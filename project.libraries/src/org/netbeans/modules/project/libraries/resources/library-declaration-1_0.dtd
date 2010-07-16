@@ -59,6 +59,6 @@
 <!--- Volume resource coded as absolute URI.
  Example:
  file:/usr/lib/java/xerces.jar is resolved to /usr/lib/java/xerces.jar
- nbinst:/modules/ext/junit.jar is resolved to /IDE-INSTALLATION/ide4/modules/ext/junit.jar
+ nbinst:/modules/ext/junit.jar is resolved to /IDE-INSTALLATION/ide/modules/ext/junit.jar
  -->
 <!ELEMENT resource (#PCDATA) >

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.soa.pojo
+OpenIDE-Module-Layer: org/netbeans/modules/soa/pojo/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/soa/pojo/resources/Bundle.properties

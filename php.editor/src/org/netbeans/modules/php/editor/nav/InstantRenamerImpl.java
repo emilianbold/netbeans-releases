@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,15 +50,16 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 
 /**
  *
@@ -68,6 +72,7 @@ public class InstantRenamerImpl implements InstantRenamer {
     private static final boolean IS_RENAME_REFACTORING_ENABLED = false;
     private List<Occurence> allOccurences = Collections.emptyList();
 
+    @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         allOccurences.clear();        
         PHPParseResult result = (PHPParseResult) info;
@@ -75,36 +80,41 @@ public class InstantRenamerImpl implements InstantRenamer {
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
-            if (IS_RENAME_REFACTORING_ENABLED) {
-                ModelElement decl = caretOccurence.getDeclaration();
-                if (caretOccurence.getAllDeclarations().size() > 1) {
-                    return false;
+            final Accuracy accuracy = caretOccurence.degreeOfAccuracy();
+            if (accuracy.equals(Occurence.Accuracy.EXACT) || accuracy.equals(Occurence.Accuracy.UNIQUE)) {
+                if (IS_RENAME_REFACTORING_ENABLED) {
+                    final Collection<? extends PhpElement> allDeclarations = caretOccurence.getAllDeclarations();
+                    if (allDeclarations.size() != 1) {
+                        return false;
+                    }
+                    PhpElement decl = allDeclarations.iterator().next();
+                    if (decl instanceof VariableName) {
+                        VariableName varName = (VariableName) decl;
+                        if (!varName.isGloballyVisible() && !varName.representsThis()) {
+                            return checkAll(caretOccurence);
+                        }
+                    } else if (decl instanceof MethodScope) {
+                        MethodScope meth = (MethodScope) decl;
+                        PhpModifiers phpModifiers = meth.getPhpModifiers();
+                        if (phpModifiers.isPrivate()) {
+                            return checkAll(caretOccurence);
+                        }
+                    } else if (decl instanceof FieldElement) {
+                        FieldElement fld = (FieldElement) decl;
+                        PhpModifiers phpModifiers = fld.getPhpModifiers();
+                        if (phpModifiers.isPrivate()) {
+                            return checkAll(caretOccurence);
+                        }
+                    }
+                } else {
+                    return checkAll(caretOccurence);
                 }
-                if (decl instanceof VariableName) {
-                    VariableName varName = (VariableName) decl;
-                    if (!varName.isGloballyVisible() && !varName.representsThis()) {
-                        return checkAll(caretOccurence);
-                    }
-                } else if (decl instanceof MethodScope) {
-                    MethodScope meth = (MethodScope) decl;
-                    PhpModifiers phpModifiers = meth.getPhpModifiers();
-                    if (phpModifiers.isPrivate()) {
-                        return checkAll(caretOccurence);
-                    }
-                } else if (decl instanceof FieldElement) {
-                    FieldElement fld = (FieldElement) decl;
-                    PhpModifiers phpModifiers = fld.getPhpModifiers();
-                    if (phpModifiers.isPrivate()) {
-                        return checkAll(caretOccurence);
-                    }
-                }
-            } else {
-                return checkAll(caretOccurence);
-            }
+            } 
         }
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Set<OffsetRange> retval = new HashSet<OffsetRange>();
         for (Occurence occurence : allOccurences) {

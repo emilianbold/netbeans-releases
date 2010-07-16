@@ -33,13 +33,13 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
 /**
  * 
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class BpelCompletionModelProvider extends CompletionModelProvider {
 
     private static final String PROCESS = "process";            // NOI18N
@@ -76,6 +76,8 @@ public class BpelCompletionModelProvider extends CompletionModelProvider {
     }
 
     private boolean isBpelFile( CompletionContext context ) {
+        if (context == null) return false;
+        
         List<QName> list = context.getPathFromRoot();
         if ( list!= null && list.size() >0 ) {
             QName qName = list.get( 0 );
@@ -85,7 +87,9 @@ public class BpelCompletionModelProvider extends CompletionModelProvider {
                 return true;
             }
         }
-        return BPELDataLoader.PRIMARY_EXTENSION.equals( 
-                context.getPrimaryFile().getExt() );
+        FileObject primaryFile = context.getPrimaryFile();
+        if ((primaryFile == null) || (primaryFile.getExt() == null)) return false;
+        
+        return BPELDataLoader.PRIMARY_EXTENSION.equals(primaryFile.getExt());
     }
 }

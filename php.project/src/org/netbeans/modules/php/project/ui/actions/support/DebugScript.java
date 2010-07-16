@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -27,10 +30,11 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.filesystems.FileObject;
@@ -50,23 +54,28 @@ public class DebugScript  extends RunScript {
 
     @Override
     public void run() {
-        //temporary; after narrowing deps. will be changed
-        Callable<Cancellable> callable = getCallable();
-        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
-        assert dbgStarter != null;
-        if (dbgStarter.isAlreadyRunning()) {
-            if (CommandUtils.warnNoMoreDebugSession()) {
-                dbgStarter.stop();
-                run();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //temporary; after narrowing deps. will be changed
+                Callable<Cancellable> callable = getCallable();
+                XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+                assert dbgStarter != null;
+                if (dbgStarter.isAlreadyRunning()) {
+                    if (CommandUtils.warnNoMoreDebugSession()) {
+                        dbgStarter.stop();
+                        run();
+                    }
+                } else {
+                    XDebugStarter.Properties props = XDebugStarter.Properties.create(
+                            provider.getStartFile(),
+                            true,
+                            provider.getDebugPathMapping(),
+                            provider.getDebugProxy());
+                    dbgStarter.start(provider.getProject(), callable, props);
+                }
             }
-        } else {
-            XDebugStarter.Properties props = XDebugStarter.Properties.create(
-                    provider.getStartFile(),
-                    true,
-                    ProjectPropertiesSupport.getDebugPathMapping(provider.getProject()),
-                    ProjectPropertiesSupport.getDebugProxy(provider.getProject()));
-            dbgStarter.start(provider.getProject(), callable, props);
-        }
+        });
     }
 
     @Override
@@ -86,7 +95,9 @@ public class DebugScript  extends RunScript {
     }
 
     public interface Provider extends RunScript.Provider {
-        PhpProject getProject();
+        Project getProject();
         FileObject getStartFile();
+        List<Pair<String, String>> getDebugPathMapping();
+        Pair<String, Integer> getDebugProxy();
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import javax.swing.*;
@@ -59,13 +60,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.VersionsCache;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
@@ -75,12 +74,8 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Lookup;
 
 /**
@@ -130,6 +125,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
         resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList));
             }
@@ -137,14 +133,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         if(results.size() > 0) {
             String url = HgUtils.getRemoteRepository(results.get(0).getRepositoryRoot());
-            boolean isKenaiRepository = url != null && HgKenaiSupport.getInstance().isKenai(url);
+            boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
             if(isKenaiRepository) {
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
-                    if(author != null && !author.equals("")) {
+                    String username = repositoryRevision.getLog().getUsername();
+                    if(author != null && !author.equals("") && username != null && !"".equals(username)) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
+                            KenaiUser kenaiUser = HgKenaiAccessor.getInstance().forName(username, url);
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }
@@ -155,20 +152,24 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
         int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SummaryListModel());
         resultsList.setSelectedIndices(selection);
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
         // not interested
     }
@@ -186,6 +187,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return newResults;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
@@ -207,29 +209,35 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
@@ -257,6 +265,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         linkerSupport.mouseMoved(p, resultsList, idx);
     }
 
+    @Override
     public Collection getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
@@ -278,6 +287,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return master.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -327,7 +337,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     missingFile = true;
                 }
                 if(oneRevisionMultiselected && i > 0 && 
-                   drev[0].getLogInfoHeader().getLog().getRevision().equals(drev[i].getLogInfoHeader().getLog().getRevision())) 
+                   drev[0].getLogInfoHeader().getLog().getRevisionNumber().equals(drev[i].getLogInfoHeader().getLog().getRevisionNumber())) 
                 {
                     oneRevisionMultiselected = false;
                 }                
@@ -337,11 +347,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }                
             container = drev[0].getLogInfoHeader();
         }
-        long revision = Long.parseLong(container.getLog().getRevision());
+        long revision = Long.parseLong(container.getLog().getRevisionNumber());
 
         final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
+        final boolean annotationsEnabled = viewEnabled && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
@@ -349,6 +360,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(diffToPrevEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     diffPrevious(selection[0]);
                 }
@@ -362,6 +374,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(backoutChangeEnabled);
                 }
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     backout(selection[0]);
                 }
@@ -371,6 +384,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {                    
                     setEnabled(revertToEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     revertModifications(selection);
                 }                
@@ -380,10 +394,26 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(viewEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
-                            view(selection[0]);
+                            view(selection[0], false);
+                        }
+                    });
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                {
+                    setEnabled(annotationsEnabled);
+                }
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            view(selection[0], true);
                         }
                     });
                 }
@@ -392,12 +422,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(viewEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            exportFileDiff(selection[0]);
-                        }
-                    });
+                    exportFileDiff(selection[0]);
                 }
             }));
         }
@@ -454,6 +481,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 revertImpl(revisions, events, this);
             }
@@ -474,7 +502,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     revertFiles.add(event.getFile());
                 }
                 RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
+                        root, revision.getLog().getRevisionNumber(), revertFiles, doBackup, progress.getLogger());
                 revertFiles.clear();
             }
         }
@@ -505,43 +533,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevisionNumber(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }
         
     }
 
-    private void view(int idx) {
+    private void view (int idx, boolean showAnnotations) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             try {
-                RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
-
-                if (file == null) { // can be null if the file does not exist or is empty in the given revision
-                    file = File.createTempFile("tmp", "-" + drev.getFile().getName()); //NOI18N
-                    file.deleteOnExit();
-                }
-
-                final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                final String revision = drev.getLogInfoHeader().getLog().getRevision();
-                EditorCookie ec = null;
-                OpenCookie oc = null;
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    ec = dobj.getCookie(EditorCookie.class);
-                    oc = dobj.getCookie(OpenCookie.class);
-                } catch (DataObjectNotFoundException ex) {
-                    Mercurial.LOG.log(Level.FINE, null, ex);
-                }
-                if (ec != null) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                } else if (oc != null) {
-                    oc.open();
-                } else {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                }
+                final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
+                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }
@@ -580,289 +584,284 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private class SummaryListModel extends AbstractListModel {
 
+        @Override
         public int getSize() {
             return dispResults.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return dispResults.get(index);
         }
     }
     
-    private class SummaryCellRenderer extends JPanel implements ListCellRenderer {
+    private class SummaryCellRenderer implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
-        private static final double DARKEN_FACTOR = 0.95;
 
-        private Style selectedStyle;
-        private Style normalStyle;
-        private Style filenameStyle;
-        private Style indentStyle;
-        private Style noindentStyle;
-        private Style hiliteStyle;
-        private Style issueHyperlinkStyle;
-        private final Style authorStyle;
-        
-        private Color selectionBackground;
-        private Color selectionForeground;
-        
-        private JTextPane textPane = new JTextPane();
-        private JPanel    actionsPane = new JPanel();
-        
-        private DateFormat defaultFormat;
-        
-        private int             index;
-        private HyperlinkLabel  diffLink;
-        private HyperlinkLabel  revertLink;
-        private HyperlinkLabel  exportDiffsLink;
+        private RevisionRenderer rr = new RevisionRenderer();
+        private ChangepathRenderer cpr = new ChangepathRenderer();
 
-        public SummaryCellRenderer() {
-            selectionBackground = new JList().getSelectionBackground();
-            selectionForeground = new JList().getSelectionForeground();
-
-            selectedStyle = textPane.addStyle("selected", null); // NOI18N
-            StyleConstants.setForeground(selectedStyle, selectionForeground);
-            StyleConstants.setBackground(selectedStyle, selectionBackground);
-            normalStyle = textPane.addStyle("normal", null); // NOI18N
-            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
-            filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
-            StyleConstants.setBold(filenameStyle, true);
-            indentStyle = textPane.addStyle("indent", null); // NOI18N
-            StyleConstants.setLeftIndent(indentStyle, 50);
-            noindentStyle = textPane.addStyle("noindent", null); // NOI18N
-            StyleConstants.setLeftIndent(noindentStyle, 0);
-            defaultFormat = DateFormat.getDateTimeInstance();
-
-            issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
-            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
-            StyleConstants.setUnderline(issueHyperlinkStyle, true);
-
-            authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-            StyleConstants.setForeground(authorStyle, Color.BLUE);
-
-            hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
-            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-            if (c != null) StyleConstants.setBackground(hiliteStyle, c);
-            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-            if (c != null) StyleConstants.setForeground(hiliteStyle, c);
-            
-            setLayout(new BorderLayout());
-            add(textPane);
-            add(actionsPane, BorderLayout.PAGE_END);
-            actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
-            
-            diffLink = new HyperlinkLabel();
-            diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-            actionsPane.add(diffLink);
-
-            revertLink = new HyperlinkLabel();
-            revertLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-            actionsPane.add(revertLink);
-            
-            exportDiffsLink = new HyperlinkLabel();
-            actionsPane.add(exportDiffsLink);
-            
-            textPane.setBorder(null);
-        }
-        
-        public Color darker(Color c) {
-            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
-                 Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
-                 Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
-        }
-        
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof RepositoryRevision) {
+                return rr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            } else {
+                return cpr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        }
+
+        private class RevisionRenderer extends JPanel implements ListCellRenderer {
+            private static final double DARKEN_FACTOR = 0.95;
+
+            private Style selectedStyle;
+            private Style normalStyle;
+            private Style filenameStyle;
+            private Style indentStyle;
+            private Style noindentStyle;
+            private Style hiliteStyle;
+            private Style issueHyperlinkStyle;
+            private final Style authorStyle;
+
+            private Color selectionBackground;
+            private Color selectionForeground;
+
+            private JTextPane textPane = new JTextPane();
+            private JPanel    actionsPane = new JPanel();
+
+            private DateFormat defaultFormat;
+
+            private int             index;
+            private HyperlinkLabel  diffLink;
+            private HyperlinkLabel  revertLink;
+            private HyperlinkLabel  exportDiffsLink;
+
+            public RevisionRenderer() {
+                selectionBackground = new JList().getSelectionBackground();
+                selectionForeground = new JList().getSelectionForeground();
+
+                selectedStyle = textPane.addStyle("selected", null); // NOI18N
+                StyleConstants.setForeground(selectedStyle, selectionForeground);
+                StyleConstants.setBackground(selectedStyle, selectionBackground);
+                normalStyle = textPane.addStyle("normal", null); // NOI18N
+                StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
+                filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
+                StyleConstants.setBold(filenameStyle, true);
+                indentStyle = textPane.addStyle("indent", null); // NOI18N
+                StyleConstants.setLeftIndent(indentStyle, 50);
+                noindentStyle = textPane.addStyle("noindent", null); // NOI18N
+                StyleConstants.setLeftIndent(noindentStyle, 0);
+                defaultFormat = DateFormat.getDateTimeInstance();
+
+                issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
+                StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
+                StyleConstants.setUnderline(issueHyperlinkStyle, true);
+
+                authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
+                StyleConstants.setForeground(authorStyle, Color.BLUE);
+
+                hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
+                Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+                if (c != null) StyleConstants.setBackground(hiliteStyle, c);
+                c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+                if (c != null) StyleConstants.setForeground(hiliteStyle, c);
+
+                setLayout(new BorderLayout());
+                add(textPane);
+                add(actionsPane, BorderLayout.PAGE_END);
+                actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
+
+                diffLink = new HyperlinkLabel();
+                diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+                actionsPane.add(diffLink);
+
+                revertLink = new HyperlinkLabel();
+                revertLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
+                actionsPane.add(revertLink);
+
+                exportDiffsLink = new HyperlinkLabel();
+                actionsPane.add(exportDiffsLink);
+
+                textPane.setBorder(null);
+            }
+
+            public Color darker(Color c) {
+                return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
+                     Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
+                     Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
+            }
+
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 renderContainer(list, (RepositoryRevision) value, index, isSelected);
-            } else {
-                renderRevision(list, (RepositoryRevision.Event) value, index, isSelected);
+                return this;
             }
-            return this;
-        }
 
-        private void renderContainer(JList list, RepositoryRevision container, int index, boolean isSelected) {
+            private void renderContainer(JList list, RepositoryRevision container, int index, boolean isSelected) {
 
-            StyledDocument sd = textPane.getStyledDocument();
+                StyledDocument sd = textPane.getStyledDocument();
 
-            Style style;
-            Color backgroundColor;
-            Color foregroundColor;
-            
-            if (isSelected) {
-                foregroundColor = selectionForeground;
-                backgroundColor = selectionBackground;
-                style = selectedStyle;
-            } else {
-                foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                backgroundColor = darker(backgroundColor); 
-                style = normalStyle;
-            }
-            textPane.setBackground(backgroundColor);
-            actionsPane.setBackground(backgroundColor);
-            
-            this.index = index;
-                        
-            // XXX cache
-            Lookup.Result<HyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-            Collection<HyperlinkProvider> hpInstances = (Collection<HyperlinkProvider>) hpResult.allInstances();
+                Style style;
+                Color backgroundColor;
+                Color foregroundColor;
 
-            try {
-                // clear document
-                sd.remove(0, sd.getLength());
-                sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+                if (isSelected) {
+                    foregroundColor = selectionForeground;
+                    backgroundColor = selectionBackground;
+                    style = selectedStyle;
+                } else {
+                    foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
+                    backgroundColor = UIManager.getColor("List.background"); // NOI18N
+                    backgroundColor = darker(backgroundColor);
+                    style = normalStyle;
+                }
+                textPane.setBackground(backgroundColor);
+                actionsPane.setBackground(backgroundColor);
 
-                // add revision
-                sd.insertString(0, container.getLog().getRevision() + 
-                        " (" + container.getLog().getCSetShortID() + ")", null); // NOI18N
-                sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+                this.index = index;
 
-                // add author
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
-                String author = container.getLog().getAuthor();
-                Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
-                if(l == null) {
-                    if(kenaiUsersMap != null && author != null && !author.equals("")) {
-                        KenaiUser kenaiUser = kenaiUsersMap.get(author);
-                        if(kenaiUser != null) {
-                            l = new AuthorLinker(kenaiUser, authorStyle, sd, author);
-                            linkerSupport.add(l, index);
+                // XXX cache
+                Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+                Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+
+                try {
+                    // clear document
+                    sd.remove(0, sd.getLength());
+                    sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+
+                    // add revision
+                    sd.insertString(0, container.getLog().getRevisionNumber() +
+                            " (" + container.getLog().getCSetShortID() + ")", null); // NOI18N
+                    sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+
+                    // add author
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
+                    String author = container.getLog().getAuthor();
+                    Linker l = linkerSupport.getLinker(AuthorLinker.class, index);
+                    if(l == null) {
+                        if(kenaiUsersMap != null && author != null && !author.equals("")) {
+                            KenaiUser kenaiUser = kenaiUsersMap.get(author);
+                            if(kenaiUser != null) {
+                                l = new AuthorLinker(kenaiUser, authorStyle, sd, author);
+                                linkerSupport.add(l, index);
+                            }
                         }
                     }
-                }
-                if(l != null) {
-                    l.insertString(sd, isSelected ? style : null);
-                } else {
-                    sd.insertString(sd.getLength(), author, style);
-                }
-                
-                // add date
-                sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(container.getLog().getDate()), null);
+                    if(l != null) {
+                        l.insertString(sd, isSelected ? style : null);
+                    } else {
+                        sd.insertString(sd.getLength(), author, style);
+                    }
 
-                // add commit msg
-                String commitMessage = container.getLog().getMessage();
-                if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
-                sd.insertString(sd.getLength(), "\n", null);
+                    // add date
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(container.getLog().getDate()), null);
 
-                // compute issue hyperlinks
-                l = linkerSupport.getLinker(IssueLinker.class, index);
-                if(l == null) {
-                    for (HyperlinkProvider hp : hpInstances) {
-                        l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
-                        if(l != null) {
-                            linkerSupport.add(l, index);
-                            break; // get the first one
+                    // add commit msg
+                    String commitMessage = container.getLog().getMessage();
+                    if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
+                    sd.insertString(sd.getLength(), "\n", null);
+
+                    // compute issue hyperlinks
+                    l = linkerSupport.getLinker(IssueLinker.class, index);
+                    if(l == null) {
+                        for (VCSHyperlinkProvider hp : hpInstances) {
+                            l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
+                            if(l != null) {
+                                linkerSupport.add(l, index);
+                                break; // get the first one
+                            }
                         }
                     }
-                }
-                if(l != null) {
-                    l.insertString(sd, style);
-                } else {
-                    sd.insertString(sd.getLength(), commitMessage, style);
-                }
-
-                int msglen = commitMessage.length();
-                int doclen = sd.getLength();
-                if (message != null && !isSelected) {
-                    int idx = commitMessage.indexOf(message);
-                    if (idx != -1) {
-                        sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
+                    if(l != null) {
+                        l.insertString(sd, style);
+                    } else {
+                        sd.insertString(sd.getLength(), commitMessage, style);
                     }
+
+                    int msglen = commitMessage.length();
+                    int doclen = sd.getLength();
+                    if (message != null && !isSelected) {
+                        int idx = commitMessage.indexOf(message);
+                        if (idx != -1) {
+                            sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
+                        }
+                    }
+
+                    resizePane(commitMessage, list.getFontMetrics(list.getFont()));
+                    if(isSelected) {
+                        sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                    }
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
                 }
-                                
-                resizePane(commitMessage, list.getFontMetrics(list.getFont()));
-                if(isSelected) {
-                    sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+
+                actionsPane.setVisible(true);
+                if(!master.isIncomingSearch()){
+                    diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);// NOI18N
+                    revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+                    exportDiffsLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_ExportDiffs"), foregroundColor, backgroundColor); // NOI18N
                 }
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
             }
-            
-            actionsPane.setVisible(true);
-            if(!master.isIncomingSearch()){
-                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);// NOI18N
-                revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
-                exportDiffsLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_ExportDiffs"), foregroundColor, backgroundColor); // NOI18N
+
+            @SuppressWarnings("empty-statement")
+            private void resizePane(String text, FontMetrics fm) {
+                if(text == null) {
+                    text = "";
+                }
+                int width = master.getWidth();
+                if (width > 0) {
+                    Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
+                    int nlc, i;
+                    for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
+                    nlc++;
+                    int lines = (int) (rect.getWidth() / (width - 80) + 1);
+                    int ph = fm.getHeight() * (lines + nlc) + 0;
+                    textPane.setPreferredSize(new Dimension(width - 50, ph));
+                }
             }
-    }
 
-        private void renderRevision(JList list, RepositoryRevision.Event dispRevision, final int index, boolean isSelected) {
-            Style style;
-            StyledDocument sd = textPane.getStyledDocument();
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (index == -1) return;
+                Rectangle apb = actionsPane.getBounds();
 
-            Color backgroundColor;
-            Color foregroundColor;
-            
-            if (isSelected) {
-                foregroundColor = selectionForeground;
-                backgroundColor = selectionBackground;
-                style = selectedStyle;
-            } else {
-                foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
-                backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                style = normalStyle;
-            }
-            textPane.setBackground(backgroundColor);
-            actionsPane.setVisible(false);
-            
-            this.index = -1;
-            try {
-                sd.remove(0, sd.getLength());
-                sd.setParagraphAttributes(0, sd.getLength(), indentStyle, false);
+                {
+                    Rectangle bounds = diffLink.getBounds();
+                    bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
+                    resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
+                }
 
-                String action = String.valueOf(dispRevision.getChangedPath().getAction()).trim();
-
-                sd.insertString(sd.getLength(), action, null);
-                sd.insertString(sd.getLength(), (action.equals("") ? "" : FIELDS_SEPARATOR) + dispRevision.getChangedPath().getPath(), null);
-                
-                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
-                resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
-            }            
-        }
-
-        @SuppressWarnings("empty-statement")
-        private void resizePane(String text, FontMetrics fm) {
-            if(text == null) {
-                text = "";
-            }
-            int width = master.getWidth();
-            if (width > 0) {                
-                Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
-                int nlc, i;
-                for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
-                nlc++;
-                int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                int ph = fm.getHeight() * (lines + nlc) + 0;
-                textPane.setPreferredSize(new Dimension(width - 50, ph));
-            }
-        }
-        
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (index == -1) return;
-            Rectangle apb = actionsPane.getBounds();
-            
-            {
-                Rectangle bounds = diffLink.getBounds();
+                Rectangle bounds = revertLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
+                resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
+
+                Rectangle edBounds = exportDiffsLink.getBounds();
+                edBounds.setBounds(edBounds.x, edBounds.y + apb.y, edBounds.width, edBounds.height);
+                resultsList.putClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + index, edBounds); // NOI18N
+
+                linkerSupport.computeBounds(textPane, index);
             }
+        }
 
-            Rectangle bounds = revertLink.getBounds();
-            bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-            resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
-
-            Rectangle edBounds = exportDiffsLink.getBounds();
-            edBounds.setBounds(edBounds.x, edBounds.y + apb.y, edBounds.width, edBounds.height);
-            resultsList.putClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + index, edBounds); // NOI18N            
-
-            linkerSupport.computeBounds(textPane, index);
+        private class ChangepathRenderer extends DefaultListCellRenderer {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                RepositoryRevision.Event revisionEvent = (RepositoryRevision.Event) value;
+                StringBuilder sb = new StringBuilder();
+                sb.append(FIELDS_SEPARATOR);
+                sb.append(String.valueOf(revisionEvent.getChangedPath().getAction()));
+                sb.append(FIELDS_SEPARATOR);
+                sb.append(revisionEvent.getChangedPath().getPath());
+                Component renderer = super.getListCellRendererComponent(list, sb.toString(), index, isSelected, isSelected);
+                if(renderer instanceof JLabel) {
+                    ((JLabel) renderer).setToolTipText(sb.toString());
+                }
+                return renderer;
+            }
         }
     }
-    
+
     private static class HyperlinkLabel extends JLabel {
 
         public HyperlinkLabel() {

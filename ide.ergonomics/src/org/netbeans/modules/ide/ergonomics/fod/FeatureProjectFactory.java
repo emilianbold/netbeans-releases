@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -255,9 +258,11 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
         return new FeatureNonProject(projectDirectory, lead, state, additional);
     }
 
+    @Override
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
+    @Override
     public void run() {
         final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
         FeatureInfo f = null;
@@ -283,27 +288,17 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
             final FeatureInfo finalF = f;
             final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
 
-            boolean success = false;
             FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
             FindComponentModules findModules = new FindComponentModules(finalF, addF);
-            Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
             Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
-            if (toInstall != null && !toInstall.isEmpty()) {
-                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                installer.getInstallTask().waitFinished();
-                success = true;
-            } else if (toEnable != null && !toEnable.isEmpty()) {
+            if (toEnable != null && !toEnable.isEmpty()) {
                 ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
                 enabler.getEnableTask().waitFinished();
-                success = true;
-            } else if (toEnable == null || toInstall == null) {
-                success = true;
-            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                success = true;
             }
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             RequestProcessor.Task t = FeatureManager.getInstance().create(this);

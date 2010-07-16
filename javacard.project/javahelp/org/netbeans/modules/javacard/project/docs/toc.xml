@@ -1,271 +1,132 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright ¨ 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
--->
-
-<!DOCTYPE toc
+--><!DOCTYPE toc
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
-         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
-
-<toc version="2.0">
-<tocitem target="org.netbeans.modules.javacard.title" text="Java Card 3 Guide" expand="true">
-<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true"></tocitem>
-
- <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="false">
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd"><toc version="2.0">
+		
+	<tocitem target="org.netbeans.modules.javacard.title" text="Java Card 3 Guide" expand="true">
+<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true">
+</tocitem>	
+ <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="true">
     <tocitem target="org.netbeans.modules.javacard.WhatYouShouldKnow" text="What You Should Know Before Working With the Java Card 3 Plugin" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsIn" text="What Is In This Online Help" expand="false"></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.WhatIsNotIn" text="What Is Not In This Online Help" expand="false"></tocitem>
-    </tocitem>
-    
- <tocitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="Developing for the Java Card 3 Platform" expand="false">
+    <tocitem target="org.netbeans.modules.javacard.WhatIsNotIn" text="What Is Not In This Online Help" expand="false"></tocitem></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="Developing for the Java Card 3 Platform" expand="true">
     <tocitem target="org.netbeans.modules.javacard.SequenceofDevelopment" text="Sequence of Development Activities" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateProject" text="Create a Project" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.WriteModifySourceCode" text="Write and Modify Source Code" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.BuildProject" text="Build the Project" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.RunApplication" text="Run the Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.DebugApplication" text="Debug the Application" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.DebugApplication" text="Debug the Application" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.JavaCardWizardsDialogBoxes" text="Java Card Wizards and Dialog Boxes" expand="false">
         <tocitem target="org.netbeans.modules.javacard.JavaCard3NewProjectWizard" text="Java Card 3 New Project Wizard" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.JavaCard3AddLibraryWizard" text="Java Card 3 Add Library Wizard" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.JavaPlatformManagerDialogBox" text="Java Platform Manager Dialog Box" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.JavaCard3DeviceManagerDialogBox" text="Java Card 3 Device Manager Dialog Box" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.JavaCard3ProjectPropertiesDialogBox" text="Java Card 3 Project Properties Dialog Box" expand="false">				
-                 <tocitem target="org.netbeans.modules.javacard.SourcesPanel" text="Sources Panel" expand="false">
-                 <tocitem target="org.netbeans.modules.javacard.AddExistingSources" text="Add Existing Sources" expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.RemoveSourcePackages" text="Remove Source Packages" expand="false"></tocitem>
-        </tocitem>
-        <tocitem target="org.netbeans.modules.javacard.DependenciesPanel" text="Dependencies Panel" expand="false">
-                 <tocitem target="org.netbeans.modules.javacard.AddLibrary" text="Add Library"expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.RemoveLibrary" text="Remove Library" expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy" text="Change Library Deployment Strategy" expand="false"></tocitem>
-        </tocitem>
-        <tocitem  target="org.netbeans.modules.javacard.AppletsPanel" text="Applets Panel" expand="false">
-                 <tocitem  target="org.netbeans.modules.javacard.RemoveApplet" text="Remove Applet" expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.RemoveInstanceApplet" text="Remove Instance Applet" expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.AddInstanceApplet" text="Add Instance Applet" expand="false"></tocitem>
-                 <tocitem  target="org.netbeans.modules.javacard.EditAppletAID" text="Edit Applet AID" expand="false"></tocitem>
-        </tocitem>
-        <tocitem  target="org.netbeans.modules.javacard.WebPanel" text="Web Panel" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.BuildCompilingPanel" text="Build - Compiling Panel" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.BuildPackagingPanel" text="Build - Packaging Panel" expand="false"></tocitem>
-        <tocitem  target="org.netbeans.modules.javacard.BuildSecurityPanel" text="Build - Security Panel" expand="false"></tocitem>
-        <tocitem  target="org.netbeans.modules.javacard.RunPanel" text="Run Panel" expand="false"></tocitem>		
-        </tocitem>
-    </tocitem>
-    
+        <tocitem target="org.netbeans.modules.javacard.JavaCard3ProjectPropertiesDialogBox" text="Java Card 3 Project Properties Dialog Box" expand="false">
+    </tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.SettingUpJavaCardPlatform" text="Setting Up a Java Card Platform" expand="false">
         <tocitem target="org.netbeans.modules.javacard.VerifyJavaCardPlatformSetUp" text="Verify the Java Card Platform is Set Up" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.AddJavaCardPlatform" text="Add a Java Card Platform" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.RemoveJavaCardPlatform" text="Remove a Java Card Platform" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.AddNewDevice" text="Add a New Device" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.CustomizeDevice" text="Customize a Device" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" text="Remove a Device From a Platform" expand="false"></tocitem>
-        </tocitem>
-     </tocitem> 
-       
+        <tocitem target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" text="Remove a Device From a Platform" expand="false">
+    </tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.DebuggingApplications" text="Debugging Applications" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.DebugApplication2" text="Debug an Application" expand="false"></tocitem>
+        <tocitem target="org.netbeans.modules.javacard.SettingBreakpoints" text="Setting Breakpoints in Code" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.SettingWatches" text="Setting Watches" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.StartingDebugging" text="Starting a Debugging Session" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.SteppingThroughCode" text="Stepping Through Code" expand="false"></tocitem>
     </tocitem>
-        
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicAppletProject" text="Creating a Classic Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="Create a Classic Applet Project From the Template" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" text="Create a Classic Applet Project From Existing Code" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" text="Create a Classic Applet Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingClassicAppletProject" text="Customizing a Classic Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.SetAppletProjectProperties" text="Set Classic Applet Project Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletSources" text="Setting Classic Applet Sources" expand="false">
-                 <tocitem target="org.netbeans.modules.javacard.AddExistingClassicAppletSources" text="Add Existing Classic Applet Sources" expand="false"></tocitem>
-                 <tocitem target="org.netbeans.modules.javacard.RemoveClassicAppletSourcePackages" text="Remove Classic Applet Source Packages" expand="false"></tocitem>
         </tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletDependencies" text="Setting Classic Applet Dependencies" expand="false">
-		<tocitem target="org.netbeans.modules.javacard.AddClassicAppletLibrary" text="Add Classic Applet Library" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.RemoveClassicAppletLibrary" text="Remove Classic Applet Library" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.ChangeClassicAppletLibraryDeployment" text="Change Classic Applet Library Deployment" expand="false"></tocitem>
         </tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingApplets" text="Setting Classic Applets in applet.xml" expand="false">
-		<tocitem target="org.netbeans.modules.javacard.ClassicAppletRemoveApplet" text="Remove a Classic Applet" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.ClassicAppletRemoveInstanceApplet" text="Remove an Instance of a Classic Applet" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.ClassicAppletAddInstanceApplet" text="Add an Instance of a Classic Applet" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.ClassicAppletEditAppletAID" text="Edit an AID of a Classic Applet" expand="false"></tocitem>
         </tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletCompilingProperties" text="Setting Classic Applet Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletPackagingProperties" text="Setting Classic Applet Build - Packaging Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletSecurityProperties" text="Setting Classic Applet Build - Security Properties" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" text="Setting Classic Applet Run Properties" expand="false"></tocitem>
-   </tocitem>      
-        
-   <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running Your Classic Applet Project" expand="false"></tocitem>
-    
-   <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletSamples" text="Running Classic Applet Samples" expand="false">
-           <tocitem target="org.netbeans.modules.javacard.RunClassicChannelsClassicApplet" text="Run ClassicChannels Classic Applet" expand="false"></tocitem>
-    </tocitem>       
-        
+        <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" text="Setting Classic Applet Run Properties" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running a Classic Applet Sample" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletSamples" text="Run HelloWorld Classic Applet Sample" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetAdditionalClassicAppletSamples" text="Getting Additional Classic Applet Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" text="Creating an Extended Applet Project" expand="false">
-            <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" text="Create an Extended Applet Project From the Template" expand="false"></tocitem>
-            <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" text="Create an Extended Applet Project From Existing Code" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" text="Create an Extended Applet Project From the Template" expand="false"></tocitem>
+        <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" text="Create an Extended Applet Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingExtendedAppletProject" text="Customizing an Extended Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.SetExtendedAppletProjectProperties" text="Set Extended Applet Project Properties" expand="false"></tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletSources" text="Setting Extended Applet Sources" expand="false">
-                <tocitem  target="org.netbeans.modules.javacard.AddExistingExtendedAppletSources" text="Add Existing Extended Applet Sources" expand="false"></tocitem>
-                <tocitem  target="org.netbeans.modules.javacard.RemoveExtendedAppletSourcePackages" text="Remove Extended Applet Source Packages" expand="false"></tocitem>
         </tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletDependencies" text="Setting Extended Applet Dependencies" expand="false">
-		<tocitem target="org.netbeans.modules.javacard.AddExtendedAppletLibrary" text="Add an Extended Applet Library" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.RemoveExtendedAppletLib" text="Remove an Extended Applet Library" expand="false"></tocitem>
-	        <tocitem target="org.netbeans.modules.javacard.ChangeExtendedAppletLibraryDeployment" text="Change an Extended Applet Library Deployment Strategy" expand="false"></tocitem>
         </tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedApplets" text="Setting Extended Applets in applet.xml" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.RemoveExtendedApplet" text="help/RemoveExtendedApplet.html" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveInstanceExtendedApplet" text="help/RemoveInstanceExtendedApplet.html" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.AddInstanceExtendedApplet" text="help/AddInstanceExtendedApplet.html" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.EditAIDofExtendedApplet" text="help/EditAIDofExtendedApplet.html" expand="false"></tocitem>
         </tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletCompilingProperties" text="Setting Extended Applet Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletSecurityProperties" text="Setting Extended Applet Build - Security Properties" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletRunProperties" text="Setting Extended Applet Run Properties" expand="false"></tocitem>
-        </tocitem>
-    
-    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running Your Extended Applet Project" expand="false"></tocitem>
-    
-    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" text="Running Extended Applet Samples" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.RunHelloWorldExtendedApplet" text="Run HelloWorld Extended Applet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunExtendedChannelsExtendedApplet" text="Run ExtendedChannels Extended Applet" expand="false"></tocitem>
-    </tocitem>
-   
-   
+        <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletRunProperties" text="Setting Extended Applet Run Properties" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running an Extended Applet Sample" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" text="Run HelloWorld Extended Applet Sample" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetAdditionalExtendedAppletSamples" text="Getting Additional Extended Applet Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicLibProject" text="Creating a Classic Library Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="Create a Classic Library Project From Template" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" text="Create a Classic Library Project From Existing Code" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" text="Create a Classic Library Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingClassicLibProject" text="Customizing a Classic Library Project" expand="false">
-    
         <tocitem target="org.netbeans.modules.javacard.SetClassicLibProjectProperties" text="Set Classic Library Project Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicLibrarySources" text="Setting Classic Library Sources" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddExistingClassicLibSources" text="Add Existing Classic Lib Sources" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveClassicLibrarySourcePackages" text="Remove Classic Library Source Packages" expand="false"></tocitem>
         </tocitem>
-      
         <tocitem target="org.netbeans.modules.javacard.SettingClassicLibraryDependencies" text="Setting Classic Library Dependencies" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddClassicLibrary" text="Add a Classic Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveClassicLibrary" text="Remove a Classic Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.ChangeClassicLibDeployment" text="Change a Classic Library Deployment Strategy" expand="false"></tocitem>
         </tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingClassicLibCompilingProperties" text="Setting Classic Library Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicLibPackagingProperties" text="Setting Classic Library Build - Packaging Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicLibrarySecurityProperties" text="Setting Classic Library Build - Security Properties" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.SettingClassicLibRunProperties" text="Setting Classic Library Run Properties" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.SettingClassicLibRunProperties" text="Setting Classic Library Run Properties" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.DeployingClassicLibrary" text="Deploying a Classic Library Project" expand="false"></tocitem>
-    
     <tocitem target="org.netbeans.modules.javacard.CreatingExtensionLibProject" text="Creating an Extension Library Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateExtensionLibProjectFromTemplate" text="Create an Extension Library Project From Template" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CreateExtensionLibProjectFromExistingCode" text="Create an Extension Library Project From Existing Code" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.CreateExtensionLibProjectFromExistingCode" text="Create an Extension Library Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingExtensionLibProject" text="Customizing an Extension Library Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.SetExtensionLibProjectProperties" text="Set Extension Library Project Properties" expand="false"></tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtensionLibSources" text="Setting Extension Library Sources" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddExistingExtensionLibrarySources" text="Add Existing Extension Library Sources" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveExtensionLibSourcePackages" text="Remove Extension Library Source Packages" expand="false"></tocitem>
         </tocitem>
-        
         <tocitem target="org.netbeans.modules.javacard.SettingExtensionLibDependencies" text="Setting Extension Library Dependencies" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddExtensionLibrary" text="Add an Extension Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveExtensionLibrary" text="Remove an Extension Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.ChangeExtensionLibDeployment" text="Change an Extension Library Deployment Strategy" expand="false"></tocitem>
-	</tocitem>
-        
+        </tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtensionLibCompilingProperties" text="Setting Extension Library Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtensionLibSecurityProperties" text="Setting Extension Library Build - Security Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtensionLibRunProperties" text="Setting Extension Library Run Properties" expand="false"></tocitem></tocitem>
-    
     <tocitem target="org.netbeans.modules.javacard.DeployingExtensionLibrary" text="Deploying an Extension Library" expand="false"></tocitem>
-    
     <tocitem target="org.netbeans.modules.javacard.CreatingWebAppProject" text="Creating a Web Application Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateWebAppProjectFromTemplate" text="Create a Web Application Project From Template" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CreateWebAppProjectFromExistingCode" text="Create a Web Application Project From Existing Code" expand="false"></tocitem>
-    </tocitem>
-    
+        <tocitem target="org.netbeans.modules.javacard.CreateWebAppProjectFromExistingCode" text="Create a Web Application Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingWebApplication" text="Customizing a Web Application Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.SetWebAppProjectProperties" text="Set Web Application Project Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppSources" text="Setting Web Application Sources" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddWebAppSources" text="Add Web Application Sources" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveWebAppSourcePackages" text="Remove Web Application Source Packages" expand="false"></tocitem>
-	</tocitem>	
-        
-        <tocitem target="org.netbeans.modules.javacard.SettingWebAppDependencies" text="Setting Web Application Dependencies" expand="false">
-                <tocitem target="org.netbeans.modules.javacard.AddWebAppLibrary" text="Add a Web Application Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.RemoveWebAppLib" text="Remove a Web Application Library" expand="false"></tocitem>
-                <tocitem target="org.netbeans.modules.javacard.ChangeWebAppDeployment" text="Change a Web Application Deployment Strategy" expand="false"></tocitem>
         </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.SettingWebAppDependencies" text="Setting Web Application Dependencies" expand="false">
+        </tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppCompilingProperties" text="Setting Web Application Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppSecurityProperties" text="Setting Web Application Build - Security Properties" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.SettingWebAppRunProperties" text="Setting Web Application Run Properties" expand="false"></tocitem>
-    </tocitem>
-        
-    <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running Your Web Application Project" expand="false"></tocitem>
-    
-    <tocitem target="org.netbeans.modules.javacard.RunningWebApplicationSamples" text="Running Web Application Samples" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.RunningHelloWorldSampleWebApp" text="Running HelloWorld Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningContainerManagedAuthenticationSampleWebApp" text="Running ContainerManagedAuthentication Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningStaticSecureWebHostingSampleWebApp" text="Running StaticSecureWebHosting Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningDynamicSecureWebHostingSampleWebApp" text="Running DynamicSecureWebHosting Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningGCFClientSampleWebApp" text="Running GCFClient Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningDynamicallyLoadedClassesSampleWebApp" text="Running DynamicallyLoadedClasses Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningPersistenceSampleWebApp" text="Running Persistence Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningRestartableTasksSampleWebApp" text="Running RestartableTasks Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningTransactionsSampleWebApp" text="Running Transactions Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningSIOFacilitySampleWebApp" text="Running SIOFacility Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningEventFacilitySampleWebApp" text="Running EventFacility Sample Web Application" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunningCardHolderAuthorizationSampleWebApp" text="Running CardHolderAuthorization Sample Web Application" expand="false"></tocitem>
-    </tocitem>
-          
-    <tocitem target="org.netbeans.modules.javacard.RunningTransitReferenceAppSample" text="Running the Transit Reference Application Sample" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.BuildWalletClassicLibRefApp" text="Build WalletClassicLib" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.BuildTransitExtLibRefApp" text="Build TransitExtLib" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunClassicWalletAppletRefApp" text="Run ClassicWalletApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunWalletAssistAppletRefApp" text="Run WalletAssistApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunPOSWebRefApp" text="Run POSWeb" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunAdminWebRefApp" text="Run AdminWeb" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileAppletRefApp" text="Run TurnstileApplet" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileClientRefApp" text="Run TurnstileClient" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.RunTurnstileWebRefApp" text="Run TurnstileWeb" expand="false"></tocitem>
-    </tocitem>
-        
+        <tocitem target="org.netbeans.modules.javacard.SettingWebAppRunProperties" text="Setting Web Application Run Properties" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running a Web Application Sample" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.RunningWebApplicationSamples" text="Run HelloWorld Web Application Sample" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetAdditionalWebAppSamples" text="Getting Additional Web Application Samples" expand="false"></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetRefAppSample" text="Getting the Transit Reference Application Sample" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" text="Setting Up Security for Your Project" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem>
-    </tocitem>
- </tocitem>
-
- <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="false">
-    <tocitem target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" text="Building a Custom Java Card Platform RI" expand="false"></tocitem>
-    
-    <tocitem target="org.netbeans.modules.javacard.ConfiguringCustomRI" text="Configuring a Custom Java Card Platform RI" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" text="Generating Custom SSL Certificates and Keys" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" text="Using Custom SSL Certificates and Keys" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CustomizingRuntimeNode" text="Customizing the Runtime Node" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CustomizingDeviceNode" text="Customizing the Device Node" expand="false"></tocitem>
-    </tocitem>
- </tocitem>
- 
- <tocitem target="org.netbeans.modules.javacard.Troubleshooting" text="Troubleshooting" expand="false">
-    <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run Samples" expand="false"></tocitem>
- </tocitem>
- 
- <tocitem target="org.netbeans.modules.javacard.Glossary" text="Glossary" expand="false"></tocitem>
+        <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem></tocitem></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.Troubleshooting" text="Troubleshooting" expand="true">
+    <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run a Sample" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.GettingUpdatedSamples" text="Getting Updated Samples" expand="false"></tocitem></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.UnableOpenProject" text="Unable to Open a Java Card 3 Project" expand="false"></tocitem></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.Glossary" text="Java Card 3 Glossary" expand="false"></tocitem>
 </toc>

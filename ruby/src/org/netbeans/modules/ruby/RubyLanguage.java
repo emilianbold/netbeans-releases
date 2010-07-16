@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,11 +53,14 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /*
@@ -62,11 +68,8 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  *
  * @author Tor Norbye
  */
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
+@LanguageRegistration(mimeType="text/x-ruby")
+@PathRecognizerRegistration(mimeTypes="text/x-ruby", sourcePathIds=RubyLanguage.SOURCE, libraryPathIds=RubyLanguage.BOOT, binaryLibraryPathIds={}) //NOI18N
 public class RubyLanguage extends DefaultLanguageConfig {
 
     public final static String BOOT = "ruby/classpath/boot";
@@ -180,6 +183,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public Set<String> getLibraryPathIds() {
         return Collections.singleton(BOOT);
+    }
+
+    @Override
+    public OverridingMethods getOverridingMethods() {
+        return new OverridingMethodsImpl();
     }
 
 }

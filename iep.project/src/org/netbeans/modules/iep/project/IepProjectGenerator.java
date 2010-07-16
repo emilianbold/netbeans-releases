@@ -18,16 +18,20 @@
  */
 package org.netbeans.modules.iep.project;
 
-import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import java.io.File;
 import java.io.IOException;
+
+import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -113,6 +117,8 @@ public class IepProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
+        ep.setProperty(ProjectConstants.ALLOW_BUILD_WITH_ERROR, "false");
+        ep.setProperty(ProjectConstants.ALWAYS_GENERATE_ABSTRACT_WSDL, "false");
         
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
         
@@ -123,13 +129,17 @@ public class IepProjectGenerator {
         ep.setProperty(IcanproProjectProperties.DIST_JAVADOC_DIR, "${"+IcanproProjectProperties.DIST_DIR+"}/javadoc");
         ep.setProperty(IcanproProjectProperties.JAVA_PLATFORM, "default_platform");
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
-
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(IcanproProjectProperties.SOURCE_ENCODING, enc.name());
+        
         //============= Start of IcanPro========================================//
-        ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-iep-engine"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+        //ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-iep-engine"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-iep-engine"); // NOI18N
+        //ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
+        //ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
+        //ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
+        //ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, NbBundle.getMessage(IepProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 

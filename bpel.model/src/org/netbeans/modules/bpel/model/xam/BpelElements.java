@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -96,6 +99,7 @@ public enum BpelElements {
     ON_EVENT("onEvent"),                            // NOI18N
     ON_ALARM_EVENT("onAlarm"),                      // NOI18N
     EXTENSIBLE_ASSIGN( "extensibleAssign"),         // NOI18N
+    EXTENSION_ASSIGN_OPERATION( "extensionAssignOperation"), // NOI18N
     ON_ALARM_PICK("onAlarm"),                       // NOI18N
     TERMINATION_HANDLER("terminationHandler"),      // NOI18N
     CONDITION("condition"),                         // NOI18N
@@ -126,8 +130,7 @@ public enum BpelElements {
     FINAL_COUNTER_VALUE( "finalCounterValue" ),     // NOI18N
     MESSAGE_EXCHAGES( "messageExchanges" ),         // NOI18N
     MESSAGE_EXCHAGE( "messageExchange"),            // NOI18N
-    SERVICE_REF( "service-ref" ,                    // NOI18N 
-            ServiceRef.SERVICE_REF_NS),                   
+    SERVICE_REF( "service-ref", ServiceRef.SERVICE_REF_NS), // NOI18N 
     COMPENSATE_SCOPE( "compensateScope" ),          // NOI18N
     QUERY( "query" ),                               // NOI18N          
     ;

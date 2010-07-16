@@ -11,7 +11,6 @@ package org.netbeans.modules.bpel.model.ext.logging.impl;
 
 import java.util.Arrays;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.impl.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,18 +50,10 @@ import org.w3c.dom.Element;
  *
  * @author zgursky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.spi.EntityFactory.class)
 public class LoggingEntityFactory implements EntityFactory {
 
-    public LoggingEntityFactory() {
-    }
-
     public boolean isApplicable(String namespaceUri) {
-        if (Trace.LOGGING_NAMESPACE_URI.equals(namespaceUri)) {
-            return true;
-        } else {
-            return false;
-        }
+        return Trace.TRACE_NAMESPACE_URI.equals(namespaceUri);
     }
 
     public Set<QName> getElementQNames() {
@@ -70,8 +61,20 @@ public class LoggingEntityFactory implements EntityFactory {
     }
 
     public BpelEntity create(BpelContainer container, Element element) {
+        return create(container, element, element.getNamespaceURI());
+    }
+    
+    /**
+     * Namespace context could be losted if elemnt is from cutted subtree
+     * 
+     * @param container
+     * @param element
+     * @param namespaceURI
+     * @return
+     */
+    public BpelEntity create(BpelContainer container, Element element, String namespaceURI) {
         QName elementQName = new QName(
-                element.getNamespaceURI(), element.getLocalName());
+                namespaceURI, element.getLocalName());
         if (LoggingElements.TRACE.getQName().equals(elementQName)) {
             return new TraceImpl(this, (BpelModelImpl)container.getBpelModel(), element);
         } else if (LoggingElements.LOG.getQName().equals(elementQName)) {

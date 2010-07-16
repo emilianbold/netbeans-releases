@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,43 +46,39 @@ package org.netbeans.modules.xslt.project.wizard.element;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.io.File;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
+import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.filesystems.FileUtil;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
+ * @author Vitaly Bychkov
  * @version 2007.02.01
  */
-final class PanelProxy<T> extends Panel<T> {
+final class PanelProxy extends Panel {
+    private static final long serialVersionUID = 1L;
     
   PanelProxy(
     Project project,
-    Panel<T> parent,
-    WSDLModel modelImplement,
-    WSDLModel modelCall)
+    Panel parent,
+    Operation ourOperation,
+    Operation partnerOperation)
   {
     super(project, parent);
-    myOperationImplement = new PanelOperation<T>(
-      project, this, modelImplement, null, true, true);
-
-    myOperationCall = new PanelOperation<T>(
-      project, this, modelCall, null, true, false);
+    myOperationImplementPanel = new PanelTransformation(project, this, 
+            ourOperation == null ? null : ourOperation.getInput(), 
+            partnerOperation == null ? null : partnerOperation.getInput(), false, true);
+    myOperationImplement = ourOperation;
+    
+    myOperationCallPanel = new PanelTransformation(project, this,
+            partnerOperation == null ? null : partnerOperation.getOutput(), 
+            ourOperation == null ? null : ourOperation.getOutput(), 
+            false, false);
+    myOperationCall = partnerOperation;
  }
 
   @Override
@@ -88,248 +87,169 @@ final class PanelProxy<T> extends Panel<T> {
     return NAME_XSLT;
   }
 
+    @Override
+    protected void finishEditing() {
+        if (myOperationImplementPanel != null) {
+            myOperationImplementPanel.finishEditing();
+        }
+        if (myOperationCallPanel != null) {
+            myOperationCallPanel.finishEditing();
+        }
+    }
+
   @Override
   protected String getError()
   {
-    String name = addExtension(myReplyFile.getText().trim());
-    if ( !PanelUtil.isValidFileName(name)) {
-        return i18n("ERR_WrongFileName", name); // NOI18N
+    String separateErrors = getError(myOperationImplementPanel.getError(), myOperationCallPanel.getError());
+    if (separateErrors != null) {
+        return separateErrors;
     }
-    FileObject file = getFolder().getFileObject(name);
 
-    name = addExtension(myRequestFile.getText().trim());
-    if (myReplyBox.isSelected() && !PanelUtil.isValidFileName(name)) {
-        return i18n("ERR_WrongFileName", name); // NOI18N
+    String opParamError = checkOpParameters();
+    if (opParamError != null) {
+        return opParamError;
     }
     
-    file = getFolder().getFileObject(name);
-
-    return getError(myOperationImplement.getError(), myOperationCall.getError());
+    String generalError = checkUniqueTransformNames();
+    if (generalError != null) {
+        return generalError;
+    }
+    
+    return generalError;
   }
 
-  public void storeSettings(Object object) {
-    WizardDescriptor descriptor = (WizardDescriptor) object;
-    myOperationImplement.storeSettings(object);
-    myOperationCall.storeSettings(object);
+  private String checkOpParameters() {
+    String implOpName = myOperationImplement == null ? "" : myOperationImplement.getName();
+    implOpName = implOpName == null ? "" : implOpName;
 
-    descriptor.putProperty(INPUT_FILE,
-      addExtension(myRequestFile.getText().trim()));
-
-    descriptor.putProperty(OUTPUT_FILE,
-      addExtension(myReplyFile.getText().trim()));
+    String callOpName = myOperationCall == null ? "" : myOperationCall.getName();
+    callOpName = callOpName == null ? "" : callOpName;
     
-    if (myReplyBox.isSelected()) {
-      descriptor.putProperty(CHOICE, CHOICE_FILTER_REQUEST_REPLY);
+    if (!check(myOperationImplementPanel.getInput())) {
+        return i18n( "ERR_Operation_With_Input_Is_Required" ,implOpName); // NOI18N
     }
-    else {
-      descriptor.putProperty(CHOICE, CHOICE_FILTER_ONE_WAY);
+    if (!check(myOperationImplementPanel.getOutput())) {
+        return i18n( "ERR_Operation_With_Output_Is_Required" ,callOpName); // NOI18N
     }
+    
+    if (myOperationCallPanel.isTransformEnabled()) {
+        if (!check(myOperationCallPanel.getInput())) {
+            return i18n( "ERR_Operation_With_Input_Is_Required" ,callOpName); // NOI18N
+        }
+        if (!check(myOperationCallPanel.getOutput())) {
+            return i18n( "ERR_Operation_With_Output_Is_Required" ,implOpName); // NOI18N
+        }
+    }
+    return null;
+  }
+  
+  private boolean check(OperationParameter parameter) {
+    return
+      parameter != null &&
+      parameter.getMessage() != null &&
+      parameter.getMessage().get() != null;
+  }
+
+  private String checkUniqueTransformNames() {
+    List<TransformationItem> implDataModel = (List<TransformationItem>) myOperationImplementPanel.getResult();  
+    List<TransformationItem> outDataModel = (List<TransformationItem>) myOperationCallPanel.getResult();  
+
+    String result = null;
+    if (implDataModel != null) {
+        for (TransformationItem item : implDataModel) {
+            result = isUniqueTransformName(outDataModel, item.getName());
+            if (result != null) {
+                return result;
+            }
+        }
+    }
+    
+    if (outDataModel != null) {
+        for (TransformationItem item : outDataModel) {
+            result = isUniqueTransformName(implDataModel, item.getName());
+            if (result != null) {
+                return result;
+            }
+        }
+    }
+    
+    return result;
+  }
+
+    @Override
+    public void readSettings(WizardDescriptor descriptor) {
+        super.readSettings(descriptor);
+        myOperationCallPanel.readSettings(descriptor);
+        myOperationImplementPanel.readSettings(descriptor);
+    }
+  
+  @Override
+  public void storeSettings(WizardDescriptor descriptor) {
+    super.storeSettings(descriptor);
+    myOperationImplementPanel.storeSettings(descriptor);
+    myOperationCallPanel.storeSettings(descriptor);
+    
+    if (myOperationCallPanel.isTransformEnabled()) {
+        descriptor.putProperty(CHOICE, CHOICE_FILTER_REQUEST_REPLY);
+    } else {
+        descriptor.putProperty(CHOICE, CHOICE_FILTER_ONE_WAY);
+    }
+    
+    descriptor.putProperty(IMPL_OPERATION, myOperationImplement);
+    descriptor.putProperty(CALLED_OPERATION, myOperationCall);
   }
 
   @Override
   protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
   {
     JPanel panel = new JPanel(new GridBagLayout());
+    
     GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.WEST;
+    c.gridy++;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.gridx = 0;
 
     // we implement
-    panel.add(createSeparator(i18n("LBL_We_Implement")), c); // NOI18N
-    myOperationImplement.createPanel(panel, c);
+    c.insets = new Insets(SMALL_SIZE,0, 0, 0);
+    panel.add(createSeparator(""), c); // NOI18N
+
+    c.gridy++;
+    c.insets = new Insets(TINY_SIZE, 0, 0, 0);
+    myOperationImplementPanel.createPanel(panel, c);
 
     // we call
-    panel.add(createSeparator(i18n("LBL_We_Call")), c); // NOI18N
-    myOperationCall.createPanel(panel, c);
+    c.gridy++;
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
+    panel.add(createSeparator(""), c); // NOI18N
+    
+    c.gridy++;
+    c.insets = new Insets(TINY_SIZE, 0, 0, 0);
+    myOperationCallPanel.createPanel(panel, c);
 
-    int number1 = getXslFileNumber(1);
-    int number2 = getXslFileNumber(number1 + 1);
-
-    // transform request
-    panel.add(createTransformRequestPanel(getXslFileName(number1)), c);
-
-    // transform reply
-    panel.add(createTransformReplyPanel(getXslFileName(number2)), c);
-
-    update();
     mainPanel.add(panel, cc);
     mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewBridgeService3"));   
+    mainPanel.revalidate();
   }
 
   @Override
   protected void update()
   {
-    if (myRequestBox == null || myReplyBox == null) {
-      return;
-    }
-    myOperationImplement.setEnabled(myRequestBox.isSelected());
-    myOperationCall.setEnabled(myReplyBox.isSelected());
+    myOperationImplementPanel.update();
+    myOperationCallPanel.update();
 
-    myRequestFile.setEnabled(myRequestBox.isSelected());
-    myRequestFileBrowseButton.setEnabled(myRequestBox.isSelected());
+    myOperationImplementPanel.setRequirement(
+//      myOperationImplement.isTransformEnabled(), myOperationCall.isTransformEnabled());
+      true, true);
 
-    myReplyFile.setEnabled(myReplyBox.isSelected());
-    myReplyFileBrowseButton.setEnabled(myReplyBox.isSelected());
-
-    myOperationImplement.setRequirement(
-      myRequestBox.isSelected(), myReplyBox.isSelected());
-
-    myOperationCall.setRequirement(
-      myRequestBox.isSelected(), myReplyBox.isSelected());
-
-    updateText(
-      myRequestText,
-      true,
-      (Operation) myOperationImplement.getResult(),
-      (Operation) myOperationCall.getResult());
-
-    updateText(
-      myReplyText,
-      false,
-      (Operation) myOperationCall.getResult(),
-      (Operation) myOperationImplement.getResult());
+    myOperationCallPanel.setRequirement(
+//      myOperationImplement.isTransformEnabled(), myOperationCall.isTransformEnabled());
+      myOperationCallPanel.isTransformEnabled(), myOperationCallPanel.isTransformEnabled());
   }
 
-  private void updateText(
-    JTextField text, 
-    boolean isInput,
-    Operation operation1,
-    Operation operation2)
-  {
-    updateText(text, getType(operation1, isInput), getType(operation2, isInput));
-  }
-
-  private void updateText(
-    JTextField text, 
-    String text1,
-    String text2)
-  {
-    text.setText(i18n("LBL_From_To", text1, text2)); // NOI18N
-  }
-
-  private String getType(Operation operation, boolean isInput) {
-    if (operation == null) {
-      return EMPTY;
-    }
-    if (isInput) {
-      return getType(operation.getInput());
-    }
-    else {
-      return getType(operation.getOutput());
-    }
-  }
-
-  private JPanel createTransformRequestPanel(String fileName) {
-    myRequestBox = createCheckBox(
-      new ButtonAction(i18n("LBL_Transform_Request")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          update();
-        }
-      }
-    );
-    myRequestBox.setEnabled(false);
-    myRequestBox.setSelected(true);
-
-    myRequestText = new JTextField();
-    a11y(myRequestText, "ACSN_LBL_Transform_Request", "ACSD_LBL_Transform_Request"); // NOI18N
-    myRequestFile = new JTextField(fileName);
-    myRequestFileBrowseButton = createBrowseButton(myRequestFile);
-
-    return createTransformPanel(
-      myRequestBox, myRequestText, myRequestFile, myRequestFileBrowseButton);
-  }
-
-  private JPanel createTransformReplyPanel(String fileName) {
-    myReplyBox = createCheckBox(
-      new ButtonAction(i18n("LBL_Transform_Reply")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          update();
-        }
-      }
-    );
-    a11y(myReplyBox, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
-    myReplyBox.setEnabled(true);
-    myReplyBox.setSelected(false);
-
-    myReplyText = new JTextField();
-    a11y(myReplyText, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
-    myReplyFile = new JTextField(fileName);
-    myReplyFileBrowseButton = createBrowseButton(myReplyFile, "LBL_Browse2");
-
-    return createTransformPanel(
-      myReplyBox, myReplyText, myReplyFile, myReplyFileBrowseButton);
-  }
-
-  private JPanel createTransformPanel(
-    JCheckBox checkBox,
-    JTextField text,
-    JTextField file,
-    JButton browseButton)
-  {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.WEST;
-    
-    // check
-    c.gridy++;
-    c.gridwidth = 2;
-    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
-    panel.add(checkBox, c);
-
-    // text
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.insets = new Insets(
-      LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 1.0;
-    text.setEnabled(false);
-    panel.add(text, c);
-    
-    // label
-    c.gridy++;
-    c.gridwidth = 2;
-    c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(
-      LARGE_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE + TINY_SIZE, TINY_SIZE, LARGE_SIZE);
-    c.fill = GridBagConstraints.NONE;
-    c.weightx = 0.0;
-    JLabel label = createLabel(i18n(getNextXslFileLabel()));
-    a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
-    label.setLabelFor(file);
-    panel.add(label, c); // NOI18N
-
-    // file
-    c.gridwidth = 1;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 1.0;
-    c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
-    panel.add(file, c);
-
-    c.weightx = 0.0;
-    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
-    panel.add(browseButton, c);
-    
-    return panel;
-  }
-
-  private String getNextXslFileLabel() {
-    myXslFileUsagesCounter++;
-    return myXslFileUsagesCounter > 1 ? "LBL_XSL_File3" : "LBL_XSL_File" ; // NOI18N
-  }
-  
-  private int myXslFileUsagesCounter = 0;
-  private PanelOperation<T> myOperationImplement;
-  private PanelOperation<T> myOperationCall;
-  private JCheckBox myRequestBox; 
-  private JCheckBox myReplyBox; 
-  private JTextField myRequestText; 
-  private JTextField myReplyText;
-  private JButton myReplyFileBrowseButton;
-  private JTextField myRequestFile;
-  private JButton myRequestFileBrowseButton;
-  private JTextField myReplyFile;
+  private Operation myOperationImplement;
+  private Operation myOperationCall;
+  private PanelTransformation myOperationImplementPanel;
+  private PanelTransformation myOperationCallPanel;
 }

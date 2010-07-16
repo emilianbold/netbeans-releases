@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,22 +47,12 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,38 +88,6 @@ public class J2SEProjectUtil {
         }
     }
     
-    /** Check if the given file object represents a source with the main method.
-     * 
-     * @param fo source
-     * @return true if the source contains the main method
-     */
-    public static boolean hasMainMethod(FileObject fo) {
-        // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
-        }
-        if (fo == null) {
-            // ??? maybe better should be thrown IAE
-            return false;
-        }
-        return !SourceUtils.getMainClasses(fo).isEmpty();
-    }
-    
-    public static Collection<ElementHandle<TypeElement>> getMainMethods (final FileObject fo) {
-        // support for unit testing
-        if (fo == null || MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return Collections.<ElementHandle<TypeElement>>emptySet();
-        }
-        return SourceUtils.getMainClasses(fo);
-    }
-
-        
-    public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
-        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
-        return SourceUtils.isMainClass(className, cpInfo);
-    }
-  
-  
     
     /**
      * Creates an URL of a classpath or sourcepath root
@@ -151,31 +112,6 @@ public class J2SEProjectUtil {
     }
     
     
-    /**
-     * Returns the active platform used by the project or null if the active
-     * project platform is broken.
-     * @param activePlatformId the name of platform used by Ant script or null
-     * for default platform.
-     * @return active {@link JavaPlatform} or null if the project's platform
-     * is broken
-     */
-    public static JavaPlatform getActivePlatform (final String activePlatformId) {
-        final JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        if (activePlatformId == null) {
-            return pm.getDefaultPlatform();
-        }
-        else {
-            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-            for (JavaPlatform p : installedPlatforms) {
-                String antName = p.getProperties().get("platform.ant.name"); // NOI18N
-                if (antName != null && antName.equals(activePlatformId)) {
-                    return p;
-                }
-            }
-            return null;
-        }
-    }
-    
     public static String getBuildXmlName (final J2SEProject project) {
         assert project != null;
         String buildScriptPath = project.evaluator().getProperty(J2SEProjectProperties.BUILD_SCRIPT);
@@ -197,7 +133,7 @@ public class J2SEProjectUtil {
         }
         else {
             for (Entry<String, String> e : props.entrySet()) {
-                if (e.getKey().startsWith(J2SEProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
+                if (e.getKey().startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
                     if (e.getValue() != null && Boolean.valueOf(e.getValue())) {
                         return false;
                     }
@@ -208,9 +144,20 @@ public class J2SEProjectUtil {
     }
 
     public static boolean isCompileOnSaveEnabled(final J2SEProject project) {
-        String compileOnSaveProperty = project.evaluator().getProperty(J2SEProjectProperties.COMPILE_ON_SAVE);
+        String compileOnSaveProperty = project.evaluator().getProperty(ProjectProperties.COMPILE_ON_SAVE);
 
         return (compileOnSaveProperty != null && Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
+    }
+
+    /**
+     * Returns true when value is ant true|on|yes
+     * @param value to be checked
+     * @return boolean
+     */
+    public static boolean isTrue(final String param) {
+        return "true".equalsIgnoreCase(param) ||    //NOI18N
+               "yes".equalsIgnoreCase(param) ||     //NOI18N
+               "on".equalsIgnoreCase(param);        //NOI18N
     }
 
 }

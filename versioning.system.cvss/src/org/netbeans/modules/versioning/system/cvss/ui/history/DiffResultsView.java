@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.awt.*;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -194,7 +198,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = RequestProcessor.getDefault().create(currentTask);
+            currentShowDiffTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(currentTask);
             currentShowDiffTask.schedule(0);
         }
     }
@@ -357,7 +361,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                         if (cancelled) {
                             return;
                         }
-                        DiffController view = DiffController.create(s1, s2);
+                        DiffController view = DiffController.createEnhanced(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             if (currentDiff != null) {
                                 currentDiff.removePropertyChangeListener(DiffResultsView.this);

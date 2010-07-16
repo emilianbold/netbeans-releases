@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
-import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSProperty;
 
@@ -41,6 +41,10 @@ public class JMSPropertyImpl  extends JMSComponentImpl implements JMSProperty{
         this(model, createPrefixedElement(JMSQName.PROPERTY.getQName(), model));
     }
 
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }    
+    
     public String getName() {
         return getAttribute(JMSAttribute.JMS_PROPERTY_NAME);        
     }

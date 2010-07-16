@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,13 +57,13 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
+import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -71,7 +74,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -80,7 +82,6 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -124,7 +125,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf,
+        conf = addServerTests(Server.TOMCAT, conf,
                 "testPreconditions",
                 "testNewJSFWebProject",
                 "testRedeployProject",
@@ -147,6 +148,12 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
+
+    @Override
+    protected String getEEVersion() {
+        return JAVA_EE_5;
+    }
+
     /** Test creation of web project.
      * - open New Project wizard from main menu (File|New Project)
      * - select Web|Web Application
@@ -179,11 +186,14 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer(serverNodeName);
-        serverStep.selectJavaEEVersion("JAVA EE 5");
+        serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.next();
 
         NewWebProjectJSFFrameworkStepOperator frameworkStep = new NewWebProjectJSFFrameworkStepOperator();
-        assertTrue("JSF framework not present!", frameworkStep.setJSFFrameworkCheckbox());
+        boolean exists = frameworkStep.setJSFFrameworkCheckbox();
+        assertTrue("JSF framework not present!", exists);
+        JComboBoxOperator cb = new JComboBoxOperator(frameworkStep);
+        cb.setSelectedItem(getJSFVersion());
 //TODO enable this code while framework configuration is fixed
 //        frameworkStep.txtServletURLMapping().setText("");
 //        assertEquals(URL_PATTERN_NULL, frameworkStep.lblTheURLPatternHasToBeEntered().getText());
@@ -201,19 +211,23 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         frameworkStep.finish();
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        verifyWebPagesNode("welcomeJSF.jsp");
-        verifyWebPagesNode("WEB-INF|web.xml");
-        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
-        verifyWebPagesNode("WEB-INF|faces-config.xml");//NOI18N
-        // Check project contains all needed files.
+        EditorOperator.closeDiscardAll();
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        Node welcomeJSF = new Node(webPages, "welcomeJSF.jsp");
-        new OpenAction().perform(welcomeJSF);
-        new EditorOperator("welcomeJSF.jsp").close();
-        Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
-        new OpenAction().perform(facesconfig);
-        // open faces-config.xml is used in next test cases
-        getFacesConfig();
+        if ("1.2".equals(getJSFVersion())){
+            verifyWebPagesNode("welcomeJSF.jsp");
+            verifyWebPagesNode("WEB-INF|web.xml");
+    //        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
+            // Check project contains all needed files.
+            Node welcomeJSF = new Node(webPages, "welcomeJSF.jsp");
+            new OpenAction().perform(welcomeJSF);
+            verifyWebPagesNode("WEB-INF|faces-config.xml");//NOI18N
+            Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
+            new OpenAction().perform(facesconfig);
+            // open faces-config.xml is used in next test cases
+            getFacesConfig();
+        }else{
+            verifyWebPagesNode("index.xhtml");
+        }
     }
 
     @Override
@@ -248,15 +262,17 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         bean.finish();
         // verify
         new EditorOperator("MyManagedBean.java").close();
-        EditorOperator facesEditor = getFacesConfig();
-        String expected = "<managed-bean>";
-        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
-        expected = "<managed-bean-name>MyManagedBean</managed-bean-name>";
-        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
-        expected = "<managed-bean-class>mypackage.MyManagedBean</managed-bean-class>";
-        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
-        expected = "<managed-bean-scope>session</managed-bean-scope>";
-        assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+        if ("1.2".equals(getJSFVersion())){
+            EditorOperator facesEditor = getFacesConfig();
+            String expected = "<managed-bean>";
+            assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+            expected = "<managed-bean-name>MyManagedBean</managed-bean-name>";
+            assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+            expected = "<managed-bean-class>mypackage.MyManagedBean</managed-bean-class>";
+            assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+            expected = "<managed-bean-scope>session</managed-bean-scope>";
+            assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
+        }
     }
     
     /** Test that delete safely bean removes record from faces-config.xml. */
@@ -267,15 +283,17 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         new JButtonOperator(safeDeleteDialog, "Refactor").push();
         node.waitNotPresent();
         // verify
-        EditorOperator facesEditor = getFacesConfig();
-        String expected = "<managed-bean>";
-        assertFalse("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
+        if ("1.2".equals(getJSFVersion())){
+            EditorOperator facesEditor = getFacesConfig();
+            String expected = "<managed-bean>";
+            assertFalse("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
+        }
     }
     
     /** Test adding JSF Managed Bean from faces-config.xml. */
     public void testAddManagedBean(){
         EditorOperator editor = getFacesConfig();
-        Action addBeanAction = new ActionNoBlock(null, "JavaServer Faces|Add Managed Bean...");
+        Action addBeanAction = new ActionNoBlock(null, "Insert|Managed Bean...");
         addBeanAction.perform(editor);
         AddManagedBeanOperator addBeanOper = new AddManagedBeanOperator();
         addBeanOper.setBeanName("SecondBean");
@@ -302,7 +320,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Test adding navigation rule from faces-config.xml. */
     public void testAddNavigationRule() throws IOException {
         EditorOperator editor = getFacesConfig();
-        Action addRule = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Rule...");
+        Action addRule = new ActionNoBlock(null, "Insert|Navigation Rule...");
         addRule.perform(editor);
         AddNavigationRuleDialogOperator rule = new AddNavigationRuleDialogOperator();
         rule.setRuleFromView("/"+WELCOME_JSP);
@@ -324,7 +342,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Test adding navigation case from faces-config.xml. */
     public void testAddNavigationCase() throws IOException {
         EditorOperator editor = getFacesConfig();
-        Action addCase = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Case...");
+        Action addCase = new ActionNoBlock(null, "Insert|Navigation Case...");
         addCase.perform(editor);
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
         caseOper.selectFromView("/"+WELCOME_JSP);
@@ -353,7 +371,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Test adding navigation case with new rule from faces-config.xml. */
     public void testAddNavigationCaseWithNewRule() throws IOException {
         EditorOperator editor = getFacesConfig();
-        Action addCase = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Case...");
+        Action addCase = new ActionNoBlock(null, "Insert|Navigation Case...");
         addCase.perform(editor);
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
         caseOper.cboFromView().getTextField().setText("/"+INDEX_JSP);
@@ -398,8 +416,13 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         lop.setProjectName(PROJECT_NAME+"2");
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
-        lop.finish();
-        
+
+        String serverNodeName = getServerNode(Server.ANY).getText();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer(serverNodeName);
+        serverStep.selectJavaEEVersion(getEEVersion());
+        serverStep.finish();
+
         // add JSF framework using project properties
         // open project properties
         ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME+"2").properties();
@@ -412,6 +435,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         NbDialogOperator addFrameworkOper = new NbDialogOperator("Add a Framework");
         // select "JavaServer Faces" but item is instance of org.netbeans.modules.web.jsf.JSFFrameworkProvider which we need to select
         new JListOperator(addFrameworkOper).selectItem("org.netbeans.modules.web.jsf.JSFFrameworkProvider");
+
         addFrameworkOper.ok();
 // TODO add after ui fixes
 //        new JCheckBoxOperator(propertiesDialogOper, "Validate XML").setSelected(false);
@@ -420,12 +444,15 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
 //        new JTabbedPaneOperator(propertiesDialogOper).setSelectedIndex(1);
 //        new JRadioButtonOperator(propertiesDialogOper, "Do not append any library.").doClick();
         // confirm properties dialog
+        JComboBoxOperator cb = new JComboBoxOperator(propertiesDialogOper);
+        cb.setSelectedItem(getJSFVersion());
         propertiesDialogOper.ok();
         
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME+"2");
-//        Node welcomeJSF = new Node(webPages, "welcomeJSF.jsp");
-        assertNotNull(new Node(webPages, "WEB-INF|faces-config.xml"));
+        if (J2EE_4.equals(getEEVersion())){
+            assertNotNull(new Node(webPages, "WEB-INF|faces-config.xml"));
+        }
         webPages.setComparator(new DefaultStringComparator(true, true));
         Node webXML = new Node(webPages, "WEB-INF|web.xml");
         new EditAction().performAPI(webXML);
@@ -442,7 +469,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     public void testJSFPalette() {
         EditorOperator editorOper = new EditorOperator(INDEX_JSP);
         editorOper.select(17);
-        ComponentPaletteOperator paletteOper = new ComponentPaletteOperator();
+        PaletteOperator paletteOper = PaletteOperator.invoke();
         // collapse HTML category
         JCheckBoxOperator htmlCategoryOper = new JCheckBoxOperator(paletteOper, "HTML");
         if(htmlCategoryOper.isSelected()) {
@@ -456,7 +483,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         editorOper.makeComponentVisible();
         paletteOper.selectComponent("JSF Form");
         paletteOper.pushKey(KeyEvent.VK_ENTER);
-        new NbDialogOperator("Insert JSF Form").ok();
+//        new NbDialogOperator("Insert JSF Form").ok();
         String expected = "<f:view>";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
         expected = "<h:form>";
@@ -469,7 +496,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         editorOper.makeComponentVisible();
         paletteOper.selectComponent("JSF Data Table");
         paletteOper.pushKey(KeyEvent.VK_ENTER);
-        new NbDialogOperator("Insert JSF Data Table").ok();
+//        new NbDialogOperator("Insert JSF Data Table").ok();
         expected = "<h:dataTable value=\"#{}\" var=\"item\">";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
         expected = "</h:dataTable>";
@@ -489,7 +516,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         
         NbDialogOperator persistenceDialog = new NbDialogOperator("Create Persistence Unit");
         new JComboBoxOperator(
-                (JComboBox)new JLabelOperator(persistenceDialog, "Data Source").getLabelFor()).selectItem("jdbc/sample");
+                (JComboBox)new JLabelOperator(persistenceDialog, "Database Connection").getLabelFor()).selectItem(0);
         new JButtonOperator(persistenceDialog, "Create").push();
         
         locationOper.finish();
@@ -520,5 +547,9 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
             tbo.push();
         }
         return new EditorOperator("faces-config.xml");
+    }
+
+    protected String getJSFVersion(){
+        return "JSF 1.2";
     }
 }

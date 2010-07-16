@@ -1,9 +1,9 @@
 struct ClassA {
-int number;
+int    number;
 String text;
 };
 static float[] floats;
-double[] doubles;
+double[]       doubles;
 
 doubles = {3.67,40,2e-30};
 

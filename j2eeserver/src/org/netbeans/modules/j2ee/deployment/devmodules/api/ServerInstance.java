@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,12 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.io.IOException;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
 /**
@@ -197,6 +203,26 @@ public final class ServerInstance {
         return null;
     }
 
+    /**
+     * Returns manager providing the access to server libraries. May
+     * return <code>null</code> if the server does not support this.
+     *
+     * @return manager providing the access to server libraries or <code>null</code>
+     * @throws InstanceRemovedException if the instance is not available anymore
+     * @since 1.68
+     */
+    public LibraryManager getLibraryManager() throws InstanceRemovedException {
+        final ServerRegistry registry = ServerRegistry.getInstance();
+        // see comment at the beginning of the class
+        synchronized (registry) {
+            org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
+            if (inst.isServerLibraryManagementSupported()) {
+                return new LibraryManager();
+            }
+        }
+        return null;
+    }
+
     private org.netbeans.modules.j2ee.deployment.impl.ServerInstance getInstanceFromRegistry(ServerRegistry registry)
             throws InstanceRemovedException {
 
@@ -246,6 +272,51 @@ public final class ServerInstance {
          */
         public boolean isLocal() throws InstanceRemovedException {
             return getInstanceFromRegistry(ServerRegistry.getInstance()).getServerInstanceDescriptor().isLocal();
+        }
+    }
+
+    /**
+     * The manager providing the access to server libraries.
+     *
+     * @since 1.68
+     */
+    public final class LibraryManager {
+
+        /**
+         * Returns the set of libraries the server has access to and can be deployed
+         * on request (by call to {@link #deployRequiredLibraries(java.util.Set)}.
+         *
+         * @return the set of libraries which can be deployed on server
+         */
+        @NonNull
+        public Set<ServerLibrary> getDeployableLibraries() throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getDeployableLibraries();
+        }
+
+        /**
+         * Returns the set of libraries already deployed to the server.
+         *
+         * @return the set of libraries already deployed to the server
+         */
+        @NonNull
+        public Set<ServerLibrary> getDeployedLibraries() throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getDeployedLibraries();
+        }
+
+        @NonNull
+        public Set<ServerLibraryDependency> getMissingDependencies(
+                @NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getMissingDependencies(libraries);
+        }
+
+        @NonNull
+        public Set<ServerLibraryDependency> getDeployableDependencies(
+                @NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getDeployableDependencies(libraries);
+        }
+
+        public void deployLibraries(@NonNull Set<ServerLibraryDependency> libraries) throws InstanceRemovedException, ConfigurationException {
+            getInstanceFromRegistry(ServerRegistry.getInstance()).deployLibraries(libraries);
         }
     }
 }

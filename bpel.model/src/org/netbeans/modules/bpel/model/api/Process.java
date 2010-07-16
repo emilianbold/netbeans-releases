@@ -20,9 +20,8 @@
 package org.netbeans.modules.bpel.model.api;
 
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-
+import org.netbeans.modules.bpel.model.api.support.AtomicTxType;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
-
 
 /**
  * <p>
@@ -57,9 +56,7 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
  *   &lt;/xsd:complexType>
  * </pre>
  */
-public interface Process extends JoinFailureSuppressor, NamedElement,
-        BaseScope, ExpressionLanguageSpec, QueryLanguageSpec
-{
+public interface Process extends JoinFailureSuppressor, NamedElement, BaseScope, ExpressionLanguageSpec, QueryLanguageSpec {
 
     /**
      * targetNamespace attribute name.
@@ -70,6 +67,17 @@ public interface Process extends JoinFailureSuppressor, NamedElement,
      * atomic attribute's name.
      */
     String ATOMIC = "atomic"; // NOI18N
+    String ATOMIC_TX_TYPE = "atomicTxType"; // NOI18N
+
+    /**
+     * persistenceOptOut attribute's name
+     */
+    String PERSISTENCE_OPT_OUT = "persistenceOptOut"; // NOI18N
+    
+    /**
+     * waitingRequestLifeSpan attribute's name
+     */
+    String WAITING_REQUEST_LIFE_SPAN = "waitingRequestLifeSpan"; // NOI18N
 
     /**
      * Gets the value of the targetNamespace property.
@@ -193,4 +201,68 @@ public interface Process extends JoinFailureSuppressor, NamedElement,
      * @param value
      */
     void setAtomic(TBoolean value);
+
+    // AtomicTxType 
+    AtomicTxType getAtomicTxType();
+    void removeAtomicTxType();
+    void setAtomicTxType(AtomicTxType value);
+
+    /**
+     * It is process level ignoreMissingFromData attribute with the similar meaning as 
+     * ignoreMissingFromData attribute at the copy level but for the whole process.
+     * @see org.netbeans.modules.bpel.model.api.Copy#getIgnoreMissingFromData()
+     * 
+     * if "ignoreMissingFromData" at process level is yes then copys level ignoreMissingFromData attribute value is ignored
+     * if "ignoreMissingFromData" at process level is no or isn't set then copys level ignoreMissingFromData attribute value is used
+     *
+     * @return "ignoreMissingFromData" attribute value.
+     */
+    TBoolean getIgnoreMissingFromData();
+    
+    /**
+     * Setter for "ignoreMissingFromData" attribute.
+     * @param value New "ignoreMissingFromData" attribute value.
+     */
+    void setIgnoreMissingFromData( TBoolean value );
+    
+    /**
+     * Removes "ignoreMissingFromData" attribute.
+     */
+    void removeIgnoreMissingFromData();
+    
+    /**
+     * Getter for "persistenceOptOut" attribute.
+     * @return "persistenceOptOut" attribute value.
+     */
+    TBoolean isPersistenceOptOut();
+    
+    /**
+     * Setter for "persistenceOptOut" attribute.
+     * @param value New "persistenceOptOut" attribute value.
+     */
+    void setPersistenceOptOut( TBoolean value );
+    
+    /**
+     * Removes "persistenceOptOut" attribute.
+     */
+    void removePersistenceOptOut();
+    
+    /**
+     * 
+     * @param value New "waitingRequestLifeSpan" attribute value
+     */
+    void setWaitingRequestLifeSpan(Integer value) throws VetoException;
+
+    /**
+     * 
+     * @return "waitingRequestLifeSpan" attriubute value
+     */
+    Integer getWaitingRequestLifeSpan();
+    
+    /**
+     * Removes "waitingRequestLifeSpan" attribute
+     */
+    void removeWaitingRequestLifeSpan();
+    
+    
 }

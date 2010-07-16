@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.util.NbBundle;
@@ -57,48 +60,59 @@ public class TarPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "Tar"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("Tar");
     }
 
+    @Override
     public boolean hasInfoList() {
         return false;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         return null;
     }
 
+    @Override
     public String getDefaultOptions() {
         return "-v"; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "tar"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return false;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return "tar";  // NOI18N
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
-        String topDir = IpeUtils.getBaseName(packagingConfiguration.getOutputValue());
+        String topDir = CndPathUtilitities.getBaseName(packagingConfiguration.getOutputValue());
 
         int i = topDir.lastIndexOf("."); // NOI18N
         if (i > 0) {
@@ -107,16 +121,19 @@ public class TarPackager implements PackagerDescriptor {
         return topDir;
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return false;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyTarZip(bw, makeConfiguration);
         }
@@ -125,26 +142,26 @@ public class TarPackager implements PackagerDescriptor {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
-            String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
+            String outputRelToTmp = CndPathUtilitities.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory \"" + "${NBTMPDIR}/" + toDir + "\"\n"); // NOI18N
                     }
-                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String toDir = IpeUtils.getDirName(elem.getTo());
-                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    String toDir = CndPathUtilitities.getDirName(elem.getTo());
+                    String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
@@ -158,7 +175,7 @@ public class TarPackager implements PackagerDescriptor {
             bw.write("# Generate tar file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("rm -f " + output + "\n"); // NOI18N
-            bw.write("cd ${TMPDIR}\n"); // NOI18N
+            bw.write("cd ${NBTMPDIR}\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N
                 options = "-" + options; // NOI18N

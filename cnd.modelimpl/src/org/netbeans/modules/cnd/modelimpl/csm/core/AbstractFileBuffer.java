@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,10 +51,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,27 +71,31 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private Charset encoding;
     
     protected AbstractFileBuffer(CharSequence absPath) {
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertNormalized(new File(absPath.toString()));
+        }
         this.absPath = FilePathCache.getManager().getString(absPath);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
     }
 
+    @Override
     public CharSequence getAbsolutePath() {
         return absPath;
     }
 
+    @Override
     public File getFile() {
         return new File(absPath.toString());
     }
     
-    public abstract int getLength();
-    public abstract String getText(int start, int end) throws IOException;
-    public abstract String getText() throws IOException;
-    
+    @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
             File file = getFile();
@@ -103,8 +113,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
     
     public abstract InputStream getInputStream() throws IOException;
-    public abstract boolean isFileBased();
-    public abstract long lastModified();
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
@@ -117,5 +125,75 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         assert this.absPath != null;
-    }    
+    }
+
+    @Override
+    public int getLineByOffset(int offset) throws IOException {
+        int[] list = getLineOffsets();
+	int low = 0;
+	int high = list.length - 1;
+	while (low <= high) {
+	    int mid = (low + high) >>> 1;
+	    int midVal = list[mid];
+	    if (midVal < offset) {
+                if (low == high) {
+                    return low + 1;
+                }
+                low = mid + 1;
+            } else if (midVal > offset) {
+                if (low == high) {
+                    return low;
+                }
+                high = mid - 1;
+            } else {
+                return mid + 1;
+            }
+	}
+	return low;
+    }
+
+    @Override
+    public int getStartLineOffset(int line) throws IOException {
+        line--;
+        int[] list = getLineOffsets();
+        if (line < list.length) {
+            return list[line];
+        }
+        return list[list.length-1];
+    }
+    
+    private WeakReference<Object> lines = new WeakReference<Object>(null);
+    private int[] getLineOffsets() throws IOException {
+        WeakReference<Object> aLines = lines;
+        int[] res = null;
+        if (aLines != null) {
+            res = (int[]) aLines.get();
+        }
+        if (res == null) {
+            String text = getText();
+            int length = text.length();
+            ArrayList<Integer> list = new ArrayList<Integer>(length/10);
+            // find line and column
+            list.add(Integer.valueOf(0));
+            for (int curOffset = 0; curOffset < length; curOffset++) {
+                char curChar = text.charAt(curOffset);
+                if (curChar == '\n') {
+                    list.add(Integer.valueOf(curOffset+1));
+                }
+            }
+            res = new int[list.size()];
+            for (int i = 0; i < list.size(); i++){
+                res[i] = list.get(i);
+            }
+            lines = new WeakReference<Object>(res);
+        }
+        return res;
+    }
+
+    protected void clearLineCache() {
+        WeakReference<Object> aLines = lines;
+        if (aLines != null) {
+            aLines.clear();
+        }
+    }
 }

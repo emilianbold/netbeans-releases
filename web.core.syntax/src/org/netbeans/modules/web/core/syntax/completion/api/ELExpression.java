@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,15 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
+import javax.lang.model.type.WildcardType;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,9 +61,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.source.CancellableTask;
@@ -65,14 +73,17 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
 import org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects;
@@ -80,7 +91,10 @@ import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
-/** 
+/**
+ * New instance of this class creates a snapshot of the given document at the time when created.
+ * Then the parsing works on that snapshot, so no document locking is necessary.
+ *
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
@@ -121,7 +135,9 @@ public class ELExpression {
      * if EL expression is attribute value. 
      */
     private String myAttributeValue;
-    
+
+    private String snapshot;
+
     /**
      * @author ads
      * Lexer for facelet file doesn't inform you about attribute.
@@ -133,9 +149,33 @@ public class ELExpression {
     private int contextOffset = -1;
     private int myStartOffset = -1;
 
-    public ELExpression(Document doc) {
+    public ELExpression(final Document doc, final int offset) throws BadLocationException {
         this.doc = doc;
         this.replace = "";
+        this.contextOffset = offset;
+
+        //clone the document's text
+        final AtomicReference<BadLocationException> ble = new AtomicReference<BadLocationException>();
+        final AtomicReference<String> snap = new AtomicReference<String>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    snap.set(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    ble.set(ex);
+                }
+            }
+            
+        });
+        if(ble.get() != null) {
+            throw ble.get();
+        }
+
+        this.snapshot = snap.get();
+        assert snapshot != null;
+        
     }
     
     /**
@@ -155,17 +195,6 @@ public class ELExpression {
 
     public Document getDocument() {
         return doc;
-    }
-    
-    public final int parse(final int offset) {
-        final int[] retval = new int[1];
-        ((BaseDocument)doc).render(new Runnable() {
-            public void run() {
-                retval[0] = doParse(offset);
-            }
-        });
-        myParseType = retval[0];
-        return myParseType;
     }
     
     public final int getParseType(){
@@ -387,10 +416,6 @@ public class ELExpression {
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
     
-    private void setContextOffset(int offset) {
-        this.contextOffset = offset;
-    }
-    
     protected Part[] getParts(){
         return getParts(getExpression());
     }
@@ -476,14 +501,26 @@ public class ELExpression {
     
     /** Parses text before offset in the document. Doesn't parse after offset.
      *  It doesn't parse whole EL expression until ${ or #{, but just simple expression.
-     *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
+     *  For example ${ 2 &lt; bean.start }. If the offset is after bean.start, then only bean.start
      *  is parsed.
+     *
+     * Should not be called under document's lock since it may take long time - findContext() is called
+     * from within the body.
      */
-    private final int doParse(int offset) {
-        setContextOffset(offset);
 
-        BaseDocument document = (BaseDocument) doc;
-        TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
+    public  final int parse() {
+        String documentMimetype = NbEditorUtilities.getMimeType(doc);
+        assert documentMimetype != null;
+        Language lang = Language.find(documentMimetype);
+        if(lang == null) {
+            return NOT_EL;
+        }
+        //get the input attributes from the document and use then for the TokenHierarchy creation
+        //XXX the input attributes should be got from the document during creation of the snapshot,
+        //    moreover they are mutable, so some kind of clone should be created there instead.
+        InputAttributes inputAttrs = doc != null ? (InputAttributes)doc.getProperty(InputAttributes.class) : null;
+        TokenHierarchy<String> hi = TokenHierarchy.create(snapshot, false, lang, null, inputAttrs);
+        
         //find EL token sequence and its superordinate sequence
         TokenSequence<?> ts = hi.tokenSequence();
         TokenSequence<?> last = null;
@@ -512,7 +549,7 @@ public class ELExpression {
                 break;
             } else {
                 //not el, scan next embedded token sequence
-                ts.move(offset);
+                ts.move(contextOffset);
                 if (ts.moveNext() || ts.movePrevious()) {
                     last = ts;
                     ts = ts.embedded();
@@ -528,7 +565,21 @@ public class ELExpression {
         }
 
 
-        int diff = ts.move(offset);
+        int diff = ts.move(contextOffset);
+
+        if( diff < 0 ) {
+            //the embedded EL token sequence obtained from the code above
+            //may start *after* the contextOffset. This is due to the start and end
+            //skip lengths used for the EL delimiters #{ and }
+            //In such case the diff may be negative and we have nothing to complete there
+            //
+            //Example:  #{ bean.property }
+            //          0123456789
+            //
+            //if the contextOffset is set to 0 or 1 the diff is -2 resp. -1
+            return NOT_EL;
+        }
+
         if (diff == 0) {
             if (!ts.movePrevious()) {
                 return EL_START;
@@ -539,6 +590,55 @@ public class ELExpression {
 
         // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
         // it can be start of the function or start of a simple expression.
+
+        //-----------------------------------------------------------------------------------
+        //#185426 fix. Since the code below is extremely unreadable, fragile and not tested
+        //I do not dare to touch it. It must be reimplemented from scratch!!!
+        //to make the issue work I create following extra check which will cover only
+        //the specific case (completion of taglibs' functions) and fallback to the
+        //original mess if its not its context
+        block: {
+            StringBuilder expressionText = new StringBuilder();
+            if(ts.token().id() == ELTokenId.IDENTIFIER) {
+                //append the portion of the identifier before the query offset
+                CharSequence tokenText = ts.token().text();
+                expressionText.append(diff == 0 ? tokenText : tokenText.subSequence(0, diff));
+                if(!ts.movePrevious()) {
+                    break block;
+                }
+            }
+
+            if(ts.token().id() == ELTokenId.COLON) {
+                //insert the colon at the beginning
+                expressionText.insert(0, ts.token().text());
+                if(ts.movePrevious()) {
+                    if(ts.token().id() == ELTokenId.TAG_LIB_PREFIX) {
+                        //insert the tag library prefix at the beginning
+                        expressionText.insert(0, ts.token().text());
+                        //result should look like: "f:funct"
+                        //in case of #{f:funct|ion} where | means the query pffset
+                        //or
+                        //result should look like: "f:"
+                        //in case of #{f:|} where | means the query pffset
+                        expression = replace = expressionText.toString();
+                        return EL_START;
+                    }
+                }
+            }
+
+        }
+
+        //if we got here, that is not our case and we have to reposition the token sequence
+        //back to the original position
+        diff = ts.move(contextOffset);
+        if (diff == 0) {
+            ts.movePrevious();
+        } else {
+            ts.moveNext();
+        }
+
+        //end of #185426 fix
+        //-----------------------------------------------------------------------------------
         Token<?> token = ts.token();
         boolean rBracket = false;
         while (rBracket ||
@@ -564,9 +664,9 @@ public class ELExpression {
                         ts.token().id() == ELTokenId.LBRACKET)
                 {
                     replace = "";
-                } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
-                    if (ts.token().offset(hi) <= offset) {
-                        expression = expression.substring(0, offset - ts.token().offset(hi));
+                } else if (ts.token().text().length() >= (contextOffset - ts.token().offset(hi))) {
+                    if (ts.token().offset(hi) <= contextOffset) {
+                        expression = expression.substring(0, contextOffset - ts.token().offset(hi));
                         replace = expression;
                     } else {
                         // cc invoked within EL delimiter
@@ -737,7 +837,13 @@ public class ELExpression {
             if ( mirror == null ){
                 return null;
             }
-            return (TypeElement) controller.getTypes().asElement( mirror);
+            Element result = controller.getTypes().asElement( mirror);
+            if ( result instanceof TypeElement ){
+                return (TypeElement)result ;
+            }
+            else {
+                return null;
+            }
         }
 
         protected TypeMirror getTypeMirrorPreceedingCaret(CompilationInfo controller,
@@ -777,7 +883,6 @@ public class ELExpression {
                     if ( handler != null ){
                         handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
                     }
-
                     return null;
                 }
                 if (lastKnownType != null) {
@@ -788,7 +893,8 @@ public class ELExpression {
                     //we cannot resolve methods of the iterable type itself,
                     //just type of its items
                     if(isResolvedExpression()) {
-                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+//                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+                        TypeMirror typeParameter = getIterableGenericType(controller, lastKnownType);
                         if(typeParameter != null) {
                             lastFoundType = lastKnownType = typeParameter;
                         }
@@ -797,6 +903,7 @@ public class ELExpression {
                     //get all methods of the type
                     Element el= controller.getTypes().asElement(
                             lastKnownType);
+                    
                     List<ExecutableElement> allMethods;
                     if ( el instanceof TypeElement ){
                         allMethods= ElementFilter.methodsIn(
@@ -807,13 +914,17 @@ public class ELExpression {
                         allMethods = Collections.emptyList();
                     }
 
+                    TypeMirror type = lastKnownType;
                     lastKnownType = null;
 
                     for (ExecutableElement method : allMethods) {
                         if (accessorName.equals(method.getSimpleName()
                                 .toString()))
                         {
-                            TypeMirror returnType = method.getReturnType();
+                            ExecutableType methodType = (ExecutableType) 
+                                controller.getTypes().asMemberOf(
+                                        (DeclaredType)type, method);
+                            TypeMirror returnType = methodType.getReturnType();
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.ARRAY) {
@@ -921,17 +1032,19 @@ public class ELExpression {
             //resolved expressions (iterating components) handling
             //and finally process the found type for its type parameter
             if(isResolvedExpression()) {
-                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+//                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+                TypeMirror typeParam = getIterableGenericType(controller, lastFoundType);
                 lastFoundType = typeParam != null ? typeParam : lastFoundType;
             }
             return lastFoundType;
         }
 
         private TypeMirror extractTypeParameter(CompilationInfo controller, TypeMirror lastKnownType, Class clazz) {
-            if (controller.getTypes().isAssignable(
-                    controller.getTypes().erasure(lastKnownType),
-                    controller.getElements().getTypeElement(
-                    clazz.getCanonicalName()).asType())) {
+            TypeMirror erasedLastKnownType = controller.getTypes().erasure(lastKnownType);
+            TypeMirror clazzTypeMirror = controller.getElements().getTypeElement(clazz.getCanonicalName()).asType();
+            TypeMirror erasedClazzTypeMirror = controller.getTypes().erasure(clazzTypeMirror);
+            
+            if (controller.getTypes().isAssignable(erasedLastKnownType, erasedClazzTypeMirror)) {
                 if (lastKnownType instanceof DeclaredType) {
                     List<? extends TypeMirror> typeArguments =
                             ((DeclaredType) lastKnownType).getTypeArguments();
@@ -1069,9 +1182,13 @@ public class ELExpression {
         }
 
         public void run(CompilationController controller) throws Exception {
+            if(beanType == null) {
+                return ;
+            }
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             
-            TypeElement bean = getTypePreceedingCaret(controller);
+//            TypeElement bean = getTypePreceedingCaret(controller);
+            TypeElement bean = controller.getElements().getTypeElement(beanType);
 
             if (bean != null) {
                 myQName = bean.getQualifiedName().toString();
@@ -1091,7 +1208,15 @@ public class ELExpression {
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
-                        String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
+                        String type ;
+                        if ( isMethod ){
+                            TypeMirror methodType = controller.getTypes().asMemberOf( 
+                                    (DeclaredType)bean.asType(), method);
+                            type = ((ExecutableType)methodType).getReturnType().toString();
+                        }
+                        else {
+                            type ="";
+                        }
                         CompletionItem item = ElCompletionItem.createELProperty(
                                 propertyName, getInsert( propertyName , firstChar), 
                                 anchorOffset, type);
@@ -1146,10 +1271,105 @@ public class ELExpression {
     }
 
     public boolean isResolvedExpression() {
-        return !getExpression().equals(getResolvedExpression());
+	//note:getResolvedExpression cannot be non-null if getExpression is null
+        return getResolvedExpression() != null && !getExpression().equals(getResolvedExpression());
     }
 
     public String getReplace() {
         return replace;
     }
+
+    //copied from java.hints module org.netbeans.modules.java.hints.errors.Utilities class >>>
+    /**
+     *
+     * @param info context {@link CompilationInfo}
+     * @param iterable tested {@link TreePath}
+     * @return generic type of an {@link Iterable} or {@link ArrayType} at a TreePath
+     */
+    private static TypeMirror getIterableGenericType(CompilationInfo info, TypeMirror iterableType) {
+        if(iterableType == null) {
+            return null;
+        }
+        TypeElement iterableElement = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+        if (iterableElement == null) {
+            return null;
+        }
+        TypeMirror designedType = null;
+        if (iterableType.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) iterableType;
+            if (!info.getTypes().isSubtype(info.getTypes().erasure(declaredType), info.getTypes().erasure(iterableElement.asType()))) {
+                return null;
+            }
+            ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);
+            ExecutableType iteratorMethodType = (ExecutableType) info.getTypes().asMemberOf(declaredType, iteratorMethod);
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
+            if (!typeArguments.isEmpty()) {
+                designedType = typeArguments.get(0);
+            }
+        } else if (iterableType.getKind() == TypeKind.ARRAY) {
+            designedType = ((ArrayType) iterableType).getComponentType();
+        }
+        if (designedType == null) {
+            return null;
+        }
+        return resolveCapturedType(info, designedType);
+    }
+
+    private static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+
+        }
+
+        return type;
+    }
+
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        TypeMirror orig = SourceUtils.resolveCapturedType(tm);
+
+        if (orig != null) {
+            if (orig.getKind() == TypeKind.WILDCARD) {
+                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
+                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
+                if (rct != null) {
+                    return rct;
+                }
+            }
+            return orig;
+        }
+
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
+
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+
+            final TypeMirror enclosingType = dt.getEnclosingType();
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            } else {
+                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            }
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+        }
+
+        return tm;
+    }
+
+    //<<< eof copy
+    
 }

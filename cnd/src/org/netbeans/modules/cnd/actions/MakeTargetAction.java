@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,14 +46,21 @@ package org.netbeans.modules.cnd.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
 import org.netbeans.modules.cnd.builds.TargetEditor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -100,8 +110,25 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
                     return null;
                 }
 
-                Node activedNode = activeNodes[0];
-                MakeExecSupport mes = activedNode.getCookie(MakeExecSupport.class);
+                Node activeNode = activeNodes[0];
+
+                MakefileTargetProvider targetProvider = activeNode.getCookie(MakefileTargetProvider.class);
+                if (targetProvider != null) {
+                    try {
+                        List<String> targets = new ArrayList<String>(targetProvider.getPreferredTargets());
+                        Collections.sort(targets);
+                        for (String target : targets) {
+                            popup.add(new PopupItemTarget(activeNode, target, -1));
+                        }
+                        if (!targets.isEmpty()) {
+                            popup.add(new JSeparator());
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                MakeExecSupport mes = activeNode.getCookie(MakeExecSupport.class);
                 if (mes != null) {
                     String[] targets = mes.getMakeTargetsArray();
 
@@ -109,12 +136,12 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
                     //if (targets.length > 0)
                     //popup.add(new JSeparator());
                     for (int i = 0; i < targets.length; i++) {
-                        popup.add(new PopupItemTarget(activedNode, targets[i], -1));
+                        popup.add(new PopupItemTarget(activeNode, targets[i], -1));
                     }
                     if (targets.length > 0) {
                         popup.add(new JSeparator());
                     }
-                    popup.add(new PopupItemAddTarget(activedNode));
+                    popup.add(new PopupItemAddTarget(activeNode));
                 }
                 initialized = true;
             }

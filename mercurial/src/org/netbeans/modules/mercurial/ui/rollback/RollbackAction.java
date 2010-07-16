@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,9 @@ package org.netbeans.modules.mercurial.ui.rollback;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -60,6 +63,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Pull action for mercurial: 
@@ -69,14 +73,27 @@ import org.openide.NotifyDescriptor;
  */
 public class RollbackAction extends ContextAction {
     
-    private final VCSContext context;
-            
-    public RollbackAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Rollback";                                 //NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_RollbackRoot" : "CTL_MenuItem_Rollback"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(RollbackAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(RollbackAction.class, name);
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         rollback(context);
     }
     
@@ -87,6 +104,7 @@ public class RollbackAction extends ContextAction {
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 
                 OutputLogger logger = getLogger();
@@ -135,7 +153,8 @@ public class RollbackAction extends ContextAction {
                                             NbBundle.getMessage(RollbackAction.class,
                                             "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath())); // NOI18N
                                     list = HgCommand.doUpdateAll(root, true, null);
-                                    
+
+                                    HgUtils.notifyUpdatedFiles(root, list);
                                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                                     // XXX containsFileOfStatus would be better (do not test exclusions from commit)
                                     if(cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0){
@@ -163,6 +182,8 @@ public class RollbackAction extends ContextAction {
                                     NbBundle.getMessage(RollbackAction.class,
                                     "MSG_ROLLBACK_INFO")); // NOI18N
                     }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -175,9 +196,5 @@ public class RollbackAction extends ContextAction {
             }
         };
         support.start(rp, root,org.openide.util.NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

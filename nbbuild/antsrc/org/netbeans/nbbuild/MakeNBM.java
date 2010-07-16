@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +70,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -76,6 +81,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
@@ -323,6 +329,8 @@ public class MakeNBM extends Task {
     private Attributes englishAttr = null;
     private Path updaterJar;
     private FileSet executablesSet;
+    private boolean usePack200;
+    private String pack200excludes;
 
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
@@ -344,6 +352,14 @@ public class MakeNBM extends Task {
     /** Name of resulting NBM file. */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    public void setUsePack200(boolean usePack200) {
+        this.usePack200 = usePack200;
+    }
+
+    public void setPack200Excludes(String pack200excludes) {
+        this.pack200excludes = pack200excludes;
     }
 
     /** List of executable files in NBM concatinated by ${line.separator}. */
@@ -454,7 +470,7 @@ public class MakeNBM extends Task {
             throw new BuildException("Unknown locale: null",getLocation());
         }
         log("Processing module attributes for locale '"+locale+"'", Project.MSG_VERBOSE);
-        Attributes attr = null;
+        Attributes attr;
         if ((!locale.equals("")) && (englishAttr != null)) {
             attr = new Attributes(englishAttr);
             attr.putValue("locale", locale);
@@ -485,7 +501,7 @@ public class MakeNBM extends Task {
         }
         log("Going to open jarfile "+jarName,Project.MSG_VERBOSE);
         File mfile = new File(productDir, jarName );
-        if ((mfile == null) || (!mfile.exists())) {
+        if (!mfile.exists()) {
             // localizing jarfile does not exist, try to return english data
             if (englishAttr != null) {
                 Attributes xattr = new Attributes(englishAttr);
@@ -498,6 +514,10 @@ public class MakeNBM extends Task {
         try {
             JarFile mjar = new JarFile(mfile);
             try {
+                if (mjar.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                    // #181025: treat bundles specially.
+                    return null;
+                }
                 if (attr.getValue("OpenIDE-Module") == null ) {
                     attr = mjar.getManifest().getMainAttributes();
                     attr.putValue("locale", locale);
@@ -589,19 +609,30 @@ public class MakeNBM extends Task {
         
         
         moduleAttributes = new ArrayList<Attributes> ();
-        moduleAttributes.add(getModuleAttributesForLocale(""));
+        File module = new File( productDir, moduleName );
+        Attributes attr = getModuleAttributesForLocale("");
+        if (attr == null) {
+            // #181025: OSGi bundle, copy unmodified.
+            Copy copy = new Copy();
+            copy.setProject(getProject());
+            copy.setOwningTarget(getOwningTarget());
+            copy.setFile(module);
+            copy.setTofile(new File(nbm.getAbsolutePath().replaceFirst("[.]nbm$", ".jar")));
+            copy.execute();
+            // XXX possibly sign it
+            // XXX could try to run pack200, though not if it was signed
+            return;
+        }
+        moduleAttributes.add(attr);
         for (String locale : locales) {
             Attributes a = getModuleAttributesForLocale(locale);
             if (a != null) moduleAttributes.add(a);
         }
 
-        File module = new File( productDir, moduleName );
         // Will create a file Info/info.xml to be stored in tmp
-        if (module != null) {
             // The normal case; read attributes from its manifest and maybe bundle.
             long mMod = module.lastModified();
             if (mostRecentInput < mMod) mostRecentInput = mMod;
-        }
 
         if (mostRecentInput < nbm.lastModified()) {
             log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + nbm.lastModified(), Project.MSG_VERBOSE);
@@ -648,8 +679,66 @@ public class MakeNBM extends Task {
  	ZipFileSet fs = new ZipFileSet();
         List <String> moduleFiles = new ArrayList <String>();
  	fs.setDir( productDir );
- 	for (int i=0; i < files.length; i++) {
- 	    fs.createInclude().setName( files[i] );
+        String [] filesForPackaging = null;
+        if(usePack200 && pack200excludes!=null && !pack200excludes.equals("")) {
+            FileSet pack200Files = new FileSet();
+            pack200Files.setDir(productDir);
+            pack200Files.setExcludes(pack200excludes);
+            pack200Files.setProject(getProject());
+            for (int i=0; i < files.length; i++) {
+                  pack200Files.createInclude().setName( files[i] );
+            }
+            DirectoryScanner ds = pack200Files.getDirectoryScanner();
+            ds.scan();
+            filesForPackaging = ds.getIncludedFiles();            
+        }
+
+        List<File> packedFiles = new ArrayList<File>();
+        for (int i = 0; i < files.length; i++) {
+            if (usePack200) {
+                File sourceFile = new File(productDir, files[i]);
+                if (sourceFile.isFile() && sourceFile.getName().endsWith(".jar")) {
+
+                    boolean doPackage = true;
+                    if (filesForPackaging != null) {
+                        doPackage = false;
+                        for (String f : filesForPackaging) {
+                            if (new File(productDir, f).equals(sourceFile)) {
+                                doPackage = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(doPackage) {
+                        //if both <filename>.jar and <filename>.jad exist - skip it
+                        //if both <filename>.jar and <filename>.jar.pack.gz exist - skip it                        
+                        for (String f : files) {
+                            if(f.equals(files[i].substring(0, files[i].lastIndexOf(".jar")) + ".jad") ||
+                                    f.equals(files[i] + ".pack.gz")) {
+                                doPackage = false;
+                                break;
+                            }
+                        }
+
+                    }
+                    if (doPackage) {
+                        File targetFile = new File(productDir, files[i] + ".pack.gz");
+                        try {
+                            if (pack200(sourceFile, targetFile)) {
+                                packedFiles.add(targetFile);
+                                files[i] = files[i] + ".pack.gz";
+                            }
+                        } catch (IOException e) {
+                            if(targetFile.exists()) {
+                                targetFile.delete();
+                            }
+                            log("Cannot pack file " + sourceFile, e, Project.MSG_WARN);
+                        }
+                    }
+                }
+            }
+
+            fs.createInclude().setName(files[i]);
             moduleFiles.add(files[i]);
         }
  	fs.setPrefix("netbeans/");
@@ -715,6 +804,9 @@ public class MakeNBM extends Task {
 	jar.setLocation(getLocation());
 	jar.init ();
 	jar.execute ();
+        for(File f : packedFiles) {
+            f.delete();
+        }
 
 	// Print messages if we overrode anything. //
         if (nbm.lastModified() != jarModified) {
@@ -764,6 +856,68 @@ public class MakeNBM extends Task {
                 signjar.execute ();
             }
 	}
+    }
+
+    private boolean isSigned(final JarFile jar) throws IOException {
+        Enumeration<JarEntry> entries = jar.entries();
+        boolean signatureInfoPresent = false;
+        boolean signatureFilePresent = false;
+        while (entries.hasMoreElements()) {
+            String entryName = entries.nextElement().getName();
+            if (entryName.startsWith("META-INF/")) {
+                if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                    signatureFilePresent = true;
+                    if (signatureInfoPresent) {
+                        break;
+                    }
+                } else if (entryName.endsWith(".SF")) {
+                    signatureInfoPresent = true;
+                    if (signatureFilePresent) {
+                        break;
+                    }
+                }
+            }
+        }
+        return signatureFilePresent && signatureInfoPresent;
+    }
+
+    public static boolean isWindows() {
+        String os = System.getProperty("os.name"); // NOI18N
+        return (os != null && os.toLowerCase().startsWith("windows"));//NOI18N
+    }
+
+    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
+        JarFile jarFile = new JarFile(sourceFile);
+        try {
+            if (isSigned(jarFile)) {
+                return false;
+            }
+
+            try {
+                String pack200Executable = new File(System.getProperty("java.home"),
+                        "bin/pack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
+
+                ProcessBuilder pb = new ProcessBuilder(
+                        pack200Executable,
+                        targetFile.getAbsolutePath(),
+                        sourceFile.getAbsolutePath());
+                
+                pb.directory(sourceFile.getParentFile());
+                int result;
+                Process process = pb.start();
+                result = process.waitFor();
+                process.destroy();
+                return result == 0;
+            } catch (InterruptedException e) {
+                return false;
+            } finally {
+                if (targetFile.exists())  {
+                    targetFile.setLastModified(sourceFile.lastModified());
+                }
+            }
+        } finally {
+            jarFile.close();
+        }
     }
 
     private Document createInfoXml(final Attributes attr) throws BuildException {

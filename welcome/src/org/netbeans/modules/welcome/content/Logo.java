@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,14 +48,15 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,8 +66,8 @@ public class Logo extends JPanel implements Constants, MouseListener {
 
     private String url;
 
-    public static Logo createSunLogo() {
-        return new Logo( SUN_LOGO_IMAGE, BundleSupport.getURL( "SunLogo" ) ); // NOI18N
+    public static Logo createOracleLogo() {
+        return new Logo( ORACLE_LOGO_IMAGE, BundleSupport.getURL( "OracleLogo" ) ); // NOI18N
     }
 
     public static Logo createJavaLogo() {
@@ -84,20 +88,32 @@ public class Logo extends JPanel implements Constants, MouseListener {
         this.url = url;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_START_PAGE_LINK"); //NOI18N
+        rec.setParameters(new Object[] {url} );
+        rec.setLoggerName(Constants.USAGE_LOGGER.getName());
+        rec.setResourceBundle(NbBundle.getBundle(BundleSupport.BUNDLE_NAME));
+        rec.setResourceBundleName(BundleSupport.BUNDLE_NAME);
+
+        Constants.USAGE_LOGGER.log(rec);
         Utils.showURL( url );
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( url );
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( null );
     }

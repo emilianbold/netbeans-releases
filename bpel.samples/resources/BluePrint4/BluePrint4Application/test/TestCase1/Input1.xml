@@ -1,0 +1,11 @@
+<soapenv:Envelope xmlns="http://manufacturing.org/xsd/purchase" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:pur="http://manufacturing.org/xsd/purchase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Body>
+    <pur:purchaseOrder>
+      <pur:orderId>00001234</pur:orderId>
+      <pur:customerId>999666333</pur:customerId>
+      <pur:orderDescription>Naa, i will cancel the oder</pur:orderDescription>
+    </pur:purchaseOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

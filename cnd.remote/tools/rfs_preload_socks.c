@@ -1,7 +1,10 @@
     /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,14 +42,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <memory.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include  <stdarg.h>
-#include  <string.h>
-#include  <limits.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -126,6 +121,7 @@ static int open_socket() {
  * -1 if an error occurred, or
  * non-negative integer in the case of success
  */
+__attribute__ ((visibility ("hidden")))
 int get_socket(int create) {
     // SOCKET_UNINITIALIZED means unitialized
     // SOCKET_ERROR means that we failed to open a socket
@@ -155,6 +151,7 @@ int get_socket(int create) {
     return _sd;
 }
 
+__attribute__ ((visibility ("hidden")))
 void release_socket() {
     if (_sd != SOCKET_ERROR && _sd != SOCKET_UNINITIALIZED) {
         trace("closing socket _sd=%d &_sd=%X\n", _sd, &_sd);

@@ -190,7 +190,7 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
     @Override
     public boolean initControls() {
         try {
-            Property prop = PropertyUtils.lookForPropertyByType(
+            Property prop = PropertyUtils.getInstance().lookForPropertyByType(
                     myEditor.getEditedNode(),
                     PropertyType.MESSAGE_EXCHANGE);
             if ( prop != null ) {
@@ -215,7 +215,7 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
             assert omRef instanceof ReferenceCollection;
             ReferenceCollection refColl = (ReferenceCollection)omRef;
             //
-            Property prop = PropertyUtils.lookForPropertyByType(
+            Property prop = PropertyUtils.getInstance().lookForPropertyByType(
                     myEditor.getEditedNode(),
                     PropertyType.MESSAGE_EXCHANGE);
             if ( prop != null ) {

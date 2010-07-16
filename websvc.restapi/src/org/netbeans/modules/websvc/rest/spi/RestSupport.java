@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -94,8 +99,7 @@ import org.openide.modules.InstalledFileLocator;
 public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
-    public static final String SWDP_LIBRARY_IN_GFV2 = "restlib_gfv2"; //NOI18N
-    public static final String SWDP_LIBRARY_IN_GFV3 = "restlib_gfv3"; //NOI18N
+    protected static final String GFV3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N
@@ -105,7 +109,6 @@ public abstract class RestSupport {
     public static final String BASE_URL_TOKEN = "___BASE_URL___";//NOI18N
     public static final String RESTBEANS_TEST_DIR = "build/generated-sources/rest-test";//NOI18N
     public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";//NOI18N
-    public static final String REST_SUPPORT_ON = "rest.support.on";//NOI18N
     public static final String TEST_RESBEANS = "test-resbeans";//NOI18N
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";//NOI18N
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
@@ -121,13 +124,18 @@ public abstract class RestSupport {
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
     public static final String REST_RI_JAR = "jersey";//NOI18N
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
-    public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
+    public static final String JSR311_JAR_PATTERN = "jsr311-api.*\\.jar";//NOI18N
+    public static final String JERSEY_API_LOCATION = "modules/ext/rest";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type";       //NOI18N
     public static final String TOMCAT_SERVER_TYPE = "tomcat";       //NOI18N
     public static final String GFV3_SERVER_TYPE = "gfv3";          //NOI18N
     public static final String GFV2_SERVER_TYPE = "J2EE";          //NOI18N
-    
+
+    public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
+    public static final int PROJECT_TYPE_WEB = 1; //NOI18N
+    public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
+
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
     protected RestApplicationModel restApplicationModel;
@@ -211,14 +219,21 @@ public abstract class RestSupport {
         FileObject sourceRoot = findSourceRoot();
         if (restServicesModel == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
-            MetadataUnit metadataUnit = MetadataUnit.create(
-                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
-                    extendWithJsr311Api(cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE)),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
-                    null);
-            restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
-            for (PropertyChangeListener pcl : modelListeners) {
-                restServicesModel.addPropertyChangeListener(pcl);
+            if (cpProvider != null) {
+                ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
+                ClassPath bootCP = cpProvider.findClassPath(sourceRoot, ClassPath.BOOT);
+                ClassPath sourceCP = cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE);
+                if (compileCP != null && bootCP != null) {
+                    MetadataUnit metadataUnit = MetadataUnit.create(
+                            bootCP,
+                            extendWithJsr311Api(compileCP),
+                            sourceCP,
+                            null);
+                    restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
+                    for (PropertyChangeListener pcl : modelListeners) {
+                        restServicesModel.addPropertyChangeListener(pcl);
+                    }
+                }
             }
         }
         return restServicesModel;
@@ -248,21 +263,31 @@ public abstract class RestSupport {
         }
 
         try {
-            getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+            RestServicesModel model = getRestServicesModel();
+            if (model != null) {
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
 
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().sizeRestServiceDescription();
-                    return null;
-                }
+                    @Override
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        metadata.getRoot().sizeRestServiceDescription();
+                        return null;
+                    }
                 });
+            }
         } catch (IOException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }
     
     public static ClassPath extendWithJsr311Api(ClassPath classPath) {
-        File jsr311JarFile = InstalledFileLocator.getDefault().locate(JSR311_API_LOCATION, null, false);
-        return extendClassPath(classPath, jsr311JarFile);
+        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+        if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+            File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
+            if (jsr311Jars != null && jsr311Jars.length>0) {
+                return extendClassPath(classPath, jsr311Jars[0]);
+            }
+        }
+        return classPath;
     }
     
     public static ClassPath extendClassPath(ClassPath classPath, File path) {
@@ -439,21 +464,33 @@ public abstract class RestSupport {
     /**
      *  Add SWDP library for given source file on specified class path types.
      * 
-     *  @param source source file object for which the libraries is added.
      *  @param classPathTypes types of class path to add ("javac.compile",...)
+     *  @param addJersey add REST Jersey Library or not.
+     *  @param jaxRsClassName jsr311 class name that should be checked for presence on classpath, e.g. "javax/ws/rs/ApplicationPath.class".
      */
-    public void addSwdpLibrary(String[] classPathTypes) throws IOException {
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            return;
+    protected void addSwdpLibrary(String[] classPathTypes, boolean addJersey, String jaxRsClassName) throws IOException {
+
+        FileObject srcRoot = findSourceRoot();
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource(jaxRsClassName) == null) {
+                Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+                if (restapiLibrary == null) {
+                    return;
+                }
+                addSwdpLibrary(classPathTypes, restapiLibrary);
+            }
+
+
+            if (addJersey) {
+                Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+                if (swdpLibrary == null) {
+                    return;
+                }
+                addSwdpLibrary(classPathTypes, swdpLibrary);
+            }
         }
         
-        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (restapiLibrary == null) {
-            return;
-        }
-        addSwdpLibrary(classPathTypes, restapiLibrary);
-        addSwdpLibrary(classPathTypes, swdpLibrary);
     }
 
     /**
@@ -462,7 +499,7 @@ public abstract class RestSupport {
      *  @param source source file object for which the libraries is added.
      *  @param classPathTypes types of class path to add ("javac.compile",...)
      */
-    public void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
+    protected void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs == null || sgs.length < 1) {
             throw new IOException("Project has no Java sources"); //NOI18N
@@ -529,17 +566,7 @@ public abstract class RestSupport {
         return true;
     }
     
-    public boolean isRestSupportOn() {
-        if (getAntProjectHelper() == null) {
-            return false;
-        }
-        String v = getProjectProperty(REST_SUPPORT_ON);
-        return "true".equalsIgnoreCase(v) || "on".equalsIgnoreCase(v);
-    }
-
-    public void setRestSupport(Boolean v) {
-        setProjectProperty(REST_SUPPORT_ON, v.toString());
-    }
+    public abstract boolean isRestSupportOn();
 
     public void setProjectProperty(String name, String value) {
         if (getAntProjectHelper() == null) {
@@ -665,14 +692,6 @@ public abstract class RestSupport {
         }
         return false;
     }
-    
-    public String getServletAdapterClass() {
-        if (hasSpringSupport()) {
-            return REST_SPRING_SERVLET_ADAPTOR_CLASS;
-        } else {
-            return REST_SERVLET_ADAPTOR_CLASS;
-        }
-    }
 
      public String getServerType() {
         return getProjectProperty(J2EE_SERVER_TYPE);
@@ -699,5 +718,20 @@ public abstract class RestSupport {
     public String getApplicationPath() throws IOException {
         return "resources"; // default application path
     }
+
+    protected static class JerseyFilter implements FileFilter {
+        private Pattern pattern;
+
+        JerseyFilter(String regexp) {
+            pattern = Pattern.compile(regexp);
+        }
+
+        public boolean accept(File pathname) {
+            return pattern.matcher(pathname.getName()).matches();
+        }
+    }
+
+    public abstract int getProjectType();
+
 }
 

@@ -10,7 +10,7 @@ cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}/config
 if [[ $product_id == NB* ]] ; then 
     rm -rf productid #just in case
-    echo -n $product_id >> productid
+    printf $product_id >> productid
 elif [ -e productid ] &&  ! cat productid | grep -q "$product_id" ; then    
-      echo -n "_$product_id" >> productid     
+      printf "_$product_id" >> productid     
 fi   

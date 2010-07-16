@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,65 +42,87 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
  */
 public final class Model {
     private ModelVisitor modelVisitor;
-    private ParserResult info;
-    private int offset;
+    private final ParserResult info;
+    private OccurencesSupport occurencesSupport;
 
     Model(ParserResult info) {
         this.info = info;
-        this.offset = -1;
+    }
+
+//    Model(FileObject fo) {
+//        ParserManager.
+//    }
+
+    public List<PhpBaseElement>  getExtendedElements() {
+        return getModelVisitor().extendedElements();
     }
 
     public FileScope getFileScope() {
-        return getModelVisitor(-1).getFileScope();
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.getFileScope();
     }
 
     public IndexScope getIndexScope() {
         return ModelVisitor.getIndexScope(info);
     }
 
+    public OccurencesSupport getOccurencesSupport(final OffsetRange range) {
+        final ModelVisitor visitor = getModelVisitor();
+        synchronized(this) {
+            if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
+                occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
+            }
+        }
+        return occurencesSupport;
+    }
+
     public OccurencesSupport getOccurencesSupport(final int offset) {
-        return new OccurencesSupport(getModelVisitor(offset), offset);
+        final ModelVisitor visitor = getModelVisitor();
+        synchronized(this) {
+            if (occurencesSupport == null || occurencesSupport.offset != offset) {
+                occurencesSupport = new OccurencesSupport(visitor, offset);
+            }
+        }
+        return occurencesSupport;
     }
 
     public ParameterInfoSupport getParameterInfoSupport(final int offset) {
-        return new ParameterInfoSupport(getModelVisitor(-1), offset);
+        final ModelVisitor visitor = getModelVisitor();
+        return new ParameterInfoSupport(visitor, offset);
     }
 
     public VariableScope getVariableScope(final int offset) {
-        return getModelVisitor(-1).getVariableScope(offset);
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.getVariableScope(offset);
+    }
+
+    public ModelElement findDeclaration(final PhpElement element) {
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.findDeclaration(element);
     }
 
     /**
      * @return the modelVisitor
      */
-    private ModelVisitor getModelVisitor(int offset) {
-        if (modelVisitor == null || (offset >= 0 && this.offset != offset)) {
-            if (offset < 0) {
-                modelVisitor = new ModelVisitor(info);
-            } else {
-                modelVisitor = new ModelVisitor(info, offset);
-            }
+    synchronized ModelVisitor getModelVisitor() {
+        if (modelVisitor == null) {
+            modelVisitor = new ModelVisitor(info);
             modelVisitor.scan(Utils.getRoot(info));
         }
 
-        return modelVisitor;
-    }
-    ModelVisitor getModelVisitor(ModelElement element) {
-        Parameters.notNull("element", element);
-        if (modelVisitor == null) {
-            modelVisitor = new ModelVisitor(info, element);
-            modelVisitor.scan(Utils.getRoot(info));
-        }
         return modelVisitor;
     }
 }

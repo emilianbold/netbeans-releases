@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -188,8 +191,10 @@ void createTMPDir(LauncherProperties * props) {
 
 void checkExtractionStatus(LauncherProperties *props) {
     if(props->status == ERROR_FREESPACE) {
-        double d = int64ttoDouble(props->bundledSize) / (1024.0 * 1024.0) + 1.0;
-        DWORD dw = (DWORD) d;
+        DWORD hiMB  = props->bundledSize->High;
+        DWORD lowMB  = props->bundledSize->Low;
+        DWORD hiMult = (hiMB!=0) ? ((MAXDWORD / 1024) + 1) / 1024 : 0;
+        DWORD dw = hiMult * hiMB + lowMB / (1024 * 1024) + 1;
         WCHAR * size = DWORDtoWCHAR(dw);
         
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Not enought free space !", 1);
@@ -419,15 +424,15 @@ void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
                 if(propName!=NULL) {
                     WCHAR * propValue = NULL;
                     
-                    if(wcscmp(propName, L"nbi.launcher.tmp.dir")==0) {
+                    if(lstrcmpW(propName, L"nbi.launcher.tmp.dir")==0) {
                         propValue = appendStringW(NULL, props->tmpDir); // launcher tmpdir
-                    } else if(wcscmp(propName, L"nbi.launcher.java.home")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.java.home")==0) {
                         if(props->java!=NULL) {
                             propValue  = appendStringW(NULL, props->java->javaHome); // relative to javahome
                         }
-                    } else if(wcscmp(propName, L"nbi.launcher.user.home")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.user.home")==0) {
                         propValue = getCurrentUserHome();
-                    } else if(wcscmp(propName, L"nbi.launcher.parent.dir")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.parent.dir")==0) {
                         propValue = appendStringW(NULL, props->exeDir); // launcher parent
                     }
                     
@@ -463,7 +468,7 @@ void resolveString(LauncherProperties * props, WCHAR ** result) {
         resolveLauncherStringProperty(props, result);
         //writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
         //writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
-    } while(wcscmp(tmp, *result)!=0);
+    } while(lstrcmpW(tmp, *result)!=0);
     
     FREE(tmp);
     

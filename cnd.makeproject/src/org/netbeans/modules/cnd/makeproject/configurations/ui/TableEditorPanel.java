@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,10 +65,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -124,6 +126,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -153,7 +156,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         return targetList;
     }
 
-    class MyTable extends JTable {
+    private class MyTable extends JTable {
 
         public MyTable() {
             //setTableHeader(null); // Hides table headers
@@ -212,7 +215,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         }
     }
 
-    static class MakeArtifactWrapper {
+    private static class MakeArtifactWrapper {
 
         private MakeArtifact makeArtifact;
 
@@ -230,7 +233,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         }
     }
 
-    class MyTableCellRenderer extends DefaultTableCellRenderer {
+    private class MyTableCellRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -279,7 +282,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         }
     }
 
-    class MyTableModel extends DefaultTableModel {
+    private class MyTableModel extends DefaultTableModel {
 
         private String[] columnNames = {getString("ITEM"), getString("CONFIGURATION"), getString("BUILD")}; // NOI18N
 
@@ -338,18 +341,18 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             } else if (col == 1) {
                 // FIXUP: should do a deep clone of the list
                 MakeArtifact oldMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact();
-                boolean abs = IpeUtils.isPathAbsolute(oldMakeArtifact.getProjectLocation());
+                boolean abs = CndPathUtilitities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
                 listData.removeElementAt(row);
                 MakeArtifact makeArtifact = ((MakeArtifactWrapper) value).getMakeArtifact();
                 String projectLocation = makeArtifact.getProjectLocation();
                 String workingDirectory = makeArtifact.getWorkingDirectory();
                 if (!abs) {
                     // retain abs/rel paths...
-                    projectLocation = IpeUtils.toRelativePath(baseDir, projectLocation);
-                    workingDirectory = IpeUtils.toRelativePath(baseDir, workingDirectory);
+                    projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
+                    workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
                 }
-                makeArtifact.setProjectLocation(FilePathAdaptor.normalize(projectLocation));
-                makeArtifact.setWorkingDirectory(FilePathAdaptor.normalize(workingDirectory));
+                makeArtifact.setProjectLocation(CndPathUtilitities.normalize(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalize(workingDirectory));
                 listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);

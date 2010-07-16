@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,13 +55,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -111,7 +114,7 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         assertNull("No build-impl.xml yet", bi);
         // Modify shared data in a project.
         Element primdata = h.getPrimaryConfigurationData(true);
-        Element oldDisplayName = Util.findElement(primdata, "display-name", "urn:test:shared");
+        Element oldDisplayName = XMLUtil.findElement(primdata, "display-name", "urn:test:shared");
         assertNotNull("had a <display-name> before", oldDisplayName);
         Element displayName = primdata.getOwnerDocument().createElementNS("urn:test:shared", "display-name");
         displayName.appendChild(primdata.getOwnerDocument().createTextNode("New Name"));
@@ -132,7 +135,7 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         NodeList l = doc.getElementsByTagName("description");
         assertEquals("one <description> in build-impl.xml", 1, l.getLength());
         el = (Element)l.item(0);
-        assertEquals("correct description", "New Name", Util.findText(el));
+        assertEquals("correct description", "New Name", XMLUtil.findText(el));
         // Clear build-impl.xml to test if it is rewritten.
         bi.delete();
         // Now make some irrelevant change - e.g. to private.xml - and check that there is no modification.

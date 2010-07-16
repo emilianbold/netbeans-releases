@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,18 +44,33 @@
 
 package org.netbeans.mobility.antext;
 
-import org.apache.tools.ant.taskdefs.Property;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.BuildException;
 
 /**
- * This target is the extension of standard Property task except it overides the
- * property (properties) if already defined.
+ * This target sets the property value or overides it
+ * when already defined.
  *
  * @author Adam Sotona
  */
-public class OverridePropertyTask extends Property {
+public class OverridePropertyTask extends Task {
 
-    protected void addProperty(String n, String v) {
-        getProject().setProperty(n, v);
+    private String name;
+    private String value;
+
+    public void setName(String name) {
+      this.name = name;
     }
-    
+
+    public void setValue(String value) {
+      this.value = value;
+    }
+
+    public void execute() {
+      if (name == null || value == null) throw new BuildException("You must specify name and value attribute.", getLocation());
+      log("Overriding property: " + name + " with value: " + value, Project.MSG_VERBOSE);
+      getProject().setProperty(name, value);
+    }
+
 }

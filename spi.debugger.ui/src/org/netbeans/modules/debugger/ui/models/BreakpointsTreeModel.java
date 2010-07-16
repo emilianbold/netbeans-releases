@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,19 +47,19 @@ package org.netbeans.modules.debugger.ui.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Vector;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -68,7 +71,8 @@ public class BreakpointsTreeModel implements TreeModel {
 
     private Listener listener;
     private Vector listeners = new Vector ();
-    
+    private Properties bpProperties = Properties.getDefault().getProperties("Breakpoints");
+    private PropertyChangeListener pchl, oppchl;
     
     /** 
      *
@@ -80,54 +84,45 @@ public class BreakpointsTreeModel implements TreeModel {
     
     /** 
      *
-     * @return threads contained in this group of threads
+     * @return groups and breakpoints contained in this group of breakpoints
      */
     public Object[] getChildren (Object parent, int from, int to)
     throws UnknownTypeException {
         if (parent == ROOT) {
-            Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-                getBreakpoints ();
-            ArrayList l = new ArrayList();
-            int i, k = bs.length;
-            for (i = 0; i < k; i++) {
-                String gn = bs[i].getGroupName();
-                if (gn.equals("")) {
-                    l.add (bs [i]);
-                } else {
-                    if (!l.contains(gn)) {
-                        l.add(gn);
+            if (listener == null) {
+                listener = new Listener (this);
+            }
+            if (pchl == null) {
+                pchl = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        fireTreeChanged();
                     }
+                };
+                bpProperties.addPropertyChangeListener(WeakListeners.propertyChange(pchl, bpProperties));
+            }
+            boolean openProjectsOnly = bpProperties.getBoolean(BreakpointGroup.PROP_FROM_OPEN_PROJECTS, true);
+            if (openProjectsOnly) {
+                oppchl = WeakListeners.propertyChange(pchl, OpenProjects.getDefault());
+                OpenProjects.getDefault().addPropertyChangeListener(oppchl);
+            } else {
+                if (oppchl != null) {
+                    OpenProjects.getDefault().removePropertyChangeListener(oppchl);
                 }
+                oppchl = null;
             }
-            if (listener == null)
-                listener = new Listener (this);
-            if (to == 0) {
-                logger.fine("getChildren("+from+", "+to+"): RETURNING "+l.toArray ());
-                return l.toArray ();
+            Object[] groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties);
+            if (to == 0 || to >= groupsAndBreakpoints.length && from == 0) {
+                return groupsAndBreakpoints;
+            } else {
+                int n = groupsAndBreakpoints.length;
+                to = Math.min(n, to);
+                from = Math.min(n, from);
+                Object[] r = new Object[to - from];
+                System.arraycopy(groupsAndBreakpoints, from, r, 0, r.length);
+                return r;
             }
-            to = Math.min(l.size(), to);
-            from = Math.min(l.size(), from);
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("getChildren("+from+", "+to+"): Breakpoints: "+Arrays.asList(bs)+";  RETURNING: "+l.subList (from, to));
-            }
-            return l.subList (from, to).toArray ();
-        } else
-        if (parent instanceof String) {
-            String groupName = (String) parent;
-            Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-                getBreakpoints ();
-            ArrayList l = new ArrayList();
-            int i, k = bs.length;
-            for (i = 0; i < k; i++)
-                if (bs [i].getGroupName ().equals (groupName))
-                    l.add (bs [i]);
-            if (listener == null)
-                listener = new Listener (this);
-            if (to == 0)
-                return l.toArray ();
-            to = Math.min(l.size(), to);
-            from = Math.min(l.size(), from);
-            return l.subList (from, to).toArray ();
+        } else if (parent instanceof BreakpointGroup) {
+            return ((BreakpointGroup) parent).getGroupsAndBreakpoints();
         } else
         throw new UnknownTypeException (parent);
     }
@@ -143,13 +138,11 @@ public class BreakpointsTreeModel implements TreeModel {
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            if (listener == null)
-                listener = new Listener (this);
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return getChildren (node, 0, 0).length;
         } else
-        if (node instanceof String) {
+        if (node instanceof BreakpointGroup) {
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return getChildren (node, 0, 0).length;
@@ -160,7 +153,7 @@ public class BreakpointsTreeModel implements TreeModel {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT) return false;
         if (node instanceof Breakpoint) return true;
-        if (node instanceof String) return false;
+        if (node instanceof BreakpointGroup) return false;
         throw new UnknownTypeException (node);
     }
 
@@ -226,7 +219,7 @@ public class BreakpointsTreeModel implements TreeModel {
             }
             return m;
         }
-        
+
         @Override
         public void breakpointAdded (Breakpoint breakpoint) {
             BreakpointsTreeModel m = getModel ();

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -53,87 +56,6 @@ made subject to such option by the copyright holder.
 	</folder>
     </folder>
     -->
-
-    <folder name="Editors">
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>
-        </folder>
-        
-        <folder name="text">
-            <folder name="x-h">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="2500"/>
-                    </file>
-                </folder>
-                
-                <folder name="FoldManager">
-                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
-                </folder>
-
-                <folder name="Popup">
-                    <file name="generate-fold-popup">
-                        <attr name="position" intvalue="4200"/>
-                    </file>
-                </folder>
-            </folder>
-            <folder name="x-c++">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="2500"/>
-                    </file>
-                </folder>
-
-                <folder name="FoldManager">
-                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
-                </folder>
-
-                <folder name="Popup">
-                    <file name="generate-fold-popup">
-                        <attr name="position" intvalue="4200"/>
-                    </file>
-                </folder>
-            </folder>
-            
-            <folder name="x-c">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="2500"/>
-                    </file>
-                </folder>
-                
-                <folder name="FoldManager">
-                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
-                </folder>
-                <folder name="Popup">
-                    <file name="generate-fold-popup">
-                        <attr name="position" intvalue="4200"/>
-                    </file>
-                </folder>
-             </folder>
-            
-            <folder name="x-fortran">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance">
-                            <attr name="position" intvalue="900"/>
-                        </file>
-                    </folder>
-                </folder>
-             </folder>
-
-        </folder>
-    </folder>
     
     <folder name="Services">
         
@@ -141,21 +63,14 @@ made subject to such option by the copyright holder.
             
             <file name="mime-resolver-name-ext.xml" url="mime-resolver-name-ext.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="138"/>
             </file>
-            <file name="cnd-ext-based-mime-resolver.xml" url="mime-resolver-ext-based.xml">
+            <file name="cnd-ext-based-mime-resolver2.xml" url="mime-resolver-ext-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="215"/>
-            </file>
-            <file name="cnd-mime-resolver-content-based.xml" url="mime-resolver-content-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="470"/>
             </file>
             <file name="cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="500"/>
             </file>
         </folder>
@@ -167,120 +82,6 @@ made subject to such option by the copyright holder.
         </folder> <!-- JavaHelp -->
     </folder>	<!-- Services -->
     <folder name="CND">
-        <folder name="ToolChain">
-            <file name="SunStudio_12.2_solaris-sparc.xml" url="toolchain/SunStudio_12.2_solaris-sparc.xml">
-                <attr name="position" intvalue="1120"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-            <file name="SunStudio_12.2_solaris-x86_linux.xml" url="toolchain/SunStudio_12.2_solaris-x86_linux.xml">
-                <attr name="position" intvalue="1125"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-
-            <file name="SunStudioExpressAten_solaris-sparc.xml" url="toolchain/SunStudioExpressAten_solaris-sparc.xml">
-                <attr name="position" intvalue="1130"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-            <file name="SunStudioExpressAten_solaris-x86_linux.xml" url="toolchain/SunStudioExpressAten_solaris-x86_linux.xml">
-                <attr name="position" intvalue="1135"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-
-            <file name="SunStudio_12.1_solaris-sparc.xml" url="toolchain/SunStudio_12.1_solaris-sparc.xml">
-                <attr name="position" intvalue="1140"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-            <file name="SunStudio_12.1_solaris-x86_linux.xml" url="toolchain/SunStudio_12.1_solaris-x86_linux.xml">
-                <attr name="position" intvalue="1145"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-
-            <file name="SunStudioExpressCeres.xml" url="toolchain/SunStudioExpressCeres.xml">
-                <attr name="position" intvalue="1150"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file>
-            <file name="SunStudio_12.xml" url="toolchain/SunStudio_12.xml">
-                <attr name="position" intvalue="1160"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <file name="SunStudio_11.xml" url="toolchain/SunStudio_11.xml">
-                <attr name="position" intvalue="1170"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <file name="SunStudio_10.xml" url="toolchain/SunStudio_10.xml">
-                <attr name="position" intvalue="1180"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <file name="SunStudio_9.xml" url="toolchain/SunStudio_9.xml">
-                <attr name="position" intvalue="1210"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">
-                <attr name="position" intvalue="1220"/>
-                <attr name="extends" stringvalue="SunStudio"/>
-            </file>
-            <!-- General SunStudio -->
-            <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
-                <attr name="position" intvalue="1910"/>
-            </file>
-            <!-- SunStudio on Update Center -->
-            <!-- Ready  but commented because dbx does not supported yet -->
-            <!-- file name="SunStudioLite.xml" url="toolchain/SunStudioLite.xml">
-                <attr name="position" intvalue="1920"/>
-                <attr name="extends" stringvalue="SunStudio_12"/>
-            </file -->
-            <!-- Windows -->
-            <file name="Cygwin_4.x.xml" url="toolchain/Cygwin_4.x.xml">
-                <attr name="position" intvalue="3010"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
-                <attr name="position" intvalue="3020"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="MinGW.xml" url="toolchain/MinGW.xml">
-                <attr name="position" intvalue="3110"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="MinGW_TDM.xml" url="toolchain/MinGW_TDM.xml">
-                <attr name="position" intvalue="3120"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="Interix.xml" url="toolchain/Interix.xml">
-                <attr name="position" intvalue="3310"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <!-- Ready  but commented -->
-            <!--file name="Intel.xml" url="toolchain/Intel.xml">
-                <attr name="position" intvalue="3410"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file-->
-            <!-- Not ready yet -->
-            <!--file name="Intel_windows.xml" url="toolchain/Intel_windows.xml">
-                <attr name="position" intvalue="3420"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file-->
-            <!-- Ready  but commented -->
-            <!--file name="Icecream.xml" url="toolchain/Icecream.xml">
-                <attr name="position" intvalue="3510"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file-->
-            <!-- Partly ready and commented -->
-            <!--file name="MSVC.xml" url="toolchain/MSVC.xml">
-               <attr name="position" intvalue="3610"/>
-            </file-->
-            <file name="GNU_solaris.xml" url="toolchain/GNU_solaris.xml">
-                <attr name="position" intvalue="4010"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="GNU_mac.xml" url="toolchain/GNU_mac.xml">
-                <attr name="position" intvalue="4020"/>
-                <attr name="extends" stringvalue="GNU"/>
-            </file>
-            <file name="GNU.xml" url="toolchain/GNU.xml">
-                <attr name="position" intvalue="4030"/>
-            </file>
-        </folder>
         <folder name="Extensions">
             <file name="Header">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -317,7 +118,6 @@ made subject to such option by the copyright holder.
             
             <file name="file.c" url="templates/c/empty-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CSrcIcon.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-c.html"/>
@@ -327,7 +127,6 @@ made subject to such option by the copyright holder.
             
             <file name="main.c" url="templates/c/simple-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CSrcIcon.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c.html"/>
@@ -337,7 +136,6 @@ made subject to such option by the copyright holder.
             
             <file name="file.h" url="templates/c/simple-h.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
@@ -345,6 +143,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="c-types"/>
                 <attr name="text/x-c/text/x-h" boolvalue="true"/> <!-- special attribute to be checked in CCFSrcFileIterator.initialize -->
             </file>
+
         </folder> <!-- End cFiles folder -->
 
         <folder name="cppFiles">
@@ -354,7 +153,6 @@ made subject to such option by the copyright holder.
                        
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-cc.html"/>
@@ -364,7 +162,6 @@ made subject to such option by the copyright holder.
             
             <file name="main.cc" url="templates/cpp/simple-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
@@ -374,7 +171,6 @@ made subject to such option by the copyright holder.
 
             <file name="file.h" url="templates/cpp/header-h.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
@@ -384,7 +180,6 @@ made subject to such option by the copyright holder.
 
             <file name="file" url="templates/cpp/header.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-standard-header.html"/>
@@ -394,7 +189,6 @@ made subject to such option by the copyright holder.
             
             <file name="class.cc" url="templates/cpp/class-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/class.html"/>
@@ -407,6 +201,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
+
         </folder> <!-- End cppFiles folder -->
 
         <folder name="qtFiles">
@@ -417,7 +212,6 @@ made subject to such option by the copyright holder.
 
             <file name="main.cc" url="templates/qt/simple-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-qt.html"/>
@@ -473,7 +267,6 @@ made subject to such option by the copyright holder.
 
             <file name="form.cc" url="templates/qt/form-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="260"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
@@ -481,7 +274,6 @@ made subject to such option by the copyright holder.
 
             <file name="form.h" url="templates/qt/form-h.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="270"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
@@ -544,90 +336,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder> <!-- End fortranFiles folder -->
 
-        <folder name="shells">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-            <attr name="position" intvalue="750"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shells.html"/>
-            
-            <file name="shell.bash" url="templates/shell/simple-shell.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/bashShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
-                <attr name="templateCategory" stringvalue="shell-types"/>
-            </file>
-            <file name="shell.csh" url="templates/shell/simple-shell.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
-                <attr name="templateCategory" stringvalue="shell-types"/>
-            </file>
-            <file name="shell.ksh" url="templates/shell/simple-shell.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/kshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
-                <attr name="templateCategory" stringvalue="shell-types"/>
-            </file>
-            <file name="shell.sh" url="templates/shell/simple-shell.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
-                <attr name="templateCategory" stringvalue="shell-types"/>
-            </file>
-            <file name="shell.zsh" url="templates/shell/simple-shell.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/zshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
-                <attr name="templateCategory" stringvalue="shell-types"/>
-            </file>
-        </folder> <!-- End shells folder -->
-
-        <folder name="MakeTemplates">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-            <attr name="position" intvalue="850"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
-            
-            <file name="Makefile">
-                <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/complexMakefile.html"/> 
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardComplex"/>
-                <attr name="templateCategory" stringvalue="makefile-types"/>
-            </file>
-            <!--
-	    <folder name="SimpleMakefiles">
-		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-		<attr name="position" intvalue="200"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simpleMakefiles.html"/> 
-		<file name="ExecutableMakefile">
-		    <attr name="template" boolvalue="true"/>
-		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/executableMakefile.html"/> 
-		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardExecutable"/>
-		    <attr name="templateCategory" stringvalue="makefile-types"/>
-		</file>
-		<file name="StaticLibMakefile">
-		    <attr name="template" boolvalue="true"/>
-		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/staticLibMakefile.html"/> 
-		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardStaticLib"/>
-		    <attr name="templateCategory" stringvalue="makefile-types"/>
-		</file>
-		<file name="SharedLibMakefile">
-		    <attr name="template" boolvalue="true"/>
-		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/sharedLibMakefile.html"/> 
-		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardSharedLib"/>
-		    <attr name="templateCategory" stringvalue="makefile-types"/>
-		</file>
-	    </folder>
-            -->
-        </folder>
     </folder> <!-- Templates -->
 
     <folder name="Loaders">
@@ -735,97 +443,77 @@ made subject to such option by the copyright holder.
                 </folder> <!-- Actions -->
             </folder> <!-- x-executable+elf -->
         </folder> <!-- application -->
-        
         <folder name="text">
-            <folder name="x-cnd-sourcefile">
+            <folder name="x-cmake-include">
                 <folder name="Actions">
-                    <file name="CopyAction.shadow">
+                    <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="1550"/>
-                    </file>
-                    <file name="OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-                    <file name="PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="900"/>
+                    <file name="org-openide-actions-CutAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <file name="PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="600"/>
                     </file>
-                    <file name="Separator2.instance">
+                    <file name="org-openide-actions-FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="Separator3.instance">
+                    <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1575"/>
-                    </file>
-                    <file name="ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                </folder> <!-- Actions -->
-            </folder> <!-- x-cnd-sourcefile -->
-            
-            <folder name="x-make">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-MakefileDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="99999"/>
-                    </file>
-                </folder>
-                <folder name="Actions">
-                    <file name="CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
+                </folder>
+                <folder name="Factories">
+                    <file name="CMakePropertyDataLoader.instance">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/cmake.png"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.CMakeIncludeDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/cmake"/>
                     </file>
-                    <file name="DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="1950"/>
-                    </file>
+                </folder>
+            </folder>
+            <folder name="x-make">
+                <folder name="Actions">
                     <file name="MakeAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-MakeAction.instance"/>
                         <attr name="position" intvalue="700"/>
@@ -834,255 +522,25 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-MakeCleanAction.instance"/>
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <file name="OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="2100"/>
-                    </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                    <file name="SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
-                    <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
                     <file name="MakeTargetAction.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeTargetAction"/>
                         <attr name="position" intvalue="900"/>
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
-                    <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file>
-                    <file name="Separator6.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1975"/>
-                    </file>
-                    <file name="ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="2000"/>
-                    </file>
-                </folder> <!-- Actions -->
-            </folder> <!-- x-make -->
-            
+                </folder>
+            </folder>
             <folder name="sh">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="99999"/>
-                    </file>
-                </folder>
                 <folder name="Actions">
-                    <file name="CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                    <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="Separator6.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1775"/>
-                    </file>
                     <file name="ShellRunAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-ShellRunAction.instance"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
-                    <file name="ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
-                </folder> <!-- Actions -->
-            </folder> <!-- x-shell -->
-            <folder name="bat">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-BatDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="99999"/>
-                    </file>
-                </folder>
-                <folder name="Actions">
-                    <file name="CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                    <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
-                    <file name="Separator6.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1775"/>
-                    </file>
-                    <file name="ShellRunAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-ShellRunAction.instance"/>
-                        <attr name="position" intvalue="1750"/>
-                    </file>
-                    <file name="ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
-                </folder> <!-- Actions -->
-            </folder>
-            <folder name="x-fortran">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="99999"/>
-                    </file>
                 </folder>
             </folder>
-            <folder name="x-c">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-CDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="99999"/>
-                    </file>
-                </folder>
-            </folder>        
-            <folder name="x-c++">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-CCDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="90000"/>
-                    </file>
-                </folder>
-            </folder>
-            <folder name="x-h">
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-HDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
-                        <attr name="position" intvalue="90000"/>
-                    </file>
-                </folder>
-            </folder>
-
             <folder name="x-cmake">
                 <folder name="Factories">
                     <file name="CMakeDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CMakefileDataIcon.png"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.CMakeDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-cmake"/>
@@ -1450,9 +908,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-netbeans-modules-cnd-actions-CMakeAction.instance"/>
             <file name="org-netbeans-modules-cnd-actions-QMakeAction.instance"/>
-            <file name="org-netbeans-modules-cnd-actions-BuildToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.BuildToolsAction"/>
-            </file>
         </folder>    
     </folder> <!-- Actions -->
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -143,18 +147,22 @@ public class TreeLoader extends LazyTreeLoader {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                JavaCompiler jc = JavaCompiler.instance(context);
                 if (fo != null && jti != null) {
                     final Log log = Log.instance(context);
                     log.nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
+                    boolean oldSkipAPT = jc.skipAnnotationProcessing;
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
+                        jc.skipAnnotationProcessing = true;
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         if (persist)
                             dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
+                        jc.skipAnnotationProcessing = oldSkipAPT;
                         log.nerrors = 0;
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
@@ -173,9 +181,9 @@ public class TreeLoader extends LazyTreeLoader {
     public boolean loadParamNames(ClassSymbol clazz) {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         if (clazz != null) {
-            URL url = SourceUtils.getJavadoc(clazz, cpInfo);
-            if (url != null) {
-                if (getParamNamesFromJavadocText(url, clazz)) {
+            JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
+            if (page != null) {
+                if (getParamNamesFromJavadocText(page, clazz)) {
                     return true;
                 }
             }
@@ -203,7 +211,12 @@ public class TreeLoader extends LazyTreeLoader {
             dumpCouplingAbort(new CouplingAbort(clazz, t), null);
         }
     }
-    
+
+    @Override
+    public void updateContext(Context context) {
+        this.context = context;
+    }
+
     public final void startPartialReparse () {
         this.partialReparse = true;
     }
@@ -276,6 +289,8 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
 
+    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
+    
     public static void dumpCouplingAbort(CouplingAbort couplingAbort, String treeInfo) {
         if (treeInfo == null)
             treeInfo = getTreeInfo(couplingAbort.getTree()).toString();
@@ -288,7 +303,7 @@ public class TreeLoader extends LazyTreeLoader {
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;
         int i = 1;
-        while (i < 255) {
+        while (i < MAX_DUMPS) {
             if (!f.exists())
                 break;
             f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N
@@ -354,13 +369,13 @@ public class TreeLoader extends LazyTreeLoader {
         return info;
     }
 
-    private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {
+    private boolean getParamNamesFromJavadocText(final JavadocHelper.TextStream page, final ClassSymbol clazz) {
         HTMLEditorKit.Parser parser;
         InputStream is = null;        
         String charset = null;
         for (;;) {
             try{
-                is = url.openStream();
+                is = page.openStream();
                 Reader reader = charset == null ? new InputStreamReader(is): new InputStreamReader(is, charset);
                 parser = new ParserDelegator();
                 parser.parse(reader, new ParserCallback() {

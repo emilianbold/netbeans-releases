@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -174,6 +177,7 @@ public class PropertyPicker extends javax.swing.JPanel {
 
             // sort the properties by name
             Arrays.sort(items, new Comparator<PropertyPickerItem>() {
+                @Override
                 public int compare(PropertyPickerItem o1, PropertyPickerItem o2) {
                     return o1.getPropertyName().compareTo(o2.getPropertyName());
                 }
@@ -191,12 +195,15 @@ public class PropertyPicker extends javax.swing.JPanel {
 
     private PropertyPickerItem createItem(final PropertyDescriptor desc) {
 	return new PropertyPickerItem() {
+            @Override
 	    public String getPropertyName() {
 		return desc.getName();
 	    }
+            @Override
 	    public String getReadMethodName() {
 		return desc.getReadMethod().getName();
 	    }
+            @Override
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return desc;
 	    }
@@ -205,12 +212,15 @@ public class PropertyPicker extends javax.swing.JPanel {
 	    
     private PropertyPickerItem createItem(final String name) {
 	return new PropertyPickerItem() {
+            @Override
 	    public String getPropertyName() {
 		return FormJavaSource.extractPropertyName(name);
 	    }
+            @Override
 	    public String getReadMethodName() {
 		return FormUtils.getMethodName(name, NO_PARAMETERS);
 	    }
+            @Override
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return null;
 	    }

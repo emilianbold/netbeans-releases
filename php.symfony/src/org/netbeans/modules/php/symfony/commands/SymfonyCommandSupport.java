@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,12 +70,15 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -97,7 +103,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     public void runCommand(CommandDescriptor commandDescriptor) {
-        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommands(), commandDescriptor.getCommandParams());
         ExecutionDescriptor descriptor = getDescriptor();
         String displayName = getOutputTitle(commandDescriptor);
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
@@ -106,13 +112,16 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     public File redirectScriptOutput(String command, String... arguments) {
         ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
-        assert processBuilder != null;
+        if (processBuilder == null) {
+            return null;
+        }
 
         File output = null;
         try {
             final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
                     new ExecutionDescriptor.InputProcessorFactory() {
+                        @Override
                         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                             return inputProcessor;
                         }
@@ -180,22 +189,38 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         if (processBuilder == null) {
             return null;
         }
-        final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
 
+        processBuilder = processBuilder.redirectErrorStream(true);
+        final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                // we are sure this will be invoked at most once
-                return InputProcessors.bridge(lineProcessor);
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        }));
+        });
 
         freshCommands = Collections.emptyList();
-        ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
+        ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
+            }
+            // #180425
+            if (freshCommands.isEmpty()) {
+                String error = lineProcessor.getError();
+                if (StringUtils.hasText(error)) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_NoCommands"),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error));
+                    }
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(error);
+                    }
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -237,7 +262,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected File getPluginsDirectory() {
-        return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
+        FileObject plugins = SymfonyPhpFrameworkProvider.locate(phpModule, "plugins", true);
+        if (plugins != null && plugins.isFolder()) {
+            return FileUtil.toFile(plugins);
+        }
+        return null;
     }
 
     private static class RedirectOutputProcessor implements InputProcessor {
@@ -253,15 +282,18 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             outputFile.deleteOnExit();
         }
 
+        @Override
         public void processInput(char[] chars) throws IOException {
             for (char c : chars) {
                 bos.write((byte) c);
             }
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
             try {
                 bos.close();
@@ -282,16 +314,22 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     }
 
     class CommandsLineProcessor implements LineProcessor {
+        private final StringBuffer error = new StringBuffer(200);
+        private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
         private String prefix;
 
+        @Override
         public void processLine(String line) {
             if (!StringUtils.hasText(line)) {
                 prefix = null;
                 return;
             }
+            error.append(line);
+            error.append(newLine);
+
             String trimmed = line.trim();
             Matcher prefixMatcher = PREFIX_PATTERN.matcher(trimmed);
             if (prefixMatcher.matches()) {
@@ -318,9 +356,15 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             return copy;
         }
 
+        public String getError() {
+            return error.toString();
+        }
+
+        @Override
         public void close() {
         }
 
+        @Override
         public void reset() {
         }
     }

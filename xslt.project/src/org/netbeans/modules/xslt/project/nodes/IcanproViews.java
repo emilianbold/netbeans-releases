@@ -18,30 +18,24 @@
  */
 package org.netbeans.modules.xslt.project.nodes;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.xslt.project.XsltproConstants;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;
 import java.util.logging.Logger;
@@ -56,9 +50,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
+import org.netbeans.modules.xml.reference.ReferenceNode;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -67,12 +61,12 @@ public class IcanproViews {
     
     private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
     
-    private IcanproViews() {
-    }
+    private IcanproViews() {}
     
     public static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
         
         private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N
+        private static final String KEY_RESOURCE_DIR = "resourceDir"; // NOI18N
         private static final String KEY_DOC_BASE = "docBase"; //NOI18N
         private static final String KEY_EJBS = "ejbKey"; //NOI18N
         private static final String WEBSERVICES_DIR = "webservicesDir"; // NOI18N
@@ -83,6 +77,7 @@ public class IcanproViews {
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
+        private Node myReferenceNode;
         
         public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
             assert helper != null;
@@ -90,8 +85,9 @@ public class IcanproViews {
             projectDir = helper.getProjectDirectory();
             this.evaluator = evaluator;
             this.project = project;
+            myReferenceNode = new ReferenceNode(project);
         }
-        
+
         @Override
         protected void addNotify() {
             super.addNotify();
@@ -127,6 +123,7 @@ public class IcanproViews {
             if (setupFolder != null && setupFolder.isFolder()) {
                 l.add(KEY_SETUP_DIR);
             }
+            l.add(KEY_RESOURCE_DIR);
 /*
             l.add(WEBSERVICES_DIR);
  */
@@ -212,10 +209,14 @@ public class IcanproViews {
 ////                }
 ////            }
             
+            else if (key == KEY_RESOURCE_DIR) {
+              FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty(IcanproProjectProperties.SRC_DIR));
+              Project project = FileOwnerQuery.getOwner(srcRoot);
+              n = myReferenceNode;
+            }
             if (n != null) {
                 nodes.add(n);
             }
-
             return nodes.toArray(new Node[nodes.size()]);
         }
         
@@ -382,7 +383,6 @@ public class IcanproViews {
         public void removeChangeListener( ChangeListener listener ) {
             ell.remove( ChangeListener.class, listener );
         }
-        
     }
     
     // TODO m
@@ -396,11 +396,7 @@ public class IcanproViews {
         if (project != null) {
             srcFolder = org.netbeans.modules.xslt.tmap.util.Util.getSrcFolder(project);
         }
-        
         // TODO m
-        return XsltproConstants.TRANSFORMMAP_XML.equals(fo.getNameExt())
-        && srcFolder != null
-                && srcFolder.equals(fo.getParent());
+        return XsltproConstants.TRANSFORMMAP_XML.equals(fo.getNameExt()) && srcFolder != null && srcFolder.equals(fo.getParent());
     }
-    
 }

@@ -51,13 +51,6 @@ is divided into following sections:
             </xsl:attribute>
             <xsl:attribute name="basedir">..
             </xsl:attribute>
-            <fail message="Please build using Ant 1.7.1 or higher.">
-                <condition>
-                    <not>
-                        <antversion atleast="1.7.1"/>
-                    </not>
-                </condition>
-            </fail>
             <target name="default">
                 <xsl:attribute name="depends">dist,javadoc
                 </xsl:attribute>
@@ -160,25 +153,27 @@ is divided into following sections:
                 </fail>
                 <path id="ant.task.classpath">
                     <fileset dir="${{module.install.dir}}">
+                        <include name="org-netbeans-modules-dm-virtual-db.jar"/>
                         <include name="org-netbeans-modules-etl-editor.jar"/>
                         <include name="org-netbeans-modules-etl-project.jar"/>
+                        <include name="org-netbeans-modules-soa-ui.jar"/>
                     </fileset>
-                    <fileset dir="${{module.install.dir}}/ext/etlpro">
+                    <fileset dir="${{module.install.dir}}/ext">
                         <include name="org-netbeans-modules-etl-project-anttask.jar"/>
                     </fileset>
                     <fileset dir="${{o.n.soa.libs.wsdl4j.dir}}/modules">
                         <include name="org-netbeans-soa-libs-wsdl4j.jar" />
                     </fileset>
-                    <fileset dir="${{openide.filesystems.dir}}/core">
+                    <fileset dir="${{netbeans.home}}/core">
                         <include name="org-openide-filesystems.jar" />
                     </fileset>
-                    <fileset dir="${{openide.filesystems.dir}}/lib">
+                    <fileset dir="${{netbeans.home}}/lib">
                         <include name="org-openide-util.jar" />
                     </fileset>
-                    <fileset dir="${{openide.filesystems.dir}}/modules">
+                    <fileset dir="${{netbeans.home}}/modules">
                         <include name="org-openide-text.jar" />
                     </fileset>
-                    <fileset dir="${{openide.filesystems.dir}}/modules/">
+                    <fileset dir="${{netbeans.home}}/modules/">
                         <include name="org-openide-loaders.jar"/>
                         <include name="org-openide-nodes.jar"/>
                         <include name="org-openide-util.jar"/>
@@ -186,8 +181,17 @@ is divided into following sections:
                         <include name="org-openide-windows.jar"/>
                         <include name="org-openide-awt.jar"/>
                         <include name="org-openide-dialogs.jar"/>
+                        <include name="org-openide-options.jar"/>
+                        <include name="org-openide-io.jar"/>
+                        <include name="org-openide-explorer.jar"/>
                     </fileset>
-                    <fileset dir="${{dbapi.dir}}/modules/">
+                    <fileset dir="${{xml.validation.dir}}/modules/">
+                        <include name="org-netbeans-modules-xml-validation.jar"/>
+                    </fileset>
+                    <fileset dir="${{netbeans.home}}/../ide12/modules/">
+                        <include name="org-netbeans-api-xml.jar"/>
+                    </fileset>
+                    <fileset dir="${{netbeans.home}}/../ide12/modules/">
                         <include name="org-netbeans-modules-db.jar"/>
                     </fileset>
                 </path>
@@ -195,6 +199,9 @@ is divided into following sections:
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
                 <taskdef name="bulk-loader" classname="org.netbeans.modules.etl.project.anttasks.ETLBulkLoader">
+                    <classpath refid="ant.task.classpath"/>
+                </taskdef>
+               <taskdef name="bulk-loader-zip" classname="org.netbeans.modules.etl.project.anttasks.ETLLoaderZip">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
             </target>
@@ -254,7 +261,7 @@ is divided into following sections:
                         filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
-								the file probably has not have been copied to the build tree yet. -->
+                                the file probably has not have been copied to the build tree yet. -->
                             <filter token="CONFIG_ABSOLUTE_PATH"
                                     value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl" />
                         </filterset>
@@ -453,6 +460,11 @@ is divided into following sections:
                 </xsl:attribute>
                 <bulk-loader/>
             </target>
+            <target name="etl_loaderzip">
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
+                <bulk-loader-zip/>
+            </target>
             <target name="pre-dist">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -503,8 +515,8 @@ is divided into following sections:
                     init,pre-dist,do-dist,post-dist
                 </xsl:attribute>
                 <!--
-					<xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist,library-inclusion-in-manifest</xsl:attribute>
-				-->
+                    <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist,library-inclusion-in-manifest</xsl:attribute>
+                -->
                 <xsl:attribute name="description">
                     Build distribution (JAR).
                 </xsl:attribute>
@@ -660,31 +672,31 @@ is divided into following sections:
         </project>
         
         <!-- TBD items:
-			
-			Could pass <propertyset> to run, debug, etc. under Ant 1.6,
-			optionally, by doing e.g.
-			
-			<propertyset>
-			<propertyref prefix="sysprop."/>
-			<mapper type="glob" from="sysprop.*" to="*"/>
-			</propertyset>
-			
-			Now user can add to e.g. project.properties e.g.:
-			sysprop.org.netbeans.modules.javahelp=0
-			to simulate
-			-Dorg.netbeans.modules.javahelp=0
-			
-		-->
+            
+            Could pass <propertyset> to run, debug, etc. under Ant 1.6,
+            optionally, by doing e.g.
+            
+            <propertyset>
+            <propertyref prefix="sysprop."/>
+            <mapper type="glob" from="sysprop.*" to="*"/>
+            </propertyset>
+            
+            Now user can add to e.g. project.properties e.g.:
+            sysprop.org.netbeans.modules.javahelp=0
+            to simulate
+            -Dorg.netbeans.modules.javahelp=0
+            
+        -->
     </xsl:template>
     
     <!---
-		Generic template to build subdependencies of a certain type.
-		Feel free to copy into other modules.
-		@param targetname required name of target to generate
-		@param type artifact-type from project.xml to filter on; optional, if not specified, uses
-		all references, and looks for clean targets rather than build targets
-		@return an Ant target which builds (or cleans) all known subprojects
-	-->
+        Generic template to build subdependencies of a certain type.
+        Feel free to copy into other modules.
+        @param targetname required name of target to generate
+        @param type artifact-type from project.xml to filter on; optional, if not specified, uses
+        all references, and looks for clean targets rather than build targets
+        @return an Ant target which builds (or cleans) all known subprojects
+    -->
     <xsl:template name="deps.target">
         <xsl:param name="targetname" />
         <xsl:param name="type" />

@@ -5,9 +5,13 @@ myapp*
   customers*
     customer
       customer_id
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id
     purchase_order
       order_id
+    bsummary[view]
+      bsummary_id
 anotherapp

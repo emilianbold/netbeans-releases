@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -249,38 +252,38 @@ public class TestUnitRecognizerTest extends TestCase {
     public void testErrorMySqlError() {
         String mysqlError = "%TEST_ERROR% time=0.0050 testname=test_two_people_buying(DslUserStoriesTest) " +
                 "message=Mysql::Error: #28000Access denied for user 'root'@'localhost' (using password: NO) " +
-                "location=/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:523:in `read'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:153:in `real_connect'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:505:in `connect'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:183:in `initialize'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:88:in `new'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:88:in `mysql_connection'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:292:in `connection='%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:260:in `retrieve_connection'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:78:in `connection'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:503:in `create_fixtures'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:963:in `load_fixtures'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:929:in `setup_fixtures'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:173:in `evaluate_method'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:161:in `call'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `each'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:272:in `run_callbacks'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/testing/setup_and_teardown.rb:31:in `run_with_callbacks'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/actionpack-2.1.0/lib/action_controller/integration.rb:600:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:34:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:33:in `each'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:33:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/ui/testrunnermediator.rb:46:in `run_suite'%BR%" +
-                "/path/netbeans/ruby2/nb_test_runner.rb:93:in `run_mediator'%BR%" +
-                "/path/netbeans/ruby2/nb_test_runner.rb:88:in `each'%BR%" +
-                "/path/netbeans/ruby2/nb_test_runner.rb:88:in `run_mediator'%BR%" +
-                "/path/netbeans/ruby2/nb_test_runner.rb:60:in `start'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/ui/testrunnerutilities.rb:29:in `run'%BR%" +
-                "/path/netbeans/ruby2/nb_test_runner.rb:168:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit/autorunner.rb:12:in `run'%BR%" +
-                "/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/1.8/test/unit.rb:278%BR%:1";
+                "location=/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:523:in `read'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:153:in `real_connect'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:505:in `connect'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:183:in `initialize'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:88:in `new'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/mysql_adapter.rb:88:in `mysql_connection'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:292:in `connection='%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:260:in `retrieve_connection'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/connection_adapters/abstract/connection_specification.rb:78:in `connection'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:503:in `create_fixtures'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:963:in `load_fixtures'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/fixtures.rb:929:in `setup_fixtures'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:173:in `evaluate_method'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:161:in `call'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `each'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:90:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/callbacks.rb:272:in `run_callbacks'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activesupport-2.1.0/lib/active_support/testing/setup_and_teardown.rb:31:in `run_with_callbacks'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/actionpack-2.1.0/lib/action_controller/integration.rb:600:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:34:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:33:in `each'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/testsuite.rb:33:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/ui/testrunnermediator.rb:46:in `run_suite'%BR%" +
+                "/path/netbeans/ruby/nb_test_runner.rb:93:in `run_mediator'%BR%" +
+                "/path/netbeans/ruby/nb_test_runner.rb:88:in `each'%BR%" +
+                "/path/netbeans/ruby/nb_test_runner.rb:88:in `run_mediator'%BR%" +
+                "/path/netbeans/ruby/nb_test_runner.rb:60:in `start'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/ui/testrunnerutilities.rb:29:in `run'%BR%" +
+                "/path/netbeans/ruby/nb_test_runner.rb:168:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit/autorunner.rb:12:in `run'%BR%" +
+                "/path/netbeans/ruby/jruby-1.1.3/lib/ruby/1.8/test/unit.rb:278%BR%:1";
 
         TestUnitHandlerFactory.TestErrorHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
         Matcher matcher = handler.match(mysqlError);
@@ -291,7 +294,7 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("test_two_people_buying", matcher.group(2));
         assertEquals("DslUserStoriesTest", matcher.group(3));
         assertEquals("Mysql::Error: #28000Access denied for user 'root'@'localhost' (using password: NO)", matcher.group(4));
-        assertTrue(matcher.group(5).startsWith("/path/netbeans/ruby2/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:523:in `read'"));
+        assertTrue(matcher.group(5).startsWith("/path/netbeans/ruby/jruby-1.1.3/lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/vendor/mysql.rb:523:in `read'"));
     }
 
     public void testSuiteFinished() {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     Future<OperationState> result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
                                 decorator.getCmdPropertyName(), decorator.isCascadeDelete());
                         status = new WeakReference<Future<OperationState>>(result);
@@ -128,7 +131,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                     if (commonSupport != null) {
                                         //try {
                                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                        CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                                         if (!GlassfishModule.JDBC_RESOURCE.equals(resource.getCommandSuffix())) {
                                             retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                         } else {
@@ -152,7 +155,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                                 if (commonSupport != null) {
                                                     //try {
                                                     java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                                    CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                                                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                                                     //retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                                     try {
                                                         mgr.putResourceData(retVal.getData());

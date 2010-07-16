@@ -79,4 +79,14 @@ public class ToImpl extends ToFromIntersectImpl implements To {
         visitor.visit( this );
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.soa.model.bpel20.impl.ExtensibleElementsImpl#create(org.w3c.dom.Element)
+     */
+    @Override
+    protected BpelEntity create( Element element ) {
+        if ( BpelElements.QUERY.getName().equals( element.getLocalName()) ) {
+            return new QueryImpl( getModel() , element );
+        }
+        return super.create(element);
+    }
 }

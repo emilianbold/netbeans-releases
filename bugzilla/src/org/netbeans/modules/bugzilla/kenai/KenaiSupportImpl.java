@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,113 +42,43 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiService;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeListener {
-
-    private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
+public class KenaiSupportImpl extends KenaiSupport {
 
     public KenaiSupportImpl() {
-        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
     public Repository createRepository(KenaiProject project) {
-        if(project == null) {
+        if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
             return null;
         }
-        try {
-            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-            for (KenaiFeature f : features) {
-                if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
-                    return null;
-                }
 
-                KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), f.getLocation());
-                if(repo == null) {
-                    return null;
-                }
-                synchronized (repositories) {
-                    repositories.add(repo);
-                }
-
-                KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
-                if(kc.getRepositoryConfiguration(repo, false) == null) {
-                    // something went wrong, can't use the repo anyway => return null
-                    Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
-                            + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
-                    return null;
-                }
-                return repo;
-            }
-        } catch (KenaiException kenaiException) {
-            Bugzilla.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
-        }
-        return null;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            // XXX move to spi
-
-            // get all kenai repositories
-            KenaiRepository[] repos;
-            synchronized(repositories) {
-                if(repositories.size() == 0) {
-                    return;
-                }
-                repos = repositories.toArray(new KenaiRepository[repositories.size()]);
-            }
-
-            // get kenai credentials
-            String user;
-            String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
-            if(pa != null) {
-                user = pa.getUserName();
-                psswd = new String(pa.getPassword());
-            } else {
-                user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
-            }
-
-            for (KenaiRepository kr : repos) {
-                // refresh their taskdata with the relevant username/password
-                kr.setCredentials(user, psswd);
-            }
-        }
+        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        return repo;
+         
     }
 
     @Override
     public void setFilter(Query query, Filter filter) {
         if(query instanceof BugzillaQuery) { // XXX assert instead of if
             BugzillaQuery bq = (BugzillaQuery) query;
-            bq.setFilter(filter);
+            bq.getController().selectFilter(filter);
         }
     }
 
@@ -161,7 +94,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         String host = loc.getHost();
         int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
         if (idx <= 0) {
-            Bugzilla.LOG.warning("can't get issue tracker url from [" + displayName + ", " + location + "]"); // NOI18N
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
             return null;
         }
         String url = location.substring(0, idx);
@@ -173,7 +106,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
         String product = null;
         int idxProductStart = location.indexOf(productAttribute);
         if (idxProductStart <= 0) {
-            Bugzilla.LOG.warning("can't get issue tracker product from [" + displayName + ", " + location + "]"); // NOI18N
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker product from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
             return null;
         } else {
             int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
@@ -209,6 +142,17 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
     @Override
     public boolean needsLogin(Query query) {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
+    }
+
+    @Override
+    public void refresh(Query query, boolean synchronously) {
+        assert query instanceof BugzillaQuery;
+        BugzillaQuery bq = (BugzillaQuery) query;
+        if(synchronously) {
+            bq.refresh();
+        } else {
+            bq.getController().onRefresh();
+        }
     }
 
 }

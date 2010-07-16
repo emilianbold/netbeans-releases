@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -51,6 +55,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -69,7 +76,7 @@ import org.openide.util.NbBundle;
  */
 public final class ChangeType implements ErrorRule<Void> {
     
-    static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, TypeMirror[] expressionType, Tree[] leaf) {
+    static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, TypeMirror[] expressionType, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset);
         
         // Try to locate the VARIABLE tree
@@ -77,7 +84,6 @@ public final class ChangeType implements ErrorRule<Void> {
             Tree scope = path.getLeaf();
             TypeMirror expected = null;
             TypeMirror resolved = null;
-            ExpressionTree found = null;
             
             // Check if this is an assignment. 
             if (scope.getKind() == Kind.ASSIGNMENT) {
@@ -113,27 +119,35 @@ public final class ChangeType implements ErrorRule<Void> {
                         }
                     }
                 }
-            }
-            
-            // Is this a VARIABLE tree
-            if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
-                expected = info.getTrees().getTypeMirror(path);
-                found = ((VariableTree) scope).getInitializer();
-                resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+            } else if (scope.getKind() == Kind.ENHANCED_FOR_LOOP) {
+                EnhancedForLoopTree efl = (EnhancedForLoopTree) scope;
 
-                if (resolved.getKind() == TypeKind.ERROR) {
-                    resolved = info.getTrees().getOriginalType((ErrorType) resolved);
+                path = new TreePath(path, efl.getVariable());
+                scope = efl.getVariable();
+
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.getIterableGenericType(info, new TreePath(path, efl.getExpression()));
+            }
+
+            // Is this a VARIABLE tree
+            if (scope.getKind() == Kind.VARIABLE) {
+                if (((VariableTree) scope).getInitializer() != null) {
+                    resolved = info.getTrees().getTypeMirror(new TreePath(path, ((VariableTree) scope).getInitializer()));
                 }
-                
-                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, resolved);
+
+                expected = info.getTrees().getTypeMirror(path);
             }
 
             if (expected != null && resolved != null) {
-                if (resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
+                if (resolved.getKind() == TypeKind.ERROR) {
+                    resolved = info.getTrees().getOriginalType((ErrorType) resolved);
+                }
+
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, resolved);
+
+                if (resolved == null || resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE || resolved.getKind() == TypeKind.NULL) {
                 } else if (resolved.getKind() != TypeKind.ERROR &&
                 		expected.getKind() != TypeKind.ERROR) {
                     tm[0] = expected;
-                    expression[0] = found;
                     expressionType[0] = resolved;
                     leaf[0] = scope;
                 }
@@ -162,11 +176,10 @@ public final class ChangeType implements ErrorRule<Void> {
             Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
         TypeMirror[] tm = new TypeMirror[1];
-        ExpressionTree[] expression = new ExpressionTree[1];
         TypeMirror[] expressionType = new TypeMirror[1];
         Tree[] leaf = new Tree[1];
         
-        computeType(info, offset, tm, expression, expressionType, leaf);
+        computeType(info, offset, tm, expressionType, leaf);
         
         if (leaf[0] instanceof VariableTree) {
             if (tm[0] != null) {
@@ -176,7 +189,7 @@ public final class ChangeType implements ErrorRule<Void> {
 
                 result.add(new ChangeTypeFix(info.getJavaSource(),
                         ((VariableTree) leaf[0]).getName().toString(), 
-                        Utilities.getTypeName(expressionType[0], false).toString(), offset));
+                        Utilities.getTypeName(info, expressionType[0], false).toString(), offset));
             }
         }
         

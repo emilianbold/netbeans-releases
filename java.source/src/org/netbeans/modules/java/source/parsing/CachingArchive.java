@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.util.Exceptions;
@@ -103,7 +107,10 @@ public class CachingArchive implements Archive {
             return l;
         }
     }          
-    
+
+    public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
+        throw new UnsupportedOperationException("Write into archives not supported");   //NOI18N
+    }
 
     private String getString(int off, int len) {
         byte[] name = new byte[len];
@@ -142,6 +149,46 @@ public class CachingArchive implements Archive {
         folders = null;
         names = null;
         nameOffset = 0;
+    }
+
+    @Override
+    public JavaFileObject getFile(final @NonNull String name) {
+        Map<String, Folder> folders = doInit();        
+        final int index = name.lastIndexOf('/');    //NOI18N
+        String folder, sn;
+        if (index<=0) {
+            folder = "";    //NOI18N
+            sn = name;
+        } else {
+            folder = name.substring(0,index);
+            sn = name.substring(index+1);
+        }
+        Folder files = folders.get(folder);
+        if (files == null) {
+            return null;
+        }
+        else {
+            assert !keepOpened || zipFile != null;
+            for (int i = 0; i < files.idx; i += files.delta){
+                final String baseName = getString(files.indices[i], files.indices[i+1]);
+                if (sn.equals(baseName)) {
+                    long mtime = join(files.indices[i+3], files.indices[i+2]);
+                    if (zipFile == null) {
+                        if (files.delta == 4) {
+                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime);
+                        }
+                        else {
+                            assert files.delta == 6;
+                            long offset = join(files.indices[i+5], files.indices[i+4]);
+                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime, offset);
+                        }
+                    } else {
+                        return FileObjects.zipFileObject( zipFile, folder, baseName, mtime);
+                    }
+                }
+            }
+            return null;
+        }
     }
                       
     // Private methods ---------------------------------------------------------

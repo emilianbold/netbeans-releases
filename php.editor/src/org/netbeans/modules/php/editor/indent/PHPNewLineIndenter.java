@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,11 +70,13 @@ public class PHPNewLineIndenter {
     private Collection<ScopeDelimiter> scopeDelimiters = null;
     private int indentSize;
     private int continuationSize;
+    private int itemsArrayDeclararionSize;
 
     public PHPNewLineIndenter(Context context) {
         this.context = context;
         indentSize = CodeStyle.get(context.document()).getIndentSize();
         continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
+        itemsArrayDeclararionSize = CodeStyle.get(context.document()).getItemsInArrayDeclarationIndentSize();
         int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
 
         scopeDelimiters = Arrays.asList(
@@ -97,6 +102,7 @@ public class PHPNewLineIndenter {
 
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     int newIndent = 0;
@@ -107,9 +113,12 @@ public class PHPNewLineIndenter {
                     ts.moveNext();
 
                     boolean indentStartComment = false;
-
+                    
 
                    boolean movePrevious = false;
+                   if (ts.token() == null) {
+                        return;
+                    }
                    if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
                         movePrevious = true;
                    }
@@ -177,8 +186,14 @@ public class PHPNewLineIndenter {
 
                         if (delimiter != null) {
                             if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
-                                if (breakProceededByCase(ts)){
-                                    newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
+				int casePosition = breakProceededByCase(ts); // is after break in case statement?
+                                if (casePosition > -1){
+                                    newIndent = Utilities.getRowIndent(doc, anchor);
+				    if (Utilities.getRowStart(doc, casePosition) != caretLineStart) {
+					// check that case is not on the same line, where enter was pressed
+					newIndent -= indentSize;
+					System.out.println("odecitam");
+				    }
                                     break;
                                 }
 
@@ -225,7 +240,7 @@ public class PHPNewLineIndenter {
                                     if (startExpression != -1) {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
-                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + indentSize;
+                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
                                         }
                                         else {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
@@ -263,8 +278,13 @@ public class PHPNewLineIndenter {
 
         if (token.id() == PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
             retunValue.expressionStartOffset = findStartTokenOfExpression(ts);
-            retunValue.indentDelta = 0;
+	    ts.move(retunValue.expressionStartOffset);
+	    ts.moveNext();
+            retunValue.indentDelta = ts.token().id() == PHPTokenId.PHP_CASE || ts.token().id() == PHPTokenId.PHP_DEFAULT
+		    ? indentSize : 0;
             retunValue.processedByControlStmt = false;
+	    ts.move(origOffset);
+	    ts.moveNext();
             return retunValue;
         }
         while (ts.movePrevious()) {
@@ -432,8 +452,9 @@ public class PHPNewLineIndenter {
                     ts.move(offsetIf);
                     ts.movePrevious();
                 }
-            }
-            else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+            } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
+		start = ts.offset();
+	    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                 curlyBalance --;
                 if (curlyBalance == -1 && ts.moveNext()) {
                     // we are after previous blog close
@@ -493,8 +514,13 @@ public class PHPNewLineIndenter {
     }
 
 
-    private boolean breakProceededByCase(TokenSequence ts){
-        boolean retunValue = false;
+    /**
+     *
+     * @param ts
+     * @return -1 if is not by case or offset of the case keyword
+     */
+    private int breakProceededByCase(TokenSequence ts){
+        int retunValue = -1;
         int origOffset = ts.offset();
 
         if (ts.movePrevious()) {
@@ -503,7 +529,7 @@ public class PHPNewLineIndenter {
                     TokenId tid = ts.token().id();
 
                     if (tid == PHPTokenId.PHP_CASE) {
-                        retunValue = true;
+                        retunValue = ts.offset();
                         break;
                     } else if (CONTROL_STATEMENT_TOKENS.contains(tid)) {
                         break;

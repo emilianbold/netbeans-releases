@@ -84,13 +84,13 @@
                         <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.beans</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency-->
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
                     <run-dependency>
@@ -153,6 +153,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.refactoring</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javaee.api</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -221,6 +227,10 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>

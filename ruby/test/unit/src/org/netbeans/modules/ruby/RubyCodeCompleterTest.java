@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -429,6 +432,38 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
 
     public void testAliasMethod2() throws Exception {
         checkCompletion("testfiles/alias_method.rb", "Close.new.so_^so_close");
+    }
+
+    public void testAliasMethodKeyword() throws Exception {
+        checkCompletion("testfiles/alias_method.rb", "Here.new.right_^there");
+    }
+
+    public void testDefineMethod() throws Exception {
+        checkCompletion("testfiles/define_method.rb", "Calcutec.new.lau^nder");
+    }
+
+    public void testDefineMethod2() throws Exception {
+        checkCompletion("testfiles/define_method.rb", "Calcutec.new.shuffle_dat^a");
+    }
+
+    public void testExtendWith() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "added_class_m^ethod :something");
+    }
+
+    public void testExtendWith2() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "Includes.added_class_^method");
+    }
+
+    public void testExtendWith3() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "i.added_class_m^ethod");
+    }
+
+    public void testSpecCc() throws Exception {
+        checkCompletion("testfiles/some_spec.rb", "@so^me.stuff");
+    }
+
+    public void testSpecCc2() throws Exception {
+        checkCompletion("testfiles/some_spec.rb", "@thi^ng.do_it");
     }
 
     // TODO uncomment when reindexed

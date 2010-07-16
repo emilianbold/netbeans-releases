@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -153,12 +156,13 @@ public class PUDataObject extends XmlMultiViewDataObject {
             }
         } else {
             try{
+                String oldVersion = persistence.getVersion();
                 java.io.InputStream is = getEditorSupport().getInputStream();
                 String version=Persistence.VERSION_1_0;
                 try {
                     version=JPAParseUtils.getVersion(is);
                 } catch (SAXException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);//persistence.xml may be corrupted, but no need to show exception dialog
                 }
                 finally
                 {
@@ -169,11 +173,11 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 try {
                     if(Persistence.VERSION_2_0.equals(version))
                     {
-                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                        newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
                     }
                     else//1.0 - default
                     {
-                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                        newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
                     }
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                     LOG.log(Level.INFO, null, ex);
@@ -185,7 +189,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     } catch (IllegalArgumentException iae) {
                         // see #104180
                         LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NOI18N
-                        return false;
+                        if(!persistence.getVersion().equals(newPersistence.getVersion())){//version may be changed, just replace instead of merge then, see #173233 also
+                            persistence = null;
+                            PersistenceMetadata.getDefault().refresh(getPrimaryFile());
+                            return true;
+                        }
+                        else return false;
                     }
                 }
             } catch (IOException ioe){

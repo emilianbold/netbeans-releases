@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 package org.netbeans.modules.dlight.cpu;
 
 import java.awt.Color;
+import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,11 +87,15 @@ public final class DLightCPUToolConfigurationProvider
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
 
+    @Override
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         toolConfiguration.setDescription(loc("CPUMonitorTool.Description"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
+        FeatureDescriptor descriptor = new FeatureDescriptor();
+        descriptor.setValue(DTDCConfiguration.DSCRIPT_TOOL_PROPERTY, CpuSamplingSupport.CPU_SAMPLING_SCRIPT_URL);
+        toolConfiguration.setFeatureDescriptor(descriptor);
 
         // SunStudio should collect data about most CPU-expensive functions
         // i.e. create a configuration that collects
@@ -159,12 +167,13 @@ public final class DLightCPUToolConfigurationProvider
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setPersistencePrefix("dlight_cpu"); // NOI18N
         indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(100);
         indicatorConfiguration.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), loc("graph.description.system"), TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), loc("graph.description.user"), TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+                new TimeSeriesDescriptor("system", loc("graph.description.system"), new Color(0xFF, 0xC7, 0x26), TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("user", loc("graph.description.user"), new Color(0xE7, 0x6F, 0x00), TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
         indicatorConfiguration.setDataRowHandler(
                 new DataRowToCpu(
                 Arrays.asList(ProcDataProviderConfiguration.USR_TIME),

@@ -60,6 +60,16 @@ public interface EntityFactory {
      * @return instantiated model entity.
      */
     BpelEntity create( BpelContainer container , Element element);
+
+    /**
+     * Creates new entity for specified <code>element</code> inside parent 
+     * <code>container</code>.
+     * This method is used inside OM when it parses XML.
+     * @param container Parent object.
+     * @param element DOM low level element. 
+     * @return instantiated model entity.
+     */
+    BpelEntity create( BpelContainer container , Element element, String namespaceURI);
     
     /**
      * Creates unattached OM entity with specified <code>clazz</code>. 

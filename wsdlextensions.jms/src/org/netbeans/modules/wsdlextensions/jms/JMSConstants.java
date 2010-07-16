@@ -87,6 +87,51 @@ public class JMSConstants {
     // JMS provider protocol
     public static final String JMS_GENERIC_JNDI_PROTOCOL = "jndi://";
     
+    // Display entry for options with null values
+    public static final String NOT_SET = "<Not Set>";
+    
+    // Use Types
+    public static final String LITERAL = "literal";
+    public static final String ENCODED = "encoded"; 
+    
+    // Concurrency Mode
+    public static final String CC = "cc";
+    public static final String SYNC = "sync"; 
+
+    // Java Primitives
+    public static final String JAVA_BOOLEAN = "boolean";
+    public static final String JAVA_SHORT = "short";
+    public static final String JAVA_INT = "int";
+    public static final String JAVA_LONG = "long";
+    public static final String JAVA_FLOAT = "float";
+    public static final String JAVA_DOUBLE = "double";
+    public static final String JAVA_STRING = "string";
+    
+    public static final int XML_MESSAGE_TYPE = 0;
+    public static final int TEXT_MESSAGE_TYPE = 1;
+    public static final int ENCODED_MESSAGE_TYPE = 2; 
+    public static final int BINARY_MESSAGE_TYPE = 3;
+    
+    public static final int INBOUND_ONE_WAY = 0;
+    public static final int OUTBOUND_ONE_WAY = 1;
+    public static final int INBOUND_REQ_RESP = 2;
+    public static final int OUTBOUND_REQ_RESP = 3;
+    public static final int SOLICITED_REC = 4;
+    
+    public static final String VERB_POLL = "poll";
+    public static final String VERB_WRITE = "write";
+    public static final String VERB_READ = "read";
+    
+    public static final String CHANGE_ME = "change me";
+    public static final String BASE64_BINARY = "base64Binary";
+    public static final String XSD_BASE64_BINARY = "xsd:base64Binary";
+    public static final String XSD_STRING = "xsd:string";
+    
+    public static final String TEXT = "text";
+    public static final String BINARY = "binary";    
+    public static final String XML = "xml";
+    public static final String ENCODED_DATA = "encoded data";
+    
     public static boolean stringValueIsTrue (String val) {        
         if (val == null || val.equals(BOOLEAN_FALSE) ) {
             return false;

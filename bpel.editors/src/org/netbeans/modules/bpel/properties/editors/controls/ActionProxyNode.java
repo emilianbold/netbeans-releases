@@ -46,7 +46,7 @@ public class ActionProxyNode extends FilterNode {
     }
     
     /* 
-     * This class is necessary for the the ClassRulesFilter
+     * This class is necessary for the ClassRulesFilter
      */ 
     public Class getOriginalNodeClass() {
         Node original = getOriginal();

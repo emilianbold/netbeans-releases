@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,21 +45,17 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Dimension;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -70,7 +69,7 @@ import org.openide.util.Utilities;
  */
 public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     
-    public static JPanel wrapPanel(ListEditorPanel innerPanel) {
+    public static JPanel wrapPanel(ListEditorPanel<String> innerPanel) {
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -90,22 +89,22 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         getDownButton().setVisible(false);
         getCopyButton().setVisible(false);
     }
-    
+
     @Override
     public String addAction() {
         FileFilter[] filters;
         if (Utilities.isWindows()){
-            filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            PeDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getPeDynamicLibraryFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            MacOSXDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
         }  else {
-            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            ElfDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getElfDynamicLibraryFileFilter()};
         }
         FileChooser fileChooser = new FileChooser(
                 getString("LIBRARY_CHOOSER_TITLE_TXT"),
@@ -114,13 +113,36 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
                 filters,
                 "",
                 false);
+        fileChooser.setMultiSelectionEnabled(true);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = FilePathAdaptor.normalize(itemPath);
-        return itemPath;
+        StringBuilder buf = new StringBuilder();
+        for (File item : fileChooser.getSelectedFiles()){
+            String itemPath = item.getPath();
+            itemPath = CndPathUtilitities.normalize(itemPath);
+            if (buf.length() > 0) {
+                buf.append(';');
+            }
+            buf.append(itemPath);
+        }
+        if (buf.length()==0) {
+            return null;
+        }
+        return buf.toString();
+    }
+
+    @Override
+    public void addObjectAction(String newObject) {
+        if (newObject != null) {
+            List<String> list = new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(newObject, ";"); // NOI18N
+            while(st.hasMoreTokens()) {
+                list.add(st.nextToken());
+            }
+            addObjectsAction(list);
+        }
     }
     
     @Override
@@ -167,8 +189,8 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector vector = getListData();
-        Object[] arr = getListData().toArray();
+        List<String> vector = getListData();
+        Object[] arr = vector.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {
                 vector.remove(i);

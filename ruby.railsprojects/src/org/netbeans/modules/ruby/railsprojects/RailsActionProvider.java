@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -479,14 +482,24 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     private void openRailsConsole(Lookup context) {
         String displayName = NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
-        String script = "script" + File.separator + "console"; // NOI18N
-        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String script = null;
         List<String> additionalArgs = new ArrayList<String>();
-        if (Utilities.isWindows() && !getPlatform().isJRuby()) {
-            // see #133066
-            additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+        boolean rails3 = RailsProjectUtil.getRailsVersion(project).isRails3OrHigher();
+        if (rails3) {
+             script = "script" + File.separator + "rails"; // NOI18N
+             additionalArgs.add("console");
         } else {
-            additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            script = "script" + File.separator + "console"; // NOI18N
+        }
+        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        // --irb not supported in rails3
+        if (!rails3) {
+            if (Utilities.isWindows() && !getPlatform().isJRuby()) {
+                // see #133066
+                additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+            } else {
+                additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            }
         }
         String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
         if (railsEnv != null && !"".equals(railsEnv.trim())) {
@@ -506,15 +519,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                 
         // request focus for the output window - see #133519
+        getOutputWindow().requestActive();
+    }
+
+    private static TopComponent getOutputWindow() {
         final String outputWindowId = "output"; //NOI18N
         TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
-        // outputWindow should not be null as the output window id is not likely to change, but 
-        // checking for null anyway since we are not relying on an API.
-        if (outputWindow != null) {
-            outputWindow.requestActive();
-        } else {
-            LOGGER.info("Could not find the output window using id " + outputWindowId);
-        }
+        assert outputWindow != null : "Could not find the output window using id " + outputWindowId;  //NOI18N
+        return outputWindow;
     }
     
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
@@ -641,6 +653,13 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     }
     
     private void runServer(String path, final boolean serverDebug, final boolean clientDebug) {
+        TopComponent outputWindow = getOutputWindow();
+        if (!outputWindow.isOpened()) {
+            outputWindow.open();
+        }
+        outputWindow.requestActive();
+        outputWindow.toFront();
+
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
             server.setDebug(serverDebug);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,47 @@ public class FixTestDependenciesTest extends NbTestCase {
 
     public FixTestDependenciesTest(String testName) {
         super(testName);
+    }
+
+    public void testOpenideUtilTestDepNeedsToBeRecursive() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependencies-openide.filesystems.xml");
+        File propertiesFile = new File(getWorkDir(), "empty.properties");
+        propertiesFile.createNewFile();
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        int first = result.indexOf("test-dependencies");
+        if (first == -1) {
+            fail("No test deps found in " + result);
+        }
+        result = result.substring(first);
+
+        if (result.indexOf("org.openide.util") == -1) {
+            fail("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf("org.openide.util.lookup") == -1) {
+            fail("org.openide.util.lookup should be there: " + result);
+        }
+    }
+    public void testNoChangeForProjectsWithoutTests() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependencies-o.apache.xml.resolver.xml");
+        String before = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        File propertiesFile = new File(getWorkDir(), "some.properties");
+        Properties np = new Properties();
+        np.put("is.autoload", "true");
+        np.store(new FileOutputStream(propertiesFile), "");
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        assertEquals("No change expected", before, result);
     }
 
     public void testSimple() throws IOException, Exception {
@@ -130,127 +174,128 @@ public class FixTestDependenciesTest extends NbTestCase {
 
     private Set<ModuleListParser.Entry> getEntries() {
         Set<ModuleListParser.Entry> entries = new HashSet<ModuleListParser.Entry>();
+        File nonexistent = new File("nonexistent");
         entries.add(new ModuleListParser.Entry("org.openide.io",new File("extra/modules/org-openide-io.jar"),
             new File[0],    null,"openide/io",
             new String[]{"org.openide.util"},
             "extra",
             new String[]{"org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.compat",new File("extra/modules/org-openide-compat.jar"),
             new File[0],    null,"openide/compat",
             new String[]{"org.netbeans.core","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.nodes","org.openide.options","org.openide.text","org.openide.util","org.openide.windows"},
             "extra",
             new String[]{"org.netbeans.core","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.nodes","org.openide.options","org.openide.text","org.openide.util","org.openide.windows"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.modules.projectapi",new File("extra/modules/org-netbeans-modules-projectapi.jar"),
             new File[0],    null,"projects/projectapi",
             new String[]{"org.netbeans.modules.queries","org.openide.filesystems","org.openide.util"},
             "extra",
             new String[]{"org.netbeans.modules.queries","org.openide.filesystems","org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.loaders",new File("extra/modules/org-openide-loaders.jar"),
             new File[0],    null,"openide/loaders",
             new String[]{"org.netbeans.api.progress","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.modules","org.openide.nodes","org.openide.text","org.openide.util","org.openide.windows"},
             "extra",
             new String[]{"org.netbeans.api.progress","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.modules","org.openide.nodes","org.openide.text","org.openide.util","org.openide.windows"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.core",new File("extra/modules/org-netbeans-core.jar"),
             new File[0],    null,"core",
             new String[]{"org.netbeans.bootstrap","org.netbeans.core.startup","org.netbeans.swing.plaf","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.loaders","org.openide.modules","org.openide.nodes","org.openide.options","org.openide.text","org.openide.util","org.openide.windows"},
             "extra",
             new String[]{"org.netbeans.bootstrap","org.netbeans.core.startup","org.netbeans.swing.plaf","org.openide.actions","org.openide.awt","org.openide.dialogs","org.openide.explorer","org.openide.filesystems","org.openide.loaders","org.openide.modules","org.openide.nodes","org.openide.options","org.openide.text","org.openide.util","org.openide.windows"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.modules.masterfs",new File("extra/modules/org-netbeans-modules-masterfs.jar"),
             new File[0],    null,"openide/masterfs",
             new String[]{"org.openide.filesystems","org.openide.util","org.openide.options","org.netbeans.modules.queries"},
             "extra",
             new String[]{"org.openide.filesystems","org.openide.util","org.openide.options","org.netbeans.modules.queries"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.bootstrap",new File("extra/lib/boot.jar"),
             new File[0],    null,"core/bootstrap",
             new String[]{"org.openide.modules","org.openide.util"},
             "extra",
             new String[]{"org.openide.modules","org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.libs.xerces",new File("extra/modules/org-netbeans-libs-xerces.jar"),
             new File[]{new File("nonsence:/home/pzajac/cvss/freshtrunk/libs/external/xerces-2.8.0.jar"),new File("nonsence:/home/pzajac/cvss/freshtrunk/libs/external/xml-commons-dom-ranges-1.0.b2.jar")},
             null,"libs/xerces",
            new String[0],
             "extra",
            new String[0],
-           Collections.<String,String[]>emptyMap()));
+           Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.api.progress",new File("extra/modules/org-netbeans-api-progress.jar"),
             new File[0],    null,"core/progress",
             new String[]{"org.openide.util","org.openide.awt"},
             "extra",
             new String[]{"org.openide.util","org.openide.awt"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.options",new File("extra/modules/org-openide-options.jar"),
             new File[0],    null,"openide/options",
             new String[]{"org.openide.util"},
             "extra",
             new String[]{"org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.explorer",new File("extra/modules/org-openide-explorer.jar"),
             new File[0],    null,"openide/explorer",
             new String[]{"org.openide.util","org.openide.nodes","org.openide.awt","org.openide.dialogs","org.openide.options"},
             "extra",
             new String[]{"org.openide.util","org.openide.nodes","org.openide.awt","org.openide.dialogs","org.openide.options"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.dialogs",new File("extra/modules/org-openide-dialogs.jar"),
             new File[0],    null,"openide/dialogs",
             new String[]{"org.netbeans.api.progress","org.openide.awt","org.openide.util"},
             "extra",
             new String[]{"org.netbeans.api.progress","org.openide.awt","org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.nodes",new File("extra/modules/org-openide-nodes.jar"),
             new File[0],    null,"openide/nodes",
             new String[]{"org.openide.util","org.openide.awt","org.openide.dialogs"},
             "extra",
             new String[]{"org.openide.util","org.openide.awt","org.openide.dialogs"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.awt",new File("extra/modules/org-openide-awt.jar"),
             new File[0],    null,"openide/awt",
             new String[]{"org.openide.util"},
             "extra",
             new String[]{"org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.text",new File("extra/modules/org-openide-text.jar"),
             new File[0],    null,"openide/text",
             new String[]{"org.netbeans.modules.editor.mimelookup","org.openide.awt","org.openide.dialogs","org.openide.nodes","org.openide.options","org.openide.util","org.openide.windows"},
             "extra",
             new String[]{"org.netbeans.modules.editor.mimelookup","org.openide.awt","org.openide.dialogs","org.openide.nodes","org.openide.options","org.openide.util","org.openide.windows"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.actions",new File("extra/modules/org-openide-actions.jar"),
             new File[0],    null,"openide/actions",
             new String[]{"org.openide.util","org.openide.nodes","org.openide.awt","org.openide.options","org.openide.text","org.openide.explorer","org.openide.dialogs","org.openide.windows"},
             "extra",
             new String[]{"org.openide.util","org.openide.nodes","org.openide.awt","org.openide.options","org.openide.text","org.openide.explorer","org.openide.dialogs","org.openide.windows"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.util",new File("extra/lib/org-openide-util.jar"),
             new File[0],    null,"openide/util",
            new String[0],
             "extra",
            new String[0],
-           Collections.<String,String[]>emptyMap()));
+           Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.netbeans.core.startup",new File("extra/core/core.jar"),
             new File[0],    null,"core/startup",
             new String[]{"org.netbeans.bootstrap","org.openide.filesystems","org.openide.modules","org.openide.util"},
             "extra",
             new String[]{"org.netbeans.bootstrap","org.openide.filesystems","org.openide.modules","org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.modules",new File("extra/lib/org-openide-modules.jar"),
             new File[0],    null,"openide/modules",
             new String[]{"org.openide.util"},
             "extra",
             new String[]{"org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         entries.add(new ModuleListParser.Entry("org.openide.filesystems",new File("extra/core/org-openide-filesystems.jar"),
             new File[0],    null,"openide/fs",
             new String[]{"org.openide.util"},
             "extra",
             new String[]{"org.openide.util"},
-            Collections.<String,String[]>emptyMap()));
+            Collections.<String,String[]>emptyMap(), nonexistent));
         return entries;
     } 
 }

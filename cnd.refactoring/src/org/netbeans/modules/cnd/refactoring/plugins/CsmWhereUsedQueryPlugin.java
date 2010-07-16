@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,13 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -62,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -196,8 +202,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (isFindUsages()) {
             if (CsmKindUtilities.isMethod(referencedObject)) {
                 CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-                if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
+                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                    out.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, isSearchFromBaseClass()));
                 }
             } else if (CsmKindUtilities.isClass(referencedObject)) {
                 // add all constructors
@@ -236,6 +242,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                                             final Collection<CsmObject> csmObjects,            
                                                             final Collection<CsmFile> files) {
         assert isFindUsages() : "must be find usages mode";
+        final boolean onlyUsages = !isFindOverridingMethods();
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
@@ -258,7 +265,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                 Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
                                 Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
                                 for (CsmReference csmReference : refs) {
-                                    elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                    boolean accept = true;
+                                    if (onlyUsages) {
+                                        accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+                                    }
+                                    if (accept) {
+                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                    }
                                 }
                             } finally {
                                 Thread.currentThread().setName(oldName);
@@ -284,7 +297,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private Collection<RefactoringElementImplementation> processOverridenMethodsQuery(final CsmMethod csmMethod) {
         assert isFindOverridingMethods() : "must be search for overriden methods";
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
-        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverridenMethods(csmMethod, isSearchFromBaseClass());        
+        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(csmMethod, isSearchFromBaseClass());
         overrides.add(csmMethod);
         for (CsmMethod method : overrides) {
             CsmReference declRef = CsmReferenceSupport.createObjectReference(method);

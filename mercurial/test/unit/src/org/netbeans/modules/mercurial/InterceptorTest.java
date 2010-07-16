@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,13 @@ package org.netbeans.modules.mercurial;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Set;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -177,6 +185,76 @@ public class InterceptorTest extends AbstractHgTest {
         String attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
         assertEquals(defaultPullReturned, attr);
+    }
+
+    public void testFullScanLimitedOnVisibleRoots () throws Exception {
+        File repo = new File("/tmp/", String.valueOf(System.currentTimeMillis()));
+        repo.mkdir();
+        File folderA = new File(repo, "folderA");
+        File fileA1 = new File(folderA, "file1");
+        File fileA2 = new File(folderA, "file2");
+        folderA.mkdirs();
+        fileA1.createNewFile();
+        fileA2.createNewFile();
+        File folderB = new File(repo, "folderB");
+        File fileB1 = new File(folderB, "file1");
+        File fileB2 = new File(folderB, "file2");
+        folderB.mkdirs();
+        fileB1.createNewFile();
+        fileB2.createNewFile();
+        File folderC = new File(repo, "folderC");
+        File fileC1 = new File(folderC, "file1");
+        File fileC2 = new File(folderC, "file2");
+        folderC.mkdirs();
+        fileC1.createNewFile();
+        fileC2.createNewFile();
+
+        HgCommand.doCreate(repo, NULL_LOGGER);
+
+        MercurialInterceptor interceptor = Mercurial.getInstance().getMercurialInterceptor();
+        Field f = MercurialInterceptor.class.getDeclaredField("hgFolderEventsHandler");
+        f.setAccessible(true);
+        Object hgFolderEventsHandler = f.get(interceptor);
+        f = hgFolderEventsHandler.getClass().getDeclaredField("seenRoots");
+        f.setAccessible(true);
+        HashMap<File, Set<File>> map = (HashMap) f.get(hgFolderEventsHandler);
+
+        getCache().getCachedStatus(folderA);
+        // some time for bg threads
+        Thread.sleep(3000);
+        Set<File> files = map.get(repo);
+        assertTrue(1 == files.size());
+        assertTrue(files.contains(folderA));
+
+        getCache().getCachedStatus(fileB1);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(2 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(fileB1));
+
+        getCache().getCachedStatus(fileB2);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(2 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(folderB));
+
+        getCache().getCachedStatus(folderC);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(3 == files.size());
+        assertTrue(files.contains(folderA));
+        assertTrue(files.contains(folderB));
+        assertTrue(files.contains(folderC));
+
+        getCache().getCachedStatus(repo);
+        // some time for bg threads
+        Thread.sleep(3000);
+        assertTrue(1 == files.size());
+        assertTrue(files.contains(repo));
+
+        Utils.deleteRecursively(repo);
     }
 
 }

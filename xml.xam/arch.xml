@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -76,11 +79,11 @@ Isloation and Durability (to the extent possible) by allowing a single writer an
 deferring dispatching of events to the end of the transaction, lazy initialization,
 , inter/intra model references, and model creation. 
 
-<api name="org.netbeans.modules.xml.xam" group="java" type="export" category="friend">
+<api name="org.netbeans.modules.xml.xam" group="java" type="export" category="devel">
 Represents a domain independent model and associated artifacts such as
  a factory, source, and the concept of a reference. 
 </api>
-<api name="org.netbeans.modules.xml.xam.dom" group="java" type="export" category="friend">
+<api name="org.netbeans.modules.xml.xam.dom" group="java" type="export" category="devel">
 Provides entities for working on XML based models. This package
 depends on org.w3c packages and assumes a mapping between an xml tree and a 
 strongly typed binding. This package also provides the ability to resolve other 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,8 +79,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.sun.etl.engine.impl.ETLEngineImpl;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.RuntimeAttribute;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.RuntimeAttribute;
 import java.util.HashMap;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
@@ -97,7 +100,7 @@ public class WsdlGenerator {
     private Definition def;
     private File engineFile;
     private static transient final Logger mLogger = Logger.getLogger(WsdlGenerator.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
     
     static {
         initFactory();
@@ -202,7 +205,7 @@ public class WsdlGenerator {
             sink.flush();
             sink.close();
         } catch (Exception e) {
-            mLogger.infoNoloc(mLoc.t("PRJS015: Exception{0}", e.getMessage()));
+            mLogger.infoNoloc(Localizer.get().t("PRJS015: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
 
@@ -472,7 +475,7 @@ public class WsdlGenerator {
             String wsdlURI = u.getFile().indexOf(".jar") > 0 ? "jar:" + u.getFile() : u.getFile();
             def = reader.readWSDL(wsdlURI);
         } catch (WSDLException e) {
-            mLogger.infoNoloc(mLoc.t("PRJS016: Exception{0}", e.getMessage()));
+            mLogger.infoNoloc(Localizer.get().t("PRJS016: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
         return def;
@@ -488,7 +491,7 @@ public class WsdlGenerator {
             try {
                 factory = WSDLFactory.newInstance();
             } catch (WSDLException e) {
-                mLogger.infoNoloc(mLoc.t("PRJS017: Exception{0}", e.getMessage()));
+                mLogger.infoNoloc(Localizer.get().t("PRJS017: Exception{0}", e.getMessage()));
             }
         }
     }

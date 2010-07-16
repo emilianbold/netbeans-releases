@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ public class ApplicationVariableTypeSelectionPanel extends javax.swing.JPanel {
         typeSelectionLabel.setText(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "LBL_TYPE_SELECTION")); // NOI18N
 
         buttonGroup1.add(stringRB);
+        stringRB.setMnemonic('S');
         stringRB.setSelected(true);
         stringRB.setText(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "LBL_STRING_TYPE")); // NOI18N
         stringRB.setActionCommand("STRING"); // NOI18N
@@ -81,18 +85,21 @@ public class ApplicationVariableTypeSelectionPanel extends javax.swing.JPanel {
         stringRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(numberRB);
+        numberRB.setMnemonic('N');
         numberRB.setText(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "LBL_NUMBER_TYPE")); // NOI18N
         numberRB.setActionCommand("NUMBER"); // NOI18N
         numberRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         numberRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(booleanRB);
+        booleanRB.setMnemonic('B');
         booleanRB.setText(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "LBL_BOOLEAN_TYPE")); // NOI18N
         booleanRB.setActionCommand("BOOLEAN"); // NOI18N
         booleanRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         booleanRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(passwordRB);
+        passwordRB.setMnemonic('P');
         passwordRB.setText(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "LBL_PASSWORD_TYPE")); // NOI18N
         passwordRB.setActionCommand("PASSWORD"); // NOI18N
         passwordRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -113,7 +120,7 @@ public class ApplicationVariableTypeSelectionPanel extends javax.swing.JPanel {
                             .add(booleanRB)
                             .add(passwordRB)))
                     .add(typeSelectionLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -136,6 +143,8 @@ public class ApplicationVariableTypeSelectionPanel extends javax.swing.JPanel {
         numberRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "ACS_NUMBER_TYPE")); // NOI18N
         booleanRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "ACS_BOOLEAN_TYPE")); // NOI18N
         passwordRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "ACS_PASSWORD_TYPE")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ApplicationVariableTypeSelectionPanel.class, "ACS_APPLICATION_VARIABLE_TYPE_SELECTION")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

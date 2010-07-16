@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ package org.openide.loaders;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.ImageObserver;
+import java.util.logging.Level;
 import org.openide.filesystems.*;
 import java.io.IOException;
 import java.util.*;
@@ -53,12 +57,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Check what can be done when registering loaders in layer.
@@ -66,18 +69,20 @@ import org.openide.util.lookup.Lookups;
  */
 @RandomlyFails
 public class DataLoaderInLayerTest extends NbTestCase {
+    static Logger LOG;
 
     public DataLoaderInLayerTest(String name) {
         super(name);
     }
-    
-    public static Test suite() {
-        Test t = null;
-        t = new NbTestSuite(DataLoaderInLayerTest.class);
-        if (t == null) {
-            t = new DataLoaderInLayerTest("testFactoryInstanceRegistrationWorksAsWell");
-        }
-        return t;
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
     }
     
     protected FileSystem createFS(String... resources) throws IOException {
@@ -87,35 +92,51 @@ public class DataLoaderInLayerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
         FileUtil.setMIMEType("simple", "text/plain");
         FileUtil.setMIMEType("ant", "text/ant+xml");
     }
     
-    private static void addRemoveLoader(DataLoader l, boolean add) throws IOException {
+    private static void addRemoveLoader(DataLoader l, boolean add) throws Exception {
         addRemoveLoader("text/plain", l, add);
     }
-    private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws IOException {
+    private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws Exception {
         addRemove(mime, l.getClass(), add);
     }
-    private static <F extends DataObject.Factory> void addRemove(String mime, Class<F> clazz, boolean add) throws IOException {
-        String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
-        FileObject root = FileUtil.getConfigRoot();
-        if (add) {
-            FileObject fo = FileUtil.createData(root, res);
-            fo.setAttribute("instanceClass", clazz.getName());
-        } else {
-            FileObject fo = root.getFileObject(res);
-            if (fo != null) {
-                fo.delete();
+    private static <F extends DataObject.Factory> void addRemove(String mime, final Class<F> clazz, final boolean add) throws Exception {
+        final String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
+        final FileObject root = FileUtil.getConfigRoot();
+        class R implements FileSystem.AtomicAction {
+            @Override
+            public void run() throws IOException {
+                if (add) {
+                    FileObject fo = FileUtil.createData(root, res);
+                    fo.setAttribute("instanceClass", clazz.getName());
+                } else {
+                    FileObject fo = root.getFileObject(res);
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                }
             }
         }
-        for (;;) {
+        LOG.log(Level.INFO, "Modifying {0}", res);
+        FileUtil.runAtomicAction(new R());
+        LOG.info("Modification done");
+        for (int i = 0; i < 100; i++) {
             Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+            LOG.log(Level.INFO, "waiting for {0} at #{1} result: {2}", new Object[]{add ? "add" : "remove", i, f});
             if (add == (f != null)) {
                 break;
             }
+            Thread.sleep(100);
         }
+        LOG.info("OK, addRemove finished");
+        // XXX: Probably DataLoaderPool shall listen on changes under Loaders/.../.../Factories and revalidate
+        // automatically
+        DataObjectPool.getPOOL().revalidate();
+        LOG.info("revalidating finished");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
@@ -200,11 +221,11 @@ public class DataLoaderInLayerTest extends NbTestCase {
         
         addRemove("text/plain", f, true);
         try {
-            FileSystem lfs = createFS("folderF/file.simple");
-            FileObject fo = lfs.findResource("folderF");
+            FileSystem lfs = createFS("folderFKK/file.simple");
+            FileObject fo = lfs.findResource("folderFKK");
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] arr = df.getChildren();
-            assertEquals("One object", 1, arr.length);
+            assertEquals("One object: " + Arrays.toString(arr), 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
             
@@ -290,15 +311,21 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
 
     public void testSimpleLoader() throws Exception {
+        FileSystem lfs = createFS("folder/file.simple");
+        FileObject fo = lfs.findResource("folder/file.simple");
+        assertNotNull(fo);
+        DataObject first = DataObject.find(fo);
+        LOG.log(Level.INFO, "default data object created: {0}", first);
+        assertEquals("Realy default", DefaultDataObject.class, first.getClass());
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = createFS("folder/file.simple");
-            FileObject fo = lfs.findResource("folder/file.simple");
-            assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
-            assertEquals(SimpleDataObject.class, dob.getClass());
+            LOG.log(Level.INFO, "Object created: {0}", dob);
+            assertEquals("Checking the right type", SimpleDataObject.class, dob.getClass());
+            LOG.info("Check ok");
         } finally {
+            LOG.warning("Check failed, removing loader");
             addRemoveLoader(l, false);
         }
     }
@@ -433,13 +460,15 @@ public class DataLoaderInLayerTest extends NbTestCase {
         protected String displayName() {
             return "Simple";
         }
+        @Override
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
             return new SimpleDataObject(pf, this);
         }
     }
     public static final class SimpleFactory implements DataObject.Factory {
+        @Override
         public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
-            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class).findDataObject(fo, recognized);
+            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class, true).findDataObject(fo, recognized);
         }
     }
     
@@ -478,6 +507,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     private static void assertImage(String msg, Image img1, Image img2) {
         ImageObserver obs = new ImageObserver() {
+            @Override
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                 fail("Already updated, hopefully");
                 return true;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,12 +57,14 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.FontMetrics;
 import java.awt.Insets;
+import java.awt.Point;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.editor.Coloring;
@@ -360,7 +365,20 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     
     protected int getHeightDimension() {
         /*TEMP+ (int)editorPane.getSize().getHeight() */
-        return highestLineNumber * editorUI.getLineHeight();
+        View rootView = org.netbeans.editor.Utilities.getDocumentView(editorPane);
+        int height = highestLineNumber * editorUI.getLineHeight();
+        if (rootView != null) {
+            try {
+                int lineCount = rootView.getViewCount();
+                if (lineCount > 0) {
+                    Rectangle rec = editorPane.modelToView(rootView.getView(lineCount - 1).getEndOffset() - 1);
+                    height = rec.y + rec.height;
+                }
+            } catch (BadLocationException ex) {
+                //
+            }
+        }
+        return height;
     }
     
     /** Paint the gutter itself */
@@ -387,73 +405,57 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         if (margin != null)
             rightMargin = margin.right;
         // calculate the first line which must be drawn
-        int lineHeight = editorUI.getLineHeight();
-        int line = (int)( (float)drawHere.y / (float)lineHeight );
-        if (line > 0)
-            line--;
-
-        // calculate the Y of the first line
-        int y = line * lineHeight;
-
-        if (showLineNumbers) {
-            int lastLine = (int)( (float)(drawHere.y+drawHere.height) / (float)lineHeight )+1;
-            if (lastLine > highestLineNumber) {
-                int prevHighest = highestLineNumber;
-                highestLineNumber = lastLine;
-                if (getDigitCount(highestLineNumber) > getDigitCount(prevHighest)) {
-//                    System.out.println("resizing in paintComponent()");
-//                    System.out.println("lastline=" + lastLine);
-//                    System.out.println("highestLineNumber=" + highestLineNumber);
-                    resize();
-                    return;
-                }
-            }
+        View rootView = org.netbeans.editor.Utilities.getDocumentView(editorPane);
+        int pos = editorPane.viewToModel(new Point(0, drawHere.y));
+        int line = rootView.getViewIndex(pos, Position.Bias.Forward);
+        if (line > 0) {
+            --line;
         }
-        
-        
-        // draw liune numbers and annotations while we are in visible area
-        // "+(lineHeight/2)" means to don't draw less than half of the line number
-        int lineAscent = editorUI.getLineAscent();
-        while ( (y+(lineHeight/2)) <= (drawHere.y + drawHere.height) )
-        {
-            // draw line numbers if they are turned on
-            if (showLineNumbers) {
-                String lineStr = null;
-                if (line < linesList.size()) {
-                    lineStr = linesList.get(line);
-                }
-                if (lineStr == null) {
-                    lineStr = "";
-                }
-                String activeSymbol = "*";
-                int lineNumberWidth = fm.stringWidth(lineStr);
-                if (line == activeLine - 1) {
-                    lineStr = lineStr + activeSymbol;
-                } 
-                int activeSymbolWidth = fm.stringWidth(activeSymbol);
-                lineNumberWidth = lineNumberWidth + activeSymbolWidth;
-                g.drawString(lineStr, numberWidth-lineNumberWidth-rightMargin, y + lineAscent);
+        try {
+            // calculate the Y of the first line
+            Rectangle rec = editorPane.modelToView(rootView.getView(line).getStartOffset());
+            if (rec == null) {
+                return;
             }
-            
-            y += lineHeight;
-            line++;
-        }
-    }
+            int y = rec.y;
 
-    /** Data for the line has changed and the line must be redraw. */
-    public void changedLine(int line) {
-        
-        if (!init)
+            // draw liune numbers and annotations while we are in visible area
+            int lineHeight = editorUI.getLineHeight();
+            int lineAscent = editorUI.getLineAscent();
+            int lineCount = rootView.getViewCount();
+            while (line < lineCount && (y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
+                View view = rootView.getView(line);
+                Rectangle rec1 = editorPane.modelToView(view.getStartOffset());
+                Rectangle rec2 = editorPane.modelToView(view.getEndOffset() - 1);
+                if (rec1 == null || rec2 == null) {
+                    break;
+                }
+                y = (int)rec1.getY();
+                // draw line numbers if they are turned on
+                if (showLineNumbers) {
+                    String lineStr = null;
+                    if (line < linesList.size()) {
+                        lineStr = linesList.get(line);
+                    }
+                    if (lineStr == null) {
+                        lineStr = ""; //NOI18N
+                    }
+                    String activeSymbol = "*"; //NOI18N
+                    int lineNumberWidth = fm.stringWidth(lineStr);
+                    if (line == activeLine - 1) {
+                        lineStr = lineStr + activeSymbol;
+                    }
+                    int activeSymbolWidth = fm.stringWidth(activeSymbol);
+                    lineNumberWidth = lineNumberWidth + activeSymbolWidth;
+                    g.drawString(lineStr, numberWidth - lineNumberWidth - rightMargin, y + lineAscent);
+                }
+
+                y += (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
+                line++;
+            }
+        } catch (BadLocationException ex) {
             return;
-        
-        // redraw also lines around - three lines will be redrawn
-        int lineHeight = editorUI.getLineHeight();
-        if (line > 0)
-            line--;
-        int y = line * lineHeight;
-        
-        repaint(0, y, (int)getSize().getWidth(), 3*lineHeight);
-        checkSize();
+        }
     }
 
     /** Repaint whole gutter.*/

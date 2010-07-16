@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,7 +73,7 @@ final class ReplaceTask implements Runnable {
      */
     private static final int MAX_ERRORS_CHECKED = 20;
     
-    private final MatchingObject[] matchingObjects;
+    private final List<MatchingObject> matchingObjects;
     private final ProgressHandle progressHandle;
     private final List<String> problems;
     
@@ -85,7 +88,7 @@ final class ReplaceTask implements Runnable {
     
     /**
      */
-    ReplaceTask(MatchingObject[] matchingObjects) {
+    ReplaceTask(List<MatchingObject> matchingObjects) {
         this.matchingObjects = matchingObjects;
         
         problems = new ArrayList<String>(4);
@@ -98,7 +101,7 @@ final class ReplaceTask implements Runnable {
     public void run() {
         assert !EventQueue.isDispatchThread();
         
-        progressHandle.start(matchingObjects.length * 2);
+        progressHandle.start(matchingObjects.size() * 2);
         try {
             replace();
             assert resultStatus != null;
@@ -129,11 +132,10 @@ final class ReplaceTask implements Runnable {
         
         int errorsCount = 0;
         
-        for (int i = 0; i < matchingObjects.length; i++) {
-            InvalidityStatus status = matchingObjects[i].checkValidity();
+        for(MatchingObject mo: matchingObjects) {
+            InvalidityStatus status = mo.checkValidity();
             if (status != null) {
-                problems.add(status.getDescription(
-                                       matchingObjects[i].getFile().getPath()));
+                problems.add(status.getDescription(mo.getFile().getPath()));
                 if (++errorsCount > MAX_ERRORS_CHECKED) {
                     break;
                 }
@@ -151,12 +153,12 @@ final class ReplaceTask implements Runnable {
      */
     private void doReplace() {
         assert !EventQueue.isDispatchThread();
-        
-        for (int i = 0; i < matchingObjects.length; i++) {
-            final MatchingObject obj = matchingObjects[i];
-            
-            progressHandle.progress(obj.getName(),
-                                    i + matchingObjects.length);
+
+        int i = 0;
+        int moSize = matchingObjects.size();
+        for(final MatchingObject obj: matchingObjects) {
+            int workunit = moSize + i++;
+            progressHandle.progress(obj.getName(), workunit);
             if (!obj.isSelected() || !obj.isValid()) {
                 continue;
             }

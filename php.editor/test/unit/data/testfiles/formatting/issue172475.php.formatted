@@ -1,4 +1,5 @@
 <?php
+
 if ($cond) {
   echo 1;
 } elseif (true) {
@@ -12,5 +13,4 @@ try {
 } catch (Exception $exc) {
   echo $exc->getTraceAsString();
 }
-
 ?>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -60,7 +64,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final String proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
 
@@ -74,21 +78,16 @@ public class DetailsAction {
                 t = RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
-                        try {
-                            final KenaiProject kenaiProj = Kenai.getDefault().getProject(proj);
-                            SwingUtilities.invokeLater(new Runnable() {
+                        final KenaiProject kenaiProj = proj.getKenaiProject();
+                        SwingUtilities.invokeLater(new Runnable() {
 
-                                public void run() {
-                                    kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
-                                    tc.open();
-                                    tc.requestActive();
-                                }
-                            });
-                        } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            handle.finish();
-                        }
+                            public void run() {
+                                kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
+                                tc.open();
+                                tc.requestActive();
+                            }
+                        });
+                        handle.finish();
                     }
                 });
             }

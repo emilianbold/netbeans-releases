@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.bpel.model.api.references;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import java.util.Set;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -40,8 +41,11 @@ import org.netbeans.modules.bpel.model.impl.references.AbstractNamedComponentRef
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
 import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceImpl;
 import org.netbeans.modules.bpel.model.xam.spi.NotImportedModelRetriever;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
@@ -51,15 +55,13 @@ import org.openide.util.Lookup.Result;
 public final class SchemaReferenceBuilder {
 
     private SchemaReferenceBuilder() {
-        Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(
-                new Lookup.Template(ExternalModelRetriever.class));
+        Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(new Lookup.Template(ExternalModelRetriever.class));
         mModelRetrievers = result.allInstances();
         
-        result = Lookup.getDefault().lookup(
-                new Lookup.Template(NotImportedModelRetriever.class));
+        result = Lookup.getDefault().lookup(new Lookup.Template(NotImportedModelRetriever.class));
         mNotImportedModelsRetrievers = result.allInstances();
         
-        myCollection = new LinkedList<SchemaReferenceFactory>();
+        myCollection = new ArrayList<SchemaReferenceFactory>();
         myCollection.add( new SchemaElementFactory() );
         myCollection.add( new SchemaTypeFactory() );
     }
@@ -141,14 +143,14 @@ public final class SchemaReferenceBuilder {
          * use preexisted primitive model. 
          */ 
         if ( Import.SCHEMA_IMPORT_TYPE.equals(nsUri)) {
-            collection = new LinkedList<SchemaModel>();
+            collection = new ArrayList<SchemaModel>();
             collection.add( SchemaModelFactory.getDefault().
                     getPrimitiveTypesModel() );
         }
         
         boolean lookNotImportedModels = entity instanceof OutOfImportReference;
         Collection<SchemaModel> moreModels = getSchemaModels( 
-                ((BpelEntity)entity).getBpelModel() , nsUri, lookNotImportedModels);
+            ((BpelEntity)entity).getBpelModel() , nsUri, lookNotImportedModels, true);
         if ( collection == null ) {
             collection = moreModels;
         }
@@ -158,16 +160,21 @@ public final class SchemaReferenceBuilder {
         return collection; 
     }
     
-    public static Collection<SchemaModel> getSchemaModels( BpelModel model , 
-            String namespace, boolean lookNotImportedModels )
-    {
-        return getInstance().getModels(model, namespace, lookNotImportedModels);
+    public static Collection<SchemaModel> getSchemaModels(BpelModel model, 
+        String namespace, boolean lookNotImportedModels) {
+        return getSchemaModels(model, namespace, lookNotImportedModels, false);
     }
 
-    private Collection<SchemaModel> getModels( BpelModel model, String namespace, 
-            boolean lookNotImportedModels )
-    {
-        Collection<SchemaModel> ret = new LinkedList<SchemaModel>();
+    public static Collection<SchemaModel> getSchemaModels(BpelModel model,
+        String namespace, boolean lookNotImportedModels, boolean lookBPELGlobalCatalog) {
+        return getInstance().getModels(model, namespace, lookNotImportedModels,
+            lookBPELGlobalCatalog);
+    }
+
+    private Collection<SchemaModel> getModels(BpelModel model, String namespace, 
+        boolean lookNotImportedModels, boolean lookBPELGlobalCatalog) {
+        Collection<SchemaModel> ret = new ArrayList<SchemaModel>();
+
         if ( !lookNotImportedModels && mModelRetrievers.size() == 1) {
             return (mModelRetrievers.iterator().next()).
                 getSchemaModels(model, namespace);
@@ -188,6 +195,19 @@ public final class SchemaReferenceBuilder {
                     }
                 }
             }
+        }
+        if (lookBPELGlobalCatalog) { // fix for issue #178631
+            try {
+                ModelSource modelSource = CatalogModelFactory.getDefault().getCatalogModel(
+                    model.getModelSource()).getModelSource(new URI(namespace));
+                if (modelSource != null) {
+                    SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(
+                        modelSource);
+                    if (schemaModel != null) {
+                        ret.add(schemaModel);
+                    }
+                }
+            } catch(Exception e) {/*ignore exception*/}
         }
         return ret;
     }
@@ -281,11 +301,13 @@ class SchemaElementFactory extends AbstractSchemaReferenceFactory {
         Collection<SchemaModel> collection = SchemaReferenceBuilder.
             getSchemaModels(entity, splited[0]);
         for (SchemaModel model : collection) {
-            Collection<GlobalElement> elements = model.getSchema()
-                    .getElements();
-            for (GlobalElement element : elements) {
-                if (splited[1].equals( element.getName())) {
-                    return clazz.cast(element);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                Collection<GlobalElement> elements = schema.getElements();
+                for (GlobalElement element : elements) {
+                    if (splited[1].equals( element.getName())) {
+                        return clazz.cast(element);
+                    }
                 }
             }
         }
@@ -321,18 +343,20 @@ class SchemaTypeFactory extends AbstractSchemaReferenceFactory {
         Collection<SchemaModel> collection = SchemaReferenceBuilder.
             getSchemaModels(entity, splited[0]);
         for (SchemaModel model : collection) {
-            Collection<GlobalSimpleType> simpleTypes = model.getSchema()
-                    .getSimpleTypes();
-            for (GlobalSimpleType simpleType : simpleTypes) {
-                if (splited[1].equals(simpleType.getName())) {
-                    return clazz.cast(simpleType);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                Collection<GlobalSimpleType> simpleTypes = schema.getSimpleTypes();
+                for (GlobalSimpleType simpleType : simpleTypes) {
+                    if (splited[1].equals(simpleType.getName())) {
+                        return clazz.cast(simpleType);
+                    }
                 }
-            }
-            Collection<GlobalComplexType> complexTypes = model.getSchema()
-                    .getComplexTypes();
-            for (GlobalComplexType complexType : complexTypes) {
-                if (splited[1].equals(complexType.getName())) {
-                    return clazz.cast(complexType);
+                //
+                Collection<GlobalComplexType> complexTypes = schema.getComplexTypes();
+                for (GlobalComplexType complexType : complexTypes) {
+                    if (splited[1].equals(complexType.getName())) {
+                        return clazz.cast(complexType);
+                    }
                 }
             }
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,7 +91,7 @@ import java.util.logging.Logger;
 public class BlacklistedClassesHandlerSingleton extends Handler implements BlacklistedClassesHandler {
 
     private static BlacklistedClassesHandler instance = null;
-    private boolean violation = false;
+    private int violation;
     // TODO: Is it necessary to use synchronizedMap? Should the list be synchronized?
     final private Map blacklist = Collections.synchronizedMap(new HashMap());
     final private Map whitelistViolators = Collections.synchronizedMap(new TreeMap());
@@ -359,7 +362,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 // TODO: Probably we should synchronize by list
                                 ((List) blacklist.get(className)).add(exc);
                             }
-                            violation = true;
+                            violation++;
                         }
                     } else if (whitelistEnabled && !whitelist.contains(className)) {
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
@@ -373,9 +376,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 List exceptions = new ArrayList();
                                 exceptions.add(exc);
                                 whitelistViolators.put(className, exceptions);
+                                violation++;
                             }
                         }
-                        violation = true;
                     } else if (generatingWhitelist) {
                         whitelist.add(className);
                     }
@@ -416,21 +419,25 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     }
 
     public boolean noViolations() {
-        return !violation;
+        return violation == 0;
+    }
+    
+    public int getNumberOfViolations() {
+        return violation;
     }
 
     public boolean noViolations(boolean listViolations) {
-        if (violation && listViolations) {
+        if (violation > 0 && listViolations) {
             logViolations();
         }
-        return !violation;
+        return violation == 0;
     }
 
     public boolean noViolations(PrintStream out) {
-        if (violation) {
+        if (violation > 0) {
             listViolations(out, true);
         }
-        return !violation;
+        return violation == 0;
     }
 
     public void logViolations() {
@@ -617,7 +624,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                 String violator = (String) iter.next();
                 ((List) blacklist.get(violator)).clear();
             }
-            violation = false;
+            violation = 0;
         }
     }
 

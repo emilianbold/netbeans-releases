@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,42 @@ import java.util.List;
 public final class Util {
 
   private Util() {}
+
+  public static void copyFile(File source, File destination) throws IOException {
+      if (!source.exists() || !source.isFile()) {
+          throw new IOException("Source is not valid for copying.");
+      }
+
+      if (!destination.exists()) {
+          destination.getParentFile().mkdirs();
+          destination.createNewFile();
+      }
+
+      final File realDest = destination.isDirectory() ?
+          new File(destination, source.getName()) :
+          destination;
+
+      FileInputStream input = null;
+      FileOutputStream output = null;
+
+      try {
+          input = new FileInputStream(source);
+          output = new FileOutputStream(realDest);
+
+          byte[] buffer = new byte[4096];
+          while (input.available() > 0) {
+              output.write(buffer, 0, input.read(buffer));
+          }
+      } finally {
+          if (input != null) {
+              input.close();
+          }
+
+          if (output != null) {
+              output.close();
+          }
+      }
+  }
 
   public static String getRelativePath(File home, File f){
       return matchPathLists(getPathList(home), getPathList(f));
@@ -104,7 +143,7 @@ public final class Util {
       return s;
   }
 
-  public static class XsltFileFilter implements FileFilter {
+  public static class XsltProjectFileFilter implements FileFilter {
 
       public boolean accept(File pathname) {
           if (pathname.isDirectory()) {
@@ -120,20 +159,30 @@ public final class Util {
           if (fileExtension == null) {
               return false;
           }
+          if (fileName.equalsIgnoreCase(TRANSFORMMAP_XML)) {
+              return true;
+          }
           if (fileExtension.equalsIgnoreCase(XSL_FILE_EXTENSION)) {
-            return true;
+              return true;
           }
           if (fileExtension.equalsIgnoreCase(XSLT_FILE_EXTENSION)) {
-            return true;
+              return true;
+          }
+          // # 162653
+          if (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION)) {
+              return true;
           }
           if (fileExtension.equalsIgnoreCase(XML_FILE_EXTENSION)) {
-            return true;
+            // # 144389
+            // return true;
           }
           return false;
       }
   }
   
-  private static final String XML_FILE_EXTENSION = "xml"; // NOI18N
-  private static final String XSL_FILE_EXTENSION = "xsl"; // NOI18N
-  private static final String XSLT_FILE_EXTENSION = "xslt"; // NOI18N
+  public static final String TRANSFORMMAP_XML = "transformmap.xml"; // NOI18N
+  public static final String XML_FILE_EXTENSION = "xml"; // NOI18N
+  public static final String XSL_FILE_EXTENSION = "xsl"; // NOI18N
+  public static final String XSLT_FILE_EXTENSION = "xslt"; // NOI18N
+  public static final String WSDL_FILE_EXTENSION = "wsdl"; // NOI18N
 }

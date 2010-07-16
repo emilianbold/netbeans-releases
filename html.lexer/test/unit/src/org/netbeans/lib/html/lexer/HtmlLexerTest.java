@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,9 +41,14 @@
  */
 package org.netbeans.lib.html.lexer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -63,9 +71,9 @@ public class HtmlLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testIssue149968"));
+        suite.addTest(new HtmlLexerTest("testFlyweightTokens"));
         return suite;
     }
 
@@ -103,6 +111,42 @@ public class HtmlLexerTest extends NbTestCase {
                 HTMLTokenId.language());
     }
 
+    public void testFlyweightTokens() {
+        assertEquals("a", HtmlElements.getCachedTagName("a"));
+        assertEquals("div", HtmlElements.getCachedTagName("div"));
+        assertEquals("td", HtmlElements.getCachedTagName("td"));
+        assertNull(HtmlElements.getCachedTagName("Xdiv"));
+        assertNull(HtmlElements.getCachedTagName("divX"));
+        assertNull(HtmlElements.getCachedTagName("t"));
+        assertNull(HtmlElements.getCachedTagName("fKHl"));
+
+        assertEquals("onclick", HtmlElements.getCachedAttrName("onclick"));
+        assertNull(HtmlElements.getCachedAttrName("fKHl"));
+        assertNull(HtmlElements.getCachedAttrName("ht"));
+
+        String code = "<div align='center'></div>";
+        TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence();
+        ts.moveStart();
+
+        while(ts.moveNext()) {
+            HTMLTokenId id = ts.token().id();
+            switch (id) {
+                case ARGUMENT:
+                case TAG_CLOSE:
+                case TAG_OPEN:
+                case TAG_CLOSE_SYMBOL:
+                case TAG_OPEN_SYMBOL:
+                case OPERATOR:
+
+                    assertTrue(ts.token().isFlyweight());
+
+                    break;
+            }
+        }
+
+    }
+
     public void testEmptyTag() {
         checkTokens("<div/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", "/>|TAG_CLOSE_SYMBOL");
     }
@@ -115,12 +159,87 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens("<div @@@/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " @@@|WS", "/>|TAG_CLOSE_SYMBOL");
     }
 
-    private void checkTokens(String text, String... descriptions) {
-        TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());
+    public void testEmbeddedCss() {
+        //not css attribute
+        checkTokens("<div align=\"center\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT",
+                "=|OPERATOR", "\"center\"|VALUE", "/>|TAG_CLOSE_SYMBOL");
+
+        //css attribute
+        checkTokens("<div class=\"myclass\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT",
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS", "/>|TAG_CLOSE_SYMBOL");
+    }
+
+    public void testGenericCssClassEmbedding() {
+        Map<String, Collection<String>> map = new HashMap<String, Collection<String>>();
+        map.put("c:button", Collections.singletonList("styleClass"));
+
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(HTMLTokenId.language(), "cssClassTagAttrMap", map, false); //NOI18N
+
+        String text = "<c:button styleClass=\"myclass\"/>";
+        TokenHierarchy th = TokenHierarchy.create(text, true, HTMLTokenId.language(), Collections.<HTMLTokenId>emptySet(), inputAttributes);
         TokenSequence ts = th.tokenSequence();
 
-//        System.out.println(ts);
+        checkTokens(ts, "<|TAG_OPEN_SYMBOL", "c:button|TAG_OPEN", " |WS", "styleClass|ARGUMENT",
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS", "/>|TAG_CLOSE_SYMBOL");
         
+    }
+
+    public void testEmbeddedScripting() {
+        //javascript embedding w/o type specification
+        checkTokens("<script>x</script>", "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+
+
+        //javascript embedding w/ explicit type specification
+        checkTokens("<script type=\"text/javascript\">x</script>", 
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/javascript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+
+        //javascript embedding w/ explicit unknown type specification - no embedding
+        checkTokens("<script type=\"text/xxx\">x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+
+        //javascript embedding w/ explicit type specification of known but excluded type - no embedding
+        checkTokens("<script type=\"text/vbscript\">x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+
+        //check also single quotes
+        //javascript embedding w/ explicit unknown type specification
+        checkTokens("<script type='text/xxx'>x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+
+
+    }
+
+    public void testEscapedQuotesInAttrValueSingleQuoted() {
+        //             <div onclick='alert(\'hello\')'/>
+        String code = "<div onclick='alert(\\'hello\\')'/>";
+
+        checkTokens(code,  "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN",
+                " |WS", "onclick|ARGUMENT", "=|OPERATOR",
+                "'alert(\\'hello\\')'|VALUE_JAVASCRIPT", "/>|TAG_CLOSE_SYMBOL" );
+    }
+
+    public void testEscapedQuotesInAttrValueDoubleQuoted() {
+        //             <div onclick="alert(\"hello\")"/>
+        String code = "<div onclick=\"alert(\\\"hello\\\")\"/>";
+
+        checkTokens(code,  "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN",
+                " |WS", "onclick|ARGUMENT", "=|OPERATOR",
+                "\"alert(\\\"hello\\\")\"|VALUE_JAVASCRIPT", "/>|TAG_CLOSE_SYMBOL" );
+    }
+
+    private void checkTokens(String text, String... descriptions) {
+        TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+//        System.out.println(ts);
+        checkTokens(ts, descriptions);
+    }
+
+    private void checkTokens(TokenSequence<HTMLTokenId> ts, String... descriptions) {
         ts.moveStart();
         for(String descr : descriptions) {
             //parse description
@@ -142,6 +261,18 @@ public class HtmlLexerTest extends NbTestCase {
                 assertEquals(id, t.id().name());
             }
         }
+
+        StringBuilder b = new StringBuilder();
+        while(ts.moveNext()) {
+            Token t = ts.token();
+            b.append("\"");
+            b.append(t.text());
+            b.append('|');
+            b.append(t.id().name());
+            b.append("\"");
+            b.append(", ");
+        }
+        assertTrue("There are some tokens left: " + b.toString(), b.length() == 0);
     }
 
 }

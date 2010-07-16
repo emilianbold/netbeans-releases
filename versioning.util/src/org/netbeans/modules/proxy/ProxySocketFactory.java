@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.io.*;
 import java.nio.channels.SocketChannel;
+import org.netbeans.api.keyring.Keyring;
 
 /**
  * Creates sockets capable of connecting through HTTPS and SOCKS proxies.
@@ -442,9 +446,20 @@ public class ProxySocketFactory extends SocketFactory {
         Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core"); // NOI18N    
         if (prefs.getBoolean(USE_PROXY_AUTHENTICATION, false)) {
             cs.setProxyUsername(prefs.get(PROXY_AUTHENTICATION_USERNAME, null));
-            cs.setProxyPassword(prefs.get(PROXY_AUTHENTICATION_PASSWORD, null).toCharArray());
+            cs.setProxyPassword(getProxyPassword(prefs));
         }
         return cs;
+    }
+
+    private char[] getProxyPassword (Preferences prefs) {
+        char[] password = null;
+        String old = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (old == null) {
+            password = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
+        } else {
+            password = old.toCharArray();
+        }
+        return password;
     }
 
     private void setupProxy(ConnectivitySettings cs, int connectionType, InetSocketAddress inetSocketAddress) {

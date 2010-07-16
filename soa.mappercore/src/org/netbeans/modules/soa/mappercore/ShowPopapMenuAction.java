@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
@@ -51,6 +53,7 @@ import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.model.VertexItem;
 
 /**
  *
@@ -63,7 +66,7 @@ public class ShowPopapMenuAction extends MapperKeyboardAction {
     }
     
     @Override
-    public String getActionKey() {
+    public Object getActionKey() {
         return "ShowPopapMenu";
     }
 
@@ -75,9 +78,10 @@ public class ShowPopapMenuAction extends MapperKeyboardAction {
         };
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         MapperContext context = canvas.getMapper().getContext();
-        MapperModel model = canvas.getMapperModel();
+        MapperModel model = canvas.getMapper().getModel();
         if (context == null || model == null) { return; }
         
         SelectionModel selectionModel = canvas.getSelectionModel();
@@ -116,27 +120,19 @@ public class ShowPopapMenuAction extends MapperKeyboardAction {
             y = canvas.getMapper().getNode(treePath, true).
                     yToView(vertex.getY() * step) + step;
         }
-
-
-        JPopupMenu mapperMenu = MapperPopupMenuFactory.
-                createMapperPopupMenu(canvas, item);
         
-        List<JMenu> listMenu = context.getMenuNewEllements(model);
-        JMenu newMenu = (JMenu) mapperMenu.getComponent(0);
-        for (JMenu m : listMenu) {
-            newMenu.add(m);
-        }
-        JPopupMenu menu = context.getCanvasPopupMenu(model, item);
-
-        if (menu != null) {
-            if (menu.getComponentCount() > 0) {
-                mapperMenu.addSeparator();
-            }
-
-            for (int i = 0; i < menu.getComponentCount(); i++) {
-                mapperMenu.add(menu.getComponent(i));
+        if (item == null) {
+            item = selectionModel.getSelectedVertexItem();
+            if (item != null) {
+                int step = canvas.getStep();
+                VertexItem vertexItem = (VertexItem) item;
+                x = canvas.toCanvas(vertexItem.getVertex().getX() * step) + step;
+                y = canvas.getMapper().getNode(treePath, true).
+                        yToView(vertexItem.getY() * step) + step;
             }
         }
+
+        JPopupMenu mapperMenu = context.getCanvasPopupMenu(model, item, canvas.getMapper());
 
         if (mapperMenu != null) {
             mapperMenu.show(canvas, x, y);

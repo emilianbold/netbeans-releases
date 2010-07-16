@@ -58,9 +58,10 @@ public class IDEJBIGenerator extends AbstractJBIGenerator {
         TMapModel tMapModel = null;
         try {
             tMapModel = IDETMapCatalogModel.getDefault().
-                                            getTMapModel(transformmapFile);
+                                            getModel(transformmapFile);
         }catch (Exception ex) {
             this.logger.log(java.util.logging.Level.SEVERE, "Error while creating Tramsformap Model ", ex);
+            ex.printStackTrace();
             throw new RuntimeException("Error while creating Transformmap Model ",ex);
         }
         

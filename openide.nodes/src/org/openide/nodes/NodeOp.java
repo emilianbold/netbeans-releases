@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,14 +55,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.JPopupMenu;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /** Utility class for operations on nodes.
@@ -118,22 +119,16 @@ public final class NodeOp extends Object {
         throw new SecurityException();
     }
 
-    /** Compute common menu for specified nodes.
-    * Provides only those actions supplied by all nodes in the list.
+    /**
+     * Computes a common popup menu for the specified nodes.
+     * Provides only those actions supplied by all nodes in the list.
+     * <p>Component action maps are not taken into consideration.
+     * {@link Utilities#actionsToPopup(Action[], Component)} is a better choice
+     * if you want to use actions such as "Paste" which look at action maps.
     * @param nodes the nodes
     * @return the menu for all nodes
     */
     public static JPopupMenu findContextMenu(Node[] nodes) {
-        return findContextMenuImpl(nodes, null);
-    }
-
-    /** Method for finding popup menu for one or more nodes.
-    *
-    * @param nodes array of nodes
-    * @param actionMap maps keys to actions or null
-    * @return popup menu for this array
-    */
-    static JPopupMenu findContextMenuImpl(Node[] nodes, ActionMap actionMap) {
         Action[] arr = findActions(nodes);
 
         // prepare lookup representing all the selected nodes
@@ -141,10 +136,6 @@ public final class NodeOp extends Object {
 
         for (Node n : nodes) {
             allLookups.add(n.getLookup());
-        }
-
-        if (actionMap != null) {
-            allLookups.add(Lookups.singleton(actionMap));
         }
 
         Lookup lookup = new ProxyLookup(allLookups.toArray(new Lookup[allLookups.size()]));

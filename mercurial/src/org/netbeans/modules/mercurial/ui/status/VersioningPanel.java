@@ -1,7 +1,10 @@
  /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -59,7 +61,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
-import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -77,7 +78,6 @@ import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots.
@@ -167,7 +167,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     void setContext(VCSContext ctx) {
         context = ctx;
-        //reScheduleRefresh(0);
+        if (EventQueue.isDispatchThread()) {
+            syncTable.setTableModel(new SyncFileNode[0]);
+        }
     }
     
     public ExplorerManager getExplorerManager() {
@@ -180,6 +182,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
+        mercurial.addPropertyChangeListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
     
@@ -188,6 +191,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
+        mercurial.removePropertyChangeListener(syncTable);
         super.removeNotify();
     }
     
@@ -223,6 +227,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
+                    btnCommit.setEnabled(false);
 //                    File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
                     /* #126311: Optimize UI for Large repos
                      if (root != null) {
@@ -289,6 +294,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                         setVersioningComponent(noContentComponent);
                     }
                     syncTable.setTableModel(nodes);
+                    btnCommit.setEnabled(nodes.length > 0);
                     // finally section, it's enqueued after this request
                 }
             });

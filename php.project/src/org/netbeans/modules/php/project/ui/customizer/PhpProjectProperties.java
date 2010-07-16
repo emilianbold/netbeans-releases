@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,19 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
+import java.util.EnumSet;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
@@ -62,6 +70,7 @@ import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -71,12 +80,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik, Radek Matous
  */
-public class PhpProjectProperties implements ConfigManager.ConfigProvider {
+public final class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final int DEFAULT_DEBUG_PROXY_PORT = 9001;
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
@@ -91,6 +101,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
+    public static final String PHP_ARGS = "php.arguments"; // NOI18N
+    public static final String WORK_DIR = "work.dir"; // NOI18N
     public static final String INTERPRETER = "interpreter"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
@@ -108,6 +120,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
     public static final String PHP_UNIT_BOOTSTRAP = "phpunit.bootstrap"; // NOI18N
+    public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
 
@@ -117,6 +130,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         URL,
         INDEX_FILE,
         ARGS,
+        PHP_ARGS,
+        WORK_DIR,
         INTERPRETER,
         RUN_AS,
         REMOTE_CONNECTION,
@@ -165,7 +180,14 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         DO_NOT_OPEN_BROWSER
     }
 
+    public static enum XDebugUrlArguments {
+        XDEBUG_SESSION_START,
+        XDEBUG_SESSION_STOP,
+        XDEBUG_SESSION_STOP_NO_EXEC
+    }
+
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PhpProjectProperties.class.getName(), 2);
 
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
@@ -174,6 +196,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
     private String srcDir;
+    private String testDir;
     private String copySrcFiles;
     private String copySrcTarget;
     private String webRoot;
@@ -184,12 +207,14 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String aspTags;
     private String phpVersion;
     private String phpUnitBootstrap;
+    private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
-    Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
-    String activeConfig;
+    final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
+    private final ConfigManager configManager;
 
     // CustomizerPhpIncludePath
     private DefaultListModel includePathListModel = null;
@@ -209,23 +234,22 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.ignorePathSupport = ignorePathSupport;
 
         runConfigs = readRunConfigs();
-        activeConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
+        String currentConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
+        configManager = new ConfigManager(this, currentConfig);
     }
 
+    @Override
     public String[] getConfigProperties() {
         return CFG_PROPS;
     }
 
+    @Override
     public Map<String, Map<String, String>> getConfigs() {
         return runConfigs;
     }
 
-    public String getActiveConfig() {
-        return activeConfig;
-    }
-
-    public void setActiveConfig(String configName) {
-        activeConfig = configName;
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 
     public String getCopySrcFiles() {
@@ -295,6 +319,20 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SRC_DIR);
         }
         return srcDir;
+    }
+
+    public String getTestDir() {
+        if (testDir == null) {
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
+            if (tests != null) {
+                testDir = FileUtil.toFile(tests).getAbsolutePath();
+            }
+        }
+        return testDir;
+    }
+
+    public void setTestDir(String testDir) {
+        this.testDir = testDir;
     }
 
     public String getUrl() {
@@ -367,6 +405,17 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.phpUnitBootstrap = phpUnitBootstrap;
     }
 
+    public boolean getPhpUnitBootstrapForCreateTests() {
+        if (phpUnitBootstrapForCreateTests == null) {
+            phpUnitBootstrapForCreateTests = ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project);
+        }
+        return phpUnitBootstrapForCreateTests;
+    }
+
+    public void setPhpUnitBootstrapForCreateTests(Boolean phpUnitBootstrapForCreateTests) {
+        this.phpUnitBootstrapForCreateTests = phpUnitBootstrapForCreateTests;
+    }
+
     public String getPhpUnitConfiguration() {
         if (phpUnitConfiguration == null) {
             File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
@@ -395,20 +444,29 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.phpUnitSuite = phpUnitSuite;
     }
 
+    public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
+        if (customizerExtenders == null) {
+            customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
+        }
+        customizerExtenders.add(customizerExtender);
+    }
+
     public void save() {
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     saveProperties();
+
+                    saveCustomizerExtenders();
+
+                    ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
             });
-            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             Exceptions.printStackTrace((IOException) e.getException());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -432,6 +490,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
+        if (testDir != null) {
+            projectProperties.setProperty(TEST_SRC_DIR, testDir);
+        }
         if (copySrcFiles != null) {
             privateProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
@@ -471,6 +532,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         if (phpUnitBootstrap != null) {
             projectProperties.setProperty(PHP_UNIT_BOOTSTRAP, relativizeFile(phpUnitBootstrap));
         }
+        if (phpUnitBootstrapForCreateTests != null) {
+            projectProperties.setProperty(PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, phpUnitBootstrapForCreateTests.toString());
+        }
         if (phpUnitConfiguration != null) {
             projectProperties.setProperty(PHP_UNIT_CONFIGURATION, relativizeFile(phpUnitConfiguration));
         }
@@ -479,12 +543,13 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         }
 
         // configs
-        storeRunConfigs(runConfigs, projectProperties, privateProperties);
+        storeRunConfigs(projectProperties, privateProperties);
         EditableProperties ep = helper.getProperties(CONFIG_PRIVATE_PROPERTIES_PATH);
-        if (activeConfig == null) {
+        String currentConfig = configManager.currentConfiguration().getName();
+        if (currentConfig == null) {
             ep.remove("config"); // NOI18N
         } else {
-            ep.setProperty("config", activeConfig); // NOI18N
+            ep.setProperty("config", currentConfig); // NOI18N
         }
 
         // store all the properties
@@ -502,8 +567,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             }
         }
 
-        // reset timestamp of the last upload
+        // reset timestamp of the last upload & download
         ProjectSettings.resetLastUpload(project);
+        ProjectSettings.resetLastDownload(project);
 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
@@ -521,6 +587,46 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             // actual file needs to be reparsed (because of php 5.3 hint)
             PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_PHP_VERSION,
                     ProjectPropertiesSupport.getPhpVersion(oldPhpVersion), ProjectPropertiesSupport.getPhpVersion(phpVersion));
+        }
+    }
+
+    void saveCustomizerExtenders() {
+        if (customizerExtenders != null) {
+            final EnumSet<PhpModule.Change> changes = EnumSet.noneOf(PhpModule.Change.class);
+            final PhpModule phpModule = project.getPhpModule();
+            for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
+                EnumSet<PhpModule.Change> change = customizerExtender.save(phpModule);
+                if (change != null) {
+                    changes.addAll(change);
+                }
+            }
+
+            // fire events (background thread, no locks)
+            if (!changes.isEmpty()) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (PhpModule.Change change : changes) {
+                            switch (change) {
+                                case SOURCES_CHANGE:
+                                    project.getSourceRoots().fireChange();
+                                    break;
+                                case TESTS_CHANGE:
+                                    project.getTestRoots().fireChange();
+                                    break;
+                                case SELENIUM_CHANGE:
+                                    project.getSeleniumRoots().fireChange();
+                                    break;
+                                case IGNORED_FILES_CHANGE:
+                                    project.fireIgnoredFilesChange();
+                                    break;
+                                default:
+                                    throw new IllegalStateException("Unknown change: " + change);
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -542,23 +648,16 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     }
 
     private String getActiveRunAsType() {
-        if (activeConfig == null) {
-            return ""; // NOI18N
-        }
-        Map<String, String> c = runConfigs.get(activeConfig);
-        return c.get(RUN_AS);
+        return configManager.currentConfiguration().getValue(RUN_AS);
     }
 
     private int getNumOfRunConfigs() {
         int n = 0;
         // removed configs may be null, do not count them
-        for (Map.Entry<String, Map<String, String>> entry : runConfigs.entrySet()) {
-            Map<String, String> c = entry.getValue();
-            if (c == null) {
-                // removed config
-                continue;
+        for (String name : configManager.configurationNames()) {
+            if (configManager.exists(name)) {
+                ++n;
             }
-            n++;
         }
         return n;
     }
@@ -627,51 +726,50 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     /**
      * A royal mess.
      */
-    void storeRunConfigs(Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs,
-            EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        //System.err.println("storeRunConfigs: " + configs);
-        Map<String, String> def = configs.get(null);
+    void storeRunConfigs(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+        Configuration defaultConfiguration = configManager.defaultConfiguration();
         for (String prop : CFG_PROPS) {
-            String v = def.get(prop);
+            String value = defaultConfiguration.getValue(prop);
             EditableProperties ep = isPrivateProperty(prop) ? privateProperties : projectProperties;
-            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                if (v != null && v.length() > 0) {
-                    ep.setProperty(prop, v);
+            if (!Utilities.compareObjects(value, ep.getProperty(prop))) {
+                if (StringUtils.hasText(value)) {
+                    ep.setProperty(prop, value);
                 } else {
                     ep.remove(prop);
                 }
             }
         }
-        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
-            String config = entry.getKey();
-            if (config == null) {
+
+        for (String name : configManager.configurationNames()) {
+            if (name == null) {
+                // default config
                 continue;
             }
+            String sharedPath = "nbproject/configs/" + name + ".properties"; // NOI18N
+            String privatePath = "nbproject/private/configs/" + name + ".properties"; // NOI18N
 
-            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
-            String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
-
-            Map<String, String> c = entry.getValue();
-            if (c == null) {
+            if (!configManager.exists(name)) {
+                // deleted config
                 getProject().getHelper().putProperties(sharedPath, null);
                 getProject().getHelper().putProperties(privatePath, null);
                 continue;
             }
-            for (Map.Entry<String, String> entry2 : c.entrySet()) {
-                String prop = entry2.getKey();
-                String v = entry2.getValue();
+
+            Configuration configuration = configManager.configurationFor(name);
+            for (String prop : CFG_PROPS) {
+                String value = configuration.getValue(prop);
                 String path = isPrivateProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = getProject().getHelper().getProperties(path);
-                if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
-                        ep.setProperty(prop, v);
+                if (!Utilities.compareObjects(value, ep.getProperty(prop))) {
+                    if (value != null && (value.length() > 0 || (StringUtils.hasText(defaultConfiguration.getValue(prop))))) {
+                        ep.setProperty(prop, value);
                     } else {
                         ep.remove(prop);
                     }
                     getProject().getHelper().putProperties(path, ep);
                 }
             }
-            // Make sure the definition file is always created, even if it is empty.
+            // make sure the definition file is always created, even if it is empty.
             getProject().getHelper().putProperties(sharedPath, getProject().getHelper().getProperties(sharedPath));
         }
     }

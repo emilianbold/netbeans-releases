@@ -63,6 +63,8 @@
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
+<!-- CSH help id for Attach Debugger window mapped to remote debugging topic -->
+<mapID target="debug.jpda.attach" url="debug/debug_remote.html" />
 
 <!--Start of Projects section -->
 <mapID target="proj_about" url="project/proj_about.html" />
@@ -165,6 +167,14 @@
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
+
+
+<!-- begin OSGi section -->
+ <mapID target="osgi_intro" url="osgi/about-osgi.html"/>
+ <mapID target="osgi_import" url="osgi/osgi-import.html"/>
+ <mapID target="osgi_pure" url="osgi/osgi-pure.html"/>
+
+
 
 <!--begin Groovy section-->
 
@@ -332,6 +342,10 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel.ejb.java" url="project/csh/proj_j2sefree_props_classpath.html" />
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
+
+<!-- Add Java Platform wizard-->
+<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="project/csh/proj_add_java_platform.html" />
+
 
 <!-- New Libraries wizard-->
     <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="project/csh/proj_new_lib_wiz1.html" />

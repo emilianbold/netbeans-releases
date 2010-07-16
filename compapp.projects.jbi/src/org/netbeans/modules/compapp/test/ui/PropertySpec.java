@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,18 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.compapp.test.ui;
 
 import java.beans.PropertyEditor;
 import org.openide.util.NbBundle;
 
 /**
- * PropertySpec.java
- *
- * Created on February 13, 2006, 5:19 PM
  *
  * @author Bing Lu
+ * @author Jun Qian
  */
 public class PropertySpec {
     public static PropertySpec DESCRIPTION = new PropertySpec("description",  // NOI18N
@@ -63,8 +63,18 @@ public class PropertySpec {
                                       true,
                                       "Properties", // NOI18N
                                       NbBundle.getMessage(PropertySpec.class, "category.properties.displayName")); // NOI18N
-    public static PropertySpec DESTINATION = new PropertySpec("destination",  // NOI18N
+    public static PropertySpec BINDING_TYPE = new PropertySpec("bindingtype",  // NOI18N
                                       String.class, 
+                                      null,
+                                      NbBundle.getMessage(PropertySpec.class, "bindingtype.displayName"), // NOI18N
+                                      NbBundle.getMessage(PropertySpec.class, "bindingtype.description"), // NOI18N
+                                      "SOAP 1.1", // NOI18N
+                                      false,
+                                      true,
+                                      "Properties", // NOI18N
+                                      NbBundle.getMessage(PropertySpec.class, "category.properties.displayName")); // NOI18N
+    public static PropertySpec DESTINATION = new PropertySpec("destination",  // NOI18N
+                                      String.class,
                                       null,
                                       NbBundle.getMessage(PropertySpec.class, "destination.displayName"), // NOI18N
                                       NbBundle.getMessage(PropertySpec.class, "destination.description"), // NOI18N

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -35,12 +38,6 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
- */
-
-/*
- * EditClusterPanel.java
- *
- * Created on 15.1.2009, 19:20:07
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
@@ -69,7 +66,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Richard Michalsky
  */
 public final class EditClusterPanel extends javax.swing.JPanel implements DocumentListener {
@@ -87,6 +83,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     static ClusterInfo showAddDialog(Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
         panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        panel.prj = prj;
         SourceRootsSupport srs = new SourceRootsSupport(new URL[0], null);
         panel.sourcesPanel.setSourceRootsProvider(srs);
         JavadocRootsSupport jrs = new JavadocRootsSupport(new URL[0], null);
@@ -124,6 +121,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     static ClusterInfo showEditDialog(ClusterInfo ci, Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
         panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        panel.prj = prj;
         SourceRootsSupport srs = new SourceRootsSupport(
                 ci.getSourceRoots() == null ? new URL[0] : ci.getSourceRoots(), null);
         panel.sourcesPanel.setSourceRootsProvider(srs);
@@ -153,13 +151,15 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.dispose();
         return retVal;
     }
-
-    private ClusterInfo clusterInfo;
     private File prjDir;
+    private Project prj;
 
-    /** Creates new form EditClusterPanel */
     public EditClusterPanel() {
         initComponents();
+        sourcesPanel = new NbPlatformCustomizerSources();
+        sourcesPanelContainer.add(sourcesPanel);
+        javadocPanel = new NbPlatformCustomizerJavadoc();
+        javadocPanelContainer.add(javadocPanel);
         okButton = new JButton();
         Mnemonics.setLocalizedText(okButton,
             NbBundle.getMessage(EditClusterPanel.class, "CTL_OK"));
@@ -179,66 +179,68 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        clusterDirText = new javax.swing.JTextField();
+        tabbedPanel = new javax.swing.JTabbedPane();
+        mainPanel = new javax.swing.JPanel();
         browseButton = new javax.swing.JButton();
+        clusterDir = new javax.swing.JLabel();
+        clusterDirText = new javax.swing.JTextField();
         sourcesPanelContainer = new javax.swing.JPanel();
-        sourcesPanel = new NbPlatformCustomizerSources();
-        sourcesPanelContainer.add(sourcesPanel);
         javadocPanelContainer = new javax.swing.JPanel();
-        javadocPanel = new NbPlatformCustomizerJavadoc();
-        javadocPanelContainer.add(javadocPanel);
 
-        jLabel1.setDisplayedMnemonic('C');
-        jLabel1.setLabelFor(clusterDirText);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.jLabel1.text")); // NOI18N
+        setLayout(new java.awt.BorderLayout());
 
-        clusterDirText.setEditable(false);
-        clusterDirText.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_BrowseForCluster")); // NOI18N
-        clusterDirText.getDocument().addDocumentListener(this);
-
-        browseButton.setMnemonic('B');
-        browseButton.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        sourcesPanelContainer.setLayout(new java.awt.CardLayout());
+        clusterDir.setLabelFor(clusterDirText);
+        org.openide.awt.Mnemonics.setLocalizedText(clusterDir, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.clusterDir.text")); // NOI18N
 
-        javadocPanelContainer.setLayout(new java.awt.CardLayout());
+        clusterDirText.setEditable(false);
+        clusterDirText.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_BrowseForCluster")); // NOI18N
+        clusterDirText.getDocument().addDocumentListener(this);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(clusterDirText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                        .add(10, 10, 10)
-                        .add(browseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jLabel1))
+                .addComponent(clusterDir)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(clusterDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(browseButton)
                 .addContainerGap())
-            .add(javadocPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .add(sourcesPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(clusterDirText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(12, 12, 12)
-                .add(sourcesPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(javadocPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(clusterDir)
+                    .addComponent(clusterDirText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton))
+                .addContainerGap(470, Short.MAX_VALUE))
         );
+
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        clusterDirText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.clusterDirText.AccessibleContext.accessibleDescription")); // NOI18N
+
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.mainPanel.TabConstraints.tabTitle"), mainPanel); // NOI18N
+
+        sourcesPanelContainer.setLayout(new java.awt.BorderLayout());
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.sourcesPanelContainer.TabConstraints.tabTitle"), sourcesPanelContainer); // NOI18N
+
+        javadocPanelContainer.setLayout(new java.awt.BorderLayout());
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.javadocPanelContainer.TabConstraints.tabTitle"), javadocPanelContainer); // NOI18N
+
+        add(tabbedPanel, java.awt.BorderLayout.CENTER);
+
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -248,26 +250,30 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            if (! file.exists() || file.isFile() || ! ClusterUtils.isValidCluster(file)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_NotValidCluster")));
-            } else {
-                ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
-                String relPath = PropertyUtils.relativizeFile(prjDir, file);
-                clusterDirText.setText(relPath);
+            AGAIN: for (;;) {
+                if (! file.exists() || file.isFile() || ! ClusterUtils.isValidCluster(file)) {
+                    if (Clusterize.clusterize(prj, file)) {
+                        continue AGAIN;
+                    }
+                } else {
+                    ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
+                    String relPath = PropertyUtils.relativizeFile(prjDir, file);
+                    clusterDirText.setText(relPath != null ? relPath : file.getAbsolutePath());
+                }
+                break;
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    public void changedUpdate(DocumentEvent e) {
+    public @Override void changedUpdate(DocumentEvent e) {
         updateDialog();
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public @Override void insertUpdate(DocumentEvent e) {
         updateDialog();
     }
 
-    public void removeUpdate(DocumentEvent e) {
+    public @Override void removeUpdate(DocumentEvent e) {
         updateDialog();
     }
 
@@ -277,10 +283,12 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel clusterDir;
     private javax.swing.JTextField clusterDirText;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel javadocPanelContainer;
+    private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel sourcesPanelContainer;
+    private javax.swing.JTabbedPane tabbedPanel;
     // End of variables declaration//GEN-END:variables
 
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,12 +47,14 @@ import org.netbeans.modules.sql.project.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
+import org.netbeans.modules.sql.project.SQLproConstants;
 import org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -75,9 +80,9 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -88,7 +93,6 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 
 
 
@@ -96,17 +100,9 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
  * Represents one sql module project
  * @author Chris Webster
  */
-@AntBasedProjectRegistration(
-    type=SQLproProjectType.TYPE,
-    iconResource="org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif",
-    sharedNamespace=SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    sharedName=SQLproProjectType.PROJECT_CONFIGURATION_NAME,
-    privateNamespace=SQLproProjectType.PRIVATE_CONFIGURATION_NAMESPACE,
-    privateName=SQLproProjectType.PRIVATE_CONFIGURATION_NAME
-)
 public final class SQLproProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif", false); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
 
@@ -162,7 +158,7 @@ public final class SQLproProject implements Project, AntProjectListener {
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
 
@@ -171,7 +167,11 @@ public final class SQLproProject implements Project, AntProjectListener {
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,7 +55,7 @@ import static com.sun.source.tree.Tree.Kind;
  * @author  Tomas Hurka
  * @author  Pavel Flaska
  */
-class Measure {
+public class Measure {
 
     /**
      * Prevent instance creation outside the class.
@@ -91,6 +94,19 @@ class Measure {
      * Used for measuring distance of two class members.
      * (for fields, methods, constructors, annotation attributes etc.)
      */
+    static final Comparator<JCTree> REAL_MEMBER = new Comparator<JCTree>() {
+
+        public int compare(JCTree t1, JCTree t2) {
+            int distance = DEFAULT.compare(t1, t2);
+            if (distance == INFINITE_DISTANCE) {
+                if (t1.getKind() == t2.getKind()) {
+                    return (t1.pos == t2.pos) ? ALMOST_THE_SAME : THE_SAME_KIND;
+                }
+            }
+            return distance;
+        }
+    };
+
     static final Comparator<JCTree> MEMBER = new Comparator<JCTree>() {
 
         public int compare(JCTree t1, JCTree t2) {
@@ -130,20 +146,20 @@ class Measure {
      * or greater than this is represented as infinite (i.e. indicates
      * that the compared objects are distinct).
      */
-    static final int INFINITE_DISTANCE = 1000;
+    public static final int INFINITE_DISTANCE = 1000;
 
     /**
      * Objects perfectly matches, they are identical.
      */
-    static final int OBJECTS_MATCH = 0;
+    public static final int OBJECTS_MATCH = 0;
 
     /**
      * Objects are almost the same, kind is the same and pos is the same.
      */
-    static final int ALMOST_THE_SAME = 250;
+    public static final int ALMOST_THE_SAME = 250;
 
     /**
      * Objects are the same kind, but different pos
      */
-    static final int THE_SAME_KIND = 750;
+    public static final int THE_SAME_KIND = 750;
 }

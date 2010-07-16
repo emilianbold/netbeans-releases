@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,15 +43,12 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.util.NbBundle;
 
 public class LocalPathCell extends JPanel {
@@ -93,71 +93,45 @@ public class LocalPathCell extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        localPathTextField = new JTextField();
-        localPathBrowseButton = new JButton();
+        localPathTextField = new javax.swing.JTextField();
+        localPathBrowseButton = new javax.swing.JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+        setFocusTraversalPolicy(null);
 
+        localPathTextField.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
+        localPathBrowseButton.setText(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.text")); // NOI18N
+        localPathBrowseButton.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("activeCaptionBorder")));
 
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return localPathTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return localPathTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return localPathBrowseButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  localPathTextField){
-                    return localPathBrowseButton;
-                }
-                return localPathTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  localPathBrowseButton){
-                    return localPathTextField;
-                }
-                return localPathBrowseButton;//end getComponentBefore
-
-            }}
-        );
-
-        localPathTextField.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-
-        localPathBrowseButton.setText(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.text")); // NOI18N
-        localPathBrowseButton.setBorder(BorderFactory.createLineBorder(UIManager.getDefaults().getColor("activeCaptionBorder")));
-
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(localPathTextField, GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                .add(0, 0, 0)
-                .add(localPathBrowseButton))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(localPathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(localPathBrowseButton))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                .add(localPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(localPathBrowseButton))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(localPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(localPathBrowseButton))
         );
 
-        localPathTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleName")); // NOI18N
-        localPathTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        localPathBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        localPathBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleDescription")); // NOI18N
+        localPathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleName")); // NOI18N
+        localPathTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        localPathBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        localPathBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton localPathBrowseButton;
-    private JTextField localPathTextField;
+    private javax.swing.JButton localPathBrowseButton;
+    private javax.swing.JTextField localPathTextField;
     // End of variables declaration//GEN-END:variables
 
 }

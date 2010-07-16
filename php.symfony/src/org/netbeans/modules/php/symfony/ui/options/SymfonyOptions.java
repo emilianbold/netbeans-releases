@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,13 @@
 package org.netbeans.modules.php.symfony.ui.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
 /**
@@ -64,20 +71,36 @@ public final class SymfonyOptions {
     private static final String PARAMS_FOR_APPS = "default.params.apps"; // NOI18N
     private static final String DEFAULT_PARAMS_FOR_APPS = "--escaping-strategy=on --csrf-secret=" + DEFAULT_SECRET; // NOI18N
 
+    final ChangeSupport changeSupport = new ChangeSupport(this);
+
     private volatile boolean symfonySearched = false;
 
     private SymfonyOptions() {
+        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     public static SymfonyOptions getInstance() {
         return INSTANCE;
     }
 
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
     public synchronized String getSymfony() {
         String symfony = getPreferences().get(SYMFONY, null);
         if (symfony == null && !symfonySearched) {
             symfonySearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME);
+            List<String> scripts = FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME, SymfonyScript.SCRIPT_NAME_LONG);
             if (!scripts.isEmpty()) {
                 symfony = scripts.get(0);
                 setSymfony(symfony);

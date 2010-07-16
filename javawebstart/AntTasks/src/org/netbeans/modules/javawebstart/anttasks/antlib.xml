@@ -2,4 +2,5 @@
 <antlib>
     <taskdef name="jnlpsignjars" classname="org.netbeans.modules.javawebstart.signtask.SignJarsTask"/>
     <taskdef name="jnlpgenerate" classname="org.netbeans.modules.javawebstart.signtask.GenerateJnlpFileTask"/>
+    <taskdef name="jnlpgenerate" classname="org.netbeans.modules.javawebstart.signtask.CopyTemplatePageTask"/>
 </antlib>

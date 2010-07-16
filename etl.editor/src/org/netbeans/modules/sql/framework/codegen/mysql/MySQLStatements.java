@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,25 +65,33 @@ import org.netbeans.modules.sql.framework.model.SourceColumn;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.jdbc.SQLUtils;
-import com.sun.sql.framework.utils.RuntimeAttribute;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.jdbc.SQLUtils;
+import com.sun.etl.utils.RuntimeAttribute;
+import com.sun.etl.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+
 /**
  * For Derby Database code generations using from JDBC Code generation.
  * @author karthik
  */
 public class MySQLStatements extends BaseStatements {
+
     private static final String RUNTIME_INPUTS_MAP = "runtimeInputsMap";
     private static final String DIRECTLY_MAPPED_SRC_COLS_EVAL = "directlyMappedSrcColsEval";
     private static final String MAPPINGS = "mappings";
     private static final String ADDITIONAL_SRC_COLS = "additionalSrcCols";
+    //Loggers
+    private static transient final Logger mLogger = Logger.getLogger(MySQLStatements.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();    
 
     public MySQLStatements(AbstractDB database) {
         super(database);
     }
 
+    @Override
     protected void populateContextForUpdate(TargetTable targetTable, StatementContext context, VelocityContext vContext) throws BaseException {
         final boolean excludeJoinKeyColumns = false;
         // SELECT START
@@ -132,6 +143,10 @@ public class MySQLStatements extends BaseStatements {
         // exception when
         localContext.putClientProperty("nestedIndent", "");
         localContext.putClientProperty("valueIdentifiers", vContext.get("sourceColumnIdentifiers"));
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
     }
 
     public List createResolvedMappingsForUpdate(TargetTable targetTable, boolean excludeKeyColumns, StatementContext context) throws BaseException {
@@ -169,7 +184,7 @@ public class MySQLStatements extends BaseStatements {
     private List evaluateSourceColumnList(List srcColListtargetTable, StatementContext context) throws BaseException {
         List srcColEvals = new ArrayList();
         Map srcExpToJdbcTypeMap = (Map) context.getClientProperty(BaseStatements.SRC_EXP_TO_JDBC_TYPE_MAP);
-        if (srcExpToJdbcTypeMap == null){
+        if (srcExpToJdbcTypeMap == null) {
             srcExpToJdbcTypeMap = new HashMap();
             context.putClientProperty(BaseStatements.SRC_EXP_TO_JDBC_TYPE_MAP, srcExpToJdbcTypeMap);
         }
@@ -193,7 +208,8 @@ public class MySQLStatements extends BaseStatements {
 
         return srcColEvals;
     }
-    
+
+    @Override
     public SQLPart getTableExistsStatement(SQLDBTable table, StatementContext context) throws BaseException {
         if (context == null) {
             context = new StatementContext();
@@ -212,23 +228,23 @@ public class MySQLStatements extends BaseStatements {
         // not be the value obtained from table.getSchema().
         String schemaName = (String) context.getClientProperty("targetSchema");
         if (StringUtil.isNullString(schemaName)) {
-        	String uSchema = table.getUserDefinedSchemaName();
-        	if (StringUtil.isNullString(uSchema)){
-                if (!StringUtil.isNullString(table.getSchema())){
+            String uSchema = table.getUserDefinedSchemaName();
+            if (StringUtil.isNullString(uSchema)) {
+                if (!StringUtil.isNullString(table.getSchema())) {
                     schemaName = table.getSchema().toUpperCase();
                 }
-        	}else{
-        		schemaName = uSchema.toUpperCase();        		
-        	}
+            } else {
+                schemaName = uSchema.toUpperCase();
+            }
         }
         vContext.put("schemaName", schemaName);
 
         String result = TemplateBuilder.generateSql(this.db.getTemplateFileName("tableExists"), vContext); // NOI18N
         return createSQLPart(result, SQLPart.STMT_CHECKTABLEEXISTS); // NOI18N;;
-    }    
+    }
 
     private String getWhereClauseForUpdate(TargetTable targetTable, StatementContext context) throws BaseException {
-        
+
         SQLCondition joinCondition = targetTable.getJoinCondition();
         SQLPredicate joinPredicate = null;
         if (joinCondition != null) {
@@ -238,8 +254,8 @@ public class MySQLStatements extends BaseStatements {
         if (joinPredicate == null) {
             throw new BaseException("Missing merge condition.");
         }
-        return this.genFactory.generate(joinPredicate, context); 
-        
+        return this.genFactory.generate(joinPredicate, context);
+
     }
 
     /**
@@ -259,35 +275,35 @@ public class MySQLStatements extends BaseStatements {
         String symbol = null;
         int mappedCols = 0;
         RuntimeAttribute ra = null;
-        List directlyMappedSrcColsEval = (List) context.getClientProperty(MySQLStatements.DIRECTLY_MAPPED_SRC_COLS_EVAL) ;
-        List additionalSelectColsEval = (List) context.getClientProperty(MySQLStatements.ADDITIONAL_SRC_COLS) ;
-        List jdbcTypeList = (List) context.getClientProperty(SQLPart.ATTR_JDBC_TYPE_LIST) ;
+        List directlyMappedSrcColsEval = (List) context.getClientProperty(MySQLStatements.DIRECTLY_MAPPED_SRC_COLS_EVAL);
+        List additionalSelectColsEval = (List) context.getClientProperty(MySQLStatements.ADDITIONAL_SRC_COLS);
+        List jdbcTypeList = (List) context.getClientProperty(SQLPart.ATTR_JDBC_TYPE_LIST);
         List mappings = (List) context.getClientProperty(MAPPINGS);
-        Map riMap = (Map) context.getClientProperty(RUNTIME_INPUTS_MAP) ;
+        Map riMap = (Map) context.getClientProperty(RUNTIME_INPUTS_MAP);
         Map symbol2JdbcTypeMap = (Map) context.getClientProperty(BaseStatements.SRC_EXP_TO_JDBC_TYPE_MAP);
         context.putClientProperty(SQLPart.ATTR_DESTS_SRC, destinationsSource);
 
-        if (mappings != null){
+        if (mappings != null) {
             mappedCols = mappings.size();
         }
 
-        if (directlyMappedSrcColsEval != null){
+        if (directlyMappedSrcColsEval != null) {
             symbolList.addAll(directlyMappedSrcColsEval);
         }
 
-        if (additionalSelectColsEval != null){
+        if (additionalSelectColsEval != null) {
             symbolList.addAll(additionalSelectColsEval);
         }
 
-        for (int i= 1; i <= mappedCols; i++){
-            destinationsSource.add(i -1 , "" + i);
+        for (int i = 1; i <= mappedCols; i++) {
+            destinationsSource.add(i - 1, "" + i);
         }
 
         // RuntimeAttributes needed in Where clause
-        if (riMap != null){
+        if (riMap != null) {
             Set keys = riMap.keySet();
             Iterator itr = keys.iterator();
-            while (itr.hasNext()){
+            while (itr.hasNext()) {
                 ra = (RuntimeAttribute) riMap.get(itr.next());
                 symbolList.add("$" + ra.getAttributeName());
                 symbol2JdbcTypeMap.put("$" + ra.getAttributeName(), "" + ra.getJdbcType());
@@ -299,12 +315,12 @@ public class MySQLStatements extends BaseStatements {
         sql = SQLUtils.createPreparedStatement(sql, symbolList, newBindingVariables);
         Iterator itr = newBindingVariables.iterator();
 
-        while (itr.hasNext()){
+        while (itr.hasNext()) {
             symbol = (String) itr.next();
-            if ((symbol != null) && (symbol.startsWith("$"))){
+            if ((symbol != null) && (symbol.startsWith("$"))) {
                 destinationsSource.add(symbol);
             } else {
-                destinationsSource.add("" + (symbolList.indexOf(symbol) + 1) );
+                destinationsSource.add("" + (symbolList.indexOf(symbol) + 1));
             }
             jdbcTypeList.add(symbol2JdbcTypeMap.get(symbol));
         }
@@ -313,6 +329,7 @@ public class MySQLStatements extends BaseStatements {
     }
 
     // TODO Voilates Statements interface pattern, need to redesign the interfaces.
+    @Override
     public Map getCorrelatedUpdateStatement(TargetTable targetTable, final StatementContext sc) throws BaseException {
         StatementContext context = new StatementContext();
         context.putAll(sc);
@@ -364,21 +381,28 @@ public class MySQLStatements extends BaseStatements {
         return ret;
     }
 
+    @Override
     public SQLPart getUpdateStatement(TargetTable targetTable, StatementContext context) throws BaseException {
         VelocityContext vContext = new VelocityContext();
         String templateName = "";
 
         if (targetTable.getSourceTableList().size() != 0) {
-            throw new IllegalStateException("Internal Error. For JDBC eWay DB single Update may not work. Use Corelated queries.") ;
+            throw new IllegalStateException("Internal Error. For JDBC eWay DB single Update may not work. Use Corelated queries.");
         } else {
             populateContextForStaticUpdate(targetTable, context, vContext);
             templateName = this.db.getTemplateFileName("updateStatic"); // NOI18N
         }
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
+        
         String result = TemplateBuilder.generateSql(templateName, vContext);
 
         return createSQLPart(result, SQLPart.STMT_UPDATE); // NOI18N
     }
 
+    @Override
     public SQLPart getMergeStatement(TargetTable targetTable, StatementContext context) throws BaseException {
         if (context == null) {
             context = new StatementContext();
@@ -394,7 +418,11 @@ public class MySQLStatements extends BaseStatements {
         localContext.setUseSourceColumnAliasName(true);
         vContext.put("nestedIndent", "");
         vContext.put("exceptionWhen", TemplateBuilder.generateSql(this.db.getTemplateFileName("exceptionWhen"), vContext));
-
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());
+        
         String result = TemplateBuilder.generateSql(this.db.getTemplateFileName("merge"), vContext); // NOI18N
         return createSQLPart(result, SQLPart.STMT_MERGE); // NOI18N
     }

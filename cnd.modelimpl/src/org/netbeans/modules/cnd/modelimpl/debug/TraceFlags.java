@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,8 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
+    public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342");
+
     public static final boolean TRACE_CPU_CPP = false;
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
     public static final boolean TRACE_PARSER_PROGRESS = Boolean.getBoolean("cnd.parser.progress.trace"); // NOI18N
@@ -67,6 +72,7 @@ public class TraceFlags {
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
 
+    public static final String TRACE_FILE_NAME = System.getProperty("cnd.modelimpl.trace.file");
 
     /** 
      * swithces off parsing function bodies
@@ -148,6 +154,9 @@ public class TraceFlags {
     public static final boolean TRACE_PC_STATE_COMPARISION = DebugUtils.getBoolean("cnd.pp.condition.comparision.trace", false); // NOI18N
 
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
+
+    // experimental expression evaluator for template instantiations
+    public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
 
     public static final List<String> logMacros;
     static {

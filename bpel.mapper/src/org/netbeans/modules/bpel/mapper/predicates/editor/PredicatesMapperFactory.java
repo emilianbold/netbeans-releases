@@ -25,16 +25,17 @@ import javax.swing.JComponent;
 import org.netbeans.modules.bpel.mapper.tree.BpelMapperContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.model.MapperFactory;
 
 
 /**
  *
- * @author nk160297
+ * @author Nikita Krjukov
  * @author AlexanderPermyakov
  */
-public class PredicatesMapperFactory {
+public class PredicatesMapperFactory implements MapperFactory {
 
-    public static Mapper createMapper(MapperModel model) {
+    public Mapper createMapper(MapperModel model) {
         Mapper newMapper = new Mapper(model);
         newMapper.setContext(new BpelMapperContext());
         //

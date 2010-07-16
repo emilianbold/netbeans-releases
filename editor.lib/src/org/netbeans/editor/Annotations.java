@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.lib.drawing.ChainDrawMark;
+import org.netbeans.modules.editor.lib.drawing.MarkChain;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
@@ -94,22 +99,21 @@ import org.openide.util.lookup.ProxyLookup;
 public class Annotations implements DocumentListener {
     
     /** Map of [Mark, LineAnnotations] */
-    private HashMap<Mark, LineAnnotations> lineAnnotationsByMark;
+    private final Map<Mark, LineAnnotations> lineAnnotationsByMark;
     
     /** List of [LineAnnotations] which is ordered by line number */
-    private ArrayList<LineAnnotations> lineAnnotationsArray;
+    private final List<LineAnnotations> lineAnnotationsArray;
 
-    /** Drawing layer for drawing of annotations */
-    private DrawLayerFactory.AnnotationLayer drawLayer;
+    private final MarkChain markChain;
 
     /** Reference to document */
-    private BaseDocument doc;
+    private final BaseDocument doc;
 
     /** List of listeners on AnnotationsListener*/
-    private EventListenerList listenerList;
+    private final EventListenerList listenerList;
 
     /** Property change listener on annotation type changes */
-    private PropertyChangeListener l;
+    private final PropertyChangeListener l;
     
     /** Whether the column with glyph icons is visible */
     private boolean glyphColumn = false;
@@ -123,17 +127,17 @@ public class Annotations implements DocumentListener {
     /** Sorts the subMenu items */
     public static final Comparator<JMenu> MENU_COMPARATOR = new MenuComparator();
 
+    private int lastGetLineAnnotationsIdx = -1;
+    private int lastGetLineAnnotationsLine = -1;
+    private LineAnnotations lastGetLineAnnotationsResult = null;
+
     public Annotations(BaseDocument doc) {
         lineAnnotationsByMark = new HashMap<Mark, LineAnnotations>(30);
         lineAnnotationsArray = new ArrayList<LineAnnotations>(20);
         listenerList =  new EventListenerList();
         
-        drawLayer = null;
         this.doc = doc;
-
-        // add annotation drawing layer
-        doc.addLayer(new DrawLayerFactory.AnnotationLayer(doc),
-                DrawLayerFactory.ANNOTATION_LAYER_VISIBILITY);
+        this.markChain = new MarkChain(doc, null);
 
         // listener on document changes
         this.doc.addDocumentListener(this);
@@ -141,9 +145,12 @@ public class Annotations implements DocumentListener {
         l = new PropertyChangeListener() {
             public void propertyChange (PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == null || AnnotationDesc.PROP_ANNOTATION_TYPE.equals(evt.getPropertyName())) {
-                    AnnotationDesc anno = (AnnotationDesc)evt.getSource();
-                    LineAnnotations lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(anno.getMark());
-                    lineAnnos.refreshAnnotations();
+                    LineAnnotations lineAnnos;
+                    synchronized (lineAnnotationsArray) {
+                        AnnotationDesc anno = (AnnotationDesc)evt.getSource();
+                        lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(anno.getMark());
+                        lineAnnos.refreshAnnotations();
+                    }
                     refreshLine(lineAnnos.getLine());
                 }
                 if (evt.getPropertyName() == null || AnnotationDesc.PROP_MOVE_TO_FRONT.equals(evt.getPropertyName())) {
@@ -156,19 +163,21 @@ public class Annotations implements DocumentListener {
         AnnotationTypes.getTypes().addPropertyChangeListener( new PropertyChangeListener() {
             public void propertyChange (PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == null || AnnotationTypes.PROP_COMBINE_GLYPHS.equals(evt.getPropertyName())) {
-                    LineAnnotations lineAnnos;
-                    for( Iterator<LineAnnotations> it = lineAnnotationsArray.iterator(); it.hasNext(); ) {
-                        lineAnnos = it.next();
-                        lineAnnos.refreshAnnotations();
+                    synchronized (lineAnnotationsArray) {
+                        for( Iterator<LineAnnotations> it = lineAnnotationsArray.iterator(); it.hasNext(); ) {
+                            LineAnnotations lineAnnos = it.next();
+                            lineAnnos.refreshAnnotations();
+                        }
                     }
                 }
                 if (evt.getPropertyName() == null || AnnotationTypes.PROP_ANNOTATION_TYPES.equals(evt.getPropertyName())) {
-                    LineAnnotations lineAnnos;
-                    for( Iterator<LineAnnotations> it = lineAnnotationsArray.iterator(); it.hasNext(); ) {
-                        lineAnnos = it.next();
-                        for( Iterator it2 = lineAnnos.getAnnotations(); it2.hasNext(); ) {
-                            AnnotationDesc anno = (AnnotationDesc)it2.next();
-                            anno.updateAnnotationType();
+                    synchronized (lineAnnotationsArray) {
+                        for( Iterator<LineAnnotations> it = lineAnnotationsArray.iterator(); it.hasNext(); ) {
+                            LineAnnotations lineAnnos = it.next();
+                            for( Iterator it2 = lineAnnos.getAnnotations(); it2.hasNext(); ) {
+                                AnnotationDesc anno = (AnnotationDesc)it2.next();
+                                anno.updateAnnotationType();
+                            }
                         }
                     }
                 }
@@ -178,13 +187,6 @@ public class Annotations implements DocumentListener {
         
     }
 
-    /** Finds the drawing layer for annotations */
-    public synchronized DrawLayerFactory.AnnotationLayer getLayer() {
-        if (drawLayer == null)
-            drawLayer = (DrawLayerFactory.AnnotationLayer)doc.findLayer(DrawLayerFactory.ANNOTATION_LAYER_NAME);
-        return drawLayer;
-    }
-    
     /** Add annotation */
     public void addAnnotation(AnnotationDesc anno) {
 
@@ -193,110 +195,108 @@ public class Annotations implements DocumentListener {
             throw new IllegalStateException("Must be run in EQ"); // NOI18N
         }
 
-        // create mark for this annotation. One mark can be shared by more annotations
-        MarkChain chain = getLayer().getMarkChain();
-        try {
-            /* Always adds a fresh mark. It helps to behave well
-             * in the following scenario:
-             * 1. add annotaion at line e.g. 3.
-             * 2. add annotation at line 4.
-             * 3. goto begining of line 2.
-             * 4. select lines 2,3,4,5 by pressing down arrow.
-             * 5. remove selected lines.
-             * 6. Undo by ctrl-z.
-             * If reusing marks this will result into line selection
-             * being at line 2 but gutter marking of annotations
-             * being at line 4.
-             * It happens because although DocumentLine.updatePositionRef()
-             * removes and adds the annotations on modified lines, it does that
-             * sequentially for each line so it removes 
-             * first of the two DocumentLine's annotations
-             * and tries to readd it to begining of removed block
-             * but it finds there an existing mark
-             * from second DocumentLine's annotation.
-             * It reuses the mark but as the mark was inside
-             * the removed block originally the undo restores its position
-             * inside the block.
-             * Creation of fresh marks fixes that problem.
-             */
-            chain.addMark(anno.getOffset(), true);
+        LineAnnotations lineAnnos;
+        synchronized (lineAnnotationsArray) {
+            // create mark for this annotation. One mark can be shared by more annotations
+            MarkChain chain = markChain;
+            try {
+                /* Always adds a fresh mark. It helps to behave well
+                 * in the following scenario:
+                 * 1. add annotaion at line e.g. 3.
+                 * 2. add annotation at line 4.
+                 * 3. goto begining of line 2.
+                 * 4. select lines 2,3,4,5 by pressing down arrow.
+                 * 5. remove selected lines.
+                 * 6. Undo by ctrl-z.
+                 * If reusing marks this will result into line selection
+                 * being at line 2 but gutter marking of annotations
+                 * being at line 4.
+                 * It happens because although DocumentLine.updatePositionRef()
+                 * removes and adds the annotations on modified lines, it does that
+                 * sequentially for each line so it removes
+                 * first of the two DocumentLine's annotations
+                 * and tries to readd it to begining of removed block
+                 * but it finds there an existing mark
+                 * from second DocumentLine's annotation.
+                 * It reuses the mark but as the mark was inside
+                 * the removed block originally the undo restores its position
+                 * inside the block.
+                 * Creation of fresh marks fixes that problem.
+                 */
+                chain.addMark(anno.getOffset(), true);
 
-        } catch (BadLocationException e) {
-            /*
-             * This is problematic point.
-             * Once this place is reached the annotation desc
-             * will have null mark and will
-             * not in fact be actively present
-             * in the document.
-             * Such annotation will then throw NPE
-             * in removeAnnotation().
-             * Hopefully causes of getting to this place
-             * were eliminated.
-             */
-            throw new IllegalStateException("offset=" + anno.getOffset() // NOI18N
-                + ", docLen=" + doc.getLength()); // NOI18N
-        }
-        // attach created mark to annotation
-        MarkFactory.ChainDrawMark annoMark = chain.getAddedMark();
-        if (annoMark == null) {
-            throw new NullPointerException();
-        }
-        anno.setMark(annoMark);
+            } catch (BadLocationException e) {
+                /*
+                 * This is problematic point.
+                 * Once this place is reached the annotation desc
+                 * will have null mark and will
+                 * not in fact be actively present
+                 * in the document.
+                 * Such annotation will then throw NPE
+                 * in removeAnnotation().
+                 * Hopefully causes of getting to this place
+                 * were eliminated.
+                 */
+                throw new IllegalStateException("offset=" + anno.getOffset() // NOI18N
+                    + ", docLen=" + doc.getLength()); // NOI18N
+            }
+            // attach created mark to annotation
+            ChainDrawMark annoMark = chain.getAddedMark();
+            if (annoMark == null) {
+                throw new NullPointerException();
+            }
+            anno.setMark(annoMark);
 
-        // #33165 - different strategy - first trying to search
-        // by the mark in the map [mark, lineAnnos]. That should
-        // eliminate problems when a mark is tried to be removed
-        // from the mark chain a second time.
-        // Hopefully this will not cause any other sorts of problems.
-        
-        LineAnnotations lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(annoMark);
-        if (lineAnnos == null) {
-            // fine LineAnnotations instance corresponding to the line of this annotation
-            // or create new LineAnnotations if this is first annotation on this line
-            lineAnnos = getLineAnnotations(anno.getLine());
+            // #33165 - different strategy - first trying to search
+            // by the mark in the map [mark, lineAnnos]. That should
+            // eliminate problems when a mark is tried to be removed
+            // from the mark chain a second time.
+            // Hopefully this will not cause any other sorts of problems.
+
+            lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(annoMark);
             if (lineAnnos == null) {
-                lineAnnos = new LineAnnotations();
-                lineAnnos.addAnnotation(anno);
-                if (lineAnnotationsByMark.put(anno.getMark(), lineAnnos) != null) {
-                    throw new IllegalStateException("Mark already in the map."); // NOI18N
-                }
-
-                // insert newly created LineAnnotations into sorted array
-                boolean inserted = false;
-                for (int i=0; i < lineAnnotationsArray.size(); i++) {
-                    if (((LineAnnotations)lineAnnotationsArray.get(i)).getLine() > lineAnnos.getLine()) {
-                        lineAnnotationsArray.add(i, lineAnnos);
-                        inserted = true;
-                        break;
+                // fine LineAnnotations instance corresponding to the line of this annotation
+                // or create new LineAnnotations if this is first annotation on this line
+                lineAnnos = getLineAnnotations(anno.getLine());
+                if (lineAnnos == null) {
+                    lineAnnos = new LineAnnotations();
+                    lineAnnos.addAnnotation(anno);
+                    if (lineAnnotationsByMark.put(anno.getMark(), lineAnnos) != null) {
+                        throw new IllegalStateException("Mark already in the map."); // NOI18N
                     }
+
+                    // insert newly created LineAnnotations into sorted array
+                    int pos = Collections.binarySearch(lineAnnotationsArray, lineAnnos, new LineAnnotationsComparator());
+
+                    lineAnnotationsArray.add(-pos - 1, lineAnnos);
+                    lastGetLineAnnotationsIdx = -1;
+                    lastGetLineAnnotationsLine = -1;
+                    lastGetLineAnnotationsResult = null;
                 }
-                if (!inserted)
-                        lineAnnotationsArray.add(lineAnnos);
+                else {
+                    lineAnnos.addAnnotation(anno);
+                    // check whether this mark is in lineAnnotationsByMark Map
+                    // it is possible that Line.Part annotations will have more marks
+                    // for one line
+                    if (lineAnnotationsByMark.get(anno.getMark()) == null)
+                        lineAnnotationsByMark.put(anno.getMark(), lineAnnos);
+                }
 
-            }
-            else {
+            } else { // mark was already in lineAnnotationsByMark map
                 lineAnnos.addAnnotation(anno);
-                // check whether this mark is in lineAnnotationsByMark Map
-                // it is possible that Line.Part annotations will have more marks
-                // for one line
-                if (lineAnnotationsByMark.get(anno.getMark()) == null)
-                    lineAnnotationsByMark.put(anno.getMark(), lineAnnos);
             }
-            
-        } else { // mark was already in lineAnnotationsByMark map
-            lineAnnos.addAnnotation(anno);
-        }
 
-        // add listener on changes of annotation type
-        anno.addPropertyChangeListener(l);
+            // add listener on changes of annotation type
+            anno.addPropertyChangeListener(l);
 
-        // ignore annotation types with default icon
-        if (anno.isVisible() && (!anno.isDefaultGlyph() || (anno.isDefaultGlyph() && lineAnnos.getCount() > 1))) {
-            glyphColumn = true;
+            // ignore annotation types with default icon
+            if (anno.isVisible() && (!anno.isDefaultGlyph() || (anno.isDefaultGlyph() && lineAnnos.getCount() > 1))) {
+                glyphColumn = true;
+            }
+
+            if (lineAnnos.getCount() > 1)
+                glyphButtonColumn = true;
         }
-        
-        if (lineAnnos.getCount() > 1)
-            glyphButtonColumn = true;
 
         // notify view that it must be redrawn
         refreshLine(lineAnnos.getLine());
@@ -312,49 +312,55 @@ public class Annotations implements DocumentListener {
             throw new IllegalStateException("Must be run in EQ"); // NOI18N
         }
 
-        // find LineAnnotations for the mark
-        MarkFactory.ChainDrawMark annoMark = (MarkFactory.ChainDrawMark)anno.getMark();
-        if (annoMark == null) {
-            // Already removed? See #116955
-            return;
+        int line;
+        synchronized (lineAnnotationsArray) {
+            // find LineAnnotations for the mark
+            ChainDrawMark annoMark = (ChainDrawMark)anno.getMark();
+            if (annoMark == null) {
+                // Already removed? See #116955
+                return;
+            }
+
+            LineAnnotations lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(annoMark);
+
+            line = lineAnnos.getLine();
+            // remove annotation from the line
+            lineAnnos.removeAnnotation(anno);
+
+            // check if this mark is referenced or not. If not, remove it
+            if (!lineAnnos.isMarkStillReferenced(annoMark)) {
+                if (lineAnnotationsByMark.remove(annoMark) != lineAnnos) {
+                    throw new IllegalStateException();
+                }
+
+                MarkChain chain = markChain;
+                // Partial fix of #33165 - rather remove mark explicitly than through its offset
+                //chain.removeMark(anno.getOffset());
+                if (!chain.removeMark(annoMark)) {
+                    throw new IllegalStateException("Mark not removed"); // NOI18N
+                }
+            }
+
+            // if there is no more annotations on the line, remove LineAnnotations
+            if (lineAnnos.getCount() == 0) {
+                int index = lineAnnotationsArray.indexOf(lineAnnos);
+                // #90220 - Sometimes there seems to be an inconsistency that the lineAnnos
+                // is not present in the array.
+                if (index != -1) {
+                    lastGetLineAnnotationsIdx = -1;
+                    lastGetLineAnnotationsLine = -1;
+                    lastGetLineAnnotationsResult = null;
+                    lineAnnotationsArray.remove(index);
+                }
+            }
+
+            // clear the mark from annotation
+            anno.setMark(null);
+
+            // remove listener on changes of annotation type
+            anno.removePropertyChangeListener(l);
         }
-
-        LineAnnotations lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(annoMark);
-
-        int line = lineAnnos.getLine();
-        // remove annotation from the line
-        lineAnnos.removeAnnotation(anno);
         
-        // check if this mark is referenced or not. If not, remove it
-        if (!lineAnnos.isMarkStillReferenced(annoMark)) {
-            if (lineAnnotationsByMark.remove(annoMark) != lineAnnos) {
-                throw new IllegalStateException();
-            }
-
-            MarkChain chain = getLayer().getMarkChain();
-            // Partial fix of #33165 - rather remove mark explicitly than through its offset
-            //chain.removeMark(anno.getOffset());
-            if (!chain.removeMark(annoMark)) {
-                throw new IllegalStateException("Mark not removed"); // NOI18N
-            }
-        }
-        
-        // if there is no more annotations on the line, remove LineAnnotations
-        if (lineAnnos.getCount() == 0) {
-            int index = lineAnnotationsArray.indexOf(lineAnnos);
-            // #90220 - Sometimes there seems to be an inconsistency that the lineAnnos
-            // is not present in the array.
-            if (index != -1) {
-                lineAnnotationsArray.remove(index);
-            }
-        }
-
-        // clear the mark from annotation
-        anno.setMark(null);
-
-        // remove listener on changes of annotation type
-        anno.removePropertyChangeListener(l);
-
         // notify view that must be redrawn
         refreshLine(line);
 //        System.out.println("AFTER REMOVE:\n" + dumpLineAnnotationsArray());
@@ -363,50 +369,76 @@ public class Annotations implements DocumentListener {
     /** Finds active annotation for the Mark. It is called from DrawLayer 
      * when it found the DrawMark */
     public AnnotationDesc getActiveAnnotation(Mark mark) {
-        LineAnnotations annos;
-        annos = (LineAnnotations)lineAnnotationsByMark.get(mark);
-        if (annos == null) {
-            return null;
+        synchronized (lineAnnotationsArray) {
+            LineAnnotations annos;
+            annos = (LineAnnotations)lineAnnotationsByMark.get(mark);
+            if (annos == null) {
+                return null;
+            }
+            AnnotationDesc anno = annos.getActive();
+            // it is possible that some other mark on the line (means
+            // some other annotations) is active
+            if (anno==null || anno.getMark() != mark) {
+                return null;
+            }
+            return anno;
         }
-        AnnotationDesc anno = annos.getActive();
-        // it is possible that some other mark on the line (means
-        // some other annotations) is active
-        if (anno==null || anno.getMark() != mark) {
-            return null;
-        }
-        return anno;
     }
 
     /** Returns the active annotation for the line given by Mark. */
     AnnotationDesc getLineActiveAnnotation(Mark mark) {
-        LineAnnotations annos;
-        annos = (LineAnnotations)lineAnnotationsByMark.get(mark);
-        if (annos == null) {
-            return null;
+        synchronized (lineAnnotationsArray) {
+            LineAnnotations annos;
+            annos = (LineAnnotations)lineAnnotationsByMark.get(mark);
+            if (annos == null) {
+                return null;
+            }
+            AnnotationDesc anno = annos.getActive();
+            return anno;
         }
-        AnnotationDesc anno = annos.getActive();
-        return anno;
     }
     
     /** Finds LineAnnotations for the given line number */
     protected LineAnnotations getLineAnnotations(int line) {
-        LineAnnotations annos;
-        // since fix of #33165 it is possible to use binary search here
-        int low = 0;
-        int high = lineAnnotationsArray.size() - 1;
-        while (low <= high) {
-            int mid = (low + high) / 2;
-            annos = (LineAnnotations)lineAnnotationsArray.get(mid);
-            int annosLine = annos.getLine();
-            if (line < annosLine) {
-                high = mid - 1;
-            } else if (line > annosLine) {
-                low = mid + 1;
-            } else {
-                return annos;
+        synchronized (lineAnnotationsArray) {
+            LineAnnotations annos;
+
+            if (lastGetLineAnnotationsIdx != -1 && lastGetLineAnnotationsLine != -1 && lastGetLineAnnotationsResult != null) {
+                if (lastGetLineAnnotationsLine == line) {
+                    return lastGetLineAnnotationsResult;
+                } else if (lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()) {
+                    annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1);
+                    lastGetLineAnnotationsIdx++;
+                    lastGetLineAnnotationsLine = annos.getLine();
+                    lastGetLineAnnotationsResult = annos;
+                    return annos;
+                }
             }
+
+            // since fix of #33165 it is possible to use binary search here
+            int low = 0;
+            int high = lineAnnotationsArray.size() - 1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                annos = (LineAnnotations)lineAnnotationsArray.get(mid);
+                int annosLine = annos.getLine();
+                if (line < annosLine) {
+                    high = mid - 1;
+                } else if (line > annosLine) {
+                    low = mid + 1;
+                } else {
+                    lastGetLineAnnotationsIdx = mid;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
+                    return annos;
+                }
+            }
+
+            lastGetLineAnnotationsIdx = -1;
+            lastGetLineAnnotationsLine = -1;
+            lastGetLineAnnotationsResult = null;
+            return null;
         }
-        return null;
     }
 
     /** Returns the active annotation for the given line number.
@@ -442,34 +474,58 @@ public class Annotations implements DocumentListener {
 
     /** Get next line number with some annotation*/
     public int getNextLineWithAnnotation(int line) {
-        LineAnnotations annos;
+        synchronized (lineAnnotationsArray) {
+            LineAnnotations annos;
 
-        // since fix of #33165 it is possible to use binary search here
-        int low = 0;
-        int high = lineAnnotationsArray.size() - 1;
-        while (low <= high) {
-            int mid = (low + high) / 2;
-            annos = (LineAnnotations)lineAnnotationsArray.get(mid);
-            int annosLine = annos.getLine();
-            if (line < annosLine) {
-                high = mid - 1;
-            } else if (line > annosLine) {
-                low = mid + 1;
-            } else {
-                return annosLine;
+            if (lastGetLineAnnotationsIdx != -1 && lastGetLineAnnotationsLine != -1 && lastGetLineAnnotationsResult != null) {
+                if (lastGetLineAnnotationsLine == line) {
+                    return lastGetLineAnnotationsLine;
+                } else if (lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()) {
+                    annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1);
+                    lastGetLineAnnotationsIdx++;
+                    lastGetLineAnnotationsLine = annos.getLine();
+                    lastGetLineAnnotationsResult = annos;
+                    return lastGetLineAnnotationsLine;
+                }
             }
-        }
-        
-        // not found annotation on exact line, follow the search with simple searching
-        for (int i=low; i<lineAnnotationsArray.size(); i++) {
-            annos = (LineAnnotations)lineAnnotationsArray.get(i);
-            int annosLine = annos.getLine();
-            if (annosLine >= line){
-                return annosLine;
+
+
+            // since fix of #33165 it is possible to use binary search here
+            int low = 0;
+            int high = lineAnnotationsArray.size() - 1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                annos = (LineAnnotations)lineAnnotationsArray.get(mid);
+                int annosLine = annos.getLine();
+                if (line < annosLine) {
+                    high = mid - 1;
+                } else if (line > annosLine) {
+                    low = mid + 1;
+                } else {
+                    lastGetLineAnnotationsIdx = mid;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
+                    return annosLine;
+                }
             }
+
+            // not found annotation on exact line, follow the search with simple searching
+            for (int i=low; i<lineAnnotationsArray.size(); i++) {
+                annos = (LineAnnotations)lineAnnotationsArray.get(i);
+                int annosLine = annos.getLine();
+                if (annosLine >= line){
+                    lastGetLineAnnotationsIdx = i;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
+                    return annosLine;
+                }
+            }
+
+            lastGetLineAnnotationsIdx = -1;
+            lastGetLineAnnotationsLine = -1;
+            lastGetLineAnnotationsResult = null;
+            return -1;
         }
-        
-        return -1;
     }
 
     /**
@@ -514,11 +570,6 @@ public class Annotations implements DocumentListener {
     /** Notify view that it is necessary to redraw the line of the document  */
     protected void refreshLine(int line) {
         fireChangedLine(line);
-        int start = Utilities.getRowStartFromLineOffset(doc, line);
-        int end = Utilities.getRowStartFromLineOffset(doc, line+1);
-        if (end == -1)
-            end = doc.getLength();
-        doc.repaintBlock(start, end);
     }
     
     /** Checks the number of removed lines and recalculate
@@ -821,7 +872,7 @@ public class Annotations implements DocumentListener {
         return popupItem;
     }
 
-    private static class DelayedMenu extends JMenu{
+    private static final class DelayedMenu extends JMenu{
         
         RequestProcessor.Task task;
         
@@ -844,7 +895,7 @@ public class Annotations implements DocumentListener {
         void clearTask() {
             this.task = null; // clear the finished task to avoid leaking
         }
-    }
+    } // End of DelayedMenu class
     
     private JMenu createMenu(BaseKit kit, int line, boolean backgroundInit){
         final DelayedMenu pm = new DelayedMenu(NbBundle.getBundle(BaseKit.class).getString("generate-gutter-popup"));
@@ -875,37 +926,37 @@ public class Annotations implements DocumentListener {
         return createMenu(kit, line, !bkgInit);
     }
     
-    private String dumpAnnotaionDesc(AnnotationDesc ad) {
-        return "offset=" + ad.getOffset() // NOI18N
-            + "(ls=" + doc.getParagraphElement(ad.getOffset()).getStartOffset() // NOI18N
-            + "), line=" + ad.getLine() // NOI18N
-            + ", type=" + ad.getAnnotationType(); // NOI18N
-    }
-
-    private String dumpLineAnnotationsArray() {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < lineAnnotationsArray.size(); i++) {
-            LineAnnotations la = lineAnnotationsArray.get(i);
-            LinkedList<AnnotationDesc> annos = la.annos;
-            sb.append("[" + i + "]: line=" + la.getLine() // NOI18N
-                + ", anos:"); // NOI18N
-            for (AnnotationDesc ad : annos) {
-                sb.append("\n    " + dumpAnnotaionDesc(ad)); // NOI18N
-            }
-            sb.append('\n');
-        }
-        return sb.toString();
-    }
+//    private String dumpAnnotaionDesc(AnnotationDesc ad) {
+//        return "offset=" + ad.getOffset() // NOI18N
+//            + "(ls=" + doc.getParagraphElement(ad.getOffset()).getStartOffset() // NOI18N
+//            + "), line=" + ad.getLine() // NOI18N
+//            + ", type=" + ad.getAnnotationType(); // NOI18N
+//    }
+//
+//    private String dumpLineAnnotationsArray() {
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i < lineAnnotationsArray.size(); i++) {
+//            LineAnnotations la = lineAnnotationsArray.get(i);
+//            LinkedList<AnnotationDesc> annos = la.annos;
+//            sb.append("[" + i + "]: line=" + la.getLine() // NOI18N
+//                + ", anos:"); // NOI18N
+//            for (AnnotationDesc ad : annos) {
+//                sb.append("\n    " + dumpAnnotaionDesc(ad)); // NOI18N
+//            }
+//            sb.append('\n');
+//        }
+//        return sb.toString();
+//    }
             
     
     /** Manager of all annotations attached to one line. Class stores
      * the references to all annotations from one line in List and also
      * stores which annotation is active, count of visible annotations 
      * and line number. */
-    static public class LineAnnotations extends Object {
+    public static class LineAnnotations extends Object {
 
         /** List with all annotations in this LineAnnotations */
-        private LinkedList<AnnotationDesc> annos;
+        private final LinkedList<AnnotationDesc> annos;
 
         /** List with all visible annotations in this LineAnnotations */
         private LinkedList<AnnotationDesc> annosVisible;
@@ -914,34 +965,33 @@ public class Annotations implements DocumentListener {
          * annotation on the line */
         private AnnotationDesc active;
         
-        /** Line number */
-//        private int lineNumber;
-        
         protected LineAnnotations() {
             annos = new LinkedList<AnnotationDesc>();
             annosVisible = new LinkedList<AnnotationDesc>();
-//            lineNumber = -1;
         }
 
         /** Add annotation to this line and activate it. */
         public void addAnnotation(AnnotationDesc anno) {
-//            if (lineNumber == -1)
-//                lineNumber = anno.getLine();
-            annos.add(anno);
-//            Collections.sort(annos);
-            refreshAnnotations();
+            synchronized (annos) {
+                annos.add(anno);
+                refreshAnnotations();
+            }
         }
         
         /** Remove annotation from this line. Refresh the active one
          * and count of visible. */
         public void removeAnnotation(AnnotationDesc anno) {
-            annos.remove(anno);
-            refreshAnnotations();
+            synchronized (annos) {
+                annos.remove(anno);
+                refreshAnnotations();
+            }
         }
 
         /** Return the active line annotation. */
         public AnnotationDesc getActive() {
-            return active;
+            synchronized (annos) {
+                return active;
+            }
         }
 
         /**
@@ -950,103 +1000,112 @@ public class Annotations implements DocumentListener {
          * annotations or null if there is none for given type
          */
         AnnotationDesc getType(String type) {
-            for (AnnotationDesc ad : annosVisible) {
-                if (ad.getAnnotationType().equals(type)) {
-                    return ad;
+            synchronized (annos) {
+                for (AnnotationDesc ad : annosVisible) {
+                    if (ad.getAnnotationType().equals(type)) {
+                        return ad;
+                    }
                 }
+                return null;
             }
-            return null;
         }
 
         /** Getter for the line number property */
         public int getLine() {
             // #33165 - delegating of getting of the line number to first anno
-            return (annos.size() > 0)
-                ? annos.peek().getLine()
-                : 0;
-//            return lineNumber;
+            synchronized (annos) {
+                return (annos.size() > 0)
+                    ? annos.peek().getLine()
+                    : 0;
+            }
         }
 
         /** Setter for the line number property */
         public void setLine(int line) {
-//            lineNumber = line;
             throw new IllegalStateException("Setting of line number not allowed"); // NOI18N
         }
 
         /** Gets the array of all pasive and visible annotations */
         public AnnotationDesc[] getPasive() {
-            AnnotationDesc[] pasives = new AnnotationDesc[getCount()-1];
-            int startIndex = annosVisible.indexOf(getActive());
-            int index = startIndex;
-            int i=0;
-            while (true) {
-                index++;
-                if (index >= annosVisible.size())
-                    index = 0;
-                if (index == startIndex)
-                    break;
+            synchronized (annos) {
+                AnnotationDesc[] pasives = new AnnotationDesc[getCount()-1];
+                int startIndex = annosVisible.indexOf(getActive());
+                int index = startIndex;
+                int i=0;
+                while (true) {
+                    index++;
+                    if (index >= annosVisible.size())
+                        index = 0;
+                    if (index == startIndex)
+                        break;
 
-                pasives[i] = annosVisible.get(index);
-                i++;
+                    pasives[i] = annosVisible.get(index);
+                    i++;
+                }
+                return pasives;
             }
-            return pasives;
         }
 
         /** Make the given annotation active. */
         public boolean activate(AnnotationDesc anno) {
-            
-            int i,j;
-            i = annosVisible.indexOf(anno);
+            synchronized (annos) {
+                int i,j;
+                i = annosVisible.indexOf(anno);
 
-            if (i == -1) {
-                // was anno combined by some type ??
-                for(j=0; j < annosVisible.size(); j++) {
-                    if (annosVisible.get(j) instanceof AnnotationCombination) {
-                        if (((AnnotationCombination)annosVisible.get(j)).isAnnotationCombined(anno)) {
-                            i = j;
-                            anno = (AnnotationCombination)annosVisible.get(j);
-                            break;
+                if (i == -1) {
+                    // was anno combined by some type ??
+                    for(j=0; j < annosVisible.size(); j++) {
+                        if (annosVisible.get(j) instanceof AnnotationCombination) {
+                            if (((AnnotationCombination)annosVisible.get(j)).isAnnotationCombined(anno)) {
+                                i = j;
+                                anno = (AnnotationCombination)annosVisible.get(j);
+                                break;
+                            }
                         }
                     }
                 }
+
+                if (i == -1)
+                    return false;
+
+                if (annosVisible.get(i) == null)
+                    return false;
+
+                if (anno == active || !anno.isVisible())
+                    return false;
+
+                active = anno;
+
+                return true;
             }
-            
-            if (i == -1)
-                return false;
-            
-            if (annosVisible.get(i) == null)
-                return false;
-            
-            if (anno == active || !anno.isVisible())
-                return false;
-            
-            active = anno;
-            
-            return true;
         }
 
         /** Get count of visible annotations on the line */
         public int getCount() {
-            return annosVisible.size();
+            synchronized (annos) {
+                return annosVisible.size();
+            }
         }
 
         /** Activate next annoation on the line. Used during the cycling. */
         public AnnotationDesc activateNext() {
-            if (getCount() <= 1)
+            synchronized (annos) {
+                if (getCount() <= 1)
+                    return active;
+
+                int current = annosVisible.indexOf(active);
+                current++;
+                if (current >= getCount())
+                    current = 0;
+                active = annosVisible.get(current);
                 return active;
-            
-            int current = annosVisible.indexOf(active);
-            current++;
-            if (current >= getCount())
-                current = 0;
-            active = annosVisible.get(current);
-            return active;
+            }
         }
         
         /** Searches all combination annotation type and sort them
          * by getCombinationOrder into combTypes array
          * which is passed as paramter. */
-        private void fillInCombinationsAndOrderThem(LinkedList<AnnotationType> combTypes) {
+        private static void fillInCombinationsAndOrderThem(LinkedList<AnnotationType> combTypes) {
             AnnotationType type;
             AnnotationType.CombinationMember[] combs;
             
@@ -1189,71 +1248,74 @@ public class Annotations implements DocumentListener {
             return false;
         }
     
-        
-        
-        
         /** Refresh the active annotation and count of visible annotations. 
          * This method is used after change of annotation type of some annotation
          * on this line */
         public void refreshAnnotations() {
-            if (!AnnotationTypes.getTypes().isCombineGlyphs().booleanValue()) {
-                
-                // combinations are disabled
-                annosVisible = new LinkedList<AnnotationDesc>();
-                for (AnnotationDesc ad : annos) {
-                    if (ad.isVisible()) {
-                        annosVisible.add(ad);
+            synchronized (annos) {
+                if (!AnnotationTypes.getTypes().isCombineGlyphs().booleanValue()) {
+
+                    // combinations are disabled
+                    annosVisible = new LinkedList<AnnotationDesc>();
+                    for (AnnotationDesc ad : annos) {
+                        if (ad.isVisible()) {
+                            annosVisible.add(ad);
+                        }
+                    }
+                } else {
+
+                    // combination are enabled
+                    LinkedList<AnnotationDesc> annosDupl = new LinkedList<AnnotationDesc>(annos);
+
+                    // List of all annotation types
+                    LinkedList<AnnotationType> combTypes = new LinkedList<AnnotationType>();
+
+                    // first, fill in the array with combination types sorted by the order
+                    fillInCombinationsAndOrderThem(combTypes);
+
+                    for (int ct=0; ct < combTypes.size(); ct++) {
+                        combineType(combTypes.get(ct), annosDupl);
+                    }
+
+                    annosVisible = new LinkedList<AnnotationDesc>();
+
+                    // add remaining not combined annotations into the line annotations array
+                    for (AnnotationDesc ad : annosDupl) {
+                        if (ad.isVisible()) {
+                            annosVisible.add(ad);
+                        }
                     }
                 }
-            } else {
-                
-                // combination are enabled
-                LinkedList<AnnotationDesc> annosDupl = new LinkedList<AnnotationDesc>(annos);
-    
-                // List of all annotation types
-                LinkedList<AnnotationType> combTypes = new LinkedList<AnnotationType>();
-                
-                // first, fill in the array with combination types sorted by the order
-                fillInCombinationsAndOrderThem(combTypes);
-                
-                for (int ct=0; ct < combTypes.size(); ct++) {
-                    combineType(combTypes.get(ct), annosDupl);
+
+                //Order by priority
+                Collections.sort(annosVisible);
+
+                // update the active annotation
+                if (annosVisible.size() > 0) {
+                        active = annosVisible.get(0);
                 }
-
-                annosVisible = new LinkedList<AnnotationDesc>();
-
-                // add remaining not combined annotations into the line annotations array
-                for (AnnotationDesc ad : annosDupl) {
-                    if (ad.isVisible()) {
-                        annosVisible.add(ad);
-                    }
-                }
-            }
-
-            //Order by priority
-            Collections.sort(annosVisible);
-            
-            // update the active annotation
-            if (annosVisible.size() > 0) {
-                    active = annosVisible.get(0);
             }
         }
 
         /** Is this given mark still referenced by some annotation or it
          * can be removed from the draw mark chain */
         public boolean isMarkStillReferenced(Mark mark) {
-            for(AnnotationDesc ad : annos) {
-                if (ad.getMark() == mark)
-                   return true;
+            synchronized (annos) {
+                for(AnnotationDesc ad : annos) {
+                    if (ad.getMark() == mark)
+                       return true;
+                }
+                return false;
             }
-            return false;
         }
         
         public Iterator<AnnotationDesc> getAnnotations() {
-            return annos.iterator();
+            synchronized (annos) {
+                return annos.iterator();
+            }
         }
         
-    }
+    } // End of LineAnnotations class
     
 
     /** Listener for listening on changes in Annotations object.*/
@@ -1268,14 +1330,14 @@ public class Annotations implements DocumentListener {
          * must be reflected somehow (most probably by complete redraw). */
         public void changedAll();
 
-    }
+    } // End of AnnotationsListener interface
 
     /** Annotation which is used for representation of combined annotations. 
      * Some basic operations like getLine etc. are delegated to one of the
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
+    private static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;
@@ -1355,11 +1417,10 @@ public class Annotations implements DocumentListener {
             return l;
         }
         
-    }
+    } // End of AnnotationCombination class
 
     public static final class MenuComparator implements Comparator<JMenu> {
 
-       
         public MenuComparator() {
         }
         
@@ -1370,7 +1431,13 @@ public class Annotations implements DocumentListener {
             if (menuTwoText == null || menuOneText == null) return 0;
             return menuOneText.compareTo(menuTwoText);
         }
+    } // End of MenuComparator class
 
+    private static class LineAnnotationsComparator implements Comparator<LineAnnotations> {
+        @Override
+        public int compare(LineAnnotations o1, LineAnnotations o2) {
+            return o1.getLine() - o2.getLine();
+        }
     }
     
 }

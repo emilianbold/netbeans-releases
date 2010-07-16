@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+        xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+        targetNamespace="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+        elementFormDefault="qualified">
+
+    <import namespace="http://docs.oasis-open.org/wsbpel/2.0/process/executable" schemaLocation="http://docs.oasis-open.org/wsbpel/2.0/OS/process/executable/ws-bpel_executable.xsd"/>
+    <import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+
+    <simpleType name="tSource">
+        <restriction base="string">
+            <enumeration value="from"/>
+            <enumeration value="to"/>
+        </restriction>
+    </simpleType>
+
+    <complexType name="tLsmContainer">
+        <sequence>
+            <element name="predicate" type="tns:tPredicate" minOccurs="0" maxOccurs="unbounded"/>
+            <element name="cast" type="tns:tCast" minOccurs="0" maxOccurs="unbounded"/>
+            <element name="component" type="tns:tPseudoComp" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="bpws:documentation" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+    </complexType>
+
+    <complexType name="tEditor">
+        <complexContent>
+            <extension base="tns:tLsmContainer"/>
+        </complexContent>
+    </complexType>
+
+    <complexType name="tPredicate">
+        <complexContent>
+            <extension base="tns:tLsmContainer">
+                <attribute name="path" type="xsd:string" use="required"/>
+                <attribute name="value" type="xsd:string" use="required"/>
+                <attribute name="source" type="tns:tSource" use="optional"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="tCast">
+        <complexContent>
+            <extension base="tns:tLsmContainer">
+                <attribute name="type" type="xsd:QName" use="required"/>
+                <attribute name="path" type="xsd:string" use="required"/>
+                <attribute name="source" type="tns:tSource" use="optional"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="tPseudoComp">
+        <complexContent>
+            <extension base="tns:tLsmContainer">
+                <attribute name="parentPath" type="xsd:string" use="required"/>
+                <attribute name="type" type="xsd:QName" use="required"/>
+                <attribute name="qName" type="xsd:QName" use="required"/>
+                <attribute name="isAttribute" type="xsd:boolean" use="optional"/>
+                <attribute name="source" type="tns:tSource" use="optional"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+</schema>
+

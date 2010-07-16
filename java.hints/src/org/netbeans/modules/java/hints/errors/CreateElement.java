@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,8 +71,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -206,44 +207,19 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (errorPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
             TreePath exp = new TreePath(errorPath, ((MemberSelectTree) errorPath.getLeaf()).getExpression());
-            Element targetElement = info.getTrees().getElement(exp);
             TypeMirror targetType = info.getTrees().getTypeMirror(exp);
 
-            if (targetElement != null && targetType != null && targetType.getKind() != TypeKind.ERROR) {
-                switch (targetElement.getKind()) {
-                    case CLASS:
-                    case INTERFACE:
-                    case ENUM:
-                    case ANNOTATION_TYPE:
-                        //situation like <something>.ClassName.<identifier>,
-                        //targetElement representing <something>.ClassName:
-                        //the new element needs to be static
-                        target = (TypeElement) targetElement;
-                        modifiers.add(Modifier.STATIC);
-                        break;
+            if (targetType != null && targetType.getKind() == TypeKind.DECLARED) {
+                Element expElement = info.getTrees().getElement(exp);
 
-                    case FIELD:
-                    case ENUM_CONSTANT:
-                    case LOCAL_VARIABLE:
-                    case PARAMETER:
-                    case EXCEPTION_PARAMETER:
-                        TypeMirror tm = targetElement.asType();
-                        if (tm.getKind() == TypeKind.DECLARED) {
-                            target = (TypeElement)((DeclaredType)tm).asElement();
-                        }
-                        break;
-                    case METHOD:
-                        Element el = info.getTypes().asElement(((ExecutableElement) targetElement).getReturnType());
+                if (isClassLikeElement(expElement)) {
+                    modifiers.add(Modifier.STATIC);
+                }
 
-                        if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                            target = (TypeElement) el;
-                        }
+                Element targetElement = info.getTypes().asElement(targetType);
 
-                        break;
-                    case CONSTRUCTOR:
-                        target = (TypeElement) targetElement.getEnclosingElement();
-                        break;
-                    //TODO: type parameter?
+                if (isClassLikeElement(targetElement)) {
+                    target = (TypeElement) targetElement;
                 }
             }
 
@@ -318,7 +294,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 if (wasMemberSelect) {
                     return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
                 } else {
-                    return prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
+		    List<Fix> currentResult = new LinkedList<Fix>();
+
+		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
+		    currentResult.addAll(prepareCreateInnerClassFix(info, newClass, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
+		    
+                    return currentResult;
                 }
             }
 
@@ -343,6 +324,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
+                result.addAll(prepareCreateInnerClassFix(info, null, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
 
@@ -358,7 +340,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (containsErrorsOrTypevarsRecursively(type)) {
+        if (Utilities.containsErrorsOrTypevarsRecursively(type)) {
             return result;
         }
 
@@ -414,14 +396,14 @@ public final class CreateElement implements ErrorRule<Void> {
 
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //create method:
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = resolveArguments(info, invocation, arguments);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments);
 
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
         TypeMirror returnType = returnTypes != null ? returnTypes.get(0) : null;
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (formalArguments == null || returnType != null && containsErrorsOrTypevarsRecursively(returnType)) {
+        if (formalArguments == null || returnType != null && Utilities.containsErrorsOrTypevarsRecursively(returnType)) {
             return Collections.<Fix>emptyList();
         }
 
@@ -436,57 +418,8 @@ public final class CreateElement implements ErrorRule<Void> {
         return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB(), targetFile));
     }
 
-    private static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
-        List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
-        List<String>     argumentNames = new LinkedList<String>();
-        Set<String>      usedArgumentNames = new HashSet<String>();
-
-        for (ExpressionTree arg : realArguments) {
-            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
-
-            //anonymous class?
-            tm = Utilities.convertIfAnonymous(tm);
-
-            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
-                return null;
-            }
-
-            if (tm.getKind() == TypeKind.NULL) {
-                tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
-            }
-
-            argumentTypes.add(tm);
-
-            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
-
-            if (proposedName == null) {
-                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);
-            }
-
-            if (proposedName == null) {
-                proposedName = "arg"; // NOI18N
-            }
-
-            if (usedArgumentNames.contains(proposedName)) {
-                int num = 0;
-
-                while (usedArgumentNames.contains(proposedName + num)) {
-                    num++;
-                }
-
-                proposedName = proposedName + num;
-            }
-
-            usedArgumentNames.add(proposedName);
-
-            argumentNames.add(proposedName);
-        }
-
-        return new Pair<List<? extends TypeMirror>, List<String>>(argumentTypes, argumentNames);
-    }
-
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, TypeElement source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -506,7 +439,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -537,6 +470,10 @@ public final class CreateElement implements ErrorRule<Void> {
         return null;
     }
 
+    private static boolean isClassLikeElement(Element expElement) {
+        return expElement != null && (expElement.getKind().isClass() || expElement.getKind().isInterface());
+    }
+
     public void cancel() {
         //XXX: not done yet
     }
@@ -551,33 +488,6 @@ public final class CreateElement implements ErrorRule<Void> {
 
     public String getDescription() {
         return NbBundle.getMessage(CreateElement.class, "DSC_Create_Field");
-    }
-
-    //XXX: currently we cannot fix:
-    //xxx = new ArrayList<Unknown>();
-    //=>
-    //ArrayList<Unknown> xxx;
-    //xxx = new ArrayList<Unknown>();
-    private static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
-        switch (tm.getKind()) {
-            case WILDCARD:
-            case TYPEVAR:
-            case ERROR:
-                return true;
-            case DECLARED:
-                DeclaredType type = (DeclaredType) tm;
-
-                for (TypeMirror t : type.getTypeArguments()) {
-                    if (containsErrorsOrTypevarsRecursively(t))
-                        return true;
-                }
-
-                return false;
-            case ARRAY:
-                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
-            default:
-                return false;
-        }
     }
 
     /**

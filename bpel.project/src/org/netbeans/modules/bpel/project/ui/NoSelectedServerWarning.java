@@ -16,16 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui;
 
 import java.awt.Component;
 import javax.swing.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
-/** Show a warning that no server is set and allows choose it.
- *
+/**
  * @author  Pavel Buzek
  */
 public class NoSelectedServerWarning extends JPanel {

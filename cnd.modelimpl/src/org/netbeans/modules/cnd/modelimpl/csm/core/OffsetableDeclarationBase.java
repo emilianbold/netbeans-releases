@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,13 +50,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -76,7 +80,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     }
     
     public CharSequence getUniqueName() {
-        return CharSequenceKey.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
+        return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
     }
     
     public CharSequence getUniqueNameWithoutPrefix() {
@@ -89,7 +93,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return file != null ? file.getProject() : null;
     }    
     
-    protected CharSequence getQualifiedNamePostfix() {
+    public CharSequence getQualifiedNamePostfix() {
         if (TraceFlags.SET_UNNAMED_QUALIFIED_NAME && (getName().length() == 0)) {
             return getOffsetBasedName();
         } else {
@@ -231,6 +235,35 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public String toString() {
-        return "" + getKind() + ' ' + getName()  + getOffsetString(); // NOI18N
-    }    
+        return "" + getKind() + ' ' + getName()  + getOffsetString() + getPositionString(); // NOI18N
+    }
+
+    protected CharSequence getPositionString() {
+        StringBuilder sb = new StringBuilder("["); // NOI18N
+        Position pos;
+        pos = getStartPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append('-');
+        pos = getEndPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append(']');
+        return sb;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)){
+            return false;
+        }
+        return getName().equals(((OffsetableDeclarationBase<?>)obj).getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return  31*super.hashCode() + getName().hashCode();
+    }
 }

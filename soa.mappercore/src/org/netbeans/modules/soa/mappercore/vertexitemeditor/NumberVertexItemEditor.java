@@ -60,6 +60,7 @@ public class NumberVertexItemEditor extends
     
     
     private static class NumberDocumentFilter extends DocumentFilter {
+        @Override
         public void replace(DocumentFilter.FilterBypass fb, int offset, 
                 int length, String text, AttributeSet attrs) 
                 throws BadLocationException 
@@ -68,6 +69,7 @@ public class NumberVertexItemEditor extends
             super.replace(fb, offset, length, text, attrs);
         }
 
+        @Override
         public void insertString(DocumentFilter.FilterBypass fb, int offset, 
                 String string, AttributeSet attr) throws BadLocationException 
         {

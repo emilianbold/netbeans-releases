@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,18 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -57,45 +67,178 @@ import org.openide.windows.WindowManager;
  */
 public class IssueAction extends SystemAction {
 
+    private static final RequestProcessor rp = new RequestProcessor("Bugtracking IssueAction"); // NOI18N
+
     public IssueAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(IssueAction.class, "CTL_IssueAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(IssueAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
-        openIssue();
+        createIssue();
     }
 
-    public static void openIssue() {
-        openIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
-    }
-
-    public static void openIssue(final Repository repository) {
-        openIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
-    }
-
-    private static void openIssue(final Repository repository, final Node[] context) {
-        final boolean repositoryGiven = repository != null;
+    public static void openIssue(final Issue issue, final boolean refresh) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                IssueTopComponent tc = new IssueTopComponent();
-                tc.initNewIssue(repository, !repositoryGiven, context);
+                UIUtils.setWaitCursor(true);
+                IssueTopComponent tc = IssueTopComponent.find(issue);
                 tc.open();
                 tc.requestActive();
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issue.getID()}));
+                        try {
+                            handle.start();
+                            if (refresh && !issue.refresh()) {
+                                return;
+                            }
+                            IssueCacheUtils.setSeen(issue, true);
+                        } finally {
+                            UIUtils.setWaitCursor(false);
+                            if(handle != null) handle.finish();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private static void createIssue() {
+        createIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
+    }
+
+    public static void createIssue(final Repository repository) {
+        createIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
+    }
+
+    private static void createIssue(final Repository repository, final Node[] context) {
+        final boolean repositoryGiven = repository != null;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                UIUtils.setWaitCursor(true);
+                try {
+                    IssueTopComponent tc = new IssueTopComponent();
+                    tc.initNewIssue(repository, !repositoryGiven, context);
+                    tc.open();
+                    tc.requestActive();
+                } finally {
+                    UIUtils.setWaitCursor(false);
+                }
+            }
+        });
+    }
+
+    public static void openIssue(final File file, final String issueId) {
+        openIssueIntern(null, file, issueId);
+    }
+
+    public static void openIssue(final Repository repository, final String issueId) {
+        openIssueIntern(repository, null, issueId);
+    }
+
+    public static void openIssueIntern(final Repository repositoryParam, final File file, final String issueId) {
+        assert issueId != null;
+        assert repositoryParam != null && file == null || repositoryParam == null && file != null;
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                UIUtils.setWaitCursor(true);
+                final IssueTopComponent tc = IssueTopComponent.find(issueId);
+                final boolean tcOpened = tc.isOpened();
+                final Issue[] issue = new Issue[1];
+                issue[0] = tc.getIssue();
+                if (issue[0] == null) {
+                    tc.initNoIssue(issueId);
+                }
+                if(!tcOpened) {
+                    tc.open();
+                }
+                tc.requestActive();
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProgressHandle handle = null;
+                        try {
+                            if (issue[0] != null) {
+                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
+                                handle.start();
+                                issue[0].refresh();
+                            } else {
+                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
+                                handle.start();
+
+                                Repository repository;
+                                if(repositoryParam == null) {
+                                    repository = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+                                    if(repository == null) {
+                                        // if no repository was known user was supposed to choose or create one
+                                        // in scope of the previous getRepository() call. So null shoud stand
+                                        // for cancel in this case.
+                                        handleTC();
+                                        return;
+                                    }
+                                    BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repository);
+
+                                } else {
+                                    repository = repositoryParam;
+                                }
+
+                                issue[0] = repository.getIssue(issueId);
+                                if(issue[0] == null) {
+                                    // lets hope the repository was able to handle this
+                                    // because whatever happend, there is nothing else
+                                    // we can do at this point
+                                    handleTC();
+                                    return;
+                                }
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        tc.setIssue(issue[0]);
+                                    }
+                                });
+                                IssueCacheUtils.setSeen(issue[0], true);
+                            }
+                        } finally {
+                            if(handle != null) handle.finish();
+                            UIUtils.setWaitCursor(false);
+                        }
+                    }
+
+                    public void handleTC() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!tcOpened) {
+                                    tc.close();
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
     }
 
     public static void closeIssue(final Issue issue) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 IssueTopComponent tc = IssueTopComponent.find(issue);
                 if(tc != null) {

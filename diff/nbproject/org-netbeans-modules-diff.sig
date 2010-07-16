@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.21.1
+#Signature file v4.1
+#Version 1.28.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -7,7 +7,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -24,7 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -38,7 +38,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public abstract org.netbeans.api.diff.Diff
-cons public Diff()
+cons public init()
 meth public abstract java.awt.Component createDiff(java.lang.String,java.lang.String,java.io.Reader,java.lang.String,java.lang.String,java.io.Reader,java.lang.String) throws java.io.IOException
 meth public org.netbeans.api.diff.DiffView createDiff(org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
 meth public static java.util.Collection<? extends org.netbeans.api.diff.Diff> getAll()
@@ -53,6 +53,7 @@ meth public int getDifferenceCount()
 meth public int getDifferenceIndex()
 meth public javax.swing.JComponent getJComponent()
 meth public static org.netbeans.api.diff.DiffController create(org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
+meth public static org.netbeans.api.diff.DiffController createEnhanced(org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setLocation(org.netbeans.api.diff.DiffController$DiffPane,org.netbeans.api.diff.DiffController$LocationType,int)
@@ -61,6 +62,7 @@ hfds impl
 hcls DiffControllerViewBridge
 
 CLSS public final static !enum org.netbeans.api.diff.DiffController$DiffPane
+ outer org.netbeans.api.diff.DiffController
 fld public final static org.netbeans.api.diff.DiffController$DiffPane Base
 fld public final static org.netbeans.api.diff.DiffController$DiffPane Modified
 meth public static org.netbeans.api.diff.DiffController$DiffPane valueOf(java.lang.String)
@@ -68,6 +70,7 @@ meth public static org.netbeans.api.diff.DiffController$DiffPane[] values()
 supr java.lang.Enum<org.netbeans.api.diff.DiffController$DiffPane>
 
 CLSS public final static !enum org.netbeans.api.diff.DiffController$LocationType
+ outer org.netbeans.api.diff.DiffController
 fld public final static org.netbeans.api.diff.DiffController$LocationType DifferenceIndex
 fld public final static org.netbeans.api.diff.DiffController$LocationType LineNumber
 meth public static org.netbeans.api.diff.DiffController$LocationType valueOf(java.lang.String)
@@ -86,9 +89,9 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setCurrentDifference(int)
 
 CLSS public org.netbeans.api.diff.Difference
-cons public Difference(int,int,int,int,int)
-cons public Difference(int,int,int,int,int,java.lang.String,java.lang.String)
-cons public Difference(int,int,int,int,int,java.lang.String,java.lang.String,org.netbeans.api.diff.Difference$Part[],org.netbeans.api.diff.Difference$Part[])
+cons public init(int,int,int,int,int)
+cons public init(int,int,int,int,int,java.lang.String,java.lang.String)
+cons public init(int,int,int,int,int,java.lang.String,java.lang.String,org.netbeans.api.diff.Difference$Part[],org.netbeans.api.diff.Difference$Part[])
 fld public final static int ADD = 1
 fld public final static int CHANGE = 2
 fld public final static int DELETE = 0
@@ -108,7 +111,8 @@ supr java.lang.Object
 hfds firstEnd,firstLineDiffs,firstStart,firstText,secondEnd,secondLineDiffs,secondStart,secondText,serialVersionUID,type
 
 CLSS public final static org.netbeans.api.diff.Difference$Part
-cons public Part(int,int,int,int)
+ outer org.netbeans.api.diff.Difference
+cons public init(int,int,int,int)
 intf java.io.Serializable
 meth public int getEndPosition()
 meth public int getLine()
@@ -117,8 +121,13 @@ meth public int getType()
 supr java.lang.Object
 hfds line,pos1,pos2,serialVersionUID,text,type
 
+CLSS public org.netbeans.api.diff.PatchUtils
+meth public static boolean isPatch(java.io.File) throws java.io.IOException
+meth public static void applyPatch(java.io.File,java.io.File) throws java.io.IOException
+supr java.lang.Object
+
 CLSS public abstract org.netbeans.api.diff.StreamSource
-cons public StreamSource()
+cons public init()
 meth public abstract java.io.Reader createReader() throws java.io.IOException
 meth public abstract java.io.Writer createWriter(org.netbeans.api.diff.Difference[]) throws java.io.IOException
 meth public abstract java.lang.String getMIMEType()
@@ -133,7 +142,7 @@ supr java.lang.Object
 hcls Impl
 
 CLSS public abstract org.netbeans.spi.diff.DiffControllerImpl
-cons protected DiffControllerImpl()
+cons protected init()
 fld protected final java.beans.PropertyChangeSupport support
 meth protected final void setDifferenceIndex(int)
 meth public abstract int getDifferenceCount()
@@ -146,23 +155,24 @@ supr java.lang.Object
 hfds differenceIndex
 
 CLSS public abstract org.netbeans.spi.diff.DiffControllerProvider
-cons public DiffControllerProvider()
+cons public init()
 meth public abstract org.netbeans.spi.diff.DiffControllerImpl createDiffController(org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
+meth public org.netbeans.spi.diff.DiffControllerImpl createEnhancedDiffController(org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.diff.DiffProvider
-cons public DiffProvider()
+cons public init()
 meth public abstract org.netbeans.api.diff.Difference[] computeDiff(java.io.Reader,java.io.Reader) throws java.io.IOException
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.diff.DiffVisualizer
-cons public DiffVisualizer()
+cons public init()
 meth public abstract java.awt.Component createView(org.netbeans.api.diff.Difference[],java.lang.String,java.lang.String,java.io.Reader,java.lang.String,java.lang.String,java.io.Reader,java.lang.String) throws java.io.IOException
 meth public org.netbeans.api.diff.DiffView createDiff(org.netbeans.api.diff.Difference[],org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.diff.MergeVisualizer
-cons public MergeVisualizer()
+cons public init()
 meth public abstract java.awt.Component createView(org.netbeans.api.diff.Difference[],org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource,org.netbeans.api.diff.StreamSource) throws java.io.IOException
 supr java.lang.Object
 

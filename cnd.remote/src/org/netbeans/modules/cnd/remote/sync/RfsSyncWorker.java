@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,9 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -65,6 +66,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,9 +78,11 @@ import org.openide.util.RequestProcessor;
  */
 /*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
+    private static final RequestProcessor RP = new RequestProcessor("RFS Sync Worker", 20); // NOI18N
     private NativeProcess remoteControllerProcess;
     private RfsLocalController localController;
     private String remoteDir;
+    private ErrorReader errorReader;
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
         super(executionEnvironment, out, err, privProjectStorageDir, files);
@@ -104,8 +109,7 @@ import org.openide.util.RequestProcessor;
             if (mkDir.get() != 0) {
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
-            startupImpl(env2add);
-            success = true;
+            success = startupImpl(env2add);
         } catch (RemoteException ex) {
             printErr(ex);
         } catch (InterruptedException ex) {
@@ -140,35 +144,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset"); // NOI18N
-
-    private BufferedReader getReader(final InputStream is) {
-        final String charSet = remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
-        // set charset
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return new BufferedReader(new InputStreamReader(is, charSet));
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return new BufferedReader(new InputStreamReader(is));
-    }
-
-    private PrintWriter getWriter(final OutputStream os) {
-        final String charSet = remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
-        // set charset
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return new PrintWriter(new OutputStreamWriter(os, charSet));
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return  new PrintWriter(os);
-    }
-
-    private void startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
+    private boolean startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
         String remoteControllerPath;
         String ldLibraryPath;
         try {
@@ -185,19 +161,27 @@ import org.openide.util.RequestProcessor;
         remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
         pb.setWorkingDirectory(remoteDir);
+        String rfsTrace = System.getProperty("cnd.rfs.controller.trace");
+        if (rfsTrace != null) {
+            pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
+        }
         remoteControllerProcess = pb.call();
 
-        RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
+        errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);
+        RP.post(errorReader);
 
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
-        final BufferedReader rcInputStreamReader = getReader(rcInputStream);
-        final PrintWriter rcOutputStreamWriter = getWriter(rcOutputStream);
+        final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
+        final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files,  remoteDir, rcInputStreamReader,
-                rcOutputStreamWriter, err, new FileData(privProjectStorageDir, executionEnvironment));
+                executionEnvironment, files, rcInputStreamReader,
+                rcOutputStreamWriter, err, privProjectStorageDir);
 
-        localController.feedFiles(new SharabilityFilter());
+        if (!localController.init()) {
+            remoteControllerProcess.destroy();
+            return false;
+        }
 
         // read port
         String line = rcInputStreamReader.readLine();
@@ -213,8 +197,8 @@ import org.openide.util.RequestProcessor;
             remoteControllerProcess.destroy();
             throw new ExecutionException(message, null); //NOI18N
         }
-        RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
-        RequestProcessor.getDefault().post(localController);
+        RemoteUtil.LOGGER.log(Level.FINE, "Remote Controller listens port {0}", port); // NOI18N
+        RP.post(localController);
 
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
         CndUtils.assertTrue(preload != null);
@@ -227,7 +211,7 @@ import org.openide.util.RequestProcessor;
 
         env2add.put("LD_PRELOAD", preload); // NOI18N
         String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
-        String oldLdLibPath = RemoteUtil.getEnv(executionEnvironment, ldLibPathVar);
+        String oldLdLibPath = MacroMap.forExecEnv(executionEnvironment).get(ldLibPathVar);
         if (oldLdLibPath != null) {
             ldLibraryPath += ":" + oldLdLibPath; // NOI18N
         }
@@ -239,9 +223,12 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
-        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N        
+        addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
+
+        return true;
     }
 
     private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {
@@ -253,17 +240,13 @@ import org.openide.util.RequestProcessor;
 
     @Override
     public void shutdown() {
-        shutdownImpl();
+        remoteControllerCleanup();
+        localControllerCleanup();
     }
 
     @Override
     public boolean cancel() {
         return false;
-    }
-
-    private void shutdownImpl() {
-        remoteControllerCleanup();
-        localControllerCleanup();
     }
 
     private void localControllerCleanup() {
@@ -272,12 +255,17 @@ import org.openide.util.RequestProcessor;
             lc = localController;
             localController = null;
         }
-        if (lc != null) {
-            lc.shutdown();
-        }
+        // now local controller does this as soon as
+        //if (lc != null) {
+        //    lc.shutdown();
+        //}
     }
     
     private void remoteControllerCleanup() {
+        ErrorReader r = errorReader;
+        if (r != null) {
+            r.stop();
+        }
         NativeProcess rc;
         synchronized (this) {
             rc = remoteControllerProcess;
@@ -294,15 +282,21 @@ import org.openide.util.RequestProcessor;
 
         private final BufferedReader errorReader;
         private final PrintWriter errorWriter;
+        private boolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
+            this.stopped = false;
         }
+        @Override
         public void run() {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null) {
+                    if (stopped) {
+                        break;
+                    }
                     if (errorWriter != null) {
                          errorWriter.println(line);
                     }
@@ -312,6 +306,9 @@ import org.openide.util.RequestProcessor;
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
 
+        private void stop() {
+            stopped = true;
+        }
+    }
 }

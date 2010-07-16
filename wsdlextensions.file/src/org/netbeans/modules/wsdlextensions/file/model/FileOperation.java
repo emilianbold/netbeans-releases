@@ -23,4 +23,10 @@ package org.netbeans.modules.wsdlextensions.file.model;
  * @author sweng
  */
 public interface FileOperation extends FileComponent {
+      public static final String ATTR_FILE_OPERATION_VERB = "verb";
+      
+      public void setVerb(String v);
+    
+      public String getVerb();
+    
 }

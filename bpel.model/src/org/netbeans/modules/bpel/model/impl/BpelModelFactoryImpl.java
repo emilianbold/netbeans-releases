@@ -30,7 +30,6 @@ import org.openide.util.Lookup;
 /**
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.spi.BpelModelFactory.class)
 public class BpelModelFactoryImpl extends AbstractModelFactory<BpelModel>
     implements BpelModelFactory
 {

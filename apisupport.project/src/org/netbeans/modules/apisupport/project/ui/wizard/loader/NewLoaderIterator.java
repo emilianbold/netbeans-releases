@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -186,8 +189,8 @@ final class NewLoaderIterator extends BasicWizardIterator {
         boolean lookupReadyObject;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
-            loaderlessObject = current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
-            lookupReadyObject = current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
+            loaderlessObject = current == null || current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
+            lookupReadyObject = current == null || current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
             loaderlessObject = false;
@@ -280,6 +283,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         if (isEditable) {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
         }

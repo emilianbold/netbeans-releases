@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2010, Oracle. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Oracle nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<process name="Asynchronous" 
+         targetNamespace="http://enterprise.netbeans.org/bpel/Asynchronous"
+         xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/Asynchronous"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+    
+    <documentation>
+        This is an example of simple asynchronous process. The process receives an input message from the client, then the process asynchronously invokes the original client and sends the same message back. Usually an asynchronous process is used when the BPEL process is long-running (it takes a long time to compute the result).
+    </documentation>
+
+    <import namespace="http://enterprise.netbeans.org/bpel/Asynchronous" 
+            location="Asynchronous.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
+
+    <partnerLinks>
+        <documentation>
+            The partner link defines the interaction between the BPEL process and the client who sends an input message and later receives the result.
+        </documentation>
+        
+        <partnerLink
+            name="partnerLinkA" 
+            partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
+            myRole="serviceProvider" 
+            partnerRole="serviceRequestor"/>
+    </partnerLinks>
+    
+    <variables>
+        <variable name="inputVar" messageType="wsdlNS:requestMessage">
+            <documentation>Input variable.</documentation>
+        </variable>
+
+        <variable name="outputVar" messageType="wsdlNS:responseMessage">
+            <documentation>Output variable.</documentation>
+        </variable>
+    </variables>
+    
+    <sequence>
+        <receive 
+            name="start"
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyPortType"
+            operation="asyncOperation"
+            variable="inputVar"
+            createInstance="yes">
+
+            <documentation>
+                The Receive activity makes the process to wait for a message to arrive.
+            </documentation>
+        </receive>
+        
+        <assign name="assign">
+            <documentation>
+                The Assign activity copies data from the input variable to the output variable.
+            </documentation>
+
+            <copy>
+                <from variable="inputVar" part="inputType"/>
+                <to variable="outputVar" part="resultType"/>
+            </copy>
+        </assign>
+        
+        <invoke
+            name="end"  
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyCallbackPortType" 
+            operation="onResult"
+            inputVariable="outputVar">
+
+            <documentation>
+                The Invoke activity allows the business process to call the client and send a response message.
+            </documentation>
+        </invoke>
+    </sequence>
+</process>

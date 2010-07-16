@@ -62,6 +62,10 @@ public class ImportImpl extends TMapComponentContainerImpl
         setAttribute(Import.NAMESPACE, TMapAttributes.NAMESPACE, uri);
     }
 
+    public void removeNamespace() {
+        setAttributeQuietly(TMapAttributes.NAMESPACE, null);
+    }
+    
     public String getLocation() {
         return getAttribute(TMapAttributes.LOCATION);
     }
@@ -70,6 +74,10 @@ public class ImportImpl extends TMapComponentContainerImpl
         setAttribute(Import.LOCATION, TMapAttributes.LOCATION, value);
     }
 
+    public void removeLocation() {
+        setAttributeQuietly(TMapAttributes.LOCATION, null);
+    }
+    
     public WSDLModel getImportModel() throws CatalogModelException {
         ModelSource ms = resolveModel( getLocation() );
         return WSDLModelFactory.getDefault().getModel( ms );

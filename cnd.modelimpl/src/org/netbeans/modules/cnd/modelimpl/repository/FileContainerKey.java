@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 final public class FileContainerKey extends ProjectNameBasedKey {
 
-    public FileContainerKey(String project) {
+    public FileContainerKey(CharSequence project) {
         super(project);
         //System.err.printf(">>>>> new FileContainerKey %s \n", project);
     }
@@ -60,6 +63,7 @@ final public class FileContainerKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
@@ -74,11 +78,13 @@ final public class FileContainerKey extends ProjectNameBasedKey {
         return "FileContainerKey " + getProjectName(); // NOI18N
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

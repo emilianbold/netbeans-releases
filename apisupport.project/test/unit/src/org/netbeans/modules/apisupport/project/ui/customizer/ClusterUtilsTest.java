@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,14 +128,14 @@ public class ClusterUtilsTest extends TestBase {
 
         File scDir = new File(suiteDir, "module1");
         NbModuleProjectGenerator.createSuiteComponentModule(
-                scDir, "test.module1", "Module 1", "test/module1/Bundle.properties", null, suiteDir);
+                scDir, "test.module1", "Module 1", "test/module1/Bundle.properties", null, suiteDir, false);
         NbModuleProject prj2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(scDir));
         prj2.open(); // necessary for project files to be created
         assertEquals(new File(suiteDir, "build/cluster"), ClusterUtils.getClusterDirectory(prj2).getAbsoluteFile());
 
         File standaloneDir = new File(getWorkDir(), "module2");
         NbModuleProjectGenerator.createStandAloneModule(
-                standaloneDir, "test.module2", "Module 2", "test/module2/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT);
+                standaloneDir, "test.module2", "Module 2", "test/module2/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT, false);
         NbModuleProject prj3 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(standaloneDir));
         prj3.open(); // necessary for project files to be created
         assertEquals(new File(standaloneDir, "build/cluster"), ClusterUtils.getClusterDirectory(prj3).getAbsoluteFile());

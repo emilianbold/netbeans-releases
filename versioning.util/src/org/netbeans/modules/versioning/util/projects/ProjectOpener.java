@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,19 +61,39 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka, Ondra Vrabec
  */
 public class ProjectOpener implements ActionListener, PropertyChangeListener {
+    private final ProjectOpenerType type;
+
+    public enum ProjectOpenerType {
+        EXPORT("EXPORT_"),
+        CHECKOUT("CHECKOUT_");
+        private final String prefix;
+        private ProjectOpenerType(String prefix) {
+            this.prefix = prefix;
+        }
+        @Override
+        public String toString() {
+            return prefix;
+        }
+        String getMessage(String key) {
+            return NbBundle.getMessage(ProjectOpener.class, prefix + key);
+        }
+        String getMessage(String key, Object... params) {
+            return NbBundle.getMessage(ProjectOpener.class, prefix + key, params);
+        }
+    }
 
     private CheckoutCompletedPanel panel;
     private Dialog dialog;
@@ -85,20 +108,21 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
      * @param checkedOutProjects <strong>All projects must have its key/value pair present.</strong> Root projects are in a set under the null key
      * @param workingFolder
      */
-    public ProjectOpener (Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
+    public ProjectOpener (ProjectOpenerType type, Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
         this.checkedOutProjects = checkedOutProjects;
         this.workingFolder = workingFolder;
+        this.type = type;
         numberOfProjects = checkedOutProjects.size() - 1;
     }
 
-    public void openCheckedOutProjects () {
-        panel = new CheckoutCompletedPanel();
+    public void openProjects () {
+        panel = new CheckoutCompletedPanel(type);
         panel.openButton.addActionListener(this);
         panel.createButton.addActionListener(this);
         panel.closeButton.addActionListener(this);
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         panel.againCheckBox.setVisible(false); // XXX as in prior versions it is disabled? Why?
-        String title = NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3008"); // NOI18N
+        String title = type.getMessage("BK3008"); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         descriptor.setModal(true);
 
@@ -110,7 +134,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         Object[] options = null;
         if (numberOfProjects > 1) {
             // more that one project
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3009", new Integer(numberOfProjects));   // NOI18N
+            String msg = type.getMessage("BK3009", new Integer(numberOfProjects));   // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[]{panel.openButton, panel.closeButton};
         } else if (numberOfProjects == 1) {
@@ -118,12 +142,12 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
             Project project = checkedOutProjects.get(null).iterator().next();
             ProjectInformation projectInformation = ProjectUtils.getInformation(project);
             String projectName = projectInformation.getDisplayName();
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3011", projectName);                              // NOI18N
+            String msg = type.getMessage("BK3011", projectName);                              // NOI18N
             panel.jLabel1.setText(msg);
             panel.openButton.setText(NbBundle.getMessage(ProjectOpener.class, "BK3012"));                              // NOI18N
             options = new Object[]{panel.openButton, panel.closeButton};
         } else {
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3010");                                           // NOI18N
+            String msg = type.getMessage("BK3010");                                  // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[]{panel.createButton, panel.closeButton};
         }
@@ -132,7 +156,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         descriptor.setOptions(options);
         descriptor.setClosingOptions(options);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectOpener.class, "ACSD_CheckoutCompleted_Dialog")); // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(type.getMessage("ACSD_Completed_Dialog")); // NOI18N
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 dialog.setVisible(true);
@@ -182,7 +206,8 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
             final Set<Project> selectedProjects = view.getSelectedProjects();
             if (projectsPanel.cbOpenRequired.isSelected()) {
                 // scan all subprojects recursively and open all
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utils.postParallel(new Runnable() {
+                    @Override
                     public void run() {
                         final Set<Project> toOpen = new HashSet<Project>();
                         final HashMap<Project, Set<? extends Project>> cache = new HashMap<Project, Set<? extends Project>>();
@@ -198,7 +223,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
                             }
                         });
                     }
-                });
+                }, 0);
             } else {
                 for (Project p : selectedProjects) {
                     openProject(p);

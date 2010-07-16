@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,16 +54,19 @@ import java.io.PipedOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -100,9 +106,9 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
         // Setup project
         String libsuffix = "so";
-        if (platform == Platform.PLATFORM_MACOSX) {
+        if (platform == PlatformTypes.PLATFORM_MACOSX) {
             libsuffix = "dylib";
-        } else if (platform == Platform.PLATFORM_WINDOWS) {
+        } else if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             libsuffix = "dll";
         }
         File folderBase = getBaseFolder();
@@ -135,12 +141,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.getDefault().remove(compilerSetold);
+            ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSetManager.getDefault().add(compilerSet);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -176,7 +182,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                     rw.close();
                     break;
                 }
-                result.append(line + "\n");
+                result.append(line).append("\n");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -202,12 +208,12 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.getDefault().remove(compilerSetold);
+            ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSetManager.getDefault().add(compilerSet);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -243,7 +249,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                     rw.close();
                     break;
                 }
-                result.append(line + "\n");
+                result.append(line).append("\n");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -266,7 +272,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("dist/Default/MyCompilerSet-MacOSX/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-MacOSX\n");
         golden.append("\t${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testAppWithLibraries("Main_GNU_MacOSX", "GNU", Platform.PLATFORM_MACOSX, golden.toString());
+        testAppWithLibraries("Main_GNU_MacOSX", "GNU", PlatformTypes.PLATFORM_MACOSX, golden.toString());
     }
 
     @Test
@@ -280,7 +286,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
         golden.append("\t${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
@@ -294,7 +300,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("dist/Default/MyCompilerSet-Solaris-x86/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
         golden.append("\t${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testAppWithLibraries("Main_GNU_Solaris_Intel", "GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("Main_GNU_Solaris_Intel", "GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
@@ -308,7 +314,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
         golden.append("\t${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testAppWithLibraries("Main_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
+        testAppWithLibraries("Main_MinGW_Windows", "MinGW", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 
     @Test
@@ -322,75 +328,75 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("dist/Default/MyCompilerSet-Windows/xxx.exe: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
         golden.append("\t${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testAppWithLibraries("Main_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
+        testAppWithLibraries("Main_Cygwin_Windows", "Cygwin", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 
     @Test
     public void testDynLib_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-MacOSX/libXxx.dylib: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-MacOSX\n");
         golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testDynamicLibrary("DynLib_GNU_MacOSX", "GNU", Platform.PLATFORM_MACOSX, golden.toString());
+        testDynamicLibrary("DynLib_GNU_MacOSX", "GNU", PlatformTypes.PLATFORM_MACOSX, golden.toString());
     }
 
     @Test
     public void testDynLib_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t$(COMPILE.cc) -g -KPIC  -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Solaris-x86/libXxx.so: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
         golden.append("\t${LINK.cc} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so -KPIC -norunpath -h libXxx.so ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
     public void testDynLib_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Solaris-x86/libXxx.so: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Solaris-x86\n");
         golden.append("\t${LINK.cc} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testDynamicLibrary("DynLib_GNU_Solaris_Intel", "GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testDynamicLibrary("DynLib_GNU_Solaris_Intel", "GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
     public void testDynLib_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
         golden.append("\t${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
+        testDynamicLibrary("DynLib_MinGW_Windows", "MinGW", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 
     @Test
     public void testDynLib_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("\n");
-        golden.append("${OBJECTDIR}/test.o: nbproject/Makefile-${CND_CONF}.mk test.cc \n");
+        golden.append("${OBJECTDIR}/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p ${OBJECTDIR}\n");
         golden.append("\t${RM} $@.d\n");
         golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o ${OBJECTDIR}/test.o test.cc\n");
         golden.append("dist/Default/MyCompilerSet-Windows/libXxx.dll: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/MyCompilerSet-Windows\n");
         golden.append("\t${LINK.cc} -mno-cygwin -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx.dll ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
+        testDynamicLibrary("DynLib_Cygwin_Windows", "Cygwin", PlatformTypes.PLATFORM_WINDOWS, golden.toString());
     }
 }

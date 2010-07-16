@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -256,7 +259,7 @@ public class BindingDesignSupport {
         }
         List<PropertyDescriptor> specialPds = getSpecialBindingDescriptors(beanClass);
         Map<String,PropertyDescriptor> pathToDesc = new HashMap<String,PropertyDescriptor>();
-        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (Utilities.isMac()) {
             try {
                 for (PropertyDescriptor pd : FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors()) {
                     pathToDesc.put(pd.getName(), pd);
@@ -329,6 +332,7 @@ public class BindingDesignSupport {
             observableList.addAll(prefList);
         }
         Comparator<BindingDescriptor> bdComparator = new Comparator<BindingDescriptor>() {
+            @Override
             public int compare(BindingDescriptor o1, BindingDescriptor o2) {
                 String path1 = o1.getPath();
                 String path2 = o2.getPath();
@@ -383,6 +387,7 @@ public class BindingDesignSupport {
                 JavaSource source = JavaSource.forFileObject(fob);
                 try {
                     source.runUserActionTask(new CancellableTask<CompilationController>() {
+                        @Override
                         public void run(CompilationController cc) throws Exception {
                             cc.toPhase(JavaSource.Phase.RESOLVED);
                             CompilationUnitTree cu = cc.getCompilationUnit();
@@ -398,14 +403,14 @@ public class BindingDesignSupport {
                             }
                             if (clazz == null) { // issue 118690
                                 // should not happen
-                                Logger.getLogger(getClass().getName()).log(Level.INFO, "ClassTree not found in " + resourceName); // NOI18N
+                                Logger.getLogger(getClass().getName()).log(Level.INFO, "ClassTree not found in {0}", resourceName); // NOI18N
                                 superClass[0] = Object.class.getName();
                                 return;
                             }
                             for (Tree clMember : clazz.getMembers()) {
                                 if (clMember.getKind() == Tree.Kind.METHOD) {
                                     MethodTree method = (MethodTree)clMember;
-                                    if (method.getParameters().size() != 0) continue;
+                                    if (!method.getParameters().isEmpty()) continue;
                                     Set<javax.lang.model.element.Modifier> modifiers = method.getModifiers().getFlags();
                                     if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)
                                             || !modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
@@ -451,6 +456,7 @@ public class BindingDesignSupport {
                             superClass[0] = (typeName == null) ? FormUtils.typeToClass(type).getName() : typeName;
                         }
 
+                        @Override
                         public void cancel() {
                         }
 
@@ -584,6 +590,7 @@ public class BindingDesignSupport {
         final TypeHelper[] result = new TypeHelper[1];
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = cc.getCompilationUnit();
@@ -639,6 +646,7 @@ public class BindingDesignSupport {
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -1194,9 +1202,9 @@ public class BindingDesignSupport {
                     buf.append(property.getJavaInitializationString());
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
     }
@@ -1217,7 +1225,7 @@ public class BindingDesignSupport {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
             if ((name != null) && group.getBinding(name) != null) {
-                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: " + name); // NOI18N
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: {0}", name); // NOI18N
                 name = null; // ignore name parameter
             }
         }
@@ -1485,6 +1493,7 @@ public class BindingDesignSupport {
      * Form model listener that updates the bindings.
      */
     private class ModelListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events == null)
                 return;

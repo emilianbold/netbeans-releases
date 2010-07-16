@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,11 +73,11 @@ import org.openide.util.ChangeSupport;
 public class SourcesNodeFactory implements NodeFactory {
     private static final Logger LOGGER = Logger.getLogger(SourcesNodeFactory.class.getName());
 
-    /** Creates a new instance of SourcesNodeFactory */
     public SourcesNodeFactory() {
     }
 
-    public NodeList createNodes(Project p) {
+    @Override
+    public NodeList<SourceGroup> createNodes(Project p) {
         PhpProject prj = p.getLookup().lookup(PhpProject.class);
         return new SourceChildrenList(prj);
     }
@@ -93,18 +96,22 @@ public class SourcesNodeFactory implements NodeFactory {
             return ProjectUtils.getSources(project);
         }
 
+        @Override
         public void addNotify() {
             getSources().addChangeListener(this);
         }
 
+        @Override
         public void removeNotify() {
             getSources().removeChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             // #132877 - discussed with tomas zezula
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     fireChange();
                 }
@@ -127,6 +134,7 @@ public class SourcesNodeFactory implements NodeFactory {
             return null;
         }
 
+        @Override
         public List<SourceGroup> keys() {
             // parse SG
             // update SG listeners
@@ -154,14 +162,17 @@ public class SourcesNodeFactory implements NodeFactory {
         //updateSourceRootsListeners(roots);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public Node node(SourceGroup key) {
             Node node = null;
             if (key != null) {

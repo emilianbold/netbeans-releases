@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -49,9 +53,11 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -80,7 +86,9 @@ public class Hacks {
      */
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
+        final AtomicReference<PropertyChangeListener> displayNameListener = new AtomicReference<PropertyChangeListener>();
         final RequestProcessor.Task task = RP.create(new Runnable() {
+            String lastKnownTitle; // #134802
             public void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();
@@ -109,29 +117,39 @@ public class Hacks {
                 final String pname;
                 if (projects.size() == 1) {
                     Project p = projects.iterator().next();
-                    pname = ProjectUtils.getInformation(p).getDisplayName();
+                    ProjectInformation info = ProjectUtils.getInformation(p);
+                    info.removePropertyChangeListener(displayNameListener.get());
+                    info.addPropertyChangeListener(displayNameListener.get());
+                    pname = info.getDisplayName();
                     assert pname != null : p;
                 } else if (projects.isEmpty()) {
                     pname = null;
                 } else {
                     pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects");
                 }
-                Project p = OpenProjectList.getDefault().getMainProject();
-                final String mname = p != null? 
-                    ProjectUtils.getInformation(p).getDisplayName():
-                    NbBundle.getMessage(Hacks.class, "LBL_NoMainProject");
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         // depends on exported keys in core/windows
                         String format = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").
                                 getString(pname != null ? "CTL_MainWindow_Title" : "CTL_MainWindow_Title_No_Project");
                         String title = pname != null?
-                            // Note that currently mname is ignored.
-                            MessageFormat.format(format, BUILD_NUMBER, pname, mname) :
-                            MessageFormat.format(format, BUILD_NUMBER, mname);
-                        WindowManager.getDefault().getMainWindow().setTitle(title);
+                            MessageFormat.format(format, BUILD_NUMBER, pname) :
+                            MessageFormat.format(format, BUILD_NUMBER);
+                        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                        if (lastKnownTitle == null || lastKnownTitle.equals(mainWindow.getTitle())) {
+                            lastKnownTitle = title;
+                            mainWindow.setTitle(title);
+                        }
                     }
                 });
+            }
+        });
+        displayNameListener.set(new PropertyChangeListener() {
+            public @Override void propertyChange(PropertyChangeEvent ev) {
+                String prop = ev.getPropertyName();
+                if (prop == null || prop.equals(ProjectInformation.PROP_DISPLAY_NAME)) {
+                    task.schedule(0);
+                }
             }
         });
         r.addPropertyChangeListener(new PropertyChangeListener() {

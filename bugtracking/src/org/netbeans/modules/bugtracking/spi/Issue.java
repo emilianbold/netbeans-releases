@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,19 +41,11 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.Map;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
 
 /**
@@ -68,10 +63,8 @@ public abstract class Issue {
      * issue data were changed
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
-    
-    private Repository repository;
 
-    private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
+    private Repository repository;
 
     static {
         IssueAccessorImpl.create();
@@ -88,7 +81,7 @@ public abstract class Issue {
 
     /**
      * Returns this issues repository
-     * 
+     *
      * @return
      */
     public Repository getRepository() {
@@ -110,7 +103,7 @@ public abstract class Issue {
      * necessary. If it was necessary to trim the name (i.e. if the full name
      * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
      * is appended to the end of the trimmed display name.
-     * 
+     *
      * @return  short variant of the display name
      * @see #getDisplayName
      */
@@ -143,7 +136,19 @@ public abstract class Issue {
     public abstract String getTooltip();
 
     /**
-     * Returns true if the issue isn't stored in a arepository yet. Otherwise false.
+     * Returns this issues unique ID
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns this issues summary
+     * @return
+     */
+    public abstract String getSummary();
+
+    /**
+     * Returns true if the issue isn't stored in a repository yet. Otherwise false.
      * @return
      */
     public abstract boolean isNew();
@@ -169,66 +174,18 @@ public abstract class Issue {
     public abstract BugtrackingController getController();
 
     /**
-     * Opens the issue with the given issueId in the IDE
+     * Opens the issue with the given issueId in the IDE. In case that issueId
+     * is null a new issue wil be created.
      *
      * @param repository
-     * @param issueId 
+     * @param issueId
      */
     public static void open(final Repository repository, final String issueId) {
-        assert issueId != null;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                final IssueTopComponent tc = IssueTopComponent.find(issueId);
-                final boolean tcOpened = tc.isOpened();
-                final Issue[] issue = new Issue[1];
-                issue[0] = tc.getIssue();
-                if (issue[0] == null) {
-                    tc.initNoIssue(issueId);
-                }
-                if(!tcOpened) {
-                    tc.open();
-                }
-                tc.requestActive();
-                rp.post(new Runnable() {
-                    public void run() {
-                        ProgressHandle handle = null;
-                        try {
-                            if (issue[0] != null) {
-                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
-                                handle.start();
-                                issue[0].refresh();
-                            } else {
-                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
-                                handle.start();
-                                issue[0] = repository.getIssue(issueId);
-                                if(issue[0] == null) {
-                                    // lets hope the repository was able to handle this
-                                    // because whatever happend, there is nothing else
-                                    // we can do at this point
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            if(!tcOpened) {
-                                                tc.close();
-                                            }
-                                        }
-                                    });
-                                    return;
-                                }
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        tc.setIssue(issue[0]);
-                                    }
-                                });
-                                IssueCacheUtils.setSeen(issue[0], true);
-                            }
-                        } finally {
-                            if(handle != null) handle.finish();
-                        }
-                    }
-                });
-            }
-        });
+        if(issueId == null) {
+            IssueAction.createIssue(repository);
+        } else {            
+            IssueAction.openIssue(repository, issueId);
+        }
     }
 
     /**
@@ -241,57 +198,11 @@ public abstract class Issue {
     /**
      * Opens this issue in the IDE
      * @param refresh also refreshes the issue after opening
-     * 
+     *
      */
     public final void open(final boolean refresh) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = IssueTopComponent.find(Issue.this);
-                tc.open();
-                tc.requestActive();
-                rp.post(new Runnable() {
-                    public void run() {
-                        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{getID()}));
-                        try {
-                            handle.start();
-                            if (refresh && !Issue.this.refresh()) {
-                                return;
-                            }
-                            IssueCacheUtils.setSeen(Issue.this, true);
-                        } finally {
-                            if(handle != null) handle.finish();
-                        }
-                    }
-                });
-            }
-        });
+        IssueAction.openIssue(this, refresh);
     }
-
-    /**
-     * Returns a Node representing this issue
-     * @return
-     */
-    // XXX used only by issue table 
-    public abstract IssueNode getNode();
-
-    /**
-     * Returns this issues unique ID
-     * @return
-     */
-    public abstract String getID();
-
-    /**
-     * Returns this issues summary
-     * @return
-     */
-    public abstract String getSummary();
-
-    /**
-     * Returns this issues attributes. 
-     * @return
-     */
-    // XXX used only by cache - move out from the spi
-    public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
@@ -310,7 +221,7 @@ public abstract class Issue {
 
     void setSelection(Node[] nodes) {
         this.selection = nodes;
-}
+    }
 
     protected Node[] getSelection() {
         return selection;

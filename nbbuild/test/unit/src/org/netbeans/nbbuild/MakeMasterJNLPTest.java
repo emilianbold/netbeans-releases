@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,62 @@ public class MakeMasterJNLPTest extends NbTestCase {
         clearWorkDir();
     }
     
+    public void testOSGiModule() throws Exception {
+        int cnt = 3;
+        Manifest m;
+
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("Bundle-SymbolicName", "org.my.module");
+        File simpleJar = generateJar (new String[0], m);
+
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.second.module/3");
+        File secondJar = generateJar (new String[0], m);
+
+        File parent = simpleJar.getParentFile ();
+        assertEquals("They are in the same folder", parent, secondJar.getParentFile());
+
+        File output = new File(parent, "output");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <jnlp dir='" + output + "'  >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "      <include name='" + secondJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        while (cnt-- > 0) {
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        }
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        String[] files = output.list();
+        assertEquals("It has two files", 2, files.length);
+
+        java.util.Arrays.sort(files);
+
+        assertEquals("The res1 file: " + files[0], "org-my-module.ref", files[0]);
+        assertEquals("The res2 file: "+ files[1], "org-second-module.ref", files[1]);
+
+        File r1 = new File(output, "org-my-module.ref");
+        String res1 = ModuleDependenciesTest.readFile (r1);
+
+        File r2 = new File(output, "org-second-module.ref");
+        String res2 = ModuleDependenciesTest.readFile (r2);
+
+        assertExt(res1, "org.my.module");
+        assertExt(res2, "org.second.module");
+    }
     
     public void testGenerateReferenceFilesOnce() throws Exception {
         doGenerateReferenceFiles(1);

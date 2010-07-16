@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
@@ -82,6 +86,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -149,57 +154,56 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     
     @Override
     protected boolean isEnabled() {
-        synchronized (SOURCE_ROOT_LOCK) {
-            String sourceRoot = getSourceRoot();
-            if (sourceRoot == null) {
+        String sourceRoot = getSourceRoot();
+        if (sourceRoot == null) {
+            return true;
+        }
+        String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+        for (int i = 0; i < sourceRoots.length; i++) {
+            if (sourceRoot.equals(sourceRoots[i])) {
                 return true;
             }
-            String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                if (sourceRoot.equals(sourceRoots[i])) {
-                    return true;
-                }
-            }
-            String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
-            for (int i = 0; i < projectSourceRoots.length; i++) {
-                if (sourceRoot.equals(projectSourceRoots[i])) {
-                    setValidity(VALIDITY.INVALID,
-                                NbBundle.getMessage(ClassBasedBreakpoint.class,
-                                            "MSG_DisabledSourceRoot",
-                                            sourceRoot));
-                    return false;
-                }
-            }
-            // Breakpoint is not in debugger's source roots,
-            // though it still might get hit if the app loads additional classes...
-            return true;
-            /*if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Breakpoint "+getBreakpoint()+
-                            " NOT submitted because it's source root "+sourceRoot+
-                            " is not contained in debugger's source roots: "+
-                            java.util.Arrays.asList(sourceRoots));
-            }
-            return false;
-             */
         }
+        String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
+        for (int i = 0; i < projectSourceRoots.length; i++) {
+            if (sourceRoot.equals(projectSourceRoots[i])) {
+                setValidity(VALIDITY.INVALID,
+                            NbBundle.getMessage(ClassBasedBreakpoint.class,
+                                        "MSG_DisabledSourceRoot",
+                                        sourceRoot));
+                return false;
+            }
+        }
+        // Breakpoint is not in debugger's source roots,
+        // though it still might get hit if the app loads additional classes...
+        return true;
+        /*if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Breakpoint "+getBreakpoint()+
+                        " NOT submitted because it's source root "+sourceRoot+
+                        " is not contained in debugger's source roots: "+
+                        java.util.Arrays.asList(sourceRoots));
+        }
+        return false;
+         */
     }
     
     /** Check whether the breakpoint belongs to the first matched source root. */
     protected boolean isEnabled(String sourcePath, String[] preferredSourceRoot) {
-        synchronized (SOURCE_ROOT_LOCK) {
-            String sourceRoot = getSourceRoot();
-            if (sourceRoot == null) {
-                return true;
-            }
-            String url = getDebugger().getEngineContext().getURL(sourcePath, true);
-            if (url == null) { // In some pathological situations, the source is not found.
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "No URL found for source path "+sourcePath);
-                return false;
-            }
-            String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
-            preferredSourceRoot[0] = urlRoot;
-            return sourceRoot.equals(urlRoot);
+        String sourceRoot = getSourceRoot();
+        if (sourceRoot == null) {
+            return true;
         }
+        String url = getDebugger().getEngineContext().getURL(sourcePath, true);
+        if (url == null) { // In some pathological situations, the source is not found.
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "No URL found for source path "+sourcePath);
+            return false;
+        }
+        String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
+        if (urlRoot == null) {
+            return true;
+        }
+        preferredSourceRoot[0] = urlRoot;
+        return sourceRoot.equals(urlRoot);
     }
     
     protected void setClassRequests (
@@ -256,6 +260,8 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
         } catch (ObjectCollectedExceptionWrapper e) {
+        } catch (InvalidRequestStateExceptionWrapper irse) {
+            Exceptions.printStackTrace(irse);
         }
     }
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -116,7 +122,11 @@ public class GeneratedSourceRootTest extends NbTestCase {
         ClassPath sourcePath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(sourcePath.getRoots()));
         FileObject moreStuff = FileUtil.createFolder(d, "build/generated-sources/morestuff");
-        assertEquals(Arrays.asList(src, stuff, moreStuff), Arrays.asList(sourcePath.getRoots()));
+        final Set<FileObject> expected = new TreeSet<FileObject>(new FOComparator());
+        expected.addAll(Arrays.asList(src, stuff, moreStuff));
+        final Set<FileObject> result = new TreeSet<FileObject>(new FOComparator());
+        result.addAll(Arrays.asList(sourcePath.getRoots()));
+        assertEquals(expected, result);
         ClassPath compile = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertEquals(compile, ClassPath.getClassPath(stuff, ClassPath.COMPILE));
         assertEquals(compile, ClassPath.getClassPath(moreStuff, ClassPath.COMPILE));
@@ -369,6 +379,14 @@ public class GeneratedSourceRootTest extends NbTestCase {
         public void stateChanged(ChangeEvent event) {
             this.fireChange();
         }
+    }
+
+    private static class FOComparator implements Comparator<FileObject> {
+        @Override
+        public int compare(FileObject o1, FileObject o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+
     }
 
 }

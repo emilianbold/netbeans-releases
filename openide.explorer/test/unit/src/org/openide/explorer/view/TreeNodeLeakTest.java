@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import javax.swing.JFrame;
+import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
@@ -115,6 +119,37 @@ public final class TreeNodeLeakTest extends NbTestCase {
         WeakReference wr = new WeakReference(toSelect[0]);
         toSelect = null;
         assertGC("Node freed", wr);
+    }
+
+    public void testDestroyedNodesAreNotHeldByVisualizers() {
+        class K extends Children.Keys<String> {
+            @Override
+            protected Node[] createNodes(String key) {
+                AbstractNode an = new AbstractNode(Children.LEAF);
+                an.setName(key);
+                return new Node[] { an };
+            }
+
+            void keys(String... arr) {
+                setKeys(arr);
+            }
+        }
+        K keys = new K();
+        AbstractNode root = new AbstractNode(keys);
+        keys.keys("A");
+
+        TreeNode v = Visualizer.findVisualizer(root);
+        assertEquals("One child", 1, v.getChildCount());
+        TreeNode ch0 = v.getChildAt(0);
+
+        Node n0 = Visualizer.findNode(ch0);
+        assertNotNull("Node for visualizer " + ch0, n0);
+        assertEquals("Name is OK", "A", n0.getName());
+        WeakReference wr = new WeakReference(n0);
+        n0 = null;
+
+        keys.keys();
+        assertGC("Node freed in spite we have a reference to visualizer", wr);
     }
     
     void clearAWTQueue() throws Exception {

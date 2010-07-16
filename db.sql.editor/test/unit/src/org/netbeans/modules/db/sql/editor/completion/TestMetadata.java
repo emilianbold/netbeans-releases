@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,12 +60,14 @@ import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  *
@@ -102,6 +107,7 @@ public class TestMetadata extends MetadataImplementation {
         TestCatalog catalogImpl = null;
         TestSchema schemaImpl = null;
         TestTable tableImpl = null;
+        TestView viewImpl = null;
         for (String line : spec) {
             int count = 0;
             while (count < line.length() && line.charAt(count) == ' ') {
@@ -167,14 +173,27 @@ public class TestMetadata extends MetadataImplementation {
                     if (schemaImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl = new TestTable(schemaImpl, trimmed);
-                    schemaImpl.tables.put(trimmed, tableImpl.getTable());
+                    tableImpl = null;
+                    viewImpl = null;
+                    if (trimmed.endsWith("[view]")) {
+                        String viewName = trimmed.replace("[view]", "");
+                        viewImpl = new TestView(schemaImpl, viewName);
+                        schemaImpl.views.put(viewName, viewImpl.getView());
+                    } else {
+                        tableImpl = new TestTable(schemaImpl, trimmed);
+                        schemaImpl.tables.put(trimmed, tableImpl.getTable());
+                    }
                     break;
                 case 6:
-                    if (schemaImpl == null || tableImpl == null) {
+                    if (schemaImpl == null
+                            || (tableImpl == null && viewImpl == null)) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl.columns.put(trimmed, new TestColumn(tableImpl, trimmed).getColumn());
+                    if (tableImpl != null) {
+                        tableImpl.columns.put(trimmed, new TestColumn(tableImpl, trimmed).getColumn());
+                    } else {
+                        viewImpl.columns.put(trimmed, new TestColumn(tableImpl, trimmed).getColumn());
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException(line);
@@ -254,6 +273,7 @@ public class TestMetadata extends MetadataImplementation {
         private final boolean _default;
         private final boolean synthetic;
         private final Map<String, Table> tables = new TreeMap<String, Table>();
+        private final Map<String, View> views = new TreeMap<String, View>();
 
         public TestSchema(TestCatalog catalogImpl, String name, boolean _default, boolean synthetic) {
             this.catalogImpl = catalogImpl;
@@ -288,12 +308,12 @@ public class TestMetadata extends MetadataImplementation {
 
         @Override
         public View getView(String name) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return views.get(name);
         }
 
         @Override
         public Collection<View> getViews() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return views.values();
         }
 
         @Override
@@ -370,17 +390,64 @@ public class TestMetadata extends MetadataImplementation {
         }
     }
 
+    static final class TestView extends ViewImplementation {
+        private final TestSchema schemaImpl;
+        private final String name;
+        private final Map<String, Column> columns = new LinkedHashMap<String, Column>();
+
+        public TestView(TestSchema schemaImpl, String name) {
+            this.schemaImpl = schemaImpl;
+            this.name = name;
+        }
+
+        @Override
+        public Schema getParent() {
+            return schemaImpl.getSchema();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Collection<Column> getColumns() {
+            return columns.values();
+        }
+
+        @Override
+        public Column getColumn(String name) {
+            return columns.get(name);
+        }
+
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+
     static final class TestColumn extends ColumnImplementation {
 
         private final TestTable tableImpl;
+        private final TestView viewImpl;
         private final String name;
 
         private TestColumn(TestTable tableImpl, String name) {
             this.tableImpl = tableImpl;
             this.name = name;
+            this.viewImpl = null;
         }
 
-        public Table getParent() {
+        private TestColumn(TestView viewImpl, String name) {
+            this.viewImpl = viewImpl;
+            this.name = name;
+            this.tableImpl = null;
+        }
+
+        public Tuple getParent() {
+            if (viewImpl != null) {
+                return viewImpl.getView();
+            }
             return tableImpl.getTable();
         }
 

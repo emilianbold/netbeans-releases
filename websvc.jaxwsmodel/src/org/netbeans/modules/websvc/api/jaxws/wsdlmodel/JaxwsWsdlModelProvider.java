@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,18 +71,27 @@ import org.openide.filesystems.FileUtil;
 public class JaxwsWsdlModelProvider implements WsdlModelProvider {
 
     private String packageName;
+    private Throwable creationException;
 
     public WsdlModel getWsdlModel(URL url, String packageName, URL catalog) {
         this.packageName = packageName;
         WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(url);
         modeler.setCatalog(catalog);
         WsdlModel model = modeler.getAndWaitForWsdlModel();
-        if(this.packageName == null || this.packageName.trim().length()== 0){
+        if (model != null && (this.packageName == null || this.packageName.trim().length() == 0)) {
             if(model.getServices().size() > 0)
                 this.packageName = model.getServices().get(0).getJavaName();
             else
                 this.packageName = "defaultPackage";
         }
+
+        Throwable ce = modeler.getCreationException();
+        if (ce != null) {
+            creationException = ce;
+        } else {
+            creationException = null;
+        }
+
         return model;
     }
 
@@ -91,7 +103,7 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
     }
 
     public Throwable getCreationException() {
-        return null;
+        return creationException;
     }
 
     public String getEffectivePackageName() {

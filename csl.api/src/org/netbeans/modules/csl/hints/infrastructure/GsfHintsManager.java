@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,8 +83,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -220,8 +222,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initErrors() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         errorsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + ERRORS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile(RULES_FOLDER + mimeType + ERRORS);
         List<Pair<Rule,FileObject>> rules = readRules( folder );
         categorizeErrorRules(rules, errors, folder, rootNode);
     }
@@ -229,8 +230,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         hintsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + HINTS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + HINTS ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeAstRules( rules, hints, folder, rootNode );
     }
@@ -239,8 +239,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initSuggestions() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         suggestionsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + SUGGESTIONS ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + SUGGESTIONS ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeAstRules(rules, suggestions, folder, rootNode);
     }
@@ -248,8 +247,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private void initSelectionHints() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         suggestionsTreeModel = new DefaultTreeModel( rootNode );
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + mimeType + SELECTION ); // NOI18N
+        FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + mimeType + SELECTION ); // NOI18N
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeSelectionRules(rules, selectionHints, folder, rootNode);
     }

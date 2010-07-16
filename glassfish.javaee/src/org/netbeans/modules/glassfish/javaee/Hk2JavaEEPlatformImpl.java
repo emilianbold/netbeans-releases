@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -204,9 +207,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (TOOL_TRUSTSTORECLIENT.equals(toolName)) {  //NOI18N
                 return true;
             }
-            if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
-                if (ServerUtilities.getJarName(gfRootStr, "webservices.jar") != null)
-                return true;   // TODO - the support is there - need to find the right classpath then change to true
+            if (TOOL_WSCOMPILE.equals(toolName)) {  //NOI18N
+                return true;
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
                 return true;
@@ -245,8 +247,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             }
 
             if (TOOL_WSCOMPILE.equals(toolName)) {
-                String[] entries = new String[]{"webservices", //NOI18N
-                    "javax.activation"}; //NOI18N
+                String[] entries = new String[] {"webservices(|-osgi).jar"}; //NOI18N
                 List<File> cPath = new ArrayList<File>();
 
                 for (String entry : entries) {
@@ -381,13 +382,22 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     public void notifyLibrariesChanged() {
         initLibraries();
-        firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
     }
+
+    private static RequestProcessor libInitThread =
+            new RequestProcessor("init libs -- Hk2JavaEEPlatformImpl");
     
     private void initLibraries() {
-        lib.setName(pf.getLibraryName());
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+        libInitThread.post(new Runnable() {
+
+            @Override
+            public void run() {
+                lib.setName(pf.getLibraryName());
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+                firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
+            }
+        });
     }
     
     @Override

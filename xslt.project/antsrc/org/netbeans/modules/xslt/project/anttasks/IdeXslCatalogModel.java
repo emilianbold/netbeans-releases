@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,18 +45,29 @@ package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
 
+import org.netbeans.modules.soa.ui.util.ModelUtil;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.model.XslModel;
-import org.netbeans.modules.xslt.model.spi.XslModelFactory;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory.XslModelFactoryAccess;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class IdeXslCatalogModel {
+public class IdeXslCatalogModel implements IDECatalogModel<XslModel> {
 
     static IdeXslCatalogModel singletonCatMod = null;
 
     public IdeXslCatalogModel () {}
+
+    public boolean isAccepted(File file) {
+        if (file == null || !file.isFile()) {
+            return false;
+        }
+
+        String ext = FileUtil.getExtension(file.getName());
+        return Util.XSLT_FILE_EXTENSION.equals(ext) || Util.XSL_FILE_EXTENSION.equals(ext);
+    }
 
     public static IdeXslCatalogModel getDefault() {
         if (singletonCatMod == null) {
@@ -62,10 +76,13 @@ public class IdeXslCatalogModel {
         return singletonCatMod;
     }
 
-    public XslModel getXslModel(File file) throws Exception {
-        ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
-        XslModelFactory factory = (XslModelFactory) Lookup.getDefault().lookup(XslModelFactory.class);
-        XslModel model = factory.getModel(source);
+    public XslModel getModel(File xslFile) throws Exception {
+        if (!isAccepted(xslFile)) {
+                return null;
+        }
+        FileObject xslFileObject = (FileUtil.toFileObject(xslFile));
+        ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(xslFileObject, true);
+        XslModel model = XslModelFactoryAccess.getFactory().getModel(source);
         model.sync();
         return model;
     }

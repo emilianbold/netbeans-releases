@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@ package org.netbeans.modules.debugger.jpda;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -61,19 +66,26 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
     
     private PropertyChangeListener changesInThreadsListener;
     private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private final List<JPDAThread> threads = new ArrayList<JPDAThread>();
 
     public ThreadsCollectorImpl(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
+        List<JPDAThread> allThreads = debugger.getAllThreads();
+        synchronized (threads) {
+            threads.addAll(allThreads);
+        }
         changesInThreadsListener = new ChangesInThreadsListener();
         debugger.addPropertyChangeListener(WeakListeners.propertyChange(changesInThreadsListener, debugger));
-        for (JPDAThread thread : getAllThreads()) {
+        for (JPDAThread thread : allThreads) {
             watchThread(thread);
         }
     }
 
     @Override
     public List<JPDAThread> getAllThreads() {
-        return debugger.getAllThreads();
+        synchronized (threads) {
+            return Collections.unmodifiableList(new ArrayList(threads));
+        }
     }
 
     @Override
@@ -91,7 +103,7 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
     public boolean isSomeThreadRunning() {
         for (JPDAThread thread : getAllThreads()) {
-            if (!thread.isSuspended()) {
+            if (!thread.isSuspended() && !((JPDAThreadImpl) thread).isMethodInvoking()) {
                 return true;
             }
         }
@@ -100,7 +112,7 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
     public boolean isSomeThreadSuspended() {
         for (JPDAThread thread : getAllThreads()) {
-            if (thread.isSuspended()) {
+            if (thread.isSuspended() || ((JPDAThreadImpl) thread).isMethodInvoking()) {
                 return true;
             }
         }
@@ -118,6 +130,9 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName())) {
+                if ("methodInvoke".equals(evt.getPropagationId())) {
+                    return ; // Ignore events associated with method invocations
+                }
                 JPDAThread thread = (JPDAThread) evt.getSource();
                 if (thread.isSuspended()) {
                     firePropertyChange(PROP_THREAD_SUSPENDED, null, thread);
@@ -136,8 +151,17 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
             if (JPDADebugger.PROP_THREAD_STARTED.equals(propertyName)) {
                 JPDAThread thread = (JPDAThread) evt.getNewValue();
                 watchThread(thread);
+                synchronized (threads) {
+                    if (!threads.contains(thread)) {
+                        threads.add(thread); // Could be already added in constructor...
+                    }
+                }
                 firePropertyChange(PROP_THREAD_STARTED, evt.getOldValue(), evt.getNewValue());
             } else if (JPDADebugger.PROP_THREAD_DIED.equals(propertyName)) {
+                JPDAThread thread = (JPDAThread) evt.getOldValue();
+                synchronized (threads) {
+                    threads.remove(thread);
+                }
                 firePropertyChange(PROP_THREAD_DIED, evt.getOldValue(), evt.getNewValue());
             } else if (JPDADebugger.PROP_THREAD_GROUP_ADDED.equals(propertyName)) {
                 firePropertyChange(PROP_THREAD_GROUP_ADDED, evt.getOldValue(), evt.getNewValue());

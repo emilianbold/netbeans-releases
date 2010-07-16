@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -53,14 +57,16 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class SvnProgressSupport implements Runnable, Cancellable {
+public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNNotifyListener {
 
     private Cancellable delegate; 
     private volatile boolean canceled;
@@ -162,7 +168,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected ProgressHandle getProgressHandle() {
         if(progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(displayName, this, getLogger().getOpenOuptutAction());
+            progressHandle = ProgressHandleFactory.createHandle(displayName, this, getLogger().getOpenOutputAction());
         }
         return progressHandle;
     }
@@ -204,5 +210,30 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     public void annotate(SVNClientException ex) {                        
         SvnClientExceptionHandler.notifyException(ex, !isCanceled(), true);        
+    }
+
+    @Override
+    public void setCommand(int i) { }
+
+    @Override
+    public void logCommandLine(String string) { }
+
+    @Override
+    public void logMessage(String string) { }
+
+    @Override
+    public void logError(String string) { }
+
+    @Override
+    public void logRevision(long l, String string) { }
+
+    @Override
+    public void logCompleted(String string) { }
+
+    @Override
+    public void onNotify(File file, SVNNodeKind svnnk) {
+        if(progressHandle != null) {
+            progressHandle.progress(file.getName());
+        }
     }
 }

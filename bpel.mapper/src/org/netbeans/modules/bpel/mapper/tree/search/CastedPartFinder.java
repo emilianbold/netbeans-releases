@@ -20,7 +20,7 @@
 package org.netbeans.modules.bpel.mapper.tree.search;
 
 import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
-import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
+import org.netbeans.modules.bpel.mapper.cast.BpelMapperTypeCast;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.wsdl.model.Part;
 
@@ -30,9 +30,9 @@ import org.netbeans.modules.xml.wsdl.model.Part;
  */
 public class CastedPartFinder extends SimpleFinder {
 
-    private AbstractTypeCast mTypeCast;
+    private BpelMapperTypeCast mTypeCast;
     
-    public CastedPartFinder(AbstractTypeCast typeCast) {
+    public CastedPartFinder(BpelMapperTypeCast typeCast) {
         mTypeCast = typeCast;
     }
     
@@ -51,7 +51,7 @@ public class CastedPartFinder extends SimpleFinder {
             return false;
         }
         if (treeItem instanceof Part ||
-                treeItem instanceof AbstractTypeCast) {
+                treeItem instanceof BpelMapperTypeCast) {
             // Stop searching if the tree item is a part.
             return false;
         }

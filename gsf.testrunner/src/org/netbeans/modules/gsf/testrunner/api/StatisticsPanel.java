@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,11 +50,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -75,6 +79,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      * Rerun button for running (all) tests again.
      */
     private JButton rerunButton;
+    private JButton rerunFailedButton;
 
     private JButton nextFailure;
 
@@ -88,15 +93,26 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     private final ResultDisplayHandler displayHandler;
 
     //default pressed value for the Show Failures Only button
-    private static boolean showFailuresOnly = false;
+    private boolean filterEnabled = false;
+    int filterMask = Status.PASSED.getBitMask();
+
+    private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
+    private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/rerun.png"), //NOI18N
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"), //NOI18N
+                            8, 8));
+
     /**
      */
     public StatisticsPanel(final ResultDisplayHandler displayHandler) {
         super(new BorderLayout(0, 0));
         this.displayHandler = displayHandler;
         JComponent toolbar = createToolbar();
-        treePanel = new ResultPanelTree(displayHandler);
-        treePanel.setFiltered(btnFilter.isSelected());
+        treePanel = new ResultPanelTree(displayHandler, this);
+        if (filterEnabled)
+            treePanel.setFilterMask(filterMask);
+        else
+            treePanel.setFilterMask(0);
 
         add(toolbar, BorderLayout.WEST);
         add(treePanel, BorderLayout.CENTER);
@@ -106,60 +122,101 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-        createRerunButton();
+        createRerunButtons();
         createNextPrevFailureButtons();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
-        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
+        toolbar.add(rerunFailedButton);
+        toolbar.add(new JToolBar.Separator());
         toolbar.add(btnFilter);
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
-        toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
+        toolbar.setRollover(true);
         toolbar.setFloatable(false);
-        toolbar.setBorderPainted(false);
-        
+
         return toolbar;
     }
     
-    private void createRerunButton() {
-        rerunButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true));
+    private void createRerunButtons() {
+        rerunButton = new JButton(rerunIcon);
+        rerunButton.setEnabled(false);
         rerunButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_RerunButton"));  //NOI18N
+        rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
+
+        rerunFailedButton = new JButton(rerunFailedIcon);
+        rerunFailedButton.setEnabled(false);
+        rerunFailedButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(getClass(), "ACSN_RerunFailedButton"));  //NOI18N
+        rerunFailedButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunFailedButton.tooltip"));
 
         final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
         if (rerunHandler != null) {
             rerunButton.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun();
                 }
             });
-            rerunHandler.addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    rerunButton.setEnabled(rerunHandler.enabled());
+            rerunFailedButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    rerunHandler.rerun(treePanel.getFailedTests());
                 }
             });
-            rerunButton.setEnabled(rerunHandler.enabled());
+            rerunHandler.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    updateButtons();
+                }
+            });
+            updateButtons();
         }
-
-        rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
     }
-    
+
+    void updateButtons(){
+        RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
+        rerunButton.setEnabled(displayHandler.sessionFinished &&
+                               rerunHandler.enabled(RerunType.ALL));
+        rerunFailedButton.setEnabled(displayHandler.sessionFinished && 
+                                     rerunHandler.enabled(RerunType.CUSTOM) &&
+                                     !treePanel.getFailedTests().isEmpty());
+    }
     /**
      */
     private void createFilterButton() {
         btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
-        btnFilter.setSelected(showFailuresOnly);
+        btnFilter.setSelected(filterEnabled);
         btnFilter.addItemListener(this);
+        btnFilter.setComponentPopupMenu(createFilterPopupMenu());
         updateFilterButtonLabel();
     }
 
+    private JPopupMenu createFilterPopupMenu(){
+        JPopupMenu popup = new JPopupMenu();
+
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hidePassed")); //NOI18N
+        item.setSelected((filterMask & Status.PASSED.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.PASSED));
+        popup.add(item);
+
+        item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideFailed")); //NOI18N
+        item.setSelected((filterMask & Status.FAILED.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.FAILED));
+        popup.add(item);
+
+        item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideError")); //NOI18N
+        item.setSelected((filterMask & Status.ERROR.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.ERROR));
+        popup.add(item);
+
+        return popup;
+    }
     /**
      */
     private void updateFilterButtonLabel() {
@@ -208,8 +265,11 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     public void itemStateChanged(ItemEvent e) {
         /* called when the Filter button is toggled. */
-        showFailuresOnly = btnFilter.isSelected();
-        treePanel.setFiltered(btnFilter.isSelected());
+        filterEnabled = btnFilter.isSelected();
+        if (filterEnabled)
+            treePanel.setFilterMask(filterMask);
+        else
+            treePanel.setFilterMask(0);
         updateFilterButtonLabel();
     }
     
@@ -234,7 +294,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         btnFilter.setEnabled(
             treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
-    
+
     /**
      * Displays a message about a running suite.
      *
@@ -250,6 +310,24 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     void displayMsg(final String msg) {
         treePanel.displayMsg(msg);
+    }
+
+    private class FilterItemListener implements ItemListener {
+        private int itemMask;
+
+        public FilterItemListener(Status status) {
+            this.itemMask = status.getBitMask();
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == e.SELECTED) {
+                filterMask |= itemMask;
+            } else if (e.getStateChange() == e.DESELECTED) {
+                filterMask &= ~itemMask;
+            }
+            StatisticsPanel.this.itemStateChanged(e);
+        }
     }
     
 }

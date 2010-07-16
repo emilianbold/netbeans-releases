@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,6 +50,70 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView.setTreeHorizontalScrollBarPolicy">
+        <api name="explorer"/>
+        <summary>OutlineView can provide horizontal scroll bar in the tree column.</summary>
+        <version major="6" minor="30"/>
+        <date day="7" month="7" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            In order to be able to provide horizontal scroll bar in the tree column,
+            two methods are added: <code>getTreeHorizontalScrollBarPolicy()</code>
+            and <code>setTreeHorizontalScrollBarPolicy()</code>.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="188130"/>
+    </change>
+    <change id="ListView.setShowParentNode">
+        <api name="explorer"/>
+        <summary>ListView can now display ".." item</summary>
+        <version major="6" minor="28"/>
+        <date day="24" month="4" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            To simplify navigation "up" in the <code>ListView</code> one
+            can turn on <a href="@TOP@/org/openide/explorer/view/ListView.html#setShowParentNode(boolean)">showParentNode</a>
+            property.
+        </description>
+        <class package="org.openide.explorer.view" name="ListView"/>
+        <issue number="35954"/>
+    </change>
+    <change id="OutlineView.setPropertyColumns">
+        <api name="explorer"/>
+        <summary><code>OutlineView.setPropertyColumns</code>,
+                 <code>OutlineView.addPropertyColumn</code> and
+                 <code>OutlineView.removePropertyColumn</code> added.
+        </summary>
+        <version major="6" minor="25"/>
+        <date day="11" month="1" year="2010"/>
+        <author login="tboudreau"/>
+        <compatibility binary="compatible" source="compatible" deprecation="yes" deletion="no" addition="yes"/>
+        <description>
+            Added methods to manipulate the displayed columns of an OutlineView
+            without needing to create prototype property objects, both making
+            it simpler to use, and avoiding the common problem of properties
+            not appearing because the prototype property does not use the
+            exact type required.
+            <p/>
+            Deprecated <code>OutlineView.setProperties()</code>, as this was
+            only needed for ease of replacement of TreeTableView.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="179397"/>
+    </change>
+    <change id="OutlineView.setTreeSortable">
+        <api name="explorer"/>
+        <summary><code>OutlineView.setTreeSortable</code> added.</summary>
+        <version major="6" minor="24"/>
+        <date day="21" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>Added method to set or unset the tree column as sortable.</description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="178613"/>
+    </change>
     <change id="TreeView.setAutoWaitCursor">
         <api name="explorer"/>
         <summary><code>TreeView.setAutoWaitCursor</code> added.</summary>

@@ -8,7 +8,10 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -43,16 +46,21 @@ Contributor(s):
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
             </file>
         </folder>
+        <folder name="NativeProjectCodeAssistance">
+            <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
+            </file>
+        </folder>
     </folder>
 
     <folder name="NativeProjects">
-        <folder name="Actions">
-            <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow">
+        <folder name="CodeAssistanceActions">
+            <file name="DiscoveryWizardAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="ReconfigureProjectAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
+            <file name="ReconfigureProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
                 <attr name="position" intvalue="250"/>
             </file>
         </folder>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,13 +52,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
@@ -165,6 +173,38 @@ public class SourceLevelQueryImplTest extends NbTestCase {
 
         String sl = sourceLevelQuery.getSourceLevel(dummy);
         assertEquals(DEFAULT_JAVAC_SOURCE, sl);
+    }
+
+    public void testSourceLevelQuery2() throws Exception {
+        this.prepareProject(TEST_PLATFORM);
+        final FileObject dummy = projdir.createData("Dummy.java");
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertNotNull(result);
+        assertEquals(JAVAC_SOURCE, result.getSourceLevel().toString());
+    }
+
+    public void testFiring() throws Exception {
+        this.prepareProject(TEST_PLATFORM);
+        final FileObject dummy = projdir.createData("Dummy.java");
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertNotNull(result);
+        assertEquals(JAVAC_SOURCE, result.getSourceLevel().toString());
+        class TestChangeListener implements ChangeListener {
+            final AtomicInteger ec = new AtomicInteger();
+            @Override
+            public void stateChanged(final ChangeEvent event) {
+                ec.incrementAndGet();
+            }
+        }
+        final TestChangeListener tl = new TestChangeListener();
+        result.addChangeListener(tl);
+        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.setProperty("javac.source", "1.7");
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        assertEquals(1, tl.ec.intValue());
+        assertEquals("1.7", result.getSourceLevel().toString());
     }
 
     private static class TestPlatformProvider implements JavaPlatformProvider {

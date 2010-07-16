@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -92,6 +96,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -307,19 +312,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                          TreePath compUnitPath,
                                          WorkingCopy workingCopy) {
         List<ExecutableElement> srcMethods
-                                = findTestableMethods(srcTopClass);
+                                = findTestableMethods(workingCopy, srcTopClass);
         boolean srcHasTestableMethods = !srcMethods.isEmpty();
 
         final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
 
-        /* Check whether the corresponding test class already exists: */
-        ClassTree tstTopClass = null;
-        for (ClassTree tstClass : tstTopClasses) {
-            if (tstClass.getSimpleName().contentEquals(testClassSimpleName)) {
-                tstTopClass = tstClass;     //yes, it exists
-                break;
-            }
-        }
+        ClassTree tstTopClass = findClass(testClassSimpleName, tstTopClasses);
         
         if (tstTopClass != null) {      //if the test class already exists
             TreePath tstTopClassTreePath = new TreePath(compUnitPath,
@@ -1377,6 +1375,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                WorkingCopy workingCopy) {
         TreeMaker maker = workingCopy.getTreeMaker();
 
+        ExecutableType srcMethodExType = (ExecutableType)srcMethod.asType();
+        try {
+            srcMethodExType = (ExecutableType)workingCopy.getTypes().asMemberOf((DeclaredType)srcClass.asType(), srcMethod);
+        } catch (IllegalArgumentException iae) {
+        }
+
+
         boolean isStatic = srcMethod.getModifiers().contains(Modifier.STATIC);
         List<StatementTree> statements = new ArrayList<StatementTree>(8);
 
@@ -1386,7 +1391,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     srcMethod.getSimpleName().toString());
             List<VariableTree> paramVariables = generateParamVariables(
                                     workingCopy,
-                                    srcMethod);
+                                    srcMethodExType,
+                                    getTestSkeletonVarNames(srcMethod.getParameters()));
             statements.add(sout);
             statements.addAll(paramVariables);
 
@@ -1416,7 +1422,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                             srcMethod.getSimpleName()),
                     createIdentifiers(maker, paramVariables));
 
-            TypeMirror retType = srcMethod.getReturnType();
+            TypeMirror retType = srcMethodExType.getReturnType();
             TypeKind retTypeKind = retType.getKind();
 
             switch(retTypeKind){
@@ -1521,27 +1527,26 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      */
     private List<VariableTree> generateParamVariables(
                                             WorkingCopy workingCopy,
-                                            ExecutableElement srcMethod) {
+                                            ExecutableType srcMethod,
+                                            String[] varNames) {
         TreeMaker maker = workingCopy.getTreeMaker();
-        List<? extends VariableElement> params = srcMethod.getParameters();
+        List<? extends TypeMirror> params = srcMethod.getParameterTypes();
         if ((params == null) || params.isEmpty()) {
             return Collections.<VariableTree>emptyList();
         }
 
         Set<Modifier> noModifiers = Collections.<Modifier>emptySet();
         List<VariableTree> paramVariables = new ArrayList<VariableTree>(params.size());
-        String[] varNames = getTestSkeletonVarNames(params);
         int index = 0;
-        for (VariableElement param : params) {
-            TypeMirror paramType = param.asType();
-            if (paramType.getKind() == TypeKind.TYPEVAR){
-                paramType = getSuperType(workingCopy, paramType);
+        for (TypeMirror param : params) {
+            if (param.getKind() == TypeKind.TYPEVAR){
+                param = getSuperType(workingCopy, param);
             }
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],
-                                   maker.Type(paramType),
-                                   getDefaultValue(maker, paramType)));
+                                   maker.Type(param),
+                                   getDefaultValue(maker, param)));
         }
         return paramVariables;
     }
@@ -1716,9 +1721,23 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      */
-    private List<ExecutableElement> findTestableMethods(TypeElement classElem) {
-        List<ExecutableElement> methods
-                = ElementFilter.methodsIn(classElem.getEnclosedElements());
+    private List<ExecutableElement> findTestableMethods(WorkingCopy wc, TypeElement classElem) {
+        boolean isEJB = isClassEjb31Bean(wc, classElem);
+        final Types types = wc.getTypes();
+
+        Iterable<? extends Element> elements;
+        if (isEJB){
+            final TypeMirror typeObject = wc.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+            ElementAcceptor acceptor = new ElementAcceptor(){
+                public boolean accept(Element e, TypeMirror type) {
+                    return !types.isSameType(typeObject, e.getEnclosingElement().asType());
+                }
+            };
+            elements = wc.getElementUtilities().getMembers(classElem.asType(), acceptor);
+        } else {
+            elements = classElem.getEnclosedElements();
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(elements);
 
         if (methods.isEmpty()) {
             return Collections.<ExecutableElement>emptyList();
@@ -1728,7 +1747,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         int skippedCount = 0;
         for (ExecutableElement method : methods) {
-            if (isTestableMethod(method)) {
+            if (isTestableMethod(method) &&
+                    (!isEJB || (isEJB && isTestableEJBMethod(method)))) {
                 if (testableMethods == null) {
                     testableMethods = new ArrayList<ExecutableElement>(
                                              methods.size() - skippedCount);
@@ -1754,6 +1774,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return setup.isMethodTestable(method);
     }
 
+    private boolean isTestableEJBMethod(ExecutableElement method){
+        Set<Modifier> modifiers = method.getModifiers();
+        
+        return !(modifiers.isEmpty() || !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS)) &&
+               !modifiers.contains(Modifier.PROTECTED);
+    }
     /**
      * Finds a non-abstract, direct or indirect subclass of a given source class
      * among nested classes of the given test class. Both static nested classes
@@ -2082,6 +2108,27 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+instanceClsName)) // NOI18N
         );
         return invocation;
+    }
+
+    /**
+     * Finds a class with the specified simple name in the specified list of
+     * classes.
+     * @param simpleName the simple class name.
+     * @param classes the list of the {@code ClassTree}s.
+     * @return a {@code ClassTree} of the class if the specified simple class
+     *         name is not {@code null}, and a class with that name exists,
+     *         otherwise {@code null}.
+     */
+    private ClassTree findClass(String simpleName, List<ClassTree> classes) {
+        if(simpleName == null) { // #180480
+            return null;
+        }
+        for (ClassTree cls : classes) {
+            if (cls.getSimpleName().contentEquals(simpleName)) {
+                return cls;     // class exists
+            }
+        }
+        return null;
     }
 
 }

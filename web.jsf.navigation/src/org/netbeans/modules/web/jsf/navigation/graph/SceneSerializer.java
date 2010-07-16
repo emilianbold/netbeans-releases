@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 //import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData.PageData;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 
 /**
  * @author David Kaspar
@@ -161,21 +163,25 @@ public class SceneSerializer {
         
     }
     
-    private final static void writeToFile(Document document, FileObject file ){
-        OutputStream fos = null;
+    private final static void writeToFile(final Document document, final FileObject file ){
         try {
-            fos = file.getOutputStream();
-            XMLUtil.write(document, fos, "UTF-8"); // NOI18N
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
+            FileSystem fs = file.getFileSystem();
+            fs.runAtomicAction(new FileSystem.AtomicAction() {
+
+                @Override
+                public void run() throws IOException {
+                    FileLock lock = file.lock();
+                    OutputStream fos = file.getOutputStream(lock);
+                    try {
+                        XMLUtil.write(document, fos, "UTF-8"); // NOI18N
+                        fos.close();
+                    } finally {
+                        lock.releaseLock();
+                    }
                 }
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

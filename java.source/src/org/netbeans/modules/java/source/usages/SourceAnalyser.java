@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -93,6 +96,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -101,6 +105,7 @@ import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -144,49 +149,52 @@ public class SourceAnalyser {
         Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
         final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
         for (CompilationUnitTree cu : data) {
-            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes,
-                    tuple);
-            uv.scan(cu,usages);
-            mainMethod[0] |= uv.mainMethod;
-            if (uv.sourceName != null && uv.rsList != null && uv.rsList.size()>0) {
-                final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
-                final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
-                final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
-                String ext;
-                if (tuple.virtual) {
-                    ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
-                }
-                else {
-                    ext = FileObjects.RS;
-                }
-                final String rsName = simpleName + '.' + ext;   //NOI18N
-                javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
-                assert fo != null;
-                try {
-                    BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
+            try {
+                UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, tuple);
+                uv.scan(cu,usages);
+                mainMethod[0] |= uv.mainMethod;
+                if (uv.rsList != null && uv.rsList.size()>0) {
+                    final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
+                    final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
+                    final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
+                    String ext;
+                    if (tuple.virtual) {
+                        ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
+                    }
+                    else {
+                        ext = FileObjects.RS;
+                    }
+                    final String rsName = simpleName + '.' + ext;   //NOI18N
+                    javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
+                    assert fo != null;
                     try {
-                        String line;
-                        while ((line = in.readLine())!=null) {
-                            uv.rsList.add (line);
+                        BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
+                        try {
+                            String line;
+                            while ((line = in.readLine())!=null) {
+                                uv.rsList.add (line);
+                            }
+                        } finally {
+                            in.close();
+                        }
+                    } catch (FileNotFoundException e) {
+                        //The manager.getFileForInput() should be used which returns null when file doesn't exist.
+                        //but the javac API doesn't allow to specify siblink  which will not work if there are two roots
+                        //with the same class name in the same wrong package.
+                        //workarond: use manager.getFileForOutput() which may return non existing javac FileObject and
+                        //cahch FileNotFoundException when it doens't exist, there is nothing to add into rsList
+                    }
+                    PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
+                    try {
+                        for (String sig : uv.rsList) {
+                            rsOut.println(sig);
                         }
                     } finally {
-                        in.close();
+                        rsOut.close();
                     }
-                } catch (FileNotFoundException e) {
-                    //The manager.getFileForInput() should be used which returns null when file doesn't exist.
-                    //but the javac API doesn't allow to specify siblink  which will not work if there are two roots
-                    //with the same class name in the same wrong package.
-                    //workarond: use manager.getFileForOutput() which may return non existing javac FileObject and
-                    //cahch FileNotFoundException when it doens't exist, there is nothing to add into rsList
                 }
-                PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
-                try {
-                    for (String sig : uv.rsList) {
-                        rsOut.println(sig);
-                    }
-                } finally {
-                    rsOut.close();
-                }
+            } catch (IllegalArgumentException iae) {
+                Exceptions.printStackTrace(iae);
             }
         }
         //Ideally not even usegas will be calculated but it will propagate the storeIndex
@@ -194,7 +202,7 @@ public class SourceAnalyser {
         if (tuple.index) {
             for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
                 final Pair<String,String> key = oe.getKey();
-                final Data value = oe.getValue();            
+                final Data value = oe.getValue();
                 addClassReferences (key,value);
             }
         }
@@ -206,13 +214,15 @@ public class SourceAnalyser {
             final List<Pair<String,String>> topLevels = new ArrayList<Pair<String,String>>();
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
             uv.scan(cu,usages);
-            for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {            
+            for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
                 final Pair<String,String> key = oe.getKey();
-                final Data data = oe.getValue();                
-                addClassReferences (key,data);                            
+                final Data data = oe.getValue();
+                addClassReferences (key,data);
             }
             this.index.store(this.references, topLevels);
-        } catch (OutputFileManager.InvalidSourcePath e) {
+        } catch (IllegalArgumentException iae) {
+            Exceptions.printStackTrace(iae);
+        }catch (OutputFileManager.InvalidSourcePath e) {
             //Deleted project, ignore
         } finally {
             this.references.clear();
@@ -297,22 +307,28 @@ public class SourceAnalyser {
         private final Set<CharSequence> importIdents;
         private final Set<CharSequence> packageAnnotationIdents;
         private final boolean virtual;
-        private final boolean storeIndex;
         private boolean isStaticImport;
-        private State state;        
+        private State state;
         private Element enclosingElement = null;
         private Set<String> rsList;         //List of references from source in case when the source has more top levels or is wrongly packaged
         private boolean crossedTopLevel;    //True when the visitor already reached the correctly packaged top level
         private boolean mainMethod;
-        
-        
-        
-        public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes,
-                final CompileTuple tuple) throws MalformedURLException {
+
+
+
+        public UsagesVisitor (
+                JavacTaskImpl jt,
+                CompilationUnitTree cu,
+                JavaFileManager manager,
+                javax.tools.JavaFileObject sibling,
+                Set<? super ElementHandle<TypeElement>> newTypes,
+                final CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
+
             assert jt != null;
             assert cu != null;
             assert manager != null;
             assert sibling != null;
+
             this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
             this.staticImports = new HashSet<String> ();
@@ -328,19 +344,24 @@ public class SourceAnalyser {
             this.signatureFiles = true;
             this.manager = manager;
             this.virtual = tuple.virtual;
-            this.storeIndex = tuple.index;
             this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);            
+            this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = null;
-            this.newTypes = newTypes;            
+            this.newTypes = newTypes;
         }
-                
-        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) throws MalformedURLException {
+
+        protected UsagesVisitor (
+                JavacTaskImpl jt,
+                CompilationUnitTree cu,
+                JavaFileManager manager,
+                javax.tools.JavaFileObject sibling,
+                List<? super Pair<String,String>> topLevels) throws MalformedURLException, IllegalArgumentException {
+
             assert jt != null;
             assert cu != null;
             assert manager != null;
             assert sibling != null;
-            
+
             this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
             this.staticImports = new HashSet<String>();
@@ -356,21 +377,20 @@ public class SourceAnalyser {
             this.signatureFiles = false;
             this.manager = manager;
             this.siblingUrl = sibling.toUri().toURL();
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);
+            this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = topLevels;
             this.newTypes = null;
             this.virtual = false;
-            this.storeIndex = true;
         }
-        
+
         final Types getTypes() {
             return types;
         }
-        
+
         final TransTypes getTransTypes () {
             return trans;
         }
-        
+
         public @Override Void scan(Tree node, Map<Pair<String,String>, Data> p) {
             if (node == null) {
                 return null;
@@ -639,13 +659,10 @@ public class SourceAnalyser {
                                     rsList.add(sourceName);
                                 }
                             }
-                            final FileObject fo = URLMapper.findFileObject(this.siblingUrl);
-                            if (fo != null) {
-                                final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                                if (cp != null) {
-                                    resourceName = cp.getResourceName(fo, '/', true);   //NOI18N
-                                }
-                            }
+                            final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
+                            rnBuilder.append('.');  //NOI18N
+                            rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
+                            resourceName =  rnBuilder.toString();
                         }
                         else {
                             crossedTopLevel = true;
@@ -753,8 +770,43 @@ public class SourceAnalyser {
             }
             return super.visitVariable(node, p);
         }
-                
-        
+
+        /**
+         * Infers a JavaFileObject
+         * @param jfm the file manager
+         * @param jfo the file to be inferred
+         * @return a inferred name
+         * @throws IllegalArgumentException when file cannot be inferred.
+         */
+        private @NonNull String inferBinaryName(final JavaFileManager jfm, final javax.tools.JavaFileObject jfo) throws IllegalArgumentException {
+            String result = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, jfo);
+            if (result != null) {
+                return result;
+            }
+            FileObject fo = null;
+            ClassPath scp = null;
+            try {
+                fo = URLMapper.findFileObject(jfo.toUri().toURL());
+                if (fo != null) {
+                    scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                    if (scp != null) {
+                        result=scp.getResourceName(fo, '.', false); //NOI18N
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                }
+            } catch (MalformedURLException e) {
+                //pass - throws IAE
+            }
+            throw new IllegalArgumentException(String.format("File: %s Type: %s FileObject: %s Sourcepath: %s",     //NOI18N
+                    jfo.toUri().toString(),
+                    jfo.getClass().getName(),
+                    fo == null ? "<null>" : FileUtil.getFileDisplayName(fo),  //NOI18N
+                    scp == null? "<null>" : scp.toString()));   //NOI18N
+        }
+
+
         private void addUsage (final Pair<String,String>owner, final String className, final Map<Pair<String,String>,Data> map, final ClassIndexImpl.UsageType type) {
             assert className != null;
             assert map != null;

@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.bpel.model.ext.logging.impl;
 
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
@@ -16,6 +17,7 @@ import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.impl.ExtensibleElementsImpl;
+import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
 import org.w3c.dom.Element;
 
 /**
@@ -33,10 +35,17 @@ public abstract class LoggingEntityImpl extends ExtensibleElementsImpl implement
     }
 
     LoggingEntityImpl(LoggingEntityFactory factory, BpelBuilderImpl builder, LoggingElements loggingElements) {
-        super(builder.getModel(), 
+        this(factory, builder.getModel(), 
                 builder.getModel().getDocument().createElementNS(
                 loggingElements.getNamespace(), loggingElements.getName()));
-        mFactory = factory;
+        // below code is reqired to invoke generating UID, unique name e.c. services
+        writeLock();
+        try {
+            BuildEvent<? extends BpelEntity> event = preCreated(this);
+            postEvent(event);
+        } finally {
+            writeUnlock();
+        }
     }
 
     public void accept(BpelModelVisitor visitor) {

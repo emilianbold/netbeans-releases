@@ -22,7 +22,7 @@ MyBean MyBean
 
 <%--CC
 <h:outputText value="#{MyBean.n|}" title="Hi" />
-String name
+name
 <h:outputText value="#{MyBean.name}" title="Hi" />
 --%>
 

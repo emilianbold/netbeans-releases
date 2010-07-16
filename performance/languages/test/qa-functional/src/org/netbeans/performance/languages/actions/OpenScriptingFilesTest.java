@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -132,7 +135,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     protected void initialize(){
         EditorOperator.closeDiscardAll();        
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        
+        waitNoEvent(10000);
     }
 
     protected Node getProjectNode(String projectName) {
@@ -201,34 +204,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
-
-        String path = nodePath+"|"+fileName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
-        popup =  fileToBeOpened.callPopup();
-        popup.pushMenu(menuItem);
-
-        EditorOperator editorOperator1 = EditorWindowOperator.getEditor(fileName);
-        editorOperator1.makeComponentVisible();
-        editorOperator1.select(1, 1);
-
-        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
-        assertNotNull("File object found", fo);
-        assertEquals("Correct name", "php20kb.php", fo.getNameExt());
-        File dir = FileUtil.toFile(fo.getParent());
-        assertNotNull("Directory is backed by java.io.File", dir);
-
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator1);
-//        try {
-//            SourceUtils.waitScanFinished();
-//        } catch (InterruptedException ex) {
-//            fail("No interrupts please");
-//        }
-        AtomicLong l = new AtomicLong();
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
-        CountingSecurityManager.initialize(dir.getPath());
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER, 0)).perform(editorOperator1);
-        CountingSecurityManager.assertCounts("At most 40 touches", 40, l);
-
         doMeasurement();
     }
 

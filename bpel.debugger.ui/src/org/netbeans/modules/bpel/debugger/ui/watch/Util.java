@@ -200,7 +200,7 @@ public class Util {
             final int slashIndex = xpath.indexOf("/");
             
             if (slashIndex == -1) {
-                return null;
+                return new Object[0];
             }
             
             final String partName = xpath.substring(0, slashIndex);

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
+        "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<MIME-resolver>
+    <file>
+        <ext name="mk"/>
+        <resolver mime="text/x-make"/>
+    </file>
+    <file>
+        <ext name=""/>
+        <name name="makefile" substring="true"/>
+        <resolver mime="text/x-make"/>
+    </file>
+    <file>
+        <!--  configure input file-->
+        <ext name="in"/>
+        <name name="makefile" substring="true"/>
+        <resolver mime="text/x-make"/>
+    </file>
+    <file>
+        <!--  automake input file-->
+        <ext name="am"/>
+        <name name="makefile" substring="true"/>
+        <resolver mime="text/x-make"/>
+    </file>
+    <file>
+        <ext name="sh"/>
+        <ext name="bash"/>
+        <ext name="csh"/>
+        <ext name="ksh"/>
+        <ext name="sh"/>
+        <ext name="zsh"/>
+        <ext name="pl"/>
+        <resolver mime="text/sh"/>
+    </file>
+    <file>
+        <!-- Only files without extension. -->
+        <ext name=""/>
+        <!-- Pattern #! in first 2 bytes and one of patterns in first 40 bytes.  -->
+        <pattern value="#!" range="2">
+            <pattern value="/bin/bash" range="40"/>
+        </pattern>
+        <pattern value="#!" range="2">
+            <pattern value="/bin/sh" range="40"/>
+        </pattern>
+        <pattern value="#!" range="2">
+            <pattern value="/bin/ksh" range="40"/>
+        </pattern>
+        <pattern value="#!" range="2">
+            <pattern value="/bin/csh" range="40"/>
+        </pattern>
+        <pattern value="#!" range="2">
+            <pattern value="/usr/bin/perl" range="40"/>
+        </pattern>
+        <resolver mime="text/sh"/>
+    </file>
+    <file>
+        <ext name="bat"/>
+        <ext name="cmd"/>
+        <resolver mime="text/bat"/>
+    </file>
+</MIME-resolver>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,34 +49,35 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.BuildPlatformNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class MakeConfiguration extends Configuration {
 
+    public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
+    public static final String PROJECT_XML = "project.xml"; // NOI18N
+    public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N
     public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
     public static final String BUILD_FOLDER = "build"; // NOI18N
     public static final String DIST_FOLDER = "dist"; // NOI18N
@@ -99,7 +103,6 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
-
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -110,6 +113,7 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
     private BooleanConfiguration dependencyChecking;
+    private BooleanConfiguration rebuildPropChanged;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
@@ -122,31 +126,32 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
-    // Constructors
-    public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
-    }
-
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
+        this(baseDir, name, configurationTypeValue, null);
     }
 
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
+        this(baseDir, name, configurationTypeValue, hostUID, null);
+    }
+
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
         super(baseDir, name);
+        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
-        }
-        else {
+        } else {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
-        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
-        compilerSet = new CompilerSet2Configuration(developmentHost);
+        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
+        CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+        compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
+        dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
+        rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -155,7 +160,8 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
-        debuggerChooserConfiguration = new DebuggerChooserConfiguration();
+
+        debuggerChooserConfiguration = new DebuggerChooserConfiguration(Lookup.EMPTY);
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
@@ -184,6 +190,14 @@ public class MakeConfiguration extends Configuration {
 
     public void setDependencyChecking(BooleanConfiguration dependencyChecking) {
         this.dependencyChecking = dependencyChecking;
+    }
+
+    public BooleanConfiguration getRebuildPropChanged() {
+        return rebuildPropChanged;
+    }
+
+    public void setRebuildPropChanged(BooleanConfiguration rebuildPropChanged) {
+        this.rebuildPropChanged = rebuildPropChanged;
     }
 
     public CompilerSet2Configuration getCompilerSet() {
@@ -271,7 +285,7 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
     }
 
-    public boolean isMakefileConfiguration() {
+    public final boolean isMakefileConfiguration() {
         return getConfigurationType().getValue() == TYPE_MAKEFILE;
     }
 
@@ -384,6 +398,7 @@ public class MakeConfiguration extends Configuration {
         this.qmakeConfiguration = qmakeConfiguration;
     }
 
+    @Override
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -396,6 +411,7 @@ public class MakeConfiguration extends Configuration {
         getFortranRequired().assign(makeConf.getFortranRequired());
         getAssemblerRequired().assign(makeConf.getAssemblerRequired());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
+        getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
@@ -425,6 +441,7 @@ public class MakeConfiguration extends Configuration {
         }
     }
 
+    @Override
     public Configuration cloneConf() {
         return (Configuration) clone();
     }
@@ -433,12 +450,13 @@ public class MakeConfiguration extends Configuration {
      * Make a copy of configuration requested from Project Properties
      * @return Copy of configuration
      */
+    @Override
     public Configuration copy() {
         MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        Vector<ConfigurationAuxObject> copiedAuxs = new Vector<ConfigurationAuxObject>();
+        List<ConfigurationAuxObject> copiedAuxs = new ArrayList<ConfigurationAuxObject>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
@@ -532,6 +550,7 @@ public class MakeConfiguration extends Configuration {
         clone.setAssemblerRequired(getAssemblerRequired().clone());
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
+        clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
         clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
@@ -561,11 +580,7 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-//    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
-//    public Sheet getGeneralSheet(Project project) {
-//        return getBuildSheet(project);
-//    }
-    public Sheet getBuildSheet(Project project, MakeCustomizer makeCustomizer) {
+    public Sheet getBuildSheet(Project project) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
@@ -574,17 +589,18 @@ public class MakeConfiguration extends Configuration {
         set.setShortDescription(getString("ProjectDefaultsHint"));
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
 //        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
-        set.put(new BooleanNodeProp(getAssemblerRequired(), true, "assemblerRequired", getString("AssemblerRequiredTxt"), getString("AssemblerRequiredHint"))); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+//        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
+//        set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
+//        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
+//        set.put(new BooleanNodeProp(getAssemblerRequired(), true, "assemblerRequired", getString("AssemblerRequiredTxt"), getString("AssemblerRequiredHint"))); // NOI18N
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
 
         if (isCompileConfiguration()) {
             set = Sheet.createExpertSet();
             set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
+            set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
             sheet.put(set);
         }
 
@@ -659,26 +675,26 @@ public class MakeConfiguration extends Configuration {
             // Base it on actual files added to project
             for (int x = 0; x < items.length; x++) {
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);
-                if (itemConfiguration == null ||
-                        itemConfiguration.getExcluded() == null ||
-                        itemConfiguration.getExcluded().getValue()) {
+                if (itemConfiguration == null
+                        || itemConfiguration.getExcluded() == null
+                        || itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == Tool.CCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.Assembler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
-            //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
-            //                hasCAsmFiles = false;
-            //            }
+                //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
+                //                hasCAsmFiles = false;
+                //            }
             }
         }
         cRequired.setDefault(hasCFiles);
@@ -695,7 +711,7 @@ public class MakeConfiguration extends Configuration {
         private boolean notYetSet = true;
 
         LanguageBooleanConfiguration() {
-            super(null, false);
+            super(false);
         }
 
         @Override
@@ -794,8 +810,8 @@ public class MakeConfiguration extends Configuration {
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {
                 LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
-                String outputLocation = IpeUtils.getDirName(projectItem.getMakeArtifact().getOutput());
-                if (IpeUtils.isPathAbsolute(outputLocation)) {
+                String outputLocation = CndPathUtilitities.getDirName(projectItem.getMakeArtifact().getOutput());
+                if (CndPathUtilitities.isPathAbsolute(outputLocation)) {
                     subProjectOutputLocations.add(outputLocation);
                 } else {
                     subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
@@ -827,25 +843,26 @@ public class MakeConfiguration extends Configuration {
         if (output == null) {
             return output;
         }
-        if (!IpeUtils.isPathAbsolute(output)) {
+        if (!CndPathUtilitities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = FilePathAdaptor.normalize(output);
+            output = CndPathUtilitities.normalize(output);
         }
         return expandMacros(output);
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, PredefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {
         // Substitute macros
-        val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
-        val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests"); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
     }
 
@@ -853,7 +870,8 @@ public class MakeConfiguration extends Configuration {
      * Special version of IntConfiguration
      * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
      */
-    static class ManagedIntConfiguration extends IntConfiguration {
+    private final static class ManagedIntConfiguration extends IntConfiguration {
+
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }
@@ -864,7 +882,7 @@ public class MakeConfiguration extends Configuration {
             if (s != null) {
                 for (int i = 0; i < names.length; i++) {
                     if (s.equals(names[i])) {
-                        setValue(i+1);
+                        setValue(i + 1);
                         break;
                     }
                 }
@@ -873,7 +891,7 @@ public class MakeConfiguration extends Configuration {
 
         @Override
         public String getName() {
-            return getNames()[getValue()-1];
+            return getNames()[getValue() - 1];
         }
     }
 //

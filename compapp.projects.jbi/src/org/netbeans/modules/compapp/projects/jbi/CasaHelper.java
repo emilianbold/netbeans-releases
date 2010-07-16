@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,13 +65,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 
 import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 
@@ -82,12 +88,26 @@ public class CasaHelper {
     private static String LOCK_FILE_SUFFIX = "~";  // NOI18N
 
     // WSIT Callback Java project support
-    private static final String CASA_NAMESPACE_URI = "http://java.sun.com/xml/ns/casa";  // NOI18N
-    private static final String WSIT_CALLBACK_ELEMENT = "WsitCallback";   // NOI18N
-    private static final String WSIT_CALLBACK_PROJECT = "CallbackProject";   // NOI18N
+    private static final String WSIT_CALLBACK_NAMESPACE = "http://www.sun.com/jbi/wsit/callbackproject"; // NOI18N
+    private static final String WSIT_CALLBACK_ELEMENT_NAME = "WsitCallback"; // NOI18N
+    private static final String WSIT_CALLBACK_PROJECT_ATTR_NAME = "CallbackProject"; // NOI18N
+
+    // JAX-WS Handlers
+    public static final String JAXWS_HANDLER_NAMESPACE = "http://www.sun.com/jbi/httpbc/jaxws_handlers"; // NOI18N
+    public static final String JAXWS_HANDLER_ELEMENT_NAME = "handler"; // NOI18N
+    public static final String JAXWS_HANDLER_CHAIN_ELEMENT_NAME = "handler-chain"; // NOI18N
+    public static final String JAXWS_HANDLER_PROJECT_PATH_ATTR_NAME = "projectpath"; // NOI18N
+    public static final String JAXWS_HANDLER_JAR_PATHS_ATTR_NAME = "jarpaths"; // NOI18N
+
+    // JAX-RS Handlers
+    public static final String JAXRS_HANDLER_NAMESPACE = "http://www.sun.com/jbi/restbc/jaxrs_filters"; // NOI18N
+    public static final String JAXRS_HANDLER_ELEMENT_NAME = "filter"; // NOI18N
+    public static final String JAXRS_HANDLER_CHAIN_ELEMENT_NAME = "filter-chain"; // NOI18N
+    public static final String JAXRS_HANDLER_PROJECT_PATH_ATTR_NAME = "projectpath"; // NOI18N
+    public static final String JAXRS_HANDLER_JAR_PATHS_ATTR_NAME = "jarpaths"; // NOI18N
 
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.CasaHelper");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.CasaHelper"); // NOI18N
     
     /**
      * Gets the name of the CASA file in the given project.
@@ -151,12 +171,12 @@ public class CasaHelper {
         String projName = projInfo.getName();        
         FileObject confFO = project.getProjectDirectory().getFileObject(CASA_DIR_NAME); 
         FileObject casaFO = null;
-        try {        
-            casaFO = FileUtil.copyFile(
+        try {
+            FileObject casaTemplateFO =
                     FileUtil.getConfigFile(
                     "org-netbeans-modules-compapp-projects-jbi/project.casa" // NOI18N
-                    ), confFO, projName
-                    );        
+                    );
+            casaFO = FileUtil.copyFile(casaTemplateFO, confFO, projName);
 //            registerCasaFileListener(project);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -276,7 +296,7 @@ public class CasaHelper {
      * @param properties    project properties (may not been persisted yet)
      */   
     public static void updateCasaWithJBIModules(JbiProject project, 
-            JbiProjectProperties properties) { 
+            JbiProjectProperties properties) {
          
         FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
         if (casaFO == null) {
@@ -296,16 +316,7 @@ public class CasaHelper {
                     CasaConstants.CASA_SERVICE_UNITS_ELEM_NAME).item(0);
             NodeList seSUs = sus.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-            
-            List<Element> internalSESUs = new ArrayList<Element>();
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
-                String isInternal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
-                if (isInternal == null || "true".equalsIgnoreCase(isInternal)) {
-                    internalSESUs.add(seSU);
-                }
-            }
-            
+                        
             @SuppressWarnings("unchecked")
             List<VisualClassPathItem> newContentList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
@@ -318,14 +329,24 @@ public class CasaHelper {
                 newProjectNameList.add(newContent.getProjectName());
             }
             
-            List<String> sesuUnitNameList = new ArrayList<String>();
-            for (Element seSU : internalSESUs) {
+            List<String> sesuNames = new ArrayList<String>();
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
                 String unitName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
-                sesuUnitNameList.add(unitName);
+                sesuNames.add(unitName);
             }
 
             // Remove deleted service units from casa
-            for (Element seSU : internalSESUs) {
+            for (int i = 0; i < seSUs.getLength(); i++) {
+                Element seSU = (Element) seSUs.item(i);
+
+                // skip external unknown SUs
+                String internal = seSU.getAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME);
+                String unknown = seSU.getAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME);
+                if ("false".equalsIgnoreCase(internal) && "true".equals(unknown)) { // NOI18N
+                    continue;
+                }
+
                 String projName = seSU.getAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME);
                 if (!newProjectNameList.contains(projName)) {
                     sus.removeChild(seSU);
@@ -335,11 +356,12 @@ public class CasaHelper {
             }
 
             // Add new service units to casa
+            List<String> externalSuNames = project.getExternalServiceUnitNames();
             for (VisualClassPathItem artifact: newContentList) {
                 String projName = artifact.getProjectName();
                 String artifactName = artifact.toString();
                 
-                if (!sesuUnitNameList.contains(projName)) {
+                if (!sesuNames.contains(projName)) {
                     String targetCompID = "unknown"; // NOI18N
                     for (int j = 0; j < newContentList.size(); j++) {
                         if (newContentList.get(j).toString().equals(artifactName)) {
@@ -351,7 +373,8 @@ public class CasaHelper {
                             CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
                     seSU.setAttribute(CasaConstants.CASA_X_ATTR_NAME, "-1"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_Y_ATTR_NAME, "-1"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, "true"); // NOI18N
+                    seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, 
+                            externalSuNames.contains(projName) ? "false" : "true"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_DEFINED_ATTR_NAME, "false"); // NOI18N 
                     seSU.setAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME, "false"); // NOI18N
                     seSU.setAttribute(CasaConstants.CASA_NAME_ATTR_NAME, projName); // NOI18N  // FIXME
@@ -378,17 +401,78 @@ public class CasaHelper {
     }
 
     /**
-     * Get the list of WSIT callback handler Java Projects
+     * Get the set of WSIT callback handler Java Projects.
      *
-     * @param project the compapp project
-     * @return the list of WSIT callback handler Java Projects
+     * @param project   the compapp project
+     * @return the set of WSIT callback handler Java Projects
      */
-    public static  List<String> getWsitCallbackProjects(JbiProject project) {
-        List<String> projs = new ArrayList<String>();
+    public static Set<String> getWSITCallbackProjects(JbiProject project) {
+        return collectCasaPortExtensionAttributes(project,
+                WSIT_CALLBACK_NAMESPACE,
+                WSIT_CALLBACK_ELEMENT_NAME,
+                WSIT_CALLBACK_PROJECT_ATTR_NAME);
+    }
+
+    /**
+     * Get the set of JAX-WS handler Jar files.
+     *
+     * @param project   the compapp project
+     * @return the set of JAX-WS handler Jar files
+     */
+    public static Set<String> getJAXWSHandlerJars(JbiProject project) {
+        Set<String> jarPaths = collectCasaPortExtensionAttributes(project,
+                JAXWS_HANDLER_NAMESPACE,
+                JAXWS_HANDLER_ELEMENT_NAME,
+                JAXWS_HANDLER_JAR_PATHS_ATTR_NAME);
+        
+        Set<String> ret = new HashSet<String>();
+        for (String jarPath : jarPaths) {
+            ret.addAll(Arrays.asList(jarPath.split(";"))); // NOI18N
+        }
+
+        return jarPaths;
+    }
+
+    /**
+     * Get the set of JAX-RS handler Jar files.
+     *
+     * @param project   the compapp project
+     * @return the set of JAX-RS handler Jar files
+     */
+    public static Set<String> getJAXRSHandlerJars(JbiProject project) {
+        Set<String> jarPaths = collectCasaPortExtensionAttributes(project,
+                JAXRS_HANDLER_NAMESPACE,
+                JAXRS_HANDLER_ELEMENT_NAME,
+                JAXRS_HANDLER_JAR_PATHS_ATTR_NAME);
+
+        Set<String> ret = new HashSet<String>();
+        for (String jarPath : jarPaths) {
+            ret.addAll(Arrays.asList(jarPath.split(";"))); // NOI18N
+        }
+
+        return jarPaths;
+    }
+
+    /**
+     * Get the set of Java Projects
+     *
+     * @param project               the compapp project
+     * @param extensionNamespace
+     * @param elementName
+     * @param attributeName
+     *
+     * @return the set of Java Projects
+     */
+    private static Set<String> collectCasaPortExtensionAttributes(JbiProject project,
+            String extensionNamespace,
+            String elementName,
+            String attributeName) {
+
+        Set<String> ret = new HashSet<String>();
 
         FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
         if (casaFO == null) {
-            return projs;
+            return ret;
         }
 
         try {
@@ -402,29 +486,20 @@ public class CasaHelper {
 
             for (int i = 0; i < casaPorts.getLength(); i++) {
                 Element casaPort = (Element) casaPorts.item(i);
-                NodeList pNodes = casaPort.getChildNodes();
-                for (int k = 0; k < pNodes.getLength(); k++) {
-                    if (pNodes.item(k) instanceof Element) {
-                        Element pNode = (Element) pNodes.item(k);
-                        String ns = pNode.getNamespaceURI();
-                        // todo: Assume non CASA elemeents are extensions...
-                        if (!CASA_NAMESPACE_URI.equals(ns)) {
-                            // get attributes..
-                            if (pNode.getLocalName().equals(WSIT_CALLBACK_ELEMENT)) {
-                                String projLoc = pNode.getAttribute(WSIT_CALLBACK_PROJECT);
-                                projs.add(projLoc);
-                            }
-                        }
-                    }
+
+                NodeList extElements = casaPort.getElementsByTagNameNS(
+                        extensionNamespace, elementName);
+                for (int j = 0; j < extElements.getLength(); j++) {
+                    Element extElement = (Element) extElements.item(j);
+                    String attributeValue = extElement.getAttribute(attributeName);
+                    ret.add(attributeValue);
                 }
-
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return projs;
+        return ret;
     }
     
     /**

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,11 +77,11 @@ public final class DataTableMetadata {
 
     /**
      * Creates new VIEW description with the name <code>name</code>,using <code>columns</code> as table column descriptions,
-     *  <code>statement</code> string is info about gettig data and <code>sourceTables</code> is the list of tables
+     *  <code>statement</code> string is info about getting data and <code>sourceTables</code> is the list of tables
      * this VIEW is built from
-     * @param name view name
+     * @param name view name, please be aware that name is case insensitive
      * @param columns columns description
-     * @param statement string which represents infor about getting data for this VIEW
+     * @param statement string which represents info about getting data for this VIEW
      * @param sourceTables tables this VIEW is built on the base of
      */
     public DataTableMetadata(String name, List<Column> columns, String statement, List<DataTableMetadata> sourceTables) {
@@ -185,7 +188,7 @@ public final class DataTableMetadata {
             for (DataTableMetadata tableWeSearch : sourceTables) {
                 boolean found = false;
                 for (DataTableMetadata tableWeHave : list) {
-                    if (tableWeSearch.getName().equals(tableWeHave.getName())) {
+                    if (tableWeSearch.getName().equalsIgnoreCase(tableWeHave.getName())) {
                         found = true;
                         break;
                     }
@@ -198,7 +201,7 @@ public final class DataTableMetadata {
         }
         // here sourceTables == null
         for (DataTableMetadata md : list) {
-            if (md.getName().equals(this.getName())) {
+            if (md.getName().equalsIgnoreCase(this.getName())) {
                 return true;
             }
         }

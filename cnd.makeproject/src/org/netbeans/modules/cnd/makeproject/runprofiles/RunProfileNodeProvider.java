@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,15 +44,14 @@
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
 import java.util.ResourceBundle;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
@@ -60,35 +62,39 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
      */
     private CustomizerNode customizerNode = null;
 
-    public CustomizerNode factoryCreate() {
+    @Override
+    public CustomizerNode factoryCreate(Lookup lookup) {
         if (customizerNode == null) {
-            customizerNode = createProfileNode();
+            customizerNode = createProfileNode(lookup);
         }
         return customizerNode;
     }
 
-    public CustomizerNode createProfileNode() {
+    public CustomizerNode createProfileNode(Lookup lookup) {
         return new RunProfileCustomizerNode(
                 "Run", // NOI18N
                 getString("RUNNING"),
-                null);
+                null, lookup);
     }
 
-    static class RunProfileCustomizerNode extends CustomizerNode {
+    private static class RunProfileCustomizerNode extends CustomizerNode {
 
-        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
+        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+            super(name, displayName, children, lookup);
         }
 
         @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+        public Sheet getSheet(Configuration configuration) {
             RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-            boolean isRemote = false;
-            if (configuration instanceof MakeConfiguration) {
-                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
-            }
-            return runProfile != null ? runProfile.getSheet(isRemote) : null;
-        //return configurationDescriptor.getSheet(project, configuration);
+            // TODO: will not disable selection of the console type as
+            // internal terminal was introduced....
+            // later a support for an extermnal terminal may be added.
+            
+            boolean disableConsoleTypeSelection = false;
+//            if (configuration instanceof MakeConfiguration) {
+//                disableConsoleTypeSelection = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
+//            }
+            return runProfile != null ? runProfile.getSheet(disableConsoleTypeSelection) : null;
         }
 
         @Override

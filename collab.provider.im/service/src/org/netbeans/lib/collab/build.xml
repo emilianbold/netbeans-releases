@@ -11,7 +11,7 @@
     <mkdir dir="${dist}/lib"/>
 </target>
 <target name="compile" depends="setup"> 
-    <javac debug="on" deprecation="on" source="1.5" srcdir="."
+    <javac debug="on" deprecation="on" source="1.6" srcdir="."
            destdir="${dist}" 
            includes="org/netbeans/lib/collab/**" >
 	<classpath>

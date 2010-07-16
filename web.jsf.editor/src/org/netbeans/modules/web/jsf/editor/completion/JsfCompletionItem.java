@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -142,7 +145,6 @@ public class JsfCompletionItem {
                     sb.append(descr);
                 }
             } else {
-                String msg = NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD"); //NOI18N
                 //extract some simple info from the component
                 sb.append("<table border=\"1\">"); //NOI18N
                 for (String[] descr : component.getDescription()) {
@@ -158,7 +160,6 @@ public class JsfCompletionItem {
                     sb.append("</tr>"); //NOI18N
                 }
                 sb.append("</table>"); //NOI18N
-                sb.append("<p style=\"color: red\">" + msg + "</p>"); //NOI18N
             }
             return sb.toString();
         }
@@ -192,7 +193,19 @@ public class JsfCompletionItem {
             sb.append("<h1>"); //NOI18N
             sb.append(attr.getName());
             sb.append("</h1>"); //NOI18N
-            sb.append(attr.getDescription());
+            if(attr.isRequired()) {
+                sb.append("<p>");
+                sb.append(NbBundle.getMessage(JsfCompletionItem.class, "MSG_RequiredAttribute"));
+                sb.append("</p>");
+            }
+            sb.append("<p>");
+            if(attr.getDescription() != null) {
+                sb.append(attr.getDescription());
+            } else {
+                sb.append(NbBundle.getMessage(JsfCompletionItem.class, "MSG_NoAttributeDescription"));
+            }
+            sb.append("</p>");
+            
             return sb.toString();
         }
 

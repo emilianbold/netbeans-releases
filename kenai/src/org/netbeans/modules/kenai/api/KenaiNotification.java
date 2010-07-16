@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ public final class KenaiNotification {
     private URI uri;
     private String author;
     private String service;
+    private String feature;
 
     private List<Modification> modifications;
 
@@ -67,15 +71,17 @@ public final class KenaiNotification {
      * @param uri uri of change
      * @param author author of change
      * @param service service name
+     * @param featureName feature name
      * @param modifications modifications in this change
      */
-    public KenaiNotification(Date stamp, Type type, URI uri, String author, String service, List<Modification> modifications) {
+    public KenaiNotification(Date stamp, Type type, URI uri, String author, String service,  String featureName, List<Modification> modifications) {
         this.stamp = stamp;
         this.type = type;
         this.uri = uri;
         this.author = author;
         this.service = service;
         this.modifications = Collections.unmodifiableList(modifications);
+        this.feature = featureName;
     }
 
     /**
@@ -124,6 +130,10 @@ public final class KenaiNotification {
      */
     public String getServiceName() {
         return service;
+    }
+
+    public String getFeatureName() {
+        return feature;
     }
 
     public static final class Modification {

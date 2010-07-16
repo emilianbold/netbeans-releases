@@ -9,6 +9,10 @@ source init.sh
 OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
+#disable Mac build until we find a new system with Java6
+#NATIVE_MAC_MACHINE=
+#MAC_PATH=
+
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer $MAC_PATH/reglib/src
    ERROR_CODE=$?
@@ -68,20 +72,22 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-tail -f $MAC_LOG_NEW &
-TAIL_PID=$!
+if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
+    tail -f $MAC_LOG_NEW &
+    TAIL_PID=$!
 
-set +x
-RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
-#Wait for the end of native mac build
-while [ $RUNNING_JOBS_COUNT -ge 2 ]; do
-    #1 or more jobs
-    sleep 10
-    jobs > /dev/null
+    set +x
     RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
-done
-set -x
-kill -s 9 $TAIL_PID
+    #Wait for the end of native mac build
+    while [ $RUNNING_JOBS_COUNT -ge 2 ]; do
+        #1 or more jobs
+        sleep 10
+        jobs > /dev/null
+        RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+    done
+    set -x
+    kill -s 9 $TAIL_PID
+fi
 
 if [ -d $DIST/ml ]; then
     mv $OUTPUT_DIR/ml/* $DIST/ml

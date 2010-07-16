@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,9 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -49,6 +54,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +65,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 
 import org.netbeans.modules.project.uiapi.CategoryModel;
 import org.netbeans.modules.project.uiapi.CategoryView;
@@ -88,6 +103,8 @@ public final class ProjectCustomizer {
     private ProjectCustomizer() {
     }
     
+    private static final Logger LOG = Logger.getLogger(ProjectCustomizer.class.getName());
+
     /** Creates standard customizer dialog which can be used for implementation
      * of {@link org.netbeans.spi.project.ui.CustomizerProvider}. You don't need
      * to call <code>pack()</code> method on the dialog. The resulting dialog will
@@ -95,7 +112,7 @@ public final class ProjectCustomizer {
      * Call <code>show()</code> on the dialog to make it visible. The dialog 
      * will be closed automatically after click on "OK" or "Cancel" button.
      * 
-     * @param categories array of descriptions of categories to be shown in the
+     * @param categories nonempty array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
      *        property. If any of the given categories is not valid cusomizer's
      *        OK button will be disabled until all categories become valid
@@ -131,7 +148,7 @@ public final class ProjectCustomizer {
      * you provided as a parameter. In case of the click on the "Cancel" button
      * the dialog will be closed automatically.
      * @since org.netbeans.modules.projectuiapi/1 1.26
-     * @param categories array of descriptions of categories to be shown in the
+     * @param categories nonempty array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
      *        property. If any of the given categories is not valid cusomizer's
      *        OK button will be disabled until all categories become valid
@@ -237,8 +254,11 @@ public final class ProjectCustomizer {
         DataFolder def = DataFolder.findFolder(root);
         assert def != null : "Cannot find DataFolder for " + folderPath;
         DelegateCategoryProvider prov = new DelegateCategoryProvider(def, context);
-        return createCustomizerDialog(prov.getSubCategories(), prov, preselectedCategory, 
-                                      okOptionListener, storeListener, helpCtx);
+        Category[] categories = prov.getSubCategories();
+        if (categories.length == 0) {
+            return new JDialog((Frame) null, "<broken>"); // what else to do?
+        }
+        return createCustomizerDialog(categories, prov, preselectedCategory, okOptionListener, storeListener, helpCtx);
     }
     
     /** Creates standard innerPane for customizer dialog.
@@ -682,20 +702,11 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
             return prov.createComponent(category, context);
         }
 
-        public ProjectCustomizer.Category[] getSubCategories() {
-            try {
-               return readCategories(folder);
-            } catch (IOException exc) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", exc);
-                return new ProjectCustomizer.Category[0];
-            } catch (ClassNotFoundException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", ex);
-                return new ProjectCustomizer.Category[0];
-            }
+        ProjectCustomizer.Category[] getSubCategories() {
+           return readCategories(folder);
         }
 
-
-        /*private*/ ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
+        /* accessible from tests */ ProjectCustomizer.Category[] readCategories(DataFolder folder) {
             List<ProjectCustomizer.Category> toRet = new ArrayList<ProjectCustomizer.Category>();
             for (DataObject dob : folder.getChildren()) {
                 if (dob instanceof DataFolder) {
@@ -704,8 +715,14 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                     for (DataObject subDob : subDobs) {
                         if (subDob.getName().equals(SELF)) {
                             InstanceCookie cookie = subDob.getLookup().lookup(InstanceCookie.class);
-                            if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
-                                sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
+                            try {
+                                if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
+                                    sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
+                                }
+                            } catch (IOException x) {
+                                LOG.log(Level.WARNING, "Could not load " + subDob, x);
+                            } catch (ClassNotFoundException x) {
+                                LOG.log(Level.WARNING, "Could not load " + subDob, x);
                             }
                         }
                     }
@@ -721,6 +738,7 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                 }
                 if (!dob.getName().equals(SELF)) {
                     InstanceCookie cook = dob.getLookup().lookup(InstanceCookie.class);
+                    try {
                     if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                         if (provider != null) {
@@ -731,6 +749,11 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                                 includeSubcats(cat.getSubcategories(), provider);
                             }
                         }
+                    }
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, "Could not load " + dob, x);
+                    } catch (ClassNotFoundException x) {
+                        LOG.log(Level.WARNING, "Could not load " + dob, x);
                     }
                 }
             }
@@ -755,7 +778,7 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
             try {
                 dn = fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
+                LOG.log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
             }
             return ProjectCustomizer.Category.create(folder.getName(), dn, null, getSubCategories());
         }
@@ -772,6 +795,97 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
         //#97998 related
         public Lookup getLookup() {
             return context;
+        }
+    }
+
+    /**
+     * Create a new cell renderer for lists or combo boxes whose model
+     * object type is Charset.
+     * @return A renderer
+     * @since 1.42
+     */
+    public static ListCellRenderer encodingRenderer() {
+        return new EncodingRenderer();
+    }
+
+    /**
+     * Create a new combo box model of all available Charsets
+     * whose initial selection is a Charset with the provided name.
+     * If the provided name is null or not a known character set,
+     * a dummy Charset instance will be used for the selection.
+     *
+     * @param initialCharset The initial character encoding, e.g. "UTF-8" or
+     * Charset.defaultCharset().name()
+     * @return A combo box model of all available character encodings
+     * @since 1.42
+     */
+    public static ComboBoxModel encodingModel(String initialCharset) {
+        return new EncodingModel(initialCharset);
+    }
+
+    private static final class EncodingRenderer extends DefaultListCellRenderer {
+        EncodingRenderer() {
+            //Needed for synth?
+            setName ("ComboBox.listRenderer"); //NOI18N
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean isLeadSelection) {
+            if (value instanceof Charset) {
+                value = ((Charset) value).displayName();
+            }
+            return super.getListCellRendererComponent(list, value, index,
+                    isSelected, isLeadSelection);
+        }
+    }
+
+    private static final class EncodingModel extends DefaultComboBoxModel {
+
+        EncodingModel (String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                } else if (c.aliases().contains(originalEncoding)) { //Mobility - can have hand-entered encoding
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (originalEncoding != null && defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset (originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    LOG.log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding);
+                }
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+
+        private static final class UnknownCharset extends Charset {
+            UnknownCharset (String name) {
+                super (name, new String[0]);
+            }
+
+            public boolean contains(Charset c) {
+                return false;
+            }
+
+            public CharsetDecoder newDecoder() {
+                throw new UnsupportedOperationException();
+            }
+
+            public CharsetEncoder newEncoder() {
+                throw new UnsupportedOperationException();
+            }
         }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,7 +86,10 @@ public class DataModelTest extends LayerTestBase {
                 Arrays.asList (new String[] {}),
                 Arrays.asList (cmf.getCreatedPaths ()));
         assertEquals(
-                Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/Bundle.properties", "src/org/example/module1/resources/layer.xml"}),
+                Arrays.asList(
+                "nbproject/project.xml",
+                "src/org/example/module1/resources/Bundle.properties",
+                "src/org/example/module1/resources/layer.xml"),
                 Arrays.asList(cmf.getModifiedPaths()));
         
         cmf.run();
@@ -98,11 +104,13 @@ public class DataModelTest extends LayerTestBase {
                 "<folder name=\"Services\">",
                     "<folder name=\"AutoupdateType\">",
                         "<file name=\"org_example_module1_update_center.instance\">",
-                            "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                            "<attr name=\"displayName\" bundlevalue=\"org.example.module1.resources.Bundle#" +
+                            "Services/AutoupdateType/org_example_module1_update_center.instance\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
-                            "<attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",                            
+                            "<attr name=\"instanceCreate\" " +
+                            "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",                            
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center\"/>",
                         "</file>",
                     "</folder>",
                 "</folder>",
@@ -118,18 +126,22 @@ public class DataModelTest extends LayerTestBase {
                 "<folder name=\"Services\">",
                     "<folder name=\"AutoupdateType\">",
                         "<file name=\"org_example_module1_update_center.instance\">",
-                            "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                            "<attr name=\"displayName\" bundlevalue=\"org.example.module1.resources.Bundle#" +
+                            "Services/AutoupdateType/org_example_module1_update_center.instance\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
-                            "<attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",                                                        
+                            "<attr name=\"instanceCreate\" " +
+                            "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",                            
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center\"/>",
                         "</file>",
                         "<file name=\"org_example_module1_update_center_1.instance\">",
-                            "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                            "<attr name=\"displayName\" bundlevalue=\"org.example.module1.resources.Bundle#" +
+                            "Services/AutoupdateType/org_example_module1_update_center_1.instance\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
-                            "<attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
+                            "<attr name=\"instanceCreate\" " +
+                            "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",                            
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center_1\"/>",
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center_1\"/>",
                         "</file>",
                     "</folder>",
                 "</folder>",

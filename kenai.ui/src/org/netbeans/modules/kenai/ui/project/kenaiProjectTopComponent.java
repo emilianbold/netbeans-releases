@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,6 +70,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Top component which displays something.
@@ -91,7 +95,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
 
     private static final String PREFERRED_ID = "kenaiProjectTopComponent"; //NOI18N
-    private static final String KENAI_URL = Kenai.getDefault().getUrl().toString(); //NOI18N
 
     private static kenaiProjectTopComponent inst = null;
     private KenaiProject instProj = null;
@@ -107,7 +110,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         instProj = proj;
         addSpecificContent();
-        Kenai.getDefault().addPropertyChangeListener(this);
+        proj.getKenai().addPropertyChangeListener(WeakListeners.propertyChange(this, proj.getKenai()));
         mainScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         mainScrollPane.getHorizontalScrollBar().setUnitIncrement(30);
         backToTopLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -626,6 +629,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     public void reinitialize(final KenaiProject proj, boolean hardReinit) {
         // must be here because of the specific contents
         instProj = proj;
+        final String KENAI_URL = instProj.getKenai().getUrl().toString(); //NOI18N
+
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -700,6 +705,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     downloadsLabel.setToolTipText(KENAI_URL + down.getWebLocation().getPath());
                     downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    downloadsLabel.removeActionListener(downloadsActionListener);
                     downloadsActionListener = new URLListener(down.getWebLocation());
                     downloadsLabel.addActionListener(downloadsActionListener);
                 }
@@ -726,6 +732,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     wikiLabel.setToolTipText(KENAI_URL + wiki.getWebLocation().getPath());
                     wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    wikiLabel.removeActionListener(wikiActionListener);
                     wikiActionListener = new URLListener(wiki.getWebLocation());
                     wikiLabel.addActionListener(wikiActionListener);
                 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,12 +54,11 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -92,8 +94,8 @@ public class GoToSourceActionGroup extends EJBActionGroup {
         final String[] ejbClass = new String[1];
         
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        MetadataModel<EjbJarMetadata> model = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
-
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar model = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+        MetadataModel<EjbJarMetadata> metadata = model.getMetadataModel();
         try {
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
@@ -102,27 +104,19 @@ public class GoToSourceActionGroup extends EJBActionGroup {
                 }
             }, true);
 
-            model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            final EjbViewController controller = new EjbViewController(ejbClass[0], model);
+
+            metadata.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass[0]);
                     if (ejb == null){
                         return null;
                     }
-                    try {
-                        results[EJB_CLASS] = ejb.getEjbClass() == null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getEjbClass())));
-                    } catch (DataObjectNotFoundException ex) {}
-                    try {
-                        results[REMOTE] = ejb.getRemote() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getRemote())));
-                    } catch (DataObjectNotFoundException ex) {}
-                    try {
-                        results[LOCAL] = ejb.getLocal() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getLocal())));
-                    } catch (DataObjectNotFoundException ex) {}
-                    try {
-                        results[HOME] = ejb.getHome() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getHome())));
-                    } catch (DataObjectNotFoundException ex) {}
-                    try {
-                        results[LOCAL_HOME] = ejb.getLocalHome() ==null ? null : DataObject.find(metadata.findResource(Utils.toResourceName(ejb.getLocalHome())));
-                    } catch (DataObjectNotFoundException ex) {}
+                    results[EJB_CLASS] = ejb.getEjbClass() == null ? null : controller.getDataObject(ejb.getEjbClass());
+                    results[REMOTE] = ejb.getRemote() ==null ? null : controller.getDataObject(ejb.getRemote());
+                    results[LOCAL] = ejb.getLocal() ==null ? null : controller.getDataObject(ejb.getLocal());
+                    results[HOME] = ejb.getHome() ==null ? null : controller.getDataObject(ejb.getHome());
+                    results[LOCAL_HOME] = ejb.getLocalHome() ==null ? null : controller.getDataObject(ejb.getLocalHome());
                     return null;
                 }
             });

@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.iep.editor.designer;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
 import org.openide.util.NbBundle;
 
 /**

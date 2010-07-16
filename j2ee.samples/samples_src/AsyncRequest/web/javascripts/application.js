@@ -1,6 +1,6 @@
 var count = 0;
 var app = {
-   url: '/async-request/chat',
+   url: '/async-request-war/chat',
    initialize: function() {
       $('login-name').focus();
       app.listen();

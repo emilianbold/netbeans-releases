@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,25 +72,24 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 /**
  * SoapBindingSupport.java
  *
- * Created on February 2, 2006, 3:35 PM
- *
  * @author Bing Lu
  * @author Jun Qian
  */
 public class SoapBindingSupport implements BindingSupport {
-    private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapBindingSupport"); // NOI18N
+    private static final Logger mLog =
+            Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapBindingSupport"); // NOI18N
+
+    private final String SOAP_ENVELOPE_NAMESPACE = 
+            "http://schemas.xmlsoap.org/soap/envelope/"; // NOI18N
+
+    private final String SOAP_ENVELOPE_NAMESPACE_PREFIX = "soapenv"; // NOI18N
+
+    private final String SOAP_DEFAULT_ENCODING_STYLE =
+            "http://schemas.xmlsoap.org/soap/encoding/"; // NOI18N
     
-    private final QName mEnvelopeQName  = new QName("http://schemas.xmlsoap.org/soap/envelope/", "Envelope"); // NOI18N
+    protected Binding mBinding;
     
-    private final QName mBodyQName = new QName("http://schemas.xmlsoap.org/soap/envelope/", "Body"); // NOI18N
-    
-    private final QName mHeaderQName = new QName("http://schemas.xmlsoap.org/soap/envelope/", "Header"); // NOI18N
-    
-    private final ResourceBundle mRb = ResourceBundle.getBundle("org.netbeans.modules.compapp.test.wsdl.Bundle"); // NOI18N
-    
-    private Binding mBinding;
-    
-    private Definitions mDefinition;
+    protected Definitions mDefinition;
     
     private SchemaTypeLoader mSchemaTypeLoader;
     
@@ -100,7 +102,19 @@ public class SoapBindingSupport implements BindingSupport {
         mDefinition = definition;
         mSchemaTypeLoader = schemaTypeLoader;
     }
-    
+
+    protected String getSoapEnvelopeNamespace() {
+        return SOAP_ENVELOPE_NAMESPACE;
+    }
+
+    protected String getSoapEnvelopeNamespacePrefix() {
+        return SOAP_ENVELOPE_NAMESPACE_PREFIX;
+    }
+
+    protected String getDefaultEncodingStyle() {
+        return SOAP_DEFAULT_ENCODING_STYLE;
+    }
+
     public String[] getEndpoints() {
         List<String> result = new ArrayList<String>();
         
@@ -109,7 +123,7 @@ public class SoapBindingSupport implements BindingSupport {
                 if (port.getBinding().get() == mBinding) {
                     List<ExtensibilityElement> eeList = 
                             port.getExtensibilityElements();
-                    SOAPAddress soapAddress = (SOAPAddress)
+                    SOAPAddress soapAddress =
                             Util.getAssignableExtensiblityElement(
                             eeList, SOAPAddress.class);
                     if (soapAddress != null) {
@@ -142,7 +156,7 @@ public class SoapBindingSupport implements BindingSupport {
         XmlObject object = XmlObject.Factory.newInstance();
         XmlCursor cursor = object.newCursor();
         cursor.toNextToken();
-        cursor.beginElement(mEnvelopeQName);
+        cursor.beginElement(new QName(getSoapEnvelopeNamespace(), "Envelope", getSoapEnvelopeNamespacePrefix())); // NOI18N
         
 //      if(inputSoapEncoded) {
         cursor.insertNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
@@ -150,11 +164,11 @@ public class SoapBindingSupport implements BindingSupport {
 //      }
         cursor.insertAttributeWithValue("schemaLocation", // NOI18N
                 "http://www.w3.org/2001/XMLSchema-instance", // NOI18N
-                "http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/"); // NOI18N
+                getSoapEnvelopeNamespace() + " " + getSoapEnvelopeNamespace()); // NOI18N
         
         cursor.toFirstChild();
         
-        cursor.beginElement(mBodyQName);
+        cursor.beginElement(new QName(getSoapEnvelopeNamespace(), "Body"));
         cursor.toFirstChild();
         
         if(bindingOperationSupport.isRpc()) {
@@ -181,21 +195,20 @@ public class SoapBindingSupport implements BindingSupport {
         
         List<ExtensibilityElement> eeList =
                 bindingOperation.getBindingInput().getExtensibilityElements();
-        List headers =
-                Util.getAssignableExtensiblityElementList(eeList, SOAPHeader.class);
+        List<SOAPHeader> headers =
+                Util.getAssignableExtensiblityElements(eeList, SOAPHeader.class);
         if (headers.isEmpty()) {
             return;
         }
         // reposition
         cursor.toStartDoc();
-        cursor.toChild(mEnvelopeQName);
+        cursor.toChild(new QName(getSoapEnvelopeNamespace(), "Envelope")); // NOI18N
         cursor.toFirstChild();
         
-        cursor.beginElement(mHeaderQName);
+        cursor.beginElement(new QName(getSoapEnvelopeNamespace(), "Header"));
         cursor.toFirstChild();
-        
-        for (int i = 0, I = headers.size(); i < I; i++) {
-            SOAPHeader header = (SOAPHeader) headers.get(i);
+
+        for (SOAPHeader header : headers) {
             String messageName = header.getMessage().get().getName(); 
             String partName = header.getPart();
             
@@ -275,7 +288,7 @@ public class SoapBindingSupport implements BindingSupport {
         // rpc requests use the bindingOperation name as root element
         BindingOperation bindingOperation = bindingOperationSupport.getBindingOperation();
         List list = bindingOperation.getBindingInput().getExtensibilityElements();
-        SOAPBody body = (SOAPBody) Util.getAssignableExtensiblityElement(list, SOAPBody.class);
+        SOAPBody body = Util.getAssignableExtensiblityElement(list, SOAPBody.class);
         
         String ns = mDefinition.getTargetNamespace();
         if(body != null && body.getNamespace() != null) {
@@ -284,9 +297,9 @@ public class SoapBindingSupport implements BindingSupport {
         cursor.beginElement(new QName(ns, bindingOperation.getName()));
         if(xmlGenerator.isSoapEnc()) {
             cursor.insertAttributeWithValue(
-                    new QName("http://schemas.xmlsoap.org/soap/envelope/",  // NOI18N
+                    new QName(getSoapEnvelopeNamespace(),
                     "encodingStyle"), // NOI18N
-                    "http://schemas.xmlsoap.org/soap/encoding/"); // NOI18N
+                    getDefaultEncodingStyle());
         }
         
         Part[] inputParts = bindingOperationSupport.getInputParts(); 

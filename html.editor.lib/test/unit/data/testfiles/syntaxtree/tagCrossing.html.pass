@@ -1,10 +1,5 @@
 root:ROOT(0-40)
-   TEXT(0-4)
    <p>(4-7/27)[RO];S:root
-      TEXT(7-15)
       <a>(15-18/23)[RR]missing_required_end_tag ;S:root,p
-         TEXT(18-23)
    </p>(23-27)[RO];S:root,p,a
-   TEXT(27-35)
    </a>(35-39)[RR]unmatched_tag ;S:root
-   TEXT(39-40)

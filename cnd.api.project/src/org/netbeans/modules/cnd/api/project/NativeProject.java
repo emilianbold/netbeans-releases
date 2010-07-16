@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,9 @@
 package org.netbeans.modules.cnd.api.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 
 public interface NativeProject {
     /**
@@ -50,7 +55,7 @@ public interface NativeProject {
      * org.netbeans.api.project.Project
      */
     public Object getProject();
-    
+
      /**
      * Returns file path to project root
      * @return file path to project root
@@ -97,7 +102,7 @@ public interface NativeProject {
      public void addProjectItemsListener(NativeProjectItemsListener listener);
 
      /**
-      * Removes a listner.
+      * Removes a listener.
       * @param listener a listener to remove
       */
      public void removeProjectItemsListener(NativeProjectItemsListener listener);
@@ -105,9 +110,15 @@ public interface NativeProject {
      /**
       * Finds a file item in the project.
       * @param file the file item to find
-      * @return the file item if found. Othervise it returns null.
+      * @return the file item if found. Otherwise it returns null.
       */
      public NativeFileItem findFileItem(File file);
+
+     /***
+      * Searcher for find project file by name
+      * @return searcher
+      */
+     public NativeFileSearch getNativeFileSearch();
      
     /**
      * Returns a list <String> of compiler defined include paths used when parsing 'orpan' source files.
@@ -140,13 +151,34 @@ public interface NativeProject {
     public List<String> getUserMacroDefinitions();
     
     /**
-     * Returns a list <NativeProject> of libriries.
-     * @return a list <NativeProject> of libriries.
+     * Returns a list <NativeProject> of libraries.
+     * @return a list <NativeProject> of libraries.
      */
     public List<NativeProject> getDependences();
     
     /**
      * Add task which will be run then <NativeProject> is ready to provide Code Model data
+     *
+     * @param task - task to run. Why is it NamedRunnable?
+     * The issue is that when we pass Runnable to be run through a chain of calls,
+     * sometimes a user interaction might be needed.
+     * For example, we'd like to say user "To perform XXX IDE needs to connect host yyy@zzz" :)
+     * In this case NamedRunnable.getName() is used and its value is inserted instead of XXX
      */
-    public void runOnCodeModelReadiness(Runnable task);
+    public abstract void runOnProjectReadiness(NamedRunnable task);
+
+    /**
+     * Execute a command from user's PATH in the context of the native project
+     * @param executable Executable name (not path)
+     * @param env Additional environment variables
+     * @param args Arguments
+     * @return NativeExitStatus
+     */
+    public NativeExitStatus execute(final String executable, final String[] env, final String... args) throws IOException;
+
+    /**
+     * Return the name of the development platform (Solaris-x86, Solaris-sparc, MacOSX, Windows, Linux-x86)
+     * @return development platform name
+     */
+    public String getPlatformName();
 }

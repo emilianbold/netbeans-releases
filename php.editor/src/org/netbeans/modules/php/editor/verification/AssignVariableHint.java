@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.IgnoreError;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -131,14 +135,26 @@ public class AssignVariableHint extends AbstractRule {
         public void visit(ExpressionStatement node) {
             if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
                 Expression expression = node.getExpression();
+                if (expression instanceof IgnoreError) {
+                    expression = ((IgnoreError)expression).getExpression();
+                }
+                String guessName = null;
                 if (expression instanceof ClassInstanceCreation) {
-                    fix = new InstanceCreationVariableFix(doc, (ClassInstanceCreation) expression);
+                    ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
+                    guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
                 } else if (expression instanceof MethodInvocation) {
-                    fix = new MethodInvocationVariableFix(doc, (MethodInvocation) expression);
+                    MethodInvocation methodInvocation = (MethodInvocation) expression;
+                    guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 } else if (expression instanceof FunctionInvocation) {
-                    fix = new FunctionInvocationVariableFix(doc, (FunctionInvocation) expression);
+                    FunctionInvocation functionInvocation = (FunctionInvocation) expression;
+                    guessName = CodeUtils.extractFunctionName(functionInvocation);
                 } else if (expression instanceof StaticMethodInvocation) {
-                    fix = new StaticMethodInvocationVariableFix(doc, (StaticMethodInvocation) expression);
+                    StaticMethodInvocation methodInvocation = (StaticMethodInvocation) expression;
+                    guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());                    
+                }
+
+                if (guessName != null) {
+                    fix = new IntroduceFixImpl(doc, node, guessName);
                 }
             }
             super.visit(node);
@@ -263,54 +279,15 @@ public class AssignVariableHint extends AbstractRule {
         }
     }
 
-    private class InstanceCreationVariableFix extends IntroduceFix {
-
-        InstanceCreationVariableFix(BaseDocument doc, ClassInstanceCreation instanceCreation) {
-            super(doc, instanceCreation);
+    private class IntroduceFixImpl extends IntroduceFix {
+        private final String guessName;
+        IntroduceFixImpl(final BaseDocument doc, final ASTNode node, final String variable) {
+            super(doc, node);
+            this.guessName = variable;
         }
 
         protected String getVariableName() {
-            ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            String guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class StaticMethodInvocationVariableFix extends IntroduceFix {
-        StaticMethodInvocationVariableFix(BaseDocument doc, StaticMethodInvocation methodInvocation) {
-            super(doc, methodInvocation);
-        }
-
-        protected String getVariableName() {
-            StaticMethodInvocation methodInvocation = (StaticMethodInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class MethodInvocationVariableFix extends IntroduceFix {
-
-        MethodInvocationVariableFix(BaseDocument doc, MethodInvocation methodInvocation) {
-            super(doc, methodInvocation);
-        }
-
-        protected String getVariableName() {
-            MethodInvocation methodInvocation = (MethodInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class FunctionInvocationVariableFix extends IntroduceFix {
-
-        FunctionInvocationVariableFix(BaseDocument doc, FunctionInvocation functionInvocation) {
-            super(doc, functionInvocation);
-        }
-
-        protected String getVariableName() {
-            FunctionInvocation functionInvocation = (FunctionInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(functionInvocation);
-            return getVariableName(guessName);
+            return super.getVariableName(guessName);
         }
     }
 

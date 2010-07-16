@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -196,13 +200,13 @@ public class WebProjectGeneratorTest extends NbTestCase {
         // check that the correct /1 data was saved
         Element el = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true);
         assertNotNull("Web modules should be saved in /1",  el);
-        List<Element> subElements = Util.findSubElements(el);
+        List<Element> subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         
         // compare the web module
         Element el2 = subElements.get(0);
         assertElement(el2, "web-module", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"doc-root", "context-path", "j2ee-spec-level", "web-inf"},
             new String[] {"web",      "mymodule",     "1.5",             "web/WEB-INF"});
         // validate against schema:
@@ -224,12 +228,12 @@ public class WebProjectGeneratorTest extends NbTestCase {
         assertNull("No /1 data should exist.", el);
         el = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
         assertNotNull("Should have /2 data.", el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the web module
         el2 = subElements.get(0);
         assertElement(el2, "web-module", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"doc-root", "context-path", "j2ee-spec-level", "web-inf"},
             new String[] {"web",      "mymodule",     "1.5",             "somewhereelse/WEB-INF"});
         // validate against schema:
@@ -252,12 +256,12 @@ public class WebProjectGeneratorTest extends NbTestCase {
         assertNull("No /1 data should exist.", el);
         el = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
         assertNotNull("Should have /2 data.", el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the web module
         el2 = subElements.get(0);
         assertElement(el2, "web-module", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"doc-root", "context-path", "j2ee-spec-level", "web-inf"},
             new String[] {"web",      "mymodule",     "1.5",             "somewhereelse/WEB-INF"});
         // validate against schema:
@@ -304,7 +308,7 @@ public class WebProjectGeneratorTest extends NbTestCase {
         String message = "Element "+element+" does not match [name="+expectedName+",value="+expectedValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
     }
 
@@ -332,7 +336,7 @@ public class WebProjectGeneratorTest extends NbTestCase {
             expectedValue+", attr="+expectedAttrName+", attrvalue="+expectedAttrValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
         String val = element.getAttribute(expectedAttrName);
         assertEquals(expectedAttrValue, val);

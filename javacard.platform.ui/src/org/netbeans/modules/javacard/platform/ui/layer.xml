@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
-    <!-- Services window now contains "Java Card" node -->
     <folder name="UI">
         <folder name="Runtime">
-            <file name="org-netbeans-modules-javacard-platform-ui-ServicesNode.instance">
+            <file name="ServicesNode.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.javacard.platform.ui.ServicesNode"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/platform/ui/root.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.platform.ui.Bundle"/>
                 <attr name="position" intvalue="152"/>
             </file>
         </folder>

@@ -88,10 +88,10 @@ public class Main {
         tmpList.add(new Alert("B", 32, "to"));
         tmpList.add(new Alert("B", 33, "route,"));
         tmpList.add(new Alert("B", 34, "filter"));
-        tmpList.add(new Alert("B", 37, "data"));
+        tmpList.add(new Alert("B", 37, "data"));  // last missing event See MissingAlertRequestHandler.java
         tmpList.add(new Alert("B", 38, "continuously"));
         tmpList.add(new Alert("B", 39, "over"));
-        tmpList.add(new Alert("B", 35, "and"));
+        tmpList.add(new Alert("B", 35, "and")); 
         tmpList.add(new Alert("B", 40, "an"));
         tmpList.add(new Alert("B", 41, "indeterminate"));
         tmpList.add(new Alert("B", 42, "period of time"));
@@ -111,33 +111,10 @@ public class Main {
         }
         MissingAlertRequestHandler requestHandler = new MissingAlertRequestHandler(alertRegistry);
         AlertSender alertSender = new AlertSender(alertList);
-        BufferedReader userIn = null;
         try {
-            userIn = new BufferedReader(new InputStreamReader(System.in));
-            while (true) {
-                System.out.println("stop?(y/n)");
-                String ans = userIn.readLine();
-                if (ans == null) {
-                    break;
-                }
-                if (ans.trim().equals("")) {
-                    continue;
-                }
-                if (ans.equalsIgnoreCase("y")) {
-                    requestHandler.stop();
-                    alertSender.stop();
-                    break;
-                }
-            }    
+            Thread.yield();
         } catch (Exception e) {
             e.printStackTrace();
-        }  finally {
-            try {
-                if (userIn != null) {
-                    userIn.close();
-                }
-            } catch (Exception e) {
-            }
         } 
     }    
     

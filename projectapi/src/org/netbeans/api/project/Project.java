@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,7 @@ import org.openide.util.Lookup;
  * tools or services should <em>not</em> need to explicitly model projects, and
  * should not be using this API much or at all.</p>
  * </div>
- * @see <a href="http://projects.netbeans.org/buildsys/howto.html">NetBeans 4.0 Project &amp; Build System How-To</a>
+ * @see <a href="http://wiki.netbeans.org/BuildSystemHowTo">NetBeans 4.0 Project &amp; Build System How-To</a>
  * @author Jesse Glick
  */
 public interface Project extends Lookup.Provider {
@@ -106,16 +109,16 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/ProjectOpenedHook.html"><code>ProjectOpenedHook</code></a></li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a></li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/PrivilegedTemplates.html"><code>PrivilegedTemplates</code></a></li>
-     * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/classpath/ClassPathProvider.html"><code>ClassPathProvider</code></a></li>
-     * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a></li>
-     * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceLevelQueryImplementation.html"><code>SourceLevelQueryImplementation</code></a></li>
+     * <li><a href="@org-netbeans-api-java-classpath@/org/netbeans/spi/java/classpath/ClassPathProvider.html"><code>ClassPathProvider</code></a></li>
+     * <li><a href="@org-netbeans-api-java-classpath@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a></li>
+     * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceLevelQueryImplementation2.html"><code>SourceLevelQueryImplementation2</code></a></li>
      * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"><code>JavadocForBinaryQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/AccessibilityQueryImplementation.html"><code>AccessibilityQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/MultipleRootsUnitTestForSourceQueryImplementation.html"><code>MultipleRootsUnitTestForSourceQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/ProjectXmlSavedHook.html"><code>ProjectXmlSavedHook</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/ant/AntArtifactProvider.html"><code>AntArtifactProvider</code></a></li>
      * <li><a href="@org-openidex-util@/org/openidex/search/SearchInfo.html"><code>SearchInfo</code></a></li>
-     * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/BinaryForSourceQueryImplementation.html"><code>BinaryForSourceQueryImplementation</code></a></li>
+     * <li><a href="@org-netbeans-api-java-classpath@/org/netbeans/spi/java/queries/BinaryForSourceQueryImplementation.html"><code>BinaryForSourceQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/api/project/ant/AntBuildExtender.html"><code>AntBuildExtender</code></a></li>
      * <li><a href="@org-openide-loaders@/org/openide/loaders/CreateFromTemplateAttributesProvider.html"><code>CreateFromTemplateAttributesProvider</code></a></li>
      * </ol>

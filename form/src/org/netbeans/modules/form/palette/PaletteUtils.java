@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,11 +46,13 @@ package org.netbeans.modules.form.palette;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.io.IOException;
+import javax.swing.Action;
 
 import org.netbeans.spi.palette.*;
 import org.openide.ErrorManager;
@@ -61,6 +66,7 @@ import org.openide.util.lookup.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.form.FormUtils;
 
 import org.netbeans.modules.form.project.ClassSource;
 
@@ -202,7 +208,7 @@ public final class PaletteUtils {
         if (context == null)
             return null;
 
-        Project project = FileOwnerQuery.getOwner(context);
+        final Project project = FileOwnerQuery.getOwner(context);
         if (project == null)
             return null;
 
@@ -212,15 +218,82 @@ public final class PaletteUtils {
             classPath.addPropertyChangeListener(new ClassPathListener(classPath, project));
 
             PaletteLookup lookup = new PaletteLookup();
-            ClassPathFilter filter = new ClassPathFilter(classPath);
-            lookup.setPalette(createPalette(filter));
-
+            final ClassPathFilter filter = new ClassPathFilter(classPath);
+            lookup.setPalette(EventQueue.isDispatchThread() ? createDummyPalette() : createPalette(filter));
             pInfo = new ProjectPaletteInfo();
             pInfo.paletteLookup = lookup;
             pInfo.paletteFilter = filter;
             palettes.put(project, pInfo);
+            if (EventQueue.isDispatchThread()) {
+                // Init real palette
+                FormUtils.getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        PaletteController palette = createPalette(filter);
+
+                        // 184551: Init all display names and icons
+                        Lookup rootLookup = palette.getRoot();
+                        Node root = rootLookup.lookup(Node.class);
+                        for (Node category : root.getChildren().getNodes(true)) {
+                            category.getDisplayName();
+                            category.getIcon(BeanInfo.ICON_COLOR_16x16);
+                            category.getIcon(BeanInfo.ICON_COLOR_32x32);
+                            for (Node item : category.getChildren().getNodes(true)) {
+                                item.getDisplayName();
+                                item.getIcon(BeanInfo.ICON_COLOR_16x16);
+                                item.getIcon(BeanInfo.ICON_COLOR_32x32);
+                            }
+                        }
+
+                        // Replace the dummy palette
+                        ProjectPaletteInfo pInfo = palettes.get(project);
+                        if (pInfo != null) {
+                            PaletteLookup lookup = pInfo.paletteLookup;
+                            PaletteController oldPalette = pInfo.getPalette();
+                            PaletteController newPalette = createPalette(filter);
+                            if (pInfo.paletteListeners != null) {
+                                for (PropertyChangeListener l : pInfo.paletteListeners) {
+                                    oldPalette.removePropertyChangeListener(l);
+                                    newPalette.addPropertyChangeListener(l);
+                                }
+                            }
+                            lookup.setPalette(newPalette);
+                        }
+                    }
+                });
+            }
         }
         return pInfo;
+    }
+
+    private static PaletteController createDummyPalette() {
+        Node loadingNode = new AbstractNode(Children.LEAF);
+        loadingNode.setDisplayName(getBundleString("MSG_DummyPaletteLoading")); // NOI18N
+        Children.Array rootChildren = new Children.Array();
+        rootChildren.add(new Node[] {loadingNode});
+        Node root = new AbstractNode(rootChildren);
+        return PaletteFactory.createPalette(root, new PaletteActions() {
+            @Override
+            public Action[] getImportActions() {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomPaletteActions() {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomCategoryActions(Lookup category) {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomItemActions(Lookup item) {
+                return new Action[0];
+            }
+            @Override
+            public Action getPreferredAction(Lookup item) {
+                return null;
+            }
+        });
     }
 
     /**
@@ -269,7 +342,7 @@ public final class PaletteUtils {
             paletteDataFolder = DataFolder.findFolder(getPaletteFolder());
         return paletteDataFolder;
     }
-    
+
     public static void clearPaletteSelection() {
         PaletteController palette = getPalette();
         if (palette != null) {
@@ -502,6 +575,7 @@ public final class PaletteUtils {
             classPath = cp;
         }
 
+        @Override
         public boolean isValidCategory(Lookup lkp) {
             Node categoryNode = lkp.lookup(Node.class);
             if (!representsShowableCategory(categoryNode))
@@ -530,6 +604,7 @@ public final class PaletteUtils {
             return dobjs.length == 0;
         }
 
+        @Override
         public boolean isValidItem(Lookup lkp) {
             return isValidItem(lkp.lookup(PaletteItem.class));
         }
@@ -579,11 +654,13 @@ public final class PaletteUtils {
             projRef = new WeakReference<Project>(p);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
                 final Project p = projRef.get();
                 if (p != null) {
                     EventQueue.invokeLater(new Runnable() { // Issue 141326
+                        @Override
                         public void run() {
                             PaletteUtils.bootClassPathChanged(p, classPath);
                         }

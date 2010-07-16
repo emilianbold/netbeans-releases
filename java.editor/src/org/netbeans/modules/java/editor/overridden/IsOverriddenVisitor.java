@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,16 +50,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.api.java.source.ClassIndex;
 
 /**
  *
@@ -65,7 +67,6 @@ import org.netbeans.api.java.source.ClassIndex;
 class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     private CompilationInfo info;
-    private Document doc;
     
     Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> type2Declaration;
     Map<ElementHandle<ExecutableElement>, MethodTree> declaration2Tree;
@@ -73,8 +74,8 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     private Map<TypeElement, ElementHandle<TypeElement>> type2Handle;
     
-    IsOverriddenVisitor(Document doc, CompilationInfo info) {
-        this.doc = doc;
+    IsOverriddenVisitor(CompilationInfo info, AtomicBoolean cancel) {
+        super(cancel);
         this.info = info;
         
         type2Declaration = new HashMap<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>>();

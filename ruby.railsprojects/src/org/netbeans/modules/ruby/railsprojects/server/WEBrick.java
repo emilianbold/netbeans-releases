@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@ package org.netbeans.modules.ruby.railsprojects.server;
 import org.netbeans.modules.ruby.railsprojects.server.nodes.RubyServerNode;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -48,6 +52,8 @@ import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -96,16 +102,23 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         return null;
     }
     
-    public String getStartupParam() {
-        return "webrick"; //NOI18N
+    @Override
+    public List<String> getStartupParams(RailsVersion version) {
+        if (version.isRails3OrHigher()) {
+            return Arrays.asList("server", "webrick");
+        }
+        return Arrays.asList("webrick");
     }
 
     public String getScriptPrefix() {
         return null;
     }
 
-    public String getServerPath() {
-        return "script" + File.separator + "server"; //NOI18N
+    public String getServerPath(RailsVersion version) {
+        if (version.isRails3OrHigher()) {
+            return "script" + File.separator + "rails";
+        }
+        return "script" + File.separator + "server";
     }
 
     public boolean isStartupMsg(String outputLine) {

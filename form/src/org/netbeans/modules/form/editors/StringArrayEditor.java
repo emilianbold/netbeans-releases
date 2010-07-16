@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,10 +75,12 @@ public class StringArrayEditor implements XMLPropertyEditor,
         support = new PropertyChangeSupport (this);
     }
 
+    @Override
     public Object getValue () {
         return strings;
     }
 
+    @Override
     public void setValue (Object value) {
         strings = (String[]) value;
         support.firePropertyChange ("", null, null); // NOI18N
@@ -87,6 +92,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     /** Used to acquire the current value from the PropertyEditor
     * @return the current value of the property
     */
+    @Override
     public String[] getStringArray () {
         return (String[])getValue ();
     }
@@ -94,6 +100,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     /** Used to modify the current value in the PropertyEditor
     * @param value the new value of the property
     */
+    @Override
     public void setStringArray (String[] value) {
         setValue (value);
     }
@@ -103,7 +110,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     protected final String getStrings(boolean quoted) {
         if (strings == null) return "null"; // NOI18N
 
-        StringBuffer buf = new StringBuffer ();
+        StringBuilder buf = new StringBuilder ();
         for (int i = 0; i < strings.length; i++) {
             // Handles in-string escapes if quoted
             if (quoted) {
@@ -142,10 +149,12 @@ public class StringArrayEditor implements XMLPropertyEditor,
         return buf.toString ();
     }
 
+    @Override
     public String getAsText () {
         return getStrings(false);
     }
 
+    @Override
     public void setAsText (String text) {
         if (text.equals("null")) { // NOI18N
             setValue(null);
@@ -161,38 +170,46 @@ public class StringArrayEditor implements XMLPropertyEditor,
         setValue(a);
     }
 
+    @Override
     public String getJavaInitializationString () {
         if (strings == null) return "null"; // NOI18N
         // [PENDING - wrap strings ???]
-        StringBuffer buf = new StringBuffer ("new String[] {"); // NOI18N
+        StringBuilder buf = new StringBuilder ("new String[] {"); // NOI18N
         buf.append (getStrings(true));
         buf.append ("}"); // NOI18N
         return buf.toString ();
     }
 
+    @Override
     public String[] getTags () {
         return null;
     }
 
+    @Override
     public boolean isPaintable () {
         return false;
     }
 
+    @Override
     public void paintValue (Graphics g, Rectangle rectangle) {
     }
 
+    @Override
     public boolean supportsCustomEditor () {
         return true;
     }
 
+    @Override
     public Component getCustomEditor () {
         return new StringArrayCustomEditor(this);
     }
 
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
         support.addPropertyChangeListener (propertyChangeListener);
     }
 
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener propertyChangeListener) {
         support.removePropertyChangeListener (propertyChangeListener);
     }
@@ -206,6 +223,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
      * @return the XML DOM element representing a subtree of XML from which
                the value should be loaded
      */
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element arrayEl = doc.createElement(XML_STRING_ARRAY);
         int count = strings != null ? strings.length : 0;
@@ -230,6 +248,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
      * @exception IOException thrown when the value cannot be restored from
                   the specified XML element
      */
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_STRING_ARRAY.equals(element.getNodeName()))
             throw new java.io.IOException();
@@ -268,6 +287,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     }
     
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(StringArrayEditor.class).getString("CTL_StringArrayEditor_DisplayName"); // NOI18N
     }

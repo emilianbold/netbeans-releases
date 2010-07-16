@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,11 +50,13 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
@@ -61,11 +66,13 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * APT utilities
@@ -146,16 +153,34 @@ public class APTUtils {
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
-            _token.setTextID(CharSequenceKey.create(buf, start, count));
+            _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
-            // no need to set text in comment token
+            // no need to set text in const token
+        } else if (_token instanceof APTLiteConstTextToken) {
+            // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
             _token.setText(new String(buf, start, count));
         }
+    }
+
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+        // TODO: optimize factory
+        if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
+        }
+        APTToken out = createAPTToken(type);
+        out.setType(type);
+        out.setColumn(startColumn);
+        out.setLine(startLine);
+        out.setOffset(startOffset);
+        out.setEndOffset(endOffset);
+        out.setEndColumn(endColumn);
+        out.setEndLine(endLine);
+        return out;
     }
 
     public static APTToken createAPTToken(int type) {
@@ -189,6 +214,7 @@ public class APTUtils {
                 // Comments
             case APTTokenTypes.CPP_COMMENT:
             case APTTokenTypes.COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return new APTCommentToken();
                 
             default: /*assert(APTConstTextToken.constText[type] != null) : "Do not know text for constText token of type " + type;  // NOI18N*/
@@ -258,7 +284,7 @@ public class APTUtils {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
         List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
-        Collections.sort(macrosSorted, CharSequenceKey.Comparator);
+        Collections.sort(macrosSorted, CharSequences.comparator());
         for (CharSequence key : macrosSorted) {
             APTMacro macro = macros.get(key);
             assert(macro != null);
@@ -309,6 +335,14 @@ public class APTUtils {
     
     public static boolean isID(Token token) {
         return token != null && token.getType() == APTTokenTypes.ID;
+    }
+
+    public static boolean isFortranKeyword(int tokenType) {
+        APTLanguageFilter filter = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.FORTRAN);
+        if (filter instanceof APTBaseLanguageFilter) {
+            return ((APTBaseLanguageFilter) filter).isKeyword(tokenType);
+        }
+        return false;
     }
 
     public static boolean isInt(Token token) {
@@ -396,6 +430,7 @@ public class APTUtils {
         switch (ttype) {
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return true;
             default:
                 return false;
@@ -507,7 +542,7 @@ public class APTUtils {
     }
 
     public static List<APTToken> toList(TokenStream ts) {
-        ArrayList<APTToken> tokens = new ArrayList<APTToken>(1024);
+        LinkedList<APTToken> tokens = new LinkedList<APTToken>();
         try {
             APTToken token = (APTToken) ts.nextToken();
             while (!isEOF(token)) {
@@ -518,7 +553,6 @@ public class APTUtils {
         } catch (TokenStreamException ex) {
             LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
         }
-        tokens.trimToSize();
         return tokens;
     }
     
@@ -578,6 +612,7 @@ public class APTUtils {
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();
+    public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
     
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
         public Token nextToken() throws TokenStreamException {
@@ -671,4 +706,93 @@ public class APTUtils {
         }
 
     }
+
+
+    private static final class APTEOFToken2 extends APTTokenAbstact {
+        public APTEOFToken2() {
+        }
+
+        @Override
+        public int getOffset() {
+            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setOffset(int o) {
+            throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndOffset() {
+            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndOffset(int o) {
+            throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public CharSequence getTextID() {
+            throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setTextID(CharSequence id) {
+            throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndColumn() {
+            throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndColumn(int c) {
+            throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndLine() {
+            throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndLine(int l) {
+            throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getType() {
+            return -1;
+        }
+
+        @Override
+        public String getText() {
+            return "<EOF>"; // NOI18N
+        }
+
+        @Override
+        public int getColumn() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getLine() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+    }
+
 }

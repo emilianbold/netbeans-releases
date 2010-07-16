@@ -28,17 +28,22 @@ public enum FileAttribute implements Attribute {
     FILE_ADDRESS_FILEDIRECTORY_PROPERTY("fileDirectory"),
     FILE_ADDRESS_RELATIVEPATH_PROPERTY("relativePath"),
     FILE_ADDRESS_PATHRELATIVETO_PROPERTY("pathRelativeTo"),
+    FILE_ADDRESS_PERSIST_BASE_PROPERTY("persistenceBaseLoc"),
     FILE_ADDRESS_LOCK_NAME("lockName"),
     FILE_ADDRESS_WORK_AREA("workArea"),
     FILE_ADDRESS_SEQ_NAME("seqName"),
+    FILE_ADDRESS_RECURSIVE("recursive"),
+    FILE_ADDRESS_RECURSIVE_EXCLUDE("recursiveExclude"),
     
     FILE_MESSAGE_FILETYPE_PROPERTY("fileType"),
     FILE_MESSAGE_ENCODINGSTYLE_PROPERTY("encodingStyle"),
+    FILE_MESSAGE_CHARSET_PROPERTY("charset"),
     FILE_MESSAGE_USE_PROPERTY("use"),
     FILE_MESSAGE_PART_PROPERTY("part"),
     FILE_MESSAGE_POLLINTERVAL_PROPERTY("pollingInterval"),
     FILE_MESSAGE_FILENAME_PROPERTY("fileName"),
     FILE_MESSAGE_FILENAMEISPATTERN_PROPERTY("fileNameIsPattern"),
+    FILE_MESSAGE_FILENAMEISREGEX_PROPERTY("fileNameIsRegex"),
     FILE_MESSAGE_REMOVEOL_PROPERTY("removeEOL"),
     FILE_MESSAGE_ADDEOL_PROPERTY("addEOL"),
     FILE_MESSAGE_MULTIPLERECORDSPERFILE_MESSAGE__PROPERTY("multipleRecordsPerFile"),
@@ -52,9 +57,11 @@ public enum FileAttribute implements Attribute {
     FILE_MESSAGE_STAGE_DIR_PROPERTY("stageDirectory"),
     FILE_MESSAGE_PROTECT_DIR_IS_RELATIVE("protectDirIsRelative"),
     FILE_MESSAGE_ARCHIVE_DIR_IS_RELATIVE("archiveDirIsRelative"),
-    FILE_MESSAGE_STAGE_DIR_IS_RELATIVE("stageDirIsRelative");
+    FILE_MESSAGE_STAGE_DIR_IS_RELATIVE("stageDirIsRelative"),   
+    FILE_MESSAGE_FORWARD_AS_ATTACHMENT("forwardAsAttachment"),
     
-
+    FILE_OPERATION_VERB("verb");
+    
     private String name;
     private Class type;
     private Class subtype;

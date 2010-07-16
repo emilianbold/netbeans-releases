@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,109 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.settings.CppSettings;
 
-public class MakeProjectOptions {
+public final class MakeProjectOptions {
 
-    /**
-     * @Deprecated
-     */
-    public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        //CppSettings.getDefault().setMakeName(defaultMakeCommand);
+    public static final int REL_OR_ABS = 0;
+    public static final int REL = 1;
+    public static final int ABS = 2;
+
+    private MakeProjectOptions() {
     }
 
-    /**
-     * @Deprecated
-     */
-    public static String getDefaultMakeCommand() {
-        return null; //CppSettings.getDefault().getMakeName();
-    }
-    
-    /**
-     * @Deprecated
-     */
-    public static void setDefaultCompilerSet(String name) {
-        // Set the default name in global setting
-        CppSettings.getDefault().setCompilerSetName(name);
-        // Also set the default compiler set in the localhost set. Remote sets will look at the setting in CppSettings.
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(ExecutionEnvironmentFactory.getLocal());
-        CompilerSet compilerSet = compilerSetManager.getCompilerSet(name);
-        if (compilerSet != null) {
-            compilerSetManager.setDefault(compilerSet);
-        }
-//        CompilerSet cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(name);
-//        if (cs != null) {
-//            CppSettings.getDefault().setCompilerSetName(cs.getName());
-////            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
-//        } else {
-//            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(0); // use 0th as default
-//        }
-    }
-
-    /**
-     * @Deprecated
-     */
-    public static void setDefaultMakeOptions(String defaultMakeOptions) {
-        MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
-    }
-
-    /**
-     * @Deprecated
-     */
-    public static String getDefaultMakeOptions() {
-        return MakeOptions.getDefaultMakeOptions();
-    }
-
-
-    /**
-     * @Deprecated
-     */
-//    public static void setDefaultPlatform(int platform) {
-//        MakeOptions.getInstance().setPlatform(platform);
-//    }
-
-    /**
-     * @Deprecated
-     */
-//    public static int getDefaultPlatform() {
-//        return MakeOptions.getInstance().getPlatform();
-//    }
-
-    /**
-     * @Deprecated
-     */
-    public static void setFortranSupport(boolean fortran) {
-        //CppSettings.getDefault().setFortranEnabled(fortran);
-    }
-
-    /**
-     * @Deprecated
-     */
-    public static boolean getFortranSupport() {
-        return true;
-        //return CppSettings.getDefault().isFortranEnabled();
-    }
-    
-    public static void setDepencyChecking(boolean val) {
-        MakeOptions.getInstance().setDepencyChecking(val);
-    }
-    
     public static boolean getDepencyChecking() {
         return MakeOptions.getInstance().getDepencyChecking();
+    }
+
+    public static boolean getRebuildPropChanged() {
+        return MakeOptions.getInstance().getRebuildPropChanged();
     }
 
     public static boolean getShowIndicatorsOnRun() {
         return MakeOptions.getInstance().getShowProfiling();
     }
 
-    public static void setShowIndicatorsOnRun(boolean val) {
-        MakeOptions.getInstance().setShowProfiling(val);
+    public static int getPathMode() {
+        return MakeOptions.getInstance().getPathMode();
     }
 }

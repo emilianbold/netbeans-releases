@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -103,60 +105,79 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String id = "--- getExpander for " + execEnv.toString() + " ---"; // NOI18N
+
+        System.out.println(id + " started.");
         try {
-            // Make sure that host is connected!
-            ConnectionManager.getInstance().connectTo(execEnv);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
-        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
-
-        Map<String, String> myenv = new HashMap<String, String>();
-        try {
-            myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
-            myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        System.out.println(myenv.toString());
-
-        String mspec = NativeExecutionTestSupport.getMspec(execEnv);
-        
-        String os;
-
-        int mpos = mspec.indexOf('-');
-        
-        if (mpos > 0) {
-            os = mspec.substring(mpos + 1);
-            if (os.equals("S2")) {
-                os = "SunOS";
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                try {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    fail("Failed to connect to " + execEnv.getDisplayName());
+                }
             }
-        } else {
-            os = "Cannot guess OS from mspec";
-        }
 
-        try {
-            String pattern = "$osname-${platform}$_isa";
-            String result = expander.expandPredefinedMacros(pattern);
-            System.out.println(pattern + " -> " + result); // NOI18N
-            assertTrue(result + " should be started with " + os, result.startsWith(os));
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            assertTrue(execEnv.getDisplayName() + " must be connected", ConnectionManager.getInstance().isConnectedTo(execEnv));
+
+            MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
+
+            Map<String, String> myenv = new HashMap<String, String>();
+            try {
+                myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
+                myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("Unable to parse string to expand: " + ex.getMessage());
+            }
+
+            System.out.println(myenv.toString());
+
+            String mspec = NativeExecutionTestSupport.getMspec(execEnv);
+
+            String os;
+
+            int mpos = mspec.indexOf('-');
+
+            if (mpos > 0) {
+                os = mspec.substring(mpos + 1);
+                if (os.equals("S2")) {
+                    os = "SunOS";
+                }
+            } else {
+                os = "Cannot guess OS from mspec";
+            }
+
+            try {
+                String pattern = "$osname-${platform}$_isa";
+                String result = expander.expandPredefinedMacros(pattern);
+                System.out.println(pattern + " -> " + result); // NOI18N
+                assertTrue(result + " should be started with " + os, result.startsWith(os));
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("Unable to parse string to expand: " + ex.getMessage());
+            }
+        } finally {
+            System.out.println(id + " finished");
         }
     }
 
     @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testPath() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 0); // NOI18N
+        doTestPath(getTestExecutionEnvironment());
+    }
+
+    @org.junit.Test
+    public void testPathLocal() {
+        doTestPath(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    private void doTestPath(final ExecutionEnvironment execEnv) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("/bin/env"); // NOI18N
+        npb.setExecutable("env"); // NOI18N
+        npb.redirectError();
         MacroMap env = npb.getEnvironment();
         env.prependPathVariable("PATH", "/firstPath"); // NOI18N
         env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N
@@ -165,8 +186,6 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
         try {
             Process p = npb.call();
-            int result = p.waitFor();
-            assertEquals(0, result);
 
             List<String> pout = ProcessUtils.readProcessOutput(p);
             int ok = 0;
@@ -182,6 +201,9 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
                     }
                 }
             }
+
+            int result = p.waitFor();
+            assertEquals(0, result);
 
             assertEquals(2, ok);
         } catch (InterruptedException ex) {

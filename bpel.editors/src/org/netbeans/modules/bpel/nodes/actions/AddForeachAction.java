@@ -38,6 +38,7 @@ public class AddForeachAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddForeachAction() {
+        super("structured/foreach"); // NOI18N
     }    
     
     protected String getBundleName() {

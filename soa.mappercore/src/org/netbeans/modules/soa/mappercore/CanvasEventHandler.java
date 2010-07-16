@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Constant;
@@ -308,45 +307,33 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
     }
     
     private void showPopupMenu(MouseEvent event) {
-        MapperContext context = getMapper().getContext();
-        MapperModel model = getMapper().getModel();
+        Mapper mapper = getMapper();
+        MapperContext context = mapper.getContext();
+        MapperModel model = mapper.getModel();
+        SelectionModel selectionModel = getSelectionModel();
         
         if (context == null || model == null) { return; }
 
-        TreePath treePath = getSelectionModel().getSelectedPath();
+        TreePath treePath = selectionModel.getSelectedPath();
         if (treePath == null) { return; }
         
         GraphItem item = null;
-        List<Link> links = getSelectionModel().getSelectedLinks();
+        List<Link> links = selectionModel.getSelectedLinks();
         if (links != null && !links.isEmpty()) {
             item = links.get(0);
         }
         
-        List<Vertex> vertexes = getSelectionModel().getSelectedVerteces();
+        List<Vertex> vertexes = selectionModel.getSelectedVerteces();
         if (vertexes != null && !vertexes.isEmpty()) {
             item = vertexes.get(0);
         }
         
-        JPopupMenu mapperMenu = MapperPopupMenuFactory.
-                createMapperPopupMenu(getCanvas(), item);           
-        
-        List<JMenu> listMenu = context.getMenuNewEllements(model);
-        JMenu newMenu = (JMenu) mapperMenu.getComponent(0);
-        for (JMenu m : listMenu) {
-            newMenu.add(m);
+        if (item == null) {
+            item = selectionModel.getSelectedVertexItem();
         }
-
-        JPopupMenu menu = context.getCanvasPopupMenu(model, item);
         
-        if (menu != null) {
-            if (menu.getComponentCount() > 0) {
-                mapperMenu.addSeparator();
-            }
+        JPopupMenu mapperMenu = context.getCanvasPopupMenu(model, item, mapper);
 
-            for (int i = 0; i < menu.getComponentCount(); i++) {
-                mapperMenu.add(menu.getComponent(i));
-            }
-        }
         if (mapperMenu != null) {
             mapperMenu.show(getCanvas(), event.getX(), event.getY());
         }

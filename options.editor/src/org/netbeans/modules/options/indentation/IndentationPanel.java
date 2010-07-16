@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,18 +53,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -78,6 +86,7 @@ import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -91,6 +100,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
+    private final boolean lineWrapOn;
+
     private final MimePath mimePath;
     private final CustomizerSelector.PreferencesFactory prefsFactory;
     private final Preferences allLangPrefs;
@@ -101,7 +112,20 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     /** 
      * Creates new form IndentationPanel.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
+        boolean lwo;
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class clazz = cl.loadClass("org.netbeans.modules.editor.lib2.highlighting.HighlightingManager"); //NOI18N
+            Field field = clazz.getField("LINEWRAP_ENABLED"); //NOI18N
+            lwo = (Boolean) field.get(null);
+        } catch (Exception e) {
+            LOG.log(Level.INFO, null, e);
+            lwo = false;
+        }
+        lineWrapOn = lwo;
+
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;
@@ -137,26 +161,41 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         loc (lTabSize, "TabSize"); //NOI18N
         loc (cbExpandTabsToSpaces, "Expand_Tabs"); //NOI18N
         loc (lRightMargin, "Right_Margin"); //NOI18N
+        loc (lLineWrap, "Line_Wrap"); //NOI18N
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleName (loc ("AN_Expand_Tabs")); //NOI18N
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleDescription (loc ("AD_Expand_Tabs")); //NOI18N
 
-        //listeners
-        cbOverrideGlobalOptions.addActionListener(this);
-        cbExpandTabsToSpaces.addActionListener(this);
+        // models & renderers
         sNumberOfSpacesPerIndent.setModel(new SpinnerNumberModel(4, 1, 50, 1));
-        sNumberOfSpacesPerIndent.addChangeListener(this);
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
-        sTabSize.addChangeListener(this);
-        sRightMargin.setModel(new SpinnerNumberModel(120, 1, 200, 10));
-        sRightMargin.addChangeListener(this);
+        sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
+        cboLineWrap.setRenderer(new LineWrapRenderer(cboLineWrap.getRenderer()));
+        if (lineWrapOn) {
+            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
+        } else {
+            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none" })); //NOI18N
+        }
 
         // initialize controls
-        prefsChange(null);
-        if (showOverrideGlobalOptions && 
+        if (showOverrideGlobalOptions &&
             null == this.prefs.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null))
         {
             // FormattingCustomizerPanel and FormattingPanelController expect this to be set
             this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
+        }
+        prefsChange(null);
+
+        //listeners
+        cbOverrideGlobalOptions.addActionListener(this);
+        cbExpandTabsToSpaces.addActionListener(this);
+        sNumberOfSpacesPerIndent.addChangeListener(this);
+        sTabSize.addChangeListener(this);
+        sRightMargin.addChangeListener(this);
+        if (lineWrapOn) {
+            cboLineWrap.addActionListener(this);
+        } else {
+            ((ControlledComboBox) cboLineWrap).setEnabledInternal(false);
+            ((ControlledLabel) lLineWrap).setEnabledInternal(false);
         }
     }
 
@@ -168,7 +207,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // ChangeListener implementation
     // ------------------------------------------------------------------------
 
-    public void stateChanged (ChangeEvent e) {
+    public @Override void stateChanged (ChangeEvent e) {
         if (sNumberOfSpacesPerIndent == e.getSource()) {
             prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, (Integer) sNumberOfSpacesPerIndent.getValue());
             prefs.putInt(SimpleValueNames.SPACES_PER_TAB, (Integer) sNumberOfSpacesPerIndent.getValue());
@@ -183,11 +222,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // ActionListener implementation
     // ------------------------------------------------------------------------
 
-    public void actionPerformed (ActionEvent e) {
+    public @Override void actionPerformed (ActionEvent e) {
         if (cbOverrideGlobalOptions == e.getSource()) {
             prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
         } else if (cbExpandTabsToSpaces == e.getSource()) {
             prefs.putBoolean(SimpleValueNames.EXPAND_TABS, cbExpandTabsToSpaces.isSelected());
+        } else if (cboLineWrap == e.getSource()) {
+            prefs.put(SimpleValueNames.TEXT_LINE_WRAP, (String) cboLineWrap.getSelectedItem());
         }
     }
 
@@ -195,7 +236,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // PreferenceChangeListener implementation
     // ------------------------------------------------------------------------
 
-    public void preferenceChange(PreferenceChangeEvent evt) {
+    public @Override void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getSource() == prefs) {
             prefsChange(evt);
         } else if (evt.getSource() == allLangPrefs) {
@@ -260,6 +301,14 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             needsRefresh = true;
         }
 
+        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+            String nue = prefs.get(SimpleValueNames.TEXT_LINE_WRAP, getDef(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
+            if (nue != cboLineWrap.getSelectedItem()) {
+                cboLineWrap.setSelectedItem(nue);
+            }
+            needsRefresh = true;
+        }
+
         if (showOverrideGlobalOptions) {
             if (key == null || FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
                 boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
@@ -273,6 +322,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                     prefs.putInt(SimpleValueNames.SPACES_PER_TAB, allLangPrefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
                     prefs.putInt(SimpleValueNames.TAB_SIZE, allLangPrefs.getInt(SimpleValueNames.TAB_SIZE, 4));
                     prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
+                    if (lineWrapOn) {
+                        prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
+                    }
                 }
                 
                 needsRefresh = true;
@@ -283,11 +335,23 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 ((ControlledSpinner) sTabSize).setEnabledInternal(nue);
                 ((ControlledLabel) lRightMargin).setEnabledInternal(nue);
                 ((ControlledSpinner) sRightMargin).setEnabledInternal(nue);
+                if (lineWrapOn) {
+                    ((ControlledLabel) lLineWrap).setEnabledInternal(nue);
+                    ((ControlledComboBox) cboLineWrap).setEnabledInternal(nue);
+                }
             }
         }
 
         if (needsRefresh) {
-            preview.refreshPreview();
+            // XXX: this is a workaround for the new view hierarchy, normally we
+            // should not catch any exception here and just call refreshPreview().
+            try {
+                preview.refreshPreview();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable e) {
+                // ignore
+            }
         }
     }
 
@@ -324,6 +388,10 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         if (key == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(key)) {
             prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
         }
+
+        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+            prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
+        }
     }
     
     /** This method is called from within the constructor to
@@ -343,6 +411,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sTabSize = new ControlledSpinner();
         lRightMargin = new ControlledLabel();
         sRightMargin = new ControlledSpinner();
+        lLineWrap = new ControlledLabel();
+        cboLineWrap = new ControlledComboBox();
 
         setOpaque(false);
 
@@ -359,6 +429,11 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         lRightMargin.setLabelFor(sRightMargin);
         org.openide.awt.Mnemonics.setLocalizedText(lRightMargin, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Right_Margin")); // NOI18N
 
+        lLineWrap.setLabelFor(cboLineWrap);
+        org.openide.awt.Mnemonics.setLocalizedText(lLineWrap, org.openide.util.NbBundle.getMessage(IndentationPanel.class, "CTL_Line_Wrap")); // NOI18N
+
+        cboLineWrap.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -366,19 +441,27 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                        .add(54, 54, 54))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                            .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE))
+                        .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                            .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                            .add(sRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)))))
+                        .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 53, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(lLineWrap, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cboLineWrap, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                .add(54, 54, 54))
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -387,9 +470,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(63, 63, 63))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(25, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lNumberOfSpacesPerIndent))
@@ -400,7 +481,12 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lRightMargin)))
+                    .add(lRightMargin))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lLineWrap)
+                    .add(cboLineWrap, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -433,7 +519,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             .add(layout.createSequentialGroup()
                 .add(cbOverrideGlobalOptions)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         cbOverrideGlobalOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Override_Global_Options")); // NOI18N
@@ -444,7 +530,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbExpandTabsToSpaces;
     private javax.swing.JCheckBox cbOverrideGlobalOptions;
+    private javax.swing.JComboBox cboLineWrap;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lLineWrap;
     private javax.swing.JLabel lNumberOfSpacesPerIndent;
     private javax.swing.JLabel lRightMargin;
     private javax.swing.JLabel lTabSize;
@@ -476,7 +564,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.INDENT_SHIFT_WIDTH, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.SPACES_PER_TAB, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TAB_SIZE, mimeType) ||
-            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType);
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType) ||
+            (lineWrapOn && prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType));
     }
 
     private boolean getDefBoolean(String key, boolean def) {
@@ -485,6 +574,10 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private int getDefInt(String key, int def) {
         return allLangPrefs != null ? allLangPrefs.getInt(key, def) : def;
+    }
+
+    private String getDef(String key, String def) {
+        return allLangPrefs != null ? allLangPrefs.get(key, def) : def;
     }
 
     public static final class TextPreview implements PreviewProvider {
@@ -517,7 +610,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             this(prefs, mimeType, NbBundle.getMessage(clazz, bundleKey));
         }
 
-        public JComponent getPreviewComponent() {
+        public @Override JComponent getPreviewComponent() {
             if (jep == null) {
                 jep = new JEditorPane();
                 jep.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IndentationPanel.class, "AN_Preview")); //NOI18N
@@ -529,7 +622,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             return jep;
         }
 
-        public void refreshPreview() {
+        public @Override void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.setText(previewText);
             
@@ -539,7 +632,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 reformat.lock();
                 try {
                     ((BaseDocument) doc).runAtomic(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
                                         + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
@@ -580,7 +673,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     public static final class NoPreview implements PreviewProvider {
         private JComponent component = null;
 
-        public JComponent getPreviewComponent() {
+        public @Override JComponent getPreviewComponent() {
             if (component == null) {
                 JLabel noPreviewLabel = new JLabel(NbBundle.getMessage(IndentationPanel.class, "MSG_no_preview_available")); //NOI18N
                 noPreviewLabel.setOpaque(true);
@@ -593,7 +686,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             return component;
         }
 
-        public void refreshPreview() {
+        public @Override void refreshPreview() {
             // noop
         }
     } // End of NoPreview class
@@ -710,5 +803,60 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
     } // End of ControlledSpinner class
 
+    private static final class ControlledComboBox extends JComboBox {
+
+        private boolean externallyEnabled = true;
+        private boolean internallyEnabled = true;
+
+        public @Override void setEnabled(boolean b) {
+            if (externallyEnabled == b) {
+                return;
+            } else {
+                externallyEnabled = b;
+                if (externallyEnabled) {
+                    if (internallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+
+        public void setEnabledInternal(boolean b) {
+            if (internallyEnabled == b) {
+                return;
+            } else {
+                internallyEnabled = b;
+                if (internallyEnabled) {
+                    if (externallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+    } // End of ControlledComboBox class
+
+    private static final class LineWrapRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+        public LineWrapRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(
+                    list,
+                    NbBundle.getMessage(IndentationPanel.class, "LWV_" + value), //NOI18N
+                    index,
+                    isSelected,
+                    cellHasFocus);
+        }
+
+    } // End of LineWrapRenderer class
 }
 

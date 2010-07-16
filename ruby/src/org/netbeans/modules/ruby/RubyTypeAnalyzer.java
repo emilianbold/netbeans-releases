@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,10 +48,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.DotNode;
+import org.jrubyparser.ast.ForNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
+import org.jrubyparser.ast.NilImplicitNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ToAryNode;
@@ -78,9 +85,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public final class RubyTypeAnalyzer {
+final class RubyTypeAnalyzer {
 
-    private ContextKnowledge knowledge;
+    private final ContextKnowledge knowledge;
     private boolean analyzed;
     private boolean targetReached;
 
@@ -104,12 +111,15 @@ public final class RubyTypeAnalyzer {
      * and <code>String</code>.
      */
     private final Set<String> analyzedMethods = new HashSet<String>();
+
+    private final RubyTypeInferencer typeInferencer;
     /**
      * Creates a new instance of RubyTypeAnalyzer for a given position. The
      * {@link #inferType} method will do the rest.
      */
-    RubyTypeAnalyzer(final ContextKnowledge knowledge) {
+    RubyTypeAnalyzer(final ContextKnowledge knowledge, RubyTypeInferencer typeInferencer) {
         this.knowledge = knowledge;
+        this.typeInferencer = typeInferencer;
     }
 
     void analyze() {
@@ -161,7 +171,8 @@ public final class RubyTypeAnalyzer {
         // contain the correct value node, we need to get the value from the "parent" multipleAsgnNode
         if (head.getNodeType() == NodeType.MULTIPLEASGNNODE) {
             MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) head;
-            if (multipleAsgnNode.getHeadNode().childNodes().size() == value.childNodes().size()) {
+            ListNode headNode = multipleAsgnNode.getHeadNode();
+            if (headNode != null && headNode.childNodes().size() == value.childNodes().size()) {
                 for (int i = 0; i < multipleAsgnNode.getHeadNode().childNodes().size(); i++) {
                     Node var = multipleAsgnNode.getHeadNode().childNodes().get(i);
                     collectTypes(var, value.childNodes().get(i), typeInferencer, result);
@@ -180,6 +191,19 @@ public final class RubyTypeAnalyzer {
         }
     }
 
+    private static String getCurrentMethod(Node node, String currentMethod) {
+
+        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
+            return AstUtilities.getName(node);
+        }
+
+        if (node.getNodeType() == NodeType.MODULENODE
+                || node.getNodeType() == NodeType.CLASSNODE
+                || node.getNodeType() == NodeType.SCLASSNODE) {
+            return  "";
+        }
+        return currentMethod;
+    }
     /**
      * Analyze the given code block down to the given offset. The {@link
      * #inferType} method can then be used to read out the symbol type if any at
@@ -192,9 +216,9 @@ public final class RubyTypeAnalyzer {
             final Map<String, RubyType> typesForSymbols,
             final boolean override, String currentMethod) {
 
-        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
-            currentMethod = AstUtilities.getName(node);
-        }
+        // the method in which we are currently; helps in optimizing performance
+        currentMethod = getCurrentMethod(node, currentMethod);
+
         // Avoid including definitions appearing later in the context than the
         // caret. (This only works for local variable analysis; for fields it
         // could be complicated by code earlier than the caret calling code
@@ -213,7 +237,7 @@ public final class RubyTypeAnalyzer {
             case MULTIPLEASGNNODE: {
                 MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) node;
                 Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
-                collectMultipleAsgnVars(multipleAsgnNode, RubyTypeInferencer.create(knowledge), vars);
+                collectMultipleAsgnVars(multipleAsgnNode, typeInferencer, vars);
                 for (Node each : vars.keySet()) {
                     if (each instanceof INameNode) {
                         String name = AstUtilities.getName(each);
@@ -223,13 +247,29 @@ public final class RubyTypeAnalyzer {
                 return;
             }
             case LOCALASGNNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
-                String symbol = RubyTypeInferencer.getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node));
+                String symbol = RubyTypeInferencer.getLocalVarPath(knowledge.getRoot(), node, currentMethod);
+                LocalAsgnNode localAsgnNode = (LocalAsgnNode) node;
+                // see if it is a loop var
+                if (localAsgnNode.getValueNode() instanceof NilImplicitNode) {
+                    AstPath path = new AstPath(knowledge.getRoot(), node);
+                    Node leafParent = path.leafParent();
+                    if (leafParent instanceof ForNode) {
+                        ForNode forNode = (ForNode) leafParent;
+                        Node iterNode = forNode.getIterNode();
+                        if (iterNode instanceof DotNode) {
+                            DotNode dotNode = (DotNode) iterNode;
+                            RubyType type = typeInferencer.inferType(dotNode.getBeginNode());
+                            maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
+                            break;
+                        }
+                    }
+                }
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
                 maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
                 break;
             }
             case CONSTDECLNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
                 String fqn  = AstUtilities.getFqnName(knowledge.getRoot(), node);
                 maybePutTypeForSymbol(typesForSymbols, fqn, type, override, currentMethod);
                 break;
@@ -239,7 +279,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARASGNNODE:
             case CLASSVARDECLNODE:
             case DASGNNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
 
                 // null element in types set means that we are not able to infer
                 // the expression

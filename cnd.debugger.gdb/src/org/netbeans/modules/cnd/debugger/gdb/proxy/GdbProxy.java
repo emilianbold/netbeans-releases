@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,12 +59,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 
 /**
  * Class GdbProxy is a Controller component of gdb driver
@@ -95,8 +97,8 @@ public class GdbProxy {
      * @param workingDirectory The directory to start the debugger from
      * @throws IOException Pass this on to the caller
      */
-    public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment,
-            String workingDirectory, String termpath, String cspath) throws IOException {
+    public GdbProxy(GdbDebugger debugger, String debuggerCommand, MacroMap debuggerEnvironment,
+            String workingDirectory, String tty, String cspath) throws IOException {
         this.debugger = debugger;
 
         ArrayList<String> dc = new ArrayList<String>();
@@ -108,7 +110,7 @@ public class GdbProxy {
         dc.add("--silent"); // NOI18N
         dc.add("--interpreter=mi"); // NOI18N
         gdbLogger = new GdbLogger(debugger, this);
-        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
+        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, tty, cspath);
     }
 
     public GdbProxyEngine getProxyEngine() {
@@ -123,11 +125,11 @@ public class GdbProxy {
         return map.get(id);
     }
     
-    public void removeCB(int id) {
+    void removeCB(int id) {
         map.remove(id);
     }
     
-    public void putCB(int id, CommandBuffer cb) {
+    void putCB(int id, CommandBuffer cb) {
         map.put(id, cb);
     }
 
@@ -150,7 +152,7 @@ public class GdbProxy {
     }
     
     /** Attach to a running program */
-    public CommandBuffer attach(String pid) {
+    public CommandBuffer attach(int pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
         return engine.sendCommandEx("attach " + pid); // NOI18N
     }
@@ -269,13 +271,6 @@ public class GdbProxy {
         return engine.sendCommandEx("-data-evaluate-expression " + string); // NOI18N
     }
 
-    /**
-     *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
-     */
-    public void data_evaluate_expression(String string) {
-        engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
-    }
-    
     /**
      */
     public void data_list_register_names(String regIds) {
@@ -415,23 +410,6 @@ public class GdbProxy {
     }
 
     /**
-     * Interrupts execution of the inferior program.
-     * This method is supposed to send "-exec-interrupt" to the debugger,
-     * but this feature is not implemented in gdb yet, so it is replaced
-     * with sending a signal "INT" (Unix) or signal TSTP (Windows).
-     */
-    public void exec_interrupt() {
-        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                debugger.kill(Signal.TRAP);
-            } else {
-                debugger.kill(Signal.INT);
-            }
-        }
-        //return 0;
-    }
-
-    /**
      * Send "-exec-abort" to the debugger
      * This command kills the inferior program.
      */
@@ -450,20 +428,19 @@ public class GdbProxy {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
+    public MICommand break_insertCMD(int flags,
+                                     boolean temporary,
+                                     String name,
+                                     String threadID,
+                                     boolean pending) {
         StringBuilder cmd = new StringBuilder();
 
-        if (GdbUtils.isMultiByte(name)) {
-            if (temporary) {
-                cmd.append("tbreak "); // NOI18N
-            } else {
-                cmd.append("break "); // NOI18N
-            }
-        } else {
-            cmd.append("-break-insert "); // NOI18N
-            if (temporary) {
-                cmd.append("-t "); // NOI18N
-            }
+        cmd.append("-break-insert "); // NOI18N
+        if (temporary) {
+            cmd.append("-t "); // NOI18N
+        }
+        
+        if (pending) {
             // This will make pending breakpoint if specified location can not be parsed now
             cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
         }
@@ -479,7 +456,9 @@ public class GdbProxy {
             // FIXME - Does the Mac support -p?
             cmd.append("-p " + threadID + " "); // NOI18N
         }
+        cmd.append('\"'); // NOI18N
         cmd.append(name);
+        cmd.append('\"'); // NOI18N
         return engine.createMICommand(cmd.toString());
     }
 
@@ -492,14 +471,18 @@ public class GdbProxy {
      * @return token number
      */
     public void break_insert(String name) {
-        break_insertCMD(0, false, name, null).send();
+        break_insertCMD(0, false, name, null, true).send();
     }
 
     /**
      * Insert temporary breakpoint
      */
     public void break_insert_temporary(String name) {
-        break_insertCMD(0, true, name, null).send();
+        break_insertCMD(0, true, name, null, true).send();
+    }
+
+    public CommandBuffer break_insert_temporaryEx(String name, boolean pending) {
+        return engine.sendCommandEx(break_insertCMD(0, true, name, null, pending).getText());
     }
 
     /**
@@ -576,10 +559,6 @@ public class GdbProxy {
         engine.sendCommand("-stack-list-locals " + printValues); // NOI18N
     }
 
-    public void stack_list_arguments(int showValues, int low, int high) {
-        engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
-    }
-
     public void stack_list_arguments(int showValues) {
         engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
     }
@@ -607,15 +586,15 @@ public class GdbProxy {
 
     /** Request a stack dump from gdb */
     public void stack_list_frames() {
-        engine.sendCommand("-stack-list-frames "); // NOI18N
+        engine.sendCommand("-stack-list-frames"); // NOI18N
     }
 
     /** Request a stack dump from gdb */
     public CommandBuffer stack_list_framesEx() {
-        return engine.sendCommandEx("-stack-list-frames "); // NOI18N
+        return engine.sendCommandEx("-stack-list-frames"); // NOI18N
     }
     
-    public void gdb_set(String command, String value) {
+    public void gdb_set(String command, Object value) {
         StringBuilder sb = new StringBuilder();
         sb.append("-gdb-set "); // NOI18N
         sb.append(command);

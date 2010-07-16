@@ -19,16 +19,12 @@
 package org.netbeans.modules.bpel.model.ext.editor.impl;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
-import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
-import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
+import org.netbeans.modules.bpel.model.ext.editor.api.NMProperties;
+import org.netbeans.modules.bpel.model.ext.editor.api.NestedExtensionsVisitor;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
-import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
@@ -38,14 +34,14 @@ import org.w3c.dom.Element;
  * @author nk160297
  * @version 1.0
  */
-public class EditorImpl extends EditorEntityImpl implements Editor {
+public class EditorImpl extends EditorExtensionContainerImpl implements Editor {
 
-    EditorImpl(EditorEntityFactory factory, BpelModelImpl model, Element e ) {
-        super(factory, model, e);
+    EditorImpl(BpelModelImpl model, Element e ) {
+        super(model, e);
     }
 
-    EditorImpl(EditorEntityFactory factory, BpelBuilderImpl builder ) {
-        super(factory, builder, EditorElements.EDITOR);
+    EditorImpl(BpelBuilderImpl builder ) {
+        super(builder, EditorElements.EDITOR);
     }
 
     /*
@@ -57,93 +53,24 @@ public class EditorImpl extends EditorEntityImpl implements Editor {
         return Editor.class;
     }
 
-    public EntityUpdater getEntityUpdater() {
-        return EditorEntityUpdater.getInstance();
-    }
-
     protected Attribute[] getDomainAttributes() {
         return new Attribute[0];
     }
 
-    private static class EditorEntityUpdater implements EntityUpdater {
-        private static EntityUpdater INSTANCE =
-                new EditorEntityUpdater();
-
-        public static EntityUpdater getInstance() {
-            return INSTANCE;
-        }
-
-        private EditorEntityUpdater() {
-
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, Operation operation) {
-            if (target instanceof ExtensibleElements) {
-                ExtensibleElements ee = (ExtensibleElements)target;
-                switch (operation) {
-                case ADD:
-                    ee.addExtensionEntity(Editor.class, (Editor)child);
-                    break;
-                case REMOVE:
-                    ee.remove(child);
-                    break;
-                }
-            }
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, int index, Operation operation) {
-            if (target instanceof ExtensibleElements) {
-                ExtensibleElements ee = (ExtensibleElements)target;
-                switch (operation) {
-                case ADD:
-                    ee.addExtensionEntity(Editor.class, (Editor)child);
-                    break;
-                case REMOVE:
-                    ee.remove(child);
-                    break;
-                }
-            }
-        }
-
+    public NMProperties getNMProperties() {
+        return getChild(NMProperties.class);
     }
 
-    public Casts getCasts() {
-        return getChild(Casts.class);
+    public void removeNMProperties() {
+        removeChild(NMProperties.class);
     }
 
-    public void removeCasts() {
-        removeChild(Casts.class);
+    public void setNMProperties(NMProperties nmProperties) {
+        setChild(nmProperties, NMProperties.class);
     }
 
-    public void setCasts(Casts value) {
-        setChild(value, Casts.class);
-    }
-
-
-    public PseudoComps getPseudoComps() {
-        return getChild(PseudoComps.class);
-    }
-
-    public void removePseudoComps() {
-        removeChild(PseudoComps.class);
-    }
-
-    public void setPseudoComps(PseudoComps pseudoComps) {
-        setChild(pseudoComps, PseudoComps.class);
-    }
-    
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.netbeans.modules.soa.model.bpel.xdm.impl.BpelContainerImpl#create(org.w3c.dom.Element)
-     */
-    @Override
-    protected BpelEntity create( Element element )
-    {
-        if ( EditorElements.CASTS.getName().equals(element.getLocalName())) {
-            return new CastsImpl(getFactory(), getModel(), element);
-        }
-        return null;
+    public void accept(NestedExtensionsVisitor visitor) {
+        visitor.visit(this);
     }
 
 }

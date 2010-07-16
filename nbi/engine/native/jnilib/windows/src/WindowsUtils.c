@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -92,19 +95,21 @@ int queryValue(int mode, HKEY section, const unsigned short* key, const unsigned
     
     if (RegOpenKeyExW(section, key, 0, KEY_QUERY_VALUE | mode, &hkey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hkey, name, NULL, (LPDWORD) &tempType, NULL, (LPDWORD) &tempSize) == ERROR_SUCCESS) {
-            tempValue = (byte*) malloc(tempSize + 8);
+            tempValue = (byte*) MALLOC(tempSize + 8);
             
             if (tempValue != NULL) {
-                memset(tempValue, 0, tempSize + 8);
+                ZERO(tempValue, tempSize + 8);
                 
                 if (RegQueryValueExW(hkey, name, NULL, (LPDWORD) &tempType, tempValue, (LPDWORD) &tempSize) == ERROR_SUCCESS) {
                     if (expand && (tempType == REG_EXPAND_SZ)) {
-                        int expandedSize = (int) wcslen((unsigned short*) tempValue) + 2;
-                        byte* expandedValue = (byte*) malloc(expandedSize);
-                        int expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
-                        
+                        int expandedSize = (int) WCSLEN((unsigned short*) tempValue) + 2;
+                        byte* expandedValue = (byte*) MALLOC(expandedSize * sizeof(wchar_t));
+                        int expandedCharsNumber = 0;
+                        ZERO(expandedValue, expandedSize);
+                        expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
                         if (expandedCharsNumber > tempSize) {
-                            expandedValue       = (byte*) realloc(expandedValue, expandedCharsNumber * sizeof(byte));
+                            FREE(expandedValue);
+                            expandedValue       = (byte*) MALLOC(expandedCharsNumber * sizeof(wchar_t));
                             expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, expandedCharsNumber);
                         }
                         

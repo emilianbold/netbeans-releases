@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -292,7 +296,13 @@ public final class EditorRegistry {
             Item item = items;
             while (item != null) {
                 JTextComponent textComponent = item.get();
-                if (textComponent == null || (item.ignoreAncestorChange && c.isAncestorOf(textComponent))) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(s2s(c) + " isAncestorOf " + s2s(textComponent) + " = " + (textComponent == null ? null : c.isAncestorOf(textComponent)) + '\n'); //NOI18N
+                    LOG.finest(s2s(c) + " isIgnoredAncestorOf " + s2s(textComponent) + " = " + (item.ignoredAncestor == null ? null : item.ignoredAncestor.get() == c) + '\n'); //NOI18N
+                }
+                if (textComponent == null || 
+                    (item.ignoreAncestorChange && (c.isAncestorOf(textComponent) || (item.ignoredAncestor != null && item.ignoredAncestor.get() == c)))
+                ) {
                     // Explicitly call focusLost() before physical removal from the registry.
                     // In practice this notification happens first before focusLost() from focus listener.
                     if (textComponent != null) {
@@ -593,10 +603,15 @@ public final class EditorRegistry {
         Item previous;
         
         /**
-         * Whether component should not be removed from registry upon removeNotify()
-         * since TabbedAdapter in NB winsys removes the component upon tab switching.
+         * Whether component should not be removed from registry upon removeNotify(),
+         * but later on when notifyClose() is called.
          */
         boolean ignoreAncestorChange;
+
+        /**
+         * The ancestor which was ignored in removeNotify().
+         */
+        Reference<Container> ignoredAncestor;
         
         /**
          * Timer for removal of component from registry after removeNotify() was called on component.
@@ -617,11 +632,13 @@ public final class EditorRegistry {
         
         static final FocusL INSTANCE = new FocusL();
 
+        @Override
         public void focusGained(FocusEvent e) {
             EditorRegistry.focusGained((JTextComponent)e.getSource(), e.getOppositeComponent());
 
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
             EditorRegistry.focusLost((JTextComponent)e.getSource(), e.getOppositeComponent());
         }
@@ -632,6 +649,7 @@ public final class EditorRegistry {
         
         static final PropertyDocL INSTANCE = new PropertyDocL();
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if ("document".equals(evt.getPropertyName())) { //NOI18N
                 focusedDocumentChange((JTextComponent)evt.getSource(),
@@ -647,6 +665,7 @@ public final class EditorRegistry {
         
         private static final int BEFORE_REMOVE_DELAY = 2000; // 2000ms delay
 
+        @Override
         public void ancestorAdded(AncestorEvent event) {
             Item item = item(event.getComponent());
             if (item.runningTimer != null) {
@@ -656,9 +675,11 @@ public final class EditorRegistry {
             itemMadeDisplayable(item);
         }
 
+        @Override
         public void ancestorMoved(AncestorEvent event) {
         }
 
+        @Override
         public void ancestorRemoved(AncestorEvent event) {
             final JComponent component = event.getComponent();
             Item item = item(component);
@@ -673,7 +694,7 @@ public final class EditorRegistry {
                 // Only start timer when ancestor changes are not ignored.
                 item.runningTimer = new Timer(BEFORE_REMOVE_DELAY,
                     new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
+                        public @Override void actionPerformed(ActionEvent e) {
                             ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
                             synchronized (EditorRegistry.class) {
                                 Item item = item(component);
@@ -686,9 +707,11 @@ public final class EditorRegistry {
                     }
                 );
                 item.runningTimer.start();
+            } else {
+                Container c = SwingUtilities.getAncestorOfClass(ignoredAncestorClass, component);
+                item.ignoredAncestor = new WeakReference<Container>(c);
             }
         }
-        
     }
 
     private static final class PackageAccessor extends EditorApiPackageAccessor {

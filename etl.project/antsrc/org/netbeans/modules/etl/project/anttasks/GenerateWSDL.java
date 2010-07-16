@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
-
 package org.netbeans.modules.etl.project.anttasks;
 
 import java.io.File;
@@ -70,157 +72,164 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
  *
  */
 public class GenerateWSDL extends Task {
-	private String mSrcDirectoryLocation;
 
-	private String mBuildDirectoryLocation;
+    private String mSrcDirectoryLocation;
+    private String mBuildDirectoryLocation;
+    private boolean buildFailed = false;
 
-	/** Creates a new instance of GenerateWSDL */
-	public GenerateWSDL() {
-	}
+    /** Creates a new instance of GenerateWSDL */
+    public GenerateWSDL() {
+    }
 
-	/**
-	 * @return Returns the srcDirectoryLocation.
-	 */
-	public String getSrcDirectoryLocation() {
-		return mSrcDirectoryLocation;
-	}
+    /**
+     * @return Returns the srcDirectoryLocation.
+     */
+    public String getSrcDirectoryLocation() {
+        return mSrcDirectoryLocation;
+    }
 
-	/**
-	 * @param srcDirectoryLocation
-	 *            The srcDirectoryLocation to set.
-	 */
-	public void setSrcDirectoryLocation(String srcDirectoryLocation) {
-		mSrcDirectoryLocation = srcDirectoryLocation;
-	}
+    /**
+     * @param srcDirectoryLocation
+     *            The srcDirectoryLocation to set.
+     */
+    public void setSrcDirectoryLocation(String srcDirectoryLocation) {
+        mSrcDirectoryLocation = srcDirectoryLocation;
+    }
 
-	/**
-	 * @return Returns the srcDirectoryLocation.
-	 */
-	public String getBuildDirectoryLocation() {
-		return mBuildDirectoryLocation;
-	}
+    /**
+     * @return Returns the srcDirectoryLocation.
+     */
+    public String getBuildDirectoryLocation() {
+        return mBuildDirectoryLocation;
+    }
 
-	/**
-	 * @param buildDirectoryLocation
-	 *            The srcDirectoryLocation to set.
-	 */
-	public void setBuildDirectoryLocation(String buildDirectoryLocation) {
-		mBuildDirectoryLocation = buildDirectoryLocation;
-	}
+    /**
+     * @param buildDirectoryLocation
+     *            The srcDirectoryLocation to set.
+     */
+    public void setBuildDirectoryLocation(String buildDirectoryLocation) {
+        mBuildDirectoryLocation = buildDirectoryLocation;
+    }
 
-	public static List getFilesRecursively(File dir, FileFilter filter) {
-		List ret = new ArrayList();
-		if (!dir.isDirectory()) {
-			return ret;
-		}
-		File[] fileNdirs = dir.listFiles(filter);
-		for (int i = 0, I = fileNdirs.length; i < I; i++) {
-			if (fileNdirs[i].isDirectory()) {
-				ret.addAll(getFilesRecursively(fileNdirs[i], filter));
-			} else {
-				ret.add(fileNdirs[i]);
-			}
-		}
-		return ret;
-	}
+    public static List getFilesRecursively(File dir, FileFilter filter) {
+        List ret = new ArrayList();
+        if (!dir.isDirectory()) {
+            return ret;
+        }
+        File[] fileNdirs = dir.listFiles(filter);
+        for (int i = 0, I = fileNdirs.length; i < I; i++) {
+            if (fileNdirs[i].isDirectory()) {
+                ret.addAll(getFilesRecursively(fileNdirs[i], filter));
+            } else {
+                ret.add(fileNdirs[i]);
+            }
+        }
+        return ret;
+    }
 
-	public static List getFilesRecursively(File dir, String[] extensions) {
-		FileFilter filter = null;
-		if (extensions[0].equals(".etl"))
-			filter = new ETLExtensionFilter(extensions);
-		else
-			filter = new EngineExtensionFilter(extensions);
-		return getFilesRecursively(dir, filter);
-	}
+    public static List getFilesRecursively(File dir, String[] extensions) {
+        FileFilter filter = null;
+        if (extensions[0].equals(".etl")) {
+            filter = new ETLExtensionFilter(extensions);
+        } else {
+            filter = new EngineExtensionFilter(extensions);
+        }
+        return getFilesRecursively(dir, filter);
+    }
 
-	public void execute() throws BuildException {
-		File srcDir = new File(mSrcDirectoryLocation);
-		File bulldDir = getBuildDir();
-		if (!srcDir.exists()) {
-			throw new BuildException("Directory " + mSrcDirectoryLocation + " does not exit.");
-		}
+    public void execute() throws BuildException {
+        File srcDir = new File(mSrcDirectoryLocation);
+        File bulldDir = getBuildDir();
+        if (!srcDir.exists()) {
+            throw new BuildException("Directory " + mSrcDirectoryLocation + " does not exit.");
+        }
 
-		String[] etlExt = new String[] { ".etl" };
-		List etlFiles = getFilesRecursively(srcDir, etlExt);
+        String[] etlExt = new String[]{".etl"};
+        List etlFiles = getFilesRecursively(srcDir, etlExt);
 
-		generateEngineFiles(etlFiles);
+        generateEngineFiles(etlFiles);
 
-		String[] engineExt = new String[] { "_engine.xml" };
-		List etlEngineFiles = getFilesRecursively(bulldDir, engineExt);
-		Map<String, Definition> wsdlMap = new HashMap<String, Definition>();
-		
-		try {
-			for (int i = 0, I = etlEngineFiles.size(); i < I; i++) {
-				File f = (File) etlEngineFiles.get(i);
-				// TODO generate endpoint and jbi artifacts based on projectName
-				// and Engine file name
-				// String engineFileName =
-				// srcDir.getAbsoluteFile().getParentFile().getName() +
-				// f.getName().substring(0, f.getName().indexOf(".xml"));
-				String engineFileName = f.getName().substring(0, f.getName().indexOf(".xml"));
+        String[] engineExt = new String[]{"_engine.xml"};
+        List etlEngineFiles = getFilesRecursively(bulldDir, engineExt);
+        Map<String, Definition> wsdlMap = new HashMap<String, Definition>();
 
-				WsdlGenerator wg = new WsdlGenerator(f,engineFileName, srcDir.getCanonicalPath());
-				Definition def = wg.generateWsdl();
-				wsdlMap.put(def.getQName().getLocalPart(), def);
-			}
+        try {
+            for (int i = 0, I = etlEngineFiles.size(); i < I; i++) {
+                File f = (File) etlEngineFiles.get(i);
+                // TODO generate endpoint and jbi artifacts based on projectName
+                // and Engine file name
+                // String engineFileName =
+                // srcDir.getAbsoluteFile().getParentFile().getName() +
+                // f.getName().substring(0, f.getName().indexOf(".xml"));
+                String engineFileName = f.getName().substring(0, f.getName().indexOf(".xml"));
 
-			ETLMapWriter ew = new ETLMapWriter(wsdlMap, bulldDir.getCanonicalPath());
-			ew.writeMap();
+                WsdlGenerator wg = new WsdlGenerator(f, engineFileName, srcDir.getCanonicalPath());
+                Definition def = wg.generateWsdl();
+                wsdlMap.put(def.getQName().getLocalPart(), def);
+            }
 
-			// todo: This needed to be done ONLY at the build time....
+            ETLMapWriter ew = new ETLMapWriter(wsdlMap, bulldDir.getCanonicalPath());
+            ew.writeMap();
 
-			if (bulldDir.exists()) {
-				// create META-INF if needed..
-				String metaDirFile = bulldDir.getCanonicalPath() + "/META-INF";
-				File metaDir = new File(metaDirFile);
-				if (!metaDir.exists()) {
-					metaDir.mkdir();
-				}
+            // todo: This needed to be done ONLY at the build time....
 
-			}
-			JBIFileWriter fw = new JBIFileWriter(bulldDir.getCanonicalPath() + "/META-INF/jbi.xml",
-					bulldDir.getCanonicalPath() + "/etlmap.xml");
-			fw.writeJBI();
+            if (bulldDir.exists()) {
+                // create META-INF if needed..
+                String metaDirFile = bulldDir.getCanonicalPath() + "/META-INF";
+                File metaDir = new File(metaDirFile);
+                if (!metaDir.exists()) {
+                    metaDir.mkdir();
+                }
 
-		} catch (Exception e) {
-			throw new BuildException(e.getMessage());
-		}
-	}
+            }
+            JBIFileWriter fw = new JBIFileWriter(bulldDir.getCanonicalPath() + "/META-INF/jbi.xml",
+                    bulldDir.getCanonicalPath() + "/etlmap.xml");
+            fw.writeJBI();
+            
+            if(buildFailed) throw new BuildException("Unable to build one or more engine files.");
+            
+        } catch (Exception e) {
+            throw new BuildException(e.getMessage());
+        }
+    }
 
-	private void generateEngineFiles(List etlFiles) {
-		Iterator iterator = etlFiles.iterator();
-		EngineFileGenerator g = new EngineFileGenerator();
-		while (iterator.hasNext()) {
-			File element = (File) iterator.next();
-			try {
-				g.generateEngine(element, getBuildDir());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-		}
+    private void generateEngineFiles(List etlFiles) {
+        Iterator iterator = etlFiles.iterator();
+        EngineFileGenerator g = new EngineFileGenerator();
+        while (iterator.hasNext()) {
+            File element = (File) iterator.next();
+            try {
+                g.generateEngine(element, getBuildDir());                
+            } catch (Exception e) {
+                buildFailed = true;
+                //TODO Log it
+            }
+        }
+      
+        //Cleanup ETL ClI Generator
+        g.cleanupEtlCliGenerator();
 
-	}
+    }
 
-	private File getBuildDir() {
-		File bulldDir = null;
+    private File getBuildDir() {
+        File bulldDir = null;
 
-		Project p = this.getProject();
-		if (p != null) {
-			String projPath = p.getProperty("basedir") + File.separator;
-			String buildDirLoc = projPath + p.getProperty(IcanproProjectProperties.BUILD_DIR);
-			bulldDir = new File(buildDirLoc);
-		} else {
-			bulldDir = new File(mBuildDirectoryLocation);
-		}
-		return bulldDir;
-	}
+        Project p = this.getProject();
+        if (p != null) {
+            String projPath = p.getProperty("basedir") + File.separator;
+            String buildDirLoc = projPath + p.getProperty(IcanproProjectProperties.BUILD_DIR);
+            bulldDir = new File(buildDirLoc);
+        } else {
+            bulldDir = new File(mBuildDirectoryLocation);
+        }
+        return bulldDir;
+    }
 
-	public static void main(String[] args) {
-		GenerateWSDL task = new GenerateWSDL();
-		task.setSrcDirectoryLocation("test");
-		task.setBuildDirectoryLocation("test/build");
-		task.execute();
+    public static void main(String[] args) {
+        GenerateWSDL task = new GenerateWSDL();
+        task.setSrcDirectoryLocation("test");
+        task.setBuildDirectoryLocation("test/build");
+        task.execute();
 
-	}
+    }
 }

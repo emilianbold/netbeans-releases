@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -698,8 +701,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ144679() throws Exception {
         // IZ#144679 : IDE highlights static constants in class as wrong code
-        performTest("IZ144679.cc", 11, 21, "IZ144679.cc", 10, 1);
-        performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
+        performTest("IZ144679.cc", 11, 40, "IZ144679.cc", 10, 1);
+        performTest("IZ144679.cc", 12, 40, "IZ144679.cc", 11, 1);
     }
 
     public void testIZ145077() throws Exception {
@@ -891,7 +894,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ174581() throws Exception {
         // IZ#174581 : template: Unable to resolve identifier
-        performTest("iz174581.cc", 22, 17, "iz174581.cc", 2, 5);
+        performTest("iz174581.cc", 24, 17, "iz174581.cc", 4, 5);
     }
 
     public void testIZ157786() throws Exception {
@@ -902,6 +905,47 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ175231() throws Exception {
         // IZ#175231 : template method is unresolved from template-based operator
         performTest("iz175231.cc", 11, 19, "iz175231.cc", 14, 5);
+    }
+
+    public void testIZ179373() throws Exception {
+        // Bug#179373: unable to resolve a member of the result of an operator
+        performTest("iz179373.cc", 17, 13, "iz179373.cc", 3, 5);
+    }
+
+    public void testIZ142674() throws Exception {
+        // Bug 142674 - Function-try-catch (C++) in editor shows error
+        performTest("iz142674.cc", 6, 9, "iz142674.cc", 3, 5);
+    }
+
+    public void testIZ184315() throws Exception {
+        // Bug 184315 - unresolved identifier on class method
+        performTest("iz184315.cc", 20, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 21, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 22, 26, "iz184315.cc", 9, 5);
+    }
+
+    public void testIZ179095() throws Exception {
+        // Bug 179095 - [code model] Go To declaration doesn't work properly
+        performTest("iz179095.cc", 26, 15, "iz179095.cc", 72, 1);
+        performTest("iz179095.cc", 72, 25, "iz179095.cc", 26, 5);
+
+        performTest("iz179095.cc", 28, 15, "iz179095.cc", 104, 1);
+        performTest("iz179095.cc", 104, 25, "iz179095.cc", 28, 5);
+
+        performTest("iz179095.cc", 32, 15, "iz179095.cc", 75, 1);
+        performTest("iz179095.cc", 75, 25, "iz179095.cc", 32, 5);
+
+        performTest("iz179095.cc", 44, 15, "iz179095.cc", 67, 1);
+        performTest("iz179095.cc", 67, 25, "iz179095.cc", 44, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 51, 15, "iz179095.cc", 89, 1);
+        performTest("iz179095.cc", 89, 25, "iz179095.cc", 51, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

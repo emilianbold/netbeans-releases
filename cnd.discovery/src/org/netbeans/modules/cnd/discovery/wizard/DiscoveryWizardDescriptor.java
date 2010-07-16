@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,6 +70,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
     public static final String INCLUDED = "DW:included"; // NOI18N
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
+    public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -87,17 +91,21 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         return null;
     }
     
+    @Override
     public Project getProject(){
         return (Project) getProperty(PROJECT);
     }
+    @Override
     public void setProject(Project project){
         putProperty(PROJECT, project);
     }
     
+    @Override
     public String getRootFolder(){
         return (String) getProperty(ROOT_FOLDER);
     }
     
+    @Override
     public void setRootFolder(String root){
         stateChanged = true;
         if (root != null && Utilities.isWindows()) {
@@ -106,33 +114,41 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         putProperty(ROOT_FOLDER, root);
     }
     
+    @Override
     public String getBuildResult() {
         return (String) getProperty(BUILD_RESULT);
     }
     
+    @Override
     public void setBuildResult(String binaryPath) {
         putProperty(BUILD_RESULT, binaryPath);
     }
     
+    @Override
     public String getAditionalLibraries() {
         return (String) getProperty(ADDITIONAL_LIBRARIES);
     }
     
+    @Override
     public void setAditionalLibraries(String binaryPath) {
         putProperty(ADDITIONAL_LIBRARIES, binaryPath);
     }
 
+    @Override
     public String getBuildLog() {
         return (String) getProperty(LOG_FILE);
     }
 
+    @Override
     public void setBuildLog(String logFile) {
         putProperty(LOG_FILE, logFile);
     }
     
+    @Override
     public DiscoveryProvider getProvider(){
         return (DiscoveryProvider) getProperty(PROVIDER);
     }
+    @Override
     public String getProviderID(){
         DiscoveryProvider provider =(DiscoveryProvider) getProperty(PROVIDER);
         if (provider != null){
@@ -140,44 +156,55 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         return null;
     }
+    @Override
     public void setProvider(DiscoveryProvider provider){
         stateChanged = true;
         putProperty(PROVIDER, provider);
     }
     
+    @Override
     public String getLevel(){
         return (String) getProperty(CONSOLIDATION_STRATEGY);
     }
+    @Override
     public void setLevel(String level){
         putProperty(CONSOLIDATION_STRATEGY, level);
     }
     
+    @Override
     public List<ProjectConfiguration> getConfigurations(){
         return (List<ProjectConfiguration>) getProperty(CONFIGURATIONS);
     }
+    @Override
     public void setConfigurations(List<ProjectConfiguration> configuration){
         putProperty(CONFIGURATIONS, configuration);
     }
     
+    @Override
     public List<String> getIncludedFiles(){
         return (List<String>) getProperty(INCLUDED);
     }
+    @Override
     public void setIncludedFiles(List<String> includedFiles){
         putProperty(INCLUDED, includedFiles);
     }
     
+    @Override
     public boolean isInvokeProvider(){
         return stateChanged;
     }
     
+    @Override
     public void setInvokeProvider(boolean invoke){
         stateChanged = invoke;
     }
     
+    @Override
     public void setMessage(String message) {
         putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
     }
 
+    @Override
     public void clean() {
         setProject(null);
         setProvider(null);
@@ -189,10 +216,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         setIncludedFiles(null);
     }
     
+    @Override
     public boolean isSimpleMode() {
         return simple;
     }
     
+    @Override
     public void setSimpleMode(boolean simple) {
         this.simple = simple;
     }
@@ -204,6 +233,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setCutResult(boolean cutResult) {
         this.cutResult = cutResult;
     }
+
+    @Override
+    public String getCompilerName() {
+        return (String) getProperty(COMPILER_NAME);
+    }
+
+    @Override
+    public void setCompilerName(String compiler) {
+        putProperty(COMPILER_NAME, compiler);
+    }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private WizardDescriptor wizard;
@@ -211,13 +250,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             this.wizard = wizard;
         }
         
+        @Override
         public Project getProject(){
             return (Project) wizard.getProperty(PROJECT);
         }
+        @Override
         public void setProject(Project project){
             wizard.putProperty(PROJECT, project);
         }
         
+        @Override
         public String getRootFolder(){
             String root = (String) wizard.getProperty(ROOT_FOLDER);
             if (root == null) {
@@ -229,6 +271,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
             return root;
         }
+        @Override
         public void setRootFolder(String root){
             wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
             if (root != null && Utilities.isWindows()) {
@@ -237,33 +280,41 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             wizard.putProperty(ROOT_FOLDER, root);
         }
         
+        @Override
         public String getBuildResult() {
             return (String) wizard.getProperty(BUILD_RESULT);
         }
         
+        @Override
         public void setBuildResult(String binaryPath) {
             wizard.putProperty(BUILD_RESULT, binaryPath);
         }
         
+        @Override
         public String getAditionalLibraries() {
             return (String) wizard.getProperty(ADDITIONAL_LIBRARIES);
         }
         
+        @Override
         public void setAditionalLibraries(String binaryPath) {
             wizard.putProperty(ADDITIONAL_LIBRARIES, binaryPath);
         }
 
+        @Override
         public String getBuildLog() {
             return (String) wizard.getProperty(LOG_FILE);
         }
 
+        @Override
         public void setBuildLog(String logFile) {
             wizard.putProperty(LOG_FILE, logFile);
         }
         
+        @Override
         public DiscoveryProvider getProvider(){
             return (DiscoveryProvider) wizard.getProperty(PROVIDER);
         }
+        @Override
         public String getProviderID(){
             DiscoveryProvider provider =(DiscoveryProvider) wizard.getProperty(PROVIDER);
             if (provider != null){
@@ -271,32 +322,40 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
             return null;
         }
+        @Override
         public void setProvider(DiscoveryProvider provider){
             wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
             wizard.putProperty(PROVIDER, provider);
         }
         
+        @Override
         public String getLevel(){
             return (String) wizard.getProperty(CONSOLIDATION_STRATEGY);
         }
+        @Override
         public void setLevel(String level){
             wizard.putProperty(CONSOLIDATION_STRATEGY, level);
         }
         
+        @Override
         public List<ProjectConfiguration> getConfigurations(){
             return (List<ProjectConfiguration>) wizard.getProperty(CONFIGURATIONS);
         }
+        @Override
         public void setConfigurations(List<ProjectConfiguration> configuration){
             wizard.putProperty(CONFIGURATIONS, configuration);
         }
         
+        @Override
         public List<String> getIncludedFiles(){
             return (List<String>) wizard.getProperty(INCLUDED);
         }
+        @Override
         public void setIncludedFiles(List<String> includedFiles){
             wizard.putProperty(INCLUDED, includedFiles);
         }
         
+        @Override
         public boolean isInvokeProvider(){
             Boolean res = (Boolean)wizard.getProperty(INVOKE_PROVIDER);
             if (res == null) {
@@ -305,6 +364,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             return res.booleanValue();
         }
         
+        @Override
         public void setInvokeProvider(boolean invoke){
             if (invoke) {
                 wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
@@ -313,10 +373,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
         }
         
+        @Override
         public boolean isSimpleMode() {
             return true;
         }
         
+        @Override
         public void setSimpleMode(boolean simple) {
         }
 
@@ -327,10 +389,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         public void setCutResult(boolean cutResult) {
         }
         
+        @Override
         public void setMessage(String message) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
+        @Override
         public void clean() {
             setProject(null);
             setProvider(null);
@@ -342,6 +406,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setConfigurations(null);
             setIncludedFiles(null);
         }
+
+        @Override
+        public String getCompilerName() {
+            return (String) wizard.getProperty(COMPILER_NAME);
+        }
+
+        @Override
+        public void setCompilerName(String compiler) {
+            wizard.putProperty(COMPILER_NAME, compiler);
+        }
     }
 
     private static class DiscoveryWizardClone implements DiscoveryDescriptor{
@@ -351,13 +425,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             this.map = map;
         }
         
+        @Override
         public Project getProject(){
             return (Project) map.get(PROJECT);
         }
+        @Override
         public void setProject(Project project){
             map.put(PROJECT, project);
         }
         
+        @Override
         public String getRootFolder(){
             String root = (String) map.get(ROOT_FOLDER);
             if (root == null) {
@@ -369,6 +446,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
             return root;
         }
+        @Override
         public void setRootFolder(String root){
             map.put(INVOKE_PROVIDER, Boolean.TRUE);
             if (root != null && Utilities.isWindows()) {
@@ -377,33 +455,41 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             map.put(ROOT_FOLDER, root);
         }
         
+        @Override
         public String getBuildResult() {
             return (String) map.get(BUILD_RESULT);
         }
         
+        @Override
         public void setBuildResult(String binaryPath) {
             map.put(BUILD_RESULT, binaryPath);
         }
         
+        @Override
         public String getAditionalLibraries() {
             return (String) map.get(ADDITIONAL_LIBRARIES);
         }
         
+        @Override
         public void setAditionalLibraries(String binaryPath) {
             map.put(ADDITIONAL_LIBRARIES, binaryPath);
         }
 
+        @Override
         public String getBuildLog() {
             return (String) map.get(LOG_FILE);
         }
 
+        @Override
         public void setBuildLog(String logFile) {
             map.put(LOG_FILE, logFile);
         }
         
+        @Override
         public DiscoveryProvider getProvider(){
             return (DiscoveryProvider) map.get(PROVIDER);
         }
+        @Override
         public String getProviderID(){
             DiscoveryProvider provider =(DiscoveryProvider) map.get(PROVIDER);
             if (provider != null){
@@ -411,32 +497,40 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
             return null;
         }
+        @Override
         public void setProvider(DiscoveryProvider provider){
             map.put(INVOKE_PROVIDER, Boolean.TRUE);
             map.put(PROVIDER, provider);
         }
         
+        @Override
         public String getLevel(){
             return (String) map.get(CONSOLIDATION_STRATEGY);
         }
+        @Override
         public void setLevel(String level){
             map.put(CONSOLIDATION_STRATEGY, level);
         }
         
+        @Override
         public List<ProjectConfiguration> getConfigurations(){
             return (List<ProjectConfiguration>) map.get(CONFIGURATIONS);
         }
+        @Override
         public void setConfigurations(List<ProjectConfiguration> configuration){
             map.put(CONFIGURATIONS, configuration);
         }
         
+        @Override
         public List<String> getIncludedFiles(){
             return (List<String>) map.get(INCLUDED);
         }
+        @Override
         public void setIncludedFiles(List<String> includedFiles){
             map.put(INCLUDED, includedFiles);
         }
         
+        @Override
         public boolean isInvokeProvider(){
             Boolean res = (Boolean)map.get(INVOKE_PROVIDER);
             if (res == null) {
@@ -445,6 +539,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             return res.booleanValue();
         }
         
+        @Override
         public void setInvokeProvider(boolean invoke){
             if (invoke) {
                 map.put(INVOKE_PROVIDER, Boolean.TRUE);
@@ -453,10 +548,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             }
         }
         
+        @Override
         public boolean isSimpleMode() {
             return true;
         }
         
+        @Override
         public void setSimpleMode(boolean simple) {
         }
 
@@ -467,10 +564,12 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         public void setCutResult(boolean cutResult) {
         }
         
+        @Override
         public void setMessage(String message) {
             map.put(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
         }
         
+        @Override
         public void clean() {
             setProject(null);
             setProvider(null);
@@ -481,6 +580,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);
+        }
+
+        @Override
+        public String getCompilerName() {
+            return (String) map.get(COMPILER_NAME);
+        }
+
+        @Override
+        public void setCompilerName(String compiler) {
+            map.put(COMPILER_NAME, compiler);
         }
     }
 

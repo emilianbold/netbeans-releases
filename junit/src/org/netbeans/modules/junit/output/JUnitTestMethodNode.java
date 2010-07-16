@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,9 @@
 package org.netbeans.modules.junit.output;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
@@ -79,37 +82,21 @@ public class JUnitTestMethodNode extends TestMethodNode{
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
         FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
         if (testFO != null){
-            Project suiteProject = FileOwnerQuery.getOwner(testFO);
-            ActionProvider actionProvider = suiteProject.getLookup().lookup(ActionProvider.class);
+            ActionProvider actionProvider = OutputUtils.getActionProvider(testFO);
             if (actionProvider != null){
-                boolean runSupported = false;
-                boolean debugSupported = false;
-                for (String action : actionProvider.getSupportedActions()) {
-                    if (!runSupported && action.equals(COMMAND_RUN_SINGLE_METHOD)) {
-                        runSupported = true;
-                        if (debugSupported) {
-                            break;
-                        }
-                    }
-                    if (!debugSupported && action.equals(COMMAND_DEBUG_SINGLE_METHOD)) {
-                        debugSupported = true;
-                        if (runSupported) {
-                            break;
-                        }
-                    }
-                }
+                List supportedActions = Arrays.asList(actionProvider.getSupportedActions());
 
                 SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
                 Lookup nodeContext = Lookups.singleton(methodSpec);
-                if (runSupported && actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD,
-                                                                   nodeContext)) {
+                if (supportedActions.contains(COMMAND_RUN_SINGLE_METHOD) &&
+                        actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD, nodeContext)) {
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_RUN_SINGLE_METHOD,
                                                          "LBL_RerunTest"));     //NOI18N
                 }
-                if (debugSupported && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD,
-                                                                     nodeContext)) {
+                if (supportedActions.contains(COMMAND_DEBUG_SINGLE_METHOD) &&
+                        actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD, nodeContext)) {
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_DEBUG_SINGLE_METHOD,
@@ -132,4 +119,5 @@ public class JUnitTestMethodNode extends TestMethodNode{
     public JUnitTestcase getTestcase(){
         return (JUnitTestcase)testcase;
     }
+
 }

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,11 +71,12 @@ public class CorrelationSetNode extends BpelNode<CorrelationSet> {
         //
         CustomEditorProperty customizer = new CustomEditorProperty(this);
         mainPropertySet.put(customizer);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

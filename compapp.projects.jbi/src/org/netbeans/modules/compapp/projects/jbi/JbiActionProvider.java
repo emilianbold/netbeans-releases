@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,7 +55,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
@@ -67,20 +69,23 @@ import java.util.Map;
 import java.util.Properties;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  * Action provider of the Web project. This is the place where to do strange things to Web actions.
@@ -107,45 +112,50 @@ public class JbiActionProvider implements ActionProvider {
         COMMAND_REBUILD,
         COMMAND_DEBUG
     };
-    /**
-     * DOCUMENT ME!
-     */
-    JbiProject project;
+
+    private JbiProject project;
 
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
-    private ReferenceHelper refHelper;
+
     /** Map from commands to ant targets */
-    Map<String, String[]> commands;
+    private Map<String, String[]> commands;
+
+    private static final String TARGET_NAME_RUN = "run"; // NOI18N
+    private static final String TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD = "run-jbi-deploy-without-build"; // NOI18N
+    private static final String TARGET_NAME_UNDEPLOY = "undeploy"; // NOI18N
+    private static final String TARGET_NAME_JBI_BUILD = "jbi-build"; // NOI18N
+    private static final String TARGET_NAME_JBI_CLEAN_BUILD = "jbi-clean-build"; // NOI18N
+    private static final String TARGET_NAME_JBI_CLEAN_CONFIG = "jbi-clean-config"; // NOI18N
+    private static final String TARGET_NAME_TEST = "test"; // NOI18N
+    private static final String TARGET_NAME_DEBUG = "debug"; // NOI18N
+    private static final String TARGET_NAME_CLEAN = "clean"; // NOI18N
 
     /**
      * Creates a new JbiActionProvider object.
      *
      * @param project DOCUMENT ME!
      * @param antProjectHelper DOCUMENT ME!
-     * @param refHelper DOCUMENT ME!
      */
-    public JbiActionProvider(JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+    public JbiActionProvider(JbiProject project, AntProjectHelper antProjectHelper) {
         commands = new HashMap<String, String[]>();
-        commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[]{"undeploy"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[]{"jbi-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[]{"jbi-clean-config"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[]{"jbi-clean-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[]{"validate-portmaps"}); // NOI18N
-        // Start Test Framework
-        commands.put(JbiProjectConstants.COMMAND_TEST, new String[]{"test"}); // NOI18N
-        // End Test Framework
+        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN});
+        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN});
+        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[]{TARGET_NAME_UNDEPLOY});
+        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[]{TARGET_NAME_JBI_BUILD});
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[]{TARGET_NAME_JBI_CLEAN_CONFIG});
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[]{TARGET_NAME_JBI_CLEAN_BUILD});
+        commands.put(JbiProjectConstants.COMMAND_TEST, new String[]{TARGET_NAME_TEST});
+        //commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[]{"validate-portmaps"});
+
         // map common project action to jbi ones
-        commands.put(COMMAND_BUILD, new String[]{"jbi-build"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[]{"jbi-clean-build"}); // NOI18N
-        commands.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
-        // end map common project action to jbi ones
+        commands.put(COMMAND_CLEAN, new String[]{TARGET_NAME_CLEAN});
+        commands.put(COMMAND_BUILD, new String[]{TARGET_NAME_JBI_BUILD});
+        commands.put(COMMAND_REBUILD, new String[]{TARGET_NAME_JBI_CLEAN_BUILD});
+        commands.put(COMMAND_DEBUG, new String[]{TARGET_NAME_DEBUG});
+
         this.antProjectHelper = antProjectHelper;
         this.project = project;
-        this.refHelper = refHelper;
     }
 
     /**
@@ -182,6 +192,18 @@ public class JbiActionProvider implements ActionProvider {
     public void invokeAction(final String command, Lookup context)
             throws IllegalArgumentException {
 
+        // #160224
+        JbiProjectProperties props = project.getProjectProperties();
+        Boolean skipBuildWhenDeploy = (Boolean) props.get(JbiProjectProperties.SKIP_BUILD_WHEN_DEPLOY);
+
+        if (skipBuildWhenDeploy) { // skip "jbi-build" ant task
+            commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD});
+            commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN_JBI_DEPLOY_WITHOUT_BUILD});
+        } else {
+            commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{TARGET_NAME_RUN});
+            commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{TARGET_NAME_RUN});
+        }
+
         // starting server could be time consuming
         new Thread(new Runnable() {
 
@@ -207,11 +229,40 @@ public class JbiActionProvider implements ActionProvider {
                     return;
                 }
 
-                Properties p = null;
+                if (command.equals(JbiProjectConstants.COMMAND_TEST)&& !setupTests()) {
+                    return;
+                }
+
+                if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG)) {
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(JbiActionProvider.class, "MSG_CleanServiceAssembly"), // NOI18N
+                            NbBundle.getMessage(JbiActionProvider.class, "TTL_CleanServiceAssembly"), // NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+                        return;
+                    }
+                }
+
+                Properties p = new Properties();
                 String[] targetNames = commands.get(command);
 
-                if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
-                    if (!setupTests()) {
+                JbiProjectProperties properties = project.getProjectProperties();
+
+                if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
+                        command.equals(JbiProjectConstants.COMMAND_REDEPLOY) ||
+                        command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
+                        command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
+                        command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
+
+                    refreshAssemblyInfo(project);
+                    
+                    saveCasaChanges(project);
+
+                    setWSITCallbackProjectsProperty(project, p);
+                    setJAXWSHandlersProperty(project, p);
+                    setJAXRSHandlersProperty(project, p);
+
+                    if (!validateSubProjects()) {
                         return;
                     }
                 }
@@ -221,24 +272,11 @@ public class JbiActionProvider implements ActionProvider {
                         command.equals(JbiProjectConstants.COMMAND_UNDEPLOY) ||
                         command.equals(COMMAND_DEBUG) ||
                         command.equals(JbiProjectConstants.COMMAND_TEST)) {
-
-                    /*if (isProjectEmpty()) {
-                    NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_EmptyJbiProjectError" // NOI18N
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(d);
-                    return;
-                    }*/
-                    
-                    JbiProjectProperties properties = project.getProjectProperties();
                     
                     // 4/11/08 OSGi support
-                    Boolean osgiSupport = (Boolean) properties.get(JbiProjectProperties.OSGI_SUPPORT);
                     // 02/04/09, IZ#153580, disable fuji deployment
                     /*
+                    Boolean osgiSupport = (Boolean) properties.get(JbiProjectProperties.OSGI_SUPPORT);
                     if (osgiSupport) {
                         String osgiContainerDir = (String) properties.get(JbiProjectProperties.OSGI_CONTAINER_DIR);
                         if (osgiContainerDir == null || osgiContainerDir.trim().length() == 0) {
@@ -249,167 +287,163 @@ public class JbiActionProvider implements ActionProvider {
                             DialogDisplayer.getDefault().notify(d);
                             return;
                         }
-                    } else*/ if (!JbiManager.isSelectedServer(project)) {
+                    } else*/
+
+                    if (!JbiManager.isSelectedServer(project)) {
                         return;
                     }
-                    
-                    // IZ#133733 Missing WSIT call back project when deploying CompApp                    
-                    if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
-                        command.equals(JbiProjectConstants.COMMAND_REDEPLOY)) {
-                        saveCasaChanges(project);
 
-                        // call WSIT Java Callback Project...
-                        String cbProjects = callWSITJavaCallbackProject(project);
-                        if (cbProjects != null) {
-                            if (p == null) {
-                                p = new Properties();
+                } else if (targetNames == null) {
+                    throw new IllegalArgumentException(command);
+                }
+
+                // Make sure the SA is deployed and started. It is more effiecient
+                // this way than calling the deploy Ant task blindly in the Ant script.
+                if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
+
+                    // Make sure the app server is running.
+                    // (block until server is ready)
+                    JbiManager.startServer(project, true);
+
+                    String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
+                            getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+
+                    try {
+                        ServerInstance server = AdministrationServiceHelper.
+                                getServerInstance(System.getProperty("netbeans.user"),
+                                serverInstance);
+                        p.setProperty("server.password", server.getPassword());
+
+                        RuntimeManagementServiceWrapper mgmtServiceWrapper =
+                                AdministrationServiceHelper.getRuntimeManagementServiceWrapper(server);
+                        mgmtServiceWrapper.clearServiceAssemblyStatusCache();
+
+                        String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+                        ServiceAssemblyInfo saStatus = mgmtServiceWrapper.getServiceAssembly(saID, "server");
+                        if (saStatus == null) { // not deployed
+                            // Add the deploy target to the target list.
+                            // (Alternatively, we could call adminService.deployServiceAssembly
+                            // directly, but then we need to worry about project build.)
+                            List<String> targetList = new ArrayList<String>();
+                            String[] extraTargetNames = commands.get(JbiProjectConstants.COMMAND_DEPLOY);
+                            targetList.addAll(Arrays.asList(extraTargetNames));
+                            targetList.addAll(Arrays.asList(targetNames));
+                            targetNames = targetList.toArray(new String[]{});
+                        } else if (!saStatus.getState().equals(ServiceAssemblyInfo.STARTED_STATE)) {
+                            // simply start the service assembly
+                            String result = mgmtServiceWrapper.startServiceAssembly(saID, "server");
+                            boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                    "Start", saID, result); // NOI18N
+                            if (!success) {
+                                return;
                             }
-                            p.setProperty("WsitCallbackProjects", cbProjects);
                         }
-                    }
-
-                    if (!validateSubProjects()) {
+                    } catch (ManagementRemoteException e) {
+                        NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(d);
                         return;
-                    }
-
-                    // Make sure the SA is deployed and started. It is more effiecient 
-                    // this way than calling the deploy Ant task blindly in the Ant script.
-                    if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
-
-                        // Make sure the app server is running.
-                        // (block until server is ready)
-                        JbiManager.startServer(project, true);
-
-                        String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
-                                getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
-
-                        try {
-                            RuntimeManagementServiceWrapper mgmtServiceWrapper =
-                                    AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
-                            mgmtServiceWrapper.clearServiceAssemblyStatusCache();
-
-                            String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-                            ServiceAssemblyInfo saStatus = mgmtServiceWrapper.getServiceAssembly(saID, "server");
-                            if (saStatus == null) { // not deployed
-                                // Add the deploy target to the target list. 
-                                // (Alternatively, we could call adminService.deployServiceAssembly
-                                // directly, but then we need to worry about project build.)
-                                List<String> targetList = new ArrayList<String>();
-                                String[] extraTargetNames = commands.get(JbiProjectConstants.COMMAND_DEPLOY);
-                                targetList.addAll(Arrays.asList(extraTargetNames));
-                                targetList.addAll(Arrays.asList(targetNames));
-                                targetNames = targetList.toArray(new String[]{});
-                            } else if (!saStatus.getState().equals(ServiceAssemblyInfo.STARTED_STATE)) {
-                                // simply start the service assembly
-                                String result = mgmtServiceWrapper.startServiceAssembly(saID, "server");
-                                boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                                        "Start", saID, result); // NOI18N
-                                if (!success) {
-                                    return;
-                                }
-                            }
-                        } catch (ManagementRemoteException e) {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                                    NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(d);
-                            return;
-                        }
-                    }
-
-                } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
-                        command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
-                        command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
-
-                    if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG)) {
-                        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(JbiActionProvider.class, "MSG_CleanServiceAssembly"), // NOI18N
-                                NbBundle.getMessage(JbiActionProvider.class, "TTL_CleanServiceAssembly"), // NOI18N
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-                            return;
-                        }
-                    }
-
-                    saveCasaChanges(project);
-
-                    // call WSIT Java Callback Project...
-                    String cbProjects = callWSITJavaCallbackProject(project);
-                    if (cbProjects != null) {
-                        if (p == null) {
-                            p = new Properties();
-                        }
-                        p.setProperty("WsitCallbackProjects", cbProjects);
-                    }
-
-                    if (!validateSubProjects()) {
-                        return;
-                    }
-                } else {
-                    p = null;
-
-                    if (targetNames == null) {
-                        throw new IllegalArgumentException(command);
                     }
                 }
 
-
                 JbiBuildListener jbiBuildListener = getBuildListener(command);
+                if (jbiBuildListener != null) {
+                    jbiBuildListener.buildStarted();
+                }
 
+                ExecutorTask executorTask = null;
                 try {
-                    ExecutorTask executorTask =
-                            ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                    executorTask = ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                    executorTask.waitFinished(); // FIXME: not guaranteed
 
-                    if (jbiBuildListener != null) {
-                        jbiBuildListener.buildStarted();
-                    }
-
-                    executorTask.waitFinished();
-                    
-                    if (jbiBuildListener != null) {
-                        jbiBuildListener.buildCompleted(executorTask.result() == 0);
-                    }
-                    
-//            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
-//                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
-//                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
-//                    command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
-//                executorTask.addTaskListener(new TaskListener() {
-//                    public void taskFinished(Task task) {
-//                        CasaHelper.registerCasaFileListener(project);
-//                    }
-//                });
-//            }
-
-                    if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
-                        executorTask.addTaskListener(new TaskListener() {
-
-                            public void taskFinished(Task task) {
-                                FileObject testDir = project.getTestDirectory();
-                                if (testDir != null) {
-                                    String fileName = FileUtil.toFile(testDir).getPath() +
-                                            "/selected-tests.properties"; // NOI18N
-                                    try {
-                                        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-                                        String line = reader.readLine();
-                                        assert line.startsWith("testcases=");
-                                        String testCaseNames = line.substring(line.indexOf('=')); // NOI18N
-                                        for (String testCaseName : testCaseNames.split(",")) { // NOI18N
-                                            FileObject testCaseDir = testDir.getFileObject(testCaseName.trim());
-                                            TestcaseNode.setTestCaseRunning(testCaseDir, false);
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
+                    if (command.equals(JbiProjectConstants.COMMAND_TEST)) {                       
+                        FileObject testDir = project.getTestDirectory();
+                        if (testDir != null) {
+                            String fileName = FileUtil.toFile(testDir).getPath() +
+                                    "/selected-tests.properties"; // NOI18N
+                            try {
+                                BufferedReader reader = new BufferedReader(new FileReader(fileName));
+                                String line = reader.readLine();
+                                assert line.startsWith("testcases=");
+                                String testCaseNames = line.substring(line.indexOf('=')); // NOI18N
+                                for (String testCaseName : testCaseNames.split(",")) { // NOI18N
+                                    FileObject testCaseDir = testDir.getFileObject(testCaseName.trim());
+                                    TestcaseNode.setTestCaseRunning(testCaseDir, false);
                                 }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        });
+                        }
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
+                } finally {
+                    if (jbiBuildListener != null) {
+                        jbiBuildListener.buildCompleted(
+                                executorTask == null || executorTask.result() == 0);
+                    }
                 }
 
             }
         }).start();
+    }
+
+    // Check the sub/self projects' project.xml files. If any file has a newer
+    // time stamp than compapp's ASI.xml, then we update ASI.xml. This
+    // guarantees that renamed sub/self project gets properly reflected in ASI.
+    private void refreshAssemblyInfo(JbiProject jbiProject) {
+        try {
+            FileObject asiFO = jbiProject.getProjectDirectory().getFileObject(
+                    "src/conf/" + JbiProject.ASSEMBLY_INFO_FILE_NAME); // NOI18N
+            Date asiTimestamp = asiFO.lastModified();
+
+            Set<Project> projects = new HashSet<Project>();
+            projects.add(jbiProject);
+
+            SubprojectProvider spp = jbiProject.getLookup().lookup(SubprojectProvider.class);
+            projects.addAll(spp.getSubprojects());
+
+            for (Project p : projects) {
+                FileObject projectXmlFO = p.getProjectDirectory().
+                        getFileObject("nbproject/project.xml"); // NOI18N
+                Date projectXmlTimestamp = projectXmlFO.lastModified();
+
+                if (projectXmlTimestamp.after(asiTimestamp)) {
+                    //System.out.println("Updating Assembly Information...");
+                    jbiProject.getProjectProperties().saveAssemblyInfo();
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setWSITCallbackProjectsProperty(JbiProject project,
+            Properties p) {
+        // call WSIT Java Callback Project...
+        String cbProjects = buildWSITJavaCallbackProject(project);
+        if (cbProjects != null) {
+            p.setProperty("WsitCallbackProjects", cbProjects);
+        }
+    }
+
+    private void setJAXWSHandlersProperty(JbiProject project,
+            Properties p) {
+        // get JAX-WS Handler Jars...
+        String jaxwsHandlerJars = getJAXWSHandlerJars(project);
+        if (jaxwsHandlerJars != null) {
+            p.setProperty("JAXWSHandlerJars", jaxwsHandlerJars);
+        }
+    }
+
+    private void setJAXRSHandlersProperty(JbiProject project,
+            Properties p) {
+        // get JAX-RS Handler Jars...
+        String jaxrsHandlerJars = getJAXRSHandlerJars(project);
+        if (jaxrsHandlerJars != null) {
+            p.setProperty("JAXRSHandlerJars", jaxrsHandlerJars);
+        }
     }
 
     private JbiBuildListener getBuildListener(String command) {
@@ -425,7 +459,7 @@ public class JbiActionProvider implements ActionProvider {
                         return casaDO.getLookup().lookup(JbiBuildListener.class);
                     }
                 } catch (DataObjectNotFoundException e) {
-                // ignore the error
+                    // ignore the error
                 }
             }
         }
@@ -442,9 +476,12 @@ public class JbiActionProvider implements ActionProvider {
             List<Project> subProjects = new ArrayList<Project>();
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
-                Project subProject = item.getAntArtifact().getProject();
-                subProjects.add(subProject);
-                subProjectTypeMap.put(subProject.getClass(), subProject);
+                AntArtifact aa = item.getAntArtifact();
+                if (aa != null) { // aa is null if the corresponding project has been deleted
+                    Project subProject = aa.getProject();
+                    subProjects.add(subProject);
+                    subProjectTypeMap.put(subProject.getClass(), subProject);
+                }
             }
 
             Collection<? extends ProjectValidator> validators =
@@ -468,24 +505,59 @@ public class JbiActionProvider implements ActionProvider {
         return true;
     }
 
-    private String callWSITJavaCallbackProject(JbiProject project) {
-        // process cass and check for Java callback project setting...
-        List<String> cbProjects = CasaHelper.getWsitCallbackProjects(project);
+    private String buildWSITJavaCallbackProject(JbiProject project) {
+        // process casa and check for Java callback project setting...
+        Set<String> cbProjects = CasaHelper.getWSITCallbackProjects(project);
+        return buildJavaProjects(cbProjects);
+    }
+
+    private String getJAXWSHandlerJars(JbiProject project) {
+        // process casa and check for JAX-WS handler setting...
+        Set<String> handlerJars = CasaHelper.getJAXWSHandlerJars(project);
+        return getSemicolonDelimitedString(handlerJars);
+    }
+
+    private String getJAXRSHandlerJars(JbiProject project) {
+        // process casa and check for JAX-RS handler setting...
+        Set<String> handlerJars = CasaHelper.getJAXRSHandlerJars(project);
+        return getSemicolonDelimitedString(handlerJars);
+    }
+
+    private static String getSemicolonDelimitedString(Collection<String> collection) {
+
+        StringBuffer sb = new StringBuffer();
+
+        if (collection != null) {
+            for (String item : collection) {
+                sb.append(item);
+                sb.append(";"); // NOI18N
+            }
+
+            if (sb.length() > 0) {
+                sb = sb.deleteCharAt(sb.length() - 1); // strip the last ";"
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private String buildJavaProjects(Set<String> projectPaths) {
+        // process casa and check for Java callback project setting...
         String projects = null;
         boolean first = true;
-        for (String pLoc : cbProjects) {
+        for (String projectPath : projectPaths) {
             // System.out.println("Invoke building: "+pLoc);
-            File buildxml = new File(pLoc+"/build.xml"); // NOI18N
+            File buildxml = new File(projectPath + "/build.xml"); // NOI18N
             FileObject bfo = FileUtil.toFileObject(buildxml);
             String[] targets = new String[] { "compile" }; // NOI18N
             Properties p = null;
             try {
                 ExecutorTask executorTask = ActionUtils.runTarget(bfo, targets, p);
                 if (!first) {
-                    projects += ";"+pLoc;  // NOI18N
+                    projects += ";" + projectPath;  // NOI18N
                 } else {
                     first = false;
-                    projects = pLoc;
+                    projects = projectPath;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -510,11 +582,11 @@ public class JbiActionProvider implements ActionProvider {
                     saveCookie.save();
                 }
             } catch (Exception ex) {
-            // failed to load casa...
+                // failed to load casa...
             }
         }
 
-    // TODO: save other wsdls in compapp
+        // TODO: save other wsdls in compapp
     }
 
     private boolean setupTests() {
@@ -538,7 +610,7 @@ public class JbiActionProvider implements ActionProvider {
             final List<String> skippedTestCaseNames = new ArrayList<String>();
             while (testFolders.hasMoreElements()) {
                 FileObject testFolder = (FileObject) testFolders.nextElement();
-                String testFolderName = testFolder.getName();
+                String testFolderName = testFolder.getNameExt();
                 //accumulate everything except "results" folder and other well-known folders
                 if (!testFolderName.equals("results") && !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
                     if (!TestcaseNode.isTestCaseRunning(testFolder)) {

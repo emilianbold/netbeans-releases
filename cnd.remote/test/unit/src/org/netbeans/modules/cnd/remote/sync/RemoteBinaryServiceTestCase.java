@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,11 +41,11 @@
  */
 package org.netbeans.modules.cnd.remote.sync;
 
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService.RemoteBinaryID;
+import org.netbeans.modules.remote.api.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -57,6 +60,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
     }
 
     @ForAllEnvironments
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testBinaryService() throws Exception {
 
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
@@ -64,7 +68,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
         // setup: create a temp file and copy /bin/ls into it
         RemoteCommandSupport rcs;
         rcs = new RemoteCommandSupport(execEnv, "mktemp");
-        assertTrue(rcs.run() == 0);
+        assertTrue("mktemp is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
         String remotePath = rcs.getOutput();
         assertNotNull(remotePath);
         if (remotePath.endsWith("\n")) {
@@ -72,7 +76,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
         }
         assertTrue(remotePath.length() > 0);
         rcs = new RemoteCommandSupport(execEnv, "cp /bin/ls " + remotePath);
-        assertTrue(rcs.run() == 0);
+        assertTrue("cp /bin/ls " + remotePath + "is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
 
         String localPath;
         File localFile = null;
@@ -84,7 +88,7 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
                 expectedDownloadCount++;
             } else if (i == 4) {
                 rcs = new RemoteCommandSupport(execEnv, "touch " + remotePath);
-                assertTrue(rcs.run() == 0);
+                assertTrue("touch " + remotePath + "is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
                 expectedDownloadCount++;
             }
 
@@ -96,8 +100,8 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
             localPath = RemoteBinaryService.getFileName(remoteBinaryID);
             localFile = new File(localPath);
-            assertTrue(localFile.exists());
-            assertTrue(localFile.length() > 0);
+            assertTrue("file doesn't exists " + localFile, localFile.exists());
+            assertTrue("file is empty " + localFile, localFile.length() > 0);
             assertEquals("Download Count differs", expectedDownloadCount, RemoteBinaryServiceImpl.getDownloadCount());
         }
     }

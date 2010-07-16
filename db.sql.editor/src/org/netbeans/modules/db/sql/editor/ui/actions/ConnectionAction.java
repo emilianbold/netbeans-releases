@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,6 +55,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
@@ -62,6 +67,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -80,11 +86,13 @@ import org.openide.util.WeakListeners;
  */
 public class ConnectionAction extends SQLExecutionBaseAction {
 
+    @Override
     protected String getDisplayName(SQLExecution sqlExecution) {
         // just needed in order to satisfy issue 101775
         return NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
     }
 
+    @Override
     protected void actionPerformed(SQLExecution sqlExecution) {
     }
 
@@ -121,6 +129,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         @Override
         protected void setSQLExecution(final SQLExecution sqlExecution) {
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     if (toolbarPresenter != null) {
                         // test for null necessary since the sqlExecution property
@@ -161,28 +170,32 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             setBorder(new EmptyBorder(0, 2, 0, 8));
             setOpaque(false);
             setFocusTraversalPolicyProvider(true);
-           setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
-              @Override
-              public Component getDefaultComponent(Container aContainer) {
-                 final EditorCookie ec = actionContext.lookup(
-                       EditorCookie.class);
-                 if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes();
-                    if (panes != null) {
-                       for (JEditorPane pane : panes) {
-                          if (pane.isShowing()) {
-                             return pane;
-                          }
-                       }
+            setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
+                @Override
+                public Component getDefaultComponent(Container aContainer) {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        return null;
                     }
-                 }
+                    final EditorCookie ec = actionContext.lookup(
+                            EditorCookie.class);
+                    if (ec != null) {
+                        JEditorPane[] panes = ec.getOpenedPanes();
+                        if (panes != null) {
+                            for (JEditorPane pane : panes) {
+                                if (pane.isShowing()) {
+                                    return pane;
+                                }
+                            }
+                        }
+                    }
 
-                 return null;
-              }
+                    return null;
+                }
            });
 
             combo = new JComboBox();
             combo.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     DatabaseConnection dbconn = (DatabaseConnection)combo.getSelectedItem();
                     combo.setToolTipText(dbconn != null ? dbconn.getDisplayName() : null);
@@ -219,27 +232,33 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         private List<DatabaseConnection> connectionList; // must be ArrayList
         private SQLExecution sqlExecution;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public DatabaseConnectionModel() {
             listener = WeakListeners.create (ConnectionListener.class, this, ConnectionManager.getDefault ());
             ConnectionManager.getDefault().addConnectionListener(listener);
             connectionList = new ArrayList<DatabaseConnection>();
             connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+            sortConnections();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return connectionList.get(index);
         }
 
+        @Override
         public int getSize() {
             return connectionList.size();
         }
 
+        @Override
         public void setSelectedItem(Object object) {
             if (sqlExecution != null) {
                 sqlExecution.setDatabaseConnection((DatabaseConnection)object);
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return sqlExecution != null ? sqlExecution.getDatabaseConnection() : null;
         }
@@ -255,10 +274,12 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             fireContentsChanged(this, 0, 0); // because the selected item might have changed
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (propertyName == null || propertyName.equals(SQLExecution.PROP_DATABASE_CONNECTION)) {
                 Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
                     public void run() {
                         fireContentsChanged(this, 0, 0); // because the selected item might have changed
                     }
@@ -266,17 +287,29 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             }
         }
 
+        @Override
         public void connectionsChanged() {
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     connectionList.clear();
                     connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+                    sortConnections();
 
                     DatabaseConnection selectedItem = (DatabaseConnection)getSelectedItem();
                     if (selectedItem != null && !connectionList.contains(selectedItem)) {
                         setSelectedItem(null);
                     }
                     fireContentsChanged(this, 0, connectionList.size());
+                }
+            });
+        }
+
+        void sortConnections() {
+            Collections.sort(connectionList, new Comparator<DatabaseConnection>() {
+                @Override
+                public int compare(DatabaseConnection o1, DatabaseConnection o2) {
+                    return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
             });
         }

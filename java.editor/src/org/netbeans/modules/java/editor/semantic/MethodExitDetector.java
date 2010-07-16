@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,7 +87,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     private Collection<TypeMirror> exceptions;
     private Stack<Map<TypeMirror, List<Tree>>> exceptions2HighlightsStack;
     
-    public List<int[]> process(CompilationInfo info, Document document, MethodTree methoddecl, Collection<Tree> excs) {
+    public List<int[]> process(CompilationInfo info, Document document, Tree methoddeclorblock, Collection<Tree> excs) {
         this.info = info;
         this.doc  = document;
         this.highlights = new ArrayList<int[]>();
@@ -97,13 +100,13 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
             //"return" exit point only if not searching for exceptions:
             doExitPoints = excs == null;
             
-            Boolean wasReturn = scan(TreePath.getPath(cu, methoddecl), null);
+            Boolean wasReturn = scan(TreePath.getPath(cu, methoddeclorblock), null);
             
             if (isCanceled())
                 return null;
             
             if (doExitPoints && wasReturn != Boolean.TRUE) {
-                int lastBracket = Utilities.findLastBracket(methoddecl, cu, info.getTrees().getSourcePositions(), document);
+                int lastBracket = Utilities.findLastBracket(methoddeclorblock, cu, info.getTrees().getSourcePositions(), document);
                 
                 if (lastBracket != (-1)) {
                     //highlight the "fall over" exitpoint:

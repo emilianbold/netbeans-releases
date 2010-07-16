@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,11 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Visible in the Search History Diff view.
@@ -67,8 +75,8 @@ class DiffNode extends AbstractNode {
     private final Setup     setup;
     private String          htmlDisplayName;
 
-    public DiffNode(Setup setup) {
-        super(Children.LEAF, Lookups.singleton(setup));
+    public DiffNode(Setup setup, CvsFileNode node) {
+        super(Children.LEAF, getLookupFor(setup, node.getLookupObjects()));
         this.setup = setup;
         setName(setup.getBaseFile().getName());
         initProperties();
@@ -86,6 +94,7 @@ class DiffNode extends AbstractNode {
         fireDisplayNameChange(htmlDisplayName, htmlDisplayName);
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
@@ -94,11 +103,34 @@ class DiffNode extends AbstractNode {
         return setup;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         return new Action [0];
     }
     
+    /**
+     * Provide cookies to actions.
+     * If a node represents primary file of a DataObject
+     * it has respective DataObject cookies.
+     */
+    @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
+    @Override
+    public Cookie getCookie(Class klass) {
+        FileObject fo = FileUtil.toFileObject(getSetup().getBaseFile());
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (fo.equals(dobj.getPrimaryFile())) {
+                    return dobj.getCookie(klass);
+                }
+            } catch (DataObjectNotFoundException e) {
+                // ignore file without data objects
+            }
+        }
+        return super.getCookie(klass);
+    }
+
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -111,12 +143,20 @@ class DiffNode extends AbstractNode {
         setSheet(sheet);        
     }
 
+    private static org.openide.util.Lookup getLookupFor (Setup setup, Object[] lookupObjects) {
+        Object[] allLookupObjects = new Object[lookupObjects.length + 1];
+        allLookupObjects[0] = setup;
+        System.arraycopy(lookupObjects, 0, allLookupObjects, 1, lookupObjects.length);
+        return Lookups.fixed(allLookupObjects);
+    }
+
     private abstract class DiffNodeProperty extends PropertySupport.ReadOnly {
 
         protected DiffNodeProperty(String name, Class type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();

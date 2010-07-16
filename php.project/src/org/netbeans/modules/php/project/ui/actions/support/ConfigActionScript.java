@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,26 +45,21 @@ package org.netbeans.modules.php.project.ui.actions.support;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.regex.Pattern;
+import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Action implementation for SCRIPT configuration.
@@ -69,7 +67,6 @@ import org.openide.util.Lookup;
  * @author Tomas Mysik
  */
 class ConfigActionScript extends ConfigAction {
-    static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
     private final FileObject sourceRoot;
 
     protected ConfigActionScript(PhpProject project) {
@@ -89,7 +86,9 @@ class ConfigActionScript extends ConfigAction {
                         ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
                         FileUtil.toFile(sourceRoot),
                         null,
-                        ProjectPropertiesSupport.getArguments(project)) != null) {
+                        ProjectPropertiesSupport.getArguments(project),
+                        ProjectPropertiesSupport.getWorkDir(project),
+                        ProjectPropertiesSupport.getPhpArguments(project)) != null) {
                     valid = false;
                 }
             } catch (PhpProgram.InvalidPhpProgramException ex) {
@@ -118,110 +117,104 @@ class ConfigActionScript extends ConfigAction {
 
     @Override
     public void runProject() {
-        new RunScript(new ScriptProvider()).run();
+        new RunScript(new ScriptProvider(getStartFile(null))).run();
     }
 
     @Override
     public void debugProject() {
-        new DebugScript(new ScriptProvider()).run();
+        new DebugScript(new ScriptProvider(getStartFile(null))).run();
     }
 
     @Override
     public void runFile(Lookup context) {
-        new RunScript(new ScriptProvider(context)).run();
+        new RunScript(new ScriptProvider(getStartFile(context))).run();
     }
 
     @Override
     public void debugFile(Lookup context) {
-        new DebugScript(new ScriptProvider(context)).run();
+        new DebugScript(new ScriptProvider(getStartFile(context))).run();
     }
 
-    private final class ScriptProvider implements DebugScript.Provider {
-        private final PhpProgram program;
-        private final File startFile;
+    private File getStartFile(Lookup context) {
+        FileObject file = null;
+        if (context == null) {
+            file = CommandUtils.fileForProject(project, sourceRoot);
+        } else {
+            file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
+        }
+        assert file != null : "Start file must be found";
+        return FileUtil.toFile(file);
+    }
 
-        public ScriptProvider() {
-            this(null);
+    private final class ScriptProvider extends DefaultScriptProvider implements DebugScript.Provider {
+
+        public ScriptProvider(File file) {
+            super(file);
         }
 
-        public ScriptProvider(Lookup context) {
-            PhpProgram prg = null;
-            try {
-                prg = ProjectPropertiesSupport.getPhpInterpreter(project);
-            } catch (InvalidPhpProgramException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            assert prg.isValid() : String.format("php program %s must be valid", prg);
-
-            program = prg;
-            startFile = getStartFile(context);
-        }
-
+        @Override
         public PhpProject getProject() {
             return project;
         }
 
+        @Override
         public FileObject getStartFile() {
-            assert startFile != null;
-            return FileUtil.toFileObject(startFile);
+            assert file != null;
+            return FileUtil.toFileObject(file);
         }
 
+        @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
-            assert startFile != null;
-            RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
-            return PhpProgram.getExecutionDescriptor()
-                    .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
-                    .optionsPath(UiUtils.OPTIONS_PATH)
-                    .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
-                    .outProcessorFactory(redirector)
-                    .postExecution(redirector)
+            assert file != null;
+            return super.getDescriptor()
                     .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
         }
 
+        @Override
         public ExternalProcessBuilder getProcessBuilder() {
-            assert startFile != null;
-            ExternalProcessBuilder builder = program.getProcessBuilder()
-                    .addArgument(startFile.getName());
-            String argProperty = ProjectPropertiesSupport.getArguments(project);
-            if (StringUtils.hasText(argProperty)) {
-                for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
-                    builder = builder.addArgument(argument);
+            assert file != null;
+            ExternalProcessBuilder builder = program.getProcessBuilder();
+            String phpArgs = ProjectPropertiesSupport.getPhpArguments(project);
+            if (StringUtils.hasText(phpArgs)) {
+                for (String phpArg : Utilities.parseParameters(phpArgs)) {
+                    builder = builder.addArgument(phpArg);
                 }
             }
-            builder = builder.workingDirectory(startFile.getParentFile());
+            builder = builder.addArgument(file.getAbsolutePath());
+            String args = ProjectPropertiesSupport.getArguments(project);
+            if (StringUtils.hasText(args)) {
+                for (String arg : Utilities.parseParameters(args)) {
+                    builder = builder.addArgument(arg);
+                }
+            }
+
+            String workDir = ProjectPropertiesSupport.getWorkDir(project);
+            if (RunAsValidator.validateWorkDir(workDir, false) == null) {
+                builder = builder.workingDirectory(new File(workDir));
+            } else {
+                builder = builder.workingDirectory(file.getParentFile());
+            }
             return builder;
         }
 
-        public String getOutputTabTitle() {
-            assert startFile != null;
-            return String.format("%s - %s", program.getProgram(), startFile.getName());
-        }
-
+        @Override
         public boolean isValid() {
-            return program.isValid() && startFile != null;
+            return super.isValid() && file != null;
         }
 
-        private File getStartFile(Lookup context) {
-            FileObject file = null;
-            if (context == null) {
-                file = CommandUtils.fileForProject(project, sourceRoot);
-            } else {
-                file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
-            }
-            assert file != null : "Start file must be found";
-            return FileUtil.toFile(file);
+        @Override
+        protected PhpProgram getPhpProgram() throws InvalidPhpProgramException {
+            return ProjectPropertiesSupport.getPhpInterpreter(project);
         }
-    }
 
-    static final class PhpLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        @Override
+        public List<Pair<String, String>> getDebugPathMapping() {
+            return ProjectPropertiesSupport.getDebugPathMapping(project);
+        }
 
-        public LineConvertor newLineConvertor() {
-            LineConvertor[] lineConvertors = new LineConvertor[PhpInterpreter.LINE_PATTERNS.length];
-            int i = 0;
-            for (Pattern linePattern : PhpInterpreter.LINE_PATTERNS) {
-                lineConvertors[i++] = LineConvertors.filePattern(null, linePattern, null, 1, 2);
-            }
-            return LineConvertors.proxy(lineConvertors);
+        @Override
+        public Pair<String, Integer> getDebugProxy() {
+            return ProjectPropertiesSupport.getDebugProxy(project);
         }
     }
 }

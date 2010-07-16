@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LoggingPermission;
 import org.openide.util.Lookup;
 
 /** NetBeans security manager implementation.
@@ -169,6 +173,13 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
 
+    private void notifyRead(String file) {
+        SecurityManager s = getSecurityManager();
+        if (s != null) {
+            s.checkRead(file);
+        }
+    }
+
     private void notifyWrite(String file) {
         SecurityManager s = getSecurityManager();
         if (s != null) {
@@ -176,13 +187,16 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
     
-    private static boolean officialExit = false;
+    static boolean officialExit = false;
     /** Can be called from core classes to exit the system.
      * Direct calls to System.exit will not be honored, for safety.
      * @param status the status code to exit with
      * @see "#20751"
      */
     public static void exit(int status) {
+        if (officialExit) {
+            return; // already inside a shutdown hook
+        }
         officialExit = true;
         System.exit(status);
     }
@@ -272,8 +286,8 @@ public class TopSecurityManager extends SecurityManager {
     static {
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
-        warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
-        warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
+        warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N
+        warnedClassesNH.add("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
         warnedClassesNH.add("org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties"); // AS bundle is not in any cluster
@@ -286,7 +300,7 @@ public class TopSecurityManager extends SecurityManager {
      * it reduces performance penalty of startup about 10%
      */
     public @Override void checkRead(String file) {
-        // XXX reconsider!
+        notifyRead(file);
     }
     
     public @Override void checkRead(FileDescriptor fd) {
@@ -364,6 +378,7 @@ public class TopSecurityManager extends SecurityManager {
     }
 
     public @Override void checkPermission(Permission perm) {
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         
         //
@@ -392,8 +407,36 @@ public class TopSecurityManager extends SecurityManager {
     }
     
     public @Override void checkPermission(Permission perm, Object context) {
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         return;
+    }
+
+    private boolean checkLogger(Permission perm) {
+        //Do not allow foreign code to replace NetBeans logger with its own
+        //(particularly java.util.logging.FileLogger, which will deadlock)
+        //see http://netbeans.org/bugzilla/show_bug.cgi?id=178013
+        if (LoggingPermission.class.isInstance(perm)) {
+            //This code will run every time a logger is created;  if this
+            //proves too performance-degrading, replace the assertion test
+            //with a system property so that mysterious logger-related deadlocks
+            //can still be done, but leave it off by default
+            Throwable t = new Exception().fillInStackTrace();
+            for (StackTraceElement e : t.getStackTrace()) {
+                //Currently no other reliable way to determine that the call
+                //is to reset the logging infrastructure, not just create
+                //a logger - see JDK bug 1694855
+                if ("java.util.logging.LogManager".equals(e.getClassName()) && "reset".equals(e.getMethodName())) { //NOI18N
+                    SecurityException se = new SecurityException("Illegal attempt to reset system logger"); //NOI18N
+                    throw se;
+                }
+                if ("java.util.logging.LogManager".equals(e.getClassName()) && "readConfiguration".equals(e.getMethodName())) { //NOI18N
+                    SecurityException se = new SecurityException("Illegal attempt to replace system logger configuration"); //NOI18N
+                    throw se;
+                }
+            }
+        }
+        return true;
     }
     
     public static void install() {
@@ -582,7 +625,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                 return;
             }
 
-            Class<?> appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
+            Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); // NOI18N
             Method getAppContext = appContextClass.getMethod ("getAppContext"); // NOI18N
             Object appContext = getAppContext.invoke (null, new Object[0]);
             

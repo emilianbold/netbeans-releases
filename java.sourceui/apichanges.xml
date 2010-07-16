@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -107,6 +110,20 @@ is the proper place.
     <changes>
 
 
+        <change id="ElementJavadoc-create">
+            <api name="general"/>
+            <summary>Adding cancelable version of ElementJavadoc.create</summary>
+            <version major="1" minor="15"/>
+            <date day="29" month="6" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                 Added a cancelable version of ElementJavadoc.create to allow
+                 code completion to cancel slow call to JavadocForBinaryQuery.
+            </description>
+            <issue number="171183"/>
+        </change>
         <change id="ElementOpenForCPInfoAndHandle">
             <api name="general"/>
             <summary>Adding ElementOpen.open(ClasspathInfo info, ElementHandle h)</summary>

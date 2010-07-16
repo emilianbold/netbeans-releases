@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.j2seproject;
@@ -44,6 +47,7 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -52,13 +56,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Comment;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *
@@ -152,7 +154,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                 Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
                 Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","src.dir");   //NOI18N
@@ -169,7 +171,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                    copyDocument (doc, oldRoot, newRoot);
+                    XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                     cachedElement = newRoot;
                 }
             }
@@ -183,48 +185,23 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public synchronized EditableProperties getUpdatedProjectProperties () {
         EditableProperties cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         //The javadoc.additionalparam was not in NB 4.0
-        if (cachedProperties.get (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
-            cachedProperties.put (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
-        }
-        if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
-            cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
-        }
-         if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
-            cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
-        }
+        ensureValueExists(cachedProperties, J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
+        ensureValueExists(cachedProperties, "build.generated.dir","${build.dir}/generated"); //NOI18N
+        ensureValueExists(cachedProperties, "meta.inf.dir","${src.dir}/META-INF"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+        ensureValueExists(cachedProperties, "javac.test.processorpath","${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); //NOI18N
         return cachedProperties;
     }
 
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,newElement);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
+    private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
+        if (prop.get(property)==null) { //NOI18N
+            prop.put (property, defaultValue); //NOI18N
         }
     }
 

@@ -166,9 +166,9 @@ public final class MavenModelUtils {
             plugin = model.getFactory().createPlugin();
             plugin.setGroupId("org.apache.maven.plugins"); //NOI18N
             plugin.setArtifactId("maven-war-plugin"); //NOI18N
+            plugin.setVersion("2.0.2"); //NOI18N
             bld.addPlugin(plugin);
         }
-        plugin.setVersion("2.0.2"); //NOI18N
 
         Configuration config = plugin.getConfiguration();
         if (config == null) {

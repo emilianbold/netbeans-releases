@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,10 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -423,6 +430,8 @@ public abstract class Properties {
 
         private HashMap properties = new HashMap ();
         private boolean isInitialized = false;
+        private HashMap<String, ReentrantReadWriteLock> propertyRWLocks = new HashMap<String, ReentrantReadWriteLock>();
+        private HashMap<String, Integer> propertyRWLockCounts = new HashMap<String, Integer>();
 
 
         public String getProperty (String propertyName, String defaultValue) {
@@ -450,10 +459,68 @@ public abstract class Properties {
             save ();
         }
 
+        private synchronized ReentrantReadWriteLock getRWLock(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                rwl = new ReentrantReadWriteLock(true);
+                propertyRWLocks.put(propertyName, rwl);
+            }
+            Integer c = propertyRWLockCounts.get(propertyName);
+            if (c == null) {
+                c = 1;
+            } else {
+                c = c + 1;
+            }
+            propertyRWLockCounts.put(propertyName, c);
+            return rwl;
+        }
+
+        public void lockRead(String propertyName) {
+            ReentrantReadWriteLock rwl = getRWLock(propertyName);
+            ReadLock rl = rwl.readLock();
+            rl.lock();
+        }
+
+        public void lockWrite(String propertyName) {
+            ReentrantReadWriteLock rwl = getRWLock(propertyName);
+            WriteLock wl = rwl.writeLock();
+            wl.lock();
+        }
+
+        public synchronized void unLockRead(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                throw new IllegalStateException("No lock for property "+propertyName);
+            }
+            rwl.readLock().unlock();
+            RWUnlock(propertyName);
+        }
+
+        public synchronized void unLockWrite(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                throw new IllegalStateException("No lock for property "+propertyName);
+            }
+            rwl.writeLock().unlock();
+            RWUnlock(propertyName);
+        }
+
+        private synchronized void RWUnlock(String propertyName) {
+            Integer c = propertyRWLockCounts.get(propertyName);
+            if (c.intValue() == 1) {
+                propertyRWLockCounts.remove(propertyName);
+                propertyRWLocks.remove(propertyName);
+            } else {
+                c = c - 1;
+                propertyRWLockCounts.put(propertyName, c);
+            }
+        }
+
         private synchronized void load () {
             BufferedReader br = null;
             try {
-                FileObject fo = findSettings();
+                FileObject fo = findSettings(false);
+                if (fo == null) return ;
                 InputStream is = fo.getInputStream ();
                 br = new BufferedReader (new InputStreamReader (is));
 
@@ -503,7 +570,7 @@ public abstract class Properties {
             PrintWriter pw = null;
             FileLock lock = null;
             try {
-                FileObject fo = findSettings();
+                FileObject fo = findSettings(true);
                 lock = fo.lock ();
                 OutputStream os = fo.getOutputStream (lock);
                 pw = new PrintWriter (os);
@@ -594,14 +661,16 @@ public abstract class Properties {
             }
         }
 
-        private static FileObject findSettings() throws IOException {
+        private static FileObject findSettings(boolean create) throws IOException {
             FileObject r = FileUtil.getConfigFile("Services"); // NOI18N
             if (r == null) {
+                if (!create) return null;
                 r = FileUtil.getConfigRoot().createFolder("Services"); // NOI18N
             }
             FileObject fo = r.getFileObject
                 ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             if (fo == null) {
+                if (!create) return null;
                 fo = r.createData
                     ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             }
@@ -981,7 +1050,8 @@ public abstract class Properties {
         }
 
         public Object getObject (String propertyName, Object defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Object initialValue = getInitialValue(propertyName, Object.class);
@@ -1030,11 +1100,14 @@ public abstract class Properties {
                     return defaultValue;
                 }
                 return r.read (typeID, getProperties (propertyName));
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setObject (String propertyName, Object value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, "# null"); // NOI18N
                 } else if (value instanceof String) {
@@ -1059,12 +1132,15 @@ public abstract class Properties {
                     impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
 
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String arrayType = impl.getProperty (propertyName + ".array_type", null); // NOI18N
                 if (arrayType == null) {
                     Object[] initialValue = getInitialValue(propertyName, Object[].class);
@@ -1092,11 +1168,14 @@ public abstract class Properties {
                     os [i] = o;
                 }
                 return os;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setArray (String propertyName, Object[] value) {
-            synchronized (impl) {
+            try {
+                impl.lockWrite(propertyName);
                 impl.setProperty (propertyName, "# array"); // NOI18N
                 impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ()); // NOI18N
                 Properties p = getProperties (propertyName);
@@ -1104,12 +1183,15 @@ public abstract class Properties {
                 p.setInt ("length", k); // NOI18N
                 for (i = 0; i < k; i++)
                     p.setObject ("" + i, value [i]); // NOI18N
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Collection getCollection (String propertyName, Collection defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Collection initialValue = getInitialValue(propertyName, Collection.class);
@@ -1146,11 +1228,14 @@ public abstract class Properties {
                     c.add (o);
                 }
                 return c;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setCollection (String propertyName, Collection value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
@@ -1164,12 +1249,15 @@ public abstract class Properties {
                         i++;
                     }
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Map getMap (String propertyName, Map defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Map initialValue = getInitialValue(propertyName, Map.class);
@@ -1202,11 +1290,14 @@ public abstract class Properties {
                     m.put (key, value);
                 }
                 return m;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setMap (String propertyName, Map value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
@@ -1222,6 +1313,8 @@ public abstract class Properties {
                         i++;
                     }
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }

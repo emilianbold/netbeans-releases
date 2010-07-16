@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.TestActionConfiguration;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.bundler.BundlerSupport;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyBaseLogicalViewProvider;
@@ -109,6 +113,8 @@ import org.openide.util.lookup.Lookups;
  * Logical view provider for Rails project.
  */
 public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider {
+
+    private static final RequestProcessor requestProcessor = new RequestProcessor("Rails Annotation"); // NOI18N
     
     public RailsLogicalViewProvider(
             final RailsProject project,
@@ -306,7 +312,7 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
         
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
+                task = requestProcessor.create(this);
             }
             
             synchronized (privateLock) {
@@ -355,6 +361,8 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
         // Private methods -------------------------------------------------------------
         
         private Action[] getAdditionalActions() {
+
+            bundlerSupport.initialize();
             
             ResourceBundle bundle = NbBundle.getBundle(RailsLogicalViewProvider.class);
             
@@ -390,6 +398,9 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
                 actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             }
 
+            if (bundlerSupport.installed()) {
+                actions.add(bundlerSupport.createAction());
+            }
             actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
             actions.add(null);
 

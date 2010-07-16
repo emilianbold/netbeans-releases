@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,9 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.servlet.jsp.tagext.TagFileInfo;
@@ -103,6 +108,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
      * @return true if the provided offset should be in a hyperlink
      *         false otherwise
      */
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset){
         if (!(doc instanceof BaseDocument))
             return false;
@@ -185,22 +191,15 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             TokenSequence<ELTokenId> elTokenSequence = 
                 tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
-                JspELExpression exp = new JspELExpression(jspSup);
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return false; //no token
+                //check expression language
+ 		elTokenSequence.move(offset);
+		if (!elTokenSequence.moveNext()) {
+		    return false;
+		}
+
+		if(elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
+                    return true;
                 }
-                
-                if (elTokenSequence.token().id() == ELTokenId.DOT){
-                    return false;
-                }
-                
-                int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
-                int res = exp.parse(endOfEL);
-                if (res == ELExpression.EL_START) {
-                    res = exp.parse(endOfEL + 1);
-                }
-                return res == ELExpression.EL_BEAN;
             }
             // is the a reachable tag file?
             return (canBeTagFile(tokenSequence, jspSup));
@@ -241,64 +240,103 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
      * @return a two member array which contains starting and ending offset of a hyperlink
      *         that should be on a given offset
      */
-    public int[] getHyperlinkSpan(Document doc, int offset){
-        if (!(doc instanceof BaseDocument)) {
-            return null;
-        }
-        
-        BaseDocument bdoc = (BaseDocument) doc;
-        JTextComponent target = Utilities.getFocusedComponent();
-        
-        if (target == null || target.getDocument() != bdoc)
-            return null;
-        
-        JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
-        
-        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-        tokenSequence.move(offset);
-        if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-            return null; //no token found
-        }
-        Token<?> token = tokenSequence.token();
-        
-        if (canBeTagFile(tokenSequence, jspSup)){
-            // a reachable tag file.
-            int start = token.offset(tokenHierarchy);
-            int end = token.offset(tokenHierarchy) + token.length();
-            String text = token.text().toString().trim();
-            if (text.startsWith("<")) {
-                start = start + 1;
-            }
-            return new int[]{start, end};
-        } else{
-            // is it a bean in EL ?
-            TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                    ELTokenId.language());
-            
-            if (elTokenSequence != null){
-                JspELExpression exp = new JspELExpression(jspSup);
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return null; //no token
+    @Override
+    public int[] getHyperlinkSpan(final Document doc, final int offset){
+        final AtomicReference<Callable<int[]>> returnTaskRef = new AtomicReference<Callable<int[]>>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                BaseDocument bdoc = (BaseDocument) doc;
+                JTextComponent target = Utilities.getFocusedComponent();
+
+                if (target == null || target.getDocument() != bdoc)
+                    return;
+
+                final JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
+
+                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
+                TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+                tokenSequence.move(offset);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                    return; //no token found
                 }
-                
-                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
-                int res = exp.parse(elEnd);
-                
-                if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START ){
-                    return new int[] {elTokenSequence.offset(), elEnd};
+                Token<?> token = tokenSequence.token();
+
+                if (canBeTagFile(tokenSequence, jspSup)){
+                    // a reachable tag file.
+                    int start = token.offset(tokenHierarchy);
+                    final int end = token.offset(tokenHierarchy) + token.length();
+                    String text = token.text().toString().trim();
+                    if (text.startsWith("<")) { //NOI18N
+                        start = start + 1;
+                    }
+                    final int fstart = start;
+                    returnTaskRef.set(new Callable<int[]>() {
+
+                        @Override
+                        public int[] call() throws Exception {
+                            return new int[]{fstart, end};
+                        }
+                    });
+                } else{
+                    // is it a bean in EL ?
+                    final TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                            ELTokenId.language());
+
+                    if (elTokenSequence != null){
+                            elTokenSequence.move(offset);
+                            if (!elTokenSequence.moveNext()) {
+                                return; //no token
+                            }
+                            try {
+                                final int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                                final JspELExpression exp = new JspELExpression(jspSup, elEnd);
+
+                                returnTaskRef.set(new Callable<int[]>() {
+                                    @Override
+                                    public int[] call() throws Exception {
+                                        int res = exp.parse();
+                                        if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START) {
+                                            return new int[]{elTokenSequence.offset(), elEnd};
+                                        }
+                                        return null;
+                                    }
+                                });
+                                
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+
+                    }
+
+                    //the token image always contains the quotation marks e.g. "test.css"
+                    if(token.length() > 2) {
+                        //there is somethin between the qutation marks
+                        final int from = token.offset(tokenHierarchy) + 1;
+                        final int to = token.offset(tokenHierarchy) + token.length() - 1;
+                        returnTaskRef.set(new Callable<int[]>() {
+                            @Override
+                            public int[] call() throws Exception {
+                                return new int[]{from, to};
+                            }
+                        });
+                    } else {
+                        //empty value
+                        return;
+                    }
                 }
+
             }
 
-            //the token image always contains the quotation marks e.g. "test.css"
-            if(token.length() > 2) {
-                //there is somethin between the qutation marks
-                return new int[]{token.offset(tokenHierarchy) + 1, token.offset(tokenHierarchy) + token.length() - 1};
-            } else {
-                //empty value
-                return null;
-            }
+        });
+
+        try {
+            Callable<int[]> returnTask = returnTaskRef.get();
+            return returnTask == null ? null : returnTask.call();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
         
     }
@@ -314,134 +352,162 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
      * @param offset &gt;=0 offset to test (it generally should be offset &lt; doc.getLength(), but
      *               the implementations should not depend on it)
      */
-    public void performClickAction(final Document doc, final int offset){
+    @Override
+    public void performClickAction(final Document doc, final int offset) {
+        final JTextComponent target = Utilities.getFocusedComponent();
+        if (target == null || target.getDocument() != doc) {
+            return;
+        }
+
+        final AtomicReference<Runnable> outOfDocumentLockTaskRef = new AtomicReference<Runnable>();
         doc.render(new Runnable() {
-            public void run() {        
-                try {
-                    BaseDocument bdoc = (BaseDocument) doc;
 
-                    JTextComponent target = Utilities.getFocusedComponent();
+            @Override
+            public void run() {
+                final JspSyntaxSupport jspSup = JspSyntaxSupport.get(doc);
 
-                    if (target == null || target.getDocument() != bdoc) {
-                        return;
-                    }
+                TokenHierarchy<Document> tokenHierarchy =
+                        TokenHierarchy.get(doc);
+                TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+                tokenSequence.move(offset);
+                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                    return; //no token found
+                }
+                Token<?> token = tokenSequence.token();
 
-                    JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
-
-                    TokenHierarchy<BaseDocument> tokenHierarchy = 
-                        TokenHierarchy.get(bdoc);
-                    TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-                    tokenSequence.move(offset);
-                    if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                        return; //no token found
-                    }
-                    Token<?> token = tokenSequence.token();
-
-                    // is it a bean in EL
-                    TokenSequence<ELTokenId> elTokenSequence = 
+                // is it a bean in EL
+                TokenSequence<ELTokenId> elTokenSequence =
                         tokenSequence.embedded(ELTokenId.language());
-                    if (elTokenSequence != null){
-                        JspELExpression exp = new JspELExpression(jspSup);
+                if (elTokenSequence != null) {
 
-                        elTokenSequence.move(offset);
-                        if(!elTokenSequence.moveNext()) {
-                            return ;//not token
-                        }
+                    elTokenSequence.move(offset);
+                    if (!elTokenSequence.moveNext()) {
+                        return;//not token
+                    }
 
-                        int elEnd = elTokenSequence.offset() + 
-                            elTokenSequence.token().length();
-                        int res = exp.parse(elEnd);
-                        if (res == ELExpression.EL_START ){
-                            navigateToUserBeanDef(bdoc, jspSup, target, 
-                                    elTokenSequence.token().text().toString());
-                            return;
-                        }
-                        if (res == ELExpression.EL_BEAN){
-                            if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
-                                gotoSourceFailed();
+                    final int parseOffset = elTokenSequence.offset()
+                            + elTokenSequence.token().length();
+                    final String beanName = elTokenSequence.token().text().toString();
+                    try {
+                        final JspELExpression exp = new JspELExpression(jspSup, parseOffset);
+
+                        outOfDocumentLockTaskRef.set(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    int res = exp.parse();
+                                    if (res == ELExpression.EL_START) {
+                                        navigateToUserBeanDef(doc, jspSup, target, beanName);
+                                    }
+                                    if (res == ELExpression.EL_BEAN) {
+                                        if (!exp.gotoPropertyDeclaration(exp.getObjectClass())) {
+                                            gotoSourceFailed();
+                                        }
+                                    }
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
-                        }
+                        });
+
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return;
+                }
+
+                // is ti declaration of userBean?
+                while (tokenSequence.token().id() != JspTokenId.TAG
+                        && !"jsp:useBean".equals(tokenSequence.token().text().toString())
+                        && tokenSequence.movePrevious()) {
+                    //do nothing, just skip the tokens
+                }
+
+                if (tokenSequence.index() != -1 && tokenSequence.token().id()
+                        == JspTokenId.TAG) {
+                    //we are in useBean
+                    final String className = token.text().toString().substring(1,
+                            token.length() - 1).trim();
+
+                    //compute the type off awt
+                    ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
+                    JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
+
+                    AtomicBoolean cancel = new AtomicBoolean();
+                    Compute<TypeElement> compute = new Compute<TypeElement>(cancel,
+                            source,
+                            Phase.ELEMENTS_RESOLVED,
+                            new Worker<TypeElement>() {
+
+                                @Override
+                                public TypeElement process(CompilationInfo info) {
+                                    return info.getElements().getTypeElement(className);
+                                }
+                            });
+
+                    ProgressUtils.runOffEventDispatchThread(compute,
+                            NbBundle.getMessage(JspHyperlinkProvider.class, "MSG_goto-source"),
+                            cancel,
+                            false);
+
+                    if (cancel.get()) {
                         return;
                     }
 
-                    // is ti declaration of userBean?
-                    while (tokenSequence.token().id() != JspTokenId.TAG && 
-                            !"jsp:useBean".equals(tokenSequence.token().text().toString()) 
-                            && tokenSequence.movePrevious()) {
-                        //do nothing, just skip the tokens
-                    }
+                    TypeElement typeElement = compute.result();
 
-                    if (tokenSequence.index() != -1 && tokenSequence.token().id() 
-                            == JspTokenId.TAG)
-                    {
-                        //we are in useBean
-                        final String className = token.text().toString().substring(1,
-                                token.length()-1).trim();
-
-                        //compute the type off awt
-                        ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
-                        JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
-
-                        AtomicBoolean cancel = new AtomicBoolean();
-                        Compute<TypeElement> compute = new Compute<TypeElement>(cancel,
-                                source,
-                                Phase.ELEMENTS_RESOLVED,
-                                new Worker<TypeElement>() {
-                                    public TypeElement process(CompilationInfo info) {
-                                        return info.getElements().getTypeElement(className);
-                                    }
-                                });
-
-                        ProgressUtils.runOffEventDispatchThread(compute,
-                                NbBundle.getMessage(JspHyperlinkProvider.class, "MSG_goto-source"),
-                                cancel,
-                                false);
-
-                        if(cancel.get()) {
-                            return ;
+                    //if resolved in time limit, open it
+                    if (typeElement != null) {
+                        if (!UiUtils.open(cpInfo, typeElement)) {
+                            gotoSourceFailed();
                         }
-                        
-                        TypeElement typeElement = compute.result();
+                    }
 
-                        //if resolved in time limit, open it
-                        if(typeElement != null) {
-                            if (!UiUtils.open(cpInfo, typeElement)){
-                                gotoSourceFailed();
-                            }
+
+                }
+
+                tokenSequence.move(offset);//reset tokenSequence
+                if (!tokenSequence.moveNext()) {
+                    return; //no token
+                }
+
+                FileObject fObj = getTagFile(tokenSequence, jspSup);
+                if (fObj != null) {
+                    openInEditor(fObj);
+                } else {
+                    String path = token.text().toString();
+                    int openingQuotePos = path.indexOf('"');
+
+                    if (openingQuotePos > -1) {
+                        path = path.substring(openingQuotePos + 1);
+
+                        int closingQuotePos = path.indexOf('"');
+
+                        if (closingQuotePos > -1) {
+                            path = path.substring(0, closingQuotePos);
+                            fObj = JspUtils.getFileObject(doc, path);
                         }
-                        
-
                     }
-
-                    tokenSequence.move(offset);//reset tokenSequence
-                    if(!tokenSequence.moveNext()) {
-                        return ; //no token
-                    }
-
-                    FileObject fObj = getTagFile(tokenSequence, jspSup);
-                    if ( fObj != null)
+                    if (fObj != null) {
                         openInEditor(fObj);
-                    else {
-                        String path = token.text().toString();
-                        path = path.substring(path.indexOf('"') +1);
-                        path = path.substring(0, path.indexOf('"'));
-
-                        fObj = JspUtils.getFileObject(bdoc, path);
-                        if (fObj != null) {
-                            openInEditor(fObj);
-                        } else {
-                            // when the file was not found.
-                            String msg = NbBundle.getMessage(JspHyperlinkProvider.class, 
-                                    "LBL_file_not_found", path); //NOI18N
-                            StatusDisplayer.getDefault().setStatusText(msg);
-                        }
-
+                    } else {
+                        // when the file was not found.
+                        String msg = NbBundle.getMessage(JspHyperlinkProvider.class,
+                                "LBL_file_not_found", path); //NOI18N
+                        StatusDisplayer.getDefault().setStatusText(msg);
                     }
-                } catch (BadLocationException e) {
-                    Exceptions.printStackTrace(e);
+
                 }
             }
         });
+
+        Runnable outOfDocumentLockTask = outOfDocumentLockTaskRef.get();
+        if (outOfDocumentLockTask != null) {
+            outOfDocumentLockTask.run();
+        }
+
+
     }
         
     private String getTagName(String tagwithprefix){
@@ -584,6 +650,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             this.worker = worker;
         }
 
+        @Override
         public void run() {
             try {
                 source.runUserActionTask(this, true);
@@ -593,6 +660,7 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             }
         }
 
+        @Override
         public void run(CompilationController parameter) throws Exception {
             if (cancel.get()) return ;
 

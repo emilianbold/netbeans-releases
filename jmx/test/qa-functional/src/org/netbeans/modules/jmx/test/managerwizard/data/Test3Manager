@@ -19,22 +19,20 @@ import javax.management.remote.JMXServiceURL;
  * @author <author>
  */
 public class Test3Manager {
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        
+
         //Manager instantiation and connection to the remote agent
         Test3Manager manager = Test3Manager.getDefault();
-
         // TODO add your Management Logic
-
         // Close connection
         manager.close();
         System.out.println("Connection closed.");
     }
-    
+
     /**
      * JMX Agent connection
      * This method is called automatically when <CODE>getDefault()</CODE>
@@ -50,7 +48,7 @@ public class Test3Manager {
         // Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();
     }
-    
+
     /**
      * Returns a manager singleton.
      */
@@ -61,24 +59,24 @@ public class Test3Manager {
         }
         return singleton;
     }
-    
+
     public MBeanServerConnection getMBeanServerConnection() {
         return mbsc;
     }
-    
+
     public void close() throws Exception {
-        
+
         //Close the connection
         connector.close();
     }
-    
+
     //MBeanServerConnection definition
     private MBeanServerConnection mbsc;
-    
+
     //The JMX Connector definition
     private JMXConnector connector;
-    
+
     //Singleton instance
     private static Test3Manager singleton;
-    
+
 }

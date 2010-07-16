@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,8 @@ import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -174,7 +179,20 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
         List<GeneralPlatformInstall> installers = InstallerRegistry.getDefault().getAllInstallers();
-        if (installers.size()>1) {
+        if (installers.isEmpty()) {
+            //Probably fixed by: #178256
+            final Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
+            final StringBuilder sb = new StringBuilder("No PlatformInstallFound in Lookup, enabled modules:\n");    //NOI18N
+            for (ModuleInfo info : infos) {
+                if (info.isEnabled()) {
+                    sb.append(info.getDisplayName());
+                    sb.append('('); //NOI18N
+                    sb.append(info.getCodeName());
+                    sb.append(")\n"); //NOI18N
+                }
+            }
+            throw new IllegalStateException(sb.toString());
+        } else if (installers.size()>1) {
             panelIndex = 0;
             hasSelectorPanel = true;
         }

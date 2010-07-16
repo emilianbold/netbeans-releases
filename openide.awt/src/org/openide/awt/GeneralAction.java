@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,14 +53,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.netbeans.modules.openide.util.ActionsBridge;
-import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.ActionInvoker;
 
 /**
  *
@@ -121,7 +123,7 @@ final class GeneralAction {
         if (obj instanceof String) {
             return ContextSelection.valueOf((String)obj);
         }
-        throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
+        throw new IllegalStateException("Cannot parse 'selectionType' value: " + obj); // NOI18N
     }
     private static Class<?> readClass(Object obj) {
         if (obj instanceof Class) {
@@ -138,10 +140,10 @@ final class GeneralAction {
             try {
                 return Class.forName((String)obj, false, l);
             } catch (Exception ex) {
-                throw (IllegalStateException)new IllegalStateException(ex.getMessage()).initCause(ex);
+                throw new IllegalStateException(ex);
             }
         }
-        throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
+        throw new IllegalStateException("Cannot read 'type' value: " + obj); // NOI18N
     }
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
         return AlwaysEnabledAction.extractCommonAttribute(fo, name);
@@ -214,8 +216,7 @@ final class GeneralAction {
             assert EventQueue.isDispatchThread();
             final javax.swing.Action a = findAction();
             if (a != null) {
-                ActionRunnable ar = ActionRunnable.create(e, a, async);
-                ActionsBridge.doPerformAction(a, ar);
+                ActionInvoker.invokeAction(a, e, async, null);
             }
         }
 
@@ -285,12 +286,16 @@ final class GeneralAction {
             }
             if (now != null) {
                 Action nowAction = now.get(key);
+                boolean nowEnabled;
                 if (nowAction != null) {
                     nowAction.addPropertyChangeListener(weakL);
-                    PropertyChangeSupport sup = fire ? support : null;
-                    if (sup != null && nowAction.isEnabled() != prevEnabled) {
-                        sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
-                    }
+                    nowEnabled = nowAction.isEnabled();
+                } else {
+                    nowEnabled = fallback != null && fallback.isEnabled();
+                }
+                PropertyChangeSupport sup = fire ? support : null;
+                if (sup != null && nowEnabled != prevEnabled) {
+                    sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
                 }
             }
         }
@@ -310,7 +315,11 @@ final class GeneralAction {
             if (f instanceof ContextAwareAction) {
                 f = ((ContextAwareAction)f).createContextAwareInstance(actionContext);
             }
-            return new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            DelegateAction other = new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            if (attrs != null) {
+                other.attrs = new HashMap<String,Object>(attrs);
+            }
+            return other;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

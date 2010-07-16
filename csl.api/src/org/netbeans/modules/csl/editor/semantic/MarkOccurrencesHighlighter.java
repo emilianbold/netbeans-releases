@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,8 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
+
+    private static final Logger LOG = Logger.getLogger(MarkOccurrencesHighlighter.class.getName());
     
     //private FileObject file;
     private final Language language;
@@ -103,7 +108,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         Document doc = snapshot.getSource().getDocument(false);
         
         if (doc == null) {
-            Logger.global.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!");
+            LOG.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!"); //NOI18N
             return ;
         }
         
@@ -120,6 +125,11 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         }
 
         List<OffsetRange> bag = processImpl(info, doc, caretPosition);
+        if(bag == null) {
+            //the occurrences finder haven't found anything, just ignore the result
+            //and keep the previous occurrences
+            return ;
+        }
 
         if (isCancelled()) {
             return;
@@ -164,26 +174,19 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         assert finder != null;
         
         finder.setCaretPosition(caretPosition);
-        OccurrencesFinder task = finder;
-        if (task != null) {
-            try {
-                task.run(info, null);
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-
-            if (isCancelled()) {
-                task.cancel();
-            }
-
-
-            Map<OffsetRange,ColoringAttributes> highlights = task.getOccurrences();
-            if (highlights != null) {
-                return new ArrayList<OffsetRange>(highlights.keySet());
-            }
+        try {
+            finder.run(info, null);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
         }
-        
-        return Collections.<OffsetRange>emptyList();
+
+        if (isCancelled()) {
+            finder.cancel();
+        }
+
+        Map<OffsetRange, ColoringAttributes> highlights = finder.getOccurrences();
+
+        return highlights == null ? null : new ArrayList<OffsetRange>(highlights.keySet());
     }
 
     @Override

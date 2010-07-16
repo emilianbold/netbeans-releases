@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,11 @@ package org.netbeans.spi.java.project.support;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -110,6 +118,35 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
         assertParse("/*****/package foo;", false, "foo");
         // would like to test stack overflow from #154894, but never managed to reproduce it in a unit test (only in standalone j2seproject)
     }
+
+
+    public void testFindAllSourceRoots() throws Exception {
+        FileUtil.setMIMEType("java", "text/x-java");
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject root1 = FileUtil.createFolder(wd,"root1");
+        final FileObject root2 = FileUtil.createFolder(wd,"foo/root2");
+        final FileObject root3 = FileUtil.createFolder(wd,"foo/test/root3");
+        final FileObject root4 = FileUtil.createFolder (wd,"root4");
+        TestFileUtils.writeFile(root1,"org/me/Test1.java","package org.me; class Test1{}");
+        TestFileUtils.writeFile(root2,"org/me/Test2.java","package org.me; class Test2{}");
+        TestFileUtils.writeFile(root3,"org/me/Test3.java","package org.me; class Test3{}");
+        TestFileUtils.writeFile(root4,"org/me/Test4.java","package org.me; class Test4{}");
+        final List<FileObject> result = new ArrayList(JavadocAndSourceRootDetection.findSourceRoots(wd, null));
+        final List<FileObject> expected = new ArrayList(Arrays.asList(
+                root1,
+                root2,
+                root3,
+                root4));
+        final Comparator<FileObject> c = new Comparator<FileObject>() {
+            public int compare(FileObject o1, FileObject o2) {
+                return o1.getNameExt().compareToIgnoreCase(o2.getNameExt());
+            }
+        };
+        Collections.sort(expected,c);
+        Collections.sort(result,c);
+        assertEquals (expected.toString(), result.toString());
+    }
+
     private void assertParse(String text, boolean packageInfo, String expectedPackage) {
         Matcher m = (packageInfo ? JavadocAndSourceRootDetection.PACKAGE_INFO : JavadocAndSourceRootDetection.JAVA_FILE).matcher(text);
         assertEquals("Misparse of:\n" + text, expectedPackage, m.matches() ? m.group(1) : null);

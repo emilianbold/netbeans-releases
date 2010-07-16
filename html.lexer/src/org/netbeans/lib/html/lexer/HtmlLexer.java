@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,17 +44,23 @@
 
 package org.netbeans.lib.html.lexer;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Lexical analyzer for HTML. Based on original HTML lexer from html/editor module.
@@ -74,44 +83,88 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private final TokenFactory<HTMLTokenId> tokenFactory;
 
-    class CompoundState {
+    private class CompoundState {
         private int lexerState;
         private int lexerSubState;
         private int lexerEmbeddingState;
-        private String jsAttributeName;
-        private String cssAttributeName;
+        private String attribute;
+        private String tag;
 
-        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String jsAttributeName, String cssAttributeName) {
+        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName, String tagName) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.lexerEmbeddingState = lexerEmbeddingState;
-            this.jsAttributeName = jsAttributeName;
-            this.cssAttributeName = cssAttributeName;
+            this.attribute = attributeName;
+            this.tag = tagName;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CompoundState other = (CompoundState) obj;
+            if (this.lexerState != other.lexerState) {
+                return false;
+            }
+            if (this.lexerSubState != other.lexerSubState) {
+                return false;
+            }
+            if (this.lexerEmbeddingState != other.lexerEmbeddingState) {
+                return false;
+            }
+            if (this.attribute != other.attribute && (this.attribute == null || !this.attribute.equals(other.attribute))) {
+                return false;
+            }
+            if (this.tag != other.tag && (this.tag == null || !this.tag.equals(other.tag))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 17 * hash + this.lexerState;
+            hash = 17 * hash + this.lexerSubState;
+            hash = 17 * hash + this.lexerEmbeddingState;
+            hash = 17 * hash + (this.attribute != null ? this.attribute.hashCode() : 0);
+            hash = 17 * hash + (this.tag != null ? this.tag.hashCode() : 0);
+            return hash;
         }
 
         @Override
         public String toString() {
-           // return "state=" + (lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState) + "," + attributeName.toString();
-           int state = lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
-           return Integer.toString(state)
-                   + (jsAttributeName != null ? "," + jsAttributeName.toString() : "")
-                   + (cssAttributeName != null ? "," + cssAttributeName.toString() : "");
+            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" +
+                    lexerSubState + ",es=" + lexerEmbeddingState + ",tag=" +
+                    tag + ",attr=" + attribute + ")"; //NOI18N
         }
+        
     }
 
+    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<CompoundState, CompoundState>();
+
+    @Override
     public Object state() {
-        if (jsAttributeName != null || cssAttributeName != null) {
-            return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, jsAttributeName, cssAttributeName);
+        //cache the states so lexing of large files do not eat too much memory
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        CompoundState cached = STATES_CACHE.get(currentState);
+        if(cached == null) {
+            STATES_CACHE.put(currentState, currentState);
+            return currentState;
         } else {
-            return lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
+            return cached;
         }
     }
 
     //script and style tag names
-    private static final String SCRIPT = "script";
-    private static final String STYLE = "style";
+    private static final String SCRIPT = "script"; //NOI18N
+    private static final String STYLE = "style"; //NOI18N
 
-    private static final String STYLE_ATTR = "style";
+    private static final String[] STYLE_ATTRS = new String[]{"style", "id", "class"}; //NOI18N
 
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
@@ -120,8 +173,14 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
      */
     private int lexerSubState = INIT;
     private int lexerState    = INIT;
-    private String jsAttributeName;
-    private String cssAttributeName;
+    
+    private String attribute;
+    private String tag; //tag name of the current context tag
+
+    //tag name with namespace prefix to collection of attributes which should have
+    //css class embedding by default
+    private Map<String, Collection<String>> cssClassTagAttrMap;
+    private String CSS_CLASS_MAP_PROPERTY_KEY = "cssClassTagAttrMap"; //NOI18N //semi api
 
     /** indicated whether we are in a script */
     private int lexerEmbeddingState = INIT;
@@ -178,6 +237,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
+    private static final int ISI_VAL_QUOT_ESC = 42;
+    private static final int ISI_VAL_DQUOT_ESC = 43;
+
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -204,6 +266,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
 
+    private static final String SUPPORTED_SCRIPT_TYPE = "text/javascript"; //NOI18N
+
+    //flyweight token images
+    private static final String IMG_EQUAL_SIGN = "="; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL = ">"; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL2 = "/>"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL = "<"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL2 = "</"; //NOI18N
+
+
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
@@ -212,21 +284,18 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             this.lexerState = INIT;
             this.lexerEmbeddingState = INIT;
         } else {
-            Object state = info.state();
-            if (state instanceof CompoundState) {
-                CompoundState cs = (CompoundState)state;
-                lexerState = cs.lexerState;
-                lexerSubState = cs.lexerSubState;
-                lexerEmbeddingState = cs.lexerEmbeddingState;
-                jsAttributeName = cs.jsAttributeName;
-                cssAttributeName = cs.cssAttributeName;
-            } else {
-                int encoded = ((Integer) info.state()).intValue();
-                this.lexerSubState = encoded / 1000000;
-                int remainder = encoded % 1000000;
-                this.lexerState    = remainder / 1000;
-                this.lexerEmbeddingState = remainder % 1000;
-            }
+            CompoundState cs = (CompoundState) info.state();
+            lexerState = cs.lexerState;
+            lexerSubState = cs.lexerSubState;
+            lexerEmbeddingState = cs.lexerEmbeddingState;
+            attribute = cs.attribute;
+            tag = cs.tag;
+        }
+
+        InputAttributes inputAttributes = info.inputAttributes();
+        if (inputAttributes != null) {
+            cssClassTagAttrMap = (Map<String, Collection<String>>)inputAttributes.getValue(
+                    LanguagePath.get(HTMLTokenId.language()), CSS_CLASS_MAP_PROPERTY_KEY); //NOI18N
         }
     }
 
@@ -272,6 +341,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private boolean isJavascriptEventHandlerName(CharSequence attributeName) {
+        if(attributeName == null) {
+            return false;
+        }
         if(attributeName.length() > 2) {
             char firstChar = attributeName.charAt(0);
             char secondChar = attributeName.charAt(1);
@@ -284,15 +356,27 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private boolean isStyleAttributeName(CharSequence chs) {
-        if(chs.length() == STYLE_ATTR.length()) {
-            for(int i = 0; i < chs.length(); i++) {
-                if(Character.toLowerCase(chs.charAt(i)) != Character.toLowerCase(STYLE_ATTR.charAt(i))) {
-                    return false;
+        if(chs == null) {
+            return false;
+        }
+        outer: for (int j = 0; j < STYLE_ATTRS.length; j++) {
+            if (chs.length() == STYLE_ATTRS[j].length()) {
+                for (int i = 0; i < chs.length(); i++) {
+                    if (Character.toLowerCase(chs.charAt(i)) != Character.toLowerCase(STYLE_ATTRS[j].charAt(i))) {
+                        continue outer;
+                    }
                 }
+                return true;
             }
-            return true;
         }
         return false;
+    }
+
+    private boolean isJavascriptType(CharSequence attributeValue, boolean quoted) {
+        //TODO create a list of included/excluded script types
+        //now "all minus vbscript" implies javascript
+        CharSequence clean = quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
+        return equals(SUPPORTED_SCRIPT_TYPE, clean, true, true);
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {
@@ -327,6 +411,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
 
+    @Override
     public Token<HTMLTokenId> nextToken() {
         int actChar;
 
@@ -378,6 +463,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_ERROR:      // DONE
                     lexerState = INIT;
+                    tag = null;
                     return token(HTMLTokenId.ERROR);
 
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
@@ -437,6 +523,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         lexerState = ISP_ENDTAG_WS;
                         break;
                     }
+                    tag = null;
                     switch( actChar ) {
                         case '>':               // Closing of endtag, e.g. </H6 _>_
                             lexerState = INIT;
@@ -468,11 +555,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
                         //test if the tagname is SCRIPT
-
-                        if(equals(SCRIPT, input.readText(), true, true)) {
+                        tag = input.readText().toString();
+                        if(equals(SCRIPT, tag, true, true)) {
                             lexerEmbeddingState = ISI_SCRIPT;
                         }
-                        if(equals(STYLE, input.readText(), true, true)) {
+                        if(equals(STYLE, tag, true, true)) {
                             lexerEmbeddingState = ISI_STYLE;
                         }
                         return token(HTMLTokenId.TAG_OPEN);
@@ -504,13 +591,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                     lexerState = ISI_STYLE_CONTENT;
                                     break;
                             }
-
+                            tag = null;
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '<':
+                            tag = null;
                             lexerState = INIT;
                             input.backup(1);
                             break;
                         default:
+                            tag = null;
                             lexerState = ISI_ERROR;
                             input.backup(1);
                             break;
@@ -526,6 +615,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
 
                 case ISI_TAG_SLASH:
+                    tag = null;
                     switch( actChar ) {
                         case '>':
                             lexerEmbeddingState = INIT; //possibly cancel 'in script' if empty tag found
@@ -554,6 +644,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //end of script section found
                             lexerEmbeddingState = INIT;
                             lexerState = INIT;
+                            tag = null;
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
                                 //the script has a body
@@ -582,6 +673,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //end of script section found
                             lexerEmbeddingState = INIT;
                             lexerState = INIT;
+                            tag = null;
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
                                 //the script has a body
@@ -599,8 +691,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_ARG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        jsAttributeName = isJavascriptEventHandlerName(input.readText()) ? input.readText().toString() : null;
-                        cssAttributeName = isStyleAttributeName(input.readText()) ? input.readText().toString() : null;
+                        attribute =input.readText().toString();
                         return token(HTMLTokenId.ARGUMENT);
                     }
                     break;
@@ -682,89 +773,65 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        if (jsAttributeName != null) {
-                            jsAttributeName = null;
-                            return token(HTMLTokenId.VALUE_JAVASCRIPT);
-                        }
-                        jsAttributeName = null;
-                         if (cssAttributeName != null) {
-                            cssAttributeName = null;
-                            return token(HTMLTokenId.VALUE_CSS);
-                        }
-                        cssAttributeName = null;
-                        return token(HTMLTokenId.VALUE);
+                        return resolveValueToken();
                     }
                     break;
 
                 case ISI_VAL_QUOT:
-                    switch( actChar ) {
-                        case '\'':
-                            lexerState = ISP_TAG_X;
-                            if (jsAttributeName != null) {
-                                jsAttributeName = null;
-                                return token(HTMLTokenId.VALUE_JAVASCRIPT);
-                            }
-                            jsAttributeName = null;
-                            if (cssAttributeName != null) {
-                                cssAttributeName = null;
-                                return token(HTMLTokenId.VALUE_CSS);
-                            }
-                            cssAttributeName = null;
-                            return token(HTMLTokenId.VALUE);
+                    switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_QUOT_ESC;
+                            break;
 
-//                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
-//                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
-//                        Should be removed once the issue is fixed.
-//
-//                        case '&':
-//                            if( input.readLength() == 1 ) {
-//                                lexerSubState = lexerState;
-//                                lexerState = ISA_REF;
-//                                break;
-//                            } else {
-//                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
-//                                    input.backup(1);
-//                                    return token(HTMLTokenId.VALUE);
-//                                }
-//                            }
+                        case '\'':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
+                            lexerState = ISP_TAG_X;
+                            return resolveValueToken();
                     }
                     break;  // else simply consume next char of VALUE
 
                 case ISI_VAL_DQUOT:
-                    switch( actChar ) {
-                        case '"':
-                            lexerState = ISP_TAG_X;
-                            if (jsAttributeName != null) {
-                                jsAttributeName = null;
-                                return token(HTMLTokenId.VALUE_JAVASCRIPT);
-                            }
-                            jsAttributeName = null;
-                            if (cssAttributeName != null) {
-                                cssAttributeName = null;
-                                return token(HTMLTokenId.VALUE_CSS);
-                            }
-                            cssAttributeName = null;
-                            return token(HTMLTokenId.VALUE);
+                    switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_DQUOT_ESC;
+                            break;
 
-//                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
-//                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
-//                        Should be removed once the issue is fixed.
-//
-//                        case '&':
-//                            if( input.readLength() == 1 ) {
-//                                lexerSubState = lexerState;
-//                                lexerState = ISA_REF;
-//                                break;
-//                            } else {
-//                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
-//                                    input.backup(1);
-//                                    return token(HTMLTokenId.VALUE);
-//                                }
-//                            }
+                        case '"':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
+                            lexerState = ISP_TAG_X;
+                            return resolveValueToken();
                     }
                     break;  // else simply consume next char of VALUE
 
+                case ISI_VAL_QUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_QUOT;
+                    break;
 
+                case ISI_VAL_DQUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_DQUOT;
+                    break;
 
                 case ISA_SGML_ESCAPE:       // DONE
                     if( isAZ(actChar) ) {
@@ -1043,13 +1110,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
-                if (jsAttributeName != null) {
-                    return token(HTMLTokenId.VALUE_JAVASCRIPT);
-                }
-                if (cssAttributeName != null) {
-                    return token(HTMLTokenId.VALUE_CSS);
-                }
-                return token(HTMLTokenId.VALUE);
+            case ISI_VAL_QUOT_ESC:
+            case ISI_VAL_DQUOT_ESC:
+                return resolveValueToken();
 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
@@ -1086,21 +1149,122 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         return null;
     }
 
-    private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
-        if(LOG) {
-            if(input.readLength() == 0) {
-                LOGGER.log(Level.INFO, "Found zero length token: ");
+    private static final String CLASS_ATTR_NAME = "class"; //NOI18N
+    private static final String ID_ATTR_NAME = "id"; //NOI18N
+
+    private Token<HTMLTokenId> resolveValueToken() {
+        try {
+            //onclick and similar method javascript embedding
+            if (isJavascriptEventHandlerName(attribute)) {
+                return token(HTMLTokenId.VALUE_JAVASCRIPT);
             }
-            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
+            //style, id or class attribute value css embeddeding
+            if (isStyleAttributeName(attribute)) {
+                return createCssValueToken();
+            }
+
+            //generic css "class" embedding
+            if (cssClassTagAttrMap != null && tag != null) {
+                Collection attrs = cssClassTagAttrMap.get(tag);
+                if (attrs != null && attrs.contains(attribute)) {
+                    //yup the attribute's value should have css "class" selector embedding
+                    return token(HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS);
+                }
+            }
+        } finally {
+            attribute = null;
         }
-        return tokenFactory.createToken(tokenId);
+        return token(HTMLTokenId.VALUE);
     }
 
+    private Token<HTMLTokenId> createCssValueToken() {
+        String cssTokenType;
+        if(equals(CLASS_ATTR_NAME, attribute, true, true)) {
+            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS;
+        } else if(equals(ID_ATTR_NAME, attribute, true, true)) {
+            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID;
+        } else {
+            cssTokenType = null;
+        }
+
+        return token(HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, cssTokenType);
+    }
+
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
+        return token(tokenId, null, null);
+    }
+
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId, String propertyKey, String propertyValue) {
+        if(LOG) {
+            if(input.readLength() == 0) {
+                LOGGER.log(Level.INFO, "Found zero length token: "); //NOI18N
+            }
+            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n"); //NOI18N
+        }
+         if(propertyKey != null && propertyValue != null) {
+            return tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
+        } else {
+            CharSequence image = input.readText();
+            switch(tokenId) {
+                case OPERATOR:
+                    return tokenFactory.getFlyweightToken(tokenId, IMG_EQUAL_SIGN);
+
+                case TAG_CLOSE_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '/':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '>') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL2);
+                                }
+                            }
+                            break;
+                        case '>':
+                            return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL);
+                    }
+
+                case TAG_OPEN_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '<':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '/') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL2);
+                                }
+                                break;
+                            } else  {
+                                return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL);
+                            }
+
+                    }
+
+                case TAG_OPEN:
+                case TAG_CLOSE:
+                    String cachedTagName = HtmlElements.getCachedTagName(image);
+                    if(cachedTagName != null) {
+                        assert (cachedTagName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedTagName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedTagName);
+                    }
+                    break;
+                case ARGUMENT:
+                    String cachedAttrName = HtmlElements.getCachedAttrName(image);
+                    if(cachedAttrName != null) {
+                        assert (cachedAttrName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedAttrName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedAttrName);
+                    }
+                    break;
+            }
+            
+            return tokenFactory.createToken(tokenId);
+
+        }
+
+    }
+
+    @Override
     public void release() {
     }
 
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() */
-    private boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+    private static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
         if (text1.length() != text2.length()) {
             return false;
         } else {
@@ -1116,4 +1280,23 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
     }
 
+    private static class HtmlTokenPropertyProvider implements TokenPropertyProvider {
+
+        private final String key, value;
+
+        HtmlTokenPropertyProvider(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public Object getValue(Token token, Object key) {
+            if (this.key.equals(key)) {
+                return value;
+            } else {
+                return null;
+            }
+        }
+
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +44,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
-import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -55,6 +57,8 @@ import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Performs diff action by fetching the appropriate file from repository
@@ -79,41 +83,24 @@ public class DiffExecutor {
     }
 
     /**
-     * Opens GUI component that shows differences between current base revisions
-     * and HEAD revisions.
-     */ 
-    public void showRemoteDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_REMOTE, group);
-    }
-    
-    /**
-     * Opens GUI component that shows differences between current working files
-     * and HEAD revisions.
-     */ 
-    public void showAllDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_ALL, group);
-    }
-    
-    /**
-     * Opens GUI component that shows differences between current working files
-     * and repository versions they are based on.
-     */ 
-    public void showLocalDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_LOCAL, group);
+     * Opens GUI component that shows differences.
+     * @param type type of diff (local, remote, all)
+     */
+    public void showDiff (ExecutorGroup group, int type) {
+        if (type != Setup.DIFFTYPE_LOCAL && type != Setup.DIFFTYPE_REMOTE && type != Setup.DIFFTYPE_ALL) {
+            throw new IllegalArgumentException();
+        }
+        VersionsCache.getInstance().purgeVolatileRevisions();
+        MultiDiffPanel panel = new MultiDiffPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
+        openDiff(panel, group);
     }
 
     public void showDiff(File file, String rev1, String rev2) {
         MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2);
         openDiff(panel, null);
     }
-
-    private void showDiff(int type, ExecutorGroup group) {
-        VersionsCache.getInstance().purgeVolatileRevisions();
-        MultiDiffPanel panel = new MultiDiffPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
-        openDiff(panel, group);
-    }
     
-    private void openDiff(final JComponent c, final ExecutorGroup group) {
+    private void openDiff(final MultiDiffPanel c, final ExecutorGroup group) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DiffTopComponent tc = new DiffTopComponent(c);
@@ -157,39 +144,55 @@ public class DiffExecutor {
 
     private static class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
-        public DiffTopComponent() {
-        }
-        
-        public DiffTopComponent(JComponent c) {
+        private final Lookup lookup;
+
+        public DiffTopComponent(MultiDiffPanel c) {
             setLayout(new BorderLayout());
             c.putClientProperty(TopComponent.class, this);
             add(c, BorderLayout.CENTER);
+            lookup = c.getLookup();
             getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
         
+        @Override
+        public Lookup getLookup() {
+            return new ProxyLookup(super.getLookup(), lookup);
+        }
+
+        @Override
+        public boolean canClose() {
+            return ((MultiDiffPanel) getComponent(0)).canClose();
+        }
+
+        @Override
         public UndoRedo getUndoRedo() {
             MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             return mainPanel.getUndoRedo();
         }
 
+        @Override
         public int getPersistenceType(){
             return TopComponent.PERSISTENCE_NEVER;
         }
 
+        @Override
         protected void componentClosed() {
             ((MultiDiffPanel) getComponent(0)).componentClosed();
             super.componentClosed();
         }
 
+        @Override
         protected String preferredID(){
             return "DiffExecutorTopComponent";    // NOI18N       
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(getClass());
         }
 
+        @Override
         protected void componentActivated() {
             super.componentActivated();
             MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);

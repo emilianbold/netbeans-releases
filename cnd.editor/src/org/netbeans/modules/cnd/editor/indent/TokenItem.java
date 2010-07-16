@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.cnd.editor.indent;
 
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
@@ -63,6 +67,10 @@ public final class TokenItem {
     public TokenSequence<CppTokenId> getTokenSequence() {
         return tokenSeq;
     }
+
+    public boolean isSkipPP(){
+        return skipPP;
+    }
     
     private void go() {
         tokenSeq.moveIndex(index);
@@ -71,6 +79,49 @@ public final class TokenItem {
 
     public CppTokenId getTokenID() {
         return tokenId;
+    }
+
+    public CppTokenId getTokenPPID() {
+        TokenSequence<CppTokenId> prep = tokenSeq.embedded(CppTokenId.languagePreproc());
+        if (prep == null){
+            return CppTokenId.PREPROCESSOR_START;
+        }
+        prep.moveStart();
+        while (prep.moveNext()) {
+            if (!(prep.token().id() == CppTokenId.WHITESPACE ||
+                    prep.token().id() == CppTokenId.PREPROCESSOR_START)) {
+                break;
+            }
+        }
+        Token<CppTokenId> directive = null;
+        if (prep.token() != null) {
+            directive = prep.token();
+        }
+        if (directive != null) {
+             switch (directive.id()) {
+                case PREPROCESSOR_DIRECTIVE:
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ELIF:
+                case PREPROCESSOR_ENDIF:
+                case PREPROCESSOR_DEFINE:
+                case PREPROCESSOR_UNDEF:
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_LINE:
+                case PREPROCESSOR_IDENT:
+                case PREPROCESSOR_PRAGMA:
+                case PREPROCESSOR_WARNING:
+                case PREPROCESSOR_ERROR:
+                case PREPROCESSOR_DEFINED:
+                    return directive.id();
+                default:
+                     break;
+            }
+        }
+        return CppTokenId.PREPROCESSOR_START;
     }
 
     public int index() {

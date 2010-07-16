@@ -2,7 +2,10 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
   specific language governing permissions and limitations under the
   License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
   particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that
+  by Oracle in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
   License Header, with the fields enclosed by brackets [] replaced by
   your own identifying information:
@@ -41,17 +44,9 @@
 -->
 <project name="test" default="test" basedir=".">
     <import file="build.pro"/>
-    
-    <!-- test -->
-    <target name="test" depends="unit-test,sample-test,project-test"/>
-    
-    <!-- unit test -->
-    <target name="unit-test">
-        <!-- ant target="test" dir="${home}/print"/-->
-        <ant target="test" dir="${home}/xml.search"/>
-        <ant target="test" dir="${home}/bpel.model"/>
-    </target>
 
+    <target name="all-test" depends="sample-test,project-test"/>
+    
     <!-- sample test -->
     <target name="sample-test" depends="test-s1,test-s2,test-s3"/>
 
@@ -59,11 +54,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- BPEL sample 1 -->
             <buildpath location="${bpel.samples}/Asynchronous/Asynchronous/build.xml"/>
@@ -83,11 +78,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- BPEL sample 2 -->
             <buildpath location="${bpel.samples}/BluePrint3/BluePrint3/build.xml"/>
@@ -103,11 +98,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- XSLT sample -->
             <buildpath location="${xslt.samples}/Welcome/Welcome/build.xml"/>
@@ -119,7 +114,8 @@
     <target name="project-test" depends="project-test-00,project-test-10,project-test-20"/>
     <target name="project-test-00" depends="test-01,test-02,test-03,test-04,test-05,test-06,test-07,test-08,test-09,test-10"/>
     <target name="project-test-10" depends="test-11,test-12,test-13,test-14,test-15,test-16,test-17,test-18,test-19,test-20"/>
-    <target name="project-test-20" depends="test-21,test-22,test-23,test-24,test-25,test-26,test-27"/>
+    <target name="project-test-20" depends="test-21,test-22,test-23,test-24,test-25,test-26,test-27,test-28,test-29,test-30"/>
+    <target name="project-test-30" depends="test-31,test-32"/>
 
     <target name="do-jbi-test">
         <ant antfile="${jbi}/${dir}/build.xml" target="clean" inheritAll="false">
@@ -137,22 +133,25 @@
         <antcall target="do-jbi-test"><param name="dir" value="assign/AssignBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/AssignIgnoreMissingFromData"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/AssignLiteralBpel"/></antcall>
-        <antcall target="do-jbi-test"><param name="dir" value="assign/AssignNamespaces"/></antcall>
     </target>
 
     <target name="test-02">
-        <!-- assign 2 -->
+        <antcall target="do-jbi-test"><param name="dir" value="assign/AssignNamespaces"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/AssignSelectionFailure"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/AtomicAssign"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/AttrQTest"/></antcall>
-        <antcall target="do-jbi-test"><param name="dir" value="assign/AttrTest1"/></antcall>
-        <antcall target="do-jbi-test"><param name="dir" value="assign/CopyByValue/CopyByValueBpel"/></antcall>
-        <antcall target="do-jbi-test"><param name="dir" value="assign/DataTypes"/></antcall>
     </target>
 
     <target name="test-03">
-        <!-- assign 3 -->
+        <!-- assign 2 -->
+        <antcall target="do-jbi-test"><param name="dir" value="assign/AttrTest1"/></antcall>
+        <antcall target="do-jbi-test"><param name="dir" value="assign/CopyByValue/CopyByValueBpel"/></antcall>
+        <antcall target="do-jbi-test"><param name="dir" value="assign/DataTypes"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
+    </target>
+
+    <target name="test-04">
+        <!-- assign 3 -->
         <antcall target="do-jbi-test"><param name="dir" value="assign/pattern-demo-content-based-router"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/predicates"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/scriptExampleProcessRepeatingNodes"/></antcall>
@@ -160,7 +159,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="assign/TypeHierarchy"/></antcall>
     </target>
 
-    <target name="test-04">
+    <target name="test-05">
         <!-- assign 4 -->
         <antcall target="do-jbi-test"><param name="dir" value="assign/VariableAssignments"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/VariablePropertyTest/BooleanCopy"/></antcall>
@@ -168,7 +167,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="assign/VariablePropertyTest/FromToPropertySpec"/></antcall>
     </target>
     
-    <target name="test-05">
+    <target name="test-06">
         <!-- assign 5 -->
         <antcall target="do-jbi-test"><param name="dir" value="assign/VariablePropertyTest/QualifiedQuery"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="assign/VariablePropertyTest/VariableProperty"/></antcall>
@@ -176,21 +175,29 @@
         <antcall target="do-jbi-test"><param name="dir" value="assign/virtualassignBpel"/></antcall>
     </target>
 
-    <target name="test-06">
+    <target name="test-07">
+        <!-- AtomicTxStart -->
+        <antcall target="do-jbi-test"><param name="dir" value="AtomicTxStart/InOnlyTxStart"/></antcall>
+        <antcall target="do-jbi-test"><param name="dir" value="AtomicTxStart/InOutTxStart"/></antcall>
+    </target>
+
+    <target name="test-08">
         <!-- benchmark 1 -->
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/BenchmarkBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/dynamicAddressingDPL"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/Ericsson/AlarmIRPBpel2"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/purchaseOrderCoordinator"/></antcall>
+    </target>
+        
+    <target name="test-09">
+        <!-- benchmark 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/PurchaseOrderService"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/Server/Server"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/Transformation"/></antcall>
-    </target>
-        
-    <target name="test-07">
-        <!-- benchmark 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="benchmark/TravelReservationService/TravelReservationService"/></antcall>
+    </target>
 
+    <target name="test-10">
         <!-- blueprints -->
         <antcall target="do-jbi-test"><param name="dir" value="blueprints/bp1/BluePrint1"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="blueprints/bp2/BluePrint2"/></antcall>
@@ -199,7 +206,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="blueprints/bp5/BluePrint5"/></antcall>
     </target>
 
-    <target name="test-08">
+    <target name="test-11">
         <!-- BpelToBpel -->
         <antcall target="do-jbi-test"><param name="dir" value="BpelToBpel/ClientEmployeeInfo"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="BpelToBpel/EmployeeInfo"/></antcall>
@@ -210,7 +217,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="CAPSIntegration/BPtoJCDEAP/prjPfizerSupplyChainEAP_BPEL_JMS_2"/></antcall>
     </target>
 
-    <target name="test-09">
+    <target name="test-12">
         <!-- clusterSupport -->
         <antcall target="do-jbi-test"><param name="dir" value="clusterSupport/ClusterBPEL"/></antcall>
 
@@ -219,7 +226,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="compensation/NestedScope"/></antcall>
     </target>
         
-    <target name="test-10">
+    <target name="test-13">
         <!-- correlation 1 -->
         <antcall target="do-jbi-test"><param name="dir" value="correlation/correlationBPEL"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
@@ -227,7 +234,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="correlation/CorrelationTwoPropBPEL"/></antcall>
     </target>
 
-    <target name="test-11">
+    <target name="test-14">
         <!-- correlation 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="correlation/FlowAsStartActivity"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="correlation/MatchingInstanceTwoCorrBPEL"/></antcall>
@@ -235,7 +242,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="correlation/ThreeCorrSetsBpel"/></antcall>
     </target>
 
-    <target name="test-12">
+    <target name="test-15">
         <!-- dynamicpartnerlink 1 -->
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/DPL_OneWayCallbackBpelServiceBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/DPL_SendEPRToPartnerBpel"/></antcall>
@@ -243,7 +250,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
     </target>
 
-    <target name="test-13">
+    <target name="test-16">
         <!-- dynamicpartnerlink 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/DPL_OneWayCallbackBpelServiceBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/DPL_SendEPRToPartnerBpel"/></antcall>
@@ -251,7 +258,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
     </target>
 
-    <target name="test-14">
+    <target name="test-17">
         <!-- empty -->
         <antcall target="do-jbi-test"><param name="dir" value="empty/EmptyBpel"/></antcall>
 
@@ -263,7 +270,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="exit/ExitBpel"/></antcall>
     </target>
 
-    <target name="test-15">
+    <target name="test-18">
         <!-- faulthandling -->
         <antcall target="do-jbi-test"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="faulthandling/faultMsg/faultMsg"/></antcall>
@@ -272,18 +279,20 @@
 
         <!-- flow -->
         <antcall target="do-jbi-test"><param name="dir" value="flow/FlowBpel"/></antcall>
-
-        <!-- foreach-bpel20 -->
-        <antcall target="do-jbi-test"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
     </target>
 
-    <target name="test-16">
+    <target name="test-19">
+        <!-- foreach-bpel20 -->
+        <antcall target="do-jbi-test"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
+
         <!-- i18n -->
         <antcall target="do-jbi-test"><param name="dir" value="i18n/assign/AssignBpel"/></antcall>
 
         <!-- if -->
         <antcall target="do-jbi-test"><param name="dir" value="if/ifBpel"/></antcall>
+    </target>
 
+    <target name="test-20">
         <!-- implementMultiOperations -->
         <antcall target="do-jbi-test"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
@@ -293,7 +302,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="JavaEEIntegration/DirectElem/MsgDirectElem"/></antcall>
     </target>
 
-    <target name="test-17">
+    <target name="test-21">
         <!-- JavaEEIntegration 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
@@ -302,7 +311,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
     </target>
 
-    <target name="test-18">
+    <target name="test-22">
         <!-- MessageExchange -->
         <antcall target="do-jbi-test"><param name="dir" value="MessageExchange/MessageExchangeBpel"/></antcall>
 
@@ -316,27 +325,34 @@
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/FromToPropertySpec"/></antcall>
     </target>
 
-    <target name="test-19">
+    <target name="test-23">
         <!-- nmproperty 2 -->
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/HttpOutBoundHeaderTest_bpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/Server/Server"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/SOAPHeader"/></antcall>
+    </target>
+
+    <target name="test-24">
+        <!-- nmproperty 3 -->
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/TestBasicAuth/TestBasicAuth"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="nmproperty/TestBasicAuth/TestBasicAuthClient"/></antcall>
     </target>
 
-    <target name="test-20">
+    <target name="test-25">
         <!-- PartnerLinks -->
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/DuplicateProject1"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/DuplicateProject2"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/OneBP"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/PLTLocalNamespace"/></antcall>
+    </target>
+
+    <target name="test-26">
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/SinglePartnerLink"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/TwoBPDuplicateImpl"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
     </target>
         
-    <target name="test-21">
+    <target name="test-27">
         <!-- pick -->
         <antcall target="do-jbi-test"><param name="dir" value="pick/PickBpel"/></antcall>
 
@@ -344,18 +360,20 @@
         <antcall target="do-jbi-test"><param name="dir" value="POJOCalls/JavaCallWithNoParam"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="POJOCalls/memberJavaMethod/memberJavaMethod"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="POJOCalls/testXPath"/></antcall>
+    </target>
 
+    <target name="test-28">
         <!-- referenced -->
         <antcall target="do-jbi-test"><param name="dir" value="referenced/Master"/></antcall>
 
         <!-- repeatuntil -->
         <antcall target="do-jbi-test"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
-    </target>
 
-    <target name="test-22">
         <!-- rethrow -->
         <antcall target="do-jbi-test"><param name="dir" value="rethrow/Rethrow"/></antcall>
+    </target>
 
+    <target name="test-29">
         <!-- samples -->
         <antcall target="do-jbi-test"><param name="dir" value="samples/AsynchronousSample"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="samples/EndToEndScenario"/></antcall>
@@ -363,7 +381,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="samples/SynchronousSample"/></antcall>
     </target>
 
-    <target name="test-23">
+    <target name="test-30">
         <!-- scalability -->
         <antcall target="do-jbi-test"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="scalability/Test2/ScalabilityTest2BP"/></antcall>
@@ -373,7 +391,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall>
     </target>
 
-    <target name="test-24">
+    <target name="test-31">
         <!-- SchemaElemDecl -->
         <antcall target="do-jbi-test"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="SchemaElemDecl/BPwithMsgElement"/></antcall>
@@ -385,7 +403,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="ScopeTermination/ScopeTerminationBpel"/></antcall>
     </target>
 
-    <target name="test-25">
+    <target name="test-32">
         <!-- systemicqualities -->
         <antcall target="do-jbi-test"><param name="dir" value="systemicqualities/Redelivery/RedeliverWithinRetries"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="systemicqualities/Redelivery/RedeliverWithSuspend"/></antcall>
@@ -397,7 +415,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
     </target>
 
-    <target name="test-26">
+    <target name="test-33">
         <!-- TestsForBugs -->
         <antcall target="do-jbi-test"><param name="dir" value="TestsForBugs/Bug6431708/testBPEL"/></antcall>
 
@@ -411,7 +429,7 @@
         <antcall target="do-jbi-test"><param name="dir" value="while/WhileBpel"/></antcall>
     </target>
 
-    <target name="test-27">
+    <target name="test-34">
         <!-- xpathfunctions -->
         <antcall target="do-jbi-test"><param name="dir" value="xpathfunctions/DateTimeComparison/DateTimeComparisonBPEL"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="xpathfunctions/XPathFunctionsBpel"/></antcall>
@@ -419,7 +437,9 @@
 
         <!-- xsddatatypes -->
         <antcall target="do-jbi-test"><param name="dir" value="xsddatatypes/XSDDataTypesBpel"/></antcall>
+    </target>
 
+    <target name="test-35">
         <!-- xslt -->
         <antcall target="do-jbi-test"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
         <antcall target="do-jbi-test"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>

@@ -159,7 +159,7 @@ public class ETLDataObject extends MultiDataObject {
     protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
         ETLDataObject dataObject = (ETLDataObject) super.handleCreateFromTemplate(df, name);
         String doName = dataObject.getName();
-        //make sure the the name is a valid NMTOKEN.
+        //make sure the name is a valid NMTOKEN.
         if (!XMLChar.isValidNmtoken(doName)) {
             return dataObject;
         }

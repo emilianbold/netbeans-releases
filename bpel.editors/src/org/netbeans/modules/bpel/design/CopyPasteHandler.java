@@ -85,11 +85,13 @@ public class CopyPasteHandler implements MouseListener {
 
         tabNextPlaceholder(true);
         fireUpdateActionEnabled();
+        designView.getDecorationManager().decorationChanged();
     }
 
     public void exitPasteMode() {
         copiedPattern = null;
         currentPlaceholder = null;
+        
         
         for (PlaceHolderManager m : managers) {
             m.clear();
@@ -97,6 +99,7 @@ public class CopyPasteHandler implements MouseListener {
         }
 
         fireUpdateActionEnabled();
+        designView.getDecorationManager().decorationChanged();
     }
 
     public boolean isActive() {
@@ -247,7 +250,7 @@ public class CopyPasteHandler implements MouseListener {
                     KeyStroke.getKeyStroke(
                         copy ? KeyEvent.VK_C : KeyEvent.VK_X, 
                         KeyEvent.CTRL_DOWN_MASK));
-            putValue(AbstractAction.NAME,
+            putValue(NAME,
                         NbBundle.getMessage(CopyPasteHandler.class, 
                         copy ? "ACT_ClipboardCopy" : "ACT_ClipboardCut")
                     );

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,6 @@ package org.netbeans.modules.javahelp;
 
 import java.io.IOException;
 import java.net.URL;
-import javax.swing.BoundedRangeModel;
-import javax.swing.DefaultBoundedRangeModel;
-import javax.swing.SwingUtilities;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -73,8 +73,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
      * not; by default, true
      */    
     public static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
-
-    public static final BoundedRangeModel parseModel = new DefaultBoundedRangeModel(0, 0, 0, 0);
     
     /** the XML file being parsed
      */
@@ -93,12 +91,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
         // XXX this is called way too often, why?
         this.xml = xml;
         Installer.log.fine("processing help set ref: " + xml.getPrimaryFile());
-        BPMChanger.invoke(BPMChanger.INC_MAXIMUM);
-    }
-    
-    /** Decrement count of available help sets.  */
-    protected void finalize() {
-        BPMChanger.invoke(BPMChanger.DEC_VALUE_AND_MAXIMUM);
     }
     
     /** The class being produced.
@@ -148,7 +140,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 Object ignore = NbDocsStreamHandler.class; // DO NOT DELETE THIS LINE
                 hs = new HelpSet(((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)), new URL(url));
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
-                BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
                 throw (IOException) new IOException(saxe.toString()).initCause(saxe);
             } catch (HelpSetException hse) {
@@ -156,35 +147,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
             }
         }
         return hs;
-    }
-    
-    private static final class BPMChanger implements Runnable {
-        public static final int INC_MAXIMUM = 0;
-        public static final int DEC_VALUE_AND_MAXIMUM = 1;
-        public static final int INC_VALUE = 2;
-        public static void invoke(int action) {
-            SwingUtilities.invokeLater(new BPMChanger(action));
-        }
-        private final int action;
-        private BPMChanger(int action) {
-            this.action = action;
-        }
-        public void run() {
-            switch (action) {
-            case INC_MAXIMUM:
-                parseModel.setMaximum(parseModel.getMaximum() + 1);
-                break;
-            case DEC_VALUE_AND_MAXIMUM:
-                parseModel.setValue(parseModel.getValue() - 1);
-                parseModel.setMaximum(parseModel.getMaximum() - 1);
-                break;
-            case INC_VALUE:
-                parseModel.setValue(parseModel.getValue() + 1);
-                break;
-            default:
-                throw new IllegalStateException();
-            }
-        }
     }
     
 }

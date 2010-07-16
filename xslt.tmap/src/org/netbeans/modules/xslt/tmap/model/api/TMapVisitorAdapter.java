@@ -24,36 +24,34 @@ package org.netbeans.modules.xslt.tmap.model.api;
  * @version 1.0
  */
 public class TMapVisitorAdapter implements TMapVisitor {
-
-    public void visit(TransformMap transformMap) {
-        visit((TMapComponent)transformMap);
+   public void visit(TransformMap transformMap) {
+        visit((TMapComponent) transformMap);
     }
 
     public void visit(Import imprt) {
-        visit((TMapComponent)imprt);
+        visit((TMapComponent) imprt);
     }
 
     public void visit(Service service) {
-        visit((TMapComponent)service);
+        visit((TMapComponent) service);
     }
 
     public void visit(Operation operation) {
-        visit((TMapComponent)operation);
+        visit((TMapComponent) operation);
     }
 
     public void visit(Invoke invoke) {
-        visit((TMapComponent)invoke);
+        visit((TMapComponent) invoke);
     }
 
     public void visit(Transform transform) {
-        visit((TMapComponent)transform);
+        visit((TMapComponent) transform);
     }
 
     public void visit(Param param) {
-        visit((TMapComponent)param);
+        visit((TMapComponent) param);
     }
 
     private void visit(TMapComponent component) {
     }
-
 }

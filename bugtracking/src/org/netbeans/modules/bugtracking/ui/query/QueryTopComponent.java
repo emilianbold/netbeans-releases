@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,20 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import java.util.Collection;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -65,16 +64,21 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JSeparator;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
+import javax.swing.UIManager;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -83,8 +87,9 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.PlaceholderPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
-import org.netbeans.modules.kenai.api.Kenai;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -92,12 +97,16 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import static javax.swing.SwingConstants.NORTH;
+import static javax.swing.SwingConstants.SOUTH;
+import static javax.swing.SwingConstants.WEST;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**
  * Top component which displays something.
  */
 public final class QueryTopComponent extends TopComponent
-                              implements PropertyChangeListener, QueryNotifyListener, FocusListener {
+                                     implements PropertyChangeListener, FocusListener, QueryNotifyListener {
 
     private static QueryTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -105,6 +114,15 @@ public final class QueryTopComponent extends TopComponent
 
     /** Set of opened {@code QueryTopComponent}s. */
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
+    private final FindInQuerySupport findInQuerySupport;
+
+    private final RepoPanel repoPanel;
+    private final JPanel jPanel2;
+    private final LinkButton newButton;
+    private final PlaceholderPanel panel;
+    private final JComboBox repositoryComboBox;
+    private final JScrollPane scrollPane;
+
     private Query[] savedQueries = null;
     
     private static final String PREFERRED_ID = "QueryTopComponent"; // NOI18N
@@ -117,22 +135,104 @@ public final class QueryTopComponent extends TopComponent
     private Node[] context;
 
     QueryTopComponent() {
-        RepositoriesSupport.getInstance().addPropertyChangeListener(this);
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (BugtrackingConnector c : connectors) {
+            c.addPropertyChangeListener(this);
+        }
+        repositoryComboBox = new javax.swing.JComboBox();
+        newButton = new LinkButton();
 
-        initComponents();
-        Font f = new JLabel().getFont();
-        int s = f.getSize();
-        findIssuesLabel.setFont(repoLabel.getFont().deriveFont(s * 1.7f));
-        int unitIncrement = (int)(s*1.5);
+        /* layout */
+        JLabel title = new JLabel();
+        Font titleFont = title.getFont();
+        title.setFont(titleFont.deriveFont(1.7f * titleFont.getSize()));
+        title.setBorder(BorderFactory.createEmptyBorder(
+                0, getLeftContainerGap(title), 0, 0));
+
+        repoPanel = new RepoPanel(repositoryComboBox, newButton);
+        panel = new PlaceholderPanel();
+        jPanel2 = new ViewportWidthAwarePanel(null) {
+            @Override
+            protected void notifyChildrenOfVisibleWidth() {
+                repoPanel.setAvailableWidth(getAvailableWidth());
+            }
+        };
+        jPanel2.setLayout(new BoxLayout(jPanel2, BoxLayout.Y_AXIS));
+        jPanel2.add(createVerticalStrut(null, title));
+        jPanel2.add(title);
+        jPanel2.add(createVerticalStrut(title, repoPanel));
+        jPanel2.add(repoPanel);
+        jPanel2.add(createVerticalStrut(repoPanel, panel));
+        jPanel2.add(panel);
+
+        title    .setAlignmentX(0.0f);
+        repoPanel.setAlignmentX(0.0f);
+        panel    .setAlignmentX(0.0f);
+
+        scrollPane = new QueryTopComponentScrollPane(jPanel2);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(scrollPane);
+
+         /* find bar */
+        findInQuerySupport = FindInQuerySupport.create(this);
+        FindInQueryBar findBar = findInQuerySupport.getFindBar();
+        findBar.setVisible(false);       
+        add(findBar);
+
+        /* texts */
+        Mnemonics.setLocalizedText(
+                title,
+                getBundleText("QueryTopComponent.findIssuesLabel.text"));//NOI18N
+        Mnemonics.setLocalizedText(newButton,
+                getBundleText("QueryTopComponent.newButton.text_1"));   //NOI18N
+
+        /* accessibility texts */
+        repositoryComboBox.getAccessibleContext().setAccessibleDescription(
+                getBundleText("QueryTopComponent.repositoryComboBox.AccessibleContext.accessibleDescription")); //NOI18N
+        newButton.getAccessibleContext().setAccessibleDescription(
+                getBundleText("QueryTopComponent.newButton.AccessibleContext.accessibleDescription")); //NOI18N
+
+        /* background colors */
+        Color editorBgColor = UIManager.getDefaults()
+                              .getColor("EditorPane.background");       //NOI18N
+        repoPanel.setBackground(editorBgColor);
+        panel    .setBackground(editorBgColor);
+        jPanel2  .setBackground(editorBgColor);
+
+        /* focus */
+        repoPanel.setNextFocusableComponent(newButton);
+
+        /* scrolling */
+        int unitIncrement = (int) (1.5f * titleFont.getSize() + 0.5f);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+    }
+
+    private static int getLeftContainerGap(JComponent comp) {
+        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        return layoutStyle.getContainerGap(comp, WEST, null);
+    }
+
+    private static Component createVerticalStrut(JComponent above,
+                                                 JComponent below) {
+        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        int height;
+        if (above == null) {
+            height = layoutStyle.getContainerGap(below, NORTH, null);
+        } else if (below == null) {
+            height = layoutStyle.getContainerGap(above, SOUTH, null);
+        } else {
+            height = layoutStyle.getPreferredGap(above, below,
+                                                 RELATED, SOUTH, null);
+        }
+        return Box.createVerticalStrut(height);
     }
 
     public static Set<QueryTopComponent> getOpenQueries() {
         return openQueries;
     }
     
-    private Query getQuery() {
+    public Query getQuery() {
         return query;
     }
 
@@ -148,18 +248,27 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            setSaved();
+            if(query.isSaved()) {
+                setSaved();
+            } else {
+                if(!suggestedSelectionOnly) {
+                    rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+                }
+            }
             BugtrackingController c = query.getController();
-            panel.add(c.getComponent());
+            panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             this.query.addNotifyListener(this);
+            findInQuerySupport.setQuery(query);
         } else {
             newButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     onNewClick();
                 }
             });
             repositoryComboBox.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
                         Object item = e.getItem();
@@ -181,170 +290,14 @@ public final class QueryTopComponent extends TopComponent
             }
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
-            queriesPanel.setVisible(false);
         }
         BugtrackingUtil.logBugtrackingUsage(query != null ? query.getRepository() : defaultRepository, "ISSUE_QUERY"); // NOI18N
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private static String getBundleText(String key) {
+        return NbBundle.getMessage(QueryTopComponent.class, key);
+    }
 
-        scrollPane = new javax.swing.JScrollPane();
-        jPanel2 = new javax.swing.JPanel();
-        panel = new javax.swing.JPanel();
-        repoPanel = new javax.swing.JPanel();
-        repositoryComboBox = new javax.swing.JComboBox();
-        queriesPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        findIssuesLabel = new javax.swing.JLabel();
-        repoLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                formComponentResized(evt);
-            }
-        });
-
-        scrollPane.setBorder(null);
-
-        jPanel2.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
-
-        panel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
-        panel.setOpaque(false);
-        panel.setLayout(new java.awt.BorderLayout());
-
-        repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
-        repoPanel.setNextFocusableComponent(newButton);
-
-        queriesPanel.setBackground(new java.awt.Color(224, 224, 224));
-        queriesPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                queriesPanelComponentResized(evt);
-            }
-        });
-        queriesPanel.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.jLabel1.text_1")); // NOI18N
-        queriesPanel.add(jLabel1, java.awt.BorderLayout.LINE_START);
-
-        org.openide.awt.Mnemonics.setLocalizedText(findIssuesLabel, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.findIssuesLabel.text")); // NOI18N
-
-        repoLabel.setLabelFor(repositoryComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(repoLabel, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.repoLabel.text")); // NOI18N
-        repoLabel.setFocusCycleRoot(true);
-
-        jPanel1.setOpaque(false);
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 64, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 8, Short.MAX_VALUE)
-        );
-
-        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.newButton.text_1")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout repoPanelLayout = new org.jdesktop.layout.GroupLayout(repoPanel);
-        repoPanel.setLayout(repoPanelLayout);
-        repoPanelLayout.setHorizontalGroup(
-            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repoPanelLayout.createSequentialGroup()
-                .add(repoLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(queriesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(findIssuesLabel)
-        );
-        repoPanelLayout.setVerticalGroup(
-            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repoPanelLayout.createSequentialGroup()
-                .add(13, 13, 13)
-                .add(findIssuesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(repoLabel)
-                    .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(repoPanelLayout.createSequentialGroup()
-                .add(42, 42, 42)
-                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-        );
-
-        repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        newButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.newButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(14, 14, 14)
-                .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        scrollPane.setViewportView(jPanel2);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scrollPane)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scrollPane)
-        );
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void queriesPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_queriesPanelComponentResized
-
-}//GEN-LAST:event_queriesPanelComponentResized
-
-    private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        updateSavedQueriesPanel();
-    }//GEN-LAST:event_formComponentResized
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel findIssuesLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
-    private javax.swing.JPanel panel;
-    private javax.swing.JPanel queriesPanel;
-    private javax.swing.JLabel repoLabel;
-    private javax.swing.JPanel repoPanel;
-    private javax.swing.JComboBox repositoryComboBox;
-    private javax.swing.JScrollPane scrollPane;
-    // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -399,7 +352,6 @@ public final class QueryTopComponent extends TopComponent
     @Override
     public void componentOpened() {
         openQueries.add(this);
-        Kenai.getDefault().addPropertyChangeListener(this);
         if(query != null) {
             query.getController().opened();
         }
@@ -419,7 +371,6 @@ public final class QueryTopComponent extends TopComponent
             query.removeNotifyListener(this);
             query.getController().closed();
         }
-        Kenai.getDefault().removePropertyChangeListener(this);
         if(prepareTask != null) {
             prepareTask.cancel();
         }
@@ -437,12 +388,14 @@ public final class QueryTopComponent extends TopComponent
         return query != null && query.getDisplayName() != null ? query.getDisplayName() : PREFERRED_ID;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
             setSaved();
         } else if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
             if(query != null && evt.getSource() == query) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         close();
                     }
@@ -450,12 +403,33 @@ public final class QueryTopComponent extends TopComponent
             }
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
-        } else if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+            if(query != null) {
+                Object cNew = evt.getNewValue();
+                Object cOld = evt.getOldValue();
+                if(cNew != null && cOld != null &&
+                   cNew instanceof Collection &&
+                   cOld instanceof Collection)
+                {
+                    Repository thisRepo = query.getRepository();
+                    if(contains((Collection) cOld, thisRepo) && !contains((Collection) cNew, thisRepo)) {
+                        // removed
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                close();
+                            }
+                        });
+                        return;
+                    }
+                }
+            }
             if(!repositoryComboBox.isEnabled()) {
-                // well, looks like there shuold be only one repository available
+                // well, looks like there should be only one repository available
                 return;
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(rs != null) {
                         rs.refreshRepositoryModel();
@@ -465,6 +439,17 @@ public final class QueryTopComponent extends TopComponent
         }
     }
 
+    private boolean contains(Collection c, Repository r) {
+        for (Object o : c) {
+            assert o instanceof Repository;
+            if(((Repository)o).getID().equals(r.getID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void started() {
         /* the query was started */
         assert query != null;
@@ -479,20 +464,24 @@ public final class QueryTopComponent extends TopComponent
                 query.getRepository());
     }
 
+    @Override
     public void notifyData(Issue issue) {
         /* some (partial) results for the query are available */
     }
 
+    @Override
     public void finished() {
         /* the query was finished */
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         Component c = e.getComponent();
         if(c instanceof JComponent) {
             Point p = SwingUtilities.convertPoint(c.getParent(), c.getLocation(), repoPanel);
             final Rectangle r = new Rectangle(p, c.getSize());
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     repoPanel.scrollRectToVisible(r);
                 }
@@ -500,6 +489,7 @@ public final class QueryTopComponent extends TopComponent
         }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
@@ -530,6 +520,7 @@ public final class QueryTopComponent extends TopComponent
             prepareTask.cancel();
         }
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(prepareTask != null) {
                     prepareTask.cancel();
@@ -539,6 +530,7 @@ public final class QueryTopComponent extends TopComponent
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryTopComponent.class, "CTL_PreparingQuery"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     handle.start();
@@ -548,7 +540,6 @@ public final class QueryTopComponent extends TopComponent
                     }
                     repo.addPropertyChangeListener(QueryTopComponent.this);
 
-                    final BugtrackingController removeController = query != null ? query.getController() : null;
                     if(query != null) {
                         query.removePropertyChangeListener(QueryTopComponent.this);
                         query.removeNotifyListener(QueryTopComponent.this);
@@ -558,7 +549,9 @@ public final class QueryTopComponent extends TopComponent
                     if (query == null) {
                         return;
                     }
-                    
+
+                    findInQuerySupport.setQuery(query);
+
                     QueryAccessor.getInstance().setSelection(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
                     query.addNotifyListener(QueryTopComponent.this);
@@ -567,13 +560,9 @@ public final class QueryTopComponent extends TopComponent
 
                     final BugtrackingController addController = query.getController();
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
-                            if(removeController != null) {
-                                panel.remove(removeController.getComponent());
-                            }
-                            panel.add(addController.getComponent());
-                            panel.revalidate();
-                            panel.repaint();
+                            panel.setComponent(addController.getComponent());
 
                             focusFirstEnabledComponent();
 
@@ -608,6 +597,7 @@ public final class QueryTopComponent extends TopComponent
 
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
                     setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()})); // NOI18N
@@ -621,7 +611,10 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        repoPanel.setVisible(false);
+        jPanel2.removeAll();
+        jPanel2.add(panel);
+        jPanel2.revalidate();
+        jPanel2.repaint();
         setNameAndTooltip();
     }
 
@@ -631,6 +624,7 @@ public final class QueryTopComponent extends TopComponent
             return;
         }
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 updateSavedQueriesIntern(repo);
             }
@@ -642,134 +636,25 @@ public final class QueryTopComponent extends TopComponent
             return;
         }
         BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
-        synchronized (LOCK) {
-            if(savedQueries != null) {
-                for (Query q : savedQueries) {
-                    q.removePropertyChangeListener(this);
-                }
-            }
-        }
         Query[] queries = repo.getQueries();
         final Query[] finQueries;
         synchronized (LOCK) {
+            Arrays.sort(queries);
             savedQueries = queries;
-            Arrays.sort(savedQueries);
             finQueries = savedQueries;
         }
 
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
+                repoPanel.setQueries(finQueries);
                 if(finQueries == null || finQueries.length == 0) {
-                    queriesPanel.setVisible(false);
                     BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
-                    return;
+                } else {
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
                 }
-                queriesPanel.setVisible(true);
-                Component[] componenets = queriesPanel.getComponents();
-                for (Component c : componenets) {
-                    if(c instanceof QueryButton || c instanceof JSeparator) {
-                        queriesPanel.remove(c);
-                    }
-                }
-                queriesPanel.setLayout(new GroupieFlowLayout(GroupieFlowLayout.LEFT));
-                QueryButton ql = null;
-                for (int i = 0; i < finQueries.length; i++) {
-                    Query q = finQueries[i];
-                    q.addPropertyChangeListener(QueryTopComponent.this);
-                    ql = new QueryButton(repo, q);
-                    ql.addFocusListener(QueryTopComponent.this);
-                    ql.setText(q.getDisplayName());
-                    queriesPanel.add(ql);
-                    if(i < finQueries.length - 1) {
-                        JSeparator s = new JSeparator();
-                        s.setOrientation(javax.swing.SwingConstants.VERTICAL);
-                        s.setPreferredSize(new Dimension(2, ql.getPreferredSize().height));
-                        s.setBorder(new LineBorder(Color.BLACK, 1));
-                        queriesPanel.add(s);
-                    }
-                }
-                updateSavedQueriesPanel();
-                BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
             }
         });
-    }
-
-    private void updateSavedQueriesPanel() {
-        LayoutManager lm = queriesPanel.getLayout();
-        if (lm instanceof GroupieFlowLayout) {
-            GroupieFlowLayout dl = (GroupieFlowLayout) lm;
-            int h = dl.getHeight(queriesPanel);
-            if(h == 0) return;
-            queriesPanel.revalidate();
-            Dimension d = queriesPanel.getSize();
-            d.height = h;
-            queriesPanel.setSize(d);
-            d = queriesPanel.getPreferredSize();
-            d.height = h;
-            queriesPanel.setPreferredSize(d);
-
-            queriesPanel.revalidate();
-            queriesPanel.repaint();
-        }
-    }
-
-    public class GroupieFlowLayout extends FlowLayout {
-
-        public GroupieFlowLayout(int a) {
-            super(a);
-        }
-
-        @Override
-        public Dimension minimumLayoutSize(Container target) {
-            Dimension d = super.minimumLayoutSize(target);
-            d.width = 0;
-            return d;
-        }
-
-        public int getHeight(Container target) {
-            if(target.getWidth() == 0) {
-                return 0;
-            }
-            Insets insets = target.getInsets();
-            int maxwidth = target.getWidth() - (insets.left + insets.right + getHgap()*2);
-            int nmembers = target.getComponentCount();
-            int x = 0, y = insets.top + getVgap();
-            int rowh = 0;
-
-            for (int i = 0 ; i < nmembers ; i++) {
-                Component m = target.getComponent(i);
-                if (m.isVisible()) {
-                    Dimension d = m.getPreferredSize();
-                    m.setSize(d.width, d.height);
-
-                    if ((x == 0) || ((x + d.width) <= maxwidth)) {
-                        if (x > 0) {
-                            x += getHgap();
-                        }
-                        x += d.width;
-                        rowh = Math.max(rowh, d.height);
-                    } else {
-                        x = d.width;
-                        y += getVgap() + rowh;
-                        rowh = d.height;
-                    }
-                }
-            }
-            return y + rowh + getVgap();
-        }
-    }
-
-    private class QueryButton extends LinkButton {
-        public QueryButton(final Repository repo, final Query query) {
-            super();
-            setText(query.getDisplayName());
-            getAccessibleContext().setAccessibleDescription(query.getTooltip());
-            this.setAction(new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    QueryAction.openQuery(query, repo);
-                }
-            });
-        }
     }
 
     @Override

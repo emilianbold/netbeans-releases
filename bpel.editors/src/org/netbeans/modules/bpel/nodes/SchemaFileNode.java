@@ -18,13 +18,10 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
-import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.openide.filesystems.FileObject;
@@ -52,6 +49,7 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
         return NodeType.SCHEMA_FILE;
     }
     
+    @Override
     protected String getNameImpl() {
         SchemaModel ref = getReference();
         if (ref == null) {
@@ -63,14 +61,9 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
             
             return schema == null ? null : schema.getTargetNamespace();
         }
-        BpelModel bpelModel = getLookup().lookup(BpelModel.class);
-        Project modelProject = Utils.safeGetProject(bpelModel);
+        Project modelProject = Utils.safeGetProject(ref);
         String relativePath = ResolverUtility.safeGetRelativePath(fo, modelProject);
         return relativePath != null ? relativePath : fo.getPath();
     }
     
-    protected String getImplHtmlDisplayName() {
-        return SoaUtil.getGrayString(super.getImplHtmlDisplayName());
-    }
-
 }

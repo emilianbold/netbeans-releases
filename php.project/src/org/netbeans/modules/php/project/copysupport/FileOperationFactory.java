@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,7 +55,9 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -83,36 +88,49 @@ abstract class FileOperationFactory {
         return createInitHandlerInternal(source);
     }
 
-    final Callable<Boolean> createCopyHandler(FileObject source) {
+    final Callable<Boolean> createCopyHandler(FileObject source, FileEvent fileEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createCopyHandlerInternal(source);
+        if (!isValid(fileEvent)) {
+            getLogger().log(Level.FINE, "No CREATE handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createCopyHandlerInternal(source, fileEvent);
     }
 
-    final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
+    final Callable<Boolean> createRenameHandler(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createRenameHandlerInternal(source, oldName);
+        if (!isValid(fileRenameEvent)) {
+            getLogger().log(Level.FINE, "No RENAME handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createRenameHandlerInternal(source, oldName, fileRenameEvent);
     }
 
-    final Callable<Boolean> createDeleteHandler(FileObject source) {
+    final Callable<Boolean> createDeleteHandler(FileObject source, FileEvent fileEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createDeleteHandlerInternal(source);
+        if (!isValid(fileEvent)) {
+            getLogger().log(Level.FINE, "No DELETE handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createDeleteHandlerInternal(source, fileEvent);
     }
 
     abstract Logger getLogger();
     protected abstract boolean isEnabled();
+    protected abstract boolean isValid(FileEvent fileEvent);
     protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
-    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
-    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
-    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent);
+    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent);
+    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent);
 
     final void reset() {
         factoryError = false;
@@ -154,6 +172,7 @@ abstract class FileOperationFactory {
 
     protected void showCustomizer() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.SOURCES);
             }

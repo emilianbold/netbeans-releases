@@ -23,7 +23,7 @@ import java.awt.Color;
 import org.netbeans.modules.bpel.design.ViewProperties;
 
 
-public class TextstyleDescriptor implements Descriptor{
+public class TextstyleDescriptor implements Descriptor {
 
 
     private Color editableTextColor;
@@ -41,7 +41,7 @@ public class TextstyleDescriptor implements Descriptor{
         this.editableTextColor = (editableTextColor == null)
                 ? ViewProperties.EDITABLE_TEXT_COLOR
                 : editableTextColor;
-        
+                
         this.notEditableTextColor = (notEditableTextColor == null) 
                 ? ViewProperties.UNEDITABLE_TEXT_COLOR
                 : notEditableTextColor;

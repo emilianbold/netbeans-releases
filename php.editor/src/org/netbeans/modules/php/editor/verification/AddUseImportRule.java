@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -49,17 +53,18 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.core.UiUtils;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -75,6 +80,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -105,6 +112,12 @@ public class AddUseImportRule extends AbstractRule {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        Properties props = PhpLanguageOptions.getDefault().getProperties(phpParseResult.getSnapshot().getSource().getFileObject());
+
+        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
+            return;
+        }
+
         final BaseDocument doc = context.doc;
         final int caretOffset = context.caretOffset;
         int lineBegin = -1;
@@ -166,8 +179,8 @@ public class AddUseImportRule extends AbstractRule {
                 if (isFunctionName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedFunction> functions = context.getIndex().getFunctions(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedFunction indexedFunction : functions) {
+                        Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(nodeName));
+                        for (FunctionElement indexedFunction : functions) {
                             addImportHints(indexedFunction, nodeName, currenNamespace, node);
                         }
                     }
@@ -175,8 +188,8 @@ public class AddUseImportRule extends AbstractRule {
                 } else if (isClassName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedClass> classes = context.getIndex().getClasses(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedClass indexedClass : classes) {
+                        Set<ClassElement> classes = context.getIndex().getClasses(NameKind.exact(nodeName));
+                        for (ClassElement indexedClass : classes) {
                             addImportHints(indexedClass, nodeName, currenNamespace, node);
                         }
                     }
@@ -184,8 +197,8 @@ public class AddUseImportRule extends AbstractRule {
                 } else {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedConstant cnst : constants) {
+                        Set<ConstantElement> constants = context.getIndex().getConstants(NameKind.exact(nodeName));
+                        for (ConstantElement cnst : constants) {
                             addImportHints(cnst, nodeName, currenNamespace, node);
                         }
                     }
@@ -209,8 +222,8 @@ public class AddUseImportRule extends AbstractRule {
                         node.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
                     final QualifiedName nodeName = QualifiedName.create(stringValue);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedConstant cnst : constants) {
+                        Set<ConstantElement> constants = context.getIndex().getConstants(NameKind.exact(nodeName));
+                        for (ConstantElement cnst : constants) {
                             addImportHints(cnst, nodeName, currenNamespace, node);
                         }
                     }
@@ -219,15 +232,15 @@ public class AddUseImportRule extends AbstractRule {
             super.visit(node);
         }
 
-        private void addImportHints(IndexedFullyQualified idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
-            final QualifiedName indexedName = idxElement.getQualifiedName();
+        private void addImportHints(FullyQualifiedElement idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
+            final QualifiedName indexedName = idxElement.getFullyQualifiedName();//getQualifiedName() used before
             QualifiedName importName = QualifiedName.getPrefix( indexedName, nodeName, true);
 
             if (importName != null) {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
-                if (!currentScope.getQualifiedName().append(nodeName).equals(indexedName)) {
+                if (!NameKind.exact(currentScope.getQualifiedName().append(nodeName)).matchesName(idxElement)) {
                     Collection<? extends UseElement> declaredUses = currentScope.getDeclaredUses();
                     List<? extends UseElement> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseElement>() {
 
@@ -236,7 +249,7 @@ public class AddUseImportRule extends AbstractRule {
                         }
                     });
                     if (suitableUses.isEmpty()) {
-                        if (idxElement instanceof IndexedClass || !nodeName.getKind().isUnqualified()) {
+                        if (idxElement instanceof ClassElement || !nodeName.getKind().isUnqualified()) {
                             AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
                             hints.add(new Hint(AddUseImportRule.this,
                                     importFix.getDescription(),
@@ -245,7 +258,7 @@ public class AddUseImportRule extends AbstractRule {
                                     Collections.<HintFix>singletonList(importFix), 500));
                         }
 
-                        QualifiedName name = QualifiedName.getPreferredName(indexedName, currentScope);
+                        QualifiedName name = VariousUtils.getPreferredName(indexedName, currentScope);
                         if (name != null) {
                             ChangeNameFix changeNameFix = new ChangeNameFix(doc, node, currentScope, name, nodeName);
                             hints.add(new Hint(AddUseImportRule.this,

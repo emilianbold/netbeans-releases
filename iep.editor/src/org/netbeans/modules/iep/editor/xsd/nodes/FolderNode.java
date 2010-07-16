@@ -9,9 +9,10 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
+import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -51,16 +52,18 @@ public class FolderNode extends AbstractSchemaArtifactNode {
     protected Image badgeImage(Image main) {
         Image rv = main;
         if (badge != null) {
-            Image badgeImage = ImageUtilities.loadImage(badge);
-            rv = ImageUtilities.mergeImages(main, badgeImage, 8, 8);
+            Image badgeImage = Utilities.loadImage(badge);
+            rv = Utilities.mergeImages(main, badgeImage, 8, 8);
         }
         return rv;
     }
     
     private Node getFolderNode() {
+        FileObject fo =
+            Repository.getDefault().getDefaultFileSystem().getRoot();
         Node n = null;
         try {
-            DataObject dobj = DataObject.find(FileUtil.getConfigRoot());
+            DataObject dobj = DataObject.find(fo);
             n = dobj.getNodeDelegate();
         } catch (DataObjectNotFoundException ex) {
             // cannot get the node for this, this shouldn't happen

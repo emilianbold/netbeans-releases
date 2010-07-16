@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,6 +78,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (fileChooser == null) { // create the UI component for the wizard step
             fileChooser = new JFileChooser(lastDirectoryUsed);
@@ -91,16 +95,19 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
             fileChooser.setMultiSelectionEnabled(true);
 
             fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory()
                            || f.getName().toLowerCase().endsWith(".jar"); // NOI18N
                 }
+                @Override
                 public String getDescription() {
                     return PaletteUtils.getBundleString("CTL_JarArchivesMask"); // NOI18N
                 }
             });
 
             fileChooser.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     if (JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand()))
                         wizard.stepToNext();
@@ -110,6 +117,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
             });
 
             fileChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent ev) {
                     if (JFileChooser.SELECTED_FILES_CHANGED_PROPERTY
                                         .equals(ev.getPropertyName()))
@@ -123,11 +131,13 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         return fileChooser;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         if (fileChooser != null && fileChooser.getSelectedFiles().length > 0) {
             lastDirectoryUsed = fileChooser.getCurrentDirectory().getAbsolutePath();
@@ -136,10 +146,12 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         return false;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
         wizard = settings;
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (fileChooser != null) {
             List<ClassSource.JarEntry> entries = new ArrayList<ClassSource.JarEntry>();
@@ -150,10 +162,12 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }

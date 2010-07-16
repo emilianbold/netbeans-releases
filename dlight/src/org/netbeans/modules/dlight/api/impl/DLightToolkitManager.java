@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,22 +42,39 @@
 
 package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * 
  */
 public interface DLightToolkitManager {
-  DLightSessionHandler createSession(DLightTarget target, String configurationName);
 
-  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
+    DLightSessionHandler createSession(DLightSessionConfiguration sessionConfiguration);
+    
+//  DLightSessionHandler createSession(DLightTarget target, String configurationName);
+//
+//  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
+//
+//  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
+//
+//  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
 
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
+  DLightSessionHandler open(String filePath);
 
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
+
+  /**
+   * Saves DLight session, the session can be opened later using session ID returned in this method,
+   * will store all session related information into the <param>dir</param> directory
+   * @param sourceDir directory to store all session related info into
+   * @param sessionName session name
+   * @param reference DLight session to save
+   */
+  void save(String sourceDir, String sessionName, DLightSessionHandler reference);
+
+
   
   void startSession(DLightSessionHandler reference);
 

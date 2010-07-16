@@ -281,6 +281,7 @@ public final class NbMavenProject {
     public static final String TYPE_EJB = "ejb"; //NOI18N
     public static final String TYPE_NBM = "nbm"; //NOI18N
     public static final String TYPE_NBM_APPLICATION = "nbm-application"; //NOI18N
+    public static final String TYPE_OSGI = "bundle"; //NOI18N
     public static final String TYPE_POM = "pom"; //NOI18N
     
     /**

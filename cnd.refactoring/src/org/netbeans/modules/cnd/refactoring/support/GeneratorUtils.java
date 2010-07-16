@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,12 +76,12 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -369,7 +372,7 @@ public class GeneratorUtils {
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
 
         for (CsmFile f : includers) {
-            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath()), name)) {
+            if (CndFileUtils.areFilenamesEqual(getFileName(f.getAbsolutePath()), name)) {
                 // we found source file with the same name
                 // as header and with dependency to it. Best shot.
                 return f;
@@ -378,7 +381,7 @@ public class GeneratorUtils {
 
         // look for random namesake
         for (CsmFile f : header.getProject().getSourceFiles()) {
-            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath().toString()), name)) {
+            if (CndFileUtils.areFilenamesEqual(getFileName(f.getAbsolutePath().toString()), name)) {
                 return f;
             }
         }
@@ -539,6 +542,7 @@ public class GeneratorUtils {
                     result.append(DeclarationGenerator.createSetter(field, computeSetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
                 }
             }
+            result.append("\n"); // NOI18N
             final Document doc = path.getDocument();
             Runnable update = new Runnable() {
                 public void run() {
@@ -678,10 +682,10 @@ public class GeneratorUtils {
     
     public static TypeKind getTypeKind(CsmType type) {
         CharSequence text = type.getClassifierText();
-        if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
+        if (CharSequences.comparator().compare("void", text) == 0) { // NOI18N
             return TypeKind.VOID;
-        } else if (CharSequenceKey.Comparator.compare("bool", text) == 0 || // NOI18N
-                CharSequenceKey.Comparator.compare("boolean", text) == 0) { // NOI18N
+        } else if (CharSequences.comparator().compare("bool", text) == 0 || // NOI18N
+                CharSequences.comparator().compare("boolean", text) == 0) { // NOI18N
             return TypeKind.BOOLEAN;
         }
         return TypeKind.UNKNOWN;
@@ -691,7 +695,7 @@ public class GeneratorUtils {
         if (type1.equals(type2)) {
             return true;
         } else if (type2 != null) {
-            return CharSequenceKey.Comparator.compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
+            return CharSequences.comparator().compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
         } else {
             return false;
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -165,11 +168,22 @@ class XMLResultItem implements CompletionItem {
                 if (len == replacementLength) {
                     component.setCaretPosition(offset + len);
                 } else {
-                    //+++ fix for issues #166462, #173122
-                    if (isTextRemovingAllowable(component, doc, replaceToText, offset)) {
+                    //+++ fix for issues #166462, #173122, #173691
+                    String selectedText = component.getSelectedText(),
+                           replacingText = replaceToText;
+                    if (selectedText != null) {
+                        len = selectedText.length();
+                    } else if (! isTextRemovingAllowable(component, doc, replaceToText, offset)) {
+                        if (len > 0) {
+                            replacingText = replaceToText.substring(len);
+                            offset += len;
+                        }
+                        len = 0;
+                    }
+                    if (len > 0) {
                         doc.remove(offset, len);
                     }
-                    doc.insertString(offset, replaceToText, null);
+                    doc.insertString(offset, replacingText, null);
                 }
             } else {
                 int newCaretPos = component.getCaret().getDot() + replacementLength - len;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
@@ -98,26 +102,50 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         private final Project project;
         private final File genSrcDir;
         private final FileChangeListener genSrcDirListener;
+        private final FileChangeListener genContentListener;
+        private final List<File> listensOn = Collections.synchronizedList(new LinkedList<File>());
+        private final Runnable changeTask;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public SourcesNodeList(Project proj) {
             project = proj;
+            changeTask = new Runnable() {
+                @Override
+                public void run() {
+                    stateChanged(null);
+                }
+            };
             genSrcDirListener = new FileChangeAdapter() {
                 public @Override void fileFolderCreated(FileEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
                 }
                 public @Override void fileDeleted(FileEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
                 }
                 public @Override void fileRenamed(FileRenameEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+            };
+            genContentListener = new FileChangeAdapter() {
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
                 }
             };
             File d = FileUtil.toFile(proj.getProjectDirectory());
             // XXX hardcodes the value of ${build.generated.sources.dir}, since we have no access to evaluator
             genSrcDir = d != null ? new File(d, "build/generated-sources") : null;
         }
-        
+
+        @Override
         public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.<SourceGroupKey>emptyList();
@@ -126,18 +154,34 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             for (SourceGroup group : getSources().getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 result.add(new SourceGroupKey(group, true));
             }
+            File[] removeFrom;
+            synchronized (listensOn) {
+                removeFrom = listensOn.toArray(new File[listensOn.size()]);
+                listensOn.clear();
+            }
+            for (File file : removeFrom) {
+                FileUtil.removeFileChangeListener(genContentListener, file);
+            }
             FileObject genSrc = FileUtil.toFileObject(genSrcDir);
             if (genSrc != null) {
                 for (final FileObject child : genSrc.getChildren()) {
                     if (!child.isFolder()) {
                         continue;
                     }
-                    result.add(new SourceGroupKey(new GeneratedSourceGroup(child), false));
+                    final File childFile = FileUtil.toFile(child);
+                    if (childFile == null) {
+                        continue;
+                    }
+                    FileUtil.addFileChangeListener(genContentListener,childFile);
+                    listensOn.add(childFile);
+                    if (child.getChildren().length > 0) {
+                        result.add(new SourceGroupKey(new GeneratedSourceGroup(child), false));
+                    }
                 }
             }
             return result;
         }
-        
+
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
             FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);

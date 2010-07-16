@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.tmap.nodes.properties;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropertyCustomizer;
 import org.netbeans.modules.xml.xam.Reference;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

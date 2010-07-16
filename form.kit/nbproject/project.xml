@@ -13,23 +13,10 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.form.j2ee</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.i18n.form</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.21</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.persistence.kit</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

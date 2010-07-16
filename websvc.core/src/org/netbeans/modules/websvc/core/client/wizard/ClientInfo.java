@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -81,6 +85,7 @@ import org.netbeans.modules.websvc.core.JaxWsUtils;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -448,6 +453,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             } catch (UnsupportedEncodingException ex) {
                 jTxtWsdlProject.setText(result);
             }
+            descriptorPanel.fireChangeEvent();
         }
         
     }//GEN-LAST:event_jBtnBrowse1ActionPerformed
@@ -1018,8 +1024,26 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean rpcEncoded = false;
         String warningMessage = null;
 
-        if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
+        if (wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             String wsdlUrl = (wsdlSource == WSDL_FROM_PROJECT?jTxtWsdlProject.getText().trim():jTxtWsdlURL.getText().trim());
+
+            if (wsdlSource == WSDL_FROM_PROJECT) {
+                try {
+                    URL url = new URL(wsdlUrl);
+                    HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+                    urlConn.connect();
+                    if (HttpURLConnection.HTTP_OK != urlConn.getResponseCode()) {
+                        wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_ServiceNotDeployed")); // NOI18N
+                        return false;
+                    }
+                } catch (java.net.ConnectException ex) {
+                        wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_ServerNotRunning")); // NOI18N
+                        return false;
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientInfo.class.getName()).log(Level.FINE, "Error creating HTTP connection", ex); //NOI18N
+                }
+            }
+
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
                 wizardDescriptor.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
                 return false;

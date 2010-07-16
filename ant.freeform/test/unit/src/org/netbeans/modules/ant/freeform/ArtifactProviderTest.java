@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -137,7 +141,7 @@ public class ArtifactProviderTest extends TestBase {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        for (Element exportEl : Util.findSubElements(data)) {
+        for (Element exportEl : XMLUtil.findSubElements(data)) {
             if (!exportEl.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
@@ -165,9 +169,9 @@ public class ArtifactProviderTest extends TestBase {
                 el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
                 exportEl.appendChild(el);
             }
-            Element later = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+            Element later = XMLUtil.findElement(data, "view", FreeformProjectType.NS_GENERAL);
             if (later == null) {
-                later = Util.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL);
+                later = XMLUtil.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL);
             }
             data.insertBefore(exportEl, later);
         }

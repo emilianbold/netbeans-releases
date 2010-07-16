@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,41 +71,30 @@ import org.openide.util.NbBundle;
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c" // NOI18N
+        mimeType = MIMENames.C_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c++" // NOI18N
+        mimeType = MIMENames.CPLUSPLUS_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-h" // NOI18N
+        mimeType = MIMENames.HEADER_MIME_TYPE
     )
 })
 public class CCGoToDeclarationAction extends BaseAction {
 
     static final long serialVersionUID = 1L;
-    private static CCGoToDeclarationAction instance;
 
     public CCGoToDeclarationAction() {
         super();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public static synchronized CCGoToDeclarationAction getInstance() {
-        if (instance == null) {
-            instance = new CCGoToDeclarationAction();
-            String trimmedName = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-definition-declaration"); //NOI18N
-            instance.putValue(org.netbeans.editor.ext.ExtKit.TRIMMED_TEXT, trimmedName);
-            instance.putValue(BaseAction.POPUP_MENU_TEXT, trimmedName);
-        }
-        return instance;
     }
 
     public String getName() {

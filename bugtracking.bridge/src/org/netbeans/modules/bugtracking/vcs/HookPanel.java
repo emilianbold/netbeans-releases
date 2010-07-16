@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -68,7 +70,7 @@ import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
  */
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
 
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
@@ -77,25 +79,27 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         private boolean addLinkInfo = false;
         private boolean resolve = false;
         private boolean commit = false;
+        private boolean stored = false;
         void store() {
             addLinkInfo = linkCheckBox.isSelected();
             resolve = resolveCheckBox.isSelected();
             commit = commitRadioButton.isSelected();
 
             linkCheckBox.setSelected(false);
-            linkCheckBox.setSelected(false);
             resolveCheckBox.setSelected(false);
             commitRadioButton.setSelected(false);
+            stored = true;
         }
         void restore() {
             linkCheckBox.setSelected(addLinkInfo);
             resolveCheckBox.setSelected(resolve);
             commitRadioButton.setSelected(commit);
+            stored = false;
         }
     }
     private FieldValues fieldValues = null;
     
-    public HookPanel() {
+    public HookPanel(boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 
@@ -103,8 +107,14 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs.getIssueComponent());
 
+        linkCheckBox.setSelected(link);
+        resolveCheckBox.setSelected(resolve);
+        commitRadioButton.setSelected(commit);
+        pushRadioButton.setSelected(!commit);
+
+        enableFields();
+
         repositoryComboBox.addItemListener(this);
-        enableFields();        
     }
 
     Issue getIssue() {
@@ -115,21 +125,23 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         return selectedRepository;
     }
 
-    private void enableFields() {
+    void enableFields() {
         boolean repoSelected = isRepositorySelected();
-        boolean enableUpdateFields = repoSelected && (getIssue() != null);
+        boolean enableFields = repoSelected && (getIssue() != null);
 
-        if(!enableUpdateFields) {            
+        if(!enableFields && !fieldValues.stored) { // !fieldValues.stored ->
+                                                   //  storing twice would override
+                                                   //  the originaly stored values
             fieldValues.store();
-        } else {
+        } else if (enableFields) {
             fieldValues.restore();
         }
 
-        linkCheckBox.setEnabled(enableUpdateFields);
-        resolveCheckBox.setEnabled(enableUpdateFields);
-        pushRadioButton.setEnabled(enableUpdateFields);
-        commitRadioButton.setEnabled(enableUpdateFields);
-        changeFormatButton.setEnabled(enableUpdateFields);
+        linkCheckBox.setEnabled(enableFields);
+        resolveCheckBox.setEnabled(enableFields);
+        pushRadioButton.setEnabled(enableFields);
+        commitRadioButton.setEnabled(enableFields);
+        changeFormatButton.setEnabled(enableFields);
 
         issueLabel.setEnabled(repoSelected);
         qs.enableFields(repoSelected);
@@ -194,7 +206,6 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         });
 
         buttonGroup1.add(commitRadioButton);
-        commitRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(commitRadioButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.commitRadioButton.text")); // NOI18N
 
         buttonGroup1.add(pushRadioButton);
@@ -227,11 +238,8 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                                    .add(repositoryComboBox, 0, 463, Short.MAX_VALUE))))
+                            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 463, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(jButton2)))
                 .addContainerGap())
@@ -326,9 +334,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     final javax.swing.JCheckBox resolveCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("itemStateChanged() - selected item: " + e.getItem()); //NOI18N
+            LOG.log(Level.FINER, "itemStateChanged() - selected item: {0}", e.getItem()); //NOI18N
         }
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -353,6 +362,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         super.removeNotify();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
             enableFields();

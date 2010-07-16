@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,6 +70,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      *
      * @return number of parameters of the creator.
      */
+    @Override
     public int getParameterCount() {
         return propNames.length;
     }
@@ -76,6 +80,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      *
      * @return parameter types of the creator.
      */
+    @Override
     public Class[] getParameterTypes() {
         return paramTypes;
     }
@@ -85,6 +90,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      *
      * @return exception types of the creator.
      */
+    @Override
     public Class[] getExceptionTypes() {
         return exTypes;
     }
@@ -94,6 +100,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      *
      * @return property names of the creator.
      */
+    @Override
     public String[] getPropertyNames() {
         return propNames;
     }
@@ -104,6 +111,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @param props properties describing the instance to create.
      * @return instance that reflects values of the given properties.
      */
+    @Override
     public Object createInstance(FormProperty[] props) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         return new ArrayList(); // Hack
     }
@@ -114,6 +122,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @param paramValues parameter values describing the instance to create.
      * @return instance that reflects values of the given parameters.
      */
+    @Override
     public Object createInstance(Object[] paramValues) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         return new ArrayList(); // Hack
     }
@@ -125,6 +134,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
+    @Override
     public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
         assert (props.length == propNames.length);
         
@@ -177,6 +187,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
         return sb.toString();
     }
     
+    @Override
     public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
         return null; // PENDING how is this used?
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.JCUtil;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
@@ -82,6 +86,7 @@ class PlatformPropertyProvider implements PropertyProvider, PropertyChangeListen
     protected PropertiesAdapter findAdapter() {
         PropertyProvider projectProps = antHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String platformName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
+        platformName = platformName == null ? JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME : platformName;
         DataObject dob = JCUtil.findPlatformDataObjectNamed(platformName);
         if (dob != null) {
             PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);

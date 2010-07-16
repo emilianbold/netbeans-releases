@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -33,7 +36,7 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
+ * isseu #181648
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -54,6 +57,7 @@ public class BugtrackingConfig {
     private static BugtrackingConfig instance = null;
     private static final String ARCHIVED_TTL_KEY  = "bugtracking.archived_time_to_live";      // NOI18N
     private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
+    private static final String COLUMN_SORTING_PREFIX = "bugtracking.issuetable.columnsorting";  // NOI18N
     private static long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
@@ -77,12 +81,15 @@ public class BugtrackingConfig {
         return getPreferences().getLong(ARCHIVED_TTL_KEY, DEFAULT_ARCHIVED_TTL);
     }
 
-    public void storeColumnWidths(String key, int[] widths) {
-        for (int i = 0; i < widths.length; i++) {
-            getPreferences().putInt(COLUMN_WIDTH_PREFIX + "." + key + "." + i, widths[i]); // NOI18N
-        }
+    public void storeColumns(String key, String columns) {
+        getPreferences().put(COLUMN_WIDTH_PREFIX + "." + key, columns); // NOI18N
     }
 
+    public String getColumns(String key) {
+        return getPreferences().get(COLUMN_WIDTH_PREFIX + "." + key, ""); // NOI18N
+    }
+
+    @Deprecated
     public int[] getColumnWidths(String key) {
         List<Integer> retval = new ArrayList<Integer>();
         try {
@@ -93,6 +100,7 @@ public class BugtrackingConfig {
                     int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
                     int value = getPreferences().getInt(k, -1);
                     retval.add(idx, value);
+                    getPreferences().remove(k);
                 }
             }
             int[] ret = new int[retval.size()];
@@ -106,4 +114,11 @@ public class BugtrackingConfig {
         }
     }
 
+    public void storeColumnSorting(String columnsKey, String sorting) {
+        getPreferences().put(COLUMN_SORTING_PREFIX + "." + columnsKey, sorting); // NOI18N
+    }
+
+    public String getColumnSorting(String key) {
+        return getPreferences().get(COLUMN_SORTING_PREFIX + "." + key, ""); // NOI18N
+    }
 }

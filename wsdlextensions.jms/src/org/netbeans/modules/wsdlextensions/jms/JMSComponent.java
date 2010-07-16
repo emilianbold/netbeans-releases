@@ -25,14 +25,22 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  */
 public interface JMSComponent extends ExtensibilityElement {
 
-    /*
+    
     public interface Visitor {
         void visit(JMSAddress target);
+        void visit(JMSJNDIEnv target);
+        void visit(JMSJNDIEnvEntry target);
+        void visit(JMSJCAOptions target);
         void visit(JMSBinding target);
         void visit(JMSOperation target);
+        void visit(JMSOptions target);
+        void visit(JMSOption target);
         void visit(JMSMessage target);
+        void visit(JMSProperties target);
+        void visit(JMSProperty target);
+        void visit(JMSMapMessage target);
+        void visit(JMSMapMessagePart target);
     }
     
     void accept(Visitor visitor);
-     */
 }

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,9 +72,10 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
 
     public HighlightProviderTaskFactory(){
         super();
-        SemanticHighlightingOptions.instance().addPropertyChangeListener(this);
+        SemanticHighlightingOptions.instance().addPropertyChangeListener(HighlightProviderTaskFactory.this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
             reschedule(file);
@@ -84,7 +88,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         try {
             final DataObject dobj = DataObject.find(fo);
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+            final CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
             final Document doc = ec.getDocument();
             if (doc != null && file != null) {
                 pr = new PhaseRunnerImpl(dobj, file, doc);
@@ -120,6 +124,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public void run(Phase phase) {
             Document doc = getDocument();
             if (doc != null) {
@@ -141,6 +146,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             return weakDoc != null ? weakDoc.get() : null;
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
@@ -157,6 +163,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public void cancel() {
             synchronized(listeners) {
                 for(Cancellable interruptor : listeners) {
@@ -165,15 +172,18 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public boolean isHighPriority() {
             return false;
         }
 
         protected static class MyInterruptor implements Interrupter, Cancellable {
             private boolean canceled = false;
+            @Override
             public boolean cancelled() {
                 return canceled;
             }
+            @Override
             public boolean cancel() {
                 canceled = true;
                 return true;

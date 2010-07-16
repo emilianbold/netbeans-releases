@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,11 +55,10 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
+ * @author Alex Petrov (Alexey.Petrov@Sun.Com)
  */
 public class CompletionQuery extends AsyncCompletionQuery {
-        
     /**
      * Creates a new instance of CompletionQuery
      */
@@ -64,28 +66,30 @@ public class CompletionQuery extends AsyncCompletionQuery {
         this.primaryFile = primaryFile;
     }    
     
-    /**
-     *
-     */
     @Override
     protected void prepareQuery(JTextComponent component) {
         this.component = component;
     }
     
-    /**
-     *
-     */
-    protected void query(CompletionResultSet resultSet,
-            Document doc, int caretOffset) {
-        
-        XMLSyntaxSupport support = ((XMLSyntaxSupport)((BaseDocument)doc).getSyntaxSupport());
-        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion((BaseDocument)doc)) {
-            resultSet.finish();
-            return;
+    @Override
+    protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        XMLSyntaxSupport support = 
+            (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+
+        CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(
+            component, (BaseDocument) doc);
+        List<CompletionResultItem> completionItems = null;
+        if (! support.noCompletion(component) &&
+           (CompletionUtil.canProvideCompletion((BaseDocument) doc))) {
+            completionItems = getCompletionItems(doc, caretOffset);
         }
-        
-        List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
-        if(items != null) resultSet.addAllItems(items);
+        if (endTagResultItem != null) resultSet.addItem(endTagResultItem);
+        if ((completionItems != null) && (completionItems.size() > 0)) {
+            resultSet.addAllItems(completionItems);
+        } else if ((endTagResultItem != null) &&
+                   (! (endTagResultItem instanceof TagLastCharResultItem))) {
+            endTagResultItem.setExtraPaintGap(-CompletionPaintComponent.DEFAULT_ICON_TEXT_GAP);
+        }
         resultSet.finish();
     }
         
@@ -106,13 +110,15 @@ public class CompletionQuery extends AsyncCompletionQuery {
                 
         //Step 3: Query
         switch (context.getCompletionType()) {
+            case COMPLETION_TYPE_ELEMENT_VALUE:
+                completionItems = CompletionUtil.getElementValues(context);
+                if ((completionItems != null) && (completionItems.size() > 0)) {
+                    break;
+                }
+
             case COMPLETION_TYPE_ELEMENT:
                 completionItems = CompletionUtil.getElements(context);
                 break;
-                
-            case COMPLETION_TYPE_ELEMENT_VALUE:
-                completionItems = CompletionUtil.getElementValues(context);
-                break;            
                 
             case COMPLETION_TYPE_ATTRIBUTE:
                 completionItems = CompletionUtil.getAttributes(context);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -177,7 +180,7 @@ public class FormLAF {
             // Force switch of the LayoutStyle
             if (previewDefaults.get("LayoutStyle.instance") == null) { // NOI18N
                 previewDefaults.put("LayoutStyle.instance", // NOI18N
-                    createLayoutStyle(previewLookAndFeel.getID())); 
+                    createLayoutStyle(previewLookAndFeel)); 
             }
 
             return info;
@@ -251,6 +254,7 @@ public class FormLAF {
         // such new classes are casted to the ones obtained from the map.
         // Hence, we remove such mappings to avoid problems.
         UIManager.getDefaults().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (delDefaults.isDelegating() || delDefaults.isPreviewing()) {
                     Object newValue = evt.getNewValue();
@@ -270,10 +274,12 @@ public class FormLAF {
     {
         try {
             return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Object>() {
+                @Override
                 public Object run() throws Exception {
                     // FIXME(-ttran) needs to hold a lock on UIDefaults to
                     // prevent other threads from creating Swing components
                     // in the mean time
+                    synchronized (Introspector.class) {
                     synchronized (UIManager.getDefaults()) {
                         boolean restoreAfter = true;
                         try {
@@ -293,6 +299,7 @@ public class FormLAF {
                             }
                         }
                     }
+                    }
                 }
             });
         }
@@ -303,10 +310,12 @@ public class FormLAF {
 
     public static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
         Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
+            @Override
             public Object run() {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
                 // prevent other threads from creating Swing components
                 // in the mean time
+                synchronized (Introspector.class) {
                 synchronized (UIManager.getDefaults()) {
                     boolean restoreAfter = true;
                     try {
@@ -326,9 +335,18 @@ public class FormLAF {
                         }
                     }
                 }
+                }
                 return null;
             }
         });
+    }
+
+    public static void executeWithLAFLocks(Runnable runnable) {
+        synchronized (Introspector.class) {
+            synchronized (UIManager.getDefaults()) {
+                runnable.run();
+            }
+        }
     }
 
     private static void useDesignerLookAndFeel(FormModel formModel) {
@@ -395,7 +413,8 @@ public class FormLAF {
      * which is not affected by our LAF switch => we have to create
      * the new LayoutStyle manually.
      */
-    private static LayoutStyle createLayoutStyle(String lafID) {
+    private static LayoutStyle createLayoutStyle(LookAndFeel laf) {
+        String lafID = laf.getID();
         boolean useCoreLayoutStyle = false;
         try {
             Class.forName("javax.swing.LayoutStyle"); // NOI18N
@@ -403,7 +422,17 @@ public class FormLAF {
         } catch (ClassNotFoundException cnfex) {}
         String layoutStyleClass;
         if (useCoreLayoutStyle) {
-            layoutStyleClass = "Swing"; // NOI18N
+            if ("Aqua" == lafID) { // NOI18N
+                try {
+                    laf.getClass().getDeclaredMethod("getLayoutStyle", new Class[0]); // NOI18N
+                    layoutStyleClass = "Swing"; // NOI18N
+                } catch (NoSuchMethodException nsfex) {
+                    // getLayoutStyle() not overriden => use our own (issue 52)
+                    layoutStyleClass = "Aqua";
+                }
+            } else {
+                layoutStyleClass = "Swing"; // NOI18N
+            }
         } else if ("Metal" == lafID) { // NOI18N
             layoutStyleClass = "Metal"; // NOI18N
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -52,25 +57,30 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteFile;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +116,32 @@ public class ProjectActionSupport {
             instance = new ProjectActionSupport();
         }
         return instance;
+    }
+
+    private static void refreshProjectFiles(Project project) {
+        try {
+            Set<File> files = new HashSet<File>();
+            FileObject projectFileObject = project.getProjectDirectory();
+            File f = FileUtil.toFile(projectFileObject);
+            if (f != null) {
+                files.add(f);
+            }
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            for (SourceGroup sourceGroup : groups) {
+                FileObject rootFolder = sourceGroup.getRootFolder();
+                File file = FileUtil.toFile(rootFolder);
+                if (file != null) {
+                    files.add(file);
+                }
+            }
+            File[] array = files.toArray(new File[files.size()]);
+            if (array.length > 0) {
+                FileUtil.refreshFor(array);
+            }
+            MakeLogicalViewProvider.refreshBrokenItems(project);
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -146,38 +182,46 @@ public class ProjectActionSupport {
     public void fireActionPerformed(ProjectActionEvent[] paes, ProjectActionHandler preferredHandler) {
         new HandleEvents(paes, preferredHandler).go();
     }
-
 ////////////////////////////////////////////////////////////////////////////////
 
     private InputOutput mainTab = null;
+    private InputOutput runTab = null;
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
+    private final Object lock = new Object();
 
-    private class HandleEvents implements ExecutionListener {
+    private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
-        private ProjectActionEvent[] paes;
+        private InputOutput runIoTab = null;
+        private final ProjectActionEvent[] paes;
         private String tabName;
         private String tabNameSeq;
-        int currentAction = 0;
+        private int currentAction = 0;
         private StopAction sa = null;
         private RerunAction ra = null;
-        List<BuildAction> additional;
+        private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
-        private final Object lock = new Object();
-        private ProjectActionHandler customHandler = null;
+        private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
+        private final boolean reuseTabs;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
             currentAction = 0;
-
-            if (MakeOptions.getInstance().getReuse()) {
+            reuseTabs = MakeOptions.getInstance().getReuse();
+            if (reuseTabs) {
                 synchronized (lock) {
-                    if (mainTabHandler == null && mainTab != null /*&& !mainTab.isClosed()*/) {
-                        mainTab.closeInputOutput();
-                        mainTab = null;
+                    if (mainTabHandler == null) {
+                        if (mainTab != null) {
+                            mainTab.closeInputOutput();
+                            mainTab = null;
+                        }
+                        if (runTab != null) {
+                            runTab.closeInputOutput();
+                            runTab = null;
+                        }
                     }
                     tabName = getTabName(paes);
                     tabNameSeq = tabName;
@@ -195,7 +239,7 @@ public class ProjectActionSupport {
                     ioTab = getIOTab(tabNameSeq, true);
                     if (mainTabHandler == null) {
                         mainTab = ioTab;
-                        mainTabHandler = this;
+                        mainTabHandler = HandleEvents.this;
                     }
                 }
             } else {
@@ -203,6 +247,25 @@ public class ProjectActionSupport {
                 tabNameSeq = tabName;
                 ioTab = getIOTab(tabName, false);
             }
+        }
+
+        private Action[] getActions(String name) {
+            List<Action> list = new ArrayList<Action>();
+            if (sa == null) {
+                sa = new StopAction(this);
+            }
+            if (ra == null) {
+                ra = new RerunAction(this);
+            }
+            list.add(sa);
+            list.add(ra);
+            if (additional == null) {
+                additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            }
+            // TODO: actions should have acces to output writer. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
+            list.addAll(additional);
+            return list.toArray(new Action[list.size()]);
         }
 
         private String getTabName(ProjectActionEvent[] paes) {
@@ -234,13 +297,21 @@ public class ProjectActionSupport {
             return ioTab;
         }
 
+        private InputOutput getRunTab() {
+            return runIoTab;
+        }
+
         private ProgressHandle createProgressHandle() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+
+                @Override
                 public boolean cancel() {
                     sa.actionPerformed(null);
                     return true;
                 }
             }, new AbstractAction() {
+
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     getTab().select();
                 }
@@ -252,6 +323,8 @@ public class ProjectActionSupport {
         private ProgressHandle createProgressHandleNoCancel() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
                     new AbstractAction() {
+
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             getTab().select();
                         }
@@ -259,21 +332,15 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-
+        
         private InputOutput getIOTab(String name, boolean reuse) {
-            sa = new StopAction(this);
-            ra = new RerunAction(this);
-            List<Action> list = new ArrayList<Action>();
-            list.add(sa);
-            list.add(ra);
-            additional = BuildActionsProvider.getDefault().getActions(name, paes);
-            list.addAll(additional);
+            Action[] actions = getActions(name);
             InputOutput tab;
             if (reuse) {
                 tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
                 tab.closeInputOutput(); // Close it...
             }
-            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
+            tab = IOProvider.getDefault().getIO(name, actions); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -285,10 +352,43 @@ public class ProjectActionSupport {
             return tab;
         }
 
+        private InputOutput getRunIO(ProjectActionEvent pae, boolean reuse) {
+            InputOutput io = null;
+            final String TERM_PROVIDER = "Terminal"; // NOI18N
+            IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
+            if (termProvider != null) {
+                String name = getTabName(new ProjectActionEvent[] {pae});
+                Action[] actions = getActions(pae.getActionName());
+                if (reuse) {
+                    synchronized (lock) {
+                        io = runIoTab;
+                        if (io == null) {
+                            io = termProvider.getIO(name, false);
+                            io.closeInputOutput();
+                        }
+                        io = termProvider.getIO(name, actions);
+                        runIoTab = io;
+                        if (runTab == null && mainTabHandler == this) {
+                            runTab = runIoTab;
+                        }
+                    }
+                } else {
+                    io = termProvider.getIO(name, actions);
+                    runIoTab = io;
+                }
+            }
+            return io;
+        }
+
+
         private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             synchronized (lock) {
+                if (runIoTab != null) {
+                    runIoTab.closeInputOutput();
+                    runIoTab = null;
+                }
                 tabNames.add(tabNameSeq);
             }
             try {
@@ -298,7 +398,9 @@ public class ProjectActionSupport {
             progressHandle = createProgressHandle();
             progressHandle.start();
             if (SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(new Runnable(){
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    @Override
                     public void run() {
                         go();
                     }
@@ -309,6 +411,7 @@ public class ProjectActionSupport {
         }
 
         private void go() {
+            LifecycleManager.getDefault().saveAll();
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);
@@ -324,22 +427,28 @@ public class ProjectActionSupport {
             }
 
             // Validate executable
-            switch (pae.getType()) {
-                case RUN:
-                case DEBUG:
-                case DEBUG_LOAD_ONLY:
-                case DEBUG_STEPINTO:
-                case CHECK_EXECUTABLE:
-                case CUSTOM_ACTION:
-                if (!checkExecutable(pae) || pae.getType() == ProjectActionEvent.Type.CHECK_EXECUTABLE) {
+            if (pae.getType() == PredefinedType.RUN
+                    || pae.getType() == PredefinedType.DEBUG
+                    || pae.getType() == PredefinedType.DEBUG_STEPINTO
+                    || pae.getType() == PredefinedType.CHECK_EXECUTABLE
+                    || pae.getType() == PredefinedType.CUSTOM_ACTION) {
+                if (!checkExecutable(pae) || pae.getType() == PredefinedType.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
             }
 
-            if (pae.getType() == ProjectActionEvent.Type.CUSTOM_ACTION && customHandler != null) {
+            InputOutput io = ioTab;
+            int consoleType = pae.getProfile().getConsoleType().getValue();
+            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
+                io = getRunIO(pae, reuseTabs);
+                if (io == null) {
+                    io = ioTab;
+                }
+            }
+            if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
-                customHandler.execute(ioTab);
+                customHandler.execute(io);
             } else {
                 // moved to RemoteBuildProjectActionHandler
                 //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
@@ -351,7 +460,7 @@ public class ProjectActionSupport {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
-                        handler.execute(ioTab);
+                        handler.execute(io);
 
                         foundFactory = true;
                         break;
@@ -367,7 +476,7 @@ public class ProjectActionSupport {
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
             handler.init(pae, paes);
             progressHandle.finish();
-            progressHandle = handler.canCancel()? createProgressHandle() : createProgressHandleNoCancel();
+            progressHandle = handler.canCancel() ? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
             sa.setEnabled(handler.canCancel());
             handler.addExecutionListener(this);
@@ -377,6 +486,7 @@ public class ProjectActionSupport {
             return currentHandler;
         }
 
+        @Override
         public void executionStarted(int pid) {
             if (additional != null) {
                 for (BuildAction action : additional) {
@@ -386,20 +496,17 @@ public class ProjectActionSupport {
             }
         }
 
+        @Override
         public void executionFinished(int rc) {
             if (additional != null) {
                 for (Action action : additional) {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            if (paes[currentAction].getType() == ProjectActionEvent.Type.BUILD || paes[currentAction].getType() == ProjectActionEvent.Type.CLEAN) {
+            Type type = paes[currentAction].getType();
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
                 // Refresh all files
-                try {
-                    FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
-                    projectFileObject.getFileSystem().refresh(false);
-                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
-                } catch (Exception e) {
-                }
+                refreshProjectFiles(paes[currentAction].getProject());
             }
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {
@@ -422,6 +529,8 @@ public class ProjectActionSupport {
             if (rc == 0) {
                 currentAction++;
                 RequestProcessor.getDefault().post(new Runnable() {
+
+                    @Override
                     public void run() {
                         go();
                     }
@@ -433,13 +542,15 @@ public class ProjectActionSupport {
         private boolean checkProject(ProjectActionEvent pae) {
             Project project = pae.getProject();
             if (project != null) { // paranoidal null checks are better than latent NPE :)
-                FileObject projectDirectory = project.getProjectDirectory();
-                if (projectDirectory != null) {
-                    FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
-                    if (nbproject != null) {
-                        // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
-                        File file = FileUtil.toFile(nbproject);
-                        return file != null && file.exists();
+                if (CndUtils.isUnitTestMode() || OpenProjects.getDefault().isProjectOpen(project)) { // OpenProjects don't work in test mode
+                    FileObject projectDirectory = project.getProjectDirectory();
+                    if (projectDirectory != null) {
+                        FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                        if (nbproject != null) {
+                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+                            File file = FileUtil.toFile(nbproject);
+                            return file != null && file.exists();
+                        }
                     }
                 }
             }
@@ -449,11 +560,7 @@ public class ProjectActionSupport {
         private boolean checkExecutable(ProjectActionEvent pae) {
             // Check if something is specified
             String executable = pae.getExecutable();
-            MakeConfiguration configuration = pae.getConfiguration();
-            ExecutionEnvironment execEnviroment = configuration.getDevelopmentHost().getExecutionEnvironment();
-            //executable can be not 0 length but still is not a file
-            File executableFile = RemoteFile.create(execEnviroment,executable);
-            if (executable.length() == 0 || executableFile.isDirectory()) {
+            if (executable.length() == 0) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
                 DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
                 panel.setDialogDescriptor(descriptor);
@@ -462,9 +569,9 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = FilePathAdaptor.naturalize(executable);
-                    executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = FilePathAdaptor.normalize(executable);
+                    executable = CndPathUtilitities.naturalize(executable);
+                    executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = CndPathUtilitities.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -472,7 +579,7 @@ public class ProjectActionSupport {
                         pdp.getConfigurationDescriptor().setModified();
                     }
                     // Set executable in pae
-                    if (pae.getType() == ProjectActionEvent.Type.RUN) {
+                    if (pae.getType() == PredefinedType.RUN) {
                         // Next block is commented out due to IZ120794
                         /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
                         if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
@@ -488,26 +595,26 @@ public class ProjectActionSupport {
                 }
             }
             // Check existence of executable
-            if (!IpeUtils.isPathAbsolute(executable)) { // NOI18N
+            if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir == null || runDir.length() == 0) {
-                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                    executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {
-                    runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
-                    executable = IpeUtils.toAbsolutePath(runDir, executable);
+                    runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
                 }
-                executable = FilePathAdaptor.normalize(executable);
+                executable = CndPathUtilitities.normalize(executable);
             }
-            if (IpeUtils.isPathAbsolute(executable)) {
-                Configuration conf = pae.getConfiguration();
+            if (CndPathUtilitities.isPathAbsolute(executable)) {
+                MakeConfiguration conf = pae.getConfiguration();
                 boolean ok = true;
 
-                if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
-                    final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
+                if (conf != null && !conf.getDevelopmentHost().isLocalhost()) {
+                    final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
                         PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                        executable = mapper.getRemotePath(executable,true);
+                        executable = mapper.getRemotePath(executable, true);
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
@@ -536,10 +643,9 @@ public class ProjectActionSupport {
 
             pae.setExecutable(executable);
             pae.setFinalExecutable();
-            
+
             return true;
         }
-
     }
 
 // VK: inlined since it's used once; and caller should know not only return status,
@@ -560,19 +666,19 @@ public class ProjectActionSupport {
 //        }
 //        return false;
 //    }
-
     private static final class StopAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public StopAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/stop.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.StopAction.stop")); // NOI18N
-        //System.out.println("handleEvents 1 " + handleEvents);
-        //setEnabled(false); // initially, until ready
+            //System.out.println("handleEvents 1 " + handleEvents);
+            //setEnabled(false); // initially, until ready
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -586,7 +692,7 @@ public class ProjectActionSupport {
 
     private static final class RerunAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
@@ -594,6 +700,7 @@ public class ProjectActionSupport {
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             handleEvents.reRun();

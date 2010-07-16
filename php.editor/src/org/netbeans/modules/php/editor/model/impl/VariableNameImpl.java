@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,18 +48,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.TypedInstanceElement;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
-import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -75,20 +80,36 @@ import org.openide.util.Union2;
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
     List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
+
+    private Collection<TypeScope> getMergedTypes() {
+        Collection<TypeScope> types = new HashSet<TypeScope>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        for (VarAssignmentImpl vAssignment : varAssignments) {
+            types.addAll(vAssignment.getTypes());
+        }
+        return types;
+    }
+
     enum TypeResolutionKind {
         LAST_ASSIGNMENT,
         MERGE_ASSIGNMENTS
     };
     private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
     private boolean globallyVisible;
-    VariableNameImpl(IndexScope inScope, IndexedVariable indexedVariable) {
+    VariableNameImpl(Scope inScope, VariableElement indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
+        indexedElement = indexedVariable;
     }
-    VarAssignmentImpl createAssignment(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
-        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
+    VarAssignmentImpl createAssignment(Scope scope, boolean conditionalBlock,OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange,assignment, allAssignments);
         return retval;
+    }
+
+    @Override
+    public FileObject getRealFileObject() {
+        return (indexedElement != null) ? indexedElement.getFileObject() : null;
     }
 
     VariableNameImpl(Scope inScope, Variable variable, boolean globallyVisible) {
@@ -96,7 +117,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
-        super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
+        super(inScope, name, file, offsetRange, PhpElementKind.VARIABLE);
         this.globallyVisible = globallyVisible;
     }
 
@@ -127,6 +148,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public List<? extends VarAssignmentImpl> getVarAssignments() {
         Collection<? extends VarAssignmentImpl> values = filter(getElements(), new ElementFilter() {
 
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element instanceof VarAssignmentImpl;
             }
@@ -136,6 +158,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     private List<? extends FieldAssignmentImpl> getFieldAssignments() {
         Collection<? extends FieldAssignmentImpl> values = filter(getElements(), new ElementFilter() {
 
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element instanceof FieldAssignmentImpl;
             }
@@ -212,17 +235,18 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                         }
                     }
                 }
-            }
-            for (AssignmentImpl assign : assignments) {
-                if (assign.getBlockRange().containsInclusive(offset)) {
+            }            
+            if (!assignments.isEmpty()) {
+                for (AssignmentImpl assign : assignments) {
                     if (retval == null || retval.getOffset() <= assign.getOffset()) {
-                         if (assign.getOffset() < offset) {
-                             if (expectedField == null || expectedField.equals(assign.getContainer())) {
-                                 retval = assign;
-                             }
-                         }
+                        if (assign.getOffset() < offset) {
+                            if (expectedField == null || expectedField.equals(assign.getContainer())) {
+                                retval = assign;
+                            }
+                        }
                     }
                 }
+
             }
         }
         return retval;
@@ -239,6 +263,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
 
+    @Override
     public Collection<? extends String> getTypeNames(int offset) {
         return getTypeNamesImpl(offset, false);
     }
@@ -246,24 +271,45 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return getTypeNamesImpl(offset, true);
     }
 
+    @Override
     public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
         return getTypesImpl(offset, true);
     }
 
+    @Override
     public Collection<? extends TypeScope> getTypes(int offset) {
         return getTypesImpl(offset, false);
     }
     private Collection<? extends String> getTypeNamesImpl(int offset, boolean arrayAccess) {
+        Collection<String> retval = new ArrayList<String>();
+        if (!arrayAccess && getIndexedElement() instanceof TypedInstanceElement /*&& indexedElement.getFileObject() != getFileObject()*/) {
+            TypedInstanceElement typedInstanceElement = (TypedInstanceElement)getIndexedElement();
+            Set<TypeResolver> instanceTypes = typedInstanceElement.getInstanceTypes();
+            for (TypeResolver typeResolver : instanceTypes) {
+                if (typeResolver.isResolved()) {
+                    final QualifiedName typeName = typeResolver.getTypeName(false);
+                    if (typeName != null) {
+                        retval.add(typeName.toString());
+                    }
+                }
+            }
+            return retval;
+        }
+
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
-        Collection<String> retval = Collections.emptyList();
         TypeResolutionKind useTypeResolutionKind = arrayAccess ?
             TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
+                if (assignment.isConditionalBlock()) {
+                    if (!assignment.getBlockRange().containsInclusive(offset)) {
+                        return getMergedTypeNames();
+                    }
+                }
                 Collection<String> typeNames = assignment.getTypeNames();
                 if (typeNames.isEmpty() || assignment.isArrayAccess()) {
                     if (assignment.isArrayAccess()) {
@@ -280,13 +326,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             }
             return retval;
         } else {
-            Collection<String> types = new HashSet<String>();
-            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
-            for (VarAssignmentImpl vAssignment : varAssignments) {
-                    types.addAll(vAssignment.getTypeNames());
-            }
-            return types;
+            return getMergedTypeNames();
         }
+    }
+
+    private Collection<? extends String> getMergedTypeNames() {
+        Collection<String> types = new HashSet<String>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        for (VarAssignmentImpl vAssignment : varAssignments) {
+            types.addAll(vAssignment.getTypeNames());
+        }
+        return types;
     }
 
     private Collection<? extends TypeScope> getTypesImpl(int offset, boolean arrayAccess) {
@@ -299,6 +349,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
+                if (assignment.isConditionalBlock()) {
+                    if (!assignment.getBlockRange().containsInclusive(offset)) {
+                        return getMergedTypes();
+                    }
+                }
                 Collection<TypeScope> types = assignment.getTypes();
                 if (types.isEmpty() || assignment.isArrayAccess()) {
                     AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
@@ -311,16 +366,21 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 return types;
             }
         } else {
-            Collection<TypeScope> types = new HashSet<TypeScope>();
-            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
-            for (VarAssignmentImpl vAssignment : varAssignments) {
-                    types.addAll(vAssignment.getTypes());
+            return getMergedTypes();
+        }
+        if (getIndexedElement() instanceof TypedInstanceElement) {
+            Collection<TypeScope> retval = new HashSet<TypeScope>();
+            Collection<? extends String> typeNamesImpl = getTypeNamesImpl(offset, arrayAccess);
+            for (String tName : typeNamesImpl) {
+                retval.addAll(CachingSupport.getTypes(tName, getInScope()));
+
             }
-            return types;
+            return retval;
         }
         return Collections.emptyList();
     }
 
+    @Override
     public boolean isGloballyVisible() {
         String name = getName();
         if (name.startsWith("$")) {
@@ -336,6 +396,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         this.globallyVisible = globallyVisible;
     }
 
+    @Override
     public boolean representsThis() {
         Scope inScope = getInScope();
         if (inScope instanceof ClassScope && getName().equals("$this")) {//NOI18N
@@ -350,6 +411,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         final String varName = getName();
         sb.append(varName.toLowerCase()).append(";");//NOI18N
         sb.append(varName).append(";");//NOI18N
+        //makes little sense because the variable with the same name can exists in huge number of files
+        /*
+        Set<String> typeNames = new HashSet<String>(getTypeNames(getNameRange().getEnd()+1));
+        if (typeNames.size() == 1) {
+            for (String typeName : typeNames) {
+                if (!typeName.contains("@")) {
+                    sb.append(typeName);
+                    break;
+                }
+            }
+        }*/
         sb.append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         return sb.toString();
@@ -369,6 +441,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         assignmentDatas.add(new LazyFieldAssignment(typeName, fldName, range, startOffset, scope));
     }
 
+    @Override
     public Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset) {
         processFieldAssignments();
         AssignmentImpl assignment = findFieldAssignment(offset, element);
@@ -405,7 +478,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             TypeScope type = ModelUtils.getFirst(types);
             if (type instanceof ClassScope) {
                 ClassScope cls = (ClassScope) type;
-                field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
+                field = (FieldElementImpl) ModelUtils.getFirst(cls.getDeclaredFields(), fldName);
                 if (field != null) {
                     FieldAssignmentImpl fa = new FieldAssignmentImpl(VariableNameImpl.this, (FieldElementImpl) field, scope, scope.getBlockRange(), range, typeName);
                     addElement(fa);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -88,6 +92,8 @@ import org.openide.util.actions.SystemAction;
 @NodeFactory.Registration(projectType="org-netbeans-modules-ruby-rubyproject")
 public final class ProjectRootNodeFactory implements NodeFactory {
     
+    private static final Logger LOGGER = Logger.getLogger(ProjectRootNodeFactory.class.getName());
+
     public NodeList createNodes(Project p) {
         RubyProject project = p.getLookup().lookup(RubyProject.class);
         assert project != null;
@@ -183,6 +189,10 @@ public final class ProjectRootNodeFactory implements NodeFactory {
                     if (RakeSupport.isRakeFile(key.fileObject)) {
                         return new RakeSupport.RakeNode(key.fileObject);
                     } else {
+                        if (!key.fileObject.isValid()) {
+                            LOGGER.info("Invalid FO, skipping node: " + key.fileObject.getPath());
+                            return null;
+                        }
                         DataObject dobj = DataObject.find(key.fileObject);
                         return new FilterNode(dobj.getNodeDelegate());
                     }

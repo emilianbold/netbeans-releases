@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -196,6 +200,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         cvs.getStatusCache().addVersioningListener(this);
         cvs.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
+        cvs.addVersioningListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible         
     }
 
@@ -203,6 +208,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);        
         cvs.getStatusCache().removeVersioningListener(this);
         cvs.removeVersioningListener(this);
+        cvs.addVersioningListener(syncTable);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
@@ -374,12 +380,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             LifecycleManager.getDefault().saveAll();
-            exec.showLocalDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            exec.showDiff(group, Setup.DIFFTYPE_LOCAL);
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            exec.showRemoteDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_REMOTE);
+            exec.showDiff(group, Setup.DIFFTYPE_REMOTE);
         } else {
             LifecycleManager.getDefault().saveAll();
-            exec.showAllDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
+            exec.showDiff(group, Setup.DIFFTYPE_ALL);
         }
     }
     
@@ -417,9 +426,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 }
             }
         });
-        RequestProcessor.getDefault().post(new Runnable() {
+        final ExecutorGroup grp = refreshCommandGroup;
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
-                refreshCommandGroup.execute();
+                grp.execute();
             }
         });
     }
@@ -427,14 +437,17 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Local"));
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_REMOTE);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Remote"));
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_All"));
         }
     }

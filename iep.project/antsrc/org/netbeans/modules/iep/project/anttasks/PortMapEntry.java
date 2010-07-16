@@ -31,16 +31,24 @@ public class PortMapEntry {
     private String mPortType;
     private String mRole;
     private String mRoleName;
+    private String mDisplayName;
+    private String mProcessName = null;
+    private String mFilePath = null;
+    
     
     /** Creates a new instance of PortMapEntry */
     public PortMapEntry(String partnerLink, 
                         String portType,
                         String role,
-                        String roleName) {
+                        String roleName,
+                        String processName,
+                        String filePath) {
         mPartnerLink = partnerLink;
         mPortType = portType;
         mRole = role;
         mRoleName = roleName;
+        mProcessName = processName;
+        mFilePath = filePath;
     }
     
     public String getPartnerLink() {
@@ -58,5 +66,26 @@ public class PortMapEntry {
     public String getRoleName() {
         return mRoleName;
     }
-    
+
+    /**
+     * @return the mDisplayName
+     */
+    public String getDisplayName() {
+        return mRoleName;
+    }
+
+    /**
+     * @return the mFilePath
+     */
+    public String getFilePath() {
+        return mFilePath;
+    }
+
+    /**
+     * @return the mProcessName
+     */
+    public String getProcessName() {
+        return mProcessName;
+    }
+
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@
 #include "utilsfuncs.h"
 #include "argnames.h"
 #include <tlhelp32.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -72,9 +76,21 @@ bool disableFolderVirtualization(HANDLE hProcess) {
 }
 
 bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, string &value) {
+    return getStringFromRegistryEx(rootKey, keyName, valueName, value, false);
+}
+
+bool getStringFromRegistry64bit(HKEY rootKey, const char *keyName, const char *valueName, string &value) {
+    return getStringFromRegistryEx(rootKey, keyName, valueName, value, true);
+}
+
+#ifndef KEY_WOW64_64KEY
+#define KEY_WOW64_64KEY 0x0100
+#endif
+
+bool getStringFromRegistryEx(HKEY rootKey, const char *keyName, const char *valueName, string &value, bool read64bit) {
     logMsg("getStringFromRegistry()\n\tkeyName: %s\n\tvalueName: %s", keyName, valueName);
     HKEY hKey = 0;
-    if (RegOpenKeyEx(rootKey, keyName, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(rootKey, keyName, 0, KEY_READ | (read64bit ? KEY_WOW64_64KEY : 0), &hKey) == ERROR_SUCCESS) {
         DWORD valSize = 4096;
         DWORD type = 0;
         char val[4096] = "";
@@ -424,3 +440,32 @@ bool getParentProcessID(DWORD &id) {
     CloseHandle(hSnapshot);
     return false;
 }
+
+bool isWow64()
+{
+    bool IsWow64 = FALSE;
+    typedef bool (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, bool*);
+    LPFN_ISWOW64PROCESS fnIsWow64Process;
+
+    fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+  
+    if (NULL != fnIsWow64Process)
+    {
+        if (!fnIsWow64Process(GetCurrentProcess(),&IsWow64))
+        {
+            // handle error
+        }
+    }
+    return IsWow64;
+}
+
+int convertAnsiToUtf8(const char *ansi, char *utf8, int utf8Len) {
+    const int len = 32*1024;
+    WCHAR tmp[len] = L"";
+    if (MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ansi, -1, tmp, len) == 0)
+        return -1;
+    if (WideCharToMultiByte(CP_UTF8, 0, tmp, -1, utf8, utf8Len, NULL, NULL) == 0)
+        return -1;
+    return 0;
+}
+

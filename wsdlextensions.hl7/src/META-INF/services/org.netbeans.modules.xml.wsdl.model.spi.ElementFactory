@@ -1,0 +1,7 @@
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$MessageFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$ProtocolPropertiesFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$CommunicationControlsFactory
+org.netbeans.modules.wsdlextensions.hl7.impl.HL7ElementFactoryProvider$CommunicationControlFactory

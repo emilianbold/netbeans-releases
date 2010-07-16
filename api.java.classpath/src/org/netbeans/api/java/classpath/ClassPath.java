@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,8 +60,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,10 +70,12 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
+import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -78,8 +84,8 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -205,13 +211,21 @@ public final class ClassPath {
      * @since org.netbeans.api.java/1 1.13
      */
     public static final String PROP_INCLUDES = "includes";
-    
+
+    /**
+     * The empty ClassPath.
+     * Contains no entries and never fires events.
+     * @since 1.24
+     */
+    public static final ClassPath EMPTY = new ClassPath();
+
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
         Lookup.getDefault().lookupResult(ClassPathProvider.class);
 
     private final ClassPathImplementation impl;
+    private final Throwable caller;
     private FileObject[] rootsCache;
     /**
      * Associates entry roots with the matching filter, if there is one.
@@ -220,7 +234,7 @@ public final class ClassPath {
      */
     private Map<FileObject,FilteringPathResourceImplementation> root2Filter = new WeakHashMap<FileObject,FilteringPathResourceImplementation>();
     private PropertyChangeListener pListener;
-    private PropertyChangeListener weakPListener;
+    private final List<Object[]> weakPListeners = new LinkedList<Object[]>();   //todo: Replace with Pair<PathResourceImplementation,PropertyChangeListener> when Pair available
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
     private long invalidEntries;    //Lamport ordering of events
@@ -246,10 +260,10 @@ public final class ClassPath {
         List<ClassPath.Entry> entries = this.entries();
         FileObject[] ret;
         synchronized (this) {
-            if (this.invalidRoots == current) {                            
+            if (this.invalidRoots == current) {
                 if (rootsCache == null || rootsListener == null) {
                     attachRootsListener();
-                    this.rootsCache = createRoots (entries);                    
+                    this.rootsCache = createRoots (entries);
                 }
                 ret = this.rootsCache;
             }
@@ -260,19 +274,21 @@ public final class ClassPath {
         assert ret != null;
         return ret;
     }
-    
+
     private FileObject[] createRoots (final List<ClassPath.Entry> entries) {
-        List<FileObject> l = new ArrayList<FileObject> ();
+        final List<FileObject> l = new ArrayList<FileObject> ();
+        final Set<URL> listenOn = new HashSet<URL>();
         for (Entry entry : entries) {
-            RootsListener rL = this.getRootsListener();
-            if (rL != null) {
-                rL.addRoot (entry.getURL());
-            }
+            listenOn.add(entry.getURL());
             FileObject fo = entry.getRoot();
             if (fo != null) {
                 l.add(fo);
                 root2Filter.put(fo, entry.filter);
             }
+        }
+        final RootsListener rL = this.getRootsListener();
+        if (rL != null) {
+            rL.addRoots (listenOn);
         }
         return l.toArray (new FileObject[l.size()]);
     }
@@ -317,35 +333,61 @@ public final class ClassPath {
         assert result != null;
         return result;
     }
-    
+
+    //@GuardedBy("this")
     private List<ClassPath.Entry> createEntries (final List<Object[]> resources) {
-        //The ClassPathImplementation.getResources () should never return
-        // null but it was not explicitly stated in the javadoc
-        if (resources == null) {
-            return Collections.<ClassPath.Entry>emptyList();
-        }
-        else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
+            for (final Iterator<Object[]> it = weakPListeners.iterator(); it.hasNext();) {
+                final Object[] rwp = it.next();
+                it.remove();
+                ((PathResourceImplementation)rwp[0]).removePropertyChangeListener((PropertyChangeListener)rwp[1]);
+            }
+            assert  weakPListeners.isEmpty();
             for (Object[] pair : resources) {
                 PathResourceImplementation pr = (PathResourceImplementation) pair[0];
                 URL[] roots = (URL[]) pair[1];
-                pr.removePropertyChangeListener(weakPListener);
-                pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
+                final PropertyChangeListener weakPListener = WeakListeners.propertyChange(pListener, pr);
+                pr.addPropertyChangeListener(weakPListener);
+                weakPListeners.add(new Object[]{pr, weakPListener});
                 for (URL root : roots) {
+                    if (!(pr instanceof SimplePathResourceImplementation)) { // ctor already checks these things
+                        SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName(), caller);
+                    }
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
                 }
             }
             return Collections.unmodifiableList(cache);
-        }
     }
 
     private ClassPath (ClassPathImplementation impl) {
         if (impl == null)
             throw new IllegalArgumentException ();
+        this.propSupport = new PropertyChangeSupport(this);
         this.impl = impl;
         this.pListener = new SPIListener ();
-        this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
+        this.impl.addPropertyChangeListener (WeakListeners.propertyChange(this.pListener, this.impl));
+        caller = new IllegalArgumentException();
+    }
+
+    private ClassPath() {
+        this.propSupport = new PropertyChangeSupport(this) {
+            @Override
+            public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public void firePropertyChange(PropertyChangeEvent evt) {}
+        };
+        this.impl = new ClassPathImplementation() {
+            public List<? extends PathResourceImplementation> getResources() {
+                return Collections.emptyList();
+            }
+            public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        };
+        this.pListener = new SPIListener ();
+        caller = new IllegalArgumentException();
     }
 
     /**
@@ -627,7 +669,7 @@ public final class ClassPath {
                     b.append(u);
                     break;
                 case WARN:
-                    LOG.warning("Encountered untranslatable classpath entry: " + u);
+                    LOG.log(Level.WARNING, "Encountered untranslatable classpath entry: {0}", u);
                     break;
                 case FAIL:
                     throw new IllegalArgumentException("Encountered untranslatable classpath entry: " + u); // NOI18N
@@ -777,7 +819,18 @@ public final class ClassPath {
                     //#130998:IllegalArgumentException when switching tabs
                     return false;
                 }
-                throw new IllegalArgumentException(file + " (valid: " + file.isValid() + ") not in " + r + " (valid: " + r.isValid() + ")"); //NOI18N
+                StringBuilder sb = new StringBuilder();
+                sb.append(file).append(" (valid: ").append(file.isValid()).append(") not in "). // NOI18N
+                   append(r).append(" (valid: ").append(r.isValid()).append(")"); // NOI18N
+                if (file.getPath().startsWith(r.getPath())) {
+                    while (file.getPath().length() > r.getPath().length()) {
+                        file = file.getParent();
+                        sb.append("\nChildren of ").append(file).append(" are:\n  ").append(Arrays.toString(file.getChildren()));
+                    }
+                } else {
+                    sb.append("\nRoot path is not prefix"); // NOI18N
+                }
+                throw new IllegalArgumentException(sb.toString());
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N
@@ -786,11 +839,6 @@ public final class ClassPath {
         }
 
         Entry(URL url, FilteringPathResourceImplementation filter) {
-            if (url == null)
-                throw new IllegalArgumentException ();
-            if ("jar".equals (url.getProtocol ()) && //NOI18N
-                FileUtil.getArchiveFile (url) == null
-            ) throw new IllegalArgumentException ("Invalid URL: " + url);
             this.url = url;
             this.filter = filter;
         }
@@ -815,7 +863,7 @@ public final class ClassPath {
 
     //-------------------- Implementation details ------------------------//
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propSupport;
     
     
     /**
@@ -909,7 +957,11 @@ public final class ClassPath {
                 try {
                     if (f != null) {
                         String path = FileUtil.getRelativePath(roots[ridx], f);
-                        assert path != null;
+                        assert path != null : String.format("FileUtil.getRelativePath(%s(%b),%s(%b)) returned null",
+                                FileUtil.getFileDisplayName(roots[ridx]),
+                                roots[ridx].isValid(),
+                                FileUtil.getFileDisplayName(f),
+                                f.isValid());
                         if (f.isFolder()) {
                             path += "/"; // NOI18N
                         }
@@ -987,12 +1039,21 @@ public final class ClassPath {
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
                 final List<? extends PathResourceImplementation> resources = impl.getResources();
                 if (resources == null) {
-                    LOG.warning("ClassPathImplementation.getResources cannot return null; impl class: " + impl.getClass().getName());
+                    LOG.log(Level.WARNING, "ClassPathImplementation.getResources cannot return null; impl class: {0}", impl.getClass().getName());
                     return;
                 }
-                for (PathResourceImplementation pri : resources) {
-                    pri.removePropertyChangeListener(weakPListener);
-                    pri.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pri));
+                synchronized (ClassPath.this) {
+                    for (final Iterator<Object[]> it = weakPListeners.iterator(); it.hasNext();) {
+                        final Object[] rwp = it.next();
+                        it.remove();
+                        ((PathResourceImplementation)rwp[0]).removePropertyChangeListener((PropertyChangeListener)rwp[1]);
+                    }
+                    assert  weakPListeners.isEmpty();
+                    for (PathResourceImplementation pri : resources) {
+                        final PropertyChangeListener weakPListener = WeakListeners.propertyChange(pListener, pri);
+                        pri.addPropertyChangeListener(weakPListener);
+                        weakPListeners.add(new Object[]{pri, weakPListener});
+                    }
                 }
             }
         }
@@ -1006,44 +1067,67 @@ public final class ClassPath {
 
     private static class RootsListener extends WeakReference<ClassPath> implements FileChangeListener, Runnable {
 
-        private boolean initialized;
-        private Set<String> roots;
+        private final Set<File> roots;
 
         private RootsListener (ClassPath owner) {
             super (owner, Utilities.activeReferenceQueue());
-            roots = new HashSet<String> ();
+            roots = new HashSet<File> ();
         }
 
-        public void addRoot (URL url) {
-            if (!isInitialized()) {
-                FileUtil.addFileChangeListener (this);
-                setInitialized(true);
+        public void addRoots (final Set<? extends URL> urls) {
+            Parameters.notNull("urls",urls);    //NOI18N
+            final Set<File> newRoots = new HashSet<File>();
+            for (URL url : urls) {
+                if ("jar".equals(url.getProtocol())) { //NOI18N
+                    url = FileUtil.getArchiveFile(url);
+                }
+                if (!"file".equals(url.getProtocol())) { // NOI18N
+                    // Try to convert nbinst to file
+                    FileObject file = URLMapper.findFileObject(url);
+                    if (file != null) {
+                        URL external = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                        if (external != null) {
+                            url = external;
+                        }
+                    }
+                }
+                try {
+                    //todo: Ignore non file urls, we can try to url->fileobject->url
+                    //if it becomes a file.
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        newRoots.add(new File(url.toURI()));
+                    }
+                } catch (IllegalArgumentException e) {
+                    LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
+                    //pass
+                } catch (URISyntaxException e) {
+                    LOG.log(Level.WARNING, "Invalid URL: {0}", url);
+                    //pass
+                }
             }
-            if ("jar".equals(url.getProtocol())) { //NOI18N
-                url = FileUtil.getArchiveFile(url);
+            synchronized (this) {
+                final Set<File> toRemove = new HashSet<File>(roots);
+                toRemove.removeAll(newRoots);
+                final Set<File> toAdd = new HashSet<File>(newRoots);
+                toAdd.removeAll(roots);
+                for (File root : toRemove) {
+                    FileUtil.removeFileChangeListener(this, root);
+                    roots.remove(root);
+                }
+                for (File root : toAdd) {
+                    FileUtil.addFileChangeListener(this, root);
+                    roots.add (root);
+                }
             }
-            String path = url.getPath();
-            if (path.endsWith("/")) {       //NOI18N
-                path = path.substring(0,path.length()-1);
-            }
-            roots.add (path);
         }
 
-        public void removeRoot (URL url) {            
-            if ("jar".equals(url.getProtocol())) { //NOI18N
-                url = FileUtil.getArchiveFile(url);
-            }
-            String path = url.getPath();
-            if (path.endsWith("/")) {   //NOI18N
-                path = path.substring(0,path.length()-1);
-            }
-            roots.remove (path);
-        }
 
-        public void removeAllRoots () {
-            this.roots.clear();
-            FileUtil.removeFileChangeListener(this);
-            initialized = false; //Already synchronized
+        public synchronized void removeAllRoots () {
+            for (final Iterator<File> it = roots.iterator(); it.hasNext();) {
+                final File root = it.next();
+                it.remove();
+                FileUtil.removeFileChangeListener(this, root);
+            }
         }
 
         public void fileFolderCreated(FileEvent fe) {
@@ -1055,21 +1139,7 @@ public final class ClassPath {
         }
 
         public void fileChanged(FileEvent fe) {
-            if (!isInitialized()) {
-                return; //Cache already cleared
-            }
-            String path = getPath (fe.getFile());
-            if (this.roots.contains(path)) {
-                ClassPath cp = get();
-                if (cp != null) {
-                    synchronized (cp) {
-                        cp.rootsCache = null;
-                        cp.invalidRoots++;
-                        this.removeAllRoots();  //No need to listen
-                    }
-                    cp.firePropertyChange(PROP_ROOTS,null,null,null);
-               }
-            }
+            processEvent(fe);
         }
 
         public void fileDeleted(FileEvent fe) {
@@ -1080,66 +1150,28 @@ public final class ClassPath {
             this.processEvent (fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {            
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
         public void run() {
-            if (isInitialized()) {
-                FileUtil.removeFileChangeListener(this);
+            try {
+                removeAllRoots();
+            } catch (final IllegalArgumentException iae) {
+                //pass - ignore, the FU.removeFileChangeListener holds listeners
+                //in the WeakHashMap and this may be already removed -> IAE.
             }
         }
 
         private void processEvent (FileEvent fe) {
-            if (!isInitialized()) {
-                return; //Not interesting, cache already cleared
-            }
-            String path = getPath (fe.getFile());
-            if (path == null)
-                return;
-            ClassPath cp = get();
+            final ClassPath cp = get();
             if (cp == null) {
                 return;
             }
-            boolean fire = false;
             synchronized (cp) {
-                for (String rootPath : roots) {
-                    if (rootPath.startsWith (path)) {
-                        cp.rootsCache = null;
-                        cp.invalidRoots++;
-                        this.removeAllRoots();  //No need to listen
-                        fire = true;
-                        break;
-                    }
-                }            
+                cp.rootsCache = null;
+                cp.invalidRoots++;
             }
-            if (fire) {
-                cp.firePropertyChange(PROP_ROOTS,null,null,null);
-            }
-        }
-
-        private static String getPath (FileObject fo) {
-            if (fo == null)
-                return null;            
-            try {
-                URL url = fo.getURL();
-                String path = url.getPath();
-                if (path.endsWith("/")) {        //NOI18N
-                    path=path.substring(0,path.length()-1);
-                }
-                return path;
-            } catch (FileStateInvalidException e) {
-                Exceptions.printStackTrace(e);
-                return null;
-            }
-        }
-        
-        private synchronized boolean isInitialized () {
-            return this.initialized;
-        }
-        
-        private synchronized void setInitialized (boolean newValue) {
-            this.initialized = newValue;
+            cp.firePropertyChange(PROP_ROOTS,null,null,null);
         }
     }
-
 }

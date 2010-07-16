@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -321,22 +324,27 @@ public class CreationDescriptor {
             constructorPropNames = propNames;
         }
 
+        @Override
         public final int getParameterCount() {
             return constructorPropNames.length; //constructorParamTypes.length;
         }
 
+        @Override
         public final Class[] getParameterTypes() {
             return constructor.getParameterTypes(); //constructorParamTypes;
         }
 
+        @Override
         public final Class[] getExceptionTypes() {
             return constructor.getExceptionTypes();
         }
 
+        @Override
         public final String[] getPropertyNames() {
             return constructorPropNames;
         }
 
+        @Override
         public Object createInstance(FormProperty[] props)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -361,6 +369,7 @@ public class CreationDescriptor {
             return constructor.newInstance(paramValues);
         }
 
+        @Override
         public Object createInstance(Object[] paramValues)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -368,8 +377,9 @@ public class CreationDescriptor {
             return constructor.newInstance(paramValues);
         }        
         
+        @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("new "); // NOI18N
             buf.append(theClass.getCanonicalName());
             if (genericTypes != null) {
@@ -392,6 +402,7 @@ public class CreationDescriptor {
             return buf.toString();
         }
 
+        @Override
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
             return CodeStructure.createOrigin(constructor, params);
         }
@@ -429,22 +440,27 @@ public class CreationDescriptor {
         }
     
             
+        @Override
         public final int getParameterCount() {
             return propertyNames.length; 
         }
 
+        @Override
         public final Class[] getParameterTypes() {
             return method.getParameterTypes(); 
         }
 
+        @Override
         public final Class[] getExceptionTypes() {
             return method.getExceptionTypes();
         }
 
+        @Override
         public final String[] getPropertyNames() {
             return propertyNames;
         }
 
+        @Override
         public Object createInstance(FormProperty[] props)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -471,6 +487,7 @@ public class CreationDescriptor {
             return ret;
         }
 
+        @Override
         public Object createInstance(Object[] paramValues)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -483,8 +500,9 @@ public class CreationDescriptor {
             return ret;
         }
         
+        @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (expressionType == null) expressionType = describedClass;
             if (!expressionType.isAssignableFrom(method.getReturnType())) { // Issue 71220
                 buf.append('(').append(expressionType.getName()).append(')');
@@ -513,6 +531,7 @@ public class CreationDescriptor {
             return buf.toString();
         }
 
+        @Override
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
             // nobody cares ...
             return null; 

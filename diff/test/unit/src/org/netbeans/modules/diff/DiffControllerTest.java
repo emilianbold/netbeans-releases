@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@
  */
 package org.netbeans.modules.diff;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
@@ -50,6 +55,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
 import java.io.StringReader;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**
  * @author Maros Sandor
@@ -57,17 +64,41 @@ import java.io.StringReader;
 public class DiffControllerTest extends NbTestCase {
 
     private DiffController controller;
+    private DiffController enhancedController;
 
     public DiffControllerTest(String name) {
         super(name);
     }
 
     protected void setUp() throws Exception {
+        MockServices.setServices(BuiltInDiffProvider.class);
         controller = DiffController.create(new Impl("name1", "title1", "text/plain", "content1\nsame\ndifferent1"), new Impl("name2", "title2", "text/plain", "content2\nsame\ndifferent2"));
+        final boolean[] finished = new boolean[2];
+        controller.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                controller.removePropertyChangeListener(this);
+                finished[0] = true;
+            }
+        });
+
+        enhancedController = DiffController.createEnhanced(new Impl("name1", "title1", "text/plain", "content1\nsame\ndifferent1"), new Impl("name2", "title2", "text/plain", "content2\nsame\ndifferent2"));
+        enhancedController.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                enhancedController.removePropertyChangeListener(this);
+                finished[1] = true;
+            }
+        });
+        for (int i = 0; i < 10 && !(finished[0] && finished[1]); ++i) {
+            Thread.sleep(1000);
+        }
     }
 
     public void testCurrentDifference() throws Exception {
         int dc = controller.getDifferenceCount();
+        assertEquals("Wrong number of differences", 2, dc);
+        dc = enhancedController.getDifferenceCount();
         assertEquals("Wrong number of differences", 2, dc);
     }
 
@@ -75,10 +106,15 @@ public class DiffControllerTest extends NbTestCase {
         int dc = controller.getDifferenceCount();
         int di = controller.getDifferenceIndex();
         assertTrue("Wrong difference index", di == -1 || di >= 0 && di < dc);
+        dc = enhancedController.getDifferenceCount();
+        di = enhancedController.getDifferenceIndex();
+        assertTrue("Wrong difference index", di == -1 || di >= 0 && di < dc);
     }
 
     public void testComponent() throws Exception {
         JComponent c = controller.getJComponent();
+        assertNotNull("Not a JComponent", c);
+        c = enhancedController.getJComponent();
         assertNotNull("Not a JComponent", c);
     }
 

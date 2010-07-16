@@ -18,9 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
-import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -28,7 +26,6 @@ import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -40,17 +37,13 @@ import org.openide.windows.WindowManager;
 public class ShowBpelMapperAction extends BpelNodeAction {
 
     private static final long serialVersionUID = 1L;
-//    public static final KeyStroke GOTOMAPPER_KEYSTROKE = KeyStroke.getKeyStroke(
-//            NbBundle.getMessage(ShowBpelMapperAction.class,"ACT_GoToMapperAction"));// NOI18N
 
     public ShowBpelMapperAction() {
         super();
-//        putValue(ShowBpelMapperAction.ACCELERATOR_KEY, GOTOMAPPER_KEYSTROKE);
     }
 
     protected String getBundleName() {
-        return NbBundle.getMessage(ShowBpelMapperAction.class,
-                "CTL_ShowBpelMapperAction"); // NOI18N
+        return NbBundle.getMessage(ShowBpelMapperAction.class, "CTL_ShowBpelMapperAction"); // NOI18N
     }
 
     public ActionType getType() {
@@ -69,9 +62,9 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         for (int i = 0; i < nodes.length; i++) {
             if (nodes[i] instanceof BpelNode) {
                 Object ref = ((BpelNode)nodes[i]).getReference();
-
-                isEnable = ref instanceof BpelEntity
-                        && BpelDesignContextFactory.getInstance().isMappableEntity((BpelEntity)ref);
+                isEnable = ref instanceof BpelEntity && 
+                        BpelDesignContextFactory.getInstance().isMappableEntity((BpelEntity)ref);
+//System.out.println("!!!: " + BpelDesignContextFactory.getInstance().getClass().getName());
                 if (isEnable) {
                     break;
                 }
@@ -83,7 +76,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
 
         // temporary hack, tc doesn't have nested mv tc activated nodes
         if (dataNode != null) {
-            TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
+            // TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
             Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
             BpelEntity[] entities = getBpelEntities(activatedNodes);
             isEnable = entities != null && entities.length > 0

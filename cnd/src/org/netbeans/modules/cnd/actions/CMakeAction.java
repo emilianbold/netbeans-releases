@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,27 +42,32 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.Frame;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -77,6 +85,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         return object instanceof CMakeDataObject;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++){
             performAction(activatedNodes[i]);
@@ -88,30 +97,45 @@ public class CMakeAction extends AbstractExecutorRunAction {
     }
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
-        if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    _performAction(node, listener, outputListener, project, inputOutput);
+        if (SwingUtilities.isEventDispatchThread()) {
+            final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+                private NativeExecutionService es;
+                @Override
+                public void doWork() {
+                    es = CMakeAction.prepare(node, listener, outputListener, project, inputOutput);
                 }
-            });
+                @Override
+                public void doPostRunInEDT() {
+                    if (es != null) {
+                        es.run();
+                    }
+                }
+            };
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = getString("DLG_TITLE_Prepare", "cmake"); // NOI18N
+            String msg = getString("MSG_TITLE_Prepare", "cmake"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            return _performAction(node, listener, outputListener, project, inputOutput);
+            NativeExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            if (es != null) {
+                return es.run();
+            }
         }
         return null;
     }
 
-    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,Tool.CMakeTool);
+        String buildDir = getBuildDirectory(node,PredefinedToolKind.CMakeTool);
         // Executable
-        String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
+        String executable = getCommand(node, project, PredefinedToolKind.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
-        String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
+        String[] arguments =  getArguments(node, PredefinedToolKind.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {
@@ -126,7 +150,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         traceExecutable(executable, buildDir, argsFlat, envMap);
         if (inputOutput == null) {
             // Tab Name
-            String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
+            String tabName = execEnv.isLocal() ? getString("CMAKE_LABEL", node.getName()) : getString("CMAKE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
             _tab.closeInputOutput(); // Close it...
             final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
@@ -142,24 +166,30 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "CMake", syncWorker); // NOI18N
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir)
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
-        .unbufferOutput(false)
-        .addNativeProcessListener(processChangeListener);
-        npb.redirectError();
 
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-        .controllable(true)
-        .frontWindow(true)
-        .inputVisible(true)
-        .inputOutput(inputOutput)
-        .showProgress(true)
-        .postExecution(processChangeListener)
-        .outConvertorFactory(processChangeListener);
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(buildDir).
+                unbufferOutput(false).
+                addNativeProcessListener(processChangeListener);
+        
+        npb.redirectError();
+        List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setExecutable(executable);
+        npb.setArguments(list.toArray(new String[list.size()]));
+
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(true).
+                inputOutput(inputOutput).
+                showProgress(true).
+                postExecution(processChangeListener).
+                postMessageDisplayer(new PostMessageDisplayer.Default("CMake")). // NOI18N
+                outConvertorFactory(processChangeListener);
+
         // Execute the makefile
-        ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
-        return es.run();
+        return NativeExecutionService.newService(npb, descr, "cmake"); // NOI18N
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -155,6 +158,7 @@ public abstract class AbstractCard implements Card {
     }
 
     //XXX get rid of this since we have CapabilitiesProvider?
+    @SuppressWarnings("unchecked") //NOI18N
     public final Set<Class<? extends ICardCapability>> getSupportedCapabilities() {
         CapabilitiesProvider prov = getLookup().lookup(CapabilitiesProvider.class);
         if (prov == null) {
@@ -256,11 +260,14 @@ public abstract class AbstractCard implements Card {
     /**
      * Add a capability to this card.
      * @param c The capability
+     * @throws AssertionError if assertions are enabled, and this call would 
+     * result in two of the passed capability subclass in the card's
+     * capabilities.
      */
     protected final void addCapability(ICardCapability c) {
         Logger log = Logger.getLogger (AbstractCard.class.getName());
         if (log.isLoggable(Level.FINER)) {
-            log.log(Level.FINER, "Add Capability " + c + " to " + this); //NOI18N
+            log.log(Level.FINER, "Add Capability {0} to {1}", new Object[]{c, this}); //NOI18N
         }
         logAddition (c);
         if (!initializing) {
@@ -270,6 +277,8 @@ public abstract class AbstractCard implements Card {
             }
         }
         content.add(c);
+        assert new HashSet<Object>(getLookup().lookupAll(c.getClass())).size() == getLookup().lookupAll(c.getClass()).size() :
+            "Lookup should not contain multiple instances of " + c.getClass() + "(" + getLookup().lookupAll(c.getClass()); //NOI18N
     }
 
     void logAddition(ICardCapability c) {
@@ -288,9 +297,9 @@ public abstract class AbstractCard implements Card {
      * @param <T>
      * @param type
      */
+    @SuppressWarnings("unchecked") //NOI18N
     protected <T extends Class<? extends ICardCapability>> void removeCapability(T type) {
-        //XXX probably some way to avoid this cast
-        Object t = getLookup().lookup((Class) type);
+        Object t = getLookup().lookup((Class<? extends ICardCapability>)type);
         if (t != null) {
             content.remove(t);
         }

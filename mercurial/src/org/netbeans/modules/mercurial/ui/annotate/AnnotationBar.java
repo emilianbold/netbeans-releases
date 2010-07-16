@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,10 +76,11 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -161,7 +165,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    RequestProcessor requestProcessor = null;
+    static RequestProcessor requestProcessor = null;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -187,7 +191,17 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /*
      * Holds parent/previous revisions for each line revision
      */
-    private Map<String, String> previousRevisions;
+    private Map<String, HgRevision> previousRevisions;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+     */
+    private File referencedFile;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+     */
+    private FileObject referencedFileObject;
 
     /**
      * Creates new instance initializing final fields.
@@ -305,32 +319,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
-                String url = HgUtils.getRemoteRepository(repositoryRoot);
-                boolean isKenaiRepository = url != null && HgKenaiSupport.getInstance().isKenai(url);
-                if(isKenaiRepository) {
-                    kenaiUsersMap = new HashMap<String, KenaiUser>();
-                }
-
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
-                previousRevisions = Collections.synchronizedMap(new HashMap<String, String>());
+                previousRevisions = Collections.synchronizedMap(new HashMap<String, HgRevision>());
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
                 while (it.hasNext()) {
                     AnnotateLine line = it.next();
                     int lineNum = ann2editorPermutation[line.getLineNum() -1];
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                        Element element = sd.getParagraphElement(lineOffset);
-                        if(isKenaiRepository) {
-                            String author = line.getAuthor();
-                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = HgKenaiSupport.getInstance().forName(author);
-                                if(ku != null) {
-                                    kenaiUsersMap.put(author, ku);
-                                }
-                            }
-                        }
+                        Element element = sd.getParagraphElement(lineOffset);                        
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -341,6 +341,23 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
 
+        final String url = HgUtils.getRemoteRepository(repositoryRoot);
+        final boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
+        if(isKenaiRepository) {
+            kenaiUsersMap = new HashMap<String, KenaiUser>();
+            Iterator<AnnotateLine> it = lines.iterator();
+            while (it.hasNext()) {
+                AnnotateLine line = it.next();
+                String author = line.getAuthor();
+                if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                    KenaiUser ku = HgKenaiAccessor.getInstance().forName(author, url);
+                    if(ku != null) {
+                        kenaiUsersMap.put(author, ku);
+                    }
+                }
+            }
+        }
+                
         // lazy listener registration
         caret.addChangeListener(this);
         this.caretTimer = new Timer(500, this);
@@ -360,14 +377,27 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * exists.
      */
     File getCurrentFile() {
-        File result = null;
-        
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
-            FileObject fo = dobj.getPrimaryFile();
-            result = FileUtil.toFile(fo);
+        File result = referencedFile;
+        if (result == null) {
+            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                result = FileUtil.toFile(fo);
+            }
         }
-        
+        return result;
+    }
+
+    FileObject getCurrentFileObject () {
+        FileObject result = referencedFileObject;
+        if (result == null) {
+            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof FileObject) {
+                result = (FileObject)sdp;
+            } else if (sdp instanceof DataObject) {
+                result = ((DataObject)sdp).getPrimaryFile();
+            }
+        }
         return result;
     }
 
@@ -375,19 +405,21 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return doc;
     }
 
+    private MouseListener mouseListener;
     /**
      * Registers "close" popup menu, tooltip manager // NOI18N
      * and repaint on documet change manager.
      */
+    @Override
     public void addNotify() {
         super.addNotify();
-
-
-        this.addMouseListener(new MouseAdapter() {
+        this.addMouseListener(mouseListener = new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -407,6 +439,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // register with tooltip manager
         setToolTipText(""); // NOI18N
 
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if (mouseListener != null) {
+            this.removeMouseListener(mouseListener);
+            mouseListener = null;
+        }
     }
 
     /**
@@ -455,44 +496,58 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         // revision previous to target line's revision
         final String revisionPerLine = al == null ? null : al.getRevision();
+        final String changesetIdPerLine = al == null ? null : al.getId();
         // used in menu Revert
         final File file = getCurrentFile();
         // used in diff menu, repository root set while computing revision
         // denotes the path of the file in the showing revision
         final File originalFile = al == null ? null : new File(repositoryRoot, al.getFileName());
-        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if (revisionPerLine != null) {
-                    // getting the prevoius revision may take some time, running in bg
-                    new HgProgressSupport() {
-                        @Override
-                        protected void perform() {
-                            final String previousRevision = getParentRevision(originalFile, revisionPerLine);
-                            if (!isCanceled() && previousRevision != null) {
-                                SwingUtilities.invokeLater(new Runnable () {
-                                    public void run() {
-                                        DiffAction.diff(originalFile, previousRevision, revisionPerLine);
-                                    }
-                                });
-                            }
-                        }
-                    }.start(RequestProcessor.getDefault(), repositoryRoot,
-                            NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
-                }
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
+                pri.runWithRevision(new Runnable() {
+                    @Override
+                    public void run() {
+                        DiffAction.diff(originalFile, pri.getPreviousRevision(), new HgRevision(changesetIdPerLine, revisionPerLine));
+                    }
+                }, true);
             }
         });
         popupMenu.add(diffMenu);
 
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert")); // NOI18N
         rollbackMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 revert(file, revisionPerLine);
             }
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+
+        // an action showing annotation for previous revisions
+        final JMenuItem previousAnnotationsMenu = new JMenuItem();
+        previousAnnotationsMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
+                pri.runWithRevision (new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            HgRevision previousRevision = pri.getPreviousRevision();
+                            HgUtils.openInRevision(originalFile, previousRevision, !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                }, false);
+            }
+        });
+        popupMenu.add(previousAnnotationsMenu);
 
         if(isKenai() && al != null) {
             String author = al.getAuthor();
@@ -502,8 +557,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 popupMenu.addSeparator();
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
-                        ku.startChat(ku.getChatLink(doc, lineNr));
+                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);
@@ -513,6 +569,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
         menu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hideBar();
             }
@@ -522,29 +579,78 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
+        previousAnnotationsMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
             String key = getPreviousRevisionKey(file.getAbsolutePath(), revisionPerLine);
-            String previousRevision = getPreviousRevisions().get(key); // get from cache
+            HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
             if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
                 if (!getPreviousRevisions().containsKey(key)) {
                     // get revision in a bg thread and cache the value
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             getParentRevision(originalFile, revisionPerLine);
                         }
                     });
                 }
                 String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
-                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+                String previousRevisionNumber = previousRevision == null ? null : previousRevision.getRevisionNumber();
+                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevisionNumber == null ? loc.getString("LBL_PreviousRevision") : previousRevisionNumber})); //NOI18N
                 diffMenu.setVisible(originalFile != null);
                 rollbackMenu.setVisible(true);
                 separator.setVisible(true);
+                format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
+                previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevisionNumber == null ? loc.getString("LBL_PreviousRevision") : previousRevisionNumber})); //NOI18N
+                previousAnnotationsMenu.setVisible(originalFile != null);
+                previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevisionNumber)); //NOI18N
             }
         }
 
         return popupMenu;
+    }
+
+    /**
+     * Class for running a code after the previous revision is determined, which may take some time
+     */
+    private class PreviousRevisionInvoker {
+        private final String revisionPerLine;
+        private final File originalFile;
+        private HgRevision previousRevision;
+
+        private PreviousRevisionInvoker(String revisionPerLine, File originalFile) {
+            this.revisionPerLine = revisionPerLine;
+            this.originalFile = originalFile;
+        }
+
+        /**
+         * Runs the given runnable after the previous revision is determined
+         * @param runnable
+         */
+        private void runWithRevision (final Runnable runnable, final boolean inAWT) {
+            if (revisionPerLine != null) {
+                // getting the prevoius revision may take some time, running in bg
+                new HgProgressSupport() {
+                    @Override
+                    protected void perform() {
+                        previousRevision = getParentRevision(originalFile, revisionPerLine);
+                        if (!isCanceled() && previousRevision != null) {
+                            if (inAWT) {
+                                EventQueue.invokeLater(runnable);
+                            } else {
+                                getRequestProcessor().post(runnable);
+                            }
+                        }
+                    }
+                }.start(Mercurial.getInstance().getRequestProcessor(), repositoryRoot,
+                        NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
+            }
+        }
+
+        private HgRevision getPreviousRevision() {
+            return previousRevision;
+        }
     }
 
     private void revert(final File file, String revision) {
@@ -562,6 +668,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {                 
                 RevertModificationsAction.performRevert(root, revStr, file, doBackup, this.getLogger());
             }
@@ -569,19 +676,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         support.start(rp, root, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
     }
 
-    private String getPreviousRevision(String revision) {
+    private HgRevision getPreviousRevision(String revision) {
         boolean orderedAsc = logs.length > 1 && logs[0].getRevisionAsLong() < logs[1].getRevisionAsLong(); // logs order type
         for(int i = 0; i < logs.length; i++) {
-            if (logs[i].getRevision().equals(revision)) {
+            if (logs[i].getRevisionNumber().equals(revision)) {
                 if (orderedAsc) {
                     // logs are ordered in an ascending order
                     if (i > 0) {
-                        return logs[i - 1].getRevision();
+                        return logs[i - 1].getHgRevision();
                     }
                 } else {
                     // logs are ordered in a descending order
                     if (i < logs.length - 1) {
-                        return logs[i + 1].getRevision();
+                        return logs[i + 1].getHgRevision();
                     }
                 }
             }
@@ -589,12 +696,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return null;
     }
 
-    private String getParentRevision(File file, String revision) {
+    private HgRevision getParentRevision(File file, String revision) {
         String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
-        String parent = getPreviousRevisions().get(key);
+        HgRevision parent = getPreviousRevisions().get(key);
         if (parent == null) {
             try {
-                parent = HgCommand.getParent(repositoryRoot.getAbsolutePath(), file, revision);
+                parent = HgCommand.getParent(repositoryRoot, file, revision);
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
@@ -618,7 +725,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Gets a request processor which is able to cancel tasks.
      */
-    private RequestProcessor getRequestProcessor() {
+    private static synchronized RequestProcessor getRequestProcessor() {
         if (requestProcessor == null) {
             requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);  // NOI18N
         }
@@ -640,6 +747,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     // latestAnnotationTask business logic
+    @Override
     public void run() {
         // get resource bundle
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
@@ -719,7 +827,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             statusBar.setText(StatusBar.CELL_MAIN, al.getRevision() + ":" + al.getId() + " - " + al.getAuthor() + ": " + recentStatusMessage); // NOI18N
         } else {
             clearRecentFeedback();
-        };
+        }
     }
     
     /**
@@ -742,6 +850,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * {@link #revalidate} that triggers new layouting
      * that consults prefered size.
      */
+    @Override
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
         int width = annotated ? getBarWidth() : 0;
@@ -853,12 +962,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Presents commit message as tooltips.
      */
+    @Override
     public String getToolTipText (MouseEvent e) {
         if (editorUI == null)
             return null;
         int line = getLineFromMouseEvent(e);
 
-        StringBuffer annotation = new StringBuffer();
+        StringBuilder annotation = new StringBuilder();
         if (elementAnnotations != null) {
             AnnotateLine al = getAnnotateLine(line);
 
@@ -871,9 +981,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
-                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + ":" + al.getId() + " - <b>" + escapedAuthor + "</b>"); // NOI18N
+                annotation.append("<html><!-- line=").append(line++).append(" -->").append(al.getRevision()).append(":").append(al.getId()).append(" - <b>").append(escapedAuthor).append("</b>"); // NOI18N
                 if (al.getDate() != null) {
-                    annotation.append(" " + DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
+                    annotation.append(" ").append(DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
                 }
                 if (al.getCommitMessage() != null) {
                     String escaped = null;
@@ -884,7 +994,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     }
                     if (escaped != null) {
                         String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
-                        annotation.append("<p>" + lined); // NOI18N
+                        annotation.append("<p>").append(lined); // NOI18N
                     }
                 }
             }
@@ -936,6 +1046,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * It invokes {@link #paintView} that contains
      * actual business logic.
      */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -961,15 +1072,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 int rootViewCount = rootView.getViewCount();
 
                 if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
-
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);
+                        Rectangle rec = component.modelToView(view.getStartOffset());
+                        if (rec == null) {
+                            break;
+                        }
+                        int y = rec.y;
                         paintView(view, g, y);
-                        y += editorUI.getLineHeight();
                         if (y >= clipEndY) {
                             break;
                         }
@@ -1028,6 +1139,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
@@ -1041,10 +1153,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     /** Implementation */
+    @Override
     public void insertUpdate(DocumentEvent e) {
         // handle new lines,  Enter hit at end of line changes
         // the line element instance
@@ -1084,6 +1198,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if (e.getDocument().getLength() == 0) { // external reload
             hideBar();
@@ -1092,31 +1207,37 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Caret */
+    @Override
     public void stateChanged(ChangeEvent e) {
         assert e.getSource() == caret;
         caretTimer.restart();
     }
 
     /** Timer */
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert e.getSource() == caretTimer;
         onCurrentLine();
     }
 
     /** on JTextPane */
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentResized(ComponentEvent e) {
         revalidate();
     }
 
     /** on JTextPane */
+    @Override
     public void componentShown(ComponentEvent e) {
     }
 
@@ -1128,9 +1249,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return filePath + "#" + revision;                               //NOI18N
     }
 
-    private Map<String, String> getPreviousRevisions () {
-        Map<String, String> revisions = previousRevisions;
-        return revisions == null ? new HashMap<String, String>(0) : previousRevisions;
+    private Map<String, HgRevision> getPreviousRevisions () {
+        Map<String, HgRevision> revisions = previousRevisions;
+        return revisions == null ? new HashMap<String, HgRevision>(0) : revisions;
+    }
+
+    /**
+     * Sets the file for which the annotations are displayed. This file can differ from the displayed one when showing annotations
+     * for a file in the past.
+     * @param file
+     */
+    void setReferencedFile(File file) {
+        this.referencedFile = FileUtil.normalizeFile(file);
+        this.referencedFileObject = FileUtil.toFileObject(file);
     }
 }
 

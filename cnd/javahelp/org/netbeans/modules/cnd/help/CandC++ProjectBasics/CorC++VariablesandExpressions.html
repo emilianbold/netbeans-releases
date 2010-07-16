@@ -14,32 +14,32 @@ type="text/css">
 <h2>C and C++ Variables and Expressions in the IDE
 </h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>In the IDE, local variables are listed in the Local Variables 
+<p>In the IDE, static local and auto variables are listed in the Variables
 window. However, you can also evaluate variables directly 
 in the Source Editor using <a href="BalloonEvaluation.html">balloon 
 evaluation</a>.
 </p>
 <p>
-For each variable within the current function the Local Variables 
+For each variable within the current function the Variables
 window displays information including the variable name, type, and 
-value. The Local Variables window also displays all of the static 
+value. The Variables window also displays all of the static 
 fields for each variable, as well as all of the inherited fields 
 from all superclasses.
 </p>
 <p>
 In some cases, the debugger assigns a pound sign (#) and a number 
-as the variable's value. This number is an unique identifier of the 
+as the variable's value. This number is a unique identifier of the 
 given instance. You can use this identifier to determine if a
 variable points to the same instance or to a different instance. 
 You cannot edit this value.
 </p>
-<!--
 <p>You can track the changes in the value of a variable during program 
 execution by setting a watch on the variable. When you create a 
 watch, the value of the variable is immediately evaluated and 
-displayed in the Watches window.
+displayed in the Watches window. You can also display watches inside
+the Variables window by clicking the <img src="../images/WatchesInVariables.png">
+button in the left margin.
 </p>
--->
 <table summary="related topics">
 <tr valign="top">
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
@@ -50,6 +50,7 @@ displayed in the Watches window.
   <a href="CandC++DebuggerContext.html">Current Context in the Debugger</a><br>
   <a href="SteppingThroughCorC++.html">Stepping Through Your C or C++ 
 Program</a><br>
+ <a href="CandC++LocalVariablesWindow.html">C and C++ Variables Window</a><br>
   <a href="UsingCorC++CallStack.html">Using the C or C++ Call Stack</a>
 </td>
 </tr>

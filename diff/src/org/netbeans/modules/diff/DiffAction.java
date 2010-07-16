@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 
 import org.openide.NotifyDescriptor;
+import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -70,6 +74,7 @@ import org.netbeans.modules.diff.builtin.SingleDiffPanel;
 import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Diff Action. It gets the default diff visualizer and diff provider if needed
@@ -83,6 +88,8 @@ public class DiffAction extends NodeAction {
     public DiffAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
+
+    private static boolean diffAvailable = true;
     
     private class DiffActionImpl extends AbstractAction {
         
@@ -134,21 +141,22 @@ public class DiffAction extends NodeAction {
     
     public boolean enable(Node[] nodes) {
         //System.out.println("DiffAction.enable() = "+(nodes.length == 2));
+        if (!diffAvailable) {
+            return false;
+        }
         if (nodes.length == 2) {
             FileObject fo1 = getFileFromNode(nodes[0]);
             FileObject fo2 = getFileFromNode(nodes[1]);
             if (fo1 != null && fo2 != null) {
                 if (fo1.isData() && fo2.isData()) {
-                    Diff d = Diff.getDefault();
-                    return d != null;
+                    return true;
                 }
             }
         } else if (nodes.length == 1) {
             FileObject fo1 = getFileFromNode(nodes[0]);
             if (fo1 != null) {
                 if (fo1.isData()) {
-                    Diff d = Diff.getDefault();
-                    return d != null;
+                    return true;
                 }
             }
         }
@@ -224,6 +232,7 @@ public class DiffAction extends NodeAction {
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
                     "MSG_NoDiffVisualizer")));
+            diffAvailable = false;
             return ;
         }
         SingleDiffPanel sdp = null;
@@ -252,7 +261,19 @@ public class DiffAction extends NodeAction {
             final SingleDiffPanel fsdp = sdp;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp);
+                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp) {
+                        @Override
+                        protected void componentActivated() {
+                            super.componentActivated();
+                            fsdp.requestActive();
+                        }
+
+                        @Override
+                        public UndoRedo getUndoRedo() {
+                            return fsdp.getUndoRedo();
+                        }
+                    };
+                    fsdp.putClientProperty(TopComponent.class, dtc);
                     dtc.open();
                     dtc.requestActive();
                 }

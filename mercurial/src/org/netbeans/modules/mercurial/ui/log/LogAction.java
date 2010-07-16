@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,11 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,18 +59,19 @@ import org.openide.util.NbBundle;
  */
 public class LogAction extends SearchHistoryAction {
 
-    public LogAction(String name, VCSContext context) {
-        super(context);
-        putValue(Action.NAME, name);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Log";                                      //NOI18N
     }
 
-    public void performAction(ActionEvent e) {
-        openHistory(NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(getContext())));
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        openHistory(context, NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
 
-    private void openHistory(final String title) {
-        File repositoryRoot = getRepositoryRoot();
-        File[] files = getFiles();
+    private void openHistory(VCSContext context, final String title) {
+        File repositoryRoot = getRepositoryRoot(context);
+        File[] files = getFiles(context, repositoryRoot);
         if (files == null) {
             return;
         }

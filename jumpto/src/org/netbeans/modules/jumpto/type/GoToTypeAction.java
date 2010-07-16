@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +68,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -90,6 +97,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -119,38 +128,40 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private Collection<? extends TypeProvider> typeProviders;
     private final TypeBrowser.Filter typeFilter;
     private final String title;
+    private final boolean multiSelection;
 
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
         this(
             NbBundle.getMessage( GoToTypeAction.class, "DLG_GoToType" ),
-            null
+            null,
+            true
         );
     }
     
-    public GoToTypeAction(String title, TypeBrowser.Filter typeFilter, TypeProvider... typeProviders) {
+    public GoToTypeAction(String title, TypeBrowser.Filter typeFilter, boolean multiSelection, TypeProvider... typeProviders) {
         super( NbBundle.getMessage( GoToTypeAction.class,"TXT_GoToType") );
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
         this.title = title;
         this.typeFilter = typeFilter;
         this.typeProviders = typeProviders.length == 0 ? null : Arrays.asList(typeProviders);
+        this.multiSelection = multiSelection;
     }
     
     public void actionPerformed( ActionEvent e ) {
-        TypeDescriptor typeDescriptor = getSelectedType();
-        if (typeDescriptor != null) {
-            typeDescriptor.open();
+        for (TypeDescriptor td : getSelectedTypes()) {
+            td.open();
         }
     }
             
-    public TypeDescriptor getSelectedType() {
-        return getSelectedType(true);
+    public Iterable<? extends TypeDescriptor> getSelectedTypes() {
+        return getSelectedTypes(true);
     }
     
-    public TypeDescriptor getSelectedType(final boolean visible) {
-        TypeDescriptor result = null;
+    public Iterable<? extends TypeDescriptor> getSelectedTypes(final boolean visible) {
+        Iterable<? extends TypeDescriptor> result = Collections.emptyList();
         try {
-            panel = new GoToPanel(this);
+            panel = new GoToPanel(this, multiSelection);
             dialog = createDialog(panel);
             
             Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
@@ -158,9 +169,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if (arr.length > 0) {
                 EditorCookie ec = arr[0].getCookie (EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] openedPanes = ec.getOpenedPanes ();
-                    if (openedPanes != null) {
-                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(openedPanes [0]);
+                    JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                    if (recentPane != null) {
+                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
                         if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
                             panel.setInitialText(initSearchText);
                         }
@@ -169,7 +180,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }            
             
             dialog.setVisible(visible);
-            result = panel.getSelectedType();
+            result = panel.getSelectedTypes();
 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -389,40 +400,62 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             this.text = text;
             this.createTime = System.currentTimeMillis();
             LOGGER.fine( "Worker for " + text + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );                
-       }
-        
+        }
+
         public void run() {
-            
-            LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
-            
-            final List<? extends TypeDescriptor> types = getTypeNames( text );
-            if ( isCanceled ) {
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
-                return;
-            }
-            ListModel model = Models.fromList(types);
-            if (typeFilter != null) {
-                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
-            }
-            final ListModel fmodel = model;
-            if ( isCanceled ) {            
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );                                
-                return;
-            }
-            
-            if ( !isCanceled && fmodel != null ) {                
-                LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.setModel(fmodel);
-                        if (okButton != null && !types.isEmpty()) {
-                            okButton.setEnabled (true);
+            for (;;) {
+                final int[] retry = new int[1];
+
+                Profile profile = initializeProfiling();
+                try {
+                    LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+
+                    final List<? extends TypeDescriptor> types = getTypeNames(text, retry);
+                    if ( isCanceled ) {
+                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        return;
+                    }
+                    ListModel model = Models.fromList(types);
+                    if (typeFilter != null) {
+                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                    }
+                    final ListModel fmodel = model;
+                    if ( isCanceled ) {
+                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        return;
+                    }
+
+                    if ( !isCanceled && fmodel != null ) {
+                        LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                panel.setModel(fmodel);
+                                if (okButton != null && !types.isEmpty()) {
+                                    okButton.setEnabled (true);
+                                }
+                            }
+                        });
+                    }
+                } finally {
+                    if (profile != null) {
+                        try {
+                            profile.stop();
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.INFO, "Cannot stop profiling", ex);
                         }
                     }
-                });
-            }
-            
-            
+                }
+
+                if (retry[0] > 0) {
+                    try {
+                        Thread.sleep(retry[0]);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    return;
+                }
+            } // for
         }
         
         public void cancel() {
@@ -440,7 +473,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends TypeDescriptor> getTypeNames(String text) {
+        private List<? extends TypeDescriptor> getTypeNames(String text, int[] retry) {
             // TODO: Search twice, first for current project, then for all projects
             List<TypeDescriptor> items;
             // Multiple providers: merge results
@@ -465,8 +498,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 }
                 long delta = System.currentTimeMillis() - start;
                 LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
-                
             }
+            retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
                 Collections.sort(items, new TypeComparator());
@@ -513,7 +546,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     final void waitSearchFinished() {
         task.waitFinished();
     }
-    
+
     private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
          
         private MyPanel rendererComponent;
@@ -656,7 +689,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         public void actionPerformed(ActionEvent e) {            
             if ( e.getSource() == okButton) {
-                panel.setSelectedType();
+                panel.setSelectedTypes();
             }
         }
         
@@ -675,7 +708,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             // if names are equal, show these from main project first
             if (t1Name.equals(t2Name)) {
                 String t1projectName = t1.getProjectName();
-                String t2projectName = t1.getProjectName();
+                String t2projectName = t2.getProjectName();
                 if (t1projectName != null && t2projectName != null) {
                     // prioritize types from main project
                     if (mainProjectname != null && t1projectName.equals(mainProjectname)) {
@@ -716,5 +749,71 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return s1.compareTo( s2 );
     }
     
+    private Profile initializeProfiling() {
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (!assertsOn) {
+            return null;
+        }
+
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        if (fo == null) {
+            return null;
+        }
+        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        if (a == null) {
+            return null;
+        }
+        Object profiler = a.getValue("logger-jumpto"); //NOI18N
+        if (profiler == null) {
+            return null;
+        }
+        return new Profile(profiler);
+    }
+
+    private class Profile implements Runnable {
+        Object profiler;
+        boolean profiling;
+        private final long time;
+
+        public Profile(Object profiler) {
+            time = System.currentTimeMillis();
+            this.profiler = profiler;
+            RequestProcessor.getDefault().post(this, 3000); // 3s
+        }
+
+        public synchronized void run() {
+            profiling = true;
+            if (profiler instanceof Runnable) {
+                Runnable r = (Runnable)profiler;
+                r.run();
+            }
+        }
+
+        private synchronized void stop() throws Exception {
+            long delta = System.currentTimeMillis() - time;
+
+            ActionListener ss = (ActionListener)profiler;
+            profiler = null;
+            if (!profiling) {
+                return;
+            }
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(out);
+                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                dos.close();
+                if (dos.size() > 0) {
+                    Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };
+                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                } else {
+                    LOGGER.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
 
 }

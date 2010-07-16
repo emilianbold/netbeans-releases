@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,7 +63,7 @@ public final class MIMENames {
     public static final String HEADER_MIME_TYPE = "text/x-h"; //NOI18N
 
     /** Preprocessor */
-    public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
+    public static final String PREPROC_MIME_TYPE = "text/x-cpp+preprocessor";// NOI18N
 
     /** C++ */
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++"; //NOI18N
@@ -147,6 +150,20 @@ public final class MIMENames {
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE);
     }
 
+    public static boolean isCppOrCOrFortran(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE)  || mime.equals(FORTRAN_MIME_TYPE);
+    }
+
+    public static boolean isHeaderOrCpp(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE);
+    }
+
     public static boolean isHeaderOrCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;
@@ -161,7 +178,7 @@ public final class MIMENames {
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
     }
 
-    public static boolean isExe(String mime) {
+    public static boolean isBinary(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;
         }
@@ -172,5 +189,12 @@ public final class MIMENames {
                 mime.equals(ELF_SHOBJ_MIME_TYPE) ||
                 mime.equals(ELF_GENERIC_MIME_TYPE) ||
                 mime.equals(ELF_OBJECT_MIME_TYPE);
+    }
+
+    public static boolean isBinaryExecutable(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return  mime.equals(EXE_MIME_TYPE) || mime.equals(ELF_EXE_MIME_TYPE);
     }
 }

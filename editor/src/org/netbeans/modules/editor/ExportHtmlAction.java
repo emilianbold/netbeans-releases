@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.*;
 import java.io.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
@@ -75,6 +79,8 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbPreferences;
 
 public class ExportHtmlAction extends CookieAction {
 
@@ -111,7 +117,7 @@ public class ExportHtmlAction extends CookieAction {
         if (doc instanceof BaseDocument) {
             final BaseDocument bdoc = (BaseDocument) doc;
             final JTextComponent jtc = Utilities.getLastActiveComponent();
-            Presenter p = new Presenter ();
+            final Presenter p = new Presenter ();
             String folderName = (String)EditorState.get(FOLDER_NAME_HIST);
             if (folderName == null)
                 folderName = System.getProperty("user.home"); //NOI18N
@@ -141,7 +147,7 @@ public class ExportHtmlAction extends CookieAction {
             do{
                 dlg.setVisible (true);
                 overwrite = true;
-                if ( dd.getValue() == DialogDescriptor.OK_OPTION && new File(p.getFileName()).exists()){
+                if (dd.getValue() == DialogDescriptor.OK_OPTION && (!p.isToClipboard() && new File(p.getFileName()).exists())){
                     NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage( org.netbeans.modules.editor.ExportHtmlAction.class, "MSG_FileExists", p.getFileName()),
                     NotifyDescriptor.YES_NO_OPTION,
@@ -174,6 +180,7 @@ public class ExportHtmlAction extends CookieAction {
                 if (setOpen != open) {
                     EditorState.put(OPEN_HTML_HIST, open ? Boolean.TRUE : Boolean.FALSE);
                 }
+                final boolean toClipboard = p.isToClipboard();
                 final int selectionStart = selection ? jtc.getSelectionStart() : 0;
                 final int selectionEnd = selection ? jtc.getSelectionEnd() : bdoc.getLength();
                 RequestProcessor.getDefault().post(
@@ -182,8 +189,8 @@ public class ExportHtmlAction extends CookieAction {
                                 try {
                                     if (jtc!=null)
                                         this.setCursor (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                    export (bdoc, file, lineNumbers, selectionStart, selectionEnd);
-                                    if (open) {
+                                    export (bdoc, file, lineNumbers, selectionStart, selectionEnd, toClipboard);
+                                    if (!toClipboard && open) {
                                         HtmlBrowser.URLDisplayer.getDefault().showURL(new File(file).toURI().toURL());
                                     }
                                 } catch (MalformedURLException mue) {
@@ -233,7 +240,7 @@ public class ExportHtmlAction extends CookieAction {
         return false;
     }
 
-    private void export (final BaseDocument bdoc,  String fileName, boolean lineNumbers, int selectionStart, int selectionEnd) throws IOException {
+    private void export (final BaseDocument bdoc,  String fileName, boolean lineNumbers, int selectionStart, int selectionEnd, boolean toClipboard) throws IOException {
         MimePath mimePath = MimePath.parse((String)bdoc.getProperty(BaseDocument.MIME_TYPE_PROP));
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         
@@ -253,26 +260,65 @@ public class ExportHtmlAction extends CookieAction {
         htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, mimePath, CHARSET);
         bdoc.print (htmlPrintContainer,false, Boolean.valueOf(lineNumbers), selectionStart, selectionEnd);
         String result = htmlPrintContainer.end();
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter (new OutputStreamWriter (new FileOutputStream (fileName), CHARSET));
-            out.print (result);
-        } finally {
-            if (out != null)
-                out.close();
+        if (toClipboard) {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(result), null);
+        } else {
+            PrintWriter out = null;
+            try {
+                out = new PrintWriter (new OutputStreamWriter (new FileOutputStream (fileName), CHARSET));
+                out.print (result);
+            } finally {
+                if (out != null)
+                    out.close();
+            }
         }
     }
 
-
-    private class Presenter extends JPanel {
-
+    private static final class Presenter extends JPanel implements ActionListener {
+        private static final String KEY_OPEN = "open"; //NOI18N
+        private static final String KEY_LINE_NUMBERS = "lineNumbers"; //NOI18N
+        private static final String KEY_TO_FILE = "toFile"; //NOI18N
+        private static final String KEY_SELECTION = "selection"; //NOI18N
         private JTextField fileName;
         private JCheckBox showLineNumbers;
         private JCheckBox openHtml;
         private JCheckBox selection;
-
+        private JButton browseButton;
+        private final JRadioButton toFileButton = new JRadioButton();
+        private final JRadioButton toClipboardButton = new JRadioButton();
+        private final ButtonGroup group = new ButtonGroup();
+        private boolean wasOpen = NbPreferences.forModule(Presenter.class).getBoolean (KEY_OPEN, true);
+        private boolean programmaticDisableOpen = false;
         public Presenter () {
             this.initGUI ();
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent ae) {
+            if (ae.getSource() == toClipboardButton || ae.getSource() == toFileButton) {
+                boolean isFile = toFileButton.isSelected();
+                browseButton.setEnabled (isFile);
+                fileName.setEnabled (isFile);
+                openHtml.setEnabled (isFile);
+                programmaticDisableOpen = true;
+                try {
+                    if (isFile) {
+                        openHtml.setSelected (wasOpen);
+                    } else {
+                        openHtml.setSelected(false);
+                    }
+                } finally {
+                    programmaticDisableOpen = false;
+                }
+                NbPreferences.forModule(ExportHtmlAction.class).putBoolean(
+                        KEY_TO_FILE, isFile);
+            } else if (ae.getSource() == openHtml && !programmaticDisableOpen) {
+                NbPreferences.forModule(Presenter.class).putBoolean (KEY_OPEN, openHtml.isSelected());
+            } else if (ae.getSource() == selection) {
+                NbPreferences.forModule(Presenter.class).putBoolean (KEY_SELECTION, selection.isSelected());
+            } else if (ae.getSource() == showLineNumbers) {
+                NbPreferences.forModule(Presenter.class).putBoolean (KEY_LINE_NUMBERS, showLineNumbers.isSelected());
+            }
         }
 
         public final String getFileName () {
@@ -311,63 +357,99 @@ public class ExportHtmlAction extends CookieAction {
             this.selection.setEnabled (value);
         }
 
+        public final boolean isToClipboard() {
+            return toClipboardButton.isSelected();
+        }
+
         private void initGUI () {
+            boolean isToFile = NbPreferences.forModule(ExportHtmlAction.class).getBoolean(KEY_TO_FILE, true);
+            toFileButton.setSelected(isToFile);
+            toClipboardButton.setSelected (!isToFile);
+            Mnemonics.setLocalizedText(toClipboardButton, NbBundle.getMessage(ExportHtmlAction.class, "LBL_PRINT_TO_CLIPBOARD")); //NOI18N
+            toClipboardButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class, "ACSN_PRINT_TO_CLIPBOARD")); //NOI18N
+            toClipboardButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class, "ACSD_PRINT_TO_CLIPBOARD")); //NOI18N
+
+            Mnemonics.setLocalizedText(toFileButton, NbBundle.getMessage(ExportHtmlAction.class, "LBL_PRINT_TO_FILE")); //NOI18N
+            toFileButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class, "ACSN_PRINT_TO_FILE")); //NOI18N
+            toFileButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class, "ACSD_PRINT_TO_FILE")); //NOI18N
+
+            group.add (toFileButton);
+            group.add (toClipboardButton);
+            toFileButton.addActionListener(this);
+            toClipboardButton.addActionListener(this);
             this.setLayout ( new GridBagLayout ());
             getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "ACSN_ExportToHTML")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "ACSD_ExportToHTML")); // NOI18N
             
-            JLabel label = new JLabel ();
-            Mnemonics.setLocalizedText(label, NbBundle.getMessage (ExportHtmlAction.class, "CTL_OutputDir"));
-            label.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "AN_OutputDir"));
-            label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "AD_OutputDir"));
             GridBagConstraints c = new GridBagConstraints ();
             c.gridx = 0;
             c.gridy = 0;
+            c.anchor = GridBagConstraints.WEST;
             c.gridwidth = 1;
             c.gridheight = 1;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (12,12,6,6);
-            ((GridBagLayout)this.getLayout()).setConstraints (label, c);
-            this.add (label);
-            fileName = new JTextField ();
-            fileName.setColumns (25);
+            c.fill = GridBagConstraints.BOTH;
+            c.insets = new Insets (12, 6, 6, 6);
+            add (toFileButton, c);
+
             c = new GridBagConstraints ();
             c.gridx = 1;
             c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (12,6,6,6);
-            c.weightx = 1.0;
-            ((GridBagLayout)this.getLayout()).setConstraints (fileName, c);
-            this.add (this.fileName);
-            label.setLabelFor (this.fileName);
-            JButton button = new JButton ();
-            Mnemonics.setLocalizedText(button, NbBundle.getMessage(ExportHtmlAction.class,"CTL_Select"));
-            button.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_Select"));
-            button.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(ExportHtmlAction.class,"AD_Select"));
-            button.addActionListener (new ActionListener () {
-                public void actionPerformed(ActionEvent e) {
-                    selectFile ();
-                }
-            });
+            fileName = new JTextField ();
+            fileName.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "AN_OutputDir")); //NOI18N
+            fileName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "AD_OutputDir")); //NOI18N
+            fileName.setColumns (25);
             c = new GridBagConstraints ();
             c.gridx = 2;
             c.gridy = 0;
             c.gridwidth = 1;
             c.gridheight = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.ipadx = 275;
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (12,6,6,6);
+            c.weightx = 1.0;
+            ((GridBagLayout)this.getLayout()).setConstraints (fileName, c);
+            this.add (this.fileName);
+            browseButton = new JButton ();
+            Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ExportHtmlAction.class,"CTL_Select")); //NOI18N
+            browseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_Select")); //NOI18N
+            browseButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(ExportHtmlAction.class,"AD_Select")); //NOI18N
+            browseButton.addActionListener (new ActionListener () {
+                public void actionPerformed(ActionEvent e) {
+                    selectFile ();
+                }
+            });
+            c = new GridBagConstraints ();
+            c.gridx = 3;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (12,6,6,12);
-            ((GridBagLayout)this.getLayout()).setConstraints (button,c);
-            this.add (button);
+            ((GridBagLayout)this.getLayout()).setConstraints (browseButton,c);
+            this.add (browseButton);
+
+            c = new GridBagConstraints ();
+            c.gridx = 0;
+            c.gridy = 1;
+            c.fill = GridBagConstraints.BOTH;
+            c.gridy = 1;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.gridheight = 1;
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (12, 6, 6, 6);
+            this.add (toClipboardButton, c);
+
             selection = new JCheckBox ();
             Mnemonics.setLocalizedText(selection, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Selection"));
             selection.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_Selection"));
             selection.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_Selection"));
+            selection.setSelected(NbPreferences.forModule(ExportHtmlAction.class).getBoolean (KEY_SELECTION, true));
+            selection.addActionListener(this);
             c = new GridBagConstraints ();
-            c.gridx = 1;
-            c.gridy = 1;
+            c.gridx = 2;
+            c.gridy = 2;
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.gridheight = 1;
             c.anchor = GridBagConstraints.WEST;
@@ -380,9 +462,11 @@ public class ExportHtmlAction extends CookieAction {
             Mnemonics.setLocalizedText(showLineNumbers, NbBundle.getMessage(ExportHtmlAction.class,"CTL_ShowLineNumbers"));
             showLineNumbers.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_ShowLineNumbers"));
             showLineNumbers.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_ShowLineNumbers"));
+            showLineNumbers.setSelected (NbPreferences.forModule(ExportHtmlAction.class).getBoolean (KEY_LINE_NUMBERS, true));
+            showLineNumbers.addActionListener(this);
             c = new GridBagConstraints();
-            c.gridx = 1;
-            c.gridy = 2;
+            c.gridx = 2;
+            c.gridy = 3;
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.gridheight = 1;
             c.anchor = GridBagConstraints.WEST;
@@ -395,9 +479,11 @@ public class ExportHtmlAction extends CookieAction {
             Mnemonics.setLocalizedText(openHtml, NbBundle.getMessage(ExportHtmlAction.class,"CTL_OpenHTML"));
             openHtml.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_OpenHTML"));
             openHtml.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_OpenHTML"));
+            openHtml.setSelected (NbPreferences.forModule(ExportHtmlAction.class).getBoolean (KEY_OPEN, true));
+            openHtml.addActionListener(this);
             c = new GridBagConstraints ();
-            c.gridx = 1;
-            c.gridy = 3;
+            c.gridx = 2;
+            c.gridy = 4;
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.gridheight = 1;
             c.anchor = GridBagConstraints.WEST;
@@ -406,32 +492,33 @@ public class ExportHtmlAction extends CookieAction {
             c.weightx = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints (this.openHtml,c);
             this.add (this.openHtml);
+            actionPerformed (new ActionEvent (toClipboardButton, ActionEvent.ACTION_PERFORMED, "")); //NOI18N
         }
 
-
         private void selectFile () {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle(NbBundle.getMessage(ExportHtmlAction.class, "CTL_Browse_Dialog_Title")); // NOI18N
-            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class, "ACD_Browse_Dialog")); // NOI18N
+            JFileChooser chooser = new FileChooserBuilder(Presenter.class).
+                    setFileFilter(new HtmlOrDirFilter()).
+                    setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class, "ACD_Browse_Dialog")). //NOI18N
+                    setTitle(NbBundle.getMessage(ExportHtmlAction.class, "CTL_Browse_Dialog_Title")).createFileChooser(); //NOI18N
             chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class, "ACN_Browse_Dialog")); // NOI18N
-            chooser.setFileFilter (new javax.swing.filechooser.FileFilter () {
-                public boolean accept(File f) {
-                    if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {
-                        return true;
-                    }
-                    else
-                      return false;
-                }
-
-                public String getDescription() {
-                    return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType"); // NOI18N
-                }
-            });
             chooser.setSelectedFile (new File (this.fileName.getText()));
-            if (chooser.showDialog (dlg, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Approve_Label")) == JFileChooser.APPROVE_OPTION) { // NOI18N
+            if (chooser.showDialog (this, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Approve_Label")) == JFileChooser.APPROVE_OPTION) { // NOI18N
                 this.fileName.setText (chooser.getSelectedFile().getAbsolutePath());
             }
         }
     }
 
+    private static final class HtmlOrDirFilter extends javax.swing.filechooser.FileFilter {
+        public boolean accept(File f) {
+            if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {
+                return true;
+            }
+            else
+              return false;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType"); // NOI18N
+        }
+    }
 }

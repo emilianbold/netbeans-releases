@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.model.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -46,7 +46,6 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
  * 
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ReferenceIntegrityService extends InnerEventDispatcherAdapter {
 
 
@@ -158,7 +157,7 @@ public class ReferenceIntegrityService extends InnerEventDispatcherAdapter {
         Map<BpelEntity,Collection<Reference>> map = getMap(event);
         Collection<Reference> collection = map.get( entity );
         if ( collection == null ) {
-            collection = new LinkedList<Reference>();
+            collection = new ArrayList<Reference>();
             map.put( entity , collection );
         }
         collection.add( reference );

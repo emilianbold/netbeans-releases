@@ -38,6 +38,7 @@ public class AddCompensateScopeAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddCompensateScopeAction() {
+        super("basic/compensatescope"); // NOI18N
     }    
     
     protected String getBundleName() {

@@ -32,8 +32,7 @@ import org.netbeans.modules.bpel.model.api.*;
 /**
  */
 public interface Trace extends ExtensionEntity, BpelContainer {
-    String LOGGING_NAMESPACE_URI =
-            "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace";
+    String TRACE_NAMESPACE_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace";
 
     /**
      * Returns aray of onEvent children.
@@ -164,5 +163,4 @@ public interface Trace extends ExtensionEntity, BpelContainer {
      * @return size of onAlarm children.
      */
     int sizeOfAlerts();
-
 }

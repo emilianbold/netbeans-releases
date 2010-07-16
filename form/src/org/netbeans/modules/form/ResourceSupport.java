@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -110,6 +113,7 @@ public class ResourceSupport {
     private static final int VALID_RESOURCE_VALUE = 4;
 
     static final FormProperty.Filter COPIED_PROPERTY_FILTER = new FormProperty.Filter() {
+        @Override
         public boolean accept(FormProperty property) {
             // don't copy name property
             return property.isChanged() && !isAutoNamedProperty(property);
@@ -1166,6 +1170,7 @@ public class ResourceSupport {
     // listener on FormModel - reacts on component additions/removals
 
     private class ModelListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events == null) {
                 return;
@@ -1639,6 +1644,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_AUTO_SET_COMPONENT_NAME"), // NOI18N
             FormUtils.getBundleString("HINT_AUTO_SET_COMPONENT_NAME")) // NOI18N
         {
+            @Override
             public void setValue(Boolean value) {
                 Boolean oldValue = getValue();
                 if (!oldValue.equals(value)) {
@@ -1654,6 +1660,7 @@ public class ResourceSupport {
                 }
             }
 
+            @Override
             public Boolean getValue() {
                 return Boolean.valueOf(formModel.getSettings().getAutoSetComponentName());
             }
@@ -1668,6 +1675,7 @@ public class ResourceSupport {
                 FormUtils.getBundleString("PROP_AUTO_RESOURCE"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_RESOURCE_LOCAL")) // NOI18N
             {
+                @Override
                 public void setValue(Integer value) {
                     int oldMode = getAutoMode();
                     if (value == null || value.equals(oldMode)) {
@@ -1699,6 +1707,7 @@ public class ResourceSupport {
                         .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldMode, newMode);
                 }
 
+                @Override
                 public Integer getValue() {
                     return getAutoMode();
                 }
@@ -1720,6 +1729,7 @@ public class ResourceSupport {
                 FormUtils.getBundleString("PROP_AUTO_I18N"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_I18N")) // NOI18N
             {
+                @Override
                 public void setValue(Boolean value) {
                     boolean oldAutoI18n = getAutoMode() == AUTO_I18N;
                     Boolean oldValue = Boolean.valueOf(oldAutoI18n);
@@ -1744,6 +1754,7 @@ public class ResourceSupport {
                     }
                 }
 
+                @Override
                 public Boolean getValue() {
                     return getAutoMode() == AUTO_I18N;
                 }
@@ -1756,6 +1767,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_FORM_BUNDLE"), // NOI18N
             FormUtils.getBundleString("HINT_FORM_BUNDLE")) // NOI18N
         {
+            @Override
             public void setValue(String value) {
                 String oldValue = getI18nBundleName();
                 if ((oldValue == null && value != null) || !oldValue.equals(value)) {
@@ -1771,6 +1783,7 @@ public class ResourceSupport {
                             .firePropertyChangeHelper(PROP_FORM_BUNDLE, oldValue, value);
                 }
             }
+            @Override
             public String getValue() {
                 return getI18nBundleName();
             }
@@ -1787,6 +1800,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_DESIGN_LOCALE"), // NOI18N
             FormUtils.getBundleString("HINT_DESIGN_LOCALE")) // NOI18N
         {
+            @Override
             public void setValue(String value) {
                 // this property is not persistent (not stored in .form file)
                 String oldValue = designLocale;
@@ -1796,6 +1810,7 @@ public class ResourceSupport {
                         .firePropertyChangeHelper(PROP_DESIGN_LOCALE, oldValue, value);
             }
 
+            @Override
             public String getValue() {
                 return designLocale;
             }

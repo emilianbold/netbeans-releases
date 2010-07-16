@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -90,7 +93,7 @@ public class FortranReformatterImpl {
             Token<FortranTokenId> current = ts.token();
             FortranTokenId id = current.id();
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
-                // indent afre preprocessor directive
+                // indent after preprocessor directive
                 analyzeLine(previous, current);
             }
             if (isFirst && current.id() != PREPROCESSOR_DIRECTIVE) {
@@ -98,11 +101,6 @@ public class FortranReformatterImpl {
             }
             isFirst = false;
             switch(id){
-                case KW_CONTAINS:
-                {
-                    System.out.println("");
-                }
-                break;
                 case PREPROCESSOR_DIRECTIVE: //(null, "preprocessor"),
                 {
                     preprocessorFormatter.indentPreprocessor(current);
@@ -323,34 +321,59 @@ public class FortranReformatterImpl {
                 {
                     break;
                 }
+                case LINE_CONTINUATION_FIXED:
+                {
+                    if (doFormat()) {
+                        int space = getIndent() + codeStyle.indentSize() - ts.getTokenPosition() - ts.token().length();
+                        if (space > 0){
+                            Token<FortranTokenId> next =ts.lookNext();
+                            if (next == null) {
+                                ts.addAfterCurrent(current, 0, space, true);
+                            } else {
+                                if (next.id() == WHITESPACE) {
+                                    ts.replaceNext(current, next, 0, space, true);
+                                    // !skip space
+                                    ts.moveNext();
+                                    current = ts.token();
+                                } else {
+                                    ts.addAfterCurrent(current, 0, space, true);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
                 case NUM_LITERAL_INT:
                 {
                     if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
-                        while(true) {
-                            FortranStackEntry top = braces.peek();
-                            if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
-                                braces.pop(ts);
-                                continue;
+                        int pos = ts.getTokenPosition();
+                        if (pos != 5) {
+                            while(true) {
+                                FortranStackEntry top = braces.peek();
+                                if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
+                                    braces.pop(ts);
+                                    continue;
+                                }
+                                break;
                             }
-                            break;
                         }
                         if (doFormat()) {
-                                int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
-                                if (space > 0){
-                                    Token<FortranTokenId> next =ts.lookNext();
-                                    if (next == null) {
-                                        ts.addAfterCurrent(current, 0, space, true);
+                            int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
+                            if (space > 0){
+                                Token<FortranTokenId> next =ts.lookNext();
+                                if (next == null) {
+                                    ts.addAfterCurrent(current, 0, space, true);
+                                } else {
+                                    if (next.id() == WHITESPACE) {
+                                        ts.replaceNext(current, next, 0, space, true);
+                                        // !skip space
+                                        ts.moveNext();
+                                        current = ts.token();
                                     } else {
-                                        if (next.id() == WHITESPACE) {
-                                            ts.replaceNext(current, next, 0, space, true);
-                                            // !skip space
-                                            ts.moveNext();
-                                            current = ts.token();
-                                        } else {
-                                            ts.addAfterCurrent(current, 0, space, true);
-                                        }
+                                        ts.addAfterCurrent(current, 0, space, true);
                                     }
                                 }
+                            }
                         }
                     }
                     break;
@@ -601,6 +624,10 @@ public class FortranReformatterImpl {
 
     private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current, Token<FortranTokenId> firstImportant) {
         boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && !codeStyle.isFreeFormatFortran();
+        int pos = ts.getFirstLineTokenPosition();
+        if (pos == 5 && !codeStyle.isFreeFormatFortran()) {
+            return;
+        }
         if (previous != null && previous.id() != PREPROCESSOR_DIRECTIVE) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
@@ -629,6 +656,19 @@ public class FortranReformatterImpl {
             }
             if (current.id() == WHITESPACE) {
                 ts.replaceCurrent(current, 0, space, true);
+            } else if (current.id() == LINE_COMMENT_FIXED) {
+            } else if (current.id() == LINE_COMMENT_FREE) {
+                if (codeStyle.isFreeFormatFortran()){
+                    if (space > 0) {
+                        ts.addBeforeCurrent(0, space, true);
+                    }
+                } else {
+                    if (space <= 6) {
+                        ts.addBeforeCurrent(0, 0, true);
+                    } else {
+                        ts.addBeforeCurrent(0, space, true);
+                    }
+                }
             } else {
                 if (space > 0) {
                     ts.addBeforeCurrent(0, space, true);
@@ -638,8 +678,15 @@ public class FortranReformatterImpl {
         }
         Token<FortranTokenId> next = ts.lookNext();
         if (next != null) {
-            if (next.id() == NEW_LINE) {
+            if (next.id() == NEW_LINE || next.id() == FortranTokenId.LINE_COMMENT_FIXED) {
                 return;
+            } else if (next.id() == FortranTokenId.LINE_COMMENT_FREE) {
+                if (!codeStyle.isFreeFormatFortran()) {
+                    if (getIndent() <= 6) {
+                        ts.addAfterCurrent(current, 0, 0, true);
+                        return;
+                    }
+                }
             }
             int space = -1;
             if (firstImportant != null) {
@@ -669,7 +716,6 @@ public class FortranReformatterImpl {
             }
         }
     }
-
 
     // indent new line after preprocessor directive
     private void indentNewLine(Token<FortranTokenId> current){

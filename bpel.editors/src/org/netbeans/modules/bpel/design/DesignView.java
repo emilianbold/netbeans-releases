@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -94,7 +97,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.validation.core.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
@@ -633,24 +636,20 @@ public class DesignView extends JPanel implements
         if (getProcessModel() != null
                 && getBPELModel().getState() == Model.State.VALID
                 && getModel().getRootPattern() != null) {
-
-
+            
+            getCopyPasteHandler().exitPasteMode();    
+            
             double zoom = getCorrectedZoom();
             setToolBarEnabled(true);
 
             layoutManager.layout(getModel().getRootPattern());
-
             connectionManager.reconnectAll(getModel().getRootPattern());
 
             connectionManager.layoutConnections(getModel().getRootPattern());
-
             FDimension dim = getModel().getRootPattern().getBounds().getSize();
 
-            int printWidth = (int) Math.round(dim.width
-                    + 2 * LayoutManager.HMARGIN);
-
-            int printHeight = (int) Math.round(dim.height
-                    + 2 * LayoutManager.VMARGIN);
+            int printWidth = (int) Math.round(dim.width + 2 * LayoutManager.HMARGIN);
+            int printHeight = (int) Math.round(dim.height + 2 * LayoutManager.VMARGIN);
 
             processView.revalidate();
             consumersView.revalidate();
@@ -877,10 +876,6 @@ public class DesignView extends JPanel implements
 
     protected void printChildren(Graphics g) {}
 
-
-
-
-
 //FIXME
     public FPoint convertScreenToDiagram(Point point) {
         return new FPoint(0, 0);
@@ -1003,6 +998,7 @@ public class DesignView extends JPanel implements
         }
         super.addImpl(comp, constraints, index);
     }
+
 //    public void scrollPlaceHolderToView(PlaceHolder ph) {
 //        if (ph == null){
 //            return;
@@ -1048,8 +1044,6 @@ public class DesignView extends JPanel implements
 //        });
 //    }
 
-
-
     public ValidationDecorationProvider getValidationDecorationProvider() {
         return validationDecorationProvider;
     }
@@ -1080,7 +1074,6 @@ public class DesignView extends JPanel implements
 
         }
     }
-
    
     public DnDHandler getDndHandler() {
         return dndHandler;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -56,6 +61,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
     private static final String SOURCES = "Sources"; // NOI18N
     
     private static final String BUILD = "Build"; // NOI18N
+    private static final String GEMS = "Gems"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     
     private final String name;
@@ -86,6 +92,12 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     (ProjectCustomizer.Category[])null);
+        } else if (GEMS.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    GEMS,
+                    bundle.getString( "LBL_Config_Gems" ), // NOI18N
+                    null,
+                    (ProjectCustomizer.Category[])null);
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
@@ -98,6 +110,9 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerSources(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
+        } else if (GEMS.equals(nm)) {
+            RubyBaseProject project = context.lookup(RubyBaseProject.class);
+            return new GemRequirementsPanel(project, context.lookup(SharedRubyProjectProperties.class));
         }
         return new JPanel();
 
@@ -113,5 +128,9 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
 
     public static RubyCompositePanelProvider createRun() {
         return new RubyCompositePanelProvider(RUN);
+    }
+
+    public static RubyCompositePanelProvider createGems() {
+        return new RubyCompositePanelProvider(GEMS);
     }
 }

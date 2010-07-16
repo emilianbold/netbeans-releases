@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,6 +78,9 @@ public class RailsProjectUtilTest extends RubyTestBase {
         version = RailsProjectUtil.versionFor("2.3.2");
         assertEquals("2.3.2", version.asString());
 
+        version = RailsProjectUtil.versionFor("3.0.0.beta");
+        assertEquals("3.0.0.beta", version.asString());
+
         version = RailsProjectUtil.versionFor("x.1");
         assertEquals("0.0.0", version.asString());
     }
@@ -83,5 +89,20 @@ public class RailsProjectUtilTest extends RubyTestBase {
         assertEquals(-1, RailsProjectUtil.versionFor("2.1").compareTo(RailsProjectUtil.versionFor("2.3.0")));
         assertEquals(0, RailsProjectUtil.versionFor("1.1").compareTo(RailsProjectUtil.versionFor("1.1")));
         assertEquals(1, RailsProjectUtil.versionFor("2.4.10").compareTo(RailsProjectUtil.versionFor("2.4.9")));
+        assertEquals(1, RailsProjectUtil.versionFor("3.0.0.beta2").compareTo(RailsProjectUtil.versionFor("3.0.0.beta")));
+    }
+
+    public void testIsRails3Obeta4OrHigher() {
+        RailsProjectUtil.RailsVersion beta4 = RailsProjectUtil.versionFor("3.0.0.beta4");
+        RailsProjectUtil.RailsVersion beta5 = RailsProjectUtil.versionFor("3.0.0.beta5");
+        RailsProjectUtil.RailsVersion beta = RailsProjectUtil.versionFor("3.0.0.beta");
+        RailsProjectUtil.RailsVersion old = RailsProjectUtil.versionFor("2.3.4");
+        RailsProjectUtil.RailsVersion fcs = RailsProjectUtil.versionFor("3.0.0");
+
+        assertTrue(beta4.isRails3Obeta4OrHigher());
+        assertTrue(beta5.isRails3Obeta4OrHigher());
+        assertFalse(old.isRails3Obeta4OrHigher());
+        assertFalse(beta.isRails3Obeta4OrHigher());
+        assertTrue(fcs.isRails3Obeta4OrHigher());
     }
 }

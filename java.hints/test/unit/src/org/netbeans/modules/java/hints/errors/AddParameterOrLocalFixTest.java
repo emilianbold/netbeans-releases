@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,9 +55,9 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test(String... a) {bbb = 0;}}",
                        91 - 25,
                        "AddParameterOrLocalFix:bbb:int:true",
-                       "package test; public class Test {public void test(int bbb,String... a) {bbb = 0;}}");
+                       "package test; public class Test {public void test(int bbb, String... a) {bbb = 0;}}");
     }
-    
+
     public void testAddToTheEnd() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(String[] a) {bbb = 0;}}",
@@ -62,7 +65,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "AddParameterOrLocalFix:bbb:int:true",
                        "package test; public class Test {public void test(String[] a, int bbb) {bbb = 0;}}");
     }
-    
+
     public void testAddToTheEmptyParamsList() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {bbb = 0;}}",
@@ -70,16 +73,16 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "AddParameterOrLocalFix:bbb:int:true",
                        "package test; public class Test {public void test(int bbb) {bbb = 0;}}");
     }
-    
+
     public void testAddLocalVariableWithComments() throws Exception {
         parameter = false;
-        
+
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {int a;\n //test\n |bbb = 0;\n int c; }}",
                        "AddParameterOrLocalFix:bbb:int:false",
                        "package test; public class Test {public void test() {int a; //test int bbb = 0; int c; }}");
     }
-    
+
     public void testAddLocalVariableNotInPlace() throws Exception {
         parameter = false;
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
@@ -98,7 +101,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
 
     public void testAddLocalVariableNotInPlaceInConstr() throws Exception {
         parameter = false;
-        
+
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
 
         try {
@@ -270,6 +273,29 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         return null;\n" +
                 "     }\n" +
                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testAssignmentToValid181120() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.util.Date;\n" +
+                "public class Test {\n" +
+                "     public String test(int i) {\n" +
+                "         String s;\n" +
+                "         s = test(i|i);\n" +
+                "     }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:ii:int:false",
+                ("package test;\n" +
+                 "import java.util.Date;\n" +
+                 "public class Test {\n" +
+                 "     public String test(int i) {\n" +
+                 "         String s;\n" +
+                 "         int ii;\n" +
+                 "         s = test(ii);\n" +
+                 "     }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {

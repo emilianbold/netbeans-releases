@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=20)
 public class IncludeErrorProvider extends CsmErrorProvider {
 
+    @Override
     public String getName() {
         return "include-errors"; //NOI18N
     }
@@ -78,22 +82,25 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.severity = severity;
         }
 
+        @Override
         public int getEndOffset() {
             return end;
         }
 
+        @Override
         public int getStartOffset() {
             return start;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
     }
 
-    private final static String decorateWithExtraHyperlinkTip(String tooltip) {
+    private static String decorateWithExtraHyperlinkTip(String tooltip) {
         Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-        int altShortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
+        int altShortCut = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK);
         return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  InputEvent.getModifiersExText(altShortCut));// NOI18N
     }
 
@@ -106,6 +113,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)));
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
@@ -128,6 +136,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissedWarning", getIncludeText(incl)));
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
@@ -150,6 +159,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_ErrorDirective");
         }
 
+        @Override
         public String getMessage() {
             return message;
         }

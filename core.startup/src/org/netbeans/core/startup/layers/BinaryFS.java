@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -553,7 +556,7 @@ final class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                LOG.log(Level.WARNING, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
+                LOG.log(Level.INFO, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
             }
             return null; // problem getting the value...
         }
@@ -584,7 +587,7 @@ final class BinaryFS extends FileSystem {
                 }
             } catch (Exception exc) {
                 Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
-                LOG.log(Level.WARNING, null, exc);
+                LOG.log(Level.INFO, null, exc);
             }
             return null; // problem getting the value...
         }
@@ -678,7 +681,7 @@ final class BinaryFS extends FileSystem {
                 } else {
                     return Class.forName (tname, true, c);
                 }
-            } catch (NoClassDefFoundError err) {
+            } catch (LinkageError err) {
                 throw new ClassNotFoundException ("Cannot read " + name, err);
             }
         }
@@ -883,12 +886,7 @@ final class BinaryFS extends FileSystem {
         /** Get all children of this folder (files and subfolders). */
         public FileObject[] getChildren() {
             initialize();
-            // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
-            // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
-            // and remove synchronized in doInitialize.
-            synchronized (this) {
                 return childrenMap.values().toArray(NO_CHILDREN);
-            }
         }
 
         /** Retrieve file or folder contained in this folder by name. */
@@ -909,17 +907,16 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                synchronized (this) {  // 145775
-                    childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
-                    for (int i=0; i<files; i++) { //read file desc:
-                        String nm = getString(sub);   // String name
-                        byte isFolder = sub.get();      // boolean isFolder
-                        int off = sub.getInt();          // int contentRef
-                        childrenMap.put(nm, isFolder == 0 ?
-                            new BFSFile(nm, this, off) :
-                            new BFSFolder(nm, this, off));
-                    }
-                }  // 145775
+                HashMap<String, BFSBase> map = new HashMap<String, BFSBase>(files * 4 / 3 + 1);
+                for (int i=0; i<files; i++) { //read file desc:
+                    String nm = getString(sub);   // String name
+                    byte isFolder = sub.get();      // boolean isFolder
+                    int off = sub.getInt();          // int contentRef
+                    map.put(nm, isFolder == 0 ?
+                        new BFSFile(nm, this, off) :
+                        new BFSFolder(nm, this, off));
+                }
+                childrenMap = map;
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }
@@ -955,6 +952,9 @@ final class BinaryFS extends FileSystem {
 
         @Override
         public Object get(Object key) {
+            if (key == FileObject.class) {
+                return fo;
+            }
             return key instanceof String ? fo.getAttribute((String)key) : null;
         }
 
@@ -972,8 +972,9 @@ final class BinaryFS extends FileSystem {
             if (!(obj instanceof Map)) {
                 return false;
             }
-            if (obj instanceof FileMap) {
-                return fo.equals(((FileMap)obj).fo);
+            Object o = ((Map)obj).get(FileObject.class);
+            if (o != null) {
+                return fo.equals(o);
             }
             return obj.equals(this);
         }

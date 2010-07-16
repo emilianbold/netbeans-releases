@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,7 @@ import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -72,15 +76,18 @@ import org.openide.util.NbBundle;
 public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
     
     public static final String COMPILE = "COMPILE";  //NOI18N
+    public static final String PROCESSOR = "PROCESSOR";  //NOI18N
     public static final String RUN = "RUN";          //NOI18N
     public static final String COMPILE_TESTS = "COMPILE_TESTS"; //NOI18N
     public final String RUN_TESTS = "RUN_TESTS";  //NOI18N        
     
     private final J2SEProjectProperties uiProperties;
     private boolean isSharable;
+    private final ProjectCustomizer.Category category;
     
-    CustomizerLibraries( J2SEProjectProperties uiProps, CustomizerProviderImpl.SubCategoryProvider subcat ) {
-        this.uiProperties = uiProps;        
+    CustomizerLibraries(J2SEProjectProperties uiProps, CustomizerProviderImpl.SubCategoryProvider subcat, ProjectCustomizer.Category category) {
+        this.uiProperties = uiProps;
+        this.category = category;
         initComponents();        
         
         this.putClientProperty( "HelpID", "J2SE_CustomizerGeneral" ); // NOI18N
@@ -101,6 +108,23 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 uiProperties.SHARED_LIBRARIES_MODEL,
                 null);
         
+        jListCpP.setModel( uiProperties.JAVAC_PROCESSORPATH_MODEL );
+        jListCpP.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
+        EditMediator.register(uiProperties.getProject(),
+                uiProperties.getProject().getAntProjectHelper(),
+                uiProperties.getProject().getReferenceHelper(),
+                EditMediator.createListComponent(jListCpP),
+                jButtonAddJarP.getModel(),
+                jButtonAddLibraryP.getModel(),
+                jButtonAddArtifactP.getModel(),
+                jButtonRemoveP.getModel(),
+                jButtonMoveUpP.getModel(),
+                jButtonMoveDownP.getModel(),
+                jButtonEditP.getModel(),
+                true,
+                uiProperties.SHARED_LIBRARIES_MODEL,
+                null);
+
         jListCpCT.setModel( uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
         jListCpCT.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
         EditMediator.register( uiProperties.getProject(),
@@ -167,6 +191,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         
         uiProperties.JAVAC_CLASSPATH_MODEL.addListDataListener( this );
+        uiProperties.JAVAC_PROCESSORPATH_MODEL.addListDataListener( this );
         uiProperties.JAVAC_TEST_CLASSPATH_MODEL.addListDataListener( this );
         uiProperties.RUN_CLASSPATH_MODEL.addListDataListener( this );
         uiProperties.RUN_TEST_CLASSPATH_MODEL.addListDataListener( this );
@@ -214,6 +239,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         
         DefaultListModel[] models = new DefaultListModel[]{
             uiProperties.JAVAC_CLASSPATH_MODEL,
+            uiProperties.JAVAC_PROCESSORPATH_MODEL,
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
             uiProperties.RUN_CLASSPATH_MODEL,
             uiProperties.ENDORSED_CLASSPATH_MODEL,
@@ -236,6 +262,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         
         DefaultListModel[] models = new DefaultListModel[] {
             uiProperties.JAVAC_CLASSPATH_MODEL,
+            uiProperties.JAVAC_PROCESSORPATH_MODEL,
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
             uiProperties.RUN_CLASSPATH_MODEL,
             uiProperties.ENDORSED_CLASSPATH_MODEL,
@@ -257,10 +284,11 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         
         if ( broken ) {
-            jLabelErrorMessage.setText( NbBundle.getMessage( CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error" ) ); // NOI18N            
+            category.setErrorMessage(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error"));
+            // do not call category.setValid(false) as this would prevent OK from being clicked, even if the error existed before
         }
         else {
-            jLabelErrorMessage.setText( " " ); // NOI18N
+            category.setErrorMessage(null);
         }
         J2SELogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
         //Update the state of project's node if needed
@@ -294,14 +322,17 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         if (name.equals(COMPILE)) {
             jTabbedPane1.setSelectedIndex (0);
         }        
-        else if (name.equals(COMPILE_TESTS)) {
-            jTabbedPane1.setSelectedIndex (2);
-        }
-        else if (name.equals(RUN)) {
+        if (name.equals(PROCESSOR)) {
             jTabbedPane1.setSelectedIndex (1);
         }
-        else if (name.equals(RUN_TESTS)) {
+        else if (name.equals(COMPILE_TESTS)) {
             jTabbedPane1.setSelectedIndex (3);
+        }
+        else if (name.equals(RUN)) {
+            jTabbedPane1.setSelectedIndex (2);
+        }
+        else if (name.equals(RUN_TESTS)) {
+            jTabbedPane1.setSelectedIndex (4);
         }
     }
     
@@ -331,6 +362,17 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jButtonMoveUpC = new javax.swing.JButton();
         jButtonMoveDownC = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jPanelCompileProcessor = new javax.swing.JPanel();
+        librariesJLabel5 = new javax.swing.JLabel();
+        librariesJScrollPane4 = new javax.swing.JScrollPane();
+        jListCpP = new javax.swing.JList();
+        jButtonAddArtifactP = new javax.swing.JButton();
+        jButtonAddLibraryP = new javax.swing.JButton();
+        jButtonAddJarP = new javax.swing.JButton();
+        jButtonEditP = new javax.swing.JButton();
+        jButtonRemoveP = new javax.swing.JButton();
+        jButtonMoveUpP = new javax.swing.JButton();
+        jButtonMoveDownP = new javax.swing.JButton();
         jPanelRun = new javax.swing.JPanel();
         librariesJLabel3 = new javax.swing.JLabel();
         librariesJScrollPane2 = new javax.swing.JScrollPane();
@@ -365,7 +407,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jButtonMoveUpRT = new javax.swing.JButton();
         jButtonMoveDownRT = new javax.swing.JButton();
         jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
-        jLabelErrorMessage = new javax.swing.JLabel();
         sharedLibrariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         librariesBrowse = new javax.swing.JButton();
@@ -501,6 +542,121 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jPanelCompile.add(jLabel1, gridBagConstraints);
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesTab"), jPanelCompile); // NOI18N
+
+        jPanelCompileProcessor.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelCompileProcessor.setLayout(new java.awt.GridBagLayout());
+
+        librariesJLabel5.setLabelFor(jListCpP);
+        org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel5, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesP_JLabel")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        jPanelCompileProcessor.add(librariesJLabel5, gridBagConstraints);
+
+        jListCpP.setVisibleRowCount(5);
+        librariesJScrollPane4.setViewportView(jListCpP);
+        jListCpP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "L_ACSN_ProcesserLibraries")); // NOI18N
+        jListCpP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "L_ACSD_ProcesserLibraries")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanelCompileProcessor.add(librariesJScrollPane4, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddArtifactP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_AddProject_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        jPanelCompileProcessor.add(jButtonAddArtifactP, gridBagConstraints);
+        jButtonAddArtifactP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_Add_Project")); // NOI18N
+        jButtonAddArtifactP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_Add_Project")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLibraryP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_AddLibary_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        jPanelCompileProcessor.add(jButtonAddLibraryP, gridBagConstraints);
+        jButtonAddLibraryP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_Add_Library")); // NOI18N
+        jButtonAddLibraryP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_Add_Library")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJarP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_AddJar_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanelCompileProcessor.add(jButtonAddJarP, gridBagConstraints);
+        jButtonAddJarP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_Add_Jar")); // NOI18N
+        jButtonAddJarP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_Add_Jar")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonEditP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Edit_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanelCompileProcessor.add(jButtonEditP, gridBagConstraints);
+        jButtonEditP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_Edit")); // NOI18N
+        jButtonEditP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_Edit")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Remove_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanelCompileProcessor.add(jButtonRemoveP, gridBagConstraints);
+        jButtonRemoveP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_Remove")); // NOI18N
+        jButtonRemoveP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_Remove")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUpP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MoveUp_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        jPanelCompileProcessor.add(jButtonMoveUpP, gridBagConstraints);
+        jButtonMoveUpP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_MoveUp")); // NOI18N
+        jButtonMoveUpP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_MoveUp")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDownP, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MoveDown_JButton")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanelCompileProcessor.add(jButtonMoveDownP, gridBagConstraints);
+        jButtonMoveDownP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSN_MoveDown")); // NOI18N
+        jButtonMoveDownP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "BTN_ACSD_MoveDown")); // NOI18N
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Processors_Tab"), jPanelCompileProcessor); // NOI18N
 
         jPanelRun.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         jPanelRun.setLayout(new java.awt.GridBagLayout());
@@ -831,9 +987,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Build_Subprojects")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelErrorMessage, " ");
-        jLabelErrorMessage.setOpaque(true);
-
         sharedLibrariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(sharedLibrariesLabel, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_SharedLibraries")); // NOI18N
 
@@ -846,44 +999,41 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sharedLibrariesLabel)
-                    .add(jLabelTarget))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                    .add(jComboBoxTarget, 0, 303, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(librariesBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-            .add(jCheckBoxBuildSubprojects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sharedLibrariesLabel)
+                    .addComponent(jLabelTarget))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jComboBoxTarget, 0, 317, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(librariesBrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelTarget)
-                    .add(jButton1)
-                    .add(jComboBoxTarget, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sharedLibrariesLabel)
-                    .add(librariesBrowse)
-                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jCheckBoxBuildSubprojects)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabelErrorMessage))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTarget)
+                    .addComponent(jButton1)
+                    .addComponent(jComboBoxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sharedLibrariesLabel)
+                    .addComponent(librariesBrowse)
+                    .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBoxBuildSubprojects))
         );
 
         jLabelTarget.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jLabelTarget")); // NOI18N
@@ -910,6 +1060,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
                 updateJars(uiProperties.JAVAC_CLASSPATH_MODEL);
+                updateJars(uiProperties.JAVAC_PROCESSORPATH_MODEL);
                 updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
@@ -945,42 +1096,50 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonAddArtifactC;
     private javax.swing.JButton jButtonAddArtifactCT;
+    private javax.swing.JButton jButtonAddArtifactP;
     private javax.swing.JButton jButtonAddArtifactR;
     private javax.swing.JButton jButtonAddArtifactRT;
     private javax.swing.JButton jButtonAddJarC;
     private javax.swing.JButton jButtonAddJarCT;
+    private javax.swing.JButton jButtonAddJarP;
     private javax.swing.JButton jButtonAddJarR;
     private javax.swing.JButton jButtonAddJarRT;
     private javax.swing.JButton jButtonAddLibraryC;
     private javax.swing.JButton jButtonAddLibraryCT;
+    private javax.swing.JButton jButtonAddLibraryP;
     private javax.swing.JButton jButtonAddLibraryR;
     private javax.swing.JButton jButtonAddLibraryRT;
     private javax.swing.JButton jButtonEditC;
     private javax.swing.JButton jButtonEditCT;
+    private javax.swing.JButton jButtonEditP;
     private javax.swing.JButton jButtonEditR;
     private javax.swing.JButton jButtonEditRT;
     private javax.swing.JButton jButtonMoveDownC;
     private javax.swing.JButton jButtonMoveDownCT;
+    private javax.swing.JButton jButtonMoveDownP;
     private javax.swing.JButton jButtonMoveDownR;
     private javax.swing.JButton jButtonMoveDownRT;
     private javax.swing.JButton jButtonMoveUpC;
     private javax.swing.JButton jButtonMoveUpCT;
+    private javax.swing.JButton jButtonMoveUpP;
     private javax.swing.JButton jButtonMoveUpR;
     private javax.swing.JButton jButtonMoveUpRT;
     private javax.swing.JButton jButtonRemoveC;
     private javax.swing.JButton jButtonRemoveCT;
+    private javax.swing.JButton jButtonRemoveP;
     private javax.swing.JButton jButtonRemoveR;
     private javax.swing.JButton jButtonRemoveRT;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JComboBox jComboBoxTarget;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabelErrorMessage;
     private javax.swing.JLabel jLabelTarget;
     private javax.swing.JList jListCpC;
     private javax.swing.JList jListCpCT;
+    private javax.swing.JList jListCpP;
     private javax.swing.JList jListCpR;
     private javax.swing.JList jListCpRT;
     private javax.swing.JPanel jPanelCompile;
+    private javax.swing.JPanel jPanelCompileProcessor;
     private javax.swing.JPanel jPanelCompileTests;
     private javax.swing.JPanel jPanelRun;
     private javax.swing.JPanel jPanelRunTests;
@@ -990,10 +1149,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JLabel librariesJLabel2;
     private javax.swing.JLabel librariesJLabel3;
     private javax.swing.JLabel librariesJLabel4;
+    private javax.swing.JLabel librariesJLabel5;
     private javax.swing.JScrollPane librariesJScrollPane;
     private javax.swing.JScrollPane librariesJScrollPane1;
     private javax.swing.JScrollPane librariesJScrollPane2;
     private javax.swing.JScrollPane librariesJScrollPane3;
+    private javax.swing.JScrollPane librariesJScrollPane4;
     private javax.swing.JTextField librariesLocation;
     private javax.swing.JLabel sharedLibrariesLabel;
     // End of variables declaration//GEN-END:variables

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.system.cvss;
 
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -53,6 +57,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * CVS registration class.
@@ -62,9 +67,14 @@ import java.util.prefs.PreferenceChangeListener;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
+    private VCSVisibilityQuery visibilityQuery;
+    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
+    private final static Integer priority = Utils.getPriority("cvs"); //NOI18N
+
     public CVS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(CVS.class, "CTL_CVS_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(CVS.class, "CTL_CVS_MainMenu"));
+        putProperty(PROP_PRIORITY, priority);
         CvsVersioningSystem.getInstance().addVersioningListener(this);
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
@@ -95,6 +105,14 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
+    }
+
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        if(visibilityQuery == null) {
+            visibilityQuery = new CvsVisibilityQuery();
+        }
+        return visibilityQuery;
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {

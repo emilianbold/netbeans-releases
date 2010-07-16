@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,6 +86,8 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
+import org.netbeans.spi.viewmodel.TableRendererModel;
+import org.netbeans.spi.viewmodel.TableRendererModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
@@ -122,6 +127,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List columnModels;
     private List mm;
     private List asynchModelFilters;
+    private List tableRenderers;
+    private List tableRendererFilters;
     //private RequestProcessor rp;
 
     private List<AbstractButton> buttons;
@@ -254,6 +261,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
         mm =                    cp.lookup (viewPath, Model.class);
         asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
+        tableRenderers =        cp.lookup (viewPath, TableRendererModel.class);
+        tableRendererFilters =  cp.lookup (viewPath, TableRendererModelFilter.class);
         String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
         while (asynchModelFilters.isEmpty() && searchPath != null) {
             int i = searchPath.lastIndexOf('/');
@@ -347,6 +356,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             (Customizer) columnModels,
             (Customizer) mm,
             (Customizer) asynchModelFilters,
+            (Customizer) tableRenderers,
+            (Customizer) tableRendererFilters,
         };
         for (int i = 0; i < modelListCustomizers.length; i++) {
             Customizer c = modelListCustomizers[i];
@@ -404,6 +415,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         synchronized (asynchModelFilters) {
             models.add(new ArrayList(asynchModelFilters));
+        }
+        synchronized (tableRenderers) {
+            models.add(new ArrayList(tableRenderers));
+        }
+        synchronized (tableRendererFilters) {
+            models.add(new ArrayList(tableRendererFilters));
         }
         /*if (rp != null) {
             models.add(rp);
@@ -610,6 +627,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List columnModels;
         List mm;
         List asynchModelFilters;
+        List tableRenderers;
+        List tableRendererFilters;
 
         treeModels =            cp.lookup (viewPath, TreeModel.class);
         treeModelFilters =      cp.lookup (viewPath, TreeModelFilter.class);
@@ -624,6 +643,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
         mm =                    cp.lookup (viewPath, Model.class);
         asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
+        tableRenderers =        cp.lookup (viewPath, TableRendererModel.class);
+        tableRendererFilters =  cp.lookup (viewPath, TableRendererModelFilter.class);
         String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
         while (asynchModelFilters.isEmpty() && searchPath != null) {
             int i = searchPath.lastIndexOf('/');
@@ -649,6 +670,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeNodeModelsCompound.add(mm); // Model
         treeNodeModelsCompound.add(treeExpansionModelFilters); // TreeExpansionModelFilter
         treeNodeModelsCompound.add(asynchModelFilters); // AsynchronousModelFilter
+        treeNodeModelsCompound.add(tableRenderers);
+        treeNodeModelsCompound.add(tableRendererFilters);
         /*if (rp != null) {
             treeNodeModelsCompound.add(rp);
         }*/

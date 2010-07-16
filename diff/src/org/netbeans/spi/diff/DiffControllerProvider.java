@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,4 +63,19 @@ public abstract class DiffControllerProvider {
      * @throws java.io.IOException when initialization of the controlloer fails (invalid sources, etc)
      */
     public abstract DiffControllerImpl createDiffController(StreamSource base, StreamSource modified) throws IOException;
+
+    /**
+     * Creates a Diff Controller for supplied left and right sources.
+     * It is up to the implementor to override this method and return a Diff Controller which is capable of providing enhanced UI.
+     * Unless overriden, this will return the same Controller as {@link #createDiffController(org.netbeans.api.diff.StreamSource, org.netbeans.api.diff.StreamSource) } would do.
+     *
+     * @param base defines content of the Base Diff pane
+     * @param modified defines content of the Modified (possibly editable) Diff pane
+     * @return DiffControllerImpl implementation of the DiffControllerImpl class
+     * @throws java.io.IOException when initialization of the controller fails (invalid sources, etc)
+     * @since 1.27
+     */
+    public DiffControllerImpl createEnhancedDiffController(StreamSource base, StreamSource modified) throws IOException {
+        return createDiffController(base, modified);
+    }
 }

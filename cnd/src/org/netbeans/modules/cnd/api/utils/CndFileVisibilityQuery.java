@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -65,6 +66,8 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
     private CndFileVisibilityQuery() {
         MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
         MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).addChangeListener(this);
         MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(this);
     }
 
@@ -72,15 +75,18 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
         return INSTANCE;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         acceptedFilesPattern = null; // This will reset filter
         cs.fireChange();
     }
 
+    @Override
     public boolean isVisible(FileObject file) {
         return isVisible(file.getNameExt());
     }
 
+    @Override
     public boolean isVisible(File file) {
         return isVisible(file.getName());
     }
@@ -102,6 +108,7 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
      * Add a listener to changes.
      * @param l a listener to add
      */
+    @Override
     public void addChangeListener(ChangeListener l) {
         cs.addChangeListener(l);
     }
@@ -110,22 +117,17 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
      * Stop listening to changes.
      * @param l a listener to remove
      */
+    @Override
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
-    }
-
-    private static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
-            return new TreeSet<String>();
-        }
     }
 
     private List<Collection<String>> getAcceptedFilesExtensions() {
         List<Collection<String>> suffixes = new ArrayList<Collection<String>>();
         suffixes.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());
+        suffixes.add(MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         return suffixes;
     }

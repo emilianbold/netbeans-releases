@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -68,15 +72,20 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
@@ -133,14 +142,17 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         this.packagingFilesOuterPanel = packagingFilesOuterPanel;
         DocumentListener documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 refresh();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 refresh();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 refresh();
             }
@@ -148,16 +160,18 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         packagingFilesOuterPanel.getTopDirectoryTextField().getDocument().addDocumentListener(documentListener);
     }
 
-    class AddButtonAction implements java.awt.event.ActionListener {
+    private final class AddButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
             addObjectAction(new PackagerFileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
         }
     }
 
-    class AddLinkButtonAction implements java.awt.event.ActionListener {
+    private final class AddLinkButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             PackagingNewLinkPanel packagingNewEntryPanel = new PackagingNewLinkPanel(packagingFilesOuterPanel.getTopDirectoryTextField().getText());
             DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewLinkDialogTitle"));
@@ -176,8 +190,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class AddFileOrDirectoryButtonAction implements java.awt.event.ActionListener {
+    private final class AddFileOrDirectoryButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -197,14 +212,14 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
                 String itemPath;
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                    itemPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (PathPanel.getMode() == PathPanel.REL) {
-                    itemPath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    itemPath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                 } else {
                     itemPath = files[i].getPath();
                 }
-                itemPath = FilePathAdaptor.normalize(itemPath);
+                itemPath = CndPathUtilitities.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
                     addObjectAction(new PackagerFileElement(
@@ -217,7 +232,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 } else {
                     // Regular file
                     String perm;
-                    if (IpeUtils.isExecutable(files[i])) {
+                    if (isExecutable(files[i])) {
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     } else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
@@ -234,11 +249,40 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class AddFilesButtonAction implements java.awt.event.ActionListener {
+    /*
+     * Return true if file is an executable
+     */
+    private boolean isExecutable(File file) {
+        FileObject fo = null;
+
+        if (file.getName().endsWith(".exe")) { //NOI18N
+            return true;
+        }
+
+        try {
+            fo = FileUtil.toFileObject(file.getCanonicalFile());
+        } catch (IOException e) {
+            return false;
+        }
+        if (fo == null) { // 149058
+            return false;
+        }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        final String mime = dataObject.getPrimaryFile().getMIMEType();
+        return mime.equals(MIMENames.SHELL_MIME_TYPE) || MIMENames.isBinaryExecutable(mime);
+    }
+
+    private final class AddFilesButtonAction implements java.awt.event.ActionListener {
 //        private PackagingAddingFilesProgressPanel progressPanel;
 
         private boolean cancelled;
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -275,7 +319,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         //addFilesFromDirectory(dir, dir);
         }
 
-        class AddFilesFromDir extends Thread {
+        private final class AddFilesFromDir extends Thread {
 
             private PackagingAddingFilesProgressPanel progressPanel;
             private Dialog progressDialog;
@@ -294,6 +338,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         addObjectsAction(listToAdd);
                         progressDialog.setVisible(false);
@@ -302,8 +347,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             }
         }
 
-        class StopButtonAction implements java.awt.event.ActionListener {
+        private final class StopButtonAction implements java.awt.event.ActionListener {
 
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 cancelled = true;
             }
@@ -322,19 +368,19 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
                     String path;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                        path = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
-                        path = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                        path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                        path = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                     } else {
                         path = files[i].getPath();
                     }
-                    path = FilePathAdaptor.normalize(path);
-                    String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
-                    toFile = FilePathAdaptor.normalize(toFile);
+                    path = CndPathUtilitities.normalize(path);
+                    String toFile = CndPathUtilitities.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
+                    toFile = CndPathUtilitities.normalize(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
-                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || IpeUtils.isExecutable(files[i])) { //NOI18N
+                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     } else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
@@ -428,6 +474,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -458,7 +505,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         return targetList;
     }
 
-    class MyTable extends JTable {
+    private final class MyTable extends JTable {
 
         public MyTable() {
 //	    //setTableHeader(null); // Hides table headers
@@ -512,7 +559,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class MyTableCellRenderer extends DefaultTableCellRenderer {
+    private final class MyTableCellRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -528,7 +575,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     String msg = getString("Directory_tt", elem.getTo()); // NOI18N
                     label.setToolTipText(msg);
                 } else if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    String msg = getString("File_tt", (new File(CndPathUtilitities.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
                     label.setToolTipText(msg);
                 }
                 String val = elem.getTo();
@@ -554,7 +601,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         return 6;
     }
 
-    class MyTableModel extends DefaultTableModel {
+    private final class MyTableModel extends DefaultTableModel {
 
         private String[] columnNames = {
             getString("PackagingFilesOuterPanel.column.0.text"),

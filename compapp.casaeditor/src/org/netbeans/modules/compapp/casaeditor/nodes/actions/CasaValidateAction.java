@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
-import org.netbeans.modules.xml.validation.ValidateAction;
-//import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -76,11 +77,9 @@ public class CasaValidateAction extends ValidateAction {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                if (CasaFactory.getCasaCustomizer().getBOOLEAN_DISABLE_VALIDATION()) {
-                    return; // skip validation...
-                }
-long t1 = System.currentTimeMillis();
-System.out.println("Validation Start: "+t1);
+//                if (CasaFactory.getCasaCustomizer().getBOOLEAN_DISABLE_VALIDATION()) {
+//                    return; // skip validation...
+//                }
                 RunAction runAction = new RunAction();
                 runAction.run();
 
@@ -99,8 +98,6 @@ System.out.println("Validation Start: "+t1);
                 if (controller != null) {
                     controller.notifyCompleteValidationResults(validationResults);
                 }
-long t2 = System.currentTimeMillis();
-System.out.println("Validation EndAt: "+ t2 + ", "+ (t2 -t1));
             }
         });
     }
@@ -110,19 +107,17 @@ System.out.println("Validation EndAt: "+ t2 + ", "+ (t2 -t1));
         private List<ResultItem> validationResults;
 
         public void run() {
-            
-            assert ! SwingUtilities.isEventDispatchThread();
-            validationResults = model.validate(); 
+           
+            assert !SwingUtilities.isEventDispatchThread();
 
+            // show validation started
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
-
                     InputOutput io = IOProvider.getDefault().getIO(
                             NbBundle.getMessage(ValidateAction.class,
-                            "TITLE_XML_check_window"), false); // NOI18N
+                            "LBL_XML_Check_Window"), false); // NOI18N
                     io.select();
-                    
+
                     OutputWriter writer = io.getOut();
                     try {
                         writer.reset();
@@ -130,13 +125,27 @@ System.out.println("Validation EndAt: "+ t2 + ", "+ (t2 -t1));
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                     writer.println(NbBundle.getMessage(ValidateAction.class,
-                            "MSG_XML_valid_start")); // NOI18N
+                            "MSG_Validation_Started")); // NOI18N
+                }
+            });
+
+            // the actual validation could be time-consuming
+            validationResults = model.validate(); 
+
+            // show validation result
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    InputOutput io = IOProvider.getDefault().getIO(
+                            NbBundle.getMessage(ValidateAction.class,
+                            "LBL_XML_Check_Window"), false); // NOI18N
+                    io.select();
 
                     ValidationOutputWindow outputWindow = new ValidationOutputWindow();
                     outputWindow.displayValidationInformation(validationResults);
 
+                    OutputWriter writer = io.getOut();
                     writer.print(NbBundle.getMessage(ValidateAction.class,
-                            "MSG_XML_valid_end")); // NOI18N
+                            "MSG_Validation_Finished")); // NOI18N
                 }
             });
         }

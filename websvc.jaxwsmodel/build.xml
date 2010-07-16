@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -41,58 +43,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="websvc.jaxwsmodel">
-    <description>Builds, tests, and runs the project org.netbeans.modules.websvc.wsdlmodel</description>
-    <echo message="${basedir}"/>
     <import file="../nbbuild/templates/projectized.xml"/>
-    
-    <property name="resource_root" location="src/org/netbeans/modules/websvc/jaxwsmodel/resources"/>
-    <property name="gegerated_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/project_config1_0"/>
-    <property name="generated_handler-config_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/handler_config1_0"/>
-    <property name="generated_endpoints_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/endpoints_config1_0"/>
-    
-    <target name="s2binit" depends="build-init">
-        <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-            <classpath>
-                <pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-                <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-                <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-            </classpath>
-        </taskdef>
-    </target>
-
-    <target name="s2b_generate" depends="s2binit">
-        <echo message="generating code generation input file information" />
-
-        <schema2beans filename="${resource_root}/jax-ws.dtd"
-        mddFile="${resource_root}/jax-ws.mdd"
-        attrprop="true"
-        package="org.netbeans.modules.websvc.jaxwsmodel.project_config1_0"
-        rootDir="src"/>
-        <schema2beans filename="${resource_root}/handler-config.dtd"
-        mddFile="${resource_root}/handler-config.mdd"
-        package="org.netbeans.modules.websvc.jaxwsmodel.handler_config1_0"
-        rootDir="src"/>
-        <schema2beans filename="${resource_root}/endpoints.dtd"
-        mddFile="${resource_root}/endpoints.mdd"
-        attrprop="true"
-        package="org.netbeans.modules.websvc.jaxwsmodel.endpoints_config1_0"
-        rootDir="src"/>
-    </target>
-
-    <target name="compile" depends="s2b_generate, projectized-common.compile"/>
-    
-    <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
-
-    <target name="clean-s2b-src">
-        <mkdir dir="${gegerated_dir}"/>
-        <delete>
-            <fileset dir="${gegerated_dir}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${gegerated_dir}"/>
-        <delete dir="${generated_handler-config_dir}"/>
-        <delete dir="${generated_endpoints_dir}"/>
-    </target>
-  
 </project>

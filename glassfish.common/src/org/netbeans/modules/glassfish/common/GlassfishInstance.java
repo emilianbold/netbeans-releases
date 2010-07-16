@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -92,7 +95,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     // !PW FIXME Can we extract the server name from the install?  That way,
     // perhaps we can distinguish between GF V3 and Sun AS 10.0
     private static final String GLASSFISH_PRELUDE_SERVER_NAME = "GlassFish v3 Prelude"; // NOI18N
-    private static final String GLASSFISH_SERVER_NAME = "GlassFish v3"; // NOI18N
+    private static final String GLASSFISH_SERVER_NAME = "GlassFish Server 3"; // NOI18N
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -200,6 +203,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         lookupResult.addLookupListener(this);
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         updateFactories();
     }
@@ -313,11 +317,13 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
+    @Override
     public String getDisplayName() {
         return commonSupport.getDisplayName();
     }
 
     // TODO -- this should be done differently
+    @Override
     public String getServerDisplayName() {
         File f = new File(commonSupport.getGlassfishRoot(), "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd"); // NOI18N
         if (f.exists()) {
@@ -327,16 +333,19 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
     }
 
+    @Override
     public Node getFullNode() {
         Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]"); // NOI18N
         return new Hk2InstanceNode(this, true);
     }
 
+    @Override
     public Node getBasicNode() {
         Logger.getLogger("glassfish").finer("Creating GF Instance node [BASIC]"); // NOI18N
         return new Hk2InstanceNode(this, false);
     }
     
+    @Override
     public JComponent getCustomizer() {
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
         JPanel vmCustomizer = new VmCustomizer(commonSupport);
@@ -361,10 +370,12 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         return tabbedPane != null ? tabbedPane : commonCustomizer;
     }
 
+    @Override
     public boolean isRemovable() {
         return removable;
     }
 
+    @Override
     public void remove() {
         // Just in case...
         if(!removable) {

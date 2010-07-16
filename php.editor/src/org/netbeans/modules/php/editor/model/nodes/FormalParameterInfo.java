@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,34 +42,41 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.php.editor.model.impl.ParameterImpl;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 
 /**
  *
  * @author Radek Matous
  */
 public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
-    private ParameterImpl parameter;
+    private ParameterElement parameter;
     private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
         super(node);
         FormalParameter formalParameter = getOriginalNode();
+        boolean isReference = (formalParameter.getParameterName() instanceof  Reference);
         String name = getName();
         String defVal = CodeUtils.getParamDefaultValue(formalParameter);
         Expression parameterType = formalParameter.getParameterType();
-        List<QualifiedName> types = parameterType != null ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
+        final boolean isRawType = parameterType != null;
+        List<QualifiedName> types = isRawType ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
         if (types == null) {
             types = Collections.emptyList();
         }
-        parameter = new ParameterImpl(name, defVal, types,getRange());
+        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(), 
+                TypeResolverImpl.forNames(types), formalParameter.getDefaultValue() == null, isRawType, isReference);
     }
 
     public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
@@ -97,7 +107,7 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         return ASTNodeInfo.toOffsetRange(formalParameter.getParameterName());
     }
 
-    public Parameter toParameter() {
+    public ParameterElement toParameter() {
         return parameter;
     }
 }

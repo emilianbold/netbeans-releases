@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -106,29 +110,13 @@ public abstract class EJBProblemFinder {
             if (prj == null) {
                 return;
             }
-            J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
-            if (provider != null) {
-                J2eeModule module = provider.getJ2eeModule();
-                if (module != null) {
-                    if (J2eeModule.Type.EJB.equals(module.getType())) {
-                        isEjb = true;
-                    }
-                }
-            }
             
-            if (!isEjb) {
-                return; // File doesn't belong to EJB project
+            J2eeProjectCapabilities projCap = J2eeProjectCapabilities.forProject(prj);
+            if (projCap == null || (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported())){
+                return;
             }
 
             EjbJar ejbModule = EjbJar.getEjbJar(file);
-            Profile profile = ejbModule.getJ2eeProfile();
-            if (ejbModule == null ||
-                    !(Profile.JAVA_EE_5.equals(profile)
-                    || Profile.JAVA_EE_6_FULL.equals(profile)
-                    || Profile.JAVA_EE_6_WEB.equals(profile))) {
-                return; // EJB version is not supported
-            }
-            
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,6 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -62,8 +64,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 
 /**
  *
@@ -98,6 +98,7 @@ public class ModelUtils {
 
     /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            @Override
                 public void visit(CsmReferenceContext context) {
                     collector.visit(context.getReference(), csmFile);
                 }
@@ -118,6 +119,7 @@ public class ModelUtils {
         public AbstractReferenceCollector() {
             list = new ArrayList<CsmReference>();
         }
+        @Override
         public List<CsmReference> getReferences() {
             return list;
         }
@@ -127,6 +129,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "class-fields"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (CsmKindUtilities.isField(obj)) {
@@ -139,6 +142,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "typedefs"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (CsmKindUtilities.isTypedef(obj)) {
@@ -146,11 +150,11 @@ public class ModelUtils {
             }
         }
     }
-    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
         public String getEntityName() {
             return "functions-names"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             if (isWanted(ref, file)) {
                 list.add(ref);
@@ -158,11 +162,7 @@ public class ModelUtils {
         }
         private boolean isWanted(CsmReference ref, CsmFile file) {
             CsmObject csmObject = ref.getReferencedObject();
-            if (CsmKindUtilities.isFunction(csmObject)) {
-                // check if we are in the function declaration
-                return CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS);
-            }
-            return false;
+            return CsmKindUtilities.isFunction(csmObject);
         }
     }
 
@@ -175,6 +175,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "unused-variables"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (isWanted(obj, file)) {
@@ -188,6 +189,7 @@ public class ModelUtils {
                 }
             }
         }
+        @Override
         public List<CsmReference> getReferences() {
             List<CsmReference> result = new ArrayList<CsmReference>();
             for (ReferenceCounter counter : counters.values()) {

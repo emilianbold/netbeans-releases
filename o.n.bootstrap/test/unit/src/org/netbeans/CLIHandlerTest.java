@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.logging.Level;
+import org.netbeans.CLIHandler.Status;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -58,7 +62,7 @@ public class CLIHandlerTest extends NbTestCase {
     private static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
     
     private Logger LOG;
-    
+
     public CLIHandlerTest(String name) {
         super(name);
     }
@@ -415,6 +419,38 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("First one executed", 1, h1.cnt);
         assertEquals("Not the second one", 0, h2.cnt);
     }
+
+    public void testCannotWrite() throws Exception {
+        File tmp = new File(System.getProperty("netbeans.user"));
+        tmp.setReadOnly();
+        try {
+            CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
+            Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
+
+            assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
+        } finally {
+            tmp.setWritable(true);
+            for (File f : tmp.listFiles()) {
+                f.delete();
+            }
+            assertTrue("Clean up", tmp.delete());
+        }
+    }
+    public void testCannotWriteLockFile() throws Exception {
+        File tmp = new File(System.getProperty("netbeans.user"));
+        File f = new File(tmp, "lock");
+        f.createNewFile();
+        f.setReadOnly();
+        try {
+            CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
+            Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
+
+            assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
+        } finally {
+            f.setWritable(true);
+            assertTrue("Clean up", f.delete());
+        }
+    }
     
     public void testWhenInvokedTwiceParamsGoToTheFirstHandler() throws Exception {
         final String[] template = { "Ahoj", "Hello" };
@@ -633,23 +669,27 @@ public class CLIHandlerTest extends NbTestCase {
         
         class H extends CLIHandler {
             private byte[] arr;
+            Exception error;
             
             public H() {
                 super(WHEN_INIT);
             }
             
+            @Override
             protected int cli(Args args) {
                 try {
                     InputStream is = args.getInputStream();
                     arr = new byte[8];
                     assertEquals("Read amount is the maximum of template", template.length, is.read(arr));
+                    assertEquals("EOF", -1, is.read());
                     is.close();
-                } catch (IOException ex) {
-                    fail("There is an exception: " + ex);
+                } catch (Exception ex) {
+                    error = ex;
                 }
                 return 0;
             }
             
+            @Override
             protected void usage(PrintWriter w) {}
         }
         H h1 = new H();
@@ -666,6 +706,9 @@ public class CLIHandlerTest extends NbTestCase {
             assertEquals("Attempt " + i + ": " + "4th is same", template[3], h1.arr[3]);
             
             h1.arr = null;
+        }
+        if (h1.error != null) {
+            throw h1.error;
         }
     }
     

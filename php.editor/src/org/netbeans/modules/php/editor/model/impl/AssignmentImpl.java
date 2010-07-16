@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Union2<String,Collection<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
     private boolean arrayAccess;
+    private boolean conditionalBlock;
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
@@ -70,7 +74,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpKind());
+        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind());
         this.container = container;
         this.typeName = Union2.<String, Collection<? extends TypeScope>>createFirst(typeName);
         this.scopeRange = scopeRange;
@@ -86,7 +90,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     static boolean canBeProcessed(String tName, String name) {
-        return tName.indexOf(name) == -1;
+        return tName.length() > 0 && tName.indexOf(name) == -1;
     }
 
     @CheckForNull
@@ -176,5 +180,19 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
 
     public void setAsArrayAccess(boolean arrayAccess) {
         this.arrayAccess = arrayAccess;
+    }
+
+    /**
+     * @return the conditionalBlock
+     */
+    public boolean isConditionalBlock() {
+        return conditionalBlock;
+    }
+
+    /**
+     * @param conditionalBlock the conditionalBlock to set
+     */
+    public void setConditionalBlock(boolean conditionalBlock) {
+        this.conditionalBlock = conditionalBlock;
     }
 }

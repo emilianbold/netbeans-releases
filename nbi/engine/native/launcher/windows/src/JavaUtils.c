@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -353,7 +356,7 @@ char * getJavaVersionFormatted(const JavaProperties * javaProps) {
                 result = appendString(result, updateStr);
                 FREE(updateStr);
             }
-            if(strncmp(version->build, "", 127)!=0) {
+            if(getLengthA(version->build) > 0) {
                 result = appendString(result, "-");
                 result = appendString(result, version->build);
             }
@@ -391,7 +394,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
     DWORD i=0;
     WCHAR ** keys = JAVA_REGISTRY_KEYS;
     DWORD k=0;
-    WCHAR buffer [MAX_LEN_VALUE_NAME];
+    WCHAR * buffer = newpWCHAR(MAX_LEN_VALUE_NAME);
     HKEY rootKeys [2] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
     DWORD rootKeysNumber = sizeof(rootKeys)/sizeof(HKEY);
     DWORD keysNumber = sizeof(JAVA_REGISTRY_KEYS)/sizeof(WCHAR*);
@@ -427,6 +430,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
                     trySetCompatibleJava(javaHome, props);
                     FREE(javaHome);
                     if(props->java!=NULL) {
+                        FREE(buffer);
                         return;
                     }
                 }
@@ -484,6 +488,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
             }
         }
     }
+    FREE(buffer);
     return;
 }
 

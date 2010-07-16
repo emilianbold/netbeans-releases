@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,6 +100,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.Attachments;
 import org.netbeans.modules.websvc.wsitmodelext.security.Trust13;
+import org.netbeans.modules.websvc.wsitmodelext.security.parameters.ProtectTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireIssuerSerialReference;
 
 /**
@@ -355,6 +359,14 @@ public class SecurityPolicyModelHelper {
             PolicyModelHelper.getInstance(configVersion).createElement(secBinding, SecurityPolicyQName.ONLYSIGNENTIREHEADERSANDBODY.getQName(configVersion), OnlySignEntireHeadersAndBody.class, true);
         } else {
             PolicyModelHelper.removeElement(secBinding, OnlySignEntireHeadersAndBody.class, true);
+        }
+    }
+
+    public void enableProtectTokens(WSDLComponent secBinding, boolean enable) {
+        if (enable) {
+            PolicyModelHelper.getInstance(configVersion).createElement(secBinding, SecurityPolicyQName.PROTECTTOKENS.getQName(configVersion), ProtectTokens.class, true);
+        } else {
+            PolicyModelHelper.removeElement(secBinding, ProtectTokens.class, true);
         }
     }
 
@@ -1048,6 +1060,14 @@ public class SecurityPolicyModelHelper {
         }
         return false;
     }
+
+    public static boolean isProtectTokens(WSDLComponent c) {
+        ExtensibilityElement e = getSecurityBindingTypeElement(c);
+        if (e != null) {
+            return isAttributeEnabled(e, ProtectTokens.class);
+        }
+        return false;
+   }
 
    public void setLayout(WSDLComponent c, String msgLayout) {
         WSDLModel model = c.getModel();

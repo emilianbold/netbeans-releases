@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,11 +42,15 @@
 
 package org.netbeans.modules.cnd.utils.cache;
 
+import java.util.Comparator;
+
 /**
  * Utility methods related to character sequences.
  * @author Vladimir Kvashin
  */
 public class CharSequenceUtils {
+
+    public static final Comparator<CharSequence> ComparatorIgnoreCase = new CharSequenceComparatorIgnoreCase();
 
     /**
      * Implementation of {@link String#indexOf(String)} for character sequences.
@@ -182,6 +189,24 @@ public class CharSequenceUtils {
         return true;
     }
 
+    /** Same as startsWith, but ignores case */
+    public static boolean startsWithIgnoreCase(CharSequence text, CharSequence prefix) {
+        int p_length = prefix.length();
+        if (p_length > text.length()) {
+            return false;
+        }
+        for (int x = 0; x < p_length; x++) {
+            final char c1 = text.charAt(x);
+            final char c2 = prefix.charAt(x);
+            if (c1 != c2) {
+                if (Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Implementation of {@link String#endsWith(String)} for character sequences.
      */
@@ -198,4 +223,51 @@ public class CharSequenceUtils {
         return true;
     }
 
+    public static String toString(CharSequence prefix, char separator, CharSequence postfix) {
+        int prefLength = prefix.length();
+        int postLength = postfix.length();
+        char[] chars = new char[prefLength + 1 + postLength];
+        int indx = 0;
+        if (prefix instanceof String) {
+            ((String)prefix).getChars(0, prefLength, chars, indx);
+            indx = prefLength;
+        } else {
+            for (int i = 0; i < prefLength; i++) {
+                chars[indx++] = prefix.charAt(i);
+            }
+        }
+        chars[indx++] = separator;
+        if (postfix instanceof String) {
+            ((String)postfix).getChars(0, postLength, chars, indx);
+        } else {
+            for (int i = 0; i < postLength; i++) {
+                chars[indx++] = postfix.charAt(i);
+            }
+        }
+        return new String(chars);
+    }
+
+    private static class CharSequenceComparatorIgnoreCase implements Comparator<CharSequence> {
+        @Override
+        public int compare(CharSequence o1, CharSequence o2) {
+            int n1 = o1.length();
+            int n2 = o2.length();
+            for (int i1 = 0,  i2 = 0; i1 < n1 && i2 < n2; i1++, i2++) {
+                char c1 = o1.charAt(i1);
+                char c2 = o2.charAt(i2);
+                if (c1 != c2) {
+                    c1 = Character.toUpperCase(c1);
+                    c2 = Character.toUpperCase(c2);
+                    if (c1 != c2) {
+                        c1 = Character.toLowerCase(c1);
+                        c2 = Character.toLowerCase(c2);
+                        if (c1 != c2) {
+                            return c1 - c2;
+                        }
+                    }
+                }
+            }
+            return n1 - n2;
+        }
+    }
 }

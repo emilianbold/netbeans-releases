@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -439,6 +442,66 @@ public class CacheIndexTest extends NbTestCase {
         assertValueSet(index.get(folder11), new File[] {folder111});
         assertValueSet(index.get(folder12), new File[] {file12_1});
         assertValueSet(index.get(folder111), new File[] {file111_1});
+    }
+
+    /**
+     * Adding removed files (not folders) may result in corrupted index. Adding such file will remove parent entries even if there's
+     * a modified sibling of the deleted file. See the corresponding fix in CacheIndex.
+     */
+    public void testRemoveFileTwice () throws Exception {
+        CacheIndex ci = new CIndex();
+        Map<File, Set<File>> index = getIndex(ci);
+        index.clear();
+
+        File root = new File(wc, "root");
+
+        File folder =   new File(root,      "folder1");
+        File file1 = new File(folder,      "file1");
+        File file2 =  new File(folder,     "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+
+        // add file111_1 -> all versioned parents will be added
+        Set<File> s = new HashSet<File>();
+        s.add(file1);
+        ci.add(folder, s);
+        checkParents(index, file1);
+        s.clear();
+        s.add(file1);
+        s.add(file2);
+        ci.add(folder, s);
+        checkParents(index, file1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder});
+        assertValueSet(index.get(folder), new File[] {file1, file2});
+
+        //remove file1 from index
+        file2.delete();
+        s.clear();
+        s.add(file1);
+        ci.add(folder, s);
+
+        checkParents(index, file1);
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder});
+        assertValueSet(index.get(folder), new File[] {file1});
+
+        if (!file2.isFile()) {
+            ci.add(file2, null);
+            checkParents(index, file1);
+            assertValueSet(index.get(wc), new File[] {root});
+            assertValueSet(index.get(root), new File[] {folder});
+            assertValueSet(index.get(folder), new File[] {file1});
+        } else {
+            fail("The file should be deleted");
+        }
+
+        //remove file1 from index
+        s.clear();
+        ci.add(folder, s);
+        assertEquals(0, index.keySet().size());
     }
 
     private void assertValueSet(Set<File> s, File... expectedValues) {

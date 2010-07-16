@@ -1,32 +1,69 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
   <title>Debugging Applications - Java Card 3 Development
-  </title>
-
-</head>
-
-<body class="body">
-
-<a name="DebuggingApplications"></a><h2>Debugging Applications</h2>
+   </title></head><body class="body"><a name="DebuggingApplications"></a><h2>Debugging Applications</h2>
+<p class="p">Debugging is the process of examining your application for errors. The process of debugging is accomplished by setting breakpoints and watches in your code and running it in the debugger. This enables you to execute your code one line at a time and examine the state of your application in order to discover any problems.</p>
 <p class="p">The Java Debug Wire Protocol (JDWP) used by the IDE is heavy for
-a small VM such as that provided by cjcre. Consequently, cjcre uses
+a small VM such as that provided by the Java Card RI. Consequently, the Java Card RI uses
 KVM Debug Wire Protocol (KDWP) to provide a minimum set of debugging capabilities. The
-debugproxy translates and sends the translated JDWP commands from the IDE to cjcre
-in KDWP format. Responses from cjcre are converted into JDWP format by debugproxy
-before it sends them to the IDE. </p><p class="p">The communication between cjcre, debugproxy, and the IDE happens through sockets. Socket based
-communication enables developers to debug cjcre from remote hosts. For example, cjcre could
-run on machine1, debugproxy could run on machine2, and the IDE could run
-on machine3. Developers can also run cjcre, debugproxy, and the IDE on same
+debugproxy translates and sends the translated JDWP commands from the IDE to the Java Card RI
+in KDWP format. Responses from the Java Card RI are converted into JDWP format by debugproxy
+before it sends them to the IDE. </p>
+<p class="p">The communication between the Java Card RI, debugproxy, and the IDE happens through sockets. Socket based communication enables developers to debug cjcre from remote hosts. For example, the Java Card RI could run on machine1, debugproxy could run on machine2, and the IDE could run
+on machine3. Developers can also run the Java Card RI, debugproxy, and the IDE on same
 host.</p><p class="p">Ports used by IDE communication to and from debugproxy and debugproxy communication to
-and from cjcre are distinguished by the names &#8220;listen port&#8221; and &#8220;remote
+and from the Java Card RI are distinguished by the names &#8220;listen port&#8221; and &#8220;remote
 port&#8221; respectively.</p>
+<p class="p">The Java Card platform debugger uses IDE menus and procedures for debugging applications. When you start a debugging session, the debugger windows appear automatically at the bottom of your screen. You can also debug applications that are running on a remote machine by attaching the debugger to the application process. See the appropriate Java Card 3 platform documentation on the Java Card 3 Kenai project site for detailed information about the Java Card 3 platform debugging protocol and procedures.</p>
+
+<p class="p">The following topics describe the basic sequence of activities completed by a developer
+when debugging an application for the Java Card 3 platform:</p>
+<table cellspacing="1" cellpadding="1" border="1">
+<tr>
+	<td>Task</td>
+	<td>Use the IDE to:</td>
+</tr>
+<tr>
+	<td>Prepare to run the debugger</td>
+	<td><ul>
+	    	<li><a href="SettingBreakpoints.html">Set breakpoints in your code</a>:<br>
+			Debug &gt; New Breakpoint
+			</li>
+	    	<li><a href="SettingWatches.html">Set watches in your code</a>:<br>
+			Debug &gt; New Watch
+			</li>
+</ul></td>
+</tr>
+<tr>
+	<td>Run the debugger</td>
+	<td><ul>
+	    	<li><a href="StartingDebugging.html">Start a debugger session</a>:<br>
+			Debug &gt; Debug Project<br>
+			Debug &gt; Debug File</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Monitor your code</td>
+	<td><ul>
+	<li><a href="SteppingThroughCode.html">Step through your code</a>:<br>
+	Debug &gt; Step <i>option</i></li>
+	<li>View debugging information.</li>
+	<li>View application threads.</li>
+	<li>Fix any errors and continue debugging.</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Finish the debugger session</td>
+	<td><ul>
+	    	<li>Stop the debugger:<br>
+			Debug &gt; Finish Debugger Session</li>
+			</ul></td>
+</tr>
+</table>
+
 
 
 </body>

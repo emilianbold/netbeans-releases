@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ package org.netbeans.modules.java.source.classpath;
 
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.*;
 import java.io.File;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -56,17 +58,18 @@ import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
-    
+
     FileObject[] srcRoots;
     ClasspathInfo cpInfo;
     CacheSourceForBinaryQueryImpl sfbq;
-    
+
     public CacheSourceForBinaryQueryImplTest(String testName) {
         super(testName);
     }
@@ -89,7 +92,7 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
         gpr.register(ClassPath.SOURCE, new ClassPath[]{srcPath});
         gpr.register(ClassPath.BOOT, new ClassPath[] {bootPath});
         gpr.register(ClassPath.COMPILE, new ClassPath[] {compilePath});
-        this.cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
+        this.cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,srcPath,null,true,false,false,false);
         this.sfbq = new CacheSourceForBinaryQueryImpl ();
     }
 
@@ -98,7 +101,7 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testFindSourceRoots() throws Exception {
-        ClassPath outCp = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(this.cpInfo,ClasspathInfo.PathKind.OUTPUT);        
+        ClassPath outCp = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(this.cpInfo,ClasspathInfo.PathKind.OUTPUT);
         assertNotNull(outCp);
         assertEquals(srcRoots.length,outCp.entries().size());
         Iterator<ClassPath.Entry> it = ((List<ClassPath.Entry>)outCp.entries()).iterator();
@@ -112,5 +115,26 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
             assertEquals(srcRoots[i],sourceRoots[0]);
         }
     }
-    
+
+    public void testFindSourceRootsWithAptRoot() throws Exception {
+        //Force Apt Source cache creation
+        final FileObject[] aptSrcRoots = new FileObject[srcRoots.length];
+        for (int i=0; i<srcRoots.length; i++) {
+            aptSrcRoots[i]=URLMapper.findFileObject(AptCacheForSourceQuery.getAptFolder(srcRoots[i].getURL()));
+        }
+        ClassPath outCp = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(this.cpInfo,ClasspathInfo.PathKind.OUTPUT);
+        assertNotNull(outCp);
+        assertEquals(srcRoots.length,outCp.entries().size());
+        Iterator<ClassPath.Entry> it = ((List<ClassPath.Entry>)outCp.entries()).iterator();
+        for (int i=0; it.hasNext(); i++) {
+            ClassPath.Entry entry = it.next();
+            URL url = entry.getURL();
+            SourceForBinaryQuery.Result result = this.sfbq.findSourceRoots(url);
+            FileObject[] sourceRoots = result.getRoots();
+            assertNotNull(sourceRoots);
+            assertEquals(2,sourceRoots.length);
+            assertEquals(srcRoots[i],sourceRoots[0]);
+            assertEquals(aptSrcRoots[i], sourceRoots[1]);
+        }
+    }
 }

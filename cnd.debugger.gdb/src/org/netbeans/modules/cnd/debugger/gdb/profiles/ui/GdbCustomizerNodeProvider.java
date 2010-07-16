@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustom
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -56,30 +60,33 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
     public final static int GDB_PRIORITY = 200;
 
-    private CustomizerNode customizerNode = null;
+    //private CustomizerNode customizerNode = null;
     
-    public CustomizerNode factoryCreate() {
-        if (customizerNode == null) {
-            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName")); // NOI18N
-        }
-	return customizerNode;
+    @Override
+    public CustomizerNode factoryCreate(Lookup lookup) {
+        // No need for gdb options, none is used (see IZ 176952)
+        return null;
+//        if (customizerNode == null) {
+//            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName"), null, lookup); // NOI18N
+//        }
+//	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
+    private static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
 
-        public GdbCustomizerNode(String name, String displayName) {
-	    super(name, displayName, null);
+        public GdbCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+	    super(name, displayName, children, lookup);
 	}
 
         @Override
-	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
-		    Configuration configuration) {
+	public Sheet getSheet(Configuration configuration) {
 	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
 	    return profile == null ? null : profile.getSheet();
 	}
@@ -89,25 +96,26 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             return new HelpCtx("ProjectPropsDebugging"); // NOI18N
         }
 
+        @Override
         public int getPriority() {
             return GDB_PRIORITY;
         }
 
+        @Override
         public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-            switch (type) {
-                case DEBUG:
-                case DEBUG_LOAD_ONLY:
-                case DEBUG_STEPINTO:
-                    return true;
-                default:
-                    return false;
+            if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
+                return true;
+            } else {
+                return false;
             }
         }
 
+        @Override
         public ProjectActionHandler createHandler() {
             return new GdbActionHandler();
         }
 
+        @Override
         public String getFamily() {
             return "GNU"; //NOI18N
         }

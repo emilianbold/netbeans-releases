@@ -26,7 +26,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class FTPBCValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String xsdUrl = "/org/netbeans/modules/wsdlextensions/ftp/resources/ftp_ext.xsd";
     

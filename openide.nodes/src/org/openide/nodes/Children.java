@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,7 +112,7 @@ public abstract class Children extends Object {
     static final Logger LOG = Logger.getLogger(Children.class.getName());
     
     /** access to entries/nodes */
-    EntrySupport entrySupport;
+    private EntrySupport entrySupport;
 
     /** parent node for all nodes in this list (can be null) */
     Node parent;
@@ -144,12 +147,13 @@ public abstract class Children extends Object {
      */
     EntrySupport entrySupport() {
         synchronized (Children.class) {
-            if (entrySupport == null) {
+            if (getEntrySupport() == null) {
                 LOG.finer("Initializing entrySupport");
-                entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
-                postInitializeEntrySupport();
+                EntrySupport es = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+                setEntrySupport(es);
+                postInitializeEntrySupport(es);
             }
-            return entrySupport;
+            return getEntrySupport();
         }
     }
 
@@ -167,7 +171,7 @@ public abstract class Children extends Object {
      * lock so subclasses should behave sane. Can be overriden just in this 
      * package, until found that this is needed somewhere else. 
      */
-    void postInitializeEntrySupport() {
+    void postInitializeEntrySupport(EntrySupport es) {
     }
     
     /** Setter of parent node for this list of children. Each children in the list
@@ -334,10 +338,12 @@ public abstract class Children extends Object {
     */
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        Children ch = (Children) super.clone();
-        ch.parent = null;
-        ch.entrySupport = null;
-        return ch;
+        synchronized (Children.class) {
+            Children ch = (Children) super.clone();
+            ch.parent = null;
+            ch.setEntrySupport(null);
+            return ch;
+        }
     }
 
     /**
@@ -568,7 +574,22 @@ public abstract class Children extends Object {
      * they are not created
      */
     private Node[] testNodes() {
-        return entrySupport == null ? null : entrySupport().testNodes();
+        return getEntrySupport() == null ? null : entrySupport().testNodes();
+    }
+
+    /**
+     * @return the entrySupport
+     */
+    final EntrySupport getEntrySupport() {
+        return entrySupport;
+    }
+
+    /**
+     * @param entrySupport the entrySupport to set
+     */
+    final void setEntrySupport(EntrySupport entrySupport) {
+        assert Thread.holdsLock(Children.class);
+        this.entrySupport = entrySupport;
     }
 
 
@@ -646,12 +667,12 @@ public abstract class Children extends Object {
             }
         }
         @Override
-        void postInitializeEntrySupport() {
+        void postInitializeEntrySupport(EntrySupport es) {
             if (!lazySupport) {
                 if (getNodesEntry() == null) {
                     nodesEntry = createNodesEntry();
                 }
-                entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+                es.setEntries(Collections.singleton(getNodesEntry()));
             } else if (getNodesEntry() != null) {
                 nodesEntry = null;
             }
@@ -1331,14 +1352,16 @@ public abstract class Children extends Object {
 
                 boolean init = entrySupport().isInitialized();
                 if (init && parent != null) {
-                    List<Node> snapshot = entrySupport.snapshot();
+                    List<Node> snapshot = getEntrySupport().snapshot();
                     if (snapshot.size() > 0) {
                         int[] idxs = getSnapshotIdxs(snapshot);
                         parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
                     }
                 }
 
-                entrySupport = null;
+                synchronized (Children.class) {
+                    setEntrySupport(null);
+                }
                 lazySupport = toLazy;
                 if (toLazy) {
                     nodesEntry = null;

@@ -70,10 +70,12 @@ public class TraceModelBase {
     // to be based on the file that we currently compile rather then current dir
     private boolean pathsRelCurFile = false;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     public TraceModelBase(boolean clearCache) {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
+        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF); // NOI18N
         model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
         if (model == null) {
             model = new ModelImpl();

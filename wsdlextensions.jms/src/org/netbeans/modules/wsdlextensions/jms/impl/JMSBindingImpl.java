@@ -38,4 +38,8 @@ public class JMSBindingImpl extends JMSComponentImpl implements JMSBinding {
         this(model, createPrefixedElement(JMSQName.BINDING.getQName(), model));
     }
     
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }
+    
 }

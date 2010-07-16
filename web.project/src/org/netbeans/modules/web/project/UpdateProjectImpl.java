@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -256,7 +260,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             
             FileObject manifest = FileUtil.createData(confDirFO, "MANIFEST"); //NOI18N
             FileLock lock = manifest.lock();
-            InputStream bufIn = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/project/ui/resources/MANIFEST.MF"); //NOI18N;
+            InputStream bufIn = UpdateProjectImpl.class.getResourceAsStream("/org/netbeans/modules/web/project/ui/resources/MANIFEST.MF"); //NOI18N;
             OutputStream bufOut = null;
 
             try {
@@ -295,7 +299,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                 if (version == 1) {
                     //1->2 upgrade
                     Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
@@ -317,7 +321,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
                             Element library = (Element) libList.item(i);
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
                             //remove ${ and } from the beginning and end
-                            String webFileText = findText(webFile);
+                            String webFileText = XMLUtil.findText(webFile);
                             webFileText = webFileText.substring(2, webFileText.length() - 1);
 //                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
                             if (webFileText.startsWith ("lib.")) {
@@ -357,61 +361,21 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public synchronized EditableProperties getUpdatedProjectProperties () {
         if (cachedProperties == null) {
             cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            //The javadoc.additionalparam was not in NB 4.0
-            if (cachedProperties.get (WebProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
-                cachedProperties.put (WebProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
-            }
+            ensureValueExists(cachedProperties, WebProjectProperties.JAVADOC_ADDITIONALPARAM, ""); //NOI18N //The javadoc.additionalparam was not in NB 4.0
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+            ensureValueExists(cachedProperties, "javac.test.processorpath","${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); //NOI18N
         }
         return this.cachedProperties;
     }
 
-    /**
-     * Extract nested text from a node.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent node
-     * @return the nested text, or null if none was found
-     */
-    private static String findText(Node parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                        newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,(Element)newNode);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
+    private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
+        if (prop.get(property)==null) { //NOI18N
+            prop.put (property, defaultValue); //NOI18N
         }
     }
 

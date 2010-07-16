@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -109,7 +111,7 @@ public final class BuildImplTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder : getName(), (String)null, (String)null, null);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
+        ep.put(ProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
         aph.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(aph.getProjectDirectory()));
         J2SEProjectGenerator.setDefaultSourceLevel(null);

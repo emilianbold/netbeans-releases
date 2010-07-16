@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,16 +59,6 @@ public class MainTest extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MainTest.class);
-        
-        return suite;
-    }
-
     public void testPurchaseOrder() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestPurchaseOrder", true, true, true);
     }
@@ -84,62 +77,62 @@ public class MainTest extends NbTestCase {
         stm.setJavaType("int");
         bg.addSchemaTypeMapping(stm);
         config.addReadBeanGraphs(bg);
-        
+
         generalTest("TestInvoice", true, config);
     }
-    
+
     public void testBookXMLSchema() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestBookXMLSchema", true, false, false);
     }
-    
+
     public void testBook() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestBook");
     }
-    
+
     public void testDupInternalNames() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestDupInternalNames", true, true, true);
     }
-    
+
     public void testEvents() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEvents");
     }
-    
+
     public void testMerge() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestMerge");
     }
-    
+
     public void testAttr() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestAttr", false, false, true);
     }
-    
+
     public void testMdd() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestMdd");
     }
-    
+
     public void testValid() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestValid");
     }
-    
+
     public void testFind() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestFind");
     }
-    
+
     public void testVeto() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestVeto");
     }
-    
+
     public void testContrivedApp() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestContrivedApp");
     }
-    
+
     public void testEncoding() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEncoding");
     }
-    
+
     public void testExceptions() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestExceptions");
     }
-    
+
     public void testEmpty() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEmpty");
     }
@@ -260,7 +253,7 @@ public class MainTest extends NbTestCase {
         config.setDumpToString(true);
         generalTest("TestMergeExtendBaseBean", false, config);
     }
-    
+
     public void testBeanWrapper() throws IOException, Schema2BeansException, InterruptedException {
         String testName = "TestBeanWrapper";
         try {
@@ -524,6 +517,42 @@ public class MainTest extends NbTestCase {
     protected void tearDown() {
         compareReferenceFiles();
     }
+
+    // XXX: temporarily overriding compareReferenceFiles() to dump differences as
+    // I do not know what problem there is on javaee continual tester as there is
+    // no access to diff files
+    public void compareReferenceFiles(String testFilename, String goldenFilename, String diffFilename) {
+        try {
+            File goldenFile = getGoldenFile(goldenFilename);
+            File testFile = new File(getWorkDir(),testFilename);
+            File diffFile = new File(getWorkDir(),diffFilename);
+            String message = "Files differ";
+            if(System.getProperty("xtest.home") == null) {
+                // show location of diff file only when run without XTest (run file in IDE)
+                message += "; check "+diffFile;
+            }
+            try {
+            assertFile(message, testFile, goldenFile, diffFile);
+            } catch (AssertionFileFailedError e) {
+                BufferedReader diffFileReader = new BufferedReader(new FileReader(diffFile));
+                StringBuffer diff = new StringBuffer();
+                try {
+                    String ss = diffFileReader.readLine();
+                    while (ss != null) {
+                        diff.append(ss+"\n");
+                        ss = diffFileReader.readLine();
+                    }
+                } finally {
+                    diffFileReader.close();
+                }
+                throw new AssertionFileFailedError("DIFF: "+diffFile.toString()+"\n"+diff.toString(), e.getDiffFile());
+
+            }
+        } catch (IOException ioe) {
+            fail("Could not obtain working direcory");
+        }
+    }
+
 
     public void ref(File f) throws IOException {
         Reader r = new FileReader(f);

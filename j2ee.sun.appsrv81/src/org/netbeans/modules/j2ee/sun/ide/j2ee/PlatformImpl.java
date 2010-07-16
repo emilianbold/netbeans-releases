@@ -2,7 +2,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
@@ -117,11 +121,15 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_API_JAR = "lib/endorsed/webservices-api.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
-    
+
     private static final String[] SWDP_JARS = new String[] {
-            "jersey.jar",
-            "jsr311-api.jar",
-            "wadl2java.jar"
+        "asm" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jackson-core-asl" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jersey-bundle" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jettison" + Utils.VERSIONED_JAR_SUFFIX_MATCHER ,
+        "jsr311-api" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "jersey" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
+        "wadl2java" + Utils.VERSIONED_JAR_SUFFIX_MATCHER,
     };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
@@ -333,7 +341,10 @@ public class PlatformImpl extends J2eePlatformImpl {
     }
     
     private List<URL> getSwdpJarURLs() throws MalformedURLException {
-        List<URL> ret = getSwdpJarURLs(new File(new File(dmProps.getLocation(), dmProps.getDomainName()), "lib")); //NOI18N
+        List<URL> ret = getSwdpJarURLs(new File(root, "lib")); //NOI18N
+        if (ret == null) {
+            ret = getSwdpJarURLs(new File(new File(dmProps.getLocation(), dmProps.getDomainName()), "lib")); //NOI18N
+        }
         if (ret == null) {
             ret = getSwdpJarURLs(new File(root, "lib/addons")); //NOI18N
         }
@@ -343,14 +354,12 @@ public class PlatformImpl extends J2eePlatformImpl {
     private List<URL> getSwdpJarURLs(File libDir) throws MalformedURLException {
         ArrayList<URL> ret = new ArrayList<URL>();
         for (String jarName : SWDP_JARS) {
-            File jarFile = new File(libDir, jarName);
-            if (jarFile.isFile()) {
+            File jarFile = Utils.getFileFromPattern(jarName, libDir);
+            if (jarFile != null && jarFile.isFile()) {
                 ret.add(fileToUrl(jarFile));
-            } else {
-                return null;
             }
         }
-        return ret;
+        return ret.isEmpty() ? null : ret;
     }
 
     /**

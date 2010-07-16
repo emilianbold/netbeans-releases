@@ -20,8 +20,10 @@ package org.netbeans.modules.soa.mappercore;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -36,6 +38,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -63,9 +66,13 @@ import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.openide.actions.DeleteAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.xml.search.api.SearchManager;
 
 /**
  *
@@ -110,8 +117,9 @@ public class Mapper extends JPanel {
 
     private boolean filterLeft = false;
     private boolean filterRight = false;
-
-    private boolean printMode = false;
+    
+    private JCheckBox leftTreeSearch;
+    private JCheckBox rightTreeSearch;
    
     /** Creates a new instance of RightTree */
     public Mapper(MapperModel model) {
@@ -175,9 +183,22 @@ public class Mapper extends JPanel {
         aMap.put(DefaultEditorKit.copyAction, new CopyMapperAction(canvas));
         aMap.put(DefaultEditorKit.cutAction, new CutMapperAction(canvas));
         aMap.put(DefaultEditorKit.pasteAction, new PasteMapperAction(canvas));
-        aMap.put(DefaultEditorKit.deleteNextCharAction, new DeleteMapperAction(canvas));
-
-
+        aMap.put(SystemAction.get(DeleteAction.class).getActionMapKey(),
+                new DeleteMapperAction(canvas));
+        
+        JPanel optionalityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        
+        leftTreeSearch = new JCheckBox(NbBundle.getMessage(Mapper.class, "Search_Left_Tree"));
+        leftTreeSearch.setSelected(true);
+        rightTreeSearch = new JCheckBox(NbBundle.getMessage(Mapper.class, "Search_Right_Tree"));
+        rightTreeSearch.setSelected(true);
+        optionalityPanel.add(leftTreeSearch);
+        optionalityPanel.add(rightTreeSearch);
+        
+        Component find = SearchManager.getDefault().createFind(this, this, optionalityPanel);
+        add(find, MapperLayout.FIND_PANEL);
+        find.setVisible(false);
+    
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Mapper.class, "ACSN_Mapper")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
@@ -354,15 +375,7 @@ public class Mapper extends JPanel {
     public MapperContext getContext() {
         return context;
     }
-
-    public boolean getPrintMode() {
-        return printMode;
-    }
-
-    public void setPrintMode(boolean printMode) {
-        this.printMode = printMode;
-    }
-
+    
     public void setSelectedDndPath(TreePath path) {
         pathDndselect = path;
     }
@@ -388,6 +401,14 @@ public class Mapper extends JPanel {
                 root.repaint();
             }
         }
+    }
+    
+    public boolean isSearchInLeftTree() {
+        return leftTreeSearch.isSelected();
+    }
+    
+    public boolean isSearchInRightTree() {
+        return rightTreeSearch.isSelected();
     }
 
     public TreePath getSelected() {
@@ -591,8 +612,68 @@ public class Mapper extends JPanel {
     public void expandNonEmptyGraphs() {
         expandGraphs(Utils.getNonEmptyGraphs(getFilteredModel()));
     }
-    
-    
+
+    /**
+     * Expans mapped items in left tree.
+     */
+    public void expandMappedLeftTreeItems() {
+
+        MapperModel mapperModel = getFilteredModel();
+        TreeModel treeModel = leftTree.getModel();
+
+        if (mapperModel == null || treeModel == null) return;
+
+        Object filteredRoot = mapperModel.getRoot();
+        if (filteredRoot == null) return;
+
+        TreePath rootTreePath = new TreePath(filteredRoot);
+
+        Set<TreePath> treePathes = new HashSet<TreePath>();
+        collectMappedNodes(mapperModel, rootTreePath, treePathes);
+
+        for (TreePath treePath : treePathes) {
+            if (Utils.isTreePathExpandable(treeModel, treePath)) {
+                leftTree.expandPath(treePath);
+            }
+        }
+    }
+
+    private void collectMappedNodes(MapperModel mapperModel,
+            TreePath rightTreePath, Set<TreePath> result)
+    {
+        Graph graph = mapperModel.getGraph(rightTreePath);
+        if (graph != null && graph.hasIngoingLinks()) {
+            List<Link> links = graph.getIngoingLinks();
+            if (links != null) {
+                for (Link link : links) {
+                    SourcePin sourcePin = link.getSource();
+                    if (sourcePin instanceof TreeSourcePin) {
+                        TreePath treePath = ((TreeSourcePin) sourcePin)
+                                .getTreePath();
+                        TreePath parentPath = (treePath == null) ? null
+                                : treePath.getParentPath();
+
+                        if (parentPath != null) {
+                            result.add(parentPath);
+                        }
+                    }
+                }
+            }
+        }
+
+        Object node = rightTreePath.getLastPathComponent();
+        if (!mapperModel.isLeaf(node)
+                && mapperModel.searchGraphsInside(rightTreePath))
+        {
+            int childCount = mapperModel.getChildCount(node);
+            for (int i = 0; i < childCount; i++) {
+                Object child = mapperModel.getChild(node, i);
+                collectMappedNodes(mapperModel, rightTreePath
+                        .pathByAddingChild(child), result);
+            }
+        }
+    }
+
     public void expandGraphs(List<TreePath> treePathes) {
         if (treePathes == null) {
             return;
@@ -766,7 +847,7 @@ public class Mapper extends JPanel {
         return getRightTreePathForLink(link, getRoot().getTreePath());
     }
     
-    private TreePath getRightTreePathForLink(Link link, TreePath initialTreePath) {
+    public TreePath getRightTreePathForLink(Link link, TreePath initialTreePath) {
         if (link == null || initialTreePath == null) return null; 
         
         MapperNode node = getNode(initialTreePath, true);
@@ -775,16 +856,17 @@ public class Mapper extends JPanel {
             return initialTreePath;
         }
         
-        if (!model.searchGraphsInside(initialTreePath)) {
+        if (!getModel().searchGraphsInside(initialTreePath)) {
             return null;
         }
         
-        for (int i = 0; i < node.getChildCount(); i++) {
+        for (int i = node.getChildCount() - 1; i >= 0 ; i--) {
             MapperNode childNode = node.getChild(i);
             if (childNode.isLeaf()) {
                 if (link.getGraph() == childNode.getGraph()) {
                     return childNode.getTreePath();
                 }
+                
             } else {
                 TreePath result = getRightTreePathForLink(link, childNode.getTreePath());
                 if (result != null) {

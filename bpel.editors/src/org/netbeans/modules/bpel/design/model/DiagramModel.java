@@ -29,6 +29,7 @@ import org.netbeans.modules.bpel.design.model.patterns.TerminationHandlerPattern
 import org.netbeans.modules.bpel.design.model.patterns.UnsupportedPattern;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Catch;
@@ -65,6 +66,8 @@ import org.netbeans.modules.bpel.model.api.If;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.patterns.AssignPattern;
+import org.netbeans.modules.bpel.design.model.patterns.ValidatePattern;
+import org.netbeans.modules.bpel.design.model.patterns.JavaScriptPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CatchAllPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CatchPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CompensatePattern;
@@ -104,7 +107,6 @@ import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 
 /**
- *
  * @author Alexey Yarmolenko
  */
 public class DiagramModel {
@@ -167,12 +169,19 @@ public class DiagramModel {
             result = new ElsePattern(this);
         } else if (o instanceof ForEach) {
             result = new ForEachPattern(this);
-        } else if (o instanceof Assign) {
+        }
+        else if (o instanceof Assign && !((Assign) o).isJavaScript()) {
             result = new AssignPattern(this);
-        } else if (o instanceof Receive) {
+        }
+        else if (o instanceof Assign && ((Assign) o).isJavaScript()) {
+            result = new JavaScriptPattern(this);
+        }
+        else if (o instanceof Receive) {
             result = new ReceivePattern(this);
         } else if (o instanceof Reply) {
             result = new ReplyPattern(this);
+        } else if (o instanceof Validate) {
+            result = new ValidatePattern(this);
         } else if (o instanceof Invoke) {
             result = new InvokePattern(this);
         } else if (o instanceof Flow) {

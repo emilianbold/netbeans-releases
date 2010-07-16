@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
@@ -68,7 +71,7 @@ public class QmakeProjectWriter {
     /*
      * Project file name is constructed as prefix + confName + suffix.
      */
-    private static final String PROJECT_PREFIX = "nbproject" + File.separator + "qt-"; // NOI18N
+    private static final String PROJECT_PREFIX = MakeConfiguration.NBPROJECT_FOLDER + File.separator + "qt-"; // NOI18N
     private static final String PROJECT_SUFFIX = ".pro"; // NOI18N
 
     /**
@@ -159,6 +162,8 @@ public class QmakeProjectWriter {
     }
 
     private void write(BufferedWriter bw) throws IOException {
+        bw.write("# This file is generated automatically. Do not edit.\n"); // NOI18N
+        bw.write("# Use project properties -> Build -> Qt -> Expert -> Custom Definitions.\n"); // NOI18N
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
         write(bw, Variable.DESTDIR, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getDestdirValue()));
         write(bw, Variable.TARGET, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getTargetValue()));
@@ -186,9 +191,9 @@ public class QmakeProjectWriter {
                 expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCCompiler));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);
@@ -239,7 +244,7 @@ public class QmakeProjectWriter {
             String actualMimeType = fo.getMIMEType();
             for (String mimeType : mimeTypes) {
                 if (mimeType.equals(actualMimeType)) {
-                    list.add(IpeUtils.quoteIfNecessary(item.getPath()));
+                    list.add(CndPathUtilitities.quoteIfNecessary(item.getPath()));
                     break;
                 }
             }
@@ -282,14 +287,15 @@ public class QmakeProjectWriter {
             if (0 < buf.length()) {
                 buf.append(' '); // NOI18N
             }
-            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, compilerSet.getDynamicLibrarySearchOption());
+            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, 
+                    compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag());
             buf.append(configuration.getLinkerConfiguration().getDynamicSearch().toString(dynamicSearchVisitor));
         }
         return buf.toString();
     }
 
     private String expandAndQuote(String s) {
-        return IpeUtils.quoteIfNecessary(configuration.expandMacros(s));
+        return CndPathUtilitities.quoteIfNecessary(configuration.expandMacros(s));
     }
 
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
@@ -300,32 +306,47 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(LibraryItem item) {
             switch (item.getType()) {
                 case LibraryItem.PROJECT_ITEM:
-                    return projectLibToString(item);
                 case LibraryItem.LIB_FILE_ITEM:
-                    return IpeUtils.quoteIfNecessary(item.getPath());
+                    return libFileToOptionsString(item.getPath());
                 case LibraryItem.LIB_ITEM:
                 case LibraryItem.STD_LIB_ITEM:
                 case LibraryItem.OPTION_ITEM:
-                    return item.getOption();
+                    return item.getOption(null);
                 default:
                     return ""; // NOI18N
             }
         }
 
-        private String projectLibToString(LibraryItem item) {
+        private String libFileToOptionsString(String path) {
             StringBuilder buf = new StringBuilder();
-            if (compilerSet != null) {
-                buf.append(compilerSet.getDynamicLibrarySearchOption());
-                buf.append(IpeUtils.quoteIfNecessary(IpeUtils.getDirName(item.getPath())));
+            if (compilerSet != null && isDynamicLib(path)) {
+                String searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag();
+                if (searchOption.length() == 0) {
+                    // According to code in PlatformWindows and PlatformMacOSX,
+                    // on Windows and MacOS the "-L" option is used
+                    // for searching both static and dynamic libraries. (Why?)
+                    // Let's be consistent with that behavior. Detect this
+                    // special case by empty dynamic_library_search
+                    // and use the library_search option instead.
+                    searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag();
+                }
+
+                buf.append(searchOption);
+                buf.append(CndPathUtilitities.quoteIfNecessary(CndPathUtilitities.getDirName(path)));
                 buf.append(' '); // NOI18N
             }
-            buf.append(IpeUtils.quoteIfNecessary(item.getPath()));
+            buf.append(CndPathUtilitities.quoteIfNecessary(path));
             return buf.toString();
         }
 
+        private boolean isDynamicLib(String path) {
+            return path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
+                    || path.endsWith(".so") || 0 <= path.indexOf(".so."); // NOI18N
+        }
     }
 
     private static class IncludeToString implements VectorConfiguration.ToString<String> {
@@ -336,12 +357,13 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {
-                    item = compilerSet.normalizeDriveLetter(item);
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                return IpeUtils.quoteIfNecessary(item);
+                return CndPathUtilitities.quoteIfNecessary(item);
             } else {
                 return ""; // NOI18N
             }

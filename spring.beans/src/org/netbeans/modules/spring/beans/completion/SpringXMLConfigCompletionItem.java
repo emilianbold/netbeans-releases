@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -159,7 +162,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createBeanNameItem(int substitutionOffset, String text, int sortPriority) {
         return new BeanNameItem(substitutionOffset, text, sortPriority);
     }
-    
+
     protected int substitutionOffset;
     
     protected SpringXMLConfigCompletionItem(int substitutionOffset) {
@@ -175,24 +178,27 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
     }
     
-    protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-        BaseDocument doc = (BaseDocument) c.getDocument();
+    protected void substituteText(JTextComponent c, final int offset, final int len, String toAdd) {
+        final BaseDocument doc = (BaseDocument) c.getDocument();
         CharSequence prefix = getSubstitutionText();
         String text = prefix.toString();
         if(toAdd != null) {
             text += toAdd;
         }
-        
-        doc.atomicLock();
-        try {
-            Position position = doc.createPosition(offset);
-            doc.remove(offset, len);
-            doc.insertString(position.getOffset(), text.toString(), null);
-        } catch (BadLocationException ble) {
-            // nothing can be done to update
-        } finally {
-            doc.atomicUnlock();
-        }
+        final String finalText = text;
+        doc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Position position = doc.createPosition(offset);
+                    doc.remove(offset, len);
+                    doc.insertString(position.getOffset(), finalText.toString(), null);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
     
     protected CharSequence getSubstitutionText() {
@@ -238,7 +244,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     protected ImageIcon getIcon() {
         return null;
     }
-    
+
     private static class BeanRefItem extends SpringXMLConfigCompletionItem {
 
         private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N

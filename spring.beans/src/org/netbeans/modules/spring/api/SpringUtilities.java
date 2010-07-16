@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,17 @@ package org.netbeans.modules.spring.api;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,9 +65,11 @@ import org.openide.filesystems.FileUtil;
  */
 public final class SpringUtilities {
 
-    private static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
+    public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
     private static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
     private static final String SPRING_WEBMVC_CLASS_NAME = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
+//    private static final String SPRING_WEBMVC_3_0_SPECIFIC_CLASS_NAME="org.springframework.web.servlet.config.MvcNamespaceHandler"; //NOI18N
+//    private static final String SPRING_WEBMVC_2_5_SPECIFIC_CLASS_NAME="org.springframework.web.servlet.mvc.throwaway.ThrowawayController"; //NOI18N
 
     private SpringUtilities() {}
 
@@ -80,8 +91,65 @@ public final class SpringUtilities {
         return getLibrary(SPRING_WEBMVC_CLASS_NAME);
     }
 
+    public static Library findSpringWebMVCLibrary(String version) {
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (containsClass(library, SPRING_WEBMVC_CLASS_NAME)) {
+                if (version.equalsIgnoreCase(getSpringWebMVCLibraryVersion(library))) {
+                    return library;
+                }
+            }
+        }
+        return null;
+    }
+
     public static boolean isSpringLibrary(Library library) {
         return containsClass(library, SPRING_CLASS_NAME);
+    }
+
+    public static boolean isSpringWebMVCLibrary(Library library) {
+        return containsClass(library, SPRING_WEBMVC_CLASS_NAME);
+    }
+
+    /**
+     * Get implementation version of the library containing org.springframework.core.SpringVersion class
+     * or null
+     * @param library Spring framework library
+     * @return String version
+     */
+    public static String getSpringLibraryVersion(Library library) {
+        return getLibraryVersion(library, SPRING_CLASS_NAME);
+    }
+
+    private static String getSpringWebMVCLibraryVersion(Library library) {
+        return getLibraryVersion(library, SPRING_WEBMVC_CLASS_NAME);
+    }
+
+    private static String getLibraryVersion(Library library, String className) {
+        List<URL> urls = library.getContent("classpath"); // NOI18N
+        ClassPath cp = createClassPath(urls);
+        try {
+            FileObject resource = cp.findResource(className.replace('.', '/') + ".class");  //NOI18N
+            if (resource==null) {
+                return null;
+            }
+            FileObject ownerRoot = cp.findOwnerRoot(resource);
+
+            if (ownerRoot !=null) { //NOI18N
+                if (ownerRoot.getFileSystem() instanceof JarFileSystem) {
+                    JarFileSystem jarFileSystem = (JarFileSystem) ownerRoot.getFileSystem();
+                    return getImplementationVersion(jarFileSystem);
+                }
+            }
+        } catch (FileStateInvalidException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+    public static String getImplementationVersion(JarFileSystem jarFile) {
+        Manifest manifest = jarFile.getManifest();
+        Attributes attributes = manifest.getMainAttributes();
+        return attributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
     }
 
     public static boolean containsSpring(ClassPath cp) {

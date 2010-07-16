@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,12 @@
 
 package org.netbeans.modules.subversion.ui.blame;
 
+import java.text.ParseException;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -81,8 +85,10 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -169,7 +175,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    RequestProcessor requestProcessor = null;
+    static RequestProcessor requestProcessor = null;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -187,6 +193,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private Map<String, KenaiUser> kenaiUsersMap = null;
 
     private File file;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+    */
+    private File referencedFile;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+    */
+    private FileObject referencedFileObject;
 
     /**
      * Creates new instance initializing final fields.
@@ -315,18 +331,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
-                boolean isKenaiRepository = false;
-                try {
-                    SVNUrl url = SvnUtils.getRepositoryUrl(file);
-                    isKenaiRepository = url != null && SvnKenaiSupport.getInstance().isKenai(url.toString());
-                    if(isKenaiRepository) {
-                        kenaiUsersMap = new HashMap<String, KenaiUser>();
-                    }
-                } catch (SVNClientException ex) {
-                    Subversion.LOG.log(Level.WARNING, null, ex);
-                }
-
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
@@ -335,16 +341,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     int lineNum = ann2editorPermutation[line.getLineNum() -1];
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                        Element element = sd.getParagraphElement(lineOffset);
-                        if(isKenaiRepository) {
-                            String author = line.getAuthor();
-                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = SvnKenaiSupport.getInstance().forName(author);
-                                if(ku != null) {
-                                    kenaiUsersMap.put(author, ku);
-                                }
-                            }
-                        }
+                        Element element = sd.getParagraphElement(lineOffset);                        
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -355,6 +352,30 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
 
+        boolean isKenaiRepository = false;
+        SVNUrl url = null;
+        try {
+            url = SvnUtils.getRepositoryUrl(file);
+            isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
+            if(isKenaiRepository) {
+                kenaiUsersMap = new HashMap<String, KenaiUser>();
+                Iterator<AnnotateLine> it = lines.iterator();
+                while (it.hasNext()) {
+                    AnnotateLine line = it.next();
+                    String author = line.getAuthor();
+                    if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                        KenaiUser ku = SvnKenaiAccessor.getInstance().forName(author, url.toString());
+                        if(ku != null) {
+                            kenaiUsersMap.put(author, ku);
+                        }
+                    }
+                }
+            }
+        } catch (SVNClientException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+        }
+        
+                
         // lazy listener registration
         caret.addChangeListener(this);
         this.caretTimer = new Timer(500, this);
@@ -383,14 +404,27 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * exists.
      */
     File getCurrentFile() {
-        File result = null;
-        
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
-            FileObject fo = dobj.getPrimaryFile();
-            result = FileUtil.toFile(fo);
+        File result = referencedFile;
+        if (result == null) {
+            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                result = FileUtil.toFile(fo);
+            }
         }
-        
+        return result;
+    }
+
+    FileObject getCurrentFileObject () {
+        FileObject result = referencedFileObject;
+        if (result == null) {
+            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof FileObject) {
+                result = (FileObject)sdp;
+            } else if (sdp instanceof DataObject) {
+                result = ((DataObject)sdp).getPrimaryFile();
+            }
+        }
         return result;
     }
     
@@ -398,15 +432,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Registers "close" popup menu, tooltip manager
      * and repaint on documet change manager.
      */
+    @Override
     public void addNotify() {
         super.addNotify();
 
 
         this.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -476,9 +513,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final String revisionPerLine = al == null ? null : al.getRevision();
         // used in menu Revert
         final File file = getCurrentFile();
-        final boolean revisionCanBeRolledBack = al == null ? false : al.canBeRolledBack();
+        final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (revisionPerLine != null) {
                     if (getPreviousRevision(revisionPerLine) != null) {
@@ -491,12 +529,29 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
         rollbackMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 revert(file, revisionPerLine);
             }
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
+
+        // an action showing annotation for previous revisions
+        final JMenuItem previousAnnotationsMenu = new JMenuItem();
+        previousAnnotationsMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        showPreviousAnnotations(file, revisionPerLine);
+                    }
+                });
+            }
+        });
+        popupMenu.add(previousAnnotationsMenu);
+        previousAnnotationsMenu.setVisible(false);
 
         if(isKenai() && al != null) {
             String author = al.getAuthor();
@@ -506,8 +561,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 popupMenu.addSeparator();
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
-                        ku.startChat(ku.getChatLink(doc, lineNr));
+                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);
@@ -517,6 +573,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
         menu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hideBar();
             }
@@ -527,10 +584,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         if (revisionPerLine != null) {
-            if (getPreviousRevision(revisionPerLine) != null) {
+            String previousRevision;
+            if ((previousRevision = getPreviousRevision(revisionPerLine)) != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision");
                 diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
                 diffMenu.setVisible(true);
+                previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
+                previousAnnotationsMenu.setVisible(file != null);
             }
             rollbackMenu.setVisible(true);
         }
@@ -540,16 +600,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(File file, String revision) {
         final Context ctx = new Context(file);
-        
-        final SVNUrl url;  
-        try {            
-            url = SvnUtils.getRepositoryRootUrl(file);  
+
+        final SVNUrl url;
+        try {
+            url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }               
+        }
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
-        
+
         final RevertModifications revertModifications = new RevertModifications(repositoryFile, revision);
         if(!revertModifications.showDialog()) {
             return;
@@ -557,11 +617,49 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                    
+            @Override
+            public void perform() {
                 RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
+    }
+
+    private void showPreviousAnnotations(final File file, String revision) {
+        final SVNRevision svnRevision;
+        final SVNUrl repositoryRoot;
+        final SVNUrl repositoryUrl;
+        try {
+            repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
+            repositoryUrl = SvnUtils.getRepositoryUrl(file);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
+        try {
+            svnRevision = SVNRevision.getRevision(getPreviousRevision(revision));
+        } catch (ParseException ex) {
+            Subversion.LOG.log(Level.SEVERE, "Previous revision: " + getPreviousRevision(revision), ex); //NOI18N
+            return;
+        }
+
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryRoot);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
+            public void perform() {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(repositoryRoot);
+                    ISVNInfo info = client.getInfo(repositoryUrl, svnRevision, SVNRevision.HEAD);
+                } catch (SVNClientException ex) {
+                    if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
+                        SvnClientExceptionHandler.annotate(NbBundle.getMessage(AnnotationBar.class, "MSG_NoFileInRevision", svnRevision.toString())); //NOI18N
+                        return;
+                    }
+                }
+                SvnUtils.openInRevision(file, repositoryRoot, repositoryUrl, svnRevision, SVNRevision.HEAD, true);
+            }
+        };
+        support.start(rp, repositoryRoot, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
     }
 
     private String getPreviousRevision(String revision) {
@@ -602,6 +700,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     // latestAnnotationTask business logic
+    @Override
     public void run() {
         // get resource bundle
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
@@ -703,6 +802,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * {@link #revalidate} that triggers new layouting
      * that consults prefered size.
      */
+    @Override
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
         int width = annotated ? getBarWidth() : 0;
@@ -826,12 +926,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Presents commit message as tooltips.
      */
+    @Override
     public String getToolTipText (MouseEvent e) {
         if (editorUI == null)
             return null;
         int line = getLineFromMouseEvent(e);
 
-        StringBuffer annotation = new StringBuffer();
+        StringBuilder annotation = new StringBuilder();
         if (elementAnnotations != null) {
             AnnotateLine al = getAnnotateLine(line);
 
@@ -844,9 +945,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
-                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + " - <b>" + escapedAuthor + "</b>"); // NOI18N
+                annotation.append("<html><!-- line=").append(line++).append(" -->").append(al.getRevision()).append(" - <b>").append(escapedAuthor).append("</b>"); // NOI18N
                 if (al.getDate() != null) {
-                    annotation.append(" " + DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
+                    annotation.append(" ").append(DateFormat.getDateInstance().format(al.getDate())); // NOI18N
                 }
                 if (al.getCommitMessage() != null) {
                     String escaped = null;
@@ -857,7 +958,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     }
                     if (escaped != null) {
                         String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
-                        annotation.append("<p>" + lined); // NOI18N
+                        annotation.append("<p>").append(lined); // NOI18N
                     }
                 }
             }
@@ -909,6 +1010,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * It invokes {@link #paintView} that contains
      * actual business logic.
      */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -938,15 +1040,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 int rootViewCount = rootView.getViewCount();
 
                 if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
-
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);
+                        Rectangle rec = component.modelToView(view.getStartOffset());
+                        if (rec == null) {
+                            break;
+                        }
+                        int y = rec.y;
                         paintView(view, g, y);
-                        y += editorUI.getLineHeight();
                         if (y >= clipEndY) {
                             break;
                         }
@@ -1005,6 +1107,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
@@ -1018,10 +1121,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     /** Implementation */
+    @Override
     public void insertUpdate(DocumentEvent e) {
         // handle new lines,  Enter hit at end of line changes
         // the line element instance
@@ -1061,6 +1166,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if (e.getDocument().getLength() == 0) { // external reload
             hideBar();
@@ -1069,31 +1175,47 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Caret */
+    @Override
     public void stateChanged(ChangeEvent e) {
         assert e.getSource() == caret;
         caretTimer.restart();
     }
 
     /** Timer */
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert e.getSource() == caretTimer;
         onCurrentLine();
     }
 
     /** on JTextPane */
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentResized(ComponentEvent e) {
         revalidate();
     }
 
     /** on JTextPane */
+    @Override
     public void componentShown(ComponentEvent e) {
+    }
+
+    /**
+     * Sets the file for which the annotations are displayed. This file can differ from the displayed one when showing annotations
+     * for a file in the past.
+     * @param file
+     */
+    void setReferencedFile(File file) {
+        this.referencedFile = FileUtil.normalizeFile(file);
+        this.referencedFileObject = FileUtil.toFileObject(file);
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@ package org.netbeans.modules.javacard.ri.platform.loader;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.Properties;
 import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.KeysAndValues;
@@ -48,6 +53,7 @@ import org.netbeans.modules.javacard.ri.platform.installer.KeysAndValuesEditable
 import org.netbeans.modules.javacard.ri.platform.installer.NewDevicePanel;
 import org.netbeans.modules.javacard.spi.AddCardHandler;
 import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
@@ -72,6 +78,19 @@ public class AddHandler extends AddCardHandler {
     public Card showNewDeviceDialog(DataObject platformDob, JavacardPlatform target, CardCreatedCallback callback, FileObject targetFolder) {
         final FileObject fld = targetFolder;
         final NewDevicePanel panel = new NewDevicePanel(fld);
+        final EditableProperties p = new EditableProperties(true);
+        Properties props = target.toProperties();
+        for (Map.Entry<Object,Object> e : props.entrySet()) {
+            String key = (String) e.getKey();
+            if (key.startsWith("prototype.")) { //NOI18N
+                key = key.substring ("prototype.".length()); //NOI18N
+                p.put(key, (String) e.getValue());
+            }
+        }
+        if (!p.isEmpty()) {
+            panel.read(new KeysAndValuesEditablePropsAdapter(p));
+        }
+
         String title = NbBundle.getMessage(AddHandler.class,
                 "TTL_NEW_DEVICE"); //NOI18N
         DialogBuilder builder = new DialogBuilder(AddHandler.class).setTitle(title).
@@ -80,9 +99,13 @@ public class AddHandler extends AddCardHandler {
                 setModal(true);
 
         if (builder.showDialog(DialogDescriptor.OK_OPTION)) {
-            final EditableProperties p = new EditableProperties(true);
-            KeysAndValues kv = new KeysAndValuesEditablePropsAdapter(p);
+            KeysAndValues<?> kv = new KeysAndValuesEditablePropsAdapter(p);
             panel.write(kv);
+            if (p.getProperty(JavacardDeviceKeyNames.DEVICE_CAPABILITIES) == null) {
+                p.setProperty(JavacardDeviceKeyNames.DEVICE_CAPABILITIES,
+                        "START,STOP,RESUME,DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS," + //NOI18N
+                        "CUSTOMIZER,INTERCEPTOR,PORTS,URL,DELETE"); //NOI18N
+            }
             final FileObject[] res = new FileObject[1];
             try {
                 fld.getFileSystem().runAtomicAction(new AtomicAction() {

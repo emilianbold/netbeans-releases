@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,15 +61,14 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.properties.PortTypeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
 import org.openide.nodes.Children;
-
 import javax.swing.Action;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
+
 /**
  *
  * @author Josh Sandusky
@@ -78,6 +80,7 @@ public class WSDLEndpointNode extends CasaNode {
     
     private static final String CHILD_ID_PROVIDES = "Provides"; // NOI18N
     private static final String CHILD_ID_CONSUMES = "Consumes"; // NOI18N
+
     private static final String SOAP_BINDING = "soap"; // NOI18N
     private static final String SOAP12_BINDING = "soap12"; // NOI18N
 
@@ -121,16 +124,19 @@ public class WSDLEndpointNode extends CasaNode {
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaPort cp = (CasaPort) this.getData();
-        CasaWrapperModel model = (CasaWrapperModel) cp.getModel();
-        if (model.isEditable(cp)) {
-            // only add this for soap port...
-            String bindingType = model.getBindingType(cp);
-            if (bindingType.equalsIgnoreCase(SOAP_BINDING) ||
-                    bindingType.equalsIgnoreCase(SOAP12_BINDING)) {
-                actions.add(new WSDLEndpointAction());
+        if (cp != null) {
+            CasaWrapperModel model = (CasaWrapperModel) cp.getModel();
+            if (model.isEditable(cp)) {
+                // only add this for soap port...
+                String bindingType = model.getBindingType(cp);
+                if (SOAP_BINDING.equalsIgnoreCase(bindingType) ||
+                        SOAP12_BINDING.equalsIgnoreCase(bindingType)) {
+                    actions.add(new WSDLEndpointAction());
+                }
+            } else { // non-editable port
+                actions.add(SystemAction.get(CloneWSDLPortAction.class));
             }
-        } else { // non-editable port
-            actions.add(SystemAction.get(CloneWSDLPortAction.class));
+            actions.add(SystemAction.get(GoToSourceAction.class));
         }
     }
 
@@ -164,22 +170,32 @@ public class WSDLEndpointNode extends CasaNode {
             }
         };
         identificationProperties.put(componentNameSupport);
-
-
         
         // Add all concrete child properties, as a convenience to the user.
         for (Node child : getChildren().getNodes()) {
-            if (child instanceof PortNode) {
+            if (child instanceof PortNode ||
+                    child instanceof ReadOnlyFilterNode &&
+                    ((ReadOnlyFilterNode)child).getOriginal() instanceof PortNode) {
                 addPortChildrenProperties(sheet, child.getChildren(), isEditable());
                 break;
             }
         }
 
-
         // Add JBI extensions on connection
         String bcName = this.getModel().getBindingComponentName(casaPort);
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
                 casaPort, sheet, "port", null, bcName); // NOI18N
+
+        this.sheet = sheet;
+    }
+
+    // #166809: Refresh property sheet for possible property set changes.
+    // See PortTypeProperty.setValue()
+    private Sheet sheet;
+    public void refreshPropertySheet() {
+        if (sheet != null) {
+            setupPropertySheet(sheet);
+        }
     }
     
     private static void addPortChildrenProperties(Sheet sheet, Children children, boolean bEditable) {

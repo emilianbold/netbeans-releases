@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -121,7 +124,7 @@ class DTDParser extends Object {
                 Object subElem = oldElem = incIter.next();
                 if( subElem instanceof String ) {
                     String key = (String)subElem;
-                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase(Locale.ENGLISH) );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -136,7 +139,7 @@ class DTDParser extends Object {
                 Object subElem = oldElem = excIter.next();
                 if( subElem instanceof String ) {
                     String key = (String)subElem;
-                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase(Locale.ENGLISH) );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -232,7 +235,7 @@ class DTDParser extends Object {
     
     /** Adds given instance of DTD.Attribute to Element named elemName */
     void addAttrToElement( String elemName, DTD.Attribute attr) throws WrongDTDException {
-        String key = xmlDTD ? elemName : elemName.toUpperCase();
+        String key = xmlDTD ? elemName : elemName.toUpperCase(Locale.ENGLISH);
         ElementImpl elem = (ElementImpl)elementMap.get( key );
         if( elem == null ) throw new WrongDTDException( "Attribute definition for unknown Element \"" + elemName +"\"." ); // NOI18N
         elem.addAttribute( attr );
@@ -729,7 +732,7 @@ class DTDParser extends Object {
                             DTD.ContentModel cm = createContentModel( content, inSet, exSet );
                             for( Iterator iter = list.iterator(); iter.hasNext(); ) {
                                 String key = (String)iter.next();
-                                key = xmlDTD ? key : key.toUpperCase();
+                                key = xmlDTD ? key : key.toUpperCase(Locale.ENGLISH);
                                 elementMap.put( key, createElement( key, cm, optStart, optEnd, xmlDTD) );
                             }
                             return;
@@ -1057,7 +1060,7 @@ class DTDParser extends Object {
                             SortedMap vals = new TreeMap();
                             for( Iterator iter = values.iterator(); iter.hasNext(); ) {
                                 String key = (String)iter.next();
-                                String valName = xmlDTD ? key : key.toLowerCase();
+                                String valName = xmlDTD ? key : key.toLowerCase(Locale.ENGLISH);
                                 vals.put( valName, createValue( valName ) );
                             }
                             a = createAttribute( attr.toString(),
@@ -1264,7 +1267,7 @@ class DTDParser extends Object {
         /** Get List of all Elements whose names starts with given prefix  */
         public List getElementList( String prefix ) {
             List l = new ArrayList();
-            prefix = prefix == null ? "" : xmlDTD ? prefix : prefix.toUpperCase();
+            prefix = prefix == null ? "" : xmlDTD ? prefix : prefix.toUpperCase(Locale.ENGLISH);
             Iterator i = elements.tailMap( prefix ).entrySet().iterator();
             
             while( i.hasNext() ) {
@@ -1281,7 +1284,7 @@ class DTDParser extends Object {
         
         /** Get the Element of given name. */
         public DTD.Element getElement( String name ) {
-            return (DTD.Element)elements.get( xmlDTD ? name : name.toUpperCase() );
+            return (DTD.Element)elements.get( xmlDTD ? name : name.toUpperCase(Locale.ENGLISH) );
         }
         
         /** Get List of all CharRefs whose aliases starts with given prefix. */
@@ -1371,7 +1374,7 @@ class DTDParser extends Object {
             if(prefix == null) {
                 prefix = "";
             }
-            prefix = xmlDTD ? prefix : prefix.toLowerCase();
+            prefix = xmlDTD ? prefix : prefix.toLowerCase(Locale.ENGLISH);
             Iterator i = attributes.tailMap(prefix).entrySet().iterator();
             
             while( i.hasNext() ) {
@@ -1471,7 +1474,7 @@ class DTDParser extends Object {
         public List getValueList( String prefix ) {
             if( type != TYPE_SET ) return null;
 
-            if( prefix == null ) prefix = ""; else prefix = xmlDTD ? prefix : prefix.toLowerCase();
+            if( prefix == null ) prefix = ""; else prefix = xmlDTD ? prefix : prefix.toLowerCase(Locale.ENGLISH);
 
             List retVal = new ArrayList();
             Iterator i = values.tailMap(prefix).entrySet().iterator();

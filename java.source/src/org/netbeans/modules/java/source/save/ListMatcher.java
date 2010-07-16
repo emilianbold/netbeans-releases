@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -234,18 +237,21 @@ public final class ListMatcher<E> {
         for (ii = 1; ii <= n; ++ii) {
             for (jj = 1; jj <= m; ++jj) {
                 if (oldL[ii-1].equals(newL[jj-1])) {
-                    S[ii][jj] = S[ii-1][jj-1] + 1;
+                    S[ii][jj] = S[ii-1][jj-1] + (INFINITE_DISTANCE - OBJECTS_MATCH);
                     R[ii][jj] = UP_AND_LEFT;
                 } else {
                     int distance = measure.compare(oldL[ii-1], newL[jj-1]);
-                    // if the distance is betwwen OBJECTS_MATCH and INFINITE_DISTANCE,
-                    // old element was modified to new element.
-                    if (distance > OBJECTS_MATCH && distance < INFINITE_DISTANCE) {
-                        S[ii][jj] = S[ii-1][jj-1] + 1;
-                        R[ii][jj] = UP_AND_LEFT_MOD;
+                    if (distance <= OBJECTS_MATCH) {
+                        S[ii][jj] = S[ii-1][jj-1] + (INFINITE_DISTANCE - OBJECTS_MATCH);
+                        R[ii][jj] = UP_AND_LEFT;
+                    } else if (distance >= INFINITE_DISTANCE) {
+                        S[ii][jj] = -1;
+                        R[ii][jj] = NEITHER;
                     } else {
-                        S[ii][jj] = S[ii-1][jj-1] + 0;
-                        R[ii][jj] = distance == OBJECTS_MATCH ? UP_AND_LEFT : NEITHER;
+                        // if the distance is betwwen OBJECTS_MATCH and INFINITE_DISTANCE,
+                        // old element was modified to new element.
+                        S[ii][jj] = S[ii-1][jj-1] + (INFINITE_DISTANCE - distance);
+                        R[ii][jj] = UP_AND_LEFT_MOD;
                     }
                 }
                 
@@ -288,6 +294,8 @@ public final class ListMatcher<E> {
                 jj--;
                 E element = newL[jj];
                 result.push(new ResultItem(element, Operation.INSERT));
+            } else {
+                throw new IllegalStateException("ii=" + ii + "; jj=" + jj + "; R=" + Arrays.deepToString(R));
             }
         }
         return !result.empty();

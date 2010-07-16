@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -186,6 +189,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         DataObjectPool.Item i = item;
         
         if (i != null) {
+            DataObjectPool.getPOOL().countRegistration(i.primaryFile);
             i.deregister (true);
             i.setDataObject(null);
             firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
@@ -620,6 +624,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
                 public void run () throws IOException {
                     handleDelete ();
+                    DataObjectPool.getPOOL().countRegistration(item.primaryFile);
                     item.deregister(false);
                     item.setDataObject(null);
                 }
@@ -1321,8 +1326,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                     all.put(e.getKey(), e.getValue());
                 }
             }
-            
+
             if (!all.containsKey("name") && name != null) { // NOI18N
+                if (Boolean.TRUE.equals(all.get(CreateFromTemplateHandler.FREE_FILE_EXTENSION))) {
+                    name = name.replaceFirst("[.].*", "");
+                }
                 all.put("name", name); // NOI18N
             }
             if (!all.containsKey("user")) { // NOI18N
@@ -1342,7 +1350,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         public static Map<String,Object> enhanceParameters(Map<String,Object> old, String name, String ext) {
             HashMap<String,Object> all = new HashMap<String,Object>(old);
             if (!all.containsKey("nameAndExt") && name != null) { // NOI18N
-                if (ext != null && ext.length() > 0) {
+                if (ext != null && ext.length() > 0 &&
+                        (!Boolean.TRUE.equals(old.get(CreateFromTemplateHandler.FREE_FILE_EXTENSION)) || name.indexOf('.') == -1)) {
                     all.put("nameAndExt", name + '.' + ext); // NOI18N
                 } else {
                     all.put("nameAndExt", name); // NOI18N

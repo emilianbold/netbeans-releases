@@ -53,6 +53,8 @@ public class TreeMultiViewVisualPanel extends TMapLogicalPanel {
                 getContextLookup());
                 
         beanTree = myTreeHandler.getBeanTreeView();
+        beanTree.getAccessibleContext().setAccessibleName(getAccessibleContext().getAccessibleName());
+        beanTree.getAccessibleContext().setAccessibleDescription(getAccessibleContext().getAccessibleDescription());
         return beanTree;
     }
     

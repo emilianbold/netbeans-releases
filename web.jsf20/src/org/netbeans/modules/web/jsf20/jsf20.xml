@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -49,16 +52,16 @@ made subject to such option by the copyright holder.
     <volume>
         <type>classpath</type>
 	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_0/jsf-api.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20ri/modules/ext/jsf-2_0/jsf-impl.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_0/jsf-impl.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee6-doc-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee6-doc-api.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/javax/faces/jsf-api/2.0/jsf-api-2.0.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-impl/2.0.1-b02/jsf-impl-2.0.1-b02.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-api/2.0.2-b10/jsf-api-2.0.2-b10.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-impl/2.0.2-b10/jsf-impl-2.0.2-b10.pom</resource>
     </volume>
 </library>

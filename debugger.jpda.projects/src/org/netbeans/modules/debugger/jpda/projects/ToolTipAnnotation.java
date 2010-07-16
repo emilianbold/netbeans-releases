@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,17 +44,25 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -71,10 +82,18 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -86,7 +105,7 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
-    
+
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
 
     private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
@@ -122,7 +141,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DataObject dob = DataEditorSupport.findDataObject (line);
         if (dob == null) return null;
         EditorCookie ec = dob.getCookie(EditorCookie.class);
-        if (ec == null) 
+        if (ec == null)
             return null;
             // Only for editable dataobjects
 
@@ -134,23 +153,33 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             rp = RequestProcessor.getDefault();
         }
         rp.post (this);
-        return null;
+        return "";
     }
 
     public void run () {
+        ObjectVariable tooltipVariable = null;
         if (lp == null || ec == null) return ;
         StyledDocument doc;
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
             return ;
-        }                    
-        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
+        }
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
         if (ep == null) return ;
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
+            getCurrentEngine ();
+        if (currentEngine == null) return;
+        JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
+        if (d == null) return;
+        JPDAThread t = d.getCurrentThread();
+        if (t == null || !t.isSuspended()) return;
+
         int offset;
         boolean[] isMethodPtr = new boolean[] { false };
-        String expression = getIdentifier (
-            doc, 
+        final String expression = getIdentifier (
+            d,
+            doc,
             ep,
             offset = NbDocument.findLineOffset (
                 doc,
@@ -158,14 +187,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             ) + lp.getColumn (),
             isMethodPtr
         );
-        if (expression == null) return ;
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        if (currentEngine == null) return;
-        JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
-        if (d == null) return;
-        JPDAThread t = d.getCurrentThread();
-        if (t == null || !t.isSuspended()) return ;
+        if (expression == null) return;
+
         String toolTipText = null;
         try {
             Variable v = null;
@@ -189,7 +212,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
             if (v == null) return ; // Something went wrong...
             String type = v.getType ();
-            if (v instanceof ObjectVariable)
+            if (v instanceof ObjectVariable) {
+                tooltipVariable = (ObjectVariable) v;
                 try {
                     String toString = null;
                     try {
@@ -204,24 +228,25 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     if (toString == null) {
                         toString = ((ObjectVariable) v).getToStringValue();
                     }
-                    toolTipText = expression + " = " + 
-                        (type.length () == 0 ? 
-                            "" : 
+                    toolTipText = expression + " = " +
+                        (type.length () == 0 ?
+                            "" :
                             "(" + type + ") ") +
                         toString;
                 } catch (InvalidExpressionException ex) {
                     toolTipText = expression + " = " +
-                        (type.length () == 0 ? 
-                            "" : 
+                        (type.length () == 0 ?
+                            "" :
                             "(" + type + ") ") +
                         v.getValue ();
                 }
-            else
-                toolTipText = expression + " = " + 
-                    (type.length () == 0 ? 
-                        "" : 
+            } else {
+                toolTipText = expression + " = " +
+                    (type.length () == 0 ?
+                        "" :
                         "(" + type + ") ") +
                     v.getValue ();
+            }
         } catch (InvalidExpressionException e) {
             String typeName = resolveTypeName(offset, doc);
             if (typeName != null) {
@@ -230,7 +255,30 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 toolTipText = expression + " = >" + e.getMessage () + "<";
             }
         }
-        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+
+        if (tooltipVariable != null) {
+            final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
+            final ObjectVariable var = tooltipVariable;
+            et.addExpansionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
+                    et.removeAll();
+                    et.setWidthCheck(false);
+                    et.add(ToolTipView.getToolTipView(expression, var));
+                    et.revalidate();
+                    et.repaint();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                        }
+                    });
+                }
+            });
+            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
+        } else {
+            firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+        }
     }
 
     public String getAnnotationType () {
@@ -238,17 +286,18 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     }
 
     private static String getIdentifier (
-        StyledDocument doc, 
-        JEditorPane ep, 
+        JPDADebugger debugger,
+        StyledDocument doc,
+        JEditorPane ep,
         int offset,
         boolean[] isMethodPtr
     ) {
+        // do always evaluation if the tooltip is invoked on a text selection
         String t = null;
         if ( (ep.getSelectionStart () <= offset) &&
              (offset <= ep.getSelectionEnd ())
         )   t = ep.getSelectedText ();
         if (t != null) return t;
-        
         int line = NbDocument.findLineNumber (
             doc,
             offset
@@ -258,7 +307,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             offset
         );
         try {
-            Element lineElem = 
+            Element lineElem =
                 NbDocument.findLineRootElement (doc).
                 getElement (line);
 
@@ -267,7 +316,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             t = doc.getText (lineStartOffset, lineLen);
             int identStart = col;
-            while (identStart > 0 && 
+            while (identStart > 0 &&
                 (Character.isJavaIdentifierPart (
                     t.charAt (identStart - 1)
                 ) ||
@@ -275,13 +324,17 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 identStart--;
             }
             int identEnd = col;
-            while (identEnd < lineLen && 
+            while (identEnd < lineLen &&
                    Character.isJavaIdentifierPart(t.charAt(identEnd))
             ) {
                 identEnd++;
             }
 
             if (identStart == identEnd) return null;
+
+            int newOffset = NbDocument.findLineOffset(doc, line) + identStart + 1;
+            if (!isValidTooltipLocation(debugger, doc, newOffset)) return null;
+
             String ident = t.substring (identStart, identEnd);
             if (JAVA_KEYWORDS.contains(ident)) {
                 // Java keyword => Do not show anything
@@ -300,6 +353,121 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (BadLocationException e) {
             return null;
         }
+    }
+
+    private static boolean isValidTooltipLocation(JPDADebugger debugger, final StyledDocument doc, final int offset) {
+        CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
+        if (currentFrame == null) {
+            return false;
+        }
+
+        final boolean[] isValid = new boolean[]{true};
+        final String[] className = new String[]{""};
+        Future<Void> parsingTask = null;
+        try {
+            parsingTask = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult(offset);
+                    if (res == null) return;
+                    CompilationController controller = CompilationController.get(res);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+                    TreeUtilities treeUtilities = controller.getTreeUtilities();
+                    SourcePositions positions = controller.getTrees().getSourcePositions();
+                    TreePath mainPath = treeUtilities.pathFor(offset);
+                    CompilationUnitTree unitTree = controller.getCompilationUnit();
+                    // is offset it package name section?
+                    Tree packgTree = unitTree.getPackageName();
+                    if (offset >= positions.getStartPosition(unitTree, packgTree) &&
+                            offset <= positions.getEndPosition(unitTree, packgTree)) {
+                        isValid[0] = false;
+                        return;
+                    }
+                    Tree tree = mainPath.getLeaf();
+                    Tree.Kind kind = tree.getKind();
+                    // [TODO] do not show tooltip for a string literal (it does not work correctly)
+                    if (kind == Tree.Kind.STRING_LITERAL) {
+                        isValid[0] = false;
+                        return;
+                    }
+                    // check for comments and other non-supported elements
+                    int startPos = (int)positions.getStartPosition(unitTree, tree);
+                    int endPos = (int)positions.getEndPosition(unitTree, tree);
+                    int startLine = Utilities.getLineOffset((BaseDocument)doc, startPos);
+                    int endLine = Utilities.getLineOffset((BaseDocument)doc, endPos);
+                    int line = Utilities.getLineOffset((BaseDocument)doc, offset);
+                    if (kind != Tree.Kind.VARIABLE && (startLine != line || endLine != line)) {
+                        isValid[0] = false;
+                        return;
+                    }
+                    // check whether offset is in a preceding comment
+                    for (Comment comm : treeUtilities.getComments(tree, true)) {
+                        if (comm.pos() < 0) continue;
+                        if (comm.pos() <= offset && offset <= comm.endPos()) {
+                            isValid[0] = false;
+                            return;
+                        }
+                    }
+                    // check whether offset is in a trailing comment
+                    for (Comment comm : treeUtilities.getComments(tree, false)) {
+                        if (comm.pos() < 0) continue;
+                        if (comm.pos() <= offset && offset <= comm.endPos()) {
+                            isValid[0] = false;
+                            return;
+                        }
+                    }
+                    // is offset in import section?
+                    TreePath path = mainPath;
+                    while (path != null) {
+                        tree = path.getLeaf();
+                        kind = tree.getKind();
+                        if (kind == Tree.Kind.IMPORT) {
+                            isValid[0] = false;
+                            return;
+                        }
+                        if (kind == Tree.Kind.CLASS && className[0].length() == 0) {
+                            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
+                            className[0] = typeElement.getQualifiedName().toString();
+                        }
+                        path = path.getParentPath();
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+        }
+        parsingTask.cancel(false); // for the case that scanning has not finished yet
+        if (!isValid[0]) return false;
+        if (className[0].length() > 0) {
+            Set superTypeNames = new HashSet<String>();
+            This thisVar = currentFrame.getThisVariable();
+            // [TODO] how to obtain class name in static context?
+            if (thisVar != null) {
+                String fqn = thisVar.getType();
+                // remove anonymous inner class part
+                int index = fqn.lastIndexOf('$');
+                while (index >= 0) {
+                    if ((index < fqn.length() - 1) && Character.isDigit(fqn.charAt(index + 1))) {
+                        fqn = fqn.substring(0, index);
+                        index = fqn.lastIndexOf('$');
+                    } else {
+                        break;
+                    }
+                }
+                superTypeNames.add(fqn.replace('$', '.'));
+                ObjectVariable superTypeVar = thisVar.getSuper();
+                while (superTypeVar != null) {
+                    fqn = superTypeVar.getType().replace('$', '.');
+                    superTypeNames.add(fqn);
+                    superTypeVar = superTypeVar.getSuper();
+                }
+            } else {
+                superTypeNames.add(currentFrame.getClassName());
+            }
+            if (!superTypeNames.contains(className[0])) return false;
+        }
+        return true;
     }
 
     private String resolveTypeName (final int offset, Document doc) {
@@ -327,6 +495,6 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
         return result[0];
     }
-    
+
 }
 

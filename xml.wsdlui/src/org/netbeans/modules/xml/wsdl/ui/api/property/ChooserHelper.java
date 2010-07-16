@@ -27,8 +27,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -38,6 +40,8 @@ public abstract class ChooserHelper<T extends Component> {
     public abstract void populateNodes(Node parentNode);
 
     public abstract Node selectNode(T comp);
+    
+    private static final String[] projectFilter = {"nbproject", "build"};
 
     /*
      * Filternode to make the nodes look enabled.
@@ -85,6 +89,22 @@ public abstract class ChooserHelper<T extends Component> {
 
         public boolean accept(File pathname) {
             return pathname.isDirectory();
+        }
+    }
+
+    static class TopLevelDirectoryFilter implements FileFilter {
+
+        public boolean accept(File pathname) {
+            boolean accept = pathname.isDirectory();
+            if (accept) {
+                String fileName = pathname.getName();
+                for (String name : projectFilter) {
+                    if (name.equalsIgnoreCase(fileName)) {
+                        return false;
+                    }
+                }
+            }
+            return accept;
         }
     }
 
@@ -158,7 +178,22 @@ public abstract class ChooserHelper<T extends Component> {
         }
     }
 
-    protected List<File> recursiveListFiles(File file, FileFilter filter) {
+    protected List<File> recursiveListFiles(Project project, FileFilter filter) {
+        List<File> files = new ArrayList<File>();
+        File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
+        File[] dirs = projectDirectory.listFiles(new TopLevelDirectoryFilter());
+        if (dirs != null) {
+            for (File dir : dirs) {
+                List<File> fs = recursiveListFiles(dir, filter);
+                if (fs != null && fs.size() > 0) {
+                    files.addAll(fs);
+                }
+            }
+        }
+        return files;
+    }
+
+    private List<File> recursiveListFiles(File file, FileFilter filter) {
         List<File> files = new ArrayList<File>();
         if (file != null && file.isDirectory()) {
             File[] filesArr = file.listFiles(filter);

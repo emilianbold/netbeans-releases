@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,7 @@
  */
 package org.netbeans.modules.sql.framework.model;
 
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -54,8 +57,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBColumnImpl;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBColumn;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
@@ -550,6 +551,7 @@ public class DBMetaDataFactory {
                         sqlTypeCode = java.sql.Types.CLOB;
                     }
                 }
+
                 String colName = rs.getString("COLUMN_NAME");
                 int position = rs.getInt("ORDINAL_POSITION");
                 int scale = rs.getInt("DECIMAL_DIGITS");
@@ -557,8 +559,13 @@ public class DBMetaDataFactory {
 
                 boolean isNullable = rs.getString("IS_NULLABLE").equals("YES") ? true : false;
 
-                // create a table column and add it to the vector
+                //Oracle DATE type needs to be retrieved as full date and time
+                if (sqlTypeCode == java.sql.Types.DATE && getDBType().equals(ORACLE)) {
+                    sqlTypeCode = java.sql.Types.TIMESTAMP;
+                    precision = 22;
+                }
 
+                // create a table column and add it to the vector
                 SQLDBColumn col = createColumn(table);
                 col.setName(colName);
                 col.setJdbcType(sqlTypeCode);
@@ -589,6 +596,8 @@ public class DBMetaDataFactory {
             //    } catch (Exception e) {
             //        // ignore and continue
             //    }
+                
+                //TODO - Capture all the constraints / and indexes
             }
 
 
@@ -605,9 +614,7 @@ public class DBMetaDataFactory {
             return new TargetColumnImpl();
         } else if (table.getObjectType() == SQLConstants.SOURCE_TABLE) {
             return new SourceColumnImpl();
-        } else if (table instanceof FlatfileDBTable) {
-            return new FlatfileDBColumnImpl();
-        } else {
+        }  else {
             return new AbstractDBColumn() {
 
                 public String toXMLString(String prefix) throws BaseException {

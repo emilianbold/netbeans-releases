@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,6 +103,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
             this.displayName = displayName;
         }
 
+        @Override
         public String getDisplayName() {
             return displayName;
         }
@@ -189,6 +193,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
         project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
                     LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
@@ -225,6 +230,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
     }
 
+    @Override
     public Collection<Config> getConfigurations() {
         calculateConfigs();
         List<Config> l = new ArrayList<Config>();
@@ -233,6 +239,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
 
             Collator c = Collator.getInstance();
 
+            @Override
             public int compare(Config c1, Config c2) {
                 return c.compare(c1.getDisplayName(), c2.getDisplayName());
             }
@@ -241,6 +248,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         return l;
     }
 
+    @Override
     public Config getActiveConfiguration() {
         calculateConfigs();
         String config = project.getEvaluator().getProperty(PROP_CONFIG);
@@ -251,6 +259,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
     }
 
+    @Override
     public void setActiveConfiguration(Config c) throws IOException {
         if (c != DEFAULT && !configs.values().contains(c)) {
             throw new IllegalArgumentException();
@@ -271,23 +280,28 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         assert project.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
     }
 
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
 
+    @Override
     public void customize() {
         project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
+    @Override
     public boolean configurationsAffectAction(String command) {
         return command.equals(ActionProvider.COMMAND_RUN)
                 || command.equals(ActionProvider.COMMAND_DEBUG);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
     }

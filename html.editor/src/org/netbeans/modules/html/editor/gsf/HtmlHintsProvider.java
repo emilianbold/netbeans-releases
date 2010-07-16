@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,11 +41,20 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.SyntaxTree;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -54,7 +66,9 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -65,8 +79,6 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class HtmlHintsProvider implements HintsProvider {
-
-    private boolean cancelled = false;
 
     /**
      * Compute hints applicable to the given compilation info and add to the given result list.
@@ -89,6 +101,10 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        //html extensions
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+            ext.computeSelectionHints(manager, context, suggestions, start, end);
+        }
     }
 
     /**
@@ -103,11 +119,22 @@ public class HtmlHintsProvider implements HintsProvider {
         if (isErrorCheckingEnabled(fo)) {
             for (Error e : context.parserResult.getDiagnostics()) {
                     assert e.getDescription() != null;
-                    HintFix fix = new DisableErrorChecksFix(snapshot);
+                    List<HintFix> fixes = new ArrayList<HintFix>(3);
+
+                    if(isErrorCheckingEnabledForFile(fo)) {
+                        fixes.add(new DisableErrorChecksFix(snapshot));
+                    }
+
+                    if(isErrorCheckingEnabledForMimetype(fo)) {
+                        fixes.add(new DisableErrorChecksForMimetypeFix(snapshot));
+                    }
 
                     //tweak the error position if close to embedding boundary
-                    int from = e.getStartPosition();
-                    int to = e.getEndPosition();
+                    int astFrom = e.getStartPosition();
+                    int astTo = e.getEndPosition();
+
+                    int from = snapshot.getOriginalOffset(astFrom);
+                    int to = snapshot.getOriginalOffset(astTo);
 
                     if (from == -1 && to == -1) {
                         //completely unknown position, give up
@@ -118,23 +145,33 @@ public class HtmlHintsProvider implements HintsProvider {
                         to = from;
                     }
 
+                    //add custom hint fixes
+                    fixes.addAll(getCustomHintFixesForError(context, e));
+                    
                     Hint h = new Hint(getRule(e.getSeverity()),
                             e.getDescription(),
                             e.getFile(),
                             new OffsetRange(from, to),
-                            Collections.singletonList(fix),
+                            fixes,
                             20);
 
                     hints.add(h);
             }
         } else {
             //add a special hint for reenabling disabled error checks
-            HintFix fix = new EnableErrorChecksFix(snapshot);
+            List<HintFix> fixes = new ArrayList<HintFix>(3);
+            if(!isErrorCheckingEnabledForFile(fo)) {
+                fixes.add(new EnableErrorChecksFix(snapshot));
+            }
+            if(!isErrorCheckingEnabledForMimetype(fo)) {
+                fixes.add(new EnableErrorChecksForMimetypeFix(snapshot));
+            }
+
             Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
                     NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
                     fo,
                     new OffsetRange(0, 0),
-                    Collections.singletonList(fix),
+                    fixes,
                     50);
 
             hints.add(h);
@@ -147,11 +184,76 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
+    private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
+        List<HintFix> fixes = new ArrayList<HintFix>();
+        if(e.getKey().equals(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES)) {
+            fixes.add(new HintFix() {
+                
+                @Override
+                public String getDescription() {
+                    return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_GENERATE_REQUIRED_ATTRIBUTES"); //NOI18N
+                }
+
+                @Override
+                public void implement() throws Exception {
+                    AstNode node = HtmlParserResult.getBoundAstNode(e);
+                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
+                    assert missingAttrs != null;
+                    int astOffset = node.startOffset() + 1 + node.name().length();
+                    int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);
+                    if(insertOffset == -1) {
+                        return ;
+                    }
+                    StringBuffer templateText = new StringBuffer();
+                    templateText.append(' ');
+
+                    for(String attr : missingAttrs) {
+                        templateText.append(attr);
+                        templateText.append('=');
+                        templateText.append('"');
+                        templateText.append("${");
+                        templateText.append(attr);
+                        templateText.append(" default=\"\"}"); //NOI18N
+                        templateText.append('"');
+                        templateText.append(' ');
+                    }
+                    templateText.append("${cursor}"); //NOI18N
+
+                    CodeTemplate ct = CodeTemplateManager.get(context.doc).createTemporary(templateText.toString());
+                    JTextComponent pane = EditorRegistry.focusedComponent();
+                    if(pane != null) {
+                        pane.setCaretPosition(insertOffset);
+                        ct.insert(pane);
+                    }
+
+                    //reformat the line?
+
+                }
+
+                @Override
+                public boolean isSafe() {
+                    return true;
+                }
+
+                @Override
+                public boolean isInteractive() {
+                    return false;
+                }
+                
+            });
+
+        } else {
+            fixes = Collections.emptyList();
+        }
+
+        return fixes;
+    }
+
     /**
      * Cancel in-progress processing of hints.
      */
+    @Override
     public void cancel() {
-        this.cancelled = true;
     }
 
     /**
@@ -208,22 +310,27 @@ public class HtmlHintsProvider implements HintsProvider {
             this.showInTasklist = showInTaskList;
         }
 
+        @Override
         public Set<?> getCodes() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean appliesTo(RuleContext context) {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return "html"; //NOI18N //does this show up anywhere????
         }
 
+        @Override
         public boolean showInTasklist() {
             return showInTasklist;
         }
 
+        @Override
         public HintSeverity getDefaultSeverity() {
             return severity;
         }
@@ -231,7 +338,15 @@ public class HtmlHintsProvider implements HintsProvider {
     static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
     public static boolean isErrorCheckingEnabled(FileObject fo) {
+        return isErrorCheckingEnabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
+    }
+
+    public static boolean isErrorCheckingEnabledForFile(FileObject fo) {
         return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
+    }
+
+    public static boolean isErrorCheckingEnabledForMimetype(FileObject fo) {
+        return !HtmlPreferences.isHtmlErrorCheckingDisabledForMimetype(fo.getMIMEType());
     }
 
     private static final class DisableErrorChecksFix implements HintFix {
@@ -243,10 +358,12 @@ public class HtmlHintsProvider implements HintsProvider {
             this.snapshot = snapshot;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_FILE"); //NOI18N
         }
 
+        @Override
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
@@ -260,10 +377,12 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
@@ -277,10 +396,12 @@ public class HtmlHintsProvider implements HintsProvider {
             this.snapshot = snapshot;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE"); //NOI18N
         }
 
+        @Override
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
@@ -294,22 +415,101 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
     }
 
+    private static final class DisableErrorChecksForMimetypeFix implements HintFix {
+
+        private Snapshot snapshot;
+        private String mime;
+
+        public DisableErrorChecksForMimetypeFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+            this.mime = snapshot.getSource().getFileObject().getMIMEType();
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
+        }
+
+        @Override
+        public void implement() throws Exception {
+            HtmlPreferences.setHtmlErrorChecking(mime, false);
+
+            //force reparse of *THIS document only* => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static final class EnableErrorChecksForMimetypeFix implements HintFix {
+
+        private Snapshot snapshot;
+        private String mime;
+
+        public EnableErrorChecksForMimetypeFix(Snapshot snapshot) {
+            this.snapshot = snapshot;
+            this.mime = snapshot.getSource().getFileObject().getMIMEType();
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
+        }
+
+        @Override
+        public void implement() throws Exception {
+            HtmlPreferences.setHtmlErrorChecking(mime, true);
+
+            //force reparse of *THIS document only* => hints update
+            Document doc = snapshot.getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+
     private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                         if (mti != null) {

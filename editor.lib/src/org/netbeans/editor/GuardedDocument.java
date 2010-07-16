@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.editor;
 
 import java.text.MessageFormat;
-import java.util.Hashtable;
 import java.util.Enumeration;
 import java.awt.Color;
 import java.awt.Font;
@@ -105,9 +107,6 @@ public class GuardedDocument extends BaseDocument
     /** Style context to hold the styles */
     protected StyleContext styles;
 
-    /** Style to layer name mapping */
-    protected Hashtable stylesToLayers;
-
     /** Name of the normal style. The normal style is used to reset the effect
     * of all styles applied to the line.
     */
@@ -169,7 +168,6 @@ public class GuardedDocument extends BaseDocument
     
     private void init(StyleContext styles) {
         this.styles = styles;
-        stylesToLayers = new Hashtable(5);
         guardedBlockChain = new MarkBlockChain(this) {
             protected @Override Mark createBlockStartMark() {
                 MarkFactory.ContextMark startMark = new MarkFactory.ContextMark(Position.Bias.Forward, false);
@@ -300,17 +298,6 @@ public class GuardedDocument extends BaseDocument
         }
     }
 
-    public void setCharacterAttributes(int offset, int length, AttributeSet attribs, boolean replace) {
-        if (((Boolean)attribs.getAttribute(GUARDED_ATTRIBUTE)).booleanValue() == true) {
-            guardedBlockChain.addBlock(offset, offset + length, false); // no concat
-            fireChangedUpdate(getDocumentEvent(offset, length, DocumentEvent.EventType.CHANGE, attribs));
-        }
-        if (((Boolean)attribs.getAttribute(GUARDED_ATTRIBUTE)).booleanValue() == false) {
-            guardedBlockChain.removeBlock(offset, offset + length);
-            fireChangedUpdate(getDocumentEvent(offset, length, DocumentEvent.EventType.CHANGE, attribs));
-        }
-    }
-
     public @Override void runAtomic(Runnable r) {
         if (debugAtomic) {
             System.out.println("GuardedDocument.runAtomic() called"); // NOI18N
@@ -376,28 +363,26 @@ public class GuardedDocument extends BaseDocument
         return new GuardedDocumentEvent(this, offset, length, type);
     }
 
-    /** Adds style to the document */
-    public Style addStyle(String styleName, Style parent) {
-        String layerName = (String)stylesToLayers.get(styleName);
-        if (layerName == null) {
-            layerName = styleName; // same layer name as style name
-            addStyleToLayerMapping(styleName, layerName);
-        }
-
-        Style style =  styles.addStyle(styleName, parent);
-        if (findLayer(layerName) == null) { // not created by default
-            readLock();
-            try {
-                addStyledLayer(layerName, style);
-            } finally {
-                readUnlock();
-            }
-        }
-        return style;
+    /** Set the name for normal style. Normal style is used to reset the effect
+    * of all aplied styles.
+    */
+    public void setNormalStyleName(String normalStyleName) {
+        this.normalStyleName = normalStyleName;
     }
 
-    public void addStyleToLayerMapping(String styleName, String layerName) {
-        stylesToLayers.put(styleName, layerName);
+    /** Fetches the list of style names */
+    public Enumeration getStyleNames() {
+        return styles.getStyleNames();
+    }
+
+    // ------------------------------------------------------------------------
+    // StyleDocument implementation
+    // ------------------------------------------------------------------------
+
+    /** Adds style to the document */
+    public Style addStyle(String styleName, Style parent) {
+        Style style =  styles.addStyle(styleName, parent);
+        return style;
     }
 
     /** Removes style from document */
@@ -410,16 +395,15 @@ public class GuardedDocument extends BaseDocument
         return styles.getStyle(styleName);
     }
 
-    /** Set the name for normal style. Normal style is used to reset the effect
-    * of all aplied styles.
-    */
-    public void setNormalStyleName(String normalStyleName) {
-        this.normalStyleName = normalStyleName;
-    }
-
-    /** Fetches the list of style names */
-    public Enumeration getStyleNames() {
-        return styles.getStyleNames();
+    public void setCharacterAttributes(int offset, int length, AttributeSet attribs, boolean replace) {
+        if (((Boolean)attribs.getAttribute(GUARDED_ATTRIBUTE)).booleanValue() == true) {
+            guardedBlockChain.addBlock(offset, offset + length, false); // no concat
+            fireChangedUpdate(getDocumentEvent(offset, length, DocumentEvent.EventType.CHANGE, attribs));
+        }
+        if (((Boolean)attribs.getAttribute(GUARDED_ATTRIBUTE)).booleanValue() == false) {
+            guardedBlockChain.removeBlock(offset, offset + length);
+            fireChangedUpdate(getDocumentEvent(offset, length, DocumentEvent.EventType.CHANGE, attribs));
+        }
     }
 
     /** Change attributes for part of the text.  */
@@ -440,49 +424,11 @@ public class GuardedDocument extends BaseDocument
      * @param s the style to set
      */
     public void setLogicalStyle(int pos, Style s) {
-        readLock();
-        try {
-            pos = Utilities.getRowStart(this, pos);
-            String layerName = (String)stylesToLayers.get(s.getName());
-            // remove all applied styles
-            DrawLayer[] layerArray = getDrawLayerList().currentLayers();
-            for (int i = 0; i < layerArray.length; i++) {
-                if (layerArray[i] instanceof DrawLayerFactory.StyleLayer) {
-                    ((DrawLayerFactory.StyleLayer)layerArray[i]).markChain.removeMark(pos);
-                }
-            }
-            // now set the requested style
-            DrawLayerFactory.StyleLayer styleLayer
-            = (DrawLayerFactory.StyleLayer)findLayer(layerName);
-            if (styleLayer != null) {
-                styleLayer.markChain.addMark(pos);
-            }
-            fireChangedUpdate(getDocumentEvent(
-                pos, 0, DocumentEvent.EventType.CHANGE, null)); // enough to say length 0
-        } catch (BadLocationException e) {
-            // do nothing for invalid positions
-        } finally {
-            readUnlock();
-        }
     }
 
     /** Get logical style for position in paragraph */
     public Style getLogicalStyle(int pos) {
-        try {
-            pos = Utilities.getRowStart(this, pos);
-            DrawLayer[] layerArray = getDrawLayerList().currentLayers();
-            for (int i = 0; i < layerArray.length; i++) {
-                DrawLayer layer = layerArray[i];
-                if (layer instanceof DrawLayerFactory.StyleLayer) {
-                    if (((DrawLayerFactory.StyleLayer)layer).markChain.isMark(pos)) {
-                        return ((DrawLayerFactory.StyleLayer)layer).style;
-                    }
-                }
-            }
-            return getStyle(normalStyleName); // no style found
-        } catch (BadLocationException e) {
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -534,32 +480,8 @@ public class GuardedDocument extends BaseDocument
         return new Font("Default",Font.BOLD,12); // NOI18N
     }
 
-    /**
-     * Using of <code>DrawLayer</code>s has been deprecated.
-     * 
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    protected DrawLayer addStyledLayer(String layerName, Style style) {
-        if (layerName != null) {
-            try {
-                int indColon = layerName.indexOf(':'); //NOI18N
-                int layerVisibility = Integer.parseInt(layerName.substring(indColon + 1));
-                DrawLayer layer = new DrawLayerFactory.StyleLayer(layerName, this, style);
-
-                addLayer(layer, layerVisibility);
-                return layer;
-
-            } catch (NumberFormatException e) {
-                // wrong name, let it pass
-            }
-        }
-        return null;
-    }
-
     public @Override String toStringDetail() {
         return super.toStringDetail()
-               + getDrawLayerList()
                + ",\nGUARDED blocks:\n" + guardedBlockChain; // NOI18N
     }
 

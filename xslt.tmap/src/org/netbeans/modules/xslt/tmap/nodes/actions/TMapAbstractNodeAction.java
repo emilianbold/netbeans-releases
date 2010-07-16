@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.nodes.actions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -37,6 +38,8 @@ import org.openide.util.actions.NodeAction;
  */
 public abstract class TMapAbstractNodeAction extends NodeAction {
 
+    protected static final Logger LOGGER = Logger.getLogger(TMapAbstractNodeAction.class.getName());
+    
     public TMapAbstractNodeAction() {
         myName = getBundleName();
     }
@@ -52,7 +55,7 @@ public abstract class TMapAbstractNodeAction extends NodeAction {
             return false;
         }
         
-        if (tmapComponents.length != 1) {
+        if (tmapComponents.length <= 0) {
             return false;
         }
         if (tmapComponents[0] == null) {
@@ -152,7 +155,10 @@ public abstract class TMapAbstractNodeAction extends NodeAction {
         TMapModel tmapModel = node.getLookup().lookup(TMapModel.class);
         if (tmapModel == null && node instanceof TMapComponentNode) {
             DecoratedTMapComponent decoratedRef = ((TMapComponentNode)node).getReference();
-            ref = decoratedRef == null ? null : decoratedRef.getOriginal();
+            Object objRef = decoratedRef == null ? null : decoratedRef.getReference();
+            if (objRef instanceof TMapComponent) {
+                ref = (TMapComponent)objRef;
+            }
         }
         return getModel(ref);
     }
@@ -172,10 +178,10 @@ public abstract class TMapAbstractNodeAction extends NodeAction {
             if (node instanceof TMapComponentNode) {
                 DecoratedTMapComponent decoratedRef = 
                         ((TMapComponentNode)node).getReference();
-                TMapComponent ref = decoratedRef != null 
-                        ? decoratedRef.getOriginal() : null;
-                if (ref != null) {
-                    components.add(ref);
+                Object ref = decoratedRef != null 
+                        ? decoratedRef.getReference() : null;
+                if (ref instanceof TMapComponent) {
+                    components.add((TMapComponent)ref);
                 }
             }
         }

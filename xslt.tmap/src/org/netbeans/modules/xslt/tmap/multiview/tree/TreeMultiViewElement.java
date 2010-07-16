@@ -24,13 +24,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import javax.swing.Box;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -38,28 +35,26 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.windows.TopComponent;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import javax.swing.ActionMap;
 import javax.swing.JButton;
 
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.print.PrintManager;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
+import org.netbeans.modules.xml.validation.core.Controller;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
-import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.tmap.TMapDataEditorSupport;
 import org.netbeans.modules.xslt.tmap.TMapDataObject;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -68,10 +63,10 @@ import org.netbeans.modules.xslt.tmap.navigator.TMapNavigatorLookupHint;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
-import org.openide.loaders.DataNode;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -351,13 +346,21 @@ public class TreeMultiViewElement extends TopComponent
     public JComponent getToolbarRepresentation() {
         if ( myToolBarPanel == null ) {
             JToolBar toolbar = new JToolBar();
+            toolbar.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(TreeMultiViewElement.class, "ACSN_TreeMultiviewToolbar"));// NOI18N
+            toolbar.getAccessibleContext().setAccessibleDescription( 
+                    NbBundle.getMessage(TreeMultiViewElement.class, "ACSD_TreeMultiviewToolbar"));//NOI18N
             toolbar.setFloatable(false);
-//TODO a            toolbar.addSeparator();
+            toolbar.setFocusable(false);
+
+            // print
+            toolbar.addSeparator();
+            toolbar.add(PrintManager.printAction(this));
+
+            // valdiation
+            toolbar.addSeparator();
+            toolbar.add(new ValidateAction(getValidationController()));
             
-//            toolbar.add(Box.createHorizontalStrut(1));
-// TODO r            
-//            toolbar.add(new JButton("testButton"));
-// TODO a            toolbar.addSeparator();
             int maxButtonHeight = 0;
             
             for (Component c : toolbar.getComponents()) {
@@ -366,32 +369,30 @@ public class TreeMultiViewElement extends TopComponent
                             maxButtonHeight);
                 }
             }
-            
             for (Component c : toolbar.getComponents()) {
                 if (c instanceof JButton || c instanceof JToggleButton) {
                     Dimension size = c.getMaximumSize();
                     size.height = maxButtonHeight;
                     c.setMaximumSize(size);
                     c.setMinimumSize(c.getPreferredSize());
-                } else if (c instanceof JTextComponent) {
+                    c.setFocusable(false);
+                } else if ((c instanceof JTextComponent) 
+                        || (c instanceof JComboBox)) 
+                {
                     c.setMaximumSize(c.getPreferredSize());
                     c.setMinimumSize(c.getPreferredSize());
-                } else if (c instanceof JSlider) {
-                    Dimension size;
-                    size = c.getMaximumSize();
-                    size.width = 160;
-                    c.setMaximumSize(size);
-                    
-                    size = c.getPreferredSize();
-                    size.width = 160;
-                    c.setPreferredSize(size);
                 } else {
                     c.setMinimumSize(c.getPreferredSize());
+                    c.setFocusable(false);
                 }
-            }
+            }      
             myToolBarPanel = toolbar;
         }
         return myToolBarPanel;
+    }
+
+    private Controller getValidationController() {
+        return getDataObject().getLookup().lookup(Controller.class);
     }
 
     @Override
@@ -453,6 +454,8 @@ public class TreeMultiViewElement extends TopComponent
         add(scroll, gc);
 
         setVisible(true);
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeMultiViewElement.class, "ACSN_TreeMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeMultiViewElement.class, "ACSD_TreeMultiviewElement", getName())); // NOI18N
     }
 
     /**

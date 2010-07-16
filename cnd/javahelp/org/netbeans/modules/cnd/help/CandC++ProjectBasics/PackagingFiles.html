@@ -17,11 +17,13 @@ You can add files or directories to be included in the package.
 <p><b>To specify the contents of the package:</b>
 </p>
 <ol>
-<li>For an SVR4 package, modify the package parameters on the Info tab as needed.</li>
+<li>For SVR4, IPS, RPM, or Debian packages, modify the package parameters on the Info tab as needed.
+See documentation for these package types for infomation about parameters.</li>
 <li>For all package types, add files to the package using the Files tab.
 In the Files tab, you specify the files to be packaged and map the path that
 each file should have in the package to the location of the
-file in your project.  In the Files list, type the path to the file's location
+file in your project.  Type the root directory of the package in the
+Top Directory field. In the Files list, type the path to the file's location
 in the package in
 the File or Directory Path in Package column, and the location of the file 
 in your project in the Original File or Link column.</li>
@@ -31,13 +33,16 @@ in your project in the Original File or Link column.</li>
 In the Add File or Directory dialog box, browse to the desired file or 
 directory, or type a path name in the File Name field, and click Select.</li>
 <li>Click Add Files From Directory to recursively add files from a 
-selected directory. In the Add Files From Directory dialog nox, browse to 
+selected directory. In the Add Files From Directory dialog box, browse to
 the desired directory, or type a path name in File Name field, and click Select.</li>
 <li>Click Add Softlink to add a symbolic link to a file.</li>
 <li>Click Duplicate to duplicate the selected line in the Files list.</li>
 <li>Click Remove to delete the selected line in the Files list.</li>
-<li>Click OK when your Files list is complete.</li>
 </ul>
+<li>Select the Default File Properties for regular files and executable files
+in the package. These properties will be used to set file access permissions
+when the package is installed.</li>
+<li>Click OK when your package information is complete.</li>
 </ol>
 <hr>
 <small>

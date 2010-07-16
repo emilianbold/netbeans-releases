@@ -45,8 +45,8 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.jdbc.SQLUtils;
+import com.sun.etl.jdbc.SQLUtils;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
@@ -62,6 +62,7 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLOperatorGraphNode.Ope
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Graphical representation of a custom operator
@@ -70,11 +71,12 @@ import org.openide.NotifyDescriptor;
  */
 public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
 
-    private static transient final Logger mLogger = Logger.getLogger(CustomSQLOperatorGraphNode.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(CustomSQLOperatorGraphNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private JMenuItem editItem;
     private IOperatorXmlInfo info;
     private static final String LOG_CATEGORY = CustomSQLOperatorGraphNode.class.getName();
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
 
     /** Creates a new instance of OperatorGraphNode */
     public CustomSQLOperatorGraphNode(IOperatorXmlInfo info) {
@@ -196,7 +198,9 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                 ((ConditionBuilderSQLUIModelImpl) graphModel).restoreUIState();
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT167: editCustomOperator{0}", e.getMessage()), e);
+            String msg = mLoc.t("EDIT167: editCustomOperator{0}", e.getMessage());
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + e.getMessage());
+            logger.log(Level.SEVERE, mLoc.t("EDIT167: editCustomOperator{0}", e.getMessage())+e);             
         }
     }
 

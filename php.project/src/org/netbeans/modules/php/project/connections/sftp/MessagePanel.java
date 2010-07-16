@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,13 +42,10 @@
 
 package org.netbeans.modules.php.project.connections.sftp;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -80,27 +80,7 @@ public class MessagePanel extends JPanel {
         messageLabel = new JLabel();
         doNotShowAgainCheckBox = new JCheckBox();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return doNotShowAgainCheckBox;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return doNotShowAgainCheckBox;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return doNotShowAgainCheckBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                return doNotShowAgainCheckBox;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                return doNotShowAgainCheckBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         messageLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(messageLabel, "DUMMY"); // NOI18N
@@ -108,26 +88,26 @@ public class MessagePanel extends JPanel {
         doNotShowAgainCheckBox.setSelected(true);
 
         Mnemonics.setLocalizedText(doNotShowAgainCheckBox, NbBundle.getMessage(MessagePanel.class, "MessagePanel.doNotShowAgainCheckBox.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(doNotShowAgainCheckBox)
-                    .add(messageLabel))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(doNotShowAgainCheckBox)
+                    .addComponent(messageLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(messageLabel)
-                .add(18, 18, 18)
-                .add(doNotShowAgainCheckBox)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(messageLabel)
+                .addGap(18, 18, 18)
+                .addComponent(doNotShowAgainCheckBox)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         messageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MessagePanel.class, "MessagePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N

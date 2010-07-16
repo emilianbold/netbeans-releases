@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,15 +42,40 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import org.openide.util.Lookup;
 
 /**
  * Represents a bugtracking connector.
- * 
+ *
  * @author Tomas Stupka
  */
 public abstract class BugtrackingConnector implements Lookup.Provider {
+
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * a repository from this connector was created, removed or changed
+     */
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
     
+    /**
+     * Returns a unique ID for this connector
+     *
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns the icon for this connector or null if not available
+     *
+     * @return
+     */
+    public abstract Image getIcon();
+
     /**
      * Returns the display name for this connector
      *
@@ -57,19 +85,21 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
 
     /**
      * Returns tooltip for this connector
-     * 
+     *
      * @return tooltip for this connector
      */
     public abstract String getTooltip();
 
     /**
-     * Creates a repository
+     * Creates a new repository instance.
+     * 
      * @return the created repository
      */
     public abstract Repository createRepository();
 
     /**
-     * Returns all known repositories for this connector
+     * Returns all available valid repositories for this connector.
+     *
      * @return known repositories
      */
     public abstract Repository[] getRepositories();
@@ -86,4 +116,37 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
         return null;
     }
 
+    /**
+     * remove a listener from this conector
+     * @param listener
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Add a listener to this connector to listen on events
+     * @param listener
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this connector that a repository was either removed or saved
+     * XXX make use of new/old value
+     */
+    @Deprecated
+    protected void fireRepositoriesChanged() {
+        fireRepositoriesChanged(null, null);
+    }
+
+    /**
+     *
+     * @param oldRepositories - lists repositories which were available for the connector before the change
+     * @param newRepositories - lists repositories which are available for the connector after the change
+     */
+    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
+    }
 }

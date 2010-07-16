@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
@@ -411,15 +414,19 @@ implements java.net.URLStreamHandlerFactory {
     }
 
     public void testCreatedShadowFoundInParent() throws Exception {
-        final FileObject r = FileUtil.getConfigRoot();
-        r.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+        class R implements FileSystem.AtomicAction {
+            @Override
             public void run() throws IOException {
-                FileObject orig = FileUtil.createData(r, "orig/file.txt");
-                DataFolder f = DataFolder.findFolder(r.createFolder("copy"));
-                DataShadow sh = DataShadow.create(f, DataObject.find(orig));
-                assertEquals(Collections.singletonList(sh), Arrays.asList(f.getChildren()));
+                DataObject[] old = folder.getChildren();
+                assertEquals("No children yet", 0, old.length);
+                DataShadow ds = original.createShadow(folder);
+                assertEquals("Parent is OK", folder, ds.getFolder());
+                DataObject[] arr = folder.getChildren();
+                List<DataObject> all = Arrays.asList(arr);
+                assertTrue("Newly created " + ds + " shall be in list of children", all.contains(ds));
             }
-        });
+        }
+        R action = new R();
+        FileUtil.runAtomicAction(action);
     }
-
 }

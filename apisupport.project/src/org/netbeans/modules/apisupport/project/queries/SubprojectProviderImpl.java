@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,11 +55,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -65,6 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -80,7 +82,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         this.project = project;
     }
     
-    public Set<? extends Project> getSubprojects() {
+    public @Override Set<? extends Project> getSubprojects() {
         // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
         Set<Project> s = new HashSet<Project>();
         ModuleList ml;
@@ -91,19 +93,19 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             return Collections.emptySet();
         }
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element moduleDependencies = XMLUtil.findElement(data,
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
             /* Probably better to open runtime deps too. TBD.
-            if (Util.findElement(dep, "build-prerequisite", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+            if (XMLUtil.findElement(dep, "build-prerequisite", // NOI18N
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
              */
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
+                NbModuleProject.NAMESPACE_SHARED);
+            String cnb = XMLUtil.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + project);
@@ -131,15 +133,15 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             }
         }
         // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s
-        for (Element cpext : Util.findSubElements(data)) {
+        for (Element cpext : XMLUtil.findSubElements(data)) {
             if (!cpext.getTagName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
-            Element binorig = Util.findElement(cpext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element binorig = XMLUtil.findElement(cpext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             if (binorig == null) {
                 continue;
             }
-            String text = Util.findText(binorig);
+            String text = XMLUtil.findText(binorig);
             String eval = project.evaluator().evaluate(text);
             if (eval == null) {
                 continue;
@@ -155,15 +157,14 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         }
         String eval = project.evaluator().getProperty("cp.extra"); // NOI18N
         if (eval != null) {
-            String[] pieces = PropertyUtils.tokenizePath(eval);
-            for (int i = 0; i < pieces.length; i++) {
-                File jar = project.getHelper().resolveFile(pieces[i]);
+            for (String piece : PropertyUtils.tokenizePath(eval)) {
+                if (piece.contains("${")) {
+                    //Unresolved property, ignore.
+                    continue;
+                }
+                File jar = project.getHelper().resolveFile(piece);
                 Project owner = FileOwnerQuery.getOwner(jar.toURI());
                 if (owner != null) {
-                    if (ProjectUtils.getInformation(owner).getName().equals("org.netbeans.modules.apisupport.harness")) {
-                        // cp.extra=${nb_all}/apisupport.harness/external/openjdk-javac-6-b12.jar is not a real dep
-                        continue;
-                    }
                     s.add(owner);
                 }
             }
@@ -171,11 +172,11 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         return s;
     }
     
-    public void addChangeListener(ChangeListener listener) {
+    public @Override void addChangeListener(ChangeListener listener) {
         // XXX no impl yet
     }
     
-    public void removeChangeListener(ChangeListener listener) {
+    public @Override void removeChangeListener(ChangeListener listener) {
         // XXX
     }
     

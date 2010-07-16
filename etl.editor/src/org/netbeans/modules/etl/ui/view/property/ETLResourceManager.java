@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,9 @@ import java.util.ResourceBundle;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.ui.editor.property.IResource;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +70,9 @@ public class ETLResourceManager implements IResource {
         try {
             bundle = NbBundle.getBundle(ETLResourceManager.class);
         } catch (MissingResourceException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT027: Could not locate resource bundle for ETLResourceManager.{0}", LOG_CATEGORY), ex);
+            String msg = mLoc.t("EDIT027: Could not locate resource bundle for ETLResourceManager." + LOG_CATEGORY);
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            mLogger.infoNoloc(msg.substring(15) + ex.getMessage());
         }
     }
 
@@ -76,11 +84,12 @@ public class ETLResourceManager implements IResource {
                 // Ignore unless explicitly in debug mode for this class; GUI will use
                 // default value.
                 if (DEBUG) {
-                    mLogger.errorNoloc(mLoc.t("EDIT028: Could not locate resource string for key{0}in Bundle.properties file associated with {1}; using default value.", key, LOG_CATEGORY), ex);
+                    String msg = mLoc.t("EDIT028: Could not locate resource string for key " + key + " in Bundle.properties file associated with " + LOG_CATEGORY + "; using default value.");
+                    StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                    mLogger.infoNoloc(msg.substring(15) + ex.getMessage());
                 }
             }
         }
-
         return null;
     }
 }

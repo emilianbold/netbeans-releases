@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -118,6 +121,7 @@ public final class HelpCtx extends Object {
     }
 
     // object identity
+    @Override
     public int hashCode() {
         int base = HelpCtx.class.hashCode();
 
@@ -132,17 +136,26 @@ public final class HelpCtx extends Object {
         return base;
     }
 
-    public boolean equals(Object o) {
-        if ((o == null) || !(o instanceof HelpCtx)) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-
-        HelpCtx oo = (HelpCtx) o;
-
-        return ((helpCtx == oo.helpCtx) || ((helpCtx != null) && helpCtx.equals(oo.helpCtx))) &&
-        ((helpID == oo.helpID) || ((helpID != null) && helpID.equals(oo.helpID)));
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HelpCtx other = (HelpCtx) obj;
+        if (this.helpCtx != other.helpCtx && (this.helpCtx == null || !this.helpCtx.equals(other.helpCtx))) {
+            return false;
+        }
+        if ((this.helpID == null) ? (other.helpID != null) : !this.helpID.equals(other.helpID)) {
+            return false;
+        }
+        return true;
     }
 
+
+    @Override
     public String toString() {
         if (helpID != null) {
             return "HelpCtx[" + helpID + "]"; // NOI18N
@@ -156,7 +169,7 @@ public final class HelpCtx extends Object {
     * @param helpID help ID, or <code>null</code> if the help ID should be removed
     */
     public static void setHelpIDString(JComponent comp, String helpID) {
-        err.fine("setHelpIDString: " + helpID + " on " + comp);
+        err.log(Level.FINE, "setHelpIDString: {0} on {1}", new Object[]{helpID, comp});
 
         comp.putClientProperty("HelpID", helpID); // NOI18N
     }
@@ -174,14 +187,14 @@ public final class HelpCtx extends Object {
         if (err.isLoggable(Level.FINEST)) {
             err.log(Level.FINEST, "findHelp on " + comp, new Exception());
         } else {
-            err.fine("findHelp on " + comp);
+            err.log(Level.FINE, "findHelp on {0}", comp);
         }
 
         while (comp != null) {
             if (comp instanceof HelpCtx.Provider) {
                 HelpCtx h = ((HelpCtx.Provider) comp).getHelpCtx();
 
-                err.fine("found help " + h + " through HelpCtx.Provider interface");
+                err.log(Level.FINE, "found help {0} through HelpCtx.Provider interface", h);
 
                 return h;
             }
@@ -191,7 +204,7 @@ public final class HelpCtx extends Object {
                 String hid = (String) jc.getClientProperty("HelpID"); // NOI18N
 
                 if (hid != null) {
-                    err.fine("found help " + hid + " by client property");
+                    err.log(Level.FINE, "found help {0} by client property", hid);
 
                     return new HelpCtx(hid);
                 }
@@ -199,7 +212,7 @@ public final class HelpCtx extends Object {
 
             comp = comp.getParent();
 
-            err.fine("no luck, trying parent " + comp);
+            err.log(Level.FINE, "no luck, trying parent {0}", comp);
         }
 
         err.fine("nothing found");
@@ -236,7 +249,7 @@ public final class HelpCtx extends Object {
                 return new HelpCtx(v);
             }
         } catch (IntrospectionException e) {
-            err.fine("findHelp on " + instance + ": " + e);
+            err.log(Level.FINE, "findHelp on {0}: {1}", new Object[]{instance, e});
         }
 
         return HelpCtx.DEFAULT_HELP;

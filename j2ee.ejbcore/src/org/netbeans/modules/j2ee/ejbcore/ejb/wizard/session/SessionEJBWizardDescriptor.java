@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,17 +45,18 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -64,7 +68,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
     
-    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private WizardDescriptor wizardDescriptor;
 
@@ -74,7 +78,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     public void addChangeListener(ChangeListener changeListener) {
-        changeListeners.add(changeListener);
+        changeSupport.addChangeListener(changeListener);
     }
     
     public java.awt.Component getComponent() {
@@ -102,7 +106,13 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
-        
+
+        if (isRemote && wizardPanel.getRemoteInterfaceProject() == null){
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                    NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_NoRemoteInterfaceProject")); //NOI18N
+            return false;
+        }
+
         FileObject targetFolder = (FileObject) wizardDescriptor.getProperty(MultiTargetChooserPanel.TARGET_FOLDER);
         if (targetFolder != null) {
             String targetName = (String) wizardDescriptor.getProperty(MultiTargetChooserPanel.TARGET_NAME);
@@ -125,7 +135,12 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             }
 
         }
-        
+        // #183916 - avoid cyclic dependencies
+        if (isRemote && hasCyclicDependency(wizardPanel.getRemoteInterfaceProject())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class, "ERR_CyclicDependency"));
+            return false;
+        }
+
         //TODO: RETOUCHE waitScanFinished
 //        if (JavaMetamodel.getManager().isScanInProgress()) {
 //            if (!isWaitingForScan) {
@@ -150,7 +165,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     public void removeChangeListener(ChangeListener changeListener) {
-        changeListeners.remove(changeListener);
+        changeSupport.removeChangeListener(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -165,6 +180,13 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         return wizardPanel.isLocal();
     }
 
+    public Project getRemoteInterfaceProject() {
+        if (hasRemote() && !wizardPanel.getRemoteInterfaceProject().equals(project)) {
+            return wizardPanel.getRemoteInterfaceProject();
+        }
+        return null;
+    }
+
     public String getSessionType() {
         return wizardPanel.getSessionType();
     }
@@ -174,19 +196,29 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> iterator;
-        synchronized (changeListeners) {
-            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
-        }
-        ChangeEvent changeEvent = new ChangeEvent(this);
-        while (iterator.hasNext()) {
-            iterator.next().stateChanged(changeEvent);
-        }
+        changeSupport.fireChange();
     }
 
     public void stateChanged(ChangeEvent changeEvent) {
         fireChangeEvent();
     }
 
+    private boolean hasCyclicDependency(Project projectToCheck) {
+        if (projectToCheck == null) {
+            return false;
+        }
+        SubprojectProvider subprojectProvider = projectToCheck.getLookup().lookup(SubprojectProvider.class);
+        if (subprojectProvider != null) {
+            Set<? extends Project> subprojects = subprojectProvider.getSubprojects();
+            if (subprojects.contains(project)) {
+                return true;
+            }
+            for (Project subproject : subprojects) {
+                if (hasCyclicDependency(subproject)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
-

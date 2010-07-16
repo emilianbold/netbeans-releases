@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,16 @@
 
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
+import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
@@ -64,17 +77,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
-import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
-import org.eclipse.mylyn.internal.jira.core.model.Component;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
@@ -91,10 +93,11 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -107,18 +110,28 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue extends Issue {
+public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private TaskData taskData;
     private JiraRepository repository;
     private Controller controller;
 
-    static final String LABEL_NAME_ID           = "jira.issue.id";          // NOI18N
-    static final String LABEL_NAME_TYPE         = "jira.issue.type";        // NOI18N
-    static final String LABEL_NAME_PRIORITY     = "jira.issue.priority";    // NOI18N
-    static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
-    static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
-    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
+    static final String LABEL_NAME_ID               = "jira.issue.id";          // NOI18N
+    static final String LABEL_NAME_TYPE             = "jira.issue.type";        // NOI18N
+    static final String LABEL_NAME_PRIORITY         = "jira.issue.priority";    // NOI18N
+    static final String LABEL_NAME_STATUS           = "jira.issue.status";      // NOI18N
+    static final String LABEL_NAME_RESOLUTION       = "jira.issue.resolution";  // NOI18N    
+    static final String LABEL_NAME_ASSIGNED_TO      = "jira.issue.assigned";    // NOI18N
+
+    static final String LABEL_NAME_PROJECT          = "jira.issue.project";     // NOI18N
+    static final String LABEL_NAME_COMPONENTS       = "jira.issue.components";  // NOI18N
+    static final String LABEL_NAME_AFFECTS_VERSION  = "jira.issue.affectsversion"; // NOI18N
+    static final String LABEL_NAME_FIX_VERSION      = "jira.issue.fixversion";  // NOI18N
+    static final String LABEL_NAME_CREATED          = "jira.issue.created";     // NOI18N
+    static final String LABEL_NAME_UPDATED          = "jira.issue.updated";     // NOI18N
+    static final String LABEL_NAME_DUE              = "jira.issue.due";         // NOI18N
+    static final String LABEL_NAME_ESTIMATE         = "jira.issue.estimate";    // NOI18N
+    static final String LABEL_NAME_INITIAL_ESTIMATE = "jira.issue.initestimte"; // NOI18N
+    static final String LABEL_NAME_TIME_SPENT       = "jira.issue.timespent";   // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -248,22 +261,26 @@ public class NbJiraIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
+//        assert !taskData.isPartial();
         this.taskData = taskData;
         attributes = null; // reset
         availableOperations = null;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
 
+    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
+    @Override
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???
         return getID(taskData);
@@ -273,8 +290,13 @@ public class NbJiraIssue extends Issue {
         return getID(taskData);
     }
 
+    @Override
     public String getSummary() {
-        return getFieldValue(IssueField.SUMMARY);
+        return getSummary(taskData);
+    }
+
+    private static String getSummary(TaskData taskData) {
+        return getFieldValue(taskData, IssueField.SUMMARY);
     }
     
     String getDescription() {
@@ -334,9 +356,13 @@ public class NbJiraIssue extends Issue {
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return Long.parseLong(value);
+            if(!"".equals(value)) {
+                return Long.parseLong(value);
+            } else {
+                Jira.LOG.log(Level.WARNING, "no modification value available for [{0}, {1}]", new Object[]{getRepository().getUrl(), getID()});
+            }
         } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, null, nfex);
+            Jira.LOG.log(Level.WARNING, "[" + getRepository().getUrl() + ", " + getID()+ "]", nfex);
         }
         return -1;
     }
@@ -463,6 +489,8 @@ public class NbJiraIssue extends Issue {
             mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
             mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
             mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG), "true"); // NOI18N
+            mapper.setBooleanValue(attribute.createMappedAttribute(WorkLogConverter.ADJUST_ESTIMATE.key()), Boolean.TRUE);
         }
     }
 
@@ -470,6 +498,7 @@ public class NbJiraIssue extends Issue {
      * Reloads the task data
      * @return true if successfully refreshed
      */
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -480,7 +509,7 @@ public class NbJiraIssue extends Issue {
      * @param key key of the issue
      * @return true if successfully refreshed
      */
-    public boolean refresh(String key, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String key, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataByKey(repository, key);
@@ -488,9 +517,7 @@ public class NbJiraIssue extends Issue {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -502,7 +529,7 @@ public class NbJiraIssue extends Issue {
      * @param id id of the issue
      * @return true if successfully refreshed
      */
-    public boolean refreshById(String id) {
+    private boolean refreshById(String id, boolean afterSubmitRefresh) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataById(repository, id);
@@ -510,9 +537,7 @@ public class NbJiraIssue extends Issue {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td);
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -709,9 +734,13 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getDisplayName() {
+        return getDisplayName(taskData);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
         return taskData.isNew() ?
             NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
-            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override
@@ -744,6 +773,7 @@ public class NbJiraIssue extends Issue {
     }
 
     // XXX carefull - implicit double refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
@@ -767,12 +797,7 @@ public class NbJiraIssue extends Issue {
             addComment(comment);
         }
 
-        JiraCommand submitCmd = new JiraCommand() {
-            public void execute() throws CoreException, IOException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     /**
@@ -809,6 +834,7 @@ public class NbJiraIssue extends Issue {
         final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
         JiraCommand cmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException, IOException {
 //                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
@@ -821,7 +847,7 @@ public class NbJiraIssue extends Issue {
                 }
                 Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
                         task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -946,7 +972,6 @@ public class NbJiraIssue extends Issue {
         return "";
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
@@ -962,37 +987,76 @@ public class NbJiraIssue extends Issue {
 
     public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
-            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
-            JiraConfiguration conf = repository.getConfiguration();
+            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);            
             JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
-                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                                              loc.getString("CTL_Issue_ID_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                              UIUtils.getColumnWidthInPixels(20, t)),
+                new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
+                                              loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
-                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Type_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
-                                              0)
+                                              0),
+                new ColumnDescriptor<String>(LABEL_NAME_PROJECT, String.class,
+                                              loc.getString("CTL_Issue_Project_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Project_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_COMPONENTS, String.class,
+                                              loc.getString("CTL_Issue_Components_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Components_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_AFFECTS_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Affects_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Affects_Version_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_FIX_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Fix_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Fix_Version_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_CREATED, String.class,
+                                              loc.getString("CTL_Issue_Created_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Created_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_UPDATED, String.class,
+                                              loc.getString("CTL_Issue_Updated_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Updated_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_DUE, String.class,
+                                              loc.getString("CTL_Issue_Due_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Due_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_ESTIMATE, String.class,
+                                              loc.getString("CTL_Issue_Estimate_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Estimate_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_INITIAL_ESTIMATE, String.class,
+                                              loc.getString("CTL_Issue_Initial_Estimate_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Initial_Estimate_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_TIME_SPENT, String.class,
+                                              loc.getString("CTL_Issue_Time_Spent_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Time_Spent_Desc"),         // NOI18N
+                                              0, false)
             };
         }
         return DESCRIPTORS;
@@ -1025,7 +1089,7 @@ public class NbJiraIssue extends Issue {
      * @param f
      * @return
      */
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
         return getFieldValue(taskData, f);
     }
 
@@ -1043,7 +1107,7 @@ public class NbJiraIssue extends Issue {
      * @param f
      * @return
      */
-    private String getFieldDisplayValue(IssueField f) {
+    String getFieldDisplayValue(IssueField f) {
         String value = getFieldValue(taskData, f);
         if(value == null || value.trim().equals("")) {
             return "";                                                          // NOI18N
@@ -1072,18 +1136,11 @@ public class NbJiraIssue extends Issue {
                         values.add(version.getName());
                     }
                 }
-                return values.toString();
+                return toString(values);
             case AFFECTSVERSIONS:
+                return toString(getVersionValues(f, config));
             case FIXVERSIONS:
-                projectId = getFieldValue(IssueField.PROJECT);
-                values = new LinkedList<String>();
-                for (String v : getFieldValues(f)) {
-                    Version version = config != null ? config.getVersionById(projectId, v) : null;
-                    if (version != null) {
-                        values.add(version.getName());
-                    }
-                }
-                return values.toString();
+                return toString(getVersionValues(f, config));
             case TYPE:
                 IssueType type = config != null ? config.getIssueTypeById(value) : null;
                 return type != null ? type.getName() : "";                      // NOI18N
@@ -1092,6 +1149,28 @@ public class NbJiraIssue extends Issue {
         }
     }
 
+    private List<String> getVersionValues(IssueField f, JiraConfiguration config) {
+        String projectId = getFieldValue(IssueField.PROJECT);
+        List<String> values = new LinkedList<String>();
+        for (String v : getFieldValues(f)) {
+            Version version = config != null ? config.getVersionById(projectId, v) : null;
+            if (version != null) {
+                values.add(version.getName());
+            }
+        }
+        return values;
+    }
+
+    private String toString(List<String> l) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < l.size(); i++) {
+            sb.append(l.get(i));
+            if(i < l.size() -1) {
+                sb.append(',');
+            } //  NOI18N
+        }
+        return sb.toString();
+    }
 
     static String getFieldValue(TaskData taskData, IssueField f) {
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
@@ -1122,7 +1201,7 @@ public class NbJiraIssue extends Issue {
         if(a == null) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         List<String> l = a.getValues();
         for (int i = 0; i < l.size(); i++) {
             String s = l.get(i);
@@ -1199,6 +1278,7 @@ public class NbJiraIssue extends Issue {
             Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
         }
         JiraCommand submitCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 // submit
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
@@ -1216,6 +1296,7 @@ public class NbJiraIssue extends Issue {
         }
         
         JiraCommand refreshCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
                     Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
@@ -1223,7 +1304,7 @@ public class NbJiraIssue extends Issue {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refreshById(rr[0].getTaskId());
+                    refreshById(rr[0].getTaskId(), true);
                 }
             }
         };
@@ -1307,8 +1388,16 @@ public class NbJiraIssue extends Issue {
         return availableOperations;
     }
 
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
+    }
+
     private class Controller extends BugtrackingController {
-        private JComponent issuePanel;
+        private JComponent component;
+        private IssuePanel issuePanel;
 
         public Controller() {
             IssuePanel panel = new IssuePanel();
@@ -1322,15 +1411,32 @@ public class NbJiraIssue extends Issue {
                 scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
-            BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-            issuePanel = scrollPane;
-
-            refreshViewData();
+            UIUtils.keepFocusedComponentVisible(scrollPane);
+            issuePanel = panel;
+            component = scrollPane;
         }
 
         @Override
         public JComponent getComponent() {
-            return issuePanel;
+            return component;
+        }
+
+        @Override
+        public void opened() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                // Hack - reset any previous modifications when the issue window is reopened
+                issuePanel.reloadForm(true);
+                issue.opened();
+            }
+        }
+
+        @Override
+        public void closed() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                issue.closed();
+            }
         }
 
         @Override
@@ -1342,8 +1448,8 @@ public class NbJiraIssue extends Issue {
         public void applyChanges() {
         }
 
-        private void refreshViewData() {
-            // PENDING
+        private void refreshViewData(boolean force) {
+            issuePanel.reloadFormInAWT(force);
         }
 
         @Override
@@ -1443,6 +1549,7 @@ public class NbJiraIssue extends Issue {
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
             JiraCommand cmd = new JiraCommand() {
+                @Override
                 public void execute() throws CoreException, IOException {
                     if (Jira.LOG.isLoggable(Level.FINER)) {
                         Jira.LOG.finer("getAttachmentData: id: " + Attachment.this.getId() + ", issue: " + getKey());

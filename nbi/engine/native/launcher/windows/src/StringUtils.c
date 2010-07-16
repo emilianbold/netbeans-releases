@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -462,17 +465,35 @@ char * word2char(WORD value) {
     return word2charN(value,0);
 }
 
-double int64ttoDouble(int64t * value) {
-    return (((double) value->High * ((double)(MAXDWORD) + 1)) + ((double) value->Low));
-}
-
 char * int64ttoCHAR(int64t* value) {
     if(value->High==0) {
         return DWORDtoCHAR(value->Low);
     } else {
-        char * str = newpChar(34);
-        double d = int64ttoDouble(value);
-        sprintf(str, "%.0lf", d);
+        char * high = DWORDtoCHAR(value->High);
+        char * low  = DWORDtoCHAR(value->Low);
+        DWORD highLength = getLengthA(high);
+        DWORD lowLength  = getLengthA(low);
+
+        char * str = newpChar(highLength + lowLength + 9);
+        DWORD i = 0;
+        str[0] = '[';
+        str[1] = 'H';
+        str[2] = ']';
+        str[3] = '[';
+        str[4] = 'L';
+        str[5] = ']';
+        str[6] = '=';
+
+        for(i = 0; i < highLength; i++) {
+            str [7 + i] = high[i];
+        }
+        str [7 + highLength] =L',';
+        for(i = 0; i < lowLength;i++) {
+            str [8 + highLength + i] = low[i];
+        }
+        str [8 + highLength + lowLength] = '\0';
+        FREE(high);
+        FREE(low);
         return str;
     }
 }
@@ -480,9 +501,31 @@ WCHAR * int64ttoWCHAR(int64t*value) {
     if(value->High==0) {
         return DWORDtoWCHAR(value->Low);
     } else {
-        WCHAR * str = newpWCHAR(34);
-        double d = int64ttoDouble(value);
-        wsprintfW(str, L"%.0Lf", d);
+        WCHAR * high = DWORDtoWCHAR(value->High);
+        WCHAR * low  = DWORDtoWCHAR(value->Low);
+        DWORD highLength = getLengthW(high);
+        DWORD lowLength  = getLengthW(low);
+
+        WCHAR * str = newpWCHAR(highLength + lowLength + 9);
+        DWORD i = 0;
+        str[0] = L'[';
+        str[1] = L'H';
+        str[2] = L']';
+        str[3] = L'[';
+        str[4] = L'L';
+        str[5] = L']';
+        str[6] = L'=';
+
+        for(i = 0; i < highLength;i++) {
+            str [7 + i] = high[i];
+        }
+        str [7 + highLength] = L',';
+        for(i = 0; i < lowLength;i++) {
+            str [8 + highLength + i] = low[i];
+        }
+        str [8 + highLength + lowLength] = L'\0';
+        FREE(high);
+        FREE(low);
         return str;
     }
 }
@@ -671,6 +714,18 @@ int compare(int64t * size, DWORD value) {
     else //if(size->Low < value)  
         return -1;    
 }
+int compareInt64t(int64t * a1, int64t * a2) {
+    if (a1->High > a2->High) {
+        return 1;
+    } else if(a1->High == a2->High) {
+        if (a1->Low > a2->Low)  {
+            return 1;
+        } else if(a1->Low == a2->Low)  {
+            return 0;
+        }
+    }
+    return -1;
+}
 
 void plus(int64t * size, DWORD value) {
     if(value!=0) {
@@ -680,6 +735,21 @@ void plus(int64t * size, DWORD value) {
             size->High = size->High + 1;
             size->Low  = value - (MAXDWORD - size->Low) - 1;
         }
+    }
+}
+void multiply(int64t * size, DWORD value) {
+    if(value==0) {
+        size->Low = 0;
+        size->High = 0;
+    } else {
+        DWORD i = 0;
+        DWORD low = size->Low;
+        DWORD high = size->High;
+        size->High = 0;
+        for(; i < value - 1 ; i++) {
+            plus(size, low);
+        }
+        size->High += high * value;
     }
 }
 

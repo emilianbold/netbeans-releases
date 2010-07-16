@@ -35,6 +35,7 @@ public class AddSequenceAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddSequenceAction() {
+        super("structured/sequence"); // NOI18N
     }    
     
     protected String getBundleName() {

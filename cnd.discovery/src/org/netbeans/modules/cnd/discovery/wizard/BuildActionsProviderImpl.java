@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,10 +87,10 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         //return Collections.<Action>emptyList();
         List<BuildAction> res = new ArrayList<BuildAction>();
         if (events != null && events.length == 2) {
-            if (events[0].getType() == ProjectActionEvent.Type.CLEAN &&
-                events[1].getType() == ProjectActionEvent.Type.BUILD &&
-                (events[1].getConfiguration() instanceof MakeConfiguration)&&
-                 events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            if (events[0].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
+                events[1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
+                events[1].getConfiguration() != null &&
+                events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
             }
         }
@@ -115,20 +118,24 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             }
         }
 
+        @Override
         public void executionStarted(int pid) {
             setEnabled(false);
         }
 
+        @Override
         public void executionFinished(int rc) {
             if (step == 1 && rc == 0) {
                 setEnabled(true);
             }
         }
 
+        @Override
         public void setStep(int step) {
             this.step = step;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             JEditorPane pane = findPane();
@@ -142,6 +149,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
         private String saveLog(JEditorPane pane){
+            // TODO: this method does not work for sun studio compilers. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
             BufferedWriter bw = null;
             String name = null;
             try {

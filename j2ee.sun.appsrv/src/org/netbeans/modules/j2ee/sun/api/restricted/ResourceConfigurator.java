@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -140,10 +143,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @returns true if the resource exists in the resource, or false for all
      *  other possibilities.
      */
+    @Override
     public boolean isJMSResourceDefined(String jndiName, File dir) {
         return requiredResourceExists(jndiName, dir, JMS_RESOURCE);
     }
 
+    @Override
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
         SunMessageDestination msgDest = null;
         if(! jndiName.startsWith(JMS_PREFIX)){ 
@@ -203,6 +208,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param ejbName name of ejb.
      * @param dir Folder where the resource should be stored.  Should not be null.
      */
+    @Override
     public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir) {
         FileObject location = FileUtil.toFileObject(dir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
@@ -245,6 +251,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
+    @Override
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir) {
         /*try {
             String name = refName;
@@ -281,48 +288,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }*/
     }
     
+    @Override
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
-        /*String name = "jdbc/" + beanName; // NOI18N
-        String jndiName = name;
-        try {
-            if(databaseInfo != null) {
-                String vendorName = convertToValidName(databaseInfo);
-                if(vendorName != null) {
-                    name = vendorName;
-                }
-                
-                if(vendorName.equals("derby_embedded")){  //NOI18N
-                    NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-                    DialogDisplayer.getDefault().notify(d);
-                    return null;
-                }
-                // Return if resource already defined
-                String poolName = generatePoolName(name, dir, databaseInfo);
-                if(poolName == null) {
-                    return null;
-                } else {
-                    name = poolName;
-                }
-
-                jndiName = "jdbc/" + name;
-
-                createCPPoolResource(name, jndiName, databaseInfo, dir);
-                createJDBCResource(name, jndiName, databaseInfo, dir);
-
-                if(this.showMsg) {
-                    String mess = MessageFormat.format(bundle.getString("LBL_UnSupportedDriver"), new Object [] { jndiName }); // NOI18N
-                    showInformation(mess);
-                    this.showMsg = false;
-                }
-            }
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-        
-        return jndiName;
-         */
         return null;
     }
     
@@ -623,21 +590,23 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if (null != portNumber && portNumber.length() > 0) {
                 serverPort += ":" + portNumber; //NOI18N
             }
-            if ((databaseUrl.indexOf(serverPort) != -1) 
-                    && ((databaseUrl.indexOf(databaseName) != -1) 
-                    || (databaseUrl.indexOf(sid) != -1))) {
-                if ((username != null && user.equals(username)) 
-                        && (password != null && pwd.equals(password))) {
-                    for (int i = 0; i < pl.length; i++) {
-                        String prop = pl[i].getName();
-                        if (prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
-                            String urlValue = pl[i].getValue();
-                            if (urlValue.equals(databaseUrl)) {
-                                poolJndiName = connPool.getName();
-                                break;
+            if (null != databaseUrl) {
+                if ((databaseUrl.indexOf(serverPort) != -1)
+                        && ((databaseUrl.indexOf(databaseName) != -1)
+                        || (databaseUrl.indexOf(sid) != -1))) {
+                    if ((username != null && user.equals(username))
+                            && (password != null && pwd.equals(password))) {
+                        for (int i = 0; i < pl.length; i++) {
+                            String prop = pl[i].getName();
+                            if (prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
+                                String urlValue = pl[i].getValue();
+                                if (urlValue.equals(databaseUrl)) {
+                                    poolJndiName = connPool.getName();
+                                    break;
+                                }
                             }
-                        }
-                    } //for
+                        } //for
+                    }
                 }
             }
         }
@@ -654,6 +623,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     public static void showInformation(final String msg) {
         // Asynchronous message posting.  Placed on AWT thread automatically by DialogDescriptor.
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
@@ -744,6 +714,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      * @return Set containing SunDataSource
      */
+    @Override
     public HashSet getServerDataSources() {
         return ResourceUtils.getServerDataSources(this.currentDM);
     }
@@ -755,7 +726,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @return Returns Set of SunDatasource's(JDBC Resources) present in this J2EE project
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public HashSet getResources(File resourceDir) {
+        return getResourcesFromFile(resourceDir);
+    }
+
+    public static HashSet getResourcesFromFile(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
         if (resourceFile == null) {
@@ -849,7 +825,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         }    
                     }
                     
-                    if (url == null || url.equals("")) { //NOI18N
+                    if (!(url == null || url.equals(""))) { //NOI18N
                         if (driverClass == null || driverClass.equals("")) { //NOI18N
                             DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
                             if (databaseConnection != null) {
@@ -904,6 +880,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param driver Driver ClassName for database referred to by this JDBC Resource's Connection Pool
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir) throws DatasourceAlreadyExistsException {
         SunDatasource ds = null;
         try {
@@ -1022,7 +999,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
-    private File getServerResourceFiles(File resourceDir) {
+    private static File getServerResourceFiles(File resourceDir) {
         File resourceFile = null;
         if(resourceDir != null){
             resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir));
@@ -1030,7 +1007,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return resourceFile;
     }
     
-    private HashMap getConnectionPools(File resourceFile) {
+    private static HashMap getConnectionPools(File resourceFile) {
         HashMap<String, JdbcConnectionPool> connPools = new HashMap<String, JdbcConnectionPool>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
@@ -1041,7 +1018,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return connPools;
     }
     
-    private HashMap getJdbcResources(File resourceFile) {
+    private static HashMap getJdbcResources(File resourceFile) {
         HashMap<String, JdbcResource> jdbcResources = new HashMap<String, JdbcResource>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcResource[] dsources = resources.getJdbcResource();
@@ -1063,7 +1040,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return aoResources;
     }
     
-    private Resources getResourcesGraph(File resourceFile){
+    private static Resources getResourcesGraph(File resourceFile){
         Resources resourceGraph = DDProvider.getDefault().getResourcesGraph();
         try {
             if(! resourceFile.isDirectory()){
@@ -1175,6 +1152,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public HashSet getMessageDestinations(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
@@ -1200,6 +1178,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return destinations;
     }
     
+    @Override
     public HashSet getServerDestinations() {
         return ResourceUtils.getServerDestinations(this.currentDM);
     }

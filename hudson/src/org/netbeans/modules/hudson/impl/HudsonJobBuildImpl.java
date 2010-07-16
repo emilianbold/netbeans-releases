@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,8 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
@@ -63,16 +68,14 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
     private final HudsonJobImpl job;
     private final int build;
-    private final boolean building;
-    private final Result result;
+    private boolean building;
+    private Result result;
     private final HudsonConnector connector;
 
-    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
+    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build) {
         this.connector = connector;
         this.job = job;
         this.build = build;
-        this.building = building;
-        this.result = result;
     }
     
     public HudsonJob getJob() {
@@ -91,11 +94,19 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         return getUrl();
     }
 
-    public boolean isBuilding() {
+    public @Override boolean isBuilding() {
+        getResult();
         return building;
     }
     
-    public Result getResult() {
+    public @Override synchronized Result getResult() {
+        if (result == null) {
+            AtomicBoolean _building = new AtomicBoolean();
+            AtomicReference<Result> _result = new AtomicReference<Result>(Result.NOT_BUILT);
+            connector.loadResult(this, _building, _result);
+            building = _building.get();
+            result = _result.get();
+        }
         return result;
     }
 

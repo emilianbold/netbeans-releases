@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,13 +46,17 @@ package org.netbeans.modules.subversion.client.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -67,7 +74,7 @@ public class SvnWcParser {
 
     private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {   
         Map<String, String> attributes = EntriesCache.getInstance().getFileAttributes(file);
-        return WorkingCopyDetails.createWorkingCopy(file, attributes);            
+        return WorkingCopyDetails.createWorkingCopy(file, attributes);
     }
 
    /**
@@ -82,8 +89,8 @@ public class SvnWcParser {
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
         ret.add(getSingleStatus(path));
         
-        File[] children = path.listFiles();
-        if(children != null && children.length > 0) {        
+        File[] children = getChildren(path);
+        if(children != null) {
             for (int i = 0; i < children.length; i++) {
                 if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
                     if(descend && children[i].isDirectory()) {                
@@ -95,7 +102,30 @@ public class SvnWcParser {
             }        
         }        
         return ret;
-    }    
+    }
+
+    /**
+     * Returns an array of existed file's children plus all it's children from metadata
+     */
+    private File[] getChildren (File file) throws LocalSubversionException {
+        File[] children = file.listFiles();
+        if (children != null) { // it is a folder, get all its children from metadata
+            try {
+                String[] entries = EntriesCache.getInstance().getChildren(file);
+                Set<File> childSet = new LinkedHashSet<File>(children.length + entries.length);
+                childSet.addAll(Arrays.asList(children));
+                for (String name : entries) {
+                    childSet.add(new File(file, name));
+                }
+                children = childSet.toArray(new File[childSet.size()]);
+            } catch (IOException ex) {
+                throw new LocalSubversionException(ex);
+            } catch (SAXException ex) {
+                throw new LocalSubversionException(ex);
+            }
+        }
+        return children;
+    }
 
     public ISVNStatus getSingleStatus(File file) throws LocalSubversionException {
         String finalTextStatus = SVNStatusKind.NORMAL.toString();
@@ -196,6 +226,7 @@ public class SvnWcParser {
                     lockComment = wcDetails.getValue("lock-comment");  // NOI18N
                     lockOwner = wcDetails.getValue("lock-owner");      // NOI18N
                 }
+                SVNConflictDescriptor conflictDesc = wcDetails.getConflictDescriptor();
 
                 return new ParserSvnStatus(
                         file,
@@ -214,7 +245,9 @@ public class SvnWcParser {
                         conflictWorking,
                         lockCreationDate,
                         lockComment,
-                        lockOwner);
+                        lockOwner,
+                        conflictDesc != null,
+                        conflictDesc);
             } else {
                 //File isn't handled.
                 return new ParserSvnStatus(
@@ -234,6 +267,8 @@ public class SvnWcParser {
                         null,
                         null,
                         null,
+                        null,
+                        false,
                         null);
             }
 

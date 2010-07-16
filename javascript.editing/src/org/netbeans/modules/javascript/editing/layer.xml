@@ -148,27 +148,6 @@
         </folder>
     </folder>
 
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="javascript">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsAnalyzer"/>
-                </file> 
-            </folder>
-            <folder name="x-json">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsonLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsonAnalyzer"/>
-                </file> 
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Loaders">
         <folder name="text">
             <folder name="javascript">

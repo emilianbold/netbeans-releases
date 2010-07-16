@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -57,7 +64,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -195,16 +204,21 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 
                 if ( project != null ) {
                     OpenProjectList.getDefault().open( new Project[] {project}, false, true );
-                    ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-                    Node root = ptLogial.getExplorerManager ().getRootContext ();
-                    Node projNode = root.getChildren ().findChild ( project.getProjectDirectory().getName ());
-                    try {
-                        ptLogial.getExplorerManager ().setSelectedNodes (new Node[] {projNode});
-                        ptLogial.open ();
-                        ptLogial.requestActive ();
-                    } catch (Exception ignore) {
-                        // may ignore it
+                    ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+                    Node root = ptLogical.getExplorerManager ().getRootContext ();
+                    String name = ProjectUtils.getInformation(project).getName();
+                    Node projNode = root.getChildren().findChild(name);
+                    if (projNode != null) {
+                        try {
+                            ptLogical.getExplorerManager().setSelectedNodes(new Node[] {projNode});
+                        } catch (PropertyVetoException ignore) {
+                            // may ignore it
+                        }
+                    } else {
+                        Logger.getLogger(RecentProjects.class.getName()).log(Level.WARNING, "Could not find {0} among {1}",
+                                new Object[] {name, Arrays.asList(root.getChildren().getNodes())});
                     }
+                    ProjectUtilities.makeProjectTabVisible();
                 } else {
                     String msg = NbBundle.getMessage(RecentProjects.class, "ERR_InvalidProject"); //NOI18N
                     NotifyDescriptor nd = new NotifyDescriptor.Message(msg);

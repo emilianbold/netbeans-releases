@@ -31,8 +31,7 @@ public class IEPWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("iep_understandprojects");
     // If you have context help:
     // return new HelpCtx(SampleWizardPanel1.class);
     }

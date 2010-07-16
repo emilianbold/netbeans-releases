@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ public class SyntaxTree {
     static final String FORBIDDEN_END_TAG = "forbidded_endtag"; //NOI18N
     static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
-    static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
+    public static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
     static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
 
     public static AstNode makeTree(SyntaxParserContext context) {
@@ -84,8 +87,7 @@ public class SyntaxTree {
 
         assert elements != null : "passed elements list cannot but null"; //NOI18N
 
-        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
-        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
+        int lastEndOffset = context.getSourceText().length();
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
@@ -196,8 +198,7 @@ public class SyntaxTree {
         assert elements != null;
         assert dtd != null;
 
-        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
-        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
+        int lastEndOffset = context.getSourceText().length();
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
@@ -525,10 +526,8 @@ public class SyntaxTree {
                     stack.getLast().addChild(closeTagNode);
                 }
 
-            } else {
-                //rest of the syntax element types
-                //XXX do we need to have these in the AST???
-
+            } else if (element.type() == SyntaxElement.TYPE_ERROR ||
+                    element.type() == SyntaxElement.TYPE_COMMENT) { //error || comment
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 
@@ -536,6 +535,11 @@ public class SyntaxTree {
                         element.offset() + element.length(), false);
 
                 stack.getLast().addChild(node);
+
+            } else {
+                //rest of the syntax element types of unimportant types,
+                //they are not present in the parse tree
+                
             }
 
         }
@@ -616,16 +620,23 @@ public class SyntaxTree {
         }
 
         //check missing required attributes
-        StringBuffer missingAttributesListMsg = new StringBuffer();
+        Collection<String> missingAttrsNames = new ArrayList<String>();
         for (Object _attr : dtdElement.getAttributeList(null)) {
             DTD.Attribute attr = (DTD.Attribute) _attr;
             if (attr.isRequired() && !existingAttrNames.contains(attr.getName())) {
-                //missing required attribute
-                missingAttributesListMsg.append(attr.getName());
-                missingAttributesListMsg.append(", ");
+                missingAttrsNames.add(attr.getName());
             }
 
         }
+
+        StringBuffer missingAttributesListMsg = new StringBuffer();
+        for(String missingAttrName : missingAttrsNames) {
+            //missing required attribute
+            missingAttributesListMsg.append(missingAttrName);
+            missingAttributesListMsg.append(", ");
+        }
+
+
         if (missingAttributesListMsg.length() > 0) {
             //cut last comma and space
             missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 2);
@@ -635,6 +646,8 @@ public class SyntaxTree {
                     NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
                     new Object[]{missingAttributesListMsg.toString()}),
                     Description.WARNING);
+            //store the collection of the missing attribute for further usage in hintfixes
+            node.setProperty(MISSING_REQUIRED_ATTRIBUTES, missingAttrsNames);
         }
 
     }

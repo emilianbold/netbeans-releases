@@ -18,13 +18,10 @@
  */
 package org.netbeans.modules.bpel.mapper.predicates;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.bpel.mapper.cast.TypeCast;
-import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.mapper.model.BpelPathConverter;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
-import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.soa.xpath.mapper.specstep.SpecialStepManager;
+import org.netbeans.modules.soa.xpath.mapper.tree.DirectedList;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
@@ -38,10 +35,11 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
-import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.PredicatedSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SpecialSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.WildcardSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.WrappingSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathSpecialStep;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 
@@ -53,13 +51,17 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
  */
 public class PredicateFinderVisitor extends XPathVisitorAdapter {
 
-    private PredicateManager mPredManager;
+    private BpelPredicateManager mPredManager;
     private SpecialStepManager mSStepManager;
     private XPathVariableReference mXPathVarReference;
     private XPathBpelVariable mXPathVariable;
 
-    public PredicateFinderVisitor(PredicateManager predManager,
+    public PredicateFinderVisitor(BpelPredicateManager predManager,
             SpecialStepManager sStepManager) {
+        //
+        assert predManager != null;
+        assert sStepManager != null;
+        //
         mPredManager = predManager;
         mSStepManager = sStepManager;
     }
@@ -117,80 +119,41 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
         visitChildren(expr);
     }
 
-
-
     /**
      * See the description of the method "processLocationPath"
      */
     private class LocationPathProcessor {
         // The list can contain objects of either SchemaComponent
         // or PredicatedScehmaComp type.
-        private transient LinkedList objLocationPath = new LinkedList();
         private boolean processingAborted = false;
-
-        public List getObjLocationPath() {
-            if (processingAborted) {
-                return null;
-            } else {
-                return objLocationPath;
-            }
-        }
 
         /**
          * Resolves each LocationStep to object form and registers new 
-         * predicates in the PredicateManager. 
+         * predicates in the BpelPredicateManager.
          */
         public void processLocationPath(AbstractLocationPath path) {
             processingAborted = false;
 
             //speed optimisation, see coments below
+            // TODO: The path is a part of a big XPath expression or is
+            // an atomic expression itself. The optimization tries evoiding
+            // unnecessary resolving of the expression (calculation of XPathSchemaContex).
+            // But actually the calculation is going to be done later anyway.
+            // So the optimization is suspecious. It is necessary to convince
+            // the resolving isn't done second time with the same expression. 
             if (!needProcessing(path))
                 return;
-            
-            // Put the variable or part to the locaton path first
-            if (mXPathVarReference != null) {
-                XPathSchemaContext sContext = mXPathVarReference.getSchemaContext();
-                //
-                if (sContext instanceof VariableSchemaContext) {
-                    XPathBpelVariable xPathVar = getVariable();
-                    AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
-                    objLocationPath.addFirst(varDecl);
-                    //
-                    Part part = xPathVar.getPart();
-                    if (part != null) {
-                        objLocationPath.addFirst(part);
-                    }
-                } else if (sContext instanceof CastSchemaContext) {
-                    CastSchemaContext castContext = (CastSchemaContext)sContext;
-                    //
-                    XPathBpelVariable xPathVar = getVariable();
-                    AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
-                    Part part = xPathVar.getPart();
-                    //
-                    XPathCast xPathCast = castContext.getTypeCast();
-                    TypeCast typeCast = new TypeCast(xPathCast);
-                    //
-                    if (part == null) {
-                        assert typeCast.getCastedObject() == varDecl;
-                        objLocationPath.addFirst(typeCast);
-                    } else {
-                        objLocationPath.addFirst(varDecl);
-                        //
-                        if (part != null) {
-                            assert typeCast.getCastedObject() == part;
-                            objLocationPath.addFirst(typeCast);
-                        }
-                    }
-                } else {
-                    assert false : "Incorrect schema contex!";
-                    return;
-                }
-            }
-            
             //
-            for (LocationStep step : path.getSteps()) {
-                if (!processingAborted) {
-                    processStep(step);
+            LocationStep[] stepArr = path.getSteps();
+            for (int stepIndex = 0; stepIndex < stepArr.length; stepIndex++) {
+                if (processingAborted) {
+                    break;
+                }
+                //
+                LocationStep step = stepArr[stepIndex];
+                XPathSchemaContext xPathContext = step.getSchemaContext();
+                if (xPathContext != null) {
+                    processStep(xPathContext);
                 }
             }
         }
@@ -210,56 +173,68 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 if (stepNodeTest instanceof StepNodeTypeTest) {
                     return true;
                 }
+//                else if (stepNodeTest instanceof StepNodeNameTest) {
+//                    // TODO: Process * and @* here
+//                }
             }
             return false;
         }
-        
-        private void processStep(LocationStep step) {
-            //
-            // Registure special location step to the Special Step manager
-            StepNodeTest stepNodeTest = step.getNodeTest();
-            if (mSStepManager != null && stepNodeTest instanceof StepNodeTypeTest) {
-                mSStepManager.addStep(objLocationPath, step);
-            }
-            //
-            XPathSchemaContext xPathContext = step.getSchemaContext();
-            if (xPathContext == null) {
-                processingAborted = true;
-                return;
-            }
-            //
-            if (xPathContext instanceof CastSchemaContext) {
-                CastSchemaContext castContext = (CastSchemaContext)xPathContext;
-                TypeCast typeCast = new TypeCast(castContext.getTypeCast());
-                objLocationPath.addFirst(typeCast);
+
+        private void processStep(XPathSchemaContext stepContext) {
+            if (stepContext instanceof PredicatedSchemaContext) {
+                PredicatedSchemaContext predContext =
+                        (PredicatedSchemaContext)stepContext;
+                if (predContext.hasUnknownVariable()) {
+                    processingAborted = true;
+                    return;
+                }
+                DirectedList<Object> predicatePath = BpelPathConverter.singleton().
+                        constructObjectLocationList(stepContext, true, true);
                 //
-                // step processed!
-                return;
-            }
-            //
-            SchemaCompHolder sCompHolder =
-                    XPathSchemaContext.Utilities.getSchemaCompHolder(xPathContext);
-            if (sCompHolder == null) {
-                // Error. The location path contains a step with unknown schema type
-                // or multiple possible schema types. 
-                // The predicate manager can't continue analysing the path!
-                processingAborted = true;
-                return;
-            }
-            //
-            XPathPredicateExpression[] predArr = step.getPredicates();
-            if (predArr == null || predArr.length == 0) {
-                objLocationPath.addFirst(sCompHolder.getHeldComponent());
-            } else {
-                AbstractPredicate newPredSComp = new XPathPredicate(step);
+                BpelMapperPredicate newPredSComp = new BpelMapperPredicate(predContext);
+                mPredManager.addPredicate(predicatePath, newPredSComp);
                 //
-                ArrayList currentPath = new ArrayList();
-                currentPath.addAll(objLocationPath);
+                XPathSchemaContext baseContext = predContext.getBaseContext();
+                if (baseContext != null) {
+                    processStep(baseContext);
+                }
+            } else if (stepContext instanceof WildcardSchemaContext) {
                 //
-                mPredManager.addPredicate(currentPath, newPredSComp);
+                // Registure special location step to the Special Step manager
+                WildcardSchemaContext wContext = (WildcardSchemaContext)stepContext;
+                XPathSpecialStep sStep = wContext.getSpecialStep();
+                switch (sStep.getType()) {
+                    // case ALL_ELEMENTS:
+                    // case ALL_ATTRIBUTES:
+                    case NODE:
+                        DirectedList<Object> sStepPath = BpelPathConverter.singleton().
+                                constructObjectLocationList(stepContext, true, true);
+                        //
+                        mSStepManager.addStep(sStepPath, sStep);
+                        break;
+                }
+            } else if (stepContext instanceof SpecialSchemaContext) {
                 //
-                objLocationPath.addFirst(newPredSComp);
+                // Registure special location step to the Special Step manager
+                SpecialSchemaContext wContext = (SpecialSchemaContext)stepContext;
+                XPathSpecialStep sStep = wContext.getSpecialStep();
+                switch (sStep.getType()) {
+                    // case ALL_ELEMENTS:
+                    // case ALL_ATTRIBUTES:
+                    case COMMENT:
+                    case TEXT:
+                    case PROCESSING_INSTR:
+                        DirectedList<Object> sStepPath = BpelPathConverter.singleton().
+                                constructObjectLocationList(stepContext, true, true);
+                        //
+                        mSStepManager.addStep(sStepPath, sStep);
+                        break;
+                }
+            } else if (stepContext instanceof WrappingSchemaContext) {
+                processStep(WrappingSchemaContext.class.
+                        cast(stepContext).getBaseContext());
             }
         }
+
     }
 }

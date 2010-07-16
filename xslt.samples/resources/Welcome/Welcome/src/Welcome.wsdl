@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2010, Oracle. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Oracle nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<definitions name="Welcome" targetNamespace="http://j2ee.netbeans.org/wsdl/Welcome"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/Welcome" xmlns:ns="http://xml.netbeans.org/schema/Welcome" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+    <types>
+        <xsd:schema targetNamespace="http://j2ee.netbeans.org/wsdl/Welcome">
+            <xsd:import namespace="http://xml.netbeans.org/schema/Welcome" schemaLocation="Welcome.xsd"/>
+        </xsd:schema>
+    </types>
+    
+    <message name="WelcomeRequest">
+        <part name="part" element="ns:person"/>
+    </message>
+    
+    <message name="WelcomeResponse">
+        <part name="part" element="ns:message"/>
+    </message>
+    
+    <portType name="WelcomePortType">
+        <operation name="WelcomeOperation">
+            <input name="input" message="tns:WelcomeRequest"/>
+            <output name="output" message="tns:WelcomeResponse"/>
+        </operation>
+    </portType>
+    
+    <binding name="WelcomeBinding" type="tns:WelcomePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="WelcomeOperation">
+            <soap:operation/>
+            <input name="input">
+                <soap:body use="literal"/>
+            </input>
+            <output name="output">
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="WelcomeService">
+        <port name="WelcomePort" binding="tns:WelcomeBinding">
+            <soap:address location="http://localhost:${HttpDefaultPort}/WelcomeService/WelcomePort"/>
+        </port>
+    </service>
+    
+    <plnk:partnerLinkType name="WelcomePartnerLinkType">
+        <plnk:role name="WelcomeRole" portType="tns:WelcomePortType"/>
+    </plnk:partnerLinkType>
+</definitions>

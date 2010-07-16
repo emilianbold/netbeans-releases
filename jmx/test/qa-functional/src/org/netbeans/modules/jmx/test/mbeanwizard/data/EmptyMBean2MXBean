@@ -8,7 +8,7 @@ package com.foo.bar;
 
 /**
  * Interface EmptyMBean2MXBean
- * 
+ *
  * @author <author>
  */
 public interface EmptyMBean2MXBean

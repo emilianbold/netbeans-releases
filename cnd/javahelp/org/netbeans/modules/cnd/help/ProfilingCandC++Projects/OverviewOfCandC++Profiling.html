@@ -11,47 +11,84 @@ Use is subject to license terms.
   </head>
   <body>
     <h2>
-       Overview of C and C++ Profiling
+       Overview of C/C++/Fortran Profiling
     </h2>
     <p>
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p> <p>
-      You can examine the behavior of your running C/C++ project with several profiling tools in the IDE.
-       The profiling tools run automatically by default whenever you run your C or C++ project on a Solaris 10
-       or OpenSolaris operating system.  Some tools are also available when your run on Linux and have installed
-       the Sun Studio tool collection.
+      You can examine the behavior of your running C, C++, or Fortran project with several profiling tools in the IDE.
+       The profiling tools run automatically by default whenever you run your C/C++/Fortan project on Oracle
+       Solaris 10 or OpenSolaris.  Some tools are also available when you run
+       the IDE on Linux with the Oracle Solaris Studio (formerly Sun Studio) tool collection.
     </p>
-    <p>The IDE provides the following profiling tools for C/C++ projects:</p>
-    <br>
+    <p>The IDE provides the following profiling tools for C/C++/Fortran projects:</p>
+    
     <table border="1" cellpadding="5" cellspacing="0">
         <tr valign="top">
 <th scope="col" align="left">Tool</th>
-<th scope="col" align="left">Detailed information</th>
-<th scope="col" align="left">Environment</th>
+<th scope="col" align="left">Platform</th>
+
 </tr>
-        <tr><td>CPU Usage</td>
-            <td>Hot Spots button to show CPU Usage Per Function</td>
-            <td>OpenSolaris OS, Solaris 10 OS or Linux with Sun Studio tool collection</td></tr>
-        <tr><td>Memory Usage</td>
-            <td>Memory Leaks button opens Memory Leak Details window</td>
-            <td>OpenSolaris OS, Solaris 10 OS or Linux with Sun Studio tool collection</td></tr>
-        <tr><td>Thread Usage
-            </td>
-            <td>Sync Problems button opens Thread Synchronization Details window
-            </td>
+        <tr valign="top">
+            <td><a href="AnalyzingCPUUsageCandC++FortanApps.html">CPU Usage</a></td>
+        <td>
+              - Oracle Solaris 10 or OpenSolaris<br>
+              - Linux with Oracle Solaris Studio tool collection
+                </td>
+                
+        </tr>
+        <tr valign="top">
+            <td><a href="AnalyzingMemoryUsageCandC++FortranApps.html">Memory Usage</a></td>
+            
+            <td>
+              - Oracle Solaris 10 or OpenSolaris<br>
+              - Linux with Oracle Solaris Studio tool collection
+                </td>
+                </tr>
+
+        <tr valign="top">
+            <td><a href="AnalyzingThreadUsageCandC++FortranApps.html">Thread Usage</a></td>
+
              <td>
-                OpenSolaris OS, Solaris 10 OS or Linux with Sun Studio tool collection
-            </td>
-        </tr> <tr><td>I/O Usage</td>
-            <td>I/O Details button to show the total bytes read from and written to individual files, and the project
-                functions which perform the I/O to each file</td>
-            <td>OpenSolaris OS, Solaris 10 OS </td></tr>
-        <tr><td>Thread Microstates tool</td>
-            <td>Thread Details  button to show detailed information about each thread's state.</td>
-            <td>OpenSolaris OS, Solaris 10 OS </td></tr>
+              - Oracle Solaris 10 or OpenSolaris<br>
+              - Linux with Oracle Solaris Studio tool collection
+                </td>
+                
+        </tr>
+        
+        <tr valign="top">
+            <td><a href="AnalyzingIOUsageCandC++FortranApps.html">I/O Usage</a></td>
+            
+           <td>
+              - Oracle Solaris 10 or OpenSolaris
+                </td>
+         
+        </tr>
+
+        <tr valign="top">
+        <td>
+            <a href="AnalyzingThreadMicrostatesCandC++FortranApps.html">Thread Microstates</a></td>
+        <td>
+              - Oracle Solaris 10 or OpenSolaris
+                </td>
+       
+        </tr>
     </table>
-    <p>
+    <h3>Profile Configurations</h3>
+    <p>A profile configuration determines which tools are displayed in the 
+        <a href="RunMonitorWindowforCandC++Fort.html">Run Monitor window</a>.
+        Profile configurations are predefined sets of tools that are relevant for different environments that
+        the IDE can run in. </p>
+    <p>By selecting a profile configuration you can quickly select all the
+        tools that work for the operating system and tool collection you are using. If you find that
+        none of the predefined profile configurations suit your needs, you can modify the
+        predefined profile configurations, or create your own profile configuration, as explained in
+        <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a>.
     </p>
+    
+    <p>You can also disable the profiling tools in the project's properties so that the profiling does not
+      automatically occur when you run the project, as explained in
+      <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a>.</p>
     <table>
       <tr>
         <th colspan="2" align="left">
@@ -63,9 +100,9 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="ManagingProfileConfigurations.html">Managing Profile Configurations</a><br>
-          <a href="ProfilingCandC++Projects.html">Profiling C and C++ Projects</a><br>
-           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++ Project Properties Dialog Box: Profile</a>
+          <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+          <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
         </td>
       </tr>
     </table>

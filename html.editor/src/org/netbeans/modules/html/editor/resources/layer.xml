@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -42,31 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="html">
-                <attr name="useCustomEditorKit" boolvalue="true"/>
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
-                </file> 
-            </folder>
-            <folder name="xhtml">
-                <attr name="useCustomEditorKit" boolvalue="true"/>
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage$Scanner"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    
-    
+
     <folder name="DTDs">
         <folder name="3_2">
             <file name="catalog" url="DTDs/3_2/catalog"/>
@@ -93,7 +72,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="xhtml">
             <file name="catalog" url="DTDs/xhtml/catalog"/>
-            
+
             <file name="xhtml-lat1.ent" url="DTDs/xhtml/xhtml-lat1.ent"/>
             <file name="xhtml-special.ent" url="DTDs/xhtml/xhtml-special.ent"/>
             <file name="xhtml-symbol.ent" url="DTDs/xhtml/xhtml-symbol.ent"/>
@@ -102,8 +81,8 @@ made subject to such option by the copyright holder.
             <file name="xhtml1-strict.dtd" url="DTDs/xhtml/xhtml1-strict.dtd"/>
         </folder>
     </folder>
-    
-    
+
+
     <folder name="Editors">
 
 
@@ -114,12 +93,22 @@ made subject to such option by the copyright holder.
         <folder name="text">
 
             <folder name="xhtml">
+
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="450"/>
+		    </file>
+		</folder>
+
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
-                <file name="org-netbeans-modules-html-editor-xhtml-XhtmlElEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-html-editor-xhtml-XhtmlElEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
 
                 <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
@@ -129,9 +118,15 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
 
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-html-editor-xhtml.XhtmlElHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-xhtml.XhtmlElHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
@@ -159,7 +154,7 @@ made subject to such option by the copyright holder.
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
 
-               <folder name="FontsColors">
+                <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-html-editor-xhtml-coloring.xml" url="xhtmlFontsColors.xml">
@@ -193,24 +188,35 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="Popup">
-
-                    <file name="SeparatorAfterView.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1166"/>
-                    </file>
                     <file name="ViewAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="SeparatorAfterView.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1166"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1290"/>
+		    </file>
                     <file name="format">
-                        <attr name="position" intvalue="1333"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="generate-code">
-                        <attr name="position" intvalue="1400"/>
+                        <attr name="position" intvalue="1480"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
+                    </file>
+                    <file name="SeparatorBeforeGenerateFold.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
@@ -219,7 +225,20 @@ made subject to such option by the copyright holder.
             </folder>
 
             <folder name="html">
-
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-html-editor-codegen-LoremIpsumGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                </folder>
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
+                <file name="org-netbeans-modules-html-editor-indexing-HtmlIndexer$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
@@ -227,20 +246,23 @@ made subject to such option by the copyright holder.
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
-                
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
                 </file>
-                
+
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-html-editor-HtmlBracesMatching.instance">
                         <attr name="position" intvalue="50"/>
                     </file>
                 </folder>
-                
+
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
                 </folder>
@@ -254,9 +276,9 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
-
-                <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance"/>
-                
+                <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -267,46 +289,60 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
-                
+
                 <folder name="HyperlinkProviders">
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                
+
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.api.HtmlKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.html.editor.api.HtmlKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-                
+
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-csl-hints-GsfUpToDateStateProviderFactory.instance"/>
                 </folder>
-                
+
                 <folder name="Popup">
-                    
-                    <file name="SeparatorAfterView.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1166"/>
-                    </file>
                     <file name="ViewAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="SeparatorAfterView.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1166"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1290"/>
+		    </file>
                     <file name="format">
-                        <attr name="position" intvalue="1333"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                        <file name="generate-code">
+                        <attr name="position" intvalue="1480"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
+                    </file>
+                    <file name="SeparatorBeforeGenerateFold.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
@@ -322,5 +358,43 @@ made subject to such option by the copyright holder.
                 <file name="xhtml" url="HTMLExample"/>
             </folder>
         </folder>
+        <folder name="Editor">
+            <folder name="CodeCompletion">
+                <folder name="text">
+                    <folder name="html">
+                        <file name="HtmlSpecific.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.HtmlCompletionOptionsPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="150"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
+
+    <folder name="Loaders">
+        <folder name="image">
+            <folder name="png-gif-jpeg-bmp">
+                <folder name="Actions">
+                    <!-- hide default rename action && use the refactoring instead -->
+                    <file name="RenameAction.shadow_hidden"/>
+                    <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>
+            </file>
+	</folder>
+    </folder>
+
+
 </filesystem>

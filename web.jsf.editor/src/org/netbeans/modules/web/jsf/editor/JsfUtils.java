@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,12 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -47,17 +55,21 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 
@@ -70,21 +82,49 @@ public class JsfUtils {
     public static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
     public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
 
+    public static String getCompositeLibraryURL(String libraryFolderPath) {
+        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
+    }
+
     public static boolean isCompositeComponentLibrary(FaceletsLibrary library) {
         return library instanceof CompositeComponentLibrary;
     }
 
-    public static String importLibrary(Document document, final FaceletsLibrary library, final String prefix) {
+    public static boolean importLibrary(Document document, FaceletsLibrary library, String prefix) {
+        return !importLibrary(document, Collections.singletonMap(library, prefix)).isEmpty();
+    }
+
+    /**
+     * Imports a facelets libraries
+     *
+     * @param document
+     * @param libraries2prefixes a map of FaceletsLibrary to prefix to declare. The prefix may be null, in
+     * such case the default library prefix is used.
+     *
+     * @return a map of library2declared prefixes which contains just the imported pairs
+     */
+    public static Map<FaceletsLibrary, String> importLibrary(Document document, Map<FaceletsLibrary, String> libraries2prefixes) {
         assert document instanceof BaseDocument;
 
-        final String prefixToDeclare = prefix != null ? prefix : library.getDefaultPrefix();
+        final Map<FaceletsLibrary, String> imports = new LinkedHashMap<FaceletsLibrary, String>(libraries2prefixes);
 
-        if (prefixToDeclare == null) {
-            //cannot get prefix to declare
-            return null;
+        //verify and update the imports map
+        Iterator<FaceletsLibrary> libsIterator = imports.keySet().iterator();
+        while (libsIterator.hasNext()) {
+            FaceletsLibrary l = libsIterator.next();
+            String prefix = imports.get(l);
+            if (prefix == null) {
+                //not explicitly specified prefix, we may take the library's default one
+                String defaultPrefix = l.getDefaultPrefix();
+                if (defaultPrefix != null) {
+                    imports.put(l, defaultPrefix); //update the map - add the default prefix, I recon no ConcurrentModificationException is thrown since the keyset remains the same
+                } else {
+                    //remove the library from the imports, we have no enough information
+                    libsIterator.remove();
+                }
+            }
         }
 
-        final String[] declaredPrefix = new String[1];
         final BaseDocument bdoc = (BaseDocument) document;
         try {
             Source source = Source.create(bdoc);
@@ -93,7 +133,7 @@ public class JsfUtils {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
                     if (ri != null) {
                         _result[0] = (HtmlParserResult) ri.getParserResult();
                     }
@@ -102,23 +142,28 @@ public class JsfUtils {
 
             if (_result[0] == null) {
                 //no html code
-                return null;
+                return Collections.emptyMap();
             }
+
             //try find the html root node first
             final HtmlParserResult result = _result[0];
             AstNode root = null;
             //no html root node, we need to find a root node of some other ast tree
             //belonging to some namespace
-            for (AstNode r : result.roots().values()) {
+            Collection<AstNode> roots = new ArrayList<AstNode>();
+            roots.addAll(result.roots().values());
+            roots.add(result.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+
+            for (AstNode r : roots) {
                 //find first open tag node
 
                 List<AstNode> chs = r.children(new AstNode.NodeFilter() {
 
+                    @Override
                     public boolean accepts(AstNode node) {
-                        return (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
+                        return (node.type() == AstNode.NodeType.OPEN_TAG
+                                || node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
                     }
-                    
                 });
 
                 if (!chs.isEmpty()) {
@@ -137,7 +182,7 @@ public class JsfUtils {
             final AstNode rootNode = root;
             if (rootNode == null) {
                 //TODO we may want to add a root node in such case
-                return null;
+                return Collections.emptyMap();
             }
 
             //TODO decide whether to add a new line before or not based on other attrs - could be handled by the formatter!?!?!
@@ -148,52 +193,65 @@ public class JsfUtils {
             //the namespaces map will contain it and we will not add a new declaration which will
             //result into an invalid page
 
-            //namespace to declared prefix map
-            Map<String, String> declaredNamespaces = result.getNamespaces();
-            String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
-            if(alreadyDeclaredPrefix == null) {
-                //try composite component library default prefix
-                if(library instanceof CompositeComponentLibrary) {
-                    String defaultNS = ((CompositeComponentLibrary)library).getDefaultNamespace();
-                    alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
+            //eliminate already declared libraries
+            Iterator<FaceletsLibrary> librariesIterator = imports.keySet().iterator();
+            while (librariesIterator.hasNext()) {
+                FaceletsLibrary library = librariesIterator.next();
+                Map<String, String> declaredNamespaces = result.getNamespaces();
+                String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
+                if (alreadyDeclaredPrefix == null) {
+                    //try composite component library default prefix
+                    if (library instanceof CompositeComponentLibrary) {
+                        String defaultNS = ((CompositeComponentLibrary) library).getDefaultNamespace();
+                        alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
+                    }
+                }
+                if (alreadyDeclaredPrefix != null) {
+                    //already declared, remove the library from the imports
+                    librariesIterator.remove();
+
                 }
             }
 
-            if(alreadyDeclaredPrefix != null) {
-                //already declared
-                return alreadyDeclaredPrefix;
-            }
-
             //else add the declaration
-
             final Indent indent = Indent.get(bdoc);
             indent.lock();
             try {
                 bdoc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             boolean noAttributes = rootNode.getAttributeKeys().isEmpty();
                             //if there are no attributes, just add the new one at the end of the tag,
                             //if there are some, add the new one on a new line and reformat the tag
 
-                            int insertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
-                            if(insertPosition == -1) {
-                                //cannot be mapped to the document for some reason, just ignore
-                                return ;
-                            }
-                            String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
-                                    "=\"" + library.getNamespace() + "\""; //NOI18N
-
-                            bdoc.insertString(insertPosition, text, null);
-
-                            if (!noAttributes) {
-                                //reformat the tag so the new attribute gets aligned with the previous one/s
-                                int newRootNodeEndOffset = rootNode.endOffset() + text.length();
-                                indent.reindent(insertPosition, newRootNodeEndOffset);
+                            int offset_shift = 0;
+                            Iterator<FaceletsLibrary> libsItr = imports.keySet().iterator();
+                            int originalInsertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
+                            if (originalInsertPosition == -1) {
+                                //error, cannot recover
+                                imports.clear();
+                                return;
                             }
 
-                            declaredPrefix[0] = prefixToDeclare;
+                            while (libsItr.hasNext()) {
+                                FaceletsLibrary library = libsItr.next();
+                                String prefixToDeclare = imports.get(library);
+                                int insertPosition = originalInsertPosition + offset_shift;
+
+                                String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
+                                        "=\"" + library.getNamespace() + "\""; //NOI18N
+
+                                bdoc.insertString(insertPosition, text, null);
+
+                                offset_shift += text.length();
+                            }
+
+
+                            //reformat the tag so the new attribute gets aligned with the previous one/s
+                            indent.reindent(originalInsertPosition, originalInsertPosition + offset_shift);
+
                         } catch (BadLocationException ex) {
                             Logger.global.log(Level.INFO, null, ex);
                         }
@@ -202,22 +260,23 @@ public class JsfUtils {
             } finally {
                 indent.unlock();
             }
+
+            return imports; //return the remained libraries which should be those really imported
+
         } catch (ParseException ex) {
             Logger.global.log(Level.INFO, null, ex);
         }
 
-        return declaredPrefix[0];
+        return Collections.emptyMap();
     }
 
     /**
      * Creates an OffsetRange of source document offsets for given embedded offsets.
      */
-    public static OffsetRange createOffsetRange(Snapshot snapshot, int embeddedOffsetFrom, int embeddedOffsetTo) {
-        Document doc = snapshot.getSource().getDocument(false);
-        assert doc != null;
+    public static OffsetRange createOffsetRange(Snapshot snapshot, String documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
 
         int originalFrom = 0;
-        int originalTo = 0;
+        int originalTo = documentText.length();
 
         //try to find nearest original offset if the embedded offsets cannot be directly recomputed
         //from - try backward
@@ -229,8 +288,16 @@ public class JsfUtils {
             }
         }
 
+        try {
+            //some heuristic - use end of line where the originalFrom lies
+            //in case if we cannot match the end offset at all
+            originalTo = GsfUtilities.getRowEnd(documentText, originalFrom);
+        } catch (BadLocationException ex) {
+            //ignore, end of the document will be used as end offset
+        }
+
         //to - try forward
-        for (int i = embeddedOffsetTo; i < snapshot.getText().length(); i++) {
+        for (int i = embeddedOffsetTo; i <= snapshot.getText().length(); i++) {
             int originalOffset = snapshot.getOriginalOffset(i);
             if (originalOffset != -1) {
                 originalTo = originalOffset;
@@ -240,4 +307,33 @@ public class JsfUtils {
 
         return new OffsetRange(originalFrom, originalTo);
     }
+
+    public static Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
+        for (Embedding e : resultIterator.getEmbeddings()) {
+            if (e.getMimeType().equals(mimeType)) {
+                return resultIterator.getResultIterator(e).getParserResult();
+            }
+        }
+        return null;
+    }
+
+    /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
+    public static Map<String, FaceletsLibrary> getDeclaredLibraries(HtmlParserResult result) {
+        //find all usages of composite components tags for this page
+        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
+        Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
+        JsfSupport jsfSupport = JsfSupport.findFor(result.getSnapshot().getSource().getFileObject());
+        if (jsfSupport != null) {
+            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
+
+            for (String namespace : declaredNamespaces) {
+                FaceletsLibrary lib = libs.get(namespace);
+                if (lib != null) {
+                    declaredLibraries.put(namespace, lib);
+                }
+            }
+        }
+        return declaredLibraries;
+    }
+    
 }

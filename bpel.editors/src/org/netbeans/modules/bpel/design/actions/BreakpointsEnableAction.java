@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,14 +45,12 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.core.debugger.DebuggerHelper;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -59,7 +60,9 @@ public class BreakpointsEnableAction extends AbstractAction {
 
     //public static final String ACCELERATOR = "alt shift F10"; // NOI18N
     
-    private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/design/actions/" + "resources/breakpoints_enable.png", false); // NOI18N
+    private static final Icon ICON = new ImageIcon(ImageUtilities.loadImage(
+            "org/netbeans/modules/bpel/design/actions/" + // NOI18N
+            "resources/breakpoints_enable.png")); // NOI18N
     
     private static final String LABEL = NbBundle.getMessage(
             BreakpointsEnableAction.class, "NAME_Breakpoints_Enable");

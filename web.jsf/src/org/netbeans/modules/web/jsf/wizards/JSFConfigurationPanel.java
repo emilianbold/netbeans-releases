@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -72,9 +76,10 @@ public class JSFConfigurationPanel extends WebModuleExtender {
 
     private Preferences preferences;
 
-    public enum LibraryType {USED, NEW, NONE};
+    public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
     private Library jsfCoreLibrary;
+    private ServerLibrary serverLibrary;
     private String newLibraryName;
     private File installedFolder;
 
@@ -125,6 +130,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     private boolean customizer;
     
+    @Override
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
             component = new JSFConfigurationPanelVisual(this, customizer);
@@ -132,6 +138,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
     }
@@ -148,10 +155,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         this.facesMapping = facesMapping;
     }
 
+    @Override
     public void update() {
         component.update();
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         if (component.valid()) {
@@ -161,6 +170,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return false;
     }
     
+    @Override
     public Set extend(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
@@ -171,7 +181,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return framework.extendImpl(webModule);
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }
@@ -204,7 +214,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public String getServletName(){
         return component.getServletName();
     }
-    
+
     public void setServletName(String name){
         component.setServletName(name);
     }
@@ -317,6 +327,15 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     protected void setLibrary(Library library){
         this.jsfCoreLibrary = library;
+        fireChangeEvent();
+    }
+
+    public ServerLibrary getServerLibrary() {
+        return serverLibrary;
+    }
+
+    protected void setServerLibrary(ServerLibrary library){
+        this.serverLibrary = library;
         fireChangeEvent();
     }
 

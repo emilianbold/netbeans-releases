@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.subversion.util;
 
+import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.nodes.Node;
@@ -55,6 +59,8 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
@@ -69,13 +75,16 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
@@ -119,6 +128,9 @@ public class SvnUtils {
         SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
         metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
     }
+
+    private static Reference<Context>  contextCached = new WeakReference<Context>(null);
+    private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
 
     private static final FileFilter svnFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
@@ -190,8 +202,15 @@ public class SvnUtils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        VCSContext ctx = VCSContext.forNodes(nodes);
-        return new Context(new ArrayList(ctx.computeFiles(svnFileFilter)), new ArrayList(ctx.getRootFiles()), new ArrayList(ctx.getExclusions()));
+        if (Arrays.equals(contextNodesCached.get(), nodes)) {
+            Context ctx = contextCached.get();
+            if (ctx != null) return ctx;
+        }
+        VCSContext vcsCtx = VCSContext.forNodes(nodes);
+        Context ctx = new Context(new ArrayList(vcsCtx.computeFiles(svnFileFilter)), new ArrayList(vcsCtx.getRootFiles()), new ArrayList(vcsCtx.getExclusions()));
+        contextCached = new WeakReference<Context>(ctx);
+        contextNodesCached = new WeakReference<Node []>(nodes);
+        return ctx;
     }
 
 
@@ -215,14 +234,16 @@ public class SvnUtils {
             File file = files[i];
             FileInformation fi = fromCache ? cache.getCachedStatus(file) : cache.getStatus(file);
             int status;
+            Boolean isDirectory = null;
             if (fi != null) {
                 // status got from the cache and is known or got through I/O
                 status = fi.getStatus();
+                isDirectory = fi.isDirectory();
             } else {
                 // tried to get the cached value but it was not present in the cache
                 status = FileInformation.STATUS_VERSIONED_UPTODATE;
             }
-            if (file.isDirectory()) {
+            if (Boolean.TRUE.equals(isDirectory) || (isDirectory == null && file.isDirectory())) {
                 if ((status & includingFolderStatus) == 0) return Context.Empty;
             } else {
                 if ((status & includingFileStatus) == 0) return Context.Empty;
@@ -269,25 +290,29 @@ public class SvnUtils {
      * @return <code>true</code> if
      * <ul>
      *  <li> the node contains a project in its lookup and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = (Project) lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
      * @return <code>true</code> if
      * <ul>
      *  <li> the project != null and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -295,7 +320,13 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if (f != null && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                if (f != null) {
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && SvnUtils.isManaged(f)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -1206,6 +1237,27 @@ public class SvnUtils {
         return ret;
     }
 
+    /**
+     * Lists all children of a given dir with the exception of metadata files or folders
+     * @param root given folder
+     * @return list of all direct children
+     */
+    public static List<File> listChildren (File root) {
+        List<File> ret = new ArrayList<File>();
+        if(root == null) {
+            return ret;
+        }
+        File[] files = root.listFiles();
+        if(files != null) {
+            for (File file : files) {
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {
+                    ret.add(file);
+                }
+            }
+        }
+        return ret;
+    }
+
     public static SvnFileNode [] getNodes(Context context, int includeStatus) {
         File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
         SvnFileNode [] nodes = new SvnFileNode[files.length];
@@ -1217,8 +1269,10 @@ public class SvnUtils {
 
     public static SVNRevision toSvnRevision(String revision) {
         SVNRevision svnrevision;
-        if (Setup.REVISION_HEAD.equals(revision)) {
+        if (Setup.REVISION_HEAD.equals(revision) || SVNRevision.HEAD.toString().equals(revision)) {
             svnrevision = SVNRevision.HEAD;
+        } else if (SVNRevision.BASE.toString().equals(revision)) {
+            svnrevision = SVNRevision.BASE;
         } else {
             svnrevision = new SVNRevision.Number(Long.parseLong(revision));
         }
@@ -1357,17 +1411,7 @@ public class SvnUtils {
             if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
-                switch (node.getInformation().getStatus()) {
-                    case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                        commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
-                        break;
-                    case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                    case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                        commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-                        break;
-                    default:
-                        commitOptions[i] = CommitOptions.COMMIT;
-                }
+                commitOptions[i] = getDefaultCommitOptions(node, excludeNew);
             }
         }
         return commitOptions;
@@ -1387,9 +1431,75 @@ public class SvnUtils {
         return urlString.substring(4, idx);
     }
 
-    private static CommitOptions getDefaultCommitOptions(File file) {
-        if (file.isFile()) {
-            if (getMimeType(file).startsWith("text")) {
+    public static void openInRevision(final File originalFile, final SVNUrl repoUrl, final SVNUrl fileUrl, final SVNRevision svnRevision, final SVNRevision pegRevision, boolean showAnnotations) {
+        File file;
+        String rev = svnRevision.toString();
+        try {
+            file = org.netbeans.modules.subversion.VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
+        } catch (IOException e) {
+            SvnClientExceptionHandler.notifyException(e, true, true);
+            return;
+        }
+
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        EditorCookie ec = null;
+        org.openide.cookies.OpenCookie oc = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            ec = dobj.getCookie(EditorCookie.class);
+            oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+        }
+        org.openide.text.CloneableEditorSupport ces = null;
+        if (ec == null && oc != null) {
+            oc.open();
+        } else {
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
+        }
+        if (showAnnotations) {
+            if (ces == null) {
+                return;
+            } else {
+                final org.openide.text.CloneableEditorSupport support = ces;
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        javax.swing.JEditorPane[] panes = support.getOpenedPanes();
+                        if (panes != null) {
+                            org.netbeans.modules.subversion.ui.blame.BlameAction.showAnnotations(panes[0], originalFile, svnRevision);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * Similar to {@link #getDefaultCommitOptions(org.netbeans.modules.subversion.SvnFileNode, boolean) } but does not consider exclusions, so
+     * the return value will always be a variation of {@link CommitOptions#COMMIT } (unless excludeNew is set to true)
+     * @param node
+     * @param excludeNew
+     * @return
+     */
+    public static CommitOptions getDefaultCommitOptions (SvnFileNode node, boolean excludeNew) {
+        CommitOptions commitOptions;
+        switch (node.getInformation().getStatus()) {
+            case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                commitOptions = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node);
+                break;
+            case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+            case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                commitOptions = CommitOptions.COMMIT_REMOVE;
+                break;
+            default:
+                commitOptions = CommitOptions.COMMIT;
+        }
+        return commitOptions;
+    }
+
+    private static CommitOptions getDefaultCommitOptions(SvnFileNode node) {
+        if (node.isFile()) {
+            if (node.getMimeType().startsWith("text")) { //NOI18N
                 return CommitOptions.ADD_TEXT;
             } else {
                 return CommitOptions.ADD_BINARY;
@@ -1398,4 +1508,58 @@ public class SvnUtils {
             return CommitOptions.ADD_DIRECTORY;
         }
     }
- }
+
+    public void scanForProjects(File workingFolder, String[] checkedOutFolders, SvnProgressSupport support) {
+
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
+        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+        // checkout creates new folders and cache must be aware of them
+        refreshParents(normalizedWorkingFolder);
+        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+        if (fo != null) {
+            for (int i = 0; i < checkedOutFolders.length; i++) {
+                if (support != null && support.isCanceled()) {
+                    return;
+                }
+                String module = checkedOutFolders[i];
+                if (".".equals(module)) {                   // NOI18N
+                    // root folder is scanned, skip remaining modules
+                    ProjectUtilities.scanForProjects(fo, checkedOutProjects);
+                    break;
+                } else {
+                    FileObject subfolder = fo.getFileObject(module);
+                    if (subfolder != null) {
+                        ProjectUtilities.scanForProjects(subfolder, checkedOutProjects);
+                    }
+                }
+            }
+        }
+        // open project selection
+        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+    }
+
+    /*
+     * Refreshes all parents for given files
+     * XXX move to versioning.utils if needed in other modules
+     */
+    public static void refreshFS (File... files) {
+        final Set<File> parents = new HashSet<File>();
+        for (File f : files) {
+            File parent = f.getParentFile();
+            if (parent != null) {
+                parents.add(parent);
+                Subversion.LOG.log(Level.FINE, "scheduling for fs refresh: [{0}]", parent); // NOI18N
+            }
+        }
+        if (parents.size() > 0) {
+            // let's give the filesystem some time to wake up and to realize that the file has really changed
+            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                }
+            }, 100);
+        }
+    }
+}

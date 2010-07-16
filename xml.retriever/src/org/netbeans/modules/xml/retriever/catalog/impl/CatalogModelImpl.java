@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,12 +57,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -79,8 +84,11 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.retriever.impl.ResourceRetriever;
+import org.netbeans.modules.xml.retriever.impl.ResourceRetrieverFactory;
 import org.netbeans.modules.xml.retriever.impl.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -88,6 +96,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
@@ -99,14 +108,19 @@ import org.xml.sax.SAXException;
  * @author girix
  */
 public class CatalogModelImpl implements CatalogModel {
-    protected FileObject catalogFileObject = null;
     private static Logger logger = Logger.getLogger(CatalogModelImpl.class.getName());
+
+    protected FileObject catalogFileObject = null;
+    NbCatalogResolver catalogResolver;
+    Catalog apacheCatalogResolverObj;
+    private boolean doFetch = true;
+    private boolean fetchSynchronous = false;
+
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);
         this.catalogFileObject = Util.getProjectCatalogFileObject(myProject, false);
     }
-    
     
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(FileObject catalogFileObject) throws IOException{
@@ -114,10 +128,7 @@ public class CatalogModelImpl implements CatalogModel {
         this.catalogFileObject = catalogFileObject;
     }
     
-    
-    public CatalogModelImpl(){
-    }
-    
+    public CatalogModelImpl() {}
     
     /**
      * This constructor is for unit testing purpose only
@@ -151,9 +162,8 @@ public class CatalogModelImpl implements CatalogModel {
         }
         return realURI;
     }
-    
-    private boolean doFetch = true;
-    private boolean fetchSynchronous = false;
+
+    @Override
     public synchronized ModelSource getModelSource(URI locationURI,
         ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         ModelSource ms = null;
@@ -175,7 +185,7 @@ public class CatalogModelImpl implements CatalogModel {
             ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         logger.entering("CatalogModelImpl", "getModelSource", locationURI);
         Exception exn = null;
-        ModelSource result = null;
+
         //selects the correct cataog for use.
         useSuitableCatalogFile(modelSourceOfSourceDocument);
         if(isOrphan() && isLocalFile(locationURI)) {
@@ -193,14 +203,14 @@ public class CatalogModelImpl implements CatalogModel {
         } catch(CatalogModelException ex){
             exn = ex;
         }
-        if( (absResourceFile == null) || (exn != null) ){
+        if ((absResourceFile == null) || (exn != null)) {
             //means there was no entry found in catalog or relative path resolution            
             ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
             if (rms != null) {
                 return rms;
             }
             try {
-                if(doFetch) {
+                if (doFetch) {
                     //we did not get any matching entry by conventional way..So try retrieve and cache
                     absResourceFile = retrieveCacheAndLookup(locationURI, fob);
                 }
@@ -208,19 +218,75 @@ public class CatalogModelImpl implements CatalogModel {
                 throw new CatalogModelException(ex);
             }
         }
-        if(absResourceFile != null){
+
+        ModelSource result = null;
+        if (absResourceFile != null) {
             logger.finer("Found  abs file res:"+absResourceFile);
             File normalizedFile = org.openide.filesystems.FileUtil.normalizeFile(absResourceFile);
             FileObject thisFileObj = org.openide.filesystems.FileUtil.toFileObject(normalizedFile);
             boolean editable = isEditable(absResourceFile);
             result = createModelSource(thisFileObj, editable);
-        }else if(exn!= null) {
+        }
+        if (result == null) {
+            // fix for the issue https://netbeans.org/bugzilla/show_bug.cgi?id=180205
+            // XML code completion doesn't work - XML schema isn't downloaded from "http://...xsd"
+
+            // locationURI equals XML schema location: xsi:schemaLocation="..."
+            String strURI = locationURI.toASCIIString();
+            result = getModelSource(strURI);
+        }
+        if ((result == null) && (exn != null)) {
             throw new CatalogModelException(exn);
         }
         logger.exiting("CatalogModelImpl", "getModelSource", result);
         return result;
     }
-    
+
+    private ModelSource getModelSource(String strURL) {
+        // fix for the issue https://netbeans.org/bugzilla/show_bug.cgi?id=180205
+        // XML code completion doesn't work - XML schema isn't downloaded from "http://...xsd"
+        try {
+            ResourceRetriever urlRetriever =
+                ResourceRetrieverFactory.getResourceRetriever(null, strURL);
+
+            if (urlRetriever == null) {
+                return null;
+            }
+            Map<String, InputStream> mapInputSources = urlRetriever.retrieveDocument(
+                null, strURL);
+            InputStream inputStream = null;
+            for (Map.Entry<String, InputStream> entry: mapInputSources.entrySet()) {
+                if (strURL.equals(entry.getKey()) && (entry.getValue() != null)) {
+                    inputStream = entry.getValue();
+                    break;
+                }
+            }
+            if (inputStream != null) {
+                ModelSource modelSource = createModelSource(inputStream);
+                return modelSource;
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
+        }
+        return null;
+    }
+
+    private ModelSource createModelSource(InputStream inputStream) throws CatalogModelException {
+        try {
+            Document doc = AbstractDocumentModel.getAccessProvider().loadSwingDocument(
+                inputStream);
+            if (doc != null) {
+                ModelSource modelSource = new ModelSource(Lookups.fixed(
+                    new Object[] {this, doc}), false);
+                return modelSource;
+            }
+        } catch (Exception ex) {
+            throw new CatalogModelException(ex);
+        }
+        return null;
+    }
+
     private void useSuitableCatalogFile(ModelSource modelSourceOfSourceDocument) {
         // if the modelSource's project has XMLCatalogProvider then use that to
         // see which catalog file to use for this modelSource
@@ -259,7 +325,7 @@ public class CatalogModelImpl implements CatalogModel {
         }
     }
     
-    
+    @Override
     public ModelSource getModelSource(URI locationURI) throws CatalogModelException{
         if(isOrphan()){
             //the originating file does not belong to a project so dont use catalog lookup
@@ -269,7 +335,6 @@ public class CatalogModelImpl implements CatalogModel {
         //just look in to the project catalog
         return getModelSource(locationURI, null);
     }
-    
     
     /**
      * This method must be overridden by the Unit testcase to return a special
@@ -289,7 +354,6 @@ public class CatalogModelImpl implements CatalogModel {
         return result;
     }
     
-    
     /**
      * This method could be overridden by the Unit testcase to return a special
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
@@ -300,11 +364,9 @@ public class CatalogModelImpl implements CatalogModel {
         return ms;
     }
     
-    
     protected CatalogModel createCatalogModel(FileObject fo) throws CatalogModelException{
         return new CatalogModelFactoryImpl().getCatalogModel(fo);
     }
-    
     
     private ModelSource tryOrphanResolution(URI locationURI, ModelSource modelSource){
         logger.entering("CatalogModelImpl", "getModelSource", locationURI);
@@ -352,8 +414,6 @@ public class CatalogModelImpl implements CatalogModel {
         
         return false;
     }
-            
-    
     
     protected File resolveUsingCatalog(URI locationURI, FileObject sourceFileObject
             ) throws CatalogModelException, IOException {
@@ -380,7 +440,6 @@ public class CatalogModelImpl implements CatalogModel {
         }
         throw new CatalogModelException(locationURI.toString()+" : Entry is not a relative or absolute and catalog entry not found");
     }
-    
     
     private File retrieveCacheAndLookup(URI locationURI, FileObject sourceFileObject) throws IOException, CatalogModelException{
         File result = null;
@@ -436,7 +495,6 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
-    
     protected File resolveRelativeURI(URI locationURI, FileObject sourceFileObject) throws CatalogModelException, FileNotFoundException{
         File result = null;
         if(!locationURI.isAbsolute()){
@@ -465,16 +523,12 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
-    
     protected URI resolveUsingApacheCatalog(File catalogFile, String locationURI) throws IOException, CatalogModelException{
         List<File> catalogFileList = new ArrayList<File>();
         catalogFileList.add(catalogFile);
         return resolveUsingApacheCatalog(catalogFileList, locationURI);
     }
     
-    
-    NbCatalogResolver catalogResolver;
-    Catalog apacheCatalogResolverObj;
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
         if((logger.getLevel() != null) && (logger.getLevel().intValue() <= Level.FINER.intValue())){
             Debug debug = NbCatalogManager.getStaticManager().debug;
@@ -552,7 +606,7 @@ public class CatalogModelImpl implements CatalogModel {
         return true;
     }
     
-    
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         try {
             return getInputSource(new URI(systemId));
@@ -562,7 +616,6 @@ public class CatalogModelImpl implements CatalogModel {
             throw new IOException("SystemID not a URL");
         }
     }
-    
     
     private InputSource getInputSource(URI locationURI) throws CatalogModelException, IOException {
         logger.entering("CatalogModelImpl", "getInputSource", locationURI);
@@ -574,7 +627,7 @@ public class CatalogModelImpl implements CatalogModel {
         return result;
     }
     
-    
+    @Override
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURIStr) {
         //check for sanity of the systemID
         if((systemId == null) || (systemId.trim().length() <=0 ))
@@ -638,7 +691,6 @@ public class CatalogModelImpl implements CatalogModel {
         return lsi;
     }
     
-    
     private FileObject getFileObject(String baseURIStr) throws IOException{
         if(baseURIStr == null)
             return null;
@@ -675,14 +727,12 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
-    
     private CatalogModel getResolver(FileObject baseFileObject) throws CatalogModelException{
         if(baseFileObject != null && FileOwnerQuery.getOwner(baseFileObject) != null) {
             return CatalogWriteModelFactory.getInstance().getCatalogWriteModelForProject(baseFileObject);
         }
         return this;
     }
-    
     
     private Reader getFileStreamFromDocument(File resultFile) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(resultFile));
@@ -705,7 +755,6 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
-    
     protected File resolveProjectProtocol(URI strRes) {
         File result = null;
         Project prj = FileOwnerQuery.getOwner(this.catalogFileObject);
@@ -720,7 +769,6 @@ public class CatalogModelImpl implements CatalogModel {
         }
         return result;
     }
-    
     
     private ModelSource getModelSourceFromSystemWideCatalog(URI locationURI,
             ModelSource modelSourceOfSourceDocument) {
@@ -743,4 +791,3 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
 }
-

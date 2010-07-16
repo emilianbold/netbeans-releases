@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,6 +88,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -99,6 +103,7 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
@@ -178,7 +183,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private CallStackFrame              currentCallStackFrame;
     private final Object                currentThreadAndFrameLock = new Object();
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
-    public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(false); // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+    public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(true);
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
     private AbstractDICookie            attachingCookie;
@@ -208,7 +213,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         this.lookupProvider = lookupProvider;
         
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
-        suspend = p.getInt("StepResume", suspend);
+        int stepResume = p.getInt("StepResume", (SINGLE_THREAD_STEPPING) ? 1 : 0);
+        suspend = (stepResume == 1) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
 
         pcs = new PropertyChangeSupport (this);
         List l = lookupProvider.lookup (null, DebuggerEngineProvider.class);
@@ -347,20 +353,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @see AbstractDICookie#getVirtualMachine()
      */
     public void waitRunning () throws DebuggerStartException {
+        waitRunning(0);
+    }
+
+    /**
+     * Waits till the Virtual Machine is started.
+     *
+     * @return <code>true</code> when debugger started or finished in the mean time,
+     *         <code>false</code> when the debugger is still starting
+     * @throws DebuggerStartException is some problems occurres during debugger
+     *         start
+     *
+     * @see AbstractDICookie#getVirtualMachine()
+     */
+    private boolean waitRunning(long timeout) throws DebuggerStartException {
         synchronized (LOCK2) {
             int state = getState();
             if (state == STATE_DISCONNECTED) {
                 if (exception != null)
                     throw new DebuggerStartException (exception);
                 else
-                    return;
+                    return true;
             }
             if (!starting && state != STATE_STARTING || exception != null) {
-                return ; // We're already running
+                return true; // We're already running
             }
             try {
                 logger.fine("JPDADebuggerImpl.waitRunning(): starting = "+starting+", state = "+state+", exception = "+exception);
-                LOCK2.wait ();
+                LOCK2.wait (timeout);
+                if ((starting || state == STATE_STARTING) && exception == null) {
+                    return false; // We're still not running and the time expired
+                }
             } catch (InterruptedException e) {
                  throw new DebuggerStartException (e);
             }
@@ -368,7 +391,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (exception != null)
                 throw new DebuggerStartException (exception);
             else
-                return;
+                return true;
         }
     }
 
@@ -432,6 +455,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // update breakpoints
             fixBreakpoints();
 
+            firePropertyChange(JPDADebugger.PROP_CLASSES_FIXED, null, null);
+
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {
@@ -487,30 +512,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private Boolean canBeModified;
-    private Object canBeModifiedLock = new Object();
+    private final Object canBeModifiedLock = new Object();
 
     public boolean canBeModified() {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
         synchronized (canBeModifiedLock) {
             if (canBeModified == null) {
-                try {
-                    java.lang.reflect.Method canBeModifiedMethod =
-                            com.sun.jdi.VirtualMachine.class.getMethod("canBeModified", new Class[] {});
-                    Object modifiable = canBeModifiedMethod.invoke(vm, new Object[] {});
-                    canBeModified = (Boolean) modifiable;
-                } catch (NoSuchMethodException nsmex) {
-                    // On JDK 1.4 we do not know... we suppose that can
-                    canBeModified = Boolean.TRUE;
-                } catch (IllegalAccessException iaex) {
-                    canBeModified = Boolean.TRUE;
-                } catch (InvocationTargetException itex) {
-                    canBeModified = Boolean.TRUE;
-                }
+                canBeModified = vm.canBeModified();
             }
             return canBeModified.booleanValue();
         }
-        // return vm.canBeModified(); -- After we'll build on JDK 1.5
     }
 
     private SmartSteppingFilter smartSteppingFilter;
@@ -789,7 +801,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 v = (ObjectReference) ((JDIVariable) var).getJDIValue();
             }
             Evaluator.Result result;
-            final List<EventRequest>[] disabledBreakpoints = new List[] { null };
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
             try {
                 StackFrame sf = csf.getStackFrame();
@@ -797,7 +808,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 final ThreadReference tr = StackFrameWrapper.thread(sf);
                 Runnable methodToBeInvokedNotifier = new Runnable() {
                         public void run() {
-                            if (disabledBreakpoints[0] == null) {
+                            if (resumedThread[0] == null) {
                                 JPDAThreadImpl theResumedThread = getThread(tr);
                                 try {
                                     theResumedThread.notifyMethodInvoking();
@@ -805,12 +816,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                     throw new RuntimeException(
                                         new InvalidExpressionException (pvex.getMessage()));
                                 }
-                                try {
-                                    disabledBreakpoints[0] = disableAllBreakpoints();
-                                    resumedThread[0] = theResumedThread;
-                                } catch (InternalExceptionWrapper ex) {
-                                } catch (VMDisconnectedExceptionWrapper ex) {
-                                }
+                                resumedThread[0] = theResumedThread;
                             }
                         }
                     };
@@ -847,9 +853,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw rex;
                 }
             } finally {
-                if (disabledBreakpoints[0] != null) {
-                    enableAllBreakpoints (disabledBreakpoints[0]);
-                }
                 if (resumedThread[0] != null) {
                     resumedThread[0].notifyMethodInvokeDone();
                 }
@@ -919,7 +922,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             boolean threadSuspended = false;
             JPDAThread frameThread = null;
             CallStackFrameImpl csf = null;
-            List<EventRequest> l = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
                 csf = (CallStackFrameImpl) getCurrentCallStackFrame ();
@@ -934,12 +936,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     threadSuspended = true;
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
-                }
-                try {
-                    l = disableAllBreakpoints();
-                } catch (InternalExceptionWrapper ex) {
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                    return null;
                 }
                 try {
                     Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
@@ -965,9 +961,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 throw ieex;
             } finally {
-                if (l != null) {
-                    enableAllBreakpoints (l);
-                }
                 if (threadSuspended) {
                     thread.notifyMethodInvokeDone();
                 }
@@ -1248,21 +1241,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
             AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             Operator o = getOperator();
             if (o != null) o.stop();
-            synchronized (this) {
-                if (attachingCookie != null) {
-                    if (attachingCookie instanceof ListeningDICookie) {
-                        ListeningDICookie listeningCookie = (ListeningDICookie) attachingCookie;
-                        try {
-                            listeningCookie.getListeningConnector().stopListening(listeningCookie.getArgs());
-                        } catch (java.io.IOException ioex) {
-                        } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
-                        } catch (IllegalArgumentException iaex) {
-                        }
-                    }
-                }
-            }
+            stopAttachListening();
             try {
-                waitRunning(); // First wait till the debugger comes up
+                boolean startedUp;
+                do {
+                    startedUp = waitRunning(500); // First wait till the debugger comes up
+                    if (!startedUp) {
+                        stopAttachListening();
+                        continue;
+                    }
+                } while (false);
             } catch (DebuggerStartException dsex) {
                 // We do not want to start it anyway when we're finishing - do not bother
             }
@@ -1324,6 +1312,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    private synchronized void stopAttachListening() {
+        if (attachingCookie != null) {
+            if (attachingCookie instanceof ListeningDICookie) {
+                ListeningDICookie listeningCookie = (ListeningDICookie) attachingCookie;
+                try {
+                    listeningCookie.getListeningConnector().stopListening(listeningCookie.getArgs());
+                } catch (java.io.IOException ioex) {
+                } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
+                } catch (IllegalArgumentException iaex) {
+                }
+            }
+        }
+    }
+
     /**
      * Suspends the target virtual machine (if any).
      * Used by PauseActionProvider.
@@ -1367,6 +1369,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public List<PropertyChangeEvent> notifySuspendAll(boolean doFire, boolean explicitelyPaused) {
+        return notifySuspendAll(doFire, explicitelyPaused, null);
+    }
+
+    public List<PropertyChangeEvent> notifySuspendAll(boolean doFire, boolean explicitelyPaused,
+                                                      Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
@@ -1376,7 +1383,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
                                    status == JPDAThread.STATE_ZOMBIE);
-                if (!invalid) {
+                if (!invalid && (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                     try {
                         PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire, explicitelyPaused);
                         if (event != null) {
@@ -1428,9 +1435,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
-        }
-        if (operator.flushStaledEvents()) {
-            return ;
         }
         PropertyChangeEvent stateChangeEvent;
         //notifyToBeResumedAll();
@@ -1521,9 +1525,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } finally {
             accessLock.readLock().unlock();
         }
-        if (operator.flushStaledEvents()) {
-            return false;
-        }
         setState (STATE_RUNNING);
         return true;
     }
@@ -1538,9 +1539,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
-        }
-        if (operator.flushStaledEvents()) {
-            return ;
         }
         setState (STATE_RUNNING);
         currentThread.resume();
@@ -1684,6 +1682,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }*/
 
     public String getLabel(ObjectVariable var) {
+        if (var instanceof Refreshable) {
+            if (!((Refreshable) var).isCurrent()) {
+                return null;
+            }
+        }
         synchronized (markedObjects) {
             return markedObjects.get(var.getUniqueID());
         }
@@ -1692,6 +1695,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public ObjectVariable getLabeledVariable(String label) {
         synchronized (markedObjects) {
             return markedObjectLabels.get(label);
+        }
+    }
+
+    public Map<String, ObjectVariable> getAllLabels() {
+        synchronized (markedObjects) {
+            return new HashMap<String, ObjectVariable>(markedObjectLabels);
         }
     }
 
@@ -1886,56 +1895,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                             old, callStackFrame);
     }
 
-    private List<EventRequest> disableAllBreakpoints () throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
-        logger.fine ("disableAllBreakpoints() start.");
-        List<EventRequest> l = new ArrayList<EventRequest>();
-        VirtualMachine vm = getVirtualMachine ();
-        if (vm == null) return l;
-        EventRequestManager erm = VirtualMachineWrapper.eventRequestManager (vm);
-        l.addAll (EventRequestManagerWrapper.accessWatchpointRequests (erm));
-        l.addAll (EventRequestManagerWrapper.breakpointRequests (erm));
-        l.addAll (EventRequestManagerWrapper.classPrepareRequests (erm));
-        l.addAll (EventRequestManagerWrapper.classUnloadRequests (erm));
-        l.addAll (EventRequestManagerWrapper.exceptionRequests (erm));
-        l.addAll (EventRequestManagerWrapper.methodEntryRequests (erm));
-        l.addAll (EventRequestManagerWrapper.methodExitRequests (erm));
-        l.addAll (EventRequestManagerWrapper.modificationWatchpointRequests (erm));
-//        l.addAll (erm.stepRequests ());
-        l.addAll (EventRequestManagerWrapper.threadDeathRequests (erm));
-        l.addAll (EventRequestManagerWrapper.threadStartRequests (erm));
-        int i = l.size () - 1;
-        for (; i >= 0; i--)
-            if (!EventRequestWrapper.isEnabled (l.get (i)))
-                l.remove (i);
-            else
-                EventRequestWrapper.disable (l.get (i));
-        operator.breakpointsDisabled();
-        logger.fine ("disableAllBreakpoints() end.");
-        return l;
-    }
-
-    private void enableAllBreakpoints (List<EventRequest> l) {
-        logger.fine ("enableAllBreakpoints() start.");
-        operator.breakpointsEnabled();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            try {
-                EventRequestWrapper.enable (l.get (i));
-            } catch (IllegalThreadStateException ex) {
-                // see #53163
-                // this can occurr if there is some "old" StepRequest and
-                // thread named in the request has died
-            } catch (ObjectCollectedExceptionWrapper ocex) {
-                // Something in the request was collected.
-            } catch (InvalidRequestStateException ex) {
-                // workaround for #51176
-            } catch (InternalExceptionWrapper ex) {
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                return ;
-            }
-        logger.fine ("enableAllBreakpoints() end.");
-    }
-
     private void checkJSR45Languages (JPDAThread t) {
         if (t.getStackDepth () > 0)
             try {
@@ -2040,7 +1999,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
-        if (JPDAUtils.IS_JDK_16) {
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
@@ -2065,28 +2023,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return new long[classTypes.size()];
             }
-        } else {
-            throw new UnsupportedOperationException("Not supported.");
-        }
     }
 
     public boolean canGetInstanceInfo() {
         synchronized (virtualMachineLock) {
-            return virtualMachine != null && canGetInstanceInfo(virtualMachine);
+            return virtualMachine != null && virtualMachine.canGetInstanceInfo();
         }
-    }
-
-    private static boolean canGetInstanceInfo(VirtualMachine vm) {
-        if (JPDAUtils.IS_JDK_16) {
-            try {
-                java.lang.reflect.Method canGetInstanceInfoMethod = VirtualMachine.class.getMethod("canGetInstanceInfo", new Class[] {});
-                Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
-                return Boolean.TRUE.equals(canGetInstanceInfo);
-            } catch (Exception ex) {
-                Logger.getLogger(JPDADebuggerImpl.class.getName()).log(Level.INFO, "", ex);
-            }
-        }
-        return false;
     }
 
     @Override

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,9 +73,14 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     @Override
     public void addNotify() {
         super.addNotify();
-        // XXX use controler.opened() instead
         controller.populate();
         connectionLabel.setVisible(false);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.cancel();
     }
 
     /** This method is called from within the constructor to
@@ -148,46 +156,47 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         connectionLabel.setForeground(java.awt.Color.green);
         org.openide.awt.Mnemonics.setLocalizedText(connectionLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.connectionLabel.text_1")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cancelButton.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(httpCheckBox)
+            .add(layout.createSequentialGroup()
+                .add(27, 27, 27)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(psswdLabel1)
+                    .add(userLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, httpPsswdField)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, httpUserField)))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(httpCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(27, 27, 27)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(psswdLabel1)
-                            .add(userLabel1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, httpPsswdField)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, httpUserField)))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(urlLabel)
-                            .add(psswdLabel)
-                            .add(userLabel)
-                            .add(nameLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, urlField)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, nameField))))
-                    .add(cbEnableLocalUsers)
-                    .add(layout.createSequentialGroup()
-                        .add(validateButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(validateLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(connectionLabel)))
-                .addContainerGap())
+                    .add(urlLabel)
+                    .add(psswdLabel)
+                    .add(userLabel)
+                    .add(nameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, psswdField)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, userField))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, urlField)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, nameField))))
+            .add(cbEnableLocalUsers)
+            .add(layout.createSequentialGroup()
+                .add(validateButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(validateLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cancelButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(connectionLabel))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -222,9 +231,10 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(connectionLabel)
                     .add(validateLabel)
-                    .add(validateButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(validateButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(cancelButton)
+                    .add(connectionLabel)))
         );
 
         urlField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlField.AccessibleContext.accessibleDescription")); // NOI18N
@@ -255,6 +265,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton cancelButton = new javax.swing.JButton();
     final javax.swing.JCheckBox cbEnableLocalUsers = new javax.swing.JCheckBox();
     final javax.swing.JLabel connectionLabel = new javax.swing.JLabel();
     final javax.swing.JCheckBox httpCheckBox = new javax.swing.JCheckBox();

@@ -21,20 +21,17 @@ package org.netbeans.modules.bpel.model.ext.editor.impl;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
+import org.netbeans.modules.bpel.model.ext.editor.api.NestedExtensionsVisitor;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorAttributes;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
@@ -44,17 +41,17 @@ import org.w3c.dom.Element;
  * @author nk160297
  * @version 1.0
  */
-public class PseudoCompImpl extends EditorEntityImpl implements PseudoComp {
+public class PseudoCompImpl extends EditorExtensionContainerImpl implements PseudoComp {
 
     private static AtomicReference<Attribute[]> myAttributes =
         new AtomicReference<Attribute[]>();
 
-    PseudoCompImpl(EditorEntityFactory factory, BpelModelImpl model, Element e ) {
-        super(factory, model, e);
+    PseudoCompImpl(BpelModelImpl model, Element e ) {
+        super(model, e);
     }
 
-    PseudoCompImpl(EditorEntityFactory factory, BpelBuilderImpl builder ) {
-        super(factory, builder, EditorElements.PSEUDO_COMP);
+    PseudoCompImpl(BpelBuilderImpl builder ) {
+        super(builder, EditorElements.PSEUDO_COMP);
     }
 
     @Override
@@ -78,10 +75,6 @@ public class PseudoCompImpl extends EditorEntityImpl implements PseudoComp {
 
     public Class<? extends BpelEntity> getElementType() {
         return PseudoComp.class;
-    }
-
-    public EntityUpdater getEntityUpdater() {
-        return PseudoCompEntityUpdater.getInstance();
     }
 
     public Source getSource() {
@@ -180,54 +173,15 @@ public class PseudoCompImpl extends EditorEntityImpl implements PseudoComp {
         }
     }
 
-    private static class PseudoCompEntityUpdater implements EntityUpdater {
-        private static EntityUpdater INSTANCE =
-                new PseudoCompEntityUpdater();
-
-        public static EntityUpdater getInstance() {
-            return INSTANCE;
-        }
-
-        private PseudoCompEntityUpdater() {
-
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, Operation operation) {
-            if (target instanceof PseudoComps) {
-                PseudoComps pseudoComps = (PseudoComps)target;
-                PseudoComp pseudoComp = (PseudoComp)child;
-                switch (operation) {
-                case ADD:
-                    pseudoComps.addPseudoComp(pseudoComp);
-                    break;
-                case REMOVE:
-                    pseudoComps.remove(pseudoComp);
-                    break;
-                }
-            }
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, int index, Operation operation) {
-            if (target instanceof PseudoComps) {
-                PseudoComps pseudoComps = (PseudoComps)target;
-                PseudoComp pseudoComp = (PseudoComp)child;
-                switch (operation) {
-                case ADD:
-                    pseudoComps.insertPseudoComp(pseudoComp, index);
-                    break;
-                case REMOVE:
-                    pseudoComps.remove(pseudoComp);
-                    break;
-                }
-            }
-        }
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.references.ReferenceCollection#getReferences()
      */
     public Reference[] getReferences() {
         return new Reference[] { getType()};
+    }
+
+    public void accept(NestedExtensionsVisitor visitor) {
+        visitor.visit(this);
     }
 
 }

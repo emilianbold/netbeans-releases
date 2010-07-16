@@ -48,15 +48,22 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 public class ExpressionWriter extends XPathVisitorAdapter  {
     
     /** The string buffer. */
-    private StringBuffer mBuffer;
+    protected StringBuffer mBuffer;
     
-    private XPathExpression mParentExpr;
-    private XPathModel mXPathModel;
+    protected XPathExpression mParentExpr;
+    protected XPathModel mXPathModel;
+    protected NamespaceContext mNC;
     
     /** Constructor. */
     public ExpressionWriter(XPathModel xPathModel) {
-        mBuffer = new StringBuffer();
+        this((NamespaceContext)null);
         mXPathModel = xPathModel;
+    }
+    
+    /** Constructor. */
+    public ExpressionWriter(NamespaceContext nc) {
+        mBuffer = new StringBuffer();
+        mNC = nc;
     }
     
     /**
@@ -73,7 +80,11 @@ public class ExpressionWriter extends XPathVisitorAdapter  {
      */
     @Override
     public void visit(LocationStep locationStep) {
-        mBuffer.append(locationStep.getString());
+        if (mNC == null) {
+            mBuffer.append(locationStep.getString());
+        } else {
+            mBuffer.append(locationStep.getString(mNC));
+        }
         XPathPredicateExpression[] predicates = locationStep.getPredicates();
         if (predicates != null) {
             for (int j = 0, length = predicates.length; j < length; j++) {
@@ -297,7 +308,10 @@ public class ExpressionWriter extends XPathVisitorAdapter  {
     }
 
     public String calculateFuncPrefix(QName funcQName) {
-        if(mXPathModel != null) {
+        if (mNC != null) {
+            String nsUri = funcQName.getNamespaceURI();
+            return mNC.getPrefix(nsUri);
+        } else if (mXPathModel != null) {
             NamespaceContext nsContext = mXPathModel.getNamespaceContext();
             if (nsContext != null) {
                 String nsUri = funcQName.getNamespaceURI();

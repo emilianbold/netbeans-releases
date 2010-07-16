@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.AbstractNode;
@@ -48,8 +53,10 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.text.ActiveEditorDrop;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -58,7 +65,7 @@ public class RestServiceNode extends AbstractNode{
     private String serviceName;
     private String uriTemplate;
     private String className;
-   
+    private ActiveEditorDrop editorDrop;
     private RestServicesModel model;
     
     public  RestServiceNode(Project project, RestServicesModel model,
@@ -75,6 +82,7 @@ public class RestServiceNode extends AbstractNode{
         this.className = desc.getClassName();
         
         content.add(this);
+        content.add(desc);
         content.add(new ResourceUriProvider() {
             public String getResourceUri() {
                 return desc.getUriTemplate();
@@ -82,6 +90,7 @@ public class RestServiceNode extends AbstractNode{
         });
         content.add(project);
         content.add(OpenCookieFactory.create(project, className));
+        editorDrop = new ResourceToEditorDrop(this);
     }
 
     @Override
@@ -135,5 +144,31 @@ public class RestServiceNode extends AbstractNode{
             //null,
             SystemAction.get(PropertiesAction.class),
         };
+    }
+    
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+
+        ExTransferable t = ExTransferable.create( super.clipboardCopy() );
+        ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+        t.put(s);
+
+        return t;
+    }
+
+    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private ActiveEditorDrop drop;
+
+        ActiveEditorDropTransferable(ActiveEditorDrop drop) {
+            super(ActiveEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData () {
+            return drop;
+        }
+
     }
 }

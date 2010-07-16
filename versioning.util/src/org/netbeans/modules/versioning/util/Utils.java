@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,6 +90,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Utilities class.
@@ -104,6 +108,11 @@ public final class Utils {
      * Request processor for long running tasks.
      */
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
+
+    /**
+     * Request processor for parallel tasks.
+     */
+    private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 5, true);
 
     private static /*final*/ File [] unversionedFolders;
 
@@ -139,6 +148,7 @@ public final class Utils {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
         }
     }
+    private static File tempDir;
 
     private Utils() {
     }
@@ -161,7 +171,28 @@ public final class Utils {
      * @param runnable Runnable to run
      */
     public static void post(Runnable runnable) {
-        vcsRequestProcessor.post(runnable);
+        post(runnable, 0);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 1). The runnable must not take long
+     * to execute (connect through network, etc).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void post (Runnable runnable, int timeToWait) {
+        vcsRequestProcessor.post(runnable, timeToWait);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 5).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void postParallel (Runnable runnable, int timeToWait) {
+        vcsParallelRequestProcessor.post(runnable, timeToWait);
     }
 
     /**
@@ -564,7 +595,7 @@ public final class Utils {
      * @return
      */
     public static File getTempFolder(boolean deleteOnExit) {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+        File tmpDir = getTempDir(deleteOnExit);
         for (;;) {
             File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
             if (!dir.exists() && dir.mkdirs()) {
@@ -734,11 +765,13 @@ public final class Utils {
      *
      * @param fo a file to open
      * @param revision revision of the file
+     * @return editor support opening the file
      */
-    public static void openFile(FileObject fo, String revision) {
+    public static CloneableEditorSupport openFile(FileObject fo, String revision) {
         ViewEnv env = new ViewEnv(fo);
         CloneableEditorSupport ces = new ViewCES(env, fo.getNameExt() + " @ " + revision, FileEncodingQuery.getEncoding(fo)); // NOI18N
         ces.view();
+        return ces;
     }
 
     /**
@@ -846,6 +879,16 @@ public final class Utils {
 
     public static Reader createReader(FileObject file) throws FileNotFoundException {
         return new InputStreamReader(file.getInputStream(), FileEncodingQuery.getEncoding(file));
+    }
+
+    /**
+     * Convenience method for awkward Logger invocation.
+     *
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
+    public static void logInfo(Class caller, Throwable e) {
+        Logger.getLogger(caller.getName()).log(Level.INFO, e.getMessage(), e);
     }
 
     /**
@@ -1008,9 +1051,53 @@ public final class Utils {
         return false;
     }
 
+    /**
+     * Parses system property value and returns a priority for the given versioning system.
+     * The property should be defined as {@code versioning.versioningSystem.priority}.
+     * @param versioningSystem name of the vcs
+     * @return priority or {@link Integer#MAX_VALUE} as default
+     */
+    public static Integer getPriority (String versioningSystem) {
+        Integer value = null;
+        String propName = "versioning." + versioningSystem + ".priority"; //NOI18N
+        String sValue = System.getProperty(propName, null);
+        if (sValue != null && !sValue.isEmpty()) {
+            try {
+                value = Integer.parseInt(sValue);
+                if (value <= 0) {
+                    value = null;
+                }
+            } catch (NumberFormatException ex) {
+                Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Wrong priority ({0}) value {1}, using default value", new Object[] {propName, sValue}); //NOI18N
+            }
+        }
+        if (value == null) {
+            value = Integer.MAX_VALUE;
+        }
+        return value;
+    }
+
+    private static File getTempDir (boolean deleteOnExit) {
+        if (tempDir == null) {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+            for (;;) {
+                File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+                if (!dir.exists() && dir.mkdirs()) {
+                    tempDir = FileUtil.normalizeFile(dir);
+                    if (deleteOnExit) {
+                        tempDir.deleteOnExit();
+                    }
+                    break;
+                }
+            }
+        }
+        return tempDir;
+    }
+
     private static class ViewEnv implements CloneableEditorSupport.Env {
 
         private final FileObject    file;
+        private static final long serialVersionUID = -5788777967029507963L;
 
         public ViewEnv(FileObject file) {
             this.file = file;
@@ -1075,6 +1162,7 @@ public final class Utils {
             this.charset = charset;
         }
 
+        @Override
         protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
             kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
@@ -1098,28 +1186,33 @@ public final class Utils {
         protected String messageOpened() {
             return name;
         }
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return false;
+        }
     }
 
     // -----
     // Usages logging based on repository URL (for Kenai)
 
-    private static VCSKenaiSupport kenaiSupport;
+    private static VCSKenaiAccessor kenaiAccessor;
     private static final LinkedList<File> loggedRoots = new LinkedList<File>();
     private static final List<File> foldersToCheck = new LinkedList<File>();
     private static Runnable loggingTask = null;
 
     public static void logVCSKenaiUsage(String vcs, String repositoryUrl) {
-        VCSKenaiSupport kenaiSup = getKenaiSupport();
+        VCSKenaiAccessor kenaiSup = getKenaiAccessor();
         if (kenaiSup != null) {
             kenaiSup.logVcsUsage(vcs, repositoryUrl);
         }
     }
 
-    private static VCSKenaiSupport getKenaiSupport() {
-        if (kenaiSupport == null) {
-            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    private static VCSKenaiAccessor getKenaiAccessor() {
+        if (kenaiAccessor == null) {
+            kenaiAccessor = Lookup.getDefault().lookup(VCSKenaiAccessor.class);
         }
-        return kenaiSupport;
+        return kenaiAccessor;
     }
 
     /*
@@ -1135,7 +1228,7 @@ public final class Utils {
                 foldersToCheck.add(folder);
                 if (loggingTask == null) {
                     loggingTask = new LogTask();
-                    RequestProcessor.getDefault().post(loggingTask, 2000);
+                    Utils.postParallel(loggingTask, 2000);
                 }
             }
         }
@@ -1215,5 +1308,33 @@ public final class Utils {
             ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
         }
         return ret;
+    }
+
+    /**
+     * Returns files from all opened top components
+     * @return set of opened files
+     */
+    public static Set<File> getOpenFiles() {
+        TopComponent[] comps = TopComponent.getRegistry().getOpened().toArray(new TopComponent[0]);
+        Set<File> openFiles = new HashSet<File>(comps.length);
+        for (TopComponent tc : comps) {
+            Node[] nodes = tc.getActivatedNodes();
+            if (nodes == null) {
+                continue;
+            }
+            for (Node node : nodes) {
+                File file = node.getLookup().lookup(File.class);
+                if (file == null) {
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        file = FileUtil.toFile(fo);
+                    }
+                }
+                if (file != null) {
+                    openFiles.add(file);
+                }
+            }
+        }
+        return openFiles;
     }
 }

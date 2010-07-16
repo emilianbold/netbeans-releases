@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -124,8 +127,8 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     }
     
     public void initValues(String preselectedFolder ) {
-        
-        Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+/* # 155199
         List<Project> op = Arrays.asList(openProjects);
         java.util.List projectRoots = new java.util.ArrayList();
         SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
@@ -140,16 +143,16 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
                  projectRoots.add(refPrj);
         }
         Project[] roots = (Project[])projectRoots.toArray(new Project[projectRoots.size()]);
-        Arrays.sort( roots, new ProjectByDisplayNameComparator());
-        //DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( o );
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( roots );
+*/
+        Arrays.sort( openProjects, new ProjectByDisplayNameComparator());
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );                
         projectsComboBox.setSelectedItem( project );
         
         updateRoots();
         updatePackages(); 
         if (preselectedFolder != null) {
-            packageComboBox.setSelectedItem(preselectedFolder);
+//          packageComboBox.setSelectedItem(preselectedFolder);
         }
         // Determine the extension
     }
@@ -450,7 +453,7 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     }
     //Copy/pasted from OpenProjectList
     //remove this code as soon as #68827 is fixed.
-    private static class ProjectByDisplayNameComparator implements Comparator {
+    static class ProjectByDisplayNameComparator implements Comparator {
         
         private static Comparator COLLATOR = Collator.getInstance();
         

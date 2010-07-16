@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 6.26.1
+#Signature file v4.1
+#Version 6.33
 
 CLSS public abstract java.awt.Component
-cons protected Component()
+cons protected init()
 fld public final static float BOTTOM_ALIGNMENT = 1.0
 fld public final static float CENTER_ALIGNMENT = 0.5
 fld public final static float LEFT_ALIGNMENT = 0.0
@@ -272,11 +272,11 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
 hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
 
 CLSS public java.awt.Container
-cons public Container()
+cons public init()
 innr protected AccessibleAWTContainer
 meth protected java.lang.String paramString()
 meth protected void addImpl(java.awt.Component,java.lang.Object,int)
@@ -353,12 +353,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -395,7 +394,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -440,7 +439,7 @@ CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
 
 CLSS public abstract javax.swing.JComponent
-cons public JComponent()
+cons public init()
 fld protected javax.accessibility.AccessibleContext accessibleContext
 fld protected javax.swing.event.EventListenerList listenerList
 fld protected javax.swing.plaf.ComponentUI ui
@@ -594,11 +593,11 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public org.openide.nodes.NodeAdapter
-cons public NodeAdapter()
+cons public init()
 intf org.openide.nodes.NodeListener
 meth public void childrenAdded(org.openide.nodes.NodeMemberEvent)
 meth public void childrenRemoved(org.openide.nodes.NodeMemberEvent)
@@ -615,9 +614,9 @@ meth public abstract void childrenReordered(org.openide.nodes.NodeReorderEvent)
 meth public abstract void nodeDestroyed(org.openide.nodes.NodeEvent)
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -633,10 +632,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -653,10 +653,11 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 
 CLSS public abstract org.openide.windows.CloneableOpenSupport
-cons public CloneableOpenSupport(org.openide.windows.CloneableOpenSupport$Env)
+cons public init(org.openide.windows.CloneableOpenSupport$Env)
 fld protected org.openide.windows.CloneableOpenSupport$Env env
 fld protected org.openide.windows.CloneableTopComponent$Ref allEditors
 innr public abstract interface static Env
@@ -675,6 +676,7 @@ hfds container
 hcls Listener
 
 CLSS public abstract interface static org.openide.windows.CloneableOpenSupport$Env
+ outer org.openide.windows.CloneableOpenSupport
 fld public final static java.lang.String PROP_MODIFIED = "modified"
 fld public final static java.lang.String PROP_VALID = "valid"
 intf java.io.Serializable
@@ -689,7 +691,7 @@ meth public abstract void removeVetoableChangeListener(java.beans.VetoableChange
 meth public abstract void unmarkModified()
 
 CLSS public abstract org.openide.windows.CloneableTopComponent
-cons public CloneableTopComponent()
+cons public init()
 fld public final static org.openide.windows.CloneableTopComponent$Ref EMPTY
 innr public static Ref
 intf java.io.Externalizable
@@ -710,7 +712,8 @@ supr org.openide.windows.TopComponent
 hfds isLastActivated,ref,serialVersionUID
 
 CLSS public static org.openide.windows.CloneableTopComponent$Ref
-cons protected Ref()
+ outer org.openide.windows.CloneableTopComponent
+cons protected init()
 intf java.io.Serializable
 meth public boolean isEmpty()
 meth public java.util.Enumeration<org.openide.windows.CloneableTopComponent> getComponents()
@@ -720,7 +723,7 @@ supr java.lang.Object
 hfds LOCK,componentSet,myComponentSetListener,serialVersionUID
 
 CLSS public abstract org.openide.windows.ExternalDropHandler
-cons public ExternalDropHandler()
+cons public init()
 meth public abstract boolean canDrop(java.awt.dnd.DropTargetDragEvent)
 meth public abstract boolean canDrop(java.awt.dnd.DropTargetDropEvent)
 meth public abstract boolean handleDrop(java.awt.dnd.DropTargetDropEvent)
@@ -745,9 +748,15 @@ meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeLis
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void setBounds(java.awt.Rectangle)
 
+CLSS public abstract interface !annotation org.openide.windows.RetainLocation
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String value()
+
 CLSS public org.openide.windows.TopComponent
-cons public TopComponent()
-cons public TopComponent(org.openide.util.Lookup)
+cons public init()
+cons public init(org.openide.util.Lookup)
 fld public final static int CLOSE_EACH = 0
  anno 0 java.lang.Deprecated()
 fld public final static int CLOSE_LAST = 1
@@ -817,6 +826,7 @@ meth public org.openide.util.Lookup getLookup()
 meth public org.openide.util.actions.SystemAction[] getSystemActions()
  anno 0 java.lang.Deprecated()
 meth public static javax.swing.Action openAction(org.openide.windows.TopComponent,java.lang.String,java.lang.String,boolean)
+meth public void addNotify()
 meth public void open()
 meth public void open(org.openide.windows.Workspace)
  anno 0 java.lang.Deprecated()
@@ -833,15 +843,17 @@ meth public void setToolTipText(java.lang.String)
 meth public void toFront()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr javax.swing.JComponent
-hfds LOG,UILOG,activatedNodes,attentionGetter,closeOperation,defaultLookupLock,defaultLookupRef,displayName,htmlDisplayName,icon,nodeName,serialVersion,serialVersionUID,warnedClasses,warnedTCPIClasses
+hfds LOG,MODE_ID_PREFERENCES_KEY_INFIX,UILOG,activatedNodes,attentionGetter,closeOperation,defaultLookupLock,defaultLookupRef,displayName,htmlDisplayName,icon,modeName,nodeName,serialVersion,serialVersionUID,warnedClasses,warnedTCPIClasses
 hcls AttentionGetter,CloneWindowAction,CloseWindowAction,Replacer,SynchronizeNodes
 
 CLSS public abstract interface static org.openide.windows.TopComponent$Cloneable
+ outer org.openide.windows.TopComponent
 meth public abstract org.openide.windows.TopComponent cloneComponent()
 
 CLSS public static org.openide.windows.TopComponent$NodeName
+ outer org.openide.windows.TopComponent
  anno 0 java.lang.Deprecated()
-cons public NodeName(org.openide.windows.TopComponent)
+cons public init(org.openide.windows.TopComponent)
  anno 0 java.lang.Deprecated()
 meth public static void connect(org.openide.windows.TopComponent,org.openide.nodes.Node)
 meth public void propertyChange(java.beans.PropertyChangeEvent)
@@ -850,6 +862,7 @@ supr org.openide.nodes.NodeAdapter
 hfds node,nodeL,top
 
 CLSS public abstract interface static org.openide.windows.TopComponent$Registry
+ outer org.openide.windows.TopComponent
 fld public final static java.lang.String PROP_ACTIVATED = "activated"
 fld public final static java.lang.String PROP_ACTIVATED_NODES = "activatedNodes"
 fld public final static java.lang.String PROP_CURRENT_NODES = "currentNodes"
@@ -868,7 +881,7 @@ meth public abstract void close()
 meth public abstract void open()
 
 CLSS public abstract org.openide.windows.WindowManager
-cons public WindowManager()
+cons public init()
 fld public final static java.lang.String PROP_CURRENT_WORKSPACE = "currentWorkspace"
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROP_MODES = "modes"
@@ -929,11 +942,13 @@ meth public final org.openide.windows.Workspace createWorkspace(java.lang.String
 meth public final static org.openide.windows.WindowManager getDefault()
 meth public java.lang.String findTopComponentID(org.openide.windows.TopComponent)
 meth public org.openide.windows.TopComponent$Registry getRegistry()
+meth public org.openide.windows.TopComponent[] getOpenedTopComponents(org.openide.windows.Mode)
 meth public void invokeWhenUIReady(java.lang.Runnable)
 supr java.lang.Object
 hfds activeComponent,dummyInstance,registry,serialVersionUID
 
 CLSS protected abstract interface static org.openide.windows.WindowManager$Component
+ outer org.openide.windows.WindowManager
  anno 0 java.lang.Deprecated()
 fld public final static long serialVersionUID = 0
  anno 0 java.lang.Deprecated()

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,27 +42,32 @@
 
 package org.netbeans.modules.jira;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraCorePlugin;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,22 +83,24 @@ public class Jira {
 
     private JiraRepositoryConnector jrc;
     private static Jira instance;
-    private Set<TaskRepository> refreshedRepos = new HashSet<TaskRepository>(1);
-    private JiraConfigurationCacheManager cacheManager;
     private JiraStorageManager storageManager;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
+    private final JiraCorePlugin jcp;
+    private JiraConnector connector;
     
     private Jira() {
+        BugtrackingRuntime.init();
+
         ModuleLifecycleManager.instantiated = true;
-        JiraCorePlugin jcp = new JiraCorePlugin();
+        jcp = new JiraCorePlugin();
         try {
             jcp.start(null);
         } catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX thisiscrap
+            LOG.log(Level.WARNING, "Error while starting jira client", ex);
         }
         BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
@@ -107,9 +117,20 @@ public class Jira {
             instance = new Jira();
             REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
             new File(REPOSITORIES_STORE).getParentFile().mkdirs();
-            JiraIssueProvider.getInstance();
+
+            // lazy ping tasklist issue provider to load issues ...
+            instance.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    JiraIssueProvider.getInstance();
+                }
+            });
         }
         return instance;
+    }
+
+    static void init() {
+        getInstance();
     }
 
     public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {
@@ -136,27 +157,42 @@ public class Jira {
     }
 
     public void addRepository(JiraRepository repository) {
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
+            Set<JiraRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
-                getStoredRepositories().add(repository);
+                repos.add(repository);
                 JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
-            BugtrackingRuntime
-                    .getInstance()
-                    .getTaskRepositoryManager()
-                    .addRepository(repository.getTaskRepository());
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
         }
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
     }
 
     public void removeRepository(JiraRepository repository) {
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().remove(repository);
+            Set<JiraRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            repos.remove(repository);
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             JiraConfig.getInstance().removeRepository(repository.getID());
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
         JiraIssueProvider.getInstance().removeAllFor(repository);
+    }
+
+    public JiraConnector getConnector() {
+        if (connector == null) {
+            connector = Lookup.getDefault().lookup(JiraConnector.class);
+        }
+        return connector;
     }
 
     public JiraRepository[] getRepositories() {
@@ -209,15 +245,12 @@ public class Jira {
     }
 
     void shutdown () {
-        getConfigurationCacheManager().shutdown();
-        getStorageManager().shutdown();
-    }
-
-    public JiraConfigurationCacheManager getConfigurationCacheManager () {
-        if (cacheManager == null) {
-            cacheManager = JiraConfigurationCacheManager.getInstance();
+        try {
+            jcp.stop(null);
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Error while stoping jira client", ex);
         }
-        return cacheManager;
+        getStorageManager().shutdown();
     }
 
     public JiraStorageManager getStorageManager () {

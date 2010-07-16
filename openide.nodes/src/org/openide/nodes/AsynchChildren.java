@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.openide.util.RequestProcessor;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Children object which creates its keys on a background thread.  To use,
@@ -58,8 +63,9 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                                                           Runnable {
     private final ChildFactory<T> factory;
     private final RequestProcessor.Task task;
-    private final RequestProcessor PROC = new RequestProcessor("Asynch " //NOI18N
-             + "children creator " + this, Thread.NORM_PRIORITY, true); //NOI18N
+    private static final RequestProcessor PROC = new RequestProcessor("Asynch " //NOI18N
+             + "children creator ", 4, true); //NOI18N
+    private static final Logger logger = Logger.getLogger(AsynchChildren.class.getName());
     /**
      * Create a new AsyncChildren instance with the passed provider object
      * which will manufacture key objects and nodes.
@@ -74,6 +80,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     
     volatile boolean initialized = false;
     protected @Override void addNotify() {
+        logger.log (Level.FINER, "addNotify on {0}", new Object[] { this });
         if ((!initialized && task.isFinished()) || cancelled) {
             cancelled = false;
             Node n = factory.getWaitNode();
@@ -85,6 +92,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     }
     
     protected @Override void removeNotify() {
+        logger.log (Level.FINER, "removeNotify on {0}", new Object[] { this });
         try {
             cancelled = true;
             task.cancel();
@@ -110,6 +118,11 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
      */ 
     public void refresh(boolean immediate) {
         immediate &= !EventQueue.isDispatchThread();
+        logger.log (Level.FINE, "Refresh on {0} immediate {1}", new Object[]  //NOI18N
+            { this, immediate });
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log (Level.FINEST, "Refresh: ", new Exception()); //NOI18N
+        }
         if (immediate) {
             boolean done;
             List <T> keys = new LinkedList <T> ();
@@ -153,7 +166,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     volatile boolean notified;
     private final Object notifyLock = new Object();
     public void run() {
-        if (cancelled || Thread.interrupted()) {
+        boolean fail = cancelled || Thread.interrupted();
+        logger.log (Level.FINE, "Running background children creation on " + //NOI18N
+                "{0} fail = {1}", new Object[] { this, fail }); //NOI18N
+        if (fail) {
             setKeys (Collections.<T>emptyList());
             return;
         }
@@ -178,5 +194,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             setKeys (new LinkedList <T> (keys));
         } while (!done && !Thread.interrupted() && !cancelled);
         initialized = done;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + factory + "]";
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,11 +50,18 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.openide.WizardDescriptor;
+import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -64,6 +74,7 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     int currentIndex;
     PanelConfigureProject basicPanel;
     private transient WizardDescriptor wiz;
+    private FileChangeListener fcl = new NbprojectFileChangeListener();
 
     static Object create() {
         return new WebSampleProjectIterator();
@@ -92,10 +103,7 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
         this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
-        if (name != null) {
-            name = name.replaceAll(" ", ""); //NOI18N
-        }
+        String name = templateWizard.getTemplate().getName();
         templateWizard.putProperty (WizardProperties.NAME, name);
         basicPanel = new PanelConfigureProject();
         currentIndex = 0;
@@ -126,7 +134,18 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
             FileObject index = getIndexFile(webRoot);
             if (webRoot != null) hset.add(DataObject.find(prj));
             if (index != null) hset.add(DataObject.find(index));
+            
+            // run wsimport-client-generate target when jaxws-build.xml is created
+            if (prj.getName().contains("Client")) { //NOI18N
+                FileObject nbprojectDir = prj.getFileObject("nbproject"); //NOI18N
+                if (nbprojectDir != null) {
+                    hset.add(nbprojectDir);
+                    FileChangeListener weakListener = FileUtil.weakFileChangeListener(fcl,nbprojectDir);
+                    nbprojectDir.addFileChangeListener(weakListener);
+                }                
+            }
         }
+
         return hset;
     }
     
@@ -162,6 +181,33 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
             file = webRoot.getFileObject("index", "html");
         }
         return file;
+    }
+
+    private class NbprojectFileChangeListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            if ("jaxws-build.xml".equals(fe.getFile().getNameExt())) { //NOI18N
+                FileObject nbprojectDir = (FileObject) fe.getSource();
+                final FileObject buildImplFo = nbprojectDir.getFileObject("build-impl.xml");
+                if (buildImplFo != null) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            try {
+                                ExecutorTask wsimportTask =
+                                        ActionUtils.runTarget(buildImplFo,
+                                        new String[]{"wsimport-client-generate"}, null); //NOI18N
+                                wsimportTask.waitFinished();
+                            } catch (IllegalArgumentException ex) {
+                                // do nothing if there is no wsimport-client-generate target
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    },1000);
+                }
+            }
+        }
     }
     
 }

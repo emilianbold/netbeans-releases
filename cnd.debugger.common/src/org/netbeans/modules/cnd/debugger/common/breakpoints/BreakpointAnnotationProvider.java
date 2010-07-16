@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -90,6 +93,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
     private final Logger log = Logger.getLogger("cnd.breakpoint.annotations"); // NOI18N
+    private final RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1); // NOI18N
 
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
@@ -101,8 +105,13 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                             DataObject dobj = (DataObject) evt.getSource();
-                            FileObject newFO = dobj.getPrimaryFile();
-                            annotate(newFO);
+                            final FileObject newFO = dobj.getPrimaryFile();
+                            annotationProcessor.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    annotate(newFO);
+                                }
+                            });
                         }
                     }
                 };
@@ -155,7 +164,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             CndBreakpoint b = (CndBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointAdded: " + b.getPath() + ":" + b.getLineNumber());
             b.addPropertyChangeListener (this);
-            RequestProcessor.getDefault().post(new AnnotationRefresh(b, false, true));
+            annotationProcessor.post(new AnnotationRefresh(b, false, true));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -168,7 +177,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             CndBreakpoint b = (CndBreakpoint) breakpoint;
             log.fine("BreakpointAnnotationProvider.breakpointRemoved: " + b.getPath() + ":" + b.getLineNumber());
             b.removePropertyChangeListener (this);
-            RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, false));
+            annotationProcessor.post(new AnnotationRefresh(b, true, false));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
@@ -186,7 +195,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (DebuggerManager.PROP_CURRENT_SESSION.equals(propertyName)) {
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
                 if (breakpoint instanceof CndBreakpoint) {
-                    RequestProcessor.getDefault().post(new AnnotationRefresh((CndBreakpoint)breakpoint, true, true));
+                    annotationProcessor.post(new AnnotationRefresh((CndBreakpoint)breakpoint, true, true));
                 }
             }
             return;
@@ -216,7 +225,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             // breakpoint has been removed
             return;
         }
-        RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, true));
+        annotationProcessor.post(new AnnotationRefresh(b, true, true));
     }
 
     private final class AnnotationRefresh implements Runnable {

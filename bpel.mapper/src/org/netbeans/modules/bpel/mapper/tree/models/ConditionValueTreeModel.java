@@ -23,12 +23,14 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ConditionHolder;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
 import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
 import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
 
 /**
  * The implementation of the MapperTreeModel for target tree for
@@ -60,11 +62,11 @@ public class ConditionValueTreeModel implements SoaTreeModel,
     }
 
     public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public TreeItemActionsProvider getTreeItemActionsProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public Object getRoot() {
@@ -95,7 +97,7 @@ public class ConditionValueTreeModel implements SoaTreeModel,
         return isLeaf(treeItem);
     }
 
-    public List getExtensionModelList() {
+    public List<SoaTreeExtensionModel> getExtensionModelList() {
         return null;
     }
 

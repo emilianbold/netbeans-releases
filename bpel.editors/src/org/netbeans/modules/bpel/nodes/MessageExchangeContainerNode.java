@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.nodes;
 
 import java.awt.Image;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.nodes.images.FolderIcon;
+import org.netbeans.modules.soa.ui.images.FolderIcon;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.MessageExchangeContainer;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,13 +56,14 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Root node representing Bugtracking in the Servises window
@@ -123,7 +127,10 @@ public class BugtrackingRootNode extends AbstractNode {
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            RepositoriesSupport.getInstance().addPropertyChangeListener(this);
+            BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+            for (BugtrackingConnector c : connectors) {
+                c.addPropertyChangeListener(this);
+            }
         }
 
         @Override
@@ -150,7 +157,7 @@ public class BugtrackingRootNode extends AbstractNode {
         private void refreshKeys() {
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
             setKeys(Collections.singleton(waitNode));
-            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     List<Repository> l = new ArrayList<Repository>();
                     l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
@@ -161,7 +168,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
                 refreshKeys();
             }
         }

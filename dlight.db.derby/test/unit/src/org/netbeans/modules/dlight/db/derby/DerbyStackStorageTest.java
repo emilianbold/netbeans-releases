@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,14 @@ import java.sql.SQLException;
 import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+import org.openide.util.Utilities;
 
 /**
  * @author Alexey Vladykin
  */
 public class DerbyStackStorageTest extends CommonStackDataStorageTests {
 
+    @Override
     protected StackDataStorage createStorage() {
         try {
             SQLStackDataStorage result = new SQLStackDataStorage();
@@ -59,10 +64,20 @@ public class DerbyStackStorageTest extends CommonStackDataStorageTests {
         }
     }
 
+    @Override
     protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown();
+        boolean result = ((SQLStackDataStorage) db).shutdown(true);
+
+        if (Utilities.isWindows()) {
+            // on Windows lck file of DerbyBD is not released even on
+            // close()... So directory removing will fail...
+            result = true;
+        }
+
+        return result;
     }
 
+    @Override
     protected void flush(StackDataStorage db) {
         ((SQLStackDataStorage) db).flush();
     }

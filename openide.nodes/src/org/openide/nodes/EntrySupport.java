@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -169,7 +172,7 @@ abstract class EntrySupport {
 
                 try {
                     Children.PR.enterReadAccess();
-                    if (this != children.entrySupport) {
+                    if (this != children.getEntrySupport()) {
                         // support was switched while we were waiting for access
                         return new Node[0];
                     }
@@ -252,6 +255,17 @@ abstract class EntrySupport {
             // initialize parent nodes
             for (int i = 0; i < arr.length; i++) {
                 Node n = arr[i];
+                if (n == null) {
+                    LOGGER.warning("null node among children!");
+                    for (int j = 0; j < arr.length; j++) {
+                        LOGGER.log(Level.WARNING, "  {0} = {1}", new Object[]{j, arr[j]});
+                    }
+                    for (Entry entry : entries) {
+                        Info info = findInfo(entry);
+                        LOGGER.log(Level.WARNING, "  entry: {0} info {1} nodes: {2}", new Object[]{entry, info, info.nodes(false)});
+                    }
+                    throw new NullPointerException("arr[" + i + "] is null"); // NOI18N
+                }
                 n.assignTo(children, i);
                 n.fireParentNodeChange(null, children.parent);
             }
@@ -650,7 +664,7 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                if (children.entrySupport == this) {
+                if (children.getEntrySupport() == this) {
                     children.parent.fireSubNodesChange(false, arr, current);
                 }
 
@@ -688,7 +702,7 @@ abstract class EntrySupport {
 
             Node n = children.parent;
 
-            if (n != null && children.entrySupport == this) {
+            if (n != null && children.getEntrySupport() == this) {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
@@ -884,7 +898,7 @@ abstract class EntrySupport {
                     LOGGER.fine("previous array: " + array + " caller: " + caller); // NOI18N
                 }
                 synchronized (LOCK) {
-                    if (array == caller && children.entrySupport == this) {
+                    if (array == caller && children.getEntrySupport() == this) {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
@@ -1103,7 +1117,7 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            if (children.entrySupport == this) {
+                            if (children.getEntrySupport() == this) {
                                 if (LOGGER.isLoggable(Level.FINER)) {
                                     LOGGER.finer("callRemoveNotify() " + this); // NOI18N
                                 }
@@ -1491,7 +1505,7 @@ abstract class EntrySupport {
          *  @param indices list of integers with indexes that changed
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
-            if (children.parent != null && children.entrySupport == this) {
+            if (children.parent != null && children.getEntrySupport() == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }

@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.xml.xpath.ext.impl;
 
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
+import org.netbeans.modules.xml.xpath.ext.visitor.impl.PathExpressionWriter;
 
 
 /**
@@ -152,4 +154,19 @@ public class XPathLocationPathImpl
                 " it is dangerous to specify a schema such way!"); // NOI18N
     }
     
+    public String getExpressionString(int lastStepIndex) {
+        PathExpressionWriter visitor = new PathExpressionWriter(mModel);
+        visitor.processPath(this, lastStepIndex);
+        return visitor.getString();
+    }
+
+    public String getExpressionString(int lastStepIndex, NamespaceContext nc) {
+        if (mModel.getNamespaceContext() == nc) {
+            // optimization
+            return getExpressionString(lastStepIndex);
+        }
+        PathExpressionWriter visitor = new PathExpressionWriter(nc);
+        visitor.processPath(this, lastStepIndex);
+        return visitor.getString();
+    }
 }

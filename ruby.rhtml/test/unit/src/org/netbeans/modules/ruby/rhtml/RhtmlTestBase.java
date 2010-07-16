@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -29,9 +32,6 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -42,19 +42,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.csl.editor.codetemplates.CslCorePackageAccessor;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.ruby.RubyKeystrokeHandler;
-import org.netbeans.modules.ruby.RubyRenameHandler;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -99,23 +93,6 @@ public abstract class RhtmlTestBase extends RubyTestBase {
 
         Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
 
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
-            Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE,
-                    actions, new RhtmlLanguage(),
-                    new RhtmlCompleter(), new RubyRenameHandler(), new RhtmlFinder(),
-                    null, new RubyKeystrokeHandler(), null, null, null, true);
-            List<Language> languages = new ArrayList<Language>();
-            languages.add(dl);
-            CslCorePackageAccessor.get().languageRegistryAddLanguages(languages);
-
-            String mimeFolder = "Editors/" + dl.getMimeType();
-            final FileObject root = FileUtil.getConfigFile(mimeFolder); // NOI18N
-            if (root == null) {
-                FileUtil.createFolder(FileUtil.getConfigRoot(), mimeFolder);
-            }
-        }
     }
 
     @Override

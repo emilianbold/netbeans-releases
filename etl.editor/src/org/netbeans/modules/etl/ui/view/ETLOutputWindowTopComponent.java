@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -66,7 +70,6 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
-import org.netbeans.modules.sql.framework.ui.output.dataview.JoinOperatorDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
@@ -108,11 +111,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
 
-        String nbBundle1 = mLoc.t("BUND167: Data Integrator Output");
-        setName(nbBundle1.substring(15));
+        String nbBundle_1 = mLoc.t("BUND167: Data Integrator Output");
+        setName(nbBundle_1.substring(15));
         setIcon(ImageUtilities.loadImage(ICON_RESOURCE));
-        String nbBundle2 = mLoc.t("BUND167: Data Integrator Output");
-        setToolTipText(nbBundle2.substring(15));
+        String nbBundle_2 = mLoc.t("BUND167: Data Integrator Output");
+        setToolTipText(nbBundle_2.substring(15));
 
         // create it but don't add it yet...
         verticalBar = new JToolBar(JToolBar.VERTICAL);
@@ -353,6 +356,52 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         requestActive();
     }
 
+    public void addPanel(Component panel, JButton[] btns, String tooltip) {
+        if (getComponentCount() == 0) {
+            add(panel, BorderLayout.CENTER);
+            if (panel instanceof Component) {
+                lastKnownSelection = (ETLOutputPanel)panel;
+                verticalBar.removeAll();
+                //addButton(filterButton);
+                for (JButton btn : btns) {
+                    if (btn != null) {
+                        verticalBar.add(btn);
+                    }
+                }
+                add(verticalBar, BorderLayout.WEST);
+            }
+        } else if (tabbedPane.getComponentCount() == 0 && lastKnownSelection != panel) {
+            Component comp = (Component) lastKnownSelection;
+            remove(comp);
+            tabbedPane.addMouseListener(listener);
+            tabbedPane.addPropertyChangeListener(closeL);
+            tabbedPane.addChangeListener(listen);
+            add(tabbedPane, BorderLayout.CENTER);
+
+            if(comp instanceof JComponent){
+                tabbedPane.addTab(comp.getName(), null, comp, ((JComponent)comp).getToolTipText()); //NOI18N
+            } else {
+                tabbedPane.addTab(comp.getName(), null, comp); //NOI18N
+            }
+
+            tabbedPane.addTab(panel.getName(), null, panel, tooltip); //NOI18N
+
+            tabbedPane.setSelectedComponent(panel);
+            tabbedPane.validate();
+        } else if (lastKnownSelection != panel) {
+            tabbedPane.addTab(panel.getName(), null, panel, tooltip); //NOI18N
+
+            tabbedPane.setSelectedComponent(panel);
+            tabbedPane.validate();
+        }
+        validate();
+    }
+    
+    public void addButton(JButton btn){
+        if(verticalBar != null || btn !=null){
+            verticalBar.add(btn);
+        }
+    }
     public void findAndRemoveComponent(SQLObject sqlObj) {
         if (sqlObj.getObjectType() == SQLConstants.SOURCE_TABLE || sqlObj.getObjectType() == SQLConstants.TARGET_TABLE) {
             if (tabbedPane.getComponentCount() <= 0) {
@@ -373,12 +422,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
                     if (((JoinViewDataPanel) comp).getTable() == sqlObj) {
                         removePanel(comp);
                     }
-                } else if (comp instanceof JoinOperatorDataPanel) {
-                    if (((JoinOperatorDataPanel) comp).getTable() == sqlObj) {
-                        removePanel(comp);
-                    // TODO: remove all the source object data view
-                    }
-                }
+                } 
             }
 
         }

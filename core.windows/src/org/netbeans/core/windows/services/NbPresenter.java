@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
@@ -73,6 +77,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -91,7 +97,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.core.windows.Constants;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
@@ -101,6 +106,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -118,6 +124,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** variable holding current modal dialog in the system */
     public static NbPresenter currentModalDialog;
     private static final ChangeSupport cs = new ChangeSupport(NbPresenter.class);
+    private static Boolean isJava17 = null;
     
     protected NotifyDescriptor descriptor;
     
@@ -249,6 +256,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         initializePresenter();
 
         pack();
+        // a workaround jdkbug#6925473
+        if (isJava17()) {
+            pack();
+        }
         setBounds(Utilities.findCenterBounds(getSize()));
     }
 
@@ -341,17 +352,17 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 GroupLayout layout = new GroupLayout(notificationPanel);
                 notificationPanel.setLayout(layout);
                 layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                    layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(notificationLine)
+                        .addComponent(notificationLine)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                    layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
+                        .addComponent(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 enlargedToAdd.add (notificationPanel, BorderLayout.SOUTH);
@@ -362,6 +373,16 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
 
             getContentPane ().add (toAdd, BorderLayout.CENTER);
         }
+    }
+
+    private static boolean isJava17() {
+        if (isJava17 != null) {
+            return isJava17;
+        }
+        String javaVersion = System.getProperty("java.version", "unknown"); // NOI18N
+        String javaRuntimeName = System.getProperty("java.runtime.name", "unknown"); // NOI18N
+        isJava17 = javaVersion.startsWith("1.7") || javaRuntimeName.startsWith("OpenJDK"); // NOI18N
+        return isJava17;
     }
     
     private static final class FixedHeightLabel extends JLabel {
@@ -1211,7 +1232,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             } else {
                 // handle buttons
                 if (evt.getSource() == stdHelpButton) {
-                    org.netbeans.core.NbTopManager.get().showHelp(currentHelp);
+                    showHelp(currentHelp);
                     return;
                 }
                 
@@ -1424,4 +1445,29 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             }
         }
     } // end of HackTypeAhead
+
+    /** Shows a specified HelpCtx in IDE's help window.
+     * XXX would be better to directly depend on org.netbeans.api.javahelp.Help
+    * @param helpCtx thehelp to be shown
+    */
+    private static void showHelp(HelpCtx helpCtx) {
+        // Awkward but should work.
+        try {
+            Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
+            Object o = Lookup.getDefault().lookup(c);
+            if (o != null) {
+                Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
+                m.invoke(o, new Object[] {helpCtx});
+                return;
+            }
+        } catch (ClassNotFoundException cnfe) {
+            // ignore - maybe javahelp module is not installed, not so strange
+        } catch (Exception e) {
+            // potentially more serious
+            Logger.getLogger(NbPresenter.class.getName()).log(Level.WARNING, null, e);
+        }
+        // Did not work.
+        Toolkit.getDefaultToolkit().beep();
+    }
+
 }

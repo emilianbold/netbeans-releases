@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -42,16 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.PersistenceActionGroup"/>
-            </file>
-            <file name="org-netbeans-modules-j2ee-persistence-action-UseEntityManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.UseEntityManagerAction"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Persistence">
             <!-- defined in dbschema module:
@@ -110,17 +103,20 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <file name="CopyResourcesIndexer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory"/>
+                    <!--attr name="position" intvalue="10"/-->
+                </file>
                 <!-- TODO: RETOUCHE
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-j2ee-persistence-editor-completion-NNCompletionProvider.instance"/>
                 </folder>
                 -->
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance"/>
-                        <attr name="position" intvalue="9550"/>
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-j2ee-persistence-action-UseEntityManagerCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -145,6 +141,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-persistence-unit-PUDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.ui.resources.Bundle"/>
+                        <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
                 <folder name="Actions">

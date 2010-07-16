@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -215,16 +220,20 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
 
     private EditCookie getEditCookie() {
         try {
-            FileObject wsdlFo =
-                    JAXWSClientSupport.getJaxWsClientSupport(srcRoot).getLocalWsdlFolderForClient(client.getName(),false).getFileObject(client.getLocalWsdlFile());
-            assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N
-            if (wsdlFo!=null) {
-                DataObject dObj = DataObject.find(wsdlFo);
-                return (EditCookie)dObj.getCookie(EditCookie.class);
+            String relativePath = client.getLocalWsdlFile();
+            if (relativePath != null) {
+                FileObject wsdlFolder = JAXWSClientSupport.getJaxWsClientSupport(srcRoot).getLocalWsdlFolderForClient(client.getName(),false);
+                if (wsdlFolder != null) {
+                    FileObject wsdlFo = wsdlFolder.getFileObject(relativePath);
+                    assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N
+                    if (wsdlFo != null) {
+                        DataObject dObj = DataObject.find(wsdlFo);
+                        return (EditCookie)dObj.getCookie(EditCookie.class);
+                    }
+                }
             }
         } catch (java.io.IOException ex) {
-            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            return null;
+            Logger.getLogger(JaxWsClientNode.class.getName()).log(Level.INFO, "Cannot find data object for wsdl file", ex);
         }
         return null;
     }
@@ -276,9 +285,9 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
 
     @Override
     public void destroy() throws java.io.IOException {
-        String clientName = client.getName();
-            
-            JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+        String clientName = client.getName();         
+        JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+        if (support != null) {
             // removing local wsdl and xml artifacts
             FileObject localWsdlFolder = support.getLocalWsdlFolderForClient(clientName,false);
             if (localWsdlFolder!=null) {
@@ -317,19 +326,22 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             }
             // cleaning java artifacts
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-            try {
-                ExecutorTask wsimportTask =
-                        ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
-                wsimportTask.waitFinished();
-            } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            if (buildImplFo != null) {
+                try {
+                    ExecutorTask wsimportTask =
+                            ActionUtils.runTarget(buildImplFo,
+                            new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
+                    wsimportTask.waitFinished();
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                } catch (IllegalArgumentException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                }
             }
             // removing entry from jax-ws.xml
             support.removeServiceClient(clientName);
-            super.destroy();
+        }
+        super.destroy();
     }
     
     /**

@@ -24,4 +24,7 @@ public class Utils {
         return ENV_VAR_REF_REGEX_PATT.matcher(attrVal).find();
     }
 
+    public static boolean isEmpty(String s) {
+        return (s == null || s.trim().length() == 0);
+    }
 }

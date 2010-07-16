@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeModelEvent;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -228,7 +232,13 @@ public class Outline extends ETable {
         int c = convertColumnIndexToModel(column);
         TableCellRenderer result;
         if (c == 0) {
-            result = getDefaultRenderer(Object.class);
+            TableColumn tableColumn = getColumnModel().getColumn(column);
+            TableCellRenderer renderer = tableColumn.getCellRenderer();
+            if (renderer == null) {
+                result = getDefaultRenderer(Object.class);
+            } else {
+                result = renderer;
+            }
         } else {
             result = super.getCellRenderer(row, column);
         }
@@ -532,7 +542,8 @@ public class Outline extends ETable {
     public boolean editCellAt (int row, int column, EventObject e) {
         //If it was on column 0, it may be a request to expand a tree
         //node - check for that first.
-        if (isTreeColumnIndex (column) && e instanceof MouseEvent) {
+        boolean isTreeColumn = isTreeColumnIndex(column);
+        if (isTreeColumn && e instanceof MouseEvent) {
             MouseEvent me = (MouseEvent) e;
             TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
             if (!getOutlineModel().isLeaf(path.getLastPathComponent())) {
@@ -548,9 +559,11 @@ public class Outline extends ETable {
                 int columnStart = getCellRect(row, column, false).x;
                 handleStart += columnStart;
                 handleEnd += columnStart;
-                
+
+                TableColumn tableColumn = getColumnModel().getColumn(column);
+                TableCellEditor columnCellEditor = tableColumn.getCellEditor();
                 if ((me.getX() > ins.left && me.getX() >= handleStart && me.getX() <= handleEnd) ||
-                     me.getClickCount() > 1) {
+                    (me.getClickCount() > 1 && columnCellEditor == null)) {
 
                     boolean expanded = getLayoutCache().isExpanded(path);
                     //me.consume();  - has no effect!
@@ -587,11 +600,14 @@ public class Outline extends ETable {
             }
         }
             
-        boolean res = super.editCellAt(row, column, e);
-        if( res && isTreeColumnIndex(column) && null != getEditorComponent() ) {
+        boolean res = false;
+        if (!isTreeColumn || e instanceof MouseEvent && ((MouseEvent)e).getClickCount() > 1) {
+            res = super.editCellAt(row, column, e);
+        }
+        if( res && isTreeColumn && null != getEditorComponent() ) {
             configureTreeCellEditor(getEditorComponent(), row, column);
         }
-        if (e == null && !res && isTreeColumnIndex(column)) {
+        if (e == null && !res && isTreeColumn) {
             // Handle SPACE
             checkAt(row, column, null);
         }

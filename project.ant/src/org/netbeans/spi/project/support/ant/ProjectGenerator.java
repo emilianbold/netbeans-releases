@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -99,7 +102,7 @@ public class ProjectGenerator {
     }
     
     /**
-     * See {@link #createProject(FileObject, String)} for more datails. This 
+     * See {@link #createProject(FileObject, String)} for more details. This
      * method in addition allows to setup shared libraries location
      * @param directory the main project directory to create it in
      *                  (see {@link AntProjectHelper#getProjectDirectory})
@@ -115,7 +118,7 @@ public class ProjectGenerator {
             final String name, final String librariesDefinition) throws IOException, IllegalArgumentException {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
-                public AntProjectHelper run() throws IOException {
+                public @Override AntProjectHelper run() throws IOException {
                     directory.refresh();
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
@@ -167,18 +170,24 @@ public class ProjectGenerator {
                     // Load the project into memory and mark it as modified.
                     ProjectManager.getDefault().clearNonProjectCache();
                     ByteArrayOutputStream diagStream = new ByteArrayOutputStream();
-                    Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
-                    diagHandler.setLevel(Level.ALL);
-                    Level oldLevel = AntBasedProjectFactorySingleton.LOG.getLevel();
-                    AntBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
-                    AntBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
                     Project p;
-                    try {
+                    if (System.getProperty("java.class.path").contains("junit")) {
+                        diagStream.write(':');
+                        diagStream.write('\n');
+                        Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
+                        diagHandler.setLevel(Level.ALL);
+                        Level oldLevel = AntBasedProjectFactorySingleton.LOG.getLevel();
+                        AntBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
+                        AntBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
+                        try {
+                            p = ProjectManager.getDefault().findProject(directory);
+                        } finally {
+                            AntBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
+                            AntBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
+                            diagHandler.close();
+                        }
+                    } else {
                         p = ProjectManager.getDefault().findProject(directory);
-                    } finally {
-                        AntBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
-                        AntBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
-                        diagHandler.close();
                     }
                     if (p == null) {
                         // Something is wrong, it is not being recognized.
@@ -186,7 +195,7 @@ public class ProjectGenerator {
                             if (abpt.getType().equals(type)) {
                                 // Well, the factory was there.
                                 throw new IllegalArgumentException("For some reason the folder " + directory +
-                                        " with a new project of type " + type + " is still not recognized:\n" + diagStream); // NOI18N
+                                        " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
                             }
                         }
                         throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N

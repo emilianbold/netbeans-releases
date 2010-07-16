@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,9 +69,9 @@ import org.netbeans.modules.xml.schema.abe.UIUtilities;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
@@ -118,19 +121,19 @@ public class SchemaABEViewMultiViewElement extends TopComponent
     
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();        
-        if(!AXIModel.STATE_PROPERTY.equals(property)) {
+        if(!Model.STATE_PROPERTY.equals(property)) {
             return;
         }
         //
         assert SwingUtilities.isEventDispatchThread();
         //
-        State newState = (State)evt.getNewValue();
+        Model.State newState = (Model.State)evt.getNewValue();
         if(newState == AXIModel.State.VALID) {
             errorMessage = null;
             recreateUI();
             return;
         }
-
+        
         if(errorMessage == null)
             errorMessage = NbBundle.getMessage(
                     SchemaColumnViewMultiViewElement.class,
@@ -139,7 +142,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
         emptyUI(errorMessage);
     }
-
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -228,7 +231,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         }
         
         AXIModel model = getAXIModel();
-        if( (model != null) &&
+        if( (model != null) && model.getRoot() != null && 
                 (model.getState() == AXIModel.State.VALID) ) {
             recreateUI();
             return;
@@ -272,13 +275,14 @@ public class SchemaABEViewMultiViewElement extends TopComponent
      */
     
     private void emptyUI(String errorMessage) {
-        if(abeDesigner != null)
+        if(abeDesigner != null) {
             abeDesigner.setVisible(false);
+        }
         errorLabel.setText("<" + errorMessage + ">");
         if(!isChild(errorLabel))
             add(errorLabel, BorderLayout.NORTH);
-        if(propChangeListenerAdded){
-            abeDesigner.addPropertyChangeListener(this);
+        if(propChangeListenerAdded && abeDesigner != null){
+            abeDesigner.removePropertyChangeListener(this);
             propChangeListenerAdded = false;
         }
         errorLabel.setVisible(true);
@@ -484,6 +488,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
                     getSchemaEditorSupport().getModel();
             axiModel = AXIModelFactory.getDefault().getModel(sModel);
             if (axiModel != null) {
+                // start listening axi model
                 PropertyChangeListener pcl = WeakListeners.
                         create(PropertyChangeListener.class, awtPCL, axiModel);
                 axiModel.addPropertyChangeListener(pcl);

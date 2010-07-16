@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -67,6 +71,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.Exceptions;
 
 /** Expression Language completion provider implementation
  *
@@ -90,6 +95,11 @@ public class ElCompletionProvider implements CompletionProvider {
 
     private boolean isAfterElDelimiter(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?> ts = th.tokenSequence();
+
+        if (ts == null){
+            return false;
+        }
+        
         int diff = ts.move(offset);
         if (ts.moveNext()) {
             CharSequence image = ts.token().text();
@@ -217,59 +227,46 @@ public class ElCompletionProvider implements CompletionProvider {
         protected void queryEL(CompletionResultSet result, 
                 JTextComponent component, int offset) 
         {
-            BaseDocument doc = (BaseDocument) component.getDocument();
-            JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
-
-            boolean queryingJsp = JspUtils.isJspDocument(doc);
-            JspELExpression elExpr = new JspELExpression(sup);
-            int parseType = elExpr.parse(offset); //this initializes the expression
-            int anchor = offset - elExpr.getReplace().length();
-            result.setAnchorOffset(anchor);
-
-            switch (parseType) {
-                case ELExpression.EL_START:
-                    // implicit objects
-                    for (ELImplicitObject implOb : 
-                        ELImplicitObjects.getELImplicitObjects(
-                                elExpr.getReplace(), elExpr)) 
-                    {
-                        result.addItem(ElCompletionItem.createELImplicitObject(
-                                implOb.getName(), anchor, implOb.getType()));
-                    }
-
-                    if (queryingJsp) {
-                        // defined beans on the page
-                        BeanData[] beans = sup.getBeanData();
-                        if (beans != null) {
-                            for (int i = 0; i < beans.length; i++) {
-                                if (beans[i].getId().startsWith(elExpr.getReplace())) {
-                                    result.addItem(ElCompletionItem.createELBean(
-                                            beans[i].getId(), anchor, beans[i].getClassName()));
+            try {
+                BaseDocument doc = (BaseDocument) component.getDocument();
+                JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
+                boolean queryingJsp = JspUtils.isJspDocument(doc);
+                JspELExpression elExpr = new JspELExpression(sup, offset);
+                int parseType = elExpr.parse();
+                int anchor = offset - elExpr.getReplace().length();
+                result.setAnchorOffset(anchor);
+                switch (parseType) {
+                    case ELExpression.EL_START:
+                        // implicit objects
+                        for (ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace(), elExpr)) {
+                            result.addItem(ElCompletionItem.createELImplicitObject(implOb.getName(), anchor, implOb.getType()));
+                        }
+                        if (queryingJsp) {
+                            // defined beans on the page
+                            BeanData[] beans = sup.getBeanData();
+                            if (beans != null) {
+                                for (int i = 0; i < beans.length; i++) {
+                                    if (beans[i].getId().startsWith(elExpr.getReplace())) {
+                                        result.addItem(ElCompletionItem.createELBean(beans[i].getId(), anchor, beans[i].getClassName()));
+                                    }
                                 }
                             }
+                            List<Function> functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
+                            Iterator<Function> iter = functions.iterator();
+                            while (iter.hasNext()) {
+                                Function fun = iter.next();
+                                result.addItem(ElCompletionItem.createELFunction(fun.getName(), offset - elExpr.getReplace().length(), fun.getReturnType(), fun.getPrefix(), fun.getParameters()));
+                            }
                         }
-                        //Functions
-                        List<Function> functions = 
-                            ELFunctions.getFunctions(sup, elExpr.getReplace());
-                        Iterator<Function> iter = functions.iterator();
-                        while (iter.hasNext()) {
-                            Function fun = iter.next();
-                            result.addItem(ElCompletionItem.createELFunction(
-                                    fun.getName(),
-                                    offset - elExpr.getReplace().length(),
-                                    fun.getReturnType(),
-                                    fun.getPrefix(),
-                                    fun.getParameters()));
-                        }
-                    }
-                    break;
-                case ELExpression.EL_BEAN:
-                case ELExpression.EL_IMPLICIT:
-                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(
-                            elExpr.getObjectClass(), anchor);
-                    result.addAllItems(items);
-                    break;
-                    
+                        break;
+                    case ELExpression.EL_BEAN:
+                    case ELExpression.EL_IMPLICIT:
+                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                        result.addAllItems(items);
+                        break;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

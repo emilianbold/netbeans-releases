@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,8 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 
 public class CliValidateProjectDelegate extends Task {
     
@@ -141,7 +145,7 @@ public class CliValidateProjectDelegate extends Task {
     }
     
     private void processBuildDir(File folder) {
-        final File files[] = folder.listFiles(new Util.XsltFileFilter());
+        final File files[] = folder.listFiles(new Util.XsltProjectFileFilter());
         
         if (files == null) return;
         
@@ -159,7 +163,7 @@ public class CliValidateProjectDelegate extends Task {
     private void validateFile(File file) throws BuildException {
       try {
         Model model = CliXslCatalogModel.getDefault().getXslModel(file.toURI());
-        myIsFoundErrors = new Controller(model).cliValidate(file);
+        myIsFoundErrors = new Controller(model).cliValidate(file, ValidationType.COMPLETE);
       }
       catch (Exception e) {
         throw new BuildException(e);
@@ -181,7 +185,7 @@ public class CliValidateProjectDelegate extends Task {
 
     private void processSourceDir(File file) {
         if (file.isDirectory()) {
-            final File[] children = file.listFiles(new Util.XsltFileFilter());
+            final File[] children = file.listFiles(new Util.XsltProjectFileFilter());
             
             if (children == null) return;
             

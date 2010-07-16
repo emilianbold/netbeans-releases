@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,11 +48,11 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -100,13 +103,13 @@ public class LibraryItem {
     }
 
     // Should be overridden
-    public String getOption() {
-	return ""; // NOI18N
-    }
+//    public String getOption() {
+//	return ""; // NOI18N
+//    }
     
     // Should be overridden
     public String getOption(MakeConfiguration conf) {
-	return "" + getOption(); // NOI18N
+	return "" + getOption(conf); // NOI18N
     }
 
     // Should be overridden
@@ -139,8 +142,7 @@ public class LibraryItem {
 
 	public Project getProject(String baseDir) {
 	    if (project == null) {
-		String location = IpeUtils.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
-		location = FilePathAdaptor.mapToLocal(location); // PC path
+		String location = CndPathUtilitities.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
 		try {
 		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     project = ProjectManager.getDefault().findProject(fo);
@@ -168,7 +170,7 @@ public class LibraryItem {
 
         @Override
         public String toString() {
-            String ret = IpeUtils.getBaseName(getMakeArtifact().getProjectLocation());
+            String ret = CndPathUtilitities.getBaseName(getMakeArtifact().getProjectLocation());
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
             }
@@ -183,7 +185,7 @@ public class LibraryItem {
         @Override
         public String getPath() {
             String libPath = getMakeArtifact().getOutput();
-            if (!IpeUtils.isPathAbsolute(libPath)) {
+            if (!CndPathUtilitities.isPathAbsolute(libPath)) {
                 libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
             }
             return libPath;
@@ -194,8 +196,8 @@ public class LibraryItem {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
             String libPath = getPath();
-            String libDir = IpeUtils.getDirName(libPath);
-            String libName = IpeUtils.getBaseName(libPath);
+            String libDir = CndPathUtilitities.getDirName(libPath);
+            String libName = CndPathUtilitities.getBaseName(libPath);
             return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
         }
 
@@ -212,9 +214,9 @@ public class LibraryItem {
     }
 
     public static class StdLibItem extends LibraryItem {
-	private String name;
-	private String displayName;
-	private String[] libs;
+	private final String name;
+	private final String displayName;
+	private final String[] libs;
 
 	public StdLibItem(String name, String displayName, String[] libs) {
 	    this.name = name;
@@ -227,29 +229,17 @@ public class LibraryItem {
 	    return name;
 	}
 
-	public void setName(String name) {
-	    this.name = name;
-	}
-
 	public String getDisplayName() {
 	    return displayName;
-	}
-
-	public void setDisplayName(String displayName) {
-	    this.displayName = displayName;
 	}
 
 	public String[] getLibs() {
 	    return libs;
 	}
 
-	public void setLibs(String[] libs) {
-	    this.libs = libs;
-	}
-
         @Override
 	public String getToolTip() {
-	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption() + ")"; // NOI18N
+	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -268,13 +258,13 @@ public class LibraryItem {
 	}
 
         @Override
-        public String getOption() {
+        public String getOption(MakeConfiguration conf) {
             StringBuilder options = new StringBuilder();
             for (int i = 0; i < libs.length; i++) {
                 if (libs[i].charAt(0) != '-') {
-                    options.append("-l" + libs[i] + " "); // NOI18N
+                    options.append("-l").append(libs[i]).append(" "); // NOI18N
                 } else {
-                    options.append(libs[i] + " "); // NOI18N
+                    options.append(libs[i]).append(" "); // NOI18N
                 }
             }
             return options.toString();
@@ -310,7 +300,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -329,7 +319,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
+	public String getOption(MakeConfiguration conf) {
 	    return "-l" + getLibName(); // NOI18N
 	}
 
@@ -363,7 +353,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -388,8 +378,13 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
-	    return getPath();
+	public String getOption(MakeConfiguration conf) {
+            String lpath = getPath();
+            if (conf != null) {
+                CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+                lpath = CppUtils.normalizeDriveLetter(cs, lpath);
+            }
+	    return lpath;
 	}
 
         @Override
@@ -421,7 +416,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -440,7 +435,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
+	public String getOption(MakeConfiguration conf) {
 	    return getLibraryOption();
 	}
 

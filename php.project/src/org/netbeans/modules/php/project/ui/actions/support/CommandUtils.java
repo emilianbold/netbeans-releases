@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,8 +41,10 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +61,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
@@ -64,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -325,10 +332,20 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugProject(PhpProject project) throws MalformedURLException {
+        return urlForDebugProject(project, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+    /**
+     * Get {@link URL} for debugging a project.
+     * @param project a project to get {@link URL} for.
+     * @param xDebugArgument xdebug specific argument for starting or stopping debugging
+     * @return {@link URL} for debugging a project.
+     * @throws MalformedURLException if any error occurs.
+     */
+    public static URL urlForDebugProject(PhpProject project, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments());
+            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         }
         return debugUrl;
     }
@@ -340,7 +357,18 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs
      */
     public static URL createDebugUrl(URL url) throws MalformedURLException {
-        return appendQuery(url, getDebugArguments());
+        return createDebugUrl(url, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+
+    /**
+     * Create {@link URL} for debugging from the given {@link URL}.
+     * @param url original URL
+     * @param xDebugArgument
+     * @return {@link URL} for debugging
+     * @throws MalformedURLException if any error occurs
+     */
+    public static URL createDebugUrl(final URL url, final XDebugUrlArguments xDebugArgument) throws MalformedURLException {
+        return appendQuery(url, getDebugArguments(xDebugArgument));
     }
 
     /**
@@ -364,10 +392,22 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugContext(PhpProject project, Lookup context) throws MalformedURLException {
+        return urlForDebugContext(project, context, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+    /**
+     *
+     * Get {@link URL} for debugging a project context (specific file).
+     * @param project a project to get {@link URL} for.
+     * @param context a context to get {@link URL} for.
+     * @param xDebugArgument xdebug specific argument for starting or stopping debugging
+     * @return {@link URL} for debugging a project context (specific file).
+     * @throws MalformedURLException if any error occurs.
+     */
+    public static URL urlForDebugContext(PhpProject project, Lookup context, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments());
+            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         }
         return debugUrl;
     }
@@ -446,9 +486,29 @@ public final class CommandUtils {
             relativePath = FileUtil.getRelativePath(webRoot, file);
             assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
         }
-        URL retval = new URL(getBaseURL(project), relativePath);
+        URL retval = new URL(getBaseURL(project), encodeRelativeUrl(relativePath));
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
+    }
+
+    // because of unit tests
+    static String encodeRelativeUrl(String relativeUrl) {
+        if (!StringUtils.hasText(relativeUrl)) {
+            return relativeUrl;
+        }
+        StringBuilder sb = new StringBuilder(relativeUrl.length() * 2);
+        try {
+            for (String part : StringUtils.explode(relativeUrl, "/")) { // NOI18N
+                if (sb.length() > 0) {
+                    sb.append('/'); // NOI18N
+                }
+                sb.append(URLEncoder.encode(part, "UTF-8")); // NOI18N
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return relativeUrl;
+        }
+        return sb.toString();
     }
 
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
@@ -465,8 +525,8 @@ public final class CommandUtils {
         return new URL(urlExternalForm);
     }
 
-    private static String getDebugArguments() {
-        return "XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N
+    private static String getDebugArguments(XDebugUrlArguments xDebugArgument) {
+        return xDebugArgument.toString() + "=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N
     }
 
     private static FileObject[] filterValidFiles(FileObject[] files, FileObject dir) {

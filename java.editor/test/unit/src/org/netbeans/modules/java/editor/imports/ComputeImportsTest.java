@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,7 +66,6 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.test.support.MemoryValidator;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationCreatorTest;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -90,6 +92,9 @@ public class ComputeImportsTest extends NbTestCase {
         "sun.text.normalizer.RangeValueIterator.Element",
         "javax.xml.bind.Element",
         "javax.lang.model.element.Element",
+        "com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList",
+        "com.sun.xml.internal.ws.api.server.Adapter.Toolkit",
+        "sunw.io.Serializable"
     }));
     
     private static final Set<String> NO_MASKS = new HashSet<String>();
@@ -109,14 +114,14 @@ public class ComputeImportsTest extends NbTestCase {
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         
+        clearWorkDir();
+        
         if (cache == null) {
-            cache = TestUtil.createWorkFolder();
-            cacheFO = FileUtil.toFileObject(cache);
-            
-            cache.deleteOnExit();
-            
+            cache = new File(getWorkDir(), "cache");
+            cacheFO = FileUtil.createFolder(cache);
+
             IndexUtil.setCacheFolder(cache);
-            
+
             TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
         }
     }
@@ -129,19 +134,16 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestSimple", JDK16_MASKS, JDK16_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterDeclaration() throws Exception {
+    public void testFilterDeclaration() throws Exception {
         doTest("TestFilterDeclaration", JDK16_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterTypedInitializator() throws Exception {
+    public void testFilterTypedInitializator() throws Exception {
         doTest("TestFilterTypedInitializator", JDK16_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterWithMethods() throws Exception {
-        doTest("TestFilterWithMethods", NO_MASKS, NO_MASKS);
+    public void testFilterWithMethods() throws Exception {
+        doTest("TestFilterWithMethods", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testGetCookie() throws Exception {
@@ -164,8 +166,7 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestUnfinishedMethod", NO_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestUnsupportedOperation1() throws Exception {
+    public void testUnsupportedOperation1() throws Exception {
         doTest("TestUnsupportedOperation1", JDK16_MASKS, NO_MASKS);
     }
     
@@ -193,8 +194,16 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("Test97420", NO_MASKS, NO_MASKS);
     }
     
+    public void test102613() throws Exception {
+        doTest("Test102613", NO_MASKS, NO_MASKS);
+    }
+    
+    public void testFilterByKind() throws Exception {
+        doTest("TestFilterByKind", JDK16_MASKS, JDK16_MASKS);
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = IsOverriddenAnnotationCreatorTest.makeScratchDir(this);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
         
@@ -226,6 +235,8 @@ public class ComputeImportsTest extends NbTestCase {
         TestUtil.copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
         
         packageRoot.refresh();
+        
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
         
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         

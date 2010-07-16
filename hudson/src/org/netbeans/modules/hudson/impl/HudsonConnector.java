@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -104,10 +109,11 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
+                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -115,21 +121,10 @@ public class HudsonConnector {
         // Clear cache
         cache.clear();
         
-        // Parse views and set them into instance
-        Collection<HudsonView> cViews = getViews(docInstance);
-        
-        if (null == cViews)
-            cViews = new ArrayList<HudsonView>();
-        
-        instance.setViews(cViews);
+        configureViews(instance, docInstance);
         
         // Parse jobs and return them
-        Collection<HudsonJob> cJobs = getJobs(docInstance);
-        
-        if (null == cJobs)
-            cJobs = new ArrayList<HudsonJob>();
-        
-        return cJobs;
+        return getJobs(docInstance);
     }
     
     public synchronized void startJob(final HudsonJob job) {
@@ -152,10 +147,7 @@ public class HudsonConnector {
      */
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
-                // XXX no good way to only include what you _do_ want without using XSLT
-                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
-                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn" +
-                "&exclude=//id&exclude=//description");
+                "?xpath=/*/build&wrapper=root&exclude=//url");
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -164,8 +156,6 @@ public class HudsonConnector {
         for (int i = 0; i < buildNodes.getLength(); i++) {
             Node build = buildNodes.item(i);
             int number = 0;
-            boolean building = false;
-            Result result = null;
             NodeList details = build.getChildNodes();
             for (int j = 0; j < details.getLength(); j++) {
                 Node detail = details.item(j);
@@ -181,17 +171,30 @@ public class HudsonConnector {
                 String text = firstChild.getTextContent();
                 if (nodeName.equals("number")) { // NOI18N
                     number = Integer.parseInt(text);
-                } else if (nodeName.equals("building")) { // NOI18N
-                    building = Boolean.valueOf(text);
-                } else if (nodeName.equals("result")) { // NOI18N
-                    result = Result.valueOf(text);
                 } else {
                     LOG.warning("unexpected <build> child: " + nodeName);
                 }
             }
-            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
+            builds.add(new HudsonJobBuildImpl(this, job, number));
         }
         return builds;
+    }
+
+    void loadResult(HudsonJobBuildImpl build, AtomicBoolean building, AtomicReference<Result> result) {
+        Document doc = getDocument(build.getUrl() + XML_API_URL +
+                "?xpath=/*/*[name()='result'%20or%20name()='building']&wrapper=root");
+        if (doc == null) {
+            return;
+        }
+        Element docEl = doc.getDocumentElement();
+        Element resultEl = XMLUtil.findElement(docEl, "result", null);
+        if (resultEl != null) {
+            result.set(Result.valueOf(XMLUtil.findText(resultEl)));
+        }
+        Element buildingEl = XMLUtil.findElement(docEl, "building", null);
+        if (buildingEl != null) {
+            building.set(Boolean.parseBoolean(XMLUtil.findText(buildingEl)));
+        }
     }
     
     protected synchronized HudsonVersion getHudsonVersion() {
@@ -206,8 +209,18 @@ public class HudsonConnector {
         
     }
     
-    private Collection<HudsonView> getViews(Document doc) {
+    private void configureViews(HudsonInstanceImpl instance, Document doc) {
+        String primaryViewName = null;
+        Element primaryViewEl = XMLUtil.findElement(doc.getDocumentElement(), "primaryView", null); // NOI18N
+        if (primaryViewEl != null) {
+            Element nameEl = XMLUtil.findElement(primaryViewEl, "name", null); // NOI18N
+            if (nameEl != null) {
+                primaryViewName = XMLUtil.findText(nameEl);
+            }
+        }
+        
         Collection<HudsonView> views = new ArrayList<HudsonView>();
+        HudsonView primaryView = null;
 
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -218,6 +231,7 @@ public class HudsonConnector {
             
             String name = null;
             String url = null;
+            boolean isPrimary = false;
             
             for (int j = 0; j < n.getChildNodes().getLength(); j++) {
                 Node o = n.getChildNodes().item(j);
@@ -226,8 +240,9 @@ public class HudsonConnector {
                 }
                 if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                     name = o.getFirstChild().getTextContent();
+                    isPrimary = name.equals(primaryViewName);
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = normalizeUrl(o.getFirstChild().getTextContent(), "view/[^/]+/"); // NOI18N
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "/" : "view/[^/]+/"); // NOI18N
                 }
             }
             
@@ -254,11 +269,14 @@ public class HudsonConnector {
                 }
                 
                 views.add(view);
+                if (isPrimary) {
+                    primaryView = view;
+                }
             }
             
         }
         
-        return views;
+        instance.setViews(views, primaryView);
     }
     
     private Collection<HudsonJob> getJobs(Document doc) {
@@ -321,17 +339,22 @@ public class HudsonConnector {
                             continue;
                         }
                         String nodeName2 = n2.getNodeName();
-                        String text = n2.getFirstChild().getTextContent();
-                        if (nodeName2.equals("name")) { // NOI18N
-                            name = text;
-                        } else if (nodeName2.equals("displayName")) { // NOI18N
-                            displayName = text;
-                        } else if (nodeName2.equals("url")) { // NOI18N
-                            url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
-                        } else if (nodeName2.equals("color")) { // NOI18N
-                            color = Color.valueOf(text);
+                        Node firstChild = n2.getFirstChild();
+                        if (firstChild != null) {
+                            String text = firstChild.getTextContent();
+                            if (nodeName2.equals("name")) { // NOI18N
+                                name = text;
+                            } else if (nodeName2.equals("displayName")) { // NOI18N
+                                displayName = text;
+                            } else if (nodeName2.equals("url")) { // NOI18N
+                                url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
+                            } else if (nodeName2.equals("color")) { // NOI18N
+                                color = Color.valueOf(text);
+                            } else {
+                                LOG.fine("unexpected <module> child: " + nodeName);
+                            }
                         } else {
-                            LOG.fine("unexpected <module> child: " + nodeName);
+                            LOG.fine("#178360: unexpected empty <module> child: " + nodeName);
                         }
                     }
                     job.addModule(name, displayName, color, url);

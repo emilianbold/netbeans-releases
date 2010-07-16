@@ -45,7 +45,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.windows.WindowManager;
 
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import java.io.IOException;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 

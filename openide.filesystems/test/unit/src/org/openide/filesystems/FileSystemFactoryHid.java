@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,15 +78,15 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
      * createTestedFS.
      * @param testName name of test 
      * @return  array of FileSystems that should be tested in test named: "testName"*/    
-    final static FileSystem[] createFileSystem (String testName,String[] resources, Test test) throws IOException {
-         return getInstance (test,true).createFileSystem(testName, resources);
+    static FileSystem[] createFileSystem (String testName,String[] resources, Test test) throws IOException {
+         return getInstance (test,false).createFileSystem(testName, resources);
     }
 
     /**
      * Intended to allow prepare tested environment for each individual test.
      * @param testName name of test
      * @return  array of FileSystems that should be tested in test named: "testName"*/
-    final static FileSystem createXMLSystem (String testName, Test test, URL... layers) throws IOException {
+    static FileSystem createXMLSystem (String testName, Test test, URL... layers) throws IOException {
         FileSystemFactoryHid factory = getInstance(test, false);
         if (factory instanceof XMLFileSystemTestHid.Factory) {
             XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
@@ -91,7 +94,7 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
         }
         throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
     }
-    final static boolean switchXMLSystem (FileSystem fs, Test test, URL... layers) throws IOException {
+    static boolean switchXMLSystem (FileSystem fs, Test test, URL... layers) throws IOException {
         FileSystemFactoryHid factory = getInstance(test, false);
         if (factory instanceof XMLFileSystemTestHid.Factory) {
             XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
@@ -100,25 +103,29 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
         throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
     }
       
-    final static void destroyFileSystem (String testName, Test test)  throws IOException  {
+    static void destroyFileSystem (String testName, Test test)  throws IOException  {
         getInstance (test,false).destroyFileSystem(testName);
     }    
     
-    final static String getResourcePrefix (String testName, Test test, String[] resources) {
+    static String getResourcePrefix (String testName, Test test, String[] resources) {
         return getInstance (test,false).getResourcePrefix(testName, resources);
     }    
 
     
     
-    private final static  FileSystemFactoryHid getInstance (Test test, boolean delete) {
+    private static  FileSystemFactoryHid getInstance (Test test, boolean delete) {
             FileSystemFactoryHid factory = getFromMap (test,delete);
             if (factory != null)
                 className  =  factory.getClass().getName();
         return factory;
     }
     
-    final static  String getTestClassName () {
+    static  String getTestClassName () {
         return (className != null) ? className : "Unknown TestSetup";
+    }
+
+    static void setServices(Test test, Class<?>... classes) {
+        getInstance(test, false).setServices(classes);
     }
     
     /**
@@ -130,6 +137,16 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
 
     protected String getResourcePrefix (String testName, String[] resources) {
         return "";
+    }
+
+    /** Registers services into default lookup. By default it uses
+     * MockServices.setServices. Subclasses may override and register
+     * additional classes into the lookup as well.
+     * 
+     * @param services the classes that shall be accessible from Lookup.getDefault()
+     */
+    protected void setServices(Class<?>... services) {
+        MockServices.setServices(services);
     }
     
 

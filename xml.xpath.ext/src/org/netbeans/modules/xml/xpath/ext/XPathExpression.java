@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitable;
 
 /**
@@ -44,4 +45,13 @@ public interface XPathExpression extends XPathVisitable {
      * @return the string representation
      */
     String getExpressionString();
+
+    /**
+     * Does almost the same as the previous method but use the specified
+     * namespace context while building locaiton steps' prefixes.
+     *
+     * @return the string representation
+     */
+    String getExpressionString(NamespaceContext nc);
+
 }

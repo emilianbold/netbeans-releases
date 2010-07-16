@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -78,28 +83,40 @@ public class GemFilesParserTest extends NbTestCase {
         assertEquals("win32-api", GemFilesParser.parseNameAndVersion(gem5)[0]);
         assertEquals("1.0.5", GemFilesParser.parseNameAndVersion(gem5)[1]);
 
+        String gem6 = "rails-3.0.0.beta";
+        assertEquals("rails", GemFilesParser.parseNameAndVersion(gem6)[0]);
+        assertEquals("3.0.0.beta", GemFilesParser.parseNameAndVersion(gem6)[1]);
+
+        String gem7 = "rails-3.0.0.beta4";
+        assertEquals("rails", GemFilesParser.parseNameAndVersion(gem7)[0]);
+        assertEquals("3.0.0.beta4", GemFilesParser.parseNameAndVersion(gem7)[1]);
+
     }
 
     public void testVersionSorting() throws IOException {
+
+        Collection<File> gemFiles = new ArrayList<File>();
+        gemFiles.add(createGemFile("rails", "1.2.5"));
+        gemFiles.add(createGemFile("rails", "2.0.2"));
+        gemFiles.add(createGemFile("rails", "3.0.0.beta"));
+        gemFiles.add(createGemFile("rails", "1.2.6"));
+        gemFiles.add(createGemFile("rails", "3.0.0.beta4"));
+        gemFiles.add(createGemFile("rails", "1.2"));
+        gemFiles.add(createGemFile("rails", "3.0.0"));
+        gemFiles.add(createGemFile("rails", "2.0"));
         
-        GemFilesParser gemFilesParser = new GemFilesParser(
-                createGemFile("rails", "1.2.5"), 
-                createGemFile("rails", "2.0.2"), 
-                createGemFile("rails", "1.2.6"), 
-                createGemFile("rails", "1.2"),
-                createGemFile("rails", "2.0") 
-                );
-        
-        gemFilesParser.parseGems();
-        Map<String, List<GemInfo>> result = gemFilesParser.getGemInfos();
+        Map<String, List<GemInfo>> result = GemFilesParser.getGemInfos(gemFiles);
         
         List<GemInfo> versions = result.get("rails");
-        assertEquals(5, versions.size());
-        assertEquals("2.0.2", versions.get(0).getVersion());
-        assertEquals("2.0", versions.get(1).getVersion());
-        assertEquals("1.2.6", versions.get(2).getVersion());
-        assertEquals("1.2.5", versions.get(3).getVersion());
-        assertEquals("1.2", versions.get(4).getVersion());
+        assertEquals(8, versions.size());
+        assertEquals("3.0.0", versions.get(0).getVersion());
+        assertEquals("3.0.0.beta4", versions.get(1).getVersion());
+        assertEquals("3.0.0.beta", versions.get(2).getVersion());
+        assertEquals("2.0.2", versions.get(3).getVersion());
+        assertEquals("2.0", versions.get(4).getVersion());
+        assertEquals("1.2.6", versions.get(5).getVersion());
+        assertEquals("1.2.5", versions.get(6).getVersion());
+        assertEquals("1.2", versions.get(7).getVersion());
     }
     
     private File createGemFile(String name, String version) throws IOException {

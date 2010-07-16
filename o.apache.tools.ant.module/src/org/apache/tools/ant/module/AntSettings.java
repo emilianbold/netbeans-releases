@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -238,8 +241,10 @@ public class AntSettings {
         if (aecpResult == null) {
             aecpResult = Lookup.getDefault().lookupResult(AutomaticExtraClasspathProvider.class);
             aecpResult.addLookupListener(new LookupListener() {
-                public void resultChanged(LookupEvent ev) {
-                    defAECP = null;
+                public @Override void resultChanged(LookupEvent ev) {
+                    synchronized (AntSettings.class) {
+                        defAECP = null;
+                    }
                     firePropertyChange(PROP_AUTOMATIC_EXTRA_CLASSPATH);
                 }
             });
@@ -247,6 +252,7 @@ public class AntSettings {
         if (defAECP == null) {
             defAECP = new ArrayList<File>();
             for (AutomaticExtraClasspathProvider provider : aecpResult.allInstances()) {
+                assert provider != null;
                 defAECP.addAll(Arrays.asList(provider.getClasspathItems()));
             }
         }
@@ -262,7 +268,7 @@ public class AntSettings {
     }
 
     public static boolean getAlwaysShowOutput() {
-        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, true);
+        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, /* #87801 */false);
     }
 
     public static void setAlwaysShowOutput(boolean b) {

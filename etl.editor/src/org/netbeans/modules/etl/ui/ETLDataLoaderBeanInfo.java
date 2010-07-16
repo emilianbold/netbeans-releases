@@ -46,7 +46,6 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** Description of {@link WSDLDataLoader}.
  *
@@ -60,6 +59,8 @@ public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
 	 */
         String nbBundle1 = mLoc.t("BUND154: MIME Type");
         String nbBundle2 = mLoc.t("BUND155: The MIME type used for ETL files in the IDE. The ETL MIME resolver recognizes this.");
+
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         // Make extensions into a r/o property.
         // It will only contain the WSDL MIME type.
@@ -99,6 +100,7 @@ public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
     }
     */
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             // I.e. MultiFileLoader.class or UniFileLoader.class.
@@ -109,6 +111,7 @@ public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return ImageUtilities.loadImage ("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");

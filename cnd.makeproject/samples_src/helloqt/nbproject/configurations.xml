@@ -26,6 +26,11 @@
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="4">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <qt>
         <modules>core gui</modules>
       </qt>
@@ -49,6 +54,11 @@
       </item>
     </conf>
     <conf name="Release" type="4">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <qt>
         <buildMode>1</buildMode>
         <modules>core gui</modules>
@@ -63,6 +73,12 @@
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
         </fortranCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>

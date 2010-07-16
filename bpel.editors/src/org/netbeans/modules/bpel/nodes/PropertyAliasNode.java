@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -69,21 +68,22 @@ public class PropertyAliasNode extends BpelWSDLNode<PropertyAlias> {
         mainPropertySet.put(customizer);
         //
         Property prop = null;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        prop = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        prop = propUtil.registerCalculatedProperty(this, mainPropertySet,
                 CORR_PROPERTY, "getCorrProperty", "setCorrProperty"); // NOI18N
         prop.setHidden(true);
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 CORR_PROPERTY_NAME, "getCorrPropertyQName", null); // NOI18N
-        prop = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        prop = propUtil.registerCalculatedProperty(this, mainPropertySet,
                 MESSAGE_TYPE, "getMessageType", "setMessageType"); // NOI18N
         prop.setHidden(true);
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 MESSAGE_TYPE_NAME, "getMessageTypeQName", null); // NOI18N
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 PART, "getPart", null); // NOI18N
 //                PART, "getPart", "setPart"); // NOI18N
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 QUERY, "getQuery", "setQuery"); // NOI18N
         return sheet;
     }

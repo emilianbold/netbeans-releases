@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,10 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.gsf.testrunner.api.Report;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -62,7 +61,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     /** */
     private final Report report;
     /** */
-    private boolean filtered;
+    private int filterMask;
     /** */
     private boolean live = true;         //PENDING - temporary (should be false)
 
@@ -73,9 +72,9 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     /**
      * Creates a new instance of TestsuiteNodeChildren
      */
-    TestsuiteNodeChildren(final Report report, final boolean filtered) {
+    TestsuiteNodeChildren(final Report report, final int filterMask) {
         this.report = report;
-        this.filtered = filtered;
+        this.filterMask = filterMask;
     }
     
     /**
@@ -103,29 +102,32 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     
     /**
      */
+    @Override
     protected Node[] createNodes(final Testcase testcase) {
-        if (filtered && !Status.isFailure(testcase.getStatus())) {
+        if (testcase.getStatus().isMaskApplied(filterMask)){
             return EMPTY_NODE_ARRAY;
         }
+
         return new Node[] {testcase.getSession().getNodeFactory().createTestMethodNode(testcase, report.getProject())};
     }
     
     /**
      */
-    void setFiltered(final boolean filtered) {
-        if (filtered == this.filtered) {
+    void setFilterMask(final int filterMask) {
+        int diff = this.filterMask ^ filterMask;
+        if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filtered;
+        this.filterMask = filterMask;
         
-        if ((report.getErrors() + report.getFailures()) == report.getTotalTests()) {
-            return;
-        }
+//        if ((report.getErrors() + report.getFailures()) == report.getTotalTests()) {
+//            return;
+//        }
                 
         if (isInitialized()) {
             for (Testcase testcase : report.getTests()) {
-                if (!Status.isFailure(testcase.getStatus())) {
-                    refreshKey(testcase);
+                if (testcase.getStatus().isMaskApplied(diff)){
+                   refreshKey(testcase);
                 }
             }
         }

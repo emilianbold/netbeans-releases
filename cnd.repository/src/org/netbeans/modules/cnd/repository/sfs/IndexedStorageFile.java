@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.modules.cnd.repository.sfs.index.CompactFileIndex;
 import org.netbeans.modules.cnd.repository.sfs.statistics.FileStatistics;
 import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
@@ -78,6 +82,7 @@ class IndexedStorageFile extends FileStorage {
     final private FileStatistics fileStatistics;
     private FileIndex index;
     final private FileRWAccess fileRWAccess;
+    final private AtomicLong fileRWAccessSize;
     // used to accumulate the total currently used chunk suze;
     // is necessary for tracking fragmentation
     private long usedSize;
@@ -100,7 +105,9 @@ class IndexedStorageFile extends FileStorage {
                 recreate = true;
             }
 
-            indexFile.delete();
+            if (!indexFile.delete()) {
+                System.err.println("Cannot delete repository index file "+indexFile.getAbsolutePath()); // NOI18N
+            }
 
             if (usedSize == 0) {
                 fileRWAccess.truncate(0);
@@ -113,25 +120,32 @@ class IndexedStorageFile extends FileStorage {
             fileRWAccess.truncate(0);
 
             if (indexFile.exists()) {
-                indexFile.delete();
+                if (!indexFile.delete()) {
+                    System.err.println("Cannot delete repository index file "+indexFile.getAbsolutePath()); // NOI18N
+                }
             }
 
             usedSize = 0;
         }
+        fileRWAccessSize = new AtomicLong(fileRWAccess.size());
     }
 
+    @Override
     public Persistent read(final Key key) throws IOException {
         Persistent object = null;
 
         final ChunkInfo chunkInfo = index.get(key);
         if (chunkInfo != null) {
             object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
-            fileStatistics.incrementReadCount(key);
+            if (Stats.fileStatisticsLevel > 0) {
+                fileStatistics.incrementReadCount(key);
+            }
         }
 
         return object;
     }
 
+    @Override
     public void write(final Key key, final Persistent object) throws IOException {
 
         final long offset;
@@ -139,22 +153,29 @@ class IndexedStorageFile extends FileStorage {
         final int oldSize;
 
         synchronized (writeLock) {
-            offset = fileRWAccess.size();
+            offset = getSize();
             size = fileRWAccess.write(key.getPersistentFactory(), object, offset);
+            fileRWAccessSize.addAndGet(size);
             oldSize = index.put(key, offset, size);
             usedSize += (size - oldSize);
-            fileStatistics.incrementWriteCount(key, oldSize, size);
+            if (Stats.fileStatisticsLevel > 0) {
+                fileStatistics.incrementWriteCount(key, oldSize, size);
+            }
         }
     }
 
+    @Override
     public void remove(final Key key) throws IOException {
-        fileStatistics.removeNotify(key);
+        if (Stats.fileStatisticsLevel > 0) {
+            fileStatistics.removeNotify(key);
+        }
 
         final int oldSize = index.remove(key);
 
         if (oldSize != 0) {
             if (index.size() == 0) {
                 fileRWAccess.truncate(0);
+                fileRWAccessSize.set(0);
                 usedSize = 0;
             } else {
                 usedSize -= -oldSize;
@@ -162,15 +183,19 @@ class IndexedStorageFile extends FileStorage {
         }
     }
 
+    @Override
     public int getObjectsCount() {
         return index.size();
     }
 
+    @Override
     public long getSize() throws IOException {
-        return fileRWAccess.size();
-
+        //return fileRWAccess.size();
+        //assert fileRWAccessSize.get() == fileRWAccess.size();
+        return fileRWAccessSize.get();
     }
 
+    @Override
     public void close() throws IOException {
         if (Stats.dumoFileOnExit) {
             dump(System.out);
@@ -184,17 +209,20 @@ class IndexedStorageFile extends FileStorage {
         storeIndex();
     }
 
+    @Override
     public int getFragmentationPercentage() throws IOException {
         final long fileSize;
         final float delta;
 
-        fileSize = fileRWAccess.size();
+        //fileSize = fileRWAccess.size();
+        fileSize = getSize();
         delta = fileSize - usedSize;
 
         final float percentage = delta * 100 / fileSize;
         return Math.round(percentage);
     }
 
+    @Override
     public void dump(final PrintStream ps) throws IOException {
         if (TRACE) {
             ps.printf("\nDumping %s\n", dataFile.getAbsolutePath()); // NOI18N
@@ -229,6 +257,7 @@ class IndexedStorageFile extends FileStorage {
         return calcUsedSize;
     }
 
+    @Override
     public void dumpSummary(final PrintStream ps) throws IOException {
         dumpSummary(ps, null);
     }
@@ -244,7 +273,8 @@ class IndexedStorageFile extends FileStorage {
             write.consume(fileStatistics.getWriteCount(key));
             size.consume(info.getSize());
         }
-        long channelSize = fileRWAccess.size();
+        //long channelSize = fileRWAccess.size();
+        long channelSize = getSize();
 
         if (TRACE) {
             ps.printf("\n"); // NOI18N
@@ -318,6 +348,7 @@ class IndexedStorageFile extends FileStorage {
 
     /*packet */ void moveDataFromOtherFile(FileRWAccess fileRW, long l, int size, long newOffset, Key key) throws IOException {
         fileRWAccess.move(fileRW, l, size, newOffset);
+        fileRWAccessSize.set(fileRWAccess.size());
         index.put(key, newOffset, size);
         usedSize += size;
     }
@@ -326,7 +357,7 @@ class IndexedStorageFile extends FileStorage {
         return fileRWAccess;
     }
 
-    /*packet */ FileRWAccess createFileRWAccess(File file) throws IOException {
+    private FileRWAccess createFileRWAccess(File file) throws IOException {
         FileRWAccess result;
         switch (Stats.fileRWAccess) {
             case 0:
@@ -377,6 +408,7 @@ class IndexedStorageFile extends FileStorage {
         }
     }
 
+    @Override
     public boolean defragment(long timeout) throws IOException {
         return false;
     }
@@ -394,15 +426,18 @@ class IndexedStorageFile extends FileStorage {
             indexIterator = index.getKeySetIterator();
         }
 
+        @Override
         public boolean hasNext() {
             return indexIterator.hasNext();
         }
 
+        @Override
         public Key next() {
             currentKey = indexIterator.next();
             return currentKey;
         }
 
+        @Override
         public void remove() {
             assert currentKey != null;
             final ChunkInfo chi = getChunkInfo(currentKey);
@@ -411,6 +446,7 @@ class IndexedStorageFile extends FileStorage {
             if (index.size() == 0) {
                 try {
                     fileRWAccess.truncate(0);
+                    fileRWAccessSize.set(0);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

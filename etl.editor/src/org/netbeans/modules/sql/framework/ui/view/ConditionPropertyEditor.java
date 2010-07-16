@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 
+import java.util.logging.Level;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
@@ -64,9 +68,9 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author Ritesh Adval
@@ -75,8 +79,9 @@ import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
  */
 public class ConditionPropertyEditor extends PropertyEditorSupport implements IPropertyEditor {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionPropertyEditor.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(ConditionPropertyEditor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ConditionPropertyEditor.class.getName());
 
     public static class Validation extends ConditionPropertyEditor {
 
@@ -203,7 +208,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
             try {
                 this.conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
             } catch (CloneNotSupportedException ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY), ex);
+                String msg = mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY);
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY) + ex);
                 return;
             }
 
@@ -219,7 +226,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     warnForInvalidCondition();
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT197: Error finding root predicate from text condition{0}", text), ex);
+                String msg = mLoc.t("EDIT197: Error finding root predicate from text condition{0}", text);
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, mLoc.t("EDIT197: Error finding root predicate from text condition{0}", text) + ex);
                 warnForInvalidCondition();
             }
 
@@ -230,7 +239,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     this.property.setValue(this.conditionContainer);
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT198: Error occurred in setting the property value for condition{0}from joinview table.", text), ex);
+                String msg = mLoc.t("EDIT198: Error occurred in setting the property value for condition{0}from joinview table.", text);
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, mLoc.t("EDIT198: Error occurred in setting the property value for condition{0}from joinview table.", text) + ex);
             }
         }
     }

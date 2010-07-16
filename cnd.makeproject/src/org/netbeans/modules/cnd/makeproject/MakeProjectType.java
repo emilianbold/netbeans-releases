@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,10 @@ public final class MakeProjectType implements AntBasedProjectType {
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
+    public final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
+    public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
+    public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     
     /**
      * Do nothing, just a service.
@@ -66,20 +73,85 @@ public final class MakeProjectType implements AntBasedProjectType {
      */
     public MakeProjectType() {}
     
+    @Override
     public String getType() {
         return TYPE;
     }
     
+    @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         return new MakeProject(helper);
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
     }
     
+    @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
-    
+
+    /**
+     * Get the path in the system filesystem where other modules could place
+     * objects to include them in the projects' lookup
+     * @return A path in the system filesystem
+     */
+    public String getLookupMergerPath() {
+        return projectLayerPath() + "/Lookup"; //NOI18N
+    }
+
+    /**
+     * System filesystem path for modules to place Node factories to include additional
+     * nodes under this project
+     * @return A path
+     */
+    public String nodeFactoryPath() {
+        return projectLayerPath() + "/Nodes"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add children to the Important Files subnode
+     * @return A path
+     */
+    public String importantFilesPath() {
+        return projectLayerPath() + "/ImportantFiles"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add customizer panels
+     * @return A path
+     */
+    public String customizerPath() {
+        return projectLayerPath() + "/Customizer"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project specific actions
+     * @return A path
+     */
+    public String projectActionsPath() {
+        return projectLayerPath() + "/Actions"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project folders' specific actions
+     * @return A path
+     */
+    public String folderActionsPath() {
+        return projectLayerPath() + "/ActionsFolder"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project external folders' specific actions
+     * @return A path
+     */
+    public String extFolderActionsPath() {
+        return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
+    }
+
+    private String projectLayerPath() {
+        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
+    }
 }

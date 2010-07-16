@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,17 +86,23 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         this.dm = dm;
     }
 
+    @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-        // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
+        if (null != domainsDir) {
+            // XXX Fix to work with current server domain, not just default domain.
+            File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
 
-        // TODO : need to account for a remote domain here?
-        return readMessageDestinations(domainXml, "/domain/", null);
+            // TODO : need to account for a remote domain here?
+            return readMessageDestinations(domainXml, "/domain/", null);
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
 
+    @Override
     public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
         // since a connection pool is not a Datasource, all resource deployment has to
         // happen in a different part of the deploy processing...  so this should remain
@@ -381,23 +390,27 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             properties = new HashMap<String, String>();
-            String poolName = attributes.getValue("name");
+            String poolName = attributes.getValue("name"); // NOI18N
             if(poolName != null && poolName.length() > 0) {
                 if(!pools.containsKey(poolName)) {
-                    properties.put("name", poolName);
-                    properties.put("raname", attributes.getValue("resource-adapter-name"));
-                    properties.put("conndefname", attributes.getValue("connection-definition-name"));
+                    properties.put("name", poolName); // NOI18N
+                    properties.put("raname", attributes.getValue("resource-adapter-name")); // NOI18N
+                    properties.put("conndefname", attributes.getValue("connection-definition-name")); // NOI18N
                 } else {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                            "Duplicate pool-names defined for JDBC Connection Pools.");
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, // NOI18N
+                            "Duplicate pool-names defined for Resource Adapter Pools: "+poolName); // NOI18N
                 }
             }
         }
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            properties.put(attributes.getValue("name").toLowerCase(Locale.ENGLISH),
-                    attributes.getValue("value"));
+            if (null != attributes && null != properties) {
+                String key = attributes.getValue("name"); // NOI18N
+                if(key != null && key.length() > 0) {
+                    properties.put(key.toLowerCase(Locale.ENGLISH), attributes.getValue("value")); // NOI18N
+                }
+            }
         }
 
         @Override

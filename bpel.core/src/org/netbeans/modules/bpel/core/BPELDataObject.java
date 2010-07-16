@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
 
-import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.validation.core.Controller;
 import org.netbeans.modules.bpel.core.annotations.impl.AnnotationManagerProvider;
 import org.netbeans.modules.bpel.core.helper.impl.BusinessProcessHelperImpl;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
@@ -98,13 +101,12 @@ public class BPELDataObject extends MultiDataObject {
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
         cookies.add(new AnnotationManagerProvider(this));
-
         cookies.assign(SearchProvider.class, new SearchProvider(this));
         cookies.assign(BusinessProcessHelperImpl.class, new BusinessProcessHelperImpl(this));
         cookies.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
-
     }
  
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(BPELDataObject.class);
     }
@@ -175,7 +177,6 @@ public class BPELDataObject extends MultiDataObject {
                         valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getBpelModel()));
                         return valControllerRef.get();
                     }
-
                     return null;
                 }
 
@@ -191,7 +192,6 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-
             Lookup lookup = new ProxyLookup(
                     Lookups.fixed(new Class[] { BpelModel.class, Controller.class }, conv),
                     // Do not call super.getLookup(), it is deadlock-prone!
@@ -204,6 +204,7 @@ public class BPELDataObject extends MultiDataObject {
         return myLookup.get();
     }
 
+    @Override
     protected Node createNodeDelegate() {
         return new BPELNode( this, getEditorSupport());
     }
@@ -214,11 +215,12 @@ public class BPELDataObject extends MultiDataObject {
             super( obj , Children.LEAF );
             myEditorSupport = support;  
             getCookieSet().add(obj);
-            
+
             setIconBaseWithExtension( ICON_BASE );
             setShortDescription(NbBundle.getMessage( getClass(), FILE_DESC ));
         }
         
+        @Override
         public Action getPreferredAction() {
             return new AbstractAction() {
                     private static final long serialVersionUID = 1L;
@@ -244,6 +246,7 @@ public class BPELDataObject extends MultiDataObject {
             return false; // TODO - hook in to dataobject
         }
 
+        @Override
         public Image getIcon(int type) {
             if(!isWarning() && !isError())
                 return super.getIcon(type);
@@ -255,6 +258,7 @@ public class BPELDataObject extends MultiDataObject {
             }
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
             if(!isWarning() && !isError())
                 return super.getOpenedIcon(type);
@@ -266,10 +270,11 @@ public class BPELDataObject extends MultiDataObject {
             }
         }
     
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(BPELDataObject.class);
         }
-        
+
         private BPELDataEditorSupport myEditorSupport;
     }
 

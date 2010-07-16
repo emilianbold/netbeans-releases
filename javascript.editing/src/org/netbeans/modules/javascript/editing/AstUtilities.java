@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.FunctionNode;
@@ -224,6 +228,27 @@ public final class AstUtilities {
         if (signature == null) {
             return null;
         }
+
+        // Small hack for #181449
+        // It would be better if the ast nodo was able compose the signature with parameters.
+        if (signature.indexOf(':') > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (StringTokenizer st = new StringTokenizer(signature, ":"); st.hasMoreTokens();) {
+                String token = st.nextToken();
+                int index = token.indexOf(',');
+                if (index == -1) {
+                    index = token.lastIndexOf(')');
+                }
+                if (index > -1) {
+                    sb.append(token.substring(index));
+                }
+                else {
+                    sb.append(token);
+                }
+            }
+            signature = sb.toString();
+        }
+        
 //        Node node = AstUtilities.findBySignature(root, signature);
         boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
         if (lookForFunction) {

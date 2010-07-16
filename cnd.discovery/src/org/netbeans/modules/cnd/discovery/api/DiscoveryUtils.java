@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -245,8 +248,8 @@ public class DiscoveryUtils {
         if (hasQuotes) {
             List<String> newList = new ArrayList<String>();
             for(int i = 0; i < list.size();) {
-                String s = list.get(i);
-                if (s.startsWith("-D") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
+                String s = list.get(i); 
+                if (s.startsWith("-D") && s.endsWith("=") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
                     String longString = null;
                     for(int j = i+1; j < list.size() && list.get(j).startsWith("\""); j++){  //NOI18N
                         if (longString != null) {
@@ -266,7 +269,7 @@ public class DiscoveryUtils {
         }
         String what = null;
         Iterator<String> st = list.iterator();
-        String option = null;
+        String option = null; 
         if (st.hasNext()) {
             option = st.next();
             if (option.equals("+") && st.hasNext()) { // NOI18N
@@ -284,10 +287,13 @@ public class DiscoveryUtils {
                 }
             }
             if (option.startsWith("-D")){ // NOI18N
+                String macro;
                 if (option.equals("-D") && st.hasNext()){  //NOI18N
-                    option = st.next();
+                    macro = st.next();
+                } else {
+                    macro = option.substring(2);
                 }
-                String macro = option.substring(2);
+                macro = removeQuotes(macro);
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
@@ -298,7 +304,7 @@ public class DiscoveryUtils {
                            (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
                             value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
                             value = value.substring(2,value.length()-3)+"\"";  // NOI18N
-                        } else if (!isQuote && value.length() >= 4 &&
+                        } else if (value.length() >= 4 &&
                            (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
                             value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
                             value = value.substring(1,value.length()-2)+"\"";  // NOI18N

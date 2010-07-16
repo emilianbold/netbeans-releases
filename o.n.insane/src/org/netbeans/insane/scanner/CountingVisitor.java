@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,7 @@ import java.util.*;
  */
 public class CountingVisitor implements Visitor {
     
-    private Map<Class, Info> infoMap = new HashMap<Class, Info>();
+    private Map<Class<?>, Info> infoMap = new HashMap<Class<?>, Info>();
     private int count;
     private int size;
     
@@ -66,7 +69,7 @@ public class CountingVisitor implements Visitor {
     }
     
     
-    public void visitClass(Class cls) {
+    public void visitClass(Class<?> cls) {
         infoMap.put(cls, new Info());
     }
     
@@ -85,7 +88,7 @@ public class CountingVisitor implements Visitor {
     public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {}
     public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {}  
 
-    public Set<Class> getClasses() {
+    public Set<Class<?>> getClasses() {
         return Collections.unmodifiableSet(infoMap.keySet());
     }
     

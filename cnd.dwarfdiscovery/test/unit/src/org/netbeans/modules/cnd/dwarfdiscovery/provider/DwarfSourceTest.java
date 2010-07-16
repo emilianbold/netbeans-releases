@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,6 +91,102 @@ public class DwarfSourceTest extends TestCase {
             }
         }
         assertFalse(sb.toString(), true);
+    }
+
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testLinuxCommandLine() {
+        String line = "gcc -Wp,-MD,kernel/.bounds.s.d  -nostdinc -isystem /usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include -D__KERNEL__ " +
+                      "-Iinclude  -I/export/home/av202691/NetBeansProjects/linux-2.6.28-gentoo-r5/arch/x86/include " +
+                      "-include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs " +
+                      "-fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -O2 " +
+                      "-m64 -march=core2 -mno-red-zone -mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args " +
+                      "-DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables " +
+                      "-mno-sse -mno-mmx -mno-sse2 -mno-3dnow -Iarch/x86/include/asm/mach-default -fno-stack-protector -fomit-frame-pointer " +
+                      "-Wdeclaration-after-statement -Wno-pointer-sign -fwrapv " +
+                      "-D\"KBUILD_STR(s)=#s\" -D\"KBUILD_BASENAME=KBUILD_STR(bounds)\"  -D\"KBUILD_MODNAME=KBUILD_STR(bounds)\"  -fverbose-asm -S -o kernel/bounds.s kernel/bounds.c";
+          String expResult =
+                      "Source:kernel/bounds.c\n"+
+                      "Macros:\n"+
+                      "CONFIG_AS_CFI=1\n"+
+                      "CONFIG_AS_CFI_SIGNAL_FRAME=1\n"+
+                      "KBUILD_BASENAME=KBUILD_STR(bounds)\n"+
+                      "KBUILD_MODNAME=KBUILD_STR(bounds)\n"+
+                      "KBUILD_STR(s)=#s\n"+
+                      "__KERNEL__\n"+
+                      "Paths:\n"+
+                      "/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include\n"+
+                      "include\n"+
+                      "/export/home/av202691/NetBeansProjects/linux-2.6.28-gentoo-r5/arch/x86/include\n"+
+                      "include/linux/autoconf.h\n"+
+                      "arch/x86/include/asm/mach-default";
+        String result = processLine(line, true);
+        assertDocumentText(line, expResult, result);
+    }
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testChromCommandLine() {
+        String line = "gcc -DNSS_ENABLE_ZLIB \"-DSHLIB_PREFIX=\\\"lib\\\"\" "+
+                      "\"-DSHLIB_SUFFIX=\\\"so\\\"\" \"-DSHLIB_VERSION=\\\"3\\\"\" "+
+                      "\"-DSOFTOKEN_SHLIB_VERSION=\\\"3\\\"\" "+
+                      "-DUSE_UTIL_DIRECTLY -c -o out/Release/obj.target/ssl/net/third_party/nss/ssl/sslcon.o net/third_party/nss/ssl/sslcon.c";
+          String expResult =
+                      "Source:net/third_party/nss/ssl/sslcon.c\n"+
+                      "Macros:\n"+
+                      "NSS_ENABLE_ZLIB\n"+
+                      "SHLIB_PREFIX=\"lib\"\n"+
+                      "SHLIB_SUFFIX=\"so\"\n"+
+                      "SHLIB_VERSION=\"3\"\n"+
+                      "SOFTOKEN_SHLIB_VERSION=\"3\"\n"+
+                      "USE_UTIL_DIRECTLY\n"+
+                      "Paths:";
+        String result = processLine(line, true);
+        assertDocumentText(line, expResult, result);
+    }
+
+
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testFirefoxCommandLine() {
+        String line = "c++ -o nsDependentString.o -c -I../../../dist/include/system_wrappers "+
+                      "-include /mozilla-1.9.1/config/gcc_hidden.h "+
+                      "-DMOZILLA_INTERNAL_API -DOSTYPE=\"Linux2.6\" -DOSARCH=Linux -D_IMPL_NS_COM  "+
+                      "-I/mozilla-1.9.1/xpcom/string/src -I. "+
+                      "-I../../../dist/include/xpcom -I../../../dist/include   -I../../../dist/include/string "+
+                      "-I/mozilla-1.9.1/ff-dbg/dist/include/nspr       "+
+                      "-fPIC   -fno-rtti -fno-exceptions -Wall -Wpointer-arith -Woverloaded-virtual -Wsynth "+
+                      "-Wno-ctor-dtor-privacy -Wno-non-virtual-dtor -Wcast-align -Wno-invalid-offsetof "+
+                      "-Wno-long-long -pedantic -g3 -gdwarf-2 -fno-strict-aliasing -fshort-wchar -pthread "+
+                      "-pipe  -DDEBUG -D_DEBUG -DDEBUG_av202691 -DTRACING -g -fno-inline   -DMOZILLA_CLIENT "+
+                      "-include ../../../mozilla-config.h -Wp,-MD,.deps/nsDependentString.pp "+
+                      "/mozilla-1.9.1/xpcom/string/src/nsDependentString.cpp";
+        String expResult =
+                      "Source:/mozilla-1.9.1/xpcom/string/src/nsDependentString.cpp\n"+
+                      "Macros:\n"+
+                      "DEBUG\n"+
+                      "DEBUG_av202691\n"+
+                      "MOZILLA_CLIENT\n"+
+                      "MOZILLA_INTERNAL_API\n"+
+                      "OSARCH=Linux\n"+
+                      "OSTYPE=\"Linux2.6\"\n"+
+                      "TRACING\n"+
+                      "_DEBUG\n"+
+                      "_IMPL_NS_COM\n"+
+                      "Paths:\n"+
+                      "../../../dist/include/system_wrappers\n"+
+                      "/mozilla-1.9.1/config/gcc_hidden.h\n"+
+                      "/mozilla-1.9.1/xpcom/string/src\n"+
+                      ".\n"+
+                      "../../../dist/include/xpcom\n"+
+                      "../../../dist/include\n"+
+                      "../../../dist/include/string\n"+
+                      "/mozilla-1.9.1/ff-dbg/dist/include/nspr\n"+
+                      "../../../mozilla-config.h";
+        String result = processLine(line, true);
+        assertDocumentText(line, expResult, result);
     }
 
     public void testCygdrive() {

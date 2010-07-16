@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,50 +65,62 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     public FilesAccessStrategyUnitClosureTest(String testName) {
         super(testName);
     }
+
+    private static final boolean TRACE = true;
     
     public void testClosure() throws Exception {
         
-        FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
+        final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
                 
-        Collection<String> setZero = strategy.testGetCacheFileNames();
-        assertTrue("Cache should be empty at that time", setZero.isEmpty());
+        assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
         
-	final TraceModelBase traceModel = new  TraceModelBase(true);
+	final TraceModelBase traceModel = new TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
-        long sleepAfterParse = 6000;
-        long sleepAfterClose = 2000;
+        long waitAfterParseTimeout = 30000;
         
         // Open a project, make sure cache is NOT empty
         ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
-        sleep(sleepAfterParse);
-        Collection<String> setOne = strategy.testGetCacheFileNames();
-        assertFalse("Cache should not be empty at that time", setOne.isEmpty());
+        waitCondition(new Condition("Cache should not be empty at that time") {
+            @Override
+            boolean check() {
+                return getFileNames(strategy).size() == 4;
+            }
+        }, waitAfterParseTimeout);
         
         // Close the project, make sure cache IS empty
         traceModel.getModel().closeProjectBase(projectRoot1);
-        sleep(sleepAfterClose);
-        setZero = strategy.testGetCacheFileNames();
-        assertTrue("Cache should be empty after project closure", setZero.isEmpty());
+        if (TRACE) {
+            System.out.println("Closed project " + projectRoot1.getName());
+        }
+        assertTrue("Cache should be empty after project closure", getFileNames(strategy).isEmpty());
 
         // Open the 2-nd project, make sure cache is NOT empty
         ProjectBase projectRoot2 = createProject(traceModel, "project-2", "file2.cpp", "int foo2");
-        sleep(sleepAfterParse);
-        Collection<String> setTwo = strategy.testGetCacheFileNames();
-        assertFalse("Cache should not be empty at that time", setTwo.isEmpty());
+        waitCondition(new Condition("Cache should not be empty at that time") {
+            @Override
+            boolean check() {
+                return getFileNames(strategy).size() == 4;
+            }
+        }, waitAfterParseTimeout);
+        final Collection<String> setTwo = strategy.testGetCacheFileNames();
         
-        // Open the 3-rd project, make sure cache is NOT empty
+        // Open the 3-rd project, make sure cache has changed and contains all previous keys
         ProjectBase projectRoot3 = createProject(traceModel, "project-3", "file3.cpp", "int foo3");
-        sleep(sleepAfterParse);
-        Collection<String> setThree = strategy.testGetCacheFileNames();
-        assertFalse("Cache should not be empty at that time", setThree.isEmpty());
+        waitCondition(new Condition("Cache should change at that time") {
+            @Override
+            boolean check() {
+                Collection<String> newKeys = getFileNames(strategy);
+                return newKeys.size() == 8 && newKeys.containsAll(setTwo);
+            }
+        }, waitAfterParseTimeout);
         
         // Close the 3-rd project, make sure cache is the same as befor it was open
         traceModel.getModel().closeProjectBase(projectRoot3);
-        sleep(sleepAfterClose);
-
-        Collection<String> setTwo_Dup = strategy.testGetCacheFileNames();
-        assertEquals("The set of the cached files should be the same as before", setTwo, setTwo_Dup);
+        if (TRACE) {
+            System.out.println("Closed project " + projectRoot3.getName());
+        }
+        assertTrue("The set of the cached files should be the same as before", getFileNames(strategy).equals(setTwo));
     }
     
     private ProjectBase createProject(TraceModelBase traceModel, String projectName, String fileName, String fileContent) throws Exception {
@@ -115,7 +130,37 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         writeFile(sourceFile, fileContent);
         ProjectBase project = createExtraProject(traceModel, projectRoot, projectName);
         project.waitParse();
+        if (TRACE) {
+            System.out.println("Created project " + projectName);
+        }
         return project;
     }
 
+    private Collection<String> getFileNames(FilesAccessStrategyImpl strategy) {
+        Collection<String> res = strategy.testGetCacheFileNames();
+        if (TRACE) {
+            System.out.println(res);
+        }
+        return res;
+    }
+
+    private abstract class Condition {
+        public final String failureMessage;
+        public Condition(String failureMessage) {
+            this.failureMessage = failureMessage;
+        }
+        abstract boolean check();
+    }
+
+    private void waitCondition(Condition condition, long timeout) throws Exception {
+        long now = System.currentTimeMillis();
+        long end = now + timeout;
+        while (now < end && !condition.check()) {
+            sleep(1000);
+            now = System.currentTimeMillis();
+        }
+        if (now >= end) {
+            fail(condition.failureMessage);
+        }
+    }
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="JavaCard3">
+            <file name="org-netbeans-modules-javacard-oberthur-RefreshStatusAction.instance">
+                <attr name="position" intvalue="2001"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-modules-javacard-spi">
+        <folder name="kinds">
+            <folder name="oberthur">
+                <file name="org-netbeans-modules-javacard-oberthur-CardsFactoryImpl.instance"/>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-javacard-oberthur-RefreshStatusAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-oberthur-RefreshStatusAction.instance"/>
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

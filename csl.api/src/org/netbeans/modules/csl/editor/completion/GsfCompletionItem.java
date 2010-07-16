@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -101,7 +106,18 @@ public abstract class GsfCompletionItem implements CompletionItem {
             this.completionResult = completionResult;
             this.info = info;
         }
-        
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            if(item instanceof DefaultCompletionProposal) {
+                boolean cancel = ((DefaultCompletionProposal)item).beforeDefaultAction();
+                if(cancel) {
+                    return ; //do not invoke the default action
+                }
+            }
+            super.defaultAction(component);
+        }
+
         public int getSortPriority() {
             if (item.getSortPrioOverride() != 0) {
                 return item.getSortPrioOverride();
@@ -115,7 +131,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
             case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
             case PACKAGE:
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
-            case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
+            case CLASS:
+            case INTERFACE: return item.isSmart() ? 800 - SMART_TYPE : 800;
             case ATTRIBUTE:
             case RULE: return item.isSmart() ? 482 - SMART_TYPE : 482;
             case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
@@ -232,6 +249,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //            case FIELD:
 //                return getFieldIcon();
 //            case CLASS:
+//            case INTERFACE:
 //                return getClassIcon();
 //            case MODULE:
 //                return getModuleIcon();
@@ -563,10 +581,13 @@ public abstract class GsfCompletionItem implements CompletionItem {
                             }
                             return;
                         }
-                        Position position = doc.createPosition(offset);
+                        int common = 0;
+                        while (text.regionMatches(0, textToReplace, 0, ++common));
+                        common--;
+                        Position position = doc.createPosition(offset + common);
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                        doc.remove(offset, len);
-                        doc.insertString(position.getOffset(), text, null);
+                        doc.remove(offset + common, len - common);
+                        doc.insertString(position.getOffset(), text.substring(common), null);
                         if (semiPosition != null) {
                             doc.insertString(semiPosition.getOffset(), ";", null);
                         }
@@ -677,6 +698,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
                     sb.append(METHOD_COLOR);
                      break;
                 case CLASS:
+                case INTERFACE:
                     sb.append(CLASS_COLOR);
                     break;
                 case FIELD:

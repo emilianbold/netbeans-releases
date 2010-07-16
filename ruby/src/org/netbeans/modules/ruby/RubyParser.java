@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -776,7 +779,7 @@ public final class RubyParser extends Parser {
         void error(Error error);
     }
 
-    public static class RubyError implements Error {
+    public static class RubyError implements Error.Badging {
         
         private final String displayName;
         private final ID id;
@@ -796,22 +799,27 @@ public final class RubyParser extends Parser {
             this.parameters = parameters;
         }
 
+        @Override
         public String getDisplayName() {
             return displayName;
         }
 
+        @Override
         public int getStartPosition() {
             return startPosition;
         }
 
+        @Override
         public int getEndPosition() {
             return endPosition;
         }
 
+        @Override
         public FileObject getFile() {
             return file;
         }
 
+        @Override
         public String getKey() {
             return id != null ? id.name() : "";
         }
@@ -820,10 +828,12 @@ public final class RubyParser extends Parser {
             return id;
         }
 
+        @Override
         public Object[] getParameters() {
             return parameters;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
@@ -833,12 +843,21 @@ public final class RubyParser extends Parser {
             return "RubyError:" + displayName;
         }
 
+        @Override
         public String getDescription() {
             return null;
         }
 
+        @Override
         public boolean isLineError() {
             return true;
+        }
+
+        @Override
+        public boolean showExplorerBadge() {
+            // don't show explored badges for rhtml files,
+            // see #183453
+            return !RubyUtils.isRhtmlFile(file);
         }
     }    
 }

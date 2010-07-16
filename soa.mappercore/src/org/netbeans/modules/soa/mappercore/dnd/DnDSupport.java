@@ -122,7 +122,7 @@ public class DnDSupport implements DnDConstants {
         public void dragGestureRecognized(DragGestureEvent dge) {
             if (cachedTransferable != null) {
                 try {
-                    dge.startDrag(null, FAKE_DND_ICON, new Point(0, 0),
+                    dge.startDrag(null, FAKE_DND_ICON, new Point(0, 0), 
                             cachedTransferable, this);
                 } finally {
                     cachedTransferable = null;
@@ -143,7 +143,7 @@ public class DnDSupport implements DnDConstants {
         public void dragDropEnd(DragSourceDropEvent dsde) {
             dndHandler.dragDone(component, dsde);
         }
-    }
+    }       
 
     private static class DnDRecognizer extends DragGestureRecognizer {
 
@@ -165,7 +165,7 @@ public class DnDSupport implements DnDConstants {
         protected void unregisterListeners() {
         }
     }
-
+    
     private static final Image FAKE_DND_ICON
             = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 }

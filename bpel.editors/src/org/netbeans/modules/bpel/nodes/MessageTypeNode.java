@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -86,10 +85,11 @@ public class MessageTypeNode extends BpelNode<Message> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 NAME, "getName", null); // NOI18N
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 VARIABLE_STEREOTYPE, "getStereotype", null); // NOI18N
         return sheet;
     }

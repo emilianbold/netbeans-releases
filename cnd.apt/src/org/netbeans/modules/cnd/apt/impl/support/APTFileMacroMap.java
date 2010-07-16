@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,8 +47,12 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
@@ -130,6 +137,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
 
+    @Override
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
         APTMacro macro = new APTMacroImpl(file, define, macroType);
         if (APTTraceFlags.APT_SHARE_MACROS) {
@@ -138,6 +146,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return macro;
     }
 
+    @Override
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         return new APTMacroMapSnapshot(parent);
     }
@@ -165,9 +174,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     private void initCache() {
         if (macroCache == NO_CACHE) {
-            macroCache =  new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
             // fill cache to speedup getMacro
-            APTMacroMapSnapshot.addAllMacros(active, macroCache);
+            macroCache = APTMacroMapSnapshot.addAllMacros(active, null);
             if (crc1 == 0 && crc2 == 0) {
                 for(Map.Entry<CharSequence, APTMacro> entry : macroCache.entrySet()){
                     int i1 = entry.getKey().hashCode();
@@ -248,32 +256,38 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
 
-    private LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
+    private final LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
+    private final HashSet<CharSequence> expandingMacroIDs = new HashSet<CharSequence>();
 
+    @Override
     public boolean pushExpanding(APTToken token) {
         assert (token != null);
-        if (!isExpanding(token)) {
-            expandingMacros.addLast(token.getTextID());
+        CharSequence id = token.getTextID();
+        if (!isExpanding(id)) {
+            expandingMacros.addLast(id);
+            expandingMacroIDs.add(id);
             return true;
         }
         return false;
     }
 
+    @Override
     public void popExpanding() {
         try {
-            expandingMacros.removeLast();
+            CharSequence id = expandingMacros.removeLast();
+            expandingMacroIDs.remove(id);
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why pop from empty stack?"; // NOI18N
         }
     }
 
+    @Override
     public boolean isExpanding(APTToken token) {
-        try {
-            return expandingMacros.contains(token.getTextID());
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            assert (false) : "why ask empty stack?"; // NOI18N
-        }
-        return false;
+        return isExpanding(token.getTextID());
+    }
+
+    private boolean isExpanding(CharSequence id) {
+        return expandingMacroIDs.contains(id);
     }
 
     //////////////////////////////////////////////////////////////////////////

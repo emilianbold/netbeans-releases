@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,10 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,10 +55,10 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -65,57 +71,64 @@ import org.openide.util.RequestProcessor;
  */
 public class LoginPanel extends javax.swing.JPanel {
 
-    private static URL getForgetPasswordUrl() {
+    private Credentials credentials;
+
+    private RequestProcessor.Task chkOnlineTask;
+    RequestProcessor rp = new RequestProcessor(LoginPanel.class.getName(),5);
+
+
+    private URL getForgetPasswordUrl() {
         try {
-            return new URL(Kenai.getDefault().getUrl().toString() + "/people/forgot_password"); // NOI18N
+            if (kenai!=null) {
+            return new URL(kenai.getUrl().toString() + "/people/forgot_password"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/forgot_password"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
     }
 
-    private static URL getRegisterUrl() {
+    private URL getRegisterUrl() {
         try {
-            return new URL(Kenai.getDefault().getUrl().toString() + "/people/signup"); // NOI18N
+            if (kenai!=null) {
+            return new URL(kenai.getUrl().toString() + "/people/signup"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/signup"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
     }
+
+    private Kenai kenai;
 
     /** Creates new form LoginPanel */
-    public LoginPanel() {
+    public LoginPanel(Kenai kenai, Credentials credentials) {
+        this.kenai = kenai;
+        this.credentials = credentials;
         initComponents();
-        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        lblKenaiLogoCenter.setBorder(null);
-        lblKenaiLogoLeft.setBorder(null);
-        lblKenaiLogoRight.setBorder(null);
-        Kenai kenai = Kenai.getDefault();
-        String hostName = kenai.getUrl().getHost();
-        if (!hostName.equals("kenai.com")) {//NOI18N
-            lblKenaiLogoCenter.setVisible(false);
-            lblKenaiLogoRight.setVisible(false);
-            lblKenaiLogoLeft.setText(NbBundle.getMessage(LoginPanel.class, "LBL_LoginTo", kenai.getName(), kenai.getUrl().toString()));
-            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
-            lblKenaiLogoLeft.setIcon(null);
+//        lblKenaiLogoCenter.setBorder(null);
+//        lblKenaiLogoLeft.setBorder(null);
+//        lblKenaiLogoRight.setBorder(null);
+//        String hostName = kenai.getUrl().getHost();
+//        if (!hostName.equals("kenai.com")) {//NOI18N
+//            lblKenaiLogoCenter.setVisible(false);
+//            lblKenaiLogoRight.setVisible(false);
+//            lblKenaiLogoLeft.setText(NbBundle.getMessage(LoginPanel.class, "LBL_LoginTo", kenai.getName(), kenai.getUrl().toString()));
+//            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
+//            lblKenaiLogoLeft.setIcon(null);
+//        }
+        kenaiCombo.setSelectedItem(kenai);
+        if (kenai!=null) {
+        setUsername(credentials.getUsername(kenai));
+        setPassword(credentials.getPassword(kenai));
+        setChkOnline();
+        } else {
+            setChildrenEnabled(false);
         }
-        chkIsOnline.setSelected(false);
-        chkIsOnline.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                boolean is = Utilities.isChatSupported();
-                if (is) {
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            chkIsOnline.setEnabled(true);
-                            chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
-                        }
-                    });
-                }
-            }
-        });
     }
 
     public boolean isStorePassword() {
@@ -123,6 +136,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showError(KenaiException ex) {
+        kenaiCombo.setEnabled(true);
         progressBar.setVisible(false);
         String errorMessage = ex.getMessage();
         if (errorMessage==null || "".equals(errorMessage.trim())) {
@@ -146,13 +160,51 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        kenaiCombo.setEnabled(false);
         setLoginButtonEnabled(false);
+    }
+
+    private void setChildrenEnabled(boolean enabled) {
+        for (Component c:getComponents()) {
+            if (c!=kenaiCombo && c!=kenaiLabel) {
+                c.setEnabled(enabled);
+            }
+        }
     }
 
     public void clearStatus() {
         error.setVisible(false);
         progressBar.setVisible(false);
         setLoginButtonEnabled(true);
+        kenaiCombo.setEnabled(true);
+    }
+
+    private void setChkOnline() {
+        chkIsOnline.setSelected(false);
+        chkIsOnline.setEnabled(false);
+        if (chkOnlineTask != null) {
+            chkOnlineTask.schedule(0);
+        } else {
+            chkOnlineTask = rp.post(new Runnable() {
+
+                public void run() {
+                    if (kenai == null) {
+                        return;
+                    }
+                    boolean is = Utilities.isChatSupported(kenai);
+                    if (is) {
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                                chkIsOnline.setEnabled(true);
+                                chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     private void setLoginButtonEnabled(boolean enabled) {
@@ -172,7 +224,6 @@ public class LoginPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblKenaiLogoCenter = new javax.swing.JLabel();
         lblUserName = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
         lblPassword = new javax.swing.JLabel();
@@ -181,25 +232,21 @@ public class LoginPanel extends javax.swing.JPanel {
         password = new javax.swing.JPasswordField();
         forgotPassword = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"), new URLDisplayerAction("",getForgetPasswordUrl()));
         signUp = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"), new URLDisplayerAction("",getRegisterUrl()));
-        lblKenaiLogoLeft = new javax.swing.JLabel();
-        lblKenaiLogoRight = new javax.swing.JLabel();
         error = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         chkIsOnline = new javax.swing.JCheckBox();
+        kenaiLabel = new javax.swing.JLabel();
+        kenaiCombo = new KenaiCombo(true);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
-        lblKenaiLogoCenter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_center.png"))); // NOI18N
-        lblKenaiLogoCenter.setMinimumSize(new java.awt.Dimension(0, 50));
 
         lblUserName.setLabelFor(username);
         org.openide.awt.Mnemonics.setLocalizedText(lblUserName, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.text")); // NOI18N
 
-        username.setText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.username.text")); // NOI18N
-
         lblPassword.setLabelFor(password);
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblPassword.text")); // NOI18N
 
+        chkRememberMe.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(chkRememberMe, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.text")); // NOI18N
         chkRememberMe.setToolTipText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.toolTipText")); // NOI18N
         chkRememberMe.addActionListener(new java.awt.event.ActionListener() {
@@ -216,10 +263,6 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
-        lblKenaiLogoLeft.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_left.png"))); // NOI18N
-
-        lblKenaiLogoRight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_right.png"))); // NOI18N
-
         error.setForeground(java.awt.Color.red);
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
 
@@ -230,24 +273,28 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(kenaiLabel, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.kenaiLabel.text")); // NOI18N
+
+        kenaiCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                kenaiComboActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lblKenaiLogoLeft)
-                .add(0, 0, 0)
-                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
-                .add(0, 0, 0)
-                .add(lblKenaiLogoRight))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, error)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(error)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUserName)
-                            .add(lblPassword))
+                            .add(lblPassword)
+                            .add(kenaiLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -258,25 +305,18 @@ public class LoginPanel extends javax.swing.JPanel {
                             .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .add(forgotPassword)
-                            .add(chkIsOnline))))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                            .add(chkIsOnline)
+                            .add(kenaiCombo, 0, 292, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .add(0, 0, 0)
-                        .add(lblKenaiLogoLeft))
-                    .add(layout.createSequentialGroup()
-                        .add(0, 0, 0)
-                        .add(lblKenaiLogoRight)))
-                .add(16, 16, 16)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(kenaiLabel)
+                    .add(kenaiCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblUserName)
                     .add(username, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -325,8 +365,57 @@ public class LoginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chkRememberMeActionPerformed
 
     private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
-        NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+        NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+        System.out.println(chkIsOnline.isEnabled());
     }//GEN-LAST:event_chkIsOnlineActionPerformed
+
+    private void kenaiComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
+        if (kenaiCombo.getSelectedItem() instanceof Kenai) {
+            this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+            for (ActionListener l:forgotPassword.getActionListeners()) {
+                forgotPassword.removeActionListener(l);
+            }
+            forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+            for (ActionListener l:signUp.getActionListeners()) {
+                signUp.removeActionListener(l);
+            }
+            signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+
+            forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+            signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+            
+            setUsername(credentials.getUsername(kenai));
+            setPassword(credentials.getPassword(kenai));
+            setChildrenEnabled(true);
+            setChkOnline();
+        } else if (kenaiCombo.getSelectedItem() instanceof String) {
+            final ActionEvent e = evt;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    new AddInstanceAction().actionPerformed(e);
+                    LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    if (!(kenaiCombo.getSelectedItem() instanceof Kenai) || ((LoginPanel.this.kenai=((Kenai) kenaiCombo.getSelectedItem()))==null))
+                        return;
+                    for (ActionListener l : forgotPassword.getActionListeners()) {
+                        forgotPassword.removeActionListener(l);
+                    }
+                    forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+                    for (ActionListener l : signUp.getActionListeners()) {
+                        signUp.removeActionListener(l);
+                    }
+                    signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+
+                    forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+                    signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+
+                    setChildrenEnabled(true);
+                    setChkOnline();
+                }
+            });
+        } 
+    }//GEN-LAST:event_kenaiComboActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -334,9 +423,8 @@ public class LoginPanel extends javax.swing.JPanel {
     javax.swing.JCheckBox chkRememberMe;
     javax.swing.JLabel error;
     javax.swing.JButton forgotPassword;
-    javax.swing.JLabel lblKenaiLogoCenter;
-    javax.swing.JLabel lblKenaiLogoLeft;
-    javax.swing.JLabel lblKenaiLogoRight;
+    javax.swing.JComboBox kenaiCombo;
+    javax.swing.JLabel kenaiLabel;
     javax.swing.JLabel lblNoAccount;
     javax.swing.JLabel lblPassword;
     javax.swing.JLabel lblUserName;
@@ -353,16 +441,26 @@ public class LoginPanel extends javax.swing.JPanel {
     public String getUsername() {
         return username.getText();
     }
-    public void setUsername(String uname) {
+
+    private void setUsername(String uname) {
         username.setText(uname);
         chkRememberMe.setSelected(true);
     }
 
-    public void setPassword(char[] pwd) {
+    private void setPassword(char[] pwd) {
         password.setText(new String(pwd));
     }
 
     public boolean isOnline() {
         return chkIsOnline.isSelected();
+    }
+
+    public Kenai getKenai() {
+        return (Kenai) kenaiCombo.getSelectedItem();
+    }
+
+    public interface Credentials {
+        String getUsername(Kenai kenai);
+        char[] getPassword(Kenai kenai);
     }
 }

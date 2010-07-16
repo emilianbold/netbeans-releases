@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,6 +76,7 @@ public final class JavaIndex {
     public static final int VERSION = 14;
     static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
     private static final String CLASSES = "classes"; //NOI18N
+    private static final String APT_SOURCES = "sources";    //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
 
     public static File getIndex(Context c) {
@@ -106,6 +110,14 @@ public final class JavaIndex {
         return processCandidate(new File(getIndex(url), CLASSES), onlyIfExists);
     }
 
+    public static File getAptFolder(final URL sourceRoot, final boolean create) throws IOException {
+        final File aptSources = new File (getIndex(sourceRoot), APT_SOURCES);
+        if (create) {
+            aptSources.mkdirs();
+        }
+        return aptSources;
+    }
+
     public static URL getSourceRootForClassFolder(URL binaryRoot) {
         FileObject folder = URLMapper.findFileObject(binaryRoot);
         if (folder == null || !CLASSES.equals(folder.getName()))
@@ -129,8 +141,10 @@ public final class JavaIndex {
             if (attributeValue != null) {
                 p.setProperty(attributeName, attributeValue);
                 storeProperties(root, p);
+                return true;
+            } else {
+                return false;
             }
-            return false;
         }
         if (current.equals(attributeValue)) {
             return false;

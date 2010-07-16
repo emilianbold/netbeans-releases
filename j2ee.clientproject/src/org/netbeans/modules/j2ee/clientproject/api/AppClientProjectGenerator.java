@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -191,6 +196,9 @@ public class AppClientProjectGenerator {
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
         appClient.setDisplayName(name);
         appClient.write(ddFile);
+        if (createData.isCDIEnabled()) {
+            DDHelper.createBeansXml(j2eeProfile, confRoot);
+        }
         
         final String realServerLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
@@ -502,6 +510,7 @@ public class AppClientProjectGenerator {
         //        data.appendChild(addLibs);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties epPriv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
             Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
@@ -569,8 +578,9 @@ public class AppClientProjectGenerator {
         SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = v.toString();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
-            sourceLevel = "1.5";
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel.equals("1.7")) {
+            sourceLevel = "1.6";
         }
         ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, sourceLevel); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
@@ -631,18 +641,18 @@ public class AppClientProjectGenerator {
                                                                "MSG_Warning_SpecLevelNotSupported",
                                                                new Object[] {j2eeProfile, Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID)}));
         }
-        ep.setProperty(AppClientProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
         if (h.isSharableProject() && serverLibraryName != null) {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-            setServerProperties(ep, serverLibraryName);
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }        
-        
+        J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.CAR);
+        AppClientProjectProperties.generateExtraServerProperty(epPriv);
+
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {
             ep.put(AppClientProjectProperties.APPCLIENT_MAINCLASS_ARGS, mainClassArgs);
@@ -657,49 +667,25 @@ public class AppClientProjectGenerator {
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
-        //private.properties
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
         // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-        ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
+        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, root));
         
         
         String acMain = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);
         if (acMain != null) {
-            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, acMain);
+            epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, acMain);
         }
         String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
         if (jvmOpts != null) {
-            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_JVMOPTS, jvmOpts);
+            epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_JVMOPTS, jvmOpts);
         }
         String args = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME,
                 AppClientProjectProperties.J2EE_PLATFORM_APPCLIENT_ARGS);
         if (args != null) {
-            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_ARGS, args);
-        }
-        
-        ep.setProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        
-        if (!h.isSharableProject() || serverLibraryName == null) {
-            // set j2ee.platform.classpath
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-        
-            // set j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
+            epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_ARGS, args);
         }
 
         // WORKAROUND for --retrieve option in asadmin deploy command
@@ -711,36 +697,16 @@ public class AppClientProjectGenerator {
         } else {
             ep.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(dirFO);
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, AppClientProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                    J2eeModule.CLIENT, serverInstanceID);
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
-        if (deployAntPropsFile != null) {
-            ep.setProperty(AppClientProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-        }
-        
+
+        J2EEProjectProperties.createDeploymentScript(dirFO, ep, epPriv, serverInstanceID, J2eeModule.Type.CAR);
+
         // use the default encoding
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(AppClientProjectProperties.SOURCE_ENCODING, enc.name());
+        epPriv.setProperty(AppClientProjectProperties.SOURCE_ENCODING, enc.name());
         
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
         
         return h;
-    }
-
-    public static void setServerProperties(EditableProperties ep, String serverLibraryName) {
-        ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-        ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-        ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
     }
 
     private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject referencedFO) {
@@ -817,9 +783,10 @@ public class AppClientProjectGenerator {
                                 }
 
                                 // #89131: these levels are not actually distinct from 1.5.
+                                // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
                                 String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
-                                    srcLevel = "1.5";
+                                if (sourceLevel.equals("1.7")) {
+                                    srcLevel = "1.6";
                                 }
                                 PlatformUiSupport.storePlatform(ep, updateHelper, AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

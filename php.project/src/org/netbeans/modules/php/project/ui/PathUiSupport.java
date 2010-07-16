@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -206,11 +209,8 @@ public final class PathUiSupport {
 
         private static final String RESOURCE_ICON_BROKEN_BADGE
                 = "org/netbeans/modules/php/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
-        private static final String RESOURCE_ICON_CLASSPATH
-                = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
 
         private static final ImageIcon ICON_BROKEN_BADGE = ImageUtilities.loadImageIcon(RESOURCE_ICON_BROKEN_BADGE, false);
-        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
         private static ImageIcon ICON_FOLDER = null;
         private static ImageIcon ICON_BROKEN_FOLDER = null;
 
@@ -268,7 +268,7 @@ public final class PathUiSupport {
         private static Icon getIcon(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
-                    return ICON_CLASSPATH;
+                    return ImageUtilities.image2Icon(Utils.getIncludePathIcon(false));
                     //break;
                 default:
                     if (item.isBroken()) {
@@ -417,8 +417,10 @@ public final class PathUiSupport {
             em.valueChanged(null);
         }
 
-        /** Handles button events
+        /**
+         * Handles button events.
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
 
             Object source = e.getSource();
@@ -436,8 +438,10 @@ public final class PathUiSupport {
             }
         }
 
-        /** Handles changes in the selection
+        /**
+         * Handles changes in the selection.
          */
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);
@@ -457,7 +461,6 @@ public final class PathUiSupport {
                 // XXX maybe select fs root
                 chooser = new JFileChooser();
             }
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(true);
             chooser.setDialogTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));

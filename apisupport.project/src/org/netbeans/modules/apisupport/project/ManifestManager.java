@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -54,10 +58,13 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
-import org.openide.util.Exceptions;
 
 // XXX a lot of code in this method is more or less duplicated from
 // org.netbeans.core.modules.Module class. Do not forgot to refactor this as
@@ -69,6 +76,8 @@ import org.openide.util.Exceptions;
  * @author Martin Krauskopf
  */
 public final class ManifestManager {
+
+    private static final Logger LOG = Logger.getLogger(ManifestManager.class.getName());
     
     private String codeNameBase;
     private String releaseVersion;
@@ -89,7 +98,9 @@ public final class ManifestManager {
     private Boolean autoUpdateShowInClient;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
+    public static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    public static final String BUNDLE_VERSION = "Bundle-Version"; // NOI18N
     public static final String OPENIDE_MODULE_IMPLEMENTATION_VERSION = "OpenIDE-Module-Implementation-Version"; // NOI18N
     public static final String OPENIDE_MODULE_PROVIDES = "OpenIDE-Module-Provides"; // NOI18N
     public static final String OPENIDE_MODULE_REQUIRES = "OpenIDE-Module-Requires"; // NOI18N
@@ -97,12 +108,16 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_LAYER = "OpenIDE-Module-Layer"; // NOI18N
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
+    public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
+    public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
+    public static final String BUNDLE_REQUIRE_BUNDLE = "Require-Bundle"; // NOI18N
+    public static final String BUNDLE_LOCALIZATION = "Bundle-Localization"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
     public static final String AUTO_UPDATE_SHOW_IN_CLIENT = "AutoUpdate-Show-In-Client"; // NOI18N
 
-    private static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
+    public static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
 
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
@@ -160,11 +175,10 @@ public final class ManifestManager {
                     Manifest mf = new Manifest(mis);
                     return ManifestManager.getInstance(mf, loadPublicPackages);
                 } finally {
-                    mis.close();;
+                    mis.close();
                 }
             } catch (IOException x) {
-                Exceptions.attachMessage(x, "While opening: " + manifest);
-                Exceptions.printStackTrace(x);
+                LOG.log(Level.INFO, "While opening: " + manifest, x);
             }
         }
         return NULL_INSTANCE;
@@ -186,7 +200,29 @@ public final class ManifestManager {
                     throw new IOException("No manifest in " + jar); // NOI18N
                 }
                 withGeneratedLayer = withGeneratedLayer && (jf.getJarEntry(GENERATED_LAYER_PATH) != null);
-                return ManifestManager.getInstance(m, true, withGeneratedLayer);
+                ManifestManager mm = ManifestManager.getInstance(m, true, withGeneratedLayer);
+                if (Arrays.asList(mm.getProvidedTokens()).contains("org.osgi.framework.launch.FrameworkFactory")) { // NOI18N
+                    // This looks to be a wrapper for an OSGi container.
+                    // Add in anything provided by the container itself.
+                    // Otherwise some bundles might be expressing container dependencies
+                    // which can actually be resolved at runtime but which look like missing deps.
+                    String cp = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+                    if (cp != null) {
+                        for (String piece : cp.split("[, ]+")) {
+                            if (piece.isEmpty()) {
+                                continue;
+                            }
+                            File ext = new File(jar.getParentFile().toURI().resolve(piece.trim()));
+                            if (ext.isFile()) {
+                                ManifestManager mm2 = getInstanceFromJAR(ext);
+                                List<String> toks = new ArrayList<String>(Arrays.asList(mm.provTokens));
+                                toks.addAll(Arrays.asList(mm2.provTokens));
+                                mm.provTokens = toks.toArray(new String[toks.size()]);
+                            }
+                        }
+                    }
+                }
+                return mm;
             } finally {
                 jf.close();
             }
@@ -203,6 +239,12 @@ public final class ManifestManager {
     public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
+        if (codename == null) {
+            if (attr.getValue(BUNDLE_SYMBOLIC_NAME) != null) {
+                return getOSGiInstance(manifest, loadPublicPackages, withGeneratedLayer);
+            }
+        }
+
         String codenamebase = null;
         String releaseVersion = null;
         if (codename != null) {
@@ -249,17 +291,114 @@ public final class ManifestManager {
                 autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
     }
+
+    private static ManifestManager getOSGiInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
+        Attributes attr = manifest.getMainAttributes();
+        String codenamebase = attr.getValue(BUNDLE_SYMBOLIC_NAME);
+        int semicolon = codenamebase.indexOf(';');
+        if (semicolon >= 0) {
+            codenamebase = codenamebase.substring(0, semicolon);
+        }
+        codenamebase = codenamebase.replace('-', '_');
+        String requires = null;
+        String provides = null;
+        PackageExport[] publicPackages = EMPTY_EXPORTED_PACKAGES;
+        if (loadPublicPackages) {
+            String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+            StringBuilder sb = new StringBuilder();
+            sb.append(codenamebase);
+            if (pp != null) {
+                List<PackageExport> arr = new ArrayList<PackageExport>();
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    final PackageExport pe = new PackageExport(p.replaceAll(";.*$", "").trim(), false);
+                    arr.add(pe);
+                    sb.append(',').append(pe.getPackage());
+                }
+                publicPackages = arr.toArray(new PackageExport[0]);
+            }
+            provides = sb.toString();
+        }
+        {
+            StringBuffer sb = new StringBuffer();
+            String sep = "";
+            String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
+            if (pp != null) {
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    String pkg = p.replaceAll(";.*$", "").trim();
+                    if (pkg.startsWith("javax.")) {
+                        // Crude; would be better to use MakeOSGi.JAVA_PLATFORM_PACKAGES.
+                        continue;
+                    }
+                    sb.append(sep).append(pkg);
+                    sep = ",";
+                }
+            }
+            pp = attr.getValue(BUNDLE_REQUIRE_BUNDLE);
+            if (pp != null) {
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    sep = ",";
+                }
+            }
+
+            requires = sb.length() == 0 ? null : sb.toString().replace('-', '_');
+        }
+
+        return new ManifestManager(
+                codenamebase, null,
+                just3dots(attr.getValue(BUNDLE_VERSION)),
+                attr.getValue(BUNDLE_VERSION),
+                provides, // provides
+                requires, // requires
+                null, // needs
+                attr.getValue(BUNDLE_LOCALIZATION) + ".properties", // NOI18N
+                attr.getValue(OPENIDE_MODULE_LAYER),
+                withGeneratedLayer,
+                attr.getValue(CLASS_PATH),
+                publicPackages, //publicPackages,
+                null, //friendNames,
+                false, // deprecated,
+                null, // autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
+                attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
+    }
+
+    private static String just3dots(String v) {
+        if (v == null) {
+            return null;
+        }
+        String[] segments = v.split("\\.");
+        final int max = 3;
+        int[] version = new int[segments.length > max ? max : segments.length];
+        for (int i = 0; i < version.length; i++) {
+            version[i] = Integer.parseInt(segments[i]);
+        }
+        StringBuilder sb = new StringBuilder();
+        String conditionalDot = "";
+        for (int i = 0; i < version.length; i++) {
+            sb.append(conditionalDot);
+            sb.append(version[i]);
+            conditionalDot = ".";
+        }
+        return sb.toString();
+    }
     
     /**
      * Generates module manifest with the given values into the given
      * <code>manifest</code>.
      */
     static void createManifest(FileObject manifest, String cnb, String specVer,
-            String bundlePath, String layerPath) throws IOException {
+            String bundlePath, String layerPath, boolean osgi) throws IOException {
         EditableManifest em = new EditableManifest();
-        em.setAttribute(OPENIDE_MODULE, cnb, null);
-        em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
-        em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
+        if (osgi) {
+            em.setAttribute(BUNDLE_SYMBOLIC_NAME, cnb, null);
+            em.setAttribute(BUNDLE_VERSION, specVer, null);
+            em.setAttribute(BUNDLE_LOCALIZATION, bundlePath.replaceFirst("[.]properties$", ""), null);
+            em.setAttribute("Bundle-Name", "%" + LocalizedBundleInfo.NAME, null); // NOI18N
+        } else {
+            em.setAttribute(OPENIDE_MODULE, cnb, null);
+            em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+            em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
+        }
         if (layerPath != null) {
             em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
         }
@@ -351,7 +490,14 @@ public final class ManifestManager {
     public String[] getNeededTokens() {
         return neededTokens;
     }
-    
+
+    /**
+     * Produces the {@code OpenIDE-Module-Localizing-Bundle} or {@code Bundle-Localization} header if there is one.
+     * This may be used as a default place to stick new bundle keys if there is no
+     * better place (e.g. in the same package as newly created Java code); might be
+     * used, for example, for {@code displayName} attributes on layer entries.
+     * Use {@link LocalizedBundleInfo} if you need to work with module-system-defined keys.
+     */
     public String getLocalizingBundle() {
         return localizingBundle;
     }

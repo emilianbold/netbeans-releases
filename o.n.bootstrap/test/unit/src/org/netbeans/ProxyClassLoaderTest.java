@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,11 +66,11 @@ public class ProxyClassLoaderTest extends SetupHid {
         class CL extends ProxyClassLoader {
             final Class[] owned;
             final String name;
-            CL(ClassLoader[] parents, String name, Class... owned) {
+            CL(ClassLoader[] parents, String _name, Class... _owned) {
                 super(parents, false);
                 addCoveredPackages(Collections.singleton("org.netbeans"));
-                this.name = name;
-                this.owned = owned;
+                name = _name;
+                owned = _owned;
             }
             protected @Override Class doLoadClass(String pkg, String name) {
                 for (Class c : owned) {
@@ -124,22 +127,24 @@ public class ProxyClassLoaderTest extends SetupHid {
         public static A a() {
             return new A();
         }
+        private B() {}
     }
     public static class C {
         public static A a() {
             return new A();
         }
+        private C() {}
     }
 
     public void testResourceDelegation() throws Exception { // #32576
         class CL extends ProxyClassLoader {
             final URL base1, base2;
             final String[] owned;
-            CL(ClassLoader[] parents, URL base1, URL base2, String... owned) {
+            CL(ClassLoader[] parents, URL _base1, URL _base2, String... _owned) {
                 super(parents, false);
-                this.base1 = base1;
-                this.base2 = base2;
-                this.owned = owned;
+                base1 = _base1;
+                base2 = _base2;
+                owned = _owned;
                 addCoveredPackages(Collections.singleton("p"));
             }
             @Override public URL findResource(String name) {

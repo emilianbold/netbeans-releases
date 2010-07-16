@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -68,6 +72,15 @@ public class KenaiTest extends NbTestCase {
     private static String uname = null;
     private static String passw = null;
 
+    static {
+        try {
+            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+
     public KenaiTest(String S) {
         super(S);
     }
@@ -81,7 +94,6 @@ public class KenaiTest extends NbTestCase {
     }
 
     public void setInstance() {
-        instance = Kenai.getDefault();
     }
 
     @Before
@@ -90,8 +102,6 @@ public class KenaiTest extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "https://testkenai.com");
-            instance = Kenai.getDefault();
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
                 passw = System.getProperty("kenai.user.password");
@@ -395,6 +405,45 @@ public class KenaiTest extends NbTestCase {
         }
     }
 
+    /**
+     * Test of createProject method, of class Kenai.
+     */
+    @Test
+    public void testDeleteProject() throws KenaiException {
+        System.out.println("deleteProject");
+        String name = UNITTESTUNIQUENAME;
+        String displayName = "Test Display Name";
+        String description = "Test Description";
+        String[] licenses = {"MIT"};
+        KenaiProject result;
+        try {
+            result = instance.createProject(name, displayName, description, licenses, "java");
+            assert result.getName().equals(name);
+            assert result.getDisplayName().equals(displayName);
+            assert result.getDescription().equals(description);
+
+            result.delete();
+
+            try {
+                instance.getProject(UNITTESTUNIQUENAME);
+                fail(UNITTESTUNIQUENAME + " not deleted");
+            } catch (KenaiException kenaiException) {
+                System.out.println(kenaiException);
+            }
+
+            try {
+                result.getDescription();
+                fail(UNITTESTUNIQUENAME + " not deleted");
+            } catch (KenaiException kenaiException) {
+                System.out.println(kenaiException);
+            }
+        } catch (KenaiException kem) {
+            System.out.println(kem.getAsString());
+            throw kem;
+        }
+    }
+
+
     @Test
     /**
      * Test of createProjectFeature method of class Kenai
@@ -598,7 +647,7 @@ public class KenaiTest extends NbTestCase {
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
             br = new BufferedReader(new FileReader(_fileName));
             String line = null;
-            for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
+            for (KenaiLicense lic : instance.getLicenses()) {
                 // Check the licence name
                 line = br.readLine().trim();
                 assertEquals(line, lic.getName());
@@ -630,7 +679,7 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
-        for (KenaiService ser : Kenai.getDefault().getServices()) {
+        for (KenaiService ser : instance.getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());
@@ -654,6 +703,32 @@ public class KenaiTest extends NbTestCase {
         }
     }
 
+    @Test
+    /**
+     * Test of getMyProjects method of class Kenai
+     */
+    public void testJoinLeaveProject() throws Exception {
+        KenaiProject prj = instance.getProject("eduni-hearts");
+        KenaiUser user = KenaiUser.forName(instance.getPasswordAuthentication().getUserName() + "@" + instance.getName());
+        prj.addMember(user, KenaiProjectMember.Role.OBSERVER);
+        assert instance.getMyProjects().contains(prj);
+        boolean found = false;
+        int i=0;
+        KenaiProjectMember members[] = prj.getMembers();
+        while (!found) {
+            KenaiProjectMember m = members[i++];
+            if (m.getUserName().equals(user.getUserName())) {
+                found=true;
+                user = m.getKenaiUser();
+            }
+        }
+        assert found : "User was not added";
+
+        prj.deleteMember(user);
+        assert !instance.getMyProjects().contains(prj);
+    }
+
+
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
@@ -675,6 +750,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetServices"));
         _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
+        _suite.addTest(new KenaiTest("testDeleteProject"));
         return _suite;
     }
     ;

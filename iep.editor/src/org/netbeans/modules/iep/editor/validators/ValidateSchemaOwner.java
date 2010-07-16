@@ -25,13 +25,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.netbeans.modules.iep.editor.model.DefaultOperatorValidator;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
-import org.netbeans.modules.iep.model.lib.I18nException;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
+import org.netbeans.modules.tbls.editor.ps.TcgPsI18n;
+import org.netbeans.modules.tbls.model.I18nException;
+import org.netbeans.modules.tbls.model.TcgModelConstants;
+import org.netbeans.modules.tbls.model.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentValidationMsg;
+import org.netbeans.modules.tbls.model.TcgComponentValidationReport;
 import org.openide.util.NbBundle;
 /**
  *
@@ -51,35 +51,44 @@ public class ValidateSchemaOwner extends DefaultOperatorValidator {
         List messageList = report.getMessageList();
         String type = report.getType();
         TcgComponent parent = component.getParent().getParent();
-        TcgComponent schemas = parent.getComponent(SCHEMAS_KEY);
-        TcgComponent operators = parent.getComponent(OPERATORS_KEY);
+        TcgComponent schemas = parent.getComponent(COMP_SCHEMAS);
+        TcgComponent operators = parent.getComponent(COMP_OPERATORS);
         try {
-            boolean isSchemaOwner = component.getProperty(IS_SCHEMA_OWNER_KEY).getBoolValue();
-            TcgComponent scb = null;
-            List inputIdList = component.getProperty(INPUT_ID_LIST_KEY).getListValue();
-            for(int i = 0, I = inputIdList.size(); i < I; i++) {
-                String id = (String)inputIdList.get(i);
-                TcgComponent input = operators.getComponent(id);
-                String outputSchemaId = input.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                scb = schemas.getComponent(outputSchemaId);
-                appendPossibleColumnNames(allowedColumnNames,scb,input);
-            }
-            //to do: find way to get all the expression in a loop;
-            List expressionList = getListOfExpressions(component);
-            Iterator iter = expressionList.iterator();
-            boolean founderror = false;
-            boolean temp = false;
-            while(iter.hasNext()) {
-                String expression = (String)iter.next();
-                temp = validateSelectExpression(allowedColumnNames,expression,messageList,null);
-                if(!founderror && !temp) {
-                    founderror = true;
+            boolean isSchemaOwner = component.getProperty(PROP_IS_SCHEMA_OWNER).getBoolValue();
+            if (isSchemaOwner) {
+                TcgComponent scb = null;
+                List inputIdList = component.getProperty(PROP_INPUT_ID_LIST).getListValue();
+                for(int i = 0, I = inputIdList.size(); i < I; i++) {
+                    String id = (String)inputIdList.get(i);
+                    TcgComponent input = operators.getComponent(id);
+                    String outputSchemaId = input.getProperty(PROP_OUTPUT_SCHEMA_ID).getStringValue();
+                    scb = schemas.getComponent(outputSchemaId);
+                    appendPossibleColumnNames(allowedColumnNames,scb,input);
+                }
+                List staticIputIdList = component.getProperty(PROP_STATIC_INPUT_ID_LIST).getListValue();
+                for(int i = 0, I = staticIputIdList.size(); i < I; i++) {
+                    String id = (String)staticIputIdList.get(i);
+                    TcgComponent input = operators.getComponent(id);
+                    String outputSchemaId = input.getProperty(PROP_OUTPUT_SCHEMA_ID).getStringValue();
+                    scb = schemas.getComponent(outputSchemaId);
+                    appendPossibleColumnNames(allowedColumnNames,scb,input);
+                }
+                //to do: find way to get all the expression in a loop;
+                List expressionList = getListOfExpressions(component);
+                Iterator iter = expressionList.iterator();
+                boolean founderror = false;
+                boolean temp = false;
+                while(iter.hasNext()) {
+                    String expression = (String)iter.next();
+                    temp = validateSelectExpression(allowedColumnNames,expression,messageList,null);
+                    if(!founderror && !temp) {
+                        founderror = true;
+                    }
+                }
+                if(founderror) {
+                    type = VALIDATION_ERROR_KEY;
                 }
             }
-            if(founderror) {
-                type = VALIDATION_ERROR_KEY;
-            }
-            
         } catch(Exception e) {
             mLogger.log(Level.WARNING, "Error ", e);
             
@@ -88,7 +97,7 @@ public class ValidateSchemaOwner extends DefaultOperatorValidator {
     }
     
     private List getListOfExpressions(TcgComponent component) throws Exception {
-        List la = component.getProperty(FROM_COLUMN_LIST_KEY).getListValue();
+        List la = component.getProperty(PROP_FROM_COLUMN_LIST).getListValue();
         return la;
     }
     
@@ -111,7 +120,7 @@ public class ValidateSchemaOwner extends DefaultOperatorValidator {
         mLogger.info("The expression is " + expression);
         while(m.find()) {
             String fm = m.group();
-            if(!allowedColumnsInExpression.contains(fm)) {
+            if(!allowedColumnsInExpression.contains(fm) && !isNumber(fm)) {
                 TcgComponentValidationMsg  msg =
                         new TcgComponentValidationMsg(VALIDATION_ERROR_KEY,
                         ((compType==null)? "":"'" + TcgPsI18n.getDisplayName(compType)
@@ -125,8 +134,13 @@ public class ValidateSchemaOwner extends DefaultOperatorValidator {
         return validated;
     }
     
-    
-    
-    
+    private boolean isNumber(String s) {
+        try {
+            Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
     
 }

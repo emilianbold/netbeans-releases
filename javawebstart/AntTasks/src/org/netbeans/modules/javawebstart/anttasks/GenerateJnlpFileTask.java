@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +33,8 @@ import org.apache.tools.ant.PathTokenizer;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.Commandline;
+import org.apache.tools.ant.types.Path;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,6 +52,7 @@ public class GenerateJnlpFileTask extends Task {
     private File destDir;
     private File template;
     private File properties;
+    private Path lazyJars;
     
     private static final String EXT_RESOURCE_PROPNAME_PREFIX = "jnlp.ext.resource.";
     private static String[] EXT_RESOURCE_SUFFIXES = new String[] { "href", "name", "version" };
@@ -67,6 +70,7 @@ public class GenerateJnlpFileTask extends Task {
     private static final String DEFAULT_APPLICATION_DESC_SHORT = "${APPLICATION.DESC.SHORT}";
     private static final String DEFAULT_JNLP_ICON = "${JNLP.ICONS}";
     private static final String DEFAULT_JNLP_OFFLINE = "${JNLP.OFFLINE.ALLOWED}";
+    private static final String JNLP_UPDATE = "${JNLP.UPDATE}";
     private static final String DEFAULT_JNLP_SECURITY = "${JNLP.SECURITY}";
     private static final String DEFAULT_JNLP_RESOURCES_RUNTIME = "${JNLP.RESOURCES.RUNTIME}";
     private static final String DEFAULT_JNLP_RESOURCES_MAIN_JAR = "${JNLP.RESOURCES.MAIN.JAR}";
@@ -94,7 +98,11 @@ public class GenerateJnlpFileTask extends Task {
     public void setTemplate(File file) {
         this.template = file;
     }
-    
+
+    public void setLazyJars(final Path lazyJars) {
+        this.lazyJars = lazyJars;
+    }
+
     // XXX ??? properties that will override those 
     // available via getProject().getProperty()
     public void setProperties(File file) {
@@ -191,8 +199,12 @@ public class GenerateJnlpFileTask extends Task {
             codebaseProp = getProject().getProperty("jnlp.codebase.user"); // property in project.properties
         }
         log("jnlp.codebase.url = " + codebaseProp, Project.MSG_VERBOSE);
-        if (codebaseProp != null && codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) { // default value => replace
-            ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+        if (codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) {   // default value => replace
+            if (codebaseTypeProp.equals("no.codebase")) {   //NOI18N
+                ((Element)jnlpElem).removeAttribute("codebase");    //NOI18N
+            } else if (codebaseProp != null) {
+                ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+            }
         }
         
         String hrefAttr = ((Element) jnlpElem).getAttribute("href");
@@ -203,6 +215,7 @@ public class GenerateJnlpFileTask extends Task {
         }
         
         processInformationElem(docDom);
+        processBackgroundElem(docDom, jnlpElem);
         processSecurityElem(docDom, jnlpElem);
         processResourcesElem(docDom);
         processDescriptorElem(docDom);
@@ -282,6 +295,7 @@ public class GenerateJnlpFileTask extends Task {
                                     informationElem.appendChild(createIconElement(docDom, fileName, "default"));
                                 }
                             } else if (nodeValue.equals(DEFAULT_JNLP_OFFLINE)) {
+                                //Has to be here to keep compatibility with NB 6.8
                                 informationElem.removeChild(node);
                                 String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
                                 if (offlineProp.equalsIgnoreCase("true")) {
@@ -297,7 +311,28 @@ public class GenerateJnlpFileTask extends Task {
             }
         }   
     }
-    
+
+    private void processBackgroundElem(final Document docDom, final Node parent) {
+        assert docDom != null;
+        assert parent != null;
+        NodeList childNodes = parent.getChildNodes();
+        int len = childNodes.getLength();
+        for (int i = 0; i < len; i++) {
+            Node node = childNodes.item(i);
+            if (node != null && node.getNodeType() == Node.COMMENT_NODE) { // node might be null (don't know why)
+                if (node.getNodeValue().equals(JNLP_UPDATE)) {
+                    String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
+                    final Element updateElm = docDom.createElement("update");
+                    final String updateVal = offlineProp.equalsIgnoreCase("true") ? //NOI18N
+                        "background" :  //NOI18N
+                        "always";       //NOI18N
+                    updateElm.setAttribute("check", updateVal); //NOI18N
+                    parent.replaceChild(updateElm, node);
+                }
+            }
+        }
+    }
+
     private Element createIconElement(Document doc, String href, String kind) {
         Element iconElem = doc.createElement("icon");
         iconElem.setAttribute("href", href);
@@ -375,12 +410,15 @@ public class GenerateJnlpFileTask extends Task {
                         resourceElem.removeChild(node);
                         String cpProp = getProperty("run.classpath", null); // property in project.properties
                         log("run.classpath = " + cpProp, Project.MSG_VERBOSE);
-                        PathTokenizer ptok = new PathTokenizer(cpProp);
+                        final PathTokenizer ptok = new PathTokenizer(cpProp);
+                        final Set<? extends String> lazyJarsSet = getLazyJarsSet(lazyJars);
                         while (ptok.hasMoreTokens()) {
-                            String fileName = stripFilename(ptok.nextToken());
+                            final String path = ptok.nextToken();
+                            final String fileName = stripFilename(path);
                             if (fileName.endsWith("jar") && !fileName.equals("javaws.jar")) {
-                                // lib/ should be probably taken from some properties file ? 
-                                resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, false));
+                                // lib/ should be probably taken from some properties file ?
+                                final boolean eager = !lazyJarsSet.contains(getProject().resolveFile(path).getPath());
+                                resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, eager));
                             }
                         }
                     } else if (nodeValue.equals(DEFAULT_JNLP_RESOURCES_EXTENSIONS)) {
@@ -426,8 +464,8 @@ public class GenerateJnlpFileTask extends Task {
         if (main) {
             jarElem.setAttribute("main", "true"); // NOI18N
         }
-        if (eager) {
-            jarElem.setAttribute("eager", "true"); // NOI18N
+        if (!eager) {
+            jarElem.setAttribute("download", "lazy"); // NOI18N
         }
         return jarElem;
     }
@@ -461,9 +499,7 @@ public class GenerateJnlpFileTask extends Task {
                     // create new elements
                     String appArgsProp = getProject().getProperty("application.args");
                     if (appArgsProp != null) {
-                        StringTokenizer stok = new StringTokenizer(appArgsProp);
-                        while (stok.hasMoreTokens()) {
-                            String arg = stok.nextToken();
+                        for (String arg : Commandline.translateCommandline(appArgsProp)) {
                             Element argElem = docDom.createElement("argument"); // NOI18N
                             argElem.setTextContent(arg);
                             descElem.appendChild(argElem);
@@ -555,5 +591,14 @@ public class GenerateJnlpFileTask extends Task {
         int sepIndex = path.lastIndexOf('/') == -1 ? path.lastIndexOf('\\') : path.lastIndexOf('/');
         return  path.substring(sepIndex + 1);
     }
-    
+
+    private static Set<? extends String> getLazyJarsSet(final Path value) {
+        final Set<String> result = new HashSet<String>();
+        if (value != null) {
+            for (String pathElement : value.list()) {
+                result.add(pathElement);
+            }
+        }
+        return result;
+    }
 }

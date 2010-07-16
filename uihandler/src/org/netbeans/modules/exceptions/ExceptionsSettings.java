@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,10 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.exceptions;
 
+import java.awt.EventQueue;
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.lib.uihandler.NBBugzillaAccessor;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -49,51 +56,94 @@ import org.openide.util.NbPreferences;
  * @author Jindrich Sedek
  */
 public class ExceptionsSettings {
-    
+
     private static final String userProp = "UserName";       // NOI18N
     private static final String passwdProp = "Passwd";
+    private static final String passwdKey = "exceptionreporter"; // NOI18N
     private static final String guestProp = "Guest";
     private static final String rememberProp = "RememberPasswd";
-
+    private final NBBugzillaAccessor nba;
+    private String userName;
+    private char[] passwd;
+    private boolean changed = false;
 
     /** Creates a new instance of ExceptionsSettings */
     public ExceptionsSettings() {
+        assert !EventQueue.isDispatchThread();
+        nba = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        if (nba != null) {
+            userName = nba.getNBUsername();
+            passwd = nba.getNBPassword();
+        } else {
+            userName = prefs().get(userProp, "");
+            String old = prefs().get(passwdProp, null);
+            char[] keyringPasswd = Keyring.read(passwdKey);
+            if (old != null) {
+                passwd = old.toCharArray();
+                changed = true;
+                prefs().remove(passwdProp);
+            }else if (keyringPasswd != null) {
+                passwd = keyringPasswd;
+            }
+        }
+        if (passwd == null){
+            passwd = new char[0];
+        }
+        if (userName == null){
+            userName = new String();
+        }
+    }
+
+    public void save(){
+        assert !EventQueue.isDispatchThread();
+        if (!changed){
+            return;
+        }
+        if (nba != null){
+            nba.saveNBUsername(userName);
+            nba.saveNBPassword(passwd);
+        }else{
+            prefs().put(userProp, userName);
+            Keyring.save(passwdKey, passwd,
+                    NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
+        }
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+        changed = true;
+    }
+
+    public char[] getPasswd() {
+        return passwd;
+    }
+
+    public void setPasswd(char[] passwd) {
+        changed = true;
+        this.passwd = passwd;
+    }
+
+    public boolean isGuest() {
+        return prefs().getBoolean(guestProp, false);
+    }
+
+    public void setGuest(Boolean guest) {
+        prefs().putBoolean(guestProp, guest);
+    }
+
+    public boolean rememberPasswd() {
+        return prefs().getBoolean(rememberProp, true);
+    }
+
+    public void setRememberPasswd(boolean remember) {
+        prefs().putBoolean(rememberProp, remember);
     }
 
     private Preferences prefs() {
         return NbPreferences.forModule(ExceptionsSettings.class);
     }
-    
-    public String getUserName() {
-        return prefs().get(userProp, "");
-    }
-
-    public void setUserName(String userName) {
-        prefs().put(userProp, userName);
-    }
-        
-    public String getPasswd() {
-        return prefs().get(passwdProp, "");
-    }
-
-    public void setPasswd(String passwd) {
-        prefs().put(passwdProp, passwd);
-    }
-    
-    public boolean isGuest() {
-        return prefs().getBoolean(guestProp, false);
-    }
-
-    public void setGuest(Boolean guest){
-        prefs().putBoolean(guestProp, guest);
-    }
-
-    public boolean rememberPasswd(){
-        return prefs().getBoolean(rememberProp, true);
-    }
-
-    public void setRememberPasswd(boolean remember){
-        prefs().putBoolean(rememberProp, remember);
-    }
-    
 }

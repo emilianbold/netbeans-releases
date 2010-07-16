@@ -7,13 +7,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 
 import org.netbeans.modules.iep.editor.designer.PlanCanvas;
-import org.netbeans.modules.iep.editor.util.ImageUtil;
+import org.netbeans.modules.tbls.model.ImageUtil;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.openide.util.NbBundle;
 
 
 import com.nwoods.jgo.JGoOverview;
-import com.nwoods.jgo.JGoView;
 
 public class ToggleOrthogonalLinkAction extends AbstractAction {
 

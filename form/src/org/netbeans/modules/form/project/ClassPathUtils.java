@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,10 +54,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 /**
  * Utility methods related to classpath in projects.
@@ -192,39 +193,8 @@ public class ClassPathUtils {
         if (project == null)
             return null; // the file is not in any project
 
-        // find the project output (presumably a JAR file) where the given
-        // source file is compiled (packed) to
-        AntArtifact[] artifacts =
-            AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-        if (artifacts.length == 0)
-            return null; // there is no project output
-
-        for (AntArtifact aa : artifacts) {
-            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
-            for (URL binaryRoot : entry.getClasspath()) {
-                for (FileObject sourceRoot : SourceForBinaryQuery.findSourceRoots(binaryRoot).getRoots()) {
-                    if (FileUtil.isParentOf(sourceRoot, fileInProject)) {
-                        // Looks like the one.
-                        return new ClassSource(classname, entry);
-                    }
-                }
-            }
-        }
-
-        // no output found for given source file - the file might not be
-        // a source file ... but a binary output file - in this case return
-        // simply all project outputs as there is no good way to recognize
-        // the right one (and j2se project has just one output anyway)
-
-        if (!fileInProject.getExt().equals("class")) // NOI18N
-            return null; // not interested in other than .class binary files
-
-        List<ClassSource.Entry> entries = new ArrayList<ClassSource.Entry>();
-        for (AntArtifact aa : artifacts) {
-            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
-            entries.add(entry);
-        }
-        return new ClassSource(classname, entries);
+        ClassSource.Entry entry = new ClassSource.ProjectEntry(project);
+        return new ClassSource(classname, entry);
     }
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,14 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  * This is an implementation of DefaultSystemSetting.
@@ -55,28 +60,32 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
 public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
-    private static BasicCompiler getDefaultCompiler(NativeFileItem.Language language) {
-        int kind;        
+    private static AbstractCompiler getDefaultCompiler(NativeFileItem.Language language) {
+        PredefinedToolKind kind;
         switch (language) {
             case C:
-                kind = Tool.CCompiler;
+                kind = PredefinedToolKind.CCompiler;
                 break;
             case CPP:
-                kind = Tool.CCCompiler;
+                kind = PredefinedToolKind.CCCompiler;
+                break;
+            case FORTRAN:
+                kind = PredefinedToolKind.FortranCompiler;
                 break;
             default:
                 return null;
         }
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet compilerSet = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         Tool compiler = compilerSet.getTool(kind);
-        if (compiler instanceof BasicCompiler) {
-            return (BasicCompiler)compiler;
+        if (compiler instanceof AbstractCompiler) {
+            return (AbstractCompiler)compiler;
         }
         return null;
     }
 
+    @Override
     public List<String> getSystemIncludes(NativeFileItem.Language language) {
-        BasicCompiler compiler = getDefaultCompiler(language);
+        AbstractCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            
             return Collections.unmodifiableList(compiler.getSystemIncludeDirectories());
         } else {
@@ -84,8 +93,9 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         }
     }
 
+    @Override
     public List<String> getSystemMacros(NativeFileItem.Language language) {
-        BasicCompiler compiler = getDefaultCompiler(language);
+        AbstractCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            
             return Collections.unmodifiableList(compiler.getSystemPreprocessorSymbols());
         } else {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -99,49 +103,25 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
     public List/*<FileObject>*/ getDataFiles() {
         List/*<FileObject>*/ files = new ArrayList();
         
-//        FileObject metaInf = project.getEjbModule().getMetaInf();
-//        if (metaInf != null)
-//            files.add(metaInf);
-        //???
-        
-//        SourceRoots src = project.getSourceRoots();
-//        FileObject[] srcRoots = src.getRoots();
-//
-//        for (int cntr = 0; cntr < srcRoots.length; cntr++) {
-//            files.add(srcRoots[cntr]);
-//        }
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
             files.add(srcDir);
         }
         
-        PropertyEvaluator evaluator = project.evaluator();
+        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
         String prop = evaluator.getProperty(JbiProjectProperties.SOURCE_ROOT);
         if (prop != null) {
             FileObject projectDirectory = project.getProjectDirectory();
-            FileObject dir = project.getAntProjectHelper().resolveFileObject(prop);
+            AntProjectHelper antHelper = project.getLookup().lookup(AntProjectHelper.class);
+            FileObject dir = antHelper.resolveFileObject(prop);
             if (dir != null && projectDirectory != dir && !files.contains(dir))
                 files.add(dir);
         }
         
-//        SourceRoots test = project.getTestSourceRoots();
-//        FileObject[] testRoots = test.getRoots();
-//
-//        for (int cntr = 0; cntr < testRoots.length; cntr++) {
-//            files.add(testRoots[cntr]);
-//        }
         FileObject testDir = project.getTestDirectory();
         if (testDir != null) {
             files.add(testDir);
         }
-        
-//        File resourceDir = project.getEjbModule().getEnterpriseResourceDirectory();
-//        if (resourceDir != null) {
-//            FileObject resourceFO = FileUtil.toFileObject(resourceDir);
-//            if (resourceFO != null)
-//                files.add(resourceFO);
-//        }
-        //???
         
         return files;
     }
@@ -166,7 +146,9 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyDeleted() throws IOException {
-        project.getAntProjectHelper().notifyDeleted();
+        AntProjectHelper antHelper =
+                project.getLookup().lookup(AntProjectHelper.class);
+        antHelper.notifyDeleted();
     }
     
     public void notifyCopying() {
@@ -180,8 +162,10 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
             // do nothing for the original project.
             return ;
         }
-        
-        project.getReferenceHelper().fixReferences(originalPath);
+
+        ReferenceHelper refHelper =
+                project.getLookup().lookup(ReferenceHelper.class);
+        refHelper.fixReferences(originalPath);
         
         String oldName = project.getName();
         project.setName(newName);
@@ -194,12 +178,17 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
     
     public void notifyMoved(Project original, File originalPath, final String newName) {
         if (original == null) {
-            project.getAntProjectHelper().notifyDeleted();
+            AntProjectHelper antHelper = 
+                    project.getLookup().lookup(AntProjectHelper.class);
+            antHelper.notifyDeleted();
             return ;
         }
         String oldName = project.getName();
         project.setName(newName);
-        project.getReferenceHelper().fixReferences(originalPath);
+
+        ReferenceHelper refHelper =
+                project.getLookup().lookup(ReferenceHelper.class);
+        refHelper.fixReferences(originalPath);
         fixOtherNameReferences(originalPath, oldName, newName);
     }
     
@@ -217,7 +206,7 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
         
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
-                AntProjectHelper helper = project.getAntProjectHelper();
+                AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
                 EditableProperties props = 
                         helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 
@@ -233,15 +222,16 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                 if (distJarName.endsWith("/" + oldName + ".zip")) { // NOI18N
                     int distJarNamePrefixLen = distJarName.length() - oldName.length() - 4;
                     String distJarNamePrefix = distJarName.substring(0, distJarNamePrefixLen);
+
                     props.put(JbiProjectProperties.DIST_JAR,
                             distJarNamePrefix + newName + ".zip"); // NOI18N
                 }
                 
                 // Fix uuid
-                JbiProjectHelper.setJbiProjectName(props, newName);
+                JbiProjectHelper.setServiceAssemblyID(props, newName); 
                 
                 // Fix SA description (TEMP)
-                JbiProjectHelper.updateServiceAssemblyDescription(props, oldName, newName);
+                JbiProjectHelper.updateServiceAssemblyDescription(props, oldName, newName); 
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 

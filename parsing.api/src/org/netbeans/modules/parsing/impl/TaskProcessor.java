@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -73,6 +77,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -169,7 +174,9 @@ public class TaskProcessor {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, "org.netbeans.api.java.source.JavaSource"); //NOI18N
+            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, 
+                    "org.netbeans.api.java.source.JavaSource", //NOI18N
+                    "org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper"); //NOI18N
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
@@ -187,7 +194,13 @@ public class TaskProcessor {
                     }
                 }
                 lockCount++;
-                task.run ();
+                Utilities.runPriorityIO(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        task.run ();
+                        return null;
+                    }
+                });
             } catch (final Exception e) {
                 final ParseException ioe = new ParseException ();
                 ioe.initCause(e);
@@ -611,10 +624,10 @@ public class TaskProcessor {
                                         boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
                                         if (changeExpected) {
                                             //Skeep the task, another invalidation is comming
-                                            Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
+                                            Collection<Request> rc = waitingRequests.get (source);
                                             if (rc == null) {
                                                 rc = new LinkedList<Request> ();
-                                                waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                                waitingRequests.put (source, rc);
                                             }
                                             rc.add(r);
                                             continue;
@@ -1069,17 +1082,25 @@ public class TaskProcessor {
         }
 
         public Void get() throws InterruptedException, ExecutionException {
+            checkCaller();
             this.sync.await();
             return null;
         }
 
         public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            checkCaller();
             this.sync.await(timeout, unit);
             return null;
         }
 
         private void taskFinished () {
             this.sync.countDown();
+        }
+
+        private void checkCaller() {
+            if (RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread())) {
+                throw new IllegalStateException("ScanSync.get called by protected mode owner.");    //NOI18N
+            }
         }
 
     }

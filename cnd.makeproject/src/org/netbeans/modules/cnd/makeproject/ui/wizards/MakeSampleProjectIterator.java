@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,18 +50,21 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
-public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
+public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstantiatingIterator<WizardDescriptor> {
 
     private static final long serialVersionUID = 4L;
     private transient int index = 0;
     private transient WizardDescriptor.Panel<WizardDescriptor> panel;
-    private transient WizardDescriptor wiz;
+    private transient TemplateWizard wiz;
 
     static Object create() {
         return new MakeSampleProjectIterator();
@@ -67,32 +73,38 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     public MakeSampleProjectIterator() {
     }
 
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panel;
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return false;
     }
 
-    public void initialize(TemplateWizard templateWizard) {
+    @Override
+    public void initialize(WizardDescriptor wizard) {
         int i = 0;
-        this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getName();
+        this.wiz = (TemplateWizard)wizard;
+        String name = wiz.getTemplate().getNodeDelegate().getName();
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }
-        templateWizard.putProperty("name", name); // NOI18N
+        wiz.putProperty("name", name); // NOI18N
         String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
         String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
 
@@ -104,23 +116,41 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
     }
 
-    public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
+    @Override
+    public void uninitialize(WizardDescriptor templateWizard) {
         panel = null;
         index = -1;
         this.wiz.putProperty("projdir", null); // NOI18N
         this.wiz.putProperty("name", null); // NOI18N
     }
 
-    public Set<DataObject> instantiate(TemplateWizard templateWizard) throws IOException {
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiate();
+        } finally {
+            handle.finish();
+        }
+    }
+    
+    @Override
+    public Set<DataObject> instantiate() throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
-        return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
+        prjParams.setHostToolchain(hostUID, toolchain);
+        return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);
     }
 
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -128,6 +158,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();

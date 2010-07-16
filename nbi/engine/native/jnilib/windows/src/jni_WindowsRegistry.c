@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -167,7 +170,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     int   err    = 0;
     int   index  = 0 ;
     
-    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) MALLOC(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
     if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ | getMode(jMode), &hkey) == ERROR_SUCCESS) {
@@ -214,7 +217,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     int   err          = 0;
     int   index        = 0;
     
-    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) MALLOC(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
     if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE | getMode(jMode), &hkey) == ERROR_SUCCESS) {
@@ -398,7 +401,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     unsigned short* name  = getWideChars(jEnv, jName);
     unsigned short* value = getWideChars(jEnv, jValue);
     
-    if (!setValue(getMode(jMode), getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, ((int) wcslen(value)) * sizeof(unsigned short), 0)) {
+    if (!setValue(getMode(jMode), getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, ((int) WCSLEN(value)) * sizeof(unsigned short), 0)) {
         throwException(jEnv, "Could not set value");
     }
     
@@ -472,7 +475,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     if(RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE | getMode(jMode), &hkey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_MULTI_SZ) {
-                data = (unsigned short*) malloc(size + 8);
+                data = (unsigned short*) LocalAlloc(LPTR, size + 8);
                 
                 if (data != NULL) {
                     if (RegQueryValueExW(hkey, value, NULL, &dwType, (byte*) data, &size) == ERROR_SUCCESS) {
@@ -568,7 +571,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_netbeans_installer_utils_system_windows_Wi
         
         if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_BINARY || dwType == REG_NONE) {
-                data = (BYTE*) malloc(size + 8);
+                data = (BYTE*) LocalAlloc(LPTR, size + 8);
                 if (RegQueryValueExW(hkey, value, NULL, &dwType, (BYTE*) data, &size) == ERROR_SUCCESS) {
                     if (data != NULL) {
                         result = (*jEnv)->NewByteArray(jEnv, (jsize) size);

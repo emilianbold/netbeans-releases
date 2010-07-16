@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,12 +64,12 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -88,7 +91,7 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Krauskopf
  */
 public final class SuiteOperations implements DeleteOperationImplementation,
-        MoveOperationImplementation {
+        MoveOrRenameOperationImplementation {
     
     private static final Map<String,Set<NbModuleProject>> TEMPORARY_CACHE = new HashMap<String,Set<NbModuleProject>>();
     
@@ -167,6 +170,13 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         }
     }
     
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        setDisplayName(nueName);
+    }
+
     public List<FileObject> getMetadataFiles() {
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
@@ -204,7 +214,6 @@ public final class SuiteOperations implements DeleteOperationImplementation,
                         props.setProperty(BasicBrandingModel.TITLE_PROPERTY, nueName);
                         suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }
-                    ProjectManager.getDefault().saveProject(suite);
                     return null;
                 }
             });

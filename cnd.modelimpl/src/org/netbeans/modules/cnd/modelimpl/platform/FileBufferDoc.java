@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import com.sun.org.apache.bcel.internal.classfile.SourceFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +56,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
@@ -83,6 +86,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     
     private void resetLastModified() {
         lastModified = System.currentTimeMillis();
+        clearLineCache();
     }
     
     private void fireDocumentChanged() {
@@ -103,14 +107,17 @@ public class FileBufferDoc extends AbstractFileBuffer {
     public void addChangeListener(ChangeListener listener) {
         if (listeners.getListenerCount() == 0) {
             docListener = new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedSegment.addSegment(e.getOffset(), e.getLength());
                     fireDocumentChanged();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     changedSegment.removeSegment(e.getOffset(), e.getLength());
                     fireDocumentChanged();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     // Add/remove annotation shouldn't result in reparse.
                     //fireDocumentChanged();
@@ -139,10 +146,11 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return ioe;
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         final Object[] res = new Object[]{null, null};
-        SourceFile sf;
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     res[0] = doc.getText(0, doc.getLength());
@@ -166,10 +174,12 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return new ByteArrayInputStream(((String)res[0]).getBytes());
     }
     
+    @Override
     public String getText() throws IOException {
         final String out[] = new String[] { null };
         final BadLocationException exc[] = new BadLocationException[] { null };
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     out[0] = doc.getText(0, doc.getLength());
@@ -184,6 +194,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return out[0];
     }
     
+    @Override
     public String getText(int start, int end) throws IOException {
         try {
             return doc.getText(start, end - start);
@@ -193,20 +204,46 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
     }
     
+    @Override
     public int getLength() {
         return doc.getLength();
     }
 
+    @Override
     public boolean isFileBased() {
         return false;
     }
 
+    @Override
     public long lastModified() {
         return lastModified;
     }
 
     public ChangedSegment getLastChangedSegment(){
         return lastChangedSegment;
+    }
+
+    @Override
+    public char[] getCharBuffer() throws IOException {
+        final Object[] res = new Object[]{null, null};
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final int length = doc.getLength();
+                    char[] buf = new char[length];
+                    DocumentUtilities.copyText(doc, 0, length, buf, 0);
+                    res[0] = buf;
+
+                } catch( BadLocationException e ) {
+                    res[1] = e;
+                }
+            }
+        });
+        if (res[1] != null) {
+            throw convert((BadLocationException) res[1]);
+        }
+        return (char[]) res[0];
     }
     
     public static final class ChangedSegment {

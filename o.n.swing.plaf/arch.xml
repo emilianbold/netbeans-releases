@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -377,8 +380,16 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="exec-property">
-        It will decide which sets of customizations to load based on the look and feel
-        it is asked to install, or the one currently in use if it is not asked to install one.
+        <api name="LookAndFeelClassName" category="devel" group="property" type="export">
+            The module initializes proper Look&amp;Feel. The decision is done
+            based on various inputs including what has been specified on command
+            line. To allow easier branding for those who build applications
+            on top of NetBeans, there is key <code>LookAndFeelClassName</code>
+            in <code>org.netbeans.swing.plaf.Bundle</code>
+            bundle which can be branded to actual name of the L&amp;F class.
+            The module will decide which sets of customizations to load based on
+            the chosen look and feel.
+        </api>
     </answer>
 
 

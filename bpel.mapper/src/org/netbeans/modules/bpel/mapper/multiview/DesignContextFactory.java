@@ -19,7 +19,6 @@
 package org.netbeans.modules.bpel.mapper.multiview;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -31,28 +30,8 @@ public interface DesignContextFactory {
     BpelDesignContext createBpelDesignContext(
             BpelEntity selectedEntity, Node node, Lookup lookup);
     
-    BpelDesignContext getActivatedContext(BpelModel currentBpelModel);
+    // BpelDesignContext getActivatedContext(Node[] nodes, BpelModel currentBpelModel);
 
-    public interface ContextCreator {
-        boolean accepted(BpelEntity selectedEntity);
-        BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup);
-    }
-    
-    public class EmptyContextCreator implements ContextCreator {
+    boolean isMappableEntity(BpelEntity entity);
 
-        /**
-         * @param selectedEntity - the selected bpel entity to show mapper
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            return selectedEntity != null;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            return new BpelDesignContextImpl(null, null, selectedEntity, node, lookup);
-        }
-    }
-    
 }

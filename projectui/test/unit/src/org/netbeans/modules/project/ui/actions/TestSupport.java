@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -190,7 +193,7 @@ public final class TestSupport {
                 assert false : "Shared not implemented";
             }
             Element root = xml.getDocumentElement ();
-            Element data = findElement (root, elementName, namespace);
+            Element data = XMLUtil.findElement (root, elementName, namespace);
             if (data != null) {
                 return  (Element) data.cloneNode (true);
             } else {
@@ -205,7 +208,7 @@ public final class TestSupport {
             }
             
             Element root = xml.getDocumentElement ();
-            Element existing = findElement (root, fragment.getLocalName (), fragment.getNamespaceURI ());
+            Element existing = XMLUtil.findElement (root, fragment.getLocalName (), fragment.getNamespaceURI ());
             // XXX first compare to existing and return if the same
             if (existing != null) {
                 root.removeChild (existing);
@@ -236,7 +239,7 @@ public final class TestSupport {
             }
 
             Element root = xml.getDocumentElement ();
-            Element data = findElement (root, elementName, namespace);
+            Element data = XMLUtil.findElement (root, elementName, namespace);
             if (data != null) {
                 root.removeChild (data);
                 return true;
@@ -244,25 +247,5 @@ public final class TestSupport {
                 return false;
             }
         }
-    }
-    
-    // copied from org.netbeans.modules.project.ant.Util
-    private static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        int len = l.getLength();
-        for (int i = 0; i < len; i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
     }
 }

@@ -197,6 +197,7 @@ public class ModelChangeHandler implements ChangeEventListener {
      * read comments below
      **/
     private void executeInAWTThread(final Runnable inner, final ChangeEvent event) {
+        
         Runnable outer = new Runnable() {
 
                     public void run() {

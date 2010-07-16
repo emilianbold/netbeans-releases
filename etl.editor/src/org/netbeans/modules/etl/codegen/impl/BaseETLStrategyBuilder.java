@@ -32,8 +32,6 @@ import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilderContext;
 import org.netbeans.modules.etl.codegen.PatternFinder;
 import org.netbeans.modules.etl.utils.MessageManager;
-import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
-import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
@@ -47,12 +45,14 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConnectionFactory;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.AttributeMap;
-import com.sun.sql.framework.utils.StringUtil;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConnectionFactory;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.utils.AttributeMap;
+import com.sun.etl.utils.StringUtil;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBTable;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBDefinition;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBTable;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -62,6 +62,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
+
 public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
 
     protected static final MessageManager MSG_MGR = MessageManager.getManager("org.netbeans.modules.etl.codegen.impl");
@@ -389,17 +390,17 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         return insertSelectPart;
     }
 
-    protected SQLPart generateSQLPart(FlatfileDBTable flatfileDBTable, String tableName, String staticDirectory, String stmtType, String connPoolName,
+    protected SQLPart generateSQLPart(VirtualDBTable flatfileDBTable, String tableName, String staticDirectory, String stmtType, String connPoolName,
             String flatfileRuntimeFilePath, boolean isDynamicPath, boolean createDataFileIfNotExist) {
 
         SQLPart sqlPart = null;
 
         // NOTE: getCreateStatementSQL() and getDropStatementSQL() were modified not to
         // have the side effect of assigning tableName as flatfileDBTable's new name. If
-        // this is required, then cast FlatfileDBTable to FlatfileDBTableImpl and call
+        // this is required, then cast VirtualDBTable to VirtualDBTable and call
         // setName().
         if (stmtType.equals("DROP")) {
-            sqlPart = createSQLPart(FlatfileDBTableImpl.getDropStatementSQL(tableName), stmtType, connPoolName);
+            sqlPart = createSQLPart(VirtualDBTable.getDropStatementSQL(tableName), stmtType, connPoolName);
         } else if (stmtType.equals("CREATE")) {
             sqlPart = createSQLPart(flatfileDBTable.getCreateStatementSQL(staticDirectory, tableName, flatfileRuntimeFilePath, isDynamicPath,
                     createDataFileIfNotExist), stmtType, connPoolName);
@@ -461,7 +462,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         return db.getStatements();
     }
 
-    protected void getFlatfileInitSQLParts(FlatfileDefinition ffdb, InternalDBMetadata ffMetadata, boolean isAllDBTypeInternal,
+    protected void getFlatfileInitSQLParts(VirtualDBDefinition ffdb, InternalDBMetadata ffMetadata, boolean isAllDBTypeInternal,
             ETLTaskNode initTask, ETLTaskNode cleanupTask, String connPoolName, SQLDBTable flatfileRuntime, boolean createDataFileIfNotExist) {
         String staticDirectory = ffMetadata.getStaticDirectory();
         boolean isDynamicFilePath = ffMetadata.isDynamicFilePath();
@@ -469,7 +470,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         String tableName = null;
         String flatfileRuntimeFilePath = flatfileRuntime.getRuntimeArgumentName();
         String oId = flatfileRuntime.getUniqueTableName();
-        FlatfileDBTable flatfileTable = (FlatfileDBTable) ffdb.getTable(flatfileRuntime.getName());
+        VirtualDBTable flatfileTable = (VirtualDBTable) ffdb.getTable(flatfileRuntime.getName());
 
 //        if (isAllDBTypeInternal) {
         tableName = oId;
@@ -489,12 +490,12 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         }
     }
 
-    protected void getFlatfileInitSQLParts(FlatfileDefinition ffdb, InternalDBMetadata internalMetadata, ETLTaskNode initTask,
+    protected void getFlatfileInitSQLParts(VirtualDBDefinition ffdb, InternalDBMetadata internalMetadata, ETLTaskNode initTask,
             ETLTaskNode cleanupTask, SQLDBTable flatfileRuntime, boolean createDataFileIfNotExist) {
         String staticDirectory = internalMetadata.getStaticDirectory();
         boolean isDynamicFilePath = internalMetadata.isDynamicFilePath();
 
-        FlatfileDBTable flatfileTable = (FlatfileDBTable) ffdb.getTable(flatfileRuntime.getName());
+        VirtualDBTable flatfileTable = (VirtualDBTable) ffdb.getTable(flatfileRuntime.getName());
         String tableName = flatfileRuntime.getUniqueTableName();
         String flatfileRuntimeFilePath = flatfileRuntime.getRuntimeArgumentName();
 
@@ -572,8 +573,8 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         }
 
         int targetDBType = connFactory.getDatabaseVersion(getConnectionPropertiesFrom(dbCondefn));
-        String poolName = (targetDBType == DB.AXIONDB) ? ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME: tgtConnPoolName;
-        populateFlatfileMetadata(tTable, poolName , tgtInternalMetadata, initTask, cleanupTask);
+        String poolName = (targetDBType == DB.AXIONDB) ? ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME : tgtConnPoolName;
+        populateFlatfileMetadata(tTable, poolName, tgtInternalMetadata, initTask, cleanupTask);
 
 
         DB db = DBFactory.getInstance().getDatabase(targetDBType);
@@ -584,15 +585,74 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             initStatements.setConnectionPoolName(poolName);
             initTask.addStatement(initStatements);
         }
+
+        //disableConstraintsOnTable(tTable, initTask, tgtConnPoolName, db.getStatements(), context);
+        //enableConstraintsOnTargetTable(tTable, cleanupTask, tgtConnPoolName, db.getStatements(), context);
     }
 
+    /*
+    protected void disableConstraintsOnTargetTable(TargetTable tt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+        if (tt.isDisableConstraints()) {
+            disableConstraintsOnTable((SQLDBTable) tt, taskNode, trgtConnName, stmts, sc);
+        }
+    }
+
+    protected void enableConstraintsOnTargetTable(TargetTable tt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+        if (tt.isDisableConstraints()) {
+            enableConstraintsOnTable((SQLDBTable) tt, taskNode, trgtConnName, stmts, sc);
+        }
+    }
+    
+    protected void disableConstraintsOnTable(SQLDBTable dbt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+        SQLPart disablePart = stmts.getDisableConstraintsStatment(dbt, sc);
+        if (disablePart == null) {
+            return;
+        }
+        disablePart.setConnectionPoolName(trgtConnName);
+        StringBuilder sqlBuffer = new StringBuilder(200);
+
+        if (!StringUtil.isNullString(disablePart.getSQL())) {
+            if (sqlBuffer.length() != 0) {
+                sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
+            }
+            sqlBuffer.append(disablePart.getSQL());
+
+        } else {
+            //??
+            }
+
+        taskNode.addStatement(disablePart);
+    }
+
+    protected void enableConstraintsOnTable(SQLDBTable dbt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+        SQLPart enablePart = stmts.getEnableConstraintsStatment(dbt, sc);
+        if (enablePart == null) {
+            return;
+        }
+        enablePart.setConnectionPoolName(trgtConnName);
+        StringBuilder sqlBuffer = new StringBuilder(200);
+
+        if (!StringUtil.isNullString(enablePart.getSQL())) {
+            if (sqlBuffer.length() != 0) {
+                sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
+            }
+            sqlBuffer.append(enablePart.getSQL());
+
+        } else {
+            //??
+        }
+
+        taskNode.addStatement(enablePart);
+    }
+    */
+    
     protected void populateFlatfileMetadata(TargetTable tTable, String tgtConnPoolName, InternalDBMetadata tgtInternalMetadata, ETLTaskNode initTask,
             ETLTaskNode cleanupTask) throws BaseException {
         Collection participatingTables = tTable.getSourceTableList();
         boolean isAllDBTypeInternal = PatternFinder.isInternalDBTable(tTable) && PatternFinder.allDBTablesAreInternal(participatingTables.iterator());
 
         // For Target Table
-        FlatfileDefinition tgtDB = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
+        VirtualDBDefinition tgtDB = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
         if (tgtDB != null && tgtInternalMetadata != null && tgtInternalMetadata.getStaticDirectory() != null) {
             getFlatfileInitSQLParts(tgtDB, tgtInternalMetadata, isAllDBTypeInternal, initTask, cleanupTask, tgtConnPoolName, tTable, true);
         }
@@ -600,7 +660,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         // For all SourceTables associated with Target table
         for (Iterator it = participatingTables.iterator(); it.hasNext();) {
             SQLDBTable dbTable = (SQLDBTable) it.next();
-            FlatfileDefinition srcDB = ETLCodegenUtil.getFFDefinition(dbTable);
+            VirtualDBDefinition srcDB = ETLCodegenUtil.getFFDefinition(dbTable);
             if (srcDB != null) {
                 DBConnectionDefinition srcCondefn = builderModel.getConnectionDefinition(dbTable);
                 InternalDBMetadata srcInternalMetadata = builderModel.getInternalMetadata(dbTable);

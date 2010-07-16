@@ -16,13 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -85,7 +84,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
         try {
             assert uri != null;
 
-            List<String> list = new LinkedList<String>();
+            List<String> list = new ArrayList<String>();
 
             BpelEntityImpl entity = myElement;
             while (entity != null) {
@@ -108,7 +107,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
     public Iterator<String> getPrefixes() {
         myElement.readLock();
         try {
-            List<String> list = new LinkedList<String>();
+            List<String> list = new ArrayList<String>();
 
             BpelEntityImpl entity = myElement;
             while (entity != null) {
@@ -128,6 +127,9 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * @see org.netbeans.modules.soa.model.bpel.api.support.ExNamespaceContext#addNamespace(java.lang.String)
      */
     public String addNamespace(String uri) throws InvalidNamespaceException {
+//System.out.println();
+//System.out.println("URI: " + uri);
+//System.out.println();
         try {
             new URI(uri);
         } catch (URISyntaxException e) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ package org.netbeans.test.ide;
 import java.awt.EventQueue;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 import junit.framework.Test;
 //import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
@@ -88,15 +93,26 @@ public class WhitelistTest extends JellyTestCase {
         super(name);
     }
     
-    public static Test suite() {
-        
+    public static Test suite() throws URISyntaxException {
+       URL u = WhitelistTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
         stage = Integer.getInteger("test.whitelist.stage", 1);
         
         initBlacklistedClassesHandler();
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").enableModules(".*").reuseUserDir(stage > 1);
+        ).clusters(".*").honorAutoloadEager(true).
+        enableModules(".*").reuseUserDir(stage > 1);
         
         conf = conf.addTest("testWhitelist" + stage);
         
@@ -144,14 +160,27 @@ public class WhitelistTest extends JellyTestCase {
         try {
             bcHandler.listViolations(getLog("whitelist_violators_" + stage + ".txt"), false);
             bcHandler.listViolations(getLog("report_" + stage + ".txt"), false, true);
-            assertTrue(bcHandler.reportViolations(getLog("violations_" + stage + ".xml")), bcHandler.noViolations());
+
+            int allowed = Integer.getInteger("allowed.violations", 0);
+            int number = bcHandler.getNumberOfViolations();
+            String txt = null;
+            if (number > 0) {
+                txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+            }
+            if (number > allowed) {
+                fail(
+                    "Too many violations. Allowed only " + allowed + " but was: " + number + ":\n" +
+                    txt
+                );
+            }
         } finally {
             bcHandler.unregister();
         }
     }
 
     public void openProject(String projectPath) throws Exception {
-        File projectsDir = new File(getDataDir(), projectPath);
+        File path=new File(getDataDir()+"/../../../../test/qa-functional/data").getCanonicalFile();
+        File projectsDir = new File(path, projectPath);
         Object prj = ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
         waitParsingFinished();

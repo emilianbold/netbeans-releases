@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -46,6 +49,63 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="event-order">
+            <api name="masterfs"/>
+            <summary>Guaranteed event order when deleting and creating files and new calls in ProvidedExtensions</summary>
+            <version major="2" minor="27"/>
+            <date day="22" month="6" year="2010"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <ul>
+                    <li>
+                        Guaranteed event order when deleting and creating files in atomic action -
+                        <code>createSuccess</code> and <code>deleteSuccess</code> are called imediatelly
+                        after a file is created or deleted.
+                    </li>
+                    <li> new calls <code>createdExternally</code>, <code>deletedExternally</code>,
+                        <code>fileChanged</code>, <code>beforeMove</code>,
+                        <code>moveSuccess</code>, <code>moveFailure</code>
+                    </li>
+                </ul>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="133855"/>
+        </change>
+        <change id="priority-io">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.priorityIO</code> to suspend background refresh</summary>
+            <version major="2" minor="25"/>
+            <date day="12" month="5" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.priorityIO</code> allows
+                    parsing API to suspend background I/O activity after refresh
+                    of main window.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="181684"/>
+        </change>
+        <change id="recursive-control">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.refreshRecursively</code> was added.</summary>
+            <version major="2" minor="24"/>
+            <date day="16" month="4" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.refreshRecursively</code> allows
+                    various version control providers to get better control
+                    on behavior of recursive listener.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="181684"/>
+        </change>
         <change id="added-canWrite-friend-contract-for-versioning-systems">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.canWrite</code> was added.</summary>

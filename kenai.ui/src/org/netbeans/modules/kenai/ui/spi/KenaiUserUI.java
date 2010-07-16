@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -127,8 +130,11 @@ public final class KenaiUserUI {
         Runnable run = new Runnable() {
 
             public void run() {
-
-                final Kenai kenai = Kenai.getDefault();
+                final Kenai kenai = user.getKenai();
+                if (!Utilities.isChatSupported(kenai)) {
+                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_CHAT_NOT_SUPPORTED", kenai.getName()));
+                    return;
+                }
                 if (kenai.getStatus() != Status.ONLINE) {
                     if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
@@ -143,7 +149,7 @@ public final class KenaiUserUI {
                                         Exceptions.printStackTrace(ex);
                                     }
                                 } else {
-                                    if (UIUtils.tryLogin(true)) {
+                                    if (UIUtils.tryLogin(user.getKenai(), true)) {
                                         startChat();
                                     } else {
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -168,7 +174,7 @@ public final class KenaiUserUI {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
                 tc.requestActive();
-                tc.setActivePrivate(user.getUserName());
+                tc.setActivePrivate(user.getFQN());
                 tc.insertToActiveChat(message);
                 tc.requestFocus();
             }

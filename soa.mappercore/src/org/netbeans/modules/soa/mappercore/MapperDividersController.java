@@ -53,12 +53,12 @@ public class MapperDividersController extends MouseInputAdapter {
         rightDivider.addMouseMotionListener(this);
     }
     
-    
+    @Override
     public void mousePressed(MouseEvent e) {
         mouseX = e.getX();
     }
     
-    
+    @Override
     public void mouseDragged(MouseEvent e) {
         Insets insets = mapper.getInsets();
         int w = mapper.getWidth() - insets.right - insets.left;

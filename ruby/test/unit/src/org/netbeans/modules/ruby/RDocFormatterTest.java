@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -298,6 +301,38 @@ public class RDocFormatterTest extends RubyTestBase {
         instance.appendLine("# ");
         String html = instance.toHtml();
         assertEquals("This should not be a link <a href=\"This#should\">This#should</a> be a link <br><br>", html);
+
+    }
+
+    public void testStopDoc() throws Exception {
+        RDocFormatter instance = new RDocFormatter();
+
+        instance.appendLine("# This should be displayed");
+        instance.appendLine("# :stopdoc:");
+        instance.appendLine("# THIS SHOULD BE FILTERED OUT");
+        instance.appendLine("# :startdoc:");
+        instance.appendLine("# This should also be displayed");
+        String html = instance.toHtml();
+        assertEquals("This should be displayed  This should also be displayed ", html);
+
+    }
+
+    public void testCallSeq() {
+        RDocFormatter instance = new RDocFormatter();
+        instance.appendLine("# Here comes a call-seq");
+        instance.appendLine("# :call-seq:");
+        instance.appendLine("#   my_method(arg1, arg2) -> self");
+        instance.appendLine("#");
+        instance.appendLine("# and now it's over");
+
+        String html = instance.toHtml();
+
+        assertEquals("Here comes a call-seq \n" +
+                "<hr>\n" +
+                "<pre>\n" +
+                "my_method(arg1, arg2) -> self<br></pre>\n" +
+                "<hr>\n" +
+                "and now it's over ", html);
 
     }
     

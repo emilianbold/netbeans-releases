@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.awt.event.AdjustmentListener;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,7 +61,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.util.Range;
@@ -117,26 +120,26 @@ public final class IndicatorsContainer extends JPanel
         setLayout(layout);
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING, true)
-                    .add(indicatorsScrollPane, 200, 200, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, true)
+                    .addComponent(indicatorsScrollPane, 200, 200, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                             .addContainerGap(leftMargin, leftMargin)
-                            .add(layout.createParallelGroup(GroupLayout.LEADING, true)
-                                    .add(GroupLayout.LEADING, hScrollBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(GroupLayout.LEADING, viewportBar, 200 - leftMargin - rightMargin, 200 - leftMargin - rightMargin, Short.MAX_VALUE))
-                            .add(timeLabel, GroupLayout.PREFERRED_SIZE, rightMargin, GroupLayout.PREFERRED_SIZE)))
-                .add(vScrollBar)
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, true)
+                                    .addComponent(hScrollBar, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(viewportBar, GroupLayout.Alignment.LEADING, 200 - leftMargin - rightMargin, 200 - leftMargin - rightMargin, Short.MAX_VALUE))
+                            .addComponent(timeLabel, GroupLayout.PREFERRED_SIZE, rightMargin, GroupLayout.PREFERRED_SIZE)))
+                .addComponent(vScrollBar)
         );
 
-        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.LEADING, true)
-                .add(layout.createSequentialGroup()
-                    .add(indicatorsScrollPane, 100, 100, Short.MAX_VALUE)
-                    .add(layout.createParallelGroup(GroupLayout.CENTER, false)
-                        .add(layout.createSequentialGroup()
-                            .add(viewportBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .add(hScrollBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .add(timeLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .add(vScrollBar)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, true)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(indicatorsScrollPane, 100, 100, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(viewportBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(hScrollBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(timeLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(vScrollBar)
         );
 
     }
@@ -213,15 +216,18 @@ public final class IndicatorsContainer extends JPanel
         isAdjusting = false;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == viewportModel) {
             UIThread.invoke(new Runnable() {
+                @Override
                 public void run() {
                     adjust();
                 }
             });
         } else if (e.getSource() == indicatorsScrollPane.getViewport()) {
             UIThread.invoke(new Runnable() {
+                @Override
                 public void run() {
                     Dimension viewSize = indicatorsScrollPane.getViewport().getViewSize();
                     Dimension portSize = indicatorsScrollPane.getViewport().getExtentSize();
@@ -231,6 +237,7 @@ public final class IndicatorsContainer extends JPanel
         }
     }
 
+    @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
         if (!isAdjusting) {
             Range<Long> viewport = viewportModel.getViewport();
@@ -245,6 +252,7 @@ public final class IndicatorsContainer extends JPanel
 
     private static class ThreeSidesBorder implements Border {
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
             g.fillRect(0, 0, width, 2); // top
@@ -252,10 +260,12 @@ public final class IndicatorsContainer extends JPanel
             g.fillRect(width - 2, 0, 2, height); // right
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(2, 2, 0, 2);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }

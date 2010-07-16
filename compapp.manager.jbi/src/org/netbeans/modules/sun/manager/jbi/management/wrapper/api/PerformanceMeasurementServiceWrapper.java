@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -287,12 +290,41 @@ public interface PerformanceMeasurementServiceWrapper {
     public void enableMessageExchangeMonitoring(String targetName)
             throws ManagementRemoteException;
     
-    
     /**
      * This method is used to disable monitoring of timing 
      * information about message exchanges
      * @param targetName the target name
      */
     public void disableMessageExchangeMonitoring(String targetName)
+            throws ManagementRemoteException;
+
+    /**
+     * This method is used to provide a list of consuming endpoints for a component.
+     * @param componentName  component name
+     * @param target target name
+     * @return TabularData list of consuming endpoints.
+     *      If the target is a standalone instance the table will have one entry.
+     *      If the target is a cluster the table will have an entry for each
+     *      instance. Each entry in this tabular data is of the following
+     *      composite type String - "InstanceName", String[] - "Endpoints",
+     * @throw ManagementRemoteException
+     */
+    public TabularData getConsumingEndpointsForComponentAsTabularData(
+            String componentName, String targetName)
+            throws ManagementRemoteException;
+
+    /**
+     * This method is used to provide a list of providing endpoints for a component.
+     * @param componentName  component name
+     * @param target target name
+     * @return TabularData list of providing endpoints.
+     *      If the target is a standalone instance the table will have one entry.
+     *      If the target is a cluster the table will have an entry for each
+     *      instance. Each entry in this tabular data is of the following
+     *      composite type String - "InstanceName", String[] - "Endpoints",
+     * @throw ManagementRemoteException
+     */
+    public TabularData getProvidingEndpointsForComponentAsTabularData(
+            String componentName, String targetName)
             throws ManagementRemoteException;
 }

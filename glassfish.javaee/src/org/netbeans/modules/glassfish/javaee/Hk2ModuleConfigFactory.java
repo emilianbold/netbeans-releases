@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -55,12 +57,17 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
     public Hk2ModuleConfigFactory() {
     }
     
-    public ModuleConfiguration create(J2eeModule module) {
+    @Override
+    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module);
+            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+            throw ce;
+        } catch (Exception ex) {
+            ConfigurationException ce = new ConfigurationException(module.toString());
+            ce.initCause(ex);
+            throw ce;
         }
         return retVal;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ package org.netbeans.modules.form;
 import org.openide.util.datatransfer.NewType;
 
 import java.awt.*;
-import javax.swing.*;
 import java.util.*;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -134,12 +136,14 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // -----------------------------------------------------------------------------
     // SubComponents Management
 
+    @Override
     public RADComponent[] getSubBeans() {
         RADComponent[] components = new RADComponent [subComponents.size()];
         subComponents.toArray(components);
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
             subComponents = new ArrayList<RADComponent>(initComponents.length);
@@ -157,6 +161,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADComponent[] components = new RADComponent[subComponents.size()];
         for (int i=0; i < perm.length; i++)
@@ -166,6 +171,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         subComponents.addAll(Arrays.asList(components));
     }
 
+    @Override
     public void add(RADComponent comp) {
         if (comp instanceof RADMenuItemComponent) {
             subComponents.add(comp);
@@ -174,12 +180,14 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (subComponents.remove(comp))
             comp.setParentComponent(null);
 //        getNodeReference().updateChildren();
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         return subComponents.indexOf(comp);
     }
@@ -216,6 +224,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         /** Create the object.
          * @exception IOException if something fails
          */
+        @Override
         public void create() throws java.io.IOException {
             getFormModel().getComponentCreator()
                 .createComponent(new ClassSource(item.getName()),

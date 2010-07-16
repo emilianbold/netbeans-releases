@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,8 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -50,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,8 +75,8 @@ import org.openide.util.NbBundle;
  */
 public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
-    /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
+    /** preferred dimension of the panels */
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private static final String NEW_FILE_PREFIX = 
         NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
@@ -82,12 +88,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourceGroup[] folders;
     private boolean isFolder;
+    private boolean freeFileExtension;
     
     /** Creates new form SimpleTargetChooserGUI */
-    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder ) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.project = project;
-        this.folders=folders;
+        this.folders = folders.clone();
         this.isFolder = isFolder;
+        this.freeFileExtension = freeFileExtension;
         initComponents();
         
         locationComboBox.setRenderer( CELL_RENDERER );
@@ -107,7 +116,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
-    public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
+    final void initValues(FileObject template, FileObject preselectedFolder, String documentName) {
         assert project != null;
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -406,9 +415,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private void updateCreatedFolder() {
         
         SourceGroup sg = (SourceGroup)locationComboBox.getSelectedItem();
-        if (sg == null) return;
+        if (sg == null) {
+            return;
+        }
         FileObject root = sg.getRootFolder();
-        if (root == null) return;
+        if (root == null) {
+            return;
+        }
             
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
@@ -417,7 +430,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName + 
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
-            documentName + expectedExtension;
+            documentName + (!freeFileExtension || documentName.indexOf('.') == -1 ? expectedExtension : "");
             
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N    
             
@@ -427,7 +440,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
    
     // ActionListener implementation -------------------------------------------
     
-    public void actionPerformed(java.awt.event.ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
             // Show the browse dialog             
@@ -453,15 +466,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     // DocumentListener implementation -----------------------------------------
     
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void changedUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }    
     
-    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void insertUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }
     
-    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void removeUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }
     
@@ -474,7 +487,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             setOpaque( true );
         }
         
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;
                 String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
@@ -483,13 +496,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                     setText( groupDisplayName );
                 }
                 else {
-                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                    /*
-                    setText( MessageFormat.format(
-                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
-                        new Object[] { groupDisplayName, projectDisplayName } ) );
-                    */
+                    setText(MessageFormat.format(PhysicalView.GroupNode.GROUP_NAME_PATTERN,
+                            groupDisplayName, projectDisplayName, group.getRootFolder().getName()));
                 }
                 
                 setIcon( group.getIcon( false ) );

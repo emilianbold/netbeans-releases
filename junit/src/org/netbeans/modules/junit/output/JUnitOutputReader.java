@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,6 +81,7 @@ import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 import static java.util.logging.Level.FINER;
 import static org.netbeans.modules.junit.output.RegexpUtils.ADD_ERROR_PREFIX;
@@ -156,7 +160,14 @@ final class JUnitOutputReader {
             FileObject fileObj = FileUtil.toFileObject(antScript);
             this.project = FileOwnerQuery.getOwner(fileObj);
         }
-        this.testSession = new JUnitTestSession("", this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
+        String className = props.getProperty("classname", "");      //NOI18N
+        String methodName = props.getProperty("methodname");        //NOI18N
+        String sName = JUnitExecutionManager.JUNIT_CUSTOM_FILENAME.equals(FileUtil.toFileObject(antScript).getName()) ?
+                    NbBundle.getMessage(JUnitOutputReader.class, "LBL_RerunFailedTests") :      //NOI18N
+                    methodName != null ?
+                        className + "." + methodName : className;
+
+        this.testSession = new JUnitTestSession(sName, this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
         testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
     }
 
@@ -326,10 +337,22 @@ final class JUnitOutputReader {
                                           Integer.parseInt(matcher.group(3)),
                                           parseTime(matcher.group(4)));
                         } catch (NumberFormatException ex) {
-                            assert false;
+                            assert false : ex; // #175298
                         }
                     } else {
-                        assert false;
+                        assert false :
+                            "See bug #185544 \n" +
+                            "Please, provide details about your test run: \n" +
+                            "JUnit version, a way how tests are launched, \n" +
+                            "kind of the project and so on. \n" +
+                            "Description of your test environment, a sample \n" +
+                            "project and steps to reproduce this bug will be \n" +
+                            "highly appreciated.\n" +
+                            "Cause of this error is the JUnit message about \n" +
+                            "execution of the tests doesn't match for usual " +
+                            "regexp pattern: \n" +
+                            "message: \"" + msg +"\"\n" +
+                            "pattern: \"" + regexp.getSuiteStatsPattern();
                     }
                     break;
                 }

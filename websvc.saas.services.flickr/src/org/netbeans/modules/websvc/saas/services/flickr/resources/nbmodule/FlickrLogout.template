@@ -1,0 +1,5 @@
+{
+    java.util.prefs.Preferences prefs = org.openide.util.NbPreferences.forModule(this.getClass());
+    prefs.remove("flickr_auth_token");
+    prefs.remove("flickr_user_nsid");
+}

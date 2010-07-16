@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.model.patterns;
 
 import org.netbeans.modules.bpel.design.model.DiagramModel;
@@ -26,18 +24,14 @@ import org.netbeans.modules.bpel.design.model.elements.ContentElement;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 
-
 /**
- *
  * @author Alexey Yarmolenko
  */
 public class AssignPattern extends BasicActivityPattern{
 
-    /** Creates a new instance of BasicActivityPattern */
     public AssignPattern(DiagramModel model) {
         super(model);
     }
-    
 
     protected void createElementsImpl() {
         VisualElement element = ContentElement.createAssign();
@@ -45,12 +39,10 @@ public class AssignPattern extends BasicActivityPattern{
         registerTextElement(element);
     }
     
-    
     public String getDefaultName() {
         return "Assign"; // NOI18N
     }    
 
-    
     public NodeType getNodeType() {
         return NodeType.ASSIGN;
     }

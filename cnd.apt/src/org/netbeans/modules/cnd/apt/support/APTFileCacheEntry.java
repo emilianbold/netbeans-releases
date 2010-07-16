@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,18 +49,17 @@ import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class APTFileCacheEntry {
-    private final Map<Integer, IncludeData> cache;
+    private final Map<Integer, PostIncludeData> cache;
     private final Map<Integer, Boolean> evalData;
     private final CharSequence filePath;
     private final boolean serial;
-    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, IncludeData> storage, Map<Integer, Boolean> eval) {
+    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, PostIncludeData> storage, Map<Integer, Boolean> eval) {
         assert (filePath != null);
         this.filePath = filePath;
         this.serial = concurrent;
@@ -66,7 +68,7 @@ public final class APTFileCacheEntry {
     }
 
     /*package*/static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
-        return new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, IncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
+        return new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, PostIncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
     }
 
     /*package*/static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
@@ -78,7 +80,7 @@ public final class APTFileCacheEntry {
     }
 
     private static APTFileCacheEntry create(CharSequence filePath, boolean serial) {
-        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, IncludeData>() : new ConcurrentHashMap<Integer, IncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
+        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, PostIncludeData>() : new ConcurrentHashMap<Integer, PostIncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
     }
 
     public boolean isSerial() {
@@ -88,23 +90,16 @@ public final class APTFileCacheEntry {
     private static volatile int includeHits = 0;
     private static volatile int evalHits = 0;
     /** must be called under lock */
-    /*package*/ APTMacroMap.State getPostIncludeMacroState(APTInclude node) {
-        IncludeData data = getIncludeData(node);
+    /*package*/ PostIncludeData getPostIncludeState(APTInclude node) {
+        PostIncludeData data = getIncludeData(node);
         assert data != null;
-        if (data.postIncludeMacroState != null) {
+        if (data.getPostIncludeMacroState() != null) {
             includeHits++;
             if (APTTraceFlags.TRACE_APT_CACHE && needTraceValue(includeHits)) {
                 System.err.println("INCLUDE HIT " + includeHits + " cache for line:" + node.getToken().getLine() + " in " + filePath);
             }
         }
-        return data.postIncludeMacroState;
-    }
-
-    /** must be called under lock */
-    /*package*/ void setPostIncludeMacroState(APTInclude node, APTMacroMap.State state) {
-        IncludeData data = getIncludeData(node);
-        assert data.postIncludeMacroState == null;
-        data.postIncludeMacroState = state;
+        return data;
     }
 
     /*package*/ Object getIncludeLock(APTInclude node) {
@@ -125,12 +120,13 @@ public final class APTFileCacheEntry {
         evalData.put(node.getOffset(), Boolean.valueOf(result));
     }
 
-    private IncludeData getIncludeData(APTInclude node) {
+    private PostIncludeData getIncludeData(APTInclude node) {
         Integer key = Integer.valueOf(node.getOffset());
-        IncludeData data = cache.get(key);
+        PostIncludeData data = cache.get(key);
         if (data == null) {
-            data = new IncludeData(null);
-            IncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, IncludeData>)cache).putIfAbsent(key, data);
+            // create empty object
+            data = new PostIncludeData();
+            PostIncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, PostIncludeData>)cache).putIfAbsent(key, data);
             if (prev != null) {
                 data = prev;
             }
@@ -138,6 +134,20 @@ public final class APTFileCacheEntry {
         return data;
     }
 
+    /** must be called under lock or must be serial */
+    /*package*/ void setIncludeData(APTInclude node, PostIncludeData newData) {
+        Integer key = Integer.valueOf(node.getOffset());
+        PostIncludeData old = cache.get(key);
+        assert old != null;
+        assert !old.hasPostIncludeMacroState();
+        if (serial) {
+            cache.put(key, newData);
+        } else {
+            boolean replaced = ((ConcurrentMap<Integer, PostIncludeData>) cache).replace(key, old, newData);
+            assert replaced : "old empty entry must be replaced by new one";
+        }
+    }
+    
     public CharSequence getFilePath() {
         return filePath;
     }
@@ -150,13 +160,5 @@ public final class APTFileCacheEntry {
     private boolean needTraceValue(int val) {
 //        return CharSequenceKey.ComparatorIgnoreCase.compare(filePath, "/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include/math.h") == 0;
         return val % 10 == 0;
-    }
-
-    private static final class IncludeData {
-        private volatile APTMacroMap.State postIncludeMacroState;
-
-        public IncludeData(State state) {
-            this.postIncludeMacroState = state;
-        }
     }
 }

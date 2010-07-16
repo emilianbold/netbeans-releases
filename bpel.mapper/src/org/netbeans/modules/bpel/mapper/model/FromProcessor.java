@@ -21,10 +21,13 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEditorExtensions;
-import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperLsmProcessor.MapperLsmContainer;
+import org.netbeans.modules.bpel.mapper.model.customitems.XmlLiteralDataObject;
+import org.netbeans.modules.bpel.mapper.model.customitems.XmlLiteralUtils;
+import org.netbeans.modules.bpel.mapper.tree.search.CorrelationPropertyFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.BpelFinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.NMPropertyFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
 import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
@@ -34,6 +37,7 @@ import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
 import org.netbeans.modules.bpel.model.api.FromHolder;
 import org.netbeans.modules.bpel.model.api.Literal;
+import org.netbeans.modules.bpel.model.api.Literal.LiteralForm;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -44,8 +48,10 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 
 /**
@@ -69,6 +75,7 @@ public class FromProcessor {
         VAR_QUERY, 
         PARTNER_LINK, 
         VAR_PROPERTY, 
+        VAR_NM_PROPERTY, 
         EXPRESSION, 
         LITERAL;
     }
@@ -95,26 +102,35 @@ public class FromProcessor {
         return mCopyFromForm;
     }
     
-    public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel, 
-            BpelEditorExtensions extList) {
+    public Graph populateGraph(Graph graph, BpelMapperSwingTreeModel leftTreeModel,
+            MapperLsmContainer lsmCont) {
         //
         assert getFrom() != null;
         //
         switch (getFromForm()) {
         case EXPRESSION:
             mFactory.populateGraph(graph, leftTreeModel, mContextEntity, 
-                    getFrom(), extList);
+                    getFrom(), lsmCont);
             break;
         case LITERAL:
             FromChild literal = getFrom().getFromChild(); // literal
+            
             if (literal != null && literal instanceof Literal) {
-                String literalText = ((Literal)literal).getContent();
-                Vertex newVertex = VertexFactory.getInstance().
-                        createStringLiteral(literalText);
+                XmlLiteralUtils.XmlLiteralInfo info = XmlLiteralUtils.calculateLiteralInfo((Literal)literal);
+                
+                String literalText = info.getTextValue();
+                LiteralForm literalForm = info.getLiteralForm();
+                XmlLiteralDataObject xmlDataObject = new XmlLiteralDataObject(literal.getNamespaceContext(),
+                         info.getTextValue(), literalForm);
+                
+                Vertex newVertex = BpelVertexFactory.getInstance().createXmlLiteral(xmlDataObject);
+                newVertex.getItem(0).setText(literalText);
                 //
                 graph.addVertex(newVertex);
                 Link newLink = new Link(newVertex, graph);
                 graph.addLink(newLink);
+                //
+                GraphLayout.layout(graph);
             }
             break;
         case UNKNOWN:
@@ -161,6 +177,9 @@ public class FromProcessor {
         BpelReference<VariableDeclaration> varRef = copyFrom.getVariable();
         if (varRef != null) {
             WSDLReference<Part> partRef = copyFrom.getPart();
+            WSDLReference<CorrelationProperty> property = copyFrom
+                    .getProperty();
+            String nmProperty = copyFrom.getNMProperty();
             if (partRef != null) {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
@@ -168,6 +187,10 @@ public class FromProcessor {
                 } else {
                     return FromForm.VAR_PART;
                 }
+            } else if (property != null && property.get() != null) {
+                return FromForm.VAR_PROPERTY;
+            } else if (nmProperty != null) {
+                return FromForm.VAR_NM_PROPERTY;
             } else {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
@@ -231,6 +254,38 @@ public class FromProcessor {
             }
             break;
         }
+        case VAR_PROPERTY: {
+                BpelReference<VariableDeclaration> varDeclRef = from
+                        .getVariable();
+                WSDLReference<CorrelationProperty> propertyRef = from
+                        .getProperty();
+                
+                if (varDeclRef != null && propertyRef != null) {
+                    VariableDeclaration variableDeclaration = varDeclRef.get();
+                    if (variableDeclaration != null) {
+                        CorrelationProperty property = propertyRef.get(); 
+                        if (property != null) {
+                            finderList.add(new CorrelationPropertyFinder(
+                                    variableDeclaration, property));
+                        } 
+                    }
+                }
+            }
+            break;
+        case VAR_NM_PROPERTY: {
+                BpelReference<VariableDeclaration> varDeclRef = from
+                        .getVariable();
+                String nmProperty = from.getNMProperty();
+                
+                if (varDeclRef != null && nmProperty != null) {
+                    VariableDeclaration variableDeclaration = varDeclRef.get();
+                    if (variableDeclaration != null) {
+                        finderList.add(new NMPropertyFinder(
+                                variableDeclaration, nmProperty));
+                    }
+                }
+            }
+            break;
         case VAR_PART_QUERY: {
             BpelReference<VariableDeclaration> varDeclRef = from.getVariable();
             if (varDeclRef != null) {
@@ -251,7 +306,7 @@ public class FromProcessor {
                                 contextEntity, part, (Query)query);
                         XPathLocationPath lPath = builder.build();
                         if (lPath != null) {
-                            finderList.addAll(FinderListBuilder.build(lPath));
+                            finderList.addAll(BpelFinderListBuilder.singl().build(lPath));
                         }
                     }
                 }
@@ -271,7 +326,7 @@ public class FromProcessor {
                                 contextEntity, varDecl, (Query)query);
                         XPathLocationPath lPath = builder.build();
                         if (lPath != null) {
-                            finderList.addAll(FinderListBuilder.build(lPath));
+                            finderList.addAll(BpelFinderListBuilder.singl().build(lPath));
                         }
                     }
                 }

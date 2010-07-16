@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.awt.Dialog;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -100,6 +104,11 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         return NbModuleSuite.create(conf);
     }
 
+    @Override
+    protected String getEEVersion(){
+        return JAVA_EE_5;
+    }
+
     public void testNewMavenWebProject() throws IOException {
         installJemmyQueue();
         FileUtil.createFolder(new File(PROJECT_LOCATION));
@@ -113,11 +122,14 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         projectName.setText("");
         projectName.typeText(PROJECT_NAME);
 
-
         Component plComp = new JLabelOperator(mavenWebAppWizardOperator, "Project Location").getLabelFor();
         JTextFieldOperator projectLocation = new JTextFieldOperator((JTextField)plComp);
         projectLocation.setText("");
         projectLocation.typeText(PROJECT_LOCATION);
+
+        Component javaee = new JLabelOperator(mavenWebAppWizardOperator, "Java EE Version:").getLabelFor();
+        JComboBoxOperator javaeeOp = new JComboBoxOperator((JComboBox)javaee);
+        javaeeOp.selectItem(getEEVersion());
         mavenWebAppWizardOperator.finish();
 
         // wait for project creation
@@ -145,7 +157,6 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         sleep(5000);
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("index.jsp");
-        verifyWebPagesNode("WEB-INF|web.xml");
     }
 
     @Override

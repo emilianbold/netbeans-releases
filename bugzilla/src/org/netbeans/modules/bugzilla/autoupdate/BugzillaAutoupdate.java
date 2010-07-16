@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ public class BugzillaAutoupdate {
     static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.bugzilla.supported.version"); // NOI18N
-        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.2.2"); // NOI18N
+        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.4"); // NOI18N
     }
     static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 
@@ -103,7 +106,7 @@ public class BugzillaAutoupdate {
      *         downloaded
      */
     public boolean checkAndNotify(BugzillaRepository repository) {
-        Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify start");
+        Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify start");
         try {
             if(wasCheckedToday(getLastCheck(repository))) {
                 return true;
@@ -125,7 +128,7 @@ public class BugzillaAutoupdate {
                 }
             }
         } finally {
-            Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify finish");
+            Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify finish");
         }
         return true;
     }

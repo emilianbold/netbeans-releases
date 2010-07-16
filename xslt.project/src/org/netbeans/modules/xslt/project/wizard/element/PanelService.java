@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,19 +49,25 @@ import javax.swing.JPanel;
 
 import org.openide.WizardDescriptor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
+ * @author Vitaly Bychkov
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.25
  */
-final class PanelService<T> extends Panel<T> {
+final class PanelService extends Panel {
+    private static final long serialVersionUID = 1L;
     
-  PanelService(Project project, Panel<T> parent, WSDLModel model) {
+  PanelService(Project project, Panel parent, Operation wsdlOperation) {
     super(project, parent);
-    myOperation = new PanelOperation<T>(
-      project, parent, model, getXslFileName(getXslFileNumber(1)), false, true);
+    myOperation = wsdlOperation;
+//    myOperation = new PanelOperation(
+//      project, parent, myWsdlOperation, getXslFileName(getXslFileNumber(1)), false, true);
+    myOperationPanel = new PanelTransformation(
+      project, this, myOperation, false, true);
   }
 
   @Override
@@ -67,16 +76,57 @@ final class PanelService<T> extends Panel<T> {
     return NAME_XSLT;
   }
 
+    @Override
+    protected void finishEditing() {
+        if (myOperationPanel != null) {
+            myOperationPanel.finishEditing();
+        }
+    }
+
   @Override
   protected String getError()
   {
-    return myOperation.getError();
+    String opParamError = checkOpParameters();
+    if (opParamError != null) {
+        return opParamError;
+    }
+      
+    return myOperationPanel.getError();
   }
 
-  public void storeSettings(Object object) {
-    WizardDescriptor descriptor = (WizardDescriptor) object;
-    myOperation.storeSettings(object);
+  private String checkOpParameters() {
+    String implOpName = myOperation == null ? "" : myOperation.getName();
+    implOpName = implOpName == null ? "" : implOpName;
+
+    if (!check(myOperationPanel.getInput())) {
+        return i18n( "ERR_Operation_With_Input_Is_Required" ,implOpName); // NOI18N
+    }
+    if (!check(myOperationPanel.getOutput())) {
+        return i18n( "ERR_Operation_With_Output_Is_Required" ,implOpName); // NOI18N
+    }
+    
+    return null;
+  }
+  
+  private boolean check(OperationParameter parameter) {
+    return
+      parameter != null &&
+      parameter.getMessage() != null &&
+      parameter.getMessage().get() != null;
+  }
+
+    @Override
+    public void readSettings(WizardDescriptor object) {
+        super.readSettings(object);
+        myOperationPanel.readSettings(object);
+    }
+
+  @Override
+  public void storeSettings(WizardDescriptor descriptor) {
+    super.storeSettings(descriptor);
+    myOperationPanel.storeSettings(descriptor);
     descriptor.putProperty(CHOICE, CHOICE_REQUEST_REPLY);
+    descriptor.putProperty(IMPL_OPERATION, myOperation);
   }
 
   @Override
@@ -89,10 +139,11 @@ final class PanelService<T> extends Panel<T> {
     c.weightx = 1.0;
     c.gridx = 0;
 
-    myOperation.createPanel(panel, c);
+    myOperationPanel.createPanel(panel, c);
     mainPanel.add(panel, cc);
     mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewRRService3"));   
   }
 
-  private Panel<T> myOperation;
+  private PanelTransformation myOperationPanel;
+  private Operation myOperation;
 }

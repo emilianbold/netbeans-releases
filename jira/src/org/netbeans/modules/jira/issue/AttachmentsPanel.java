@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -175,7 +179,7 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
-                dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
+                dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 authorLabel = new JLabel(author);
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
@@ -240,6 +244,7 @@ public class AttachmentsPanel extends JPanel {
     ActionListener getDeletedListener() {
         if (deletedListener == null) {
             deletedListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     JComponent comp = (JComponent)e.getSource();
                     comp.setVisible(false);
@@ -248,7 +253,7 @@ public class AttachmentsPanel extends JPanel {
                     JComponent browseButton = (JComponent)comp.getClientProperty(BROWSE_CP);
                     browseButton.setVisible(false);
                     newAttachments.remove(nameField);
-                    if (hadNoAttachments && (newAttachments.size() == 0)) {
+                    if (hadNoAttachments && newAttachments.isEmpty()) {
                         // The last attachment deleted
                         noneLabel.setVisible(true);
                         switchHelper();
@@ -264,6 +269,7 @@ public class AttachmentsPanel extends JPanel {
     ActionListener getBrowseListener() {
         if (browseListener == null) {
             browseListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     File attachment = new FileChooserBuilder(AttachmentsPanel.class).showOpenDialog();
                     if (attachment != null) {
@@ -317,6 +323,7 @@ public class AttachmentsPanel extends JPanel {
             this.verticalGroup = verticalGroup;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             JTextField nameField = new JTextField();
             nameField.setColumns(30);
@@ -347,9 +354,9 @@ public class AttachmentsPanel extends JPanel {
                 updateCreateNewButton(false);
             }
             newAttachments.add(nameField);
-            BugtrackingUtil.keepFocusedComponentVisible(nameField);
-            BugtrackingUtil.keepFocusedComponentVisible(browseButton);
-            BugtrackingUtil.keepFocusedComponentVisible(deleteButton);
+            UIUtils.keepFocusedComponentVisible(nameField);
+            UIUtils.keepFocusedComponentVisible(browseButton);
+            UIUtils.keepFocusedComponentVisible(deleteButton);
             revalidate();
         }
     }
@@ -362,6 +369,7 @@ public class AttachmentsPanel extends JPanel {
             putValue(Action.NAME, NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.name")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
             String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
@@ -369,6 +377,7 @@ public class AttachmentsPanel extends JPanel {
             handle.start();
             handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         File file = saveToTempFile(attachment);
@@ -450,6 +459,7 @@ public class AttachmentsPanel extends JPanel {
             putValue(Action.NAME, NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.name")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             final File file = new FileChooserBuilder(AttachmentsPanel.class)
                     .setFilesOnly(true).showSaveDialog();
@@ -460,6 +470,7 @@ public class AttachmentsPanel extends JPanel {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             attachment.getAttachementData(new FileOutputStream(file));

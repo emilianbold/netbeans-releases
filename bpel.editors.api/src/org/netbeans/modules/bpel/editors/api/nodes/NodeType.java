@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.editors.api.nodes;
 
 import java.awt.Image;
@@ -25,9 +24,8 @@ import javax.swing.ImageIcon;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * @author nk160297
@@ -48,6 +46,8 @@ public enum NodeType {
     REPLY,
     PICK,
     ASSIGN,
+    VALIDATE,
+    JAVA_SCRIPT,
     WAIT,
     THROW,
     RETHROW,
@@ -89,13 +89,20 @@ public enum NodeType {
     GLOBAL_SIMPLE_TYPE,
     GLOBAL_COMPLEX_TYPE,
     GLOBAL_ELEMENT,
+    NOT_IMPORTED_FILES,
+    REFERENCED_RESOURCES,
+    REFERENCED_PROJECTS,
+    PROJECT,
+    REFERENCED_RESOURCE,
     //
     WSDL_FILE,
     SCHEMA_FILE,
+    FAULT_MESSAGE,
     //
     VARIABLE_SCOPE,
     VARIABLE_CONTAINER,
     VARIABLE,
+    VARIABLE_REFERENCE,
     CORRELATION,
     CORRELATION_P,
     CORRELATION_SET_CONTAINER,
@@ -249,5 +256,4 @@ public enum NodeType {
     public static boolean isValidImage(Image img) {
         return img != null && !NodeType.UNKNOWN_IMAGE.equals(img);
     }
-    
 }

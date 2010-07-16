@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.openide.filesystems.annotations;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -523,7 +527,16 @@ public final class LayerBuilder {
                 if (processingEnv != null) {
                     String resource = bundle.replace('.', '/') + ".properties";
                     try {
-                        InputStream is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
+                        InputStream is;
+                        try {
+                            is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
+                        } catch (FileNotFoundException x) { // #181355
+                            try {
+                                is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
+                            } catch (IOException x2) {
+                                throw x;
+                            }
+                        }
                         try {
                             Properties p = new Properties();
                             p.load(is);
@@ -613,6 +626,32 @@ public final class LayerBuilder {
                 file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
             file.setAttribute("name", piece);
+            NodeList oldComments = file.getChildNodes();
+            for (int i = 0; i < oldComments.getLength();) {
+                Node node = oldComments.item(i);
+                if (node.getNodeType() == Node.COMMENT_NODE) {
+                    file.removeChild(node);
+                } else {
+                    i++;
+                }
+            }
+            if (originatingElement != null) {
+                // Embed comment in generated-layer.xml for easy navigation back to the annotation.
+                String name;
+                switch (originatingElement.getKind()) {
+                case CONSTRUCTOR:
+                case ENUM_CONSTANT:
+                case FIELD:
+                case INSTANCE_INIT:
+                case METHOD:
+                case STATIC_INIT:
+                    name = originatingElement.getEnclosingElement() + "." + originatingElement;
+                    break;
+                default:
+                    name = originatingElement.toString();
+                }
+                file.appendChild(doc.createComment(name));
+            }
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
                 org.w3c.dom.Element former = find(file, entry.getKey(), "attr");
                 if (former != null) {

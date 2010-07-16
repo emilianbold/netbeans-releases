@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -57,10 +64,42 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 
 public final class ProcessUtils {
 
     private ProcessUtils() {
+    }
+    
+    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
+    public static String getRemoteCharSet() {
+        return remoteCharSet;
+    }
+
+    public static BufferedReader getReader(final InputStream is, boolean remote) {
+        if (remote) {
+            // set charset
+            try {
+                return new BufferedReader(new InputStreamReader(is, getRemoteCharSet()));
+            } catch (UnsupportedEncodingException ex) {
+                String msg = getRemoteCharSet() + " encoding is not supported, try to override it with cnd.remote.charset"; //NOI18N
+                Exceptions.printStackTrace(new IllegalStateException(msg, ex));
+            }
+        }
+        return new BufferedReader(new InputStreamReader(is));
+    }
+
+    public static PrintWriter getWriter(final OutputStream os, boolean remote) {
+        if (remote) {
+            // set charset
+            try {
+                return new PrintWriter(new OutputStreamWriter(os, getRemoteCharSet()));
+            } catch (UnsupportedEncodingException ex) {
+                String msg = getRemoteCharSet() + " encoding is not supported, try to override it with cnd.remote.charset"; //NOI18N
+                Exceptions.printStackTrace(new IllegalStateException(msg, ex));
+            }
+        }
+        return new PrintWriter(os);
     }
 
     public static List<String> readProcessError(final Process p) throws IOException {
@@ -68,7 +107,7 @@ public final class ProcessUtils {
             return Collections.<String>emptyList();
         }
 
-        return readProcessStream(p.getErrorStream());
+        return readProcessStream(p.getErrorStream(), isRemote(p));
     }
 
     public static String readProcessErrorLine(final Process p) throws IOException {
@@ -76,7 +115,7 @@ public final class ProcessUtils {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getErrorStream());
+        return readProcessStreamLine(p.getErrorStream(), isRemote(p));
     }
 
     public static List<String> readProcessOutput(final Process p) throws IOException {
@@ -84,7 +123,7 @@ public final class ProcessUtils {
             return Collections.<String>emptyList();
         }
 
-        return readProcessStream(p.getInputStream());
+        return readProcessStream(p.getInputStream(), isRemote(p));
     }
 
     public static String readProcessOutputLine(final Process p) throws IOException {
@@ -92,7 +131,14 @@ public final class ProcessUtils {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getInputStream());
+        return readProcessStreamLine(p.getInputStream(), isRemote(p));
+    }
+
+    private static boolean isRemote(Process process) {
+        if (process instanceof NativeProcess) {
+            return ((NativeProcess)process).getExecutionEnvironment().isRemote();
+        }
+        return false;
     }
 
     public static void logError(final Level logLevel, final Logger log, final Process p) throws IOException {
@@ -105,13 +151,13 @@ public final class ProcessUtils {
         }
     }
 
-    private static List<String> readProcessStream(final InputStream stream) throws IOException {
+    private static List<String> readProcessStream(final InputStream stream, boolean remoteStream) throws IOException {
         if (stream == null) {
             return Collections.<String>emptyList();
         }
 
         final List<String> result = new LinkedList<String>();
-        final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        final BufferedReader br = getReader(stream, remoteStream);
 
         try {
             String line;
@@ -127,19 +173,24 @@ public final class ProcessUtils {
         return result;
     }
 
-    private static String readProcessStreamLine(final InputStream stream) throws IOException {
+    private static String readProcessStreamLine(final InputStream stream, boolean remoteStream) throws IOException {
         if (stream == null) {
             return ""; // NOI18N
         }
 
         final StringBuilder result = new StringBuilder();
-        final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        final BufferedReader br = getReader(stream, remoteStream);
 
         try {
             String line;
+            boolean first = true;
 
             while ((line = br.readLine()) != null) {
+                if (!first) {
+                    result.append('\n');
+                }
                 result.append(line);
+                first = false;
             }
         } finally {
             if (br != null) {
@@ -174,7 +225,7 @@ public final class ProcessUtils {
         // will send SIGTERM signal..
 
         try {
-            int rc = process.exitValue();
+            process.exitValue();
             // No exception means successful termination
             return;
         } catch (java.lang.IllegalThreadStateException ex) {
@@ -215,6 +266,7 @@ public final class ProcessUtils {
                 }
             }
         } catch (Throwable e) {
+            org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.FINE, e.getMessage(), e);
         }
 
         return pid;
@@ -222,6 +274,18 @@ public final class ProcessUtils {
 
     public static ExitStatus execute(final ExecutionEnvironment execEnv, final String executable, final String... args) {
         return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args));
+    }
+
+    public static ExitStatus executeInDir(final String workingDir, final ExecutionEnvironment execEnv,  final String executable, final String... args) {
+        return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir));
+    }
+
+    public static ExitStatus executeWithoutMacroExpansion(final String workingDir, final ExecutionEnvironment execEnv, final String executable, final String... args) {
+        if (workingDir != null) {
+            return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setMacroExpansion(false));
+        } else {
+            return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir).setMacroExpansion(false));
+        }
     }
 
     /**
@@ -278,8 +342,11 @@ public final class ProcessUtils {
             }, "o"); // NOI18N
 
             result = new ExitStatus(process.waitFor(), output.get(), error.get());
+        } catch (InterruptedException ex) {
+            result = new ExitStatus(-100, "", ex.getMessage());
         } catch (Throwable th) {
-            result = new ExitStatus(-100, "", th.getMessage());
+            org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
+            result = new ExitStatus(-200, "", th.getMessage());
         }
 
         return result;

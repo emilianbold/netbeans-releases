@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ import org.openide.util.WeakListeners;
  *  Configures the editor returned and attaches it to the property in question.
   * @author  Tim Boudreau
   */
-final class InplaceEditorFactory {
+final class InplaceEditorFactory implements PropertyChangeListener {
     private InplaceEditor checkbox = null;
     private InplaceEditor text = null;
     private InplaceEditor combo = null;
@@ -79,17 +82,17 @@ final class InplaceEditorFactory {
     InplaceEditorFactory(boolean tableUI, ReusablePropertyEnv env) {
         this.tableUI = tableUI;
         this.reusableEnv = env;
-        
         //reset editors when windows theme is changing (classic <-> xp)
-        PropertyChangeListener weakListener = WeakListeners.propertyChange( new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                checkbox = null;
-                text = null;
-                combo = null;
-                radio = null;
-            }
-        }, Toolkit.getDefaultToolkit() );
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(this, Toolkit.getDefaultToolkit());
         Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", weakListener ); //NOI18N
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        checkbox = null;
+        text = null;
+        combo = null;
+        radio = null;
     }
 
     /** Set a threshold number of tags below which a radio button, not a

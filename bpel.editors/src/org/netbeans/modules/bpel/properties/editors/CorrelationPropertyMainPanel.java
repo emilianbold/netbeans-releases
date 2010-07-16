@@ -79,7 +79,7 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
                     = (TypeChooserPanel)pnlTypeChooser;
             typeChooser.init(Constants.CORRELATION_PROPERTY_STEREO_TYPE_FILTER
                     , myEditor.getLookup());
-            typeChooser.hideChbShowImportedOnly(true);
+            // typeChooser.hideChbShowImportedOnly(true);
             typeChooser.setIncorrectNodeSelectionReasonKey("ERR_PROPERTY_TYPE_NOT_SPECIFIED"); // NOI18N
             //
             CorrelationProperty corrProp = myEditor.getEditedObject();

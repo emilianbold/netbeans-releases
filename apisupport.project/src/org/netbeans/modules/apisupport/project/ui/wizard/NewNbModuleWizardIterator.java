@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -54,12 +58,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,7 +119,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
      * Returns wizard for creating NetBeans module in general - i.e. either
      * standalone module, suite component or NB.org module.
      */
-    public static NewNbModuleWizardIterator createModuleIterator() {
+    public static NewNbModuleWizardIterator createModuleIterator(Map m) {
         return new NewNbModuleWizardIterator(Type.MODULE);
     }
     
@@ -171,7 +176,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     public Set instantiate() throws IOException {
         final File projectFolder = new File(data.getProjectFolder());
-        ProjectChooser.setProjectsFolder(new File(data.getProjectLocation()));
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
         WizardDescriptor settings = data.getSettings();
         switch (data.getWizardType()) {
@@ -190,17 +194,17 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                     // create module within the netbeans.org source tree
                     NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer());
+                            data.getBundle(), data.getLayer(), data.isOSGi());
                 } else if (data.isStandalone()) {
                     // create standalone module
                     NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), data.getPlatformID());
+                            data.getBundle(), data.getLayer(), data.getPlatformID(), data.isOSGi());
                 } else {
                     // create suite-component module
                     NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
+                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()), data.isOSGi());
                 }
                 break;
             case LIBRARY_MODULE:
@@ -225,11 +229,12 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         
         Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(createdProjectFolder);
-        
-        UIUtil.setProjectChooserDirParent(projectFolder);
-        
-        // XXX this constant should be defined somewhere!
-        settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject())); // NOI18N
+
+        if (!projectFolder.getParent().equals(data.getSuiteRoot())) { // #184830
+            UIUtil.setProjectChooserDirParent(projectFolder);
+        }
+
+        Templates.setDefinesMainProject(settings, data.isMainProject());
         
         return resultSet;
     }
@@ -251,8 +256,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         String[] steps = null;
         switch (data.getWizardType()) {
             case MODULE:
-                steps = initModuleWizard();
-                break;
             case SUITE_COMPONENT:
                 steps = initModuleWizard();
                 break;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 - 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 - 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.impl;
@@ -65,6 +68,7 @@ public class ConnectManager {
 
     // Guarded by this
     private boolean reconnecting = false;
+    private static final RequestProcessor RP = new RequestProcessor(ConnectManager.class);
 
     private ConnectManager() {
     }
@@ -78,10 +82,11 @@ public class ConnectManager {
     }
 
     public void reconnect(final DatabaseServer server) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
-                    synchronized(this) {
+                    synchronized(ConnectManager.this) {
                         if (reconnecting) {
                             // If we're already in the process of reconnecting, don't try it again
                             // (this can happen for instance if multiple properties have changed, each firing
@@ -102,6 +107,7 @@ public class ConnectManager {
 
                     if (displayProperties) {
                         Mutex.EVENT.postReadRequest(new Runnable() {
+                            @Override
                             public void run() {
                                 PropertiesDialog dialog = new PropertiesDialog(server);
                                 boolean ok = dialog.displayDialog();
@@ -139,6 +145,7 @@ public class ConnectManager {
             return false;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if (propertyChangeNeedsReconnect(evt)) {

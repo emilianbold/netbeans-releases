@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -76,6 +81,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_STATUS = "getStatus"; // NOI18N
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
+    private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
+        "setConfigDirectory",                                           //NOI18N
+        "getSvnUrl",                                                    //NOI18N
+        "addNotifyListener",                                            //NOI18N
+        "getIgnoredPatterns",                                           //NOI18N
+        "removeNotifyListener"                                          //NOI18N
+    }));
     
     private static final Object semaphor = new Object();
 
@@ -109,6 +121,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         this.support = support;
         this.handledExceptions = handledExceptions;
         this.cancellable = new Cancellable() {
+            @Override
             public boolean cancel() {
                 try {
                     SvnClientInvocationHandler.this.adapter.cancelOperation();
@@ -144,17 +157,19 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
+    @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
                 
         boolean fsReadOnlyAction = isFSWrittingCommand(method);
 
         try {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("~~~ SVN: invoking '" + method.getName() + "' with " + print(args)); //NOI18N
+                LOG.log(Level.FINE, "~~~ SVN: invoking ''{0}'' with {1}", new Object[]{method.getName(), print(args)}); //NOI18N
                 //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
             }
 
             Callable<Object> c = new Callable<Object>() {
+                @Override
                 public Object call() throws Exception {
                     if(parallelizable(method, args)) {
                         return invokeMethod(method, args);
@@ -179,7 +194,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         } catch (Exception e) {
             try {
-                if(handleException((SvnClient) proxy, e) ) {
+                if(handleException((SvnClient) proxy, e, method.getName()) ) {
                     return invoke(proxy, method, args);
                 } else {
                     // some action canceled by user message 
@@ -223,7 +238,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 }
                 if(support != null && support.isCanceled()) {
                     // action has been canceled, level info should be fine
-                    Subversion.LOG.log(Level.INFO, null, t);
+                    Subversion.LOG.log(Level.FINE, null, t);
                     // who knows what might have happened ...
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);
                 }
@@ -246,9 +261,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     files.add((File) arg);
                 } else if (arg instanceof File[]) {
                     File[] fs = (File[]) arg;
-                    for (File file : fs) {
-                        files.add(file);
-                    }
+                    files.addAll(Arrays.asList(fs));
                 }
             }
         }
@@ -260,8 +273,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return !method.getName().equals("update") &&           // NOI18N
                !method.getName().equals("revert") &&           // NOI18N
                !method.getName().equals("switchToUrl") &&      // NOI18N
-               !method.getName().equals("commit") &&           // NOI18N
-               !method.getName().equals("commitAcrossWC") &&   // NOI18N
                !method.getName().equals("remove") &&           // NOI18N
                !method.getName().equals("mkdir") &&            // NOI18N
                !method.getName().equals("checkout") &&         // NOI18N
@@ -296,7 +307,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
     
     private boolean parallelizable(Method method, Object[] args) {
-        return isLocalReadCommand(method, args) || isCancelCommand(method, args);
+        return isLocalReadCommand(method, args) || isCancelCommand(method, args)
+                || PARALLELIZABLE_METHODS.contains(method.getName());
     }
     
     protected boolean isLocalReadCommand(Method method, Object[] args) {
@@ -374,7 +386,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return ret;
     }
 
-    private boolean handleException(SvnClient client, Throwable t) throws Throwable {
+    private boolean handleException(SvnClient client, Throwable t, String methodName) throws Throwable {
         if( t instanceof InvocationTargetException ) {
             t = ((InvocationTargetException) t).getCause();            
         } 
@@ -383,6 +395,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
 
         SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, isCommandLine());
+        eh.setMethod(methodName);
         return eh.handleException();        
     }
 

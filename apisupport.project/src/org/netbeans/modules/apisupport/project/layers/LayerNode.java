@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,21 +46,17 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -88,18 +87,20 @@ import org.openide.xml.XMLUtil;
  */
 public final class LayerNode extends FilterNode implements Node.Cookie {
     
+    private static final RequestProcessor RP = new RequestProcessor(LayerNode.class);
+
     private final boolean specialDisplayName;
 
-    public LayerNode(LayerUtils.LayerHandle handle) {
+    public LayerNode(LayerHandle handle) {
         this(getDataNode(handle), handle, true);
     }
     
-    private LayerNode(Node delegate, LayerUtils.LayerHandle handle, boolean specialDisplayName) {
+    private LayerNode(Node delegate, LayerHandle handle, boolean specialDisplayName) {
         super(delegate, new LayerChildren(handle));
         this.specialDisplayName = specialDisplayName;
     }
     
-    private static Node getDataNode(LayerUtils.LayerHandle handle) {
+    private static Node getDataNode(LayerHandle handle) {
         FileObject layer = handle.getLayerFile();
         try {
             return DataObject.find(layer).getNodeDelegate();
@@ -112,9 +113,14 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
     public static Environment.Provider createProvider() {
         class EP implements Environment.Provider {
             public Lookup getEnvironment(DataObject obj) {
+                FileObject xml = obj.getPrimaryFile();
+                Project p = FileOwnerQuery.getOwner(xml);
+                if (p == null) {
+                    return Lookup.EMPTY;
+                }
                 DataNode dn = new DataNode(obj, Children.LEAF);
                 dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
-                LayerNode ln = new LayerNode(dn, new LayerUtils.LayerHandle(null, obj.getPrimaryFile()), false);
+                LayerNode ln = new LayerNode(dn, new LayerHandle(p, xml), false);
                 return Lookups.singleton(ln);
             }
         }
@@ -125,13 +131,12 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
 
         enum KeyType {WAIT, RAW, CONTEXTUALIZED}
         
-        private final LayerUtils.LayerHandle handle;
-        private ClassPath cp;
+        private final LayerHandle handle;
         private Project p;
         private FileSystem layerfs;
         private FileSystem sfs;
         
-        public LayerChildren(LayerUtils.LayerHandle handle) {
+        public LayerChildren(LayerHandle handle) {
             this.handle = handle;
         }
         
@@ -140,42 +145,29 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             super.addNotify();
             handle.setAutosave(true);
             setKeys(Collections.singleton(KeyType.WAIT));
-            RequestProcessor.getDefault().post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    try {
-                        FileObject layer = handle.getLayerFile();
-                        p = FileOwnerQuery.getOwner(layer);
-                        assert p != null : layer;
-                        try {
-                            cp = createClasspath(p);
-                        } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        }
-                        // just this project's source path, whole cp is too slow
-                        ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
-                        ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
-                        layerfs = handle.layer(false, srcPath);
-                        setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                        Project p = FileOwnerQuery.getOwner(handle.getLayerFile());
-                        boolean context = false;
-                        if (p != null) {
-                            LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
-                            h.setAutosave(true); // #135376
-                            if (h != null && layer.equals(h.getLayerFile())) {
-                                FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
-                                if (cp != null) { // has not been removeNotify()d yet
-                                    sfs = _sfs;
-                                    setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
-                                    context = true;
-                                }
-                            }
-                        }
-                        if (!context) {
-                            setKeys(Collections.singleton(KeyType.RAW));
-                        }
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    FileObject layer = handle.getLayerFile();
+                    p = /* #180872 */layer == null ? null : FileOwnerQuery.getOwner(layer);
+                    if (p == null) { // #175861: inside JAR etc.
+                        setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                        return;
                     }
+                    boolean showContextNode = true;
+                    NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
+                    if( null != moduleProvider 
+                            && !moduleProvider.prepareContext(NbBundle.getMessage(LayerNode.class, "LBL_XML_layer_in_context")) ) { //NOI18N
+                        //don't show 'layer in context' if the context classpath didn't initialize properly
+                        showContextNode = false;
+                    }
+                    final boolean b = showContextNode;
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            initialize(b);
+                        }
+                    });
                 }
             });
         }
@@ -183,7 +175,6 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         @Override
         protected void removeNotify() {
             setKeys(Collections.<KeyType>emptySet());
-            cp = null;
             p = null;
             layerfs = null;
             sfs = null;
@@ -194,10 +185,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             try {
                 switch (key) {
                 case RAW:
-                    FileSystem fs = badge(layerfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
+                    FileSystem fs = badge(layerfs, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 case CONTEXTUALIZED:
-                    fs = badge(sfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
+                    fs = badge(sfs, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 case WAIT:
                     return new Node[] {new AbstractNode(Children.LEAF) {
@@ -213,16 +204,50 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 return new Node[0];
             }
         }
-        
+
+        private void initialize(boolean showContextNode) {
+            try {
+                FileObject layer = handle.getLayerFile();
+                Project prj = FileOwnerQuery.getOwner(layer);
+                if (prj == null) { // #175861: inside JAR etc.
+                    setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                    return;
+                }
+                p = prj;
+                layerfs = handle.layer(false);
+                if( !showContextNode ) {
+                    setKeys(Collections.singleton(KeyType.RAW));
+                } else {
+                    setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
+                    Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
+                    boolean context = false;
+                    if (project != null) {
+                        LayerHandle h = LayerHandle.forProject(project);
+                        h.setAutosave(true); // #135376
+                        if (layer.equals(h.getLayerFile())) {
+                            sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+                            setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                            context = true;
+                        }
+                    }
+                    if (!context) {
+                        setKeys(Collections.singleton(KeyType.RAW));
+                    }
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
     }
     
     /**
      * Add badging support to the plain layer.
      */
-    private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer, final String rootLabel, final FileSystem highlighted) {
+    private static FileSystem badge(final FileSystem base, final FileObject layer, final String rootLabel, final FileSystem highlighted) {
         class BadgingMergedFileSystem extends LayerFileSystem {
             public BadgingMergedFileSystem() {
-                super(new FileSystem[] {base}, cp);
+                super(new FileSystem[] {base});
+                setPropagateMasks(true);
                 status.addFileStatusListener(new FileStatusListener() {
                     public void annotationChanged(FileStatusEvent ev) {
                         fireFileStatusChanged(ev);
@@ -268,6 +293,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                             htmlLabel = nonHtmlLabel;
                         }
+                        boolean deleted = false;
+                        for( FileObject fo : files ) {
+                            if( fo.getNameExt().endsWith(LayerUtils.HIDDEN) ) {
+                                deleted = true;
+                                break;
+                            }
+                        }
                         if (highlighted != null) {
                             // Boldface resources which do come from this project.
                             boolean local = false;
@@ -282,6 +314,9 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             if (local) {
                                 htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
                             }
+                        }
+                        if( deleted ) {
+                            htmlLabel = "<s>" + htmlLabel + "</s>"; //NOI18N
                         }
                         return htmlLabel;
                     }
@@ -326,28 +361,6 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             return NbBundle.getMessage(LayerNode.class, "LayerNode_label");
         } else {
             return super.getDisplayName();
-        }
-    }
-    
-    /**
-     * Make a runtime classpath indicative of what is accessible from a sample resource.
-     */
-    private static ClassPath createClasspath(Project p) throws IOException {
-        NbModuleProvider.NbModuleType type = Util.getModuleType(p);
-        if (type == NbModuleProvider.STANDALONE) {
-            return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
-        } else if (type == NbModuleProvider.SUITE_COMPONENT) {
-            SuiteProject suite = SuiteUtils.findSuite(p);
-            if (suite == null) {
-                throw new IOException("Could not load suite for " + p); // NOI18N
-            }
-            Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
-            return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(suite));
-        } else if (type == NbModuleProvider.NETBEANS_ORG) {
-            //Can cast to NbModuleProject here..
-            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p), Collections.<File>emptySet());
-        } else {
-            throw new AssertionError(type);
         }
     }
     

@@ -21,16 +21,16 @@ package org.netbeans.modules.iep.editor.model;
 
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgPsI18n;
 import org.openide.util.NbBundle;
 import java.util.logging.Logger;
-import org.netbeans.modules.iep.editor.tcg.model.DefaultValidator;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidator;
+import org.netbeans.modules.tbls.model.DefaultValidator;
+import org.netbeans.modules.tbls.model.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentValidationMsg;
+import org.netbeans.modules.tbls.model.TcgComponentValidationReport;
+import org.netbeans.modules.tbls.model.TcgComponentValidator;
 
 /**
  *
@@ -46,55 +46,29 @@ public class DefaultPlanValidator implements TcgComponentValidator, SharedConsta
     
     public TcgComponentValidationReport validate(TcgComponent component) {
         TcgComponentValidationReport report = mDefaultValidator.validate(component);
-        List messageList = report.getMessageList();
+        List<TcgComponentValidationMsg> messageList = report.getMessageList();
         String type = VALIDATION_OK_KEY;
-        TcgComponent inputComp = null;
-        TcgComponent outputComp = null;
         TcgComponent operators = null;
         
         List l = component.getComponentList();
         Iterator iter = l.iterator();
         while(iter.hasNext()){
             TcgComponent comp = (TcgComponent)iter.next();
-            if(comp.getType().getName().equals(OPERATORS_KEY)) {
+            if(comp.getType().getName().equals(COMP_OPERATORS)) {
                 operators = comp;
+                break;
             }
         }
         
         if(operators == null) {
-            addErrorMessage(messageList,null,"DefaultOperatorValidator.atleast_one_operator_required");
+            addErrorMessage(messageList,null,"DefaultOperatorValidator.at_least_one_operator_required");
             type = VALIDATION_ERROR_KEY;
-        } else {
-                List ll = operators.getComponentList();
-                Iterator iterl = ll.iterator();
-                while(iterl.hasNext()){
-                    TcgComponent compl = (TcgComponent)iterl.next();
-                    
-                    if(compl.getType().getName().equals(OP_STREAM_INPUT)||
-                       compl.getType().getName().equals(OP_TABLE_INPUT)) {
-                        inputComp = compl;
-                    }
-                    if(compl.getType().getName().equals(OP_STREAM_OUTPUT)||
-                       compl.getType().getName().equals(OP_RELATION_OUTPUT)||
-                       compl.getType().getName().equals(OP_TABLE_OUTPUT)) {
-                       outputComp = compl;
-                    }
-                }
-        }
+        } 
         
-        if(inputComp == null) {
-            addErrorMessage(messageList,null,"DefaultOperatorValidator.atleast_one_input_required");
-            type = VALIDATION_ERROR_KEY;
-        }
-        if(outputComp == null) {
-            addErrorMessage(messageList,null,"DefaultOperatorValidator.atleast_one_output_required");
-            type = VALIDATION_ERROR_KEY;
-        }
-       
         return new TcgComponentValidationReport(component, type, messageList, report.getChildReportList());
     }
     
-    private void addErrorMessage(List mL ,TcgComponentType compType, String messageKey ) {
+    private void addErrorMessage(List<TcgComponentValidationMsg> mL ,TcgComponentType compType, String messageKey ) {
         TcgComponentValidationMsg  msg = new TcgComponentValidationMsg(VALIDATION_ERROR_KEY,
                 ((compType==null)? "":"'" + TcgPsI18n.getDisplayName(compType) + "' ") +
                 NbBundle.getMessage(DefaultOperatorValidator.class,

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="WSDLEditor">
+	    <file name="hl7-ext.xsd" url="hl7-ext.xsd">
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/hl7/" />
+            <attr name="prefix" stringvalue="hl7" />
+        </file>
+        
+        <folder name="Binding">
+            <file name="HL7Binding" >
+                <attr name="xsdFileName" stringvalue="hl7-ext" />
+                <attr name="element" stringvalue="binding"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/throw16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperation">
+            <file name="HL7BindingOperation" >
+                <attr name="xsdFileName" stringvalue="hl7-ext" />
+                <attr name="element" stringvalue="operation"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/onalarm16x16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperationInput">
+			 <file name="HL7Message">
+				<attr name="xsdFileName" stringvalue="hl7-ext" />
+                <attr name="element" stringvalue="message"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+		<folder name="BindingOperationOutput">
+			 <file name="HL7Message">
+				<attr name="xsdFileName" stringvalue="hl7-ext" />
+                <attr name="element" stringvalue="message"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+		<folder name="ServicePort">
+			<file name="HL7ServicePort">
+				<attr name="xsdFileName" stringvalue="hl7-ext" />
+				<attr name="element" stringvalue="address"/>
+				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+				<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/while16x16.png"/>
+			</file>
+			<file name="HL7ProtocolProperties">
+				<attr name="xsdFileName" stringvalue="hl7-ext" />
+				<attr name="element" stringvalue="protocolproperties"/>
+				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+				<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/while16x16.png"/>
+			</file>
+			<file name="HL7CommunicationControls">
+				<attr name="xsdFileName" stringvalue="hl7-ext" />
+				<attr name="element" stringvalue="communicationcontrols"/>
+				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.hl7.resources.Bundle"/>
+				<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/hl7/resources/while16x16.png"/>
+			</file>
+		</folder>
+    </folder>
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="sun-hl7-binding">
+            <attr name="id" stringvalue="sun-hl7-binding"/>
+            <attr name="description" stringvalue="HL7 Binding"/>
+            <attr name="type" stringvalue="Binding"/>
+			<file name="hl7.binding-1.0">
+				<attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/hl7/"/>
+			</file>
+		</folder>
+    </folder>
+	 <folder name="bpel-nmproperties">
+		 <folder name="hl7-bc">
+				<attr name="display-name" stringvalue="HL7 BC"/>
+				<folder name="hl7-inbound">
+					<attr name="display-name" stringvalue="Inbound"/>
+					<file name="inbound-host">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.inbound.address.host"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Host"/>
+					</file>
+					<file name="inbound-port">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.inbound.address.port"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Port"/>
+					</file>
+					<file name="inbound-clientaddress">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.inbound.client.address"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Client Address"/>
+					</file>
+					<file name="inbound-seqnumenabled">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.inbound.protocolproperties.seqnumenabled"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Enable Sequence Number Protocol"/>
+					</file>
+				</folder>
+				<folder name="hl7-outbound">
+					<attr name="display-name" stringvalue="Outbound"/>
+					<file name="outbound-dynamicendpoint">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.use.dynamic.endpoint"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Use Dynamic Endpoint"/>
+					</file>
+					<file name="outbound-host">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.address.host"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Host"/>
+					</file>
+					<file name="outbound-port">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.address.port"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Port"/>
+					</file>
+					<file name="outbound-llptype">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.llptype"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Lower Layer Protocol Type"/>
+					</file>
+					<file name="outbound-startblockcharacter">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.startblockcharacter"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Start Block Character"/>
+					</file>
+					<file name="outbound-endblockcharacter">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.endblockcharacter"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="End Block Character"/>
+					</file>
+					<file name="outbound-enddatacharacter">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.enddatacharacter"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="End Data Character"/>
+					</file>
+					<file name="outbound-hllpchecksumenabled">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.hllpchecksumenabled"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Enable HLLP Checksum"/>
+					</file>
+					<file name="outbound-seqnumenabled">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.seqnumenabled"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Enable Sequence Number Protocol"/>
+					</file>
+					<file name="outbound-processingid">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.processingid"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="MSH Processing ID"/>
+					</file>
+					<file name="outbound-validatemsh">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.validatemsh"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Enable MSH Validation"/>
+					</file>
+					<file name="outbound-enablesft">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.enablesft"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Enable adding SFT Segment"/>
+					</file>
+					<file name="outbound-sftsoftwarevendororganization">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwarevendororganization"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Vendor Organization"/>
+					</file>
+					<file name="outbound-sftsoftwarecertifiedversionorreleasenumber">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwarecertifiedversionorreleasenumber"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Certified Version Or Release Number"/>
+					</file>
+					<file name="outbound-sftsoftwareproductname">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwareproductname"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Product Name"/>
+					</file>
+					<file name="outbound-sftsoftwarebinaryid">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwarebinaryid"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Binary ID"/>
+					</file>
+					<file name="outbound-sftsoftwareproductinformation">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwareproductinformation"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Product Information"/>
+					</file>
+					<file name="outbound-sftsoftwareinstalldate">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.softwareinstalldate"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="SFT Field - Software Install Date"/>
+					</file>
+					<file name="outbound-mllpv2retriescountonnak">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.mllpv2retriescountonnak"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="MLLPv2.0 Retries Count On NAK"/>
+					</file>
+					<file name="outbound-mllpv2retryinterval">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.mllpv2retryinterval"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="MLLPv2.0 Retry Interval"/>
+					</file>
+					<file name="outbound-mllpv2timetowaitforacknak">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.hl7.outbound.protocolproperties.mllpv2timetowaitforacknak"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="MLLPv2.0 TimetoWait For ACK/NAK"/>
+					</file>
+				</folder>
+			</folder>
+		</folder>
+</filesystem>
+

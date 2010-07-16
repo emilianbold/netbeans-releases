@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,8 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.compapp.test.ui;
 
 import java.beans.PropertyChangeEvent;
@@ -53,8 +54,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-
-
 /**
  * DOCUMENT ME!
  *
@@ -62,13 +61,13 @@ import org.openide.nodes.Node;
  * @author rselvaraj
  */
 public class TestChildren extends Children.Keys implements PropertyChangeListener {
-    private final FileObject mTestDir;
-    private final JbiProject mProject;    
     
-    private static final String[] TEST_PROPERTY_FILES = new String[] {
+    private final JbiProject mProject;    
+    private final FileObject mTestDir;
+    
+    private static final String[] TEST_PROPERTY_FILE_NAMES = new String[] {
         "Invoke.properties", "Concurrent.properties", "Correlation.properties" }; // NOI18N
    
-    
     /**
      * Creates a new TestChildren object.
      *
@@ -79,26 +78,19 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
         mTestDir = testDir;
     }
     
-    /**
-     * DOCUMENT ME!
-     */
     @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
-        
-        // and listen to changes in the model too:
-        //model.addPropertyChangeListener(this);
-    }
+    }    
     
-    
-    private static boolean isTest(FileObject fo) {
-        if (!fo.isFolder()) { 
+    private static boolean isTest(FileObject testCaseDirFO) {
+        if (!testCaseDirFO.isFolder()) {
             return false;
         }
-        
-        for (int i = 0; i < TEST_PROPERTY_FILES.length; i++) {
-            FileObject prop = fo.getFileObject(TEST_PROPERTY_FILES[i]);
+
+        for (String testPropertyFileName : TEST_PROPERTY_FILE_NAMES) {
+            FileObject prop = testCaseDirFO.getFileObject(testPropertyFileName);
             if (prop != null) {
                 return true;
             }
@@ -108,29 +100,23 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
     }
     
     private void updateKeys() {
-        List keys = Collections.EMPTY_LIST;
-        FileObject[] tests = mTestDir.getChildren();
-        keys = new ArrayList();
-        for (int i = 0; i < tests.length; i++) {
-            if (isTest(tests[i])) {
-                keys.add(tests[i]);
+        List<FileObject> keys = new ArrayList<FileObject>();
+
+        for (FileObject testDirChild : mTestDir.getChildren()) {
+            if (isTest(testDirChild)) {
+                keys.add(testDirChild);
             }
         }
+
         Collections.sort(keys, new Comparator() {
             public int compare(Object o1, Object o2) {
-                return ((FileObject)o1).getName().compareTo(((FileObject)o2).getName());
-            }
-            @Override
-            public boolean equals(Object obj) {
-                return this == obj;
+                return ((FileObject)o1).getNameExt().compareTo(((FileObject)o2).getNameExt());
             }
         });
+
         setKeys(keys);
     }
     
-    /**
-     * DOCUMENT ME!
-     */
     @Override
     protected void removeNotify() {
         //epp.removePropertyChangeListener(this);
@@ -138,34 +124,12 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
         super.removeNotify();
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param key DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     protected Node[] createNodes(Object key) {
         // interpret your key here...usually one node generated, but could be zero or more
-        FileObject fo = (FileObject) key;
-        return new Node[] {new TestcaseNode(mProject, fo)};
+        FileObject testCaseDirFO = (FileObject) key;
+        return new Node[] {new TestcaseNode(mProject, testCaseDirFO)};
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param ev DOCUMENT ME!
-     */
-    public void modelChanged(Object ev) {
-        // your data model changed, so update the children to match:
-        updateKeys();
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param pce DOCUMENT ME!
-     */
     public void propertyChange(PropertyChangeEvent pce) {
         updateKeys();
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@ package org.netbeans.modules.kenai.ui;
 
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -57,17 +62,28 @@ public class KenaiLoginTask implements Runnable {
     public static final Object monitor = new Object();
     @SuppressWarnings("deprecation")
     public void run() {
+        Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
         synchronized (monitor) {
-            Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
             try {
                 if (prefs.keys().length > 0) {
-                    UIUtils.tryLogin(false);
+                    for (Kenai k : KenaiManager.getDefault().getKenais()) {
+                        UIUtils.tryLogin(k, false);
+                    }
                 }
             } catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
             }
             isFinished = true;
             monitor.notify();
+        }
+        try {
+            if (prefs.keys().length > 0) {
+                for (Kenai k : KenaiManager.getDefault().getKenais()) {
+                    Utilities.isChatSupported(k);
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,17 +78,25 @@ public interface CasaServiceEngineServiceUnit extends CasaServiceUnit {
     void setInternal(boolean internal);
     
     /**
-     * Checks whether this service unit is defined or not.
-     * A defined service unit is a service unit that has been built by the
-     * compapp build script.
+     * Checks the build status of the service engine service unit.
+     * It's only used to decide whether to show the question mark badge in the 
+     * service unit widget inside CASA or not.
+     *
+     * For newly DnD'ed internal or external service engine service unit
+     * from the Project Explorer, its initial status is always undefined.
+     * A project build is needed to change its status from undefined to defined.
+     *
+     * For newly DnD'ed external service engine service unit from the Palette
+     * or Runtime, its status is always defined.
      */
     boolean isDefined();
     void setDefined(boolean defined);
     
     /**
      * Checks whether this service unit is unknown.
-     * An unknown service unit is a service unit that has not been associated
-     * with a concrete component project.
+     *
+     * Currently, only external service engine service unit that the user
+     * created by Drag and Drop from the CASA Palette is unknown.
      */
     boolean isUnknown();
     void setUnknown(boolean unknown);

@@ -2,7 +2,10 @@
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -15,7 +18,7 @@
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at jersey/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
+ * as provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code.  If applicable, add the following below the License
  * Header, with the fields enclosed by brackets [] replaced by your own
  * identifying information: "Portions Copyrighted [year]
@@ -47,7 +50,6 @@ public class MessageHolderSingletonBean {
 
     private LinkedList<Message> list = new LinkedList<Message>();
     private int maxMessages = 10;
-
     int currentId = 0;
 
     public MessageHolderSingletonBean() {
@@ -62,7 +64,7 @@ public class MessageHolderSingletonBean {
 
         int index = 0;
 
-        while(index < list.size() && index < maxMessages) {
+        while (index < list.size() && index < maxMessages) {
             l.add(list.get(index));
             index++;
         }
@@ -73,7 +75,6 @@ public class MessageHolderSingletonBean {
     private synchronized int getNewId() {
         return currentId++;
     }
-    
 
     public synchronized Message addMessage(String msg) {
         return addMessage(msg, new Date());
@@ -86,25 +87,26 @@ public class MessageHolderSingletonBean {
 
         return m;
     }
-    
+
     public Message getMessage(int uniqueId) {
         int index = 0;
         Message m;
 
-        while(index < list.size()) {
-            if((m = list.get(index)).getUniqueId() == uniqueId)
+        while (index < list.size()) {
+            if ((m = list.get(index)).getUniqueId() == uniqueId) {
                 return m;
+            }
             index++;
         }
-        
+
         return null;
     }
 
     public synchronized boolean deleteMessage(int uniqueId) {
         int index = 0;
 
-        while(index < list.size()) {
-            if(list.get(index).getUniqueId() == uniqueId) {
+        while (index < list.size()) {
+            if (list.get(index).getUniqueId() == uniqueId) {
                 list.remove(index);
                 return true;
             }

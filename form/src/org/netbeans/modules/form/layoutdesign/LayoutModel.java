@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -710,7 +713,7 @@ public class LayoutModel implements LayoutConstants {
         }
         
         private void mergeSubRegions(List regions, int dimension) {
-            if (regions.size() == 0) {
+            if (regions.isEmpty()) {
                 horizontal = new LayoutInterval(PARALLEL);
                 vertical = new LayoutInterval(PARALLEL);
                 return;
@@ -858,7 +861,7 @@ public class LayoutModel implements LayoutConstants {
     private void addChange(LayoutEvent change) {
         if (recordingChanges && !undoRedoInProgress) {
             redoMap.clear();
-            if (undoMap.size() == 0)
+            if (undoMap.isEmpty())
                 oldestMark = changeMark;
 
             undoMap.put(new Integer(changeMark++), change);
@@ -920,7 +923,7 @@ public class LayoutModel implements LayoutConstants {
         int m2 = ((Integer)toMark).intValue();
 
         while (m1 < m2) {
-            Object m = new Integer(m1);
+            Integer m = new Integer(m1);
             undoMap.remove(m);
             redoMap.remove(m);
             m1++;
@@ -985,6 +988,7 @@ public class LayoutModel implements LayoutConstants {
         Set<LayoutComponent> roots = new TreeSet<LayoutComponent>(new Comparator<LayoutComponent>() {
             // comparator to ensure stable order of dump; according to tree
             // hierarchy, order within container, name
+            @Override
             public int compare(LayoutComponent lc1, LayoutComponent lc2) {
                 if (lc1 == lc2)
                     return 0;
@@ -1040,7 +1044,7 @@ public class LayoutModel implements LayoutConstants {
                 rootId = idToNameMap.get(rootId);
             }
             if (rootId != null)
-                sb.append("  <Root id=\""+rootId+"\">\n"); // NOI18N
+                sb.append("  <Root id=\"").append(rootId).append("\">\n"); // NOI18N
             else
                 sb.append("  <Root>\n"); // NOI18N
             sb.append(saveContainerLayout(root, idToNameMap, 2, true));
@@ -1184,7 +1188,7 @@ public class LayoutModel implements LayoutConstants {
                 fireEvent(ev);
             }
             
-            if (l.size() == 0) {
+            if (l.isEmpty()) {
                 map.remove(linkIdInt);
             }
 

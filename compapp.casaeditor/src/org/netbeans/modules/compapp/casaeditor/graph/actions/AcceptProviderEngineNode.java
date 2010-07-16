@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
@@ -64,8 +67,8 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
     public AcceptProviderEngineNode(CasaModelGraphScene scene) {
         super(scene);
     }
-    
-    
+        
+    @Override
     public ConnectorState isAcceptable (Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
         try {
@@ -88,6 +91,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
         return retState;
     }
 
+    @Override
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
@@ -119,16 +123,18 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
     
     private void highlightExtSUs(boolean bValue) {
        for(Widget widget : getScene().getExternalRegion().getChildren()) {
-            if(widget instanceof CasaNodeWidgetEngineExternal) {
-                ((CasaNodeWidgetEngineExternal) widget).setHighlighted(bValue);
+            if(widget instanceof CasaNodeWidgetEngine.External) {
+                ((CasaNodeWidgetEngine.External) widget).setHighlighted(bValue);
             }
         }
     }
 
+    @Override
     public void acceptFinished() {
         super.acceptFinished();
     }
     
+    @Override
     public void acceptStarted(Transferable t) {
         super.acceptStarted(t);
     }

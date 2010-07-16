@@ -29,8 +29,8 @@ import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLEngineContext;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
 import org.netbeans.modules.etl.logger.Localizer;
 
 /**

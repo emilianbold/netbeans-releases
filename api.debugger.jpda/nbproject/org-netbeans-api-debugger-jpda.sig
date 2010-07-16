@@ -1,18 +1,18 @@
-#Signature file v4.0
-#Version 2.19.1
+#Signature file v4.1
+#Version 2.27
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -26,10 +26,10 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -74,7 +74,7 @@ meth public abstract java.lang.annotation.ElementType[] value()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -83,12 +83,14 @@ supr java.lang.Object
 hfds serialVersionUID
 
 CLSS public abstract org.netbeans.api.debugger.Breakpoint
-cons public Breakpoint()
+cons public init()
 fld public final static java.lang.String PROP_DISPOSED = "disposed"
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_GROUP_NAME = "groupName"
+fld public final static java.lang.String PROP_GROUP_PROPERTIES = "groupProperties"
 fld public final static java.lang.String PROP_HIT_COUNT_FILTER = "hitCountFilter"
 fld public final static java.lang.String PROP_VALIDITY = "validity"
+innr public abstract static GroupProperties
 innr public final static !enum HIT_COUNT_FILTERING_STYLE
 innr public final static !enum VALIDITY
 meth protected final void setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
@@ -103,6 +105,7 @@ meth public final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
 meth public final org.netbeans.api.debugger.Breakpoint$VALIDITY getValidity()
 meth public final void setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public java.lang.String getGroupName()
+meth public org.netbeans.api.debugger.Breakpoint$GroupProperties getGroupProperties()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
@@ -112,7 +115,7 @@ supr java.lang.Object
 hfds groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
 
 CLSS public abstract org.netbeans.api.debugger.jpda.AbstractDICookie
-cons public AbstractDICookie()
+cons public init()
 meth public abstract com.sun.jdi.VirtualMachine getVirtualMachine() throws com.sun.jdi.connect.IllegalConnectorArgumentsException,com.sun.jdi.connect.VMStartException,java.io.IOException
 supr java.lang.Object
 
@@ -149,7 +152,7 @@ meth public abstract org.netbeans.spi.debugger.jpda.EditorContext$Operation getC
 meth public abstract void makeCurrent()
 meth public abstract void popFrame()
 
-CLSS public final org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint
+CLSS public org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint
 fld public final static int TYPE_CLASS_LOADED = 1
 fld public final static int TYPE_CLASS_LOADED_UNLOADED = 3
 fld public final static int TYPE_CLASS_UNLOADED = 2
@@ -167,13 +170,14 @@ meth public void setClassExclusionFilters(java.lang.String[])
 meth public void setClassFilters(java.lang.String[])
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 hfds classExclusionFilters,classFilters,type
+hcls ClassLoadUnloadBreakpointImpl
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.ClassVariable
 intf org.netbeans.api.debugger.jpda.ObjectVariable
 meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType getClassType()
 
 CLSS public abstract org.netbeans.api.debugger.jpda.DeadlockDetector
-cons public DeadlockDetector()
+cons public init()
 fld public final static java.lang.String PROP_DEADLOCK = "deadlock"
 innr public final static Deadlock
 meth protected final org.netbeans.api.debugger.jpda.DeadlockDetector$Deadlock createDeadlock(java.util.Collection<org.netbeans.api.debugger.jpda.JPDAThread>)
@@ -185,18 +189,19 @@ supr java.lang.Object
 hfds deadlocks,pcs
 
 CLSS public final static org.netbeans.api.debugger.jpda.DeadlockDetector$Deadlock
+ outer org.netbeans.api.debugger.jpda.DeadlockDetector
 meth public java.util.Collection<org.netbeans.api.debugger.jpda.JPDAThread> getThreads()
 supr java.lang.Object
 hfds threads
 
 CLSS public org.netbeans.api.debugger.jpda.DebuggerStartException
-cons public DebuggerStartException(java.lang.String)
-cons public DebuggerStartException(java.lang.Throwable)
+cons public init(java.lang.String)
+cons public init(java.lang.Throwable)
 meth public java.lang.Throwable getTargetException()
 supr java.lang.Exception
 hfds throwable
 
-CLSS public final org.netbeans.api.debugger.jpda.ExceptionBreakpoint
+CLSS public org.netbeans.api.debugger.jpda.ExceptionBreakpoint
 fld public final static int TYPE_EXCEPTION_CATCHED = 1
 fld public final static int TYPE_EXCEPTION_CATCHED_UNCATCHED = 3
 fld public final static int TYPE_EXCEPTION_UNCATCHED = 2
@@ -219,6 +224,7 @@ meth public void setCondition(java.lang.String)
 meth public void setExceptionClassName(java.lang.String)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 hfds catchType,classExclusionFilters,classFilters,condition,exceptionClassName
+hcls ExceptionBreakpointImpl
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.Field
 intf org.netbeans.api.debugger.jpda.Variable
@@ -257,8 +263,8 @@ hfds className,condition,fieldName,instanceFilters,threadFilters,type
 hcls FieldBreakpointImpl
 
 CLSS public org.netbeans.api.debugger.jpda.InvalidExpressionException
-cons public InvalidExpressionException(java.lang.String)
-cons public InvalidExpressionException(java.lang.Throwable)
+cons public init(java.lang.String)
+cons public init(java.lang.Throwable)
 meth public java.lang.String getMessage()
 meth public java.lang.Throwable getTargetException()
 supr java.lang.Exception
@@ -288,7 +294,7 @@ meth public void setHidden(boolean)
 meth public void setPrintText(java.lang.String)
 meth public void setSuspend(int)
 supr org.netbeans.api.debugger.Breakpoint
-hfds breakpointListeners,enabled,hidden,printText,session,suspend
+hfds EMPTY_CLASSPATH,breakpointListeners,enabled,engines,hidden,printText,session,suspend
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAClassType
 intf org.netbeans.api.debugger.jpda.VariableType
@@ -301,7 +307,7 @@ meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable getClassLoade
 meth public abstract org.netbeans.api.debugger.jpda.Super getSuperClass()
 
 CLSS public abstract org.netbeans.api.debugger.jpda.JPDADebugger
-cons public JPDADebugger()
+cons public init()
 fld public final static int STATE_DISCONNECTED = 4
 fld public final static int STATE_RUNNING = 2
 fld public final static int STATE_STARTING = 1
@@ -309,6 +315,7 @@ fld public final static int STATE_STOPPED = 3
 fld public final static int SUSPEND_ALL = 2
 fld public final static int SUSPEND_EVENT_THREAD = 1
 fld public final static java.lang.String ENGINE_ID = "netbeans-JPDASession/Java"
+fld public final static java.lang.String PROP_CLASSES_FIXED = "classesFixed"
 fld public final static java.lang.String PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"
 fld public final static java.lang.String PROP_CURRENT_THREAD = "currentThread"
 fld public final static java.lang.String PROP_STATE = "state"
@@ -341,6 +348,7 @@ meth public java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getClas
 meth public long[] getInstanceCounts(java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType>)
 meth public org.netbeans.api.debugger.jpda.JPDAStep createJPDAStep(int,int)
 meth public org.netbeans.api.debugger.jpda.ThreadsCollector getThreadsCollector()
+meth public static org.netbeans.api.debugger.DebuggerEngine[] startListeningAndGetEngines(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger attach(java.lang.String,int,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger attach(java.lang.String,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger listen(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
@@ -350,13 +358,14 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.api.debugger.jpda.JPDADebugger$Registration
+ outer org.netbeans.api.debugger.jpda.JPDADebugger
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.api.debugger.jpda.JPDAStep
-cons public JPDAStep(org.netbeans.api.debugger.jpda.JPDADebugger,int,int)
+cons public init(org.netbeans.api.debugger.jpda.JPDADebugger,int,int)
 fld protected org.netbeans.api.debugger.jpda.JPDADebugger debugger
 fld public final static int STEP_INTO = 1
 fld public final static int STEP_LINE = -2
@@ -493,7 +502,7 @@ meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(com.s
 meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(int)
 meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(java.lang.String)
 supr org.netbeans.api.debugger.jpda.AbstractDICookie
-hfds args,listeningConnector
+hfds args,isListening,listeningConnector
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.LocalVariable
 intf org.netbeans.api.debugger.jpda.Variable
@@ -573,7 +582,7 @@ intf org.netbeans.api.debugger.jpda.ObjectVariable
 CLSS public abstract interface org.netbeans.api.debugger.jpda.This
 intf org.netbeans.api.debugger.jpda.ObjectVariable
 
-CLSS public final org.netbeans.api.debugger.jpda.ThreadBreakpoint
+CLSS public org.netbeans.api.debugger.jpda.ThreadBreakpoint
 fld public final static int TYPE_THREAD_DEATH = 2
 fld public final static int TYPE_THREAD_STARTED = 1
 fld public final static int TYPE_THREAD_STARTED_OR_DEATH = 3
@@ -584,9 +593,10 @@ meth public static org.netbeans.api.debugger.jpda.ThreadBreakpoint create()
 meth public void setBreakpointType(int)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 hfds breakpointType
+hcls ThreadBreakpointImpl
 
 CLSS public abstract org.netbeans.api.debugger.jpda.ThreadsCollector
-cons public ThreadsCollector()
+cons public init()
 fld public final static java.lang.String PROP_THREAD_DIED = "threadDied"
 fld public final static java.lang.String PROP_THREAD_GROUP_ADDED = "threadGroupAdded"
 fld public final static java.lang.String PROP_THREAD_RESUMED = "threadResumed"
@@ -608,8 +618,8 @@ CLSS public abstract interface org.netbeans.api.debugger.jpda.VariableType
 meth public abstract java.lang.String getName()
 
 CLSS public final org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent
-cons public JPDABreakpointEvent(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.JPDADebugger,int,org.netbeans.api.debugger.jpda.JPDAThread,com.sun.jdi.ReferenceType,org.netbeans.api.debugger.jpda.Variable)
-cons public JPDABreakpointEvent(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.JPDADebugger,java.lang.Throwable,org.netbeans.api.debugger.jpda.JPDAThread,com.sun.jdi.ReferenceType,org.netbeans.api.debugger.jpda.Variable)
+cons public init(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.JPDADebugger,int,org.netbeans.api.debugger.jpda.JPDAThread,com.sun.jdi.ReferenceType,org.netbeans.api.debugger.jpda.Variable)
+cons public init(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.JPDADebugger,java.lang.Throwable,org.netbeans.api.debugger.jpda.JPDAThread,com.sun.jdi.ReferenceType,org.netbeans.api.debugger.jpda.Variable)
 fld public final static int CONDITION_FAILED = 3
 fld public final static int CONDITION_FALSE = 2
 fld public final static int CONDITION_NONE = 0
@@ -630,9 +640,10 @@ intf java.util.EventListener
 meth public abstract void breakpointReached(org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent)
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.EditorContext
-cons public EditorContext()
+cons public init()
 fld public final static java.lang.String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"
 fld public final static java.lang.String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite"
+fld public final static java.lang.String CLASS_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
 fld public final static java.lang.String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint"
 fld public final static java.lang.String CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE = "CurrentExpressionLine"
 fld public final static java.lang.String CURRENT_EXPRESSION_SECONDARY_LINE_ANNOTATION_TYPE = "CurrentExpression"
@@ -640,11 +651,12 @@ fld public final static java.lang.String CURRENT_LAST_OPERATION_ANNOTATION_TYPE 
 fld public final static java.lang.String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC"
 fld public final static java.lang.String CURRENT_OUT_OPERATION_ANNOTATION_TYPE = "StepOutOperation"
 fld public final static java.lang.String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint"
+fld public final static java.lang.String DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
 fld public final static java.lang.String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint"
-fld public final static java.lang.String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledFieldBreakpoint"
-fld public final static java.lang.String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledMethodBreakpoint"
-fld public final static java.lang.String FIELD_BREAKPOINT_ANNOTATION_TYPE = "FieldBreakpoint"
-fld public final static java.lang.String METHOD_BREAKPOINT_ANNOTATION_TYPE = "MethodBreakpoint"
+fld public final static java.lang.String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
+fld public final static java.lang.String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
+fld public final static java.lang.String FIELD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
+fld public final static java.lang.String METHOD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
 fld public final static java.lang.String OTHER_THREAD_ANNOTATION_TYPE = "OtherThread"
 fld public final static java.lang.String PROP_LINE_NUMBER = "lineNumber"
 innr public abstract interface static !annotation Registration
@@ -687,12 +699,14 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider
+ outer org.netbeans.spi.debugger.jpda.EditorContext
 meth public abstract byte[] byteCodes()
 meth public abstract byte[] constantPool()
 meth public abstract int[] indexAtLines(int,int)
 
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument
-cons public MethodArgument(java.lang.String,java.lang.String,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position)
+ outer org.netbeans.spi.debugger.jpda.EditorContext
+cons public init(java.lang.String,java.lang.String,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position)
 meth public java.lang.String getName()
 meth public java.lang.String getType()
 meth public org.netbeans.spi.debugger.jpda.EditorContext$Position getEndPosition()
@@ -701,6 +715,7 @@ supr java.lang.Object
 hfds endPos,name,startPos,type
 
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$Operation
+ outer org.netbeans.spi.debugger.jpda.EditorContext
 meth public boolean equals(java.lang.Object)
 meth public int getBytecodeIndex()
 meth public int hashCode()
@@ -717,6 +732,7 @@ supr java.lang.Object
 hfds bytecodeIndex,endPosition,methodClassType,methodEndPosition,methodName,methodStartPosition,nextOperations,returnValue,startPosition
 
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$Position
+ outer org.netbeans.spi.debugger.jpda.EditorContext
 meth public boolean equals(java.lang.Object)
 meth public int getColumn()
 meth public int getLine()
@@ -726,13 +742,58 @@ supr java.lang.Object
 hfds column,line,offset
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.EditorContext$Registration
+ outer org.netbeans.spi.debugger.jpda.EditorContext
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 
+CLSS public abstract interface org.netbeans.spi.debugger.jpda.Evaluator<%0 extends java.lang.Object>
+innr public abstract interface static !annotation Registration
+innr public final static Context
+innr public final static Expression
+innr public final static Result
+meth public abstract org.netbeans.spi.debugger.jpda.Evaluator$Result evaluate(org.netbeans.spi.debugger.jpda.Evaluator$Expression<{org.netbeans.spi.debugger.jpda.Evaluator%0}>,org.netbeans.spi.debugger.jpda.Evaluator$Context) throws org.netbeans.api.debugger.jpda.InvalidExpressionException
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Context
+ outer org.netbeans.spi.debugger.jpda.Evaluator
+cons public init(org.openide.util.Lookup)
+meth public com.sun.jdi.ObjectReference getContextObject()
+meth public com.sun.jdi.StackFrame getStackFrame()
+meth public int getStackDepth()
+meth public org.netbeans.api.debugger.jpda.CallStackFrame getCallStackFrame()
+meth public org.netbeans.api.debugger.jpda.ObjectVariable getContextVariable()
+meth public void notifyMethodToBeInvoked()
+supr java.lang.Object
+hfds callStackFrame,contextObject,contextVariable,methodToBeInvokedNotifier,stackDepth,stackFrame
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Expression<%0 extends java.lang.Object>
+ outer org.netbeans.spi.debugger.jpda.Evaluator
+cons public init(java.lang.String)
+meth public java.lang.String getExpression()
+meth public void setPreprocessedObject({org.netbeans.spi.debugger.jpda.Evaluator$Expression%0})
+meth public {org.netbeans.spi.debugger.jpda.Evaluator$Expression%0} getPreprocessedObject()
+supr java.lang.Object
+hfds expression,preprocessed
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.Evaluator$Registration
+ outer org.netbeans.spi.debugger.jpda.Evaluator
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String language()
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Result
+ outer org.netbeans.spi.debugger.jpda.Evaluator
+cons public init(com.sun.jdi.Value)
+cons public init(org.netbeans.api.debugger.jpda.Variable)
+meth public com.sun.jdi.Value getValue()
+meth public org.netbeans.api.debugger.jpda.Variable getVariable()
+supr java.lang.Object
+hfds v,var
+
 CLSS public abstract org.netbeans.spi.debugger.jpda.SmartSteppingCallback
-cons public SmartSteppingCallback()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract boolean stopHere(org.netbeans.spi.debugger.ContextProvider,org.netbeans.api.debugger.jpda.JPDAThread,org.netbeans.api.debugger.jpda.SmartSteppingFilter)
 meth public abstract void initFilter(org.netbeans.api.debugger.jpda.SmartSteppingFilter)
@@ -740,13 +801,14 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.SmartSteppingCallback$Registration
+ outer org.netbeans.spi.debugger.jpda.SmartSteppingCallback
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.SourcePathProvider
-cons public SourcePathProvider()
+cons public init()
 fld public final static java.lang.String PROP_SOURCE_ROOTS = "sourceRoots"
 innr public abstract interface static !annotation Registration
 meth public abstract java.lang.String getRelativePath(java.lang.String,char,boolean)
@@ -761,13 +823,14 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.SourcePathProvider$Registration
+ outer org.netbeans.spi.debugger.jpda.SourcePathProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.VariablesFilter
-cons public VariablesFilter()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract boolean isLeaf(org.netbeans.spi.viewmodel.TreeModel,org.netbeans.api.debugger.jpda.Variable) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public abstract boolean isReadOnly(org.netbeans.spi.viewmodel.TableModel,org.netbeans.api.debugger.jpda.Variable,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -786,13 +849,14 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.VariablesFilter$Registration
+ outer org.netbeans.spi.debugger.jpda.VariablesFilter
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.VariablesFilterAdapter
-cons public VariablesFilterAdapter()
+cons public init()
 meth public abstract java.lang.String[] getSupportedAncestors()
 meth public abstract java.lang.String[] getSupportedTypes()
 meth public boolean isLeaf(org.netbeans.spi.viewmodel.TreeModel,org.netbeans.api.debugger.jpda.Variable) throws org.netbeans.spi.viewmodel.UnknownTypeException

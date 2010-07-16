@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,10 +75,18 @@ public final class ConfigManager {
     private final String[] propertyNames;
     private final ChangeSupport changeSupport;
 
+    private volatile String currentConfig;
+
     public ConfigManager(ConfigProvider configProvider) {
+        this(configProvider, null);
+    }
+
+    public ConfigManager(ConfigProvider configProvider, String currentConfig) {
         this.configProvider = configProvider;
         changeSupport = new ChangeSupport(this);
-        configs = configProvider.getConfigs();
+        configs = createEmptyConfigs();
+        configs.putAll(configProvider.getConfigs());
+        this.currentConfig = currentConfig;
 
         List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
@@ -88,6 +99,7 @@ public final class ConfigManager {
      */
     public static Map<String, Map<String, String>> createEmptyConfigs() {
         Map<String, Map<String, String>> configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
+            @Override
             public int compare(String s1, String s2) {
                 return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
             }
@@ -105,6 +117,7 @@ public final class ConfigManager {
     public static Comparator<Configuration> getConfigurationComparator() {
         return new Comparator<Configuration>() {
             Collator coll = Collator.getInstance();
+            @Override
             public int compare(Configuration c1, Configuration c2) {
                 String lbl1 = c1.getDisplayName();
                 String lbl2 = c2.getDisplayName();
@@ -119,6 +132,13 @@ public final class ConfigManager {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    // configs are reseted to their original state (discards changes in memory)
+    public synchronized void reset() {
+        configs.clear();
+        configErrors.clear();
+        configs.putAll(configProvider.getConfigs());
     }
 
     public synchronized boolean exists(String name) {
@@ -141,13 +161,12 @@ public final class ConfigManager {
     }
 
     public synchronized Configuration currentConfiguration() {
-        String activeConfig = configProvider.getActiveConfig();
-        if (exists(activeConfig)) {
-            return new Configuration(activeConfig);
+        if (exists(currentConfig)) {
+            return new Configuration(currentConfig);
         }
         // #176670
-        LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", activeConfig);
-        return createNew(activeConfig, activeConfig);
+        LOGGER.log(Level.WARNING, "Missing configuration \"{0}\" found - perhaps deleted?", currentConfig);
+        return createNew(currentConfig, currentConfig);
     }
 
     public Configuration defaultConfiguration() {
@@ -160,7 +179,7 @@ public final class ConfigManager {
 
     public synchronized void markAsCurrentConfiguration(String currentConfig) {
         assert configs.keySet().contains(currentConfig);
-        configProvider.setActiveConfig(currentConfig);
+        this.currentConfig = currentConfig;
         changeSupport.fireChange();
     }
 
@@ -315,20 +334,5 @@ public final class ConfigManager {
          * @return all the configurations.
          */
         Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> getConfigs();
-
-        /**
-         * Get the currently active configuration name.
-         * <p>
-         * This property is outside of {@link ConfigManager} to allow its persistence etc.
-         * @return the currently active configuration name.
-         */
-        String getActiveConfig();
-
-        /**
-         * Set the currently active configuration name.
-         * @param configName the currently active configuration name.
-         * @see #getActiveConfig()
-         */
-        void setActiveConfig(String configName);
     }
 }

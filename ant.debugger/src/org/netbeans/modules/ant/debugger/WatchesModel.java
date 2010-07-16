@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.openide.text.Annotatable;
 
 import org.openide.text.Line;
@@ -63,7 +67,7 @@ import org.openide.text.Line;
  *
  * @author   Jan Jancura
  */
-public class WatchesModel implements NodeModel, TableModel {
+public class WatchesModel implements NodeModelFilter, TableModel {
 
     public static final String WATCH =
     "org/netbeans/modules/debugger/resources/watchesView/Watch";
@@ -79,7 +83,7 @@ public class WatchesModel implements NodeModel, TableModel {
     }
     
     
-    // NodeModel implementation ................................................
+    // NodeModelFilter implementation ................................................
     
     /**
      * Returns display name for given node.
@@ -90,10 +94,8 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
-    public String getDisplayName (Object node) throws UnknownTypeException {
-        if (node instanceof Watch) 
-            return ((Watch) node).getExpression ();
-        throw new UnknownTypeException (node);
+    public String getDisplayName (NodeModel model, Object node) throws UnknownTypeException {
+        return model.getDisplayName(node);
     }
     
     /**
@@ -105,10 +107,8 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
-    public String getIconBase (Object node) throws UnknownTypeException {
-        if (node instanceof Watch) 
-            return WATCH;
-        throw new UnknownTypeException (node);
+    public String getIconBase (NodeModel model, Object node) throws UnknownTypeException {
+        return model.getIconBase(node);
     }
     
     /**
@@ -120,13 +120,12 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
-    public String getShortDescription (Object node) 
-    throws UnknownTypeException {
+    public String getShortDescription (NodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
             String expression = ((Watch) node).getExpression ();
             return debugger.getVariableValue (expression);
         }
-        throw new UnknownTypeException (node);
+        return model.getShortDescription(node);
     }
         
      

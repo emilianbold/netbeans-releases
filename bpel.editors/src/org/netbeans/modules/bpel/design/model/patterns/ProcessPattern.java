@@ -16,15 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.model.patterns;
-
-
 
 import java.awt.Cursor;
 import java.awt.geom.Area;
-
 import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -47,6 +42,7 @@ import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.layout.LayoutManager;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
@@ -61,15 +57,17 @@ import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
-import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.xam.Model;
+import org.openide.util.NbBundle;
 
 /**
- *
  * @author Alexey Yarmolenko
  */
 public class ProcessPattern extends CompositePattern {
@@ -82,13 +80,11 @@ public class ProcessPattern extends CompositePattern {
     private Connection connection1;
     private Connection connection2;
     
-    
     private Connection eventHandlersConnection;
     private VisualElement eventsBadge;
     
     private Connection faultHandlersConnection;
     private VisualElement faultBadge;
-    
     
     public ProcessPattern(DiagramModel model) {
         super(model);
@@ -108,8 +104,6 @@ public class ProcessPattern extends CompositePattern {
         return false;
     }
     
-    
-    
     protected void onAppendPattern(Pattern p) {
         BpelEntity entity = p.getOMReference();
         
@@ -121,7 +115,6 @@ public class ProcessPattern extends CompositePattern {
             removeElement(placeHolder);
         }
     }
-    
     
     protected void onRemovePattern(Pattern p) {
         Process process = (Process) getOMReference();
@@ -137,17 +130,15 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-    
     public CompositePattern getParent(){
         return null;
     }
     
     public FBounds layoutPattern(LayoutManager manager) {
         Collection<Pattern> patterns = super.getNestedPatterns();
-        
         Process process = (Process) getOMReference();
-        
         FRange rangeX = new FRange(0);
+
         double y;
         double yMax = 0;
         
@@ -202,9 +193,7 @@ public class ProcessPattern extends CompositePattern {
         double y1 = contentBottom + LayoutManager.VSPACING + endEvent.getHeight();
         
         getBorder().setClientRectangle(rangeX.min, y0, rangeX.getSize(), y1 - y0);
-        
         FBounds result = getBorder().getBounds();
-        
         PartnerLinkContainer plc = process.getPartnerLinkContainer();
         
         if (plc != null){
@@ -217,7 +206,6 @@ public class ProcessPattern extends CompositePattern {
                 //plc_pattern.optimizePositions(manager);
             }
         }
-        
         
         EventHandlers eventHandlers = process.getEventHandlers();
         FaultHandlers faultHandlers = process.getFaultHandlers();
@@ -273,12 +261,10 @@ public class ProcessPattern extends CompositePattern {
         return null;
     }
     
-
     public boolean isCollapsable() {
         return false;
     }
 
-    
     protected void createElementsImpl() {
         
         setBorder(new ProcessBorder());
@@ -289,10 +275,10 @@ public class ProcessPattern extends CompositePattern {
         Process process = (Process) getOMReference();
         
         startEvent = ContentElement.createStartEvent();
-        startEvent.setText("Process Start"); // NOI18N
+        startEvent.setText(NbBundle.getMessage(ProcessPattern.class, "LBL_Process_Start")); // NOI18N
         
         endEvent = ContentElement.createEndEvent();
-        endEvent.setText("Process End"); // NOI18N
+        endEvent.setText(NbBundle.getMessage(ProcessPattern.class, "LBL_Process_End")); // NOI18N
         
         placeHolder = new PlaceHolderElement();
         
@@ -333,11 +319,9 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-    
     public String getDefaultName() {
         return "Process"; // NOI18N
     }
-    
     
     public void createPlaceholders(Pattern draggedPattern,
             Collection<PlaceHolder> placeHolders) {
@@ -352,11 +336,9 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-    
     public NodeType getNodeType() {
         return NodeType.PROCESS;
     }
-    
     
     public void reconnectElements() {
         
@@ -403,18 +385,15 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-    
     private Pattern getEventHandlersPattern() {
         EventHandlers eh = ((Process) getOMReference()).getEventHandlers();
         return (eh != null) ? getNestedPattern(eh) : null;
     }
     
-    
     private Pattern getFaultHandlersPattern() {
         FaultHandlers fh = ((Process) getOMReference()).getFaultHandlers();
         return (fh != null) ? getNestedPattern(fh) : null;
     }
-    
     
     private Pattern getRootActivityPattern() {
         Activity a = (Activity) ((Process) getOMReference()).getActivity();
@@ -437,59 +416,58 @@ public class ProcessPattern extends CompositePattern {
     public void reloadPartnerlinks() {
         PartnerLinkContainer plc = ((Process) getOMReference()).getPartnerLinkContainer();
         
-        if(plc == null){
+        if (plc == null) {
             return;
         }
-        
         PartnerLinksPattern plp = (PartnerLinksPattern) getNestedPattern(plc);
         
-        if (plp != null){
+        if (plp != null) {
             plp.setParent(null);
         }
-        
-        
-        if (getModel().getFilters().showPartnerlinks() &&
-                plc != null ) {
+        if (getModel().getFilters().showPartnerlinks() && plc != null) {
             Pattern p = getModel().createPattern(plc);
             p.setParent(this);
         }
-        
     }
     
-    
     public void updateAccordingToViewFiltersStatus() {
-        
         reloadPartnerlinks();
-        
     }
     
     class ImportPlaceholder extends DefaultPlaceholder {
         public ImportPlaceholder(Pattern dndPattern) {
             super( ProcessPattern.this, dndPattern);
-            
         }
+
         public void drop() {
+//System.out.println("!!!!!!!!!!");
             Pattern pattern =  getDraggedPattern();
-            
             BpelModel model = getModel().getView().getBPELModel();
+            Import new_imp = (Import) pattern.getOMReference();
+            Model schema = ImportHelper.getSchemaModel(new_imp);
+//System.out.println("new_imp: " + new_imp.getImportType());
             
-            Import  new_imp = (Import) pattern.getOMReference();
-            
-            if (pattern.getParent() == null) {
-//                if (getModel().getView().showCustomEditor(pattern,
-//                        CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)){
-//                    new ImportRegistrationHelper(model).addImport(new_imp);
-//                }
-                new ImportRegistrationHelper(model).addImport(new_imp);
+            if (pattern.getParent() != null) {
+              return;
             }
+            if ( !new_imp.getImportType().equals(Import.SCHEMA_IMPORT_TYPE)) {
+              return;
+            }
+            // vlv: dnd
+            FileObject modelFileObject = SoaUtil.getFileObjectByModel(model);
+            FileObject schemaFileObject = SoaUtil.getFileObjectByModel(schema);
+            
+            if (!ReferenceUtil.isSameProject(modelFileObject, schemaFileObject)) {
+                ReferenceUtil.addFile(modelFileObject, schemaFileObject);
+            }
+            new ImportRegistrationHelper(model).addImport(schema);
         }
     }
-        class InnerPlaceHolder extends PlaceHolder {
+
+    class InnerPlaceHolder extends PlaceHolder {
         public InnerPlaceHolder(Pattern draggedPattern) {
-            super(ProcessPattern.this, draggedPattern, placeHolder.getCenterX(),
-                    placeHolder.getCenterY());
+            super(ProcessPattern.this, draggedPattern, placeHolder.getCenterX(), placeHolder.getCenterY());
         }
-        
         
         public void drop() {
             Pattern p = getDraggedPattern();
@@ -497,10 +475,7 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-
-    
     private static final float INITIAL_SIZE = 200;
-    
     private static final float MIN_CONTENT_WIDTH = 200;
     private static final float MIN_CONTENT_HEIGHT = 200;
     
@@ -511,6 +486,4 @@ public class ProcessPattern extends CompositePattern {
     public Connection getConnection2() {
         return connection2;
     }
-
-    
 }

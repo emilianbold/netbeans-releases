@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -87,7 +90,7 @@ made subject to such option by the copyright holder.
     
     <target name="compile" depends="build-openide,build-looks">
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.6">
             <classpath path="${build.cp}"/>
             <compilerarg value="-Xlint:unchecked"/>
         </javac>
@@ -103,7 +106,7 @@ made subject to such option by the copyright holder.
     <target name="compile-selected-files-in-src">
         <fail unless="files">Must set property 'files'</fail>
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5" includes="${files}">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.6" includes="${files}">
             <classpath path="${build.cp}"/>
             <compilerarg value="-Xlint"/>
         </javac>
@@ -165,7 +168,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="debug-fix-nb">
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.6">
             <classpath path="${build.cp}"/>
             <include name="${fix.file}.java"/>
         </javac>
@@ -195,12 +198,12 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="javadoc">
-        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.5.0/docs/api"/>
+        <property name="javadoc.docs.jdk" value="http://java.sun.com/javase/6/docs/api/"/>
         <!--
         <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
         -->
         <mkdir dir="${build.javadoc.dir}"/>
-        <javadoc destdir="${build.javadoc.dir}" source="1.5">
+        <javadoc destdir="${build.javadoc.dir}" source="1.6">
             <classpath path="${build.cp}"/>
             <sourcepath>
                 <pathelement location="src"/>
@@ -219,7 +222,7 @@ made subject to such option by the copyright holder.
     
     <target name="test-build" depends="build">
         <mkdir dir="${build.test.classes.dir}"/>
-        <javac srcdir="test" destdir="${build.test.classes.dir}" debug="true" deprecation="true" source="1.5">
+        <javac srcdir="test" destdir="${build.test.classes.dir}" debug="true" deprecation="true" source="1.6">
             <classpath path="${test.build.cp}"/>
         </javac>
         <!-- copy resources if it becomes necessary -->

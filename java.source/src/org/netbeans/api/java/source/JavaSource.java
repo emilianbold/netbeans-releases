@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,9 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.util.Log;
@@ -61,6 +67,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -87,8 +94,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.PatchedPublic;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -465,6 +472,10 @@ public final class JavaSource {
             final Snapshot snapshot = resultIterator.getSnapshot();
             if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                 Parser.Result result = resultIterator.getParserResult();
+                if (result == null) {
+                    //Deleted file of other parser critical issue
+                    return;
+                }
                 final CompilationController cc = CompilationController.get(result);
                 assert cc != null;
                 cc.setJavaSource(this.js);
@@ -808,6 +819,46 @@ public final class JavaSource {
         @Override
         public @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
             return SourceUtils.generateReadableParameterName(typeName, used);
+        }
+
+        @Override
+        public AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type) {
+            return make.AnnotatedType(annotations, type);
+        }
+
+        @Override
+        public AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t) {
+            return make.TypeAnnotation(t);
+        }
+
+        @Override
+        public ModificationResult.Difference createDifference(ModificationResult.Difference.Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
+            return new ModificationResult.Difference(kind, startPos, endPos, oldText, newText, description);
+        }
+
+        @Override
+        public ModificationResult.Difference createNewFileDifference(JavaFileObject fileObject, String text) {
+            return new ModificationResult.CreateChange(fileObject, text);
+        }
+
+        @Override
+        public ModificationResult createModificationResult(Map<FileObject, List<ModificationResult.Difference>> diffs, Map<?, int[]> tag2Span) {
+            ModificationResult result = new ModificationResult(null);
+
+            result.diffs = diffs;
+            result.tag2Span = tag2Span;
+
+            return result;
+        }
+
+        @Override
+        public Map<FileObject, List<ModificationResult.Difference>> getDiffsFromModificationResult(ModificationResult mr) {
+            return mr.diffs;
+        }
+
+        @Override
+        public Map<?, int[]> getTagsFromModificationResult(ModificationResult mr) {
+            return mr.tag2Span;
         }
     }                                                
 }

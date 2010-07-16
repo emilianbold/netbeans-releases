@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,25 @@
 
 package org.netbeans.spi.debugger;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.netbeans.debugger.registry.ContextAwareServiceHandler;
-import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -57,6 +71,8 @@ import org.openide.util.RequestProcessor;
  * @author   Jan Jancura
  */
 public abstract class ActionsProvider {
+
+    private static final RequestProcessor debuggerActionsRP = new RequestProcessor("Debugger Actions", 5);
 
     /**
      * Returns set of actions supported by this ActionsProvider.
@@ -106,7 +122,7 @@ public abstract class ActionsProvider {
      */
     public void postAction (final Object action,
                             final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerActionsRP.post(new Runnable() {
             public void run() {
                 try {
                     doAction(action);
@@ -134,33 +150,85 @@ public abstract class ActionsProvider {
          */
         String path() default "";
 
+        /**
+         * Provide the list of actions that this provider supports.
+         * This list is used before an instance of the registered class is created,
+         * it's necessary when {@link #activateForMIMETypes()} is overriden
+         * to prevent from the class instantiation.
+         * @return The list of actions.
+         * @since 1.23
+         */
+        String[] actions() default {};
+
+        /**
+         * Provide a list of MIME types that are compared to the MIME type of
+         * a file currently active in the IDE and when matched, this provider
+         * is activated (an instance of the registered class is created).
+         * By default, the provider instance is created immediately.
+         * This method can be used to delay the instantiation of the
+         * implementation class for performance reasons.
+         * @return The list of MIME types
+         * @since 1.23
+         */
+        String[] activateForMIMETypes() default {};
+
     }
 
     static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider> {
+
+        private static final String ERROR = "error in getting MIMEType";    // NOI18N
 
         private String serviceName;
         private ContextProvider context;
         private ActionsProvider delegate;
 
-        private ContextAware(String serviceName) {
+        private Set actions;
+        private Set<String> enabledOnMIMETypes;
+        private List<ActionsProviderListener> listeners = new ArrayList<ActionsProviderListener>();
+        private PropertyChangeListener contextDispatcherListener;
+
+        private ContextAware(String serviceName, Set actions, Set<String> enabledOnMIMETypes) {
             this.serviceName = serviceName;
+            this.actions = actions;
+            this.enabledOnMIMETypes = enabledOnMIMETypes;
         }
 
-        private ContextAware(String serviceName, ContextProvider context) {
+        private ContextAware(String serviceName, Set actions, Set<String> enabledOnMIMETypes,
+                             ContextProvider context) {
             this.serviceName = serviceName;
+            this.actions = actions;
+            this.enabledOnMIMETypes = enabledOnMIMETypes;
             this.context = context;
         }
 
         private synchronized ActionsProvider getDelegate() {
             if (delegate == null) {
                 delegate = (ActionsProvider) ContextAwareSupport.createInstance(serviceName, context);
+                for (ActionsProviderListener l : listeners) {
+                    delegate.addActionsProviderListener(l);
+                }
+                listeners.clear();
+                if (contextDispatcherListener != null) {
+                    detachContextDispatcherListener();
+                }
             }
             return delegate;
         }
 
         @Override
         public Set getActions() {
-            return getDelegate().getActions();
+            ActionsProvider actionsDelegate;
+            if (actions != null) {
+                synchronized (this) {
+                    actionsDelegate = this.delegate;
+                }
+            } else {
+                actionsDelegate = getDelegate();
+            }
+            if (actionsDelegate == null) {
+                return actions;
+            }
+            return actionsDelegate.getActions();
         }
 
         @Override
@@ -175,24 +243,63 @@ public abstract class ActionsProvider {
 
         @Override
         public boolean isEnabled(Object action) {
+            ActionsProvider actionsDelegate;
+            if (enabledOnMIMETypes != null) {
+                synchronized (this) {
+                    actionsDelegate = this.delegate;
+                }
+            } else {
+                actionsDelegate = getDelegate();
+            }
+            if (actionsDelegate == null) {
+                String currentMIMEType = getCurrentMIMEType();
+                if (currentMIMEType != ERROR) {
+                    if (!enabledOnMIMETypes.contains(currentMIMEType)) {
+                        //System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
+                        return false;
+                    }
+                }
+            }
             return getDelegate().isEnabled(action);
         }
 
         @Override
         public void addActionsProviderListener(ActionsProviderListener l) {
-            getDelegate().addActionsProviderListener(l);
+            ActionsProvider actionsDelegate;
+            synchronized (this) {
+                actionsDelegate = delegate;
+                if (actionsDelegate == null) {
+                    listeners.add(l);
+                    if (contextDispatcherListener == null && enabledOnMIMETypes != null) {
+                        contextDispatcherListener = attachContextDispatcherListener();
+                    }
+                    return ;
+                }
+            }
+            actionsDelegate.addActionsProviderListener(l);
         }
 
         @Override
         public void removeActionsProviderListener(ActionsProviderListener l) {
-            getDelegate().removeActionsProviderListener(l);
+            ActionsProvider actionsDelegate;
+            synchronized (this) {
+                actionsDelegate = delegate;
+                if (actionsDelegate == null) {
+                    listeners.remove(l);
+                    if (listeners.size() == 0 && contextDispatcherListener != null) {
+                        detachContextDispatcherListener();
+                    }
+                    return ;
+                }
+            }
+            actionsDelegate.removeActionsProviderListener(l);
         }
 
         public ActionsProvider forContext(ContextProvider context) {
             if (context == this.context) {
                 return this;
             } else {
-                return new ActionsProvider.ContextAware(serviceName, context);
+                return new ActionsProvider.ContextAware(serviceName, actions, enabledOnMIMETypes, context);
             }
         }
 
@@ -205,7 +312,159 @@ public abstract class ActionsProvider {
          */
         static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
             String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
-            return new ActionsProvider.ContextAware(serviceName);
+            String actionsStr = (String) attrs.get(ContextAwareServiceHandler.SERVICE_ACTIONS);
+            String enabledOnMIMETypesStr = (String) attrs.get(ContextAwareServiceHandler.SERVICE_ENABLED_MIMETYPES);
+            String[] actions = parseArray(actionsStr);
+            String[] enabledOnMIMETypes = parseArray(enabledOnMIMETypesStr);
+            return new ActionsProvider.ContextAware(serviceName,
+                                                    createSet(actions),
+                                                    createSet(enabledOnMIMETypes));
+        }
+
+        private static String[] parseArray(String strArray) {
+            if (strArray == null) {
+                return null;
+            }
+            if (strArray.startsWith("[")) strArray = strArray.substring(1);
+            if (strArray.endsWith("]")) strArray = strArray.substring(0, strArray.length() - 1);
+            strArray = strArray.trim();
+            int index = 0;
+            List<String> strings = new ArrayList<String>();
+            while (index < strArray.length()) {
+                int index2 = strArray.indexOf(',', index);
+                if (index2 < 0) index2 = strArray.length();
+                if (index2 > index) {
+                    String s = strArray.substring(index, index2).trim();
+                    if (s.length() > 0) { // Can be trimmed to 0 length
+                        strings.add(s);
+                    }
+                    index = index2 + 1;
+                } else {
+                    index++;
+                    continue;
+                }
+            }
+            return strings.toArray(new String[0]);
+        }
+
+        private static <T> Set<T> createSet(T[] array) {
+            if (array != null) {
+                return Collections.unmodifiableSet(new HashSet(Arrays.asList(array)));
+            } else {
+                return null;
+            }
+        }
+
+        private static String getCurrentMIMEType() {
+            // Ask EditorContextDispatcher.getDefault().getMostRecentFile()
+            // It's not in a dependent module, therefore we have to find it dynamically:
+            try {
+                Class editorContextDispatcherClass = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.spi.debugger.ui.EditorContextDispatcher");
+                try {
+                    try {
+                        Object editorContextDispatcher = editorContextDispatcherClass.getMethod("getDefault").invoke(null);
+                        FileObject file = (FileObject) editorContextDispatcherClass.getMethod("getMostRecentFile").invoke(editorContextDispatcher);
+                        if (file != null) {
+                            return file.getMIMEType();
+                        } else {
+                            return null;
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } catch (ClassNotFoundException ex) {
+            }
+            return ERROR;
+        }
+
+        private PropertyChangeListener attachContextDispatcherListener() {
+            // Call EditorContextDispatcher.getDefault().addPropertyChangeListener(String MIMEType, PropertyChangeListener l)
+            // It's not in a dependent module, therefore we have to find it dynamically:
+            PropertyChangeListener l = null;
+            try {
+                Class editorContextDispatcherClass = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.spi.debugger.ui.EditorContextDispatcher");
+                try {
+                    try {
+                        Object editorContextDispatcher = editorContextDispatcherClass.getMethod("getDefault").invoke(null);
+                        java.lang.reflect.Method m = editorContextDispatcherClass.getMethod(
+                                "addPropertyChangeListener",
+                                String.class,
+                                PropertyChangeListener.class);
+                        l = new ContextDispatcherListener();
+                        for (String mimeType : enabledOnMIMETypes) {
+                            m.invoke(editorContextDispatcher, mimeType, l);
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } catch (ClassNotFoundException ex) {
+            }
+            return l;
+        }
+
+        private void detachContextDispatcherListener() {
+            // Call EditorContextDispatcher.getDefault().removePropertyChangeListener(PropertyChangeListener l)
+            // It's not in a dependent module, therefore we have to find it dynamically:
+            PropertyChangeListener l = null;
+            try {
+                Class editorContextDispatcherClass = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.spi.debugger.ui.EditorContextDispatcher");
+                try {
+                    try {
+                        Object editorContextDispatcher = editorContextDispatcherClass.getMethod("getDefault").invoke(null);
+                        java.lang.reflect.Method m = editorContextDispatcherClass.getMethod(
+                                "removePropertyChangeListener",
+                                PropertyChangeListener.class);
+                        m.invoke(editorContextDispatcher, contextDispatcherListener);
+                        contextDispatcherListener = null;
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } catch (ClassNotFoundException ex) {
+            }
+        }
+
+        private class ContextDispatcherListener implements PropertyChangeListener {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                List<ActionsProviderListener> ls;
+                synchronized (ContextAware.this) {
+                    ls = new ArrayList<ActionsProviderListener>(listeners);
+                }
+                for (ActionsProviderListener l : ls) {
+                    for (Object action : actions) {
+                        l.actionStateChange(action, isEnabled(action));
+                    }
+                }
+            }
+            
         }
 
     }

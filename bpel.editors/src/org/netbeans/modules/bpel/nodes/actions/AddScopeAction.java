@@ -36,6 +36,7 @@ public class AddScopeAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddScopeAction() {
+        super("structured/scope"); // NOI18N
     }    
 
     public boolean isContainerSupportChildType(BpelContainer container) {

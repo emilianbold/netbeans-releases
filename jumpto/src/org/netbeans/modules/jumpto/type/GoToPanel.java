@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -84,7 +90,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private ContentProvider contentProvider;
     private boolean containsScrollPane;
     JLabel messageLabel;
-    private TypeDescriptor selectedType;
+    private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
     
     private String oldText;
     
@@ -94,12 +100,12 @@ public class GoToPanel extends javax.swing.JPanel {
     private final SearchHistory searchHistory;
     
     /** Creates new form GoToPanel */
-    public GoToPanel( ContentProvider contentProvider ) throws IOException {
+    public GoToPanel( ContentProvider contentProvider, boolean multiSelection ) throws IOException {
         this.contentProvider = contentProvider;
         initComponents();
         containsScrollPane = true;
                 
-        matchesList.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+        matchesList.setSelectionMode( multiSelection ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
         //matchesList.setPrototypeCellValue("12345678901234567890123456789012345678901234567890123456789012345678901234567890");        
         matchesList.addListSelectionListener(null);
         
@@ -174,12 +180,16 @@ public class GoToPanel extends javax.swing.JPanel {
         });
     }
     
-    public void setSelectedType() {
-        selectedType = ((TypeDescriptor) matchesList.getSelectedValue());
+    public void setSelectedTypes() {
+        final List<TypeDescriptor> types = new LinkedList<TypeDescriptor>();
+        for (Object td : matchesList.getSelectedValues()) {
+            types.add((TypeDescriptor)td);
+        }
+        selectedTypes = Collections.unmodifiableCollection(types);
     }
     
-    public TypeDescriptor getSelectedType() {
-        return selectedType;
+    public Iterable<? extends TypeDescriptor> getSelectedTypes() {
+        return selectedTypes;
     }
 
     void setWarning(String warningMessage) {
@@ -345,7 +355,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private void nameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameFieldActionPerformed
         if (contentProvider.hasValidContent()) {
             contentProvider.closeDialog();
-            setSelectedType();        
+            setSelectedTypes();
         }
     }//GEN-LAST:event_nameFieldActionPerformed
     

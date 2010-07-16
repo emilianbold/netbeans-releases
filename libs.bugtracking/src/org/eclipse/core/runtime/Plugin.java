@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
  */
 package org.eclipse.core.runtime;
 
-import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.osgi.framework.Bundle;
@@ -49,8 +51,8 @@ import org.osgi.framework.BundleContext;
 /**
  * @author Maros Sandor
  */
-public class Plugin implements ILog {
-    private IPath stateLocation;
+public class Plugin {    
+    private ILog log;
 
     public final Bundle getBundle() {
         return null;
@@ -69,53 +71,34 @@ public class Plugin implements ILog {
     }
     
     public final ILog getLog() {
-        return this;
+        if(log == null) {
+            log = new ILog() {
+                public void log(IStatus status) {
+                    Level l = null;
+                    switch (status.getSeverity()) {
+                        case IStatus.CANCEL:
+                            l = Level.OFF; break;
+                        case IStatus.ERROR:
+                            l = Level.SEVERE; break;
+                        case IStatus.INFO:
+                            l = Level.INFO; break;
+                        case IStatus.OK:
+                            l = Level.INFO; break;
+                        case IStatus.WARNING:
+                            l = Level.WARNING; break;
+                        default:
+                            l = Level.INFO;
+                    }
+                    BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode());
+                    BugtrackingRuntime.LOG.log(Level.INFO, null, status.getException());
+                }
+            };
+        }
+        return log;
     }
     
     public final IPath getStateLocation() throws IllegalStateException {
-        if(stateLocation == null) {
-            File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
-            stateLocation = new StateLocation(f);
-        }
-        return stateLocation;
-    }
-
-    public void log(IStatus status) {
-        Level l = null;
-        switch (status.getSeverity()) {
-            case IStatus.CANCEL:
-                l = Level.OFF; break;
-            case IStatus.ERROR:
-                l = Level.SEVERE; break;
-            case IStatus.INFO:
-                l = Level.INFO; break;
-            case IStatus.OK:
-                l = Level.INFO; break;
-            case IStatus.WARNING:
-                l = Level.WARNING; break;
-            default:
-                l = Level.INFO;
-        }
-        BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode());
-        BugtrackingRuntime.LOG.log(Level.INFO, null, status.getException());
-    }
-
-    private class StateLocation implements IPath {
-        private final File file;
-
-        private StateLocation(File file) {
-            this.file = file;
-        }
-
-        public IPath append(String path) {
-            File f = new File(file, path);
-            return new StateLocation(f);
-        }
-
-        public File toFile() {
-            return file;
-        }
-
+        return Platform.getStateLocation(null);
     }
 
 }

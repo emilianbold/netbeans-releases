@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -81,7 +85,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -222,6 +225,9 @@ public class PropertySheet extends JPanel {
     /**Debugging option to suppress all use of tabs */
     private static final boolean neverTabs = Boolean.getBoolean("netbeans.ps.nevertabs"); //NOI18N
     static final boolean forceTabs = Boolean.getBoolean("nb.ps.forcetabs");
+
+    /** property sheet processor */
+    private static final RequestProcessor RP = new RequestProcessor("Property Sheet"); // NOI18N
 
     /** Holds the sort mode for the property sheet */
     private int sortingMode = UNSORTED;
@@ -514,7 +520,7 @@ public class PropertySheet extends JPanel {
                 curTask.cancel();
             }
             
-            if (SwingUtilities.isEventDispatchThread()) {
+            if (EventQueue.isDispatchThread()) {
                 if (loggable) {
                     PropUtils.log(PropertySheet.class, "  Nodes cleared on event queue.  Emptying model.");
                 }
@@ -524,7 +530,7 @@ public class PropertySheet extends JPanel {
                 helperNodes = null;
                 psheet.setTabbedContainerItems(new Object[0], new String[0]);
             } else {
-                SwingUtilities.invokeLater(
+                EventQueue.invokeLater(
                     new Runnable() {
                         public void run() {
                             if (loggable) {
@@ -578,34 +584,39 @@ public class PropertySheet extends JPanel {
 
     private synchronized RequestProcessor.Task getScheduleTask() {
         if (scheduleTask == null) {
-            scheduleTask = RequestProcessor.getDefault().post(
-                    new Runnable() {
+            scheduleTask = RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    Node[] tmp = helperNodes;
+                    if (tmp != null) {
+                        for (Node n : tmp) {
+                            // pre-initialized outside of AWT thread
+                            n.getPropertySets();
+                        }
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
-                            SwingUtilities.invokeLater(
-                                new Runnable() {
-                                    public void run() {
-                                        final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-                                        Node[] nodesToSet = helperNodes;
-                                        if (loggable) {
-                                            PropUtils.log(
-                                                PropertySheet.class,
-                                                "Delayed " + "updater setting nodes to " + //NOI18N
-                                                    (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
-                                            );
-                                        }
+                            final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
+                            Node[] nodesToSet = helperNodes;
+                            if (loggable) {
+                                PropUtils.log(
+                                    PropertySheet.class,
+                                    "Delayed " + "updater setting nodes to " + //NOI18N
+                                        (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
+                                );
+                            }
 
-                                        doSetNodes(nodesToSet);
-                                    }
-                                }
-                            );
+                            doSetNodes(nodesToSet);
                         }
-                    }
-                );
-            initTask = RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                        }
-                    }
-                );
+                    });
+                }
+            });
+            initTask = RP.post(new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
         }
 
         // if none task runs then return initTask to wait for next changes
@@ -693,7 +704,7 @@ public class PropertySheet extends JPanel {
         boolean result = true;
 
         for (int i = 0; i < ps.length; i++) {
-            result &= (ps[i].getProperties() != null);
+            result &= (ps[i] != null && ps[i].getProperties() != null);
 
             if (!result) {
                 break;
@@ -1381,10 +1392,10 @@ public class PropertySheet extends JPanel {
                         }
                     }
                 };
-                if( SwingUtilities.isEventDispatchThread() ) {
+                if( EventQueue.isDispatchThread() ) {
                     runnable.run();
                 } else {
-                    SwingUtilities.invokeLater(runnable);
+                    EventQueue.invokeLater(runnable);
                 }
             }
              /*else {
@@ -1417,7 +1428,7 @@ public class PropertySheet extends JPanel {
             /** Receives property change events directed to PropertyChangeListeners,
              * not NodeListeners */
             public void propertyChange(final PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
+                EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         String nm = evt.getPropertyName();
                         /*

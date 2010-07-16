@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@ package org.netbeans.modules.php.editor.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,7 +54,12 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -61,20 +70,57 @@ import org.openide.util.Exceptions;
 public final class FindUsageSupport {
     private Set<FileObject> files;
     private ModelElement element;
+    private ElementQuery.Index index;
 
-    public static FindUsageSupport getInstance(PHPIndex index, ModelElement element) {
+    public static FindUsageSupport getInstance(ElementQuery.Index index, ModelElement element) {
         return new FindUsageSupport(index, element);
     }
 
-    private FindUsageSupport(PHPIndex index, ModelElement element) {
+    private FindUsageSupport(ElementQuery.Index index, ModelElement element) {
         this.element = element;
         this.files = new LinkedHashSet<FileObject>();
-        this.files.add(element.getFileObject());
         String name = element.getName();
         if (name.startsWith("$")) {//NOI18N
             name = name.substring(1);
         }
-        this.files.addAll(index.filesWithIdentifiers(name));
+        this.index = index;
+    }
+
+    public Collection<MethodElement> overridingMethods() {
+        if (element instanceof MethodElement) {
+            MethodElement method = (MethodElement) element;
+            TypeElement type = method.getType();
+            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            for (TypeElement nextType : index.getInheritedByTypes(type)) {
+                inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
+            }
+            return ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedByMethods);
+        } else if (element instanceof MethodScope) {
+            MethodScope method = (MethodScope) element;
+            TypeScope type = (TypeScope)method.getInScope();
+            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            for (TypeElement nextType : index.getInheritedByTypes(type)) {
+                inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
+            }
+            return ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedByMethods);
+        }
+
+        return Collections.emptyList();
+    }
+
+
+    public Collection<TypeElement> subclasses() {
+        if (element instanceof TypeElement) {
+            return index.getInheritedByTypes((TypeElement) element);
+        }
+        return Collections.emptySet();
+    }
+
+    public Collection<TypeElement> directSubclasses() {
+        if (element instanceof TypeElement) {
+            return index.getDirectInheritedByTypes((TypeElement) element);
+        }
+        return Collections.emptySet();
     }
 
     @CheckForNull
@@ -90,11 +136,8 @@ public final class FindUsageSupport {
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                     Model model = ModelFactory.getModel(parameter);
-                    ModelVisitor modelVisitor = model.getModelVisitor(element);
-                    Occurence occurence = modelVisitor.getOccurence(element);
-                    if (occurence != null) {
-                        retval.addAll(occurence.getAllOccurences());
-                    }
+                    ModelVisitor modelVisitor = model.getModelVisitor();
+                    retval.addAll(modelVisitor.getOccurence(element));
                 }
             });
         } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
@@ -106,7 +149,20 @@ public final class FindUsageSupport {
     /**
      * @return the files
      */
-    public Set<FileObject> inFiles() {
+    public  Set<FileObject> inFiles() {
+        synchronized(this) {
+            if (this.files.isEmpty()) {
+                this.files.add(element.getFileObject());
+                String name = element.getName();
+                final PhpElementKind kind = element.getPhpElementKind();
+                if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
+                  name = name.startsWith("$") ? name.substring(1) : name;  
+                } else if (kind.equals(PhpElementKind.METHOD) && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(name)) {
+                    name = element.getInScope().getName();
+                }
+                this.files.addAll(index.getLocationsForIdentifiers(name));
+            }
+        }
         return files;
     }
 
@@ -116,4 +172,6 @@ public final class FindUsageSupport {
     public ModelElement elementToFind() {
         return element;
     }
+
+
 }

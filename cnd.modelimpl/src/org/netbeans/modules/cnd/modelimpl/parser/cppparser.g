@@ -139,6 +139,7 @@ tokens {
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -373,7 +374,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
-	protected static final int tsCOMPLEX   = 0x16000;
+	protected static final int tsCOMPLEX   = 0x10000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -733,6 +734,15 @@ template_explicit_specialization
 		dtor_declarator[false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 
+        |
+        // Template explicit specialisation dtor declaration
+		(class_forward_declaration)=>
+		{if(statementTrace >= 1)
+			printf("template_explicit_specialization_0f[%d]: template " +
+				"class forward explicit-specialisation\n", LT(1).getLine());
+		}
+		declaration_specifiers[false, false] SEMICOLON
+		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
@@ -1518,7 +1528,7 @@ function_definition
         {in_parameter_list = false;}
     )?
     (   compound_statement
-    |   function_try_block
+    |   function_try_block[false]
     )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
     //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
@@ -1630,8 +1640,9 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 	;
 
 protected
-typeof_param : 
-            (type_name) => type_name
+typeof_param :
+            // fast check of simple typeof (type) but skip typeof (type1() + type2()) which would be considered as expression
+            (type_name {LA(1) != PLUS}?) => type_name
         |
             expression
         ;
@@ -1734,16 +1745,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 LCURLY
                 // This stores class name in dictionary
                 {beginClassDefinition(ts, id);}
-                (options{generateAmbigWarnings = false;greedy=false;}:
-                    member_declaration
-                |
-                    // IZ 136081 : Wrong parser recovering in class
-                    balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
-                |
-                    // IZ 138291 : Completion does not work for unfinished constructor
-                    // On unfinished construction we skip some symbols for class parsing process recovery
-                    (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
-                )*
+                class_members
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -1761,6 +1763,26 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             | RCURLY )
             {enclosingClass = saveClass;}
         )
+    ;
+
+class_members
+    :
+    (options{generateAmbigWarnings = false;greedy=false;}:
+        member_declaration
+    |
+        // IZ 136081 : Wrong parser recovering in class
+        balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
+    |
+        // IZ 138291 : Completion does not work for unfinished constructor
+        // On unfinished construction we skip some symbols for class parsing process recovery
+        (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
+    )*
+    ;
+
+fix_fake_class_members
+    :
+        class_members
+        { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
     ;
 
 enum_specifier
@@ -2298,9 +2320,8 @@ qualified_ctor_id returns [String q = ""]
 
 ctor_body
     :
-    (ctor_initializer)?
-    (   compound_statement
-    |   function_try_block)
+    (  (ctor_initializer)? compound_statement
+    |  function_try_block[true])
     ;
 
 ctor_initializer
@@ -2858,7 +2879,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_11[%d]: try_block\n", LT(1).getLine());
 		}	
-                try_block
+                try_block[false]
 	|
                 {if (statementTrace>=1) 
 			printf("statement_12[%d]: throw_statement\n", LT(1).getLine());
@@ -2927,17 +2948,19 @@ compound_statement
             )                      
 	;
 
-function_try_block
+function_try_block[boolean constructor]
     :
         {isLazyCompound()}?
-        LITERAL_try balanceCurlies 
+        LITERAL_try
+        ({(constructor)}?((COLON) => ctor_initializer)?)?
+        balanceCurlies
         (options {greedy=true;} : LITERAL_catch
         LPAREN exception_declaration RPAREN
         balanceCurlies)*
         {#function_try_block = #(#[CSM_TRY_CATCH_STATEMENT_LAZY, "CSM_TRY_CATCH_STATEMENT_LAZY"], #function_try_block);}
     |
         {!isLazyCompound()}?
-        try_block
+        try_block[constructor]
         {#function_try_block = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #function_try_block);}
     ;
 
@@ -3073,9 +3096,11 @@ jump_statement
 	)
 	;
 
-try_block
+try_block[boolean constructor]
     :
-    LITERAL_try compound_statement (options {greedy=true;} : handler)*
+    LITERAL_try
+    ({(constructor)}?((COLON) => ctor_initializer)?)?
+    compound_statement (options {greedy=true;} : handler)*
     {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
     ;
 
@@ -3249,7 +3274,6 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   LITERAL_typename
             |   LITERAL___interrupt 
-            |   LITERAL_sizeof
             |   LITERAL___extension__
             |   LITERAL_template
             |   LITERAL_new
@@ -3282,6 +3306,10 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_union
             |   LITERAL_class
             |   LITERAL_enum
+
+            |   LITERAL_sizeof
+            |   LITERAL___real
+            |   LITERAL___imag
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3420,7 +3448,6 @@ lazy_expression_predicate
     |   constant
 
     |   LITERAL___interrupt 
-    |   LITERAL_sizeof
     |   LITERAL___extension__
     |   LITERAL_template
     |   LITERAL_new
@@ -3454,6 +3481,9 @@ lazy_expression_predicate
     |   LITERAL_static_cast 
     |   LITERAL_reinterpret_cast 
     |   LITERAL_const_cast
+    |   LITERAL_sizeof
+    |   LITERAL___real
+    |   LITERAL___imag
 
     |   GREATERTHAN lazy_expression_predicate
     ;

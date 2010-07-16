@@ -53,7 +53,7 @@ public class PythonPlatformManager implements Serializable{
     private HashMap<String, PythonPlatform> platforms;
     private String defaultPlatform;
     private volatile boolean autoDetecting;
-
+    private PythonOptions options = PythonOptions.getInstance();
     /**
      * The PythonPlatformManager is a singleton
      */
@@ -93,9 +93,13 @@ public class PythonPlatformManager implements Serializable{
            jythonInstallDir + File.separator + "Lib" + File.separator + "site-packages" });
         List<String> list = discoverJythonClasspath(platform.getInterpreterCommand());
         platform.setJavaPath(list.toArray(new String[list.size()]));
-
-        platform.setDirty(false);
-
+        try {
+            //platform.setDirty(false);
+            storePlatform(platform);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         return platform;
     }
 
@@ -162,7 +166,7 @@ public class PythonPlatformManager implements Serializable{
                 platform.setDirty(false);
 
                 platforms.put(platform.getId(), platform);
-                if (id.equals(PLATFORM_ID_DEFAULT)) {
+                if (id.equals(options.getPythonDefault())) {
                     defaultPlatform = id;
                     foundDefault = true;
                 }
@@ -210,7 +214,7 @@ public class PythonPlatformManager implements Serializable{
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     clearProperties(platform, props);
                     putPlatformProperties(platform, props);
-                    PropertyUtils.putGlobalProperties(props);
+                    PropertyUtils.putGlobalProperties(props);                    
                     return null;
                 }
             });
@@ -278,6 +282,7 @@ public class PythonPlatformManager implements Serializable{
 
     public void setDefaultPlatform(String defaultPlatform) {
         this.defaultPlatform = defaultPlatform;
+        options.setPythonDefault(defaultPlatform);
         firePlatformsChanged();
     }
 

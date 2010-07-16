@@ -47,6 +47,14 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Project">
+                <file name="org-netbeans-modules-maven-apisupport-NBMReload.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
+                </file>
+                <file name="org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
             <folder name="Repositories">
@@ -58,33 +66,44 @@ made subject to such option by the copyright holder.
                     <attr name="repoIndexUrl" stringvalue="http://bits.netbeans.org/maven2/.index/"/>
                 </file>
             </folder>
-            <folder name="ProjectActions">
-                <file name="NBMReload.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
-                    <attr name="position" intvalue="1000"/>
-                    <attr name="misplaced.action.allowed" boolvalue="true"/>
+            <folder name="Actions">
+                <file name="org-netbeans-modules-maven-apisupport-NBMReload.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-NBMReload.instance"/>
+                    <attr name="position" intvalue="1250"/>
+                </file>
+                <file name="org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.instance"/>
+                    <attr name="position" intvalue="3150"/>
                 </file>
             </folder>
-            <folder name="Archetypes">
-                <file name="nbm-archetype">
-                    <attr name="position" intvalue="200"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="nbm-archetype"/>
-                    <attr name="version" stringvalue="1.2"/>
-                    <!--attr name="repository" stringvalue=""/-->
-                    <attr name="nameBundleKey" stringvalue="TIT_NBM_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_NBM_Archetype"/>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Maven2">
+                <file name="NbModule">
+                    <attr name="position" intvalue="400"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbModuleIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbModuleDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/nbmicon.png"/>
+                    <attr name="template" boolvalue="true"/>
                 </file>
-                <file name="netbeans-platform-app-archetype">
-                    <attr name="position" intvalue="205"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="netbeans-platform-app-archetype"/>
-                    <attr name="version" stringvalue="1.2.1"/>
-                    <!--attr name="repository" stringvalue=""/-->
-                    <attr name="nameBundleKey" stringvalue="TIT_Platform_Application_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_Platform_Application_Archetype"/>
+                <file name="NbSuite">
+                    <attr name="position" intvalue="450"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbSuiteIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbSuiteDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="NbApp">
+                    <attr name="position" intvalue="500"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbAppIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbAppDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
+                    <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
         </folder>

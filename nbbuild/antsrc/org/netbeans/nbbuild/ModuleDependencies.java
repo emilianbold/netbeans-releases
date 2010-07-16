@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -117,56 +121,36 @@ public class ModuleDependencies extends Task {
                 if (o.type == null) throw new BuildException ("<output> needs attribute type");
                 if (o.file == null) throw new BuildException ("<output> needs attribute file");
                 
-                getProject ().log ("Generating " + o.type + " to " + o.file);
-                
                 if ("public-packages".equals (o.type.getValue ())) {
                     generatePublicPackages (o.file, true, false);
-                    continue;
-                }
-                if ("friend-packages".equals (o.type.getValue ())) {
+                } else if ("friend-packages".equals (o.type.getValue ())) {
                     generatePublicPackages (o.file, false, false);
-                    continue;
-                }
-                if ("shared-packages".equals (o.type.getValue ())) {
+                } else if ("shared-packages".equals (o.type.getValue ())) {
                     generateSharedPackages (o.file);
-                    continue;
-                }
-                if ("modules".equals (o.type.getValue ())) {
-                    generateListOfModules (o.file);                    
-                    continue;
-                }
-                if ("dependencies".equals (o.type.getValue ())) {
+                } else if ("modules".equals (o.type.getValue ())) {
+                    generateListOfModules (o.file);
+                } else if ("disabled-autoloads".equals(o.type.getValue())) {
+                    generateListOfDisabledAutoloads(o.file);
+                } else if ("dependencies".equals (o.type.getValue ())) {
                     generateDependencies (o.file, false);                    
-                    continue;
-                }
-                if ("implementation-dependencies".equals (o.type.getValue ())) {
+                } else if ("implementation-dependencies".equals (o.type.getValue ())) {
                     generateDependencies (o.file, true);                    
-                    continue;
-                }
-                if ("group-dependencies".equals (o.type.getValue ())) {
+                } else if ("group-dependencies".equals (o.type.getValue ())) {
                     generateGroupDependencies (o.file, false);                    
-                    continue;
-                }
-                if ("group-implementation-dependencies".equals (o.type.getValue ())) {
+                } else if ("group-implementation-dependencies".equals (o.type.getValue ())) {
                     generateGroupDependencies (o.file, true);                    
-                    continue;
-                }
-                if ("group-friend-packages".equals (o.type.getValue ())) {
+                } else if ("group-friend-packages".equals (o.type.getValue ())) {
                     generatePublicPackages(o.file, false, true);                    
-                    continue;
-                }
-                if ("kits".equals(o.type.getValue())) {
+                } else if ("kits".equals(o.type.getValue())) {
                     generateKits(o.file);
-                    continue;
-                }
-                if ("kit-dependencies".equals(o.type.getValue())) {
+                } else if ("kit-dependencies".equals(o.type.getValue())) {
                     generateKitDependencies(o.file);
-                    continue;
-                }
-                if ("plugins".equals(o.type.getValue())) {
+                } else if ("plugins".equals(o.type.getValue())) {
                     generatePlugins(o.file);
-                    continue;
+                } else {
+                    assert false : o.type;
                 }
+                getProject().log(o.file + ": generating " + o.type);
             }
         
         } catch (IOException ex) {
@@ -252,15 +236,17 @@ public class ModuleDependencies extends Task {
 
                 TreeSet<Dependency> depends = new TreeSet<Dependency>();
                 TreeSet<Dependency> provides = new TreeSet<Dependency>();
-                addDependencies (depends, file.getManifest (), Dependency.REQUIRES, "OpenIDE-Module-Requires");
-                addDependencies (provides, file.getManifest (), Dependency.PROVIDES, "OpenIDE-Module-Provides");
+                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Requires");
+                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Needs");
+                addDependencies (depends, file.getManifest (), Dependency.Type.recommends, "OpenIDE-Module-Recommends");
+                addDependencies (provides, file.getManifest (), Dependency.Type.provides, "OpenIDE-Module-Provides");
                 {
                     String ideDeps = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-IDE-Dependencies"); // IDE/1 > 4.25
                     if (ideDeps != null) {
                         throw new BuildException("OpenIDE-Module-IDE-Dependencies is obsolete in " + f);
                     }
                 }
-                addDependencies (depends, file.getManifest (), Dependency.REQUIRES, "OpenIDE-Module-Module-Dependencies");
+                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Module-Dependencies");
                 /* org.netbeans.api.java/1,org.netbeans.modules.queries/0,
                  org.netbeans.modules.javacore/1,org.netbeans.jmi.javamodel/1 > 1.11,org.netbeans.api.mdr/1,
                  org.netbeans.modules.mdr/1= 1.0.0,org.netbeans.modules.
@@ -331,7 +317,7 @@ public class ModuleDependencies extends Task {
                 }
 
                 String s = m.publicPackages;
-                HashMap<String,Boolean> pkgs = null;
+                Map<String,Boolean> pkgs = null;
                 if (s != null) {
                     pkgs = new HashMap<String,Boolean>();
                     StringTokenizer tok = new StringTokenizer(s, ",");
@@ -411,7 +397,7 @@ public class ModuleDependencies extends Task {
                     cntFriends++;
                 }
                 if (cntFriends > maxFriends) {
-                    throw new BuildException("Too many intercluster friends (" + cntFriends + ") for module " + info.getName(false));
+                    w.println("  WARNING: excessive number of intercluster friends (" + cntFriends + ")");
                 }
                 
                 if (cntFriends > 0) {
@@ -425,7 +411,7 @@ public class ModuleDependencies extends Task {
         w.close();
     }
     
-    private void iterateThruPackages (File f, HashMap pkgs, TreeSet<String> packages) throws IOException {
+    private void iterateThruPackages(File f, Map<String,Boolean> pkgs, TreeSet<String> packages) throws IOException {
         JarFile file = new JarFile (f);
         Enumeration en = file.entries ();
         LOOP: while (en.hasMoreElements ()) {
@@ -443,7 +429,7 @@ public class ModuleDependencies extends Task {
                    continue;
                 }
 
-                Boolean b = (Boolean)pkgs.get (p);
+                Boolean b = pkgs.get(p);
                 if (b != null) {
                     packages.add (p);
                     continue;
@@ -458,7 +444,7 @@ public class ModuleDependencies extends Task {
                         parent = parent.substring (0, prev);
                     }
 
-                    b = (Boolean)pkgs.get (parent);
+                    b = pkgs.get(parent);
                     if (Boolean.TRUE.equals (b)) {
                         packages.add (p);
                         continue LOOP;
@@ -496,7 +482,58 @@ public class ModuleDependencies extends Task {
         }
         w.close ();
     }
-    
+
+    private void generateListOfDisabledAutoloads(File output) throws BuildException, IOException {
+        Map<String,Set<String>> depsAll = new TreeMap<String,Set<String>>();
+        Map<String,ModuleInfo> considered = new TreeMap<String,ModuleInfo>();
+        Set<String> regular = new HashSet<String>();
+        for (ModuleInfo m : modules) {
+            if (regexp != null && !regexp.matcher(m.group).matches()) {
+                continue;
+            }
+            if (m.isAutoload) {
+                considered.put(m.codebasename, m);
+            } else if (!m.isEager) {
+                regular.add(m.codebasename);
+            }
+            Set<String> deps = new TreeSet<String>();
+            depsAll.put(m.codebasename, deps);
+            for (Dependency d : m.depends) {
+                ModuleInfo m2 = findModuleInfo(d, m);
+                if (m2 != null) {
+                    deps.add(m2.codebasename);
+                }
+            }
+        }
+        transitiveClosure(depsAll);
+        Map<String,Set<ModuleInfo>> disabled = new TreeMap<String,Set<ModuleInfo>>();
+        for (Map.Entry<String, Set<String>> entry : depsAll.entrySet()) {
+            if (!regular.contains(entry.getKey())) {
+                continue;
+            }
+            for (String dep : entry.getValue()) {
+                considered.remove(dep);
+            }
+        }
+        for (ModuleInfo m : considered.values()) {
+            Set<ModuleInfo> group = disabled.get(m.group);
+            if (group == null) {
+                group = new TreeSet<ModuleInfo>();
+                disabled.put(m.group, group);
+            }
+            group.add(m);
+        }
+        PrintWriter w = new PrintWriter(new FileWriter(output));
+        for (Set<ModuleInfo> group : disabled.values()) {
+            for (ModuleInfo m : group) {
+                w.print("MODULE ");
+                w.print(m.getName(false));
+                w.println();
+            }
+        }
+        w.close();
+    }
+
     private void generateKits(File output) throws BuildException, IOException {
         PrintWriter w = new PrintWriter(new FileWriter(output));
         // calculate transitive closure of kits
@@ -628,10 +665,11 @@ public class ModuleDependencies extends Task {
             TreeSet<String> deps = new TreeSet<String>();
             moduleDepsAll.put(m.codebasename, deps);
             for (Dependency d : m.depends) {
-                if (!d.isSpecial()) {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    deps.add(theModuleOneIsDependingOn.codebasename);
+                ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                if (theModuleOneIsDependingOn == null) {
+                    continue;
                 }
+                deps.add(theModuleOneIsDependingOn.codebasename);
             }
         }
         transitiveClosure(moduleDepsAll);
@@ -647,11 +685,12 @@ public class ModuleDependencies extends Task {
                 TreeSet<String> deps = new TreeSet<String>();
                 kitDepsAll.put(m.getName(false), deps);
                 for (Dependency d : m.depends) {
-                    if (!d.isSpecial()) {
-                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                        if (theModuleOneIsDependingOn.showInAutoupdate) {
-                            deps.add(theModuleOneIsDependingOn.getName(false));
-                        }
+                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                    if (theModuleOneIsDependingOn == null) {
+                        continue;
+                    }
+                    if (theModuleOneIsDependingOn.showInAutoupdate) {
+                        deps.add(theModuleOneIsDependingOn.getName(false));
                     }
                 }
             }
@@ -664,23 +703,20 @@ public class ModuleDependencies extends Task {
      * 
      * @param deps the dependency map, will contain the transitive closure when the method exits
      */
-    private void transitiveClosure(TreeMap<String, TreeSet<String>> allDeps) {
-        // add transitively all dependencies
+    private void transitiveClosure(Map<String,? extends Set<String>> allDeps) {
         boolean needAnotherIteration = true;
         while (needAnotherIteration) {
             needAnotherIteration = false;
-            for (String m: allDeps.keySet()) {
-                TreeSet<String> deps = allDeps.get(m);
+            for (Map.Entry<String,? extends Set<String>> entry : allDeps.entrySet()) {
+                Set<String> deps = entry.getValue();
                 for (String d : new TreeSet<String>(deps)) {
                     for (String d2: allDeps.get(d)) {
-                        if (!deps.contains(d2)) {
-                            log ("transitive closure: need to add " + d2 + " to " + m, Project.MSG_DEBUG);
-                            deps.add(d2);
+                        if (deps.add(d2)) {
+                            log("transitive closure: need to add " + d2 + " to " + entry.getKey(), Project.MSG_DEBUG);
                             needAnotherIteration = true;
                         }
                     }
                 }
-
             }
         }       
     }
@@ -699,12 +735,13 @@ public class ModuleDependencies extends Task {
                     if (regexp != null && !regexp.matcher(m.group).matches()) {
                         continue;
                     }
-                    if (!d.isSpecial()) {
-                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                        if (theModuleOneIsDependingOn.showInAutoupdate) {
-                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
-                            w.println();
-                        }
+                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                    if (theModuleOneIsDependingOn == null) {
+                        continue;
+                    }
+                    if (theModuleOneIsDependingOn.showInAutoupdate) {
+                        w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
+                        w.println();
                     }
                 }
             }
@@ -766,19 +803,23 @@ public class ModuleDependencies extends Task {
         
         PrintWriter w = new PrintWriter (new FileWriter (output));
         for (Map.Entry<String,List<ModuleInfo>> entry : packages.entrySet()) {
-            String out = entry.getKey();
+            String pkg = entry.getKey().replace('/', '.');
+            if (pkg.equals("")) {
+                continue; // ignore default package
+            }
             List<ModuleInfo> cnt = entry.getValue();
             if (cnt.size() > 1) {
-                log("Package " + out + " is shared between:", Project.MSG_VERBOSE);
-                boolean doPrint = regexp == null;
+                SortedSet<String> cnbs = new TreeSet<String>();
                 for (ModuleInfo m : cnt) {
-                    log ("   " + m.codebasename, Project.MSG_VERBOSE);
-                    if (regexp != null && regexp.matcher(m.group).matches()) {
-                        doPrint = true;
+                    if (regexp == null || regexp.matcher(m.group).matches()) {
+                        cnbs.add(m.codebasename);
                     }
                 }
-                if (doPrint) {
-                    w.println (out.replace ('/', '.'));
+                if (cnbs.size() > 1) {
+                    w.println("PACKAGE " + pkg);
+                    for (String cnb : cnbs) {
+                        w.println("  MODULE " + cnb);
+                    }
                 }
             }
         }
@@ -824,11 +865,12 @@ public class ModuleDependencies extends Task {
         PrintWriter w = new PrintWriter (new FileWriter (output));
         for (ModuleInfo m : modules) {
             boolean first = true;
+            Set<ModuleInfo> written = new HashSet<ModuleInfo>(); // XXX needed for other uses of findModuleInfo too
             for (Dependency d : m.depends) {
                 if (d.getName().startsWith("org.openide.modules.ModuleFormat")) {
                     continue; // just clutter
                 }
-                String print = "  REQUIRES ";
+                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
                 } else {
@@ -842,18 +884,19 @@ public class ModuleDependencies extends Task {
                 
                 if (first) {
                     w.print ("MODULE ");
-                    w.print (m.getName (false));
-                    w.println ();
+                    w.println(m.getName (false));
                     first = false;
                 }
-                w.print (print);
                 if (d.isSpecial ()) {
-                    w.print (d.getName ());
+                    w.print(print);
+                    w.println(d.getName ());
                 } else {
                     ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    w.print (theModuleOneIsDependingOn.getName (false));
+                    if (theModuleOneIsDependingOn != null && written.add(theModuleOneIsDependingOn)) {
+                        w.print(print);
+                        w.println(theModuleOneIsDependingOn.getName(false));
+                    }
                 }
-                w.println ();
             }
         }
         w.close ();
@@ -874,8 +917,19 @@ public class ModuleDependencies extends Task {
                 l = new TreeSet<Dependency>();
                 groups.put(m.group, l);
             }
-            l.addAll(m.depends);
+            Set<Dependency> deps = new HashSet<Dependency>();
             for (Dependency d : m.depends) {
+                if (implementationOnly && (!d.exact || d.compare == null)) {
+                    continue;
+                }
+                // special dependencies are ignored
+                if (d.isSpecial ()) {
+                    continue;
+                }
+                deps.add(d);
+            }
+            l.addAll(deps);
+            for (Dependency d : deps) {
                 Set<ModuleInfo> r = referrers.get(d);
                 if (r == null) {
                     r = new HashSet<ModuleInfo>();
@@ -891,22 +945,13 @@ public class ModuleDependencies extends Task {
             
             boolean first = true;
             for (Dependency d : depends) {
-                String print = "  REQUIRES ";
-                if (d.exact && d.compare != null) {
-                    // ok, impl deps
-                } else {
-                    if (implementationOnly) {
-                        continue;
-                    }
-                }
-                
-                // special dependencies are ignored
-                if (d.isSpecial ()) {
-                    continue;
-                }
+                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
                 ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);
+                if (ref == null) {
+                    continue;
+                }
                 if (groupName.equals (ref.group)) {
                     continue;
                 }
@@ -928,12 +973,17 @@ public class ModuleDependencies extends Task {
     /** For a given dependency finds the module that this dependency refers to.
      */
     private ModuleInfo findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
+        if (dep.isSpecial()) {
+            return null;
+        }
         for (ModuleInfo info : modules) {
             if (dep.isDependingOn (info)) {
                 return info;
             }
         }
-        
+        if (dep.type == Dependency.Type.recommends) {
+            return null;
+        }
         throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
     }
     /** For a given codebasename finds module that we depend on
@@ -948,7 +998,7 @@ public class ModuleDependencies extends Task {
         return null;
     }
     
-    private static void addDependencies (TreeSet<Dependency> addTo, java.util.jar.Manifest man, int dependencyType, String attrName) throws BuildException {
+    private static void addDependencies (TreeSet<Dependency> addTo, java.util.jar.Manifest man, Dependency.Type dependencyType, String attrName) throws BuildException {
         String value = man.getMainAttributes ().getValue (attrName);
         if (value == null) {
             return;
@@ -1034,6 +1084,7 @@ public class ModuleDependencies extends Task {
                 "friend-packages",
                 "shared-packages",
                 "modules",
+                "disabled-autoloads",
                 "dependencies",
                 "implementation-dependencies",
                 "group-dependencies",
@@ -1100,18 +1151,17 @@ public class ModuleDependencies extends Task {
     } // end of ModuleInfo
     
     private static final class Dependency extends Object implements Comparable<Dependency> {
-        public static final int PROVIDES = 1;
-        public static final int REQUIRES = 2;
+        enum Type {provides, requires, recommends}
         
         public final String token;
         public final int majorVersionFrom;
         public final int majorVersionTo;
-        public final int type;
+        public final Type type;
         public final boolean exact;
         public final String compare;
         
         
-        public Dependency (String token, int type, boolean exact, String compare) {
+        public Dependency (String token, Type type, boolean exact, String compare) {
             // base name
             int slash = token.indexOf ('/');
             if (slash == -1) {
@@ -1178,15 +1228,7 @@ public class ModuleDependencies extends Task {
         }
         
         public @Override String toString() {
-            String t;
-            switch (type) {
-                case REQUIRES: t = "requires "; break;
-                case PROVIDES: t = "provides "; break;
-                default:
-                    throw new IllegalStateException ("Unknown type: " + type);
-            }
-            
-            return "Dependency[" + t + getName () + "]";
+            return "Dependency[" + type + " " + getName () + "]";
         }
 
     } // end of Dependency

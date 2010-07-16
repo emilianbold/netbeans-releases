@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,31 +53,55 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.class)
 public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
+    private static final boolean TRACE = false;
+    private static final int GAP = "\n/**\n *\n */\n".length();
 
     @Override
     public Function getFunction(Document doc, int position) {
-        final CsmOffsetableDeclaration decl = getFunction(CsmUtilities.getCsmFile(doc, false), position);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, true);
+        if (TRACE) {
+            System.err.println("CsmDocGeneratorProviderImpl ["+ position + "]" + csmFile.getClass());
+            for(CsmOffsetableDeclaration decl : csmFile.getDeclarations()) {
+                System.err.println("decl "+decl);
+            }
+        }
+        final CsmOffsetableDeclaration decl = getFunction( csmFile, position);
         if (decl instanceof CsmFunction) {
             return new Function() {
+                @Override
+                public String getName() {
+                    return ((CsmFunction)decl).getName().toString();
+                }
+                @Override
+                public String getSignature() {
+                    return ((CsmFunction)decl).getSignature().toString();
+                }
+                @Override
                 public String getReturnType() {
+                    if (CsmKindUtilities.isConstructor(decl) || CsmKindUtilities.isDestructor(decl)) {
+                        return null;
+                    }
                     return ((CsmFunction)decl).getReturnType().getCanonicalText().toString();
                 }
+                @Override
                 public List<Parameter> getParametes() {
                     List<Parameter> list = new ArrayList<Parameter>();
                     for (final CsmParameter par : ((CsmFunction)decl).getParameters()){
                         list.add(new Parameter(){
+                            @Override
                             public String getType() {
                                 return par.getType().getCanonicalText().toString();
                             }
+                            @Override
                             public String getName() {
                                 return par.getName().toString();
                             }
@@ -91,9 +118,9 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
         if (file != null) {
             CsmOffsetableDeclaration best = null;
             for(CsmOffsetableDeclaration decl : file.getDeclarations()) {
-                if (decl.getStartOffset() < position && position < decl.getEndOffset()) {
+                if (decl.getStartOffset() <= position && position <= decl.getEndOffset()) {
                     return getInternalDeclaration(decl, position);
-                } else if (decl.getStartOffset() > position) {
+                } else if (decl.getStartOffset() > position - GAP) {
                     if (best == null || best.getStartOffset() > decl.getStartOffset()){
                         best = decl;
                     }
@@ -109,9 +136,9 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
             CsmClass cls = (CsmClass) parent;
             CsmOffsetableDeclaration best = null;
             for(CsmMember decl : cls.getMembers()){
-                if (decl.getStartOffset() < position && position < decl.getEndOffset()) {
+                if (decl.getStartOffset() <= position && position <= decl.getEndOffset()) {
                     return getInternalDeclaration(decl, position);
-                } else if (decl.getStartOffset() > position) {
+                } else if (decl.getStartOffset() > position - GAP) {
                     if (best == null || best.getStartOffset() > decl.getStartOffset()){
                         best = decl;
                     }
@@ -124,13 +151,15 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
             for(CsmOffsetableDeclaration decl : ns.getDeclarations()) {
                 if (decl.getStartOffset() < position && position < decl.getEndOffset()) {
                     return getInternalDeclaration(decl, position);
-                } else if (decl.getStartOffset() > position) {
+                } else if (decl.getStartOffset() > position - GAP) {
                     if (best == null || best.getStartOffset() > decl.getStartOffset()){
                         best = decl;
                     }
                 }
             }
             return best;
+        } else if (CsmKindUtilities.isFunction(parent)) {
+            return parent;
         }
         return null;
     }

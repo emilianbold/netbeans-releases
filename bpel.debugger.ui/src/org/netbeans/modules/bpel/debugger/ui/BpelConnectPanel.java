@@ -58,7 +58,6 @@ public class BpelConnectPanel extends JPanel {
     private JTextField mPortField;
     private Controller controller;
     
-    
     /**
      * Adds options for a selected connector type to this panel.
      */
@@ -86,7 +85,7 @@ public class BpelConnectPanel extends JPanel {
         add(p, c);
         controller = new BpelConnectController();
     }
-
+    
     Controller getController() {
         return controller;
     }
@@ -156,7 +155,6 @@ public class BpelConnectPanel extends JPanel {
     private static final String DEFAULT_HOST = "localhost"; // NOI18N
 
     private class BpelConnectController implements Controller {
-        
         public boolean isValid() {
             return true;
         }
@@ -184,12 +182,8 @@ public class BpelConnectPanel extends JPanel {
             return true;
         }
 
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
+        public void addPropertyChangeListener(PropertyChangeListener l) {}
 
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        
+        public void removePropertyChangeListener(PropertyChangeListener l) {}
     }
 }

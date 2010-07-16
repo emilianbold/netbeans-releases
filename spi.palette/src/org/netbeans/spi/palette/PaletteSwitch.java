@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,6 +90,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
     private Lookup.Result lookupRes;
 
     private Object currentToken;
+
+    private static final RequestProcessor RP = new RequestProcessor("PaletteSwitch"); //NOI18N
     
     /** Creates a new instance of PaletteSwitcher */
     private PaletteSwitch() {
@@ -134,6 +139,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return currentPalette;
     }
     
+    @Override
     public void run() {
         if( !SwingUtilities.isEventDispatchThread() ) {
             SwingUtilities.invokeLater( this );
@@ -153,7 +159,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
         final PaletteController existingPalette = currentPalette;
         final boolean isMaximized = isPaletteMaximized();
         final Object token = currentToken;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 findNewPalette(existingPalette, activeTc, openedEditors, isMaximized, token);
             }
@@ -216,27 +223,15 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return lkp.lookup( PaletteController.class );
     }
     
-    private void showHidePaletteTopComponent( PaletteController prevPalette, PaletteController newPalette ) {
-        if( prevPalette == newPalette && null != newPalette )
-            return;
+    private void showHidePaletteTopComponent(PaletteController newPalette, boolean isNewVisible) {
         PaletteController oldPalette = currentPalette;
         currentPalette = newPalette;
-        WindowManager wm = WindowManager.getDefault();
-        TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
-        if( null == palette ) {
-            Logger.getLogger( getClass().getName() ).log( Level.INFO, "Cannot find CommonPalette component." ); // NOI18N
-                
-            //for unit-testing
-            palette = PaletteTopComponent.getDefault();
-        }
         
-        if( PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null) ) {
-            if( !palette.isOpened() )
-                palette.open();
+        if (isNewVisible) {
+            PaletteTopComponent.showPalette();
             PaletteVisibility.setVisible(newPalette, true);
         } else {
-            if( palette.isOpened() )
-                palette.close();
+            PaletteTopComponent.hidePalette();
         }
 
         propertySupport.firePropertyChange( PROP_PALETTE_CONTENTS, oldPalette, currentPalette );
@@ -345,10 +340,14 @@ final class PaletteSwitch implements Runnable, LookupListener {
                 palette = availablePalettes.get( 0 );
         }
         final PaletteController newPalette = palette;
+        if (existingPalette == newPalette && null != newPalette) {
+            return;
+        }
+        final boolean isNewVisible = PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if( currentToken == token )
-                    showHidePaletteTopComponent(existingPalette, newPalette);
+                    showHidePaletteTopComponent(newPalette, isNewVisible);
             }
         });
     }

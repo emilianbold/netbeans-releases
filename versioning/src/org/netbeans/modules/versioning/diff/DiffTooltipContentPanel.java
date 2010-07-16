@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
  */
 package org.netbeans.modules.versioning.diff;
 
-import org.netbeans.editor.EditorUI;
 import org.netbeans.api.diff.Difference;
 import org.openide.text.CloneableEditorSupport;
 
@@ -49,15 +51,20 @@ import javax.swing.text.*;
 import java.io.StringReader;
 import java.io.IOException;
 import java.awt.*;
+import org.netbeans.editor.EditorUI;
 
 /**
  * @author Maros Sandor
  */
 class DiffTooltipContentPanel extends JComponent {
+    private JEditorPane originalTextPane;
+    private final Color color;
+    private int maxWidth;
+    private final JScrollPane jsp;
 
-    public DiffTooltipContentPanel(JTextComponent parentPane, String mimeType, Difference diff) {
+    public DiffTooltipContentPanel(final JTextComponent parentPane, final String mimeType, final Difference diff) {
         
-        JEditorPane originalTextPane = new JEditorPane();
+        originalTextPane = new JEditorPane();
 
         EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
         originalTextPane.setEditorKit(kit);
@@ -80,29 +87,27 @@ class DiffTooltipContentPanel extends JComponent {
 
         originalTextPane.setDocument(doc);
         originalTextPane.setEditable(false);
-        Color color = getBackgroundColor(diff.getType());
+        color = getBackgroundColor(diff.getType());
         originalTextPane.setBackground(color);
-
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(originalTextPane);
-
         Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
         int lineCount = rootElement.getElementCount();
         int height = eui.getLineHeight() * lineCount;
-
-        int maxWidth = 0;
+        maxWidth = 0;
         for(int line = 0; line < lineCount; line++) {
             Element lineElement = rootElement.getElement(line);
             String text = null;
             try {
                 text = doc.getText(lineElement.getStartOffset(), lineElement.getEndOffset() - lineElement.getStartOffset());
             } catch (BadLocationException e) {
-                e.printStackTrace();
+                //
             }
             text = replaceTabs(mimeType, text);
             int lineLength = parentPane.getFontMetrics(parentPane.getFont()).stringWidth(text);
-            if (lineLength > maxWidth) maxWidth = lineLength;
+            if (lineLength > maxWidth) {
+                maxWidth = lineLength;
+            }
         }
-
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
         else if (maxWidth < 150) maxWidth += 10;
         originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
@@ -111,11 +116,36 @@ class DiffTooltipContentPanel extends JComponent {
             originalTextPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
         }
 
-        JScrollPane jsp = new JScrollPane(originalTextPane);
+        jsp = new JScrollPane(originalTextPane);
         jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
 
         setLayout(new BorderLayout());
         add(jsp);
+    }
+
+    void resize () {
+        if (originalTextPane == null) return;
+        originalTextPane.setBackground(color);
+        Element rootElement = org.openide.text.NbDocument.findLineRootElement((StyledDocument) originalTextPane.getDocument());
+        int lineCount = rootElement.getElementCount();
+
+        int height = 0;
+        assert lineCount > 0;
+        Element lineElement = rootElement.getElement(lineCount - 1);
+        Rectangle rec;
+        try {
+            rec = originalTextPane.modelToView(lineElement.getEndOffset() - 1);
+            height = rec.y + rec.height;
+        } catch (BadLocationException ex) {
+        }
+        if (height > 0) {
+            Dimension size = originalTextPane.getPreferredSize();
+            Dimension scrollpaneSize = jsp.getPreferredSize();
+
+            jsp.setPreferredSize(new Dimension(maxWidth * 7 / 6 + Math.max(0, scrollpaneSize.width - size.width), height + Math.max(0, scrollpaneSize.height - size.height)));
+            SwingUtilities.getWindowAncestor(originalTextPane).pack();
+        }
+        originalTextPane = null;
     }
 
     private Color getBackgroundColor (int key) {

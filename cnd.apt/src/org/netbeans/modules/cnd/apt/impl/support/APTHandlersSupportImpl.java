@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,21 +45,22 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -79,9 +83,19 @@ public class APTHandlersSupportImpl {
     public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
-    
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
+
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+        // user paths could contain "-include file" elements
+        List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
+        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
+            if (!includeDirEntry.isExistingDirectory()) {
+                // check if this is file
+                if (CndFileUtils.isExistingFile(includeDirEntry.getFile(), includeDirEntry.getAsSharedCharSequence().toString())) {
+                    fileEntries.add(includeDirEntry);
+                }
+            }
+        }
+        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
@@ -96,13 +110,37 @@ public class APTHandlersSupportImpl {
     public static APTPreprocHandler.State createInvalidPreprocState(APTPreprocHandler.State orig) {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copyInvalid();
     }
-    
+
+    public static boolean equalsIgnoreInvalid(State state1, State state2) {
+        if (state1 instanceof APTPreprocHandlerImpl.StateImpl) {
+            return ((APTPreprocHandlerImpl.StateImpl) state1).equalsIgnoreInvalidFlag(state2);
+        } else if (state2 instanceof APTPreprocHandlerImpl.StateImpl) {
+            return ((APTPreprocHandlerImpl.StateImpl) state2).equalsIgnoreInvalidFlag(state1);
+        } else {
+            return state1.equals(state2);
+        }
+    }
+
+    public static boolean isFirstLevel(APTIncludeHandler includeHandler) {
+        if (includeHandler != null) {
+            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
+        } else {
+            return false;
+        }
+    }
+
+    public static Collection<IncludeDirEntry> extractIncludeFileEntries(APTIncludeHandler includeHandler) {
+        Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
+        if (includeHandler != null) {
+            return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
+        }
+        return out;
+    }
+
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>(128);
-        APTMacroMapSnapshot.addAllMacros(macro.snap, tmpMap);
-        return tmpMap;
+        return APTMacroMapSnapshot.addAllMacros(macro.snap, null);
     }
 
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){

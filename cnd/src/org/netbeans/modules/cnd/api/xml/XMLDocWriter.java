@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,7 +55,6 @@ import java.io.OutputStream;
  * is to define one or more specialized <code>XMLEncoder</code>s for the
  * expected top-level elements and delegate to their {@link XMLEncoder#encode}.
  */
-
 abstract public class XMLDocWriter implements XMLEncoder {
 
     private int indentChars = 2;
@@ -80,26 +82,27 @@ abstract public class XMLDocWriter implements XMLEncoder {
      */
 
     protected String encoding() {
-	String lang = System.getenv("LANG");	// NOI18N
+//	String lang = System.getenv("LANG");	// NOI18N
 	String encoding = "UTF-8";		// NOI18N
-	if (lang != null) {
-	    if (lang.equals("zh") ||		// NOI18N
-		lang.equals("zh.GBK") ||	// NOI18N
-		lang.equals("zh_CN.EUC") ||	// NOI18N
-		lang.equals("zh_CN.GB18030") ||	// NOI18N
-		lang.equals("zh_CN") ||		// NOI18N
-		lang.equals("zh_CN.GBK")) {	// NOI18N
-
-		encoding = "EUC-JP";		// NOI18N
-
-	    } else if (lang.equals("ja") ||	// NOI18N
-		       lang.equals("ja_JP.eucJP")) { // NOI18N
-
-		encoding = "EUC-JP";		// NOI18N
-	    } else {
-		encoding = "UTF-8";		// NOI18N
-	    }
-	}
+        // See IZ 119431
+//	if (lang != null) {
+//	    if (lang.equals("zh") ||		// NOI18N
+//		lang.equals("zh.GBK") ||	// NOI18N
+//		lang.equals("zh_CN.EUC") ||	// NOI18N
+//		lang.equals("zh_CN.GB18030") ||	// NOI18N
+//		lang.equals("zh_CN") ||		// NOI18N
+//		lang.equals("zh_CN.GBK")) {	// NOI18N
+//
+//		encoding = "EUC-JP";		// NOI18N
+//
+//	    } else if (lang.equals("ja") ||	// NOI18N
+//		       lang.equals("ja_JP.eucJP")) { // NOI18N
+//
+//		encoding = "EUC-JP";		// NOI18N
+//	    } else {
+//		encoding = "UTF-8";		// NOI18N
+//	    }
+//	}
 	return encoding;
     } 
 
@@ -108,7 +111,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
      *	<?xml version="1.0" encoding="UTF-8"?>
      * (Or the correct encoding)
      */
-
     private void writeHeader() {
 	String version = "1.0";		// NOI18N
 	encoderStream.println
@@ -120,7 +122,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
      *	<!DOCTYPE ... >
      * LATER though ...
      */
-
     private void writeDoctype() {
     } 
 

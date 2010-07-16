@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -60,6 +64,17 @@ import org.openide.util.Utilities;
 public final class RunAsValidator {
 
     private RunAsValidator() {
+    }
+
+    /**
+     * See {@link #validateWebFields(String, File, String, String)}.
+     * Please notice that WebRoot can be {@code null}.
+     */
+    public static String validateWebFields(String url, FileObject webRoot, String indexFile, String arguments) {
+        if (webRoot == null) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidWebRoot");
+        }
+        return validateWebFields(url, FileUtil.toFile(webRoot), indexFile, arguments);
     }
 
     /**
@@ -87,16 +102,46 @@ public final class RunAsValidator {
      * @param phpInterpreter PHP interpreter path to validate.
      * @param projectDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
-     * @param arguments arguments to validate, can be <code>null</code>.
+     * @param arguments script arguments to validate, can be <code>null</code>.
+     * @param workDir working directory, can be {@code null}
+     * @param arguments PHP arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
+    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments, String workDir, String phpArgs) {
         try {
             PhpInterpreter.getCustom(phpInterpreter);
         } catch (InvalidPhpProgramException ex) {
             return ex.getLocalizedMessage();
         }
+        String err = validateWorkDir(workDir, true);
+        if (err != null) {
+            return err;
+        }
         return validateIndexFile(projectDirectory, indexFile, arguments);
+    }
+
+    /**
+     * Validate working directory and return an error message or {@code null}.
+     * @param workDir working directory
+     * @param allowEmpty if {@code true} then {@code null} or empty String is allowed
+     * @return an error message or {@code null} if working directory is valid
+     */
+    public static String validateWorkDir(String workDir, boolean allowEmpty) {
+        boolean hasText = StringUtils.hasText(workDir);
+        if (allowEmpty && !hasText) {
+            return null;
+        }
+        if (!hasText) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_FolderEmpty");
+        }
+        File workDirFile = new File(workDir);
+        if (!workDirFile.isAbsolute()) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirNotAbsolute");
+        }
+        if (!workDirFile.isDirectory()) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirDirectory");
+        }
+        return null;
     }
 
     private static final String INVALID_SEPARATOR = "\\";

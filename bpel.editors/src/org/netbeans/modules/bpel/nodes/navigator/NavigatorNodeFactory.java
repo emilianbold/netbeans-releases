@@ -39,6 +39,7 @@ import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.nodes.CorrelationSetNode;
 import org.netbeans.modules.bpel.nodes.children.ActivityNodeChildren;
@@ -55,6 +56,7 @@ import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.bpel.nodes.VariableNode;
+import org.netbeans.modules.bpel.nodes.children.ValidateChildren;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -309,6 +311,7 @@ public class NavigatorNodeFactory implements NodeFactory<NodeType> {
             case EXIT :
             case FROM_PART:
             case TO_PART :
+            case VARIABLE_REFERENCE :
             case WAIT :
             case RETHROW :
             case THROW :
@@ -320,6 +323,12 @@ public class NavigatorNodeFactory implements NodeFactory<NodeType> {
                 assert reference instanceof PartnerLink;
                 newNode = PropertyNodeFactory.getInstance().createNode(nodeType,
                         reference, lookup);
+                break;
+            case VALIDATE :
+                assert reference instanceof Validate;
+                Children validateChildren = new ValidateChildren((Validate)reference, lookup);
+                newNode = PropertyNodeFactory.getInstance().createNode(nodeType,
+                        reference, validateChildren, lookup);
                 break;
                 
 ////////            default:

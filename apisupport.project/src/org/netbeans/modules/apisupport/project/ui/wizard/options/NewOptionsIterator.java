@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -128,7 +131,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
             "Panel_CLASS_NAME", // NOI18N
             "OptionsPanelController_CLASS_NAME", // NOI18N
             "OptionsPanelController_ANNOTATION", // NOI18N
-            "ICON_PATH", // NOI18N
             ADVANCED_BUNDLE_KEYS[0],
             ADVANCED_BUNDLE_KEYS[1],
             CATEGORY_BUNDLE_KEYS[0],
@@ -155,6 +157,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         //OptionsCategory
         private String categoryName;
         private String iconPath;
+        private File icon;
         private String secondaryKeywords;
         private boolean allowAdvanced;
         
@@ -172,10 +175,11 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return checkFirstPanel();
         }
         
-        int setDataForPrimaryPanel(final String categoryName, final String iconPath, final boolean allowAdvanced, final String primaryKeywords) {
+        int setDataForPrimaryPanel(final String categoryName, final String iconPath, File icon, final boolean allowAdvanced, final String primaryKeywords) {
             this.advanced = false;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
+            this.icon = icon;
             this.allowAdvanced = allowAdvanced;
             this.primaryKeywords = primaryKeywords;
             return checkFirstPanel();
@@ -201,16 +205,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return errCode;
         }
 
-        private String getAbsoluteIconPath() {
-            return getProject().getProjectDirectory() + "/src/" + getIconPath();
-        }
-        
         private Map<String, String> getTokenMap(boolean useAnnotations) {
             Map<String, String> retval = new HashMap<String, String>();
             for (int i = 0; i < TOKENS.length; i++) {
-                if (isAdvanced() && "ICON_PATH".equals(TOKENS[i])) { // NOI18N
-                    continue;
-                }
                 retval.put(TOKENS[i], getReplacement(TOKENS[i], useAnnotations));
             }
             return retval;
@@ -227,8 +224,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 return getPanelClassName();
             } else if ("OptionsPanelController_CLASS_NAME".equals(key)) {// NOI18N
                 return getOptionsPanelControllerClassName();
-            } else if ("ICON_PATH".equals(key)) {// NOI18N
-                return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getAbsoluteIconPath());
             } else if ("OptionsPanelController_ANNOTATION".equals(key)) { // NOI18N
                 if (!useAnnotations) {
                     return "";
@@ -301,7 +296,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
                 case WARNING_INCORRECT_ICON_SIZE:
-                    File icon = new File(getAbsoluteIconPath());
                     assert icon.exists();
                     return UIUtil.getIconDimensionWarning(icon, 32, 32);
                 default:
@@ -351,13 +345,11 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 } else if (getPrimaryKeywords().length() == 0)  {
                     return MSG_BLANK_KEYWORDS;
                 } else {
-                    File icon = new File(getAbsoluteIconPath());
                     if (!icon.exists()) {
                         return MSG_BLANK_ICONPATH;
                     }
                 }
                 //warnings should go at latest
-                File icon = new File(getAbsoluteIconPath());
                 assert icon.exists();
                 if (!UIUtil.isValidIcon(icon, 32, 32)) {
                     return WARNING_INCORRECT_ICON_SIZE;
@@ -403,7 +395,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 generateLayerEntry();
             }
             if (!isAdvanced()) {
-                addCreateIconOperation(files, getAbsoluteIconPath());
+                addCreateIconOperation(files, icon.getAbsolutePath());
             }
             return files;
         }
@@ -433,9 +425,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private void generateDependencies() {
             files.add(files.addModuleDependency("org.openide.util")); // NOI18N
+            files.add(files.addModuleDependency("org.openide.util.lookup")); // NOI18N
             files.add(files.addModuleDependency("org.netbeans.modules.options.api","1",null,true));// NOI18N
             files.add(files.addModuleDependency("org.openide.awt")); // NOI18N
-            files.add(files.addModuleDependency("org.jdesktop.layout")); // NOI18N
         }
 
         private void generateLayerEntry() {

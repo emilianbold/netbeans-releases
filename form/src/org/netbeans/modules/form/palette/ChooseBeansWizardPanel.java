@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,8 +82,9 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public Component getComponent() {
-        if ((markedBeans == null) && ((allBeans == null) || (allBeans.size() == 0))) {
+        if ((markedBeans == null) && ((allBeans == null) || (allBeans.isEmpty()))) {
             // No beans found
             String messageKey;
             if (sourceType == ClassSource.JarEntry.class)
@@ -119,15 +123,18 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
         return beanSelector;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         return beanSelector != null && beanSelector.getSelectedBeans().size() > 0;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard wizard) {
         sourceType = wizard.getSourceType();
         List<? extends ClassSource.Entry> jarFiles = wizard.getJARFiles();
@@ -152,6 +159,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             beanSelector.setBeans(markedBeans, allBeans);
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (beanSelector != null) {
             List<BeanInstaller.ItemInfo> itemList = beanSelector.getSelectedBeans();
@@ -162,10 +170,12 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
@@ -258,7 +268,9 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
         void setDisplayedBeans(final List<BeanInstaller.ItemInfo> beans) {
             list.setModel(new AbstractListModel() {
+                @Override
                 public int getSize() { return beans.size(); }
+                @Override
                 public Object getElementAt(int i) { return beans.get(i); }
             });
         }
@@ -287,6 +299,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             setBorder(noFocusBorder);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list,
                                                       Object value,
                                                       int index,
@@ -319,10 +332,12 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
     class Listener implements ListSelectionListener, ActionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             cs.fireChange();
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if ("SHOW MARKED".equals(ev.getActionCommand())) { // NOI18N
                 beanSelector.setDisplayedBeans(markedBeans);

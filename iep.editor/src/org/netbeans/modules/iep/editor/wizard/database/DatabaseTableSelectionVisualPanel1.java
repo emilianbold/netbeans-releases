@@ -8,6 +8,9 @@ package org.netbeans.modules.iep.editor.wizard.database;
 import java.awt.BorderLayout;
 import java.sql.Connection;
 import java.util.List;
+
+import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 
 import org.openide.util.NbBundle;
@@ -31,6 +34,10 @@ public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
         this.setLayout(new BorderLayout());
         mDBTableSelectionPanel = new DatabaseSingleTableSelectionPanel();
         this.add(mDBTableSelectionPanel, BorderLayout.CENTER);
+    }
+    
+    public JList getAvailableTablesList() {
+        return this.mDBTableSelectionPanel.getAvailableTablesList();
     }
     
     public List<TableInfo> getSelectedTables() {

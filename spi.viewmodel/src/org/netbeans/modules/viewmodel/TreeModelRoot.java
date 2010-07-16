@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,6 +92,7 @@ public class TreeModelRoot {
     private final WeakHashMap<Object, WeakReference<TreeModelNode>[]> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>[]>();
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
+    private OutlineView outlineView;
     
     /** The children evaluator for view of this root. *
     private final Map<RequestProcessor, TreeModelNode.LazyEvaluator> childrenEvaluators
@@ -124,6 +128,7 @@ public class TreeModelRoot {
         this.model = model;
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        this.outlineView = outlineView;
         modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
         model.addModelListener (modelListeners[0]);
     }
@@ -133,6 +138,7 @@ public class TreeModelRoot {
         this.model = model.getMain();
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        this.outlineView = outlineView;
         int nl = model.getModels().length;
         modelListeners = new ModelChangeListener[nl];
         for (int i = 0; i < nl; i++) {
@@ -144,6 +150,10 @@ public class TreeModelRoot {
 
     public TreeFeatures getTreeFeatures () {
         return treeFeatures;
+    }
+
+    public OutlineView getOutlineView() {
+        return outlineView;
     }
 
     public TreeModelNode getRootNode () {
@@ -181,6 +191,36 @@ public class TreeModelRoot {
         }
     }
     
+    void unregisterNode (Object o, TreeModelNode n) {
+        synchronized (objectToNode) {
+            WeakReference<TreeModelNode>[] wrs = objectToNode.get(o);
+            if (wrs != null) {
+                for (int i = 0; i < wrs.length; i++) {
+                    WeakReference<TreeModelNode> wr = wrs[i];
+                    TreeModelNode tn = wr.get();
+                    if (tn == n) {
+                        if (wrs.length == 1) { // The only item
+                            objectToNode.remove(o);
+                        } else if (wrs.length == 2) { // Leave only the other item
+                            wrs = new WeakReference[] { wrs[(i + 1) % 2] };
+                            objectToNode.put (o, wrs);
+                        } else {    // Leave only the other items
+                            WeakReference[] nwrs = new WeakReference[wrs.length - 1];
+                            if (i > 0) {
+                                System.arraycopy(wrs, 0, nwrs, 0, i);
+                            }
+                            if (i < (wrs.length - 1)) {
+                                System.arraycopy(wrs, i+1, nwrs, i, wrs.length - i - 1);
+                            }
+                            objectToNode.put (o, nwrs);
+                        }
+                        return ;
+                    }
+                }
+            }
+        }
+    }
+
     TreeModelNode[] findNode (Object o) {
         WeakReference<TreeModelNode>[] wrs;
         synchronized (objectToNode) {
@@ -260,6 +300,8 @@ public class TreeModelRoot {
 
     private final class ModelChangeListener implements ModelListener {
 
+        //private final Logger logger = Logger.getLogger(ModelChangeListener.class.getName());
+
         private final Models.CompoundModel model;
 
         public ModelChangeListener(Models.CompoundModel model) {
@@ -269,6 +311,8 @@ public class TreeModelRoot {
         public void modelChanged (final ModelEvent event) {
             //System.err.println("TreeModelRoot.modelChanged("+event.getClass()+") from "+model);
             //Thread.dumpStack();
+            //logger.fine("TreeModelRoot.modelChanged("+event+")");
+            //logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST_MODEL_CHANGED"));
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     if (model == null)
@@ -294,10 +338,12 @@ public class TreeModelRoot {
                     if (event instanceof ModelEvent.NodeChanged) {
                         ModelEvent.NodeChanged nchEvent = (ModelEvent.NodeChanged) event;
                         Object node = nchEvent.getNode();
+                        //logger.fine("NodeChanged("+node+")");
                         //System.err.println("NodeChanged("+node+")");
                         if (node != null) {
                             TreeModelNode[] tmNodes = findNode(node);
                             //System.err.println("  nodes = "+Arrays.toString(tmNodes));
+                            //logger.fine("  nodes = "+Arrays.toString(tmNodes));
                             for (TreeModelNode tmNode : tmNodes) {
                                 tmNode.refresh(model, nchEvent.getChange());
                             }

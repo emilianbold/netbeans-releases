@@ -38,11 +38,9 @@ public class DesignContextUtil {
             return true;
         }
         BpelEntity contextEntity = context.getContextEntity();
-        BpelEntity graphEntity = context.getGraphEntity();
         BpelEntity selectedtEntity = context.getSelectedEntity();
         
         return !(contextEntity != null && !contextEntity.isInDocumentModel())
-                || !(graphEntity != null && !graphEntity.isInDocumentModel())
                 || !(selectedtEntity != null && !selectedtEntity.isInDocumentModel());
     }
     

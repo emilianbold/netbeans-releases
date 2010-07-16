@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,8 +63,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
@@ -87,10 +95,12 @@ public final class UIUtils {
     // Usage logging
     private static Logger metricsLogger;
     private static final String USG_KENAI = "USG_KENAI"; // NOI18N
-    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
+    /** To avoid logging same params more than once in a session. Expecting
+     * less than 20 possible combinations at max. */
+    private static Set<String> loggedParams = Collections.synchronizedSet(new HashSet<String>());
 
-    public static String getPrefName(String name)  {
-        return Kenai.getDefault().getUrl().getHost() + name;
+    public static String getPrefName(Kenai kenai, String name)  {
+        return kenai.getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
@@ -108,28 +118,33 @@ public final class UIUtils {
      * @deprecated 
      */
     @Deprecated
-    public static synchronized boolean tryLogin(boolean force) {
-        if (Kenai.getDefault().getPasswordAuthentication()!=null) {
+    public static synchronized boolean tryLogin(final Kenai kenai, boolean force) {
+        if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
         if (!force) {
-            String online = preferences.get(getPrefName(LOGIN_STATUS_PREF), "false"); // NOI18N
+            String online = preferences.get(getPrefName(kenai, LOGIN_STATUS_PREF), "false"); // NOI18N
             if (!Boolean.parseBoolean(online)) {
                 return false;
             }
         }
 
-        String uname=preferences.get(getPrefName(KENAI_USERNAME_PREF), null); // NOI18N
+        String uname=preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
         if (uname==null) {
             return false;
         }
-        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
+        boolean goOnline = Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), "false")) && Utilities.isChatSupported(kenai);
         PresenceIndicator.getDefault().init();
         try {
-            KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
+            KenaiConnection.getDefault(kenai);
+            char[] password = loadPassword(kenai, preferences);
+            if (password == null) {
+                return false;
+            }
+            kenai.login(uname, password,
+                    force ? true : goOnline);
         } catch (KenaiException ex) {
             return false;
         }
@@ -137,12 +152,60 @@ public final class UIUtils {
     }
 
     /**
-     * Invokes login dialog
-     * @return true, if user was succesfully logged in
+     * @return
      */
     public static boolean showLogin() {
+        return showKenaiLogin()!=null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static Kenai showKenaiLogin() {
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()==Kenai.Status.OFFLINE) {
+                return showKenaiLogin(k);
+            }
+        }
+        return showKenaiLogin(null);
+    }
+    /**
+     * Loads password from the keyring. For settings compatibility,
+     * can also interpret and upgrade old insecure storage.
+     */
+    @SuppressWarnings("deprecation")
+    private static char[] loadPassword(Kenai kenai,Preferences preferences) {
+        String passwordPref = getPrefName(kenai, KENAI_PASSWORD_PREF);
+        String scrambledPassword = preferences.get(passwordPref, null); // NOI18N
+        char[] newPassword = Keyring.read(passwordPref);
+        if (scrambledPassword != null) {
+            preferences.remove(passwordPref);
+            if (newPassword == null) {
+                return Scrambler.getInstance().descramble(scrambledPassword).toCharArray();
+            }
+        }
+        return newPassword;
+    }
+
+    /**
+     * Invokes login dialog
+     * @param kenai
+     * @return true, if user was succesfully logged in
+     */
+    public static boolean showLogin(final Kenai kenai) {
+        return showKenaiLogin(kenai) != null;
+    }
+
+    /**
+     * Invokes login dialog
+     * @param kenai
+     * @return kenai instance, where user requested login, or null if login was
+     * cancelled
+     */
+    public static Kenai showKenaiLogin(final Kenai kenai) {
         PresenceIndicator.getDefault().init();
-        final LoginPanel loginPanel = new LoginPanel();
+        final LoginPanel loginPanel = new LoginPanel(kenai, new CredentialsImpl());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
@@ -154,6 +217,7 @@ public final class UIUtils {
                 DialogDescriptor.DEFAULT_ALIGN,
                 null, new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
+                        final Kenai k = loginPanel.getKenai();
                         if (event.getSource().equals(ctlLogin)) {
                             UIUtils.logKenaiUsage("LOGIN"); // NOI18N
                         loginPanel.showProgress();
@@ -161,8 +225,12 @@ public final class UIUtils {
 
                             public void run() {
                                 try {
-                                    KenaiConnection.getDefault();
-                                    Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
+                                    KenaiConnection.getDefault(k);
+                                    PasswordAuthentication current = k.getPasswordAuthentication();
+                                    if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
+                                        k.logout();
+                                    }
+                                    k.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
                                     SwingUtilities.invokeLater(new Runnable() {
 
                                         public void run() {
@@ -186,13 +254,16 @@ public final class UIUtils {
                                 }
                             }
                         });
+                        String passwordPref = getPrefName(k, KENAI_PASSWORD_PREF);
                         if (loginPanel.isStorePassword()) {
-                            preferences.put(getPrefName(KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
-                            preferences.put(getPrefName(KENAI_PASSWORD_PREF), Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
+                            preferences.put(getPrefName(k, KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
+                            Keyring.save(passwordPref, loginPanel.getPassword(),
+                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", k.getUrl().getHost()));
                         } else {
-                            preferences.remove(getPrefName(KENAI_USERNAME_PREF)); // NOI18N
-                            preferences.remove(getPrefName(KENAI_PASSWORD_PREF)); // NOI18N
+                            preferences.remove(getPrefName(k, KENAI_USERNAME_PREF)); // NOI18N
+                            Keyring.delete(passwordPref);
                         }
+                        preferences.remove(passwordPref);
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
                         JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
@@ -204,18 +275,36 @@ public final class UIUtils {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get(getPrefName(KENAI_USERNAME_PREF), null); // NOI18N
-        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
-        if (uname!=null && password!=null) {
-            loginPanel.setUsername(uname);
-            loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
-        }
         d.pack();
         d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
 
-        return loginPanel.getClientProperty("cancel")==null; // NOI18N
+        if (loginPanel.getClientProperty("cancel")==null) {  // NOI18N
+            return loginPanel.getKenai();
+        }
+        return null;
+    }
+
+    private static class CredentialsImpl implements LoginPanel.Credentials {
+
+        public String getUsername(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            String uname = preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
+            if (uname==null) {
+                return "";
+            }
+            return uname;
+        }
+
+        public char[] getPassword(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            char[] password = loadPassword(kenai, preferences);
+            if (password==null) {
+                return new char[0];
+            }
+            return password;
+        }
     }
 
     public static JLabel createUserWidget(String user) {
@@ -225,13 +314,16 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
+        String firstName = u.getKenaiUser().getFirstName();
+        final String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    String firstName = u.getKenaiUser().getFirstName();
+                    String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
                     result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }
@@ -262,9 +354,9 @@ public final class UIUtils {
         return result;
     }
 
-    public static synchronized void logKenaiUsage(Object... parameters) {
+    public static void logKenaiUsage(Object... parameters) {
         String paramStr = getParamString(parameters);
-        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+        if (loggedParams.add(paramStr)) {
             // not logged in this session yet
             if (metricsLogger == null) {
                 metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.kenai"); // NOI18N
@@ -273,11 +365,6 @@ public final class UIUtils {
             rec.setParameters(parameters);
             rec.setLoggerName(metricsLogger.getName());
             metricsLogger.log(rec);
-
-            if (loggedParams == null) {
-                loggedParams = new HashSet<String>();
-            }
-            loggedParams.add(paramStr);
         }
     }
 

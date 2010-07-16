@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Notification;
 import org.netbeans.modules.jmx.test.helpers.NotificationType;
@@ -60,6 +63,7 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * Check components and created files.
  */
 public class ImplementNotificationEmitterActions extends ActionsTestCase {
+    private static boolean initialized;
 
     /** Need to be defined because of JUnit */
     public ImplementNotificationEmitterActions(String name) {
@@ -67,33 +71,21 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         popupPath = ACTION_JMX + "|" + ACTION_IMPLEMENT_NOTIFICATION_EMITTER;
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
-
-    public static NbTestSuite suite() {
-
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ImplementNotificationEmitterActions("init"));
-        suite.addTest(new ImplementNotificationEmitterActions("test1"));
-        suite.addTest(new ImplementNotificationEmitterActions("test2"));
-        suite.addTest(new ImplementNotificationEmitterActions("test3"));
-        suite.addTest(new ImplementNotificationEmitterActions("test4"));
-        suite.addTest(new ImplementNotificationEmitterActions("test5"));
-        suite.addTest(new ImplementNotificationEmitterActions("test6"));
-        suite.addTest(new ImplementNotificationEmitterActions("test7"));
-        return suite;
-    }
-
 
     /**
      * Create all needed files for running next tests
      */
     public void init() {
 
-        System.out.println("====================  init  ====================");
+        System.out.println("====================  setup ImplementNotificationEmitterActions  ====================");
 
         System.out.println("Create new java class " + SIMPLE_1);
         createJavaFile(SIMPLE_1);
@@ -155,7 +147,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test2() {
@@ -167,7 +159,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test3() {
@@ -181,7 +173,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -210,7 +202,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -253,11 +245,11 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         System.out.println("Open java file " + SIMPLE_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test6() {
@@ -268,11 +260,11 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
         System.out.println("Open java file " + DYNAMIC_3);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_3);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test7() {
@@ -287,11 +279,11 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);

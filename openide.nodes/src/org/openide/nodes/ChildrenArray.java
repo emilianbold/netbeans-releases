@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,8 +66,7 @@ final class ChildrenArray extends NodeAdapter {
 
     private Map<Info, Collection<Node>> map;
 
-    private static final Logger LOG_NODES_FOR = Logger.getLogger(
-            "org.openide.nodes.ChildrenArray.nodesFor"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(ChildrenArray.class.getName()); // NOI18N
 
     /** Creates new ChildrenArray */
     public ChildrenArray() {
@@ -127,9 +129,9 @@ final class ChildrenArray extends NodeAdapter {
     * @return the nodes
     */
     public synchronized Collection<Node> nodesFor(Info info, boolean hasToExist) {
-        final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
+        final boolean IS_LOG = LOGGER.isLoggable(Level.FINE);
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOGGER.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
             assert !hasToExist : "Should be already initialized";
@@ -138,7 +140,7 @@ final class ChildrenArray extends NodeAdapter {
         Collection<Node> nodes = map.get(info);
 
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
+            LOGGER.finer("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
         }
 
         if (nodes == null) {
@@ -149,15 +151,19 @@ final class ChildrenArray extends NodeAdapter {
                 NodeOp.warning(ex);
                 nodes = Collections.<Node>emptyList();
             }
+            if (nodes == null) {
+                nodes = Collections.<Node>emptyList();
+                LOGGER.warning("Null returned by " + info.entry + " (" + info.entry.getClass().getName() + ")");
+            }
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {
-                LOG_NODES_FOR.finer("  created nodes=" + nodes); // NOI18N
+                LOGGER.finer("  created nodes=" + nodes); // NOI18N
             }
         }
 
         if (IS_LOG) {
-            LOG_NODES_FOR.finer("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOGGER.finer("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         return nodes;
     }

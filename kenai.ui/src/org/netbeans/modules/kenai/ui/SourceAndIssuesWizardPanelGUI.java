@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -115,22 +118,22 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String getSvnRepoItem() {
-        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai", Kenai.getDefault().getName());
+    private final String getSvnRepoItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai", panel.getKenai().getName());
     }
 
-    private static final String getHgRepoItem() {
-        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai", Kenai.getDefault().getName());
+    private final String getHgRepoItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai", panel.getKenai().getName());
     }
     private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
     private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String getBgzIssuesItem() {
-        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai", Kenai.getDefault().getName());
+    private final String getBgzIssuesItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai", panel.getKenai().getName());
     }
-    private static final String getJiraIssuesItem() {
-        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai", Kenai.getDefault().getName());
+    private final String getJiraIssuesItem() {
+        return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai", panel.getKenai().getName());
     }
     private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
     private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None"); // NOI18N
@@ -201,7 +204,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         showIssuesOnKenaiGUI();
         itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
-        if (!Kenai.getDefault().getUrl().getHost().equals(("testkenai.com"))) { // NOI18N
+        if (panel.getKenai()!=null && !panel.getKenai().getUrl().getHost().equals(("testkenai.com"))) { // NOI18N
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
@@ -223,7 +226,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
             public void run() {
                 Collection<KenaiService> services = null;
                 try {
-                    services = Kenai.getDefault().getServices();
+                    if (panel.getKenai()!=null) {
+                        services = panel.getKenai().getServices();
+                    }
                 } catch (KenaiException ex) {
                     // OK, no services
                     // XXX or show message that "Cannot connect to Kenai.com server" ???
@@ -334,7 +339,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         } else {
             return;
         }
-        String message = MessageFormat.format(REPO_NAME_PREVIEW_MSG, Kenai.getDefault().getUrl().toString(), repoTypeName, prjName, repoNameTextField.getText());
+        String message = MessageFormat.format(REPO_NAME_PREVIEW_MSG, panel.getKenai().getUrl().toString(), repoTypeName, prjName, repoNameTextField.getText());
         repoNamePreviewLabel.setText(message);
     }
 

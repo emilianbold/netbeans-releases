@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
@@ -48,17 +50,12 @@ import java.beans.VetoableChangeListener;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.ui.options.ServerListUIEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 /**
  * Popup a dialog which lets the user reconnect to an offline remote host.
@@ -89,7 +86,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         this.propertyEnv = propertyEnv;
         this.oldExecEnv = (dhconf == null) ? null : dhconf.getExecutionEnvironment();
         this.selectedEnv = new AtomicReference<ExecutionEnvironment>(this.oldExecEnv);
-        this.cacheManager = new ToolsCacheManager();
+        this.cacheManager = ToolsCacheManager.createInstance(true);
         this.setLayout(new BorderLayout());
         JComponent component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);
         add(component, BorderLayout.CENTER);
@@ -105,6 +102,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
      * @param evt A PropertyEnv where we can control the custom property editor
      * @throws java.beans.PropertyVetoException
      */
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         boolean changed = false;
         ExecutionEnvironment env = selectedEnv.get();
@@ -114,7 +112,8 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         if (env.equals(oldExecEnv)) {
             return;
         }
-        dhconf.setHost(env);
+        cacheManager.applyChanges();
+        dhconf.setHost(env, true);
 //        if (!dhconf.isConfigured()) {
 //            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
 //            final ServerRecord record = ServerList.get(execEnv);

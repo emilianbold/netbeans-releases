@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.spi.sql.editor.SQLEditorProvider;
@@ -70,13 +75,14 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
 
     private static final String CMD_FOLDER = "Databases/SQLCommands"; // NOI18N
     
+    @Override
     public void openSQLEditor(DatabaseConnection dbconn, String sql, boolean execute) {
         FileObject tmpFo = FileUtil.getConfigFile(CMD_FOLDER);
         if (tmpFo == null) {
             try {
                 tmpFo = FileUtil.createFolder(FileUtil.getConfigRoot(), CMD_FOLDER );
             } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             }
         }
         
@@ -120,7 +126,7 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         try {
             sqlDo = DataObject.find(sqlFo);
         } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             return;
         }
         
@@ -128,9 +134,13 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         openCookie.open();
         
         SQLExecuteCookie sqlCookie = sqlDo.getCookie (SQLExecuteCookie.class);
-        sqlCookie.setDatabaseConnection(dbconn);
-        if (execute) {
-            sqlCookie.execute();
+        if (sqlCookie != null) {
+            sqlCookie.setDatabaseConnection(dbconn);
+            if (execute) {
+                sqlCookie.execute();
+            }
+        } else {
+            Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, "No SQLExecuteCookie found for " + sqlDo);
         }
     }
 }

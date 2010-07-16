@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 6.9.1
+#Signature file v4.1
+#Version 6.16
 
 CLSS public abstract interface java.awt.event.ActionListener
 intf java.util.EventListener
@@ -18,7 +18,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -80,7 +80,7 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setEnabled(boolean)
 
 CLSS public abstract org.openide.actions.ActionManager
-cons public ActionManager()
+cons public init()
 fld public final static java.lang.String PROP_CONTEXT_ACTIONS = "contextActions"
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public abstract org.openide.util.actions.SystemAction[] getContextActions()
@@ -94,7 +94,7 @@ hfds supp
 hcls Trivial
 
 CLSS public org.openide.actions.CloneViewAction
-cons public CloneViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.Object getActionMapKey()
@@ -103,7 +103,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CloseViewAction
-cons public CloseViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.Object getActionMapKey()
 meth public java.lang.String getName()
@@ -111,7 +111,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CopyAction
-cons public CopyAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -121,7 +121,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.CustomizeAction
-cons public CustomizeAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void performAction(org.openide.nodes.Node[])
@@ -130,7 +130,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public org.openide.actions.CutAction
-cons public CutAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -140,7 +140,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.DeleteAction
-cons public DeleteAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -150,7 +150,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.EditAction
-cons public EditAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -161,7 +161,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.FindAction
-cons public FindAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -169,24 +169,25 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.GarbageCollectAction
-cons public GarbageCollectAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.awt.Component getToolbarPresenter()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
+hfds RP
 hcls HeapViewWrapper
 
 CLSS public org.openide.actions.GotoAction
-cons public GotoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public final org.openide.actions.MoveDownAction
-cons public MoveDownAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void initialize()
@@ -198,7 +199,7 @@ hfds PROP_ORDER_LISTENER,curIndexCookie
 hcls OrderingListener
 
 CLSS public final org.openide.actions.MoveUpAction
-cons public MoveUpAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void initialize()
@@ -210,7 +211,7 @@ hfds PROP_ORDER_LISTENER,curIndexCookie,err
 hcls OrderingListener
 
 CLSS public final org.openide.actions.NewAction
-cons public NewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected void performAction(org.openide.nodes.Node[])
@@ -224,7 +225,7 @@ hfds model
 hcls ActSubMenuModel,DelegateAction
 
 CLSS public org.openide.actions.NextTabAction
-cons public NextTabAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -232,7 +233,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.OpenAction
-cons public OpenAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -243,7 +244,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public final org.openide.actions.OpenLocalExplorerAction
-cons public OpenLocalExplorerAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected java.lang.String iconResource()
@@ -253,7 +254,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public final org.openide.actions.PageSetupAction
-cons public PageSetupAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
@@ -261,7 +262,7 @@ meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
 
 CLSS public final org.openide.actions.PasteAction
-cons public PasteAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth protected void initialize()
@@ -280,7 +281,7 @@ hfds globalModel,types
 hcls ActSubMenuModel,ActionPT,DelegateAction,NodeSelector
 
 CLSS public final org.openide.actions.PopupAction
-cons public PopupAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected void initialize()
 meth public java.lang.String getName()
@@ -288,7 +289,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.PreviousTabAction
-cons public PreviousTabAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -296,7 +297,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.PrintAction
-cons public PrintAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected int mode()
 meth protected java.lang.Class[] cookieClasses()
@@ -307,7 +308,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.PropertiesAction
-cons public PropertiesAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected java.lang.String iconResource()
@@ -320,7 +321,7 @@ supr org.openide.util.actions.NodeAction
 hcls DelegateAction
 
 CLSS public org.openide.actions.RedoAction
-cons public RedoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
@@ -331,7 +332,7 @@ supr org.openide.util.actions.CallableSystemAction
 hfds SWING_DEFAULT_LABEL
 
 CLSS public org.openide.actions.RenameAction
-cons public RenameAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean enable(org.openide.nodes.Node[])
 meth protected boolean surviveFocusChange()
@@ -341,7 +342,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
 
 CLSS public org.openide.actions.ReorderAction
-cons public ReorderAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -352,26 +353,28 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.ReplaceAction
-cons public ReplaceAction()
+cons public init()
 meth protected boolean asynchronous()
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.SaveAction
-cons public SaveAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected int mode()
 meth protected java.lang.Class[] cookieClasses()
 meth protected java.lang.String iconResource()
 meth protected void performAction(org.openide.nodes.Node[])
 meth public java.lang.String getName()
+meth public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CookieAction
 hfds dataObject,getNodeDelegate
+hcls Delegate
 
 CLSS public org.openide.actions.ToolsAction
-cons public ToolsAction()
+cons public init()
 innr public abstract interface static Model
 intf org.openide.util.ContextAwareAction
 intf org.openide.util.actions.Presenter$Menu
@@ -389,13 +392,14 @@ hfds gl,serialVersionUID
 hcls DelegateAction,G,Inline,Popup
 
 CLSS public abstract interface static org.openide.actions.ToolsAction$Model
+ outer org.openide.actions.ToolsAction
  anno 0 java.lang.Deprecated()
 meth public abstract org.openide.util.actions.SystemAction[] getActions()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public org.openide.actions.UndoAction
-cons public UndoAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
@@ -408,7 +412,7 @@ hcls Listener
 
 CLSS public org.openide.actions.UndockAction
  anno 0 java.lang.Deprecated()
-cons public UndockAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public java.lang.String getName()
@@ -416,7 +420,7 @@ meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.CallbackSystemAction
 
 CLSS public org.openide.actions.ViewAction
-cons public ViewAction()
+cons public init()
 meth protected boolean asynchronous()
 meth protected boolean surviveFocusChange()
 meth protected int mode()
@@ -428,7 +432,7 @@ supr org.openide.util.actions.CookieAction
 
 CLSS public org.openide.actions.WorkspaceSwitchAction
  anno 0 java.lang.Deprecated()
-cons public WorkspaceSwitchAction()
+cons public init()
 meth public java.lang.String getName()
 meth public javax.swing.JMenuItem getMenuPresenter()
 meth public org.openide.util.HelpCtx getHelpCtx()
@@ -440,9 +444,9 @@ intf javax.swing.Action
 meth public abstract javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -458,10 +462,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.SharedClassObject
-cons protected SharedClassObject()
+cons protected init()
 intf java.io.Externalizable
 meth protected boolean clearSharedData()
 meth protected final java.lang.Object getLock()
@@ -488,7 +493,7 @@ hfds PROP_SUPPORT,addNotifySuper,alreadyWarnedAboutDupes,dataEntry,err,first,fir
 hcls DataEntry,SetAccessibleAction,WriteReplace
 
 CLSS public abstract org.openide.util.actions.CallableSystemAction
-cons public CallableSystemAction()
+cons public init()
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
 intf org.openide.util.actions.Presenter$Toolbar
@@ -502,7 +507,7 @@ supr org.openide.util.actions.SystemAction
 hfds DEFAULT_ASYNCH,serialVersionUID,warnedAsynchronousActions
 
 CLSS public abstract org.openide.util.actions.CallbackSystemAction
-cons public CallbackSystemAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 meth protected void initialize()
 meth public boolean getSurviveFocusChange()
@@ -521,7 +526,7 @@ hfds LISTENER,PROP_ACTION_PERFORMER,err,notSurviving,serialVersionUID,surviving
 hcls ActionDelegateListener,DelegateAction,GlobalManager,WeakAction
 
 CLSS public abstract org.openide.util.actions.CookieAction
-cons public CookieAction()
+cons public init()
 fld public final static int MODE_ALL = 4
 fld public final static int MODE_ANY = 7
 fld public final static int MODE_EXACTLY_ONE = 8
@@ -536,7 +541,7 @@ hfds PROP_COOKIES,listener,serialVersionUID
 hcls CookieDelegateAction,CookiesChangeListener
 
 CLSS public abstract org.openide.util.actions.NodeAction
-cons public NodeAction()
+cons public init()
 intf org.openide.util.ContextAwareAction
 meth protected abstract boolean enable(org.openide.nodes.Node[])
 meth protected abstract void performAction(org.openide.nodes.Node[])
@@ -562,19 +567,22 @@ innr public abstract interface static Popup
 innr public abstract interface static Toolbar
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Menu
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getMenuPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Popup
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract javax.swing.JMenuItem getPopupPresenter()
 
 CLSS public abstract interface static org.openide.util.actions.Presenter$Toolbar
+ outer org.openide.util.actions.Presenter
 intf org.openide.util.actions.Presenter
 meth public abstract java.awt.Component getToolbarPresenter()
 
 CLSS public abstract org.openide.util.actions.SystemAction
-cons public SystemAction()
+cons public init()
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_ICON = "icon"
 intf javax.swing.Action

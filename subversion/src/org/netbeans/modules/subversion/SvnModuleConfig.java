@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,16 @@
 package org.netbeans.modules.subversion;
 
 
+import java.awt.Color;
+import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -75,17 +82,24 @@ public class SvnModuleConfig {
     
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";                                 // NOI18N
-
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
+    public static final String KEY_PASSWORD = "versioning.subversion."; //NOI18N
+    public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
+    private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
+    private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
+    private static final String SEPARATOR = "###"; //NOI18N
+    private static final String KEY_SORTING = "sortingStatus."; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
-    private Map<String, String[]> urlCredentials;
+    private Map<String, Object[]> urlCredentials;
     
     public static SvnModuleConfig getDefault() {
         return INSTANCE;
     }
     
     private Set<String> exclusions;
+    private String lastCanceledCommitMessage;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -194,7 +208,7 @@ public class SvnModuleConfig {
         return rc;
     }      
     
-    public void insertRecentUrl(RepositoryConnection rc) {        
+    public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
         
         List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
@@ -206,6 +220,8 @@ public class SvnModuleConfig {
             }
         }
         handleCredentials(rc);
+        storeCredentials(rc);
+
         String url = RepositoryConnection.getString(rc);
         if (!"".equals(url)) {                                          //NOI18N
             Utils.insert(prefs, KEY_RECENT_URL, url, -1);
@@ -220,6 +236,7 @@ public class SvnModuleConfig {
             idx++;
             RepositoryConnection rc = it.next();
             handleCredentials(rc);
+            storeCredentials(rc);
             String url = RepositoryConnection.getString(rc);
             if (!"".equals(url)) {                                      //NOI18N
                 urls.add(url);
@@ -233,14 +250,31 @@ public class SvnModuleConfig {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
-        for (Iterator<String> it = urls.iterator(); it.hasNext();) {
-            RepositoryConnection rc = RepositoryConnection.parse(it.next());
-            if(getUrlCredentials().containsKey(rc.getUrl())) {
-                String[] creds = getUrlCredentials().get(rc.getUrl());
-                if(creds.length < 2) continue; //skip garbage
-                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
+        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
+        for (String urlString : urls) {
+            RepositoryConnection rc = RepositoryConnection.parse(urlString);
+            if (rc.getPassword() != null || rc.getCertPassword() != null) {
+                withPassword.add(rc);
+            } else {
+                if(getUrlCredentials().containsKey(rc.getUrl())) {
+                    Object[] creds = getUrlCredentials().get(rc.getUrl());
+                    if(creds.length < 3) continue; //skip garbage
+                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2]);
+                } else if (!EventQueue.isDispatchThread()) {
+                    char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;
+                    char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
+                    rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword);
+                }
+                ret.add(rc);
             }
-            ret.add(rc);
+        }
+        // there's an old-style connection with password set
+        // rewrite these connections with the new version with no password included
+        if (withPassword.size() > 0) {
+            for (RepositoryConnection conn : withPassword) {
+                insertRecentUrl(conn);
+            }
+            return getRecentUrls();
         }
         return ret;
     }
@@ -282,7 +316,85 @@ public class SvnModuleConfig {
         ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
     }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
+    }
+
+    public boolean getExludeNewFiles () {
+        return getPreferences().getBoolean(PROP_EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles (boolean excludeNewFiles) {
+        getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
+    }
     
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
+    }
+
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
+    }
+
+    public boolean isRepositoryPathPrefixed() {
+        return getPreferences().getBoolean(PREFIX_REPOSITORY_PATH, false);
+    }
+
+    public void setRepositoryPathPrefixed(boolean prefixRepositoryPath) {
+        getPreferences().putBoolean(PREFIX_REPOSITORY_PATH, prefixRepositoryPath);
+    }
+
+    public LinkedHashMap<String, Integer> getSortingStatus(String panel) {
+        LinkedHashMap<String, Integer> sortingState = null;
+        String packed = getPreferences().get(KEY_SORTING + panel, null);
+        if (packed != null) {
+            String[] tokens = packed.split(SEPARATOR);
+            sortingState = new LinkedHashMap<String, Integer>(tokens.length >> 1);
+            for (int i = 0; i < tokens.length - 1;) {
+                String column = tokens[i++];
+                try {
+                    Integer colState = Integer.parseInt(tokens[i++]);
+                    sortingState.put(column, colState);
+                } catch (NumberFormatException ex) {
+                    //
+                }
+            }
+        }
+        return sortingState;
+    }
+
+    public void setSortingStatus (String panel, Map<String, Integer> sortingState) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : sortingState.entrySet()) {
+            sb.append(e.getKey()).append(SEPARATOR).append(e.getValue().toString()).append(SEPARATOR);
+        }
+        if (sb.length() > 0) {
+            getPreferences().put(KEY_SORTING + panel, sb.toString());
+        } else {
+            getPreferences().remove(KEY_SORTING + panel);
+        }
+    }
+
     // private methods ~~~~~~~~~~~~~~~~~~
     
     private synchronized Set<String> getCommitExclusions() {
@@ -322,16 +434,26 @@ public class SvnModuleConfig {
     }
     
     private void handleCredentials(RepositoryConnection rc) {
+        String url;
+        try {
+            url = rc.getSvnUrl().toString();
+        } catch (MalformedURLException ex) {
+            url = rc.getUrl();
+        }
         if(!rc.getSavePassword()) {
-            getUrlCredentials().put(rc.getUrl(), new String[]{rc.getUsername(), rc.getPassword()});
+            getUrlCredentials().put(rc.getUrl(), new Object[]{rc.getUsername(), rc.getPassword(), rc.getCertPassword()});
+            if (!url.equals(rc.getUrl())) {
+                getUrlCredentials().put(url, new Object[]{rc.getUsername(), rc.getPassword(), rc.getCertPassword()});
+            }
         } else {
             getUrlCredentials().remove(rc.getUrl());
+            getUrlCredentials().remove(url);
         }                      
     }    
     
-    private Map<String, String[]> getUrlCredentials() {
+    private Map<String, Object[]> getUrlCredentials() {
         if(urlCredentials == null) {
-            urlCredentials =  new HashMap<String, String[]>();
+            urlCredentials =  new HashMap<String, Object[]>();
         }
         return urlCredentials;
     }    
@@ -356,5 +478,33 @@ public class SvnModuleConfig {
             }
         }
         return null;
+    }
+
+    private void storeCredentials (final RepositoryConnection rc) {
+        if ((rc.getSavePassword() && rc.getPassword() != null) || rc.getCertPassword() != null) {
+            Runnable outOfAWT = new Runnable() {
+                @Override
+                public void run() {
+                    String url;
+                    try {
+                        url = rc.getSvnUrl().toString();
+                    } catch (MalformedURLException ex) {
+                        url = rc.getUrl();
+                    }
+                    if (rc.getSavePassword() && rc.getPassword() != null) {
+                        KeyringSupport.save(KEY_PASSWORD, url, rc.getPassword().clone(), null);
+                    }
+                    if (rc.getCertPassword() != null) {
+                        KeyringSupport.save(KEY_CERT_PASSWORD, url, rc.getCertPassword().clone(), null);
+                    }
+                }
+            };
+            // keyring should be called only in a background thread
+            if (EventQueue.isDispatchThread()) {
+                Subversion.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
     }
 }

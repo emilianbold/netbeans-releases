@@ -47,7 +47,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author Karol Harezlak
  */
 
-public final class InspectorPanel implements NavigatorPanel {
+final class InspectorPanel implements NavigatorPanel {
 
     private static InspectorPanel INSTANCE;
 
@@ -55,7 +55,10 @@ public final class InspectorPanel implements NavigatorPanel {
     private Lookup lookup;
     private final InstanceContent ic;
     
-    public static InspectorPanel getInstance() {
+    static InspectorPanel getInstance() {
+        if (INSTANCE != null) {
+            return INSTANCE;
+        }
         synchronized (InspectorPanel.class) {
             if (INSTANCE == null) {
                 INSTANCE = new InspectorPanel();
@@ -93,7 +96,7 @@ public final class InspectorPanel implements NavigatorPanel {
         return lookup;
     }
 
-    public InstanceContent getInstanceContent() {
+    InstanceContent getInstanceContent() {
         return ic;
     }
 

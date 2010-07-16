@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
 
     private static Hk2DeploymentFactory preludeInstance;
     private static Hk2DeploymentFactory ee6Instance;
+    private static Hk2DeploymentFactory ee6WCInstance;
     private String[] uriFragments;
     private String version;
     private String displayName;
@@ -79,9 +83,11 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createPrelude() {
         if (preludeInstance == null) {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
+            ServerUtilities tmp = ServerUtilities.getPreludeUtilities();
             preludeInstance = new Hk2DeploymentFactory(new String[] { "deployer:gfv3:" }, "0.1",  // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
+            preludeInstance.setServerUtilities(tmp);
         }
         return preludeInstance;
     }
@@ -93,18 +99,37 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createEe6() {
         // FIXME -- these strings should come from some constant place
         if (ee6Instance == null) {
+            ServerUtilities tmp = ServerUtilities.getEe6Utilities();
             ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:"}, "0.2", // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
+            ee6Instance.setServerUtilities(tmp);
         }
         return ee6Instance;
     }
 
     /**
+     *
+     * @return
+     */
+    public static synchronized DeploymentFactory createEe6WC() {
+        // FIXME -- these strings should come from some constant place
+        if (ee6WCInstance == null) {
+            ServerUtilities tmp = ServerUtilities.getEe6WCUtilities();
+            ee6WCInstance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6wc:"}, "0.3", // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_WCDisplayName"));  // NOI18N
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6WCInstance);
+            ee6WCInstance.setServerUtilities(tmp);
+        }
+        return ee6WCInstance;
+    }
+    /**
      * 
      * @param uri 
      * @return 
      */
+    // also check the urlPattern in layer.xml when changing this
+    @Override
     public boolean handlesURI(String uri) {
         if (uri == null) {
             return false;
@@ -129,11 +154,11 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return 
      * @throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException 
      */
+    @Override
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        finishInit();
         // prevent registry mismatches
         if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
@@ -147,11 +172,11 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return 
      * @throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException 
      */
+    @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        finishInit();
         // prevent registry mismatches
         if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
@@ -163,6 +188,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * 
      * @return 
      */
+    @Override
     public String getProductVersion() {
         return version;
     }
@@ -171,18 +197,9 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * 
      * @return 
      */
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
-    /**
-     * Creating the server utility instance in the constructor triggered an
-     * exception, since some infrastucture wasn't initialized completely.
-     */
-    private void finishInit() {
-        if (null != preludeInstance)
-            preludeInstance.setServerUtilities(ServerUtilities.getPreludeUtilities());
-        if (null != ee6Instance)
-            ee6Instance.setServerUtilities(ServerUtilities.getEe6Utilities());
-    }
 }

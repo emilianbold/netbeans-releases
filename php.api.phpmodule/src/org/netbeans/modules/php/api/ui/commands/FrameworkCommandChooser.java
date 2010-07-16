@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,7 +91,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class FrameworkCommandChooser extends JPanel {
-    private static final long serialVersionUID = 24055317521316402L;
+    private static final long serialVersionUID = 24058452121416402L;
 
     private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.task"); // NOI18N
     private static final Object NO_MATCHING_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
@@ -97,7 +101,7 @@ public final class FrameworkCommandChooser extends JPanel {
     private static boolean debug;
 
     /** Preselect lastly used task for more convenience. */
-    private static String lastTask;
+    private static FrameworkCommand lastTask;
 
     private static boolean keepOpened = false;
 
@@ -126,6 +130,7 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.setSelected(debug);
         keepOpenedCheckBox.setSelected(keepOpened);
         keepOpenedCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 keepOpened = e.getStateChange() == ItemEvent.SELECTED;
             }
@@ -133,9 +138,18 @@ public final class FrameworkCommandChooser extends JPanel {
         refreshNeeded = reloadAllTasks();
         refreshTaskList();
         taskField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
         });
         preselectLastlySelected();
         initTaskParameters();
@@ -156,6 +170,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName)); // NOI18N
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 setRunButtonState(runButton, chooserPanel);
                 chooserPanel.initTaskParameters();
@@ -169,10 +184,12 @@ public final class FrameworkCommandChooser extends JPanel {
         refreshButton.getAccessibleContext().setAccessibleDescription(
                 getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));  // NOI18N
         refreshButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
                 runButton.setEnabled(false);
                 chooserPanel.reloadTasks(new Runnable() {
+                    @Override
                     public void run() {
                         assert EventQueue.isDispatchThread() : "is EDT";
                         refreshButton.setEnabled(true);
@@ -199,6 +216,7 @@ public final class FrameworkCommandChooser extends JPanel {
             refreshButton.setEnabled(false);
             runButton.setEnabled(false);
             chooserPanel.reloadTasks(new Runnable() {
+                @Override
                 public void run() {
                     assert EventQueue.isDispatchThread() : "is EDT";
                     refreshButton.setEnabled(true);
@@ -208,6 +226,7 @@ public final class FrameworkCommandChooser extends JPanel {
         }
 
         runButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!chooserPanel.keepOpenedCheckBox.isSelected()) {
                     dialog.setVisible(false);
@@ -215,7 +234,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 }
                 FrameworkCommand task = chooserPanel.getSelectedTask();
                 FrameworkCommandChooser.debug = chooserPanel.debugCheckbox.isSelected();
-                FrameworkCommandChooser.lastTask = task.getCommand();
+                FrameworkCommandChooser.lastTask = task;
                 chooserPanel.storeParameters();
 
                 frameworkCommandSupport.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug));
@@ -236,12 +255,15 @@ public final class FrameworkCommandChooser extends JPanel {
         taskParametersComboBox.setModel(new DefaultComboBoxModel(params.toArray()));
         preselectLastSelectedParam(task);
         taskParametersComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -260,9 +282,11 @@ public final class FrameworkCommandChooser extends JPanel {
         } else {
             updateHelp(getMessage("LBL_PleaseWait")); // NOI18N
             EXECUTOR.submit(new Runnable() {
+                @Override
                 public void run() {
                     final String help = task.getHelp();
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateHelp(help);
                         }
@@ -374,7 +398,7 @@ public final class FrameworkCommandChooser extends JPanel {
             return;
         }
         for (FrameworkCommand task : allTasks) {
-            if (lastTask.equals(task.getCommand())) {
+            if (lastTask.equals(task)) {
                 matchingTaskList.setSelectedValue(task, true);
                 break;
             }
@@ -424,8 +448,10 @@ public final class FrameworkCommandChooser extends JPanel {
         matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkCommandSupport.getFrameworkName())}); // NOI18N
 
         frameworkCommandSupport.refreshFrameworkCommandsLater(new Runnable() {
+            @Override
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         reloadAllTasks();
                         refreshTaskList();
@@ -489,57 +515,7 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleName")); // NOI18N
         debugCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return matchingTaskList;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return matchingTaskList;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return keepOpenedCheckBox;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  matchingTaskList){
-                    return helpTextArea;
-                }
-                if(aComponent ==  helpTextArea){
-                    return previewTextField;
-                }
-                if(aComponent ==  taskField){
-                    return taskParametersComboBox;
-                }
-                if(aComponent ==  previewTextField){
-                    return keepOpenedCheckBox;
-                }
-                if(aComponent ==  taskParametersComboBox){
-                    return matchingTaskList;
-                }
-                return matchingTaskList;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  helpTextArea){
-                    return matchingTaskList;
-                }
-                if(aComponent ==  previewTextField){
-                    return helpTextArea;
-                }
-                if(aComponent ==  taskParametersComboBox){
-                    return taskField;
-                }
-                if(aComponent ==  keepOpenedCheckBox){
-                    return previewTextField;
-                }
-                if(aComponent ==  matchingTaskList){
-                    return taskParametersComboBox;
-                }
-                return keepOpenedCheckBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         taskLabel.setLabelFor(taskField);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
@@ -609,51 +585,51 @@ public final class FrameworkCommandChooser extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(keepOpenedCheckBox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.keepOpenedCheckBox.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(keepOpenedCheckBox)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskLabel)
-                            .add(taskParamLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
-                            .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(previewLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(keepOpenedCheckBox)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(taskLabel)
+                            .addComponent(taskParamLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
+                            .addComponent(taskFieldPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
+                    .addComponent(matchingTaskLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(previewLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(taskLabel)
-                    .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(taskParamLabel)
-                    .add(taskParametersComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(matchingTaskLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(previewTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(previewLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(keepOpenedCheckBox))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(taskLabel)
+                    .addComponent(taskFieldPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(taskParamLabel)
+                    .addComponent(taskParametersComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(matchingTaskLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(previewTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(previewLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keepOpenedCheckBox))
         );
 
         taskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -662,6 +638,7 @@ public final class FrameworkCommandChooser extends JPanel {
         taskFieldPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskFieldPanel.AccessibleContext.accessibleDescription")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleName")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskParametersComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleName")); // NOI18N
         taskParametersComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleName")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -734,6 +711,7 @@ public final class FrameworkCommandChooser extends JPanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
@@ -810,7 +788,8 @@ public final class FrameworkCommandChooser extends JPanel {
             Pattern pattern = StringUtils.getPattern(filter);
             if (pattern != null) {
                 for (FrameworkCommand task : tasks) {
-                    Matcher m = pattern.matcher(task.getCommand());
+                    String command = StringUtils.implode(Arrays.asList(task.getCommands()), " "); // NOI18N
+                    Matcher m = pattern.matcher(command);
                     if (m.matches()) {
                         matching.add(task);
                     }
@@ -818,7 +797,8 @@ public final class FrameworkCommandChooser extends JPanel {
             } else {
                 List<FrameworkCommand> exact = new ArrayList<FrameworkCommand>();
                 for (FrameworkCommand task : tasks) {
-                    String taskLC = task.getCommand().toLowerCase(Locale.ENGLISH);
+                    String command = StringUtils.implode(Arrays.asList(task.getCommands()), " "); // NOI18N
+                    String taskLC = command.toLowerCase(Locale.ENGLISH);
                     String filterLC = filter.toLowerCase(Locale.ENGLISH);
                     if (taskLC.startsWith(filterLC)) {
                         // show tasks which start with the filter first

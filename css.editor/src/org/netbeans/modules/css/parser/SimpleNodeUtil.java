@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@ package org.netbeans.modules.css.parser;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
@@ -47,17 +52,23 @@ import java.util.StringTokenizer;
  */
 public class SimpleNodeUtil {
 
-    public static String unquotedValue(String value) {
-        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
-    }
-
-    public static boolean isValueQuoted(String value) {
-        if (value.length() < 2) {
-            return false;
-        } else {
-            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
-                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+    public static OffsetRange getTrimmedNodeRange(SimpleNode node) {
+        CharSequence text = node.image();
+        int from_diff;
+        int to_diff;
+        for(from_diff = 0; from_diff < text.length(); from_diff++) {
+            if(!Character.isWhitespace(text.charAt(from_diff))) {
+                break;
+            }
         }
+
+        for(to_diff = 0; to_diff < text.length() - from_diff; to_diff++) {
+            if(!Character.isWhitespace(text.charAt(text.length() - 1 - to_diff))) {
+                break;
+            }
+        }
+
+        return new OffsetRange(node.startOffset() + from_diff, node.endOffset() - to_diff);
     }
 
     public static Token getNodeToken(SimpleNode node, int tokenKind) {
@@ -110,10 +121,25 @@ public class SimpleNodeUtil {
         SimpleNode[] children = getChildrenByType(node, kind);
         return children.length == 0 ? null : children[0];
     }
+
+    public static SimpleNode getAncestorByType(SimpleNode node, final int kind) {
+	final AtomicReference<SimpleNode> found = new AtomicReference<SimpleNode>();
+	visitAncestors(node, new NodeVisitor() {
+	    public void visit(SimpleNode node) {
+		if(found.get() == null && node.kind() == kind) {
+		    found.set(node);
+		}
+	    }
+	});
+	return found.get();
+    }
     
     /** @return list of children of the node with the specified kind. */
     public static SimpleNode[] getChildrenByType(SimpleNode node, int kind) {
-        int childrenCount = node.children.length;
+        int childrenCount = node.jjtGetNumChildren();
+        if(childrenCount == 0) {
+            return new SimpleNode[0];
+        }
         ArrayList<SimpleNode> list = new ArrayList<SimpleNode>(childrenCount / 4);
         for(int i = 0; i < childrenCount ; i++) {
             SimpleNode child = (SimpleNode)node.children[i];
@@ -223,6 +249,21 @@ public class SimpleNodeUtil {
         }
 
         return null;
+    }
+
+    public static String getNodeImage(SimpleNode node) {
+        String image;
+        switch(node.kind()) {
+            case CssParserTreeConstants.JJTHEXCOLOR:
+                //filter out comments and whitespaces since the node
+                //can also contain them: (<HASH> ( ( <S> | <COMMENT> ) )*)
+                image = node.image(CssParserConstants.COMMENT, CssParserConstants.S);
+                break;
+            default:
+                image = node.image();
+        }
+
+        return image;
     }
 
 }

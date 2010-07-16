@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,11 +53,14 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
@@ -62,6 +68,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
 import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
 import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
+import org.netbeans.modules.php.editor.nav.OverridingMethodsImpl;
 import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
@@ -73,6 +80,8 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
  *
  * @author Petr Pisl
  */
+@LanguageRegistration(mimeType="text/x-php5") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-php5", sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={}) //NOI18N
 public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
@@ -82,7 +91,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@');
+        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@') || (c == '\\');//NOI18N
     }
 
     @Override
@@ -190,6 +199,11 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public Set<String> getSourcePathIds() {
         return Collections.singleton(PhpSourcePath.SOURCE_CP);
+    }
+
+    @Override
+    public OverridingMethods getOverridingMethods() {
+        return new OverridingMethodsImpl();
     }
 
 }

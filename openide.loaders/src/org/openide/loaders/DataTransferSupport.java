@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -110,6 +113,8 @@ abstract class DataTransferSupport {
     /** Supports paste of multiple DataObject at once.
      */
     static abstract class PasteTypeExt extends PasteType {
+        private static final RequestProcessor RP = new RequestProcessor("Paste Support"); // NOI18N
+        
         /** All DataObjects being pasted. */
         private DataObject objs [];
         /** Create paste type. */
@@ -124,7 +129,7 @@ abstract class DataTransferSupport {
         * @param obj pasted DataObject
         */
         protected abstract void handlePaste (DataObject obj) throws IOException;
-        /** Could be clipboard cleand up after the paste operation is finished or
+        /** Could be clipboard clean up after the paste operation is finished or
          * should its content be preserved.
          * @return default implementation returns <code>false</code>
          */
@@ -140,27 +145,26 @@ abstract class DataTransferSupport {
             return true;
         }
         /** Paste all DataObjects */
+        @Override
         public final Transferable paste() throws IOException {
             if (javax.swing.SwingUtilities.isEventDispatchThread()) {
-                org.openide.util.RequestProcessor.getDefault().post(new java.lang.Runnable() {
+                RP.post(new java.lang.Runnable() {
+                    @Override
+                    public void run() {
+                        java.lang.String n = org.openide.awt.Actions.cutAmpersand(getName());
+                        org.netbeans.api.progress.ProgressHandle h = org.netbeans.api.progress.ProgressHandleFactory.createHandle(n);
 
-                                                                        public void run() {
-                                                                            java.lang.String n = org.openide.awt.Actions.cutAmpersand(getName());
-                                                                            org.netbeans.api.progress.ProgressHandle h = org.netbeans.api.progress.ProgressHandleFactory.createHandle(n);
-
-                                                                            h.start();
-                                                                            h.switchToIndeterminate();
-                                                                            try {
-                                                                                doPaste();
-                                                                            }
-                                                                            catch (java.io.IOException ioe) {
-                                                                                Exceptions.printStackTrace(ioe);
-                                                                            }
-                                                                            finally {
-                                                                                h.finish();
-                                                                            }
-                                                                        }
-                                                                    });
+                        h.start();
+                        h.switchToIndeterminate();
+                        try {
+                            doPaste();
+                        } catch (java.io.IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        } finally {
+                            h.finish();
+                        }
+                    }
+                });
             } else {
                 doPaste();
             }

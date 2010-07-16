@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 
 /**
@@ -55,11 +59,13 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 public class DwarfMacinfoTable {
     private long baseSourceTableOffset = -1;
     private long fileSourceTableOffset = -1;
-    private DwarfMacroInfoSection section;
-    ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
-    ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private final DwarfMacroInfoSection section;
+    private final ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private final ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private List<Integer> commandIncludedFilesTable;
     private boolean baseSourceTableRead;
     private boolean fileSourceTableRead;
+    private boolean commandIncludedFilesRead;
     
     public DwarfMacinfoTable(DwarfMacroInfoSection section, long offset) {
         this.section = section;
@@ -116,6 +122,14 @@ public class DwarfMacinfoTable {
         fileSourceTableRead = true;
     }
     
+    public List<Integer> getCommandLineIncludedFiles() throws IOException{
+        if (!commandIncludedFilesRead) {
+            commandIncludedFilesTable = section.getCommandIncudedFiles(this, fileSourceTableOffset);
+            commandIncludedFilesRead = true;
+        }
+        return commandIncludedFilesTable;
+    }
+
     public ArrayList<DwarfMacinfoEntry> getCommandLineMarcos() {
         ArrayList<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
@@ -177,17 +191,6 @@ public class DwarfMacinfoTable {
             currLine = entry.lineNum;
             idx++;
         } while (idx < size && (entry = entries.get(idx)).lineNum - currLine == 1);
-        
-        return result;
-    }
-    
-    public ArrayList<String> getCommandLineDefines() {
-        ArrayList<String> result = new ArrayList<String>();
-        ArrayList<DwarfMacinfoEntry> macros = getCommandLineMarcos();
-        
-        for (DwarfMacinfoEntry macro : macros) {
-            result.add(macro.definition.replaceFirst(" ", "=")); // NOI18N
-        }
         
         return result;
     }

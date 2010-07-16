@@ -1,0 +1,3 @@
+org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilter
+org.netbeans.modules.debugger.jpda.ui.models.BoldVariablesTableModelFilterFirst
+org.netbeans.modules.debugger.jpda.ui.models.NumericDisplayFilter

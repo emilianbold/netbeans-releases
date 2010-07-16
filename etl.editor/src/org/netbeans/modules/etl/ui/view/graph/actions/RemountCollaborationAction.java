@@ -78,7 +78,7 @@ public class RemountCollaborationAction extends GraphAction {
                     SQLObjectUtil.setOrgProperties(table);
                 }
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                 mLogger.infoNoloc(ex.getMessage());
                 StatusDisplayer.getDefault().setStatusText("Unable to remount :" + ex.getMessage());
             }
         }
@@ -95,7 +95,7 @@ public class RemountCollaborationAction extends GraphAction {
                     SQLObjectUtil.setOrgProperties(table);
                 }
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                 mLogger.infoNoloc(ex.getMessage());
                 StatusDisplayer.getDefault().setStatusText("Unable to remount :" + ex.getMessage());
             }
         }

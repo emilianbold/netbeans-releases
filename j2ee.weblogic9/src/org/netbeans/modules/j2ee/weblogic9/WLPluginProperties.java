@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,11 +70,13 @@ import org.xml.sax.SAXException;
  * @author Ivan Sidorkin
  */
 public class WLPluginProperties {
-    
+
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
-    
-    private static final String CONFIG_XML = "config/config.xml";
-    
+
+    private static final String CONFIG_XML = "config/config.xml"; //NOI18N
+
+    private static final String DOMAIN_LIB_DIR = "lib"; //NOI18N
+
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
     public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
@@ -76,20 +84,42 @@ public class WLPluginProperties {
     public static final String HOST_ATTR = "host";                     // NOI18N
     public static final String PORT_ATTR = "port";                     // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
-    
+
     private static WLPluginProperties pluginProperties = null;
     private String installLocation;
-    
-    
-    public static WLPluginProperties getInstance(){
-        if(pluginProperties==null){
+
+
+    public static synchronized WLPluginProperties getInstance(){
+        if (pluginProperties == null) {
             pluginProperties = new WLPluginProperties();
         }
         return pluginProperties;
     }
-    
-    
-    
+
+    @CheckForNull
+    public static File getDomainLibDirectory(WLDeploymentManager manager) {
+        String domain = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        if (domain != null) {
+            File domainLib = new File(new File(domain), DOMAIN_LIB_DIR);
+            if (domainLib.exists() && domainLib.isDirectory()) {
+                return domainLib;
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getServerLibDirectory(WLDeploymentManager manager) {
+        String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        if (server != null) {
+            File serverLib = new File(new File(server), DOMAIN_LIB_DIR);
+            if (serverLib.exists() && serverLib.isDirectory()) {
+                return serverLib;
+            }
+        }
+        return null;
+    }
+
     /** Creates a new instance of */
     private WLPluginProperties() {
         java.io.InputStream inStream = null;
@@ -110,9 +140,9 @@ public class WLPluginProperties {
         } catch (java.io.IOException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
-        
+
     }
-    
+
     void loadPluginProperties(java.io.InputStream inStream) {
         Properties inProps = new Properties();
         if (null != inStream)
@@ -126,12 +156,12 @@ public class WLPluginProperties {
             setInstallLocation(loc);
         }
     }
-    
+
     private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
-    
-    
+
+
     private  FileObject propertiesFile = null;
-    
+
     private FileObject getPropertiesFile() throws java.io.IOException {
         FileObject dir = FileUtil.getConfigFile("J2EE");
         FileObject retVal = null;
@@ -143,14 +173,14 @@ public class WLPluginProperties {
         }
         return retVal;
     }
-    
-    
+
+
     public void saveProperties(){
         Properties outProp = new Properties();
         String installRoot = getInstallLocation();
         if (installRoot != null)
             outProp.setProperty(INSTALL_ROOT_KEY, installRoot);
-        
+
         FileLock l = null;
         java.io.OutputStream outStream = null;
         try {
@@ -173,32 +203,16 @@ public class WLPluginProperties {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
-    
-    //temporary fix of #65456 
-    //TODO domains file should be detected automatically upon nodemanager.properties content;
-    //same problem also in ServerPropertiesPanel.getRegisteredDomains()
-    public static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
-    
-    public static boolean domainListExists(File candidate) {
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !new File(candidate.getPath() + File.separator + DOMAIN_LIST).exists()) {
-            return false;
-        }
-        return true;
-    }
-    
+
     private static Collection fileColl = new java.util.ArrayList();
-    
+
     static {
         fileColl.add("common");        // NOI18N
-        fileColl.add("uninstall");     // NOI18N
         fileColl.add("common/bin");    // NOI18N
         fileColl.add("server/lib/weblogic.jar"); // NOI18N
+        fileColl.add(".product.properties"); // NOI18N
     }
-    
+
     public static boolean isGoodServerLocation(File candidate){
         if (null == candidate ||
                 !candidate.exists() ||
@@ -213,13 +227,19 @@ public class WLPluginProperties {
     /**
      * Checks whether the server root contains weblogic.jar of version 9 or 10.
      */
-    public static boolean isSupportedVersion(File serverRoot) {
+    public static boolean isSupportedVersion(Version version) {
+        return version != null && (Integer.valueOf(9).equals(version.getMajor())
+                    || Integer.valueOf(10).equals(version.getMajor())
+                    || Integer.valueOf(11).equals(version.getMajor()));
+    }
+
+    public static Version getVersion(File serverRoot) {
         File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
         if (!weblogicJar.exists()) {
-            return false;
+            return null;
         }
         try {
-            // JarInputStream cannot be used due to problem in weblogic.jar ib Oracle Weblogic Server 10.3
+            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
             JarFile jar = new JarFile(weblogicJar);
             try {
                 Manifest manifest = jar.getManifest();
@@ -230,7 +250,7 @@ public class WLPluginProperties {
                 }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
-                    return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N
+                    return Version.fromJsr277NotationWithFallback(implementationVersion);
                 }
             } finally {
                 try {
@@ -242,26 +262,26 @@ public class WLPluginProperties {
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
         }
-        return false;
+        return null;
     }
 
     public static String getWeblogicDomainVersion(String domainRoot) {
         // Domain config file
         File config = new File(domainRoot, CONFIG_XML);
-        
+
         // Check if the file exists
         if (!config.exists())
             return null;
-        
+
         try {
             InputSource source = new InputSource(new FileInputStream(config));
             Document d = XMLUtil.parse(source, false, false, null, null);
-            
+
             // Retrieve domain version
             if (d.getElementsByTagName("domain-version").getLength() > 0) {
                 return d.getElementsByTagName("domain-version").item(0).getTextContent();
             }
-            
+
         } catch(FileNotFoundException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
         } catch(IOException e) {
@@ -269,10 +289,10 @@ public class WLPluginProperties {
         } catch(SAXException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
-        
+
         return null;
     }
-    
+
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
             return false;
@@ -290,17 +310,18 @@ public class WLPluginProperties {
         }
         return true;
     }
-    
+
     public void setInstallLocation(String installLocation){
         if ( installLocation.endsWith("/") || installLocation.endsWith("\\") ){
             installLocation = installLocation.substring(0, installLocation.length() - 1 );
         }
-        
+
         this.installLocation = installLocation;
 //        WLDeploymentFactory.resetWLClassLoader(installLocation);
     }
-    
+
     public String getInstallLocation(){
         return this.installLocation;
     }
+
 }

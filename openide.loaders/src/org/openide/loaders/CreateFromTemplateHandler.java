@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,7 @@ public abstract class CreateFromTemplateHandler {
     /** Handles the creation of new file. 
      * @param orig the source file 
      * @param f the folder to create a file in
-     * @param name the name of new file to create in the folder (extension will be inherited from <code>orig</code>)
+     * @param name the name of new file to create in the folder (see {@link #FREE_FILE_EXTENSION} regarding extension)
      * @param parameters map of additional arguments as specified by registered {@link CreateFromTemplateAttributesProvider}s
      * @return the newly create file
      * @throws IOException if something goes wrong with I/O
@@ -68,5 +71,19 @@ public abstract class CreateFromTemplateHandler {
         String name,
         Map<String,Object> parameters
     ) throws IOException;
+
+    /**
+     * Parameter to enable free file extension mode.
+     * By default, the extension of the newly created file will be inherited
+     * from the template. But if {@link #createFromTemplate} is called with this
+     * parameter set to {@link Boolean#TRUE}
+     * (such as from {@link DataObject#createFromTemplate(DataFolder,String,Map)}),
+     * and the file name already seems to
+     * include an extension (<samp>*.*</samp>), the handler should not append
+     * any extension from the template.
+     * @since org.openide.loaders 7.16
+     * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/templates/support/Templates.SimpleTargetChooserBuilder.html#freeFileExtension()"><code>Templates.SimpleTargetChooserBuilder.freeFileExtension</code></a>
+     */
+    public static final String FREE_FILE_EXTENSION = "freeFileExtension"; // NOI18N
     
 }

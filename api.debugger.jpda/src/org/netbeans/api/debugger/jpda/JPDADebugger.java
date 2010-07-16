@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -99,6 +102,9 @@ public abstract class JPDADebugger {
     /** Property name constant.
      * @since 2.16     */
     public static final String          PROP_THREAD_GROUP_ADDED = "threadGroupAdded";  // NOI18N
+    /** Property name constant.
+     * @since 2.25     */
+    public static final String          PROP_CLASSES_FIXED = "classesFixed";  // NOI18N
     
     /** Suspend property value constant. */
     public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
@@ -205,8 +211,33 @@ public abstract class JPDADebugger {
      * @param connector The listening connector
      * @param args The arguments
      * @param services The additional services
+     * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
+     * returns an empty array
      */
     public static void startListening (
+        ListeningConnector        connector,
+        Map<String, ? extends Argument>  args,
+        Object[]                  services
+    ) throws DebuggerStartException {
+        startListeningAndGetEngines(connector, args, services);
+    }
+
+    /**
+     * This utility method helps to start a new JPDA debugger session.
+     * Its implementation use {@link ListeningDICookie} and
+     * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
+     * It's identical to {@link #startListening(com.sun.jdi.connect.ListeningConnector, java.util.Map, java.lang.Object[])},
+     * but returns the started engines.
+     *
+     * @param connector The listening connector
+     * @param args The arguments
+     * @param services The additional services
+     * @return A non-empty array of started engines (since 2.26)
+     * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
+     * returns an empty array
+     * @since 2.26
+     */
+    public static DebuggerEngine[] startListeningAndGetEngines (
         ListeningConnector        connector,
         Map<String, ? extends Argument>  args,
         Object[]                  services
@@ -228,6 +259,7 @@ public abstract class JPDADebugger {
             throw new DebuggerStartException(
                     NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
         }
+        return es;
     }
     
     /**

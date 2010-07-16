@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,7 +66,7 @@ public class TypeInfo {
     private String resolvedType;
     private String rawInfo;
     private Map<String, Object> map;
-    private Map<String, TypeInfo> ticache;
+//    private Map<String, TypeInfo> ticache;
     private static final Map<String, Map<String, Object>> mcache = new HashMap<String, Map<String, Object>>();
     protected static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 //    private static final boolean disable_caches = Boolean.getBoolean("gdb.disable.ti.caches");
@@ -75,12 +78,12 @@ public class TypeInfo {
     public static TypeInfo getTypeInfo(GdbDebugger debugger, AbstractVariable var) {
         String resolvedType;
         String rawInfo;
-        Map<String, TypeInfo> ticache = debugger.getTypeInfoCache();
-        
-        TypeInfo tinfo = ticache.get(var.getType());
-        if (tinfo != null) {
-            return tinfo;
-        }
+//        Map<String, TypeInfo> ticache = debugger.getTypeInfoCache();
+//
+//        TypeInfo tinfo = ticache.get(var.getType());
+//        if (tinfo != null) {
+//            return tinfo;
+//        }
         
         if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
             rawInfo = debugger.requestBaseClassType(var.getType());
@@ -105,11 +108,11 @@ public class TypeInfo {
                     resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
                 }
             }
-            tinfo = ticache.get(resolvedType);
-            if (tinfo != null) {
-//                log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
-                return tinfo;
-            }
+//            tinfo = ticache.get(resolvedType);
+//            if (tinfo != null) {
+////                log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
+//                return tinfo;
+//            }
         } else {
             resolvedType = null;
         }
@@ -123,17 +126,17 @@ public class TypeInfo {
         this.rawInfo = rawInfo;
         map = null;
         
-        if (resolvedType != null && resolvedType.length() > 0 && !disable_ti_cache) {
-            ticache = debugger.getTypeInfoCache();
-            log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
-
-            if (vartype != null && vartype.length() > 0) {
-                if (!vartype.equals(resolvedType)) {
-                    ticache.put(resolvedType, this);
-                }
-                ticache.put(vartype, this);
-            }
-        }
+//        if (resolvedType != null && resolvedType.length() > 0 && !disable_ti_cache) {
+//            ticache = debugger.getTypeInfoCache();
+//            log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
+//
+//            if (vartype != null && vartype.length() > 0) {
+//                if (!vartype.equals(resolvedType)) {
+//                    ticache.put(resolvedType, this);
+//                }
+//                ticache.put(vartype, this);
+//            }
+//        }
     }
     
     public String getResolvedType(AbstractVariable var) {

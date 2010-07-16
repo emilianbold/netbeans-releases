@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -83,7 +87,10 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     private final EjbJar ejbModule;
     private final EjbNodesFactory nodeFactory;
     private final Project project;
-    private final HashMap<Key, Node> nodesHash = new HashMap<Key, Node>();
+    private final java.util.Map<Key, Node> nodesHash = Collections.synchronizedMap(new HashMap<Key, Node>());
+
+    private Task updateTask = null;
+    private static final RequestProcessor rp = new RequestProcessor();
 
     public EjbContainerChildren(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, EjbNodesFactory nodeFactory, Project project) {
         this.ejbModule = ejbModule;
@@ -114,8 +121,12 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         updateKeys();
     }
 
-    private void updateKeys(){
-        RequestProcessor.getDefault().post(new Runnable(){
+    private synchronized void updateKeys(){
+        if (updateTask != null){
+            updateTask.schedule(100);
+            return;
+        }
+        updateTask = rp.post(new Runnable(){
             public void run() {
                 try {
                     Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
@@ -171,13 +182,13 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                     Exceptions.printStackTrace(ex);
                 }
             }
-        });
+        }, 100);
     }
 
     private void createNodesForKeys(List<Key> keys){
         nodesHash.clear();
         for(Key key: keys){
-            nodesHash.put(key, createNodes(key)[0]);
+            createNodes(key);
         }
     }
 
@@ -190,7 +201,8 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     protected Node[] createNodes(Key key) {
         Node node = nodesHash.get(key);
-        if (node == null){
+        if (!nodesHash.containsKey(key)){
+            node = null;
             if (key.ejbType == Key.EjbType.SESSION) {
                 // do not create node for web service
                 if (!key.isWebService && nodeFactory != null) {
@@ -208,8 +220,9 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
                 ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
             }
+            nodesHash.put(key, node);
         }
-        return node == null ? new Node[1] : new Node[] { node };
+        return node == null ? null : new Node[] { node };
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -273,9 +286,16 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 return false;
             }
             final Key other = (Key) obj;
-            if (this.ejbClass != other.ejbClass && (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
+            if (this.ejbClass != other.ejbClass &&
+               (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
                 return false;
             }
+
+            if (this.defaultDisplayName != other.defaultDisplayName &&
+               (this.defaultDisplayName == null || !this.defaultDisplayName.equals(other.defaultDisplayName))) {
+                return false;
+            }
+
             return true;
         }
 

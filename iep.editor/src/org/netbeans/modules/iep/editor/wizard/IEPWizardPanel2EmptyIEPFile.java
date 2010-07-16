@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,13 +47,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
 /**
@@ -69,7 +75,7 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.FinishableP
     
     private WizardDescriptor.Panel mDelegate;
     
-    public IEPWizardPanel2EmptyIEPFile(WizardDescriptor descriptor) {
+    public IEPWizardPanel2EmptyIEPFile(TemplateWizard descriptor) {
         Project project = Templates.getProject( descriptor );
         Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         
@@ -85,13 +91,22 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.FinishableP
         DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
         DataFolder projectFolder = 
             DataFolder.findFolder(project.getProjectDirectory());
-//        try {
-//            if (mDescriptor.getTargetFolder().equals(projectFolder)) {
-//                wizard.setTargetFolder(folder);
-//            }
-//        } catch (IOException ioe) {
-//            wizard.setTargetFolder(folder);
-//        }
+        
+        
+        
+        try {
+            if (projectFolder != null && projectFolder.equals(descriptor.getTargetFolder())) {
+                //by default we always want to use source folder
+                //if project folder is selected
+                FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
+                if(srcFileObject != null) {
+                    DataFolder srcFolder = DataFolder.findFolder(srcFileObject);
+                    descriptor.setTargetFolder(srcFolder);
+                }
+            }
+        } catch (Exception ioe) {
+            descriptor.setTargetFolder(folder);
+        }
         
         SourceGroup[] sourceGroups = roots.toArray(new SourceGroup[roots.size()]);
         //folderPanel = new WsdlPanel(project);
@@ -114,7 +129,7 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.FinishableP
     }
 
     public HelpCtx getHelp() {
-        return mDelegate.getHelp();
+        return new HelpCtx("iep_understandprojects");
         // Show no Help button for this panel:
         //return HelpCtx.DEFAULT_HELP;
     // If you have context help:

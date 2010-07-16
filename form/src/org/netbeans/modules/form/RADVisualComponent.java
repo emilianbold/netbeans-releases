@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -214,7 +217,7 @@ public class RADVisualComponent extends RADComponent {
     // Properties
 
     @Override
-    protected void createPropertySets(List<Node.PropertySet> propSets) {
+    protected synchronized void createPropertySets(List<Node.PropertySet> propSets) {
         super.createPropertySets(propSets);
         if (SUPPRESS_PROPERTY_TABS) {
             return;
@@ -229,6 +232,7 @@ public class RADVisualComponent extends RADComponent {
                     FormUtils.getBundleString("CTL_LayoutTab"), // NOI18N
                     FormUtils.getBundleString("CTL_LayoutTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     Node.Property[] props = getConstraintsProperties();
                     return (props == null) ? NO_PROPERTIES : props;
@@ -281,7 +285,7 @@ public class RADVisualComponent extends RADComponent {
     } */
 
     @Override
-    protected void clearProperties() {
+    protected synchronized void clearProperties() {
         super.clearProperties();
         constraintsProperties = null;
     }
@@ -289,13 +293,13 @@ public class RADVisualComponent extends RADComponent {
     // ---------
     // constraints properties
 
-    public Node.Property[] getConstraintsProperties() {
+    public synchronized Node.Property[] getConstraintsProperties() {
         if (constraintsProperties == null)
             createConstraintsProperties();
         return constraintsProperties;
     }
 
-    public void resetConstraintsProperties() {
+    public synchronized void resetConstraintsProperties() {
         if (constraintsProperties != null) {
             for (int i=0; i < constraintsProperties.length; i++)
                 nameToProperty.remove(constraintsProperties[i].getName());
@@ -309,7 +313,7 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    private void createConstraintsProperties() {
+    private synchronized void createConstraintsProperties() {
         constraintsProperties = null;
 
         LayoutSupportManager layoutSupport = getParentLayoutSupport();
@@ -331,6 +335,7 @@ public class RADVisualComponent extends RADComponent {
                 new LayoutComponentResizableProperty(component, LayoutConstants.VERTICAL)
             };
             component.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     RADComponentNode node = getNodeReference();
                     if (node != null) {
@@ -383,6 +388,7 @@ public class RADVisualComponent extends RADComponent {
     private class ConstraintsListenerConvertor implements VetoableChangeListener,
                              PropertyChangeListener, FormProperty.ValueConvertor
     {
+        @Override
         public void vetoableChange(PropertyChangeEvent ev)
             throws PropertyVetoException
         {
@@ -408,6 +414,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             Object source = ev.getSource();
             if (source instanceof FormProperty
@@ -427,6 +434,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
 
+        @Override
         public Object convert(Object value, FormProperty property) {
             return resourcePropertyConvert(value, property);
         }
@@ -459,6 +467,7 @@ public class RADVisualComponent extends RADComponent {
             setValue("canEditAsText", Boolean.TRUE); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -486,6 +495,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
         
+        @Override
         public Object getValue() {
             int size = component.getLayoutInterval(dimension).getPreferredSize(false);
             return new Integer(size);
@@ -571,6 +581,7 @@ public class RADVisualComponent extends RADComponent {
             this.dimension = dimension;
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
                 throw new IllegalArgumentException();
@@ -602,6 +613,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
         
+        @Override
         public Object getValue() {
             int pref = component.getLayoutInterval(dimension).getPreferredSize(false);
             int max = component.getLayoutInterval(dimension).getMaximumSize(false);

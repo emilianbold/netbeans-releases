@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,9 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.JButton;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
@@ -56,7 +61,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,6 +71,7 @@ public class RevertFileChanges implements PropertyChangeListener {
     private LocalHistoryFileView view;
     private DialogDescriptor dialogDescriptor;
     private JButton okButton;
+    private Node[] selectedNodes;
     
     RevertFileChanges () {
         view = new LocalHistoryFileView();                                
@@ -89,7 +94,7 @@ public class RevertFileChanges implements PropertyChangeListener {
         long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);        
         view.refresh(new File[] {root}, ts);                
         if(show()) {            
-            StoreEntry[] entries = view.getSelectedEntries();
+            StoreEntry[] entries = getSelectedEntries();
             if(entries != null && entries.length > 0) {
                 revert(entries[0]); 
                 LocalHistorySettings.getInstance().setLastSelectedEntry(root, entries[0].getTimestamp());    
@@ -106,7 +111,7 @@ public class RevertFileChanges implements PropertyChangeListener {
     }        
     
     private void revert(final StoreEntry entry) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {                 
                 Utils.revert(entry);   
             }
@@ -116,6 +121,9 @@ public class RevertFileChanges implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {  
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {  
             Node[] nodes = (Node[]) evt.getNewValue();
+            if (nodes != null && nodes.length > 0) {
+                selectedNodes = nodes;
+            }
             okButton.setEnabled(isEnabled(nodes));        
         }
     }   
@@ -131,6 +139,18 @@ public class RevertFileChanges implements PropertyChangeListener {
             }            
         }
         return true; 
-    }      
+    }
+
+    private StoreEntry[] getSelectedEntries() {
+        Node[] nodes = selectedNodes;
+        if(nodes != null && nodes.length > 0) {
+            ArrayList<StoreEntry> entries = new ArrayList<StoreEntry>();
+            for(Node node : nodes) {
+                entries.add(node.getLookup().lookup(StoreEntry.class));
+            }
+            return entries.toArray(new StoreEntry[entries.size()]);
+        }
+        return new StoreEntry[0];
+    }
  
 }    

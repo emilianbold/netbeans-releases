@@ -31,7 +31,6 @@ import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
 import org.netbeans.modules.soa.mappercore.graphics.Triangle;
-import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
  *
@@ -139,6 +138,7 @@ public class Constant extends Vertex {
     }
     
     
+    @Override
     public void layout() {
         int itemWidth = getWidth() - 3;
         int itemCount = getItemCount();

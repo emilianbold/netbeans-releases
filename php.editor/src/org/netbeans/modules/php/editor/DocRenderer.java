@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,14 +16,14 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,16 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -54,18 +60,25 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -97,38 +110,83 @@ class DocRenderer {
             return predefinedSymbolElement.getDoc();
         }
 
-        if (element instanceof IndexedElement) {
-            return documentIndexedElement(info, (IndexedElement) element);
+        if (element instanceof PhpElement) {
+            return documentIndexedElement( (PhpElement) element);
         }
 
-        if (element instanceof IndexedClassMember) {
-            IndexedClassMember indexedClassMember = (IndexedClassMember) element;
-            return documentIndexedElement(info, indexedClassMember.getMember());
+        if (element instanceof TypeMemberElement) {
+            TypeMemberElement indexedClassMember = (TypeMemberElement) element;
+            return documentIndexedElement(indexedClassMember);
         }
 
         return null;
     }
 
-    private static String documentIndexedElement(ParserResult info, IndexedElement indexedElement) {
+    private static String documentIndexedElement(final PhpElement indexedElement) {
+        final StringBuilder description = new StringBuilder();
+        final CCDocHtmlFormatter locationHeader = new CCDocHtmlFormatter();
+        CCDocHtmlFormatter header = new CCDocHtmlFormatter();
+        final String location = getLocation(indexedElement);
+        final StringBuilder phpDoc = new StringBuilder();
+        final ElementQuery elementQuery = indexedElement.getElementQuery();
+        if (location != null) {
+            locationHeader.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
+        }
+        if (canBeProcessed(indexedElement)) {
+            if (getPhpDoc(indexedElement, header, phpDoc).length() == 0) {
+                if (indexedElement instanceof MethodElement) {
+                    ElementFilter forName = ElementFilter.forName(NameKind.exact(indexedElement.getName()));
+                    ElementQuery.Index index = elementQuery.getQueryScope().isIndexScope() ? (Index) elementQuery
+                            : ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(indexedElement.getFileObject()));
+                    final LinkedHashSet<TypeElement> inheritedTypes = index.getInheritedTypes(((MethodElement) indexedElement).getType());
+                    for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDoc.length() == 0 && typeIt.hasNext();) {
+                        final Set<MethodElement> inheritedMethods = forName.filter(index.getDeclaredMethods(typeIt.next()));
+                        for (Iterator<MethodElement> methodIt = inheritedMethods.iterator(); phpDoc.length() == 0 && methodIt.hasNext();) {
+                            getPhpDoc(methodIt.next(), header = new CCDocHtmlFormatter(), phpDoc);
+                        }
+                    }
+                }
+            }
+        }
+        if (phpDoc.length() > 0) {
+            description.append(phpDoc);
+        } else {
+            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
+        }
+        return String.format("%s%s%s", locationHeader.getText(), header.getText(), description.toString());
 
-        StringBuilder description = new StringBuilder();
-        final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
+    }
 
+    private static boolean canBeProcessed(PhpElement indexedElement) {
+        return indexedElement != null && indexedElement.getOffset() > -1 && indexedElement.getFileObject() != null;
+    }
+
+    private static StringBuilder getPhpDoc(final PhpElement indexedElement, final CCDocHtmlFormatter header, final StringBuilder phpDoc) {
+        if (canBeProcessed(indexedElement)) {
+            FileObject nextFo = indexedElement.getFileObject();
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(nextFo)), new PHPDocExtractor(header, phpDoc, indexedElement));
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return phpDoc;
+    }
+
+    private static String getLocation(PhpElement indexedElement) {
         String location = null;
-        
-        if (indexedElement.isPlatform()){
+        if (indexedElement.isPlatform()) {
             location = NbBundle.getMessage(DocRenderer.class, "PHPPlatform");
         } else {
             FileObject fobj = indexedElement.getFileObject();
-
             if (fobj != null) {
                 Project project = FileOwnerQuery.getOwner(fobj);
-
                 if (project != null) {
                     // find the appropriate source root
                     Sources sources = ProjectUtils.getSources(project);
                     // TODO the PHPSOURCE constatnt has to be published in the project api
-                    for (SourceGroup group : sources.getSourceGroups("PHPSOURCE")) { //NOI18N
+                    for (SourceGroup group : sources.getSourceGroups("PHPSOURCE")) {
+                        //NOI18N
                         String relativePath = FileUtil.getRelativePath(group.getRootFolder(), fobj);
                         if (relativePath != null) {
                             location = relativePath;
@@ -144,46 +202,23 @@ class DocRenderer {
                 }
             }
         }
-
-        
-        if (location != null) {
-            header.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
-        }
-
-        final StringBuilder phpDoc = new StringBuilder();
-
-        if (indexedElement.getOffset() > -1) {
-            FileObject fo = indexedElement.getFileObject();
-            
-            if (fo == null){
-                return null;
-            }
-
-            UserTask task = new PHPDocExtractor(header, phpDoc, indexedElement);
-            try {
-                ParserManager.parse(Collections.singleton(Source.create(fo)), task);
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        if (phpDoc.length() > 0) {
-            description.append(phpDoc);
-        } else {
-            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
-        }
-
-        return header.getText() + description.toString();
-
+        return location;
     }
 
-    private static class PHPDocExtractor extends UserTask {
+    static final class PHPDocExtractor extends UserTask {
+        // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
+        // + table (table, tr, th, td)
+        private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
+        private static final Pattern REPLACE_CODE_PATTERN = Pattern.compile("(?<=(</|<))code>", Pattern.CASE_INSENSITIVE); // NOI18N
+        private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
+        // #183594
+        private static final Pattern KEEP_NEWLINE_PATTERN = Pattern.compile("(\r?\n)(?=(\\s\\S|[-+#o]\\s|\\d\\.?\\s))"); // NOI18N
 
         private CCDocHtmlFormatter header;
         private StringBuilder phpDoc;
-        private IndexedElement indexedElement;
+        private PhpElement indexedElement;
 
-        public PHPDocExtractor(CCDocHtmlFormatter header, StringBuilder phpDoc, IndexedElement indexedElement) {
+        public PHPDocExtractor(CCDocHtmlFormatter header, StringBuilder phpDoc, PhpElement indexedElement) {
             this.header = header;
             this.phpDoc = phpDoc;
             this.indexedElement = indexedElement;
@@ -205,7 +240,7 @@ class DocRenderer {
             int paramCount = functionDeclaration.getFormalParameters().size();
 
             for (int i = 0; i < paramCount; i++) {
-                FormalParameter param = functionDeclaration.getFormalParameters().get(i);                
+                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
                 if (param.getParameterType() != null) {
                     Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
                     if (paramId != null) {
@@ -237,14 +272,14 @@ class DocRenderer {
             header.appendText(")");
             header.parameters(false);
         }
-       
+
         private void extractPHPDoc(PHPDocBlock pHPDocBlock) {
             StringBuilder params = new StringBuilder();
             StringBuilder links = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
             StringBuilder others = new StringBuilder();
 
-            phpDoc.append(pHPDocBlock.getDescription());
+            phpDoc.append(processPhpDoc(pHPDocBlock.getDescription()));
 
             // list PHPDoc tags
             phpDoc.append("<br />\n"); //NOI18N
@@ -254,8 +289,8 @@ class DocRenderer {
                 switch (tag.getKind()) {
                     case PARAM:
                         PHPDocParamTagData tagData = new PHPDocParamTagData(tag.getValue());
-                        String pline = String.format("<tr><td valign=\"top\" %s>%s</td><td valign=\"top\" %s><b>%s</b></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
-                                TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, tagData.description);
+                        String pline = String.format("<tr><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+                                TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, processPhpDoc(tagData.description));
 
                         params.append(pline);
                         break;
@@ -275,14 +310,14 @@ class DocRenderer {
 
                             if (rparts.length > 1) {
                                 String desc = rparts[1];
-                                returnValue.append(desc);
+                                returnValue.append(processPhpDoc(desc));
                             }
                         }
 
                         break;
                     default:
                         String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                tag.getKind().toString(), tag.getValue());
+                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue()));
 
                         others.append(oline);
                         break;
@@ -312,7 +347,15 @@ class DocRenderer {
                 phpDoc.append("<table>\n" + others + "</table>\n"); //NOI18N
             }
         }
-        
+
+        // because of unit tests
+        static String processPhpDoc(String phpDoc) {
+            String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
+            notags = REPLACE_CODE_PATTERN.matcher(notags).replaceAll("pre>"); // NOI18N
+            notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
+            return KEEP_NEWLINE_PATTERN.matcher(notags).replaceAll("<br>&nbsp;&nbsp;&nbsp;&nbsp;"); // NOI18N
+        }
+
          @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ParserResult presult = (ParserResult)resultIterator.getParserResult();
@@ -332,8 +375,20 @@ class DocRenderer {
                     doFunctionDeclaration((FunctionDeclaration) node);
                 } else {
                     header.name(indexedElement.getKind(), true);
-                    header.appendText(indexedElement.getDisplayName());
-                    header.name(indexedElement.getKind(), false);                    
+                    header.appendText(indexedElement.getName());
+                    header.name(indexedElement.getKind(), false);
+                    String value = null;
+                    if (indexedElement instanceof ConstantElement) {
+                        ConstantElement constant = (ConstantElement) indexedElement;
+                        value = constant.getValue();
+                    } else if (indexedElement instanceof TypeConstantElement) {
+                        TypeConstantElement constant = (TypeConstantElement) indexedElement;
+                        value = constant.getValue();
+                    }
+                    if (value != null) {
+                        header.appendText(" = ");//NOI18N
+                        header.appendText(value);
+                    }
                 }
 
                 header.appendHtml("<br/><br/>"); //NOI18N

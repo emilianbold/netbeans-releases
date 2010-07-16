@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,14 @@
 
 package org.netbeans.modules.mercurial.ui.update;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.*;
 import java.util.*;
-import java.awt.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.*;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.spi.diff.*;
 
 import org.openide.util.*;
@@ -56,6 +62,8 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -87,7 +95,6 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
     }
 
     public void exec() {
-        assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
@@ -141,6 +148,18 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision = leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision = rightFileRevision.trim();
+        List<HgLogMessage> parentRevisions = null;
+        if (leftFileRevision.equals(LOCAL)) {
+            try {
+                parentRevisions = HgCommand.getParents(Mercurial.getInstance().getRepositoryRoot(file), file, null);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+            if (parentRevisions != null && parentRevisions.size() > 1) {
+                leftFileRevision = parentRevisions.get(0).getRevisionNumber();
+                rightFileRevision = parentRevisions.get(1).getRevisionNumber();
+            }
+        }
         if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)
                 || leftFileRevision.equals(LOCAL)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
@@ -163,15 +182,18 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
                                                               fo, lock, encoding);
-
-        try {
-            Component c = merge.createView(diffs, s1, s2, result);
-            if (c instanceof TopComponent) {
-                ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    Component c = merge.createView(diffs, s1, s2, result);
+                    if (c instanceof TopComponent) {
+                        ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+                    }
+                } catch (IOException ioex) {
+                    org.openide.ErrorManager.getDefault().notify(ioex);
+                }
             }
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
+        });
     }
 
     /**
@@ -313,7 +335,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                         f1l1 = i;
                         continue;
                     }
-                } else if (line.endsWith(CHANGE_DELIMETER)) {
+                } else if (line.endsWith(CHANGE_DELIMETER) && !line.endsWith(CHANGE_DELIMETER + CHANGE_DELIMETER.charAt(0))) {
                     String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);
@@ -375,7 +397,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         throw new RuntimeException("Not implemented"); // NOI18N
     }
     
-    
+
     private static class MergeResultWriterInfo extends StreamSource {
         
         private File tempf1, tempf2, tempf3, outputFile;

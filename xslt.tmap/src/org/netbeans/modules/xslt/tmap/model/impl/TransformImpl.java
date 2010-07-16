@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -34,7 +35,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TransformImpl extends NameableImpl implements Transform {
+public class TransformImpl extends NameableTMapComponentContainerImpl implements Transform {
 
     public TransformImpl(TMapModelImpl model) {
         this(model, createNewElement(TMapComponents.TRANSFORM, model));
@@ -60,6 +61,10 @@ public class TransformImpl extends NameableImpl implements Transform {
         setAttribute(Transform.FILE, TMapAttributes.FILE, locationURI);
     }
 
+    public void removeFile() {
+        setFile(null);
+    }
+
     public VariableReference getSource() {
         return getTMapVarReference(TMapAttributes.SOURCE);
     }
@@ -72,12 +77,20 @@ public class TransformImpl extends NameableImpl implements Transform {
         setAttribute(Transform.SOURCE, TMapAttributes.SOURCE, source == null ? "" : source.getRefString());
     }
 
+    public void removeSource() {
+        setSource((String)null);
+    }
+
     public VariableReference getResult() {
         return getTMapVarReference(TMapAttributes.RESULT);
     }
 
     public void setResult(String result) {
         setAttribute(Transform.RESULT, TMapAttributes.RESULT, result);
+    }
+
+    public void removeResult() {
+        setResult((String)null);
     }
 
     public List<Param> getParams() {
@@ -107,5 +120,22 @@ public class TransformImpl extends NameableImpl implements Transform {
         }
         
         return refs.toArray(new Reference[refs.size()]);
+    }
+
+    public List<Invoke> getInvokes() {
+        return getChildren(Invoke.class);
+    }
+
+    public void removeInvoke(Invoke invoke) {
+        removeChild(TYPE.getTagName(), invoke);
+    }
+
+    public void addInvoke(Invoke invoke) {
+        addAfter(TYPE.getTagName(), invoke, TYPE.getChildTypes());
+    }
+
+    public int getSizeOfInvokes() {
+        List<Invoke> invokes = getInvokes();
+        return invokes == null ? 0 : invokes.size();
     }
 }

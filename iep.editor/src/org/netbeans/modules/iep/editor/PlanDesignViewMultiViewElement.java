@@ -22,6 +22,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Iterator;
 
 import javax.swing.AbstractAction;
@@ -52,8 +55,10 @@ import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.api.print.PrintManager;
+
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -61,6 +66,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -68,8 +74,8 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
 
 /**
  * @author radval
@@ -88,6 +94,9 @@ public class PlanDesignViewMultiViewElement extends TopComponent
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private transient JToolBar mToolbar;
     private GraphView graphComponent;
+    private ActivatedNodesMediator nodesMediator;
+    private CookieProxyLookup cpl;
+    
 
     public PlanDesignViewMultiViewElement() {
         super();
@@ -131,8 +140,9 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         };
 
         Node delegate = this.mObj.getNodeDelegate();
-
-        CookieProxyLookup cpl = new CookieProxyLookup(new Lookup[]{
+        nodesMediator = new ActivatedNodesMediator(delegate);
+        nodesMediator.setExplorerManager(this);
+        cpl = new CookieProxyLookup(new Lookup[]{
                     Lookups.fixed(new Object[]{
                         // Need the data object registered in the lookup so that the
                         // projectui code will close our open editor windows when the
@@ -146,28 +156,55 @@ public class PlanDesignViewMultiViewElement extends TopComponent
                         // This is unusal, not sure why this is here.
                         this,
                     }),
+                    nodesMediator.getLookup(),
                     // The Node delegate Lookup must be the last one in the list
                     // for the CookieProxyLookup to work properly.
                     delegate.getLookup(),
                 }, delegate);
 
         associateLookup(cpl);
+        addPropertyChangeListener(ACTIVATED_NODES, nodesMediator);
         addPropertyChangeListener(ACTIVATED_NODES, cpl);
 
         setLayout(new BorderLayout());
+        
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
+        IEPModel iepModel = editor.getModel();
+        // Construct the standard editor interface.
+        if (graphComponent == null) {
+            graphComponent = new GraphView(iepModel);
+            ZoomManager manager = new ZoomManager(graphComponent.getPlanCanvas());
+            manager.addToolbarActions((JToolBar) getToolbarRepresentation());
+
+            // vlv: print
+            mToolbar.addSeparator();
+            mToolbar.add(PrintManager.printAction(this));
+        }
     }
 
-    private void cleanup() {
+    public void cleanup() {
         try {
             manager.setSelectedNodes(new Node[0]);
         } catch (PropertyVetoException e) {
         }
+        
+        removePropertyChangeListener(ACTIVATED_NODES, nodesMediator);
+        removePropertyChangeListener(ACTIVATED_NODES, cpl);
+        nodesMediator.setExplorerManager(null);
+        nodesMediator = null;
+        cpl = null;
 
+        if(graphComponent != null) {
+            graphComponent.cleanup();
+        }
+        
         if (mToolbar != null) {
             mToolbar.removeAll();
         }
         mToolbar = null;
         removeAll();
+        
+        setActivatedNodes(new Node[0]);
     }
 
     public ExplorerManager getExplorerManager() {
@@ -219,12 +256,25 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         ExplorerUtils.activateActions(manager, true);
         mObj.getPlanEditorSupport().syncModel();
         updateGroupVisibility();
+        
+        //refresh properties
+        if(graphComponent != null) {
+            if(graphComponent.getPlanCanvas().getSelection().getPrimarySelection() == null) {
+                graphComponent.getPlanCanvas().refreshProperties();
+            }
+        }
     }
 
     @Override
     public void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
+        
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
         updateGroupVisibility();
     }
 
@@ -298,16 +348,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         IEPModel iepModel = editor.getModel();
         if (iepModel != null &&
                 iepModel.getState() == IEPModel.State.VALID) {
-            // Construct the standard editor interface.
-            if (graphComponent == null) {
-                graphComponent = new GraphView(iepModel);
-                ZoomManager manager = new ZoomManager(graphComponent.getPlanCanvas());
-                manager.addToolbarActions((JToolBar) getToolbarRepresentation());
-
-                // vlv: print
-                mToolbar.addSeparator();
-                mToolbar.add(PrintManager.printAction(this));
-            }
+           
             removeAll();
             add(graphComponent, BorderLayout.CENTER);
             return;
@@ -316,7 +357,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         // Clear the interface and show the error message.
         removeAll();
 
-        String errorMessage = null;
+        String errorMessage = NbBundle.getMessage(PlanDesignViewMultiViewElement.class, "MSG_NotWellformedPlan");
 
         errorLabel.setText("<" + errorMessage + ">");
         errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -338,6 +379,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));
 
+                //no longer needed see iz 98752
                 Action overviewAction = new OverviewAction(graphComponent.getPlanCanvas(), model);
                 mToolbar.add(overviewAction);
 
@@ -408,5 +450,23 @@ public class PlanDesignViewMultiViewElement extends TopComponent
                     PlanDesignViewMultiViewElement.this;
 
         }
+    }
+    
+    @Override
+    public void readExternal(ObjectInput in) throws
+            IOException, ClassNotFoundException {
+        super.readExternal(in);
+        Object obj = in.readObject();
+        if (obj instanceof PlanDataObject) {
+            mObj = (PlanDataObject) obj;
+            this.mObj.getPlanEditorSupport().setPlanDesignMultiviewElement(this);
+            initialize();
+        }
+    }
+    
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(mObj);
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -86,12 +90,11 @@ final class DiffResultsViewForLine extends DiffResultsView {
     @Override
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        String revision2 = rev.getLogInfoHeader().getLog().getRevision();
-        showDiff(rev, null, revision2, showLastDifference);
+        showDiff(rev, null, rev.getLogInfoHeader().getLog().getHgRevision(), showLastDifference);
     }
 
     @Override
-    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
         if (revision1 == null) {
             return new ShowDiffTask(header, revision2, showLastDifference);
         } else {
@@ -122,16 +125,17 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
     private class ShowDiffTask extends HgProgressSupport {
         private final RepositoryRevision.Event header;
-        private final String revision;
+        private final HgRevision revision;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision, boolean showLastDifference) {
+        public ShowDiffTask(RepositoryRevision.Event header, HgRevision revision, boolean showLastDifference) {
             this.header = header;
             this.revision = revision;
         }
 
+        @Override
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
-            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision);
+            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision.getRevisionNumber());
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
@@ -150,13 +154,14 @@ final class DiffResultsViewForLine extends DiffResultsView {
             if (currentTask != this) return;
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (isCanceled()) {
                             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
-                        final DiffController view = DiffController.create(leftSource, rightSource);
+                        final DiffController view = DiffController.createEnhanced(leftSource, rightSource);
                         int leftMaxLineNumber = getLastLineIndex(leftSource);
                         int rightMaxLineNumber = getLastLineIndex(rightSource);
                         if (currentTask == ShowDiffTask.this) {
@@ -252,6 +257,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
         if (showLineInLocal) {
             currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.LineNumber, lineNumber);
         } else {
+            currentDiff.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE);
             currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, lineNumber);
         }
     }
@@ -283,18 +289,22 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        @Override
         public String getTitle() {
             return fileObject != null ? FileUtil.getFileDisplayName(fileObject) : file.getAbsolutePath();
         }
 
+        @Override
         public String getMIMEType() {
             return mimeType = fileObject != null && fileObject.isValid() ? Mercurial.getInstance().getMimeType(file) : null;
         }
 
+        @Override
         public Reader createReader() throws IOException {
             if (mimeType == null || !mimeType.startsWith("text/")) {
                 return null;
@@ -303,6 +313,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

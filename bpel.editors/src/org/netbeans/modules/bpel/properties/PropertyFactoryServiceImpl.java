@@ -27,7 +27,6 @@ import org.netbeans.modules.bpel.editors.api.nodes.PropertyFactoryService;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.editors.api.nodes.PropertyFactoryService.class)
 public class PropertyFactoryServiceImpl implements PropertyFactoryService {
     
     public PropertyFactoryServiceImpl() {

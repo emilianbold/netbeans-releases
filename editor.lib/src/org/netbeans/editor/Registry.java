@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,17 @@
 
 package org.netbeans.editor;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.text.JTextComponent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
+import org.openide.modules.PatchedPublic;
 
 /**
  * All the documents and components register here so that
@@ -61,32 +69,12 @@ import javax.swing.event.ChangeEvent;
  */
 public class Registry {
 
-    private static final WeakReference[] EMPTY = new WeakReference[0];
-
-    /** Array of weak references to documents */
-    private static WeakReference[] docRefs = EMPTY;
-    
-    /** Number of the document references */
-    private static int docRefsCount;
-
-    /** Array of activated document numbers */
-    private static final ArrayList docAct = new ArrayList();
-
-    /** Array list of weak references to components */
-    private static WeakReference[] compRefs = EMPTY;
-
-    /** Number of the document references */
-    private static int compRefsCount;
-
-    /** Array of activated component numbers */
-    private static final ArrayList<Integer> compAct = new ArrayList<Integer>();
-    
     /** List of the registered changes listeners */
     private static final WeakEventListenerList listenerList
 	= new WeakEventListenerList();
-    
-    private static int consolidateCounter;
 
+    private static PropertyChangeListener editorRegistryListener = null;
+    
     /** Add weak listener to listen to change of activity of documents or components.
      * The caller must
      * hold the listener object in some instance variable to prevent it
@@ -94,6 +82,7 @@ public class Registry {
      * @param l listener to add
      */
     public static void addChangeListener(ChangeListener l) {
+        registerListener();
         listenerList.add(ChangeListener.class, l);
     }
 
@@ -103,6 +92,7 @@ public class Registry {
      * @param l listener to remove
      */
     public static void removeChangeListener(ChangeListener l) {
+        registerListener();
         listenerList.remove(ChangeListener.class, l);
     }
 
@@ -110,17 +100,20 @@ public class Registry {
      * @return document id or -1 if document was not yet added to the registry
      *  by <code>addDocument()</code>.
      */
-    public static synchronized int getID(BaseDocument doc) {
-	Integer i = getIDInteger(doc);
-	return (i != null) ? i.intValue() : -1;
+    @PatchedPublic
+    private static int getID(BaseDocument doc) {
+        registerListener();
+        return -1;
     }
 	
     /** Get component ID from the component.
      * @return component id or -1 if component was not yet added to the registry
      *  by <code>addComponent()</code>.
      */
-    public static synchronized int getID(JTextComponent c) {
-	return getIDImpl(c);
+    @PatchedPublic
+    private static int getID(JTextComponent c) {
+        registerListener();
+        return -1;
     }
 
     /** Get document when its ID is known.
@@ -129,13 +122,10 @@ public class Registry {
      *  by <code>getID(doc)</code>.
      * @return document instance or null when document no longer exists
      */
-    public static synchronized BaseDocument getDocument(int docID) {
-        if (docID < 0 || docID >= docRefsCount) {
-            return null;
-        }
-
-	WeakReference wr = docRefs[docID];
-        return (wr != null) ? (BaseDocument)wr.get() : null;
+    @PatchedPublic
+    private static BaseDocument getDocument(int docID) {
+        registerListener();
+        return null;
     }
 
     /** Get component when its ID is known.
@@ -144,32 +134,20 @@ public class Registry {
      *  by <code>getID(c)</code>.
      * @return component instance or null when document no longer exists
      */
-    public static synchronized JTextComponent getComponent(int compID) {
-        if (compID < 0 || compID >= compRefsCount) {
-            return null;
-        }
-
-	WeakReference wr = compRefs[compID];
-        return (wr != null) ? (JTextComponent)wr.get() : null;
+    @PatchedPublic
+    private static JTextComponent getComponent(int compID) {
+        registerListener();
+        return null;
     }
 
     /** Add document to registry. Doesn't search for repetitive
      * adding.
      * @return registry unique ID of the document
      */
-    public static synchronized int addDocument(BaseDocument doc) {
-        Integer docID = getIDInteger(doc);
-        if (docID != null) { // already added
-            return docID.intValue();
-        }
-
-	if (docRefsCount >= docRefs.length) {
-	    docRefs = realloc(docRefs);
-	}
-	
-        docRefs[docRefsCount] = new WeakReference(doc);
-        doc.putProperty(BaseDocument.ID_PROP, new Integer(docRefsCount));
-	return docRefsCount++;
+    @PatchedPublic
+    private static int addDocument(BaseDocument doc) {
+        registerListener();
+        return -1;
     }
 
     /** Add component to registry. If the component is already registered
@@ -177,22 +155,10 @@ public class Registry {
      * to the component is _not_ registered automatically.
      * @return ID of the component
      */
-    public static synchronized int addComponent(JTextComponent c) {
-        int compID = getIDImpl(c);
-        if (compID != -1) {
-            if (compRefs[compID] == null) { // unregistered previously by removeComponent()
-                compRefs[compID] = new WeakReference<JTextComponent>(c);
-            }
-            return compID; // already registered
-        }
-	
-	if (compRefsCount >= compRefs.length) {
-	    compRefs = realloc(compRefs);
-	}
-
-        compRefs[compRefsCount] = new WeakReference(c);
-        ((BaseTextUI)c.getUI()).componentID = compRefsCount;
-        return compRefsCount++;
+    @PatchedPublic
+    private static int addComponent(JTextComponent c) {
+        registerListener();
+        return -1;
     }
 
     /** Remove component from registry. It's usually done when
@@ -201,78 +167,18 @@ public class Registry {
      *  new ID will be different from this one. -1 will be returned
      *  if the component was not yet added to the registry.
      */
-    public static int removeComponent(JTextComponent c) {
-        int compID;
-        boolean lastComponent = false;
-                
-        synchronized (Registry.class) {
-            compID = getIDImpl(c);
-            
-            if (compID != -1) {
-                compRefs[compID] = null;
-                // Search whether was activated
-                for (int i = compAct.size() - 1; i >= 0; i--) {
-                    if (compAct.get(i) == compID) {
-                        compAct.remove(i);
-                        break;
-                    }
-                }
-                
-                lastComponent = compAct.isEmpty();
-            }
-        }
-	
-        if (lastComponent) {
-            fireChange();
-        }
-        
-        return compID;
+    @PatchedPublic
+    private static int removeComponent(JTextComponent c) {
+        registerListener();
+        return -1;
     }
 
     /** Put the component to the first position in the array of last accessed
     * components. The activate of document is also called automatically.
     */
-    public static void activate(JTextComponent c) {
-        boolean activated = true;
-        synchronized (Registry.class) {
-            int compID = getIDImpl(c);
-            if (compID == -1) { // c not registered
-                return;
-            }
-            
-            int actSize = compAct.size();
-            int ind = 0;
-            while (ind < actSize) {
-                int id = compAct.get(ind);
-                if (id == compID) { // found
-                    if (ind == 0) {
-                        break;
-                    }
-                    compAct.add(0, compAct.remove(ind));
-                    activated = true;
-                    break;
-                }
-                
-                ind++;
-            }
-            
-            if (ind == actSize) {
-                compAct.add(0, compID);
-                activated = true;
-            }
-
-            // Try to activate component's document too
-            Object doc = c.getDocument();
-            if (doc instanceof BaseDocument) {
-                if (doActivate((BaseDocument)doc)) {
-                    activated = true;
-                }
-            }
-        }
-        
-        if (activated) {
-            fireChange();
-        }
+    @PatchedPublic
+    private static void activate(JTextComponent c) {
+        registerListener();
     }
 
     /** Put the document to the first position in the array of last accessed
@@ -280,40 +186,45 @@ public class Registry {
      * is done.
      * @param doc document to be activated
      */
-    public static void activate(BaseDocument doc) {
-        boolean activated;
-        synchronized (Registry.class) {
-            activated = doActivate(doc);
-	}
-
-        if (activated) {
-	    fireChange();
-        }
+    @PatchedPublic
+    private static void activate(BaseDocument doc) {
+        registerListener();
     }
     
-    public static synchronized BaseDocument getMostActiveDocument() {
-        return getValidDoc(0, true);
+    public static BaseDocument getMostActiveDocument() {
+        registerListener();
+        JTextComponent jtc = getMostActiveComponent();
+        return jtc == null ? null : Utilities.getDocument(jtc);
     }
 
-    public static synchronized BaseDocument getLeastActiveDocument() {
-        int lastInd = docAct.size() - 1;
-        return getValidDoc(lastInd, false);
+    public static BaseDocument getLeastActiveDocument() {
+        registerListener();
+        JTextComponent jtc = getLeastActiveComponent();
+        return jtc == null ? null : Utilities.getDocument(jtc);
     }
 
-    public static BaseDocument getLessActiveDocument(BaseDocument doc) {
-        return getLessActiveDocument(getID(doc));
+    @PatchedPublic
+    private static BaseDocument getLessActiveDocument(BaseDocument doc) {
+        registerListener();
+        return null;
     }
 
-    public static synchronized BaseDocument getLessActiveDocument(int docID) {
-        return getNextActiveDoc(docID, true);
+    @PatchedPublic
+    private static BaseDocument getLessActiveDocument(int docID) {
+        registerListener();
+        return null;
     }
 
-    public static BaseDocument getMoreActiveDocument(BaseDocument doc) {
-        return getMoreActiveDocument(getID(doc));
+    @PatchedPublic
+    private static BaseDocument getMoreActiveDocument(BaseDocument doc) {
+        registerListener();
+        return null;
     }
 
-    public static synchronized BaseDocument getMoreActiveDocument(int docID) {
-        return getNextActiveDoc(docID, false);
+    @PatchedPublic
+    private static BaseDocument getMoreActiveDocument(int docID) {
+        registerListener();
+        return null;
     }
 
     /** Get the iterator over the active documents. It starts with
@@ -321,207 +232,76 @@ public class Registry {
      * It's just the current snapshot so the iterator will
      * not reflect future changes.
      */
-    public static synchronized Iterator getDocumentIterator() {
-        consolidate();
-
-        ArrayList docList = new ArrayList();
-        int actSize = docAct.size();
-        for (int i = 0; i < actSize; i++) {
-            int ind = ((Integer)docAct.get(i)).intValue();
-            WeakReference wr = docRefs[ind];
-            if (wr != null) {
-                Object doc = wr.get();
-                if (doc != null) {
-                    docList.add(doc);
-                }
+    public static Iterator<? extends Document> getDocumentIterator() {
+        registerListener();
+        final Iterator<? extends JTextComponent> cIt = getComponentIterator();
+        return new Iterator<Document>() {
+            public boolean hasNext() {
+                return cIt.hasNext();
             }
-        }
 
-        return docList.iterator();
+            public Document next() {
+                return cIt.next().getDocument();
+            }
+
+            public void remove() {
+                cIt.remove();
+            }
+        };
     }
 
-    public static synchronized JTextComponent getMostActiveComponent() {
-        return getValidComp(0, true);
+    public static JTextComponent getMostActiveComponent() {
+        registerListener();
+        return EditorRegistry.focusedComponent();
     }
 
-    public static synchronized JTextComponent getLeastActiveComponent() {
-        int lastInd = compAct.size() - 1;
-        return getValidComp(lastInd, false);
+    public static JTextComponent getLeastActiveComponent() {
+        registerListener();
+        List<? extends JTextComponent> l = EditorRegistry.componentList();
+        return l.size() > 0 ? l.get(l.size() - 1) : null;
     }
 
-    public static JTextComponent getLessActiveComponent(JTextComponent c) {
-        return getLessActiveComponent(getID(c));
+    @PatchedPublic
+    private static JTextComponent getLessActiveComponent(JTextComponent c) {
+        registerListener();
+        return null;
     }
 
-    public static synchronized JTextComponent getLessActiveComponent(int compID) {
-        return getNextActiveComp(compID, true);
+    @PatchedPublic
+    private static JTextComponent getLessActiveComponent(int compID) {
+        registerListener();
+        return null;
     }
 
-    public static JTextComponent getMoreActiveComponent(JTextComponent c) {
-        return getMoreActiveComponent(getID(c));
+    @PatchedPublic
+    private static JTextComponent getMoreActiveComponent(JTextComponent c) {
+        registerListener();
+        return null;
     }
 
-    public static synchronized JTextComponent getMoreActiveComponent(int compID) {
-        return getNextActiveComp(compID, false);
+    @PatchedPublic
+    private static JTextComponent getMoreActiveComponent(int compID) {
+        registerListener();
+        return null;
     }
 
     /** Get the iterator over the active components. It starts with
     * the most active component till the least active component.
     */
-    public static synchronized Iterator getComponentIterator() {
-	consolidate();
+    public static Iterator<? extends JTextComponent> getComponentIterator() {
+        registerListener();
+        return EditorRegistry.componentList().iterator();
+    }
 
-        ArrayList compList = new ArrayList();
-        int actSize = compAct.size();
-        for (int i = 0; i < actSize; i++) {
-            int ind = compAct.get(i);
-            WeakReference wr = compRefs[ind];
-            if (wr != null) {
-                Object comp = wr.get();
-                if (comp != null) {
-                    compList.add(comp);
+    private static synchronized void registerListener() {
+        if (editorRegistryListener == null) {
+            editorRegistryListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    fireChange();
                 }
-            }
+            };
+            EditorRegistry.addPropertyChangeListener(editorRegistryListener);
         }
-
-        return compList.iterator();
-    }
-
-    private static WeakReference[] realloc(WeakReference[] refs) {
-	WeakReference[] tmp = new WeakReference[refs.length * 2 + 4];
-	System.arraycopy(refs, 0, tmp, 0, refs.length);
-	return tmp;
-    }
-    
-    private static void consolidate() {
-	while (++consolidateCounter >= 20) { // after every 20th call
-	    consolidateCounter = 0;
-	    
-	    // Remove empty document references
-	    for (int i = docAct.size() - 1; i >= 0; i--) {
-		int ind = ((Integer)docAct.get(i)).intValue();
-		WeakReference wr = docRefs[ind];
-		if (wr != null) {
-		    if (wr.get() == null) { // empty reference
-			docAct.remove(i);
-			docRefs[ind] = null;
-		    }
-		}
-	    }
-
-	    // Remove empty component references
-	    for (int i = compAct.size() - 1; i >= 0; i--) {
-		int ind = compAct.get(i);
-		WeakReference wr = compRefs[ind];
-		if (wr != null) {
-		    if (wr.get() == null) { // empty reference
-			compAct.remove(i);
-			compRefs[ind] = null;
-		    }
-		}
-	    }
-	}
-    }
-
-    private static int getIDImpl(JTextComponent c) {
-        if (c == null) {
-            return -1;
-        }
-        return ((BaseTextUI)c.getUI()).componentID;
-    }
-
-    private static Integer getIDInteger(BaseDocument doc) {
-	if (doc == null) {
-            return null;
-        }
-
-        return (Integer)doc.getProperty(BaseDocument.ID_PROP);
-    }
-
-    private static boolean doActivate(BaseDocument doc) {
-	Integer docIDInteger = getIDInteger(doc);
-	
-	if (docIDInteger == null) {
-	    return false; // document not added to registry
-	}
-
-        int docID = (docIDInteger != null) ? docIDInteger.intValue() : -1;
-
-	int size = docAct.size();
-	for (int ind = 0; ind < size; ind++) {
-	    int id = ((Integer)docAct.get(ind)).intValue();
-	    if (id == docID) {
-		if (ind == 0) { // no change
-		    return false;
-		}
-
-		docAct.add(0, docAct.remove(ind));
-		return true;
-	    }
-	}
-	
-        docAct.add(0, docIDInteger);
-	return true;
-    }
-
-    private static BaseDocument getValidDoc(int ind, boolean forward) {
-	consolidate();
-
-	int actSize = docAct.size();
-        while (ind >= 0 && ind < actSize) {
-            int docID = ((Integer)docAct.get(ind)).intValue();
-	    WeakReference wr = docRefs[docID];
-            BaseDocument doc = (wr != null) ? (BaseDocument)wr.get() : null;
-            if (doc != null) {
-                return doc;
-            }
-            ind += forward ? +1 : -1;
-        }
-        return null;
-    }
-
-    private static BaseDocument getNextActiveDoc(int docID, boolean forward) {
-	consolidate();
-
-        int actSize = docAct.size();
-        int ind = forward ? 0 : (actSize - 1);
-        while (ind >= 0 && ind < actSize) {
-            if (((Integer)docAct.get(ind)).intValue() == docID) {
-                ind += forward ? +1 : -1; // get next one
-                return getValidDoc(ind, forward);
-            }
-            ind += forward ? +1 : -1;
-        }
-        return null;
-    }
-
-    private static JTextComponent getValidComp(int ind, boolean forward) {
-	consolidate();
-
-	int actSize = compAct.size();
-        while (ind >= 0 && ind < actSize) {
-            int compID = compAct.get(ind);
-	    WeakReference wr = compRefs[compID];
-            JTextComponent c = (wr != null) ? (JTextComponent)wr.get() : null;
-            if (c != null) {
-                return c;
-            }
-            ind += forward ? +1 : -1;
-        }
-        return null;
-    }
-
-    private static JTextComponent getNextActiveComp(int compID, boolean forward) {
-        int actSize = compAct.size();
-        int ind = forward ? 0 : (actSize - 1);
-        while (ind >= 0 && ind < actSize) {
-            if (compAct.get(ind) == compID) {
-                ind += forward ? +1 : -1;
-                return getValidComp(ind, forward);
-            }
-            ind += forward ? +1 : -1;
-        }
-        return null;
     }
 
     private static void fireChange() {
@@ -534,34 +314,15 @@ public class Registry {
     }
 
     /** Debug the registry into string. */
-    public static synchronized String registryToString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("Document References:\n"); // NOI18N
-        for (int i = 0; i < docRefsCount; i++) {
-            WeakReference wr = docRefs[i];
-            sb.append("docRefs[" + i + "]=" + ((wr != null) ? wr.get() : "null") + "\n"); // NOI18N
+    public static String registryToString() {
+        registerListener();
+        try {
+            Method m = EditorRegistry.class.getDeclaredMethod("dumpItemList"); //NOI18N
+            return (String) m.invoke(null);
+        } catch (Exception e) {
+            // ignore;
+            return ""; //NOI18N
         }
-        sb.append("Component References:\n"); // NOI18N
-        for (int i = 0; i < compRefsCount; i++) {
-            WeakReference wr = (WeakReference)compRefs[i];
-            sb.append("compRefs[" + i + "]=" + ((wr != null) ? wr.get() : "null") + "\n"); // NOI18N
-        }
-        sb.append("\nActive Document Indexes:\n"); // NOI18N
-        for (int i = 0; i < docAct.size(); i++) {
-            sb.append(docAct.get(i));
-            if (i != docAct.size() - 1) {
-                sb.append(", "); // NOI18N
-            }
-        }
-        sb.append("\nActive Component Indexes:\n"); // NOI18N
-        for (int i = 0; i < compAct.size(); i++) {
-            sb.append(compAct.get(i));
-            if (i != compAct.size() - 1) {
-                sb.append(", "); // NOI18N
-            }
-        }
-
-        return sb.toString();
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
@@ -161,7 +165,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final int caret = target.getCaretPosition();   
             Document doc = target.getDocument();
             DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+            CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
             if (file == null) {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
@@ -242,8 +246,15 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
         if (instance != null) {
-            return;
+            if (instance.target != target) {
+                // cancel rename in other component
+                instance.release();
+            } else {
+                // prohibit two renames in the same component
+                return;
+            }
         }
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, "INSTANT_RENAME"); // NOI18N
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
     }
 

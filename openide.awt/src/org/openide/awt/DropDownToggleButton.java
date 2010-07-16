@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,6 @@ import javax.swing.JToggleButton;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * JToggleButton with a small arrow that displays popup menu when clicked.
@@ -98,12 +100,14 @@ class DropDownToggleButton extends JToggleButton {
         resetIcons();
         
         addPropertyChangeListener(  DropDownButtonFactory.PROP_DROP_DOWN_MENU,new PropertyChangeListener() {
+            @Override
             public void propertyChange( PropertyChangeEvent e ) {
                 resetIcons();
             }
         });
         
         addMouseMotionListener( new MouseMotionAdapter() {
+            @Override
             public void mouseMoved( MouseEvent e ) {
                 if( null != getPopupMenu() ) {
                     mouseInArrowArea = isInArrowArea( e.getPoint() );
@@ -115,6 +119,7 @@ class DropDownToggleButton extends JToggleButton {
         addMouseListener( new MouseAdapter() {
             private boolean popupMenuOperation = false;
             
+            @Override
             public void mousePressed( MouseEvent e ) {
                 popupMenuOperation = false;
                 JPopupMenu menu = getPopupMenu();
@@ -145,6 +150,7 @@ class DropDownToggleButton extends JToggleButton {
                 }
             }
 
+            @Override
             public void mouseEntered( MouseEvent e ) {
                 mouseInButton = true;
                 if( hasPopupMenu() ) {
@@ -153,6 +159,7 @@ class DropDownToggleButton extends JToggleButton {
                 }
             }
 
+            @Override
             public void mouseExited( MouseEvent e ) {
                 mouseInButton = false;
                 mouseInArrowArea = false;
@@ -168,9 +175,11 @@ class DropDownToggleButton extends JToggleButton {
     private PopupMenuListener getMenuListener() {
         if( null == menuListener ) {
             menuListener = new PopupMenuListener() {
+                @Override
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 }
 
+                @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                     // If inside the button let the button's mouse listener
                     // deal with the state. The popup menu will be hidden and
@@ -186,6 +195,7 @@ class DropDownToggleButton extends JToggleButton {
                     }
                 }
 
+                @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
                 }
             };
@@ -351,6 +361,7 @@ class DropDownToggleButton extends JToggleButton {
     private class Model extends JToggleButton.ToggleButtonModel {
         private boolean _pressed = false;
         
+        @Override
         public void setPressed(boolean b) {
             if( mouseInArrowArea || _pressed )
                 return;
@@ -374,7 +385,6 @@ class DropDownToggleButton extends JToggleButton {
             setArmed( false );
             setPressed( false );
             setRollover( false );
-            setSelected( false );
         }
 
         public boolean _isPressed() {

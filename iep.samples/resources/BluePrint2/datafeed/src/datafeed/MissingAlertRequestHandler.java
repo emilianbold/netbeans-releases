@@ -91,6 +91,10 @@ public class MissingAlertRequestHandler implements Runnable {
                     textMessage.setText(alert.toXml());
                     System.out.println("        Sending alert " + alert);
                     sender.send(textMessage);
+                    if (deviceId.equals("B") && sequenceNum.equals("37")) {
+                        // finish sending the last missing event See Main.java
+                        stop = true;
+                    }
                 } catch (JMSException ex) {
                     ex.printStackTrace();
                 }

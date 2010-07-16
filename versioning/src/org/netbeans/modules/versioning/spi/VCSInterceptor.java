@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.versioning.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Versioning systems that need to intercept or listen to file system operations implement this class.  
@@ -225,5 +229,26 @@ public abstract class VCSInterceptor {
      * @param file file that was just locked and is expected to change
      */
     public void beforeEdit(File file) {
+    }
+
+    /** Allows versioning system to exclude some children from recursive
+     * listening check. Also notifies the versioning whenever a refresh
+     * is required and allows the versiniong to provide special timestamp
+     * for a directory.
+     * <p>
+     * Default implementation of this method returns -1.
+     *
+     * @param dir the directory to check timestamp for
+     * @param lastTimeStamp the previously known timestamp or -1
+     * @param children add subfiles that shall be iterated into this array
+     * @return the timestamp that shall represent this directory, it will
+     *   be compared with timestamps of all children and the newest
+     *   one will be kept and next time passed as lastTimeStamp. Return
+     *   0 if the directory does not have any special timestamp. Return
+     *   -1 if you are not providing any special implementation
+     * @since 1.17
+     */
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        return -1;
     }
 }

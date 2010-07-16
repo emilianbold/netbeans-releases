@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.model.api.support;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
@@ -61,7 +61,6 @@ public final class ImportHelper {
         return getWsdlModel(model, location, importType, true );
     }
         
-
     /**
      * Returns wsdl model respectively given import <code>imp</code>.
      * @param model BPEL OM
@@ -69,33 +68,41 @@ public final class ImportHelper {
      * @param importType type of import
      * @param checkWellFormed if true method will return null if model is not valid
      */
-    public static WSDLModel getWsdlModel( BpelModel model, String location, 
-            String importType  , boolean checkWellFormed ) 
+    public static WSDLModel getWsdlModel( BpelModel model, String location, String importType  , boolean checkWellFormed ) {
+//System.out.println();
+//System.out.println();
+//System.out.println("IIIIIIIIIIIIIII getWsdlModel: " + location + " " + model + " " + importType + " " + checkWellFormed);
 
-    {
         if (!Import.WSDL_IMPORT_TYPE.equals( importType)) {
             return null;
         }
+//System.out.println("IIIIIIIIIIIIIII 1");
         WSDLModel wsdlModel;
+
         if (location == null) {
             return null;
         }
+//System.out.println("IIIIIIIIIIIIIII 2");
         try {
             URI uri = new URI(location);
-            ModelSource source = CatalogModelFactory.getDefault()
-                    .getCatalogModel( model.getModelSource())
-                    .getModelSource(uri, model.getModelSource());
+//System.out.println("IIIIIIIIIIIIIII 2: " + CatalogModelFactory.getDefault().getClass().getName());
+//System.out.println("IIIIIIIIIIIIIII URI: " + uri + " " + uri.hashCode());
+            
+            ModelSource source = CatalogModelFactory.getDefault().getCatalogModel( model.getModelSource()).getModelSource(uri, model.getModelSource());
             wsdlModel = WSDLModelFactory.getDefault().getModel(source);
+//System.out.println();
         }
         catch (URISyntaxException e) {
+//System.out.println("IIIIIIIIIIIIIII ex 1");
             wsdlModel = null;
         }
         catch (CatalogModelException e) {
+//System.out.println("IIIIIIIIIIIIIII ex 2: ");
+//          e.printStackTrace();
             wsdlModel = null;
         }
-        if (wsdlModel != null && wsdlModel.getState() == 
-            Model.State.NOT_WELL_FORMED && checkWellFormed ) 
-        {
+//System.out.println("IIIIIIIIIIIIIII 3: " + wsdlModel);
+        if (wsdlModel != null && wsdlModel.getState() == Model.State.NOT_WELL_FORMED && checkWellFormed) {
             return null;
         }
         return wsdlModel;
@@ -143,7 +150,7 @@ public final class ImportHelper {
         for (Schema schema : collection) {
             if ( namespace.equals( schema.getTargetNamespace() )){
                 if ( models == null ){
-                    models = new LinkedList<SchemaModel>();
+                    models = new ArrayList<SchemaModel>();
                 }
                 models.add( schema.getModel() );
             }

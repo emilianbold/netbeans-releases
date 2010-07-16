@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,116 +41,137 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class ArchiverConfiguration implements AllOptionsProvider {
+
     private MakeConfiguration makeConfiguration;
-    
     private StringConfiguration output;
-    private BooleanConfiguration runRanlib;
+    private NamedBooleanConfiguration runRanlib;
     private BooleanConfiguration replaceOption;
     private BooleanConfiguration verboseOption;
     private BooleanConfiguration supressOption;
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
     private StringConfiguration tool;
-    
+    private StringConfiguration ranlibTool;
+
     // Constructors
     public ArchiverConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         output = new StringConfiguration(null, ""); // NOI18N
-        runRanlib = new BooleanConfiguration(null, true, "", "$(RANLIB)"); // NOI18N
-        replaceOption = new BooleanConfiguration(null, true, "", "r"); // NOI18N
-        verboseOption = new BooleanConfiguration(null, true, "", "v"); // NOI18N
-        supressOption = new BooleanConfiguration(null, false, "", "c"); // NOI18N
+        runRanlib = new NamedBooleanConfiguration(true, "", "$(RANLIB)"); // NOI18N
+        replaceOption = new BooleanConfiguration(true);
+        verboseOption = new BooleanConfiguration(true);
+        supressOption = new BooleanConfiguration(false);
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
         tool = new StringConfiguration(null, "ar"); // NOI18N
+        ranlibTool = new StringConfiguration(null, "ranlib"); // NOI18N
     }
-    
+
     // MakeConfiguration
     public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
     }
+
     public MakeConfiguration getMakeConfiguration() {
         return makeConfiguration;
     }
-    
+
     // Output
     public void setOutput(StringConfiguration output) {
         this.output = output;
     }
+
     public StringConfiguration getOutput() {
         return output;
     }
-    
+
     // RunRanlib
-    public void setRunRanlib(BooleanConfiguration runRanlib) {
+    public void setRunRanlib(NamedBooleanConfiguration runRanlib) {
         this.runRanlib = runRanlib;
     }
-    public BooleanConfiguration getRunRanlib() {
+
+    public NamedBooleanConfiguration getRunRanlib() {
         return runRanlib;
     }
-    
+
     // Replace
     public void setReplaceOption(BooleanConfiguration replaceOption) {
         this.replaceOption = replaceOption;
     }
+
     public BooleanConfiguration getReplaceOption() {
         return replaceOption;
     }
-    
+
     // Verbose
     public void setVerboseOption(BooleanConfiguration verboseOption) {
         this.verboseOption = verboseOption;
     }
+
     public BooleanConfiguration getVerboseOption() {
         return verboseOption;
     }
-    
+
     // Supress
     public void setSupressOption(BooleanConfiguration supressOption) {
         this.supressOption = supressOption;
     }
+
     public BooleanConfiguration getSupressOption() {
         return supressOption;
     }
-    
+
     // CommandLine
     public OptionsConfiguration getCommandLineConfiguration() {
         return commandLineConfiguration;
     }
+
     public void setCommandLineConfiguration(OptionsConfiguration commandLineConfiguration) {
         this.commandLineConfiguration = commandLineConfiguration;
     }
-    
+
     // Additional Dependencies
     public OptionsConfiguration getAdditionalDependencies() {
         return additionalDependencies;
     }
+
     public void setAdditionalDependencies(OptionsConfiguration additionalDependencies) {
         this.additionalDependencies = additionalDependencies;
     }
-    
+
     // Tool
     public void setTool(StringConfiguration tool) {
         this.tool = tool;
     }
+
     public StringConfiguration getTool() {
         return tool;
     }
-    
+
+    // ranlib tool
+    public void setRanlibTool(StringConfiguration ranlibTool) {
+        this.ranlibTool = ranlibTool;
+    }
+
+    public StringConfiguration getRanlibTool() {
+        return ranlibTool;
+    }
+
     // Clone and assign
     public void assign(ArchiverConfiguration conf) {
         // ArchiverConfiguration
@@ -160,8 +184,9 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         getAdditionalDependencies().assign(conf.getAdditionalDependencies());
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
         getTool().assign(conf.getTool());
+        getRanlibTool().assign(conf.getRanlibTool());
     }
-    
+
     @Override
     public ArchiverConfiguration clone() {
         ArchiverConfiguration clone = new ArchiverConfiguration(getMakeConfiguration());
@@ -174,9 +199,10 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         clone.setAdditionalDependencies(getAdditionalDependencies().clone());
         clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         clone.setTool(getTool().clone());
+        clone.setRanlibTool(getRanlibTool().clone());
         return clone;
     }
-    
+
     // Interface OptionsProvider
     public String getOptions() {
         String options = getAllOptions(false) + " "; // NOI18N
@@ -184,22 +210,29 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         options += getOutputValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
-    
-    public String getAllOptions(BasicCompiler compiler) {
+
+    @Override
+    public String getAllOptions(Tool tool) {
         return getAllOptions(true);
     }
-    
+
     private String getAllOptions(boolean includeOutput) {
-        String options = ""; // NOI18N
-        options += getReplaceOption().getOption();
-        options += getVerboseOption().getOption();
-        options += getSupressOption().getOption() + " "; // NOI18N
-        if (includeOutput) {
-            options += getOutputValue() + " ";  // NOI18N
+        StringBuilder options = new StringBuilder();
+
+        options.append(getReplaceOption().getValue() ? "r" : ""); // NOI18N
+        options.append(getVerboseOption().getValue() ? "v" : ""); // NOI18N
+        options.append(getSupressOption().getValue() ? "c" : ""); // NOI18N
+        if (options.length() > 0) {
+            options.insert(0, "-"); // NOI18N
         }
-        return CppUtils.reformatWhitespaces(options);
+        options.append(" "); // NOI18N
+        if (includeOutput) {
+            options.append(getOutputValue());  // NOI18N
+            options.append(" ");  // NOI18N
+        }
+        return CppUtils.reformatWhitespaces(options.toString());
     }
-    
+
     // Sheet
     public Sheet getGeneralSheet() {
         Sheet sheet = new Sheet();
@@ -219,7 +252,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         set2.put(new BooleanNodeProp(getSupressOption(), true, "SupressDiagnostics", getString("SupressDiagnosticsTxt"), getString("SupressDiagnosticsHint"))); // NOI18N
         sheet.put(set2);
         Sheet.Set set3 = new Sheet.Set();
-        String [] texts = new String[] {getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")}; // NOI18N
+        String[] texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")}; // NOI18N
         set3.setName("Input"); // NOI18N
         set3.setDisplayName(getString("InputTxt"));
         set3.setShortDescription(getString("InputHint"));
@@ -230,31 +263,34 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         set4.setDisplayName(getString("ToolTxt1"));
         set4.setShortDescription(getString("ToolHint1"));
         set4.put(new StringNodeProp(getTool(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        set4.put(new StringNodeProp(getRanlibTool(), "ranlibTool", getString("RanlibToolTxt"), getString("RanlibToolHint"))); // NOI18N
         sheet.put(set4);
-        
-        texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
+
+        texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
         set2 = new Sheet.Set();
         set2.setName("CommandLine"); // NOI18N
         set2.setDisplayName(getString("CommandLineTxt"));
         set2.setShortDescription(getString("CommandLineHint"));
         set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
         sheet.put(set2);
-        
+
         return sheet;
     }
-    
-    class AdditionalDependenciesOptions implements AllOptionsProvider {
+
+    private class AdditionalDependenciesOptions implements AllOptionsProvider {
+
         public String getOptions() {
             return null; // Not used
         }
-        
-        public String getAllOptions(BasicCompiler compiler) {
+
+        @Override
+        public String getAllOptions(Tool tool) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);
         }
     }
-    
+
     public String getOutputValue() {
         if (getOutput().getModified()) {
             return getOutput().getValue();
@@ -262,24 +298,25 @@ public class ArchiverConfiguration implements AllOptionsProvider {
             return getOutputDefault();
         }
     }
-    
+
     private static class OutputNodeProp extends StringNodeProp {
+
         public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }
-        
+
         @Override
         public void setValue(String v) {
-            if (IpeUtils.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
             super.setValue(v);
         }
     }
-    
+
     private String getOutputDefault() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_STATIC_LIB:
                 outputName = "lib" + outputName + ".a"; // NOI18N
@@ -288,16 +325,16 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         outputName = ConfigurationSupport.makeNameLegal(outputName);
         return "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}" + "/" + outputName; // UNIX path // NOI18N
     }
-    
+
     /*
      * Default output pre version 28
      */
     public String getOutputDefault27() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // UNIX path // NOI18N
     }
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(ArchiverConfiguration.class, s);

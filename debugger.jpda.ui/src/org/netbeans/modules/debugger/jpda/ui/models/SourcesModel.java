@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,9 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -114,6 +119,9 @@ NodeActionsProvider {
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke ("DELETE")
         );
+        MOVE_UP_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);     // NOI18N
+        MOVE_DOWN_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);   // NOI18N
+        RESET_ORDER_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE); // NOI18N
     }
 
 
@@ -355,6 +363,7 @@ NodeActionsProvider {
         for (int x = 0; x < roots.length; x++) {
             sourceRootsSet.add(roots[x]);
         }
+        additionalSourceRoots = new LinkedHashSet(Arrays.asList(sourcePath.getAdditionalSourceRoots()));
     }
 
     /*// ExtendedNodeModelFilter:
@@ -480,9 +489,26 @@ NodeActionsProvider {
         public Class getType () {
             return null;
         }
+
     }
 
     private JFileChooser newSourceFileChooser;
+
+    private static File getCurrentSourceRoot() {
+        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (fo == null) {
+            return null;
+        }
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
+        fo = cp.findOwnerRoot(fo);
+        if (fo == null) {
+            return null;
+        }
+        return FileUtil.toFile(fo);
+    }
 
     private final Action NEW_SOURCE_ROOT_ACTION = new AbstractAction(
             NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_Action_AddSrc")) {
@@ -509,6 +535,10 @@ NodeActionsProvider {
                     }
 
                 });
+            }
+            File currentSourceRoot = getCurrentSourceRoot();
+            if (currentSourceRoot != null) {
+                newSourceFileChooser.setSelectedFile(currentSourceRoot);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));

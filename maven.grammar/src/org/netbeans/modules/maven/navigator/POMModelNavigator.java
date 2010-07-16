@@ -61,6 +61,7 @@ public class POMModelNavigator implements NavigatorPanel {
     protected Lookup.Result<DataObject> selection;
 
     protected final LookupListener selectionListener = new LookupListener() {
+        @Override
         public void resultChanged(LookupEvent ev) {
             if(selection == null)
                 return;
@@ -69,14 +70,17 @@ public class POMModelNavigator implements NavigatorPanel {
     };
     
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_NAME");
     }
 
+    @Override
     public String getDisplayHint() {
         return NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_HINT");
     }
 
+    @Override
     public JComponent getComponent() {
         return getNavigatorUI();
     }
@@ -88,6 +92,7 @@ public class POMModelNavigator implements NavigatorPanel {
         return component;
     }
 
+    @Override
     public void panelActivated(Lookup context) {
         getNavigatorUI().showWaitNode();
         selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
@@ -95,6 +100,7 @@ public class POMModelNavigator implements NavigatorPanel {
         selectionListener.resultChanged(null);
     }
     
+    @Override
     public void panelDeactivated() {
         getNavigatorUI().showWaitNode();
         if(selection != null) {
@@ -104,6 +110,7 @@ public class POMModelNavigator implements NavigatorPanel {
         getNavigatorUI().release();
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }

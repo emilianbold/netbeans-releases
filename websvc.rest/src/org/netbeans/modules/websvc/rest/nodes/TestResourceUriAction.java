@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -74,6 +78,7 @@ public class TestResourceUriAction extends NodeAction  {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         ResourceUriProvider resourceUriProvider = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class);
@@ -84,18 +89,21 @@ public class TestResourceUriAction extends NodeAction  {
             if (resourceUri == null || resourceUri.length() == 0) {
                 return false;
             }
+        } 
+        Project prj = activatedNodes[0].getLookup().lookup(Project.class);
+        if (prj == null || prj.getLookup().lookup(J2eeModuleProvider.class) == null) {
+            return false;
         }
         return true;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         String uri = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class).getResourceUri();
         if (!uri.startsWith("/")) {
             uri = "/"+uri;
         }
-        System.out.println("uri = "+uri);
         String resourceURL = getResourceURL(activatedNodes[0].getLookup().lookup(Project.class), uri);
-        System.out.println("url = "+resourceURL);
         try {
             URL url = new URL(resourceURL);
             if (url != null) {
@@ -186,9 +194,17 @@ public class TestResourceUriAction extends NodeAction  {
             }
         }
 
+        String applicationPath = "resources"; //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                applicationPath = restSupport.getApplicationPath();
+            } catch (IOException ex) {}
+        }
+
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/resources" + uri; //NOI18N
+                "/"+applicationPath + uri; //NOI18N
     }
 
     @Override

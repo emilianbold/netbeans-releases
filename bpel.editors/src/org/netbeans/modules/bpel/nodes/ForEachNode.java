@@ -69,37 +69,38 @@ public class ForEachNode extends BpelNode<ForEach> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, PropertyType.NAME,
                 "getName", "setName", null); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 ForEach.COUNTER_NAME, PropertyType.COUNTER_NAME,
                 "getCounterName", "setCounterName", null); // NOI18N
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 PropertyType.PARALLEL, "isParallel", "setParallel", null); // NOI18N
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 StartCounterValue.class, PropertyType.START_COUNTER_EXPR,
                 "getStartCounterValue", "setStartCounterValue", null); // NOI18N
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 FinalCounterValue.class, PropertyType.FINAL_COUNTER_EXPR,
                 "getFinalCounterValue", "setFinalCounterValue", null); // NOI18N
         //
-        PropertyUtils.registerElementProperty(null, this, mainPropertySet,
+        propUtil.registerElementProperty(null, this, mainPropertySet,
                 Branches.class, PropertyType.COMPLETION_CONDITION,
                 "getCompletionCondition", "setCompletionCondition",     // NOI18N
                 "removeCompletionCondition");                           // NOI18N
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 PropertyType.COUNT_COMPLETED_BRANCHES_ONLY,
                 "isCountCompletedOnly", "setCountCompletedOnly" ,       // NOI18N
                 "removeCountCompletedOnly");                            // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

@@ -6,6 +6,5 @@
     <param name="eager">false</param>
     <param name="enabled">true</param>
     <param name="jar">wherever/simple-module.jar</param>
-    <param name="release">1</param>
     <param name="reloadable">false</param>
 </module>

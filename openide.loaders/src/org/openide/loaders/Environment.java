@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.openide.loaders;
 
-import java.util.Iterator;
 import javax.naming.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -53,7 +55,7 @@ import org.openide.util.Lookup;
  */
 public final class Environment extends Object {
     /** Result of query for all instances of Environment.Provider */
-    private static Lookup.Result result;
+    private static Lookup.Result<Provider> result;
 
     /** Constructor
      */
@@ -88,15 +90,14 @@ public final class Environment extends Object {
     }
     
     /** Finds a JNDI context for a given data object.
-     * This method is probably unused and useless.
      * @param obj the data object
      * @return the JNDI context for this data object
      * @since 3.13
+     * @deprecated This method is probably unused and useless.
      */
-    public static javax.naming.Context findSettingsContext(DataObject obj) {
-        Iterator it = getProviders().allInstances().iterator();
-        while (it.hasNext()) {
-            Environment.Provider ep = (Environment.Provider) it.next();
+    @Deprecated
+    public static Context findSettingsContext(DataObject obj) {
+        for (Provider ep : getProviders().allInstances()) {
             Lookup lookup = ep.getEnvironment(obj);
             if (lookup != null) {
                 Context ctx = lookup.lookup(Context.class);
@@ -125,10 +126,8 @@ public final class Environment extends Object {
             }
             }
         */
-        
-        Iterator it = getProviders().allInstances().iterator();
-        while (it.hasNext ()) {
-            Environment.Provider ep = (Environment.Provider)it.next ();
+
+        for (Provider ep : getProviders().allInstances()) {
             Lookup lookup = ep.getEnvironment (obj);
             if (lookup != null) {
                 return lookup;
@@ -139,7 +138,7 @@ public final class Environment extends Object {
         return null;
     }
     
-    static Lookup.Result getProviders() {
+    static Lookup.Result<Provider> getProviders() {
         if (result == null) {
             result = Lookup.getDefault().lookupResult(Environment.Provider.class);
         }

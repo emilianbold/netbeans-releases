@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -165,6 +169,19 @@ public class L10nTask extends Task {
                 unzip.setSrc(nbmFile);
                 unzip.setDest(nbmDir);
                 unzip.execute();
+
+                DirectoryScanner packGzDs = new DirectoryScanner();
+                final String suffix = ".jar.pack.gz";
+                packGzDs.setBasedir(nbmDir);
+                packGzDs.setIncludes(new String[]{"**/*" + suffix});
+                packGzDs.scan();
+                for(String packedJar : packGzDs.getIncludedFiles()) {
+                    File packedJarFile = new File(nbmDir, packedJar);
+                    File unpackedJarFile = new File(nbmDir, packedJar.substring(0, packedJar.length() - suffix.length()) + ".jar");
+                    log("Unpacking " + packedJar + " to " + unpackedJarFile, Project.MSG_VERBOSE);
+                    AutoUpdate.unpack200(packedJarFile, unpackedJarFile);
+                    packedJarFile.delete();
+                }
             }
             ds.setBasedir(tmpDir);
             String[] includesKeys = includes.keySet().toArray(new String[]{""});
@@ -185,7 +202,8 @@ public class L10nTask extends Task {
             
             Zip zip = (Zip) getProject().createTask("zip");
             zip.setDestFile(kitFile);
-            for (String file : ds.getIncludedFiles()) {
+            for (String filePath : ds.getIncludedFiles()) {
+                String file = filePath.replace("\\", "/");
                 ZipFileSet zipFileSet = new ZipFileSet();
                 boolean matching = false;
                 for (String include : includesKeys) {
@@ -235,7 +253,9 @@ public class L10nTask extends Task {
             Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                lnr.close();
+                if (lnr!=null) {
+                    lnr.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -255,5 +275,5 @@ public class L10nTask extends Task {
     }
     public void setKitFile(File kitFile) {
         this.kitFile = kitFile;
-    }
+    }    
 }

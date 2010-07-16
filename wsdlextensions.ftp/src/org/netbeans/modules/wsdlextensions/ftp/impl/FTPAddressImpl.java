@@ -72,7 +72,7 @@ public class FTPAddressImpl extends FTPComponentImpl implements FTPAddress {
         setAttribute(FTP_UD_HEURISTICS_PROPERTY, FTPAttribute.FTP_UD_HEURISTICS_PROPERTY, heuristicsLoc);
     }
 
-    public String getTrnasferMode() {
+    public String getTransferMode() {
         return getAttribute(FTPAttribute.FTP_TRANSMODE_PROPERTY);
     }
 
@@ -103,6 +103,103 @@ public class FTPAddressImpl extends FTPComponentImpl implements FTPAddress {
 
     public void setDataChannelTimeout(String s) {
         setAttribute(FTP_DATA_CH_TIMEOUT_PROPERTY, FTPAttribute.FTP_DATA_CH_TIMEOUT_PROPERTY, s);
+    }
+
+    public String getSecureFTPType() {
+        return getAttribute(FTPAttribute.FTP_SEC_TYPE_PROPERTY);
+    }
+
+    public void setSecureFTPType(String s) {
+        setAttribute(FTPAddress.FTP_SEC_TYPE_PROPERTY, FTPAttribute.FTP_SEC_TYPE_PROPERTY, s);
+    }
+
+    public String getKeyStore() {
+        return getAttribute(FTPAttribute.FTP_KSTOR_PROPERTY);
+    }
+
+    public void setKeyStore(String s) {
+        setAttribute(FTPAddress.FTP_KSTOR_PROPERTY, FTPAttribute.FTP_KSTOR_PROPERTY, s);
+    }
+
+    public String getKeyStorePassword() {
+        return getAttribute(FTPAttribute.FTP_KSTOR_PASSWD_PROPERTY);
+    }
+
+    public void setKeyStorePassword(String s) {
+        setAttribute(FTPAddress.FTP_KSTOR_PASSWD_PROPERTY, FTPAttribute.FTP_KSTOR_PASSWD_PROPERTY, s);
+    }
+
+    public String getKeyAlias() {
+        return getAttribute(FTPAttribute.FTP_KEY_ALIAS_PROPERTY);
+    }
+
+    public void setKeyAlias(String s) {
+        setAttribute(FTPAddress.FTP_KEY_ALIAS_PROPERTY, FTPAttribute.FTP_KEY_ALIAS_PROPERTY, s);
+    }
+
+    public String getKeyPassword() {
+        return getAttribute(FTPAttribute.FTP_KEY_PASSWD_PROPERTY);
+    }
+
+    public void setKeyPassword(String s) {
+        setAttribute(FTPAddress.FTP_KEY_PASSWD_PROPERTY, FTPAttribute.FTP_KEY_PASSWD_PROPERTY, s);
+    }
+
+    public String getTrustStore() {
+        return getAttribute(FTPAttribute.FTP_TSTOR_PROPERTY);
+    }
+
+    public void setTrustStore(String s) {
+        setAttribute(FTPAddress.FTP_TSTOR_PROPERTY, FTPAttribute.FTP_TSTOR_PROPERTY, s);
+    }
+
+    public String getTrustStorePassword() {
+        return getAttribute(FTPAttribute.FTP_TSTOR_PASSWD_PROPERTY);
+    }
+
+    public void setTrustStorePassword(String s) {
+        setAttribute(FTPAddress.FTP_TSTOR_PASSWD_PROPERTY, FTPAttribute.FTP_TSTOR_PASSWD_PROPERTY, s);
+    }
+
+    public boolean getEnableCCC() {
+        String s = getAttribute(FTPAttribute.FTP_ENABLE_CCC_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setEnableCCC(boolean b) {
+        setAttribute(FTPAddress.FTP_ENABLE_CCC_PROPERTY, FTPAttribute.FTP_ENABLE_CCC_PROPERTY, b ? "true" : "false");
+    }
+
+    public String getFTPLogin() {
+        return getAttribute(FTPAttribute.FTP_LOGIN_PROPERTY);
+    }
+
+    public void setFTPLogin(String s) {
+        setAttribute(FTPAddress.FTP_LOGIN_PROPERTY, FTPAttribute.FTP_LOGIN_PROPERTY, s);
+    }
+
+    public String getFTPLoginPassword() {
+        return getAttribute(FTPAttribute.FTP_LOGIN_PASSWORD_PROPERTY);
+    }
+
+    public void setFTPLoginPassword(String s) {
+        setAttribute(FTPAddress.FTP_LOGIN_PASSWORD_PROPERTY, FTPAttribute.FTP_LOGIN_PASSWORD_PROPERTY, s);
+    }
+
+    public String getControlChannelEncoding() {
+        return getAttribute(FTPAttribute.FTP_CNTRL_CH_ENCODING_PROPERTY);
+    }
+
+    public void setControlChannelEncoding(String s) {
+        setAttribute(FTP_CNTRL_CH_ENCODING_PROPERTY, FTPAttribute.FTP_CNTRL_CH_ENCODING_PROPERTY, s);
+    }
+
+    public String getPersistenceBaseDir() {
+        return getAttribute(FTPAttribute.FTP_PERSIST_BASE_LOC_PROPERTY);
+    }
+
+    public void setPersistenceBaseDir(String s) {
+        setAttribute(FTP_PERSIST_BASE_LOC_PROPERTY, FTPAttribute.FTP_PERSIST_BASE_LOC_PROPERTY, s);
     }
 
 }

@@ -507,7 +507,7 @@ public class CasaWrapperModelTest {
         int y = 100;
         
         CasaServiceEngineServiceUnit newSESU = 
-                casaWrapperModel.addServiceEngineServiceUnit(internal, x, y);
+                casaWrapperModel.addServiceEngineServiceUnitFromPalette(internal, x, y);
         assertEquals(2, casaWrapperModel.getServiceEngineServiceUnits().size());
         assertFalse(newSESU.isInternal());
         assertTrue(newSESU.isUnknown());
@@ -628,7 +628,7 @@ public class CasaWrapperModelTest {
     @Test
     public void testAddEndpointToServiceEngineServiceUnit() {
         System.out.println("addEndpointToServiceEngineServiceUnit");
-        CasaServiceEngineServiceUnit seSU = casaWrapperModel.addServiceEngineServiceUnit(false,0,0);
+        CasaServiceEngineServiceUnit seSU = casaWrapperModel.addServiceEngineServiceUnitFromPalette(false,0,0);
         boolean isConsumes = true;
         CasaEndpointRef expResult = null;
         CasaEndpointRef result = casaWrapperModel.addExternalEndpoint(seSU, isConsumes);
@@ -675,7 +675,7 @@ public class CasaWrapperModelTest {
         String type = "MyProjectType";
         int x = 0;
         int y = 0;
-        casaWrapperModel.addJBIModule(project, type, x, y);
+        casaWrapperModel.addJBIModule(project, type, x, y, true);
         
     }
 
@@ -804,7 +804,7 @@ public class CasaWrapperModelTest {
         CasaServiceEngineServiceUnit seSU = 
                 casaWrapperModel.getServiceEngineServiceUnits().get(0);
         try {
-            casaWrapperModel.setUnitName(seSU, unitName);
+            casaWrapperModel.setServiceUnitName(seSU, unitName);
             assertTrue(false);
         } catch (AssertionFailedError e) {
             System.out.println("");// expected because only external se su's unitName can be set
@@ -813,7 +813,7 @@ public class CasaWrapperModelTest {
         CasaBindingComponentServiceUnit bcSU = 
                 casaWrapperModel.getBindingComponentServiceUnits().get(0);
         try {
-            casaWrapperModel.setUnitName(bcSU, unitName);
+            casaWrapperModel.setServiceUnitName(bcSU, unitName);
             assertTrue(false);
         } catch (AssertionFailedError e) {
             // expected because only external se su's unitName can be set

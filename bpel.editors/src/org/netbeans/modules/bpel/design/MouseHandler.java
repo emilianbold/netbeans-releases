@@ -60,6 +60,12 @@ public class MouseHandler extends MouseAdapter {
 
     
     public void mouseReleased(MouseEvent e) {
+//        maybeShowPopup(e);
+        getDiagramView().requestFocus();
+        Pattern p = getDiagramView().findPattern(e.getPoint());
+
+        getSelectionModel().setSelectedPattern(p);
+
         maybeShowPopup(e);
     }
     

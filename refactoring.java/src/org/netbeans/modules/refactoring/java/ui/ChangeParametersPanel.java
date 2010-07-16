@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -58,6 +62,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.Exceptions;
@@ -78,6 +83,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private static Action editAction = null;
     private String returnType;
+    private String enclosingClassName;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -127,6 +133,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
                         returnType = e.getReturnType().toString();
+                        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, refactoredObj.resolve(info), true, true, true, true, true);
+                        TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
+                        Element enclosingElement = tph.resolveElement(info);
+                        enclosingClassName = enclosingElement.getSimpleName().toString();
                         if (inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
@@ -599,8 +609,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             buf.append(' ');
             name = RetoucheUtils.getSimpleName(refactoredObj);
         } else {
-            // for constructor, get name from the declaring class
-            name = RetoucheUtils.getSimpleName(refactoredObj);
+            // for constructor, get name from the declaring class            
+            // name = RetoucheUtils.getSimpleName(refactoredObj);
+            name = enclosingClassName;
         }
         buf.append(name);
         buf.append('(');

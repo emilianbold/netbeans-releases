@@ -20,7 +20,6 @@
 package org.netbeans.modules.soa.mappercore.vertexitemeditor;
 
 import java.awt.Component;
-import javax.swing.JTextField;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;

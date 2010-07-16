@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,13 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.providers.CheckProviders;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -59,32 +66,31 @@ import org.openide.filesystems.URLMapperTestHidden;
 /**
  * @author rmatous
  */
-public class FileBasedFileSystemTest extends FileSystemFactoryHid {            
+public class FileBasedFileSystemTest extends FileSystemFactoryHid {
     public FileBasedFileSystemTest(Test test) {
         super(test);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockServices.setServices(new Class[] {FileBasedURLMapper.class});
+    @Override
+    protected void setServices(Class<?>... services) {
+        List<Class<?>> arr = new ArrayList<Class<?>>();
+        arr.addAll(Arrays.asList(services));
+        arr.add(FileBasedURLMapper.class);
+        MockServices.setServices(arr.toArray(new Class<?>[0]));
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();        
+        return new FileBasedFileSystemTest(suite(false));
+    }
+    static NbTestSuite suite(boolean created) {
+        NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);                
-        suite.addTestSuite(BaseFileObjectTestHid.class);                
-        return new FileBasedFileSystemTest(suite);
+        suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(BaseFileObjectTestHid.class);
+        suite.addTest(new CheckProviders(created));
+        return suite;
     }
         
     private File getWorkDir() {
@@ -93,6 +99,7 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         return new File(workDirProperty);
     }
             
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         FileObjectFactory.reinitForTests();
         FileObject workFo = FileBasedFileSystem.getFileObject(getWorkDir());
@@ -108,8 +115,10 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
+    @Override
     protected void destroyFileSystem(String testName) throws IOException {}    
 
+    @Override
     protected String getResourcePrefix(String testName, String[] resources) {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }

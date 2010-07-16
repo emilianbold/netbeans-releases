@@ -124,5 +124,3 @@
         <!-- end div#wrapper -->
     </body>
 </html>
-
-

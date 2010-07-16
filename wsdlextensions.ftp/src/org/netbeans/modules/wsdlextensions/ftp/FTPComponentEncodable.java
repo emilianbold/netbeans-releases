@@ -28,6 +28,10 @@ public interface FTPComponentEncodable extends FTPComponent {
     public static final String FTP_ENCODINGSTYLE_PROPERTY = "encodingStyle";
     public static final String FTP_PART_PROPERTY = "part";
     
+    public static final String FTP_CHAR_ENCODE_PROPERTY = "characterEncoding";
+    public static final String FTP_FILE_TYPE_PROPERTY = "fileType";
+    public static final String FTP_FWD_ATTACH_PROPERTY = "forwardAsAttachment";
+    
     public String getUse();
     public void setUse(String use);
 
@@ -37,4 +41,12 @@ public interface FTPComponentEncodable extends FTPComponent {
     public String getPart();
     public void setPart(String use);
 
+    public String getCharacterEncoding();
+    public void setCharacterEncoding(String s);
+
+    public String getFileType();
+    public void setFileType(String s);
+
+    public boolean getForwardAsAttachment();
+    public void setForwardAsAttachment(boolean b);
 }

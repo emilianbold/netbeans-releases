@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -65,14 +69,17 @@ public class QueryAction extends SystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(QueryAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
@@ -95,27 +102,34 @@ public class QueryAction extends SystemAction {
 
     private static void openQuery(final Query query, final Repository repository, final Node[] context, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
-                QueryTopComponent tc = null;
-                if(query != null) {
-                    tc = QueryTopComponent.find(query);
+                UIUtils.setWaitCursor(true);
+                try {
+                    QueryTopComponent tc = null;
+                    if(query != null) {
+                        tc = QueryTopComponent.find(query);
+                    }
+                    if(tc == null) {
+                        tc = new QueryTopComponent();
+                        tc.init(query, repository, context, suggestedSelectionOnly);
+                    }
+                    if(!tc.isOpened()) {
+                        tc.open();
+                    }
+                    tc.requestActive();
+                    BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                } finally {
+                    UIUtils.setWaitCursor(false);
                 }
-                if(tc == null) {
-                    tc = new QueryTopComponent();
-                    tc.init(query, repository, context, suggestedSelectionOnly);
-                }
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
-                tc.requestActive();
-                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
             }
         });
     }
 
     public static void closeQuery(final Query query) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tc = null;
                 if(query != null) {

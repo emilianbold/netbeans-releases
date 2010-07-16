@@ -22,10 +22,8 @@
 <editor_palette_item version="1.0">
     <class name="org.netbeans.modules.iep.editor.palette.items.relationConverter.NotificationStream"/>
     
-    <!--<icon16 urlvalue="images/notificationStreamx16.png" />
-    <icon32 urlvalue="images/notificationStreamx32.png" />-->
-    <icon16 urlvalue="images/new/icons32x32/notificationStreamx32.png" />
-    <icon32 urlvalue="images/new/icons32x32/notificationStreamx32.png" />
+    <icon16 urlvalue="images/icons16x16/notificationStreamx16.png" />
+    <icon32 urlvalue="images/icons32x32/notificationStreamx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.relationConverter.Bundle"
                display-name-key="NAME_html-NotificationStream"
                tooltip-key="HINT_html-NotificationStream" />

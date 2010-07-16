@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@
  */
 package org.netbeans.modules.xslt.core.multiview.source;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -47,15 +52,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
-//import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -68,6 +74,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
@@ -292,12 +299,79 @@ public class XSLTSourceMultiViewElement extends CloneableEditor implements Multi
         if (doc instanceof NbDocument.CustomToolbar) {
             if (myToolBar == null) {
                 myToolBar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
+                if (SwingUtilities.isEventDispatchThread()) {
+                    removeSourceButton(myMultiViewObserver.getTopComponent());
+//                    removeSeparator(myToolBar);
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            removeSourceButton(myMultiViewObserver.getTopComponent());
+//                            removeSeparator(myToolBar);
+                        }
+                    });
+                }
             }
             return myToolBar;
         }
         return null;
     }
     
+    //temporary hack to remove source button and separator after it
+    //139025
+    private void removeSourceButton(Container container) {
+        if (container == null && !isRemoveSourceButton()) {
+            return;
+        }
+        int num = container.getComponentCount();
+        for (int i = 0; i < num; i++) {
+            Component item = container.getComponent(i);
+            
+            if (item instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton)item; 
+                if (NbBundle.getMessage(XSLTSourceMultiViewElementDesc.class, 
+                        XSLTSourceMultiViewElementDesc.DISPLAY_NAME).equals(button.getText())) 
+                {
+                    button.setVisible(false);
+                    sourceButtonRemoved = true;
+                    break;
+                }
+            } 
+
+            if (item instanceof Container) {
+                removeSourceButton((Container)item);
+            }
+        }
+    }
+
+//    private boolean separatorRemoved = false;
+    private boolean sourceButtonRemoved = false;
+//    private boolean isRemoveSeparator() {
+//        return sourceButtonRemoved && !separatorRemoved;
+//    }
+    private boolean isRemoveSourceButton() {
+        return !sourceButtonRemoved;
+    }
+
+//    private void removeSeparator(Container container) {
+//        if (container == null || !isRemoveSeparator()) {
+//            return;
+//        }
+//        int num = container.getComponentCount();
+//        for (int i = 0; i < num; i++) {
+//            Component item = container.getComponent(i);
+//            if (item instanceof JSeparator) {
+//                item.setVisible(false);
+//                separatorRemoved = true;
+//                break;
+//            }
+//
+//            if (item instanceof Container) {
+//                removeSeparator((Container)item);
+//            }
+//        }
+//    }
+     
     public JComponent getVisualRepresentation() {
         return this;
     }

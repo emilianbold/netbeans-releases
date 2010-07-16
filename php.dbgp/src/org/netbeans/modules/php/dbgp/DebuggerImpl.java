@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,7 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.util.concurrent.Callable;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.util.Cancellable;
 
@@ -60,69 +60,18 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
+    @Override
     public void start(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
-        assert properties.startFile != null;
-        SessionId sessionId = getSessionId(project);
-        if (sessionId == null) {
-            sessionId = new SessionId(properties.startFile);
-            DebuggerOptions options = new DebuggerOptions();
-            options.debugForFirstPageOnly = properties.closeSession;
-            options.pathMapping = properties.pathMapping;
-            options.debugProxy = properties.debugProxy;
-
-            debug(sessionId, options, run);
-            long started = System.currentTimeMillis();
-            if (!sessionId.isInitialized(true)) {
-                ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
-                return;
-            }
-        }
+        SessionManager.getInstance().startNewSession(project, run, properties);
     }
 
+    @Override
     public void stop() {
-        Session phpSession = getPhpSession();
-        if (phpSession != null) {
-            SessionProgress forSession = SessionProgress.forSession(phpSession);
-            if (forSession != null) {
-                forSession.cancel();
-            }
-        }
+        SessionManager.getInstance().stopCurrentSession(true);
     }
 
+    @Override
     public boolean isAlreadyRunning() {
-        return getPhpSession() != null;
+        return SessionManager.getInstance().isAlreadyRunning();
     }
-
-    private Session getPhpSession() {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId sessionId = session.lookupFirst(null, SessionId.class);
-            if (sessionId != null) {
-                Project sessionProject = sessionId.getProject();
-                if (sessionProject != null && PhpProjectUtils.isPhpProject(sessionProject)) {
-                    return session;
-                }
-            }
-        }
-        return null;
-    }
-
-    private SessionId getSessionId(Project project) {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId sessionId = session.lookupFirst(null, SessionId.class);
-            if (sessionId != null) {
-                Project sessionProject = sessionId.getProject();
-                if (project.equals(sessionProject)) {
-                    return sessionId;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void debug(SessionId id,DebuggerOptions options, Callable<Cancellable> backendLauncher) {
-        SessionManager.getInstance().startSession(id, options, backendLauncher);
-    }
-
 }

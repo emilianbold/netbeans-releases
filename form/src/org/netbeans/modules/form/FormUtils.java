@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,8 +62,6 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Document;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
@@ -78,6 +79,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class FormUtils
 {
     public static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.form"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("GUI Builder", 10, false); // NOI18N
 
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
@@ -273,6 +275,8 @@ public class FormUtils
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED,
                 "selectionMode", PROP_PREFERRED },
+        { "javax.swing.JList", CLASS_AND_SWING_SUBCLASSES,
+                  "listData", PROP_HIDDEN },
         { "javax.swing.JComboBox", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
         { "javax.swing.JComboBox", CLASS_EXACTLY,
@@ -341,6 +345,9 @@ public class FormUtils
                 "selected", PROP_HIDDEN },
         { "javax.swing.JSpinner", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
+        { "javax.swing.JSpinner", CLASS_AND_SWING_SUBCLASSES,
+                "foreground", PROP_HIDDEN,
+                "background", PROP_HIDDEN },
         { "java.applet.Applet", CLASS_AND_SUBCLASSES,
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
@@ -706,7 +713,7 @@ public class FormUtils
                     count = 0;
                     setWriteObjCounter_Method.invoke(null, comp, count);
                     // reinstall ComponentUI
-                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: "+comp); // NOI18N
+                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: {0}", comp); // NOI18N
                     ComponentUI ui = (ComponentUI) ui_Field.get(comp);
                     ui.installUI(comp);
                 }
@@ -934,7 +941,7 @@ public class FormUtils
             LOGGER.log(Level.INFO, dnfex.getMessage(), dnfex);
         }
         if (!(dob instanceof FormDataObject)) {
-            LOGGER.log(Level.INFO, "Unable to find FormDataObject for " + srcFile); // NOI18N
+            LOGGER.log(Level.INFO, "Unable to find FormDataObject for {0}", srcFile); // NOI18N
             return;
         }
         FormDataObject formDob = (FormDataObject)dob;
@@ -942,10 +949,10 @@ public class FormUtils
         DialogBinding.bindComponentToDocument(document, ccPosition, 0, editor);
 
         // do not highlight current row
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
-        if (eui != null) { // Issue 142686
-            eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        }
+        editor.putClientProperty(
+            "HighlightsLayerExcludes", //NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+        );
 
         setupTextUndoRedo(editor);
     }
@@ -1302,6 +1309,7 @@ public class FormUtils
                 deviationMap = new HashMap<String, DefaultValueDeviation>();
                 deviationMap.put("background", // NOI18N
                     new DefaultValueDeviation(values) {
+                        @Override
                         Object getValue(Object beanInstance) {
                             return ((javax.swing.JTextField)beanInstance).isEditable() ?
                                    this.values[0] : this.values[1];
@@ -1338,7 +1346,7 @@ public class FormUtils
     }
     
     public static String getMethodName(String name, Class[] params) {        
-	StringBuffer sb = new StringBuffer(name);
+	StringBuilder sb = new StringBuilder(name);
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N
         } else {
@@ -1355,6 +1363,7 @@ public class FormUtils
 
     static void sortProperties(Node.Property[] properties) {
         Arrays.sort(properties, new Comparator<Node.Property>() {
+            @Override
             public int compare(Node.Property o1, Node.Property o2) {
                 String n1 = o1.getDisplayName();
                 String n2 = o2.getDisplayName();
@@ -1786,4 +1795,9 @@ public class FormUtils
             return Introspector.getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
         }
     }
+
+    public static RequestProcessor getRequestProcessor() {
+        return RP;
+    }
+
 }

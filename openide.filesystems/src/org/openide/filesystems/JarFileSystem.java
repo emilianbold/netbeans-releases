@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +75,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -88,7 +93,7 @@ public class JarFileSystem extends AbstractFileSystem {
     static final long serialVersionUID = -98124752801761145L;
 
     /** One request proccesor shared for all instances of JarFileSystem*/
-    private static RequestProcessor req = new RequestProcessor("JarFs - modification watcher", 1, false, false); // NOI18N
+    private static final RequestProcessor req = new RequestProcessor("JarFs - modification watcher", 1, false, false); // NOI18N
 
     /** Controlls the LocalFileSystem's automatic refresh.
     * If the refresh time interval is set from the System.property, than this value is used.
@@ -171,6 +176,31 @@ public class JarFileSystem extends AbstractFileSystem {
         setCapability(cap);
     }
 
+    /** Creates new JAR for a given JAR file. This constructor
+     * behaves basically like:
+     * <pre>
+     * JarFileSystem fs = new JarFileSystem();
+     * fs.setJarFile(jar);
+     * </pre>
+     * but it is more effective in some situations. It does not open and
+     * read the content of the jar file immediately. Instead
+     * it waits until somebody asks for resources from inside the JAR.
+     *
+     * @param jar location of the JAR file
+     * @since 7.34
+     */
+    public JarFileSystem(File jar) throws IOException {
+        this();
+        try {
+            setJarFile(jar, true, false);
+        } catch (PropertyVetoException ex) {
+            // cannot happen, setSystemName can throw the exception only
+            // if the filesystem is already in Repository, which this one
+            // is not.
+            throw (IOException)new IOException().initCause(ex);
+        }
+    }
+
     /* Creates Reference. In FileSystem, which subclasses AbstractFileSystem, you can overload method
      * createReference(FileObject fo) to achieve another type of Reference (weak, strong etc.)
      * @param fo is FileObject. It`s reference yourequire to get.
@@ -233,7 +263,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * @throws IOException if the file is not valid
     */
     public void setJarFile(final File aRoot) throws IOException, PropertyVetoException {
-        setJarFile(aRoot, true);
+        setJarFile(aRoot, true, true);
     }
     
     @SuppressWarnings("deprecation") // need to set it for compat
@@ -241,7 +271,7 @@ public class JarFileSystem extends AbstractFileSystem {
         setSystemName(s);
     }
 
-    private void setJarFile(final File aRoot, boolean refreshRoot)
+    private void setJarFile(final File aRoot, boolean refreshRoot, boolean openJar)
     throws IOException, PropertyVetoException {
         if (!aRoot.equals(FileUtil.normalizeFile(aRoot))) {
             throw new IllegalArgumentException(
@@ -279,18 +309,20 @@ public class JarFileSystem extends AbstractFileSystem {
 
         JarFile tempJar = null;
 
-        try {
-            tempJar = new JarFile(s);
-            LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
-        } catch (ZipException e) {
-            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
+        if (openJar) {
+            try {
+                tempJar = new JarFile(s);
+                LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
+            } catch (ZipException e) {
+                throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
+            }
         }
 
         synchronized (closeSync) {
             _setSystemName(s);
 
             closeCurrentRoot(false);
-            jar = tempJar;
+            setJar(tempJar);
             openRequestTime = System.currentTimeMillis();
             root = new File(s);
 
@@ -328,7 +360,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
                     if ((f != null) && !f.equals(aRoot)) {
                         try {
-                            setJarFile(f, false);
+                            setJarFile(f, false, true);
                         } catch (IOException iex) {
                             ExternalUtil.exception(iex);
                         } catch (PropertyVetoException pvex) {
@@ -436,12 +468,18 @@ public class JarFileSystem extends AbstractFileSystem {
     //
     // Info
     //
-    protected java.util.Date lastModified(String name) {
-        try {
-            return new java.util.Date(getEntry(name).getTime());
-        } finally {
-            closeCurrentRoot(false);
+    protected Date lastModified(String name) {
+        long t;
+        if (name.length() == 0) {
+            t = getJarFile().lastModified();
+        } else {
+            try {
+                t = getEntry(name).getTime();
+            } finally {
+                closeCurrentRoot(false);
+            }
         }
+        return new Date(t);
     }
 
     protected boolean folder(String name) {
@@ -603,7 +641,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected void lock(String name) throws IOException {
-        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock", name, getDisplayName(), name));
+        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock_JAR", name, root));
     }
 
     protected void unlock(String name) {
@@ -613,6 +651,9 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Object readAttribute(String name, String attrName) {
+        if ("java.io.File".equals(attrName)) {
+            return null;
+        }
         Attributes attr1 = getManifest().getAttributes(name);
 
         try {
@@ -688,18 +729,7 @@ public class JarFileSystem extends AbstractFileSystem {
             // 150% of time from last open request, but between CLOSE_DELAY_MIN and CLOSE_DELAY_MAX
             closeDelay = (int) Math.min(CLOSE_DELAY_MAX, Math.max(CLOSE_DELAY_MIN, (1.5 * requestPeriod)));
 
-            JarFile j = jar;
-
-            if (j != null) {
-                return j;
-            }
-
-            if ((jar == null) && (root != null)) {
-                jar = new JarFile(root);
-                LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
-            }
-
-            return jar;
+            return getJar(true);
         }
     }
 
@@ -724,15 +754,16 @@ public class JarFileSystem extends AbstractFileSystem {
         return new Runnable() {
                 public void run() {
                     synchronized (closeSync) {
-                        if (jar != null) {
+                    final JarFile jarFile = getJar(false);
+                        if (jarFile != null) {
                             try {
-                                jar.close();
+                                jarFile.close();
                                 LOGGER.log(Level.FINE, "closed: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
                             } catch (Exception exc) {
                                 // ignore exception during closing, just log it
                                 ExternalUtil.exception(exc);
                             } finally {
-                                jar = null;
+                                setJar(null);
                                 closeTask = null;
                             }
                         }
@@ -895,7 +926,10 @@ public class JarFileSystem extends AbstractFileSystem {
             synchronized (closeSync) {
                 j = reOpenJarFile();
 
-                JarEntry je = j.getJarEntry(file);
+                JarEntry je = null;
+                if (j != null) {
+                    je = j.getJarEntry(file);
+                }
 
                 if (je != null) {
                     return je;
@@ -905,6 +939,33 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         return new JarEntry(file);
+    }
+
+    /**
+     * @return the jar
+     */
+    private JarFile getJar(boolean create) {
+        assert Thread.holdsLock(closeSync);
+        if (jar == null && create) {
+            try {
+                if (root.canRead()) {
+                    jar = new JarFile(root);
+                    LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{root.getAbsolutePath(), System.currentTimeMillis()}); //NOI18N
+                    return jar;
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            }
+            LOGGER.log(Level.WARNING, "cannot open {0}", root.getAbsolutePath()); // NOI18N
+        }
+        return jar;
+    }
+
+    /**
+     * @param jar the jar to set
+     */
+    private void setJar(JarFile jar) {
+        this.jar = jar;
     }
 
     /** Use soft-references to not throw away the data that quickly.

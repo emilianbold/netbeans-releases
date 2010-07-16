@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.30.1
+#Signature file v4.1
+#Version 1.35.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -7,7 +7,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -24,7 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -40,7 +40,7 @@ meth public java.lang.String toString()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -49,7 +49,7 @@ supr java.lang.Object
 hfds serialVersionUID
 
 CLSS public final org.netbeans.api.lexer.InputAttributes
-cons public InputAttributes()
+cons public init()
 meth public java.lang.Object getValue(org.netbeans.api.lexer.LanguagePath,java.lang.Object)
 meth public void setValue(org.netbeans.api.lexer.Language<?>,java.lang.Object,java.lang.Object,boolean)
 meth public void setValue(org.netbeans.api.lexer.LanguagePath,java.lang.Object,java.lang.Object,boolean)
@@ -107,7 +107,7 @@ meth public static org.netbeans.api.lexer.PartType[] values()
 supr java.lang.Enum<org.netbeans.api.lexer.PartType>
 
 CLSS public abstract org.netbeans.api.lexer.Token<%0 extends org.netbeans.api.lexer.TokenId>
-cons protected Token()
+cons protected init()
 meth public abstract boolean hasProperties()
 meth public abstract boolean isCustomText()
 meth public abstract boolean isFlyweight()
@@ -260,7 +260,7 @@ supr java.lang.Object
 hfds endSkipLength,joinSections,language,startSkipLength
 
 CLSS public abstract org.netbeans.spi.lexer.LanguageHierarchy<%0 extends org.netbeans.api.lexer.TokenId>
-cons public LanguageHierarchy()
+cons public init()
 meth protected abstract java.lang.String mimeType()
 meth protected abstract java.util.Collection<{org.netbeans.spi.lexer.LanguageHierarchy%0}> createTokenIds()
 meth protected abstract org.netbeans.spi.lexer.Lexer<{org.netbeans.spi.lexer.LanguageHierarchy%0}> createLexer(org.netbeans.spi.lexer.LexerRestartInfo<{org.netbeans.spi.lexer.LanguageHierarchy%0}>)
@@ -280,7 +280,7 @@ hfds language
 hcls Accessor
 
 CLSS public abstract org.netbeans.spi.lexer.LanguageProvider
-cons protected LanguageProvider()
+cons protected init()
 fld public final static java.lang.String PROP_EMBEDDED_LANGUAGE = "LanguageProvider.PROP_EMBEDDED_LANGUAGE"
 fld public final static java.lang.String PROP_LANGUAGE = "LanguageProvider.PROP_LANGUAGE"
 meth protected final void firePropertyChange(java.lang.String)
@@ -320,7 +320,7 @@ supr java.lang.Object
 hfds input,inputAttributes,languagePath,state,tokenFactory
 
 CLSS public abstract org.netbeans.spi.lexer.MutableTextInput<%0 extends java.lang.Object>
-cons public MutableTextInput()
+cons public init()
 meth protected abstract boolean isReadLocked()
 meth protected abstract boolean isWriteLocked()
 meth protected abstract java.lang.CharSequence text()

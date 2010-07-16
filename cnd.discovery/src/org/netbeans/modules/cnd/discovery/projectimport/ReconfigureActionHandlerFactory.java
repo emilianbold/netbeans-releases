@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,13 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
 
@@ -55,41 +59,49 @@ import org.openide.windows.InputOutput;
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
 public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFactory {
 
+    @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        switch (type) {
-            case CONFIGURE: 
-                return true;
-            default:
-                return false;
+        if ("configure".equals(type.name())) { // NOI18N
+            type.setLocalizedName(NbBundle.getMessage(getClass(), "ConfigureActionName")); // NOI18N
+            return true;
+        } else {
+            return false;
         }
     }
 
+    @Override
     public ProjectActionHandler createHandler() {
         return new ProjectActionHandler() {
             private ProjectActionEvent pae;
             private ReconfigureProject reconfigure;
 
+            @Override
             public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
                 this.pae = pae;
                 reconfigure = new ReconfigureProject(pae.getProject());
             }
 
+            @Override
             public void execute(InputOutput io) {
                 reconfigure.reconfigure("-g", "-g", "", io); // NOI18N
             }
 
+            @Override
             public boolean canCancel() {
                 return true;
             }
 
+            @Override
             public void cancel() {
                 reconfigure.cancel();
             }
 
+            @Override
             public void addExecutionListener(ExecutionListener l) {
                 reconfigure.addExecutionListener(l);
             }
 
+            @Override
             public void removeExecutionListener(ExecutionListener l) {
                 reconfigure.removeExecutionListener(l);
             }

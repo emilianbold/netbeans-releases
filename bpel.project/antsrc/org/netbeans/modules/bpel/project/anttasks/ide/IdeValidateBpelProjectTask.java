@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,8 +66,9 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.misc.Xml;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 
 public class IdeValidateBpelProjectTask extends Task {
 
@@ -76,30 +80,27 @@ public class IdeValidateBpelProjectTask extends Task {
         this.mBuildDirectory = buildDir;
     }
 
-    public void setRunValidation(String flag) {
-        setAllowBuildWithError(flag);
-        myAllowBuildWithError = !myAllowBuildWithError;
+    public void setAllowBuildWithError(String flag) {
+        if (flag == null) {
+            return;
+        }
+        if (flag.equals("false")) {
+            myAllowBuildWithError = false;
+        }
+        else if (flag.equals("true")) {
+            myAllowBuildWithError = true;
+        }
     }
 
-    public void setAllowBuildWithError(String flag) {
-        if (flag != null) {
-            if (flag.equals("false")) {
-                myAllowBuildWithError = false;
-            } else if (flag.equals("true")) {
-                myAllowBuildWithError = true;
-            }
-        }
+    public void setValidation(String flag) {
+        myValidationType = Util.getValidationType(flag);
     }
 
     public void setClasspathRef(Reference ref) {}
 
-    public void setProjectClassPath(String projectClassPath) {
-        this.mProjectClassPath = projectClassPath;
-    }
+    public void setProjectClassPath(String projectClassPath) {}
 
-    public void setBuildDependentProjectDir(String dependentProjectFilesDir) {
-        this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
-    }
+    public void setBuildDependentProjectDir(String dependentProjectFilesDir) {}
 
     public boolean isFoundErrors() {
         return this.isFoundErrors;
@@ -114,11 +115,6 @@ public class IdeValidateBpelProjectTask extends Task {
         if (this.mBuildDirectory == null) {
             throw new BuildException("No build directory is set.");
         }
-
-        if (this.mBuildDependentProjectFilesDirectory == null) {
-            throw new BuildException("No dependentProjectFiles directory is set.");
-        }
-        
         try {
             this.mSourceDir = new File(this.mSourceDirectory);
             CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
@@ -190,7 +186,7 @@ public class IdeValidateBpelProjectTask extends Task {
         }
     }
 
-    // vlv # 100036
+    // # 100036
     private void processFile(File file) throws BuildException {
         BpelModel model = null;
 
@@ -207,7 +203,7 @@ public class IdeValidateBpelProjectTask extends Task {
 
             for (MyFile mFile : myMyFiles) {
                 if (mFile.getQName().equals(qName)) {
-                    if (!myAllowBuildWithError) { // # 106342
+                    if ( !myAllowBuildWithError) { // # 106342
                         throw new BuildException(
                                 " \n" +
                                 "BPEL files " + mFile.getName() + " and " + current.getName() + "\n" +
@@ -247,8 +243,8 @@ public class IdeValidateBpelProjectTask extends Task {
       try {
         Model model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
 
-        if (new Controller(model).ideValidate(file)) {
-          throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
+        if (new Controller(model).ideValidate(file, myValidationType)) {
+          throw new BuildException(Xml.FOUND_VALIDATION_ERRORS);
         }
       }
       catch (Exception e) {
@@ -285,13 +281,12 @@ public class IdeValidateBpelProjectTask extends Task {
     }
 
     private String mSourceDirectory;
-    private String mProjectClassPath;
     private String mBuildDirectory;
-    private String mBuildDependentProjectFilesDirectory;
     private File mSourceDir;
     private File mBuildDir;
+    private List<MyFile> myMyFiles;
     private Map myFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
     private boolean myAllowBuildWithError = false;
-    private List<MyFile> myMyFiles;
+    private ValidationType myValidationType = ValidationType.COMPLETE;
 }

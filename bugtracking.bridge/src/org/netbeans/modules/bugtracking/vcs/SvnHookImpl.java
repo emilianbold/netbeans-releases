@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,16 +61,15 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
+import org.netbeans.modules.versioning.hooks.SvnHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
  * Subversion commit hook implementation
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.subversion.hooks.spi.SvnHook.class)
 public class SvnHookImpl extends SvnHook {
 
     private static final String[] SUPPORT_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
@@ -75,7 +77,7 @@ public class SvnHookImpl extends SvnHook {
 
     private HookPanel panel;
     private final String name;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
 
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
 
@@ -106,7 +108,7 @@ public class SvnHookImpl extends SvnHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "svn beforeCommit start for " + file);                // NOI18N
+        LOG.log(Level.FINE, "svn beforeCommit start for {0}", file);                // NOI18N
 
         String msg = context.getMessage();
         List<LogEntry> logEntries = null;
@@ -118,7 +120,7 @@ public class SvnHookImpl extends SvnHook {
 
             Issue issue = getIssue();
             if (issue == null) {
-                LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+                LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
                 return null;
             }
             String issueInfo = new MessageFormat(formatString).format(
@@ -126,7 +128,7 @@ public class SvnHookImpl extends SvnHook {
                     new StringBuffer(),
                     null).toString();
 
-            LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
+            LOG.log(Level.FINER, " svn commit hook issue info ''{0}''", issueInfo);     // NOI18N
             if(format.isAbove()) {
                 msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
@@ -139,8 +141,10 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public void afterCommit(SvnHookContext context) {
-        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
-        VCSHooksConfig.getInstance().setSvnLink(isLinkSelected());
+        if(panel == null) {
+            LOG.fine("no settings for afterCommit");                                // NOI18N
+            return;
+        }
 
         if(context.getFiles().length == 0) {
             LOG.warning("calling svn afterCommit for zero files");              // NOI18N
@@ -148,20 +152,24 @@ public class SvnHookImpl extends SvnHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "svn afterCommit start for " + file);               // NOI18N
+        LOG.log(Level.FINE, "svn afterCommit start for {0}", file);               // NOI18N
+
+        Issue issue = getIssue();
+        if (issue == null) {
+            LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
+            return;
+        }
+
+        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
+        VCSHooksConfig.getInstance().setSvnLink(isLinkSelected());
 
         if(!isLinkSelected() &&
            !isResolveSelected())
         {
-            LOG.log(Level.FINER, " nothing to do in svn afterCommit for " + file); // NOI18N
+            LOG.log(Level.FINER, " nothing to do in svn afterCommit for {0}", file); // NOI18N
             return;
         }
 
-        Issue issue = getIssue();
-        if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
-            return;
-        }
         
         String msg = null;
         if(isLinkSelected()) {
@@ -185,13 +193,14 @@ public class SvnHookImpl extends SvnHook {
                         message},
                     new StringBuffer(),
                     null).toString();
-
-            LOG.log(Level.FINER, " svn commit hook message '" + msg + "'");     // NOI18N
-            issue.addComment(msg, isResolveSelected());
         }
-
-        issue.open();
-        LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
+        if(isLinkSelected() || isResolveSelected()) {
+            LOG.log(Level.FINER, " svn commit hook message ''{0}'', resolved {1}", new Object[]{msg, isResolveSelected()});     // NOI18N
+            issue.addComment(msg, isResolveSelected());
+            issue.open();
+        }
+        
+        LOG.log(Level.FINE, "svn commit hook end for {0}", file);                 // NOI18N
         VCSHooksConfig.logHookUsage("SVN", getSelectedRepository());            // NOI18N
     }
 
@@ -206,10 +215,10 @@ public class SvnHookImpl extends SvnHook {
             referenceFile = context.getFiles()[0];
         }
 
-        panel = new HookPanel();
-        panel.linkCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnLink());
-        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
-        panel.commitRadioButton.setSelected(false);
+        panel = new HookPanel(
+                    VCSHooksConfig.getInstance().getSvnLink(),
+                    VCSHooksConfig.getInstance().getSvnResolve(),
+                    false);
 
         if (referenceFile != null) {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
@@ -219,6 +228,7 @@ public class SvnHookImpl extends SvnHook {
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeFormatButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onShowFormat();
             }
@@ -232,7 +242,7 @@ public class SvnHookImpl extends SvnHook {
     }
 
     private String getRevisions(List<LogEntry> entries) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator<LogEntry> it = entries.iterator();
         while(it.hasNext()) {
             LogEntry logEntry = it.next();

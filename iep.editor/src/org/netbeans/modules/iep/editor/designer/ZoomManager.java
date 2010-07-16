@@ -20,7 +20,6 @@
 package org.netbeans.modules.iep.editor.designer;
 
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -34,13 +33,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Manages the zoom level for a particular Scene instance.

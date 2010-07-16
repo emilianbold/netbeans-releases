@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -65,7 +69,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class DiffStreamSource extends StreamSource {
 
     private final File      baseFile;
-    private final String    revision;
+    private final HgRevision    revision;
     private final String    title;
     private String          mimeType;
     private Boolean         start;
@@ -74,6 +78,7 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
+    private Boolean         canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -82,7 +87,7 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource(File baseFile, HgRevision revision, String title) {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
@@ -97,6 +102,7 @@ public class DiffStreamSource extends StreamSource {
         this.start = true;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -105,10 +111,12 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
@@ -123,6 +131,7 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         if (baseFile.isDirectory()) {
             // XXX return directory listing?
@@ -139,13 +148,22 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
     @Override
     public boolean isEditable() {
-        return Setup.REVISION_CURRENT.equals(revision) && isPrimary();
+        return HgRevision.CURRENT.equals(revision) && isPrimary() && isBaseFileWritable();
+    }
+
+    private boolean isBaseFileWritable () {
+        if (canWriteBaseFile == null) {
+            FileObject fo = FileUtil.toFileObject(baseFile);
+            canWriteBaseFile = fo != null && fo.canWrite();
+        }
+        return canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -221,10 +239,7 @@ public class DiffStreamSource extends StreamSource {
                 mimeType = Mercurial.getInstance().getMimeType(remoteFile);
             }
         } catch (Exception e) {
-            // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
-            failure.initCause(e);
-            throw failure;
+            throw new IOException("Can not load remote file for " + baseFile, e);
         }
     }
 }

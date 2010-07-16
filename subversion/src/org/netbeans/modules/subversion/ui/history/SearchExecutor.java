@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,7 +56,8 @@ import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
 import java.util.Map.Entry;
-import org.netbeans.modules.subversion.FileStatusCache;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
@@ -74,6 +78,7 @@ class SearchExecutor implements Runnable {
         new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
     };
 
+    private static final Logger LOG = Logger.getLogger(SearchExecutor.class.getName());
     private final SearchHistoryPanel    master;
     private Map<SVNUrl, Set<File>>      workFiles;
     private Map<String,File>            pathToRoot;
@@ -119,6 +124,10 @@ class SearchExecutor implements Runnable {
             SVNUrl url = e.getValue();
             if(url != null) {
                 String rootPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);
+                if (rootPath == null) {
+                    LOG.log(Level.FINE, "populatePathToRoot: rootUrl: {0}, url: {1}, probably svn:externals", new String[] {rootUrl.toString(), url.toString()});
+                    continue;
+                }
                 String fileAbsPath = e.getKey().getAbsolutePath().replace(File.separatorChar, '/');
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
                 pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
@@ -148,8 +157,7 @@ class SearchExecutor implements Runnable {
         return a.length() - ai - 1;
     }
 
-
-
+    @Override
     public void run() {
         populatePathToRoot();
 
@@ -160,8 +168,9 @@ class SearchExecutor implements Runnable {
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
-                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
+                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                 }
             };
             support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -171,8 +180,9 @@ class SearchExecutor implements Runnable {
                 final Set<File> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 SvnProgressSupport support = new SvnProgressSupport() {
+                    @Override
                     public void perform() {
-                        search(rootUrl, files, fromRevision, toRevision, this);
+                        search(rootUrl, files, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                     }
                 };
                 support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -180,7 +190,7 @@ class SearchExecutor implements Runnable {
         }
     }
 
-    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport) {
+    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(rootUrl, progressSupport);
@@ -194,7 +204,7 @@ class SearchExecutor implements Runnable {
         }
         if (searchingUrl()) {
             try {
-                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
+                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
@@ -212,7 +222,7 @@ class SearchExecutor implements Runnable {
                     }
                     paths[idx++] = p;
                 }
-                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, true);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, fetchDetailsPaths);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 try {
@@ -221,7 +231,7 @@ class SearchExecutor implements Runnable {
                     // listed in paths[]. This causes problems when the given user has restricted access only to a specific folder.
                     if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
                         for(String path : paths) {
-                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, true, 0);
+                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
                             appendResults(rootUrl, messages);
                         }
                         return;
@@ -303,6 +313,7 @@ class SearchExecutor implements Runnable {
         completedSearches++;
         if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     master.setResults(results);
                 }

@@ -19,66 +19,23 @@
 
 package org.netbeans.modules.bpel.mapper.model;
 
-import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
-import org.netbeans.modules.soa.mappercore.Mapper;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextController;
+import org.netbeans.modules.soa.xpath.mapper.context.MapperStaticContext;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author nk160297
  */
-public interface MapperTcContext {
+public interface MapperTcContext extends MapperStaticContext {
     TopComponent getTopComponent();
-    DesignContextController getDesignContextController();
-    Mapper getMapper();
-    
-    void setMapperModel(MapperModel mModel);
-    void showMapperTcGroup(boolean flag);
-    void setMapper(Mapper mapper);
-    
+
+    BpelMapperModel getMapperModel();
+
+    BpelDesignContextController getDesignContextController();
+
     interface Provider {
         MapperTcContext getMapperTcContext();
     }
     
-    final class Wrapper implements MapperTcContext {
-        private MapperTcContext mWrapped;
-        private Mapper mMapper;
-        
-        public Wrapper(MapperTcContext wrapped) {
-            mWrapped = wrapped;
-        }
-        
-        public TopComponent getTopComponent() {
-            return mWrapped.getTopComponent();
-        }
-        
-        public DesignContextController getDesignContextController() {
-            return mWrapped.getDesignContextController();
-        }
-        
-        public Mapper getMapper() {
-            if (mMapper != null) {
-                return mMapper;
-            } else {
-                return mWrapped.getMapper();
-            }
-        }
-
-        public void setMapperModel(MapperModel mModel) {
-            if (mMapper == null) {
-                mWrapped.setMapperModel(mModel);
-            } else {
-                mMapper.setModel(mModel);
-            }
-        }
-        
-        public void showMapperTcGroup(boolean flag) {
-            mWrapped.showMapperTcGroup(flag);
-        }
-        
-        public void setMapper(Mapper mapper) {
-            mMapper = mapper;
-        }
-    }
 }

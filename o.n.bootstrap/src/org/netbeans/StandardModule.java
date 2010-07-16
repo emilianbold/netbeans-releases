@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,8 +74,9 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import org.netbeans.Module.PackageExport;
-import org.netbeans.Util.FileWithSuffix;
+import org.netbeans.LocaleVariants.FileWithSuffix;
 import org.openide.modules.Dependency;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -318,7 +322,7 @@ final class StandardModule extends Module {
     private void findExtensionsAndVariants(Manifest m) {
         assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
         localeVariants = null;
-        List<File> l = Util.findLocaleVariantsOf(jar);
+        List<File> l = LocaleVariants.findLocaleVariantsOf(jar, getCodeNameBase());
         if (!l.isEmpty()) {
             localeVariants = new HashSet<File>(l);
         }
@@ -349,7 +353,7 @@ final class StandardModule extends Module {
                 }
                 if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
-                l = Util.findLocaleVariantsOf(extfile);
+                l = LocaleVariants.findLocaleVariantsOf(extfile, getCodeNameBase());
                 if (!l.isEmpty()) {
                     if (localeExtensions == null) {
                         localeExtensions = new HashSet<File>();
@@ -450,9 +454,9 @@ final class StandardModule extends Module {
                     name = locbundle.substring(0, idx);
                     ext = locbundle.substring(idx);
                 }
-                List<Util.FileWithSuffix> pairs = Util.findLocaleVariantsWithSuffixesOf(jar);
+                List<FileWithSuffix> pairs = LocaleVariants.findLocaleVariantsWithSuffixesOf(jar, getCodeNameBase());
                 Collections.reverse(pairs);
-                for (Util.FileWithSuffix pair : pairs) {
+                for (FileWithSuffix pair : pairs) {
                     File localeJar = pair.file;
                     String suffix = pair.suffix;
                     String rsrc = name + suffix + ext;
@@ -674,7 +678,7 @@ final class StandardModule extends Module {
     /** Class loader to load a single module.
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
-    private class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
+    class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
         private int rc;
         /** Create a new loader for a module.
          * @param classp the List of all module jars of code directories;
@@ -700,15 +704,27 @@ final class StandardModule extends Module {
             return getAllPermission();
         }
         
-        /** look for JNI libraries also in modules/bin/ */
+        /**
+         * Look up a native library as described in modules documentation.
+         * @see http://bits.netbeans.org/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#jni
+         */
         protected @Override String findLibrary(String libname) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            String arch = System.getProperty("os.arch"); // NOI18N
+            String system = System.getProperty("os.name").toLowerCase(); // NOI18N
             String mapped = System.mapLibraryName(libname);
-            File lib = new File(new File(jar.getParentFile(), "lib"), mapped); // NOI18N
-            if (lib.isFile()) {
-                return lib.getAbsolutePath();
-            } else {
-                return null;
-            }
+            File lib;
+
+            lib = ifl.locate("modules/lib/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            lib = ifl.locate("modules/lib/" + arch + "/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            lib = ifl.locate("modules/lib/" + arch + "/" + system + "/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            return null;
         }
 
         protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {

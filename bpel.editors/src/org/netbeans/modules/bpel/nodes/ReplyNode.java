@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
@@ -103,35 +102,36 @@ public class ReplyNode extends BpelNode<Reply> {
         mainPropertySet.put(customizer);
         //
         Node.Property property;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
         Sheet.Set messagePropertySet = 
                 getPropertySet(sheet, Constants.PropertiesGroups.MESSAGE_SET);
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PartnerLinkReference.PARTNER_LINK, PARTNER_LINK, 
                 "getPartnerLink", "setPartnerLink", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PortTypeReference.PORT_TYPE, PORT_TYPE, 
                 "getPortType", "setPortType", "removePortType"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 OperationReference.OPERATION, OPERATION, 
                 "getOperation", "setOperation", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(myInstanceRef, 
+        property = propUtil.registerAttributeProperty(myInstanceRef, 
                 messagePropertySet,
                 null, OUTPUT, 
                 "getOutputVariable", "setVariable", "removeVariable"); // NOI18N
@@ -141,21 +141,21 @@ public class ReplyNode extends BpelNode<Reply> {
         Sheet.Set faultPropertySet = 
                 getPropertySet(sheet, Constants.PropertiesGroups.FAULT_SET);
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 faultPropertySet,
                 FaultNameReference.FAULT_NAME, FAULT_NAME_RO, 
                 "getFaultName", null, null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(myInstanceRef, 
+        property = propUtil.registerAttributeProperty(myInstanceRef, 
                 faultPropertySet,
                 null, FAULT_VARIABLE_REF, 
                 "getFaultVariable", "setVariable", "removeVariable"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -198,6 +198,7 @@ public class ReplyNode extends BpelNode<Reply> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,

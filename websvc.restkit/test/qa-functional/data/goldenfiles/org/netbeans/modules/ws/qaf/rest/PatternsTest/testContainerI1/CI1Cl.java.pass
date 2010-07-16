@@ -5,15 +5,13 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
+import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Consumes;
 import org.codehaus.jettison.json.JSONString;
+
 
 /**
  * REST Web Service
@@ -22,44 +20,44 @@ import org.codehaus.jettison.json.JSONString;
  */
 
 public class CI1Cl {
-    @Context
-    private UriInfo context;
-
+    private String CI1URI;
     /** Creates a new instance of CI1Cl */
-    public CI1Cl() {
+    private CI1Cl(String CI1URI) {
+        this.CI1URI=CI1URI;
+    }
+
+    /** Get instance of the CI1Cl */
+    public static CI1Cl getInstance(String CI1URI) {
+        // The user may use some kind of persistence mechanism
+        // to store and restore instances of CI1Cl class.
+        return new CI1Cl(CI1URI);
     }
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI1Cl
-     * @param CI1URI resource URI parameter
      * @return an instance of org.codehaus.jettison.json.JSONString
      */
     @GET
     @Produces("application/json")
-    public JSONString getJson(@PathParam("CI1URI")
-    String CI1URI) {
+    public JSONString getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
 
     /**
      * PUT method for updating or creating an instance of CI1Cl
-     * @param CI1URI resource URI parameter
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
     @Consumes("application/json")
-    public void putJson(@PathParam("CI1URI")
-    String CI1URI, JSONString content) {
+    public void putJson(JSONString content) {
     }
 
     /**
      * DELETE method for resource CI1Cl
-     * @param CI1URI resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("CI1URI")
-    String CI1URI) {
+    public void delete() {
     }
 }

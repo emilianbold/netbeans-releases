@@ -17,9 +17,25 @@
 
     <complexType name="tEditor">
         <sequence>
+            <element name="predicates" type="tns:tPredicates" minOccurs="0"/>
             <element name="casts" type="tns:tCasts" minOccurs="0"/>
             <element name="pseudoComps" type="tns:tPseudoComps" minOccurs="0"/>
         </sequence>
+    </complexType>
+
+    <complexType name="tPredicates">
+        <sequence>
+            <element name="predicate" type="tns:tPredicate" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+    </complexType>
+
+    <complexType name="tPredicate">
+        <sequence>
+            <element ref="bpws:documentation" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+        <attribute name="path" type="xsd:string" use="required"/>
+        <attribute name="value" type="xsd:string" use="required"/>
+        <attribute name="source" type="tns:tSource" use="optional"/>
     </complexType>
 
     <complexType name="tCasts">
@@ -50,7 +66,7 @@
         <attribute name="parentPath" type="xsd:string" use="required"/>
         <attribute name="type" type="xsd:QName" use="required"/>
         <attribute name="qName" type="xsd:QName" use="required"/>
-        <attribute name="isAttribute" type="tns:boolean" use="optional"/>
+        <attribute name="isAttribute" type="xsd:boolean" use="optional"/>
         <attribute name="source" type="tns:tSource" use="optional"/>
     </complexType>
 

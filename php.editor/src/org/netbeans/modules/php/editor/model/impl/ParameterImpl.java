@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,8 +60,9 @@ public class ParameterImpl implements Parameter {
     private String defaultValue;
     private List<QualifiedName> types;
     private OffsetRange range;
+    private boolean isRawType;
 
-    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, OffsetRange range) {
+    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, boolean isRawType, OffsetRange range) {
         this.name = name;
         this.defaultValue = defaultValue;
         if (types == null) {
@@ -67,6 +71,7 @@ public class ParameterImpl implements Parameter {
             this.types = types;
         }
         this.range = range;
+        this.isRawType = isRawType;
     }
 
     @NonNull
@@ -103,6 +108,8 @@ public class ParameterImpl implements Parameter {
             sb.append(qualifiedName.toString());
         }
         sb.append(":");//NOI18N
+        sb.append(isRawType?1:0);
+        sb.append(":");//NOI18N
         String defValue = getDefaultValue();
         if (defValue != null) {
             sb.append(encode(defValue));
@@ -126,8 +133,9 @@ public class ParameterImpl implements Parameter {
                             qualifiedNames.add(QualifiedName.create(type));
                         }
                     }
-                    String defValue = (parts.length > 2) ? parts[2] : "";
-                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, OffsetRange.NONE));
+                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false ;
+                    String defValue = (parts.length > 3) ? parts[3] : "";
+                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, isRawType, OffsetRange.NONE));
                 }
             }
         }
@@ -139,7 +147,7 @@ public class ParameterImpl implements Parameter {
 
         for (int i = 0; i < inStr.length(); i++) {
             if ((inStr.charAt(i) == ':') || (inStr.charAt(i) == '|') ||//NOI18N
-                    (inStr.charAt(i) == ';') ||  isEncodedChar(i, inStr)) {//NOI18N
+                    (inStr.charAt(i) == ';') || (inStr.charAt(i) == ',') ||  isEncodedChar(i, inStr)) {//NOI18N
                 outStr.append(encodeChar(inStr.charAt(i)));
 
                 continue;
@@ -193,6 +201,10 @@ public class ParameterImpl implements Parameter {
         }
 
         return isEncodedChar;
+    }
+
+    public boolean hasRawType() {
+        return isRawType;
     }
 
 }

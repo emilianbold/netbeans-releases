@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,6 +83,7 @@ public final class UpdateHelper {
      */
     public EditableProperties getProperties(final String path) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
+            @Override
             public EditableProperties run() {
                 if (!isCurrent() && AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {
                     // only project properties were changed
@@ -103,6 +107,7 @@ public final class UpdateHelper {
     public void putProperties(final String path, final EditableProperties props) {
         ProjectManager.mutex().writeAccess(
             new Runnable() {
+            @Override
                 public void run() {
                     if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {
                         // only project props should cause update
@@ -129,6 +134,7 @@ public final class UpdateHelper {
      */
     public Element getPrimaryConfigurationData(final boolean shared) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            @Override
             public Element run() {
                 if (!shared || isCurrent()) { // only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
@@ -149,6 +155,7 @@ public final class UpdateHelper {
      */
     public void putPrimaryConfigurationData(final Element element, final boolean shared) {
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
             public void run() {
                 if (!shared || isCurrent()) {
                     helper.putPrimaryConfigurationData(element, shared);
@@ -173,6 +180,7 @@ public final class UpdateHelper {
     public boolean requestUpdate() throws IOException {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws IOException {
                     if (isCurrent()) {
                         return true;

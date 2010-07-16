@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,8 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,15 +74,18 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.Mnemonics;
 
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
-public class ConnectorPanel extends JPanel implements ActionListener {
+public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Provider {
 
     public static final String PROP_TYPE = "type";
     
     private static final String FIRST_ATTACH_TYPE = "org.netbeans.modules.debugger.jpda.ui.JPDAAttachType"; // NOI18N
-    
+
+    private static final int TOTAL_SLOTS = 4; // TOTAL_SLOTS - 1 is the maximal number of items that can appear in the attach history
+
     /** Contains list of AttachType names.*/
     private JComboBox             cbAttachTypes;
     /** Switches off listenning on cbAttachTypes.*/
@@ -88,6 +96,8 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     private Controller            controller;
     /** Current attach type, which is stored into settings for the next invocation. */
     private AttachType            currentAttachType;
+    /** Help for the dialog */
+    private HelpCtx               help = HelpCtx.DEFAULT_HELP;
 
 
     public ConnectorPanel ()  {
@@ -173,6 +183,7 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
         JComponent customizer = attachType.getCustomizer ();
+        help = HelpCtx.findHelp (customizer);
         controller = attachType.getController();
         if (controller == null && (customizer instanceof Controller)) {
             Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
@@ -210,14 +221,93 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     
     boolean ok () {
         String defaultAttachTypeName = currentAttachType.getTypeDisplayName();
-        Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
+        Properties props = Properties.getDefault().getProperties("debugger");
+        props.setString("last_attach_type", defaultAttachTypeName);
         if (controller == null) return true;
+        props = props.getProperties("last_attaches");
+        Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+        int freeSlot = -1;
+        if (usedSlots.length >= TOTAL_SLOTS) {
+            freeSlot = usedSlots[TOTAL_SLOTS - 1];
+        } else {
+            for (int x = 0; x < TOTAL_SLOTS; x++) {
+                boolean found = true;
+                for (int y = 0; y < usedSlots.length; y++) {
+                    if (x == usedSlots[y]) {
+                        found = false;
+                        break;
+                    }
+                } // for
+                if (found) {
+                    freeSlot = x;
+                    break;
+                }
+            } // for
+        }
+        Method saveMethod = null;
+        Method displayNameMethod = null;
+        try {
+            saveMethod = controller.getClass().getMethod("save", Properties.class);
+            displayNameMethod = controller.getClass().getMethod("getDisplayName");
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        }
+        String dispName = null;
+        if (saveMethod != null && displayNameMethod != null) {
+            Properties slot = props.getProperties("slot_" + freeSlot);
+            try {
+                dispName = (String) displayNameMethod.invoke(controller);
+                if (dispName != null && dispName.trim().length() > 0) {
+                    slot.setString("display_name", dispName);
+                    saveMethod.invoke(controller, slot.getProperties("values"));
+                    slot.setString("attach_type", defaultAttachTypeName);
+                }
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            }
+        }
+
         boolean ok = controller.ok ();
+
         if (ok) {
             GestureSubmitter.logAttach(defaultAttachTypeName);
-        }
+            if (dispName != null && dispName.trim().length() > 0) {
+                int newLength = Math.min(TOTAL_SLOTS - 1, usedSlots.length + 1);
+                int excludeIndex = -1;
+                // remove duplicities having the same display name
+                for (int x = 0; x < usedSlots.length; x++) {
+                    String str = props.getProperties("slot_" + usedSlots[x]).getString("display_name", "");
+                    if (dispName.equals(str) && x < TOTAL_SLOTS - 1) {
+                        excludeIndex = x;
+                        newLength--;
+                        break;
+                    }
+                }
+                Integer[] newUsedSlots = new Integer[newLength];
+                int copyFrom = 0;
+                for (int x = 1; x < newLength; x++) {
+                    if (copyFrom == excludeIndex) {
+                        copyFrom++;
+                    }
+                    newUsedSlots[x] = usedSlots[copyFrom];
+                    copyFrom++;
+                } // for
+                newUsedSlots[0] = freeSlot;
+                props.setArray("used_slots", newUsedSlots);
+            } // if
+            DebugMainProjectAction.attachHistoryChanged();
+        } // if
         return ok;
-    }    
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return help;
+    }
 }
 
 

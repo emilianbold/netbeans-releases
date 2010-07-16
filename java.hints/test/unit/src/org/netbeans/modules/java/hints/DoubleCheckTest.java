@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,7 +87,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:115-0:127:verifier:Remove the outer conditional statement"
+            "0:115-0:127:verifier:ERR_DoubleCheck"
         );
     }
     public void testSomeCodeAfterTheOuterIf() throws Exception {
@@ -165,8 +170,8 @@ public class DoubleCheckTest extends TreeRuleTestBase {
         
         String golden = (before1 + before3 + after1 + after3).replace("\n", " ");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "4:0-4:12:verifier:Remove the outer conditional statement",
-            "FixDoubleCheck",
+            "4:0-4:12:verifier:ERR_DoubleCheck",
+            "FIX_DoubleCheck",
             golden
         );
     }
@@ -205,7 +210,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
 
         performAnalysisTest("test/Test.java",
                             code,
-                            "4:0-4:12:verifier:Remove the outer conditional statement");
+                            "4:0-4:12:verifier:ERR_DoubleCheck");
     }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
@@ -214,5 +219,14 @@ public class DoubleCheckTest extends TreeRuleTestBase {
     }
     
     private String sourceLevel = "1.5";
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    static {
+        NbBundle.setBranding("test");
+    }
     
 }

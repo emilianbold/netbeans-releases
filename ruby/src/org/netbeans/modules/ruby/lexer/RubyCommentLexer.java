@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,14 @@
 package org.netbeans.modules.ruby.lexer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeEvent;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import org.netbeans.api.lexer.Token;
@@ -96,30 +105,33 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
      * rather than having a contract API with it, based on
      * tasklist/docscan/src/org/netbeans/modules/tasklist/docscan/Settings.java)
      */
-    private String[] getTodoMarkers() {
+    private synchronized String[] getTodoMarkers() {
         if (markers == null) {
-            final String MARKER_PREFIX = "Tag"; // NOI18N
-            final int MARKER_PREFIX_LENGTH = MARKER_PREFIX.length();
-            List<String> markerList = new ArrayList<String>();
+            final String TODO_MARKERS_KEY = "patterns"; // NOI18N
 
-            try {
-                Preferences preferences =
-                    NbPreferences.root().node("org/netbeans/modules/tasklist/docscan"); // NOI18N
-                String[] keys = preferences.keys();
+            Preferences preferences =
+                    NbPreferences.root().node("/org/netbeans/modules/tasklist/todo"); // NOI18N
 
-                for (int i = 0; i < keys.length; i++) {
-                    String key = keys[i];
+            preferences.addPreferenceChangeListener(new PreferenceChangeListener() {
 
-                    if ((key != null) && key.startsWith(MARKER_PREFIX)) {
-                        markerList.add(key.substring(MARKER_PREFIX_LENGTH));
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    synchronized (RubyCommentLexer.this) {
+                        markers = null;
                     }
                 }
-            } catch (BackingStoreException bse) {
-                ErrorManager.getDefault().notify(bse);
-            }
+            });
+            
+            List<String> markerList = new ArrayList<String>();
+            markerList.addAll(Arrays.asList(preferences.get(TODO_MARKERS_KEY, "").split("\\|")));
 
-            if (markerList.size() > 0) {
+            if (!markerList.isEmpty()) {
                 markerList.remove("@todo"); // Applies to javadoc, and these tags are now colorized separately
+                for (Iterator<String> it = markerList.iterator(); it.hasNext();) {
+                    if (it.next().trim().isEmpty()) {
+                        it.remove();
+                    }
+                }
                 markers = markerList.toArray(new String[markerList.size()]);
             } else {
                 // Additional candidates: HACK, WORKAROUND, REMOVE, OLD

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.execution.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -96,11 +99,12 @@ public class DwarfSource implements SourceFileProperties{
     private Set<String> includedFiles;
     private CompilerSettings normilizeProvider;
     private Map<String,GrepEntry> grepBase;
+    private String compilerName;
     
-    DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
-        initCompilerSettings(compilerSettings, isCPP);
+    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
+        initCompilerSettings(compilerSettings, lang);
         this.grepBase = grepBase;
-        initSourceSettings(cu, isCPP);
+        initSourceSettings(cu, lang);
     }
 
     private void countFileName(CompilationUnit cu) throws IOException {
@@ -109,15 +113,15 @@ public class DwarfSource implements SourceFileProperties{
         File file = new File(fullName);
         fullName = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
         fullName = linkSupport(fullName);
-        if (fullName != null && Utilities.isWindows()) {
+        if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');
         }
         fullName = PathCache.getString(fullName);
         if (FULL_TRACE) {System.out.println("Compilation unit full name:"+fullName);} // NOI18N
     }
 
-    private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
-        List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
+    private void initCompilerSettings(CompilerSettings compilerSettings, ItemProperties.LanguageKind lang){
+        List<String> list = compilerSettings.getSystemIncludePaths(lang);
        if (list != null){
            systemIncludes = new ArrayList<String>(list);
            //if (FULL_TRACE) {
@@ -126,7 +130,7 @@ public class DwarfSource implements SourceFileProperties{
            //        System.out.println("\t"+s); // NOI18N
            //    }
            //}
-           if (Utilities.isWindows()) {
+           if (compilerSettings.isWindows()) {
                if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
                    cygwinPath = compilerSettings.getCygwinDrive();
@@ -155,7 +159,7 @@ public class DwarfSource implements SourceFileProperties{
             systemIncludes = new ArrayList<String>();
         }
         haveSystemIncludes = systemIncludes.size() > 0;
-        Map<String, String> map = compilerSettings.getSystemMacroDefinitions(isCPP);
+        Map<String, String> map = compilerSettings.getSystemMacroDefinitions(lang);
         if (map != null){
             systemMacros = new HashMap<String,String>(map);
         } else {
@@ -165,22 +169,27 @@ public class DwarfSource implements SourceFileProperties{
         normilizeProvider = compilerSettings;
     }
     
+    @Override
     public String getCompilePath() {
         return compilePath;
     }
     
+    @Override
     public String getItemPath() {
         return fullName;
     }
     
+    @Override
     public String getItemName() {
         return sourceName;
     }
     
+    @Override
     public List<String> getUserInludePaths() {
         return userIncludes;
     }
     
+    @Override
     public List<String> getSystemInludePaths() {
         return systemIncludes;
     }
@@ -189,23 +198,31 @@ public class DwarfSource implements SourceFileProperties{
         return includedFiles;
     }
     
+    @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
     
+    @Override
     public Map<String, String> getSystemMacros() {
         return systemMacros;
     }
     
+    @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
+    }
+
+    @Override
+    public String getCompilerName() {
+        return compilerName;
     }
     
     private String fixFileName(String fileName) {
         if (fileName == null){
             return fileName;
         }
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (FULL_TRACE) {System.out.println("Try to fix win name:"+fileName);} // NOI18N
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
@@ -249,7 +266,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     private String linkSupport(String name){
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             if (!new File(name).exists()){
                 String link = name+".lnk"; // NOI18N
                 if (new File(link).exists()){
@@ -290,12 +307,46 @@ public class DwarfSource implements SourceFileProperties{
         return name;
     }
     
-    
-    private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
+
+    static String extractCompilerName(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException {
+        String compilerName = null;
+        if (cu.getCompileOptions() == null) {
+            compilerName = cu.getProducer();
+        } else {
+            String compileOptions = cu.getCompileOptions();
+            int startIndex = compileOptions.indexOf("R="); // NOI18N
+            if (startIndex >=0 ) {
+                int endIndex = compileOptions.indexOf(";", startIndex); // NOI18N
+                if (endIndex >= 0) {
+                    compilerName = PathCache.getString(compileOptions.substring(startIndex+2, endIndex));
+                }
+            }
+            if (compilerName == null) {
+                if (lang == ItemProperties.LanguageKind.CPP) {
+                    compilerName = PathCache.getString("CC"); // NOI18N
+                } else if (lang == ItemProperties.LanguageKind.C) {
+                    compilerName = PathCache.getString("cc"); // NOI18N
+                } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                    compilerName = PathCache.getString("fortran"); // NOI18N
+                } else {
+                    compilerName = PathCache.getString("unknown"); // NOI18N
+                }
+
+            }
+        }
+        return compilerName;
+    }
+
+    static boolean isSunStudioCompiler(CompilationUnit cu) throws IOException {
+        return cu.getCompileOptions() != null;
+    }
+
+    private void initSourceSettings(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
         countFileName(cu);
+        compilerName = PathCache.getString(extractCompilerName(cu, lang));
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         
@@ -316,11 +367,7 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         }
-        if (isCPP) {
-            language = ItemProperties.LanguageKind.CPP;
-        } else {
-            language = ItemProperties.LanguageKind.C;
-        }
+        language = lang;
     }
     
     public void process(CompilationUnit cu) throws IOException{
@@ -377,6 +424,27 @@ public class DwarfSource implements SourceFileProperties{
                     String include = PathCache.getString(defaultSearchPath);
                     addUserIncludePath(include);
                 }
+            } else if (option.startsWith("-isystem")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
+            } else if (option.startsWith("-include")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
+            } else if (option.startsWith("-imacros")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
             } else if (option.equals("-fopenmp")){ // NOI18N
                 userMacros.put("_OPENMP", "200505"); // NOI18N
             } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
@@ -396,7 +464,7 @@ public class DwarfSource implements SourceFileProperties{
         if (path.startsWith(CYG_DRIVE_UNIX)){
             path = fixFileName(path);
         }
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             path = path.replace('\\', '/');
         }
         return path;
@@ -484,42 +552,62 @@ public class DwarfSource implements SourceFileProperties{
             cutFolderPrefix(path, dwarfTable);
         }
         List<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
+        DwarfMacinfoTable dwarfMacroTable = cu.getMacrosTable();
+        if (dwarfMacroTable != null) {
+            List<Integer> commandLineIncludedFiles = dwarfMacroTable.getCommandLineIncludedFiles();
+            for(int i : commandLineIncludedFiles) {
+                processPath(dwarfTable.getFilePath(i), list, dwarfTable, false);
+            }
+        }
         for(String path : dwarfIncludedFiles){
-            String includeFullName = path;
-            if (FULL_TRACE) {System.out.println("Included file original:"+path);} // NOI18N
-            if (path.startsWith("./")) { // NOI18N
-                includeFullName = compilePath+path.substring(1);
-            } else if (path.startsWith("../")) { // NOI18N
-                includeFullName = compilePath+File.separator+path;
-            } else if (!path.startsWith("/")){ // NOI18N
-                includeFullName = compilePath+File.separator+path;
-            } else {
-                includeFullName = fixCygwinPath(path);
-                includeFullName = normalizePath(includeFullName);
-            }
-            if (Utilities.isWindows()) {
-                includeFullName = includeFullName.replace('\\', '/');
-            }
+            processPath(path, list, dwarfTable, true);
+        }
+        if (FULL_TRACE) {System.out.println("Include paths:"+userIncludes);} // NOI18N
+    }
+
+    private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
+        path = path.replace('\\', '/'); // NOI18N
+        String includeFullName = path;
+        if (FULL_TRACE) {
+            System.out.println("Included file original:" + path); // NOI18N
+        }
+        if (path.startsWith("./")) { // NOI18N
+            includeFullName = compilePath + path.substring(1);
+        } else if (path.startsWith("../")) { // NOI18N
+            includeFullName = compilePath + File.separator + path;
+        } else if (!path.startsWith("/")) { // NOI18N
+            includeFullName = compilePath + File.separator + path;
+        } else {
+            includeFullName = fixCygwinPath(path);
+        }
+        if (normilizeProvider.isWindows()) {
+            includeFullName = includeFullName.replace('\\', '/'); // NOI18N
+        }
+        includeFullName = normalizePath(includeFullName);
+        if (isPath) {
             String userPath = null;
-            int i = includeFullName.lastIndexOf('/');
+            int i = includeFullName.lastIndexOf('/'); // NOI18N
             if (i > 0) {
-                userPath = includeFullName.substring(0,i);
+                userPath = includeFullName.substring(0, i);
                 if (!isSystemPath(userPath)) {
                     list = grepSourceFile(includeFullName).includes;
-                    for(String included : list){
+                    for (String included : list) {
                         cutFolderPrefix(included, dwarfTable);
                     }
                     addpath(userPath);
                 }
             }
-            includedFiles.add(PathCache.getString(includeFullName));
-            if (FULL_TRACE) {System.out.println("Included file:"+includeFullName);} // NOI18N
+        } else {
+            addpath(includeFullName);
         }
-        if (FULL_TRACE) {System.out.println("Include paths:"+userIncludes);} // NOI18N
+        includedFiles.add(PathCache.getString(includeFullName));
+        if (FULL_TRACE) {
+            System.out.println("Included file:" + includeFullName); // NOI18N
+        }
     }
 
     private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             path = path.replace('\\', '/'); // NOI18N
         }
         if (path.indexOf('/')>0){ // NOI18N
@@ -695,40 +783,45 @@ public class DwarfSource implements SourceFileProperties{
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 int lineNo = 0;
-                fileLoop:while(true){
-                    String line = in.readLine();
-                    if (line == null){
-                        break;
-                    }
+                int size;
+                String line;
+                int first;
+                fileLoop:while((line = in.readLine()) != null) {
                     lineNo++;
-                    int size = line.length();
-                    if (size == 0) {
+                    if ((size = line.length()) == 0) {
                         continue;
                     }
-                    int first = 0;
-                    for(; first < size; first++) {
-                        char c = line.charAt(first);
-                        if (c == ' ' || c == '\t') { // NOI18N
-                            continue;
+                    firstLoop:for(first = 0; first < size; first++) {
+                        switch (line.charAt(first)) {
+                            case ' ':
+                            case '\t':
+                                break;
+                            case '#':
+                                break firstLoop;
+                            default:
+                                continue fileLoop;
                         }
-                        if (c == '#') { // NOI18N
-                            break;
-                        }
-                        continue fileLoop;
                     }
                     first++;
                     if (first >= size) {
                         continue;
                     }
-                    for(; first < size; first++) {
-                        char c = line.charAt(first);
-                        if (c == ' ' || c == '\t') { // NOI18N
-                            continue;
+                    secondLoop:for(; first < size; first++) {
+                        switch (line.charAt(first)) {
+                            case ' ':
+                            case '\t':
+                                break;
+                            case 'i':
+                                if (first + 1 < size && line.charAt(first + 1) != 'n') {
+                                    // not "include" prefix
+                                    continue fileLoop;
+                                }
+                                break secondLoop;
+                            case 'd':
+                                break secondLoop;
+                            default:
+                                continue fileLoop;
                         }
-                        if (c == 'i' || c == 'd') { // NOI18N
-                            break;
-                        }
-                        continue fileLoop;
                     }
                     if (first >= size) {
                         continue;
@@ -783,6 +876,7 @@ public class DwarfSource implements SourceFileProperties{
         } else {
             if (FULL_TRACE) {System.out.println("Cannot grep file:"+fileName);} // NOI18N
         }
+        res.includes.trimToSize();
         grepBase.put(fileName,res);
         return res;
     }

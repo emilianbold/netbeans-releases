@@ -14,7 +14,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.PlanDataObject;
 import org.netbeans.modules.iep.editor.wizard.IEPWizardHelper;
 import org.netbeans.modules.iep.editor.wizard.IEPWizardIterator;
-import org.netbeans.modules.iep.editor.wizard.IEPWizardPanel2;
 import org.netbeans.modules.iep.editor.wizard.IEPWizardPanel3;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.openide.DialogDisplayer;
@@ -57,7 +56,7 @@ public class IEPTemplateAction extends AbstractAction {
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel[] getPanels() {
+    private WizardDescriptor.Panel<org.openide.WizardDescriptor>[] getPanels() {
         //if panels are null first initialize each different
         //wizard paths
         Project project = FileOwnerQuery.getOwner(mDataObject.getPrimaryFile());
@@ -79,15 +78,15 @@ public class IEPTemplateAction extends AbstractAction {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
                 }
             }
         }

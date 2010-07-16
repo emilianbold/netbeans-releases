@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.model.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Set;
 import javax.xml.namespace.QName;
 
@@ -36,7 +36,7 @@ import org.openide.util.Lookup.Result;
 final class EntityFactoryRegistry {
 
     private EntityFactoryRegistry() {
-        myFactories = new LinkedList<EntityFactory>();
+        myFactories = new ArrayList<EntityFactory>();
         myAllQNames = new HashSet<QName>(BpelElements.allQNames());
         myExtensionsQNames = new HashSet<QName>();
         

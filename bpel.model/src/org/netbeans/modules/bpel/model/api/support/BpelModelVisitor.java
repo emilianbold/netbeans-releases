@@ -47,6 +47,7 @@ import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.ExtensibleAssign;
 import org.netbeans.modules.bpel.model.api.Extension;
 import org.netbeans.modules.bpel.model.api.ExtensionActivity;
+import org.netbeans.modules.bpel.model.api.ExtensionAssignOperation;
 import org.netbeans.modules.bpel.model.api.ExtensionContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -466,6 +467,12 @@ public interface BpelModelVisitor  {
      * @param assign visited object.
      */
     void visit( ExtensibleAssign assign );
+
+    /**
+     * Visit ExtensionAssignOperation element.
+     * @param extAssignOp visited object.
+     */
+    void visit( ExtensionAssignOperation extAssignOp );
 
     /**
      * Visit ExtensionActivity element.

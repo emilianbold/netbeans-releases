@@ -63,24 +63,23 @@ made subject to such option by the copyright holder.
              
         <p>When you create a database connection, you supply the details needed to connect to a specific database.
         The details needed to connect to a database include the location of the database, which driver to use and the username and password information.</p>     
-        <p>After you create the database connection you can do the following:</p>
-        <ul>
-            <li>Disconnect and reconnect to the database</li>
-            <li>Browse the database structure</li>
-	    <li>View data contained in a table in the database</li>
-        </ul>
-        
-        
         <p><b>To create a new connection:</b></p>
         <ol>
             <li>Confirm that your database is running.</li>
             <li>In the Services window, confirm that the appropriate JDBC driver for your database is listed under the Drivers node.</li>
-            <li>Right-click the Databases node and choose New Connection.
-                <p>Alternatively, expand the Drivers node, right-click your driver's instance node and 
-            choose Connect Using.</p></li>
-            <li>In the New Database Connection dialog box, confirm that the correct driver is 
-            selected in the Driver field.</li>
-            <li>Provide the JDBC database URL for the database connection in the Database URL field. 
+            <li>Right-click the Databases node and choose New Connection.<br>
+              Alternatively, expand the Drivers node, right-click your driver's instance node and 
+            choose Connect Using.<br>
+            <br>
+            </li>
+            <li>In the New Database Connection dialog box, select the Data Input Mode, which can be either a field entry or a direct JDBC database URL. The Data Input Mode option defines only the form in which you want to specify the database connection settings: either type the host name, port, and database name in separate fields or use a direct URL.<br>
+              <br>
+            </li>
+            <li>Confirm that the correct driver for your database is 
+              selected in the Driver Name list.</li>
+            <li>If you selected the Field Entry option, enter the host name, port, and database name in the respective fields. You can select the Show JDBC URL checkbox to see the actual URL for the new connection. <br>
+              <br>
+              If you selected Direct URL Entry for the Data Input Mode, enter the JDBC database URL for the database connection in the Database URL field. 
                 <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
                 for the driver, followed by another colon. The rest of the URL depends on 
                 the type of driver you are using. For example, you might need to specify 

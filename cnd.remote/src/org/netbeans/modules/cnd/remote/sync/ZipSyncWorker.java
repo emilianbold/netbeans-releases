@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,7 +87,7 @@ import org.openide.util.NbBundle;
         private final SharabilityFilter delegate;
 
         public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            fileData = new FileData(privProjectStorageDir, executionEnvironment);
+            fileData = FileData.get(privProjectStorageDir, executionEnvironment);
             delegate = new SharabilityFilter();
         }
 
@@ -149,6 +152,7 @@ import org.openide.util.NbBundle;
         return sb;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("REC")
     private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
 
         totalCount = uploadCount = 0;
@@ -165,7 +169,7 @@ import org.openide.util.NbBundle;
         for (int i = 0; i < files.length; i++) {
             String remoteFile = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(files[i].getAbsolutePath(), true);
             if (files[i].isDirectory()) {
-                script.append(String.format("test -d %s  || echo D %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
+                script.append(String.format("test -d %s  || echo %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
             }
         }
         script.append("\""); // NOI18N
@@ -254,22 +258,24 @@ import org.openide.util.NbBundle;
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
+                pb.setCommandLine("unzip -oqq " + remoteFile + " < /dev/null"); // NOI18N
                 //pb.setExecutable("unzip");
                 //pb.setArguments("-o", remoteFile);
                 pb.setWorkingDirectory(remoteRoot);
                 pb.redirectError();
                 Process proc = pb.call();
 
-                BufferedReader in;
                 String line;
-
-                in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                while ((line = in.readLine()) != null) {
-                    if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.err.printf("\t%s\n", line); } //NOI18N
-                }
+                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 // we now redirect instead of reading stderr // in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
+                try {
+                    while ((line = in.readLine()) != null) {
+                        if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.err.printf("\t%s\n", line); } //NOI18N
+                    }
+                } finally {
+                    in.close();
+                }
+                    
                 int rc = proc.waitFor();
                 //String cmd = "sh -c \"unzip -o -q " + remoteFile + " > /dev/null";
                 //RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, cmd);
@@ -285,12 +291,14 @@ import org.openide.util.NbBundle;
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
             filter.flush();
+        } catch (IOException ex) {
+            throw ex;
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             if (zipFile != null && zipFile.exists()) {
                 if (!zipFile.delete()) {
-                    RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
+                    RemoteUtil.LOGGER.log(Level.INFO, "Can not delete temporary file {0}", zipFile.getAbsolutePath()); //NOI18N
                 }
             }
         }
@@ -309,6 +317,7 @@ import org.openide.util.NbBundle;
     }
 
 
+    @Override
     public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);

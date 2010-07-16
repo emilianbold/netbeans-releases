@@ -2,7 +2,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,10 +49,12 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -463,6 +468,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
     public Tree visitParameterizedType(ParameterizedTypeTree tree, Object p) {
 	return rewriteChildren(tree);
+    }
+    public Tree visitAnnotatedType(AnnotatedTypeTree node, Object p) {
+        return rewriteChildren(node);
     }
     public Tree visitTypeParameter(TypeParameterTree tree, Object p) {
 	return rewriteChildren(tree);
@@ -1084,6 +1092,30 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
     
+    protected final Tree rewriteChildren(AnnotatedTypeTree tree) {
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
+        ExpressionTree type = (ExpressionTree) translate(tree.getUnderlyingType());
+
+        if (!annotations.equals(tree.getAnnotations()) || type != tree.getUnderlyingType()) {
+            List<AnnotationTree> typeAnnotations = new LinkedList<AnnotationTree>();
+
+            for (AnnotationTree at : annotations) {
+                if (!(at instanceof JCTypeAnnotation)) {//XXX
+                    at = make.TypeAnnotation(at);
+                }
+                typeAnnotations.add(at);
+            }
+
+            AnnotatedTypeTree n = make.AnnotatedType(typeAnnotations, type);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree, n);
+	    tree = n;
+            copyPosTo(tree, n);
+        }
+
+        return tree;
+    }
+
     protected final TypeParameterTree rewriteChildren(TypeParameterTree tree) {
 	List<? extends ExpressionTree> bounds = 
                 (List<? extends ExpressionTree>)translate(tree.getBounds());

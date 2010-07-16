@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,9 +41,13 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -53,9 +60,12 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -164,6 +174,36 @@ public class ModelUtils {
     }
 
     @NonNull
+    public static Collection<? extends TypeScope> resolveType(Model model, Assignment varBase) {
+        Collection<? extends TypeScope> retval = Collections.emptyList();
+        VariableScope scp = model.getVariableScope(varBase.getStartOffset());
+        if (scp != null) {
+            String vartype = CodeUtils.extractVariableType(varBase);
+            if (vartype == null) {
+                final Expression rightHandSide = varBase.getRightHandSide();
+                if (rightHandSide instanceof VariableBase) {
+                    vartype = VariousUtils.extractTypeFroVariableBase((VariableBase)rightHandSide);
+                    if (vartype != null) {
+                        return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
+                    }
+                } else if (rightHandSide instanceof StaticDispatch) {
+                    QualifiedName qName = ASTNodeInfo.toQualifiedName(rightHandSide, true);
+                    if (qName != null) {
+                        VariableScope variableScope = model.getVariableScope(rightHandSide.getStartOffset());
+                        NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
+                        Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
+                                variableScope != null ? variableScope : model.getFileScope(), filter.getName());
+                        return filter.filterModelElements(staticTypeName, true);
+                    }
+                }
+            } else {
+                retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
+            }
+        }
+        return retval;
+    }
+
+    @NonNull
     public static Collection<? extends TypeScope> resolveTypeAfterReferenceToken(Model model, TokenSequence<PHPTokenId> tokenSequence, int offset) {
         tokenSequence.move(offset);
         Collection<? extends TypeScope> retval = Collections.emptyList();
@@ -180,14 +220,6 @@ public class ModelUtils {
 
     @CheckForNull
     public static <T> T getFirst(Collection<? extends T> all) {
-        if (all instanceof List) {
-            return all.size() > 0 ? ((List<T>)all).get(0) : null;
-        }
-        return all.size() > 0 ? all.iterator().next() : null;
-    }
-
-    @CheckForNull
-    public static <T extends Occurence> T getFirst(Collection<? extends T> all) {
         if (all instanceof List) {
             return all.size() > 0 ? ((List<T>)all).get(0) : null;
         }
@@ -224,6 +256,12 @@ public class ModelUtils {
 
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final QualifiedName qName) {
+        return filter(allElements, QuerySupport.Kind.EXACT, qName);
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
             final String... elementName) {
         return filter(allElements, QuerySupport.Kind.EXACT, elementName);
     }
@@ -233,7 +271,9 @@ public class ModelUtils {
             final QuerySupport.Kind nameKind, final String... elementName) {
         return filter(allElements, new ElementFilter<T>() {
             public boolean isAccepted(T element) {
-                return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
+                final PhpElementKind kind = element.getPhpElementKind();
+                boolean caseSensitive = EnumSet.of(PhpElementKind.VARIABLE, PhpElementKind.FIELD).contains(kind);
+                return (elementName.length == 0 || nameKindMatch(!caseSensitive, element.getName(), nameKind, elementName));
             }
         });
     }

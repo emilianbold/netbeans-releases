@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,10 +79,10 @@ public class SourcePathTest extends NbTestCase {
             r2.toURI().toURL(),
         });
         
-        final ClassPath sp1 = SourcePath.create(base, true);
+        final ClassPath sp1 = SourcePath.sources(base, true);
         assertEquals (base,sp1); 
         
-        final ClassPath sp2 = SourcePath.create(base, false);
+        final ClassPath sp2 = SourcePath.sources(base, false);
         assertTrue (sp2.entries().isEmpty());
         
         ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
@@ -98,7 +101,7 @@ public class SourcePathTest extends NbTestCase {
         });
         assertEquals (base,sp2);
         
-        final ClassPath sp3 = SourcePath.create(base, false);
+        final ClassPath sp3 = SourcePath.sources(base, false);
         assertEquals (base,sp3);
     }
     

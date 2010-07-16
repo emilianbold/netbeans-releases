@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.analyzer;
@@ -63,9 +66,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.java.hints.infrastructure.HintsTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent;
+import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -84,6 +87,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class Analyzer implements Runnable {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(Analyzer.class.getName(), 1, false, false);
 
     private final Lookup context;
     private final AtomicBoolean cancel;
@@ -146,7 +150,7 @@ public class Analyzer implements Runnable {
 
                             handle.progress(f.incrementAndGet());
 
-                            eds.addAll(new HintsTask().computeHints(cc));
+                            eds.addAll(new HintsInvoker(cc, new AtomicBoolean()).computeHints(cc));
                         } finally {
                             HintsSettings.setPreferencesOverride(null);
                         }
@@ -184,7 +188,7 @@ public class Analyzer implements Runnable {
         
         ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel()); // NOI18N
 
-        RequestProcessor.getDefault().post(new Analyzer(context, abCancel, h, preferencesOverlay));
+        RP.post(new Analyzer(context, abCancel, h, preferencesOverlay));
     }
     
     public static Lookup normalizeLookup(Lookup l) {

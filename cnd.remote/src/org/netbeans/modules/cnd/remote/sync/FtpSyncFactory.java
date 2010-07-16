@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,7 +58,9 @@ public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd
 class FtpSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", false);
-    /*package*/ static final String ID = "ftp"; //NOI18N
+
+    /** this factory ID -  public for test purposes */
+    public static final String ID = "ftp"; //NOI18N
     
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
@@ -64,16 +70,12 @@ class FtpSyncFactory extends BaseSyncFactory {
 
     @Override
     public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        // return NbBundle.getMessage(getClass(), "FTP_Factory_Name");
-        return "FTP"; //NOI18N FIXUP
+        return NbBundle.getMessage(getClass(), "FTP_Factory_Name");
     }
 
     @Override
     public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        //return NbBundle.getMessage(getClass(), "FTP_Factory_Description");
-        return  "Use FTP protocol for synchronization."; // NOI18N FIXUP
+        return NbBundle.getMessage(getClass(), "FTP_Factory_Description");
     }
 
     @Override

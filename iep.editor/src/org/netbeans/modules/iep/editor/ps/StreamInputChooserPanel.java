@@ -28,23 +28,19 @@ package org.netbeans.modules.iep.editor.ps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.wizard.Utility;
-import org.netbeans.modules.iep.model.IEPModel;
-import org.netbeans.modules.iep.model.InputOperatorComponent;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.iep.model.WsOperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -107,6 +103,12 @@ public class StreamInputChooserPanel extends javax.swing.JPanel implements Explo
         manager.setRootContext(rootNode);
         populateRootNode(rootNode);
         Utility.expandNodes(beanTreeView1, 2, rootNode);
+        
+        String treeACDN = NbBundle.getMessage(StreamInputChooserPanel.class, "ACSN_StreamInputChooserPanel.SelectStreamInput");
+        String treeACDS = NbBundle.getMessage(StreamInputChooserPanel.class, "ACDS_StreamInputChooserPanel.SelectStreamInput");
+        beanTreeView1.getAccessibleContext().setAccessibleName(treeACDN);
+        beanTreeView1.getAccessibleContext().setAccessibleDescription(treeACDS);
+        
     }
     
     private void populateRootNode(Node rootNode) {
@@ -170,7 +172,7 @@ public class StreamInputChooserPanel extends javax.swing.JPanel implements Explo
     
     private ExplorerManager manager;
     public static String PROP_SELECTED_INPUT_OPERATOR_COMPONENT = "PROP_SELECTED_INPUT_OPERATOR_COMPONENT";
-    private InputOperatorComponent selectedComponent;
+    private WsOperatorComponent selectedComponent;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -184,11 +186,11 @@ public class StreamInputChooserPanel extends javax.swing.JPanel implements Explo
                 if(nodes.length > 0) {
                     Node node = nodes[0];
                     //set the selected node to null and state as invalid by default
-                    InputOperatorComponent previousComp = selectedComponent;
+                    WsOperatorComponent previousComp = selectedComponent;
                     selectedComponent = null;
                     
                     firePropertyChange(PROP_SELECTED_INPUT_OPERATOR_COMPONENT, previousComp, selectedComponent);
-                    InputOperatorComponent comp = node.getLookup().lookup(InputOperatorComponent.class);
+                    WsOperatorComponent comp = node.getLookup().lookup(WsOperatorComponent.class);
                     if (comp != null) {
                         previousComp = selectedComponent;
                         selectedComponent = comp;
@@ -200,7 +202,7 @@ public class StreamInputChooserPanel extends javax.swing.JPanel implements Explo
         }
     }
 
-    public InputOperatorComponent getSelectedInputOperatorComponent() {
+    public WsOperatorComponent getSelectedInputOperatorComponent() {
         return selectedComponent;
     }
  

@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.ext.logging.xam;
 
 import java.util.HashSet;
@@ -30,10 +26,8 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.bpel.model.ext.logging.impl.LoggingEntityFactory;
 
-
 /**
  * @author ads
- *
  */
 public enum LoggingElements {
     TRACE( "trace" ),                                 // NOI18N          
@@ -42,7 +36,7 @@ public enum LoggingElements {
     ;
     
     LoggingElements( String name ) {
-        this ( name , Trace.LOGGING_NAMESPACE_URI);
+        this ( name , Trace.TRACE_NAMESPACE_URI);
     }
     
     LoggingElements( String name , String nsUri ) {
@@ -70,7 +64,7 @@ public enum LoggingElements {
      */
     public QName getQName() {
         if ( getNamespace() == null ) {
-            return new QName(Trace.LOGGING_NAMESPACE_URI, getName());
+            return new QName(Trace.TRACE_NAMESPACE_URI, getName());
         }
         else {
             return new QName( getNamespace() , getName() );
@@ -95,5 +89,4 @@ public enum LoggingElements {
             QNAMES.add(v.getQName());
         }
     }
-
 }

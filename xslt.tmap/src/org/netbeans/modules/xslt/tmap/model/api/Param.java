@@ -40,6 +40,10 @@ public interface Param extends Nameable, ReferenceCollection {
 
     String getValue();
 
+    void removeValue();
+
+    void setValue(String value);
+
     VariableReference getVariableReference();
 
     void setVariableReference(VariableReference varRef);
@@ -49,6 +53,8 @@ public interface Param extends Nameable, ReferenceCollection {
     String getLiteralValue();
 
     void setContent(String content);
+    
+    void removeContent();
 
     String getContent();
 

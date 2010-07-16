@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.nodes.CategoryFolderNode;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -83,11 +84,14 @@ public class SchemaCategoriesChildren extends Children.Array {
                     (NodeFactory)myLookup.lookup(NodeFactory.class);
             ArrayList<Node> nodesList = new ArrayList<Node>();
             //
-            Collection<GlobalComplexType> types = model.getSchema().getComplexTypes();
-            for (GlobalComplexType type : types) {
-                Node newNode = nodeFactory.createNode(
-                        NodeType.GLOBAL_COMPLEX_TYPE, type, myLookup);
-                nodesList.add(newNode);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                Collection<GlobalComplexType> types = schema.getComplexTypes();
+                for (GlobalComplexType type : types) {
+                    Node newNode = nodeFactory.createNode(
+                            NodeType.GLOBAL_COMPLEX_TYPE, type, myLookup);
+                    nodesList.add(newNode);
+                }
             }
             //
             Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);
@@ -112,11 +116,14 @@ public class SchemaCategoriesChildren extends Children.Array {
                     (NodeFactory)myLookup.lookup(NodeFactory.class);
             ArrayList<Node> nodesList = new ArrayList<Node>();
             //
-            Collection<GlobalSimpleType> types = model.getSchema().getSimpleTypes();
-            for (GlobalSimpleType type : types) {
-                Node newNode = nodeFactory.createNode(
-                        NodeType.GLOBAL_SIMPLE_TYPE, type, myLookup);
-                nodesList.add(newNode);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                Collection<GlobalSimpleType> types = schema.getSimpleTypes();
+                for (GlobalSimpleType type : types) {
+                    Node newNode = nodeFactory.createNode(
+                            NodeType.GLOBAL_SIMPLE_TYPE, type, myLookup);
+                    nodesList.add(newNode);
+                }
             }
             //
             Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);
@@ -141,11 +148,14 @@ public class SchemaCategoriesChildren extends Children.Array {
                     (NodeFactory)myLookup.lookup(NodeFactory.class);
             ArrayList<Node> nodesList = new ArrayList<Node>();
             //
-            Collection<GlobalElement> elements = model.getSchema().getElements();
-            for (GlobalElement element : elements) {
-                Node newNode = nodeFactory.createNode(
-                        NodeType.GLOBAL_ELEMENT, element, myLookup);
-                nodesList.add(newNode);
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                Collection<GlobalElement> elements = schema.getElements();
+                for (GlobalElement element : elements) {
+                    Node newNode = nodeFactory.createNode(
+                            NodeType.GLOBAL_ELEMENT, element, myLookup);
+                    nodesList.add(newNode);
+                }
             }
             //
             Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);

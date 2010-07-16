@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -64,8 +68,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * APTMacroMap base implementation
@@ -105,7 +108,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
      */
     private void define(String macroText, boolean isSystem) {
         macroText = DEFINE_PREFIX + macroText;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText);
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
@@ -141,7 +144,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     
     private void defineImpl(APTFile file, APTDefine define, Kind macroType) {
         APTToken name = define.getName();
-        CharSequence filePath = (file == null ? CharSequenceKey.empty() : file.getPath());
+        CharSequence filePath = (file == null ? CharSequences.empty() : file.getPath());
         putMacro(name.getTextID(), createMacro(filePath, define, macroType));
     }
 
@@ -163,7 +166,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     } 
 
     public final boolean isDefined(CharSequence token) {
-        token = CharSequenceKey.create(token);
+        token = CharSequences.create(token);
         return getMacro(token) != null;
     } 
 
@@ -173,7 +176,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro getMacro(CharSequence token) {
-        assert token instanceof TinyCharSequence : "must not be String object " + token;
+        assert CharSequences.isCompact(token) : "must not be String object " + token;
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
@@ -253,8 +256,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
     @Override
     public String toString() {
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
-        APTMacroMapSnapshot.addAllMacros(active, tmpMap);
+        Map<CharSequence, APTMacro> tmpMap = APTMacroMapSnapshot.addAllMacros(active, null);
         return APTUtils.macros2String(tmpMap);
     }
     

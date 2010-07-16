@@ -29,14 +29,15 @@ import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.model.api.support.AtomicTxType;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.ExtBpelAttributeMeta;
 import org.netbeans.modules.bpel.nodes.dnd.BpelEntityPasteType;
 import org.netbeans.modules.bpel.nodes.dnd.SequenceEntityPasteType;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author nk160297
  */
 public class BpelProcessNode extends BaseScopeNode<Process> {
@@ -61,20 +62,39 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
             return sheet;
         }
         //
-        Sheet.Set mainPropertySet = 
-                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        Sheet.Set mainPropertySet = getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 Process.TARGET_NAMESPACE, TARGET_NAMESPACE, 
                 "getTargetNamespace", "setTargetNamespace", null); // NOI18N
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 ATOMIC_PROCESS, "isAtomic", "setAtomic", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
+                Process.ATOMIC_TX_TYPE, ATOMIC_TX_TYPE,
+                "getAtomicTxType", "setAtomicTxType", "removeAtomicTxType"); // NOI18N
+        //
+        propUtil.registerAttributeProperty(this, mainPropertySet,
+                ExtBpelAttributeMeta.IGNORE_MISSING_FROM_DATA.getLocalName(), 
+                IGNORE_MISSING_FROM_DATA, "getIgnoreMissingFromData", 
+                "setIgnoreMissingFromData", "removeIgnoreMissingFromData"); // NOI18N
+        //
+        propUtil.registerAttributeProperty(this, mainPropertySet,
+                ExtBpelAttributeMeta.PERSISTENCE_OPT_OUT.getLocalName(), 
+                PERSISTENCE_OPT_OUT, "isPersistenceOptOut", 
+                "setPersistenceOptOut", "removePersistenceOptOut"); // NOI18N
+        //
+        propUtil.registerAttributeProperty(this, mainPropertySet,
+                ExtBpelAttributeMeta.WAITING_REQUEST_LIFE_SPAN.getLocalName(), 
+                WAITING_REQUEST_LIFE_SPAN, "getWaitingRequestLifeSpan", 
+                "setWaitingRequestLifeSpan", "removeWaitingRequestLifeSpan"); // NOI18N
+        //
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -85,22 +105,12 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         if (!isDropNodeSupported(childNode)) {
             return false;
         }
-        
-        if (childNode instanceof PartnerLink
-            && getReference() != null 
-            && getReference().getPartnerLinkContainer() != null) 
-        {
+        if (childNode instanceof PartnerLink && getReference() != null && getReference().getPartnerLinkContainer() != null) {
             return true;
         }
-        
-        if (childNode instanceof Activity
-            && getReference() != null 
-            && getReference().getActivity() == null) 
-        {
+        if (childNode instanceof Activity && getReference() != null && getReference().getActivity() == null) {
             return true;
         }
-        
-        
         return false;
     }
     
@@ -111,7 +121,6 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         if (childNode instanceof Activity) {
             return new SequenceEntityPasteType(getReference(),(BpelEntity)childNode.getReference());
         }
-        
         return null;
     }
     
@@ -119,8 +128,6 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-//                ActionType.GO_TO_SOURCE,
-//                ActionType.GO_TO_DIAGRAMM,
                 ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.PROPERTIES
@@ -132,8 +139,6 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
             ActionType.SEPARATOR,
             ActionType.ADD_FROM_PALETTE,
             ActionType.SEPARATOR,
-//            ActionType.GO_TO_SOURCE,
-//            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
@@ -145,7 +150,6 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         return new ActionType[] {
             ActionType.ADD_VARIABLE,
             ActionType.ADD_CORRELATION_SET,
-            // ActionType.ADD_MESSAGE_EXCHANGE, // Issue 85553
             ActionType.ADD_PARTNER_LINK,
             ActionType.ADD_EVENT_HANDLERS,
             ActionType.ADD_FAULT_HANDLERS,
@@ -157,13 +161,13 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
     @Override
     protected String getImplHtmlDisplayName() {
         String name = getName();
+
         if (name == null) {
             return getNodeType().getDisplayName();
         }
-//        name = name.replaceAll("&","&amp;"); // NOI18N
         return name;
     }
-    
+
     public Boolean isAtomic() {
         if (TBoolean.YES.equals(getReference().isAtomic())) {
             return Boolean.TRUE;
@@ -171,13 +175,12 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         return Boolean.FALSE;
     }
     
-    public void setAtomic(Boolean newValue) {
-        if (newValue == null) {
-            // default atomic is no.
+    public void setAtomic(Boolean value) {
+        if (value == null) {
             getReference().setAtomic(TBoolean.NO);
-        } else {
-            getReference().setAtomic(
-                    newValue == Boolean.TRUE ? TBoolean.YES : TBoolean.NO);
+        }
+        else {
+            getReference().setAtomic(value == Boolean.TRUE ? TBoolean.YES : TBoolean.NO);
         }
     }
 }

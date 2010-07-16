@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,22 +52,20 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.junit.After;
 import static org.junit.Assert.*;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
@@ -79,17 +80,6 @@ import org.openide.util.Utilities;
  * @author Tim
  */
 public class CardPropertiesTest {
-
-    public CardPropertiesTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     OPA opa;
     CardProperties p;
@@ -114,10 +104,6 @@ public class CardPropertiesTest {
         platformProps.setProperty("javacard.device.name", "foo");
         platformProps.setProperty("javacard.device.host", "localhost");
         platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, "TestPlatform");
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -261,6 +247,7 @@ public class CardPropertiesTest {
             "cmd",
             "/c",
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\debugproxy.bat" : "usr/local/java/jcdk3.0.2/bin/debugproxy",
+            "debug",
             "--listen",
             "7022",
             "--remote",
@@ -279,9 +266,14 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
-        String[] got = p.getRunCommandLine(platformProps, false, 0);
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
+        String[] got = p.getRunCommandLine(platformProps, false, false, false);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
+            "-debug",
+            "false",
+            "-suspend",
+            "false",
             "-ramsize",
             "4M",
             "-e2psize",
@@ -289,7 +281,7 @@ public class CardPropertiesTest {
             "-corsize",
             "3K",
             "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom",
+            win ? winEepromFile : "/home/user/foo/foo.eprom",
             "-loggerlevel",
             "severe",
             "-httpport",
@@ -312,181 +304,19 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
         assertNotNull (platformProps.get("javacard.instance.id"));
-        String[] got = p.getResumeCommandLine(platformProps);
+        String[] got = p.getRunCommandLine(platformProps, false, false, true);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
             "-resume",
-            "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom"
-        };
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testBasicCommandLine() {
-        if (!Utilities.isWindows()) { //FIXME
-            return;
-        }
-        String cmdline = "cmd /c " + "c:\\foo\\cjcre.exe "
-                + "-ramsize 2K "
-                + "-e2psize 2K "
-                + "-corsize 1K "
-                + "-e2pfile c:\\bar\\foo.eeprom "
-                + "-debug false "
-                + "-loggerlevel SEVERE "
-                + "-httpport 8080 "
-                + "-contactedport 2650 "
-                + "-contactedprotocol T1 "
-                + "-contactlessport 2651 "
-                + "-bogus C:\\Progam Files\\foo\\bar.foo "
-                + "-debuggerport 2652 "
-                + "-suspend false ";
-
-        String[] expect = new String[]{
-            "cmd",
-            "/c",
-            "c:\\foo\\cjcre.exe",
-            "-ramsize",
-            "2K",
-            "-e2psize",
-            "2K",
-            "-corsize",
-            "1K",
-            "-e2pfile",
-            "c:\\bar\\foo.eeprom",
             "-debug",
             "false",
-            "-loggerlevel",
-            "SEVERE",
-            "-httpport",
-            "8080",
-            "-contactedport",
-            "2650",
-            "-contactedprotocol",
-            "T1",
-            "-contactlessport",
-            "2651",
-            "-bogus",
-            "C:\\Progam Files\\foo\\bar.foo",
-            "-debuggerport",
-            "2652",
             "-suspend",
             "false",
-        };
-
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testSpacesInPaths() {
-        if (!Utilities.isWindows()) { //FIXME
-            return;
-        }
-        String cmdline = "cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
-                + "-ramsize 2K "
-                + "-e2psize 2K "
-                + "-corsize 1K "
-                + "-e2pfile c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom "
-                + "-debug "
-                + "-loggerlevel SEVERE "
-                + "-httpport 8080 "
-                + "-contactedport 2650 "
-                + "-contactedprotocol T1 "
-                + "-contactlessport 2651 "
-                + "-debuggerport 2652 "
-                + "-nosuspend";
-
-        String[] expect = new String[]{
-            "cmd",
-            "/c",
-            "c:\\Program Files\\Java\\Java Card\\cjcre.exe",
-            "-ramsize",
-            "2K",
-            "-e2psize",
-            "2K",
-            "-corsize",
-            "1K",
             "-e2pfile",
-            "c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom",
-            "-debug",
-            "-loggerlevel",
-            "SEVERE",
-            "-httpport",
-            "8080",
-            "-contactedport",
-            "2650",
-            "-contactedprotocol",
-            "T1",
-            "-contactlessport",
-            "2651",
-            "-debuggerport",
-            "2652",
-            "-nosuspend"
+            win ? winEepromFile : "/home/user/foo/foo.eprom"
         };
-
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testLeadingSpaces() {
-        if (!Utilities.isWindows()) { //FIXME
-            return;
-        }
-        String cmdline = "  cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
-                + "-ramsize 2K "
-                + "-e2psize 2K "
-                + "-corsize 1K "
-                + "-e2pfile c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom "
-                + "-debug "
-                + "-loggerlevel SEVERE "
-                + "-httpport 8080 "
-                + "-contactedport 2650 "
-                + "-contactedprotocol T1 "
-                + "-contactlessport 2651 "
-                + "-debuggerport 2652 "
-                + "-nosuspend";
-
-        String[] expect = new String[]{
-            "cmd",
-            "/c",
-            "c:\\Program Files\\Java\\Java Card\\cjcre.exe",
-            "-ramsize",
-            "2K",
-            "-e2psize",
-            "2K",
-            "-corsize",
-            "1K",
-            "-e2pfile",
-            "c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom",
-            "-debug",
-            "-loggerlevel",
-            "SEVERE",
-            "-httpport",
-            "8080",
-            "-contactedport",
-            "2650",
-            "-contactedprotocol",
-            "T1",
-            "-contactlessport",
-            "2651",
-            "-debuggerport",
-            "2652",
-            "-nosuspend"
-        };
-
-        String[] got = shellSplit(cmdline);
         for (int i = 0; i < Math.min(expect.length, got.length); i++) {
             assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
         }
@@ -499,240 +329,21 @@ public class CardPropertiesTest {
         Set <Class<? extends ICardCapability>> expect = new HashSet<Class<? extends ICardCapability>>();
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
                 EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
-                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, ApduSupport.class));
-        assertEquals (expect, got);
+                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class, DeleteCapability.class));
+        assertSetsEquals (expect, got);
     }
 
-    @Test
-    public void testMultiDashCommandLine() {
-        if (!Utilities.isWindows()) { //FIXME
-            return;
+    private void assertSetsEquals (Set<?> expect, Set<?> got) {
+        if (!expect.equals(got)) {
+            Set expect1 = new HashSet<Object> (expect);
+            Set got1 = new HashSet<Object> (got);
+            Set expect2 = new HashSet<Object> (expect);
+            Set got2 = new HashSet<Object> (got);
+            got1.removeAll(expect1);
+            expect2.removeAll(got2);
+            assertTrue ("Unexpected objects: " + got1, got1.isEmpty());
+            assertTrue ("Missing objects: " + expect2, expect2.isEmpty());
         }
-        String cmdline =         "cmd /c C:\\Java Card\\JCDK3.0.2\\bin\\debugproxy.bat " + //NOI18N
-        "--listen 2026 " + //NOI18N
-        "--remote localhost:3225 " + //NOI18N
-        "--classpath C:\\Some Where\\a.jar;C:\\Some Where Else\\b.jar"; //NOI18N
-        String[] expect = new String[] {
-            "cmd",
-            "/c",
-            "C:\\Java Card\\JCDK3.0.2\\bin\\debugproxy.bat",
-            "--listen",
-            "2026",
-            "--remote",
-            "localhost:3225",
-            "--classpath",
-            "C:\\Some Where\\a.jar;C:\\Some Where Else\\b.jar"
-        };
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testDashesInPaths() {
-        if (!Utilities.isWindows()) { //FIXME
-            return;
-        }
-        String cmdline = "cmd /c c:\\Program Files\\Java\\Java Card\\cjcre.exe "
-                + "-ramsize 2K "
-                + "-e2psize 2K "
-                + "-corsize 1K "
-                + "-e2pfile C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom "
-                + "-debug "
-                + "-loggerlevel SEVERE "
-                + "-httpport 8080 "
-                + "-contactedport 2650 "
-                + "-contactedprotocol T1 "
-                + "-contactlessport 2651 "
-                + "-debuggerport 2652 "
-                + "-nosuspend";
-
-        String[] expect = new String[]{
-            "cmd",
-            "/c",
-            "c:\\Program Files\\Java\\Java Card\\cjcre.exe",
-            "-ramsize",
-            "2K",
-            "-e2psize",
-            "2K",
-            "-corsize",
-            "1K",
-            "-e2pfile",
-            "C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom",
-            "-debug",
-            "-loggerlevel",
-            "SEVERE",
-            "-httpport",
-            "8080",
-            "-contactedport",
-            "2650",
-            "-contactedprotocol",
-            "T1",
-            "-contactlessport",
-            "2651",
-            "-debuggerport",
-            "2652",
-            "-nosuspend"
-        };
-
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testArgValueSplit () {
-        String val = "-e2pfile C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom";
-        List<String> s = new ArrayList<String>();
-        assertTrue(Utils.splitArgs(val, s));
-        System.err.println("SPLIT TO " + s);
-        assertEquals (2, s.size());
-    }
-    @Test
-    public void testCantSplitFileName() {
-        String val = "C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom";
-        List<String> s = new ArrayList<String>();
-        if (!Utils.splitArgs(val, s)) {
-            s.add (val);
-        }
-        System.err.println("SPLIT TO " + s);
-        assertEquals (1, s.size());
-    }
-    @Test
-    public void testMiniSplit() {
-        String val = "-ramsize 2K -e2psize 2K -corsize 1K";
-        List<String> s = new ArrayList<String>();
-        assertTrue(Utils.splitArgs(val, s));
-        System.err.println("SPLIT TO " + s);
-        assertEquals ("Should have gotten 6 parts: " + s, 6, s.size());
-        assertEquals ("-ramsize", s.get(0));
-        assertEquals ("2K", s.get(1));
-        assertEquals ("-e2psize", s.get(2));
-        assertEquals ("2K", s.get(3));
-        assertEquals ("-corsize", s.get(4));
-        assertEquals ("1K", s.get(5));
-    }
-
-    @Test
-    public void testShortCommandLineNoSpaces() {
-        String cmdline = "cjcre.exe -resume -e2pfile c:\\foo.eprom";
-        String[] expect = new String[]{
-            "cjcre.exe",
-            "-resume",
-            "-e2pfile",
-            "c:\\foo.eprom"
-        };
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-    @Test
-    public void testShortCommandLineWithSpaces() {
-        String cmdline = "c:\\Program Files\\Java\\cjcre.exe -resume -e2pfile c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom";
-        String[] expect = new String[]{
-            "c:\\Program Files\\Java\\cjcre.exe",
-            "-resume",
-            "-e2pfile",
-            "c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom"
-        };
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testOneElementCommandLine() {
-        String cmdline = "cjcre.exe";
-        String[] expect = new String[]{"cjcre.exe"};
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testTwoElementCommandLine() {
-        String cmdline = "cjcre.exe -resume";
-        String[] expect = new String[]{"cjcre.exe", "-resume"};
-        String[] got = shellSplit(cmdline);
-        for (int i = 0; i < Math.min(expect.length, got.length); i++) {
-            assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
-        }
-        assertEquals(expect.length, got.length);
-    }
-
-    @Test
-    public void testSplitRegexp() {
-        String val = "-e2pfile C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom";
-        List<String> s = new ArrayList<String>();
-        Matcher m = pattern().matcher(val);
-        while (m.find()) {
-            for (int i=1; i <= m.groupCount(); i++) {
-                s.add(m.group(i));
-            }
-        }
-        assertEquals ("-e2pfile", s.get(0));
-        assertEquals ("C:\\space\\nbsrc\\nbbuild\\testuserdir\\config\\org-netbeans-modules-javacard\\eeproms\\javacard_default\\Default Device.eprom", s.get(1));
-        assertEquals (2, s.size());
-    }
-
-    static Pattern pattern() { return Utils.ARG_VALUE_SPLIT; }
-
-    //for dev time:
-    static final Pattern ARG_VALUE_SPLIT = Pattern.compile(
-            "^\\s*(\\-\\S*)\\s*?((?!\\-)\\S.*?)?(?:\\s\\-|$)"); //NOI18N
-    
-    @Test
-    public void testMiniSplitRegexp() {
-        String val = "-ramsize 2K -e2psize 2K -corsize 1K";
-        List<String> s = new ArrayList<String>();
-        Matcher m = pattern().matcher(val);
-        while (m.find()) {
-            for (int i=1; i <= m.groupCount(); i++) {
-                s.add(m.group(i));
-            }
-        }
-        assertEquals ("-ramsize", s.get(0));
-        assertEquals ("2K", s.get(1));
-        assertEquals (2, s.size());
-    }
-
-    @Test
-    public void testSplitSoloSwitches() {
-        String val = "-resume -e2pfile c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom";
-        List<String> s = new ArrayList<String>();
-        Utils.splitArgs(val, s);
-        assertEquals ("Not split in 3: " + s, 3, s.size());
-    }
-
-    @Test
-    public void testSoloSwitches() {
-        String val = "-resume -e2pfile c:\\Documents And Settings\\Joe Blow\\My Documents\\Java Card\\foo.eeprom";
-        List<String> s = new ArrayList<String>();
-        Matcher m = pattern().matcher(val);
-        while (m.find()) {
-            for (int i=1; i <= m.groupCount(); i++) {
-                System.err.println(i + ":" + m.group(i));
-                if (m.group(i) != null) {
-                    s.add(m.group(i));
-                }
-            }
-        }
-        assertEquals ("-resume", s.get(0));
-        assertEquals (1, s.size());
-    }
-
-    private static final String[] shellSplit(String s) {
-        return CardProperties.shellSplit(s);
     }
 
     private static final class OPA extends ObservableProperties implements PropertiesAdapter {

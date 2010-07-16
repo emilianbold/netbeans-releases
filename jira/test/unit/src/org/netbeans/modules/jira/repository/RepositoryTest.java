@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,8 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,16 +54,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
@@ -87,12 +89,7 @@ public class RepositoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JiraCorePlugin bcp = new JiraCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Jira.getInstance(); // force JiraCorePlugin init
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
@@ -224,29 +221,6 @@ public class RepositoryTest extends NbTestCase {
 //        assertNotNull(i);
 //        assertEquals("somari", i.getSummary());
 //    }
-
-    public void testConfigurationData () throws NoSuchFieldException, NoSuchMethodException {
-        Class configurationDataClass = JiraConfiguration.ConfigurationData.class;
-        Field[] declaredFields = JiraClientData.class.getDeclaredFields();
-        for (Field f : declaredFields) {
-            if (Modifier.isPrivate(f.getModifiers())) {
-                continue;
-            }
-            Field confDataField = configurationDataClass.getDeclaredField(f.getName());
-            assertNotNull(confDataField);
-            compareModifiers(f.getModifiers(), confDataField.getModifiers());
-        }
-
-        Method[] declaredMethods = JiraClientData.class.getDeclaredMethods();
-        for (Method m : declaredMethods) {
-            if (Modifier.isPrivate(m.getModifiers())) {
-                continue;
-            }
-            Method confDataMethod = configurationDataClass.getDeclaredMethod(m.getName());
-            assertNotNull(confDataMethod);
-            compareModifiers(m.getModifiers(), confDataMethod.getModifiers());
-        }
-    }
 
     public void testSimpleSearch() throws MalformedURLException, CoreException, JiraException {
         long ts = System.currentTimeMillis();

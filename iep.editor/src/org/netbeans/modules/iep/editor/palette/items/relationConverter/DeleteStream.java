@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.iep.editor.palette.items.relationConverter;
 
-import org.netbeans.modules.iep.editor.tcg.palette.TcgActiveEditorDrop;
+import org.netbeans.modules.tbls.editor.palette.TcgActiveEditorDrop;
 
 /*
  * DeleteStream.java

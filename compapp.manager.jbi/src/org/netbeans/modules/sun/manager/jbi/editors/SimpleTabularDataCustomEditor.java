@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -94,6 +97,8 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     protected JBIComponentConfigurationDescriptor descriptor;
     protected boolean isWritable = true;
 
+    private static int MIN_COLUMN_COUNT_FOR_MULTILINE_HEADER = 4;
+
     public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor,
             String tableLabelText,
             String tableLabelDescription,
@@ -120,7 +125,12 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         table.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(table);
 
+        table.setName(tableLabelText);
+        table.setToolTipText(tableLabelDescription);
+        label.setLabelFor(table);
+
         configureTableColumns(table);
+        initTableColumnWidths();
 
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
@@ -242,10 +252,26 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         return ret;
     }
 
-    /** Returns preferredSize as the preferred height and the width of the panel */
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(450, 250);
+        // The preferred panel width is determined by all table columns'
+        // perferred widths.
+        int width = 5 * columnNames.length;  // some initial padding
+        for (int i = 0; i < columnNames.length; i++) {
+            TableColumn column = null;
+            try {
+                column = table.getColumn(columnNames[i]);
+            } catch (IllegalArgumentException e) {
+                // this column is hidden
+                continue;
+            }
+            width += column.getPreferredWidth();
+        }
+
+        width = Math.max(width, 450);
+        width = Math.min(width, 1000);
+
+        return new Dimension(width, 250);
     }
 
     protected JTable createTable(DefaultTableModel tableModel) {
@@ -294,6 +320,24 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         for (int i = 0; i < columnNames.length; i++) {
             TableColumn col = table.getColumnModel().getColumn(i);
             col.setHeaderRenderer(headerCellRenderer);
+        }
+    }
+
+    private void initTableColumnWidths() {
+        for (int i = 0; i < columnNames.length; i++) {
+            TableColumn column = null;
+            try {
+                column = table.getColumn(columnNames[i]);
+            } catch (IllegalArgumentException e) {
+                // this column is hidden
+                continue;
+            }
+
+            TableCellRenderer renderer = column.getHeaderRenderer();
+            Component comp = renderer.getTableCellRendererComponent(
+                    table, column.getHeaderValue(), false, false, 0, 0);
+            int width = comp.getPreferredSize().width;
+            column.setPreferredWidth(width);
         }
     }
     
@@ -453,6 +497,10 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                 }
             }
 
+            if (columnNames.length >= MIN_COLUMN_COUNT_FOR_MULTILINE_HEADER) { // make the table header multi-line
+                columnTitle = columnTitle.replace(" ", "<br>");
+            }
+
             String myValue = colIndex < indexColumnCount ? "<html><body><b><i>" + columnTitle + "</i></b></body></html>" : // NOI18N
                     "<html><body><b>" + columnTitle + "</b></body></html>"; // NOI18N
             setText(myValue);
@@ -497,7 +545,6 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         buttonPanel.add(deleteAllButton);
         deleteAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_DELETE_ALL")); // NOI18N
 
-        label.setLabelFor(table);
         org.openide.awt.Mnemonics.setLocalizedText(label, tableLabelText);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

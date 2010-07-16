@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -106,7 +109,7 @@ public final class Main extends Object {
    * Sets up the custom font size and theme url for the plaf library to
    * process.
    */
-  static void initUICustomizations() {
+    public static void initUICustomizations() {
       if (!CLIOptions.isGui ()) {
           return;
       }
@@ -155,7 +158,8 @@ public final class Main extends Object {
 
             StartLog.logStart ("Modules initialization"); // NOI18N
             try {
-                moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
+                moduleSystem = new ModuleSystem();
+                moduleSystem.init(FileUtil.getConfigRoot().getFileSystem());
             } catch (IOException ioe) {
                 // System will be screwed up.
                 throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N
@@ -223,17 +227,6 @@ public final class Main extends Object {
     // initialize the URL factory
     initializeURLFactory();
   
-    if (System.getProperties ().get ("org.openide.TopManager") == null) { // NOI18N
-      // this tells the system that we run in guy mode
-      System.setProperty ("org.openide.TopManager.GUI", "true"); // NOI18N
-      // update the top manager to our main if it has not been provided yet
-      System.getProperties().put (
-        // Note that it is no longer actually a TopManager; historical relic:
-        "org.openide.TopManager", // NOI18N
-        "org.netbeans.core.NonGui" // NOI18N
-      );
-    }
-
     CLIOptions.initialize();
     StartLog.logProgress ("Command line parsed"); // NOI18N
 
@@ -312,17 +305,14 @@ public final class Main extends Object {
     CoreBridge.getDefault().registerPropertyEditors();
     StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
-    CoreBridge.getDefault().loadSettings();
-    StartLog.logProgress ("IDE settings loaded"); // NOI18N
+    org.netbeans.Main.finishInitialization();
+    StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
     
     for (RunLevel level : Lookup.getDefault().lookupAll(RunLevel.class)) {
         level.run();
     }
 
     InstalledFileLocatorImpl.discardCache();
-
-    org.netbeans.Main.finishInitialization();
-    StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
 
     Splash.getInstance().setRunning(false);
     Splash.getInstance().dispose();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -72,17 +75,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members;
     private final List<CsmUID<CsmFriend>> friends;
-    private final ArrayList<CsmInheritance> inheritances = new ArrayList<CsmInheritance>(0);
+    private final ArrayList<CsmUID<CsmInheritance>> inheritances;
     private TemplateDescriptor templateDescriptor = null;
     private /*final*/ int leftBracketPos;
 
     private class ClassAstRenderer extends AstRenderer {
         private final boolean renderingLocalContext;
-        private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
+        private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(boolean renderingLocalContext) {
-            super((FileImpl) ClassImpl.this.getContainingFile());
+        public ClassAstRenderer(CsmFile containingFile, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+            super((FileImpl) containingFile);
             this.renderingLocalContext = renderingLocalContext;
+            this.curentVisibility = curentVisibility;
         }
 
         @Override
@@ -109,13 +113,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 switch (token.getType()) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
-                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
                         String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
                         setTemplateDescriptor(params, name);
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        addInheritance(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
+                        addInheritance(new InheritanceImpl(token, getContainingFile(), ClassImpl.this), !isRenderingLocalContext());
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
@@ -206,7 +210,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FIELD:
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
-                            addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            try {
+                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
                         } else {
                             if (renderVariable(token, null, null, false)) {
                                 break;
@@ -248,7 +256,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         {
                             child = token.getFirstChild();
                             if (hasFriendPrefix(child)) {
-                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                try {
+                                    addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
                             } else {
                                 ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                                 if (fd != null) {
@@ -349,6 +361,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
+            
+            // Check for include directives in class
+            if (!renderingLocalContext) {
+                CsmFile file = getContainingFile();
+                for (CsmInclude include : file.getIncludes()) {
+                    if (include.getStartOffset() > getStartOffset()
+                            && include.getEndOffset() < getEndOffset()) {
+                        ((FileImpl) file).onFakeRegisration((IncludeImpl) include, ClassImpl.this);
+                    }
+                }
+            }
         }
 
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {
@@ -371,7 +394,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return false;
         }
 
-        private CsmFriend renderFriendClass(AST ast) {
+        private CsmFriend renderFriendClass(AST ast) throws AstRendererException {
             AST firstChild = ast.getFirstChild();
             AST child = firstChild;
             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
@@ -381,12 +404,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 child = child.getNextSibling();
             }
             CsmClassForwardDeclaration cfd = null;
+            AST qid = null;
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
                 // check if we want to have class forward
                 // we don't want for AA::BB names
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
                 CharSequence[] nameParts = AstRenderer.getNameTokens(qid);
                 if (nameParts != null && nameParts.length == 1) {
                     // also we don't want for templates references
@@ -406,8 +430,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         ((NamespaceImpl) scope).addDeclaration(cfd);
                     }
                 }
+            } else if (child != null && (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                //class G;
+                //class X {
+                //  friend G;
+                //};
+                qid = child;
+            } else {
+                // FIXME: is it valid or exceptional branch?
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
             }
-            return new FriendClassImpl(firstChild, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+            return new FriendClassImpl(firstChild, qid, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
         }
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token) {
@@ -505,14 +538,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             visibility = curentVisibility;
         }
 
+        @Override
         public boolean isStatic() {
             return false;
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return visibility;
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return (CsmClass) getScope();
         }
@@ -576,10 +612,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             unregisterInProject();
         }
 
+        @Override
         public boolean isStatic() {
             return false;
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return visibility;
         }
@@ -590,6 +628,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
         }
 
+        @Override
         public CsmClass getContainingClass() {
             CsmClass out = containerRef;
             if (out == null) {
@@ -636,7 +675,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (cls == null) {
                 cls = getContainingClass();
             }
-            return CharSequenceKey.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
         ////////////////////////////////////////////////////////////////////////////
@@ -676,6 +715,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
+        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         kind = findKind(ast);
     }
 
@@ -695,15 +735,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     protected final void render(AST ast, boolean localClass) {
-        new ClassAstRenderer(localClass).render(ast);
+        new ClassAstRenderer(getContainingFile(), CsmVisibility.PRIVATE, localClass).render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
+    }
+
+    public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
+        new ClassAstRenderer(file, visibility, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
         ClassImpl out = null;
         if (container != null) {
-            CharSequence name = CharSequenceKey.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-            name = (name == null) ? CharSequenceKey.empty() : name;
+            CharSequence name = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+            name = (name == null) ? CharSequences.empty() : name;
             int start = getStartOffset(ast);
             int end = getEndOffset(ast);
             CsmOffsetableDeclaration existing = container.findExistingDeclaration(start, end, name);
@@ -734,10 +779,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         templateDescriptor = td;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return this.kind;
     }
 
+    @Override
     public Collection<CsmMember> getMembers() {
         Collection<CsmMember> out;
         synchronized (members) {
@@ -746,6 +793,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
 
+    @Override
     public Iterator<CsmMember> getMembers(CsmFilter filter) {
         Collection<CsmUID<CsmMember>> uids = new ArrayList<CsmUID<CsmMember>>();
         synchronized (members) {
@@ -754,6 +802,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return UIDCsmConverter.UIDsToDeclarations(uids, filter);
     }
 
+    @Override
     public Collection<CsmFriend> getFriends() {
         Collection<CsmFriend> out;
         synchronized (friends) {
@@ -762,16 +811,21 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
 
-    public List<CsmInheritance> getBaseClasses() {
+    @Override
+    public Collection<CsmInheritance> getBaseClasses() {
+        Collection<CsmInheritance> out;
         synchronized (inheritances) {
-            return new ArrayList<CsmInheritance>(inheritances);
+            out = UIDCsmConverter.UIDsToInheritances(inheritances);
         }
+        return out;
     }
 
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -801,11 +855,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    private void addInheritance(CsmInheritance inheritance) {
+    private void addInheritance(CsmInheritance inheritance, boolean global) {
+        if (global) {
+            RepositoryUtils.put(inheritance);
+        }
+        CsmUID<CsmInheritance> uid = UIDCsmConverter.inheritanceToUID(inheritance);
+        assert uid != null;
         synchronized (inheritances) {
-            if (!inheritances.contains(inheritance)) {
-                inheritances.add(inheritance);
-            }
+            UIDUtilities.insertIntoSortedUIDList(uid, inheritances);
         }
     }
 
@@ -826,11 +883,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return (lcurly instanceof CsmAST) ? ((CsmAST) lcurly).getOffset() : getStartOffset();
     }
 
+    @Override
     public int getLeftBracketOffset() {
         return leftBracketPos;
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection<CsmScopeElement>) (Collection<?>) getMembers();
     }
@@ -840,6 +899,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         super.dispose();
         _clearMembers();
         _clearFriends();
+        _clearInheritances();
     }
 
     private void _clearMembers() {
@@ -847,6 +907,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         Utils.disposeAll(members2dispose);
         synchronized (members) {
             RepositoryUtils.remove(this.members);
+        }
+    }
+
+    private void _clearInheritances() {
+        Collection<CsmInheritance> inheritances2dispose = getBaseClasses();
+        Utils.disposeAll(inheritances2dispose);
+        synchronized (inheritances) {
+            RepositoryUtils.remove(this.inheritances);
         }
     }
 
@@ -873,10 +941,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return CsmDeclaration.Kind.CLASS;
     }
 
+    @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
@@ -893,8 +963,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
         factory.writeUIDCollection(this.friends, output, true);
-        Collection<CsmInheritance> baseClasses = getBaseClasses();
-        PersistentUtils.writeInheritances(baseClasses, output);
+        factory.writeUIDCollection(this.inheritances, output, true);
     }
 
     public ClassImpl(DataInput input) throws IOException {
@@ -917,13 +986,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             friends = new ArrayList<CsmUID<CsmFriend>>(collSize);
         }
         factory.readUIDCollection(this.friends, input, collSize);
-        Collection<CsmInheritance> baseClasses = new ArrayList<CsmInheritance>();
-        PersistentUtils.readInheritances(baseClasses, input);
-        synchronized (this.inheritances) {
-            this.inheritances.clear();
-            this.inheritances.addAll(baseClasses);
-            inheritances.trimToSize();
+
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        } else {
+            inheritances = new ArrayList<CsmUID<CsmInheritance>>(collSize);
         }
+        factory.readUIDCollection(this.inheritances, input, collSize);
     }
     private static final int CLASS_KIND = 1;
     private static final int UNION_KIND = 2;

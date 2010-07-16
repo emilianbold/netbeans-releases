@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmTypedef
@@ -190,11 +193,11 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     public CharSequence getQualifiedName() {
         CsmObject container = _getContainer();
         if (CsmKindUtilities.isClass(container)) {
-            return CharSequenceKey.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
         } else if (CsmKindUtilities.isNamespace(container)) {
             CharSequence nsName = ((CsmNamespace) container).getQualifiedName();
             if (nsName != null && nsName.length() > 0) {
-                return CharSequenceKey.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();
@@ -275,12 +278,25 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
+    private static final byte UNNAMED_TYPE_FLAG = 1;
+    private static final byte UNNAMED_TYPEDEF_FLAG = 1 << 1;
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        output.writeBoolean(typeUnnamed);
+        byte unnamedState = 0;
+        if (typeUnnamed) {
+            unnamedState |= UNNAMED_TYPE_FLAG;
+        }
+        boolean unnamed = getName().length() == 0;
+        if (unnamed) {
+            unnamedState |= UNNAMED_TYPEDEF_FLAG;
+        }
+        output.writeByte(unnamedState);
+        if (unnamed) {
+            super.writeUID(output);
+        }
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
 
@@ -299,7 +315,18 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
-        typeUnnamed = input.readBoolean();
+        byte unnamedState = input.readByte();
+        typeUnnamed = false;
+        if ((unnamedState & UNNAMED_TYPE_FLAG) == UNNAMED_TYPE_FLAG) {
+            typeUnnamed = true;
+        }
+        boolean unnamed = false;
+        if ((unnamedState & UNNAMED_TYPEDEF_FLAG) == UNNAMED_TYPEDEF_FLAG) {
+            unnamed = true;
+        }
+        if (unnamed) {
+            super.readUID(input);
+        }
         this.type = PersistentUtils.readType(input);
         assert this.type != null;
 

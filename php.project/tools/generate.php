@@ -7,6 +7,8 @@
  * @author Michael Spector <michael@zend.com>
  */
 
+define("DOC_URL", "./html/");      // PHP documentation, separate HTML files
+
 if (version_compare(phpversion(), "5.0.0") < 0) {
 	die ("This script requires PHP 5.0.0 or higher!\n");
 }
@@ -41,9 +43,10 @@ for ($i = 0; $i < count($argv); ++$i) {
 if (!$phpdocDir) {
 	show_help();
 }
-
-$functionsDoc = parse_phpdoc_functions ($phpdocDir);
-$classesDoc = parse_phpdoc_classes ($phpdocDir);
+$extensions = get_loaded_extensions();
+$functionsDoc = parse_phpdoc_functions ($phpdocDir, $extensions);
+$fieldsDoc = parse_phpdoc_fields ($phpdocDir, $extensions);
+$classesDoc = parse_phpdoc_classes ($phpdocDir, $extensions);
 $constantsDoc = parse_phpdoc_constants ($phpdocDir);
 
 $processedFunctions = array();
@@ -55,7 +58,6 @@ $processedConstants = array();
 if (!$splitFiles) {
 	begin_file_output();
 }
-$extensions = get_loaded_extensions();
 foreach ($extensions as $extName) {
 	if ($splitFiles) {
 		begin_file_output();
@@ -85,7 +87,7 @@ foreach ($intClasses as $intClass) {
 
 print "\n";
 $constants = get_defined_constants(true);
-$intConstants = $constants["internal"];
+$intConstants = isset($constants["internal"]) ? $constants["internal"] : array();
 // add magic constants:
 $intConstants['__FILE__'] = null;
 $intConstants['__LINE__'] = null;
@@ -102,6 +104,7 @@ foreach ($intConstants as $name => $value) {
 	}
 }
 
+
 finish_file_output("{$phpDir}/basic.php");
 
 // Create .list file
@@ -112,6 +115,32 @@ foreach (glob("{$phpDir}/*.php") as $f) {
 }
 fclose($fp);
 
+
+function findVerInfo($file)
+ {
+    $url = DOC_URL.$file.".html";
+    $search_for = '<p class="verinfo">';
+    //echo "Reading $url :\n";
+
+    if (!is_file($url)) {
+        return;
+    }
+
+    $file_contents = file_get_contents($url);
+
+    $start_pos = strpos($file_contents, $search_for);
+
+    if ($start_pos !== 0) {
+       $start_pos += strlen($search_for);
+       $end_pos = strpos($file_contents, '</p>', $start_pos);
+
+       if ($end_pos !== 0) {
+          $verinfo = substr($file_contents, $start_pos, $end_pos - $start_pos);
+          //echo "Ver. info: $verinfo\n";
+          return $verinfo;
+       }
+    }
+ }
 
 // === Functions ===
 /**
@@ -143,31 +172,55 @@ function clean_php_identifier ($name) {
  */
 function make_funckey_from_ref ($ref) {
 	if ($ref instanceof ReflectionMethod) {
-		$funckey = strtolower($ref->getDeclaringClass()->getName())."::".strtolower($ref->getName());
+		$funckey = make_classmember_ref($ref->getDeclaringClass()->getName(), $ref->getName());
 	} else {
 		$funckey = strtolower($ref->getName());
 	}
 	return $funckey;
 }
+function make_property_from_ref ($ref) {
+	if ($ref instanceof ReflectionProperty) {
+		$funckey = make_classmember_ref($ref->getDeclaringClass()->getName(), $ref->getName());
+	} else {
+		throw new Exception("Unexpected type: ".gettype($ref));
+	}
+	return $funckey;
+}
+
+function make_classmember_ref ($className, $memberName) {
+	return strtolower($className)."::".strtolower($memberName);
+}
+
 
 /**
  * Parses PHP documentation
  * @param phpdocDir string PHP.net documentation directory
  * @return array Function information gathered from the PHP.net documentation by parsing XML files
  */
-function parse_phpdoc_functions ($phpdocDir) {
+function parse_phpdoc_functions ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
 		glob ("{$phpdocDir}/en/reference/*/functions/*.xml"),
+		glob ("{$phpdocDir}/en/language/predefined/*/*.xml"),
 		glob ("{$phpdocDir}/en/reference/*/functions/*/*.xml")
 	);
+	foreach ($extensions as $extName) {
+		$extName = strtolower($extName);
+		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*/*.xml";
+		$xml_files = array_merge (
+			$xml_files,
+			glob ($globPattern)
+		);
+	}
+    $functionsDoc = array();
 	foreach ($xml_files as $xml_file) {
 		$xml = file_get_contents ($xml_file);
 
 		if (preg_match ('@<refentry.*?xml:id=["\'](.*?)["\'].*?>.*?<refname>(.*?)</refname>.*?<refpurpose>(.*?)</refpurpose>@s', $xml, $match)) {
 
 			$refname = make_funckey_from_str ($match[2]);
-			$functionsDoc[$refname]['id'] = $match[1];
-			$functionsDoc[$refname]['quickref'] = trim($match[3]);
+            $functionsDoc[$refname] = array();
+            $functionsDoc[$refname]['id'] = $match[1];
+            $functionsDoc[$refname]['quickref'] = trim($match[3]);
 
 			if (preg_match ('@<refsect1\s+role=["\']description["\']>(.*?)</refsect1>@s', $xml, $match)) {
 				$description = $match[1];
@@ -241,28 +294,97 @@ function parse_phpdoc_functions ($phpdocDir) {
 /**
  * Parses PHP documentation
  * @param phpdocDir string PHP.net documentation directory
+ * @return array Function information gathered from the PHP.net documentation by parsing XML files
+ */
+function parse_phpdoc_fields ($phpdocDir, $extensions) {
+	$xml_files = array();
+	foreach ($extensions as $extName) {
+		$extName = strtolower($extName);
+
+		$xml_files = array_merge (
+			$xml_files,
+			glob ("{$phpdocDir}/en/reference/{$extName}/*.xml"),
+                        glob ("{$phpdocDir}/en/reference/{$extName}/*/*.xml")
+		);
+	}
+        foreach ($xml_files as $xml_file) {
+            $xml = file_get_contents($xml_file);
+            if (preg_match('@<classsynopsisinfo>.*?<classname>(.*)</classname>.*?</classsynopsisinfo>@s', $xml, $matchOffset, PREG_OFFSET_CAPTURE)) {
+                $classname = $matchOffset[1][0];
+                if (preg_match_all("@<fieldsynopsis>.*?<type>(.*?)</type>.*?<varname.*?>(.*?)</varname>@s", $xml, $matchOffset,null,$matchOffset[1][1])) {
+                    for ($index = 0; $index < count($matchOffset[2]); $index++) {
+                        $name = $matchOffset[2][$index];
+                        $type= $matchOffset[1][$index];
+                        $exploded = explode("::", $name);
+                        if (count($exploded) > 1) {
+                            $name = $exploded[1];
+                        }
+                        $reference = make_classmember_ref($classname, $name);
+                        $fieldsDoc[$reference]['field'] = $name;
+                        $fieldsDoc[$reference]['type'] = $type;
+                    }
+                }
+            } else {
+                if (preg_match('@<classsynopsis>.*?<classname>(.*)</classname>.*?<fieldsynopsis>.*?<type>(.*?)</type>.*?<varname.*?>(.*?)</varname>.*?</classsynopsis>@s', $xml, $match)) {
+                    $reference = make_classmember_ref($match[1], $match[3]);
+                    $fieldsDoc[$reference]['field'] = $match[3];
+                    $fieldsDoc[$reference]['type'] = $match[2];
+                    //$fieldsDoc[$refname]['quickref'] = trim($match[3]);
+                }
+            } 
+
+        }
+        if (isset($fieldsDoc)) {
+            return $fieldsDoc;
+        }
+        return array();
+}
+
+/**
+ * Parses PHP documentation
+ * @param phpdocDir string PHP.net documentation directory
  * @return array Class information gathered from the PHP.net documentation by parsing XML files
  */
-function parse_phpdoc_classes ($phpdocDir) {
+function parse_phpdoc_classes ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
 		glob ("{$phpdocDir}/en/reference/*/reference.xml"),
 		glob ("{$phpdocDir}/en/reference/*/classes.xml"),
 		glob ("{$phpdocDir}/en/language/*/*.xml"),
 		glob ("{$phpdocDir}/en/language/*.xml")
 	);
+	foreach ($extensions as $extName) {
+		$extName = strtolower($extName);
+		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*.xml";
+		$xml_files = array_merge (
+			$xml_files,
+			glob ($globPattern)
+		);
+	}
+
+    $classesDoc = array();
 	foreach ($xml_files as $xml_file) {
 		$xml = file_get_contents ($xml_file);
-		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {
+		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {			
 			$id = $match[1];
-			if (preg_match_all ('@<title><classname>(.*?)</classname></title>@', $xml, $match)) {
+			$prefixId = substr($id, 0, strlen("class."));
+			$clsNamePattern = ($prefixId === "class.") ?
+			'@<ooclass><classname>(.*?)</classname></ooclass>@' :
+			'@<title><classname>(.*?)</classname></title>@';
+			if (preg_match_all ($clsNamePattern, $xml, $match)) {
 				for ($i = 0; $i < count($match[0]); ++$i) {
 					$class = $match[1][$i];
 					$refname = strtolower ($class);
 					$classesDoc[$refname]['id'] = $id;
 					$classesDoc[$refname]['name'] = $class;
-
-					if (preg_match ("@<title><classname>{$class}</classname></title>\s*<para>(.*?)</para>@s", $xml, $match2)) {
-						$classesDoc[$refname]['doc'] = xml_to_phpdoc($match2[1]);
+					$offsetPattern = ($prefixId === "class.") ?
+						"@xml:id=[\"'](.*?)\.intro[\"']@i" :
+						"@<title><classname>{$class}</classname></title>@";
+					if (preg_match ($offsetPattern , $xml, $matchOffset,PREG_OFFSET_CAPTURE)) {
+						$docPattern = '@<para>(.*?)</para>@s';
+						if (preg_match ($docPattern, $xml, $match2,null,$matchOffset[0][1])) {
+							$doc = xml_to_phpdoc($match2[1]);
+							$classesDoc[$refname]['doc'] = $doc;
+						}
 					}
 				}
 			}
@@ -280,9 +402,10 @@ function parse_phpdoc_constants ($phpdocDir) {
 	exec ("find ".addslashes($phpdocDir)." -name \"*constants.xml\"", $xml_files);
 	foreach ($xml_files as $xml_file) {
 		$xml = file_get_contents ($xml_file);
+
 		if (preg_match ('@xml:id=["\'](.*?)["\']@', $xml, $match)) {
 			$id = $match[1];
-			if (preg_match_all ('@<term>\s*<constant>([a-zA-Z_][a-zA-Z0-9_]*)</constant>.*?</term>.*?<listitem>(.*?)</listitem>@s', $xml, $match)) {
+			if (preg_match_all ('@<term>\s*<constant>([a-zA-Z_:][a-zA-Z0-9_:]*)</constant>.*?</term>.*?<listitem>(.*?)</listitem>@s', $xml, $match)) {
 				for ($i = 0; $i < count($match[0]); ++$i) {
 					$constant = $match[1][$i];
 					$constantsDoc[$constant]['id'] = $id;
@@ -378,7 +501,7 @@ function print_class ($classRef, $tabs = 0) {
 	// process constants
 	$constsRef = $classRef->getConstants();
 	if (count ($constsRef) > 0) {
-		print_class_constants ($constsRef, $tabs + 1);
+		print_class_constants ($classRef, $constsRef, $tabs + 1);
 		print "\n";
 	}
 
@@ -392,6 +515,7 @@ function print_class ($classRef, $tabs = 0) {
 	}
 
 	// process methods
+	/* @var $classRef ReflectionClass */
 	$methodsRef = $classRef->getMethods();
 	if (count ($methodsRef) > 0) {
 		foreach ($methodsRef as $methodRef) {
@@ -405,10 +529,10 @@ function print_class ($classRef, $tabs = 0) {
 
 /**
  * Prints ReflectionProperty in format of PHP code
- * @param propertyRef ReflectionProperty object
- * @param tabs integer[optional] number of tabs for indentation
+ * @param ReflectionProperty $propertyRef  object
+ * @param integer[optional] tabs  number of tabs for indentation
  */
-function print_property ($propertyRef, $tabs = 0) {
+function print_property ($propertyRef, $tabs = 0) {        
 	print_doccomment ($propertyRef, $tabs);
 	print_tabs ($tabs);
 	print_modifiers ($propertyRef);
@@ -455,24 +579,26 @@ function print_parameters ($parameters) {
 			if ($i++ > 0) {
 				print ", ";
 			}
-			$type = $parameter['type'];
-			if ($type && (class_exists ($type) || $type == "array")) {
-				print "{$type} ";
-			}
 			if (@$parameter['isreference']) {
 				print "&";
 			}
-			print "\${$parameter['name']}";
+                        print "\${$parameter['name']}";
+
 			if (@$parameter['isoptional']) {
 				if (@$parameter['defaultvalue']) {
 					$value = $parameter['defaultvalue'];
 					if (!is_numeric ($value)) {
 						$value = "'{$value}'";
 					}
-					print " = {$value}";
+                                        print " = {$value}";
 				} else {
 					print " = null";
 				}
+			}
+
+			$type = $parameter['type'];
+			if ($type && (class_exists ($type) || $type == "array")) {
+				print "{$type} ";
 			}
 		}
 	}
@@ -571,12 +697,31 @@ function escape_const_value ($value) {
  * @param constants array containing constants, where key is a name of constant
  * @param tabs integer[optional] number of tabs for indentation
  */
-function print_class_constants ($constants, $tabs = 0) {
-	foreach ($constants as $name => $value) {
-		$value = escape_const_value ($value);
-		print_tabs ($tabs);
-		print "const {$name} = {$value};\n";
-	}
+function print_class_constants ($classRef, $constants, $tabs = 0) {
+    global $constantsDoc;
+    global $processedConstants;
+
+
+    //$doc = @$constantsDoc[$name]['doc'];
+    foreach ($constants as $name => $value) {
+        $value = escape_const_value ($value);
+        $clsName = $classRef->getName();
+        $idx = "$clsName::$name";
+        $doc = @$constantsDoc[$idx]['doc'];
+        if ($doc) {
+            print "\n";
+            print_tabs ($tabs);
+            print "/**\n";
+            print_tabs ($tabs);
+            print " * ".newline_to_phpdoc($doc, $tabs)."\n";
+            print_tabs ($tabs);
+            print " * @link ".make_url($constantsDoc[$idx]['id'])."\n";
+            print_tabs ($tabs);
+            print " */\n";
+        }
+        print_tabs ($tabs);
+        print "const {$name} = {$value};\n";
+    }
 }
 
 /**
@@ -608,6 +753,7 @@ function make_url ($id) {
 function print_doccomment ($ref, $tabs = 0) {
 	global $functionsDoc;
 	global $classesDoc;
+        global $fieldsDoc;
 
 	$docComment = $ref->getDocComment();
 	if ($docComment) {
@@ -637,7 +783,9 @@ function print_doccomment ($ref, $tabs = 0) {
 	else if ($ref instanceof ReflectionFunctionAbstract) {
 		$funckey = make_funckey_from_ref ($ref);
 		$returntype = @$functionsDoc[$funckey]['returntype'];
-		$desc = @$functionsDoc[$funckey]['quickref'];
+                $id = @$functionsDoc[$funckey]['id'];
+                $ver_info = findVerInfo($id);
+                $desc = @$functionsDoc[$funckey]['quickref'];
 		$returndoc = newline_to_phpdoc (@$functionsDoc[$funckey]['returndoc'], $tabs);
 
 		$paramsRef = $ref->getParameters();
@@ -646,7 +794,11 @@ function print_doccomment ($ref, $tabs = 0) {
 		if ($desc || count ($paramsRef) > 0 || $parameters || $returntype) {
 			print_tabs ($tabs);
 			print "/**\n";
-			if ($desc) {
+                        if($ver_info) {
+                            print_tabs ($tabs);
+                            print " * {$ver_info}<br/>\n";
+                        }
+                        if ($desc) {
 				print_tabs ($tabs);
 				print " * {$desc}\n";
 			}
@@ -655,35 +807,36 @@ function print_doccomment ($ref, $tabs = 0) {
 				$url = make_url ($functionsDoc[$funckey]['id']);
 				print " * @link {$url}\n";
 			}
-			if ($parameters) {
-				foreach ($parameters as $parameter) {
-					print_tabs ($tabs);
-					print " * @param {$parameter['name']} {$parameter['type']}";
-					if (@$parameter['isoptional']) {
-						print "[optional]";
-					}
-                    $paramdoc = newline_to_phpdoc (@$parameter['paramdoc'], $tabs);
-                    print " {$paramdoc}";
-					print "\n";
-				}
-			} else {
-				$i = 0;
-				foreach ($paramsRef as $paramRef) {
-					print_tabs ($tabs);
-					$name = $paramRef->getName() ? $paramRef->getName() : "var".++$i;
-					print " * @param {$name}";
-					if ($className = get_parameter_classname($paramRef)) {
-						print " {$className}";
-						if ($paramRef->isArray()) {
-							print "[]";
-						}
-					}
-					if ($paramRef->isOptional()) {
-						print "[optional]";
-					}
-					print "\n";
-				}
-			}
+                        if($parameters) {
+                            foreach ($parameters as $parameter) {
+                                print_tabs($tabs);
+                                print " * @param {$parameter['type']} \${$parameter['name']}";
+                                if (@$parameter['isoptional']) {
+                                    print " [optional]";
+                                }
+                                $paramdoc = newline_to_phpdoc(@$parameter['paramdoc'], $tabs);
+                                print " {$paramdoc}";
+                                print "\n";
+                            }
+                        } else {
+                            $i = 0;
+                            foreach ($paramsRef as $paramRef) {
+                                print_tabs($tabs);
+                                $name = $paramRef->getName() ? $paramRef->getName() : "var".++$i;
+                                print " * @param";
+                                if($className = get_parameter_classname($paramRef)) {
+                                    print " {$className}";
+                                    if($paramRef->isArray()) {
+                                        print "[]";
+                                    }
+                                }
+                                print " \${$name}";
+                                if($paramRef->isOptional()) {
+                                    print " [optional]";
+                                }
+                                print "\n";
+                            }
+                        }
 			if ($returntype) {
 				print_tabs ($tabs);
 				print " * @return {$returntype} {$returndoc}\n";
@@ -691,7 +844,19 @@ function print_doccomment ($ref, $tabs = 0) {
 			print_tabs ($tabs);
 			print " */\n";
 		}
-	}
+	}else if ($ref instanceof ReflectionProperty) {
+            $property_from_ref = make_property_from_ref($ref);
+            $fieldName = @$fieldsDoc[$property_from_ref]['field'];
+            $fieldType = @$fieldsDoc[$property_from_ref]['type'];            
+            if (isset ($fieldName) && isset ($fieldType)) {
+                print_tabs ($tabs);
+                print "/**\n";
+                print_tabs ($tabs);
+                print " * @var $fieldType\n";
+                print_tabs ($tabs);
+                print " */\n";
+            }
+        }
 }
 
 /**
@@ -704,6 +869,9 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
 	$str = str_replace ("&false;", "false", $str);
+	$str = str_replace ("&resource;", "resource", $str);
+	$str = str_replace ("&style.oop;", "Oriented object style", $str);
+	$str = str_replace ("&style.procedural;", "Procedural style", $str);
     $str = strip_tags_special ($str);
 	$str = preg_replace ("/  */", " ", $str);
 	$str = preg_replace ("/[\r\n][\t ]/", "\n", $str);

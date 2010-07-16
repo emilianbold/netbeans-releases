@@ -21,9 +21,10 @@ package org.netbeans.modules.wsdlextensions.jms.template;
 
 import java.io.InputStream;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardExtensionIterator;
 import org.openide.util.NbBundle;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class JMSTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String jmsTemplateUrl = "/org/netbeans/modules/wsdlextensions/jms/template/template.xml";
@@ -35,4 +36,14 @@ public class JMSTemplateProvider extends ExtensibilityElementTemplateProvider {
     public String getLocalizedMessage(String str, Object[] objects) {
         return NbBundle.getMessage(JMSTemplateProvider.class, str, objects);
     }
+
+    @Override
+    public InputStream getTemplateFileInputStream(String filePath) {
+        return JMSTemplateProvider.class.getResourceAsStream("/org/netbeans/modules/wsdlextensions/jms/template/" + filePath);
+    }
+    
+    @Override
+    public WSDLWizardExtensionIterator getWSDLWizardExtensionIterator(WSDLWizardContext context) {
+        return new JMSWSDLWizardExtensionIterator(context);
+    }    
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,24 +42,24 @@
 
 package org.netbeans.modules.cnd.remote;
 
+import org.netbeans.modules.cnd.remote.pbuild.*;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSupportTestCase;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
+import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
-import org.netbeans.modules.cnd.remote.project.RemoteBuildMakefileTestCase;
-import org.netbeans.modules.cnd.remote.project.RemoteBuildSamplesTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
-import org.netbeans.modules.cnd.remote.sync.RemoteBinaryServiceTestCase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.support.UploadTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsGnuRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsSunStudioRemoteBuildTestCase;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
@@ -68,6 +71,30 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
+
+   public RemoteDevelopmentTest() {
+       this("Remote Development", // NOI18N
+           HostSetupTestCase.class,
+           RemoteFileTestCase.class,
+           RemoteFileSupportTestCase.class,
+           RemoteFileSystemTestCase.class,
+           MappingsTestCase.class,
+           IncludeMappingsTestCase.class,
+           RemoteBuildMakefileTestCase.class,
+           RemoteBuildSamplesTestCase.class,
+           RfsGnuRemoteBuildTestCase.class,
+           RfsSunStudioRemoteBuildTestCase.class,
+           DownloadTestCase.class,
+           RemoteUtilTestCase.class,
+           ServerListTestCase.class,
+           TransportTestCase.class,
+           UploadTestCase.class,
+           ZipSyncWorkerTestCase.class,
+           FtpSyncWorkerTestCase.class,
+           RemoteBuildUpdatesDownloadTestCase.class,
+           RfsRemoteControllerDeathTestCase.class
+       );
+   }
 
     public RemoteDevelopmentTest(Class testClass) {
         this(testClass.getName(), testClass);
@@ -90,28 +117,6 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
             addTest(test);
         }
     }
-
-    public RemoteDevelopmentTest() {
-        this("Remote Development", // NOI18N
-             MappingsTestCase.class,
-             TransportTestCase.class,
-             UploadTestCase.class,
-             DownloadTestCase.class,
-             RemoteBinaryServiceTestCase.class,
-             RemoteUtilTestCase.class,
-             ServerListTestCase.class,
-             ZipSyncWorkerTestCase.class,
-             HostSetupTestCase.class,
-             RemoteFileTestCase.class,
-             RemoteFileSupportTestCase.class,
-             RemoteFileSystemTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class,
-             RemoteBinaryServiceTestCase.class,
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class);
-    }
-
 
     private RemoteDevelopmentTest(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);

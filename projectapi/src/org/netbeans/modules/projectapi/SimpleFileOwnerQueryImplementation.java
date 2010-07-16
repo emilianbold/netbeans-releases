@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -143,10 +146,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             }
             
             if (!externalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                Reference<FileObject> externalOwnersReference = externalOwners.get(fileObject2URI(f));
+                URI externalOwnersURI = externalOwners.get(fileObject2URI(f));
 
-                if (externalOwnersReference != null) {
-                    FileObject externalOwner = externalOwnersReference.get();
+                if (externalOwnersURI != null) {
+                    FileObject externalOwner = uri2FileObject(externalOwnersURI);
 
                     if (externalOwner != null && externalOwner.isValid()) {
                         try {
@@ -192,15 +195,13 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /**
      * Map from external source roots to the owning project directories.
      */
-    private static final Map<URI,Reference<FileObject>> externalOwners =
-        Collections.synchronizedMap(new WeakHashMap<URI,Reference<FileObject>>());
+    private static final Map<URI,URI> externalOwners =
+        Collections.synchronizedMap(new HashMap<URI,URI>());
     
     private static final Map<URI,FileObject> deserializedExternalOwners =
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
     
     private static boolean externalRootsIncludeNonFolders = false;
-    private static final Map<FileObject,Collection<URI>> project2External =
-        Collections.synchronizedMap(new WeakHashMap<FileObject,Collection<URI>>());
     
     
     static void deserialize() {
@@ -225,12 +226,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
             for (URI uri : externalOwners.keySet()) {
-               Reference<FileObject> fo = externalOwners.get(uri);
-               FileObject fileObject = fo.get();
-               if (fileObject != null) {
-                    p.put(uri.toString(), fileObject.getURL().toExternalForm()); 
-               }
+                URI ownerURI = externalOwners.get(uri);
+                p.put(uri.toString(), ownerURI.toString());
             }
+            p.sync(); // #184310
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
         }
@@ -260,35 +259,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             FileObject fo = owner.getProjectDirectory();
-            externalOwners.put(root, new WeakReference<FileObject>(fo));
+            externalOwners.put(root, fileObject2URI(fo));
             deserializedExternalOwners.remove(root);
-            synchronized (project2External) {
-                FileObject prjDir = owner.getProjectDirectory();
-                Collection<URI> roots = project2External.get (prjDir);
-                if (roots == null) {
-                    roots = new LinkedList<URI>();
-                    project2External.put(prjDir, roots);
-                }
-                roots.add (root);                
-            }
         } else {
-            Reference<FileObject> ownerReference = externalOwners.remove(root);
-            
-            if (ownerReference != null) {
-                FileObject ownerFO = ownerReference.get();
-                
-                if (ownerFO != null) {
-                    synchronized (project2External) {
-                        Collection<URI> roots = project2External.get(ownerFO);
-                        if (roots != null) {
-                            roots.remove(root);
-                            if (roots.size() == 0) {
-                                project2External.remove(ownerFO);
-                            }
-                        }
-                    }
-                }
-            }
+            externalOwners.remove(root);
         }
     }
     

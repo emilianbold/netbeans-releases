@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +60,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -131,6 +138,17 @@ public final class GemManager {
     private final Lock runnerLocalLock;
     private final Lock runnerRemoteLock;
 
+    private static final ExecutorService RELOAD_EXECUTOR = Executors.newCachedThreadPool();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                RELOAD_EXECUTOR.shutdownNow();
+            }
+        });
+    }
+
     public GemManager(final RubyPlatform platform) {
         assert platform.hasRubyGemsInstalled() : "called when RubyGems installed";
         this.platform = platform;
@@ -195,7 +213,7 @@ public final class GemManager {
         return FileUtil.toFileObject(getGemHomeF());
     }
 
-    public String getGemHomeUrl() {
+    public synchronized String getGemHomeUrl() {
         if (gemHomeUrl == null) {
             String gemHome = getGemHome();
             if (gemHome != null) {
@@ -379,6 +397,7 @@ public final class GemManager {
         if (versions == null || versions.isEmpty()) {
             return Collections.<GemInfo>emptyList();
         }
+        Collections.sort(versions);
         return versions;
     }
 
@@ -405,11 +424,12 @@ public final class GemManager {
         }
     }
 
-    private void initGemList() {
+    private synchronized void initGemList() {
         if (localGems == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
             localGems = new HashMap<String, List<GemInfo>>();
+            Set<File> allSpecFiles = new HashSet<File>(100);
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
@@ -417,32 +437,27 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(specFiles);
-                        for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
-                            String name = nameToInfos.getKey();
-                            List<GemInfo> newInfos = nameToInfos.getValue();
-                            List<GemInfo> currentInfos = localGems.get(name);
-                            if (currentInfos != null) {
-                                currentInfos.addAll(newInfos);
-                            }  else {
-                                localGems.put(name, newInfos);
-                            }
-                        }
+                        allSpecFiles.addAll(Arrays.asList(specFiles));
                     }
                 } else {
                     LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 }
-                logGems(Level.FINEST);
             }
+            Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(allSpecFiles);
+            for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
+                String name = nameToInfos.getKey();
+                localGems.put(name, nameToInfos.getValue());
+            }
+            logGems(Level.FINEST);
         }
     }
 
-    public Set<String> getInstalledGemsFiles() {
+    public synchronized Set<String> getInstalledGemsFiles() {
         initGemList();
         return localGems.keySet();
     }
 
-    public void reset() {
+    public synchronized void reset() {
         resetRemote();
         resetLocal();
         gemHomeUrl = null;
@@ -517,7 +532,7 @@ public final class GemManager {
      * @return list of the available installed gems. Returns an empty list if
      *         they could not be read, never <tt>null</tt>.
      */
-    public List<Gem> getLocalGems() {
+    public synchronized List<Gem> getLocalGems() {
         return local != null ? local : Collections.<Gem>emptyList();
     }
 
@@ -528,22 +543,51 @@ public final class GemManager {
      * @return list of the available remote gems. Returns an empty list if they
      *         could not be read, never <tt>null</tt>.
      */
-    public List<Gem> getRemoteGems() {
+    public synchronized List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
-    boolean needsLocalReload() {
+    synchronized boolean needsLocalReload() {
         return local == null;
     }
 
-    boolean needsRemoteReload() {
+    synchronized boolean needsRemoteReload() {
         return remote == null;
     }
 
-    boolean needsReload() {
+    synchronized boolean needsReload() {
         return needsLocalReload() || needsRemoteReload();
     }
 
+    /**
+     * Attempts to asynchronously reload local gems (gives up if
+     * can't acquire the lock for local gems in 10 secs).
+     * 
+     * @param force forces reloading if true.
+     */
+    public void reloadLocalGems(final boolean force) {
+        RELOAD_EXECUTOR.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final int timeout = 10;
+                    if (runnerLocalLock.tryLock(timeout, TimeUnit.SECONDS)) {
+                        if (force) {
+                            resetLocal();
+                        }
+                        reloadLocalIfNeeded();
+                    } else {
+                        LOGGER.info("Could not retrieve lock for reloading " +
+                                "gems in " + timeout + " secs, skipping reload");//NOI18N
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } finally {
+                    runnerLocalLock.unlock();
+                }
+            }
+        });
+    }
     /**
      * This method is called automatically every time when installed or remote
      * gems are looked for. The method reloads only needed gems. Remote, local
@@ -777,7 +821,7 @@ public final class GemManager {
      *
      * @return a set of URLs
      */
-    public Set<URL> getNonGemLoadPath() {
+    public synchronized Set<URL> getNonGemLoadPath() {
         if (nonGemUrls == null) {
             initializeUrlMaps();
         }
@@ -789,7 +833,7 @@ public final class GemManager {
      * Return a map from gem name to the version string, which is of the form
      * {@code <major>.<minor>.<tiny>[-<platform>]}, such as 1.2.3 and 1.13.5-ruby
      */
-    public Map<String, String> getGemVersions() {
+    public synchronized Map<String, String> getGemVersions() {
         if (gemVersions == null) {
             initializeUrlMaps();
         }
@@ -800,7 +844,7 @@ public final class GemManager {
     /**
      * Return a map from gem name to the URL for the lib root of the current gems
      */
-    public Map<String, URL> getGemUrls() {
+    public synchronized Map<String, URL> getGemUrls() {
         if (gemUrls == null) {
             initializeUrlMaps();
         }

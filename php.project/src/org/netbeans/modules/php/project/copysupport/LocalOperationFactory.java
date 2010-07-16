@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,12 +47,13 @@ import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -109,7 +113,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             writableFolder = writableFolder.getParentFile();
         }
 
-        boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
+        boolean isWritable = writableFolder != null && FileUtils.isDirectoryWritable(writableFolder);
         if (!isWritable) {
             LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
 
@@ -135,7 +139,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         // createCopyFolderRecursivelyHandler used because of external changes
         // fire just one FS event for top most folder. See #172139
@@ -146,6 +150,7 @@ final class LocalOperationFactory extends FileOperationFactory {
         assert source.isFolder();
         LOGGER.log(Level.FINE, "Creating COPY FOLDER handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY FOLDER handler for {0} (project {1})", new Object[]{getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -191,6 +196,7 @@ final class LocalOperationFactory extends FileOperationFactory {
         assert source.isData();
         LOGGER.log(Level.FINE, "Creating COPY FILE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY FILE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -204,9 +210,10 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -246,9 +253,10 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -341,5 +349,10 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
+    }
+
+    @Override
+    protected boolean isValid(FileEvent fileEvent) {
+        return true;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,11 +56,15 @@ import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -113,9 +120,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {
@@ -133,9 +141,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {
@@ -153,9 +162,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {
@@ -237,10 +247,14 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected synchronized RemoteClient getRemoteClient() {
         if (remoteClient == null) {
+            InputOutput remoteLog = RemoteCommand.getRemoteLog(
+                    NbBundle.getMessage(RemoteOperationFactory.class, "LBL_RemoteSynchronizationLog", project.getName(),
+                    false));
             remoteClient = new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
                     .setAdditionalInitialSubdirectory(ProjectPropertiesSupport.getRemoteDirectory(project))
                     .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
                     .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project))
+                    .setInputOutput(remoteLog)
                     .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         }
         return remoteClient;
@@ -284,8 +298,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
         FileObject sourceRoot = getSources();
         String baseDirectory = FileUtil.toFile(sourceRoot).getAbsolutePath();
         File sourceFile = FileUtil.toFile(source);
-        TransferFile toTransferFile = TransferFile.fromFileObject(source, baseDirectory);
-        TransferFile fromTransferFile = TransferFile.fromFile(new File(sourceFile.getParentFile(), oldName), baseDirectory);
+        TransferFile toTransferFile = TransferFile.fromFileObject(null, source, baseDirectory);
+        TransferFile fromTransferFile = TransferFile.fromFile(null, new File(sourceFile.getParentFile(), oldName), baseDirectory);
         LOGGER.log(Level.FINE, "Renaming file {0} -> {1} for project {2}", new Object[] {fromTransferFile.getRelativePath(), toTransferFile.getRelativePath(), project.getName()});
         if (client.exists(fromTransferFile)) {
             if (client.rename(fromTransferFile, toTransferFile)) {
@@ -321,5 +335,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
             }
         }
         return success;
+    }
+
+    @Override
+    protected boolean isValid(FileEvent fileEvent) {
+        return !fileEvent.firedFrom(RemoteClient.DOWNLOAD_ATOMIC_ACTION);
     }
 }

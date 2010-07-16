@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,9 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -69,6 +74,11 @@ public class FindNameTest extends NbTestCase {
 
     public FindNameTest() {
         super("FindNameTest");
+    }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
     }
 
     public void testFftImageTransformer() {
@@ -147,7 +157,9 @@ public class FindNameTest extends NbTestCase {
             if (full) {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
-                    loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
+                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+                    loop:while(iterator.hasNext()) {
+                        CompilationUnit unit = iterator.next();
                         //System.err.println("Unit:"+unit.getSourceFileFullName());
                         for (DwarfEntry entry : unit.getDeclarations(false)){
                             if (entry.getKind() == TAG.DW_TAG_subprogram){
@@ -211,12 +223,14 @@ public class FindNameTest extends NbTestCase {
             System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
         }
         if (full) {
-            Dwarf2NameFinder source = getDwarfSource(executable);
-            source.lookup(base + shift);
-            System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
+                Dwarf2NameFinder source = getDwarfSource(executable);
+                source.lookup(base + shift);
+                System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+                assertEquals(number.line, source.getLineNumber());
+            }
             assertNotNull(fileInfo);
             assertNotNull(number);
-            assertEquals(number.line, source.getLineNumber());
             assertNotNull(candidate);
             assertEquals(number.line, candidate.line);
         } else {

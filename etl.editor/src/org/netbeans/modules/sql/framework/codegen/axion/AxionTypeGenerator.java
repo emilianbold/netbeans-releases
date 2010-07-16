@@ -21,6 +21,7 @@ package org.netbeans.modules.sql.framework.codegen.axion;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 
 import org.netbeans.modules.sql.framework.codegen.AbstractTypeGenerator;
 import org.netbeans.modules.sql.framework.codegen.DataType;
@@ -69,10 +70,19 @@ public class AxionTypeGenerator extends AbstractTypeGenerator {
             supportedDataTypes.put(new Integer(Types.JAVA_OBJECT), DataType.JAVA_OBJECT);
             supportedDataTypes.put(new Integer(Types.OTHER), DataType.VARCHAR);
 
-            supportedDataTypes.put(new Integer(Types.BLOB), DataType.BLOB);
-            supportedDataTypes.put(new Integer(Types.CLOB), DataType.CLOB);
+            supportedDataTypes.put(new Integer(Types.BLOB), DataType.LONGVARBINARY);
+            supportedDataTypes.put(new Integer(Types.CLOB), DataType.LONGVARCHAR);
         }
         return supportedDataTypes;
     }
+    
+    @Override
+    public boolean isPrecisionRequired(int jdbcType) {
+        if (jdbcType == Types.LONGVARBINARY || jdbcType == Types.BLOB ||
+               jdbcType == Types.LONGVARCHAR || jdbcType == Types.CLOB ) {
+            return true;
+        }
+        return SQLUtils.isPrecisionRequired(jdbcType);
+    }    
 }
 

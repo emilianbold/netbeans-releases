@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,12 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -74,15 +79,15 @@ public class KeyUtilities {
     }
 
     public static Key createProjectKey(ProjectBase project) {
-        return createProjectKey(project.getUniqueName().toString());
+        return createProjectKey(project.getUniqueName());
     }
 
-    public static Key createProjectKey(String projectQualifiedName) {
+    public static Key createProjectKey(CharSequence projectQualifiedName) {
         return new ProjectKey(projectQualifiedName);
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return createProjectKey(ProjectBase.getUniqueName(nativeProject).toString());
+        return createProjectKey(ProjectBase.getUniqueName(nativeProject));
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
@@ -105,29 +110,34 @@ public class KeyUtilities {
         return KeyManager.instance().getSharedUID(new IncludeKey(incl));
     }
 
+    public static Key createInheritanceKey(CsmInheritance inh) {
+        assert inh != null;
+        return KeyManager.instance().getSharedUID(new InheritanceKey(inh));
+    }
+
     public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {
         assert paramList != null;
         return new ParamListKey(paramList);
     }
     ////////////////////////////////////////////////////////////////////////////
 
-    public static int getUnitId(String unitName) {
+    public static int getUnitId(CharSequence unitName) {
         return RepositoryUtils.getUnitId(unitName);
     }
 
-    public static String getUnitName(int unitIndex) {
+    public static CharSequence getUnitName(int unitIndex) {
         return RepositoryUtils.getUnitName(unitIndex);
     }
 
-    public static int getFileIdByName(final int unitId, final String fileName) {
+    public static int getFileIdByName(final int unitId, final CharSequence fileName) {
         return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
 
-    public static String getFileNameById(final int unitId, final int fileId) {
+    public static CharSequence getFileNameById(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameById(unitId, fileId);
     }
 
-    public static String getFileNameByIdSafe(final int unitId, final int fileId) {
+    public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
     }
 
@@ -136,6 +146,20 @@ public class KeyUtilities {
             return Utils.getCsmDeclarationKind(((OffsetableDeclarationKey) key).getKind());
         }
         return null;
+    }
+
+    public static CsmVisibility getKeyVisibility(Key key) {
+        if (key instanceof InheritanceKey) {
+            Utils.getCsmVisibility(((InheritanceKey) key).getKind());
+        }
+        return null;
+    }
+
+    public static char getKeyChar(Key key) {
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey) key).getKind();
+        }
+        return 0;
     }
 
     public static CharSequence getKeyName(Key key) {
@@ -161,6 +185,8 @@ public class KeyUtilities {
     public static int getProjectIndex(Key key) {
         if (key instanceof ProjectFileNameBasedKey) {
             return ((ProjectFileNameBasedKey) key).getUnitId();
+        } else if (key instanceof ProjectKey) {
+            return ((ProjectKey) key).getUnitId();
         }
         return -1;
     }

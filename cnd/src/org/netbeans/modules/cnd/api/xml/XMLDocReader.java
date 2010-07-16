@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.modules.cnd.api.xml;
 
 import java.io.IOException;
-import java.io.File;
 import java.io.InputStream;
 
 import java.text.MessageFormat;
@@ -50,7 +52,6 @@ import java.text.MessageFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXParseException;
@@ -61,6 +62,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -81,7 +83,7 @@ abstract public class XMLDocReader extends XMLDecoder {
      * Set to true to get a trace of what's being read.
      */
 
-    public boolean debug = false;	// echo SAX callbacks
+    private static final boolean debug = false;	// echo SAX callbacks
 
     private String sourceName;			// remember for error messages
 
@@ -104,8 +106,9 @@ abstract public class XMLDocReader extends XMLDecoder {
 
     public boolean read(InputStream inputStream, String sourceName) {
 	this.sourceName = sourceName;
-	if (sourceName == null)
-	    this.sourceName = Catalog.get("UNKNOWN_sourceName");// NOI18N
+	if (sourceName == null) {
+            this.sourceName = getString("UNKNOWN_sourceName"); // NOI18N
+        }
 
 	SAXParserFactory spf = SAXParserFactory.newInstance();
 	spf.setValidating(false);
@@ -125,7 +128,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	xmlReader.setEntityResolver(parser);
 	xmlReader.setErrorHandler(new ErrHandler());
 
-	String fmt = Catalog.get("MSG_Whilereading");	// NOI18N
+	String fmt = getString("MSG_Whilereading");	// NOI18N
 	String whileMsg = MessageFormat.format(fmt, new Object[] {sourceName});
 
 	try {
@@ -144,7 +147,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 		int expectedVersion = versionException.expectedVersion();
 		int actualVersion = versionException.actualVersion();
 
-		fmt = Catalog.get("MSG_versionerror");	// NOI18N
+		fmt = getString("MSG_versionerror");	// NOI18N
 		String errmsg = whileMsg + MessageFormat.format(fmt,
 		    new Object[] {what,
 				  "" + actualVersion, // NOI18N
@@ -190,6 +193,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	 */
 
 	// interface EntityResolver
+        @Override
 	public InputSource resolveEntity(String pubid, String sysid) {
 	    if (debug) {
 		System.out.println("SAX resolveEntity: " + pubid + " " + sysid); // NOI18N
@@ -199,6 +203,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void startDocument() throws SAXException {
 	    if (debug) {
 		System.out.println("SAX startDocument"); // NOI18N
@@ -211,6 +216,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void endDocument() {
 	    if (debug) {
 		System.out.println("SAX endDocument"); // NOI18N
@@ -219,21 +225,23 @@ abstract public class XMLDocReader extends XMLDecoder {
 	} 
 
 	// interface ContentHandler
+        @Override
 	public void characters(char[] ch, int start, int length) {
 	    String s = new String(ch, start, length);
 	    currentText = currentText + s;
 	    if (debug) {
 		s = s.trim();
-		if (s.length() == 0)
-		    System.out.println("SAX characters[" + length + "]: " + // NOI18N
-				       "<trimmed>"); // NOI18N
-		else
-		    System.out.println("SAX characters[" + length + "]: " + s); // NOI18N
+		if (s.length() == 0) {
+                    System.out.println("SAX characters[" + length + "]: " + "<trimmed>"); // NOI18N
+                } else {
+                    System.out.println("SAX characters[" + length + "]: " + s); // NOI18N
+                }
 	    }
 	}
 
 
 	// interface ContentHandler
+        @Override
 	public void startElement(String uri,
 				 String localName, String qName,
 				 org.xml.sax.Attributes atts)
@@ -259,6 +267,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void endElement(String uri, String localName, String qName) {
 	    if (debug) {
 		System.out.println("SAX endElement: " + uri + " " + localName + " " + // NOI18N
@@ -268,10 +277,12 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void startPrefixMapping(String prefix, String uri) {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void endPrefixMapping(String prefix) {
 	    if (debug) {
 		System.out.println("SAX endPrefixMapping: " + prefix); // NOI18N
@@ -279,6 +290,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void ignorableWhitespace(char[] ch, int start, int length) {
 	    if (debug) {
 		System.out.println("SAX ignorableWhitespace " + length); // NOI18N
@@ -286,6 +298,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void processingInstruction(String target, String data) {
 	    if (debug) {
 		System.out.println("SAX processingInstruction: " + target + " " + // NOI18N
@@ -294,6 +307,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void setDocumentLocator(org.xml.sax.Locator locator) {
 	    if (debug) {
 		System.out.println("SAX setDocumentLocator"); // NOI18N
@@ -301,6 +315,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	}
 
 	// interface ContentHandler
+        @Override
 	public void skippedEntity(String name)  {
 	    if (debug) {
 		System.out.println("SAX skippedEntity: " + name); // NOI18N
@@ -314,7 +329,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	} 
 
 	private void annotate(SAXParseException ex) {
-	    String fmt = Catalog.get("MSG_sax_error_location");	// NOI18N
+	    String fmt = getString("MSG_sax_error_location");	// NOI18N
 	    String msg = MessageFormat.format(fmt, new Object[] {
 			    ex.getSystemId(),
 			    "" + ex.getLineNumber() // NOI18N
@@ -325,18 +340,25 @@ abstract public class XMLDocReader extends XMLDecoder {
 					       null, null, null);
 	}
 
+        @Override
 	public void fatalError(SAXParseException ex) throws SAXException {
 	    annotate(ex);
 	    throw ex;
 	}
 
+        @Override
 	public void error(SAXParseException ex) throws SAXException {
 	    annotate(ex);
 	    throw ex;
 	}
 
+        @Override
 	public void warning(SAXParseException ex) throws SAXException {
 	    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 	}
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(XMLDocReader.class, key);
     }
 }

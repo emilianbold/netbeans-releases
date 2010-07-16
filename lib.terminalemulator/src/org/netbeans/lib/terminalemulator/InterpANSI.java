@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *			
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -103,6 +106,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_TO_ESC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpDumb i = (InterpDumb) ai;
 		i.ctl_sequence = "";	// NOI18N
@@ -111,18 +115,21 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_SC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_sc();
 		return null;
 	    }
 	}
 	static final class ACT_RC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_rc();
 		return null;
 	    }
 	}
 	static final class ACT_FULL_RESET implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_full_reset();
 		return null;
@@ -130,6 +137,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static class ACT_RESET_NUMBER implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.resetNumber();
 		return null;
@@ -137,6 +145,7 @@ public class InterpANSI extends InterpDumb {
 	};
 
 	static final class ACT_REMEMBER_DIGIT implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.remember_digit(c);
 		return null;
@@ -144,6 +153,7 @@ public class InterpANSI extends InterpDumb {
 	};
 
 	static final class ACT_PUSH_NUMBER implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (!ai.pushNumber())
 		    return "ACT PUSH_NUMBER";	// NOI18N
@@ -151,6 +161,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_UP implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_up(1);
@@ -160,6 +171,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_DO implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_do(1);
@@ -169,6 +181,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_ND implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_nd(1);
@@ -178,6 +191,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_BC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_bc(1);
@@ -187,6 +201,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_MARGIN implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_margin(0, 0);
@@ -196,6 +211,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_DC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_dc(1);
@@ -206,6 +222,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_SM implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_set_mode(1);
@@ -216,6 +233,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_RM implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_reset_mode(1);
@@ -226,6 +244,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_IC implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    ai.ops.op_ic(1);
@@ -235,6 +254,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_DL implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_dl(1);
@@ -245,6 +265,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_HO implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_ho();
@@ -255,6 +276,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_PRINT implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		// Ignored for now, except for 'dump time'
 		if (ai.noNumber()) {
@@ -277,6 +299,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_J implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_cd();
@@ -292,6 +315,7 @@ public class InterpANSI extends InterpDumb {
 	    }
 	}
 	static final class ACT_K implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_ce();
@@ -308,6 +332,7 @@ public class InterpANSI extends InterpDumb {
 	}
         
 	static final class ACT_AL implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_al(1);
@@ -319,6 +344,7 @@ public class InterpANSI extends InterpDumb {
 	}
         
         static final class ACT_AS implements Actor {
+	    @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_as();
                 return null;
@@ -326,6 +352,7 @@ public class InterpANSI extends InterpDumb {
         }
         
         static final class ACT_AE implements Actor {
+	    @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_ae();
                 return null;
@@ -333,6 +360,7 @@ public class InterpANSI extends InterpDumb {
         }
 
 	static final class ACT_ATTR implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		// set graphics modes (bold, reverse video etc)
 		if (ai.noNumber()) {
@@ -347,6 +375,7 @@ public class InterpANSI extends InterpDumb {
 
 	static final class ACT_DSR implements Actor {
 	    // Device Status Report
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    ai.ops.op_status_report(5);	// reset everything
@@ -358,6 +387,7 @@ public class InterpANSI extends InterpDumb {
 	}
 
 	static final class ACT_GLYPH implements Actor {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
 		    return "ACT GLYPH: missing number";	// NOI18N
@@ -392,10 +422,12 @@ public class InterpANSI extends InterpDumb {
 	setup();
     } 
 
+    @Override
     public String name() {
 	return "ansi";	// NOI18N
     } 
 
+    @Override
     public void reset() {
 	super.reset();
     }

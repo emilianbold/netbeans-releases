@@ -12,9 +12,10 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -35,7 +36,7 @@
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="nameTextField" pref="299" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="customPropertyPanel" pref="348" max="32767" attributes="0"/>
+                          <Component id="customPropertyPanel" pref="362" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="browsersLabel" alignment="0" min="-2" max="-2" attributes="0"/>

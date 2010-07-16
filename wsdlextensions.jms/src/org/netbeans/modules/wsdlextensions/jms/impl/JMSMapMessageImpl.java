@@ -19,13 +19,13 @@
 
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
-import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSMapMessagePart;
 import org.netbeans.modules.wsdlextensions.jms.JMSMapMessage;
 import java.util.List;
 import java.util.Iterator;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
 
@@ -42,7 +42,11 @@ public class JMSMapMessageImpl  extends JMSComponentImpl implements JMSMapMessag
     public JMSMapMessageImpl(WSDLModel model){
         this(model, createPrefixedElement(JMSQName.MAPMESSAGE.getQName(), model));
     }
-
+    
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }
+    
     public List<JMSMapMessagePart> getMapMessageParts() {
         return getExtensibilityElements(JMSMapMessagePart.class);
     }

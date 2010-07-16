@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
@@ -53,6 +57,7 @@ import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
@@ -62,9 +67,27 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
             new TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean>(new RequestPrivilegesTask(), true);
     private final ExecutionEnvironment execEnv;
     private volatile boolean cancelled = false;
+    private final ConnectionListener connectionListener;
 
-    protected SPSCommonImpl(ExecutionEnvironment execEnv) {
+    protected SPSCommonImpl(final ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
+        connectionListener = new ConnectionListener() {
+
+            @Override
+            public void connected(ExecutionEnvironment env) {
+            }
+
+            @Override
+            public void disconnected(ExecutionEnvironment env) {
+                if (execEnv.equals(env)) {
+                    invalidate();
+                }
+            }
+        };
+
+        ConnectionManager cm = ConnectionManager.getInstance();
+        cm.addConnectionListener(WeakListeners.create(
+                ConnectionListener.class, connectionListener, cm));
     }
 
     ExecutionEnvironment getExecEnv() {
@@ -73,10 +96,12 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     abstract String getPID();
 
-    public abstract void requestPrivileges(
+    @Override
+    public abstract boolean requestPrivileges(
             Collection<String> requestedPrivileges,
-            String root, char[] passwd) throws NotOwnerException, CancellationException;
+            String root, char[] passwd) throws NotOwnerException, CancellationException, InterruptedException;
 
+    @Override
     public void requestPrivileges(
             final Collection<String> requestedPrivileges,
             boolean askForPassword) throws NotOwnerException, CancellationException {
@@ -112,6 +137,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         return cancelled;
     }
 
+    @Override
     public boolean hasPrivileges(
             final Collection<String> privs) {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
@@ -134,6 +160,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         return status;
     }
 
+    @Override
     public List<String> getExecutionPrivileges() {
         List<String> result = null;
 
@@ -152,6 +179,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
      * @param onPrivilegesGranted
      * @return
      */
+    @Override
     public AsynchronousAction getRequestPrivilegesAction(
             final Collection<String> requestedPrivileges,
             final Runnable onPrivilegesGranted) {
@@ -161,9 +189,11 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         if (onPrivilegesGranted != null) {
             action.addObservableActionListener(new ObservableActionListener<Boolean>() {
 
+                @Override
                 public void actionStarted(Action source) {
                 }
 
+                @Override
                 public void actionCompleted(Action source, Boolean result) {
                     if (result != null && result.booleanValue() == true) {
                         onPrivilegesGranted.run();
@@ -179,6 +209,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         cachedPrivilegesFetcher.remove(execEnv);
     }
 
+    @Override
     public void invalidate() {
         invalidateCache();
     }

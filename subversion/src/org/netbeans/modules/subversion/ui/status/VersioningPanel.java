@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -124,11 +127,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         parent.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
 
         getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNextInnerView();
             }
         });
         getActionMap().put("nextInnerView", new AbstractAction("") { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrevInnerView();
             }
@@ -157,12 +162,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         onDisplayedStatusChanged();
     }
     
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             repaint();
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -180,26 +187,34 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     void setContext(Context ctx) {
         context = ctx;
+        if (EventQueue.isDispatchThread()) {
+            syncTable.setTableModel(new SyncFileNode[0]);
+        }
         reScheduleRefresh(0);
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         return explorerManager;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
         subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
+        subversion.addPropertyChangeListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
 
+    @Override
     public void removeNotify() {
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
         subversion.getStatusCache().removePropertyChangeListener(this);
+        subversion.removePropertyChangeListener(syncTable);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
@@ -249,6 +264,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void setupModels() {
         if (context == null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
                 }
@@ -295,6 +311,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
@@ -309,6 +326,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             });
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     ph.finish();
                 }
@@ -336,7 +354,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();            
-        CommitAction.commit(parentTopComponent.getContentTitle(), context);
+        CommitAction.commit(parentTopComponent.getContentTitle(), context, false);
     }
     
     /**
@@ -406,9 +424,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         svnProgressSupport = new VersioningPanelProgressSupport() {
+            @Override
             public void perform() {
                 try {
-                    StatusAction.executeStatus(context, this);
+                    StatusAction.executeStatus(context, this, true);
                 } finally {
                     setFinished(true); // stops skipping versioning events
                 }
@@ -430,12 +449,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         String title = parentTopComponent.getContentTitle();
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {            
             LifecycleManager.getDefault().saveAll();
-            DiffAction.diff(context, Setup.DIFFTYPE_LOCAL, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_LOCAL, title, true); // do not trigger status refresh, statuses already known
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            DiffAction.diff(context, Setup.DIFFTYPE_REMOTE, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_REMOTE, title, true); // do not trigger status refresh, statuses already known
         } else {
             LifecycleManager.getDefault().saveAll();
-            DiffAction.diff(context, Setup.DIFFTYPE_ALL, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_ALL, title, true); // do not trigger status refresh, statuses already known
         }
     }
 
@@ -444,14 +463,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote")); // NOI18N
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         }
     }
@@ -461,6 +483,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         reScheduleRefresh(0);
     }
 
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             if (!affectsView(event)) return;
@@ -500,6 +523,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     void deserialize() {
         if (syncTable != null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     syncTable.setDefaultColumnSizes();
                 }
@@ -523,6 +547,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     private class RefreshViewTask implements Runnable {
+        @Override
         public void run() {
             setupModels();
         }
@@ -553,9 +578,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         private Set<JComponent> adjusted = new HashSet<JComponent>();
 
+        @Override
         public void removeLayoutComponent(Component comp) {
         }
 
+        @Override
         public void layoutContainer(Container parent) {
             Dimension dim = VersioningPanel.this.getSize();
             Dimension max = parent.getSize();
@@ -587,9 +614,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
         }
 
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
 
             // in column layout use taller toolbar
@@ -617,6 +646,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             return new Dimension(horizont, height);
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             // Eliminates double height toolbar problem
             Dimension dim = VersioningPanel.this.getSize();
@@ -674,11 +704,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 button.setMargin(new Insets(0, 3, 0, 3));
                 button.setBorderPainted(false);
                 button.addMouseListener(new MouseAdapter() {
+                    @Override
                     public void mouseEntered(MouseEvent e) {
                         button.setContentAreaFilled(true);
                         button.setBorderPainted(true);
                     }
 
+                    @Override
                     public void mouseExited(MouseEvent e) {
                         button.setContentAreaFilled(false);
                         button.setBorderPainted(false);

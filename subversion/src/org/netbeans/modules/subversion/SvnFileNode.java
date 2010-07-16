@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,8 @@ public class SvnFileNode {
     private String relativePath;
     private String copy;
     private boolean copyScanned;
+    private Boolean fileFlag;
+    private String mimeType;
 
     public SvnFileNode(File file) {
         this.file = FileUtil.normalizeFile(file);
@@ -81,11 +86,13 @@ public class SvnFileNode {
         return file;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         return o instanceof SvnFileNode && file.equals(((SvnFileNode) o).file);
     }
 
+    @Override
     public int hashCode() {
         return file.hashCode();
     }
@@ -105,14 +112,14 @@ public class SvnFileNode {
     }
 
     /**
-     * Returns relativePath of this node's file. 
+     * Returns relativePath of this node's file or the full resourceUrl if explicitly selected in Options.
      * @return relative path of this node's file.
      */
-    public String getRelativePath() {
+    public String getLocation() {
         if (relativePath == null) {
             try {
                 assert !java.awt.EventQueue.isDispatchThread();
-                relativePath = SvnUtils.getRelativePath(getFile());
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(getFile()).toString() : SvnUtils.getRelativePath(getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }
@@ -130,5 +137,19 @@ public class SvnFileNode {
             copyScanned = true;
         }
         return copy;
+    }
+
+    public boolean isFile () {
+        if (fileFlag == null) {
+            fileFlag = file.isFile();
+        }
+        return fileFlag;
+    }
+
+    public String getMimeType () {
+        if (isFile() && mimeType == null) {
+            mimeType = SvnUtils.getMimeType(file);
+        }
+        return mimeType;
     }
 }

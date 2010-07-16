@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ import org.openide.util.Utilities;
  */
 public final class CompositeFCS extends FontColorSettings {
 
+    // -J-Dorg.netbeans.modules.editor.settings.storage.fontscolors.CompositeFCS.level=FINE
     private static final Logger LOG = Logger.getLogger(CompositeFCS.class.getName());
     
     public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
@@ -135,6 +139,7 @@ public final class CompositeFCS extends FontColorSettings {
      * text found by the last search peration, etc. They are not bound to any
      * tokens and therefore are mime type independent.
      */
+    @Override
     public AttributeSet getFontColors(String highlightName) {
         assert highlightName != null : "The parameter highlightName must not be null."; //NOI18N
         
@@ -152,6 +157,7 @@ public final class CompositeFCS extends FontColorSettings {
         return attribs;
     }
 
+    @Override
     public AttributeSet getTokenFontColors(String tokenName) {
         assert tokenName != null : "The parameter tokenName must not be null."; //NOI18N
         
@@ -258,7 +264,7 @@ public final class CompositeFCS extends FontColorSettings {
             Object key = keys.nextElement();
             Object value = attribs.getAttribute(key);
 
-            sb.append("'" + key + "' = '" + value + "'"); //NOI18N
+            sb.append("'").append(key).append("' = '").append(value).append("'"); //NOI18N
             if (keys.hasMoreElements()) {
                 sb.append(", "); //NOI18N
             }
@@ -301,6 +307,17 @@ public final class CompositeFCS extends FontColorSettings {
         // property and refresh FontColorSettings in MimeLookup. As per JDK docs java apps
         // should pick up changes in OS AA Font Settings automatically without restart.
         Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("System provided desktop hints:"); //NOI18N
+            for(Object key : desktopHints.keySet()) {
+                Object value = desktopHints.get(key);
+                String humanReadableKey = translateRenderingHintsConstant(key);
+                String humanReadableValue = translateRenderingHintsConstant(value);
+                LOG.fine("  " + humanReadableKey + " = " + humanReadableValue); //NOI18N
+            }
+            LOG.fine("----------------"); //NOI18N
+        }
+
         Boolean aaOn = null;
         String reason = null;
 
@@ -342,15 +359,19 @@ public final class CompositeFCS extends FontColorSettings {
         if (aaOn == null) {
             LOG.fine("Text Antialiasing setting was not determined, using defaults."); //NOI18N
             if (desktopHints != null) {
+                LOG.fine("Using system provided desktop hints"); //NOI18N
                 hints = new HashMap<Object, Object>(desktopHints);
             } else {
+                LOG.fine("No system provided desktop hints available, using hardcoded defaults"); //NOI18N
                 hints = Collections.<Object, Object>singletonMap(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
             }
         } else {
             LOG.fine("Text Antialiasing was set " + (aaOn.booleanValue() ? "ON" : "OFF") + " by " + reason + "."); //NOI18N
             if (desktopHints != null) {
+                LOG.fine("Using system provided desktop hints"); //NOI18N
                 hints = new  HashMap<Object, Object>(desktopHints);
             } else {
+                LOG.fine("No system provided desktop hints available, using hardcoded defaults"); //NOI18N
                 hints = new  HashMap<Object, Object>();
             }
             if (aaOn.booleanValue()) {

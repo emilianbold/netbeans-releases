@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.TraceItem;
-import org.netbeans.modules.bpel.mapper.tree.models.MapperConnectabilityProvider;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
 import org.netbeans.modules.soa.ui.tree.SoaTreeModel;

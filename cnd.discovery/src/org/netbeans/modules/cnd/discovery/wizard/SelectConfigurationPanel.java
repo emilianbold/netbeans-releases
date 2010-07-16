@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -66,6 +72,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
@@ -84,6 +91,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public final class SelectConfigurationPanel extends JPanel {
+    private static final RequestProcessor RP = new RequestProcessor(SelectConfigurationPanel.class.getName(), 1);
     private SelectConfigurationWizard wizard;
     private String oldConsolidation;
     private boolean showResulting;
@@ -101,11 +109,13 @@ public final class SelectConfigurationPanel extends JPanel {
     
     private void addListeners(){
         configurationTree.addTreeSelectionListener(new TreeSelectionListener(){
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
                 updateListModels();
             }
         });
         showInherited.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showResulting = showInherited.isSelected();
                 updateListModels();
@@ -338,7 +348,7 @@ public final class SelectConfigurationPanel extends JPanel {
             configurationTree.setModel(model);
             // count configurations in other thread.
             AnalyzingTask task = new AnalyzingTask(wizardDescriptor);
-            RequestProcessor.getDefault().post(task);
+            RP.post(task);
             //task.start();
             isStoped = false;
             wasTerminated = true;
@@ -369,25 +379,31 @@ public final class SelectConfigurationPanel extends JPanel {
         String consolidation = wizardDescriptor.getLevel();
         assert consolidation != null;
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
+            @Override
             public boolean createSubProjects() {
                 return false;
             }
+            @Override
             public Project getProject() {
                 return wizardDescriptor.getProject();
             }
 
+            @Override
             public String getMakefile() {
                 return null;
             }
 
+            @Override
             public String getSourceRoot() {
                 return wizardDescriptor.getRootFolder();
             }
 
+            @Override
             public String getExecutable() {
                 return wizardDescriptor.getBuildResult();
             }
 
+            @Override
             public String getWorkingFolder() {
                 return null;
             }
@@ -395,6 +411,7 @@ public final class SelectConfigurationPanel extends JPanel {
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
         List<String> includedFiles = new ArrayList<String>();
         wizardDescriptor.setIncludedFiles(includedFiles);
+        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             includedFiles.addAll(conf.getIncludedFiles());
@@ -404,9 +421,29 @@ public final class SelectConfigurationPanel extends JPanel {
                 consolidateModel(project, consolidation);
                 projectConfigurations.add(project);
             }
+            for (SourceFileProperties source : conf.getSourcesConfiguration()) {
+                String compiler = source.getCompilerName();
+                if (compiler != null) {
+                    AtomicInteger count = compilers.get(compiler);
+                    if (count == null) {
+                        count = new AtomicInteger();
+                        compilers.put(compiler, count);
+                    }
+                    count.incrementAndGet();
+                }
+            }
         }
         wizardDescriptor.setInvokeProvider(false);
         wizardDescriptor.setConfigurations(projectConfigurations);
+        int max = 0;
+        String top = "";
+        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
+            if (entry.getValue().get() > max) {
+                max = entry.getValue().get();
+                top = entry.getKey();
+            }
+        }
+        wizardDescriptor.setCompilerName(top);
     }
     
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
@@ -470,9 +507,11 @@ public final class SelectConfigurationPanel extends JPanel {
     }
     
     public static class EmptyListModel extends AbstractListModel {
+        @Override
         public int getSize() {
             return 0;
         }
+        @Override
         public Object getElementAt(int i) {
             return null;
         }
@@ -495,26 +534,55 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
 
-    private static class MyProgress implements Progress {
+    public static class MyProgress implements Progress {
         private ProgressHandle handle;
         private int done;
+        private int length;
+
+        @Override
+        public void start() {
+            start(0);
+        }
+
+        @Override
         public void start(int length) {
-            handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
-            handle.start(length);
-            done = 0;
-        }
-
-        public void increment() {
-            if (handle != null) {
-                done++;
-                handle.progress(done);
-            }
-        }
-
-        public void done() {
             if (handle != null) {
                 handle.finish();
             }
+            handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
+            handle.start(length);
+            done = 0;
+            this.length = length;
         }
+
+        @Override
+        public void increment(String message) {
+            if (handle != null) {
+                done++;
+                if (message == null) {
+                    handle.progress(done);
+                } else {
+                    int i = message.lastIndexOf('\\');
+                    if (i < 0) {
+                        i = message.lastIndexOf('/');
+                    }
+                    if (i > 0) {
+                        String msg = NbBundle.getMessage(SelectConfigurationPanel.class, "MSG_ParsingProgressFull", ""+done, ""+length, message.substring(i+1)); // NOI18N
+                        handle.progress(msg, done);
+                    } else {
+                        handle.progress(done);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void done() {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }
+
     }
 }

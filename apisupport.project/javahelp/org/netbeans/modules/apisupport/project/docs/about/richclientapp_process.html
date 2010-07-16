@@ -1,33 +1,33 @@
 
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-    <!--
-    * Copyright 2009 Sun Microsystems, Inc.
-    * All rights reserved. 
-    * Use is subject to license terms.
-    -->
-    <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2009 Sun Microsystems, Inc.
+* All rights reserved. 
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Working with Rich-Client Applications</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
         <h2>Working with Rich-Client Applications</h2>
         A rich-client application is a complete,
-            functioning, standalone Swing application,
-            built on top of the <a href="about-netbeans-platform.html">NetBeans Platform</a>. 
+        functioning, standalone Swing application,
+        built on top of the <a href="about-netbeans-platform.html">NetBeans Platform</a>.
         <p>The following table outlines the development cycle of rich-client applications, from creation to distribution. 
         <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
-            process step. The right column contains detail information to accomplish that process.">
-           
+               process step. The right column contains detail information to accomplish that process.">
+
             <tr valign="top"> 
                 <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-                <b>Set up<br>the application</b></td>
+                    <b>Set up<br>the application</b></td>
                 <td> 
                     <ol>
                         <li>Begin creating your application by
-                        using the <a href="../create_plugin/projectlevel_create/create_module_suite.html">module
-                        suite project template</a>. </li>
+                            using the <a href="../create_plugin/projectlevel_create/create_platform_app.html">NetBeans
+                                Platform application project template</a>. </li>
                         <li>Optionally, before going further, brand the application by providing
                             a splash screen and other external customizations, as described in step 6
                             below. 
@@ -35,7 +35,7 @@
                     </ol>
                 </td>
             </tr>
-           
+
             <tr> 
                 <td colspan="2"> 
                     <hr align="center" width="80%">
@@ -43,29 +43,29 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"><img src="../images/circle2.gif" alt="Number three"><br>
-                <b>Develop<br>the application</b></td>
+                    <b>Develop<br>the application</b></td>
                 <td> 
                     <ol><li>Begin creating each distinct part of your application 
-                        by using the <a href="../create_plugin/projectlevel_create/create_module.html">module
-                        project template</a>. </li>
+                            by using the <a href="../create_plugin/projectlevel_create/create_module.html">module
+                                project template</a>. </li>
                         <li>Right-click a module project in the Projects window and choose New > Other.
                         <li>In the New File wizard, choose the best <a href="../create_plugin/filelevel_create/about_file_wizards.html">NetBeans API 
-                        template</a> for 
-                        your programming needs.
+                                template</a> for
+                            your programming needs.
                         <li>After using a wizard, double-click the file
-                        that you would like to edit. Use the Source Editor to edit the
-                        file.</li>
+                            that you would like to edit. Use the Source Editor to edit the
+                            file.</li>
                         <li>Refer to the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                            <param name="content" value="http://bits.netbeans.org/dev/javadoc/">
-                            <param name="text" value="<html><u>NetBeans API Javadoc</u></html>">
-                            <param name="textFontSize" value="medium">
-                            <param name="textColor" value="blue">
-                        </object>
+                                <param name="content" value="http://bits.netbeans.org/dev/javadoc/">
+                                <param name="text" value="<html><u>NetBeans API Javadoc</u></html>">
+                                <param name="textFontSize" value="medium">
+                                <param name="textColor" value="blue">
+                            </object>
                     </ol>
                 </td>
             </tr>
-          
-        
+
+
             <tr> 
                 <td colspan="2"> 
                     <hr align="center" width="80%">
@@ -77,12 +77,12 @@
                     <b>Build<br>the application</b>
                 </td>
                 <td> 
-      
+
                     <ul>
                         <li>Choose Build &gt; Build 
-                        Main Project or right-click any project and choose Build Project. 
+                            Main Project or right-click any project and choose Build Project.
                     </ul>
-      
+
                 </td>
             </tr>
             <tr> 
@@ -97,7 +97,7 @@
                 </td>
                 <td> 
                     <ul>
-                        <li>Right-click a module suite project node and choose Run Project.</li>
+                        <li>Right-click the application project node and choose Run Project.</li>
                     </ul>
                 </td>
             </tr>
@@ -106,20 +106,18 @@
                     <hr align="center" width="80%">
                 </td>
             </tr>
-            
+
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle5.gif" alt="Number 5"><br>
-                <b>Brand<br>the application</b> </td>
+                    <b>Brand<br>the application</b> </td>
                 <td>
-                    Right-click the module suite node in the Projects 
-                    window and choose Properties. Use the Application panel and Splash 
-                    Screen panel to brand the application. 
-                    <ol>
-                        <li>In the Application panel, specify a branding name for the executable, an application title for the title bar, and
-                        an icon for the Help | About dialog box.
-                        <li>In the Splash Screen panel, specify a splash screen
-                        and a progress bar.
-                    </ol>
+                    <ul><li>Right-click the application node in the Projects
+                            window and choose Properties. Use the Application panel
+                            to brand the name of the application launcher.
+                        <li>Right-click the application node again, choose Branding,
+                            and then use the tabs Basic, Splash Screen, Window System,
+                            and Resource Bundles to brand these details of the application.
+                    </ul>
                 </td>
             </tr>
 
@@ -128,20 +126,28 @@
                     <hr align="center" width="80%">
                 </td>
             </tr>
-            
+
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle6.gif" alt="Number 6"><br>
-                <b>Distribute<br>the application</b> </td>
+                    <b>Distribute<br>the application</b> </td>
                 <td> 
                     You can distribute the application in one or both of the following ways:
                     <ul><li>Create a ZIP Distribution</li>
-                        <ul><li>Right-click the module suite node and choose <a href="../build_plugin/building_zip.html">Build ZIP Distribution</a>.
-                        <p>The application's executable and its clusters are packaged in a ZIP distribution.
-                        <li>Distribute the ZIP file.</ul>
+                        <ul><li>Right-click the application project and choose <a href="../build_plugin/building_zip.html">Build ZIP Distribution</a>.
+                                <p>The application's executable and its clusters are packaged in a ZIP distribution.
+                            <li>Distribute the ZIP file.</ul>
                         <li>Create a JNLP Application</li>
-                        <ul><li>Right-click the module suite node and choose <a href="../build_plugin/building_jnlp.html">Build JNLP Application</a>.
-                        <p>The application's JNLP files are created.
-                        <li>Put the JNLP application on a server.</ul>
+                        <ul><li>Right-click the application project and choose <a href="../build_plugin/building_jnlp.html">Build JNLP Application</a>.
+                                <p>The application's JNLP files are created.
+                            <li>Put the JNLP application on a server.</ul>
+                        <li>Create an Installer</li>
+                        <ul><li>Right-click the application project and choose Project Properties.
+                                <p>In the Installer panel, specify the installers
+                                     you would like to create.
+                            <li>Close the Project Properties dialog, right-click the
+                                 application project and choose Build Installers.
+                                 The installers will be created in the application
+                                 'dist' folder, visible in the Files window (Ctrl-2).</ul>
                     </ul>
                 </td>
             </tr>
@@ -152,14 +158,14 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle7.gif" alt="Number 7"><br>
-                <b>Distribute<br>updates to the application</b> </td>
+                    <b>Distribute<br>updates to the application</b> </td>
                 <td> 
                     <ol>
-                        <li>Right-click the module suite project and choose Create <a href="../build_plugin/building_nbm.html">NBMs</a>.
-                        <p>An NBM file is created for each module project in the module suite project. In addition,
-                        an <a href="../distribute_plugin/generate_autoupdate_descriptor.html">autoupdate descriptor</a> is created.
+                        <li>Right-click the application project and choose Create <a href="../build_plugin/building_nbm.html">NBMs</a>.
+                            <p>An NBM file is created for each module project in the application project. In addition,
+                                an <a href="../distribute_plugin/generate_autoupdate_descriptor.html">autoupdate descriptor</a> is created.
                         <li>Distribute the NBM file for installation via the Plugins manager.
-		
+
 
                     </ol>
                 </td>

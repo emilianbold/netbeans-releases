@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -94,55 +97,56 @@ public class DwarfReader extends ElfReader {
     }
     
     public Object readForm(FORM form) throws IOException {
-        if (form.equals(FORM.DW_FORM_addr)) {
-            return read(new byte[getAddressSize()]);
-        } else if (form.equals(FORM.DW_FORM_block2)) {
-            return read(new byte[readShort()]);
-        } else if (form.equals(FORM.DW_FORM_block4)) {
-            return read(new byte[readInt()]);
-        } else if (form.equals(FORM.DW_FORM_data2)) {
-            //TODO: check on all architectures!
-            //return read(new byte[2]);
-            return readShort();
-        } else if (form.equals(FORM.DW_FORM_data4)) {
-            //TODO: check on all architectures!
-            //return read(new byte[4]);
-            return readInt();
-        } else if (form.equals(FORM.DW_FORM_data8)) {
-            //TODO: check on all architectures!
-            //return read(new byte[8]);
-            return readLong();
-        } else if (form.equals(FORM.DW_FORM_string)) {
-            return readString();
-        } else if (form.equals(FORM.DW_FORM_block)) {
-            return read(new byte[readUnsignedLEB128()]);
-        } else if (form.equals(FORM.DW_FORM_block1)) {
-            return read(new byte[readUnsignedByte()]);
-        } else if (form.equals(FORM.DW_FORM_data1)) {
-            return readByte();
-        } else if (form.equals(FORM.DW_FORM_flag)) {
-            return readBoolean();
-        } else if (form.equals(FORM.DW_FORM_sdata)) {
-            return readSignedLEB128();
-        } else if (form.equals(FORM.DW_FORM_strp)) {
-            return ((StringTableSection)getSection(SECTIONS.DEBUG_STR)).getString(readInt()); 
-        } else if (form.equals(FORM.DW_FORM_udata)) {
-            return readUnsignedLEB128();
-        } else if (form.equals(FORM.DW_FORM_ref_addr)) {
-            return read(new byte[getAddressSize()]);
-        } else if (form.equals(FORM.DW_FORM_ref1)) {
-            return read(new byte[readUnsignedByte()]);
-        } else if (form.equals(FORM.DW_FORM_ref2)) {
-            return read(new byte[2]);
-        } else if (form.equals(FORM.DW_FORM_ref4)) {
-            return readInt();
-        } else if (form.equals(FORM.DW_FORM_ref8)) {
-            return readLong();
-        } else if (form.equals(FORM.DW_FORM_ref_udata)) {
-            return read(new byte[readUnsignedLEB128()]);
-        } else if (form.equals(FORM.DW_FORM_indirect)) {
-            return readForm(FORM.get(readUnsignedLEB128()));
-        } else {
+        switch(form) {
+            case DW_FORM_addr:
+                return read(new byte[getAddressSize()]);
+            case DW_FORM_block2:
+                return read(new byte[readShort()]);
+            case DW_FORM_block4:
+                return read(new byte[readInt()]);
+            case DW_FORM_data2:
+                //TODO: check on all architectures!
+                //return read(new byte[2]);
+                return readShort();
+            case DW_FORM_data4:
+                //TODO: check on all architectures!
+                //return read(new byte[4]);
+                return readInt();
+            case DW_FORM_data8:
+                //TODO: check on all architectures!
+                //return read(new byte[8]);
+                return readLong();
+            case DW_FORM_string:
+                return readString();
+            case DW_FORM_block:
+                return read(new byte[readUnsignedLEB128()]);
+            case DW_FORM_block1:
+                return read(new byte[readUnsignedByte()]);
+            case DW_FORM_data1:
+                return readByte();
+            case DW_FORM_flag:
+                return readBoolean();
+            case DW_FORM_sdata:
+                return readSignedLEB128();
+            case DW_FORM_strp:
+                return ((StringTableSection)getSection(SECTIONS.DEBUG_STR)).getString(readInt());
+            case DW_FORM_udata:
+                return readUnsignedLEB128();
+            case DW_FORM_ref_addr:
+                return read(new byte[getAddressSize()]);
+            case DW_FORM_ref1:
+                return read(new byte[readUnsignedByte()]);
+            case DW_FORM_ref2:
+                return read(new byte[2]);
+            case DW_FORM_ref4:
+                return readInt();
+            case DW_FORM_ref8:
+                return readLong();
+            case DW_FORM_ref_udata:
+                return read(new byte[readUnsignedLEB128()]);
+            case DW_FORM_indirect:
+                return readForm(FORM.get(readUnsignedLEB128()));
+            default:
             throw new IOException("unknown type " + form); // NOI18N
         }
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,8 +59,8 @@ import java.util.Properties;
 import javax.swing.text.Document;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.NbCatalogManager;
-import org.apache.xml.resolver.tools.NbCatalogResolver;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
 
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
@@ -230,14 +233,14 @@ public class CliXslCatalogModel implements CatalogModel {
     }
     
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
-        NbCatalogResolver catalogResolver;
+        CatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;    
 
         
-        NbCatalogManager manager = new NbCatalogManager(null);
+        CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new NbCatalogResolver(manager);
+        catalogResolver = new CatalogResolver(manager);
         //catalogResolver = new CatalogResolver(true);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         

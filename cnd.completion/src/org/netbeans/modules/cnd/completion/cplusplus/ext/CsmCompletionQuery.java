@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -104,6 +107,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateP
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.doxygensupport.CompletionDocumentationProviderImpl;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -180,6 +184,7 @@ abstract public class CsmCompletionQuery {
     public CsmCompletionResult query(JTextComponent component, int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         BaseDocument doc = (BaseDocument) component.getDocument();
+//        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
         return query(component, doc, offset, openingSource, sort, instantiateTypes);
     }
 
@@ -1462,6 +1467,16 @@ abstract public class CsmCompletionQuery {
                             if (obj != null && CsmKindUtilities.isClass(obj)) {
                                 lastType = CsmCompletion.createType((CsmClass)obj, 0, 0, false);
                             }
+                            if (last) {
+                                if (CsmKindUtilities.isClass(obj)) {
+                                    CsmClass c = (CsmClass) obj;
+                                    Collection<CsmClass> classList = new LinkedHashSet<CsmClass>();
+                                    classList.add(c);
+                                    result = new CsmCompletionResult(component, getBaseDocument(), classList,
+                                            c.getQualifiedName().toString(),
+                                            item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                }
+                            }
                         }
                     }
                     break;
@@ -1469,6 +1484,7 @@ abstract public class CsmCompletionQuery {
                 case CsmCompletionExpression.GENERIC_TYPE_OPEN:
                 case CsmCompletionExpression.OPERATOR:
                 {
+                    boolean boolOperator = false;
                     CompletionResolver.Result res = null;
 //                    CsmClassifier cls = null;
 //                    if (findType) {
@@ -1510,7 +1526,7 @@ abstract public class CsmCompletionQuery {
                         case NOTEQ:
                         case AMPAMP: // Binary, result is boolean
                         case BARBAR:
-                            lastType = CsmCompletion.BOOLEAN_TYPE;
+                            boolOperator = true;
                             // nobreak;
 
                         case PLUS:
@@ -1523,7 +1539,7 @@ abstract public class CsmCompletionQuery {
                                 break;
                             }
                             // nobreak;
-                            
+
                         case LTLT: // Always binary
                         case GTGT:
 //                    case RUSHIFT:
@@ -1533,33 +1549,56 @@ abstract public class CsmCompletionQuery {
                         case BAR:
                         case CARET:
                         case PERCENT:
-                            if (findType && !mtdList.isEmpty()) {
-                                List<CsmType> typeList = getTypeList(item, 0);
-                                // check exact overloaded operator
-                                Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, false, false);
-                                if (filtered.size() > 0) {
-                                    mtdList = filtered;
-                                    lastType = extractFunctionType(mtdList, null);
-                                } else if (item.getParameterCount() > 0) {
-                                    lastType = resolveType(item.getParameter(0));
-                                    staticOnly = false;
+                            if (findType && lastType == null) {
+                                if (!mtdList.isEmpty()) {
+                                    List<CsmType> typeList = getTypeList(item, 0);
+                                    // check exact overloaded operator
+                                    Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, false, false);
+                                    if (filtered.size() > 0) {
+                                        mtdList = filtered;
+                                        lastType = extractFunctionType(mtdList, null);
+                                    } else if (item.getParameterCount() > 0) {
+                                        lastType = resolveType(item.getParameter(0));
+                                        staticOnly = false;
+                                    }
                                 }
-                            } else if (lastType != null) {
-                                // simple backup
-                                switch (item.getParameterCount()) {
-                                    case 2:
-                                        CsmType typ1 = resolveType(item.getParameter(0));
-                                        CsmType typ2 = resolveType(item.getParameter(1));
-                                        if (typ1 != null && typ2 != null && typ1.getArrayDepth() == 0 && typ2.getArrayDepth() == 0 && CsmCompletion.isPrimitiveClass(typ1.getClassifier()) && CsmCompletion.isPrimitiveClass(typ2.getClassifier())) {
-                                            lastType = sup.getCommonType(typ1, typ2);
-                                        }
-                                        break;
-                                    case 1: // get the only one parameter
-                                        CsmType typ = resolveType(item.getParameter(0));
-                                        if (typ != null && CsmCompletion.isPrimitiveClass(typ.getClassifier())) {
-                                            lastType = typ;
-                                        }
-                                        break;
+                                if(lastType == null) {
+                                    // simple backup
+                                    switch (item.getParameterCount()) {
+                                        case 2:
+                                            CsmType typ1 = resolveType(item.getParameter(0));
+                                            if (typ1 != null && typ1.getArrayDepth() == 0) {
+                                                if (CsmCompletion.isPrimitiveClass(typ1.getClassifier())) {
+                                                    CsmType typ2 = resolveType(item.getParameter(1));
+                                                    if (typ2 != null && typ2.getArrayDepth() == 0) {
+                                                        if (CsmCompletion.isPrimitiveClass(typ2.getClassifier())) {
+                                                            lastType = sup.getCommonType(typ1, typ2);
+                                                        }
+                                                    }
+                                                } else {
+                                                    CsmClassifier classifier = typ1.getClassifier();
+                                                    if (CsmKindUtilities.isClass(classifier)) {
+                                                        CsmClass cls = (CsmClass) classifier;
+                                                        for (CsmMember member : cls.getMembers()) {
+                                                            if(CsmKindUtilities.isFunction(member) && member.getName().toString().equals(operatorPrefix)) {
+                                                                lastType = ((CsmFunction)member).getReturnType();
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case 1: // get the only one parameter
+                                            CsmType typ = resolveType(item.getParameter(0));
+                                            if (typ != null && CsmCompletion.isPrimitiveClass(typ.getClassifier())) {
+                                                lastType = typ;
+                                            }
+                                            break;
+                                    }
+                                }
+                                if(lastType == null && boolOperator) {
+                                    lastType = CsmCompletion.BOOLEAN_TYPE;
                                 }
                             }
                             break;

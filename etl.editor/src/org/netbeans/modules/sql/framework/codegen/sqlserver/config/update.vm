@@ -5,6 +5,7 @@
 #set( $indent = "    " )
 ##
 ##
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/disableConstraints.vm")
 UPDATE $targetTable 
 SET
 #foreach($mapping in $mappings)
@@ -17,4 +18,4 @@ FROM
     WHERE 
         #if($condition != "")$condition#end
 #end
-        
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/enableConstraints.vm")        

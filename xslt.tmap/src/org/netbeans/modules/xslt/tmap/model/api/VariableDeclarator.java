@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Vitaly Bychkov
@@ -26,13 +28,21 @@ package org.netbeans.modules.xslt.tmap.model.api;
 public interface VariableDeclarator extends TMapReferenceable, TMapComponent {
 
     String INPUT_VARIABLE = "inputVariable"; // NOI18N
+    String DEFAULT_INPUT_VARIABLE = 
+            NbBundle.getMessage(VariableDeclarator.class, "MSG_DefaultValue", INPUT_VARIABLE); // NOI18N
     String OUTPUT_VARIABLE = "outputVariable"; // NOI18N
+    String DEFAULT_OUTPUT_VARIABLE = 
+            NbBundle.getMessage(VariableDeclarator.class, "MSG_DefaultValue", OUTPUT_VARIABLE); // NOI18N
     
+    public Variable getDefaultInputVariable();
+
     public Variable getInputVariable();
     
     public void setInputVariableName(String inputVariable);
     
     public Variable getOutputVariable();
+    
+    public Variable getDefaultOutputVariable();
     
     public void setOutputVariableName(String outputVariable);
 }

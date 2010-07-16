@@ -38,7 +38,7 @@ public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operatio
 
     @Override
     public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
+        Operation ref = getReference();
         String opName = null;
         if (ref != null) {
             opName = Util.getReferenceLocalName(ref.getOperation());
@@ -53,7 +53,7 @@ public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operatio
     
     @Override
     public String getTooltip() {
-        Operation ref = getOriginal();
+        Operation ref = getReference();
         StringBuffer attributesTooltip = new StringBuffer();
         if (ref != null) {
             attributesTooltip.append(
@@ -61,14 +61,32 @@ public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operatio
                     , Operation.OPERATION_NAME));
             
             Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
+            if (inputVar == null) {
+                inputVar = ref.getDefaultInputVariable();
+                if (inputVar != null) {
+                    attributesTooltip.append(
+                            Util.getLocalizedAttribute(inputVar.getName()
+                            , Operation.DEFAULT_INPUT_VARIABLE));
+                }
+            } else {
+                attributesTooltip.append(
+                        Util.getLocalizedAttribute(inputVar.getName()
+                        , Operation.INPUT_VARIABLE));
+            }
 
             Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
+            if (outputVar == null) {
+                outputVar = ref.getDefaultOutputVariable();
+                if (outputVar != null) {
+                    attributesTooltip.append(
+                            Util.getLocalizedAttribute(outputVar.getName()
+                            , Operation.DEFAULT_OUTPUT_VARIABLE));
+                }
+            } else {
+                attributesTooltip.append(
+                        Util.getLocalizedAttribute(outputVar.getName()
+                        , Operation.OUTPUT_VARIABLE));
+            }
         }
 
 

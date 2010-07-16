@@ -1,0 +1,17 @@
+#if($isDisableConstraint)
+    
+    ## Disable Primary Key
+    ALTER TABLE $targetTable DISABLE CONSTRAINT $targetTablePkName CASCADE
+    ${statementSeparator}
+
+    ## Disable Foreign Keys
+    #set( $fkCounter = 0)
+    #set( $totalFKs = $targetTableForeignKeys.size())
+    #foreach( $fk in ${targetTableForeignKeys} )
+        ALTER TABLE $targetTable DISABLE CONSTRAINT $fk.getName() CASCADE
+        #if($fkCounter < $totalFKs)
+            ${statementSeparator}
+        #end
+        #set( $fkCounter = $fkCounter + 1)
+    #end
+#end

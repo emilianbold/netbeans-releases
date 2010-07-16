@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import java.util.concurrent.Callable;
 import javax.xml.namespace.QName;
@@ -105,15 +104,16 @@ public class OnEventNode extends BpelNode<OnEvent> {
         messagePropertySet.put(customizer);
         //
         Node.Property property;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PartnerLinkReference.PARTNER_LINK, PropertyType.PARTNER_LINK,
                 "getPartnerLink", "setPartnerLink", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PortTypeReference.PORT_TYPE, PropertyType.PORT_TYPE,
                 "getPortType", "setPortType", "removePortType"); // NOI18N
@@ -129,26 +129,26 @@ public class OnEventNode extends BpelNode<OnEvent> {
             }
         };
         //
-        property = PropertyUtils.registerAttributeProperty(selfReference,
+        property = propUtil.registerAttributeProperty(selfReference,
                 messagePropertySet,
                 OperationReference.OPERATION, PropertyType.OPERATION,
                 "getOperation", "setOperationLocal", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(selfReference, 
+        property = propUtil.registerAttributeProperty(selfReference, 
                 messagePropertySet,
                 VariableReference.VARIABLE, PropertyType.EVENT_VARIABLE_NAME,
                 "getVariable", "setVariableLocal", "removeVariableLocal"); // NOI18N
         property.setValue("canEditAsText", Boolean.TRUE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(selfReference, 
+        property = propUtil.registerAttributeProperty(selfReference, 
                 messagePropertySet,
                 MessageTypeReference.MESSAGE_TYPE, PropertyType.VARIABLE_TYPE_QNAME,
                 "getVariableTypeQName", null, null); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -165,6 +165,7 @@ public class OnEventNode extends BpelNode<OnEvent> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
@@ -347,9 +348,9 @@ public class OnEventNode extends BpelNode<OnEvent> {
         event.removeMessageType();
         //
         SchemaModel model = element.getModel();
+
         if (model != null){
-            new ImportRegistrationHelper(
-                    event.getBpelModel()).addImport(model);
+            new ImportRegistrationHelper(event.getBpelModel()).addImport(model);
         }
     }
     

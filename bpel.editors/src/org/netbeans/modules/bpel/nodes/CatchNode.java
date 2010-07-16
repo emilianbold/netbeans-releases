@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.model.api.Catch;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -32,6 +31,7 @@ import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
@@ -39,7 +39,9 @@ import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.properties.TypeContainer;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
@@ -61,6 +63,7 @@ public class CatchNode extends BpelNode<Catch> {
         return NodeType.CATCH;
     }
     
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
 
@@ -70,24 +73,25 @@ public class CatchNode extends BpelNode<Catch> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        Node.Property property = PropertyUtils.registerAttributeProperty(this, 
+        Node.Property property = propUtil.registerAttributeProperty(this, 
                 mainPropertySet,
                 FaultNameReference.FAULT_NAME, FAULT_NAME, 
                 "getFaultName", "setFaultName", "removeFaultName"); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 mainPropertySet,
                 Catch.FAULT_VARIABLE, FAULT_VARIABLE_NAME,
                 "getFaultVariable", "setFaultVariable", "removeFaultVariable"); // NOI18N
         property.setValue("canEditAsText", Boolean.TRUE); // NOI18N
         //
-        property = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        property = propUtil.registerCalculatedProperty(this, mainPropertySet,
                 FAULT_VARIABLE_TYPE, "getFaultVariableType", "setFaultVariableType"); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -130,6 +134,13 @@ public class CatchNode extends BpelNode<Catch> {
                     public Object call() throws Exception {
                         aCatch.removeFaultElement();
                         Message message = typeContainer.getMessage();
+                        WSDLModel wModel = message.getModel();
+                        BpelModel bModel = aCatch.getBpelModel();
+                        if (wModel != null && bModel != null) {
+                            // Check if the model is imported to BPEL
+                            new ImportRegistrationHelper(bModel).addImport(wModel);
+                        }
+                        //
                         WSDLReference<Message> messageRef =
                                 aCatch.createWSDLReference(message, Message.class);
                         aCatch.setFaultMessageType(messageRef);
@@ -142,6 +153,13 @@ public class CatchNode extends BpelNode<Catch> {
                     public Object call() throws Exception {
                         aCatch.removeFaultMessageType();
                         GlobalElement gElement = typeContainer.getGlobalElement();
+                        SchemaModel sModel = gElement.getModel();
+                        BpelModel bModel = aCatch.getBpelModel();
+                        if (sModel != null && bModel != null) {
+                            // Check if the schema is imported to BPEL
+                            new ImportRegistrationHelper(bModel).addImport(sModel);
+                        }
+                        //
                         SchemaReference<GlobalElement> gElementRef =
                                 aCatch.createSchemaReference(gElement, GlobalElement.class);
                         aCatch.setFaultElement(gElementRef);
@@ -155,6 +173,7 @@ public class CatchNode extends BpelNode<Catch> {
         }
     }
     
+    @Override
     protected void updateComplexProperties(ChangeEvent event) {
         if (event instanceof PropertyUpdateEvent || 
                 event instanceof PropertyRemoveEvent) {
@@ -184,6 +203,7 @@ public class CatchNode extends BpelNode<Catch> {
         };
     }
     
+    @Override
      public String getHelpId() {
         return "orch_elements_scope_add_catch"; //NOI18N
     }

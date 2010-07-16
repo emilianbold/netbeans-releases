@@ -22,7 +22,6 @@ package org.netbeans.modules.soa.mappercore.model;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.model.VertexItem;
 
 /**
  *
@@ -162,7 +161,7 @@ public class GraphSubset {
     }
     private Vertex createVertex(Vertex vertex) {
         Vertex newVertex = null;
-        if (vertex instanceof Constant){
+        if (vertex instanceof Constant) {
             newVertex = new Constant(vertex.getDataObject(), vertex.getIcon());
         } 
         if (vertex instanceof Operation) {
@@ -212,6 +211,7 @@ public class GraphSubset {
         if (target instanceof Graph) {
             newTarget = null;
         }
+        
         if (target instanceof VertexItem) {
             VertexItem item = (VertexItem) target;
             int indexV = graphSubset.ingexOf(item.getVertex());
@@ -225,9 +225,9 @@ public class GraphSubset {
         
         if (newSource != null && newTarget != null) {
             return new Link(newSource, newTarget);
-        } else {
-            return null;
-        }
+        } 
+    
+        return null;
     }
     
     private static final Vertex[] EMPTY_VERTECES = new Vertex[0];

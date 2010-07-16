@@ -1,8 +1,10 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
+
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
+import org.netbeans.modules.j2ee.sun.ide.DeploymentFactoryFactory;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory;
 import org.openide.util.NbBundle;
 
@@ -111,22 +113,22 @@ public class PlatformValidator {
         //serverVersion.equals(APPSERVERSJS)
         String serverType = NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME"); //NOI18N
         if(serverVersion.equals(GLASSFISH_V1)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"); //NOI18N
+            serverType = NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV1"); //NOI18N
         }else if(serverVersion.equals(GLASSFISH_V2)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"); //NOI18N
+            serverType = NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV2"); //NOI18N
         }else if(serverVersion.equals(SAILFIN_V1)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"); //NOI18N
+            serverType = NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_JavaEEPlusSIP"); //NOI18N
         }
         return serverType;
     }
     
     public String getServerVersionByName(String serverName){
         String serverVersion = null;
-        if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"))){ //NOI18N
+        if(serverName.equals(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV1"))){ //NOI18N
             serverVersion = GLASSFISH_V1;
-        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"))){ //NOI18N
+        }else if(serverName.equals(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV2"))){ //NOI18N
             serverVersion = GLASSFISH_V2;
-        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"))){ //NOI18N
+        }else if(serverName.equals(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_JavaEEPlusSIP"))){ //NOI18N
             serverVersion = SAILFIN_V1;
         }else if(serverName.equals(NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME"))){ //NOI18N
             serverVersion = APPSERVERSJS;

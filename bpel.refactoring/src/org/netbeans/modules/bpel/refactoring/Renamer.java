@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -102,507 +105,455 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
 final class Renamer extends Plugin {
-    
-  Renamer(RenameRefactoring refactoring) {
-    myRequest = refactoring;
-  }
-  
-  public Problem fastCheckParameters() {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
-    ErrorItem error = null;
 
-    if (reference instanceof Model) {
-      error = RefactoringUtil.precheck((Model) reference, myRequest.getNewName());
+    Renamer(RenameRefactoring refactoring) {
+        myRequest = refactoring;
     }
-    else if (reference instanceof Nameable) {
-      error = RefactoringUtil.precheck((Nameable) reference, myRequest.getNewName());
-    }
-    if (error != null) {
-      return new Problem(true, error.getMessage());
-    }
-    return null;
-  }
-    
-  public Problem checkParameters() {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
-  
-    if (reference == null) {
-      return null;
-    }
-    if ( !(reference instanceof Model || reference instanceof Nameable)) {
-      return null;
-    }
-    Model model = SharedUtils.getModel(reference);
-    ErrorItem error = RefactoringUtil.precheckTarget(model, true);
 
-    if (error != null) {
-      return new Problem(isFatal(error), error.getMessage());
-    }
-    if (reference instanceof Model) {
-      error = RefactoringUtil.precheck((Model) model, myRequest.getNewName());
-    }
-    else if (reference instanceof Nameable) {
-      error = RefactoringUtil.precheck((Nameable) reference, myRequest.getNewName());
-    }
-    if (error != null) {
-      return new Problem(isFatal(error), error.getMessage());
-    }
-    return null;
-  }
-    
-  public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+    public Problem fastCheckParameters() {
+        Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+        ErrorItem error = null;
 
-    if (reference == null) {
-      return null;
+        if (reference instanceof Model) {
+            error = RefactoringUtil.precheck((Model) reference, myRequest.getNewName());
+        } else if (reference instanceof Nameable) {
+            error = RefactoringUtil.precheck((Nameable) reference, myRequest.getNewName());
+        }
+        if (error != null) {
+            return new Problem(true, error.getMessage());
+        }
+        return null;
     }
-    if ( !(reference instanceof Model || reference instanceof Nameable)) {
-      return null;
-    }
-    Set<Component> roots = getRoots(reference);
-    List<Element> elements = new ArrayList<Element>();
 
-    for (Component root : roots) {
-      List<Element> founds = find(reference, root);
+    public Problem checkParameters() {
+        Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
-      if (founds != null) {
-        elements.addAll(founds);
-      }
-    }
-    if (elements.size() > 0) {
-      List<Model> models = getModels(elements);
-      List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
+        if (reference == null) {
+            return null;
+        }
+        if (!(reference instanceof Model || reference instanceof Nameable)) {
+            return null;
+        }
+        Model model = SharedUtils.getModel(reference);
+        ErrorItem error = RefactoringUtil.precheckTarget(model, true);
 
-      if (errors != null && errors.size() > 0) {
-        return processErrors(errors);
-      }
+        if (error != null) {
+            return new Problem(isFatal(error), error.getMessage());
+        }
+        if (reference instanceof Model) {
+            error = RefactoringUtil.precheck((Model) model, myRequest.getNewName());
+        } else if (reference instanceof Nameable) {
+            error = RefactoringUtil.precheck((Nameable) reference, myRequest.getNewName());
+        }
+        if (error != null) {
+            return new Problem(isFatal(error), error.getMessage());
+        }
+        return null;
     }
-    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
-    transaction.register(this, elements);
-    refactoringElements.registerTransaction(transaction);
 
-    for (Element element : elements) {
-      element.setTransactionObject(transaction);
-      refactoringElements.add(myRequest, element);
-    }
-    return null;
-  }
-      
-  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
-    Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
-    Set<Model> models = map.keySet();
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
-    String oldName = myRequest.getContext().lookup(String.class);
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
-    for (Model model : models) {
-      if (reference instanceof Nameable) {
-        rename(getComponents(map.get(model)), model, (Named) reference, oldName);
-      }
-      else if (reference instanceof Model) {
-        rename(getComponents(map.get(model)));
-      }
-    }
-  }
-    
-  public String getModelReference(Component component) {
-    if (component instanceof Import) {
-      return ((Import) component).getLocation();
-    }
-    return null;
-  }
+        if (reference == null) {
+            return null;
+        }
+        if (!(reference instanceof Model || reference instanceof Nameable)) {
+            return null;
+        }
+        Set<Component> roots = getRoots(reference);
+        List<Element> elements = new ArrayList<Element>();
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
-    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
-  
-    for (RefactoringElementImplementation element : elements) {
-      Model model = (element.getLookup().lookup(Component.class)).getModel();
-      Set<RefactoringElementImplementation> components = results.get(model);
+        for (Component root : roots) {
+            List<Element> founds = find(reference, root);
 
-      if (components == null) {
-        components = new HashSet<RefactoringElementImplementation>();
-        components.add(element);
-        results.put(model, components);
-      }
-      else {
-        components.add(element);
-      }
-    }
-    return results;
-  }
+            if (founds != null) {
+                elements.addAll(founds);
+            }
+        }
+        if (elements.size() > 0) {
+            List<Model> models = getModels(elements);
+            List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 
-  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
-    List<Component> component = new ArrayList<Component>(elements.size());
-  
-    for (RefactoringElementImplementation element : elements) {
-      component.add(element.getLookup().lookup(Component.class));
-    }
-    return component;
-  }
-       
-  private void rename(List<Component> components, Model model, Named target, String oldName) throws IOException {
-    if (target == null || components == null || model == null) {
-      return;
-    }
-    myXPath = new XPath(null, target, oldName);
-    myOldName = oldName;
-    boolean doTransaction = !model.isIntransaction();
-    
-    try {
-      if (doTransaction) {
-        model.startTransaction();
-      }
-      for (Component component : components) {
-        renameComponent(component, target);
-      }
-    }
-    finally {
-      if (doTransaction && model.isIntransaction()) {
-        model.endTransaction();
-      }
-    }
-  }
+            if (errors != null && errors.size() > 0) {
+                return processErrors(errors);
+            }
+        }
+        XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+        transaction.register(this, elements);
+        refactoringElements.registerTransaction(transaction);
 
-  private void rename(List<Component> components) throws IOException {
-    if (components == null) {
-      return;
+        for (Element element : elements) {
+            element.setTransactionObject(transaction);
+            refactoringElements.add(myRequest, element);
+        }
+        return null;
     }
-    for (Component component : components) {
-      renameFile(component);
-    }
-  }
 
-  private void renameFile(Component component) throws IOException {
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+        Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
+        Set<Model> models = map.keySet();
+        Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+        String oldName = myRequest.getContext().lookup(String.class);
+
+        for (Model model : models) {
+            if (reference instanceof Nameable) {
+                rename(getComponents(map.get(model)), model, (Named) reference, oldName);
+            } else if (reference instanceof Model) {
+                rename(getComponents(map.get(model)));
+            }
+        }
+    }
+
+    public String getModelReference(Component component) {
+        if (component instanceof Import) {
+            return ((Import) component).getLocation();
+        }
+        return null;
+    }
+
+    private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
+        Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
+
+        for (RefactoringElementImplementation element : elements) {
+            Model model = (element.getLookup().lookup(Component.class)).getModel();
+            Set<RefactoringElementImplementation> components = results.get(model);
+
+            if (components == null) {
+                components = new HashSet<RefactoringElementImplementation>();
+                components.add(element);
+                results.put(model, components);
+            } else {
+                components.add(element);
+            }
+        }
+        return results;
+    }
+
+    private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
+        List<Component> component = new ArrayList<Component>(elements.size());
+
+        for (RefactoringElementImplementation element : elements) {
+            component.add(element.getLookup().lookup(Component.class));
+        }
+        return component;
+    }
+
+    private void rename(List<Component> components, Model model, Named target, String oldName) throws IOException {
+        if (target == null || components == null || model == null) {
+            return;
+        }
+        myXPath = new XPath(null, target, oldName);
+        myOldName = oldName;
+        boolean doTransaction = !model.isIntransaction();
+
+        try {
+            if (doTransaction) {
+                model.startTransaction();
+            }
+            for (Component component : components) {
+                renameComponent(component, target);
+            }
+        } finally {
+            if (doTransaction && model.isIntransaction()) {
+                model.endTransaction();
+            }
+        }
+    }
+
+    private void rename(List<Component> components) throws IOException {
+        if (components == null) {
+            return;
+        }
+        for (Component component : components) {
+            renameFile(component);
+        }
+    }
+
+    private void renameFile(Component component) throws IOException {
 //out();
 //out("FILE RENAME: " + Util.getName(component));
-    if ( !(component instanceof Import)) {
-      return;
+        if (!(component instanceof Import)) {
+            return;
+        }
+        try {
+            Import _import = (Import) component;
+            _import.setLocation(SharedUtils.calculateNewLocationString(_import.getLocation(), myRequest));
+        } catch (VetoException e) {
+            throw new IOException(e.getMessage());
+        }
     }
-    try {
-      Import _import = (Import) component;
-      _import.setLocation(
-        SharedUtils.calculateNewLocationString(_import.getLocation(), myRequest));
-    }
-    catch (VetoException e) {
-      throw new IOException(e.getMessage());
-    }
-  }
 
-  private void renameComponent(Component component, Named target) throws IOException{
+    private void renameComponent(Component component, Named target) throws IOException {
 //out();
 //out("RENAME: " + Util.getName(target));
 //out("    in: " + Util.getName(component));
 //out();
-    if (component instanceof PartReference && ((PartReference) component).getPart() != null && component instanceof ReferenceCollection && target instanceof Part) {
-      rename((PartReference) component, (Part) target);
+        if (component instanceof PartReference && ((PartReference) component).getPart() != null && component instanceof ReferenceCollection && target instanceof Part) {
+            rename((PartReference) component, (Part) target);
+        } else if (component instanceof PropertyReference && ((PropertyReference) component).getProperty() != null && component instanceof ReferenceCollection && target instanceof CorrelationProperty) {
+            rename((PropertyReference) component, (CorrelationProperty) target);
+        } else if (component instanceof Variable) {
+            rename((Variable) component, target);
+        } else {
+            renameCamponent(component, target);
+        }
     }
-    else if (component instanceof PropertyReference && ((PropertyReference) component).getProperty() != null && component instanceof ReferenceCollection && target instanceof CorrelationProperty) {
-      rename((PropertyReference) component, (CorrelationProperty) target);
-    }
-    else if (component instanceof Variable) {
-      rename((Variable) component, target);
-    }
-    else {
-      renameCamponent(component, target);
-    }
-  }
 
-  private void renameCamponent(Component component, Named target) throws IOException{
-    if (component instanceof OperationReference && component instanceof ReferenceCollection && target instanceof Operation) {
-      rename((OperationReference) component, (Operation) target);
+    private void renameCamponent(Component component, Named target) throws IOException {
+        if (component instanceof OperationReference && component instanceof ReferenceCollection && target instanceof Operation) {
+            rename((OperationReference) component, (Operation) target);
+        } else if (component instanceof PortTypeReference && component instanceof ReferenceCollection && target instanceof PortType) {
+            rename((PortTypeReference) component, (PortType) target);
+        } else if (component instanceof MessageExchangeReference && component instanceof ReferenceCollection && target instanceof MessageExchange) {
+            rename((MessageExchangeReference) component, (MessageExchange) target);
+        } else {
+            renameCampanent(component, target);
+        }
     }
-    else if (component instanceof PortTypeReference && component instanceof ReferenceCollection && target instanceof PortType) {
-      rename((PortTypeReference) component, (PortType) target);
-    }
-    else if (component instanceof MessageExchangeReference && component instanceof ReferenceCollection && target instanceof MessageExchange) {
-      rename((MessageExchangeReference) component, (MessageExchange) target);
-    }
-    else {
-      renameCampanent(component, target);
-    }
-  }
 
-  private void renameCampanent(Component component, Named target) throws IOException{
-    if (component instanceof Role && target instanceof PortType) {
-      rename((Role) component, (PortType) target);
+    private void renameCampanent(Component component, Named target) throws IOException {
+        if (component instanceof Role && target instanceof PortType) {
+            rename((Role) component, (PortType) target);
+        } else if (component instanceof Catch) {
+            rename((Catch) component, target);
+        } else if (component instanceof Reply) {
+            rename((Reply) component, target);
+        } else if (component instanceof Throw) {
+            rename((Throw) component, target);
+        } else if (component instanceof OnEvent) {
+            rename((OnEvent) component, target);
+        } else if (component instanceof CorrelationProperty) {
+            rename((CorrelationProperty) component, target);
+        } else if (component instanceof PropertyAlias) {
+            rename((PropertyAlias) component, target);
+        } else if (component instanceof PartnerLink) {
+            rename((PartnerLink) component, target);
+        } else {
+            renameKomponent(component, target);
+        }
     }
-    else if (component instanceof Catch) {
-      rename((Catch) component, target);
-    }
-    else if (component instanceof Reply) {
-      rename((Reply) component, target);
-    }
-    else if (component instanceof Throw) {
-      rename((Throw) component, target);
-    }
-    else if (component instanceof OnEvent) {
-      rename((OnEvent) component, target);
-    }
-    else if (component instanceof CorrelationProperty) {
-      rename((CorrelationProperty) component, target);
-    }
-    else if (component instanceof PropertyAlias) {
-      rename((PropertyAlias) component, target);
-    }
-    else if (component instanceof PartnerLink) {
-      rename((PartnerLink) component, target);
-    }
-    else {
-      renameKomponent(component, target);
-    }
-  }
 
-  private void renameKomponent(Component component, Named target) throws IOException{
-    if (component instanceof CorrelationSet) {
-      rename((CorrelationSet) component, target);
-    }
-    else if (component instanceof ContentElement && component instanceof BpelEntity) {
-      rename((ContentElement) component);
-    }
-    else if (component instanceof Query) {
-      rename((Query) component, target);
-    }
-    else {
+    private void renameKomponent(Component component, Named target) throws IOException {
+        if (component instanceof CorrelationSet) {
+            rename((CorrelationSet) component, target);
+        } else if (component instanceof ContentElement && component instanceof BpelEntity) {
+            rename((ContentElement) component);
+        } else if (component instanceof Query) {
+            rename((Query) component, target);
+        } else {
 //out();
 //out("!!! RENAME IN !!! : " + component.getClass().getName());
 //out();
-      return;
+            return;
+        }
     }
-  }
 
-  private void rename(PartReference reference, Part part) {
-    reference.setPart(((ReferenceCollection) reference).
-      createWSDLReference(part, Part.class));
-  }
+    private void rename(PartReference reference, Part part) {
+        reference.setPart(((ReferenceCollection) reference).createWSDLReference(part, Part.class));
+    }
 
-  private void rename(PropertyReference reference, CorrelationProperty property) {
-    reference.setProperty(((ReferenceCollection) reference).
-      createWSDLReference(property, CorrelationProperty.class));
-  }
+    private void rename(PropertyReference reference, CorrelationProperty property) {
+        reference.setProperty(((ReferenceCollection) reference).createWSDLReference(property, CorrelationProperty.class));
+    }
 
-  private void rename(PortTypeReference reference, PortType portType) {
-    reference.setPortType(((ReferenceCollection) reference).
-      createWSDLReference(portType, PortType.class));
-  }
+    private void rename(PortTypeReference reference, PortType portType) {
+        reference.setPortType(((ReferenceCollection) reference).createWSDLReference(portType, PortType.class));
+    }
 
-  private void rename(OperationReference reference, Operation operation) {
-    reference.setOperation(((ReferenceCollection) reference).
-      createWSDLReference(operation, Operation.class));
-  }
+    private void rename(OperationReference reference, Operation operation) {
+        reference.setOperation(((ReferenceCollection) reference).createWSDLReference(operation, Operation.class));
+    }
 
-  private void rename(MessageExchangeReference reference, MessageExchange exchange) {
-    reference.setMessageExchange(((ReferenceCollection) reference).
-      createReference(exchange, MessageExchange.class));
-  }
+    private void rename(MessageExchangeReference reference, MessageExchange exchange) {
+        reference.setMessageExchange(((ReferenceCollection) reference).createReference(exchange, MessageExchange.class));
+    }
 
-  private void rename(Role role, PortType target) throws IOException {
-      role.setPortType(target.createReferenceTo(target, PortType.class));
-  }
+    private void rename(Role role, PortType target) throws IOException {
+        role.setPortType(target.createReferenceTo(target, PortType.class));
+    }
 
-  private void rename(ContentElement element) throws IOException {
-    String content = myXPath.rename(element.getContent(), (BpelEntity) element);
+    private void rename(ContentElement element) throws IOException {
+        String content = myXPath.rename(element.getContent(), (BpelEntity) element);
 //out();
 //out("New content: " + content);
 //out();
-    try {
-      element.setContent(content);
+        try {
+            element.setContent(content);
+        } catch (VetoException e) {
+            throw new IOException(e.getMessage());
+        }
     }
-    catch (VetoException e) {
-      throw new IOException(e.getMessage());
-    }
-  }
 
-  private void rename(CorrelationProperty property, Named target) throws IOException {
-    NamedComponentReference<GlobalElement> element = property.getElement();
+    private void rename(CorrelationProperty property, Named target) throws IOException {
+        NamedComponentReference<GlobalElement> element = property.getElement();
 
-    if (element != null && target instanceof GlobalElement) {
-      property.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
-    }
-    NamedComponentReference<GlobalType> type = property.getType();
+        if (element != null && target instanceof GlobalElement) {
+            property.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
+        }
+        NamedComponentReference<GlobalType> type = property.getType();
 
-    if (type != null && target instanceof GlobalType) {
-      property.setType(((GlobalType) target).createReferenceTo(
-        (GlobalType) target, GlobalType.class));
+        if (type != null && target instanceof GlobalType) {
+            property.setType(((GlobalType) target).createReferenceTo((GlobalType) target, GlobalType.class));
+        }
     }
-  }
 
-  private void rename(PropertyAlias alias, Named target) throws IOException {
-    NamedComponentReference<GlobalElement> element = alias.getElement();
+    private void rename(PropertyAlias alias, Named target) throws IOException {
+        NamedComponentReference<GlobalElement> element = alias.getElement();
 
-    if (element != null && target instanceof GlobalElement) {
-      alias.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
-    }
-    NamedComponentReference<GlobalType> type = alias.getType();
+        if (element != null && target instanceof GlobalElement) {
+            alias.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
+        }
+        NamedComponentReference<GlobalType> type = alias.getType();
 
-    if (type != null && target instanceof GlobalType) {
-      alias.setType(((GlobalType) target).createReferenceTo(
-        (GlobalType) target, GlobalType.class));
+        if (type != null && target instanceof GlobalType) {
+            alias.setType(((GlobalType) target).createReferenceTo((GlobalType) target, GlobalType.class));
+        }
+        if (target instanceof Message) {
+            alias.setMessageType(((Message) target).createReferenceTo((Message) target, Message.class));
+        } else if (target instanceof Part) {
+            alias.setPart(((Part) target).getName());
+        } else if (target instanceof CorrelationProperty) {
+            alias.setPropertyName(((CorrelationProperty) target).createReferenceTo((CorrelationProperty) target, CorrelationProperty.class));
+        }
     }
-    if (target instanceof Message) {
-      alias.setMessageType(((Message) target).createReferenceTo((Message) target, Message.class));
-    }
-    else if (target instanceof Part) {
-      alias.setPart(((Part) target).getName());
-    }
-    else if (target instanceof CorrelationProperty) {
-      alias.setPropertyName(((CorrelationProperty) target).createReferenceTo(
-        (CorrelationProperty) target, CorrelationProperty.class));
-    }
-  }
 
-  private void rename(Query query, Named target) throws IOException {
-    int k = Util.checkQuery(query, myOldName);
-    if (k == -1) {
-      return;
+    private void rename(Query query, Named target) throws IOException {
+        int k = Util.checkQuery(query, myOldName);
+        if (k == -1) {
+            return;
+        }
+        String path = query.getContent();
+        query.setContent(path.substring(0, k) + target.getName() + path.substring(k + myOldName.length()));
     }
-    String path = query.getContent();
-    query.setContent(path.substring(0,k) +
-      target.getName() + path.substring(k + myOldName.length()));
-  }
 
-  private void rename(OnEvent event, Named target) throws IOException {
-    if (target instanceof Message) {
-      event.setMessageType(event.createWSDLReference((Message) target, Message.class));
+    private void rename(OnEvent event, Named target) throws IOException {
+        if (target instanceof Message) {
+            event.setMessageType(event.createWSDLReference((Message) target, Message.class));
+        }
     }
-  }
 
-  private void rename(PartnerLink partnerLink, Named target) throws IOException {
-    if (target instanceof PartnerLinkType) {
-      partnerLink.setPartnerLinkType(partnerLink.createWSDLReference(
-        (PartnerLinkType) target, PartnerLinkType.class));
+    private void rename(PartnerLink partnerLink, Named target) throws IOException {
+        if (target instanceof PartnerLinkType) {
+            partnerLink.setPartnerLinkType(partnerLink.createWSDLReference((PartnerLinkType) target, PartnerLinkType.class));
+        } else if (target instanceof Role) {
+            WSDLReference<Role> reference = partnerLink.createWSDLReference((Role) target, Role.class);
+
+            if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
+                partnerLink.setMyRole(reference);
+            } else if (isRenamedRole(partnerLink, PartnerLink.PARTNER_ROLE)) {
+                partnerLink.setPartnerRole(reference);
+            }
+        }
     }
-    else if (target instanceof Role) {
-      WSDLReference<Role> reference = partnerLink.createWSDLReference((Role) target, Role.class);
 
-    if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
-        partnerLink.setMyRole(reference);
-      }
-      else if (isRenamedRole(partnerLink, PartnerLink.PARTNER_ROLE)) {
-        partnerLink.setPartnerRole(reference);
-      }
-    }
-  }
-
-  private void rename(CorrelationSet correlationSet, Named target) throws IOException {
-    if (target instanceof CorrelationProperty) {
+    private void rename(CorrelationSet correlationSet, Named target) throws IOException {
+        if (target instanceof CorrelationProperty) {
 //out();
 //out("RENAME");
-      List<WSDLReference<CorrelationProperty>> references = correlationSet.getProperties();
-      List<WSDLReference<CorrelationProperty>> list = new ArrayList<WSDLReference<CorrelationProperty>>();
+            List<WSDLReference<CorrelationProperty>> references = correlationSet.getProperties();
+            List<WSDLReference<CorrelationProperty>> list = new ArrayList<WSDLReference<CorrelationProperty>>();
 
-      if (references == null) {
-        return;
-      }
-      for (WSDLReference<CorrelationProperty> reference : references) {
-        if (reference.get() != null) {
-          list.add(reference);
+            if (references == null) {
+                return;
+            }
+            for (WSDLReference<CorrelationProperty> reference : references) {
+                if (reference.get() != null) {
+                    list.add(reference);
 //out("  see: " + reference.get());
-        }
-        else {
+                } else {
 //out("  add");
-          list.add(correlationSet.createWSDLReference(
-            (CorrelationProperty) target, CorrelationProperty.class));
+                    list.add(correlationSet.createWSDLReference((CorrelationProperty) target, CorrelationProperty.class));
+                }
+            }
+            correlationSet.setProperties(list);
         }
-      }
-      correlationSet.setProperties(list);
     }
-  }
 
-  private boolean isRenamedRole(PartnerLink partnerLink, String attribute) {
-    String roleName = partnerLink.getAttribute(new StringAttribute(attribute));
-    return myOldName.equals(roleName);
-  }
+    private boolean isRenamedRole(PartnerLink partnerLink, String attribute) {
+        String roleName = partnerLink.getAttribute(new StringAttribute(attribute));
+        return myOldName.equals(roleName);
+    }
 
-  private void rename(Variable variable, Named target) {
+    private void rename(Variable variable, Named target) {
 //out();
 //out("RENAME: " + Util.getName(target));
 //out("    in: " + Util.getName(variable));
 //out();
-    if (target instanceof GlobalElement) {
-      variable.setElement(
-        variable.createSchemaReference((GlobalElement) target, GlobalElement.class));
-    }
-    else if (target instanceof GlobalType) {
-      variable.setType(
-        variable.createSchemaReference((GlobalType) target, GlobalType.class));
-    }
-    else if (target instanceof Message) {
-      variable.setMessageType( 
-        variable.createWSDLReference((Message) target, Message.class));
-    }
-  }
-
-  private void rename(Catch _catch, Named target) throws IOException {
-    if (target instanceof Fault) {
-      renameFaultNameReference(_catch, target);
-    }
-    else if (target instanceof GlobalElement) {
-      _catch.setFaultElement(
-        _catch.createSchemaReference((GlobalElement) target, GlobalElement.class));
-    }
-    else if (target instanceof Message) {
-      _catch.setFaultMessageType( 
-        _catch.createWSDLReference((Message) target, Message.class));
-    }
-  }
-
-  private void rename(Reply reply, Named target) throws IOException {
-    if (target instanceof Fault) {
-      renameFaultNameReference(reply, target);
-    }
-  }
-
-  private void rename(Throw _throw, Named target) throws IOException {
-    if (target instanceof Fault) {
-      renameFaultNameReference(_throw, target);
-    }
-  }
-
-  private void renameFaultNameReference(FaultNameReference reference, Named target) throws IOException {
-    try {
-      reference.setFaultName(getQName(reference.getFaultName(), target));
-    }
-    catch (VetoException e) {
-      throw new IOException(e.getMessage());
-    }
-  }
-
-  private QName getQName(QName qName, Named target) {
-    if (qName == null) {
-      return null;
-    }
-    return new QName(qName.getNamespaceURI(), target.getName(), qName.getPrefix());
-  }
-
-  // --------------------------------------------------------------
-  private static final class StringAttribute implements Attribute {
-    
-    public StringAttribute(String name) {
-      myName = name;
-    }
-    
-    public Class getType() {
-      return String.class;
-    }
-   
-    public String getName() {
-      return myName;
+        if (target instanceof GlobalElement) {
+            variable.setElement(variable.createSchemaReference((GlobalElement) target, GlobalElement.class));
+        } else if (target instanceof GlobalType) {
+            variable.setType(variable.createSchemaReference((GlobalType) target, GlobalType.class));
+        } else if (target instanceof Message) {
+            variable.setMessageType(variable.createWSDLReference((Message) target, Message.class));
+        }
     }
 
-    public Class getMemberType() {
-      return null;
+    private void rename(Catch _catch, Named target) throws IOException {
+        if (target instanceof Fault) {
+            renameFaultNameReference(_catch, target);
+        } else if (target instanceof GlobalElement) {
+            _catch.setFaultElement(_catch.createSchemaReference((GlobalElement) target, GlobalElement.class));
+        } else if (target instanceof Message) {
+            _catch.setFaultMessageType(_catch.createWSDLReference((Message) target, Message.class));
+        }
     }
 
-    private String myName;
-  }
+    private void rename(Reply reply, Named target) throws IOException {
+        if (target instanceof Fault) {
+            renameFaultNameReference(reply, target);
+        }
+    }
 
-  private XPath myXPath;
-  private String myOldName;
-  private RenameRefactoring myRequest;
+    private void rename(Throw _throw, Named target) throws IOException {
+        if (target instanceof Fault) {
+            renameFaultNameReference(_throw, target);
+        }
+    }
+
+    private void renameFaultNameReference(FaultNameReference reference, Named target) throws IOException {
+        try {
+            reference.setFaultName(getQName(reference.getFaultName(), target));
+        } catch (VetoException e) {
+            throw new IOException(e.getMessage());
+        }
+    }
+
+    private QName getQName(QName qName, Named target) {
+        if (qName == null) {
+            return null;
+        }
+        return new QName(qName.getNamespaceURI(), target.getName(), qName.getPrefix());
+    }
+
+    // --------------------------------------------------------------
+    private static final class StringAttribute implements Attribute {
+
+        public StringAttribute(String name) {
+            myName = name;
+        }
+
+        public Class getType() {
+            return String.class;
+        }
+
+        public String getName() {
+            return myName;
+        }
+
+        public Class getMemberType() {
+            return null;
+        }
+        private String myName;
+    }
+
+    private XPath myXPath;
+    private String myOldName;
+    private RenameRefactoring myRequest;
 }

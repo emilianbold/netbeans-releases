@@ -5,11 +5,6 @@
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
       <Color blue="ff" green="ff" id="Control" palette="2" red="ff" type="palette"/>
     </Property>
-    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-        <EmptyBorder bottom="0" left="3" right="3" top="0"/>
-      </Border>
-    </Property>
     <Property name="focusCycleRoot" type="boolean" value="true"/>
   </Properties>
   <AuxValues>
@@ -27,17 +22,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="filterCombo" alignment="0" pref="247" max="32767" attributes="0"/>
+          <Component id="filterCombo" alignment="0" pref="249" max="32767" attributes="0"/>
           <Component id="searchPanel" alignment="0" max="32767" attributes="0"/>
-          <Component id="contactListScrollPane" alignment="0" pref="247" max="32767" attributes="0"/>
+          <Component id="contactListScrollPane" alignment="0" pref="249" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="filterCombo" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="contactListScrollPane" pref="235" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+              <Component id="contactListScrollPane" pref="239" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="searchPanel" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -47,6 +42,11 @@
   <SubComponents>
     <Component class="javax.swing.JComboBox" name="filterCombo">
       <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder/>
+          </Border>
+        </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="contactJList"/>
         </Property>
@@ -65,6 +65,9 @@
       <SubComponents>
         <Component class="javax.swing.JList" name="contactJList">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="ColorManager.getDefault().getDefaultBackground()" type="code"/>
+            </Property>
             <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="searchField"/>
             </Property>

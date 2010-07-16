@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,8 @@ import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**
  * Implementation of the <code>DataCollectorConfiguration</code> interface
@@ -69,6 +74,7 @@ public final class CLIODCConfiguration
     private final List<DataTableMetadata> dataTablesMetadata;
     private boolean indicatorDataProvider;
     private String collectorName;
+    private DataStorageType dataStorageType;
 
 
     static {
@@ -101,6 +107,7 @@ public final class CLIODCConfiguration
         this.parser = parser;
         this.dataTablesMetadata = dataTablesMetadata;
         this.envs = new HashMap<String, String>();
+        this.dataStorageType = SQLDataStorage.getStorageType();
     }
 
     public void setName(String collectorName){
@@ -118,6 +125,10 @@ public final class CLIODCConfiguration
     public void setDLightTargetExecutionEnv(Map<String, String> envs){
         this.envs.clear();
         this.envs.putAll(envs);
+    }
+
+    public void setDataStorageType(DataStorageType dataStorageType) {
+        this.dataStorageType = dataStorageType;
     }
 
     /**
@@ -154,6 +165,10 @@ public final class CLIODCConfiguration
 
     private CLIOParser getParser() {
         return parser;
+    }
+
+    private DataStorageType getDataStorageType() {
+        return dataStorageType;
     }
 
     private static final class CLIODCConfigurationAccessorImpl
@@ -199,6 +214,11 @@ public final class CLIODCConfiguration
         @Override
         public String getName(CLIODCConfiguration configuration) {
             return configuration.collectorName;
+        }
+
+        @Override
+        public DataStorageType getDataStorageType(CLIODCConfiguration configuration) {
+            return configuration.getDataStorageType();
         }
     }
 }

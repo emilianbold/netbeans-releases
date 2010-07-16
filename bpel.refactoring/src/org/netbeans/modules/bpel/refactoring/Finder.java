@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,51 +61,48 @@ import org.netbeans.modules.xml.xam.Referenceable;
  * @version 2007.03.16
  */
 final class Finder extends Plugin {
-    
-  Finder(WhereUsedQuery query) {
-    myQuery = query;
-  }
 
-  public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference = myQuery.getRefactoringSource().lookup(Referenceable.class);
-
-    if (reference == null) {
-      return null;
+    Finder(WhereUsedQuery query) {
+        myQuery = query;
     }
-    Component component = myQuery.getContext().lookup(Component.class);
-    Set<Component> roots = new HashSet<Component>();
 
-    if (component == null) {
-      roots = getRoots(reference);
-    }
-    else {
-      roots.add(component);
-    }
-    List<Element> elements = null;
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        Referenceable reference = myQuery.getRefactoringSource().lookup(Referenceable.class);
 
-    for (Component root : roots) {
-      elements = find(reference, root);
-  
-      if (elements != null) {
-        for (Element element : elements) {
-          refactoringElements.add(myQuery, element);
+        if (reference == null) {
+            return null;
         }
-      }
+        Component component = myQuery.getContext().lookup(Component.class);
+        Set<Component> roots = new HashSet<Component>();
+
+        if (component == null) {
+            roots = getRoots(reference);
+        } else {
+            roots.add(component);
+        }
+        List<Element> elements = null;
+
+        for (Component root : roots) {
+            elements = find(reference, root);
+
+            if (elements != null) {
+                for (Element element : elements) {
+                    refactoringElements.add(myQuery, element);
+                }
+            }
+        }
+        return null;
     }
-    return null;
-  }
 
-  public Problem fastCheckParameters() {
-    return null;
-  }
+    public Problem fastCheckParameters() {
+        return null;
+    }
 
-  public Problem checkParameters() {
-    return null;
-  }
+    public Problem checkParameters() {
+        return null;
+    }
 
-  public void doRefactoring(List<RefactoringElementImplementation> elements)
-    throws IOException
-  {}
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {}
 
-  private WhereUsedQuery myQuery;
+    private WhereUsedQuery myQuery;
 }

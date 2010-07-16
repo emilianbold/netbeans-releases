@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,34 +64,33 @@ public class MeasureJ2SEActionsTest {
         System.setProperty("suitename", MeasureJ2SEActionsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2SE Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
-        .addTest(SearchTest.class)
-//  needs to be fixed      .addTest(CloseAllEditorsTest.class)
-//  needs to be fixed      .addTest(CloseEditorTest.class)
-//  needs to be fixed      .addTest(CloseEditorModifiedTest.class)
-//  needs to be fixed      .addTest(CloseEditorTabTest.class)
-        .addTest(CommentingCodeInEditorTest.class)
-// commented until IZ 159587 is fixed        .addTest(CreateNBProjectTest.class)
-        .addTest(CreateProjectTest.class)
-        // needs to be fixed .addTest(DeleteFolderTest.class)
-        .addTest(ExpandNodesInComponentInspectorTest.class)
-        .addTest(ExpandNodesProjectsViewTest.class)
-        .addTest(JavaCompletionInEditorTest.class)
-        .addTest(OpenFilesTest.class)
-        .addTest(OpenFilesNoCloneableEditorTest.class)
-        .addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class)
-        .addTest(OpenFilesWithOpenedEditorTest.class)
-        .addTest(PageUpPageDownInEditorTest.class)
-        .addTest(PasteInEditorTest.class)
-        .addTest(SaveModifiedFileTest.class)
-        .addTest(SelectCategoriesInNewFileTest.class)
-        .addTest(ShiftCodeInEditorTest.class)
-        // needs to be fixed .addTest(SwitchToFileTest.class)
-//  needs to be fixed      .addTest(SwitchViewTest.class)
-        .addTest(TypingInEditorTest.class)
-        .addTest(ShowClassMembersInNavigatorTest.class)
-        // needs tb moved to scenarios .addTest(RefactorFindUsagesTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|apisupport[0-9]|profiler[0-9]").reuseUserDir(true)));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesInComponentInspectorTest.class)
+// TODO move to scenarios        .addTest(SearchTest.class)
+                .addTest(TypingInEditorTest.class)
+                .addTest(CloseAllEditorsTest.class)
+                .addTest(CloseEditorTest.class)
+                .addTest(CloseEditorModifiedTest.class)
+                .addTest(CloseEditorTabTest.class)
+                .addTest(CommentingCodeInEditorTest.class)
+                .addTest(CreateNBProjectTest.class)
+                .addTest(CreateProjectTest.class)
+                .addTest(AddToFavoritesTest.class)
+                .addTest(ExpandNodesProjectsViewTest.class)
+                .addTest(JavaCompletionInEditorTest.class)
+                .addTest(OpenFilesTest.class)
+                .addTest(OpenFilesNoCloneableEditorTest.class)
+                .addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class)
+                .addTest(OpenFilesWithOpenedEditorTest.class)
+                .addTest(PageUpPageDownInEditorTest.class)
+// to fix        .addTest(PasteInEditorTest.class)
+                .addTest(SaveModifiedFileTest.class)
+                .addTest(SelectCategoriesInNewFileTest.class)
+// to fix        .addTest(ShiftCodeInEditorTest.class)
+// to fix                .addTest(SwitchToFileTest.class)
+// to fix                .addTest(SwitchViewTest.class)
+                .addTest(ShowClassMembersInNavigatorTest.class)
+// TODO move to scenarios              .addTest(RefactorFindUsagesTest.class)*/
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
  
         return suite;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,10 +71,12 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         this.wizardDescriptor = wizardDescriptor;
     }
     
+    @Override
     public boolean isFinishPanel() {
         return false;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PersistenceClientEntitySelectionVisual(panelName, wizardDescriptor);
@@ -80,10 +85,12 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return helpCtx;
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
@@ -91,9 +98,11 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -101,6 +110,7 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         changeSupport.fireChange();
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -113,13 +123,15 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         }
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
-        d.putProperty(WizardProperties.PERSISTENCE_UNIT, component.getPersistenceUnit());
+        d.putProperty(WizardProperties.CREATE_PERSISTENCE_UNIT, component.getCreatePersistenceUnit());
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent(e);
     }

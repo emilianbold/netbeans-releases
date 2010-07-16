@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,6 @@ package org.netbeans.modules.cnd.settings;
 import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.builds.ErrorExpression;
-import org.netbeans.modules.cnd.builds.ErrorExpressionEditor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -62,25 +63,11 @@ public class MakeSettings extends SharedClassObject {
     /** serial uid */
     static final long serialVersionUID = 1276277545941336641L;
     public static final String PROP_DEFAULT_BUILD_DIR = "defaultBuildDirectory"; //NOI18N
-    public static final String PROP_DEFAULT_MAKE_COMMAND = "defaultMakeCommand"; //NOI18N
-    public static final String PROP_ERROR_EXPRESSION = "errorExpression"; //NOI18N
     public static final String PROP_EXECUTOR = "executor";	//NOI18N
     public static final String PROP_REUSE_OUTPUT = "reuseOutput";	//NOI18N
     public static final String PROP_SAVE_ALL = "saveAll";	//NOI18N
-    public static final ErrorExpression SUN_COMPILERS;
-    public static final ErrorExpression GNU_COMPILERS;
     /** The resource bundle for the form editor */
     private static ResourceBundle bundle;
-
-
-    static {
-        SUN_COMPILERS = new ErrorExpression(
-                getString("LBL_SunErrorName"), //NOI18N
-                getString("CTL_SunErrorRE"), 1, 2, -1, 3); //NOI18N
-        GNU_COMPILERS = new ErrorExpression(
-                getString("LBL_GnuErrorName"), //NOI18N
-                getString("CTL_GnuErrorRE"), 1, 2, -1, 3); //NOI18N
-    }
 
     /**
      *  Initialize each property.
@@ -91,16 +78,8 @@ public class MakeSettings extends SharedClassObject {
         super.initialize();
         registerPropertyEditors();
 
-        setDefaultMakeCommand(getString("DEFAULT_MAKE_COMMAND_VALUE")); // NOI18N
         setReuseOutput(false);
         setSaveAll(true);
-
-        // Define and set the initial ErrorExpressions
-        if (System.getProperty("os.name", "").toLowerCase().indexOf("sunos") >= 0) {
-            setErrorExpression(SUN_COMPILERS);
-        } else {
-            setErrorExpression(GNU_COMPILERS);
-        }
     }
 
     /** 
@@ -130,15 +109,10 @@ public class MakeSettings extends SharedClassObject {
     private void registerPropertyEditors() {
         String[] searchPath = PropertyEditorManager.getEditorSearchPath();
         String[] newSP = new String[searchPath.length + 1];
-
-        for (int i = 0; i < searchPath.length; i++) {
-            newSP[i] = searchPath[i];
-        }
+        System.arraycopy(searchPath, 0, newSP, 0, searchPath.length);
 
         newSP[searchPath.length] = "org.netbeans.modules.cnd.builds"; // NOI18N
         PropertyEditorManager.setEditorSearchPath(newSP);
-        PropertyEditorManager.registerEditor(
-                ErrorExpression.class, ErrorExpressionEditor.class);
     }
 
     /**
@@ -180,27 +154,7 @@ public class MakeSettings extends SharedClassObject {
      *  @return the default name
      */
     public String getDefaultMakeCommand() {
-        return (String) getProperty(PROP_DEFAULT_MAKE_COMMAND);
-    }
-
-    /**
-     *  Set the default make command. This can be either a simple name or
-     *  a path name to a specific make program.
-     *
-     *  @param make name or path of the desired make program 
-     */
-    public void setDefaultMakeCommand(String make) {
-        putProperty(PROP_DEFAULT_MAKE_COMMAND, make);
-    }
-
-    /** @return Error Expression */
-    public ErrorExpression getErrorExpression() {
-        return (ErrorExpression) getProperty(PROP_ERROR_EXPRESSION);
-    }
-
-    /** Setter for PROP_ERROR_EXPRESSION */
-    public void setErrorExpression(ErrorExpression err) {
-        putProperty(PROP_ERROR_EXPRESSION, err);
+        return "make"; // NOI18N
     }
 
     /** If true, Ant Execution uses always the same Output tab. */

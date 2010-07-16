@@ -25,4 +25,10 @@ public class HgException extends Exception {
             super(message);
         }
     }
+
+    public static class HgCommandCanceledException extends HgException {
+        public HgCommandCanceledException (String message) {
+            super(message);
+        }
+    }
 }

@@ -30,12 +30,14 @@
 	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
                xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
                templates.xsd" prefix="file">
-    <template name="FileTransport">
+    <template name="defaultSkeleton" skeleton="true">
         <wsdlElement name="Binding">
             <extensionElement name="binding"/>
         </wsdlElement>
         <wsdlElement name="BindingOperation">
-            <extensionElement name="operation"/>
+            <extensionElement name="operation">
+                <extensionAttr name="verb" defaultValue="poll"/>
+            </extensionElement>
         </wsdlElement>
         <wsdlElement name="BindingOperationInput">
             <extensionElement name="message">
@@ -52,11 +54,84 @@
         </wsdlElement>
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
-                <extensionAttr name="fileDirectory"  defaultValue="C:\Temp"/>
+                <extensionAttr name="fileDirectory"  defaultValue="Default System Temp Dir"/>
                 <extensionAttr name="lockName"  defaultValue="filebc.lck"/>
-                <extensionAttr name="workArea"  defaultValue="filebc_tmp"/>
+                <extensionAttr name="workArea"  defaultValue="filebc-in-processing"/>
                 <extensionAttr name="seqName"  defaultValue="filebc.seq"/>
             </extensionElement>
         </wsdlElement>
     </template>
+    <template name="InboundOneWay" default="true" mode="inbound">
+        <wsdlTemplate file="wsdltemplates/InboundOneWay.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="InboundRequestResponse" mode="inbound">
+        <wsdlTemplate file="wsdltemplates/InboundRequestResponse.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundOneWay" mode="outbound">
+        <wsdlTemplate file="wsdltemplates/OutboundOneWay.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="SyncRead" mode="outbound">
+        <wsdlTemplate file="wsdltemplates/SyncRead.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+
 </templateGroup>

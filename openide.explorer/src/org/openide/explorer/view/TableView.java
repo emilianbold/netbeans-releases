@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -51,18 +55,23 @@ import java.beans.VetoableChangeListener;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Properties;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.TableColumnSelector;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -293,11 +302,11 @@ public class TableView extends JScrollPane {
         }
         if (firstSelection >= 0) {
             Rectangle rect = table.getCellRect(firstSelection, 0, true);
-            java.awt.Insets ins = getInsets();
-            rect.height = getHeight() - 30;
-            table.scrollRectToVisible(rect);
+            if (!getViewport().getViewRect().contains(rect.getLocation())) {
+                rect.height = Math.max(rect.height, getHeight() - 30);
+                table.scrollRectToVisible(rect);
+            }
         }
-
     }
     
     /**
@@ -615,6 +624,16 @@ public class TableView extends JScrollPane {
 
         @Override
         public Object transformValue(Object value) {
+            if (value instanceof ETableColumn) {
+                ETableColumn c = (ETableColumn) value;
+                return c.getHeaderValue ().toString ();
+            } else if (value instanceof AbstractButton) {
+                AbstractButton b = (AbstractButton) value;
+                Mnemonics.setLocalizedText (b, b.getText ());
+                return b;
+            } else if (value instanceof VisualizerNode) {
+                return Visualizer.findNode (value);
+            }
             return PropertiesRowModel.getValueFromProperty(value);
         }
         
@@ -625,6 +644,9 @@ public class TableView extends JScrollPane {
             if (o instanceof Node.Property) { // && (e == null || e instanceof KeyEvent)) {
                 //Toggle booleans without instantiating an editor
                 Node.Property p = (Node.Property)o;
+                if (!p.canWrite()) {
+                    return false;
+                }
                 if (p.getValueType() == Boolean.class || p.getValueType() == Boolean.TYPE) {
                     PropertiesRowModel.toggleBooleanProperty(p);
                     Rectangle r = getCellRect(row, column, true);
@@ -638,6 +660,7 @@ public class TableView extends JScrollPane {
         /**
          */
         private class TableViewETableColumn extends ETableColumn {
+            private String tooltip;
             public TableViewETableColumn(int index) {
                 super(index, TableViewETable.this);
             }
@@ -649,6 +672,51 @@ public class TableView extends JScrollPane {
                     return ntm.isComparableColumn(getModelIndex());
                 }
                 return true;
+            }
+
+            final String getShortDescription (String defaultValue) {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (0 == getModelIndex()) {
+                    // 1st column
+                    return defaultValue;
+                }
+
+                if (model instanceof NodeTableModel) {
+                    NodeTableModel ntm = (NodeTableModel)model;
+                    Node.Property propertyForColumn = ntm.propertyForColumn(getModelIndex());
+                    return propertyForColumn.getShortDescription();
+                }
+                return defaultValue;
+            }
+
+            @Override
+            protected TableCellRenderer createDefaultHeaderRenderer() {
+                TableCellRenderer orig = super.createDefaultHeaderRenderer();
+                TableViewHeaderRenderer ovohr = new TableViewHeaderRenderer(orig);
+                return ovohr;
+            }
+
+            /** This is here to compute and set the header tooltip. */
+            class TableViewHeaderRenderer implements TableCellRenderer {
+                private TableCellRenderer orig;
+                public TableViewHeaderRenderer(TableCellRenderer delegate) {
+                    orig = delegate;
+                }
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    if (tooltip == null) {
+                        tooltip = getShortDescription(value.toString());
+                    }
+                    if ((tooltip != null) && (oc instanceof JComponent)) {
+                        JComponent jc = (JComponent)oc;
+                        jc.setToolTipText(tooltip);
+                    }
+                    return oc;
+                }
             }
         }
     }

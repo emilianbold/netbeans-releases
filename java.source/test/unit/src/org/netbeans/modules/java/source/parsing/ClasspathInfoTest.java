@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -127,7 +130,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-	JavacElements elements = (JavacElements) JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null).getElements();
+	JavacElements elements = (JavacElements) JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null).getElements();
 	
         List<String> notFound = new LinkedList<String>();
         JarFile jf = new JarFile( rtJar );       
@@ -163,7 +166,7 @@ public class ClasspathInfoTest extends NbTestCase {
                     // empty package
                     continue;
                 }
-                PackageElement pd = JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null).getElements().getPackageElement( packageName );
+                PackageElement pd = JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null).getElements().getPackageElement( packageName );
                 assertNotNull( "Declaration for " + packageName + " should not be null.", pd );
             }
         }
@@ -207,7 +210,7 @@ public class ClasspathInfoTest extends NbTestCase {
     public void testMemoryFileManager () throws Exception {
         final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
         createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
-        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true,  true);
+        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals (new String[] {"org.me.Lib"}, jfos, fm);

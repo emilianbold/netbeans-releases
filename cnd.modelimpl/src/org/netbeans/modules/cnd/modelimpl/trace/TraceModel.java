@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.text.NumberFormat;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
@@ -78,13 +80,11 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.openide.util.Lookup;
+import org.openide.util.CharSequences;
 
 /**
  * Tracer for model
@@ -92,7 +92,7 @@ import org.openide.util.Lookup;
  */
 public class TraceModel extends TraceModelBase {
 
-    private static class TestResult {
+    private static final class TestResult {
 
         private long time;
         private long lineCount;
@@ -214,12 +214,13 @@ public class TraceModel extends TraceModelBase {
     private boolean quiet = false;
     private boolean memBySize = false;
     private boolean doCleanRepository = Boolean.getBoolean("cnd.clean.repository");
-    private boolean testFolding = false;
+//    private boolean testFolding = false;
     private Map<String, Long> cacheTimes = new HashMap<String, Long>();
     private int lap = 0;
     private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<CsmFile, APTPreprocHandler>();
     FileImpl.Hook hook = new FileImpl.Hook() {
 
+        @Override
         public void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
             states.put(file, preprocHandler);
         }
@@ -411,8 +412,8 @@ public class TraceModel extends TraceModelBase {
             memBySize = true;
         } else if ("cleanrepository".equals(flag)) { // NOI18N
             doCleanRepository = true;
-        } else if ("folding".equals(flag)) { // NOI18N
-            testFolding = true;
+//        } else if ("folding".equals(flag)) { // NOI18N
+//            testFolding = true;
         } else if ("clean4dump".equals(flag)) { // NOI18N
             dumpModelAfterCleaningCache = true;
         } else if ("tparm".equals(flag)) { // NOI18N
@@ -589,7 +590,7 @@ public class TraceModel extends TraceModelBase {
                     CsmFile file = (CsmFile) it.next();
                     l.add(file.getAbsolutePath());
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
@@ -602,7 +603,7 @@ public class TraceModel extends TraceModelBase {
                         l.add(file.getAbsolutePath());
                     }
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
@@ -736,12 +737,8 @@ public class TraceModel extends TraceModelBase {
         //for (int i = 0; i < fileList.size(); i++) {
         for (NativeFileItem item : getFileItems()) {
             try {
-                if (!testFolding) {
-                    TestResult res = test(item);
-                    total.accumulate(res);
-                } else {
-                    testFolding(item.getFile());
-                }
+                TestResult res = test(item);
+                total.accumulate(res);
             } catch (Exception e) {
                 DiagnosticExceptoins.register(e);
             }
@@ -803,7 +800,7 @@ public class TraceModel extends TraceModelBase {
         }
         StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes);
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
 
     private APTMacroMap getMacroMap(File file) {
@@ -850,7 +847,7 @@ public class TraceModel extends TraceModelBase {
         try {
             stream = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
             reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
-            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, getFileLanguage(file));
             for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
                 if (printTokens) {
                     print("" + t);
@@ -913,7 +910,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPT(buffer);
+            apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
         }
         APTMacroMap macroMap = getMacroMap(file);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
@@ -1100,7 +1097,7 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.getInstance().findAPT(buffer);
+        APTFile apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {
@@ -1134,6 +1131,7 @@ public class TraceModel extends TraceModelBase {
         return apt;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DM_GC")
     private long usedMemory() {
         System.gc();
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -1236,9 +1234,9 @@ public class TraceModel extends TraceModelBase {
             CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
-            sleep(100);
+            waitProjectParsed(getProject(), false);
             RepositoryAccessor.getRepository().debugClear();
-            fileImpl = (FileImpl) prj.findFile(absPath);
+            fileImpl = (FileImpl) prj.findFile(absPath, false);
         }
 
         if (dumpModel) {
@@ -1312,6 +1310,7 @@ public class TraceModel extends TraceModelBase {
     public static void dumpAst(AST ast) {
         ASTVisitor visitor = new ASTVisitor() {
 
+            @Override
             public void visit(AST node) {
                 for (AST node2 = node; node2 != null; node2 = node2.getNextSibling()) {
                     String ofStr = (node2 instanceof CsmAST) ? (" offset=" + ((CsmAST) node2).getOffset() + " file = " + ((CsmAST) node2).getFilename()) : ""; // NOI18N
@@ -1395,53 +1394,53 @@ public class TraceModel extends TraceModelBase {
         }
     }
 
-    private void testFolding(File file) {
-        InputStream is;
-        try {
-            is = new FileInputStream(file);
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            return;
-        }
-        if (is == null) {
-            return;
-        }
-        Reader reader = new InputStreamReader(is);
-        reader = new BufferedReader(reader);
-        FoldingParser p = Lookup.getDefault().lookup(FoldingParser.class);
-        if (p != null) {
-            List<CppFoldRecord> folds = p.parse(file.getAbsolutePath(), reader);
-            try {
-                reader.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            printFolds(file.getAbsolutePath(), folds);
-        } else {
-            System.out.println("No Folding Provider"); // NOI18N
-        }
-    }
-
-    private void printFolds(String file, List<CppFoldRecord> folds) {
-        Collections.sort(folds, FOLD_COMPARATOR);
-        System.out.println("Foldings of the file " + file); // NOI18N
-        for (Iterator it = folds.iterator(); it.hasNext();) {
-            CppFoldRecord fold = (CppFoldRecord) it.next();
-            System.out.println(fold);
-        }
-    }
-    private static Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
-
-        public int compare(CppFoldRecord o1, CppFoldRecord o2) {
-            int start1 = o1.getStartLine();
-            int start2 = o2.getStartLine();
-            if (start1 == start2) {
-                return o1.getStartOffset() - o2.getStartOffset();
-            } else {
-                return start1 - start2;
-            }
-        }
-    };
+//    private void testFolding(File file) {
+//        InputStream is;
+//        try {
+//            is = new FileInputStream(file);
+//        } catch (FileNotFoundException ex) {
+//            ex.printStackTrace();
+//            return;
+//        }
+//        if (is == null) {
+//            return;
+//        }
+//        Reader reader = new InputStreamReader(is);
+//        reader = new BufferedReader(reader);
+//        FoldingParser p = Lookup.getDefault().lookup(FoldingParser.class);
+//        if (p != null) {
+//            List<CppFoldRecord> folds = p.parse(file.getAbsolutePath(), reader);
+//            try {
+//                reader.close();
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//            }
+//            printFolds(file.getAbsolutePath(), folds);
+//        } else {
+//            System.out.println("No Folding Provider"); // NOI18N
+//        }
+//    }
+//
+//    private void printFolds(String file, List<CppFoldRecord> folds) {
+//        Collections.sort(folds, FOLD_COMPARATOR);
+//        System.out.println("Foldings of the file " + file); // NOI18N
+//        for (Iterator it = folds.iterator(); it.hasNext();) {
+//            CppFoldRecord fold = (CppFoldRecord) it.next();
+//            System.out.println(fold);
+//        }
+//    }
+//    private static Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
+//
+//        public int compare(CppFoldRecord o1, CppFoldRecord o2) {
+//            int start1 = o1.getStartLine();
+//            int start2 = o2.getStartLine();
+//            if (start1 == start2) {
+//                return o1.getStartOffset() - o2.getStartOffset();
+//            } else {
+//                return start1 - start2;
+//            }
+//        }
+//    };
 
     boolean isShowTime() {
         return showTime;
@@ -1472,6 +1471,18 @@ public class TraceModel extends TraceModelBase {
             }
         }
         return result;
+    }
+
+    private static String getFileLanguage(File file) {
+        String lang = APTLanguageSupport.GNU_CPP;
+        final String fileName = file.getName();
+        if (file.getName().length() > 2 && fileName.endsWith(".c")) { // NOI18N
+            lang = APTLanguageSupport.GNU_C;
+        }
+        if (file.getName().length() > 2 && fileName.endsWith(".f")) { // NOI18N
+            lang = APTLanguageSupport.FORTRAN;
+        }
+        return lang;
     }
 }
 

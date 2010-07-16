@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-22010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,28 +43,46 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.HashSet;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -71,28 +92,31 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
+import static com.sun.source.tree.Tree.Kind.*;
+
 /**
  *
  * @author Jan Lahoda
  */
 public class Utilities {
+    public  static final String JAVA_MIME_TYPE = "text/x-java";
     private static final String DEFAULT_NAME = "name";
 
     public Utilities() {
@@ -214,7 +238,7 @@ public class Utilities {
         if (tm.getKind().isPrimitive()) {
             return "" + Character.toLowerCase(tm.getKind().name().charAt(0));
         }
-        
+
         switch (tm.getKind()) {
             case DECLARED:
                 DeclaredType dt = (DeclaredType) tm;
@@ -471,4 +495,335 @@ public class Utilities {
         }
         return tm;
     }
+
+    public static List<List<TreePath>> splitStringConcatenationToElements(CompilationInfo info, TreePath tree) {
+        return sortOut(info, linearize(tree));
+    }
+
+    //where:
+    private static List<TreePath> linearize(TreePath tree) {
+        List<TreePath> todo = new LinkedList<TreePath>();
+        List<TreePath> result = new LinkedList<TreePath>();
+
+        todo.add(tree);
+
+        while (!todo.isEmpty()) {
+            TreePath tp = todo.remove(0);
+
+            if (tp.getLeaf().getKind() != Kind.PLUS) {
+                result.add(tp);
+                continue;
+            }
+
+            BinaryTree bt = (BinaryTree) tp.getLeaf();
+
+            todo.add(0, new TreePath(tp, bt.getRightOperand()));
+            todo.add(0, new TreePath(tp, bt.getLeftOperand()));
+        }
+
+        return result;
+    }
+
+    private static List<List<TreePath>> sortOut(CompilationInfo info, List<TreePath> trees) {
+        List<List<TreePath>> result = new LinkedList<List<TreePath>>();
+        List<TreePath> currentCluster = new LinkedList<TreePath>();
+
+        for (TreePath t : trees) {
+            if (isConstantString(info, t)) {
+                currentCluster.add(t);
+            } else {
+                if (!currentCluster.isEmpty()) {
+                    result.add(currentCluster);
+                    currentCluster = new LinkedList<TreePath>();
+                }
+                result.add(new LinkedList<TreePath>(Collections.singletonList(t)));
+            }
+        }
+
+        if (!currentCluster.isEmpty()) {
+            result.add(currentCluster);
+        }
+
+        return result;
+    }
+
+    public static boolean isConstantString(CompilationInfo info, TreePath tp) {
+        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
+
+        Element el = info.getTrees().getElement(tp);
+
+        if (el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String) {
+            return true;
+        }
+
+        if (tp.getLeaf().getKind() != Kind.PLUS) {
+            return false;
+        }
+
+        List<List<TreePath>> sorted = splitStringConcatenationToElements(info, tp);
+
+        if (sorted.size() != 1) {
+            return false;
+        }
+
+        List<TreePath> part = sorted.get(0);
+
+        if (!part.isEmpty() && isConstantString(info, part.get(0))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static @NonNull Collection<? extends TreePath> resolveFieldGroup(@NonNull CompilationInfo info, @NonNull TreePath variable) {
+        Tree leaf = variable.getLeaf();
+
+        if (leaf.getKind() != Kind.VARIABLE) {
+            return Collections.singleton(variable);
+        }
+
+        TreePath parentPath = variable.getParentPath();
+        Iterable<? extends Tree> children;
+
+        switch (parentPath.getLeaf().getKind()) {
+            case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
+            case CLASS: children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
+            default:    children = Collections.singleton(leaf); break;
+        }
+
+        List<TreePath> result = new LinkedList<TreePath>();
+        ModifiersTree currentModifiers = ((VariableTree) leaf).getModifiers();
+
+        for (Tree c : children) {
+            if (c.getKind() != Kind.VARIABLE) continue;
+
+            if (((VariableTree) c).getModifiers() == currentModifiers) {
+                result.add(new TreePath(parentPath, c));
+            }
+        }
+        
+        return result;
+    }
+
+    public static String shortDisplayName(CompilationInfo info, ExpressionTree expression) {
+        return new HintDisplayNameVisitor(info).scan(expression, null);
+    }
+    
+    private static final Map<Kind, String> operator2DN;
+
+    static {
+        operator2DN = new HashMap<Kind, String>();
+
+        operator2DN.put(AND, "&");
+        operator2DN.put(XOR, "^");
+        operator2DN.put(OR, "|");
+        operator2DN.put(CONDITIONAL_AND, "&&");
+        operator2DN.put(CONDITIONAL_OR, "||");
+        operator2DN.put(MULTIPLY_ASSIGNMENT, "*=");
+        operator2DN.put(DIVIDE_ASSIGNMENT, "/=");
+        operator2DN.put(REMAINDER_ASSIGNMENT, "%=");
+        operator2DN.put(PLUS_ASSIGNMENT, "+=");
+        operator2DN.put(MINUS_ASSIGNMENT, "-=");
+        operator2DN.put(LEFT_SHIFT_ASSIGNMENT, "<<=");
+        operator2DN.put(RIGHT_SHIFT_ASSIGNMENT, ">>=");
+        operator2DN.put(UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, ">>>=");
+        operator2DN.put(AND_ASSIGNMENT, "&=");
+        operator2DN.put(XOR_ASSIGNMENT, "^=");
+        operator2DN.put(OR_ASSIGNMENT, "|=");
+        operator2DN.put(BITWISE_COMPLEMENT, "~");
+        operator2DN.put(LOGICAL_COMPLEMENT, "!");
+        operator2DN.put(MULTIPLY, "*");
+        operator2DN.put(DIVIDE, "/");
+        operator2DN.put(REMAINDER, "%");
+        operator2DN.put(PLUS, "+");
+        operator2DN.put(MINUS, "-");
+        operator2DN.put(LEFT_SHIFT, "<<");
+        operator2DN.put(RIGHT_SHIFT, ">>");
+        operator2DN.put(UNSIGNED_RIGHT_SHIFT, ">>>");
+        operator2DN.put(LESS_THAN, "<");
+        operator2DN.put(GREATER_THAN, ">");
+        operator2DN.put(LESS_THAN_EQUAL, "<=");
+        operator2DN.put(GREATER_THAN_EQUAL, ">=");
+        operator2DN.put(EQUAL_TO, "==");
+        operator2DN.put(NOT_EQUAL_TO, "!=");
+    }
+
+    private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
+
+        private CompilationInfo info;
+
+        public HintDisplayNameVisitor(CompilationInfo info) {
+            this.info = info;
+        }
+
+        public @Override String visitIdentifier(IdentifierTree tree, Void v) {
+            return "..." + tree.getName().toString();
+        }
+
+        public @Override String visitMethodInvocation(MethodInvocationTree tree, Void v) {
+            ExpressionTree methodSelect = tree.getMethodSelect();
+
+            return "..." + simpleName(methodSelect) + "(...)"; // NOI18N
+        }
+
+        public @Override String visitArrayAccess(ArrayAccessTree node, Void p) {
+            return "..." + simpleName(node.getExpression()) + "[]"; // NOI18N
+        }
+
+        public @Override String visitNewClass(NewClassTree nct, Void p) {
+            return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
+        }
+
+        @Override
+        public String visitBinary(BinaryTree node, Void p) {
+            String dn = operator2DN.get(node.getKind());
+
+            return scan(node.getLeftOperand(), p) + dn + scan(node.getRightOperand(), p);
+        }
+
+        @Override
+        public String visitLiteral(LiteralTree node, Void p) {
+            if (node.getValue() instanceof String)
+                return "...";
+
+            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), node);
+            int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), node);
+
+            return info.getText().substring(start, end);
+        }
+
+        private String simpleName(Tree t) {
+            if (t.getKind() == Kind.IDENTIFIER) {
+                return ((IdentifierTree) t).getName().toString();
+            }
+
+            if (t.getKind() == Kind.MEMBER_SELECT) {
+                return ((MemberSelectTree) t).getIdentifier().toString();
+            }
+
+            if (t.getKind() == Kind.METHOD_INVOCATION) {
+                return scan(t, null);
+            }
+
+            if (t.getKind() == Kind.PARAMETERIZED_TYPE) {
+                return simpleName(((ParameterizedTypeTree) t).getType()) + "<...>"; // NOI18N
+            }
+
+            if (t.getKind() == Kind.ARRAY_ACCESS) {
+                return simpleName(((ArrayAccessTree) t).getExpression()) + "[]"; //NOI18N
+            }
+
+            if (t.getKind() == Kind.PARENTHESIZED) {
+                return "(" + simpleName(((ParenthesizedTree)t).getExpression()) + ")"; //NOI18N
+            }
+
+            if (t.getKind() == Kind.TYPE_CAST) {
+                return simpleName(((TypeCastTree)t).getType());
+            }
+
+            if (t.getKind() == Kind.ARRAY_TYPE) {
+                return simpleName(((ArrayTypeTree)t).getType());
+            }
+
+            throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
+        }
+    }
+
+    public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+            from = from.getParentPath();
+        }
+
+        if (from != null && from.getLeaf().getKind() == Kind.METHOD) {
+            return from;
+        }
+
+        return null;
+    }
+
+    public static boolean isInConstructor(HintContext ctx) {
+        TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());
+        if (method == null) return false;
+        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
+        return (enclosingMethodElement != null &&
+                enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
+    }
+
+    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
+        List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
+        List<String> argumentNames = new LinkedList<String>();
+        Set<String>      usedArgumentNames = new HashSet<String>();
+
+        for (ExpressionTree arg : realArguments) {
+            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
+
+            //anonymous class?
+            tm = Utilities.convertIfAnonymous(tm);
+
+            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+                return null;
+            }
+
+            if (tm.getKind() == TypeKind.NULL) {
+                tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+
+            argumentTypes.add(tm);
+
+            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+
+            if (proposedName == null) {
+                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);
+            }
+
+            if (proposedName == null) {
+                proposedName = "arg"; // NOI18N
+            }
+
+            if (usedArgumentNames.contains(proposedName)) {
+                int num = 0;
+
+                while (usedArgumentNames.contains(proposedName + num)) {
+                    num++;
+                }
+
+                proposedName = proposedName + num;
+            }
+
+            usedArgumentNames.add(proposedName);
+
+            argumentNames.add(proposedName);
+        }
+
+        return new Pair<List<? extends TypeMirror>, List<String>>(argumentTypes, argumentNames);
+    }
+
+    //XXX: currently we cannot fix:
+    //xxx = new ArrayList<Unknown>();
+    //=>
+    //ArrayList<Unknown> xxx;
+    //xxx = new ArrayList<Unknown>();
+    public static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
+        switch (tm.getKind()) {
+            case WILDCARD:
+            case TYPEVAR:
+            case ERROR:
+                return true;
+            case DECLARED:
+                DeclaredType type = (DeclaredType) tm;
+
+                for (TypeMirror t : type.getTypeArguments()) {
+                    if (containsErrorsOrTypevarsRecursively(t))
+                        return true;
+                }
+
+                return false;
+            case ARRAY:
+                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
+            default:
+                return false;
+        }
+    }
+
 }

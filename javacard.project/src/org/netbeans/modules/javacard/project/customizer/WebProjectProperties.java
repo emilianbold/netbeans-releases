@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,6 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.filemodels.WebXmlModel;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.propdos.PropertiesAdapter;
-import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
@@ -55,7 +55,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 import javax.swing.JToggleButton.ToggleButtonModel;
@@ -70,12 +69,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.Vector;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.spi.Card;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 
 public class WebProjectProperties extends JCProjectProperties {
 
@@ -111,7 +113,9 @@ public class WebProjectProperties extends JCProjectProperties {
         this.servletMapping = defaultMapping;
         try {
             SERVLET_URL.remove(0, SERVLET_URL.getLength());
-            SERVLET_URL.insertString(0, webContextPath + '/' + servletMapping, null); //NOI18N
+            String servletUrl = assembleUrl(baseUrl(), webContextPath, servletMapping);
+            SERVLET_URL.insertString(0, servletUrl, null); //NOI18N
+            updateFullUrl();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -147,7 +151,7 @@ public class WebProjectProperties extends JCProjectProperties {
                             staticPagesDir.getChildren(true /* recursive */);
                     while (allFiles.hasMoreElements()) {
                         FileObject file = allFiles.nextElement();
-                        if (file.isData() && "html".equals(file.getExt()) || "htm".equals(file.getExt())) {
+                        if (file.isData() && "html".equals(file.getExt()) || "htm".equals(file.getExt())) { //NOI18N
                             pages.add("/" + FileUtil.getRelativePath(
                                     staticPagesDir, file));
                         }
@@ -173,9 +177,7 @@ public class WebProjectProperties extends JCProjectProperties {
                     }
 
                     private void change() {
-                        if (SELECT_URL.isSelected()) {
-                            updateFullUrl();
-                        }
+                        updateFullUrl();
                     }
 
                     @Override
@@ -199,13 +201,47 @@ public class WebProjectProperties extends JCProjectProperties {
                 SELECT_SERVLET.addActionListener(cl);
                 SPECIFIC_URL.addDocumentListener(cl);
                 try {
-                    SERVLET_URL.insertString(0, webContextPath + '/' + servletMapping, null);
+                    String url = assembleUrl(baseUrl(), webContextPath, servletMapping);
+//                    SERVLET_URL.insertString(0, webContextPath + '/' + servletMapping, null);
+                    SERVLET_URL.insertString(0, url, null);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 updateFullUrl();
             }
         });
+    }
+
+    private String baseUrl() {
+        JavacardPlatform platform = JCUtil.findPlatformNamed(platformName);
+        Card card = platform.getCards().find(activeDevice, true);
+        UrlCapability urls = card.getCapability(UrlCapability.class);
+        String result = null;
+        if (urls != null) {
+            result = urls.getURL();
+        }
+        if (result == null) {
+            result = "http://???/"; //NOI18N
+        }
+        return result;
+    }
+    
+    private String trimSlashes (String s) {
+        if (s == null) {
+            return ""; //NOI18N
+        }
+        if (s.startsWith("/") && s.length() > 1) { //NOI18N
+            s = s.substring(1);
+        }
+        if (s.endsWith("/") && s.length() > 1) { //NOI18N
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
+    }
+
+    private String assembleUrl (String base, String webContextPath, String servletMapping) {
+        return trimSlashes(base) + '/' + trimSlashes (webContextPath) + //NOI18N
+                '/' + trimSlashes(servletMapping); //NOI18N
     }
 
     private void updateFullUrl() {
@@ -215,26 +251,16 @@ public class WebProjectProperties extends JCProjectProperties {
             if (SELECT_URL.isSelected()) {
                 fullUrl = SPECIFIC_URL.getText(0, SPECIFIC_URL.getLength());
             } else {
-                DataObject deviceDob = Utils.findDeviceForPlatform(platformName, activeDevice);
-                String baseUrl = "http://???/";
-                if (deviceDob != null) {
-                    PropertiesAdapter adap = deviceDob.getLookup().lookup(PropertiesAdapter.class);
-                    if (adap != null) {
-                        Properties props = adap.asProperties();
-                        baseUrl = props.getProperty(JavacardDeviceKeyNames.DEVICE_SERVERURL);
-                        if (!baseUrl.endsWith("/")) {
-                            baseUrl = baseUrl + "/";
-                        }
-                    }
-                }
+                String baseUrl = baseUrl();
                 if (SELECT_SERVLET.isSelected()) {
-                    fullUrl = baseUrl + webContextPath + servletMapping;
+                    fullUrl = assembleUrl (baseUrl, webContextPath, servletMapping);
                 } else {
                     String page = (String) PAGES.getSelectedItem();
-                    if (page.startsWith("/")) {
+                    if (page.startsWith("/")) { //NOI18N
                         page = page.substring(1);
                     }
-                    fullUrl = baseUrl + PAGES.getSelectedItem();
+                    String sel = PAGES.getSelectedItem() == null ? "" : PAGES.getSelectedItem().toString(); //NOI18N
+                    fullUrl = trimSlashes(baseUrl) + '/' + trimSlashes(sel); //NOI18N
                 }
             }
             COMPLETE_URL.insertString(0, fullUrl, null);

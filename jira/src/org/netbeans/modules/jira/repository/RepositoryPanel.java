@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,6 +76,12 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         // XXX use controler.opened() instead
         controller.populate();
         connectionLabel.setVisible(false);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.cancel();
     }
 
     /** This method is called from within the constructor to
@@ -139,6 +148,13 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         connectionLabel.setForeground(java.awt.Color.green);
         connectionLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.connectionLabel.text")); // NOI18N
 
+        cancelButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -175,7 +191,9 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(validateLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(connectionLabel)))
                 .addContainerGap())
@@ -213,7 +231,8 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                     .add(validateButton)
                     .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(validateLabel)
-                    .add(connectionLabel))
+                    .add(connectionLabel)
+                    .add(cancelButton))
                 .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -233,8 +252,13 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         // TODO add your handling code here:
     }//GEN-LAST:event_httpCheckBoxActionPerformed
 
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton cancelButton = new javax.swing.JButton();
     final javax.swing.JLabel connectionLabel = new javax.swing.JLabel();
     final javax.swing.JCheckBox httpCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPasswordField httpPsswdField = new javax.swing.JPasswordField();

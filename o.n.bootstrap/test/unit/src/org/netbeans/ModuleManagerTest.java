@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,19 +104,13 @@ public class ModuleManagerTest extends SetupHid {
     static {
         // To match org.netbeans.Main.execute (cf. #44828):
         new URLConnection(ModuleManagerTest.class.getResource("ModuleManagerTest.class")) {
-            public void connect() throws IOException {}
+            public @Override void connect() throws IOException {}
         }.setDefaultUseCaches(false);
     }
 
     public ModuleManagerTest(String name) {
         super(name);
     }
-
-    /*
-    public static Test suite() {
-        return new ModuleManagerTest("test...");
-    }
-     */
 
     @Override
     protected Level logLevel() {
@@ -169,7 +166,7 @@ public class ModuleManagerTest extends SetupHid {
                 m2,
                 Arrays.asList(m1, m2)
             ), installer.args);
-            Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
+            Class<?> somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             installer.clear();
@@ -243,7 +240,7 @@ public class ModuleManagerTest extends SetupHid {
                 m2,
                 Arrays.asList(m1, m2)
             ), installer.args);
-            Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
+            Class<?> somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m2 and make sure m1 goes away as well.
@@ -296,7 +293,7 @@ public class ModuleManagerTest extends SetupHid {
                 m2,
                 Arrays.asList(m1, m2)
             ), installer.args);
-            Class somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
+            Class<?> somethingelse = Class.forName("org.bar.SomethingElse", true, m2.getClassLoader());
             Method somemethod = somethingelse.getMethod("message");
             assertEquals("hello", somemethod.invoke(somethingelse.newInstance()));
             // Now try turning off m1 and make sure m2 goes away quietly.
@@ -343,7 +340,7 @@ public class ModuleManagerTest extends SetupHid {
                 m3,
                 Arrays.asList(m1, m2, m3)
             ), installer.args);
-            Class somethingelseagain = Class.forName("org.baz.SomethingElseAgain", true, m3.getClassLoader());
+            Class<?> somethingelseagain = Class.forName("org.baz.SomethingElseAgain", true, m3.getClassLoader());
             Method somemethod = somethingelseagain.getMethod("doit");
             assertEquals("hello", somemethod.invoke(somethingelseagain.newInstance()));
             assertEquals("correct result of simulateDisable", Arrays.asList(m3, m2, m1), mgr.simulateDisable(Collections.singleton(m2)));
@@ -552,14 +549,14 @@ public class ModuleManagerTest extends SetupHid {
         assertTrue(items.size() == 1);
         Lookup.Item<Module> item = items.iterator().next();
         assertEquals(m2, item.getInstance());
-        Util.err.info("Item ID: " + item.getId());
+        Util.err.log(Level.INFO, "Item ID: {0}", item.getId());
         assertTrue("Item class is OK: " + item.getType(), item.getType().isAssignableFrom(Module.class));
         assertEquals("finding by ID works", Collections.singleton(m2),
                 new HashSet<Module>(l.lookup(new Lookup.Template<Module>(null, item.getId(), null)).allInstances()));
         final boolean[] waiter = new boolean[] {false};
         resultAll.addLookupListener(new LookupListener() {
-            public void resultChanged(LookupEvent lev) {
-                Util.err.info("Got event: " + lev);
+            public @Override void resultChanged(LookupEvent lev) {
+                Util.err.log(Level.INFO, "Got event: {0}", lev);
                 synchronized (waiter) {
                     waiter[0] = true;
                     waiter.notify();
@@ -822,8 +819,8 @@ public class ModuleManagerTest extends SetupHid {
         }
         ClassLoader l = new URLClassLoader(new URL[] {
             // Order should be irrelevant:
-            jar.toURL(),
-            ljar.toURL(),
+            jar.toURI().toURL(),
+            ljar.toURI().toURL(),
         });
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
@@ -1591,7 +1588,7 @@ public class ModuleManagerTest extends SetupHid {
         try {
             int i = 0;
             while (i < count) {
-                Util.err.info("testLackOfOrderSensitivity round #" + i);
+                Util.err.log(Level.INFO, "testLackOfOrderSensitivity round #{0}", i);
                 switch (r.nextInt(11)) {
                 case 0:
                 case 1:
@@ -1972,7 +1969,7 @@ public class ModuleManagerTest extends SetupHid {
             File j1 = new File(jars, "simple-module.jar");
             File j2 = new File(jars, "depends-on-simple-module.jar");
             File j3 = new File(jars, "dep-on-two-modules.jar");
-            URLClassLoader l = new URLClassLoader(new URL[] {j1.toURL(), j2.toURL()});
+            URLClassLoader l = new URLClassLoader(new URL[] {j1.toURI().toURL(), j2.toURI().toURL()});
             Manifest mani1, mani2;
             JarFile j = new JarFile(j1);
             try {
@@ -2350,7 +2347,7 @@ public class ModuleManagerTest extends SetupHid {
                 ClassLoader l;
                 IllegalStateException ex;
 
-                public void propertyChange (java.beans.PropertyChangeEvent event) {
+                public @Override void propertyChange(java.beans.PropertyChangeEvent event) {
                     if (Module.PROP_ENABLED.equals (event.getPropertyName ())) {
                         try {
                             l = get();

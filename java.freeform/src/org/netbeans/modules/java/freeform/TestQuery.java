@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -54,6 +56,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -115,14 +118,14 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
     private URL[][] findSourcesAndTests() {
         List<URL> sources = new ArrayList<URL>();
         List<URL> tests = new ArrayList<URL>();
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (data != null) {
-            for (Element cu : Util.findSubElements(data)) {
+            for (Element cu : XMLUtil.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
-                boolean isTests = Util.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_2) != null; // NOI18N
-                for (Element pr : Util.findSubElements(cu)) {
+                boolean isTests = XMLUtil.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_3) != null; // NOI18N
+                for (Element pr : XMLUtil.findSubElements(cu)) {
                     if (pr.getLocalName().equals("package-root")) { // NOI18N
-                        String rawtext = Util.findText(pr);
+                        String rawtext = XMLUtil.findText(pr);
                         assert rawtext != null;
                         String evaltext = eval.evaluate(rawtext);
                         if (evaltext != null) {

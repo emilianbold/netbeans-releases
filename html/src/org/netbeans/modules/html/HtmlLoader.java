@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,12 +64,17 @@ public class HtmlLoader extends UniFileLoader {
         super("org.netbeans.modules.html.HtmlDataObject"); // NOI18N
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType("text/html"); // NOI18N
-        getExtensions().addMimeType("text/xhtml"); // NOI18N
+        getExtensions().addMimeType(getPrimartyMimeType()); // NOI18N
+    }
+
+    protected String getPrimartyMimeType() {
+        return "text/html"; //NOI18N
     }
     
+    @Override
     protected MultiDataObject createMultiObject(final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new HtmlDataObject(primaryFile, this);
@@ -75,12 +83,14 @@ public class HtmlLoader extends UniFileLoader {
     /** Get the default display name of this loader.
      * @return default display name
      */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(HtmlLoader.class, "PROP_HtmlLoader_Name");
     }
     
+    @Override
     protected String actionsContext() {
-        return "Loaders/text/html/Actions/"; // NOI18N
+        return "Loaders/" + getPrimartyMimeType() + "/Actions/"; // NOI18N
     }
     
 }

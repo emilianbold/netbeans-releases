@@ -20,7 +20,7 @@
 package org.netbeans.modules.bpel.mapper.tree.search;
 
 import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
-import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
+import org.netbeans.modules.bpel.mapper.cast.BpelMapperTypeCast;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
@@ -31,9 +31,9 @@ import org.netbeans.modules.bpel.model.api.Variable;
  */
 public class CastedVariableFinder extends SimpleFinder {
 
-    private AbstractTypeCast mTypeCast;
+    private BpelMapperTypeCast mTypeCast;
     
-    public CastedVariableFinder(AbstractTypeCast typeCast) {
+    public CastedVariableFinder(BpelMapperTypeCast typeCast) {
         mTypeCast = typeCast;
     }
     
@@ -52,7 +52,7 @@ public class CastedVariableFinder extends SimpleFinder {
             return false;
         }
         if (treeItem instanceof Variable || 
-                treeItem instanceof AbstractTypeCast ||
+                treeItem instanceof BpelMapperTypeCast ||
                 treeItem instanceof VariableDeclarationWrapper) {
             // Stop searching if the tree item is a variable wrapper.
             return false;

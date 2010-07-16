@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -102,7 +106,7 @@ public class NbModuleProjectGenerator {
     /** Generates standalone NetBeans Module. */
     public static void createStandAloneModule(final File projectDir, final String cnb,
             final String name, final String bundlePath,
-            final String layerPath, final String platformID) throws IOException {
+            final String layerPath, final String platformID, final boolean osgi) throws IOException {
         try {
             logUsage("StandAloneModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -111,9 +115,9 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleProvider.STANDALONE);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.STANDALONE, osgi);
                     createPlatformProperties(dirFO, platformID);
-                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     if (bundlePath != null) {
                         createBundle(dirFO, bundlePath, name);
                     }
@@ -135,7 +139,7 @@ public class NbModuleProjectGenerator {
     /** Generates suite component NetBeans Module. */
     public static void createSuiteComponentModule(final File projectDir, final String cnb,
             final String name, final String bundlePath,
-            final String layerPath, final File suiteDir) throws IOException {
+            final String layerPath, final File suiteDir, final boolean osgi) throws IOException {
         try {
             logUsage("SuiteComponentModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -144,9 +148,9 @@ public class NbModuleProjectGenerator {
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
-                    createProjectXML(dirFO, cnb, NbModuleProvider.SUITE_COMPONENT);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.SUITE_COMPONENT, osgi);
                     createSuiteProperties(dirFO, suiteDir);
-                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     if (bundlePath != null) {
                         createBundle(dirFO, bundlePath, name);
                     }
@@ -212,7 +216,7 @@ public class NbModuleProjectGenerator {
                             createFileObject(dirFO, AntProjectHelper.PROJECT_XML_PATH),
                             cnb, NbModuleProvider.SUITE_COMPONENT, packageList, classPathExtensions);
                     createSuiteProperties(dirFO, suiteDir);
-                    createManifest(dirFO, cnb, bundlePath, null);
+                    createManifest(dirFO, cnb, bundlePath, null, false);
                     createBundle(dirFO, bundlePath, name);
                     
                     // write down the nbproject/properties file
@@ -235,7 +239,7 @@ public class NbModuleProjectGenerator {
      * Generates NetBeans Module within the netbeans.org source tree.
      */
     public static void createNetBeansOrgModule(final File projectDir, final String cnb,
-            final String name, final String bundlePath, final String layerPath) throws IOException {
+            final String name, final String bundlePath, final String layerPath, final boolean osgi) throws IOException {
         try {
             logUsage("NetBeansOrgModule"); // NOI18N
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -250,8 +254,8 @@ public class NbModuleProjectGenerator {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
                     createNetBeansOrgBuildXML(dirFO, cnb, nborg);
-                    createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG);
-                    createManifest(dirFO, cnb, bundlePath, layerPath);
+                    createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG, osgi);
+                    createManifest(dirFO, cnb, bundlePath, layerPath, osgi);
                     createBundle(dirFO, bundlePath, name);
                     if (layerPath != null) {
                         createLayerInSrc(dirFO, layerPath);
@@ -274,10 +278,11 @@ public class NbModuleProjectGenerator {
      * <em>standalone</em> or <em>module in suite</em> module.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, NbModuleProvider.NbModuleType type) throws IOException {
+            String cnb, NbModuleProvider.NbModuleType type, boolean osgi) throws IOException {
+        String[] deps = osgi ? new String[] {"org.netbeans.libs.osgi"} : new String[0]; // NOI18N
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
-                cnb, type);
+                cnb, type, deps);
     }
     
     /**
@@ -396,7 +401,7 @@ public class NbModuleProjectGenerator {
         EditableProperties props = new EditableProperties(true);
         props.put("nbplatform.active", platformID); // NOI18N
         NbPlatform plaf = NbPlatform.getPlatformByID(platformID);
-        if (plaf != null && plaf.getHarnessVersion() > NbPlatform.HARNESS_VERSION_65) {
+        if (plaf != null && plaf.getHarnessVersion().compareTo(HarnessVersion.V65) > 0) {
             List<String> clusterPath = new ArrayList<String>();
             File[] files = plaf.getDestDir().listFiles();
             for (File file : files) {
@@ -409,10 +414,10 @@ public class NbModuleProjectGenerator {
     }
     
     private static void createManifest(FileObject projectDir, String cnb,
-            String bundlePath, String layerPath) throws IOException {
+            String bundlePath, String layerPath, boolean osgi) throws IOException {
         FileObject manifestFO = createFileObject(
                 projectDir, "manifest.mf"); // NOI18N
-        ManifestManager.createManifest(manifestFO, cnb, "1.0", bundlePath, layerPath); // NOI18N
+        ManifestManager.createManifest(manifestFO, cnb, "1.0", bundlePath, layerPath, osgi); // NOI18N
     }
     
     private static void createBundle(FileObject projectDir, String bundlePath,
@@ -450,7 +455,7 @@ public class NbModuleProjectGenerator {
     
     private static void createInitialProperties(FileObject projectDir) throws IOException {
         EditableProperties props = new EditableProperties(false);
-        props.put(SingleModuleProperties.JAVAC_SOURCE, "1.5"); // NOI18N
+        props.put(SingleModuleProperties.JAVAC_SOURCE, "1.6"); // NOI18N
         props.put(SingleModuleProperties.JAVAC_COMPILERARGS, "-Xlint -Xlint:-serial"); // NOI18N
         FileObject f = createFileObject(projectDir, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Util.storeProperties(f, props);

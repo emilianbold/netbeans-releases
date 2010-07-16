@@ -23,6 +23,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -49,7 +50,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -59,7 +59,7 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,7 +73,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProject.class.getName());
     //private static transient final Localizer mLoc = Localizer.get();
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif", false); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-etl-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.etl.project";
@@ -81,6 +81,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
     public static final String COMMAND_GENWSDL = "gen-wsdl";
     public static final String COMMAND_SCHEMA = "gen-schema";
     public static final String COMMAND_BULK_LOADER = "bulk-loader";
+    public static final String COMMAND_LOADER_ZIP = "etl_loaderzip";
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -101,6 +102,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
         return helper.getProjectDirectory();
     }
 
+    @Override
     public String toString() {
         return "EtlproProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -132,21 +134,26 @@ public final class EtlproProject implements Project, AntProjectListener, Project
                 new String[]{"${src.dir}/*.java"}, // NOI18N
                 new String[]{"${build.classes.dir}/*.class"} // NOI18N
                 );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         /*String nbBundle1 = mLoc.t("BUND711: EJB Module");
         String nbBundle2 = mLoc.t("BUND712: Source Packages");
         String webModuleLabel = nbBundle1.substring(15); //NOI18N
         String srcJavaLabel = nbBundle2.substring(15); //NOI18N*/
 
-		String webModuleLabel = NbBundle.getMessage (EtlproProject.class, "CTL_EJB_Module");
-        String srcJavaLabel =  NbBundle.getMessage (EtlproProject.class, "CTL_Source_Packages");
+		String webModuleLabel = "EJB Module";
+        String srcJavaLabel =  "Source Packages";
 
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SOURCE_ROOT + "}", webModuleLabel, /*XXX*/ null, null);
         sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", srcJavaLabel, /*XXX*/ null, null);
 
         sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/ null, null);
         sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/ null, null);
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[]{
             new Info(),
             aux,
@@ -383,7 +390,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
             "simple-files" // NOI18N
         };
         private static final String[] PRIVILEGED_NAMES = new String[]{
-            "Templates/CAPS/Collaboration.etl" ,//For the right click in Project-New->should have ETL by default
+            "Templates/CAPS/ETL.etl" ,
         };
     
 

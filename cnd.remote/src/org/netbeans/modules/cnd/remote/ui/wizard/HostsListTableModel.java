@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -104,14 +107,17 @@ class HostsListTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public int getRowCount() {
         return rows.size();
     }
 
+    @Override
     public int getColumnCount() {
         return 2; //3; no platform yet
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         HostRecord record = rows.get(rowIndex);
         switch (columnIndex) {
@@ -131,6 +137,7 @@ class HostsListTableModel extends AbstractTableModel {
     }
 
     private final static Comparator<HostRecord> hrc = new Comparator<HostRecord>() {
+        @Override
         public int compare(HostRecord o1, HostRecord o2) {
             if (o1.ssh && !o2.ssh) {
                 return -1;
@@ -178,6 +185,7 @@ class HostsListTableModel extends AbstractTableModel {
 
     private class HostsLoader implements Runnable {
 
+        @Override
         public void run() {
             RemoteUtil.LOGGER.fine("Hosts Lookup thread started");
             try {
@@ -222,9 +230,9 @@ class HostsListTableModel extends AbstractTableModel {
                     if (runOnFinish != null) {
                         SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
                     }
-                    RemoteUtil.LOGGER.fine("Hosts Lookup thread done " + HostsListTableModel.this.getRowCount() + " host(s) found");
+                    RemoteUtil.LOGGER.log(Level.FINE, "Hosts Lookup thread done {0} host(s) found", HostsListTableModel.this.getRowCount());
                 } else {
-                    RemoteUtil.LOGGER.fine("Hosts Lookup thread interrupted; " + HostsListTableModel.this.getRowCount() + " host(s) found so far");
+                    RemoteUtil.LOGGER.log(Level.FINE, "Hosts Lookup thread interrupted; {0} host(s) found so far", HostsListTableModel.this.getRowCount());
                 }
             }            
         }

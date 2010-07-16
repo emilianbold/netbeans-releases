@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -129,6 +132,7 @@ public class RADComponentNode extends FormNode
             if (!iconsInitialized) {
                 // getIconForClass invokes getNodes(true) which cannot be called in Mutex
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         Image icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, true);
 			iconsInitialized = true;
@@ -171,9 +175,16 @@ public class RADComponentNode extends FormNode
 
     @Override
     public Node.PropertySet[] getPropertySets() {
-        return component.getProperties();
+        final Node.PropertySet[][] props = new Node.PropertySet[1][];
+        FormLAF.executeWithLAFLocks(new Runnable() {
+            @Override
+            public void run() {
+                props[0] = component.getProperties();
+            }
+        });
+        return props[0];
     }
-    
+
     /* List new types that can be created in this node.
      * @return new types
      */
@@ -395,6 +406,7 @@ public class RADComponentNode extends FormNode
                 component.getFormModel().removeComponent(component, true);
             } else {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         component.getFormModel().removeComponent(component, true);
                     }
@@ -461,6 +473,7 @@ public class RADComponentNode extends FormNode
         }
 
         customizer.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 FormProperty[] properties;
                 if (evt.getPropertyName() != null) {
@@ -489,6 +502,7 @@ public class RADComponentNode extends FormNode
         // we run this as privileged to avoid security problems - because
         // the property change is fired from untrusted bean customizer code
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
             public Object run() {
                 Object oldValue = evt != null ? evt.getOldValue() : null;
                 Object newValue = evt != null ? evt.getNewValue() : null;
@@ -569,6 +583,7 @@ public class RADComponentNode extends FormNode
     // -----------------------------------------------------------------------------
     // RADComponentCookie implementation
     
+    @Override
     public RADComponent getRADComponent() {
         return component;
     }
@@ -576,6 +591,7 @@ public class RADComponentNode extends FormNode
     // -----------------------------------
     // FormPropertyCookie implementation
     
+    @Override
     public FormProperty getProperty(String name) {
         return component.getPropertyByName(name, FormProperty.class, true);
         //        Node.Property prop = component.getPropertyByName(name, true);
@@ -625,6 +641,7 @@ public class RADComponentNode extends FormNode
             setKeys(keys);
         }
         
+        @Override
         protected Node[] createNodes(Object key) {
             Node node;
             if (key == keyLayout)
@@ -639,6 +656,7 @@ public class RADComponentNode extends FormNode
     
     private final class ComponentsIndex extends org.openide.nodes.Index.Support {
         
+        @Override
         public Node[] getNodes() {
             RADComponent[] comps;
             if (component instanceof RADVisualContainer)
@@ -655,10 +673,12 @@ public class RADComponentNode extends FormNode
             return nodes;
         }
         
+        @Override
         public int getNodesCount() {
             return getNodes().length;
         }
         
+        @Override
         public void reorder(int[] perm) {
             if (component instanceof ComponentContainer) {
                 ComponentContainer cont = (ComponentContainer) component;

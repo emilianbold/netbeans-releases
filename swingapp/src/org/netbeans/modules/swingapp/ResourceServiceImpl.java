@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -82,6 +85,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ResourceService.class)
 public class ResourceServiceImpl implements ResourceService {
 
+    @Override
     public void prepareNew(FileObject srcFile) {
         // just make sure the resources folder exist
         try {
@@ -91,16 +95,19 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    @Override
     public ResourceValue get(String key, Class type, String localeSuffix, FileObject srcFile) {
         DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile, true);
         resMap.setLocalization(localeSuffix);
         return resMap.getResourceValue(key, type);
     }
 
+    @Override
     public Collection<String> findKeys(String keyRegex, FileObject srcFile) {
         return ResourceUtils.getDesignResourceMap(srcFile, true).collectKeys(keyRegex, true);
     }
 
+    @Override
     public ResourceValue create(String key, Class type, Object value, String stringValue, FileObject srcFile) {
         return new ResourceValueImpl(key, type, value, null, stringValue,
                                      type == String.class,
@@ -108,6 +115,7 @@ public class ResourceServiceImpl implements ResourceService {
                                      srcFile);
     }
 
+    @Override
     public ResourceValue changeKey(ResourceValue resource, String newKey) {
         ResourceValueImpl resValue = (ResourceValueImpl) resource;
         if (!ResourceValue.COMPUTE_AUTO_KEY.equals(resource.getKey())) {
@@ -117,6 +125,7 @@ public class ResourceServiceImpl implements ResourceService {
         return resValue;
     }
 
+    @Override
     public ResourceValue changeValue(ResourceValue resource, Object newValue, String newStringValue) {
         ResourceValueImpl resValue = (ResourceValueImpl) resource;
         return new ResourceValueImpl(resValue.getKey(), resValue.getValueType(),
@@ -124,6 +133,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resValue.getStorageLevel(), resValue.getSourceFile());
     }
 
+    @Override
     public ResourceValue switchLocale(ResourceValue resource, String localeSuffix) {
         if (resource instanceof ResourceValueImpl) {
             ResourceValueImpl resValue = (ResourceValueImpl) resource;
@@ -142,6 +152,7 @@ public class ResourceServiceImpl implements ResourceService {
         return resource;
     }
 
+    @Override
     public String[][] getAvailableLocales(FileObject srcFile) {
         Set<String> localeSet = new HashSet<String>();
         Map<String, MultiDataObject.Entry> entries = new HashMap<String, MultiDataObject.Entry>();
@@ -162,6 +173,7 @@ public class ResourceServiceImpl implements ResourceService {
         return new String[][] { locales, displays };
     }
 
+    @Override
     public java.awt.Component getCreateLocaleComponent(final PropertyEditor prEd, FileObject srcFile) {
         DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile,true);
         String bundleName = resMap.getBundleNames().get(0);
@@ -186,6 +198,7 @@ public class ResourceServiceImpl implements ResourceService {
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
             new ActionListener() {
+            @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         String locale = localePanel.getLocale().toString();
@@ -203,6 +216,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private static boolean appframeworkUsedLogged = false;
+    @Override
     public void update(ResourceValue oldValue, ResourceValue newValue,
                        FileObject srcFile, String localeSuffix)
         throws IOException
@@ -235,6 +249,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    @Override
     public void autoSave(FileObject srcFile) {
         DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile, false);
         if (resMap != null) {
@@ -242,6 +257,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    @Override
     public void close(FileObject srcFile) {
         DesignResourceMap resMap = ResourceUtils.unregisterDesignResourceMap(srcFile);
         if (resMap != null) {
@@ -254,6 +270,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @return true if app framework library is on classpath and the project is
      *         an application (i.e. executable project with Application subclass)
      */
+    @Override
     public boolean projectWantsUseResources(FileObject fileInProject) {
         return AppFrameworkSupport.isFrameworkEnabledProject(fileInProject);
     }
@@ -262,6 +279,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @return true if app framework library is on classpath of the project
      *         (the project can also be a library, not only an application)
      */
+    @Override
     public boolean projectUsesResources(FileObject fileInProject) {
         return AppFrameworkSupport.isFrameworkLibAvailable(fileInProject);
     }
@@ -270,11 +288,13 @@ public class ResourceServiceImpl implements ResourceService {
 //        return AppFrameworkSupport.updateProjectClassPath(fileInProject);
 //    }
 
+    @Override
     public boolean isExcludedProperty(Class componentType, String propName) {
         return java.awt.Component.class.isAssignableFrom(componentType)
                && "name".equals(propName); // NOI18N
     }
 
+    @Override
     public String getInjectionCode(Object bean, String variableName, FileObject srcFile) {
         if (bean instanceof java.awt.Component) {
             java.awt.Component component = (java.awt.Component) bean;
@@ -285,10 +305,12 @@ public class ResourceServiceImpl implements ResourceService {
         return null;
     }
 
+    @Override
     public ResourcePanel createResourcePanel(Class valueType, FileObject srcFile) {
         return new ResourcePanelImpl(ResourceUtils.getDesignResourceMap(srcFile, true), valueType);
     }
 
+    @Override
     public List<URL> getResourceFiles(FileObject srcFile) {
         PropertiesDataObject dobj = ResourceUtils.getPropertiesDataObject(srcFile);
         if (dobj != null) {

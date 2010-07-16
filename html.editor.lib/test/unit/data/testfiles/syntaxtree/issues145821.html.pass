@@ -1,13 +1,7 @@
 root:ROOT(0-92)
    <table>(0-20/91)[RR!]unresolved_tag ;S:root
-      TEXT(20-25)
       <table>(25-32/82)[RR!]unexpected_tag unresolved_tag ;S:root,table
-         TEXT(32-41)
          <table>(41-48/69)[RR!]unexpected_tag unresolved_tag ;S:root,table,table
-            TEXT(48-61)
          </table>(61-69)[RR!];S:root,table,table,table
-         TEXT(69-74)
       </table>(74-82)[RR!];S:root,table,table
-      TEXT(82-83)
    </table>(83-91)[RR!];S:root,table
-   TEXT(91-92)

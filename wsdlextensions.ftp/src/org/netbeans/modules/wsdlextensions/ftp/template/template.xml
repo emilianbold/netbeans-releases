@@ -30,7 +30,8 @@
 	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
                xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
                templates.xsd" prefix="ftp">
-    <template name="FTPMessage">
+    <!--template name="FTPMessage"-->
+    <template name="defaultSkeleton" skeleton="true">        
         <wsdlElement name="BindingOperationInput">
            <extensionElement name="message" >
                 <extensionAttr name="messageRepository" defaultValue="" />
@@ -66,20 +67,25 @@
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="url"  defaultValue="ftp://anonymous:user\@yahoo.com@localhost:21"/>
-                <!-- 
-                where:
-                [ftp_user]: FTP account login
-                [ftp_password]: FTP account login password
-                [ftp_host]: name or IP of FTP server host
-                [ftp_port]: FTP port
-                -->
+                <extensionAttr name="user" defaultValue="" />
+                <extensionAttr name="password" defaultValue="" />
                 <extensionAttr name="dirListStyle" defaultValue="UNIX" />
                 <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
                 <extensionAttr name="userDefDirListStyle" defaultValue="" />
                 <extensionAttr name="userDefDirListHeuristics" defaultValue="" />
                 <extensionAttr name="mode" defaultValue="BINARY" />
+                <extensionAttr name="securedFTP" defaultValue="None" />
+                <extensionAttr name="enableCCC" defaultValue="false" />
+                <extensionAttr name="keyStore" defaultValue="" />
+                <extensionAttr name="keyStorePassword" defaultValue="" />
+                <extensionAttr name="keyAlias" defaultValue="" />
+                <extensionAttr name="keyPassword" defaultValue="" />
+                <extensionAttr name="trustStore" defaultValue="" />
+                <extensionAttr name="trustStorePassword" defaultValue="" />
+                <extensionAttr name="controlChannelEncoding" />
                 <extensionAttr name="cmdChannelTimeout" defaultValue="45000" />
                 <extensionAttr name="dataChannelTimeout" defaultValue="45000" />
+                <extensionAttr name="baseLocation" defaultValue="" />
             </extensionElement>
         </wsdlElement>
         <wsdlElement name="Binding">
@@ -89,7 +95,8 @@
             <extensionElement name="operation" />
         </wsdlElement>
     </template>
-    <template name="FTPTransport">
+    <!--template name="FTPTransport"-->
+    <template name="defaultSkeleton2" skeleton="true">        
         <wsdlElement name="BindingOperationInput">
             <extensionElement name="transfer" >
                 <extensionAttr name="sendTo" defaultValue="" />
@@ -110,8 +117,6 @@
                 <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
                 <extensionAttr name="postReceiveLocation" defaultValue="" />
                 <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
-                <extensionAttr name="senderUsePassive" defaultValue="true" />
-                <extensionAttr name="receiverUsePassive" defaultValue="true" />
                 <extensionAttr name="use" defaultValue="literal" />
                 <extensionAttr name="encodingStyle" defaultValue="" />
                 <extensionAttr name="part"/>
@@ -138,8 +143,6 @@
                 <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
                 <extensionAttr name="postReceiveLocation" defaultValue="" />
                 <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
-                <extensionAttr name="senderUsePassive" defaultValue="true" />
-                <extensionAttr name="receiverUsePassive" defaultValue="true" />
                 <extensionAttr name="use" defaultValue="literal" />
                 <extensionAttr name="encodingStyle" defaultValue="" />
                 <extensionAttr name="part"/>
@@ -149,20 +152,25 @@
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="url"  defaultValue="ftp://anonymous:user\@yahoo.com@localhost:21"/>
-                <!-- 
-                where:
-                [ftp_user]: FTP account login
-                [ftp_password]: FTP account login password
-                [ftp_host]: name or IP of FTP server host
-                [ftp_port]: FTP port
-                -->
+                <extensionAttr name="user" defaultValue="" />
+                <extensionAttr name="password" defaultValue="" />
                 <extensionAttr name="dirListStyle" defaultValue="UNIX" />
                 <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
                 <extensionAttr name="userDefDirListStyle" defaultValue="" />
                 <extensionAttr name="userDefDirListHeuristics" defaultValue="" />
                 <extensionAttr name="mode" defaultValue="BINARY" />
+                <extensionAttr name="securedFTP" defaultValue="None" />
+                <extensionAttr name="enableCCC" defaultValue="false" />
+                <extensionAttr name="keyStore" defaultValue="" />
+                <extensionAttr name="keyStorePassword" defaultValue="" />
+                <extensionAttr name="keyAlias" defaultValue="" />
+                <extensionAttr name="keyPassword" defaultValue="" />
+                <extensionAttr name="trustStore" defaultValue="" />
+                <extensionAttr name="trustStorePassword" defaultValue="" />
+                <extensionAttr name="controlChannelEncoding" />
                 <extensionAttr name="cmdChannelTimeout" defaultValue="45000" />
                 <extensionAttr name="dataChannelTimeout" defaultValue="45000" />
+                <extensionAttr name="baseLocation" defaultValue="" />
             </extensionElement>
         </wsdlElement>
         <wsdlElement name="Binding">
@@ -170,6 +178,186 @@
         </wsdlElement>
         <wsdlElement name="BindingOperation">
             <extensionElement name="operation" />
+        </wsdlElement>
+    </template>
+    <template name="InboundOneWayMessaging" default="true">
+        <wsdlTemplate file="wsdltemplates/InboundOneWayMessaging.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="InboundRequestResponseMessaging">
+        <wsdlTemplate file="wsdltemplates/InboundRequestResponseMessaging.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundOneWayMessaging">
+        <wsdlTemplate file="wsdltemplates/OutboundOneWayMessaging.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundRequestResponseMessaging">
+        <wsdlTemplate file="wsdltemplates/OutboundRequestResponseMessaging.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundGetMessaging">
+        <wsdlTemplate file="wsdltemplates/GetMessaging.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="InboundOneWayTransferring">
+        <wsdlTemplate file="wsdltemplates/InboundOneWayTransferring.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="InboundRequestResponseTransferring">
+        <wsdlTemplate file="wsdltemplates/InboundRequestResponseTransferring.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundOneWayTransferring">
+        <wsdlTemplate file="wsdltemplates/OutboundOneWayTransferring.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundRequestResponseTransferring">
+        <wsdlTemplate file="wsdltemplates/OutboundRequestResponseTransferring.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="OutboundReceiveTransferring">
+        <wsdlTemplate file="wsdltemplates/ReceiveTransferring.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
         </wsdlElement>
     </template>
 </templateGroup>

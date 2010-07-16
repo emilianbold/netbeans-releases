@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +80,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
@@ -126,38 +131,57 @@ public class GoToSupport {
         return od != null ? od.getPrimaryFile() : null;
     }
     
-    public static String getGoToElementTooltip(Document doc, final int offset, final boolean goToSource) {
-        return performGoTo(doc, offset, goToSource, true, false);
+    public static String getGoToElementTooltip(final Document doc, final int offset, final boolean goToSource, final String key) {
+        try {
+            final FileObject fo = getFileObject(doc);
+
+            if (fo == null)
+                return null;
+
+            final String[] result = new String[1];
+
+            ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult (offset);
+                    CompilationController controller = CompilationController.get(res);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                        return;
+
+                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+
+                    if (resolved != null) {
+                        result[0] = computeTooltip(controller, resolved, key);
+                    }
+                }
+            });
+
+            return result[0];
+        } catch (ParseException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
     
     private static boolean isError(Element el) {
         return el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR;
     }
     
-    private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
-        if (!tooltip && !javadoc) {
-            final AtomicBoolean cancel = new AtomicBoolean();
-            
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                public void run() {
-                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, cancel);
-                }
-            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
-            
-            return null;
-        } else {
-            return performGoToImpl(doc, offset, goToSource, tooltip, javadoc, null);
-        }
+    private static void performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean javadoc) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            public void run() {
+                performGoToImpl(doc, offset, goToSource, javadoc, cancel);
+            }
+        }, NbBundle.getMessage(GoToSupport.class, javadoc ? "LBL_GoToJavadoc" : goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
     }
 
-    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final AtomicBoolean cancel) {
+    private static void performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean javadoc, final AtomicBoolean cancel) {
         try {
             final FileObject fo = getFileObject(doc);
             
             if (fo == null)
-                return null;
+                return ;
             
-            final String[] result = new String[1];
             final int[] offsetToOpen = new int[] {-1};
             final ElementHandle[] elementToOpen = new ElementHandle[1];
             final String[] displayNameForError = new String[1];
@@ -174,151 +198,23 @@ public class GoToSupport {
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
                     cpInfo[0] = controller.getClasspathInfo();
-                    Token<JavaTokenId>[] token = new Token[1];
-                    int[] span = getIdentifierSpan(doc, offset, token);
-                    
-                    if (span == null) {
+
+                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+
+                    if (resolved == null) {
                         CALLER.beep(goToSource, javadoc);
-                        return ;
-                    }
-                    
-                    int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
-                    
-                    Element el = null;
-                    boolean insideImportStmt = false;
-                    TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
-                    
-                    if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
-                        el = JavadocImports.findReferencedElement(controller, offset);
-                    } else {
-                        TreePath parent = path.getParentPath();
-
-                        if (parent != null) {
-                            Tree parentLeaf = parent.getLeaf();
-
-                            if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
-                                if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
-                                    path = path.getParentPath();
-                                }
-                            } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
-                                el = handleStaticImport(controller, (ImportTree) parentLeaf);
-                                insideImportStmt = true;
-                            } else {
-                                if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
-                                    && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
-                                    && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
-                                    if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
-                                        path = parent.getParentPath();
-                                    }
-                                }
-                            }
-
-                            if (el == null) {
-                                el = controller.getTrees().getElement(path);
-
-                                if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
-                                    ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
-
-                                    if (ee != null) {
-                                        el = ee;
-                                    } else {
-                                        ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
-                                        Name methodName = null;
-                                        switch (select.getKind()) {
-                                            case IDENTIFIER:
-                                                Scope s = controller.getTrees().getScope(path);
-                                                el = s.getEnclosingClass();
-                                                methodName = ((IdentifierTree)select).getName();
-                                                break;
-                                            case MEMBER_SELECT:
-                                                el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
-                                                methodName = ((MemberSelectTree)select).getIdentifier();
-                                                break;
-                                        }
-                                        if (el != null) {
-                                            for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
-                                                if (m.getSimpleName() == methodName) {
-                                                    el = m;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (!tooltip)
-                                CALLER.beep(goToSource, javadoc);
-                            else
-                                result[0] = null;
-                            return;
-                        }
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
                         return;
                     }
                     
-                    if (goToSource && !insideImportStmt) {
-                        TypeMirror type = null;
-                        
-                        if (el instanceof VariableElement)
-                            type = el.asType();
-                        
-                        if (type != null && type.getKind() == TypeKind.DECLARED) {
-                            el = ((DeclaredType)type).asElement();
-                        }
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-                    
-                    if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
-                        //check for annonymous innerclasses:
-                        el = handlePossibleAnonymousInnerClass(controller, el);
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-                    
-                    if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-                    
-                    if (tooltip) {
-                        DisplayNameElementVisitor v = new DisplayNameElementVisitor();
-                        
-                        v.visit(el, true);
-                        
-                        result[0] = "<html><body>" + v.result.toString();
-                    } else if (javadoc) {
-                        result[0] = null;
-                        URL url = SourceUtils.getJavadoc(el, controller.getClasspathInfo());
+                    if (javadoc) {
+                        URL url = SourceUtils.getJavadoc(resolved.resolved, controller.getClasspathInfo());
                         if (url != null) {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                         } else {
                             CALLER.beep(goToSource, javadoc);
                         }
                     } else {
-                        TreePath elpath = getPath(controller, el);
+                        TreePath elpath = getPath(controller, resolved.resolved);
                         
                         if (elpath != null) {
                             Tree tree = elpath.getLeaf();
@@ -330,16 +226,16 @@ public class GoToSupport {
                                     CALLER.beep(goToSource, javadoc);
                                 } else {
                                     //#71272: it is necessary to translate the offset:
-                                    offsetToOpen[0] = controller.getPositionConverter().getOriginalPosition((int) startPos);
-                                    displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                                    offsetToOpen[0] = controller.getSnapshot().getOriginalOffset((int) startPos);
+                                    displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
                                     tryToOpen[0] = true;
                                 }
                             } else {
                                 CALLER.beep(goToSource, javadoc);
                             }
                         } else {
-                            elementToOpen[0] = ElementHandle.create(el);
-                            displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                            elementToOpen[0] = ElementHandle.create(resolved.resolved);
+                            displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
                             tryToOpen[0] = true;
                         }
                     }
@@ -347,11 +243,9 @@ public class GoToSupport {
             });
             
             if (tryToOpen[0]) {
-                assert result[0] == null;
-
                 boolean openSucceeded = false;
 
-                if (cancel.get()) return null;
+                if (cancel.get()) return ;
 
                 if (offsetToOpen[0] >= 0) {
                     openSucceeded = CALLER.open(fo, offsetToOpen[0]);
@@ -364,19 +258,160 @@ public class GoToSupport {
                     CALLER.warnCannotOpen(displayNameForError[0]);
                 }
             }
-            
-            return result[0];
         } catch (ParseException ex) {
             throw new IllegalStateException(ex);
         }
     }
     
     public static void goTo(final Document doc, final int offset, final boolean goToSource) {
-        performGoTo(doc, offset, goToSource, false, false);
+        performGoTo(doc, offset, goToSource, false);
     }
     
     public static void goToJavadoc(Document doc, int offset) {
-        performGoTo(doc, offset, false, false, true);
+        performGoTo(doc, offset, false, true);
+    }
+
+    public static Context resolveContext(CompilationInfo controller, Document doc, int offset, boolean goToSource) {
+        Token<JavaTokenId>[] token = new Token[1];
+        int[] span = getIdentifierSpan(doc, offset, token);
+
+        if (span == null) {
+            return null;
+        }
+
+        int exactOffset = controller.getSnapshot().getEmbeddedOffset(span[0] + 1);
+
+        Element el = null;
+        TypeMirror classType = null;
+        boolean insideImportStmt = false;
+        TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
+
+        if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
+            el = JavadocImports.findReferencedElement(controller, offset);
+        } else {
+            TreePath parent = path.getParentPath();
+
+            if (parent != null) {
+                Tree parentLeaf = parent.getLeaf();
+
+                if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
+                    if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
+                        path = path.getParentPath();
+                    }
+                } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
+                    el = handleStaticImport(controller, (ImportTree) parentLeaf);
+                    insideImportStmt = true;
+                } else {
+                    if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                        && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                        && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                        if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                            path = parent.getParentPath();
+                            classType = controller.getTrees().getTypeMirror(path);
+                        }
+                    }
+                }
+
+                if (el == null) {
+                    el = controller.getTrees().getElement(path);
+
+                    if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
+                        ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+
+                        if (ee != null) {
+                            el = ee;
+                        } else {
+                            ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
+                            Name methodName = null;
+                            switch (select.getKind()) {
+                                case IDENTIFIER:
+                                    Scope s = controller.getTrees().getScope(path);
+                                    el = s.getEnclosingClass();
+                                    methodName = ((IdentifierTree)select).getName();
+                                    break;
+                                case MEMBER_SELECT:
+                                    el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
+                                    methodName = ((MemberSelectTree)select).getIdentifier();
+                                    break;
+                            }
+                            if (el != null) {
+                                for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
+                                    if (m.getSimpleName() == methodName) {
+                                        el = m;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                return null;
+            }
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        if (goToSource && !insideImportStmt) {
+            TypeMirror type = null;
+
+            if (el instanceof VariableElement)
+                type = el.asType();
+
+            if (type != null && type.getKind() == TypeKind.DECLARED) {
+                el = ((DeclaredType)type).asElement();
+            }
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        TypeMirror parentTypeForAnonymous = null;
+
+        if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
+            //check for annonymous innerclasses:
+            TypeMirror[] classTypeRef = new TypeMirror[] {classType };
+
+            el = handlePossibleAnonymousInnerClass(controller, el, classTypeRef);
+
+            classType = parentTypeForAnonymous = classTypeRef[0];
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
+            return null;
+        }
+
+        return new Context(classType, parentTypeForAnonymous, el);
+    }
+
+    private static String computeTooltip(CompilationInfo controller, Context resolved, String key) {
+        DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
+
+        if (resolved.resolved.getKind() == ElementKind.CONSTRUCTOR && resolved.classType != null && resolved.classType.getKind() == TypeKind.DECLARED) {
+            v.printExecutable(((ExecutableElement) resolved.resolved), (DeclaredType) resolved.classType, true);
+        } else if (resolved.resolved.getKind() == ElementKind.INTERFACE && resolved.parentTypeForAnonymous != null && resolved.parentTypeForAnonymous.getKind() == TypeKind.DECLARED) {
+            v.printType(((TypeElement) resolved.resolved), (DeclaredType) resolved.classType, true);
+        } else  {
+            v.visit(resolved.resolved, true);
+        }
+
+        String result = v.result.toString();
+        int overridableKind = overridableKind(resolved.resolved);
+
+        if (overridableKind != (-1) && key != null) {
+            result = NbBundle.getMessage(GoToSupport.class, key, overridableKind, result);
+        }
+
+        result = "<html><body>" + result;
+
+        return result;
     }
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
@@ -426,9 +461,12 @@ public class GoToSupport {
         return new int [] {ts.offset(), ts.offset() + t.length()};
     }
     
-    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el) {
+    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el, TypeMirror[] classTypeRef) {
         Element encl = el.getEnclosingElement();
         Element doubleEncl = encl != null ? encl.getEnclosingElement() : null;
+        TypeMirror classType = classTypeRef[0];
+
+        classTypeRef[0] = null;
         
         if (   doubleEncl != null
             && !doubleEncl.getKind().isClass()
@@ -442,6 +480,25 @@ public class GoToSupport {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
                 
                 if (nct.getClassBody() != null) {
+                    List<? extends TypeMirror> sup = classType != null && classType.getKind() == TypeKind.DECLARED
+                            ? info.getTypes().directSupertypes(classType) : Collections.<TypeMirror>emptyList();
+                    TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
+
+                    if (jlObject != null) {
+                        TypeMirror jlObjectType = jlObject.asType();
+                        TypeMirror parent = null;
+
+                        for(TypeMirror tm : sup) {
+                            if (info.getTypes().isSameType(tm, jlObjectType)) {
+                                continue;
+                            }
+                            assert parent == null;
+                            parent = tm;
+                        }
+
+                        classTypeRef[0] = parent;
+                    }
+                    
                     Element parentElement = info.getTrees().getElement(new TreePath(enclTreePath, nct.getIdentifier()));
                     
                     if (parentElement == null || parentElement.getKind().isInterface()) {
@@ -542,6 +599,25 @@ public class GoToSupport {
         }
     }
 
+    private static int overridableKind(Element el) {
+        if (   el.getModifiers().contains(Modifier.FINAL)
+            || el.getModifiers().contains(Modifier.PRIVATE)) {
+            return -1;
+        }
+
+        if (el.getKind().isClass() || el.getKind().isInterface()) {
+            return 0;
+        }
+
+        if (   el.getKind() == ElementKind.METHOD
+            && !el.getModifiers().contains(Modifier.STATIC)
+            && !el.getEnclosingElement().getModifiers().contains(Modifier.FINAL)) {
+            return 1;
+        }
+
+        return -1;
+    }
+
     private static TreePath getPath(final CompilationInfo info, Element el) {
         final Element toFind = info.getElementUtilities().isSynthetic(el) ? el.getEnclosingElement() : el;
 
@@ -612,6 +688,12 @@ public class GoToSupport {
     }
     
     private static final class DisplayNameElementVisitor extends AbstractElementVisitor6<Void, Boolean> {
+
+        private final CompilationInfo info;
+
+        public DisplayNameElementVisitor(CompilationInfo info) {
+            this.info = info;
+        }
         
         private StringBuffer result        = new StringBuffer();
         
@@ -638,6 +720,10 @@ public class GoToSupport {
         }
 
         public Void visitType(TypeElement e, Boolean highlightName) {
+            return printType(e, null, highlightName);
+        }
+        
+        Void printType(TypeElement e, DeclaredType dt, Boolean highlightName) {
             modifier(e.getModifiers());
             switch (e.getKind()) {
                 case CLASS:
@@ -665,13 +751,16 @@ public class GoToSupport {
                 result.append(e.getQualifiedName());
             }
             
+            if (dt != null)
+                dumpRealTypeArguments(dt.getTypeArguments());
+
             return null;
         }
 
         public Void visitVariable(VariableElement e, Boolean highlightName) {
             modifier(e.getModifiers());
             
-            result.append(getTypeName(e.asType(), true));
+            result.append(getTypeName(info, e.asType(), true));
             
             result.append(' ');
             
@@ -693,7 +782,7 @@ public class GoToSupport {
                     result.append(" in ");
 
                     //short typename:
-                    result.append(getTypeName(enclosing.asType(), true));
+                    result.append(getTypeName(info, enclosing.asType(), true));
                 }
             }
             
@@ -701,6 +790,10 @@ public class GoToSupport {
         }
 
         public Void visitExecutable(ExecutableElement e, Boolean highlightName) {
+            return printExecutable(e, null, highlightName);
+        }
+
+        Void printExecutable(ExecutableElement e, DeclaredType dt, Boolean highlightName) {
             switch (e.getKind()) {
                 case CONSTRUCTOR:
                     modifier(e.getModifiers());
@@ -709,18 +802,23 @@ public class GoToSupport {
                     boldStartCheck(highlightName);
                     result.append(e.getEnclosingElement().getSimpleName());
                     boldStopCheck(highlightName);
-                    dumpArguments(e.getParameters());
+                    if (dt != null) {
+                        dumpRealTypeArguments(dt.getTypeArguments());
+                        dumpArguments(e.getParameters(), ((ExecutableType) info.getTypes().asMemberOf(dt, e)).getParameterTypes());
+                    } else {
+                        dumpArguments(e.getParameters(), null);
+                    }
                     dumpThrows(e.getThrownTypes());
                     break;
                 case METHOD:
                     modifier(e.getModifiers());
                     dumpTypeArguments(e.getTypeParameters());
-                    result.append(getTypeName(e.getReturnType(), true));
+                    result.append(getTypeName(info, e.getReturnType(), true));
                     result.append(' ');
                     boldStartCheck(highlightName);
                     result.append(e.getSimpleName());
                     boldStopCheck(highlightName);
-                    dumpArguments(e.getParameters());
+                    dumpArguments(e.getParameters(), null);
                     dumpThrows(e.getThrownTypes());
                     break;
                 case INSTANCE_INIT:
@@ -765,7 +863,7 @@ public class GoToSupport {
                     result.append(", ");
                 }
                 
-                result.append(getTypeName(e.asType(), true));
+                result.append(getTypeName(info, e.asType(), true));
                 
                 addSpace = true;
             }
@@ -773,18 +871,47 @@ public class GoToSupport {
             result.append("&gt;");
         }
 
-        private void dumpArguments(List<? extends VariableElement> list) {
+        private void dumpRealTypeArguments(List<? extends TypeMirror> list) {
+            if (list.isEmpty())
+                return ;
+
+            boolean addSpace = false;
+
+            result.append("&lt;");
+
+            for (TypeMirror t : list) {
+                if (addSpace) {
+                    result.append(", ");
+                }
+
+                result.append(getTypeName(info, t, true));
+
+                addSpace = true;
+            }
+
+            result.append("&gt;");
+        }
+
+        private void dumpArguments(List<? extends VariableElement> list, List<? extends TypeMirror> types) {
             boolean addSpace = false;
             
             result.append('(');
-            
-            for (VariableElement e : list) {
+
+            Iterator<? extends VariableElement> listIt = list.iterator();
+            Iterator<? extends TypeMirror> typesIt = types != null ? types.iterator() : null;
+
+            while (listIt.hasNext()) {
                 if (addSpace) {
                     result.append(", ");
                 }
                 
-                visit(e, false);
-                
+                VariableElement ve = listIt.next();
+                TypeMirror      type = typesIt != null ? typesIt.next() : ve.asType();
+
+                result.append(getTypeName(info, type, true));
+                result.append(" ");
+                result.append(ve.getSimpleName());
+
                 addSpace = true;
             }
                 
@@ -804,7 +931,7 @@ public class GoToSupport {
                     result.append(", ");
                 }
                 
-                result.append(getTypeName(t, true));
+                result.append(getTypeName(info, t, true));
                 
                 addSpace = true;
             }
@@ -812,8 +939,8 @@ public class GoToSupport {
             
     }
     
-    private static String getTypeName(TypeMirror t, boolean fqn) {
-        return translate(Utilities.getTypeName(t, fqn).toString());
+    private static String getTypeName(CompilationInfo info, TypeMirror t, boolean fqn) {
+        return translate(Utilities.getTypeName(info, t, fqn).toString());
     }
     
     private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
@@ -850,5 +977,16 @@ public class GoToSupport {
         public void beep(boolean goToSource, boolean goToJavadoc);
         public boolean open(ClasspathInfo info, ElementHandle<?> el);
         public void warnCannotOpen(String displayName);
+    }
+
+    public static final class Context {
+        public final TypeMirror classType;
+        public final TypeMirror parentTypeForAnonymous;
+        public final Element resolved;
+        public Context(TypeMirror classType, TypeMirror parentTypeForAnonymous, Element resolved) {
+            this.classType = classType;
+            this.parentTypeForAnonymous = parentTypeForAnonymous;
+            this.resolved = resolved;
+        }
     }
 }

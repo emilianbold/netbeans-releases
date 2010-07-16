@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,25 +48,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 
 /**
-* Provides hooks for a custom module that may be inserted into NetBeans.
-* If needed this class should be extended by the main class of a module.
-*
-* <p>Simple modules will likely not need a main class--just a few entries in the manifest file.
-* Even modules with a main class need not do anything in it that is already covered by manifest entries;
-* only additional special functionality need be handled here.
-*
+ * Optional custom module lifecycle hooks.
+ * Most modules should not need this.
 * <p>Specify this class in the manifest file with <code>OpenIDE-Module-Install</code>.
-*
-* <p>Modules wishing to keep state associated with the installation of the module
-* may do so by implementing not only this class but also {@link java.io.Externalizable}.
-* In this case, they are responsible for reading and writing their own state
-* properly (probably using {@link java.io.ObjectOutput#writeObject} and {@link java.io.ObjectInput#readObject}).
-* Note that state which is logically connected to the user's configuration of the module on
-* a possibly project-specific basis should <em>not</em> be stored this way, but rather
-* using a system option. (Even if this information is not to be displayed, it should
-* still be stored as hidden properties of the system option, so as to be switched properly
-* during project switches.)
- * <strong>Storing externalizable state in a <code>ModuleInstall</code> is deprecated.</strong>
 * @author Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
 public class ModuleInstall extends SharedClassObject {

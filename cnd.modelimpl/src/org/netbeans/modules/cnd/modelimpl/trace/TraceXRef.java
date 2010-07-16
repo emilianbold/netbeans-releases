@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -95,7 +98,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -207,7 +210,7 @@ public class TraceXRef extends TraceModel {
     }
 
     private CsmFile getCsmFile(String path) {
-        return super.getProject().findFile(new File(path).getAbsolutePath());
+        return super.getProject().findFile(new File(path).getAbsolutePath(), false);
     }
 
     @Override
@@ -345,7 +348,7 @@ public class TraceXRef extends TraceModel {
             }
             CharSequence path1 = i1.getContainingFile().getAbsolutePath();
             CharSequence path2 = i2.getContainingFile().getAbsolutePath();
-            int res = CharSequenceKey.Comparator.compare(path1, path2);
+            int res = CharSequences.comparator().compare(path1, path2);
             if (res == 0) {
                 int ofs1 = i1.getStartOffset();
                 int ofs2 = i2.getStartOffset();

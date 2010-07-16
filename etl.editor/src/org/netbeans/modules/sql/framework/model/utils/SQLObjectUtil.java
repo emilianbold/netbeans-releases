@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,15 +82,15 @@ import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.VisibleSQLPredicate;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Attribute;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.Attribute;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 import java.util.HashMap;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBTable;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
@@ -253,25 +256,25 @@ public class SQLObjectUtil {
     }
 
     public static void dropTable(SQLDBTable table, SQLDBModel model) throws BaseException, SQLException {
-        Connection conn = null;
-        Statement stmt = null;
-        DBConnectionDefinition conndef = model.getETLDBConnectionDefinition();
-        try {
-            conn = DBExplorerUtil.createConnection(conndef.getDriverClass(), conndef.getConnectionURL(), conndef.getUserName(), conndef.getPassword());
-            stmt = conn.createStatement();
-            stmt.execute(FlatfileDBTableImpl.getDropStatementSQL(table));
-        } catch (Exception ex) {
-            StatusDisplayer.getDefault().setStatusText("Failed to drop table: " + table.getName() +
-                    "Reason: " + ex.getMessage());
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException ex) {
-                    // ignore
-                }
-            }
-        }
+//        Connection conn = null;
+//        Statement stmt = null;
+//        DBConnectionDefinition conndef = model.getETLDBConnectionDefinition();
+//        try {
+//            conn = DBExplorerUtil.createConnection(conndef.getDriverClass(), conndef.getConnectionURL(), conndef.getUserName(), conndef.getPassword());
+//            stmt = conn.createStatement();
+//            stmt.execute(VirtualDBTable.getDropStatementSQL(table));
+//        } catch (Exception ex) {
+//            StatusDisplayer.getDefault().setStatusText("Failed to drop table: " + table.getName() +
+//                    "Reason: " + ex.getMessage());
+//        } finally {
+//            if (conn != null) {
+//                try {
+//                    conn.close();
+//                } catch (SQLException ex) {
+//                    // ignore
+//                }
+//            }
+//        }
     }
 
     public static void createTable(SQLDBTable aTable, SQLDBModel model) throws BaseException, SQLException {
@@ -279,7 +282,9 @@ public class SQLObjectUtil {
         Statement stmt = null;
         try {
             String prefix = "ORGPROP_";
-            FlatfileDBTableImpl fftbl = new FlatfileDBTableImpl(aTable);
+            //FIXME
+            //VirtualDBTable fftbl = new VirtualDBTable(aTable);
+            VirtualDBTable fftbl = new VirtualDBTable();
             Attribute attr = aTable.getAttribute("ORGPROP_LOADTYPE");
 
             if (attr != null) {
@@ -343,7 +348,24 @@ public class SQLObjectUtil {
                 rtInput.addColumn(arg);
                 return arg;
             }
+        } else {
+            // Fix for CR#6771984
+            RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
+            RuntimeInput rtInput = rtDBModel.getRuntimeInput();
+            String argName = "arg_0";
+            if (rtInput == null) {
+                rtInput = getOrCreateRuntimeInput(rtDBModel);
+            }
+            // if runtime input arg does not exist then only add it
+            if (rtInput.getColumnList().isEmpty() && rtInput.getColumn(argName) == null) {
+                SourceColumn arg = SQLModelObjectFactory.getInstance().createSourceColumn(
+                        argName, java.sql.Types.VARCHAR, 0, 0, true);
+                arg.setVisible(false); // the column is not visible in canvas
+                rtInput.addColumn(arg);
+                return arg;
+            }    
         }
+        
         return null;
     }
 
@@ -354,7 +376,7 @@ public class SQLObjectUtil {
         srcColumn.setVisible(false); // the column is not visible in canvas
 
         // set default value
-        FlatfileDBTableImpl flatfileTable = (FlatfileDBTableImpl) (sTable);
+        VirtualDBTable flatfileTable = (VirtualDBTable) (sTable);
         if (flatfileTable != null) {
             srcColumn.setDefaultValue(flatfileTable.getFileName());
         }
@@ -419,7 +441,7 @@ public class SQLObjectUtil {
         }
 
         mLogger.infoNoloc(mLoc.t("EDIT126: temp table name{0} for table", sysName, tableName));
-        return sysName;
+        return sysName.toUpperCase();
     }
 
     public static String generateTemporaryTableName(String prefix, String tableName) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,14 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.modules.html.editor.test.TestBase;
 
@@ -72,6 +83,42 @@ public class NbReaderProviderTest extends TestBase {
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Strict//EN", null));
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Transitional//EN", null));
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Frameset//EN", null));
+    }
+
+    public void testX() {
+        DTD d = Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null);
+        List l = d.getElementList("");
+        Set<Attribute> all = new TreeSet<Attribute>(new Comparator<Attribute>() {
+            @Override
+            public int compare(Attribute o1, Attribute o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+
+        Set<Element> alltags = new TreeSet<Element>(new Comparator<Element>() {
+            @Override
+            public int compare(Element o1, Element o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+
+        });
+        for(Object o : l) {
+            Element e = (Element)o;
+            alltags.add(e);
+            for(Object a : e.getAttributeList("")) {
+                all.add((Attribute)a);
+            }
+        }
+
+//        for(Attribute a : all) {
+//            System.out.print("\"" + a.getName() + "\", ");
+//        }
+//
+        for(Element e : alltags) {
+            System.out.print("\"" + e.getName().toLowerCase() + "\", ");
+        }
+
     }
 
 }

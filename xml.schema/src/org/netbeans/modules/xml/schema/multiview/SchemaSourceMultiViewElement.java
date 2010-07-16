@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.netbeans.modules.xml.schema.ui.nodes.StructuralSchemaNodeFactory;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.awt.UndoRedo;
@@ -120,7 +123,7 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
         // This initialization fixes CR 6380287 by ensuring that the Node
         // listener is registered with the DataObject Node delegate.
         dobj.getSchemaEditorSupport().initializeCloneableEditor(this);
-		initialize();
+        initialize();
     }
 
     /**
@@ -192,7 +195,7 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
         });
         timerSelNodes.setRepeats(false);
     }
-	
+    
     public JComponent getToolbarRepresentation() {
         Document doc = getEditorPane().getDocument();
         if (doc instanceof NbDocument.CustomToolbar) {
@@ -205,34 +208,34 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
     }
     
     public JComponent getVisualRepresentation() {
-	return this;
+    return this;
     }
     
     public void setMultiViewCallback(final MultiViewElementCallback callback) {
-	multiViewCallback = callback;
+    multiViewCallback = callback;
     }
     
     public void requestVisible() {
-	if (multiViewCallback != null)
-	    multiViewCallback.requestVisible();
-	else
-	    super.requestVisible();
+    if (multiViewCallback != null)
+        multiViewCallback.requestVisible();
+    else
+        super.requestVisible();
     }
     
     public void requestActive() {
-	if (multiViewCallback != null)
-	    multiViewCallback.requestActive();
-	else
-	    super.requestActive();
+    if (multiViewCallback != null)
+        multiViewCallback.requestActive();
+    else
+        super.requestActive();
     }
     
     protected String preferredID() {
-	return getClass().getName();
+    return getClass().getName();
     }
     
     
     public UndoRedo getUndoRedo() {
-	return schemaDataObject.getSchemaEditorSupport().getUndoManager();
+    return schemaDataObject.getSchemaEditorSupport().getUndoManager();
     }
 
     /**
@@ -245,12 +248,12 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
      * close handler. 
      */ 
     protected boolean closeLast() {
-	SchemaEditorSupport ses = schemaDataObject.getSchemaEditorSupport();
-	JEditorPane[] editors = ses.getOpenedPanes();
-	if (editors == null || editors.length == 0) {
-	    return ses.silentClose();
-	}
-	return false;
+    SchemaEditorSupport ses = schemaDataObject.getSchemaEditorSupport();
+    JEditorPane[] editors = ses.getOpenedPanes();
+    if (editors == null || editors.length == 0) {
+        return ses.silentClose();
+    }
+    return false;
     }
 
     public CloseOperationState canCloseElement() {
@@ -304,77 +307,77 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
     }
     
     public void componentOpened() {
-	super.componentOpened();
+    super.componentOpened();
     }
     
     public void componentClosed() {
-	super.componentClosed();
+    super.componentClosed();
     }
     
     public void componentShowing() {
-	super.componentShowing();
+    super.componentShowing();
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
         editor.addUndoManagerToDocument();
     }
     
     public void componentHidden() {
-	super.componentHidden();
+    super.componentHidden();
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
         // Sync model before having undo manager listen to the model,
         // lest we get redundant undoable edits added to the queue.
-	editor.syncModel();
+    editor.syncModel();
         editor.removeUndoManagerFromDocument();
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
-	// The superclass persists things such as the caret position.
-	super.writeExternal(out);
-	out.writeObject(schemaDataObject);
+    // The superclass persists things such as the caret position.
+    super.writeExternal(out);
+    out.writeObject(schemaDataObject);
     }
     
     public void readExternal(ObjectInput in)
     throws IOException, ClassNotFoundException {
-	super.readExternal(in);
-	// Since we are persistent and not created by the descriptor when
-	// deserialized, we need to retrieve the data object for ourselves.
-	Object firstObject = in.readObject();
-	if (firstObject instanceof SchemaDataObject) {
-	    schemaDataObject = (SchemaDataObject) firstObject;
-	}
-	initialize();
+    super.readExternal(in);
+    // Since we are persistent and not created by the descriptor when
+    // deserialized, we need to retrieve the data object for ourselves.
+    Object firstObject = in.readObject();
+    if (firstObject instanceof SchemaDataObject) {
+        schemaDataObject = (SchemaDataObject) firstObject;
+    }
+    initialize();
     }
     
-	// node support
-	/** Root node of schema model */
-	private Node rootNode;
-	/** current selection*/
-	private Node selectedNode;
+    // node support
+    /** Root node of schema model */
+    private Node rootNode;
+    /** current selection*/
+    private Node selectedNode;
     /** listens to selected node destroyed event */
     private NodeAdapter nl;
-	/** Timer which countdowns the "update selected element node" time. */
-	private Timer timerSelNodes;
-	/** Listener on caret movements */
-	private CaretListener caretListener;
-	/* task */
-	private transient RequestProcessor.Task selectionTask = null;
+    /** Timer which countdowns the "update selected element node" time. */
+    private Timer timerSelNodes;
+    /** Listener on caret movements */
+    private CaretListener caretListener;
+    /* task */
+    private transient RequestProcessor.Task selectionTask = null;
  /** Selects element at the caret position. */
-	void selectElementsAtOffset()
-	{
-		if(selectionTask!=null)
-		{
-			selectionTask.cancel();
-			selectionTask = null;
-		}
-		RequestProcessor rp = new RequestProcessor("schema source view processor "+hashCode());
-		selectionTask = rp.create(new Runnable()
-		{
-			public void run()
-			{
-				if (!isActiveTC() || schemaDataObject == null ||
-						!schemaDataObject.isValid() || schemaDataObject.isTemplate())
-				{
-					return;
-				}
+    void selectElementsAtOffset()
+    {
+        if(selectionTask!=null)
+        {
+            selectionTask.cancel();
+            selectionTask = null;
+        }
+        RequestProcessor rp = new RequestProcessor("schema source view processor "+hashCode());
+        selectionTask = rp.create(new Runnable()
+        {
+            public void run()
+            {
+                if (!isActiveTC() || schemaDataObject == null ||
+                        !schemaDataObject.isValid() || schemaDataObject.isTemplate())
+                {
+                    return;
+                }
                 Node n = findNode(getEditorPane().getCaret().getDot());
                 // default to node delegate if node not found
                 if(n==null) 
@@ -408,43 +411,44 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
                         setActivatedNodes(new Node[] { selectedNode });
                     }
                 }
-			}
-		});
+            }
+        });
         if(EventQueue.isDispatchThread()) {
-    		selectionTask.run();
+            selectionTask.run();
         } else {
             EventQueue.invokeLater(selectionTask);
         }
-	}
-	
-	private Node findNode(int offset)
-	{
-		try
-		{
-			SchemaEditorSupport support = schemaDataObject.getSchemaEditorSupport();
-			if(support==null) return null;
-			SchemaModel model = support.getModel();
-			if(model==null||model.getState()!=SchemaModel.State.VALID) return null;
-			if(rootNode==null)
-				rootNode = new StructuralSchemaNodeFactory(support.getModel(),
-						schemaDataObject.getNodeDelegate().getLookup()).createRootNode();
-			if(rootNode==null) return null;
-			SchemaComponent sc = (SchemaComponent) support.getModel().
-					findComponent(offset);
-			if(sc==null) return null;
-			List<Node> path = UIUtilities.findPathFromRoot(rootNode,sc);
-			if(!path.isEmpty())
-				return path.get(path.size()-1);
-		}
-		catch (IOException ioe)
-		{
-		}
-		return null;
-	}
-	
-	protected boolean isActiveTC()
-	{
-		return getRegistry().getActivated() == multiViewCallback.getTopComponent();
-	}
-	
+    }
+    
+    private Node findNode(int offset)
+    {
+        try
+        {
+            SchemaEditorSupport support = schemaDataObject.getSchemaEditorSupport();
+            if(support==null) return null;
+            SchemaModel model = support.getModel();
+            if(model == null || model.getRootComponent() == null || 
+                    model.getState() != SchemaModel.State.VALID) return null;
+            if(rootNode==null)
+                rootNode = new StructuralSchemaNodeFactory(support.getModel(),
+                        schemaDataObject.getNodeDelegate().getLookup()).createRootNode();
+            if(rootNode==null) return null;
+            SchemaComponent sc = (SchemaComponent) support.getModel().
+                    findComponent(offset);
+            if(sc==null) return null;
+            List<Node> path = UIUtilities.findPathFromRoot(rootNode,sc);
+            if(!path.isEmpty())
+                return path.get(path.size()-1);
+        }
+        catch (IOException ioe)
+        {
+        }
+        return null;
+    }
+    
+    protected boolean isActiveTC()
+    {
+        return getRegistry().getActivated() == multiViewCallback.getTopComponent();
+    }
+    
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.export.ExportCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.util.IndexingBridge;
@@ -88,7 +92,7 @@ class CommandRunnable implements Runnable, Cancellable {
             support.commandStarted(this);
         }
         CounterRunnable counterUpdater = new CounterRunnable();
-        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        RequestProcessor.Task counterTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(counterUpdater);
         counterUpdater.initTask(counterTask);
         try {
             counterTask.schedule(500);
@@ -130,8 +134,8 @@ class CommandRunnable implements Runnable, Cancellable {
                 (cmdName.startsWith("update") && (options == null || !options.isDoNoChanges()))
              || cmdName.startsWith("export")
              || cmdName.startsWith("remove")
-             || cmdName.startsWith("checkout")
-             || cmdName.startsWith("commit");
+             || (cmdName.startsWith("checkout") 
+             && !(cmd instanceof CheckoutCommand && ((CheckoutCommand) cmd).isPipeToOutput())); //NOI18N checkout (output to pipe) called during diff - do not run under indexing bridge
 
         File[] files = null;
         if(blockIndexing) {

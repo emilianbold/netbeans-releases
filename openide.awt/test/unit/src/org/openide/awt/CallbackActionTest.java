@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,23 +104,33 @@ public class CallbackActionTest extends NbTestCase {
             fail("Shall create an action: " + obj);
         }
     }
+
+    public void testCopyLikeProblem() throws Exception {
+        FileObject fo = folder.getFileObject("testCopyLike.instance");
+
+        Object obj = fo.getAttribute("instanceCreate");
+        if (!(obj instanceof Action)) {
+            fail("Shall create an action: " + obj);
+        }
+
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup l = new AbstractLookup(ic);
+        ActionMap map = new ActionMap();
+        map.put("copy-to-clipboard", new MyAction());
+        ic.add(map);
+
+        CntListener list = new CntListener();
+        Action clone = ((ContextAwareAction)obj).createContextAwareInstance(l);
+        clone.addPropertyChangeListener(list);
+        assertTrue("Enabled", clone.isEnabled());
+
+        ic.remove(map);
+        assertFalse("Disabled", clone.isEnabled());
+        list.assertCnt("one change", 1);
+    }
     
     
     public void testWithFallback() throws Exception {
-        class MyAction extends AbstractAction {
-            public int cntEnabled;
-            public int cntPerformed;
-            
-            @Override
-            public boolean isEnabled() {
-                cntEnabled++;
-                return super.isEnabled();
-            }
-            
-            public void actionPerformed(ActionEvent ev) {
-                cntPerformed++;
-            }
-        }
         MyAction myAction = new MyAction();
         MyAction fallAction = new MyAction();
         
@@ -174,5 +187,22 @@ public class CallbackActionTest extends NbTestCase {
             this.cnt = 0;
         }
     } // end of CntListener
+
+    class MyAction extends AbstractAction {
+
+        public int cntEnabled;
+        public int cntPerformed;
+
+        @Override
+        public boolean isEnabled() {
+            cntEnabled++;
+            return super.isEnabled();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            cntPerformed++;
+        }
+    } // end of MyAction
     
 }

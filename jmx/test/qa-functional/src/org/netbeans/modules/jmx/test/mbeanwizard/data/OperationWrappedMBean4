@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 /**
  * Class OperationWrappedMBean4
- * 
+ *
  * @author <author>
  */
 public class OperationWrappedMBean4 extends StandardMBean implements OperationWrappedMBean4MBean {
@@ -54,7 +54,6 @@ public class OperationWrappedMBean4 extends StandardMBean implements OperationWr
     @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
-
         return description;
     }
 
@@ -95,7 +94,6 @@ public class OperationWrappedMBean4 extends StandardMBean implements OperationWr
                     return null;
             }
         }
-
         return null;
     }
 
@@ -136,7 +134,6 @@ public class OperationWrappedMBean4 extends StandardMBean implements OperationWr
                     return null;
             }
         }
-
         return null;
     }
 
@@ -153,28 +150,22 @@ public class OperationWrappedMBean4 extends StandardMBean implements OperationWr
             signature[i] = params[i].getType();
         }
         String[] methodSignature;
-
         methodSignature = new String[]{};
         if (info.getName().equals("operation1") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
         methodSignature = new String[]{java.util.List.class.getName()};
         if (info.getName().equals("operation2") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
         methodSignature = new String[]{java.lang.Object[].class.getName(), java.lang.Integer.TYPE.getName()};
         if (info.getName().equals("operation3") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
         methodSignature = new String[]{java.lang.String[].class.getName(), java.lang.Integer.TYPE.getName()};
         if (info.getName().equals("operation3") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
-
         return description;
     }
 

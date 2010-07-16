@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,19 +44,16 @@
 
 package org.netbeans.core.ui.sysopen;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -62,11 +62,9 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 
 /**
  * Open the selected file(s) with the system default tool.
- * Available only on JDK 6+.
  * @author Jesse Glick
  */
 public final class SystemOpenAction extends AbstractAction implements ContextAwareAction {
@@ -75,60 +73,25 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
         super(NbBundle.getMessage(SystemOpenAction.class, "CTL_SystemOpenAction"));
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         new ContextAction(Utilities.actionsGlobalContext()).actionPerformed(e);
     }
 
-    public Action createContextAwareInstance(Lookup context) {
+    public @Override Action createContextAwareInstance(Lookup context) {
         return new ContextAction(context);
     }
     
-    private static final class ContextAction extends AbstractAction implements Presenter.Popup {
+    private static final class ContextAction extends AbstractAction {
         
-        private static interface Performer {
-            void open(File f) throws IOException;
-        }
-        private static final Performer performer;
-        static {
-            Performer _performer = null;
-            try {
-                Class desktop = Class.forName("java.awt.Desktop");
-                if ((Boolean) desktop.getMethod("isDesktopSupported").invoke(null)) {
-                    final Object desktopInstance = desktop.getMethod("getDesktop").invoke(null);
-                    Class action = Class.forName("java.awt.Desktop$Action");
-                    if ((Boolean) desktop.getMethod("isSupported", action).
-                            invoke(desktopInstance, action.getField("OPEN").get(null))) {
-                        final Method open = desktop.getMethod("open", File.class);
-                        _performer = new Performer() {
-                            public void open(File f) throws IOException {
-                                // XXX could try edit too?
-                                try {
-                                    open.invoke(desktopInstance, f);
-                                } catch (InvocationTargetException x) {
-                                    throw (IOException) x.getTargetException();
-                                } catch (Exception x) {
-                                    throw (IOException) new IOException(x.toString()).initCause(x);
-                                }
-                            }
-                        };
-                    }
-                }
-            } catch (ClassNotFoundException x) {
-                // OK, ignore
-            } catch (Exception x) {
-                Logger.getLogger(SystemOpenAction.class.getName()).log(Level.WARNING, null, x);
-            }
-            performer = _performer;
-        }
-
         private final Set<File> files;
         
         public ContextAction(Lookup context) {
             super(NbBundle.getMessage(SystemOpenAction.class, "CTL_SystemOpenAction"));
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             files = new HashSet<File>();
             for (DataObject d : context.lookupAll(DataObject.class)) {
                 File f = FileUtil.toFile(d.getPrimaryFile());
-                if (f == null) {
+                if (f == null || /* #144575 */Utilities.isWindows() && !f.getName().contains(".")) {
                     files.clear();
                     break;
                 }
@@ -136,50 +99,26 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             }
         }
 
-        public void actionPerformed(ActionEvent e) {
-            if (performer == null) {
-                return;
-            }
+        public @Override boolean isEnabled() {
+            return !files.isEmpty() && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN);
+        }
+
+        public @Override void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(new Runnable() { // #176879: asynch
-                public void run() {
+                public @Override void run() {
+                    Desktop desktop = Desktop.getDesktop();
                     for (File f : files) {
                         try {
-                            performer.open(f);
+                            desktop.open(f);
                         } catch (IOException x) {
                             Logger.getLogger(SystemOpenAction.class.getName()).log(Level.INFO, null, x);
-                            // XXX or perhaps notify user of problem
+                            // XXX or perhaps notify user of problem; but not very useful on Unix at least (#6940853)
                         }
                     }
                 }
             });
         }
 
-        public JMenuItem getPopupPresenter() {
-            class Menu extends JMenuItem implements DynamicMenuContent {
-                public Menu() {
-                    super(ContextAction.this);
-                }
-                public JComponent[] getMenuPresenters() {
-                    if (performer != null && !files.isEmpty()) {
-                        if (Utilities.isWindows()) { // #144575
-                            for (File f : files) {
-                                if (!f.getName().contains(".")) {
-                                    return new JComponent[0];
-                                }
-                            }
-                        }
-                        return new JComponent[] {this};
-                    } else {
-                        return new JComponent[0];
-                    }
-                }
-                public JComponent[] synchMenuPresenters(JComponent[] items) {
-                    return getMenuPresenters();
-                }
-            }
-            return new Menu();
-        }
-        
     }
     
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,17 +42,23 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.LambdaFunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -62,17 +71,17 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
-    private List<? extends Parameter> paremeters;
-    String returnType;
+    private List<? extends ParameterElement> paremeters;
+    volatile String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
     }
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType) {
@@ -87,14 +96,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType = info.getReturnType();
     }
 
-    FunctionScopeImpl(Scope inScope, IndexedFunction indexedFunction) {
-        this(inScope, indexedFunction, PhpKind.FUNCTION);
+    FunctionScopeImpl(Scope inScope, BaseFunctionElement indexedFunction) {
+        this(inScope, indexedFunction, PhpElementKind.FUNCTION);
     }
 
-    protected FunctionScopeImpl(Scope inScope, final IndexedFunction element, PhpKind kind) {
+    protected FunctionScopeImpl(Scope inScope, final BaseFunctionElement element, PhpElementKind kind) {
         super(inScope, element, kind);
         this.paremeters = element.getParameters();
-        this.returnType =  element.getReturnType();
+        this.returnType =  element.asString(PrintAs.ReturnSemiTypes);
     }
 
     public static FunctionScopeImpl createElement(Scope scope, LambdaFunctionDeclaration node) {
@@ -126,34 +135,47 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static List<String> recursionDetection = new ArrayList<String>();//#168868
 
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        if (returnType != null && returnType.length() > 0) {
-            retval = new ArrayList<TypeScope>();
-            for (String typeName : returnType.split("\\|")) {//NOI18N
+        String types = null;
+        synchronized(this) {
+            types = returnType;
+        }
+        if (types != null && types.length() > 0) {
+            boolean evaluate = types.indexOf("@") != -1;//NOI18N
+            retval = new HashSet<TypeScope>();
+            for (String typeName : types.split("\\|")) {//NOI18N
                 if (typeName.trim().length() > 0) {
-                    if (resolve && typeName.contains("@")) {//NOI18N
-                        try {
-                            if (recursionDetection.add(typeName) && recursionDetection.size() < 30) {
-                            retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                    try {
+                        recursionDetection.add(typeName);
+                        if (recursionDetection.size() < 30) {
+                            if (resolve && typeName.contains("@")) {//NOI18N
+                                retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+
+                            } else {
+                                retval.addAll(CachingSupport.getTypes(typeName, this));
                             }
-                        } finally {
-                            recursionDetection.remove(typeName);
                         }
-                    } else {
-                        retval.addAll(CachingSupport.getTypes(typeName, this));
+                    } finally {
+                        recursionDetection.remove(typeName);
                     }
                 }
             }
-            returnType = null;//NOI18N
-            for (TypeScope typeScope : retval) {
-                if (returnType == null) {
-                    returnType = typeScope.getNamespaceName().append(typeScope.getName()).toString();
-                } else {
-                    returnType += "|"+typeScope.getNamespaceName().append(typeScope.getName()).toString();//NOI18N
+            if (evaluate) {
+                StringBuilder sb = new StringBuilder();
+                for (TypeScope typeScope : retval) {
+                    if (sb.length() != 0 ) {
+                        sb.append("|");//NOI18N
+                    }
+                    sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
                 }
+                synchronized(this) {
+                    if (types.equals(returnType)) {
+                        returnType = sb.toString();
+                    }
+                }                
             }
         }
         return retval;
@@ -163,14 +185,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     public List<? extends String> getParameterNames() {
         assert paremeters != null;
         List<String> parameterNames = new ArrayList<String>();
-        for (Parameter parameter : paremeters) {
+        for (ParameterElement parameter : paremeters) {
             parameterNames.add(parameter.getName());
         }
         return parameterNames;
     }
 
     @NonNull
-    public List<? extends Parameter> getParameters() {
+    public List<? extends ParameterElement> getParameters() {
         return paremeters;
     }
 
@@ -201,7 +223,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE);
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
@@ -218,13 +240,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        List<? extends Parameter> parameters = getParameters();
+        List<? extends ParameterElement> parameters = getParameters();
         for (int idx = 0; idx < parameters.size(); idx++) {
-            Parameter parameter = parameters.get(idx);
+            ParameterElementImpl parameter = (ParameterElementImpl) parameters.get(idx);
             if (idx > 0) {
                 sb.append(',');//NOI18N
             }
-            sb.append(parameter.getIndexSignature());
+            sb.append(parameter.getSignature());
             
         }
         sb.append(";");//NOI18N
@@ -240,9 +262,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     @Override
     public QualifiedName getNamespaceName() {
-        if (indexedElement instanceof IndexedFunction) {
-            IndexedFunction indexedFunction = (IndexedFunction)indexedElement;
-            return QualifiedName.create(indexedFunction.getNamespaceName());
+        if (indexedElement instanceof FunctionElement) {
+            FunctionElement indexedFunction = (FunctionElement)indexedElement;
+            return indexedFunction.getNamespaceName();
         }
         return super.getNamespaceName();
     }

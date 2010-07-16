@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -56,6 +60,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -74,7 +80,7 @@ import org.openide.util.WeakListeners;
  * @author Radek Matous
  */
 public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener, ChangeListener {
-    private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
+    static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
 
     public static final boolean ALLOW_BROKEN = Boolean.getBoolean(CopySupport.class.getName() + ".allowBroken"); // NOI18N
 
@@ -92,7 +98,11 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     // process property changes just once
     private final RequestProcessor.Task initTask;
 
-    private volatile boolean projectOpened = false;
+    volatile boolean projectOpened = false;
+    // #187060
+    private final AtomicInteger opened = new AtomicInteger();
+    private final AtomicInteger closed = new AtomicInteger();
+
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
@@ -110,8 +120,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         remoteConnections.addChangeListener(WeakListeners.change(this, remoteConnections));
 
         initTask = COPY_SUPPORT_RP.create(new Runnable() {
-           public void run() {
-               init();
+            @Override
+            public void run() {
+                init();
             }
         });
     }
@@ -122,6 +133,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     private static RequestProcessor.Task createCopyTask() {
         return COPY_SUPPORT_RP.create(new Runnable() {
+            @Override
             public void run() {
                 Callable<Boolean> operation = OPERATIONS_QUEUE.poll();
                 while (operation != null) {
@@ -133,12 +145,15 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     operation = OPERATIONS_QUEUE.poll();
                 }
             }
-        });
+        }, true);
     }
 
     public void projectOpened() {
         LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
-        assert !projectOpened : "Copy Support already opened for project " + project.getName();
+
+        opened.incrementAndGet();
+
+        assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = true;
 
@@ -147,7 +162,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     public void projectClosed() {
         LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
-        assert projectOpened : "Copy Support already closed for project " + project.getName();
+
+        closed.incrementAndGet();
+
+        assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = false;
         unregisterFileChangeListener();
@@ -194,7 +212,16 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             }
         } else {
             fileChangeListener = new SourcesFileChangeListener(this);
-            FileUtil.addRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()));
+            FileUtil.addRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()), new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    boolean cancel = !projectOpened;
+                    if (cancel) {
+                        LOGGER.log(Level.INFO, "Adding of recursive listener interrupted for project {0}", project.getName());
+                    }
+                    return cancel;
+                }
+            });
             LOGGER.log(Level.FINE, "\t-> RECURSIVE listener registered for project {0}", project.getName());
         }
     }
@@ -229,9 +256,25 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
-    public void waitFinished() {
-        COPY_TASK.schedule(0);
-        COPY_TASK.waitFinished();
+    /**
+     * @return {@code true} if copying finished or user wants to continue
+     */
+    public boolean waitFinished() {
+        try {
+            if (!proxyOperationFactory.isEnabled()) {
+                return true;
+            }
+            if (COPY_TASK.waitFinished(200)) {
+                return true;
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return true;
+        }
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"),
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
 
     @Override
@@ -241,7 +284,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FOLDER CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -251,7 +294,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event DATA CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -261,7 +304,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE CHANGED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -271,7 +314,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE DELETED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createDeleteHandler(source));
+        prepareOperation(proxyOperationFactory.createDeleteHandler(source, fe));
     }
 
     @Override
@@ -286,9 +329,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         if (StringUtils.hasText(ext)) {
             originalName += "." + ext; // NOI18N
         }
-        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName));
+        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName, fe));
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event PROPERTY CHANGE for opened project {0}", project.getName());
@@ -296,6 +340,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event STATE CHANGE (remote connections) for opened project {0}", project.getName());
@@ -356,18 +401,18 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
 
         @Override
-        protected Callable<Boolean> createCopyHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
+        protected Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createCopyHandler(source, fileEvent), remoteFactory.createCopyHandler(source, fileEvent));
         }
 
         @Override
-        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
-            return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
+        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
+            return createHandler(localFactory.createRenameHandler(source, oldName, fileRenameEvent), remoteFactory.createRenameHandler(source, oldName, fileRenameEvent));
         }
 
         @Override
-        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
+        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createDeleteHandler(source, fileEvent), remoteFactory.createDeleteHandler(source, fileEvent));
         }
 
         private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
@@ -376,6 +421,11 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 return null;
             }
             return new ProxyHandler(localHandler, remoteHandler);
+        }
+
+        @Override
+        protected boolean isValid(FileEvent fileEvent) {
+            return true;
         }
 
         private final class ProxyHandler implements Callable<Boolean> {
@@ -387,6 +437,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 this.remoteHandler = remoteHandler;
             }
 
+            @Override
             public Boolean call() throws Exception {
                 Boolean localRetval = callLocal();
                 Boolean remoteRetval = callRemote();
@@ -476,26 +527,32 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return sources;
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             copySupport.fileFolderCreated(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             copySupport.fileDataCreated(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             copySupport.fileChanged(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             copySupport.fileDeleted(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             copySupport.fileRenamed(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             copySupport.fileAttributeChanged(fe);
         }

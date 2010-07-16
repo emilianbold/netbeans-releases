@@ -42,12 +42,12 @@ import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConnectionFactory;
-import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.ScEncrypt;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConnectionFactory;
+import com.sun.etl.jdbc.DBConstants;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.utils.ScEncrypt;
+import com.sun.etl.utils.StringUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -405,7 +405,9 @@ public class AxionStatements extends BaseStatements {
         if (StringUtil.isNullString(orgPropertiesList)) {
             orgPropertiesList = "";
         }
-        vContext.put("orgProperties", orgPropertiesList);
+        //vContext.put("orgProperties", orgPropertiesList);
+        vContext.put("orgPropertiesList", orgPropertiesList);
+        vContext.put("tableName", table.getName());
 
         sqlBuf.append(TemplateBuilder.generateSql(this.db.getTemplateFileName("createExternal"), vContext));
 

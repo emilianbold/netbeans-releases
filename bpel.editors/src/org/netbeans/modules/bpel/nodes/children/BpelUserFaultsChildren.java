@@ -16,9 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.nodes.children;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,9 +27,9 @@ import java.util.Set;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 
-import org.netbeans.modules.bpel.model.api.BpelContainer;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitorAdaptor;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -59,7 +59,8 @@ import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.ext.Extensions;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
-
+import org.netbeans.modules.xml.clazz.ClazzLoader;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -74,43 +75,47 @@ import org.openide.util.Lookup;
 public class BpelUserFaultsChildren extends Children.Keys {
     
     private Lookup myLookup;
+    private List<File> myArchives;
     private FaultNameStandardChildren mStandardFaultsChildren;
     private WsdlImportsChildren mWsdlImportFaultsChildren;
     
     @SuppressWarnings("unchecked")
-    public BpelUserFaultsChildren(Process process, Lookup lookup, 
-            FaultNameStandardChildren standardFaultsChildren, 
-            WsdlImportsChildren wsdlImportFaultsChildren) {
+    public BpelUserFaultsChildren(Process process, Lookup lookup, FaultNameStandardChildren standardFaultsChildren, WsdlImportsChildren wsdlImportFaultsChildren) {
         myLookup = lookup;
         mStandardFaultsChildren = standardFaultsChildren;
         mWsdlImportFaultsChildren = wsdlImportFaultsChildren;
         //
         if (process != null) {
+            myArchives = ReferenceUtil.getArchiveFiles(SoaUtil.getFileObjectByModel(process.getModel()));
             setKeys(new Object[] {process});
         }
     }
-    
+
     protected Node[] createNodes(Object key) {
-        if (!(key instanceof Process)) {
+        if ( !(key instanceof Process)) {
             return null;
         }
-        Process process = (Process)key;
+        Process process = (Process) key;
         //
-        SearchFaultVisitor sfVisitor = new SearchFaultVisitor();
-        process.accept(sfVisitor);
-        HashSet<QName> allUsedFaultNames = sfVisitor.getAllUsedFaultNames();
+        SearchFaultVisitor visitor = new SearchFaultVisitor();
+        process.accept(visitor);
+        HashSet<QName> allUsedFaultNames = visitor.getAllUsedFaultNames();
         //
-        Set<QName> standardFaultNames = 
-                mStandardFaultsChildren.getStandardFaultNames();
+        List<Class<?>> exceptions = new ClazzLoader().getExceptions(myArchives);
+
+        for (Class<?> exception : exceptions) {
+            String name = replace(exception.getName(), "$", ".."); // NOI18N
+            allUsedFaultNames.add(new QName(Extensions.ERROR_HANDLER_URI, name, "sxeh")); // NOI18N
+        }
+        //
+        Set<QName> standardFaultNames = mStandardFaultsChildren.getStandardFaultNames();
         allUsedFaultNames.removeAll(standardFaultNames);
         //
-         Set<QName> systemFault = new HashSet<QName>();
-        systemFault.add( new QName(Extensions.ERROR_EXT_URI, 
-                Extensions.SYSTEM_FAULT_NAME)); 
+        Set<QName> systemFault = new HashSet();
+        systemFault.add( new QName(Extensions.ERROR_HANDLER_URI, Extensions.SYSTEM_FAULT_NAME)); 
         allUsedFaultNames.removeAll(systemFault);
         //
-        Set<QName> wsdlFaultNames = 
-                mWsdlImportFaultsChildren.getImportedWsdlFaultNames();
+        Set<QName> wsdlFaultNames = mWsdlImportFaultsChildren.getImportedWsdlFaultNames();
         allUsedFaultNames.removeAll(wsdlFaultNames);
         //
         ArrayList<Node> nodesList = new ArrayList<Node>();
@@ -118,13 +123,11 @@ public class BpelUserFaultsChildren extends Children.Keys {
         NodeFactory nodeFactory = myLookup.lookup(NodeFactory.class);
         for (QName faultQName : allUsedFaultNames) {
             @SuppressWarnings("unchecked")
-            Node newNode = nodeFactory.createNode(
-                    NodeType.FAULT, faultQName, myLookup);
+            Node newNode = nodeFactory.createNode(NodeType.FAULT, faultQName, myLookup);
             nodesList.add(newNode);
         }
         //
-        BpelNode.DisplayNameComparator comparator =
-                new BpelNode.DisplayNameComparator();
+        BpelNode.DisplayNameComparator comparator = new BpelNode.DisplayNameComparator();
         Collections.sort(nodesList, comparator);
         Node[] resultNodes = nodesList.toArray(new Node[nodesList.size()]);
         return resultNodes;
@@ -173,8 +176,7 @@ public class BpelUserFaultsChildren extends Children.Keys {
                 }
                 //    
                 if (!isTheSameNsUri) {
-                    newFaultName = new QName(newNsUri, 
-                            newFaultName.getLocalPart(), prefix);
+                    newFaultName = new QName(newNsUri, newFaultName.getLocalPart(), prefix);
                 }
             }
             //
@@ -306,7 +308,5 @@ public class BpelUserFaultsChildren extends Children.Keys {
         public void visit( TerminationHandler handler ) {
             visitChildren(handler);
         }
-
     }
-    
 }

@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,15 +30,11 @@ import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
-
 /**
  * @author ads
  *
  */
-public class ImportImpl extends NamespaceSpecImpl 
-    implements Import, AfterExtensions 
-{
-
+public class ImportImpl extends NamespaceSpecImpl implements Import, AfterExtensions {
 
     ImportImpl( BpelModelImpl model, Element e ) {
         super(model, e);

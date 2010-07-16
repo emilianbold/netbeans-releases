@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,20 +87,21 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     public final static int BROWSER_FOLDERS_SELECTION_ONLY      = 8;
     public final static int BROWSER_SELECT_ANYTHING = BROWSER_FOLDERS_SELECTION_ONLY | BROWSER_FILES_SELECTION_ONLY;
 
-    public final static String BROWSER_HELP_ID_SEARCH_HISTORY   = "org.netbeans.modules.subversion.ui.browser.searchhistory";
-    public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";
-    public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";
-    public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";
-    public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";
-    public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";
-    public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";
+    public final static String BROWSER_HELP_ID_SEARCH_HISTORY   = "org.netbeans.modules.subversion.ui.browser.searchhistory"; // NOI18N
+    public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";      // NOI18N
+    public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";    // NOI18N
+    public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";         // NOI18N
+    public final static String BROWSER_HELP_ID_MERGE_TAG        = "org.netbeans.modules.subversion.ui.browser.mergetag";      // NOI18N
+    public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";      // NOI18N
+    public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";          // NOI18N
+    public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";        // NOI18N
     
     private final int mode;
     
     private final String helpID;
 
     private final String username;
-    private final String password;
+    private final char[] password;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];
@@ -139,7 +143,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                    RepositoryFile repositoryRoot,
                    RepositoryFile[] select,
                    String username,
-                   String password,
+                   char[] password,
                    BrowserAction[] nodeActions,
                    String helpID) {
         this.mode = mode;       
@@ -150,9 +154,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
          * or both are non-null:
          */
         this.username = username;
-        this.password = (username == null) ? null
-                                           : (password != null) ? password
-                                                                : "";   //NOI18N
+        this.password = (username == null) ? null : password;
         
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(Browser.class, "ACSN_RepositoryTree"),                                            // NOI18N
@@ -222,7 +224,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     
     private boolean show() {
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); 
+                new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); // NOI18N
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(helpID));
         dialogDescriptor.setValid(false);
@@ -240,7 +242,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         });        
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); // NOI18N
         dialog.setVisible(true);                
 
         return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());

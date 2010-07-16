@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,20 +50,28 @@ import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
@@ -77,8 +88,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
@@ -88,14 +101,13 @@ import org.openide.util.actions.Presenter;
  * Also tries to provide display labels for {@link InstanceDataObject}s.
  * @author Jesse Glick
  */
-final class BadgingSupport implements FileSystem.Status, FileChangeListener {
+final class BadgingSupport implements SynchronousStatus, FileChangeListener {
 
     static final RequestProcessor RP = new RequestProcessor(BadgingSupport.class.getName());
+    private static final Logger LOG = Logger.getLogger(BadgingSupport.class.getName());
 
     /** for branding/localization like "_f4j_ce_ja"; never null, but may be "" */
     private String suffix = "";
-    /** classpath in which to look up resources; may be null but then nothing will be found... */
-    private ClassPath classpath;
     private final FileSystem fs;
     private final FileChangeListener fileChangeListener;
     private final List<FileStatusListener> listeners = new ArrayList<FileStatusListener>();
@@ -108,10 +120,6 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         this.fs = fs;
         fileChangeListener = FileUtil.weakFileChangeListener(this, null);
         fs.addFileChangeListener(fileChangeListener);
-    }
-    
-    public void setClasspath(ClassPath classpath) {
-        this.classpath = classpath;
     }
     
     public void setSuffix(String suffix) {
@@ -143,20 +151,24 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
         RP.post(new Runnable() {
             public void run() {
-                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
+                Set<FileObject> toFire = new HashSet<FileObject>(files);
+                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, toFire);
                 synchronized (names) {
                     for (FileObject f : files) {
                         names.put(f.getPath(), r);
                     }
                 }
-                fireFileStatusChanged(new FileStatusEvent(fs, files, false, true));
+                fireFileStatusChanged(new FileStatusEvent(fs, toFire, false, true));
             }
         });
         return name;
     }
-    
+    public @Override String annotateNameSynch(String name, Set<? extends FileObject> files) {
+        // XXX could participate in names cache
+        return annotateNameGeneral(name, files, suffix, null, null);
+    }
     private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
-            String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
+            String suffix, FileChangeListener fileChangeListener, Set<FileObject> toFire) {
         for (FileObject fo : files) {
             // #168446: try <attr name="displayName" bundlevalue="Bundle#key"/> first
             String bundleKey = (String) fo.getAttribute("literal:displayName"); // NOI18N
@@ -178,13 +190,14 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
             if (bundleName != null) {
                 try {
-                    URL[] u = LayerUtils.currentify(LayerUtils.urlForBundle(bundleName), suffix, cp);
+                    URL[] u = LayerUtils.currentify(LayerUtils.urlForBundle(bundleName), suffix, classpathForFile(fo));
                     for (int i = 0; i < u.length; i++) {
                     InputStream is = u[i].openStream();
                     try {
                         Properties p = new Properties();
                         p.load(is);
                         String val = p.getProperty(bundleKey);
+                        if (fileChangeListener != null) {
                         // Listen to changes in the origin file if any...
                         FileObject ufo = URLMapper.findFileObject(u[i]);
                         if (ufo != null) {
@@ -194,9 +207,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                             ufo.getParent().removeFileChangeListener(fileChangeListener);
                             ufo.getParent().addFileChangeListener(fileChangeListener);
                         }
+                        }
                         if (val != null) {
-                            if (fo.getPath().startsWith("Menu/")) { // NOI18N
-                                // Special-case menu folders to trim the mnemonics, since they are ugly.
+                            if (fo.getPath().matches("(Menu|Toolbars)/.+")) { // NOI18N
+                                // Special-case these folders to trim the mnemonics, since they are ugly.
                                 return Actions.cutAmpersand(val);
                             } else {
                                 return val;
@@ -226,7 +240,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         orig = null;
                     }
                     if (orig != null && orig.hasExt("instance")) { // NOI18N
-                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp);
+                        if (toFire != null) {
+                            toFire.add(orig);
+                        }
+                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, toFire);
                     }
                 }
             }
@@ -277,7 +294,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         } catch (Exception e) {
             // ignore, OK
-            Logger.getLogger(BadgingSupport.class.getName()).log(Level.FINE, "Ignored exception: (" + e.getClass().getSimpleName() + ") " + e.getMessage());
+            LOG.log(Level.FINE, "Ignored exception: ({0}) {1}", new Object[] {e.getClass().getSimpleName(), e.getMessage()});
         }
         // OK, probably a developed module, so take a guess.
         String clazz = (String) fo.getAttribute("instanceClass"); // NOI18N
@@ -307,6 +324,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     }
     
     public Image annotateIcon(final Image icon, int type, final Set<? extends FileObject> files) {
+        assert icon != null;
         final boolean big;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             big = false;
@@ -327,6 +345,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         RP.post(new Runnable() {
             public void run() {
                 Image r = annotateIconGeneral(icon, big, files);
+                assert r != null : files;
                 synchronized (icons) {
                     for (FileObject f : files) {
                         icons.put(f.getPath(), r);
@@ -336,6 +355,18 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         });
         return icon;
+    }
+    public @Override Image annotateIconSynch(Image icon, int type, Set<? extends FileObject> files) {
+        final boolean big;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            big = false;
+        } else if (type == BeanInfo.ICON_COLOR_32x32) {
+            big = true;
+        } else {
+            return icon;
+        }
+        // XXX could participate in bigIcons/smallIcons cache
+        return annotateIconGeneral(icon, big, files);
     }
     private Image annotateIconGeneral(Image icon, boolean big, Set<? extends FileObject> files) {
         for (FileObject fo : files) {
@@ -356,7 +387,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
             if (value != null) {
                 try {
-                    URL[] u = LayerUtils.currentify((URL) value, suffix, classpath);
+                    URL[] u = LayerUtils.currentify((URL) value, suffix, classpathForFile(fo));
                     FileObject ufo = URLMapper.findFileObject(u[0]);
                     if (ufo != null) {
                         ufo.removeFileChangeListener(fileChangeListener);
@@ -364,8 +395,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     }
                     return Toolkit.getDefaultToolkit().getImage(u[0]);
                 } catch (Exception e) {
-                    //e.printStackTrace(LayerDataNode.getErr());
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    LOG.log(Level.INFO, "For " + value + " on " + fo.getPath(), e);
                 }
             }
         }
@@ -391,6 +421,9 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         someFileChange();
     }
     public void fileAttributeChanged(FileAttributeEvent fe) {
+        if ("DataEditorSupport.read-only.refresh".equals(fe.getName())) { // NOI18N
+            return;
+        }
         someFileChange();
     }
     public void fileRenamed(FileRenameEvent fe) {
@@ -417,4 +450,42 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         });
     }
 
+    private static ClassPath classpathForFile(FileObject fo) {
+        URL[] layers = (URL[]) fo.getAttribute("layers"); // NOI18N
+        if (layers != null) {
+            for (URL layer : layers) {
+                URL jar = FileUtil.getArchiveFile(layer);
+                if (jar != null) {
+                    List<URL> roots = new ArrayList<URL>();
+                    roots.add(FileUtil.getArchiveRoot(jar));
+                    Matcher m = Pattern.compile("(file:.+/)([^/]+)[.]jar").matcher(jar.toString()); // NOI18N
+                    if (m.matches()) {
+                        try {
+                            for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
+                                roots.add(new URL("jar:" + m.group(1) + "locale/" + m.group(2) + suffix + ".jar!/")); // NOI18N
+                            }
+                        } catch (MalformedURLException x) {
+                            LOG.log(Level.WARNING, "could not find locale variants of " + jar, x);
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "could not find locale variants of {0}", jar);
+                    }
+                    LOG.log(Level.FINE, "from {0} getting {1}", new Object[] {layer, roots});
+                    return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+                }
+                Project p;
+                try {
+                    p = FileOwnerQuery.getOwner(layer.toURI());
+                    if (p != null) {
+                        return LayerUtils.findResourceCP(p);
+                    }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        LOG.log(Level.WARNING, "no classpath found for {0} @{1}", new Object[] {fo, Arrays.toString(layers)});
+        return ClassPathSupport.createClassPath(new URL[0]);
+    }
+    
 }

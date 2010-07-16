@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
@@ -27,10 +28,14 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
 
     private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
 
+    private TreeCellRenderer renderer;
+    
+    private SchemaArtifactTreeCellEditor editor;
     
     /** Creates new form DatabaseTableColumnSelectionPanel */
     public DatabaseTableColumnSelectionPanel() {
         initComponents();
+        initUI();
     }
 
     /** This method is called from within the constructor to
@@ -46,9 +51,11 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
 
+        jLabel1.setLabelFor(jTree1);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel1.text")); // NOI18N
 
         jScrollPane2.setViewportView(jTree1);
+        jTree1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jTree1.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -58,20 +65,30 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
+    public JTree getTableColumnsTree() {
+        return this.jTree1;
+    }
+    
+    public SchemaArtifactTreeCellEditor getSchemaArtifactTreeCellEditor() {
+        return this.editor;
+    }
+    
     public void setSelectedTables(List<TableInfo> tables) {
     	if(tables == null) {
     		return;
@@ -81,9 +98,11 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
     	
         DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables, this.mExistingColumnNames);
         this.jTree1.setModel(model);
+        editor.setExistingArtifactList(mExistingColumnNames);
+        
         this.jTree1.setRootVisible(false);
-        TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
-        TreeCellEditor editor = new SchemaArtifactTreeCellEditor(jTree1, renderer, this.mExistingColumnNames);
+//        TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
+//        TreeCellEditor editor = new SchemaArtifactTreeCellEditor(jTree1, renderer, this.mExistingColumnNames);
         this.jTree1.setCellRenderer(renderer);
         this.jTree1.setCellEditor(editor);
         this.jTree1.setEditable(true);
@@ -129,6 +148,14 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
     	//remove old invalid columns
     	this.mExistingColumnNames.removeAll(invalidExistingColumns);
     	
+    }
+    
+    private void initUI() {
+        String selectedTableLabel = org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel1.text");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, selectedTableLabel);
+
+        this.renderer = new SchemaArtifactTreeCellRenderer();
+        this.editor = new SchemaArtifactTreeCellEditor(jTree1, renderer, this.mExistingColumnNames);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

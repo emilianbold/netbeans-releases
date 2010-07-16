@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -257,6 +260,11 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         
         private void paintMatcher(Graphics2D g, Color fillClr, 
                 int leftX, int rightX, int upL, int upR, int doR, int doL) {
+            int topY = Math.min(upL, upR), bottomY = Math.max(doL, doR);
+            // try rendering only curves in viewable area
+            if (!g.hitClip(leftX, topY, rightX - leftX, bottomY - topY)) {
+                return;
+            }
             CubicCurve2D upper = new CubicCurve2D.Float(leftX, upL,
                     (rightX -leftX)*.3f, upL,
                     (rightX -leftX)*.7f, upR,

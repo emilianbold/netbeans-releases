@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -145,7 +148,7 @@ final class WorkspaceParser {
         }
         Document xml;
         try {
-            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(workspace.getUserJSFLibraries() + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -156,10 +159,10 @@ final class WorkspaceParser {
             !JSF_LIB_NS.equals(root.getNamespaceURI())) {
             return;
         }
-        for (Element el : Util.findSubElements(root)) {
+        for (Element el : XMLUtil.findSubElements(root)) {
             String libraryName = el.getAttribute("Name"); // NOI18N
             List<String> jars = new ArrayList<String>();
-            for (Element file : Util.findSubElements(el)) {
+            for (Element file : XMLUtil.findSubElements(el)) {
                 String path = file.getAttribute("SourceLocation"); // NOI18N
                 if (!"false".equals(file.getAttribute("RelativeToWorkspace"))) { // NOI18N
                     path = new File(workspace.getDirectory(), path).getPath();

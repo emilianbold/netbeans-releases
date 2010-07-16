@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,12 +72,13 @@ public enum DependencyKind {
     public Set<ArtifactKind> supportedArtifacts() {
         switch (this) {
             case CLASSIC_LIB :
+            case EXTENSION_LIB :
             case JAVA_PROJECT :
                 return EnumSet.of(ArtifactKind.ORIGIN);
-            case EXTENSION_LIB :
             case CLASSIC_LIB_JAR :
-                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE);
+                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE, ArtifactKind.EXP_FILE);
             case EXTENSION_LIB_JAR :
+                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE);
             case RAW_JAR :
                 return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SOURCES_PATH);
             case JAR_WITH_EXP_FILE :
@@ -86,10 +90,12 @@ public enum DependencyKind {
 
     public Set<DeploymentStrategy> supportedDeploymentStrategies() {
         switch (this) {
-            case EXTENSION_LIB:
-            case EXTENSION_LIB_JAR:
             case JAR_WITH_EXP_FILE :
+                return EnumSet.of(DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
+            case EXTENSION_LIB_JAR:
             case CLASSIC_LIB_JAR:
+                return EnumSet.of(DeploymentStrategy.DEPLOY_TO_CARD, DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
+            case EXTENSION_LIB:
             case CLASSIC_LIB :
                 return EnumSet.of(DeploymentStrategy.DEPLOY_TO_CARD, DeploymentStrategy.ALREADY_ON_CARD);
             case RAW_JAR :

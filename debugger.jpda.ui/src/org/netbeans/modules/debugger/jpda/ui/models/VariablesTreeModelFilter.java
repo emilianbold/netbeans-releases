@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -81,6 +85,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -99,7 +104,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private RequestProcessor.Task evaluationTask;
     
-    private LinkedList evaluationQueue = new LinkedList();
+    private final LinkedList evaluationQueue = new LinkedList();
 
     private EvaluatorListener evalListener;
     private VariablesPreferenceChangeListener prefListener;
@@ -112,8 +117,10 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         CodeEvaluator.addResultListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
+        preferences.addPreferenceChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class, prefListener, preferences));
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
-        properties.addPropertyChangeListener(prefListener);
+        properties.addPropertyChangeListener(WeakListeners.propertyChange(prefListener, properties));
     }
 
     /** 
@@ -146,6 +153,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     }
     
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
+        //Logger.getLogger(VariablesTreeModelFilter.class.getName()).fine("postEvaluationMonitor("+o+", whenEvaluated="+(whenEvaluated != null)+")");
+        //Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.FINE, "Called from ", new IllegalStateException("TEST POST EVAL MONITOR"));
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
                 evaluationQueue.contains(whenEvaluated)) return ;
@@ -260,12 +269,28 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @return  true if node is leaf
      */
     public boolean isLeaf (
-        TreeModel original, 
-        Object node
+        final TreeModel original,
+        final Object node
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
-            return original.isLeaf (node);
+        final boolean[] unfilteredIsLeaf = new boolean[] { false };
+        VariablesFilter vf = getFilter (node, true, new Runnable() {
+            public void run() {
+                VariablesFilter vf = getFilter (node, false, null);
+                if (vf == null) return ;
+                try {
+                    boolean filteredIsLeaf = vf.isLeaf (original, (Variable) node);
+                    if (filteredIsLeaf != unfilteredIsLeaf[0]) {
+                        fireChildrenChange(node);
+                    }
+                } catch (UnknownTypeException utex) {
+                }
+            }
+        });
+        if (vf == null) {
+            boolean isLeaf = original.isLeaf (node);
+            unfilteredIsLeaf[0] = isLeaf;
+            return isLeaf;
+        }
         return vf.isLeaf (original, (Variable) node);
     }
 
@@ -291,7 +316,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
-    private void fireChildrenChange(Object row) {
+    void fireChildrenChange(Object row) {
         Object[] listeners;
         synchronized (modelListeners) {
             listeners = modelListeners.toArray();
@@ -336,6 +361,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     public String getIconBase (final NodeModel original, final Object node) 
     throws UnknownTypeException {
+        Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.WARNING,
+                "Obsolete getIconBase() method was called!",
+                new IllegalStateException("getIconBaseWithExtension() should be called!"));
         final String[] unfilteredIconBase = new String[] { null };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
@@ -428,7 +456,6 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             value = original.getValueAt (row, columnID);
         } else {
             value = vf.getValueAt (original, (Variable) row, columnID);
-            fireChildrenChange(row);
         }
         return value;
     }

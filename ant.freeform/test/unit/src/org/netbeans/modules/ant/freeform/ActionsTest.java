@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,8 +58,6 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
@@ -64,7 +65,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -200,11 +200,10 @@ public class ActionsTest extends TestBase {
     }
     
     public void testLogicalViewActions() throws Exception {
-        Action[] actions = lvp.createLogicalView().getActions(false);
+        Action[] actions = Actions.contextMenuCustomActions(simple);
         assertNotNull("have some context actions", actions);
         ResourceBundle bundle = NbBundle.getBundle(Actions.class);
         assertEquals("correct labels", Arrays.asList(
-            (String) CommonProjectActions.newFileAction().getValue(Action.NAME),
             null,
             bundle.getString("CMD_build"),
             bundle.getString("CMD_clean"),
@@ -215,31 +214,15 @@ public class ActionsTest extends TestBase {
             bundle.getString("CMD_javadoc"),
             "Generate XDocs",
             null,
-            "Create Distribution",
-            null,
-            (String) CommonProjectActions.setAsMainProjectAction().getValue(Action.NAME),
-            (String) CommonProjectActions.openSubprojectsAction().getValue(Action.NAME),
-            (String) CommonProjectActions.closeProjectAction().getValue(Action.NAME),
-            null,
-            (String) CommonProjectActions.renameProjectAction().getValue(Action.NAME),
-            (String) CommonProjectActions.moveProjectAction().getValue(Action.NAME),
-            (String) CommonProjectActions.copyProjectAction().getValue(Action.NAME),
-            (String) CommonProjectActions.deleteProjectAction().getValue(Action.NAME),
-            null,
-            (String) SystemAction.get(FindAction.class).getValue(Action.NAME),
-            null,
-            /* Fix for IZ#107597
-             * (String) SystemAction.get(ToolsAction.class).getValue(Action.NAME),
-            null,*/
-            (String) CommonProjectActions.customizeProjectAction().getValue(Action.NAME)),
+            "Create Distribution"),
             findActionLabels(actions));
-        Action javadocAction = actions[8];
+        Action javadocAction = actions[7];
         assertEquals("this is Run Javadoc", bundle.getString("CMD_javadoc"), javadocAction.getValue(Action.NAME));
         runContextMenuAction(javadocAction, simple);
         AntTargetInvocation inv = new AntTargetInvocation(buildXml, new String[] {"build-javadoc"}, Collections.singletonMap("from-ide", "true"));
         assertEquals("ran right target", Collections.singletonList(inv), targetsRun);
         targetsRun.clear();
-        Action xdocsAction = actions[9];
+        Action xdocsAction = actions[8];
         assertEquals("this is Generate XDocs", "Generate XDocs", xdocsAction.getValue(Action.NAME));
         runContextMenuAction(xdocsAction, simple);
         inv = new AntTargetInvocation(buildXml, new String[] {"generate-xdocs"}, Collections.singletonMap("from-ide", "true"));

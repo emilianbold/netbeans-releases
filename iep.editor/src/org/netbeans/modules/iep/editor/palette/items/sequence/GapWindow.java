@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.iep.editor.palette.items.sequence;
 
-import org.netbeans.modules.iep.editor.tcg.palette.TcgActiveEditorDrop;
+import org.netbeans.modules.tbls.editor.palette.TcgActiveEditorDrop;
 
 /*
  * GapWindow.java

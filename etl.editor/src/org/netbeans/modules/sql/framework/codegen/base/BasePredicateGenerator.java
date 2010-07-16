@@ -24,7 +24,7 @@ import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.codegen.TemplateBuilder;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLPredicate;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * @author Ritesh Adval

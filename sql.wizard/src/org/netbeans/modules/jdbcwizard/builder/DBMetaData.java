@@ -59,7 +59,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.openide.ErrorManager;
 
 /**
  * Extracts database metadata information (table names and constraints, their associated columns,
@@ -67,8 +67,8 @@ import java.util.logging.Logger;
  * 
  * @author
  */
-
 class DriverShim implements Driver {
+
     private final Driver driver;
 
     DriverShim(final Driver d) {
@@ -105,16 +105,12 @@ public final class DBMetaData {
 
     /** Index to the name field for results of table/view/procedure searches */
     public static final int NAME = 0;
-
     /** Index to the catalog field for results of table/view/procedure searches */
     public static final int CATALOG = 1;
-
     /** Index to the schema field for results of table/view/procedure searches */
     public static final int SCHEMA = 2;
-
     /** Index to the type field for results of table/view/procedure searches */
     public static final int TYPE = 3;
-
     /** Database OTD type for DB2 */
     public static final String DB2 = "DB2"; // NOI18N
 
@@ -145,9 +141,11 @@ public final class DBMetaData {
     /** Database type display description for SQL Server */
     public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
 
-	/** Database type display description for MySQL Server */
+    /** Database type display description for MySQL Server */
     public static final String MYSQL_TEXT = "MySQL"; // NOI18N
-	public static final String MYSQL = "MYSQL"; // NOI18N
+
+    public static final String MYSQL = "MYSQL"; // NOI18N
+
     /** Database type display description for JDBC */
     // public static final String JDBC_TEXT = "JDBC"; // NOI18N
     /** Database type display description for VSAM/ADABAS/IAM */
@@ -157,72 +155,104 @@ public final class DBMetaData {
     public static final String JDBC_TEXT = "JDBC-ODBC"; // NOI18N
 
     /** List of database type display descriptions */
-    public static final String[] DBTYPES = { DBMetaData.DB2_TEXT, DBMetaData.ORACLE_TEXT, DBMetaData.SQLSERVER_TEXT, DBMetaData.JDBC_TEXT, DBMetaData.VSAM_ADABAS_IAM_TEXT, DBMetaData.JDBC_TEXT,DBMetaData.MYSQL_TEXT };
-
+    public static final String[] DBTYPES = {DBMetaData.DB2_TEXT, DBMetaData.ORACLE_TEXT, DBMetaData.SQLSERVER_TEXT, DBMetaData.JDBC_TEXT, DBMetaData.VSAM_ADABAS_IAM_TEXT, DBMetaData.JDBC_TEXT, DBMetaData.MYSQL_TEXT};
     /** List of Java types */
-    public static final String[] JAVATYPES = { "boolean", "byte", "byte[]", "double", "float", "int",
-            "java.lang.String", "java.lang.Object", "java.math.BigDecimal", "java.net.URL", "java.sql.Array",
-            "java.sql.Blob", "java.sql.Clob", "java.sql.Date", "java.sql.Ref", "java.sql.Struct", "java.sql.Time",
-            "java.sql.Timestamp", "long", "short" };
-
+    public static final String[] JAVATYPES = {"boolean", "byte", "byte[]", "double", "float", "int",
+        "java.lang.String", "java.lang.Object", "java.math.BigDecimal", "java.net.URL", "java.sql.Array",
+        "java.sql.Blob", "java.sql.Clob", "java.sql.Date", "java.sql.Ref", "java.sql.Struct", "java.sql.Time",
+        "java.sql.Timestamp", "long", "short"
+    };
     /** List of JDBC SQL types */
-    public static final String[] SQLTYPES = { "ARRAY", "BIGINT", "BINARY", "BIT", "BLOB", "BOOLEAN", "CHAR", "CLOB",
-            "DATALINK", "DATE", "DECIMAL", "DISTINCT", "DOUBLE", "FLOAT", "INTEGER", "JAVA_OBJECT", "LONGVARBINARY",
-            "LONGVARCHAR", "NULL", "NUMERIC", "OTHER", "REAL", "REF", "SMALLINT", "STRUCT", "TIME", "TIMESTAMP",
-            "TINYINT", "VARBINARY", "VARCHAR" };
-
+    public static final String[] SQLTYPES = {"ARRAY", "BIGINT", "BINARY", "BIT", "BLOB", "BOOLEAN", "CHAR", "CLOB",
+        "DATALINK", "DATE", "DECIMAL", "DISTINCT", "DOUBLE", "FLOAT", "INTEGER", "JAVA_OBJECT", "LONGVARBINARY",
+        "LONGVARCHAR", "NULL", "NUMERIC", "OTHER", "REAL", "REF", "SMALLINT", "STRUCT", "TIME", "TIMESTAMP",
+        "TINYINT", "VARBINARY", "VARCHAR"
+    };
     public static final int[] SQLTYPE_CODES = {
-            java.sql.Types.ARRAY,
-            java.sql.Types.BIGINT,
-            java.sql.Types.BINARY,
-            java.sql.Types.BIT,
-            java.sql.Types.BLOB,
-            16, // java.sql.Types.BOOLEAN,
-            java.sql.Types.CHAR,
-            java.sql.Types.CLOB,
-            70, // case java.sql.Types.DATALINK,
-            java.sql.Types.DATE, java.sql.Types.DECIMAL, java.sql.Types.DISTINCT, java.sql.Types.DOUBLE,
-            java.sql.Types.FLOAT, java.sql.Types.INTEGER, java.sql.Types.JAVA_OBJECT, java.sql.Types.LONGVARBINARY,
-            java.sql.Types.LONGVARCHAR, java.sql.Types.NULL, java.sql.Types.NUMERIC, java.sql.Types.OTHER,
-            java.sql.Types.REAL, java.sql.Types.REF, java.sql.Types.SMALLINT, java.sql.Types.STRUCT,
-            java.sql.Types.TIME, java.sql.Types.TIMESTAMP, java.sql.Types.TINYINT, java.sql.Types.VARBINARY,
-            java.sql.Types.VARCHAR };
-
+        java.sql.Types.ARRAY,
+        java.sql.Types.BIGINT,
+        java.sql.Types.BINARY,
+        java.sql.Types.BIT,
+        java.sql.Types.BLOB,
+        16, // java.sql.Types.BOOLEAN,
+        java.sql.Types.CHAR,
+        java.sql.Types.CLOB,
+        70, // case java.sql.Types.DATALINK,
+        java.sql.Types.DATE, java.sql.Types.DECIMAL, java.sql.Types.DISTINCT, java.sql.Types.DOUBLE,
+        java.sql.Types.FLOAT, java.sql.Types.INTEGER, java.sql.Types.JAVA_OBJECT, java.sql.Types.LONGVARBINARY,
+        java.sql.Types.LONGVARCHAR, java.sql.Types.NULL, java.sql.Types.NUMERIC, java.sql.Types.OTHER,
+        java.sql.Types.REAL, java.sql.Types.REF, java.sql.Types.SMALLINT, java.sql.Types.STRUCT,
+        java.sql.Types.TIME, java.sql.Types.TIMESTAMP, java.sql.Types.TINYINT, java.sql.Types.VARBINARY,
+        java.sql.Types.VARCHAR
+    };
     /** Map SQL type to Java type */
     public static final HashMap SQLTOJAVATYPES = new HashMap();
+    
+
     static {
         DBMetaData.SQLTOJAVATYPES.put("ARRAY", "java.sql.Array"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("BIGINT", "long"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("BINARY", "byte[]"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("BIT", "boolean"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("BLOB", "java.sql.Blob"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("BOOLEAN", "boolean"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("CHAR", "java.lang.String"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("CLOB", "java.sql.Clob"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("DATALINK", "java.net.URL"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("DATE", "java.sql.Date"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("DECIMAL", "java.math.BigDecimal"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("DISTINCT", "java.lang.String"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("DOUBLE", "double"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("FLOAT", "double"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("INTEGER", "int"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("JAVA_OBJECT", "java.lang.Object"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("LONGVARBINARY", "byte[]"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("LONGVARCHAR", "java.lang.String"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("NULL", "java.lang.String"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("NUMERIC", "java.math.BigDecimal"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("OTHER", "java.lang.String"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("REAL", "float"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("REF", "java.sql.Ref"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("SMALLINT", "short"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("STRUCT", "java.sql.Struct"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("TIME", "java.sql.Time"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("TIMESTAMP", "java.sql.Timestamp"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("TINYINT", "byte"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("VARBINARY", "byte[]"); // NOI18N
+
         DBMetaData.SQLTOJAVATYPES.put("VARCHAR", "java.lang.String"); // NOI18N
         // added abey for Procedure ResultSets
+
         DBMetaData.SQLTOJAVATYPES.put("RESULTSET", "java.sql.ResultSet"); // NOI18N
+
     }
 
     // String used in java.sql.DatabaseMetaData to indicate system tables.
@@ -247,7 +277,7 @@ public final class DBMetaData {
     //private boolean errPrepStmtParameters = false; // error getting prep. stmt. parameters
 
     //private boolean errPrepStmtResultSetColumns = false; // error getting prep. stmt. resultset
-
+    private String sqlText;
     // columns
 
     /**
@@ -256,11 +286,11 @@ public final class DBMetaData {
      * @param newTable Table to get the primary key(s) for
      * @throws Exception DOCUMENT ME!
      */
-    public static final void checkPrimaryKeys(final Table newTable,final Connection connection) throws Exception {
+    public static final void checkPrimaryKeys(final Table newTable, final Connection connection) throws Exception {
         //this.errMsg = "";
         try {
             // get the primary keys
-            final List primaryKeys = getPrimaryKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName(),connection);
+            final List primaryKeys = getPrimaryKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName(), connection);
 
             if (primaryKeys.size() != 0) {
                 newTable.setPrimaryKeyColumnList(primaryKeys);
@@ -295,11 +325,11 @@ public final class DBMetaData {
      * @param newTable Table to get the foreign key(s) for
      * @throws Exception DOCUMENT ME!
      */
-    public static void checkForeignKeys(final Table newTable,final Connection connection) throws Exception {
+    public static void checkForeignKeys(final Table newTable, final Connection connection) throws Exception {
         //this.errMsg = "";
         try {
             // get the foreing keys
-            final List foreignKeys = getForeignKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName(),connection);
+            final List foreignKeys = getForeignKeys(newTable.getCatalog(), newTable.getSchema(), newTable.getName(), connection);
             if (foreignKeys != null) {
                 newTable.setForeignKeyColumnList(foreignKeys);
 
@@ -327,7 +357,6 @@ public final class DBMetaData {
             throw e;
         }
     }
-
     private static final Logger mLogger = Logger.getLogger(DBMetaData.class.getName());
 
     /**
@@ -337,47 +366,45 @@ public final class DBMetaData {
      * @throws Exception DOCUMENT ME!
      */
     /*public void connectDB(final Connection conn) throws Exception {
-        this.errMsg = "";
-        if (conn == null) {
-            throw new IllegalArgumentException("Connection can't be null.");
-        }
-
-        this.dbconn = conn;
-        this.getDBMetaData();
+    this.errMsg = "";
+    if (conn == null) {
+    throw new IllegalArgumentException("Connection can't be null.");
+    }
+    
+    this.dbconn = conn;
+    this.getDBMetaData();
     }*/
-
     /**
      * Disconnects from the database.
      * 
      * @throws Exception DOCUMENT ME!
      */
     /*public void disconnectDB() throws Exception {
-        this.errMsg = "";
-        // close connection to database
-        try {
-            if (this.dbconn != null && !this.dbconn.isClosed()) {
-                this.dbconn.close();
-                this.dbconn = null;
-            }
-        } catch (final SQLException e) {
-            e.printStackTrace();
-            this.errMsg = e.getLocalizedMessage();
-            throw e;
-        }
+    this.errMsg = "";
+    // close connection to database
+    try {
+    if (this.dbconn != null && !this.dbconn.isClosed()) {
+    this.dbconn.close();
+    this.dbconn = null;
+    }
+    } catch (final SQLException e) {
+    e.printStackTrace();
+    this.errMsg = e.getLocalizedMessage();
+    throw e;
+    }
     }*/
 
     /*private void getDBMetaData() throws Exception {
-        this.errMsg = "";
-        // get the metadata
-        try {
-            this.dbmeta = this.dbconn.getMetaData();
-        } catch (final SQLException e) {
-            e.printStackTrace();
-            this.errMsg = e.getLocalizedMessage();
-            throw e;
-        }
+    this.errMsg = "";
+    // get the metadata
+    try {
+    this.dbmeta = this.dbconn.getMetaData();
+    } catch (final SQLException e) {
+    e.printStackTrace();
+    this.errMsg = e.getLocalizedMessage();
+    throw e;
+    }
     }*/
-
     /**
      * Returns the database product name
      * 
@@ -385,20 +412,19 @@ public final class DBMetaData {
      * @throws Exception DOCUMENT ME!
      */
     /*public String getDBName() throws Exception {
-        String dbname = "";
-
-        this.errMsg = "";
-        // get the database product name
-        try {
-            dbname = this.dbmeta.getDatabaseProductName();
-        } catch (final SQLException e) {
-            e.printStackTrace();
-            this.errMsg = e.getLocalizedMessage();
-            throw e;
-        }
-        return dbname;
+    String dbname = "";
+    
+    this.errMsg = "";
+    // get the database product name
+    try {
+    dbname = this.dbmeta.getDatabaseProductName();
+    } catch (final SQLException e) {
+    e.printStackTrace();
+    this.errMsg = e.getLocalizedMessage();
+    throw e;
+    }
+    return dbname;
     }*/
-
     /**
      * Returns the database OTD type.
      * 
@@ -413,7 +439,7 @@ public final class DBMetaData {
         if (dbname.equals("microsoft sql server")) {
             // Microsoft SQL Server
             dbtype = DBMetaData.SQLSERVER;
-        }else if (dbname.equals("mysql")) {
+        } else if (dbname.equals("mysql")) {
             // Microsoft SQL Server
             dbtype = DBMetaData.MYSQL;
         } else if (dbname.equals("sql server") || dbname.indexOf("jdbc") > -1) {
@@ -438,8 +464,8 @@ public final class DBMetaData {
 
         return dbtype;
     }
-    
-    public static int getDatabaseMajorVersion(final Connection conn) throws Exception{
+
+    public static int getDatabaseMajorVersion(final Connection conn) throws Exception {
         final DatabaseMetaData dbmeta = conn.getMetaData();
         return dbmeta.getDatabaseMajorVersion();
     }
@@ -450,9 +476,11 @@ public final class DBMetaData {
             Statement stmt = conn.createStatement();
             try {
                 ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
+
                 try {
                     while (rs.next()) {
                         result.add(rs.getString("OBJECT_NAME")); // NOI18N
+
                     }
                 } finally {
                     rs.close();
@@ -465,6 +493,7 @@ public final class DBMetaData {
         }
         return result;
     }
+
     private static final String getJDBCSearchPattern(final String guiPattern, final Connection connection) throws Exception {
         //this.errMsg = "";
 
@@ -542,16 +571,16 @@ public final class DBMetaData {
      * @throws Exception DOCUMENT ME!
      */
     public static final String[][] getTablesOnly(final String catalog,
-                                    final String schemaPattern,
-                                    final String tablePattern,
-                                    final boolean includeSystemTables,final Connection connection) throws Exception {
+            final String schemaPattern,
+            final String tablePattern,
+            final boolean includeSystemTables, final Connection connection) throws Exception {
         String[] tableTypes;
 
         if (includeSystemTables) {
-            final String[] types = { DBMetaData.TABLE, DBMetaData.SYSTEM_TABLE };
+            final String[] types = {DBMetaData.TABLE, DBMetaData.SYSTEM_TABLE};
             tableTypes = types;
         } else {
-            final String[] types = { DBMetaData.TABLE };
+            final String[] types = {DBMetaData.TABLE};
             tableTypes = types;
         }
 
@@ -573,14 +602,14 @@ public final class DBMetaData {
         String[] tableTypes;
 
         if (includeSystemTables) {
-            final String[] types = { DBMetaData.VIEW, DBMetaData.SYSTEM_TABLE };
+            final String[] types = {DBMetaData.VIEW, DBMetaData.SYSTEM_TABLE};
             tableTypes = types;
         } else {
-            final String[] types = { DBMetaData.VIEW };
+            final String[] types = {DBMetaData.VIEW};
             tableTypes = types;
         }
 
-        return getTables(catalog, schemaPattern, viewPattern, tableTypes,connection);
+        return getTables(catalog, schemaPattern, viewPattern, tableTypes, connection);
     }
 
     /**
@@ -594,20 +623,20 @@ public final class DBMetaData {
      * @throws Exception DOCUMENT ME!
      */
     public static final String[][] getTablesAndViews(final String catalog,
-                                        final String schemaPattern,
-                                        final String tablePattern,
-                                        final boolean includeSystemTables,final Connection connection) throws Exception {
+            final String schemaPattern,
+            final String tablePattern,
+            final boolean includeSystemTables, final Connection connection) throws Exception {
         String[] tableTypes;
 
         if (includeSystemTables) {
-            final String[] types = { DBMetaData.TABLE, DBMetaData.VIEW, DBMetaData.SYSTEM_TABLE };
+            final String[] types = {DBMetaData.TABLE, DBMetaData.VIEW, DBMetaData.SYSTEM_TABLE};
             tableTypes = types;
         } else {
-            final String[] types = { DBMetaData.TABLE, DBMetaData.VIEW };
+            final String[] types = {DBMetaData.TABLE, DBMetaData.VIEW};
             tableTypes = types;
         }
 
-        return getTables(catalog, schemaPattern, tablePattern, tableTypes,connection);
+        return getTables(catalog, schemaPattern, tablePattern, tableTypes, connection);
     }
 
     /**
@@ -658,6 +687,7 @@ public final class DBMetaData {
 
                 // fill in table info
                 final String[] tableItem = new String[4]; // hold info for each table
+
                 tableItem[DBMetaData.NAME] = tableName;
                 tableItem[DBMetaData.CATALOG] = tableCatalog;
                 tableItem[DBMetaData.SCHEMA] = tableSchema;
@@ -681,6 +711,17 @@ public final class DBMetaData {
         }
     }
 
+    public PrepStmt getPrepStmtMetaData() throws Exception {
+        PrepStmt newPrepStmt = null;
+        try {
+            newPrepStmt = getPrepStmtMetaData(null, null, null, sqlText, null);
+        } catch (Exception e) {
+            //errMsg = e.getLocalizedMessage();
+            //throw e;
+        }
+        return newPrepStmt;
+    }
+
     /**
      * Gets the prepared statement metadata (parameters, resultsets).
      * 
@@ -691,7 +732,7 @@ public final class DBMetaData {
      * @return PrepStmt Prepared statement object
      * @throws Exception DOCUMENT ME!
      */
-    public static final PrepStmt getPrepStmtMetaData(final String catalog, final String schema, final String name, final String sqlText,final Connection connection) throws Exception {
+    public static final PrepStmt getPrepStmtMetaData(final String catalog, final String schema, final String name, final String sqlText, final Connection connection) throws Exception {
 
         //this.errMsg = "";
         //this.checkPrepStmtMetaData = false;
@@ -718,7 +759,7 @@ public final class DBMetaData {
             // the driver does not support java.sql.ParameterMetaData we
             // can construct a paramters array using default values. see
             // details inside getPrepStmtParameters(...)
-            parameters = getPrepStmtParameters(pstmt, sqlText,connection);
+            parameters = getPrepStmtParameters(pstmt, sqlText, connection);
 
             newPrepStmt.setParameters(parameters);
 
@@ -755,18 +796,18 @@ public final class DBMetaData {
     public static final String[][] getProcedures(String catalog, String schemaPattern, String procedurePattern, final Connection connection) throws Exception {
         //this.errMsg = "";
         try {
-            if (catalog.equals("")) {
+            if ((catalog != null) && catalog.equals("")) {
                 catalog = null;
             }
-            if (schemaPattern.equals("")) {
+            if ((schemaPattern != null) && (schemaPattern.equals(""))) {
                 schemaPattern = null;
             }
-            if (procedurePattern.equals("")) {
+            if ((procedurePattern != null) && procedurePattern.equals("")) {
                 procedurePattern = null;
             }
 
             if (procedurePattern != null) {
-                procedurePattern = getJDBCSearchPattern(procedurePattern,connection);
+                procedurePattern = getJDBCSearchPattern(procedurePattern, connection);
             }
 
             final Vector v = new Vector();
@@ -777,7 +818,7 @@ public final class DBMetaData {
             while (rs.next()) {
                 String procedureCatalog = rs.getString("PROCEDURE_CAT");
                 String procedureSchema = rs.getString("PROCEDURE_SCHEM");
-                final String procedureName = rs.getString("PROCEDURE_NAME");
+                String procedureName = rs.getString("PROCEDURE_NAME");
                 final String procedureType = getProcedureTypeDescription(rs.getShort("PROCEDURE_TYPE"));
 
                 if (procedureCatalog == null) {
@@ -786,9 +827,14 @@ public final class DBMetaData {
                 if (procedureSchema == null) {
                     procedureSchema = "";
                 }
-
+                //for sqlserver trim the last 2 characters of the sp name.
+                if (getDBType(connection).equalsIgnoreCase(SQLSERVER)) {
+                    int len = procedureName.length();
+                    procedureName = procedureName.substring(0, len - 2);
+                }
                 // fill in procedure info
                 final String[] procedureItem = new String[4]; // hold info for each procedure
+
                 procedureItem[DBMetaData.NAME] = procedureName;
                 procedureItem[DBMetaData.CATALOG] = procedureCatalog;
                 procedureItem[DBMetaData.SCHEMA] = procedureSchema;
@@ -805,10 +851,11 @@ public final class DBMetaData {
             }
             rs.close();
             return procedures;
-        } catch (final Exception e) {
-            e.printStackTrace();
+        } catch (final Exception ex) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             //this.errMsg = e.getLocalizedMessage();
-            throw e;
+            throw ex;
         }
     }
 
@@ -821,7 +868,7 @@ public final class DBMetaData {
      * @return List List of primary keys
      * @throws Exception DOCUMENT ME!
      */
-    public static final List getPrimaryKeys(String tcatalog, String tschema, final String tname,final Connection v) throws Exception {
+    public static final List getPrimaryKeys(String tcatalog, String tschema, final String tname, final Connection v) throws Exception {
         List pkList = Collections.EMPTY_LIST;
         ResultSet rs = null;
 
@@ -835,10 +882,10 @@ public final class DBMetaData {
             }
 
             rs = v.getMetaData().getPrimaryKeys(tcatalog, tschema, tname);
-            if(v.getMetaData().getDriverName().startsWith("JDBC-ODBC")){
-            	pkList = KeyColumn.createPrimaryKeyColumnList(rs,true);
-            }else{
-            	pkList = KeyColumn.createPrimaryKeyColumnList(rs,false);
+            if (v.getMetaData().getDriverName().startsWith("JDBC-ODBC")) {
+                pkList = KeyColumn.createPrimaryKeyColumnList(rs, true);
+            } else {
+                pkList = KeyColumn.createPrimaryKeyColumnList(rs, false);
             }
         } catch (final Exception e) {
             e.printStackTrace();
@@ -849,7 +896,7 @@ public final class DBMetaData {
                 try {
                     rs.close();
                 } catch (final SQLException e) {
-                    /* Ignore */;
+                    /* Ignore */ ;
                 }
             }
         }
@@ -884,7 +931,7 @@ public final class DBMetaData {
             } catch (final Exception e) {
                 e.printStackTrace();
                 DBMetaData.mLogger.warning("JDBC driver does not support java.sql.ParameterMetaData " + e.getMessage());
-                //this.errMsg = e.getLocalizedMessage();
+            //this.errMsg = e.getLocalizedMessage();
             }
         } catch (final Exception e) {
             e.printStackTrace();
@@ -895,7 +942,7 @@ public final class DBMetaData {
                 try {
                     rs.close();
                 } catch (final SQLException e) {
-                    /* Ignore */;
+                    /* Ignore */ ;
                 }
             }
         }
@@ -913,17 +960,17 @@ public final class DBMetaData {
      * @return Procedure object
      * @throws Exception DOCUMENT ME!
      */
-    public static final Procedure getProcedureMetaData(String pcatalog, String pschema, final String pname, final String ptype,final Connection connection) throws Exception {
+    public static final Procedure getProcedureMetaData(String pcatalog, String pschema, final String pname, final String ptype, final Connection connection) throws Exception {
         //this.errMsg = "";
         try {
             // create a new procedure object
             final Procedure newProcedure = new Procedure(pname, pcatalog, pschema, ptype);
             final Vector v = new Vector();
 
-            if (pcatalog.equals("")) {
+            if ((pcatalog != null) && pcatalog.equals("")) {
                 pcatalog = null;
             }
-            if (pschema.equals("")) {
+            if ((pschema != null) && pschema.equals("")) {
                 pschema = null;
             }
 
@@ -1084,10 +1131,10 @@ public final class DBMetaData {
             newTable.setColumns(columns);
 
             // now check the columns that are primary keys
-            checkPrimaryKeys(newTable,connection);
+            checkPrimaryKeys(newTable, connection);
 
             // now check the columns that are foreign keys
-            checkForeignKeys(newTable,connection);
+            checkForeignKeys(newTable, connection);
 
             // catch exceptions for this as index only makes sense for
             // tables and not views (can't check the table type because it's dependent on driver)
@@ -1097,7 +1144,7 @@ public final class DBMetaData {
                 newTable.setIndexList(IndexColumn.createIndexList(rs));
             } catch (final Exception e) {
                 // ignore and continue
-               //this.errMsg = e.getLocalizedMessage();
+                //this.errMsg = e.getLocalizedMessage();
             }
 
             return newTable;
@@ -1110,11 +1157,12 @@ public final class DBMetaData {
                 try {
                     rs.close();
                 } catch (final SQLException e) {
-                    /* Ignore... */;
+                    /* Ignore... */ ;
                 }
             }
         }
     }
+
     public static final Table getTableMetaDataForODBCDriver(String tcatalog, String tschema, final String tname, final String ttype, final Connection connection) throws Exception {
         //this.errMsg = "";
         ResultSet rs = null;
@@ -1136,55 +1184,55 @@ public final class DBMetaData {
             rs = connection.getMetaData().getColumns(tcatalog, tschema, tname, "%");
 
             TableColumn[] columns = null;
-                     
+
             while (rs.next()) {
-				// {13=COLUMN_DEF, 12=REMARKS, 11=NULLABLE, 10=NUM_PREC_RADIX,
-				// 9=DECIMAL_DIGITS, 8=BUFFER_LENGTH, 7=COLUMN_SIZE,
-				// 6=TYPE_NAME,
-				// 5=DATA_TYPE, 4=COLUMN_NAME, 3=TABLE_NAME, 2=TABLE_SCHEM,
-				// 1=TABLE_CAT}
-				String tablecat = rs.getString(1);
-				String tablesch = rs.getString(2);
-				String tablename = rs.getString(3);
-				String colName = rs.getString(4);
-				int sqlTypeCode = rs.getInt(5);
-				String typename = rs.getString(6);
-				int precision = rs.getInt(7);
-				int bufflen = rs.getInt(8);
-				int scale = rs.getInt(9);
-				int radix = rs.getInt(10);
-				boolean nullable = rs.getBoolean(11);
-				String remarks = rs.getString(12);
-				String defaultValue = rs.getString(13);
-				
-				final String sqlType = DBMetaData.getSQLTypeDescription(sqlTypeCode);
-	            final String javaType = getJavaFromSQLTypeDescription(sqlType);
+                // {13=COLUMN_DEF, 12=REMARKS, 11=NULLABLE, 10=NUM_PREC_RADIX,
+                // 9=DECIMAL_DIGITS, 8=BUFFER_LENGTH, 7=COLUMN_SIZE,
+                // 6=TYPE_NAME,
+                // 5=DATA_TYPE, 4=COLUMN_NAME, 3=TABLE_NAME, 2=TABLE_SCHEM,
+                // 1=TABLE_CAT}
+                String tablecat = rs.getString(1);
+                String tablesch = rs.getString(2);
+                String tablename = rs.getString(3);
+                String colName = rs.getString(4);
+                int sqlTypeCode = rs.getInt(5);
+                String typename = rs.getString(6);
+                int precision = rs.getInt(7);
+                int bufflen = rs.getInt(8);
+                int scale = rs.getInt(9);
+                int radix = rs.getInt(10);
+                boolean nullable = rs.getBoolean(11);
+                String remarks = rs.getString(12);
+                String defaultValue = rs.getString(13);
 
-				// create a table column and add it to the vector
-				final TableColumn col = new TableColumn(colName, javaType);
-				boolean isNullable = false;
-				if (rs.getString("IS_NULLABLE").equals("YES")) {
-					isNullable = true;
-				}
-				col.setJavaType(javaType);
-				col.setSqlType(sqlType);
-				col.setIsNullable(isNullable);
-				col.setIsSelected(true);
-				col.setIsPrimaryKey(false);
-				col.setIsForeignKey(false);
-				col.setSqlTypeCode(sqlTypeCode);
-				//col.setOrdinalPosition(position);
-				col.setNumericPrecision(precision);
-				col.setNumericScale(scale);
-				col.setNumericRadix(radix);
+                final String sqlType = DBMetaData.getSQLTypeDescription(sqlTypeCode);
+                final String javaType = getJavaFromSQLTypeDescription(sqlType);
 
-				if (defaultValue != null) {
-					col.setDefaultValue(defaultValue.trim());
-				}
+                // create a table column and add it to the vector
+                final TableColumn col = new TableColumn(colName, javaType);
+                boolean isNullable = false;
+                if (rs.getString("IS_NULLABLE").equals("YES")) {
+                    isNullable = true;
+                }
+                col.setJavaType(javaType);
+                col.setSqlType(sqlType);
+                col.setIsNullable(isNullable);
+                col.setIsSelected(true);
+                col.setIsPrimaryKey(false);
+                col.setIsForeignKey(false);
+                col.setSqlTypeCode(sqlTypeCode);
+                //col.setOrdinalPosition(position);
+                col.setNumericPrecision(precision);
+                col.setNumericScale(scale);
+                col.setNumericRadix(radix);
 
-				// add to vector
-				v.add(col);
-			}
+                if (defaultValue != null) {
+                    col.setDefaultValue(defaultValue.trim());
+                }
+
+                // add to vector
+                v.add(col);
+            }
 
             // now copy Vector to array
             if (v.size() > 0) {
@@ -1196,10 +1244,10 @@ public final class DBMetaData {
             newTable.setColumns(columns);
 
             // now check the columns that are primary keys
-            checkPrimaryKeys(newTable,connection);
+            checkPrimaryKeys(newTable, connection);
 
             // now check the columns that are foreign keys
-            checkForeignKeys(newTable,connection);
+            checkForeignKeys(newTable, connection);
 
             // catch exceptions for this as index only makes sense for
             // tables and not views (can't check the table type because it's dependent on driver)
@@ -1209,7 +1257,7 @@ public final class DBMetaData {
                 newTable.setIndexList(IndexColumn.createIndexList(rs));
             } catch (final Exception e) {
                 // ignore and continue
-               //this.errMsg = e.getLocalizedMessage();
+                //this.errMsg = e.getLocalizedMessage();
             }
 
             return newTable;
@@ -1222,7 +1270,7 @@ public final class DBMetaData {
                 try {
                     rs.close();
                 } catch (final SQLException e) {
-                    /* Ignore... */;
+                    /* Ignore... */ ;
                 }
             }
         }
@@ -1237,6 +1285,7 @@ public final class DBMetaData {
     public static final String getJavaFromSQLTypeDescription(final String sqlType) {
         Object t;
         String javaType = "java.lang.String"; // default value
+
         t = DBMetaData.SQLTOJAVATYPES.get(sqlType);
 
         if (t != null) {
@@ -1256,66 +1305,66 @@ public final class DBMetaData {
         // returns a String representing the passed in numeric
         // SQL type
         switch (type) {
-        case java.sql.Types.ARRAY:
-            return "ARRAY";
-        case java.sql.Types.BIGINT:
-            return "BIGINT";
-        case java.sql.Types.BINARY:
-            return "BINARY";
-        case java.sql.Types.BIT:
-            return "BIT";
-        case java.sql.Types.BLOB:
-            return "BLOB";
-        case 16:
-            // case java.sql.Types.BOOLEAN:
-            return "BOOLEAN";
-        case java.sql.Types.CHAR:
-            return "CHAR";
-        case java.sql.Types.CLOB:
-            return "CLOB";
-        case 70:
-            // case java.sql.Types.DATALINK:
-            return "DATALINK";
-        case java.sql.Types.DATE:
-            return "DATE";
-        case java.sql.Types.DECIMAL:
-            return "DECIMAL";
-        case java.sql.Types.DOUBLE:
-            return "DOUBLE";
-        case java.sql.Types.FLOAT:
-            return "FLOAT";
-        case java.sql.Types.INTEGER:
-            return "INTEGER";
-        case java.sql.Types.JAVA_OBJECT:
-            return "JAVA_OBJECT";
-        case java.sql.Types.LONGVARBINARY:
-            return "LONGVARBINARY";
-        case java.sql.Types.LONGVARCHAR:
-            return "LONGVARCHAR";
-        case java.sql.Types.NULL:
-            return "NULL";
-        case java.sql.Types.NUMERIC:
-            return "NUMERIC";
-        case java.sql.Types.OTHER:
-            return "OTHER";
-        case java.sql.Types.REAL:
-            return "REAL";
-        case java.sql.Types.REF:
-            return "REF";
-        case java.sql.Types.SMALLINT:
-            return "SMALLINT";
-        case java.sql.Types.STRUCT:
-            return "STRUCT";
-        case java.sql.Types.TIME:
-            return "TIME";
-        case java.sql.Types.TIMESTAMP:
-            return "TIMESTAMP";
-        case java.sql.Types.TINYINT:
-            return "TINYINT";
-        case java.sql.Types.VARBINARY:
-            return "VARBINARY";
-        case java.sql.Types.VARCHAR:
-            return "VARCHAR";
+            case java.sql.Types.ARRAY:
+                return "ARRAY";
+            case java.sql.Types.BIGINT:
+                return "BIGINT";
+            case java.sql.Types.BINARY:
+                return "BINARY";
+            case java.sql.Types.BIT:
+                return "BIT";
+            case java.sql.Types.BLOB:
+                return "BLOB";
+            case 16:
+                // case java.sql.Types.BOOLEAN:
+                return "BOOLEAN";
+            case java.sql.Types.CHAR:
+                return "CHAR";
+            case java.sql.Types.CLOB:
+                return "CLOB";
+            case 70:
+                // case java.sql.Types.DATALINK:
+                return "DATALINK";
+            case java.sql.Types.DATE:
+                return "DATE";
+            case java.sql.Types.DECIMAL:
+                return "DECIMAL";
+            case java.sql.Types.DOUBLE:
+                return "DOUBLE";
+            case java.sql.Types.FLOAT:
+                return "FLOAT";
+            case java.sql.Types.INTEGER:
+                return "INTEGER";
+            case java.sql.Types.JAVA_OBJECT:
+                return "JAVA_OBJECT";
+            case java.sql.Types.LONGVARBINARY:
+                return "LONGVARBINARY";
+            case java.sql.Types.LONGVARCHAR:
+                return "LONGVARCHAR";
+            case java.sql.Types.NULL:
+                return "NULL";
+            case java.sql.Types.NUMERIC:
+                return "NUMERIC";
+            case java.sql.Types.OTHER:
+                return "OTHER";
+            case java.sql.Types.REAL:
+                return "REAL";
+            case java.sql.Types.REF:
+                return "REF";
+            case java.sql.Types.SMALLINT:
+                return "SMALLINT";
+            case java.sql.Types.STRUCT:
+                return "STRUCT";
+            case java.sql.Types.TIME:
+                return "TIME";
+            case java.sql.Types.TIMESTAMP:
+                return "TIMESTAMP";
+            case java.sql.Types.TINYINT:
+                return "TINYINT";
+            case java.sql.Types.VARBINARY:
+                return "VARBINARY";
+            case java.sql.Types.VARCHAR:
+                return "VARCHAR";
         }
         // all others default to OTHER
         return "OTHER";
@@ -1347,58 +1396,58 @@ public final class DBMetaData {
         String javaType = "java.lang.String";
 
         switch (type) {
-        case java.sql.Types.ARRAY:
-            javaType = "java.sql.ARRAY";
-        case java.sql.Types.BIGINT:
-            javaType = "long";
-        case java.sql.Types.BINARY:
-            javaType = "byte[]";
-        case java.sql.Types.BIT:
-            javaType = "boolean";
-        case java.sql.Types.BLOB:
-            javaType = "java.sql.Blob";
+            case java.sql.Types.ARRAY:
+                javaType = "java.sql.ARRAY";
+            case java.sql.Types.BIGINT:
+                javaType = "long";
+            case java.sql.Types.BINARY:
+                javaType = "byte[]";
+            case java.sql.Types.BIT:
+                javaType = "boolean";
+            case java.sql.Types.BLOB:
+                javaType = "java.sql.Blob";
             // case java.sql.Types.BOOLEAN:
             // javaType = "boolean";
-        case java.sql.Types.CHAR:
-            javaType = "java.lang.String";
-        case java.sql.Types.CLOB:
-            javaType = "java.sql.Clob";
-        case java.sql.Types.DATE:
-            javaType = "java.sql.Date";
-        case java.sql.Types.DECIMAL:
-            javaType = "java.math.BigDecimal";
-        case java.sql.Types.DOUBLE:
-            javaType = "double";
-        case java.sql.Types.FLOAT:
-            javaType = "double";
-        case java.sql.Types.INTEGER:
-            javaType = "int";
-        case java.sql.Types.LONGVARBINARY:
-            javaType = "byte[]";
-        case java.sql.Types.LONGVARCHAR:
-            javaType = "java.lang.String";
-        case java.sql.Types.NUMERIC:
-            javaType = "java.math.BigDecimal";
+            case java.sql.Types.CHAR:
+                javaType = "java.lang.String";
+            case java.sql.Types.CLOB:
+                javaType = "java.sql.Clob";
+            case java.sql.Types.DATE:
+                javaType = "java.sql.Date";
+            case java.sql.Types.DECIMAL:
+                javaType = "java.math.BigDecimal";
+            case java.sql.Types.DOUBLE:
+                javaType = "double";
+            case java.sql.Types.FLOAT:
+                javaType = "double";
+            case java.sql.Types.INTEGER:
+                javaType = "int";
+            case java.sql.Types.LONGVARBINARY:
+                javaType = "byte[]";
+            case java.sql.Types.LONGVARCHAR:
+                javaType = "java.lang.String";
+            case java.sql.Types.NUMERIC:
+                javaType = "java.math.BigDecimal";
             // case java.sql.Types.OTHER:
             // javaType = "java.sql.Blob";
-        case java.sql.Types.REAL:
-            javaType = "float";
-        case java.sql.Types.REF:
-            javaType = "java.sql.Ref";
-        case java.sql.Types.SMALLINT:
-            javaType = "short";
-        case java.sql.Types.STRUCT:
-            javaType = "java.sql.Struct";
-        case java.sql.Types.TIME:
-            javaType = "java.sql.Time";
-        case java.sql.Types.TIMESTAMP:
-            javaType = "java.sql.Timestamp";
-        case java.sql.Types.TINYINT:
-            javaType = "byte";
-        case java.sql.Types.VARBINARY:
-            javaType = "byte[]";
-        case java.sql.Types.VARCHAR:
-            javaType = "java.lang.String";
+            case java.sql.Types.REAL:
+                javaType = "float";
+            case java.sql.Types.REF:
+                javaType = "java.sql.Ref";
+            case java.sql.Types.SMALLINT:
+                javaType = "short";
+            case java.sql.Types.STRUCT:
+                javaType = "java.sql.Struct";
+            case java.sql.Types.TIME:
+                javaType = "java.sql.Time";
+            case java.sql.Types.TIMESTAMP:
+                javaType = "java.sql.Timestamp";
+            case java.sql.Types.TINYINT:
+                javaType = "byte";
+            case java.sql.Types.VARBINARY:
+                javaType = "byte[]";
+            case java.sql.Types.VARCHAR:
+                javaType = "java.lang.String";
         }
         return javaType;
     }
@@ -1476,10 +1525,9 @@ public final class DBMetaData {
      * @return error message
      */
     /*public String getErrString() {
-        return this.errMsg;
+    return this.errMsg;
     }*/
-
-    private static final Parameter[] getPrepStmtParameters(final PreparedStatement pstmt, final String sqlText,final Connection connection) {
+    private static final Parameter[] getPrepStmtParameters(final PreparedStatement pstmt, final String sqlText, final Connection connection) {
         String errMsg = "";
         //errPrepStmtParameters = false;
         Parameter[] parameters = null;
@@ -1488,8 +1536,7 @@ public final class DBMetaData {
             ParameterMetaData pmeta = null;
             try {
                 pmeta = pstmt.getParameterMetaData();
-            }
-            // just catch all exception since
+            } // just catch all exception since
             // attunity throws java.lang.AbstractMethodError
             // SequeLink throws SQLException
             catch (final AbstractMethodError absE) {
@@ -1559,7 +1606,7 @@ public final class DBMetaData {
                         try {
                             paramType = getPrepStmtParamTypeDescription(pmeta.getParameterMode(i));
                         } catch (final SQLException e) {
-                           //this.errPrepStmtParameters = true;
+                            //this.errPrepStmtParameters = true;
                             e.printStackTrace();
                             errMsg = e.getLocalizedMessage();
                         }
@@ -1605,6 +1652,23 @@ public final class DBMetaData {
         String errMsg = "";
         //this.errPrepStmtResultSetColumns = false;
         ResultSetColumn[] cols = null;
+		try {
+			if (getDBType(pstmt.getConnection()).equals(DBMetaData.ORACLE)){
+				int i=0;
+				try {
+					while(true)
+						pstmt.setNull(++i, java.sql.Types.NULL);
+				}
+				
+				catch (SQLException sqe)
+				{
+					// no more parameters to bind
+				}
+				pstmt.execute();
+			}
+        }
+        catch (Exception e) {}
+		
         try {
             final ResultSetMetaData rsmd = pstmt.getMetaData();
             int count = 0;
@@ -1653,402 +1717,401 @@ public final class DBMetaData {
      * @return boolean
      */
     /*public boolean checkAPIsForSupport() {
-        boolean support = true;
-
-        try {
-            this.dbmeta.supportsBatchUpdates();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsBatchUpdates() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsBatchUpdates() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsCatalogsInDataManipulation();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInDataManipulation() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInDataManipulation() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsCatalogsInProcedureCalls();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInProcedureCalls() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInProcedureCalls() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsCatalogsInTableDefinitions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInTableDefinitions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInTableDefinitions() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsCatalogsInIndexDefinitions();
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInIndexDefinitions() failed - " + errE.getMessage());
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInIndexDefinitions() failed - " + e.getMessage());
-        }
-        try {
-            this.dbmeta.supportsCatalogsInPrivilegeDefinitions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInPrivilegeDefinitions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsCatalogsInPrivilegeDefinitions() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsConvert();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsConvert() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsConvert() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsExpressionsInOrderBy();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsExpressionsInOrderBy() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsExpressionsInOrderBy() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsLikeEscapeClause();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsLikeEscapeClause() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsLikeEscapeClause() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsNamedParameters();
-        } catch (final Exception e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsNamedParameters() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsNamedParameters() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsNonNullableColumns();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsNonNullableColumns() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsNonNullableColumns() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsOuterJoins();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsOuterJoins() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsOuterJoins() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsPositionedDelete();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsPositionedDelete() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsPositionedDelete() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsPositionedUpdate();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsPositionedUpdate() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsPositionedUpdate() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY) failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY) failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE) failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE) failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE) failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE) failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSchemasInDataManipulation();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInDataManipulation() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInDataManipulation() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSchemasInIndexDefinitions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInIndexDefinitions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInIndexDefinitions() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSchemasInPrivilegeDefinitions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInPrivilegeDefinitions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInPrivilegeDefinitions() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSchemasInProcedureCalls();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInProcedureCalls() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInProcedureCalls() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSchemasInTableDefinitions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInTableDefinitions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSchemasInTableDefinitions() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSelectForUpdate();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSelectForUpdate() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSelectForUpdate() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsStoredProcedures();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsStoredProcedures() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsStoredProcedures() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSubqueriesInComparisons();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInComparisons() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInComparisons() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSubqueriesInExists();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInExists() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInExists() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSubqueriesInIns();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInIns() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInIns() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsSubqueriesInQuantifieds();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInQuantifieds() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsSubqueriesInQuantifieds() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTableCorrelationNames();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTableCorrelationNames() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTableCorrelationNames() failed - " + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE) failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE) failed - "
-                    + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE) failed - "
-                    + errE.getMessage());
-        }
-        try {
-            this.dbmeta.supportsTransactions();
-        } catch (final SQLException e) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactions() failed - " + e.getMessage());
-        } catch (final AbstractMethodError errE) {
-            support = false;
-            DBMetaData.mLogger.warning("supportsTransactions() failed - " + errE.getMessage());
-        }
-
-        return support;
+    boolean support = true;
+    
+    try {
+    this.dbmeta.supportsBatchUpdates();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsBatchUpdates() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsBatchUpdates() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsCatalogsInDataManipulation();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInDataManipulation() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInDataManipulation() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsCatalogsInProcedureCalls();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInProcedureCalls() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInProcedureCalls() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsCatalogsInTableDefinitions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInTableDefinitions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInTableDefinitions() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsCatalogsInIndexDefinitions();
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInIndexDefinitions() failed - " + errE.getMessage());
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInIndexDefinitions() failed - " + e.getMessage());
+    }
+    try {
+    this.dbmeta.supportsCatalogsInPrivilegeDefinitions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInPrivilegeDefinitions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsCatalogsInPrivilegeDefinitions() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsConvert();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsConvert() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsConvert() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsExpressionsInOrderBy();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsExpressionsInOrderBy() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsExpressionsInOrderBy() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsLikeEscapeClause();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsLikeEscapeClause() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsLikeEscapeClause() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsNamedParameters();
+    } catch (final Exception e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsNamedParameters() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsNamedParameters() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsNonNullableColumns();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsNonNullableColumns() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsNonNullableColumns() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsOuterJoins();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsOuterJoins() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsOuterJoins() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsPositionedDelete();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsPositionedDelete() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsPositionedDelete() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsPositionedUpdate();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsPositionedUpdate() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsPositionedUpdate() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY ) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY) failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_FORWARD_ONLY) failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE) failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE) failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE) failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsResultSetType(ResultSet.TYPE_SCROLL_SENSITIVE) failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSchemasInDataManipulation();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInDataManipulation() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInDataManipulation() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSchemasInIndexDefinitions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInIndexDefinitions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInIndexDefinitions() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSchemasInPrivilegeDefinitions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInPrivilegeDefinitions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInPrivilegeDefinitions() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSchemasInProcedureCalls();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInProcedureCalls() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInProcedureCalls() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSchemasInTableDefinitions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInTableDefinitions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSchemasInTableDefinitions() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSelectForUpdate();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSelectForUpdate() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSelectForUpdate() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsStoredProcedures();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsStoredProcedures() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsStoredProcedures() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSubqueriesInComparisons();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInComparisons() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInComparisons() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSubqueriesInExists();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInExists() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInExists() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSubqueriesInIns();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInIns() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInIns() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsSubqueriesInQuantifieds();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInQuantifieds() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsSubqueriesInQuantifieds() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTableCorrelationNames();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTableCorrelationNames() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTableCorrelationNames() failed - " + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE) failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_NONE) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_COMMITTED) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE) failed - "
+    + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactionIsolationLevel(Connection.TRANSACTION_SERIALIZABLE) failed - "
+    + errE.getMessage());
+    }
+    try {
+    this.dbmeta.supportsTransactions();
+    } catch (final SQLException e) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactions() failed - " + e.getMessage());
+    } catch (final AbstractMethodError errE) {
+    support = false;
+    DBMetaData.mLogger.warning("supportsTransactions() failed - " + errE.getMessage());
+    }
+    
+    return support;
     }*/
-
     private static final Parameter[] handleUnsupportParameterMetaData(final String sqlText) {
         int numParams = 0;
         for (int i = 0; i < sqlText.length(); i++) {
@@ -2091,8 +2154,11 @@ public final class DBMetaData {
      * @return Procedure resultset encapsulated in a Procedure object
      * @throws SQLException, NullPointerException
      */
-    public static final Procedure getProcResultSetColumns(final String pcatalog, final String pschema, final String pname, final String columnName,final Connection connection)
-            throws SQLException, NullPointerException {
+    public static final Procedure getProcResultSetColumns(final String pcatalog,
+                                                            final String pschema,
+                                                            final String pname,
+                                                            final String columnName,
+                                                            final Connection connection) {
 
         String errMsg = "";
         String cstmtString = "";
@@ -2106,6 +2172,7 @@ public final class DBMetaData {
         final ResultSetColumn resultCol = new ResultSetColumn();
         final ArrayList paramIndices = new ArrayList(); // arraylist to hold the indices of the
         // paramters that return resultsets
+
         final ArrayList result = new ArrayList(); // arraylist to hold ResultSetColumns objects
 
         // check if the procedure is within a package or not
@@ -2202,7 +2269,6 @@ public final class DBMetaData {
                         cstmt.registerOutParameter(paramIndex, targetSqlType);
                     } catch (final SQLException e) {
                         e.printStackTrace();
-                        throw e;
                     }
                 }
 
@@ -2217,7 +2283,6 @@ public final class DBMetaData {
                         cstmt.registerOutParameter(paramIndex, targetSqlType);
                     } catch (final SQLException e) {
                         e.printStackTrace();
-                        throw e;
                     }
                 }
             }
@@ -2233,6 +2298,7 @@ public final class DBMetaData {
             while (paramIdxIter.hasNext()) {
                 final ArrayList resultArray = new ArrayList(); // arraylist to hold the objects of
                 // ResultSetColumn
+
                 count += 1;
                 // get the index (from the arraylist) of the parameter which is a resultset
                 final int index = ((Integer) paramIdxIter.next()).intValue();
@@ -2281,11 +2347,9 @@ public final class DBMetaData {
             // resultset column metadata not supported
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
-            throw e;
         } catch (final NullPointerException npe) {
             npe.printStackTrace();
             errMsg = npe.getLocalizedMessage();
-            throw npe;
         } catch (final Exception e) {
             // resultset column metadata not supported
             e.printStackTrace();
@@ -2293,7 +2357,391 @@ public final class DBMetaData {
         }
 
         // add the arraylist object to the Procedure object
-        procResult.setResultSetColumns(result);
+        if ((result != null) && (result.size() > 0)) {
+            procResult.setResultSetColumns(result);
+        }
+        procResult.setCallableStmtString(cstmtString);
+        return procResult;
+    }
+
+    //Only works for Oracle.
+    public Procedure getOracleProcResultSetColumns(Procedure storedProc,
+                                                    String columnName,
+                                                    Connection dbconn) {
+
+        String errMsg = "";
+        String cstmtString = "";
+        int colCount = 0;
+        boolean isFunction = false;
+        boolean hasParameters = true;
+        // indicates if the procedure is within a package or standalone
+        boolean isPackaged = true;
+
+        String pname = storedProc.getName();
+        String pcatalog = storedProc.getCatalog();
+        String pschema = storedProc.getSchema();
+        Procedure procResult = new Procedure(pname, pcatalog, pschema, new String("PROCEDURE"));
+        ResultSetColumn resultCol = new ResultSetColumn();
+        ArrayList paramIndices = new ArrayList();   // arraylist to hold the indices of the paramters that return resultsets
+
+        ArrayList result = new ArrayList();     // arraylist to hold ResultSetColumns objects
+
+        // check if the procedure is within a package or not
+        if (pcatalog.trim().equalsIgnoreCase("") || pcatalog == null) {
+            isPackaged = false;
+        }
+        try {
+            DatabaseMetaData dbmeta = dbconn.getMetaData();
+            ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+
+            // loop to identify if the procedure is actually a function
+            while (rs.next()) {
+                if (rs.getShort("COLUMN_TYPE") == DatabaseMetaData.procedureColumnReturn) {
+                    // this is a function, so set the flag to true
+                    isFunction = true;
+                }
+            }
+
+            rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+
+            // get the count of the parameters
+            while (rs.next()) {
+                colCount++;
+            }
+
+            // check if the procedure has parameters or not
+            if (colCount == 0) {
+                hasParameters = false;
+            }
+
+            // construct the procedure execution command string
+            if (isFunction == true) {
+                cstmtString = "{ ? = call ";
+                // use the package name to qualify the procedure name if the procedure is within a package
+                if (isPackaged) {
+                    cstmtString += pcatalog + "." + pname + "(";
+                } else {
+                    cstmtString += pname + "(";
+                }
+
+                for (int j = 1; j < colCount; j++) {
+                    cstmtString += "?,";
+                }
+
+                // trim the last comma only if the procedure has any parameters
+                if (hasParameters) {
+                    cstmtString = cstmtString.substring(0, cstmtString.length() - 1);
+                }
+                cstmtString += ") }";
+            } else {
+                cstmtString = "call ";
+                // use the package name to qualify the procedure name if the procedure is within a package
+                if (isPackaged) {
+                    cstmtString += pcatalog + "." + pname + "(";
+                } else {
+                    cstmtString += pname + "(";
+                }
+
+                for (int j = 0; j < colCount; j++) {
+                    cstmtString += "?,";
+                }
+
+                // trim the last comma only if the procedure has any parameters
+                if (hasParameters) {
+                    cstmtString = cstmtString.substring(0, cstmtString.length() - 1);
+                }
+                cstmtString += ")";
+            }
+
+            CallableStatement cstmt = dbconn.prepareCall(cstmtString);
+
+            rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+            int paramIndex = 0;
+
+            // loop through the list of parameters and register them
+            for (int j = 0; j < colCount; j++) {
+                rs.next();
+                paramIndex++;
+                String parameterName = rs.getString("COLUMN_NAME");
+                int targetSqlType = rs.getInt("DATA_TYPE");
+                int colType = rs.getShort("COLUMN_TYPE");
+                String type_Name = rs.getString("TYPE_NAME");
+
+                if (colType == DatabaseMetaData.procedureColumnIn) {
+                    if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL TABLE"))) {
+                        targetSqlType = -14; //OracleTypes.PLSQL_INDEX_TABLE;
+                    }
+
+                    if ((targetSqlType == 1111) && (type_Name.equals("PL/SQL RECORD"))) {
+                        targetSqlType = -14; //OracleTypes.PLSQL_INDEX_TABLE;
+                    }
+                    cstmt.setNull(paramIndex, targetSqlType);
+                }
+
+                if (colType == DatabaseMetaData.procedureColumnInOut || colType == DatabaseMetaData.procedureColumnOut) {
+                    try {
+                        // if the parameter is a cursor type, add its index to the arraylist
+                        if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+                            targetSqlType = -10; //OracleTypes.CURSOR;
+                            paramIndices.add(new Integer(paramIndex));
+                        }
+                        cstmt.registerOutParameter(paramIndex, targetSqlType);
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                        throw e;
+                    }
+                }
+
+                // check if the parameter is RETURN type (i.e. it is a function)
+                if (colType == DatabaseMetaData.procedureColumnReturn) {
+                    try {
+                        // if the parameter is a cursor type, add its index to the arraylist
+                        if ((targetSqlType == 1111) && (type_Name.equals("REF CURSOR"))) {
+                            targetSqlType = -10; //OracleTypes.CURSOR;
+                            paramIndices.add(new Integer(paramIndex));
+                        }
+                        cstmt.registerOutParameter(paramIndex, targetSqlType);
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                        throw e;
+                    }
+                }
+            }
+
+            // execute the stored procedure
+            boolean resultsAvailable = cstmt.execute();
+            int count = -1;
+            int numResults = paramIndices.size();
+
+            Iterator paramIdxIter = paramIndices.iterator();
+
+            // iterate through the resultsets returned, whose indices are stored in the arraylist
+            while (paramIdxIter.hasNext()) {
+                ArrayList resultArray = new ArrayList();    // arraylist to hold the objects of ResultSetColumn
+
+                count += 1;
+                // get the index (from the arraylist) of the parameter which is a resultset
+                int index = ((Integer) paramIdxIter.next()).intValue();
+                ResultSet paramRS;
+                ResultSetMetaData rsmd;
+                // if the resultset returns nothing, set the metadata object to null
+                try {
+                    paramRS = (ResultSet) cstmt.getObject(index);
+                    rsmd = paramRS.getMetaData();
+                } catch (SQLException e) {
+                    rsmd = null;
+                }
+
+                int rsmdColCount = 0;
+                if (rsmd != null) {
+                    rsmdColCount = rsmd.getColumnCount();
+                }
+                // scroll through the resultset column information
+                for (int i = 1; i <= rsmdColCount; i++) {
+                    ResultSetColumn currCol = new ResultSetColumn();
+                    currCol.setOrdinalPosition(i);
+                    currCol.setName(rsmd.getColumnName(i));
+                    currCol.setLabel(rsmd.getColumnLabel(i));
+                    currCol.setSqlType(getSQLTypeDescription(rsmd.getColumnType(i)));
+                    currCol.setJavaType((String) SQLTOJAVATYPES.get(getSQLTypeDescription(rsmd.getColumnType(i))));
+
+                    if (rsmd.isNullable(i) == DatabaseMetaData.columnNullable) {
+                        currCol.setIsNullable(true);
+                    } else {
+                        currCol.setIsNullable(false);
+                    }
+                    // add ResultSetColumn object to the arraylist
+                    boolean addToArray = resultArray.add(currCol);
+                }
+
+                // add the arraylist having ResultSetColumn objects to the ResultSetColumns object
+                // now add this ResultSetColumns object to the arraylist object (result)
+                if (resultArray.size() > 0) {
+                    ResultSetColumns rsColbj = new ResultSetColumns();
+                    rsColbj.setColumns(resultArray);
+                    Parameter[] params = storedProc.getParameters();
+                    
+                    //rsColbj.setName(pname + "_" + count);
+                    rsColbj.setName(params[index-1].getName());
+                    result.add(rsColbj);
+                }
+            }
+        } catch (SQLException e) {
+            // resultset column metadata not supported
+            System.out.println("\nException occurred: " + e.getClass().getName() + ", " + e.getMessage());
+            e.printStackTrace();
+            errMsg = e.getLocalizedMessage();
+        } catch (NullPointerException npe) {
+            System.out.println("\nException occurred: " + npe.getClass().getName() + ", " + npe.getMessage());
+            npe.printStackTrace();
+            errMsg = npe.getLocalizedMessage();
+        } catch (Exception e) {
+            // resultset column metadata not supported
+            System.out.println("\nException occurred: " + e.getClass().getName() + ", " + e.getMessage());
+            e.printStackTrace();
+            errMsg = e.getLocalizedMessage();
+        }
+
+        // add the arraylist object to the Procedure object
+        if ((result != null) && (result.size() > 0)) {
+            procResult.setResultSetColumns(result);
+        }
+        procResult.setCallableStmtString(cstmtString);
+
+        return procResult;
+    }
+
+    public Procedure getSQLServerProcResultSetColumns(String pcatalog,
+                                                        String pschema,
+                                                        String pname,
+                                                        String columnName,
+                                                        Connection dbconn) {
+
+        String errMsg = "";
+        String cstmtString = "";
+        int colCount = 0;
+        boolean hasParameters = true;
+        Procedure procResult = new Procedure(pname, pcatalog, pschema, new String("PROCEDURE"));
+        ResultSetColumn resultCol = new ResultSetColumn();
+        ArrayList result = new ArrayList();     // arraylist to hold ResultSetColumns objects
+
+        try {
+            DatabaseMetaData dbmeta = dbconn.getMetaData();
+            ResultSet rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+
+            // get the count of the procedure parameters
+            while (rs.next()) {
+                colCount++;
+            }
+
+            // construct the procedure execution command string
+            cstmtString = "{ call ";
+            cstmtString += pname + "(";
+
+
+            hasParameters = false;
+
+            for (int j = 0; j < colCount - 1; j++) {
+                cstmtString += "?,";
+                hasParameters = true;
+            }
+            /*
+            if(colCount == 0) {
+            hasParameters = false;
+            }
+             */
+            if (hasParameters) {
+                // to trim the last comma in the command string
+                cstmtString = cstmtString.substring(0, cstmtString.length() - 1);
+            }
+            cstmtString += ") }";
+
+            Logger.getAnonymousLogger().fine("\nCallable statement is: " + cstmtString);
+            
+            CallableStatement cstmt = dbconn.prepareCall(cstmtString);
+            rs = dbmeta.getProcedureColumns(pcatalog, pschema, pname, columnName);
+
+            // loop through the list of parameters and register them
+            for (int j = 0; j < colCount; j++) {
+                rs.next();
+                String parameterName = rs.getString("COLUMN_NAME");
+                int targetSqlType = rs.getInt("DATA_TYPE");
+                int colType = rs.getShort("COLUMN_TYPE");
+                String type_Name = rs.getString("TYPE_NAME");
+
+                // set the IN parameters to null
+                if (colType == DatabaseMetaData.procedureColumnIn) {
+                    cstmt.setNull(j, targetSqlType);
+                }
+
+                // register the INOUT and OUT paramters with obtained SQL datatype
+                if (colType == DatabaseMetaData.procedureColumnInOut || colType == DatabaseMetaData.procedureColumnOut) {
+                    try {
+                        cstmt.registerOutParameter(j, targetSqlType);
+                    } catch (SQLException e) {
+                        Logger.getAnonymousLogger().severe(e.getMessage());
+                        Logger.getAnonymousLogger().severe(e.toString());
+                        throw e;
+                    }
+                }
+            }
+
+            // execute the stored procedure
+            boolean resultsAvailable = cstmt.execute();
+            int count = -1;
+
+            ResultSet rsProc;
+            // iterate through the resultsets returned after execution
+            do {
+                ArrayList resultArray = new ArrayList();    // arraylist to hold the objects of ResultSetColumn
+
+                count += 1;
+
+                ResultSetMetaData rsmd;
+                // if the resultset returns nothing, set the metadata object to null
+                try {
+                    rsProc = cstmt.getResultSet();
+                    rsmd = rsProc.getMetaData();
+                } catch (SQLException e) {
+                    rsmd = null;
+                }
+
+                // get the count of the columns returned by the resultset
+                int rsmdColCount = 0;
+                if (rsmd != null) {
+                    rsmdColCount = rsmd.getColumnCount();
+                }
+                // scroll through the resultset column information (metadata)
+                for (int i = 1; i <= rsmdColCount; i++) {
+                    ResultSetColumn currCol = new ResultSetColumn();
+                    currCol.setOrdinalPosition(i);
+                    currCol.setName(rsmd.getColumnName(i));
+                    currCol.setLabel(rsmd.getColumnLabel(i));
+                    currCol.setSqlType(getSQLTypeDescription(rsmd.getColumnType(i)));
+                    currCol.setJavaType((String) SQLTOJAVATYPES.get(getSQLTypeDescription(rsmd.getColumnType(i))));
+
+                    if (rsmd.isNullable(i) == DatabaseMetaData.columnNullable) {
+                        currCol.setIsNullable(true);
+                    } else {
+                        currCol.setIsNullable(false);
+                    }
+                    // add ResultSetColumn object to the arraylist
+                    boolean addToArray = resultArray.add(currCol);
+                }
+
+                // add the arraylist having ResultSetColumn objects to the ResultSetColumns object
+                // now add this ResultSetColumns object to the arraylist object (result)
+                if (resultArray.size() > 0) {
+                    ResultSetColumns rsColbj = new ResultSetColumns();
+                    rsColbj.setColumns(resultArray);
+                    rsColbj.setName(pname + "_" + count);
+                    result.add(rsColbj);
+                }
+            } while (cstmt.getMoreResults());
+        } catch (SQLException e) {
+            // resultset column metadata not supported
+            Logger.getAnonymousLogger().severe("\nException occurred: " + e.getClass().getName() + "\n" + e.getMessage());
+            Logger.getAnonymousLogger().severe(e.toString());
+            errMsg = e.getLocalizedMessage();
+        } catch (NullPointerException npe) {
+            Logger.getAnonymousLogger().severe("\nException occurred: " + npe.getClass().getName() + "\n" + npe.getMessage());
+            Logger.getAnonymousLogger().severe(npe.toString());
+            errMsg = npe.getLocalizedMessage();
+        } catch (Exception e) {
+            // resultset column metadata not supported
+            Logger.getAnonymousLogger().severe("\nException occurred: " + e.getClass().getName() + ", " + e.getMessage());
+            Logger.getAnonymousLogger().severe(e.toString());
+            errMsg = e.getLocalizedMessage();
+        }
+
+        // add the arraylist object to the Procedure object
+        if ((result != null) && (result.size() > 0)) {
+            procResult.setResultSetColumns(result);
+        }
+
+        procResult.setCallableStmtString(cstmtString);
         return procResult;
     }
 
@@ -2307,7 +2755,7 @@ public final class DBMetaData {
      * @return Procedure resultset encapsulated in a Procedure object
      * @throws SQLException, NullPointerException
      */
-    public static final Procedure getQueryResultSet(final String pcatalog, final String pschema, final String pname, final String sqlText,final Connection connection)
+    public static final Procedure getQueryResultSet(final String pcatalog, final String pschema, final String pname, final String sqlText, final Connection connection)
             throws SQLException, NullPointerException {
         String errMsg = "";
         final Procedure procResult = new Procedure(pname, pcatalog, pschema, new String("PROCEDURE"));
@@ -2395,7 +2843,7 @@ public final class DBMetaData {
      * @param Procedure Procedure object representing a procedure or function
      * @return String Text of the procedure or function
      */
-    public static final String getProcedureText(final Procedure proc,final Connection connection) {
+    public static final String getProcedureText(final Procedure proc, final Connection connection) {
         String procText = "";
         String stmtString = "";
         final String procName = proc.getName();
@@ -2418,7 +2866,7 @@ public final class DBMetaData {
             }
         } catch (final SQLException e) {
             e.printStackTrace();
-            //this.errMsg = e.getLocalizedMessage();
+        //this.errMsg = e.getLocalizedMessage();
         }
 
         return procText;

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants.AlarmType;
 import org.openide.nodes.Sheet;
@@ -70,22 +69,23 @@ public final class OnAlarmNode extends BpelNode<TimeEventHolder>
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 PropertyType.ALARM_TYPE,
                 "getAlarmType", "setAlarmType"); // NOI18N
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 For.class, PropertyType.FOR_EXPRESSION,
                 "getTimeEvent", "setTimeEvent", null); // NOI18N
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 DeadlineExpression.class, PropertyType.UNTIL_EXPRESSION,
                 "getTimeEvent", "setTimeEvent", null); // NOI18N
         //
         updateAlarmTypeState(null, sheet.toArray());
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -186,13 +186,14 @@ public final class OnAlarmNode extends BpelNode<TimeEventHolder>
                 break;
         }
         
-        prop = PropertyUtils.lookForPropertyByType(
+        PropertyUtils propUtil = PropertyUtils.getInstance();
+        prop = propUtil.lookForPropertyByType(
                 propSetArr, PropertyType.FOR_EXPRESSION);
         if (prop != null) {
             prop.setHidden(isForHidden);
         }
         //
-        prop = PropertyUtils.lookForPropertyByType(
+        prop = propUtil.lookForPropertyByType(
                 propSetArr, PropertyType.UNTIL_EXPRESSION);
         if (prop != null) {
             prop.setHidden(isUntilHidden);

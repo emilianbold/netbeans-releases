@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,7 +94,6 @@ import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -202,10 +204,10 @@ final class VisualArchiveIncludesSupport {
      */
     public void setVisualWarItems(List<VisualClassPathItem> items) {
         this.data = new Object[items.size()][2];
-        
+
         for (int i = 0; i < items.size(); i++) {
             VisualClassPathItem vi = items.get(i);
-            classpathTableModel.setValueAt(vi, i, 0);            
+            classpathTableModel.setValueAt(vi, i, 0);
             classpathTableModel.setValueAt(vi.getAsaType(), i, 1);
         }
         
@@ -469,8 +471,10 @@ final class VisualArchiveIncludesSupport {
         TableColumnModel columnModel = this.classpathTable.getColumnModel();
         TableColumn firstColumn = columnModel.getColumn(0);
         TableColumn secondColumn = columnModel.getColumn(1);
+        TableColumn thirdColumn = columnModel.getColumn(2);
         firstColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_Item")); // NOI18N
-        secondColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_PathInArchive")); // NOI18N
+        secondColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_ItemTarget")); // NOI18N
+        thirdColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_ItemInDeployment")); // NOI18N
         firstColumn.setCellRenderer(new ClassPathCellRenderer());
     }    
     
@@ -676,25 +680,12 @@ final class VisualArchiveIncludesSupport {
     private void updateProperties(JbiProjectProperties prop, 
             ClasspathTableModel classpathModel) {
         List<String> targetIDs = new ArrayList<String>();
-        VisualClassPathItem vcpi = null;
-        List<VisualClassPathItem> javaEEProjs = new ArrayList<VisualClassPathItem>();
-        Object aa = null;
         
         for (int i = 0; i < classpathModel.getRowCount(); i++) {
-            targetIDs.add((String) classpathModel.getValueAt(i, 1));
-            
-            vcpi = (VisualClassPathItem) classpathModel.getValueAt(i, 0);
-            if (vcpi != null) {
-                aa = vcpi.getObject();
-                if ( (aa instanceof AntArtifact) && 
-                        VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact) aa)){
-                    javaEEProjs.add(vcpi);
-                }
-            }
+            targetIDs.add((String) classpathModel.getValueAt(i, 1));            
         }
         
         prop.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, targetIDs);
-        prop.put(JbiProjectProperties.JBI_JAVAEE_JARS, javaEEProjs);
     }
     
     
@@ -725,13 +716,11 @@ final class VisualArchiveIncludesSupport {
             } else if (source == removeProjectButton) {
                 removeElements();
             } else if (source == updateComponentsButton) {
-                RequestProcessor.getDefault().post(
-                        new Runnable() {
+                RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         fetchInfo();
                     }
-                }
-                );
+                });
             }
         }
         
@@ -774,6 +763,7 @@ final class VisualArchiveIncludesSupport {
     
     private static class ClassPathCellRenderer extends DefaultTableCellRenderer {
         
+        @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object value, 
                 boolean isSelected, boolean hasFocus, 
@@ -788,9 +778,9 @@ final class VisualArchiveIncludesSupport {
     }
     
     private class ClasspathTableModel extends AbstractTableModel {
-        
+
         public int getColumnCount() {
-            return 2; 
+            return 3;
         }
         
         public int getRowCount() {            
@@ -798,12 +788,29 @@ final class VisualArchiveIncludesSupport {
         }
         
         public Object getValueAt(int row, int col) {
-            return data[row][col];
+            if (col == 0) {
+                return data[row][0];
+            } else if (col == 1) {
+                // FIXME
+                return data[row][1]; //((VisualClassPathItem)data[row][1]).getAsaType(); //data[row][1];
+            } else { // col == 2
+                return ((VisualClassPathItem)data[row][0]).isInDeployment();
+            }
         }
         
+        @Override
         public void setValueAt(Object value, int row, int col) {
             data[row][col] = value;
             fireTableCellUpdated(row, col);
+        }
+
+        @Override
+        public Class getColumnClass(int col) {
+            if (col == 2) {
+                return Boolean.class;
+            } else {
+                return super.getColumnClass(col);
+            }
         }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,11 +51,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -66,13 +72,51 @@ import org.openide.util.Lookup;
 public final class PlatformInfo {
 
     private ArrayList<String> list = new ArrayList<String>();
-    private String pathName = null;
+    private String pathName;
     private final ExecutionEnvironment executionEnvironment;
     private final int platform;
+    private HostInfo hostinfo;
 
-    private PlatformInfo(ExecutionEnvironment execEnv, int platform) {
+    private PlatformInfo(ExecutionEnvironment execEnv) {
         this.executionEnvironment = execEnv;
-        this.platform = platform;
+        try {
+            hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (hostinfo != null) {
+            switch (hostinfo.getOSFamily()){
+                case SUNOS:
+                    switch (hostinfo.getCpuFamily()){
+                        case SPARC:
+                            platform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
+                            break;
+                        case X86:
+                            platform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+                            break;
+                        default:
+                            platform = PlatformTypes.PLATFORM_GENERIC;
+                            break;
+                    }
+                    break;
+                case LINUX:
+                    platform = PlatformTypes.PLATFORM_LINUX;
+                    break;
+                case WINDOWS:
+                    platform = PlatformTypes.PLATFORM_WINDOWS;
+                    break;
+                case MACOSX:
+                    platform = PlatformTypes.PLATFORM_MACOSX;
+                    break;
+                default:
+                    platform = PlatformTypes.PLATFORM_GENERIC;
+                    break;
+            }
+        } else {
+            platform = PlatformTypes.PLATFORM_NONE;
+        }
 
         String path = getEnv().get(getPathName());
         if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
@@ -199,35 +243,39 @@ public final class PlatformInfo {
             if (i >= 0) {
                 return null;
             }
-            String cmd2 = null;
             ArrayList<String> dirlist = getPath();
 
-            if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
-                cmd2 = cmd + ".exe"; // NOI18N
-            }
-
             for (String dir : dirlist) {
-                String path = dir + separator() + cmd;
-                if (fileExists(path)) {
+                String path = findCommand(dir, cmd);
+                if (path != null) {
                     return path;
-                } else {
-                    if (isWindows() && cmd.endsWith(".exe")){ // NOI18N
-                        String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
-                        if (fileExists(path2)) {
-                            return path;
-                        }
-                    }
                 }
-                if (cmd2 != null) {
-                    path = dir + separator() + cmd2;
-                    if (fileExists(path)) {
-                        return path;
-                    }
-                    String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
-                    if (fileExists(path2)) {
-                        return path;
-                    }
+            }
+        }
+        return null;
+    }
+
+    public String findCommand(String dir, String cmd) {
+        String path = dir + separator() + cmd;
+        if (fileExists(path)) {
+            return path;
+        } else {
+            if (isWindows() && cmd.endsWith(".exe")){ // NOI18N
+                String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+                if (fileExists(path2)) {
+                    return path;
                 }
+            }
+        }
+        if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
+            String cmd2 = cmd + ".exe"; // NOI18N
+            path = dir + separator() + cmd2;
+            if (fileExists(path)) {
+                return path;
+            }
+            String path2 = dir + separator() + cmd + ".lnk"; // NOI18N
+            if (fileExists(path2)) {
+                return path;
             }
         }
         return null;
@@ -343,8 +391,7 @@ public final class PlatformInfo {
     public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
         PlatformInfo pi = map.get(execEnv);
         if (pi == null) {
-            int thePlatform = HostInfoProvider.getPlatform(execEnv);
-            pi = new PlatformInfo(execEnv, thePlatform);
+            pi = new PlatformInfo(execEnv);
             map.put(execEnv, pi);
         }
         return pi;

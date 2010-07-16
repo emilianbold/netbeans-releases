@@ -2,7 +2,10 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
   specific language governing permissions and limitations under the
   License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
   particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that
+  by Oracle in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
   License Header, with the fields enclosed by brackets [] replaced by
   your own identifying information:
@@ -41,17 +44,13 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Tools">
-            <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance"/>
-            <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance"/>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="SOA_BPEL">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
             <attr name="position" intvalue="102"/>
-            <file name="Process.bpel" url="templates/EmptyBPEL.template">
+
+            <file name="Process.bpel" url="BpelProcess.template">
+                <attr name="position" intvalue="100"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.core.wizard.NewBpelFileIterator"/>
@@ -61,12 +60,11 @@
             </file>
         </folder>
     </folder>    
-    
+
     <folder name="Plugins">
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-bpel-core-BPELCatalog.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.bpel.core.BPELCatalog"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
@@ -76,7 +74,7 @@
     <folder name="Services">
         <!-- Recognize text/x-bpel+xml -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-bpel-core-mime-resolver.xml" url="bpel-mime-resolver.xml">
+            <file name="org-netbeans-modules-bpel-core-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bpel_file.gif"/>
                 <attr name="position" intvalue="446"/>
@@ -105,87 +103,77 @@
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance"/>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance">
                         <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance">
                         <attr name="position" intvalue="150"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="1000"/>
                     </file>
                     <!--file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file-->
-                    <file name="org-openide-actions-FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="org-openide-actions-PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>                    
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="700"/>
                     </file>                    
-                       
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>   
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1100"/>
                     </file>                    
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    </folder>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-core-compatibility-CheckCompatibilityAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>    

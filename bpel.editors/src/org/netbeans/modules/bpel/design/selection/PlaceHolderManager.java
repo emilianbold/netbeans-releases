@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.model.api.CompensatableActivityHolder;
 import org.netbeans.modules.bpel.design.model.patterns.CompensatePattern;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.editors.api.dnd.DnDCallback;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.openide.ErrorManager;
 
@@ -211,7 +212,16 @@ public class PlaceHolderManager implements DnDTool {
                         }
                     }
                 }
+                DnDCallback callback = (DnDCallback) activity.getCookie(DnDCallback.class);
+                if (callback != null){
+                    callback.preDrop();
+                }
                 targetPlaceholder.drop();
+                if (callback != null){
+                    callback.postDrop();
+                    activity.removeCookie(DnDCallback.class);
+                }
+                
 
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

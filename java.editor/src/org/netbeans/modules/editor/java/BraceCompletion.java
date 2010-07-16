@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -593,15 +596,16 @@ class BraceCompletion {
             return false;
         }
 
-        if (caretOffset == 1) {
-            char previousChar = doc.getChars(caretOffset - 1, 1)[0];
-
-            return previousChar == '\\';
+        for (int i = 2; caretOffset - i >= 0; i += 2) {
+            char[] previousChars = doc.getChars(caretOffset - i, 2);
+            if (previousChars[1] != '\\')
+                return false;
+            if (previousChars[0] != '\\')
+                return true;
         }
 
-        char[] previousChars = doc.getChars(caretOffset - 2, 2);
-
-        return previousChars[0] != '\\' && previousChars[1] == '\\';
+        char previousChar = doc.getChars(caretOffset - 1, 1)[0];
+        return previousChar == '\\';
     }
 
     /** 
@@ -801,7 +805,7 @@ class BraceCompletion {
      * @param doc the document
      * @param caretOffset position to be tested (before '\n' gets inserted into doc.
      */
-    static boolean posWithinString(BaseDocument doc, int caretOffset) {
+    static boolean posWithinString(Document doc, int caretOffset) {
         return posWithinQuotes(doc, caretOffset, '"', JavaTokenId.STRING_LITERAL);
     }
 
@@ -813,13 +817,12 @@ class BraceCompletion {
      * @param doc the document
      * @param caretOffset position of typed quote
      */
-    static boolean posWithinQuotes(BaseDocument doc, int caretOffset, char quote, JavaTokenId tokenId) {
-        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset - 1, false);
+    static boolean posWithinQuotes(Document doc, int caretOffset, char quote, JavaTokenId tokenId) {
+        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
         if (javaTS != null) {
-            return javaTS.token().id() == tokenId &&
-                    (caretOffset - javaTS.offset() == 1 ||
-                     (caretOffset > 0 && !(DocumentUtilities.getText(doc).charAt(caretOffset - 1) == quote &&
-                        (caretOffset < 2 || DocumentUtilities.getText(doc).charAt(caretOffset - 2) != '\\'))));
+            if (javaTS.token().id() != tokenId) return false;
+            if (caretOffset > javaTS.offset() && caretOffset < javaTS.offset() + javaTS.token().length()) return true;
+            else return false;
         }
         return false;
     }

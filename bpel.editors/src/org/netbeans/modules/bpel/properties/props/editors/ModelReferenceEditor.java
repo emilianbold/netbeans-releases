@@ -20,14 +20,9 @@ package org.netbeans.modules.bpel.properties.props.editors;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
-import org.netbeans.modules.bpel.model.api.NamedElement;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
-import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropertyCustomizer;
 import org.netbeans.modules.xml.xam.Reference;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

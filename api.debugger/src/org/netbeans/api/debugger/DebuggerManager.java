@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -187,6 +190,7 @@ public final class DebuggerManager implements ContextProvider {
     private boolean                           breakpointsInitialized = false;
     private final Vector                      watches = new Vector ();
     private boolean                           watchesInitialized = false;
+    private ThreadLocal<Boolean>              watchesInitializing = new ThreadLocal<Boolean>();
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listeners = new Vector ();
     private final HashMap                     listenersMap = new HashMap ();
@@ -378,6 +382,11 @@ public final class DebuggerManager implements ContextProvider {
             }
         }
         
+        if (sessionToStart != null) {
+            GestureSubmitter.logDebugStart(sessionToStart, engines);
+            setCurrentSession (sessionToStart);
+        }
+
         k = engines.size ();
         for (i = 0; i < k; i++) {
             if (Thread.interrupted()) {
@@ -406,12 +415,10 @@ public final class DebuggerManager implements ContextProvider {
                 if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
                 am.destroy();
             }
+            if (sessionToStart != null) {
+                sessionToStart.kill();
+            }
             return new DebuggerEngine[] {};
-        }
-        
-        if (sessionToStart != null) {
-            GestureSubmitter.logDebugStart(sessionToStart, engines);
-            setCurrentSession (sessionToStart);
         }
         
         DebuggerEngine[] des = new DebuggerEngine [engines.size ()];
@@ -617,10 +624,39 @@ public final class DebuggerManager implements ContextProvider {
      * @return the new watch
      */
     public Watch createWatch (String expr) {
-        initWatches ();
         Watch w = new Watch (expr);
-        watches.addElement (w);
-        fireWatchCreated (w);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.addElement (w);
+        } else {
+            initWatches ();
+            watches.addElement (w);
+            fireWatchCreated (w);
+        }
+        return w;
+    }
+
+    /**
+     * Creates a watch with its expression set to an initial value
+     * and add it at the specific position
+     *
+     * @param index the position at which the specified watch is to be inserted
+     * @param expr expression to watch for (the format is the responsibility
+     *    of the debugger plug-in implementation, but it is typically
+     *    a variable name).
+     * @return the new watch
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     *         <code>(index < 0 || index > getWatches().length)</code>
+     * @since 1.22
+     */
+    public Watch createWatch (int index, String expr) {
+        Watch w = new Watch (expr);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.add (index, w);
+        } else {
+            initWatches ();
+            watches.add (index, w);
+            fireWatchCreated (w);
+        }
         return w;
     }
 
@@ -656,6 +692,42 @@ public final class DebuggerManager implements ContextProvider {
         fireWatchRemoved (w);
     }
 
+    /**
+     * Reorders watches with given permutation.
+     * @param permutation The permutation with the length of current watches list
+     * @throws IllegalArgumentException if the permutation is not valid permutation
+     * @since 1.22
+     */
+    public void reorderWatches(final int[] permutation) throws IllegalArgumentException {
+        synchronized (watches) {
+            if (permutation.length != watches.size()) {
+                throw new IllegalArgumentException("Permutation of length "+permutation.length+", but have "+watches.size()+" watches.");
+            }
+            checkPermutation(permutation);
+            Vector v = (Vector) watches.clone ();
+            for (int i = 0; i < v.size(); i++) {
+                watches.set(permutation[i], v.get(i));
+            }
+        }
+    }
+
+    private static void checkPermutation(int[] permutation) throws IllegalArgumentException {
+        int max = permutation.length;
+        int[] check = new int[max];
+        for (int i = 0; i < max; i++) {
+            int p = permutation[i];
+            if (p >= max) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+", which is bigger than the length of the permutation.");
+            }
+            if (p < 0) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+", which is negative.");
+            }
+            if (check[p] != 0) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+" twice or more times.");
+            }
+            check[p] = 1;
+        }
+    }
     
     // listenersMap ...............................................................
 
@@ -1140,43 +1212,48 @@ public final class DebuggerManager implements ContextProvider {
     }
 
     private void initWatches () {
+        initDebuggerManagerListeners();
         synchronized (watches) {
             if (watchesInitialized) return ;
             watchesInitialized = true;
-        }
-        initDebuggerManagerListeners();
-        // The rest must not be synchronized, since initWatches() does call createWatch()
-        PropertyChangeEvent ev = new PropertyChangeEvent (
-            this, PROP_WATCHES_INIT, null, null
-        );
-        
-        Vector l = (Vector) listeners.clone ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
             try {
-                ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
-                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+                watchesInitializing.set(Boolean.TRUE);
+                // All is synchronized, initWatches() implementations should call just createWatch()
+                PropertyChangeEvent ev = new PropertyChangeEvent (
+                    this, PROP_WATCHES_INIT, null, null
+                );
 
-        Vector l1;
-        synchronized (listenersMap) {
-            l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
-            if (l1 != null) {
-                l1 = (Vector) l1.clone ();
-            }
-        }
-        if (l1 != null) {
-            k = l1.size ();
-            for (i = 0; i < k; i++) {
-                try {
-                    ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
-                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                Vector l = (Vector) listeners.clone ();
+                int i, k = l.size ();
+                for (i = 0; i < k; i++) {
+                    try {
+                        ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
+                        ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+
+                Vector l1;
+                synchronized (listenersMap) {
+                    l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
+                    if (l1 != null) {
+                        l1 = (Vector) l1.clone ();
+                    }
+                }
+                if (l1 != null) {
+                    k = l1.size ();
+                    for (i = 0; i < k; i++) {
+                        try {
+                            ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
+                            ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            } finally {
+                watchesInitializing.set(Boolean.FALSE);
             }
         }
     }

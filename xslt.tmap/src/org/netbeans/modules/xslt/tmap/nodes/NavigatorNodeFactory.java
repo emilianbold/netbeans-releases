@@ -21,9 +21,12 @@ package org.netbeans.modules.xslt.tmap.nodes;
 import org.netbeans.modules.soa.ui.nodes.ReflectionNodeFactory;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
+import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -42,10 +45,13 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
     }
     
     private NavigatorNodeFactory() {
-        super(7);
+        super(8);
         //
         key2Class.put(NodeType.TRANSFORMMAP, TransformMapNode.class);
+        key2Class.put(NodeType.IMPORTS_CONTAINER, ImportsContainerNode.class);
+        key2Class.put(NodeType.VARIABLES_CONTAINER, VariablesContainerNode.class);
         key2Class.put(NodeType.IMPORT, ImportNode.class);
+        key2Class.put(NodeType.VARIABLE, VariableNode.class);
         key2Class.put(NodeType.SERVICE, ServiceNode.class);
         key2Class.put(NodeType.OPERATION, OperationNode.class);
         key2Class.put(NodeType.INVOKE, InvokeNode.class);
@@ -82,11 +88,11 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
         Node node = null;
         switch (nodeType) {
             case TRANSFORMMAP:
-//            assert ref instanceof TransformMap
-//                    : "reference should be TransformMap type to create TransformMap type Node"; // NOI18N
-//                node = super.createNode(nodeType,ref,
-//                        new TransformMapChildren((TransformMap)ref,lookup),lookup);
-//            break;
+            assert ref instanceof TransformMap
+                    : "reference should be TransformMap type to create TransformMap type Node"; // NOI18N
+                node = super.createNode(nodeType,ref,
+                        new TMapRootNodeChildrenImpl((TransformMap)ref,lookup),lookup);
+            break;
             case SERVICE:
 //            assert ref instanceof Service
 //                    : "reference should be Service type to create Service type Node"; // NOI18N
@@ -101,7 +107,22 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
 //                        new OperationChildren((Operation)ref,lookup),lookup);
                 assert ref instanceof TMapComponent 
                         : "reference should be TMapComponent type to create TMapComponent type Node"; // NOI18N
-                node = super.createNode(nodeType, ref, new TMapComponentNodeChildrenImpl((TMapComponent) ref, lookup), lookup);
+                node = super.createNode(nodeType, ref, new TMapActivitiesNodeChildrenImpl((TMapComponent) ref, lookup), lookup);
+                break;
+            case VARIABLES_CONTAINER:
+                assert ref instanceof Operation 
+                        : "reference should be Operation type to create Variables Container type Node";
+                node = super.createNode(nodeType,ref,
+                        new TMapVariablesNodeChildrenImpl((Operation)ref,lookup),lookup);
+                break;
+            case IMPORTS_CONTAINER:
+                node = super.createNode(nodeType,ref,
+                        new TMapImportsNodeChildrenImpl((TransformMap)ref,lookup),lookup);
+                break;
+            case VARIABLE:
+                assert ref instanceof Variable 
+                        : "reference should be Variable type to create Variable type Node"; // NOI18N
+                node = super.createNode(nodeType, ref, Children.LEAF, lookup);
                 break;
             case IMPORT:
                 assert ref instanceof Import 

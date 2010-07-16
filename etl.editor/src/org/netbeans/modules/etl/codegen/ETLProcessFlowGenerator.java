@@ -20,7 +20,7 @@ package org.netbeans.modules.etl.codegen;
 
 import java.util.Map;
 import com.sun.etl.engine.ETLEngine;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * @author Jonathan Giron

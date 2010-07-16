@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,16 @@
  */
 package org.netbeans.modules.subversion.ui.properties;
 
+import java.util.Set;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.BorderFactory;
@@ -59,6 +66,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -138,7 +146,9 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
     private PropertiesTable propertiesTable;
     private ListenersSupport listenerSupport = new ListenersSupport(this);
-    private final JLabel lblErrMessage = new JLabel();
+    private final javax.swing.ImageIcon warningIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif")); //NOI18N
+    private final javax.swing.ImageIcon errorIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/error.gif")); //NOI18N
+    private final JLabel lblErrMessage = new JLabel(errorIcon, SwingConstants.LEADING);
     private final Document propNameDocument;
     private final Document propValueDocument;
     private String propertyName;
@@ -146,7 +156,8 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     private String illegalPropErrMsgKey;
     private boolean recursive;
     private String[] existingProperties;
-    private String[] illegalProperties;
+    private String[] illegalProperties = new String[0];
+    private Set<String> recursiveProperties = Collections.EMPTY_SET;
     private SvnProperties propValueChangeListener;
     private boolean interactionInitialized;
 
@@ -217,6 +228,10 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
         if (interactionInitialized) {
             illegalPropertiesChanged();
         }
+    }
+
+    void setRecursiveProperties (Collection<String> propNames) {
+        recursiveProperties = new HashSet<String>(propNames);
     }
 
     void setForDirectory(boolean forDirectory) {
@@ -374,12 +389,22 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     }// </editor-fold>
 
     private void setErrMessage(String message) {
+        setMessage(message, errorIcon, Color.RED);
+    }
+
+    private void setWarningMessage (String message) {
+        setMessage(message, warningIcon, Color.BLACK);
+    }
+
+    private void setMessage (String message, javax.swing.ImageIcon icon, Color foregroundColor) {
         if (message == null) {
             lblErrMessage.setText(" ");                                 //NOI18N
             lblErrMessage.setVisible(false);
         } else {
             lblErrMessage.setText(message);
             lblErrMessage.setVisible(true);
+            lblErrMessage.setIcon(icon);
+            lblErrMessage.setForeground(foregroundColor);
             int widthReserve = lblErrMessage.getSize().width - lblErrMessage.getPreferredSize().width;
             if (widthReserve < 0) {
                 makeDialogWider(-widthReserve);
@@ -422,7 +447,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
 
     private void refreshAddButtonState() {
         boolean enabled;
-        String errMsg;
+        String errMsg, warningMsg = null;
 
         if (propertyName.length() == 0) {
             enabled = false;
@@ -441,8 +466,20 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
             errMsg = null;
         }
 
+        if (errMsg == null && recursiveProperties.contains(propertyName)) {
+            cbxRecursively.setSelected(true);
+            cbxRecursively.setEnabled(false);
+            warningMsg = NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.needsRecursive", propertyName); //NOI18N
+        } else {
+            cbxRecursively.setEnabled(true);
+        }
+
         btnAdd.setEnabled(enabled);
-        setErrMessage(errMsg);
+        if (errMsg != null) {
+            setErrMessage(errMsg);
+        } else {
+            setWarningMessage(warningMsg);
+        }
     }
 
     private boolean isPropertyNameLegal() {

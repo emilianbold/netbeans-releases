@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Operation;
 import org.netbeans.modules.jmx.test.helpers.Parameter;
 import org.netbeans.modules.jmx.test.helpers.Exception;
@@ -77,19 +79,6 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MBeanOperationsWizard("createMBean1"));
-        suite.addTest(new MBeanOperationsWizard("createMBean2"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -105,7 +94,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
     /**
      * MBean from existing java class
      */
-    public void createMBean1() {
+    public void testCreateMBean1() {
         
         System.out.println("==========  createMBean1  ==========");
         
@@ -113,13 +102,13 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         tableOperator = WRAPPER_OPERATION_TABLE;
         removeButton = WRAPPER_OPERATION_REMOVE_BUTTON;
         // Test operations wizard
-        testOperationsWizard(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS);
+        operationsWizardTest(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS);
     }
     
     /**
      * StandardMBean with metadata
      */
-    public void createMBean2() {
+    public void testCreateMBean2() {
         
         System.out.println("==========  createMBean2  ==========");
 
@@ -127,7 +116,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         tableOperator = OPERATION_TABLE_FROM_MENU;
         removeButton = OPERATION_REMOVE_BUTTON;
         // Test operations wizard
-        testOperationsWizard(FILE_TYPE_STANDARD_MBEAN_WITH_METADATA);
+        operationsWizardTest(FILE_TYPE_STANDARD_MBEAN_WITH_METADATA);
     }
     
     //========================= Test Wizard ==================================//
@@ -135,7 +124,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
     /**
      * Test operations wizard
      */
-    private void testOperationsWizard(String fileType) {
+    private void operationsWizardTest(String fileType) {
         
         System.out.println("File type is " + fileType);
         

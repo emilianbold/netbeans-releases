@@ -23,7 +23,6 @@ package org.netbeans.modules.iep.editor.ps;
 import java.awt.dnd.*;
 import java.util.ArrayList;
 import javax.swing.JTextArea;
-import javax.swing.event.CaretListener;
 
 /**
  * SmartTextArea.java

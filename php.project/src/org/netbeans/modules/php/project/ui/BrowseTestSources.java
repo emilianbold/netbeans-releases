@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,26 +42,26 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,14 +83,17 @@ public class BrowseTestSources extends JPanel {
         initComponents();
         infoLabel.setText(title);
         testSourcesTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -122,39 +128,16 @@ public class BrowseTestSources extends JPanel {
         assert notificationLineSupport != null;
 
         String testSources = testSourcesTextField.getText();
-        if (testSources.length() == 0) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderEmpty"));
+        String error = Utils.validateTestSources(phpProject, testSources);
+        if (error != null) {
+            notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);
             return;
         }
 
-        File testSourcesFile = new File(testSources);
-        if (!testSourcesFile.isAbsolute()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotAbsolute"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!testSourcesFile.isDirectory()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotDirectory"));
-            dialogDescriptor.setValid(false);
-            return;
-        }
-        FileObject nbproject = phpProject.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
-        if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject)))) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestEqualsSources"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
-                || nbproject.equals(testSourcesFo)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestUnderneathNBMetadata"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!Utils.isFolderWritable(testSourcesFile)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotWritable"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotUnderneathProjectFolder"));
+        String warning = Utils.warnTestSources(phpProject, testSources);
+        if (warning != null) {
+            notificationLineSupport.setWarningMessage(warning);
             dialogDescriptor.setValid(true);
             return;
         }
@@ -172,13 +155,41 @@ public class BrowseTestSources extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         infoLabel = new JLabel();
         testSourcesLabel = new JLabel();
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return testSourcesBrowseButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesTextField){
+                    return testSourcesBrowseButton;
+                }
+                return testSourcesTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesBrowseButton){
+                    return testSourcesTextField;
+                }
+                return testSourcesBrowseButton;//end getComponentBefore
+
+            }}
+        );
+
         Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+
         testSourcesLabel.setLabelFor(testSourcesTextField);
 
         Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));
@@ -191,32 +202,42 @@ public class BrowseTestSources extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(infoLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(testSourcesLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(testSourcesBrowseButton)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(infoLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testSourcesLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(infoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(testSourcesLabel)
-                    .add(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(testSourcesBrowseButton))
+                .addComponent(infoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(testSourcesLabel)
+                    .addComponent(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testSourcesBrowseButton))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        testSourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void testSourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testSourcesBrowseButtonActionPerformed

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,7 +56,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -62,8 +64,8 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -74,16 +76,15 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public abstract class SQLDataStorage implements DataStorage {
+public abstract class SQLDataStorage implements PersistentDataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
     private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
     private LinkedBlockingQueue<Request> requestQueue;
-    private final Object insertPreparedStatmentsLock = new Object();
     private final Map<String, PreparedStatement> insertPreparedStatments;
     private static final int WAIT_INTERVALS = 100;
     private static final int MAX_BULK_SIZE = 10000;
-    private static final int BUFFER_COUNT = 6;
+    private static final int IDLE_ITERATIONS = 2;
     private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
     protected Connection connection;
     protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
@@ -303,6 +304,10 @@ public abstract class SQLDataStorage implements DataStorage {
         return viewName;
     }
 
+    protected final void loadTable(final DataTableMetadata metadata){
+        tables.put(metadata.getName(), metadata);
+    }
+
     protected final boolean createTable(final DataTableMetadata metadata) {
         if (tables.containsKey(metadata.getName())) {
             return true;
@@ -362,9 +367,8 @@ public abstract class SQLDataStorage implements DataStorage {
     }
 
     private PreparedStatement getPreparedInsertStatement(DataTableMetadata tableDescription) {
-        PreparedStatement statement;
-        synchronized (insertPreparedStatmentsLock) {
-            statement = insertPreparedStatments.get(tableDescription.getName());
+        synchronized (insertPreparedStatments) {
+            PreparedStatement statement = insertPreparedStatments.get(tableDescription.getName());
             if (statement != null) {
                 return statement;
             }
@@ -391,19 +395,14 @@ public abstract class SQLDataStorage implements DataStorage {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
             }
 
-            PreparedStatement stmt = null;
-
             try {
-                stmt = connection.prepareStatement(query.toString());
+                statement = connection.prepareStatement(query.toString());
             } catch (SQLException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
 
-            if (stmt != null) {
-                synchronized (insertPreparedStatments) {
-                    insertPreparedStatments.put(tableName, stmt);
-                    //insert(tableName, row);
-                }
+            if (statement != null) {
+                insertPreparedStatments.put(tableName, statement);
             }
             return statement;
         }
@@ -514,6 +513,17 @@ public abstract class SQLDataStorage implements DataStorage {
         }
     }
 
+    public final synchronized void syncAddData(String tableName, List<DataRow> data) {
+        for (DataRow row : data) {
+            DataRowInsertRequest request = new DataRowInsertRequest(tableName, row);
+            try {
+                request.execute();
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     /**
      * Returns a prepareed statement for insertion of the row into the table
      * NB: FILLS the statement with data
@@ -538,7 +548,7 @@ public abstract class SQLDataStorage implements DataStorage {
                 new Convertor<Object>() {
 
                     public String toString(Object item) {
-                        return String.valueOf(item);
+                        return '\'' + String.valueOf(item) + '\'';
                     }
                 }));
 
@@ -605,122 +615,77 @@ public abstract class SQLDataStorage implements DataStorage {
         public String toString(T item);
     }
 
+    public void flush() {
+        try {
+            asyncThread.flush();
+        } catch (InterruptedException ex) {
+            logger.log(Level.INFO, null, ex);
+        }
+    }
+
     private class AsyncThread extends Thread {
 
-        private boolean shutdown;
-        private int emptyBufferCount;
-        List<Request> requestList = new ArrayList<Request>();
+        private volatile boolean idle; // true if at least IDLE_ITERATIONS previous iterations were idle
+        private volatile boolean stop; // true if it's time to stop
 
         public AsyncThread() {
             setDaemon(true);
             setName("DLIGHT: SQL Storage AsyncThread"); // NOI18N
         }
 
+        public void flush() throws InterruptedException {
+            while (!idle) {
+                Thread.sleep(WAIT_INTERVALS);
+            }
+        }
+
         @Override
         public void run() {
-            while (emptyBufferCount < BUFFER_COUNT) {
-                for (int i = 0; i < MAX_BULK_SIZE; i++) {
-                    try {
-                        Request request = requestQueue.poll(WAIT_INTERVALS, TimeUnit.MILLISECONDS);
-                        if (request == null) {
+            int idleIterations = 0;
+            List<Request> requestList = new ArrayList<Request>();
+            for (;;) {
+                requestQueue.drainTo(requestList, MAX_BULK_SIZE);
+
+                if (requestList.isEmpty()) {
+                    if (IDLE_ITERATIONS <= ++idleIterations) {
+                        idle = true;
+                        if (stop) {
                             break;
                         }
-                        requestList.add(request);
-                    } catch (InterruptedException e) {
+                        idleIterations = IDLE_ITERATIONS; // to prevent overflow
                     }
-                }
-                try {
-                    if (requestList.isEmpty()) {
-                        if (shutdown) {
-                            emptyBufferCount++;
-                        }
-                    } else {
+                    try {
+                        Thread.sleep(WAIT_INTERVALS);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                } else {
+                    idleIterations = 0;
+                    idle = false;
+                    try {
                         for (Request request : requestList) {
                             if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString()); //NOI18N
+                                logger.fine("SQLDataStorage.AsyncThread executes " + request.toString()); //NOI18N
                             }
-
                             request.execute();
                         }
-
+                    } catch (Exception e) {
+                        logger.log(
+                                Level.WARNING,
+                                "SQLDataStorage.async_db_write_failed", //NOI18N
+                                e);
                     }
-                } catch (Exception e) {
-                    logger.log(
-                            Level.WARNING,
-                            "SQLDataStorage.async_db_write_failed", //NOI18N
-                            e);
+                    requestList.clear();
                 }
-                requestList.clear();
-
-
             }
         }
 
         private void shutdown() {
-            shutdown = true;
-            while (emptyBufferCount < BUFFER_COUNT) {
-                try {
-                    Thread.sleep(WAIT_INTERVALS);
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-    }
-
-    private class AsyncReadThread extends Thread {
-
-        private boolean shutdown;
-        private int emptyBufferCount;
-        List<Request> requestList = new ArrayList<Request>();
-
-        public AsyncReadThread() {
-            setDaemon(true);
-            setName("DLIGHT: SQL Storage AsyncFillModelThread"); // NOI18N
-        }
-
-        @Override
-        public void run() {
-            while (emptyBufferCount < BUFFER_COUNT) {
-                for (int i = 0; i < MAX_BULK_SIZE; i++) {
-                    try {
-                        Request request = requestQueue.poll(WAIT_INTERVALS, TimeUnit.MILLISECONDS);
-                        if (request == null) {
-                            break;
-                        }
-                        requestList.add(request);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                try {
-                    if (requestList.isEmpty()) {
-                        if (shutdown) {
-                            emptyBufferCount++;
-                        }
-                    } else {
-                        for (Request request : requestList) {
-                            request.execute();
-                        }
-
-                    }
-                } catch (Exception e) {
-                    logger.log(
-                            Level.WARNING,
-                            "SQLDataStorage_db_write_failed", //NOI18N
-                            e);
-                }
-                requestList.clear();
-
-
-            }
-        }
-
-        private void shutdown() {
-            shutdown = true;
-            while (emptyBufferCount < BUFFER_COUNT) {
-                try {
-                    Thread.sleep(WAIT_INTERVALS);
-                } catch (InterruptedException e) {
-                }
+            stop = true;
+            try {
+                flush();
+            } catch (InterruptedException ex) {
+                logger.log(Level.INFO, null, ex);
             }
         }
     }

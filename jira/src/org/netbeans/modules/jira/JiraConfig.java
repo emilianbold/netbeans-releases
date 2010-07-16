@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.jira;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +50,6 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
@@ -60,7 +63,7 @@ public class JiraConfig {
 
     private static JiraConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N // XXX
-    private static final String REPO_NAME           = "jira.repository_";           // NOI18N
+    private static final String REPO_ID           = "jira.repository_";           // NOI18N
     private static final String QUERY_NAME          = "jira.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
@@ -129,48 +132,82 @@ public class JiraConfig {
     public void putRepository(String repoID, JiraRepository repository) {
         String repoName = repository.getDisplayName();
 
-        String user = repository.getUsername();
-        String password = BugtrackingUtil.scramble(repository.getPassword());
+        String user = repository.getUsername();        
 
-        String httpUser = repository.getHttpUsername();
-        String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
+        String httpUser = repository.getHttpUsername();        
         String url = repository.getUrl();
         getPreferences().put(
-                REPO_NAME + repoID,
+                REPO_ID + repoID,
                 url + DELIMITER +
                 user + DELIMITER +
-                password + DELIMITER +
+                "" + DELIMITER +          // NOI18N - skip password, will be saved via keyring
                 httpUser + DELIMITER +
-                httpPassword + DELIMITER +
+                "" + DELIMITER +          // NOI18N - skip http password, will be saved via keyring
                 repoName);
+
+        String password = repository.getPassword();
+        String httpPassword = repository.getHttpPassword();
+        BugtrackingUtil.savePassword(password, null, user, url);
+        BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
+
+    }
+
+    public String getRepositoryName(String repoId) {
+        String repoString = getPreferences().get(REPO_ID + repoId, "");         // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
+            return null;
+        }
+        String[] values = repoString.split(DELIMITER);
+        return values.length > 5 ? values[5] : repoId;
     }
 
     public JiraRepository getRepository(String repoID) {
-        String repoString = getPreferences().get(REPO_NAME + repoID, "");     // NOI18N
+        String repoString = getPreferences().get(REPO_ID + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
         String url = values[0];
-        String user = values[1];
-        String password = BugtrackingUtil.descramble(values[2]);
-        String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
         String repoName;
         if(values.length > 5) {
             repoName = values[5];
         } else {
             repoName = repoID;
         }
-        return new JiraRepository(repoID, repoName, url, user, password, httpUser, httpPassword);
+
+        JiraRepository repo = new JiraRepository(repoID, repoName, url, null, null, null, null);
+
+        // make sure tha scrambled password is removed
+        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
+            putRepository(repoID, repo);
+        }
+
+        return repo;
     }
 
+    public void setupCredentials(JiraRepository repository) {
+        String repoID = repository.getID();
+        String[] values = getRepositoryValues(repoID);
+        if(values == null) {
+            return;
+        }
+
+        String url = repository.getUrl();
+        String user = values[1];
+        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
+
+        repository.setCredentials(user, password, httpUser, httpPassword);
+    }
+
+
     public String[] getRepositories() {
-        return getKeysWithPrefix(REPO_NAME);
+        return getKeysWithPrefix(REPO_ID);
     }
 
     public void removeRepository(String name) {
-        getPreferences().remove(REPO_NAME + name);
+        getPreferences().remove(REPO_ID + name);
     }
 
     private String[] getKeysWithPrefix(String prefix) {
@@ -216,4 +253,13 @@ public class JiraConfig {
         }
         return priorityIcons.get(priorityId);
     }
+
+    private String[] getRepositoryValues(String repoID) {
+        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
+            return null;
+        }
+        return repoString.split(DELIMITER);
+    }
+
 }

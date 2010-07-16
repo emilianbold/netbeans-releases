@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,10 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
@@ -62,6 +65,7 @@ public final class LocalFileSearcherImpl implements FileSearcher {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public final String searchFile(FileSearchParams fileSearchParams) {
         final ExecutionEnvironment execEnv = fileSearchParams.getExecEnv();
 
@@ -69,14 +73,22 @@ public final class LocalFileSearcherImpl implements FileSearcher {
             return null;
         }
 
-        log.fine("File Searching Task: " + fileSearchParams.toString() + "..."); // NOI18N
+        log.log(Level.FINE, "File Searching Task: {0}...", fileSearchParams.toString()); // NOI18N
 
         List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
 
         if (fileSearchParams.isSearchInUserPaths()) {
             try {
-                HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
-                sp.addAll(Arrays.asList(hi.getPath().split(File.pathSeparator)));
+                Map<String, String> environment = HostInfoUtils.getHostInfo(execEnv).getEnvironment();
+                String path = null;
+                if (environment.containsKey("Path")) { // NOI18N
+                    path = environment.get("Path"); // NOI18N
+                } else if (environment.containsKey("PATH")) { // NOI18N
+                    path = environment.get("PATH"); // NOI18N
+                }
+                if (path != null) {
+                    sp.addAll(Arrays.asList(path.split(File.pathSeparator)));
+                }
             } catch (IOException ex) {
             } catch (CancellationException ex) {
             }
@@ -87,9 +99,9 @@ public final class LocalFileSearcherImpl implements FileSearcher {
         for (String path : sp) {
             try {
                 File f = new File(path, file);
-                log.fine("   Test '" + f.toString() + "'"); // NOI18N
+                log.log(Level.FINE, "   Test ''{0}''", f.toString()); // NOI18N
                 if (f.canRead()) {
-                    log.fine("   FOUND '" + f.toString() + "'"); // NOI18N
+                    log.log(Level.FINE, "   FOUND ''{0}''", f.toString()); // NOI18N
                     return f.getCanonicalPath();
                 }
             } catch (Throwable th) {

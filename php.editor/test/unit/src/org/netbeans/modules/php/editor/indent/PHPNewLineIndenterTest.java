@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,22 @@ import org.openide.filesystems.FileObject;
 public class PHPNewLineIndenterTest extends PHPTestBase {
     public PHPNewLineIndenterTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+	//System.setProperty("org.netbeans.editor.linewrap.disable", "true");
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
+        }
+        try {
+            TestLanguageProvider.register(PHPTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
+        }
     }
 
     public void testSmartEnter() throws Exception{
@@ -678,26 +697,57 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue174835_01.php");
     }
 
+    public void test178542_01()throws Exception {
+        testIndentInFile("testfiles/indent/issue178542_01.php");
+    }
+
+    public void test178542_02()throws Exception {
+        testIndentInFile("testfiles/indent/issue178542_02.php");
+    }
+
+    public void test178542_03()throws Exception {
+        testIndentInFile("testfiles/indent/issue178542_03.php");
+    }
+
+    public void testSwitch_01()throws Exception {
+        testIndentInFile("testfiles/indent/switch_01.php");
+    }
+
+    public void testSwitch_02()throws Exception {
+        testIndentInFile("testfiles/indent/switch_02.php");
+    }
+
+    public void testSwitch_03()throws Exception {
+        testIndentInFile("testfiles/indent/switch_03.php");
+    }
+
+    public void testSwitch_04()throws Exception {
+        testIndentInFile("testfiles/indent/switch_04.php");
+    }
+
+    public void testSwitch_05()throws Exception {
+        testIndentInFile("testfiles/indent/switch_05.php");
+    }
+
+    public void testSwitch_06()throws Exception {
+        testIndentInFile("testfiles/indent/switch_06.php");
+    }
+
+    public void testSwitch_07()throws Exception {
+        testIndentInFile("testfiles/indent/switch_07.php");
+    }
+
+    public void testSwitch_08()throws Exception {
+        testIndentInFile("testfiles/indent/switch_08.php");
+    }
+
+    public void testSwitch_09()throws Exception {
+        testIndentInFile("testfiles/indent/switch_09.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
-    }
-
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        try {
-            TestLanguageProvider.register(HTMLTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Ignore -- we've already registered this either via layers or other means
-        }
-        try {
-            TestLanguageProvider.register(PHPTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Ignore -- we've already registered this either via layers or other means
-        }
     }
 
     protected void testIndentInFile(String file) throws Exception {

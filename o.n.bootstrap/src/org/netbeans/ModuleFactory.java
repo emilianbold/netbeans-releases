@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,8 +64,21 @@ public class ModuleFactory {
      */
     public Module create(File jar, Object history, boolean reloadable,
             boolean autoload, boolean eager, ModuleManager mgr, Events ev)
-            throws IOException {
-        return new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+    throws IOException {
+        try {
+            StandardModule m = new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+            return m;
+        } catch (InvalidException ex) {
+            Manifest mani = ex.getManifest();
+            if (mani != null) {
+                String name = mani.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+                if (name == null) {
+                    throw ex;
+                }
+                return new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
+            }
+            throw ex;
+        }
     }
 
     /**
@@ -74,7 +90,8 @@ public class ModuleFactory {
      */
     public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager,
             ModuleManager mgr, Events ev) throws InvalidException {
-        return new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
+        Module m = new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
+        return m;
     }
     /**
      * Allows specifying different parent classloader of all modules classloaders.

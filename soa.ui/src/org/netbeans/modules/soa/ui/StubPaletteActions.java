@@ -22,10 +22,6 @@ import javax.swing.Action;
 import org.openide.util.Lookup;
 import org.netbeans.spi.palette.PaletteActions;
 
-/**
- *
- * @author Vladimir Yaroslavskiy
- */
 public class StubPaletteActions extends PaletteActions {
 
   /**

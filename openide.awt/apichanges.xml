@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,6 +50,45 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="UndoRedo.Provider">
+        <api name="awt"/>
+        <summary>Introducing UndoRedo.Provider</summary>
+        <version major="7" minor="25"/>
+        <date day="29" month="6" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>Undo and Redo actions now seek their context for implementation
+            of <a href="@TOP@/org/openide/awt/UndoRedo.Provider.html">UndoRedo.Provider</a>.
+            If found, it influences their enabled/disabled state. If there is no
+            such provider, the implementation fallbacks to currently activated
+            <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">TopComponent</a>.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="UndoRedo"/>
+        <issue number="180614"/>
+    </change>
+    <change id="HIDE_WHEN_DISABLED">
+        <api name="awt"/>
+        <summary><code>HIDE_WHEN_DISABLED</code></summary>
+        <version major="7" minor="22"/>
+        <date day="1" month="4" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes">
+            <p>
+                Actions formerly implementing <code>DynamicMenuContent</code> solely to
+                conditionally hide an action are encouraged to use the new API.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                New action property which makes it simple to conditionally hide,
+                rather than merely grey out, a context menu item.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="DynamicMenuContent"/>
+        <issue number="182488"/>
+    </change>
     <change id="Notification.SILENT">
         <api name="awt"/>
         <summary>Support for silent notifications</summary>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.awt.Image;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
@@ -65,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -79,9 +84,11 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -103,6 +110,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -111,7 +119,11 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchInfoFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -127,10 +139,7 @@ import org.w3c.dom.Text;
     sharedNamespace=PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class PhpProject implements Project {
-
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
-
+public final class PhpProject implements Project {
     static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
 
     final AntProjectHelper helper;
@@ -141,6 +150,8 @@ public class PhpProject implements Project {
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
+
+    private final FileObjectFilter fileObjectFilter = new PhpFileObjectFilter();
 
     // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
@@ -153,12 +164,13 @@ public class PhpProject implements Project {
     // @GuardedBy(ProjectManager.mutex())
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
+    private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
     final Object ignoredFoldersLock = new Object();
+    // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
-    private final PropertyChangeListener ignoredFoldersListener = new IgnoredFoldersListener();
 
     // frameworks
     final Object frameworksLock = new Object();
@@ -166,6 +178,11 @@ public class PhpProject implements Project {
     List<PhpFrameworkProvider> frameworks;
     private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
     private final LookupListener frameworksListener = new FrameworksListener();
+
+    // project's property changes
+    public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
+    final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -180,10 +197,11 @@ public class PhpProject implements Project {
         seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
         lookup = createLookup(configuration);
 
-        addWeakPropertyEvaluatorListener(ignoredFoldersListener);
+        addWeakPropertyEvaluatorListener(projectPropertiesListener);
         helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -201,6 +219,28 @@ public class PhpProject implements Project {
 
         VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
         visibilityQuery.addChangeListener(WeakListeners.change(listener, visibilityQuery));
+    }
+
+    // add as a weak listener, only once
+    boolean addWeakPropertyChangeListener(PropertyChangeListener listener) {
+        if (!propertyChangeListeners.add(listener)) {
+            // already added
+            return false;
+        }
+        addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
+        return true;
+    }
+
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public FileObjectFilter getFileObjectFilter() {
+        return fileObjectFilter;
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -224,6 +264,7 @@ public class PhpProject implements Project {
                 helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
+    @Override
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
     }
@@ -243,6 +284,7 @@ public class PhpProject implements Project {
     FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     synchronized (PhpProject.this) {
                         if (sourcesDirectory == null) {
@@ -263,32 +305,48 @@ public class PhpProject implements Project {
         // #168390, #165494
         if (srcDirProperty == null) {
             FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            boolean found = projectProps != null;
+            boolean projectPropsFound = projectProps != null;
 
             StringBuilder buffer = new StringBuilder(2000);
-            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n");
-            buffer.append("diagnostics:\n");
-            buffer.append("project.properties exists: ");
-            buffer.append(found);
-            if (found) {
+            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n"); // NOI18N
+            buffer.append("diagnostics:\n"); // NOI18N
+            buffer.append("project.properties exists: "); // NOI18N
+            buffer.append(projectPropsFound);
+            if (projectPropsFound) {
                 boolean canRead = projectProps.canRead();
-                buffer.append("\nproject.properties valid: ");
+                buffer.append("\nproject.properties valid: "); // NOI18N
                 buffer.append(projectProps.isValid());
-                buffer.append("\nproject.properties can read: ");
+                buffer.append("\nproject.properties can read: "); // NOI18N
                 buffer.append(canRead);
                 if (canRead) {
-                    buffer.append("\nproject.properties content: [");
+                    buffer.append("\nproject.properties content: ["); // NOI18N
                     try {
                         buffer.append(projectProps.asText());
                     } catch (IOException exc) {
                         buffer.append(exc.getMessage());
                     }
-                    buffer.append("]");
+                    buffer.append("]"); // NOI18N
+                }
+            } else {
+                // project properties not found
+                FileObject projectDirectory = getProjectDirectory();
+                buffer.append("\nproject directory: "); // NOI18N
+                buffer.append(projectDirectory);
+                buffer.append("\nproject directory children: "); // NOI18N
+                buffer.append(Arrays.asList(projectDirectory.getChildren()));
+
+                FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+                boolean nbprojectFound = nbproject != null;
+                buffer.append("\nnbproject exists: "); // NOI18N
+                buffer.append(nbprojectFound);
+                if (nbprojectFound) {
+                    buffer.append("\nnbproject children: "); // NOI18N
+                    buffer.append(Arrays.asList(nbproject.getChildren()));
                 }
             }
-            buffer.append("\nproperties (helper): ");
+            buffer.append("\nproperties (helper): "); // NOI18N
             buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-            buffer.append("\nproperties (evaluator): ");
+            buffer.append("\nproperties (evaluator): "); // NOI18N
             buffer.append(eval.getProperties());
             throw new IllegalStateException(buffer.toString());
         }
@@ -305,6 +363,7 @@ public class PhpProject implements Project {
     FileObject getTestsDirectory() {
         if (testsDirectory == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     synchronized (PhpProject.this) {
                         if (testsDirectory == null) {
@@ -319,7 +378,6 @@ public class PhpProject implements Project {
     }
 
     void setTestsDirectory(FileObject testsDirectory) {
-        assert this.testsDirectory == null : "Project test directory already set to " + this.testsDirectory;
         assert testsDirectory != null && testsDirectory.isValid();
         this.testsDirectory = testsDirectory;
     }
@@ -344,6 +402,7 @@ public class PhpProject implements Project {
     FileObject getSeleniumDirectory() {
         if (seleniumDirectory == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     synchronized (PhpProject.this) {
                         if (seleniumDirectory == null) {
@@ -394,7 +453,7 @@ public class PhpProject implements Project {
     }
 
     private void informUser(String title, String message, int type) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
                 message,
                 title,
                 NotifyDescriptor.DEFAULT_OPTION,
@@ -449,6 +508,7 @@ public class PhpProject implements Project {
     private void putIgnoredProjectFiles(Set<File> ignored) {
         if (ignoredFolders == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     synchronized (ignoredFoldersLock) {
                         if (ignoredFolders == null) {
@@ -468,7 +528,7 @@ public class PhpProject implements Project {
             }
             File file = new File(item.getFilePath());
             if (!file.isAbsolute()) {
-                file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
+                file = helper.resolveFile(item.getFilePath());
             }
             ignored.add(file);
         }
@@ -519,17 +579,36 @@ public class PhpProject implements Project {
         }
     }
 
+    public boolean hasConfigFiles() {
+        final PhpModule phpModule = getPhpModule();
+        for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+            if (frameworkProvider.getConfigurationFiles(phpModule).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void resetFrameworks() {
+        boolean fire = false;
         synchronized (frameworksLock) {
+            List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
             frameworks = null;
+            List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
+            fire = !oldFrameworkProviders.equals(newFrameworkProviders);
+        }
+
+        if (fire) {
+            propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
         }
     }
 
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
-                    synchronized (this) {
+                    synchronized (PhpProject.this) {
                         if (name == null) {
                             Element data = getHelper().getPrimaryConfigurationData(true);
                             NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -555,6 +634,7 @@ public class PhpProject implements Project {
 
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
             public void run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
                 NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -623,7 +703,9 @@ public class PhpProject implements Project {
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
-                getEvaluator()
+                getEvaluator(),
+                PhpSearchInfo.create(this),
+                new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
     }
@@ -632,29 +714,51 @@ public class PhpProject implements Project {
         return refHelper;
     }
 
+    public void fireIgnoredFilesChange() {
+        ignoredFolders = null;
+        ignoredFoldersChangeSupport.fireChange();
+    }
+
     private final class Info implements ProjectInformation {
+        private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
+
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+        public Info() {
+            PhpProject.this.propertyChangeSupport.addPropertyChangeListener(PhpProject.PROP_FRAMEWORKS, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    firePropertyChange(ProjectInformation.PROP_ICON);
+                }
+            });
+        }
+
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener  listener) {
             propertyChangeSupport.addPropertyChangeListener(listener);
         }
 
+        @Override
         public String getDisplayName() {
             return PhpProject.this.getName();
         }
 
+        @Override
         public Icon getIcon() {
-            return PROJECT_ICON;
+            return ImageUtilities.image2Icon(annotateImage(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png"))); // NOI18N
         }
 
+        @Override
         public String getName() {
             return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
 
+        @Override
         public Project getProject() {
             return PhpProject.this;
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propertyChangeSupport.removePropertyChangeListener(listener);
         }
@@ -662,9 +766,28 @@ public class PhpProject implements Project {
         void firePropertyChange(String prop) {
             propertyChangeSupport.firePropertyChange(prop , null, null);
         }
+
+        private Image annotateImage(Image image) {
+            Image badged = image;
+            boolean first = true;
+            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
+                if (badgeIcon != null) {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
+                    if (first) {
+                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
+                        first = false;
+                    }
+                } else {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
+                }
+            }
+            return badged;
+        }
     }
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
+        @Override
         protected void projectOpened() {
             // #165494 - moved from projectClosed() to projectOpened()
             // clear references to ensure that all the dirs are read again
@@ -676,7 +799,7 @@ public class PhpProject implements Project {
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
-            LOGGER.fine("Adding frameworks listener for " + sourcesDirectory);
+            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", sourcesDirectory);
             PhpFrameworks.addFrameworksListener(frameworksListener);
             // do it in a background thread
             getIgnoredFiles();
@@ -697,33 +820,50 @@ public class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
 
-            // log usage
-            StringBuilder buffer = new StringBuilder(200);
-            for (PhpFrameworkProvider provider : frameworkProviders) {
-                if (buffer.length() > 0) {
-                    buffer.append("|"); // NOI18N
-                }
-                buffer.append(provider.getName());
+            // frameworks
+            PhpModule phpModule = getPhpModule();
+            assert phpModule != null;
+            for (PhpFrameworkProvider frameworkProvider : frameworkProviders) {
+                frameworkProvider.phpModuleOpened(phpModule);
             }
-            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(buffer.toString())); // NOI18N
+
+            // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
+            getCopySupport().projectOpened();
+
+            // log usage
+            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
         }
 
+        @Override
         protected void projectClosed() {
-            assert sourcesDirectory != null;
-            sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-            LOGGER.fine("Removing frameworks listener for " + sourcesDirectory);
-            PhpFrameworks.removeFrameworksListener(frameworksListener);
+            try {
+                assert sourcesDirectory != null;
+                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                PhpFrameworks.removeFrameworksListener(frameworksListener);
 
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+                ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+                ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+                for (ClassPath classPath : bootClassPaths) {
+                    IncludePathClassPathProvider.removeProjectIncludePath(classPath);
+                }
 
-            getCopySupport().projectClosed();
+                // frameworks
+                PhpModule phpModule = getPhpModule();
+                assert phpModule != null;
+                for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                    frameworkProvider.phpModuleClosed(phpModule);
+                }
+            } finally {
+                // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
+                getCopySupport().projectClosed();
+            }
         }
     }
 
@@ -738,6 +878,7 @@ public class PhpProject implements Project {
             this.helper = helper;
             baseEval.addPropertyChangeListener(this);
         }
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             if (PhpConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
                 setDelegate(computeDelegate(baseEval, prefix, helper));
@@ -754,6 +895,7 @@ public class PhpProject implements Project {
 
     public final class PhpProjectXmlSavedHook extends ProjectXmlSavedHook {
 
+        @Override
         protected void projectXmlSaved() throws IOException {
             Info info = getLookup().lookup(Info.class);
             assert info != null;
@@ -763,20 +905,25 @@ public class PhpProject implements Project {
     }
 
     private final class SeleniumProvider implements PhpSeleniumProvider {
+        @Override
         public FileObject getTestDirectory(boolean showCustomizer) {
             return ProjectPropertiesSupport.getSeleniumDirectory(PhpProject.this, showCustomizer);
         }
 
+        @Override
         public void runAllTests() {
             ConfigAction.get(ConfigAction.Type.SELENIUM, PhpProject.this).runProject();
         }
     }
 
-    private final class IgnoredFoldersListener implements PropertyChangeListener {
+    private final class ProjectPropertiesListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProjectProperties.IGNORE_PATH.equals(evt.getPropertyName())) {
-                ignoredFolders = null;
-                ignoredFoldersChangeSupport.fireChange();
+            String propertyName = evt.getPropertyName();
+            if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
+                fireIgnoredFilesChange();
+            } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
+                testsDirectory = null;
             }
         }
     }
@@ -784,26 +931,32 @@ public class PhpProject implements Project {
     // if source folder changes, reset frameworks (new framework can be found in project)
     private final class SourceDirectoryFileChangeListener implements FileChangeListener {
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             processFileChange();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             processFileChange();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             // probably not interesting for us
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             processFileChange();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             processFileChange();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // probably not interesting for us
         }
@@ -815,6 +968,7 @@ public class PhpProject implements Project {
     }
 
     private final class FrameworksListener implements LookupListener {
+        @Override
         public void resultChanged(LookupEvent ev) {
             LOGGER.fine("frameworks change, frameworks back to null");
             resetFrameworks();
@@ -823,11 +977,101 @@ public class PhpProject implements Project {
 
     private final class PhpAntProjectListener implements AntProjectListener {
 
+        @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
             name = null;
         }
 
+        @Override
         public void propertiesChanged(AntProjectEvent ev) {
         }
+    }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+        }
+    }
+
+    private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+        private final PhpProject project;
+        // @GuardedBy(this)
+        private SearchInfo.Files delegate = null;
+
+        private PhpSearchInfo(PhpProject project) {
+            this.project = project;
+            delegate = createDelegate();
+        }
+
+        public static SearchInfo create(PhpProject project) {
+            PhpSearchInfo phpSearchInfo = new PhpSearchInfo(project);
+            project.getSourceRoots().addPropertyChangeListener(phpSearchInfo);
+            project.getTestRoots().addPropertyChangeListener(phpSearchInfo);
+            project.getSeleniumRoots().addPropertyChangeListener(phpSearchInfo);
+            return phpSearchInfo;
+        }
+
+        private SearchInfo.Files createDelegate() {
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSourceFileObjects(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
+            // XXX ugly, see #178634 for more info
+            assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
+            return (SearchInfo.Files) searchInfo;
+        }
+
+        @Override
+        public boolean canSearch() {
+            return true;
+        }
+
+        @Override
+        public synchronized Iterator<DataObject> objectsToSearch() {
+            return delegate.objectsToSearch();
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch() {
+            return delegate.filesToSearch();
+        }
+
+        private FileObject[] getSourceFileObjects() {
+            List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
+            roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
+            roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
+            return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    delegate = createDelegate();
+                }
+            }
+        }
+    }
+
+    private final class PhpFileObjectFilter implements FileObjectFilter {
+
+        @Override
+        public boolean searchFile(FileObject file) {
+            if (!file.isData()) {
+                throw new IllegalArgumentException("File expected");
+            }
+            return PhpVisibilityQuery.forProject(PhpProject.this).isVisible(file);
+        }
+
+        @Override
+        public int traverseFolder(FileObject folder) {
+            if (!folder.isFolder()) {
+                throw new IllegalArgumentException("Folder expected");
+            }
+            if (PhpVisibilityQuery.forProject(PhpProject.this).isVisible(folder)) {
+                return TRAVERSE;
+            }
+            return DO_NOT_TRAVERSE;
+        }
+
     }
 }

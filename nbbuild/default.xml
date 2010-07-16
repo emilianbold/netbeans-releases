@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -87,6 +90,9 @@ made subject to such option by the copyright holder.
     <taskdef name="arch"
          classname="org.netbeans.nbbuild.Arch"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="autoupdate"
+         classname="org.netbeans.nbbuild.AutoUpdate"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="fixdependencies"
          classname="org.netbeans.nbbuild.FixDependencies"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -116,10 +122,12 @@ made subject to such option by the copyright holder.
     <taskdef name="parsemanifest" classname="org.netbeans.nbbuild.ParseManifest"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
-  
-  <target name="init" depends="init-tasks">
+
+  <target name="init" depends="init-tasks,-define-cluster-path">
     <!-- Gets the module name -->
     <getmodulename name="module.name" root="${nb_all}"/>
     
@@ -136,7 +144,9 @@ made subject to such option by the copyright holder.
       <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
     </propertyfile>
     <property name="${module.name}.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
+  </target>
 
+  <target name="-define-cluster-path">
     <!-- netbeans.dest.dir -> cluster.path.id translation for NB.org modules -->
     <!-- XXX should use cluster.properties rather than relying on this file -->
     <available property="clusters.file" file="${nb_all}/ide/launcher/netbeans.clusters" value="${nb_all}/ide/launcher/netbeans.clusters"/>

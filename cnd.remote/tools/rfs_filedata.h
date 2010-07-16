@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,21 +53,30 @@ enum file_state {
     INITIAL = 'i',
     TOUCHED = 't',
     COPIED = 'c',
+
+    /** 
+     * Local host already knows that it's owned by remote one;
+     * the file has not been modified remotely during the last build
+     */
     UNCONTROLLED = 'u',
+
+    /** The file has been modified remotely during the last build */
+    MODIFIED = 'm',
+
     ERROR = 'e',
     DIRECTORY = 'D',
-    PENDING = 'p'
+    LINK = 'L',
+    LINK_FILE = 'l',
+    PENDING = 'p',
+    
+    /** The file does not exist on local host (although belongs to the project) */
+    INEXISTENT = 'n',
 };
 
 typedef struct file_data {
     volatile enum file_state state;
     pthread_mutex_t cond_mutex;
     pthread_cond_t cond;
-    struct file_data *left;
-    struct file_data *right;
-    #if TRACE
-    int cnt;
-    #endif
     char filename[];
 } file_data;
 
@@ -73,11 +85,22 @@ typedef struct file_data {
  */
 file_data *find_file_data(const char* filename);
 
+/** Should be called before first file data is added */
+void start_adding_file_data();
+
 /**
- * Inserts file_data for the given file name;
- * returns a reference to the newly inserted one
+ * Adds file_data for the given file name;
+ * returns a reference to the newly inserted one.
+ *
+ * Note that you should call start_adding_file_data() once
+ * before adding file data
+ * and call stop_adding_file_data
+ * once all file data is added
  */
-file_data *insert_file_data(const char* filename, enum file_state state);
+file_data *add_file_data(const char* filename, enum file_state state);
+
+/** Should be called after the last file data is added */
+void stop_adding_file_data();
 
 /**
  * Visits all file_data elements - calls function passed as a 1-st parameter

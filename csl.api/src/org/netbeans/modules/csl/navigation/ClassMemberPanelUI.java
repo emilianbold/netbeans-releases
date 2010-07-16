@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,6 +74,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -83,7 +87,9 @@ import org.openide.util.Lookup;
  */
 public class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, FiltersManager.FilterChangeListener {
-    
+
+    private static RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class);
+
     private ExplorerManager manager = new ExplorerManager();
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
@@ -94,7 +100,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private Action[] actions; // General actions for the panel
     
     /** Creates new form ClassMemberPanelUi */
-    public ClassMemberPanelUI(Language language) {
+    public ClassMemberPanelUI(final Language language) {
                       
         initComponents();
         
@@ -102,21 +108,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView = createBeanTreeView();        
         add(elementView, BorderLayout.CENTER);
                
-        // filters
-        filtersPanel = new TapPanel();
-        filtersLbl = new JLabel(NbBundle.getMessage(ClassMemberPanelUI.class, "LBL_Filter")); //NOI18N
-        filtersLbl.setBorder(new EmptyBorder(0, 5, 5, 0));
-        filtersPanel.add(filtersLbl);
-        filtersPanel.setOrientation(TapPanel.DOWN);
-        // tooltip
-        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
-                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        String keyText = Utilities.keyToString(toggleKey);
-        filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText));
-        
         filters = new ClassMemberFilters( this );
         filters.getInstance().hookChangeListener(this);
-        filtersPanel.add(filters.getComponent());
         
         actions = new Action[] {            
             new SortByNameAction( filters ),
@@ -124,29 +117,47 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             null,
             new FilterSubmenuAction(filters.getInstance())            
         };
-        
-        // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
-        // We don't want filters for all languages. Hardcoded for now.
-        boolean includeFilters = true;
-        if (language != null && language.getStructure() != null) {
-            StructureScanner scanner = language.getStructure();
-            Configuration configuration = scanner.getConfiguration();
-            if (configuration != null) {
-                includeFilters = configuration.isFilterable();
-                if (!includeFilters) {
-                    //issue #132883 workaround
-                    filters.disableFiltering = true;
 
-                    // Perhaps we don't have to create the filterspanel etc. above
-                    // in this case, but it's right before 6.1 high resistance and
-                    // I'm afraid code relies on the above stuff being non-null
+        // See http://www.netbeans.org/issues/show_bug.cgi?id=186407
+        // Making the calls to getStructure() out of AWT EDT
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
+                // We don't want filters for all languages. Hardcoded for now.
+                boolean includeFilters = true;
+                if (language != null && language.getStructure() != null) {
+                    StructureScanner scanner = language.getStructure();
+                    Configuration configuration = scanner.getConfiguration();
+                    if (configuration != null) {
+                        includeFilters = configuration.isFilterable();
+                        if (!includeFilters) {
+                            //issue #132883 workaround
+                            filters.disableFiltering = true;
+                        }
+                    }
+                }
+                if (includeFilters) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            // filters
+                            filtersPanel = new TapPanel();
+                            filtersLbl = new JLabel(NbBundle.getMessage(ClassMemberPanelUI.class, "LBL_Filter")); //NOI18N
+                            filtersLbl.setBorder(new EmptyBorder(0, 5, 5, 0));
+                            filtersPanel.add(filtersLbl);
+                            filtersPanel.setOrientation(TapPanel.DOWN);
+                            // tooltip
+                            KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
+                                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+                            String keyText = Utilities.keyToString(toggleKey);
+                            filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText));
+                            filtersPanel.add(filters.getComponent());
+                            add(filtersPanel, BorderLayout.SOUTH);
+                        }
+                    });
                 }
             }
-        }
-        if (includeFilters) {
-            add(filtersPanel, BorderLayout.SOUTH);
-        }
-
+        });
         manager.setRootContext(ElementNode.getWaitNode());
     }
 

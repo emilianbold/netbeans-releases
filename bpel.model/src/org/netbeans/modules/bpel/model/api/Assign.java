@@ -134,4 +134,11 @@ public interface Assign extends Activity, BpelContainer {
      */
     void removeValidate();
 
+    boolean isJavaScript();
+    String getJavaScript();
+    void setJavaScript(String value);
+    String getInput();
+    void setInput(String value);
+    String getOutput();
+    void setOutput(String value);
 }

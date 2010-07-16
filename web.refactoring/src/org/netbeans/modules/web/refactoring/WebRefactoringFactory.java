@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -106,9 +109,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         }
         FileObject ddFile = wm.getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
-        if (webApp == null){
-            return null;
-        }
+//        if (webApp == null){
+//            return null;
+//        }
         String clazz = resolveClass(handle);
         
         // if we have a java file, the class name should be resolvable
@@ -123,33 +126,45 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage || folder){
-                refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                }
                 refactorings.add(new TldPackageRename(rename, wm, sourceFO));
             } else if (javaFile) {
-                refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                }
                 refactorings.add(new TldRename(clazz, rename, wm));
             }
         } 
         
         if (refactoring instanceof WhereUsedQuery && javaFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            if (webApp != null) {
+                refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            }
             refactorings.add(new TldWhereUsed(clazz, wm, whereUsedQuery));
         } 
         
         if (refactoring instanceof SafeDeleteRefactoring && javaFile){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            if (webApp != null) {
+                refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            }
             refactorings.add(new TldSafeDelete(safeDelete, wm));
         }
         
         if (refactoring instanceof MoveRefactoring){
             MoveRefactoring move = (MoveRefactoring) refactoring;
             if (javaFile){
-                refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                }
                 refactorings.add(new TldMove(move, wm));
             } else if (folder){
-                refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                }
                 refactorings.add(new TldFolderMove(wm, sourceFO, move));
             }
         }

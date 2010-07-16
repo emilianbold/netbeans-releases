@@ -32,7 +32,7 @@ import net.java.hulp.i18n.Logger;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 
 

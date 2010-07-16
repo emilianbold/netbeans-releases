@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -112,7 +115,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 }
             }
             NbPlatform supposedPlaf = null;
-            for (NbPlatform plaf : NbPlatform.getPlatforms()) {
+            for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
                 // XXX more robust condition?
                 if (binaryRoot.toExternalForm().indexOf(plaf.getDestDir().toURI().toURL().toExternalForm()) != -1) {
                     supposedPlaf = plaf;
@@ -409,13 +412,13 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 is.close();
             }
             Element docel = doc.getDocumentElement();
-            Element type = Util.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
+            Element type = XMLUtil.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
             String cnb = null;
-            if (Util.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
-                Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-                Element data = Util.findElement(cfg, "data", null); // NOI18N
+            if (XMLUtil.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
+                Element cfg = XMLUtil.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
+                Element data = XMLUtil.findElement(cfg, "data", null); // NOI18N
                 if (data != null) {
-                    cnb = Util.findText(Util.findElement(data, "code-name-base", null)); // NOI18N
+                    cnb = XMLUtil.findText(XMLUtil.findElement(data, "code-name-base", null)); // NOI18N
                 }
             }
             return cnb;

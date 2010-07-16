@@ -25,7 +25,7 @@ USERDIR=/tmp/preindexing
 #############################################################################################
 # No user-configurable parts beyond this point...
 CLUSTERS=$NBHGHOME/nbbuild/netbeans
-PHP=$CLUSTERS/php1
+PHP=$CLUSTERS/php
 
 if test ! -f $CLUSTERS/extra/modules/org-netbeans-modules-gsf-tools.jar ; then
   echo "You should build contrib/gsf.tools first, which will automate the indexing process within the IDE when this script is run."

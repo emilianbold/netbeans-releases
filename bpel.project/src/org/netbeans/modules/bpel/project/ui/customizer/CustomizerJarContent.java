@@ -34,7 +34,6 @@ import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.bpel.project.ui.ProjectLogicalViewProvider;
 
 /** Customizer for WAR packaging.
  */

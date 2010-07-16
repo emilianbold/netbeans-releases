@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -90,6 +93,7 @@ public abstract class CsmFileTaskFactory {
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {
+            @Override
             public void fireChangeEvent(CsmFileTaskFactory f) {
                 f.fileObjectsChanged();
             }
@@ -116,6 +120,7 @@ public abstract class CsmFileTaskFactory {
         if (OpenedEditors.SHOW_TIME) {System.err.println("CsmFileTaskFactory: POST worker " + id);}
         DECISION_WORKER.post(new Runnable() {
 
+            @Override
             public void run() {
                 long start = System.currentTimeMillis();
                 if (OpenedEditors.SHOW_TIME) {System.err.println("CsmFileTaskFactory: RUN worker " + id + " [" + name + "]" );}
@@ -127,13 +132,14 @@ public abstract class CsmFileTaskFactory {
 
     public final void reschedule(final FileObject file) throws IllegalArgumentException {
         postDecision(new Runnable() {
+            @Override
             public void run() {
                 runTask(file, PhaseRunner.Phase.PARSED, rescheduleDelay());
             }
         });
     }
 
-    private final void postDecision(Runnable runnable){
+    private void postDecision(Runnable runnable){
         DECISION_WORKER.post(runnable);
     }
 
@@ -249,10 +255,10 @@ public abstract class CsmFileTaskFactory {
         if (fo != null) {
             Document doc = CsmUtilities.getDocument(fo);
             if (doc != null) {
-                csmFile = CsmUtilities.getCsmFile(doc, false);
+                csmFile = CsmUtilities.getCsmFile(doc, false, false);
             }
             if (csmFile == null) {
-                csmFile = CsmUtilities.getCsmFile(fo, false);
+                csmFile = CsmUtilities.getCsmFile(fo, false, false);
             }
             if (allowStandalone && csmFile == null) {
                 csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
@@ -267,7 +273,7 @@ public abstract class CsmFileTaskFactory {
         }
     }
 
-   private final void runTask(CsmFile eventCsm, PhaseRunner.Phase phase, int delay) {
+   private void runTask(CsmFile eventCsm, PhaseRunner.Phase phase, int delay) {
         if (fobj2task.isEmpty()) {
             return;
         }
@@ -286,7 +292,7 @@ public abstract class CsmFileTaskFactory {
         _runTask(pr, fobj, phase, delay);
    }
 
-    private final void runTask(FileObject eventFobj, PhaseRunner.Phase phase, int delay) {
+    private void runTask(FileObject eventFobj, PhaseRunner.Phase phase, int delay) {
         TaskData pr = fobj2task.get(eventFobj);
         if (pr == null) {
             return;
@@ -294,7 +300,7 @@ public abstract class CsmFileTaskFactory {
         _runTask(pr, eventFobj, phase, delay);
     }
 
-    private final void _runTask(TaskData pr, FileObject fobj, Phase phase, int delay) {
+    private void _runTask(TaskData pr, FileObject fobj, Phase phase, int delay) {
         pr.runner.cancel();
         if (pr.task != null) {
             pr.task.cancel();
@@ -327,7 +333,7 @@ public abstract class CsmFileTaskFactory {
         post(pr, fobj, phase, delay);
     }
 
-    private final void post(TaskData pr, FileObject fo, PhaseRunner.Phase phase, int delay) {
+    private void post(TaskData pr, FileObject fo, PhaseRunner.Phase phase, int delay) {
         if (pr.runner.isHighPriority()) {
             pr.task = HIGH_PRIORITY_WORKER.post(new CsmSafeRunnable(getRunnable(pr.runner, phase), fo), delay, Thread.NORM_PRIORITY);
         } else {
@@ -340,6 +346,7 @@ public abstract class CsmFileTaskFactory {
         @Override
         public void fileParsingFinished(final CsmFile file) {
             postDecision(new Runnable() {
+                @Override
                 public void run() {
                     runTask(file, PhaseRunner.Phase.PARSED, IMMEDIATELY);
                 }
@@ -349,6 +356,7 @@ public abstract class CsmFileTaskFactory {
         @Override
         public void fileParsingStarted(final CsmFile file) {
             postDecision(new Runnable() {
+                @Override
                 public void run() {
                     runTask(file, PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY);
                 }
@@ -358,6 +366,7 @@ public abstract class CsmFileTaskFactory {
         @Override
         public void projectParsingFinished(CsmProject project) {
             postDecision(new Runnable() {
+                @Override
                 public void run() {
                     runAllTasks(PhaseRunner.Phase.PROJECT_PARSED, IMMEDIATELY);
                 }
@@ -368,14 +377,17 @@ public abstract class CsmFileTaskFactory {
 
     private class ModelListener implements CsmModelListener {
 
+        @Override
         public void projectOpened(CsmProject project) {
             // do nothing
         }
 
+        @Override
         public void projectClosed(CsmProject project) {
             // TODO: do something? Cleanup, maybe?
         }
 
+        @Override
         public void modelChanged(final CsmChangeEvent e) {
             if (!e.getRemovedFiles().isEmpty()){
                 postDecision(new Runnable() {
@@ -388,7 +400,7 @@ public abstract class CsmFileTaskFactory {
                                     if (doc != null) {
                                         synchronized (fileTaskFactoryLock) {
                                             runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                                            fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false)));
+                                            fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false, false)));
                                         }
                                     }
                                 }
@@ -419,17 +431,21 @@ public abstract class CsmFileTaskFactory {
 
     protected static PhaseRunner lazyRunner() {
         return new PhaseRunner() {
+            @Override
             public void run(Phase phase) {
                 // do nothing for all phases
             }
 
+            @Override
             public boolean isValid() {
                 return true;
             }
 
+            @Override
             public void cancel() {
             }
 
+            @Override
             public boolean isHighPriority() {
                 return false;
             }
@@ -446,8 +462,9 @@ public abstract class CsmFileTaskFactory {
         }
     }
 
-    private static final Runnable getRunnable(final PhaseRunner pr, final PhaseRunner.Phase phase) {
+    private static Runnable getRunnable(final PhaseRunner pr, final PhaseRunner.Phase phase) {
         return new Runnable() {
+            @Override
             public void run() {
                 pr.run(phase);
             }
@@ -462,6 +479,7 @@ public abstract class CsmFileTaskFactory {
             this.fileObject = fileObject;
         }
 
+        @Override
         public void run() {
             CsmFile file = getCsmFile(fileObject, false);
             if (file !=  null && file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {

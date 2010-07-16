@@ -58,11 +58,25 @@ public class XPathPredicateExpressionImpl extends XPathExpressionImpl
     
     public XPathSchemaContext getSchemaContext() {
         if (mSchemaContext == null) {
-            if (myModel.getRootExpression() != null) {
-                myModel.resolveExtReferences(false);
+            boolean success = false;
+            if (mModel.getRootExpression() != null) {
+                success = mModel.resolveExtReferences(false);
             } else {
-                myModel.resolveExpressionExtReferences(this);
+                success = mModel.resolveExpressionExtReferences(this);
             }
+            //
+            // TODO: Nikita. Uncomment for Debugging
+            //
+//            if (success && mSchemaContext == null) {
+//                // assert false : "Wrong behavior!"; // NOI18N
+//                //
+//                // Try again for debugging purposes
+//                if (myModel.getRootExpression() != null) {
+//                    success = myModel.resolveExtReferences(true);
+//                } else {
+//                    success = myModel.resolveExpressionExtReferences(this);
+//                }
+//            }
         }
         return mSchemaContext;
     }

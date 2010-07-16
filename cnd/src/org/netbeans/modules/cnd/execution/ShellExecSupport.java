@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.ShellSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,10 +91,12 @@ public class ShellExecSupport extends ExecutionSupport {
                 getString("PROP_RUN_DIRECTORY"), // NOI18N
                 getString("HINT_RUN_DIRECTORY")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getRunDirectory();
             }
 
+            @Override
             public void setValue(String val) {
                 setRunDirectory(val);
             }
@@ -127,10 +129,12 @@ public class ShellExecSupport extends ExecutionSupport {
                 getString("PROP_SHELL_COMMAND"), // NOI18N
                 getString("HINT_SHELL_COMMAND")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getShellCommand();
             }
 
+            @Override
             public void setValue(String val) {
                 setShellCommand(val);
             }
@@ -277,12 +281,7 @@ public class ShellExecSupport extends ExecutionSupport {
         }
     }
 
-    private ResourceBundle bundle = null;
-
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(ShellExecSupport.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(ShellExecSupport.class, s);
     }
 }

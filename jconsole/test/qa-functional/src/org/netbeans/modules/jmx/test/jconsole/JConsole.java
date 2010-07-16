@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,9 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 
 /**
  * Start a JConsole process and check it appears in the Runtime processes.
@@ -54,21 +58,15 @@ public class JConsole extends JConsoleTestCase {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        new OutputWindowViewAction().perform();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
-        return suite;
-    }
+    public void testStartJConsole() {
+        OutputTabOperator oto;
 
-
-    public void startJConsole() {
-        
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         // push "Open" toolbar button in "System" toolbar
         System.out.println("Starting JConsole...");
@@ -76,7 +74,7 @@ public class JConsole extends JConsoleTestCase {
                 "Start JConsole Management Console").push();
         sleep(2000);
         
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+        oto = checkOutputTabOperator("JConsole", "JConsole started");
+        if (oto != null) terminateProcess(oto);
     }
 }

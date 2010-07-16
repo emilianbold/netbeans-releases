@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,30 +46,16 @@ package org.netbeans.modules.openide.explorer;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Lookup;
 
 /**
- * An architectural hack - until PropertySheet is separated and openide
- * split up, openide cannot depend on module code due to classloader
- * restrictions.  So we have an interface which will supply a bridge to
- * the tabcontrol code; an implementation of this interface is provided
- * over org.netbeans.swing.tabcontrol.TabbedContainer (in core/swing/tabcontrol)
- * by the window system which depends on it.
- *
- * @see org.netbeans.core.windows.view.ui.tabcontrol.TabbedContainerBridgeImpl
- * @author  Tim Boudreau
+ * A separate class only for historical reasons. Could be inlined into PSheet if desired.
  */
 public abstract class TabbedContainerBridge {
     
     protected TabbedContainerBridge(){};
     
     public static TabbedContainerBridge getDefault() {
-        TabbedContainerBridge result = Lookup.getDefault().lookup (TabbedContainerBridge.class);
-        if (result == null) {
-            //unit test or standalone library operation
-            return new TrivialTabbedContainerBridgeImpl();
-        }
-        return result;
+        return new TabbedContainerBridgeImpl();
     }
 
     public abstract JComponent createTabbedContainer();

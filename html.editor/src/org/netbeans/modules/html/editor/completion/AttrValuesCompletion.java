@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,24 +41,17 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.awt.Color;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.swing.ImageIcon;
-import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -63,8 +59,11 @@ import org.openide.util.ImageUtilities;
  */
 public abstract class AttrValuesCompletion {
 
-    private static final Map<String, Map<String, AttrValuesCompletion>> SUPPORTS = new HashMap<String, Map<String, AttrValuesCompletion>>();
-    private static final AttrValuesCompletion FILE_NAME_SUPPORT = new FilenameSupport();
+    private static final Map<String, Map<String, ValueCompletion<HtmlCompletionItem>>> SUPPORTS =
+            new HashMap<String, Map<String, ValueCompletion<HtmlCompletionItem>>>();
+
+    public static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
+    private static final ValueCompletion<HtmlCompletionItem> CONTENT_TYPE_SUPPORT = new ContentTypeSupport();
 
     static {
         //TODO uff, such long list ... redo it so it resolves according to the DTD attribute automatically
@@ -91,19 +90,27 @@ public abstract class AttrValuesCompletion {
         putSupport("ins", "cite", FILE_NAME_SUPPORT); //NOI18N
         putSupport("del", "cite", FILE_NAME_SUPPORT); //NOI18N
         putSupport("form", "action", FILE_NAME_SUPPORT); //NOI18N
+
+        putSupport("script", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("style", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("link", "type", CONTENT_TYPE_SUPPORT); //NOI18N
     }
 
-    private static void putSupport(String tag, String attr, AttrValuesCompletion support) {
-        Map<String, AttrValuesCompletion> map = SUPPORTS.get(tag);
+    private static void putSupport(String tag, String attr, ValueCompletion<HtmlCompletionItem> support) {
+        Map<String, ValueCompletion<HtmlCompletionItem>> map = SUPPORTS.get(tag);
         if (map == null) {
-            map = new HashMap<String, AttrValuesCompletion>();
+            map = new HashMap<String, ValueCompletion<HtmlCompletionItem>>();
             SUPPORTS.put(tag, map);
         }
         map.put(attr, support);
     }
 
-    public static AttrValuesCompletion getSupport(String tag, String attr) {
-        Map<String, AttrValuesCompletion> map = SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+    public static Map<String, ValueCompletion<HtmlCompletionItem>> getSupportsForTag(String tag) {
+        return SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+    }
+
+    public static ValueCompletion<HtmlCompletionItem> getSupport(String tag, String attr) {
+        Map<String, ValueCompletion<HtmlCompletionItem>> map = getSupportsForTag(tag);
         if(map == null) {
             return null;
         } else {
@@ -111,94 +118,35 @@ public abstract class AttrValuesCompletion {
         }
     }
 
-    public abstract List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart);
+    public static class ContentTypeSupport implements ValueCompletion {
 
-    public static class FilenameSupport extends AttrValuesCompletion {
+        public static String[] TYPICAL_CONTENT_TYPES = new String[]{"text/css", "text/javascript"}; //NOI18N
 
-        static final ImageIcon PACKAGE_ICON =
-                ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
-
-        public List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart) {
-            List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>();
-
-            String path = "";   // NOI18N
-            String fileNamePart = valuePart;
-            int lastSlash = valuePart.lastIndexOf('/');
-            if (lastSlash == 0) {
-                path = "/"; // NOI18N
-                fileNamePart = valuePart.substring(1);
-            } else if (lastSlash > 0) { // not a leading slash?
-                path = valuePart.substring(0, lastSlash);
-                fileNamePart = (lastSlash == valuePart.length()) ? "" : valuePart.substring(lastSlash + 1);    // NOI18N
-            }
-
-            int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
-
-            try {
-                FileObject orig = DataLoadersBridge.getDefault().getFileObject(doc);
-                Project project = FileOwnerQuery.getOwner(orig);
-                FileObject documentBase = project != null ? project.getProjectDirectory() : orig;
-
-//                FileObject documentBase = JspUtils.guessWebModuleRoot(orig);
-                // need to normalize fileNamePart with respect to orig
-                String ctxPath = Utils.resolveRelativeURL("/" + orig.getPath(), path);  // NOI18N
-                //is this absolute path?
-                if (path.startsWith("/")) {
-                    ctxPath = documentBase.getPath() + path;
-                } else {
-                    ctxPath = ctxPath.substring(1);
+        @Override
+        public List<HtmlCompletionItem> getItems(FileObject file, int offset, String valuePart) {
+            //linear search, too little items, no problem
+            List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
+            for(int i = 0; i < TYPICAL_CONTENT_TYPES.length; i++) {
+                if(TYPICAL_CONTENT_TYPES[i].startsWith(valuePart)) {
+                    items.add(HtmlCompletionItem.createAttributeValue(TYPICAL_CONTENT_TYPES[i], offset));
                 }
-
-                FileSystem fs = orig.getFileSystem();
-
-                FileObject folder = fs.findResource(ctxPath);
-                if (folder != null) {
-                    //add all accessible files from current context
-                    result.addAll(files(anchor, folder, fileNamePart));
-
-                    //add go up in the directories structure item 
-                    if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
-                            && (path.length() == 0 || (path.lastIndexOf("../") + 3 == path.length()))) { // NOI18N
-                        result.add(HtmlCompletionItem.createGoUpFileCompletionItem(anchor, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
-                    }
-                }
-            } catch (FileStateInvalidException ex) {
-                // unreachable FS - disable completion
-            } catch (IllegalArgumentException ex) {
-                // resolving failed
             }
-
-            return result;
+            return items;
         }
 
-        private List<HtmlCompletionItem> files(int offset, FileObject folder, String prefix) {
-            List<HtmlCompletionItem> res = new ArrayList<HtmlCompletionItem>();
-            TreeMap<String, HtmlCompletionItem> resFolders = new TreeMap<String, HtmlCompletionItem>();
-            TreeMap<String, HtmlCompletionItem> resFiles = new TreeMap<String, HtmlCompletionItem>();
+    }
 
-            Enumeration<? extends FileObject> files = folder.getChildren(false);
-            while (files.hasMoreElements()) {
-                FileObject file = files.nextElement();
-                String fname = file.getNameExt();
-                if (fname.startsWith(prefix) && !"cvs".equalsIgnoreCase(fname)) {
+    public static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
 
-                    if (file.isFolder()) {
-                        resFolders.put(file.getNameExt(), HtmlCompletionItem.createFileCompletionItem(file.getNameExt() + "/", offset, java.awt.Color.BLUE, PACKAGE_ICON));
-                    } else {
-                        java.awt.Image icon = Utils.getIcon(file);
-                        if (icon != null) {
-                            resFiles.put(file.getNameExt(), HtmlCompletionItem.createFileCompletionItem(file.getNameExt(), offset, java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
-                        } else {
-                            resFiles.put(file.getNameExt(), HtmlCompletionItem.createFileCompletionItem(file.getNameExt(), offset, java.awt.Color.BLACK, null));
-                        }
-                    }
-                }
-            }
-            
-            res.addAll(resFolders.values());
-            res.addAll(resFiles.values());
+        @Override
+        public HtmlCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
+            return HtmlCompletionItem.createFileCompletionItem(name, anchor, color, icon);
+        }
 
-            return res;
+        @Override
+        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
+            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
         }
     }
+    
 }

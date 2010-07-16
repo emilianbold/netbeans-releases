@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,7 +84,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -103,6 +106,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     private static final String ATTR_FULLY_QUALIFIED_NAME = "fullyQualifiedName";
     private static final String ATTR_CREATE_TARGET_TABLE = "createTargetTable";
     private static final String ATTR_TRUNCATE_BEFORE_LOAD = "truncateBeforeLoad";
+    private static final String ATTR_DISBALE_CONSTRAINTS = "disableConstraints";
     private static transient final Logger mLogger = Logger.getLogger(TargetTableImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition joinCondition;
@@ -651,14 +655,16 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         }
     }
 
-    /**
-     * @see org.netbeans.modules.sql.framework.model.TargetTable#isTruncateBeforeLoad()
-     */
     public boolean isTruncateBeforeLoad() {
         Boolean shouldTruncate = (Boolean) this.getAttributeObject(ATTR_TRUNCATE_BEFORE_LOAD);
         return (shouldTruncate != null) ? shouldTruncate.booleanValue() : false;
     }
 
+    public boolean isDisableConstraints() {
+        Boolean shouldDisableConstraints = (Boolean) this.getAttributeObject(ATTR_DISBALE_CONSTRAINTS);
+        return (shouldDisableConstraints != null) ? shouldDisableConstraints.booleanValue() : false;
+    }
+    
     public boolean isUsingFullyQualifiedName() {
         Boolean fullName = (Boolean) this.getAttributeObject(ATTR_FULLY_QUALIFIED_NAME);
         if (fullName != null) {
@@ -828,9 +834,6 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         }
     }
 
-    /**
-     * @see org.netbeans.modules.sql.framework.model.TargetTable#setTruncateBeforeLoad(boolean)
-     */
     public void setTruncateBeforeLoad(boolean flag) {
         this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
     }
@@ -839,6 +842,14 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
     }
 
+    public void setDisableConstraints(boolean flag) {
+        this.setAttribute(ATTR_DISBALE_CONSTRAINTS, flag);
+    }
+    
+    public void setDisableConstraints(Boolean flag) {
+        this.setAttribute(ATTR_DISBALE_CONSTRAINTS, flag);
+    }
+    
     /**
      * Returns XML representation of table metadata.
      * 

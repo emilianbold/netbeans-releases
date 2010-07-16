@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.iep.editor;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -37,15 +35,15 @@ import org.openide.windows.TopComponent;
  * @author Jeri Lockhart
  */
 public class PlanDesignViewMultiViewDesc extends Object
-    implements MultiViewDescription, Serializable {
-    
-    
+        implements MultiViewDescription, Serializable {
+
     /**
      * 
      */
     private static final long serialVersionUID = 2580263536201519563L;
     public static final String PREFERRED_ID = "wsdl-treeview";
     private PlanDataObject wsdlDataObject;
+    private PlanDesignViewMultiViewElement element = null;
     
     /**
      *
@@ -55,15 +53,14 @@ public class PlanDesignViewMultiViewDesc extends Object
         super();
     }
 
-
     /**
      *
      *
      */
     public PlanDesignViewMultiViewDesc(PlanDataObject wsdlDataObject) {
         this.wsdlDataObject = wsdlDataObject;
+        this.element = new PlanDesignViewMultiViewElement(wsdlDataObject);
     }
-
 
     /**
      *
@@ -73,7 +70,6 @@ public class PlanDesignViewMultiViewDesc extends Object
         return PREFERRED_ID;
     }
 
-
     /**
      *
      *
@@ -82,39 +78,35 @@ public class PlanDesignViewMultiViewDesc extends Object
         return TopComponent.PERSISTENCE_NEVER;
     }
 
-
     /**
      *
      *
      */
     public java.awt.Image getIcon() {
-        return ImageUtilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
+        return Utilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
     }
 
-
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(PlanDesignViewMultiViewDesc.class);
-        }
-
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PlanDesignViewMultiViewDesc.class);
+    }
 
     /**
      *
      *
      */
     public String getDisplayName() {
-        return NbBundle.getMessage(PlanDesignViewMultiViewDesc.class,    
-            "LBL_designView_name");
+        return NbBundle.getMessage(PlanDesignViewMultiViewDesc.class,
+                "LBL_designView_name");
     }
-
 
     /**
      *
      *
      */
     public MultiViewElement createElement() {
-            return new PlanDesignViewMultiViewElement(wsdlDataObject);
+//        return new PlanDesignViewMultiViewElement(wsdlDataObject);
+        return this.element;
     }
-
 
     /**
      *
@@ -124,16 +116,16 @@ public class PlanDesignViewMultiViewDesc extends Object
         out.writeObject(wsdlDataObject);
     }
 
-
     /**
      *
      *
      */
     public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException
-    {
+            throws IOException, ClassNotFoundException {
         Object firstObject = in.readObject();
-        if (firstObject instanceof PlanDataObject)
+        if (firstObject instanceof PlanDataObject) {
             wsdlDataObject = (PlanDataObject) firstObject;
+            this.element = new PlanDesignViewMultiViewElement(wsdlDataObject);
+        }
     }
 }

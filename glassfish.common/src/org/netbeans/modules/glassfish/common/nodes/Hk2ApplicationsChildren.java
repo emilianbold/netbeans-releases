@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,24 +74,26 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
         this.lookup = lookup;
     }
 
+    @Override
     public void updateKeys(){
         setKeys(new Object[] { WAIT_NODE });
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor t = new RequestProcessor("app-child-updater");
+        t.post(new Runnable() {
             Vector<Object> keys = new Vector<Object>();
             
+            @Override
             public void run() {
                 GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
                 if(commonSupport != null) {
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                         java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
                         for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
                             List<AppDesc> apps = entry.getValue();
-                            Decorator decorator = DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION);
                             for(AppDesc app: apps) {
-                                keys.add(new Hk2ApplicationNode(lookup, app, decorator));
+                                keys.add(new Hk2ApplicationNode(lookup, app, DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION, app.getEnabled())));
                             }
                         }
                     } catch (Exception ex) {
@@ -111,6 +116,7 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
         setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
     
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof Hk2ItemNode){
             return new Node [] { (Hk2ItemNode) key };

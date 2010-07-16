@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,6 +103,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     private boolean updating;
     private ValidationGroup group = ValidationGroup.create(this);
     private final ComboEditor ceditor = new ComboEditor();
+    @SuppressWarnings("unchecked") //NOI18N
     public void run() {
         initComponents();
         ProtocolRenderer r = new ProtocolRenderer();
@@ -568,7 +572,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             }
             val = s.get(DEVICE_SUSPEND_THREADS_ON_STARTUP);
             if (val == null) {
-                val = "true";
+                val = "false";
             }
             suspendCheckBox.setSelected(Boolean.valueOf(val));
             
@@ -844,7 +848,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(suspendCheckBox, "Suspend Threads on startup");
         suspendCheckBox.setToolTipText("<html>Check this checkbox if you want to start<br>stepping through code in the debugger<br>as soon as the card is started");
-        suspendCheckBox.setHorizontalTextPosition(10);
+        suspendCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 18;
@@ -1018,7 +1022,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(remoteCheckbox, "Card Manager is on a remote computer");
         remoteCheckbox.setToolTipText("<html>If true, this card is not running on the same computer<br>as the IDE is");
-        remoteCheckbox.setHorizontalTextPosition(10);
+        remoteCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         remoteCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onRemoteCheckboxChanged(evt);

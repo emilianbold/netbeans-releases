@@ -20,19 +20,16 @@ package org.netbeans.modules.bpel.model.ext.editor.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
-import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
+import org.netbeans.modules.bpel.model.ext.editor.api.NestedExtensionsVisitor;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorAttributes;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
@@ -42,17 +39,17 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class CastImpl extends EditorEntityImpl implements Cast {
+public class CastImpl extends EditorExtensionContainerImpl implements Cast {
 
     private static AtomicReference<Attribute[]> myAttributes =
         new AtomicReference<Attribute[]>();
 
-    CastImpl(EditorEntityFactory factory, BpelModelImpl model, Element e ) {
-        super(factory, model, e);
+    CastImpl(BpelModelImpl model, Element e ) {
+        super(model, e);
     }
 
-    CastImpl(EditorEntityFactory factory, BpelBuilderImpl builder ) {
-        super(factory, builder, EditorElements.CAST);
+    CastImpl(BpelBuilderImpl builder ) {
+        super(builder, EditorElements.CAST);
     }
 
     @Override
@@ -74,10 +71,6 @@ public class CastImpl extends EditorEntityImpl implements Cast {
 
     public Class<? extends BpelEntity> getElementType() {
         return Cast.class;
-    }
-
-    public EntityUpdater getEntityUpdater() {
-        return CastEntityUpdater.getInstance();
     }
 
     public Source getSource() {
@@ -139,54 +132,15 @@ public class CastImpl extends EditorEntityImpl implements Cast {
         removeAttribute(EditorAttributes.TYPE);
     }
 
-    private static class CastEntityUpdater implements EntityUpdater {
-        private static EntityUpdater INSTANCE =
-                new CastEntityUpdater();
-
-        public static EntityUpdater getInstance() {
-            return INSTANCE;
-        }
-
-        private CastEntityUpdater() {
-
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, Operation operation) {
-            if (target instanceof Casts) {
-                Casts casts = (Casts)target;
-                Cast cast = (Cast)child;
-                switch (operation) {
-                case ADD:
-                    casts.addCast(cast);
-                    break;
-                case REMOVE:
-                    casts.remove(cast);
-                    break;
-                }
-            }
-        }
-
-        public void update(BpelEntity target, ExtensionEntity child, int index, Operation operation) {
-            if (target instanceof Casts) {
-                Casts casts = (Casts)target;
-                Cast cast = (Cast)child;
-                switch (operation) {
-                case ADD:
-                    casts.insertCast(cast, index);
-                    break;
-                case REMOVE:
-                    casts.remove(cast);
-                    break;
-                }
-            }
-        }
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.references.ReferenceCollection#getReferences()
      */
     public Reference[] getReferences() {
         return new Reference[] { getType()};
+    }
+
+    public void accept(NestedExtensionsVisitor visitor) {
+        visitor.visit(this);
     }
 
 }

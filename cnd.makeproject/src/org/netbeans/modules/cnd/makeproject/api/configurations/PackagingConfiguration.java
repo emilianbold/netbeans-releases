@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
@@ -58,7 +63,6 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -80,7 +84,7 @@ public class PackagingConfiguration {
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
-        verbose = new BooleanConfiguration(null, true);
+        verbose = new BooleanConfiguration(true);
         info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
         additionalInfo = new VectorConfiguration<String>(null); // NOI18N
         files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
@@ -92,7 +96,7 @@ public class PackagingConfiguration {
         setDefaultValues();
     }
     
-    public void setDefaultValues() {
+    public final void setDefaultValues() {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
@@ -104,7 +108,7 @@ public class PackagingConfiguration {
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
-            if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+            if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 suffix = ".exe"; // NOI18N
             }
         } else if (makeConfiguration.isLibraryConfiguration()) {
@@ -283,9 +287,10 @@ public class PackagingConfiguration {
         clone.setTopDir(getTopDir().clone());
         return clone;
     }
-    TypePropertyChangeListener typePropertyChangeListener;
+    
+    private TypePropertyChangeListener typePropertyChangeListener;
     // Sheet
-    public Sheet getGeneralSheet(MakeCustomizer makeCustomizer) {
+    public Sheet getGeneralSheet(JPanel makeCustomizer) {
         IntNodeProp intNodeprop;
         OutputNodeProp outputNodeProp;
         StringNodeProp toolNodeProp;
@@ -313,7 +318,7 @@ public class PackagingConfiguration {
         return sheet;
     }
     
-    class PackagerIntConfiguration extends IntConfiguration {
+    private class PackagerIntConfiguration extends IntConfiguration {
         PackagerIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }
@@ -340,7 +345,7 @@ public class PackagingConfiguration {
     
     }
     
-    class PackagerIntNodeProp extends IntNodeProp {
+    private class PackagerIntNodeProp extends IntNodeProp {
         public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
             super(intConfiguration, canWrite, unused, name, description);
         }
@@ -364,20 +369,21 @@ public class PackagingConfiguration {
         }
     }
 
-    class TypePropertyChangeListener implements PropertyChangeListener {
+    private class TypePropertyChangeListener implements PropertyChangeListener {
 
-        private MakeCustomizer makeCustomizer;
+        private JPanel makeCustomizer;
         private OutputNodeProp outputNodeProp;
         private StringNodeProp toolNodeProp;
         private StringNodeProp optionsNodeProp;
 
-        TypePropertyChangeListener(MakeCustomizer makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
+        TypePropertyChangeListener(JPanel makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
             this.makeCustomizer = makeCustomizer;
             this.outputNodeProp = outputNodeProp;
             this.toolNodeProp = toolNodeProp;
             this.optionsNodeProp = optionsNodeProp;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             toolNodeProp.setCanWrite(getToolDefault().length() > 0);
             optionsNodeProp.setCanWrite(getToolDefault().length() > 0);
@@ -421,7 +427,7 @@ public class PackagingConfiguration {
     }
     
     public String getOutputName() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
@@ -478,7 +484,7 @@ public class PackagingConfiguration {
 
         @Override
         public void setValue(String v) {
-            if (IpeUtils.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -502,7 +508,7 @@ public class PackagingConfiguration {
     
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
-        s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
+        s = CndPathUtilitities.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
     

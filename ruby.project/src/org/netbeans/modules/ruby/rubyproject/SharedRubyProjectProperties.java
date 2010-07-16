@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,6 +80,11 @@ public abstract class SharedRubyProjectProperties {
     public static final String JVM_ARGS = "jvm.args"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    /**
+     * The project property for the RAILS_ENV env variable; defined here instead
+     * of RailsProjectProperties as this is needed in RakeRunner.
+     */
+    public static final String RAILS_ENV = "rails.env"; // NOI18N
 
     /**
      * Support for odd property name ('run.jvmargs'). Will be dropped in the
@@ -115,6 +123,9 @@ public abstract class SharedRubyProjectProperties {
 
     private String activeConfig;
     private Map<String, Map<String, String>> runConfigs;
+
+    private List<GemRequirement> gemRequirements;
+    private List<GemRequirement> gemRequirementsTests;
     
     public static final String[] WELL_KNOWN_PATHS = new String[]{
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -218,7 +229,23 @@ public abstract class SharedRubyProjectProperties {
     public void setActiveConfig(String activeConfig) {
         this.activeConfig = activeConfig;
     }
-    
+
+    public List<GemRequirement> getGemRequirements() {
+        return gemRequirements;
+    }
+
+    public void setGemRequirements(List<GemRequirement> gemRequirements) {
+        this.gemRequirements = gemRequirements;
+    }
+
+    public List<GemRequirement> getGemRequirementsForTests() {
+        return gemRequirementsTests;
+    }
+
+    public void setGemRequirementsForTests(List<GemRequirement> gemRequirements) {
+        this.gemRequirementsTests = gemRequirements;
+    }
+
     public Map<String, Map<String, String>> getRunConfigs() {
         return runConfigs;
     }
@@ -360,6 +387,7 @@ public abstract class SharedRubyProjectProperties {
         }
         getUpdateHelper().putProperties("nbproject/private/config.properties", configProperties); // NOI18N
 
+        putGemRequirements(projectProperties);
         // Save all paths
         projectProperties.setProperty(JAVAC_CLASSPATH, javac_cp);
 
@@ -377,6 +405,19 @@ public abstract class SharedRubyProjectProperties {
             } catch (UnsupportedCharsetException e) {
                 //When the encoding is not supported by JVM do not set it as default
             }
+        }
+    }
+
+    private void putGemRequirements(EditableProperties projectProperties) {
+        if (gemRequirements == null) {
+            projectProperties.remove(RequiredGems.REQUIRED_GEMS_PROPERTY);
+        } else {
+            projectProperties.put(RequiredGems.REQUIRED_GEMS_PROPERTY, RequiredGems.asString(gemRequirements));
+        }
+        if (gemRequirementsTests == null) {
+            projectProperties.remove(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY);
+        } else {
+            projectProperties.put(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY, RequiredGems.asString(gemRequirementsTests));
         }
     }
 

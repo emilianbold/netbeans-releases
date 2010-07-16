@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -277,7 +280,7 @@ public class MakeJNLP extends Task {
             }
             
             JarFile theJar = new JarFile(jar);
-            String codenamebase = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module");
+            String codenamebase = JarWithModuleAttributes.extractCodeName(theJar.getManifest().getMainAttributes());
             if (codenamebase == null) {
                 throw new BuildException("Not a NetBeans Module: " + jar);
             }
@@ -327,7 +330,7 @@ public class MakeJNLP extends Task {
             
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-            writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+            writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
             writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
             writeJNLP.write("  <information>\n");
             writeJNLP.write("   <title>" + XMLUtil.toElementContent(title) + "</title>\n");
@@ -460,6 +463,8 @@ public class MakeJNLP extends Task {
 
         fileToOwningModule.remove("ant/nblib/" + dashcnb + ".jar");
 
+        fileToOwningModule.remove("VERSION.txt"); // cluster release information
+
         fileToOwningModule.keySet().removeAll(indirectFilePaths);
         
         if (verifyExcludes != null) {
@@ -474,7 +479,7 @@ public class MakeJNLP extends Task {
             if (!fileToOwningModule.isEmpty()) {
                 throw new BuildException(
                     "Cannot build JNLP for module " + f + " as these files are in " +
-                    "module's NBM, but are not referenced from any path:\n" + fileToOwningModule.keySet()
+                    "module's NBM, but are not referenced from any path (see harness/README for properties you can define to fix):\n" + fileToOwningModule.keySet()
                 );
             }
         }
@@ -547,7 +552,7 @@ public class MakeJNLP extends Task {
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-                writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+                writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
                 writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
                 writeJNLP.write("  <information>\n");
                 writeJNLP.write("    <title>" + n + "</title>\n");

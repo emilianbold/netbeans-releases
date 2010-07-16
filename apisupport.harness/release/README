@@ -590,6 +590,10 @@ selected fields in project.xml, *are* available for use in your build.xml
 defining other properties in project.properties (unless you defined them in
 private.properties).
 
+app.icon.icns [since 6.9] - "${harness.dir}/etc/applicationIcon.icns" by default,
+path to application's icon in Mac (.icns) format; used for creating ".app" 
+directory hierarchy in "build-mac" target.
+
 basedir - you cannot define this; it is always the project directory of the
 module (as in any Ant script). Available in all other properties files.
 
@@ -606,12 +610,20 @@ private.properties:
 
     build.compiler.deprecation=false
 
+build.dir - "build", location of all module build products not placed into
+${suite.build.dir}. May be overridden on a suitewide basis if placed in
+platform.properties, e.g.: build.dir=${suite.build.dir}/${ant.project.name}
+[since 6.10]
+
 build.test.unit.classes.dir - "build/test/unit/classes", where unit tests are
 compiled to.
 
 buildnumber - generated timestamp for use in
 OpenIDE-Module-Implementation-Version (or OpenIDE-Module-Build-Version if
 OpenIDE-Module-Implementation-Version was explicitly defined in the manifest).
+
+catalog.base.url [since 6.9] - distribution base for the suite modules NBMs
+location for which the catalog is generated. Default is ".". 
 
 cluster - cluster directory your module is to be built into. For netbeans.org
 modules, this is a subdirectory of nbbuild/netbeans/; the subdirectory name is
@@ -621,6 +633,8 @@ defined automatically from nbbuild/cluster.properties, with a fallback to
 in platform.properties); similarly, for standalone modules, it defaults to
 "${basedir}/build/cluster". Available in project.properties for netbeans.org
 modules only.
+
+code.name.base - your code name base as org.netbeans.modules.foo
 
 code.name.base.dashes - your code name base as org-netbeans-modules-foo
 
@@ -753,13 +767,20 @@ time) without restarting the IDE.
 nbm.target.cluster [since 5.0u2] - allow to declare a target cluster where
 install if NBM install globally.
 
+autoupdate.catalog.url - if you want to use module's or suite's update target
+during build, you need to specify the URL of your NBMs catalog.
+
 nbplatform.active - optional name of a NB platform to build and run against. See
 discussion above for details of how this is used.
 
-netbeans.dest.dir - absolute pathname of NB platform (or IDE or whatever) that
-you are building your module against, and into which your module will be built.
-Available in project.properties (and in all properties files for netbeans.org
-modules). Specified folder must exist and must contain valid NB platform.
+netbeans.dest.dir - [up to 6.5.1] absolute pathname of NB platform (or IDE or 
+whatever) that you are building your module against, and into which your module 
+will be built. Available in project.properties (and in all properties files for 
+netbeans.org modules). Specified folder must exist and must contain valid NB 
+platform. Do not define in suite modules if suite's platform.properties defines 
+"cluster.path" property. Also do not depend on this property to be defined, it 
+will not be in projects created with NB 6.7 or later. 
+
 
 netbeans.home - location of "platform*" cluster of the NetBeans IDE installation
 you are running. *Only defined* when you run an Ant script *inside* the IDE.
@@ -786,6 +807,12 @@ platform.properties (in a standalone module, or in the suite for a suite compone
 module, or in nbbuild/user.build.properties for a netbeans.org module). You may
 also define just ${nbjdk.home} directly, without using ${nbjdk.active}, if you do
 not need to use the Java Platform Manager to set up the JDK definition.
+
+use.pack200 [since 6.9] - whether to Pack200 compress NBMs; default true.
+
+pack200.excludes [since 6.9] - comma- or space- separated list of patterns of 
+files relative to cluster directory for which pack200 compression should not be used 
+while creating NBMs.
 
 project.license [since 6.0] - license to use for newly created files in the project
 (applies also to suites); default is 'cddl' for modules inside netbeans.org.
@@ -910,9 +937,8 @@ tools.jar [since 5.0u1] - set to location of tools.jar in active JDK. Useful in
 case your module needs to compile against JDK-only classes. Meaningless on Mac
 OS X.
 
-To support builds of JNLP based applications (described at
-http://installer.netbeans.org/docs/jnlpInstaller3.html) additional properties
-may be used or redefined in JNLP-related targets:
+To support builds of JNLP-based applications additional properties may be used
+or redefined in JNLP-related targets:
 
 jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 5 in
   the directory sample/jnlp/servlet/jnlp-servlet.jar if one wants to build 
@@ -939,7 +965,7 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   this property. Sample values with prebuilt binaries (good for testing):
 http://bits.netbeans.org/6.5/jnlp/
 http://bits.netbeans.org/6.7/fcs/jnlp/
-http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/jnlp/
+http://deadlock.netbeans.org/hudson/job/ide-jnlp/lastStableBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   in JNLP mode even though they are not listed as Class-Path extensions of the
@@ -952,7 +978,7 @@ jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   entry META-INF/clusterpath/$path where $path is the ('/'-separated) path
   within the cluster where the JAR would be found in a normal installation.
 
-jnlp.indirect.files [since 7.0M1] - optional pattern of files in the cluster to
+jnlp.indirect.files [since 6.7 M1] - optional pattern of files in the cluster to
   load in JNLP mode. The module may load these files using InstalledFileLocator
   using the same path in regular as in JNLP mode. Note that the physical path on
   disk to the resulting file will not necessarily contain the directory prefix
@@ -1109,18 +1135,25 @@ etc.
 app.version - version of the application, used in building the MacOS application
 bundle for example. (Since 6.0 beta2)
 
+app.conf - location of an alternative configuration file. If not specified,
+default one from harness/etc/app.conf is taken (Since 6.9)
+
 branding.dir (default "${suite.dir}/branding") - directory containing branding
 overrides.
 
 branding.token - optional token defining an application branding.
 
+suite.build.dir - "build", location of suitewide build products including the
+cluster. If overridden, should be placed in platform.properties, e.g.:
+suite.build.dir=${suite.dir}/../build [since 6.10]
+
 enabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "platform6") which should be included in the application. Should be stored
+(e.g. "platform") which should be included in the application. Should be stored
 in platform.properties, not project.properties. Available since 5.0u1. Since 6.5,
 can elide version numbers from the end, e.g. just "platform" suffices.
 
 disabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "ide6") which should be completely excluded from the application.
+(e.g. "ide") which should be completely excluded from the application.
 DEPRECATED since 5.0u1 in favor of ${enabled.clusters} and ignored if that is nonempty.
 
 disabled.modules - comma-separated list of code name bases of modules in the
@@ -1189,6 +1222,13 @@ by default, even if some of them fails and target succeeds regardless of test st
 When property 'continue.after.failing.tests' is set to 'false', this target fails
 immediately after tests in some module fail and does not continue testing the rest
 of the suite (this was the default up to version 6.7).
+
+test-generate-html - similar to the module-level target of the same name, only
+this executes and reports on all unit and functional tests for all suite
+modules. [since 6.10]
+
+test-view-html - tests all modules in the suite, then opens the browser to
+display the report generated from the results of those tests. [since 6.10]
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 

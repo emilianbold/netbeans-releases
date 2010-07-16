@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -45,13 +48,41 @@ made subject to such option by the copyright holder.
 
 <MIME-resolver >
     <file>
+	<!-- Mac Power PC peff executable -->
+	<!--          J o y ! p e f f     -->
+	<magic   hex="4a6f792170656666"
+	        mask="ffffffffffffffff"/>
+	<!-- Next 4 bytes contains architecture type:
+             "pwpc" for the PowerPC CFM
+             "m68k" for CFM-68K
+             Ignore architecture. -->
+        <resolver mime="application/x-exe"/>
+    </file>
+
+    <file>
 	<!-- Mach-O executable i386 -->
 	<!--                  v       v       v       v-->
 	<magic   hex="cefaedfe0000000000000000020000000000"
 	        mask="ffffffff0000000000000000ff0000000000"/>
         <resolver mime="application/x-exe"/>
     </file>
+
+    <file>
+	<!-- Mach-O executable x86-64 -->
+	<!--                  v       v       v       v-->
+	<magic   hex="cffaedfe0000000000000000020000000000"
+	        mask="ffffffff0000000000000000ff0000000000"/>
+        <resolver mime="application/x-exe"/>
+    </file>
     
+    <file>
+	<!-- Mach-O executable ppc -->
+	<!--                  v       v       v       v-->
+	<magic   hex="feedface0000000000000000000000020000"
+	        mask="ffffffff0000000000000000000000ff0000"/>
+        <resolver mime="application/x-exe"/>
+    </file>
+
     <file>
 	<!-- Mach-O universal binary with 2 architectures-->
         <!-- FIXUP: this mask matches too many files and doesn't

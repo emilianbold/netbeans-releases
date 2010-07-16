@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
  *
@@ -45,11 +48,11 @@ import org.netbeans.junit.NbTestCase;
  * @author pzajac
  */
 public class TestDistFilterTest extends NbTestCase {
-    private static final String ORG_OPENIDE_UNIT = "unit/platform5/org-openide";
-    private static final String ORG_OPENIDE_FS = "unit/platform5/org-openide-fs";
-    private static final String ORG_OPENIDE_LOADERS = "unit/platform5/org-openide-loaders";
-    private static final String ORG_OPENIDE_FS_QA = "qa-functional/platform5/org-openide-fs";   
-    private static final String ORG_OPENIDE_NO_LOADERS = "unit/platform5/org-openide-no-loaders";
+    private static final String ORG_OPENIDE_UNIT = "unit/platform/org-openide";
+    private static final String ORG_OPENIDE_FS = "unit/platform/org-openide-fs";
+    private static final String ORG_OPENIDE_LOADERS = "unit/platform/org-openide-loaders";
+    private static final String ORG_OPENIDE_FS_QA = "qa-functional/platform/org-openide-fs";   
+    private static final String ORG_OPENIDE_NO_LOADERS = "unit/platform/org-openide-no-loaders";
     public TestDistFilterTest(java.lang.String testName) {
         super(testName);
     }

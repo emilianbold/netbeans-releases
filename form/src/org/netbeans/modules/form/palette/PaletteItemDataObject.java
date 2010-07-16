@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -152,6 +155,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         return new ItemNode();
     }
 
+    @Override
     public <T extends Node.Cookie> T createCookie(Class<T> cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
@@ -218,7 +222,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         FileObject itemFile = folder.createData(fileName,
                                                 PaletteItemDataLoader.ITEM_EXT);
 
-        StringBuffer buff = new StringBuffer(512);
+        StringBuilder buff = new StringBuilder(512);
         buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
         buff.append("<palette_item version=\"1.0\">\n"); // NOI18N
         buff.append("  <component classname=\""); // NOI18N
@@ -270,6 +274,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         }
         
 
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException
         {

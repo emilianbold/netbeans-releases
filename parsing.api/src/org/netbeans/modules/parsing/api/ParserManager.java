@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
@@ -59,6 +63,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 
 
 /**
@@ -90,18 +95,38 @@ public final class ParserManager {
      * @throws ParseException encapsulating the user exception
      */
     public static void parse (
-        final Collection<Source>  
+        @NonNull final Collection<Source>
                             sources, 
-        final UserTask
+        @NonNull final UserTask
                             userTask
     ) throws ParseException {
+        Parameters.notNull("sources", sources);     //NOI18N
+        Parameters.notNull("userTask", userTask);   //NOI18N
         if (sources.size () == 1)
             TaskProcessor.runUserTask (new UserTaskAction (sources.iterator ().next (), userTask), sources);
         else
             TaskProcessor.runUserTask (new MultiUserTaskAction (sources, userTask), sources);
     }
 
-    public static Future<Void> parseWhenScanFinished (final Collection<Source>  sources,  final UserTask userTask) throws ParseException {
+    /**
+     * Performs the given task when the scan finished. When the background scan is active
+     * the task is enqueued and the method returns, the task is performed when the
+     * background scan completes by the thread doing the background scan. When no background
+     * scan is running the method behaves exactly like the {#link ParserManager#parse},
+     * it performs the given task synchronously (in caller thread). If there is an another {@link UserTask}
+     * running this method waits until it's completed.
+     * @param sources A list of sources that should be parsed.
+     * @param userTask A task started when parsing is done.
+     * @return {@link Future} which can be used to find out the state of the task {@link Future#isDone} or {@link Future#isCancelled}.
+     * The caller may cancel the task using {@link Future#cancel} or wait until the task is performed {@link Future#get}.
+     * @throws ParseException encapsulating the user exception.
+     */
+    @NonNull
+    public static Future<Void> parseWhenScanFinished (
+            @NonNull final Collection<Source>  sources,
+            @NonNull final UserTask userTask) throws ParseException {
+        Parameters.notNull("sources", sources);     //NOI18N
+        Parameters.notNull("userTask", userTask);   //NOI18N
         if (sources.size () == 1)
             return TaskProcessor.runWhenScanFinished (new UserTaskAction (sources.iterator ().next (), userTask), sources);
         else
@@ -147,7 +172,6 @@ public final class ParserManager {
         }
 
         public Void run () throws Exception {
-            //tzezula: Wrong - doesn't work for multiple files!
             LMListener lMListener = new LMListener ();
             Parser parser = null;
             final Collection<Snapshot> snapShots = new LazySnapshots(sources);
@@ -300,15 +324,34 @@ public final class ParserManager {
      * @throws ParseException encapsulating the user exception
      */
     public static void parse (
-        final String mimeType,
-        final UserTask     userTask
-    ) throws ParseException {        
+        @NonNull final String mimeType,
+        @NonNull final UserTask     userTask
+    ) throws ParseException {
+        Parameters.notNull("mimeType", mimeType);   //NOI18N
+        Parameters.notNull("userTask", userTask);   //NOI18N
         final Parser pf = findParser(mimeType);
         TaskProcessor.runUserTask (new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
     }
-    
 
-    public static Future<Void> parseWhenScanFinished (final String mimeType, final UserTask userTask) throws ParseException {
+    /**
+     * Performs the given task when the scan finished. When the background scan is active
+     * the task is enqueued and the method returns, the task is performed when the
+     * background scan completes by the thread doing the background scan. When no background
+     * scan is running the method behaves exactly like the {#link ParserManager#parse},
+     * it performs the given task synchronously (in caller thread). If there is an another {@link UserTask}
+     * running this method waits until it's completed.
+     * @param mimetype A mimetype specifying the parser.
+     * @param userTask A task started when parsing is done.
+     * @return {@link Future} which can be used to find out the state of the task {@link Future#isDone} or {@link Future#isCancelled}.
+     * The caller may cancel the task using {@link Future#cancel} or wait until the task is performed {@link Future#get}.
+     * @throws ParseException encapsulating the user exception.
+     */
+    @NonNull
+    public static Future<Void> parseWhenScanFinished (
+            @NonNull final String mimeType,
+            @NonNull final UserTask userTask) throws ParseException {
+        Parameters.notNull("mimeType", mimeType);   //NOI18N
+        Parameters.notNull("userTask", userTask);   //NOI18N
         final Parser pf = findParser(mimeType);
         return TaskProcessor.runWhenScanFinished(new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -77,7 +81,10 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
     public Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
             public Element run() {
-                AuxiliaryConfiguration delegate = project.getLookup().lookup(AuxiliaryConfiguration.class);
+                assert project != null;
+                Lookup lookup = project.getLookup();
+                assert lookup != null : project.getClass().getName() + " violates #185464";
+                AuxiliaryConfiguration delegate = lookup.lookup(AuxiliaryConfiguration.class);
                 if (delegate != null) {
                     Element fragment = delegate.getConfigurationFragment(elementName, namespace, shared);
                     if (fragment != null) {
@@ -98,7 +105,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                                 InputSource input = new InputSource(is);
                                 input.setSystemId(config.getURL().toString());
                                 Element root = XMLUtil.parse(input, false, true, /*XXX*/null, null).getDocumentElement();
-                                return findElement(root, elementName, namespace);
+                                return XMLUtil.findElement(root, elementName, namespace);
                             } finally {
                                 is.close();
                             }
@@ -163,7 +170,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             doc = XMLUtil.createDocument("auxiliary-configuration", "http://www.netbeans.org/ns/auxiliary-configuration/1", null, null);
                         }
                         Element root = doc.getDocumentElement();
-                        Element oldFragment = findElement(root, elementName, namespace);
+                        Element oldFragment = XMLUtil.findElement(root, elementName, namespace);
                         if (oldFragment != null) {
                             root.removeChild(oldFragment);
                         }
@@ -230,7 +237,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             is.close();
                         }
                         Element root = doc.getDocumentElement();
-                        Element toRemove = findElement(root, elementName, namespace);
+                        Element toRemove = XMLUtil.findElement(root, elementName, namespace);
                         if (toRemove != null) {
                             root.removeChild(toRemove);
                             if (root.getElementsByTagName("*").getLength() > 0) {
@@ -274,25 +281,6 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                 return result;
             }
         });
-    }
-
-    private static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        int len = l.getLength();
-        for (int i = 0; i < len; i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element) l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
     }
 
 }

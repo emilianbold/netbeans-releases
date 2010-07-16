@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,9 +41,12 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 
 public abstract class ConnectionManagerAccessor {
 
@@ -68,7 +74,34 @@ public abstract class ConnectionManagerAccessor {
 
         return DEFAULT;
     }
+//    public abstract Session getConnectionSession(final ExecutionEnvironment env, boolean restoreLostConnection);
 
-    public abstract Session getConnectionSession(
-            final ConnectionManager mgr, final ExecutionEnvironment env, boolean restoreLostConnection);
+    /**
+     * Opens and returns a jsch channel in a thread-safe manner.
+     * Env must be connected prior to this method call
+     *
+     * @param env - env where channel should be opened
+     * @param type - type of a channel to open
+     * @param waitIfNoAvailable - whether should wait for available channel or
+     * just return null in case no channel is available at the moment
+     * @return Opened channel or null if waitIfNoAvailable is not set and no channel is available
+     * @throws InterruptedException
+     * @throws JSchException
+     * @throws IOException
+     */
+    public abstract Channel openAndAcquireChannel(final ExecutionEnvironment env, String type, boolean waitIfNoAvailable) throws InterruptedException, JSchException, IOException;
+
+    /**
+     * Closes (and releases a resource lock) previously opened by
+     * openAndAcquireChannel() jsch channel.
+     *
+     * @param env
+     * @param channel - a channel to close
+     * @throws JSchException
+     */
+    public abstract void closeAndReleaseChannel(final ExecutionEnvironment env, final Channel channel) throws JSchException;
+
+    public abstract void reconnect(final ExecutionEnvironment env) throws IOException;
+
+    public abstract void changeAuth(ExecutionEnvironment env, Authentication auth);
 }

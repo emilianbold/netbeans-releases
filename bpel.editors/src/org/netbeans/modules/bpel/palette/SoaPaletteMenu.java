@@ -28,45 +28,25 @@ import org.openide.util.actions.CallableSystemAction;
  */
 public class SoaPaletteMenu extends CallableSystemAction {
 
-  /**
-   * Creates a new palette menu.
-   */
-  public SoaPaletteMenu () {
-    myName = NbBundle.getMessage(SoaPaletteMenu.class, "LBL_BPEL_Palette"); // NOI18N
-  }
+    public SoaPaletteMenu() {
+        myName = NbBundle.getMessage(SoaPaletteMenu.class, "LBL_BPEL_Palette"); // NOI18N
+    }
 
-  /**
-   * If true, this action should be performed asynchronously in a private thread.
-   * If false, it will be performed synchronously as called in the event thread.
-   * @return true if this action should automatically be performed asynchronously
-   */
-  protected boolean asynchronous() {
-    return false;
-  }
+    protected boolean asynchronous() {
+        return false;
+    }
 
-  /**
-   * Returns name of menu action.
-   * @return name of menu action
-   */
-  public String getName() {
-    return myName;
-  }
+    public String getName() {
+        return myName;
+    }
 
-  /**
-   * Returns help context of menu action.
-   * @return help context of menu action
-   */
-  public HelpCtx getHelpCtx() {
-    return null;
-  }
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
 
-  /**
-   * Does action.
-   */
-  public void performAction() {
-    SoaPaletteFactory.getPalette().showCustomizer();
-  }
+    public void performAction() {
+        SoaPaletteFactory.getPalette().showCustomizer();
+    }
 
-  private final String myName;
-  private static final long serialVersionUID = 1L; 
+    private final String myName;
 }

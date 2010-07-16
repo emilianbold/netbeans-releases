@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,27 +57,29 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
-import com.sun.sql.framework.exception.DBSQLException;
-import com.sun.sql.framework.utils.ScEncrypt;
-import com.sun.sql.framework.jdbc.DBConnectionFactory;
+
+import com.sun.etl.exception.DBSQLException;
+import com.sun.etl.utils.ScEncrypt;
+import com.sun.etl.jdbc.DBConnectionFactory;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.axiondb.AxionException;
 import org.axiondb.Database;
 import org.axiondb.engine.Databases;
+import org.netbeans.modules.dm.virtual.db.api.AxionDBConfiguration;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
-import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.etl.ui.view.wizards.ETLCollaborationWizard;
 
 /**
  *
  * @author radval
- *
+ * 
  */
 public class DBExplorerUtil {
 
@@ -83,17 +88,18 @@ public class DBExplorerUtil {
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(DBExplorerUtil.class.getName());
     //private static transient final Localizer mLoc = Localizer.get();
+    private static String fs = File.separator;
 
     public static String adjustDatabaseURL(String url) {
+
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
-            String relativePath = File.separator + "nbproject" + File.separator + "private" + File.separator +
-                    "databases" + File.separator;
+            String relativePath = fs + "nbproject" + fs + "private" + fs + "databases" + fs;
             if (urlParts[1].startsWith(ETLEditorSupport.PRJ_PATH)) {
-                urlParts[0] =  urlParts[0].toUpperCase();
+                urlParts[0] = urlParts[0].toUpperCase();
                 String adjustedName = urlParts[0].contains(ETLEditorSupport.PRJ_NAME.toUpperCase()) ? urlParts[0] : ETLEditorSupport.PRJ_NAME.toUpperCase() + "_" + urlParts[0];
                 url = AXION_URL_PREFIX + adjustedName + ":" + urlParts[1];
-            }else if (urlParts[1].startsWith(relativePath)) {
+            } else if (urlParts[1].startsWith(relativePath)) {
                 url = AXION_URL_PREFIX + urlParts[0] + ":" + ETLEditorSupport.PRJ_PATH + urlParts[1];
             }
         }
@@ -155,7 +161,7 @@ public class DBExplorerUtil {
             workDir = name;
         } else {
             name = prefixStripped.substring(0, colon);
-            workDir = unifyPath(prefixStripped.substring(colon + 1));
+            workDir = prefixStripped.substring(colon + 1);
         }
 
         String[] connStr = new String[2];
@@ -172,15 +178,14 @@ public class DBExplorerUtil {
         return conn;
     }
 
-
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
         JDBCDriver drv = null;
         Connection conn = null;
         try {
-           
-                url = adjustDatabaseURL(url);
+
+            url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
@@ -211,10 +216,7 @@ public class DBExplorerUtil {
                 }
             }
         } catch (Exception ex) {
-            //Exceptions.printStackTrace(ex);
-            if (ex.getMessage().indexOf("Specified JDBC Driver not found in DB Explorer: ") != -1) {
-                mLogger.warnNoloc(ex.getMessage());
-            }
+            java.util.logging.Logger.getLogger(DBExplorerUtil.class.getName()).log(Level.SEVERE, "Specified JDBC Driver not found in DB Explorer." + ex);
         }
         return conn;
     }
@@ -225,18 +227,22 @@ public class DBExplorerUtil {
                 localConnectionList.remove(conn);
                 conn.close();
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                mLogger.infoNoloc(ex.getMessage());
             }
         }
     }
 
-    public static DatabaseConnection createDatabaseConnection(String driverName, String url, String username, String password) throws DBSQLException {
+     public static DatabaseConnection createDatabaseConnection(String driverName, String url, String username, String password) throws DBSQLException {
+        return createDatabaseConnection(driverName, url, username, password, true);
+    }
+
+    public static DatabaseConnection createDatabaseConnection(String driverName, String url, String username, String password, boolean addToDBExplorer) throws DBSQLException {
         DatabaseConnection dbconn = null;
         JDBCDriver drv = null;
         String schema = null;
         try {
-            
-                url = adjustDatabaseURL(url);
+
+            url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
@@ -258,12 +264,12 @@ public class DBExplorerUtil {
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
 
-                //Fix for 6697129: No mashup database found when try to add external table Tools - MashupDatabase.
-                //ETLEditorSupport.PRJ_PATH  is "" and url.indexOf(ETLEditorSupport.PRJ_PATH) returns 0 if no projects are 
-                //opened in the netbeans and gives a warning no mashup db found if we try to add an external table from Tools menu.
-                //if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH)) {
-                 if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && !(MashupTableWizardIterator.IS_PROJECT_CALL)) {
+
+                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && addToDBExplorer && !(ETLEditorSupport.IS_PROJECT_CALL)) {
                     ConnectionManager.getDefault().addConnection(dbconn);
+                /* Enhancements to ETL Wizard for Loader Functionality */
+                } else if (ETLCollaborationWizard.IS_WIZARD_CALL) {
+                    //ConnectionManager.getDefault().addConnection(dbconn);
                 }
             }
 
@@ -295,7 +301,7 @@ public class DBExplorerUtil {
             driver = registerAxionDriverInstance();
         } else {
             if (drivers.length == 0) {
-                throw new Exception("Specified JDBC Driver not found in DB Explorer: " + driverName);
+                throw new Exception("Specified JDBC Driver not found in DB Explorer.");
             } else {
                 driver = drivers[0];
             }
@@ -391,13 +397,10 @@ public class DBExplorerUtil {
         if (f.exists()) {
             db = f.listFiles();
             for (int i = 0; i < db.length; i++) {
-                String ver = null;
                 try {
-                    ver = db[i].getCanonicalPath() + File.separator + db[i].getName().toUpperCase() + ".VER";
-                    File version = new File(ver);
-                    if (version.exists()) {
-                        String url = AXION_URL_PREFIX + db[i].getName() + ":" + workDir + db[i].getName();
-                        url = unifyPath(url);
+                    boolean fileNameFilter = checkFileNameFilter(db[i].getCanonicalPath());
+                    if (fileNameFilter) {
+                        String url = DBExplorerUtil.AXION_URL_PREFIX + databaseName + ":" + workDir + db[i].getName();
                         DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
                         if (con == null) {
                             DBExplorerUtil.createDatabaseConnection(AXION_DRIVER, url, "sa", "sa");
@@ -410,26 +413,35 @@ public class DBExplorerUtil {
         }
     }
 
-    public static String unifyPath(String workDir) {
-        //return workDir.replace('/', '\\');
-        return workDir;
+    private static String databaseName;
+    public static boolean checkFileNameFilter(String path) {
+        File[] files = new File(path).listFiles(new FilenameFilter() {
+
+            public boolean accept(File dir, String name) {                
+                if (name.toUpperCase().trim().endsWith(".VER")) {                    
+                    databaseName = name.replace(".VER", "");
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+        return files.length == 0 ? false : true;
     }
 
     public static List<DatabaseConnection> getDatabasesForCurrentProject() {
         List<DatabaseConnection> dbConns = new ArrayList<DatabaseConnection>();
-        String workDir = ETLEditorSupport.PRJ_PATH + File.separator + "nbproject" + File.separator + "private" + File.separator + "databases" + File.separator;
+        String workDir = ETLEditorSupport.PRJ_PATH + fs + "nbproject" + fs + "private" + fs + "databases" + fs;
         File f = new File(workDir);
         File[] db = null;
         if (f.exists()) {
             db = f.listFiles();
             for (int i = 0; i < db.length; i++) {
-                String ver = null;
                 try {
-                    ver = db[i].getCanonicalPath() + File.separator + (ETLEditorSupport.PRJ_NAME + "_" + db[i].getName()).toUpperCase() + ".VER";
-                    File version = new File(ver);
-                    if (version.exists()) {
-                        String url = DBExplorerUtil.AXION_URL_PREFIX + db[i].getName() + ":" + workDir + db[i].getName();
-                        url = unifyPath(url);
+                    boolean fileNameFilter = checkFileNameFilter(db[i].getCanonicalPath());
+                    if (fileNameFilter) {
+                        String url = DBExplorerUtil.AXION_URL_PREFIX + databaseName  + ":" + workDir + db[i].getName();
+                        //url = unifyPath(url);
                         DatabaseConnection dbConn = DBExplorerUtil.createDatabaseConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
                         dbConns.add(dbConn);
                     }
@@ -449,7 +461,7 @@ public class DBExplorerUtil {
         String connName = dbConn.getName();
         if (connName.startsWith(DBExplorerUtil.AXION_URL_PREFIX)) {
             String[] parts = DBExplorerUtil.parseConnUrl(connName);
-            connName = parts[0] + " [MASHUP DB]";
+            connName = parts[0] + " [VIRTUAL DB]";
         } else if (connName.startsWith("jdbc:derby://")) {
             int start = "jdbc:derby://".length();
             String host = connName.substring(start);

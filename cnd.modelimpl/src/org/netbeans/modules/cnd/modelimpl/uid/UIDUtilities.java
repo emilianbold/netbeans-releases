@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -64,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -133,6 +138,10 @@ public class UIDUtilities {
         return getCachedUID(new IncludeUID(incl), incl);
     }
 
+    public static CsmUID<CsmInheritance> createInheritanceUID(CsmInheritance inh) {
+        return getCachedUID(new InheritanceUID(inh), inh);
+    }
+
     public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
         return getCachedUID(new ParamListUID<T>(incl), incl);
     }
@@ -195,6 +204,13 @@ public class UIDUtilities {
         return isSameFile(uid1.getObject(), uid2.getObject());
     }
 
+    public static int getFileID(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            return KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid).getKey());
+        }
+        return -1;
+    }
+
     private static boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2) {
         if (decl1 != null && decl2 != null) {
             CsmFile file1 = decl1.getContainingFile();
@@ -217,6 +233,22 @@ public class UIDUtilities {
             }
         }
         return null;
+    }
+
+    public static CsmVisibility getVisibility(CsmUID<CsmInheritance> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
+            return KeyUtilities.getKeyVisibility(key);
+        }
+        return null;
+    }
+
+    public static char getKindChar(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
+            return KeyUtilities.getKeyChar(key);
+        }
+        return 0;
     }
 
     public static CharSequence getFileName(CsmUID<CsmFile> uid) {
@@ -300,7 +332,13 @@ public class UIDUtilities {
         if (name1 instanceof Comparable<?>) {
             @SuppressWarnings("unchecked")
             Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
-            return o1.compareTo(name2);
+            int i = o1.compareTo(name2);
+            if (i == 0) {
+                int i1 = getKindChar(d1);
+                int i2 = getKindChar(d2);
+                return i1-i2;
+            }
+            return i;
         }
         if (name1 != null) {
             return (name2 == null) ? 1 : 0;
@@ -405,6 +443,7 @@ public class UIDUtilities {
             return out;
         }
 
+        @Override
         public void dispose(T obj) {
             if (obj == null) {
                 weakT = DUMMY;
@@ -416,6 +455,12 @@ public class UIDUtilities {
         public void update(T obj) {
             if (weakT.get() != obj) {
                 weakT = new WeakReference<Object>(obj);
+            }
+        }
+
+        public void clear() {
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache()) {
+                weakT = new WeakReference<Object>(null);
             }
         }
     }
@@ -572,6 +617,20 @@ public class UIDUtilities {
     }
 
     /**
+     * UID for CsmInclude
+     */
+    /* package */ static final class InheritanceUID extends CachedUID<CsmInheritance> { //KeyBasedUID<CsmInclude> {
+
+        public InheritanceUID(CsmInheritance inh) {
+            super(KeyUtilities.createInheritanceKey(inh), inh);
+        }
+
+        /* package */ InheritanceUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+
+    /**
      * UID for CsmParameterList
      */
     /* package */ static final class ParamListUID<T extends CsmNamedElement> extends CachedUID<CsmParameterList<T>> { //KeyBasedUID<CsmParameterList<T>> {
@@ -681,8 +740,10 @@ public class UIDUtilities {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }
 
+        @Override
         public abstract T getObject();
 
+        @Override
         public void write(DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
         }
@@ -726,6 +787,7 @@ public class UIDUtilities {
             this.name = NameCache.getManager().getString(name);
         }
 
+        @Override
         public CsmClass getObject() {
             return getProject().getDummyForUnresolved(name);
         }
@@ -772,6 +834,7 @@ public class UIDUtilities {
             super(input);
         }
 
+        @Override
         public CsmNamespace getObject() {
             return getProject().getUnresolvedNamespace();
         }
@@ -788,6 +851,7 @@ public class UIDUtilities {
             super(input);
         }
 
+        @Override
         public CsmFile getObject() {
             return getProject().getUnresolvedFile();
         }
@@ -801,6 +865,7 @@ public class UIDUtilities {
             return prj;
         }
 
+        @Override
         public void dispose() {
             prjRef = getProject();
         }

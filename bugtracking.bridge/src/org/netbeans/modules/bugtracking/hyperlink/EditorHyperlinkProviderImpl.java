@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,13 +57,12 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -119,7 +121,9 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
         final String issueId = getIssueId(doc, offset, type);
-        if(issueId == null) return;
+        if(issueId == null) {
+            return;
+        }
 
         class IssueDisplayer implements Runnable {
             public void run() {
@@ -131,13 +135,11 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                         file = FileUtil.toFile(fileObject);
                     }
                 }
-                if(file == null) return;
-
-                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                if(repo == null) return;
-
-                BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
-                Issue.open(repo, issueId);
+                if(file == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "EditorHyperlinkProviderImpl - no file found for given document");
+                    return;
+                }
+                BugtrackingUtil.openIssue(file, issueId);
             }
         }
         RequestProcessor.getDefault().post(new IssueDisplayer());
@@ -169,6 +171,13 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
             }
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
+        }
+        if(issueId == null) {
+            try {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", doc.getText(spanInfo.startOffset, spanInfo.endOffset - spanInfo.startOffset));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return issueId;
     }

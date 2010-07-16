@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -52,9 +54,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -108,7 +109,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         myListEditorPanel.setListData(data);
     }
 
-    public Vector<LibraryItem> getListData() {
+    public List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -116,12 +117,14 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         return new ArrayList<LibraryItem>(getListData());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("RequiredProjects"); // NOI18N
     }
@@ -190,26 +193,27 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         }
     }
 
-    class AddProjectButtonAction implements java.awt.event.ActionListener {
+    private class AddProjectButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
             if (artifacts != null) {
                 for (int i = 0; i < artifacts.length; i++) {
                     String location;
                     String workingdir;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                        location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
-                        location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                        location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                        location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {
                         location = artifacts[i].getProjectLocation();
                         workingdir = artifacts[i].getWorkingDirectory();
                     }
-                    location = FilePathAdaptor.normalize(location);
-                    workingdir = FilePathAdaptor.normalize(workingdir);
+                    location = CndPathUtilitities.normalize(location);
+                    workingdir = CndPathUtilitities.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

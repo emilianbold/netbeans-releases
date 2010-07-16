@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,18 +77,22 @@ final class DefaultCodeExpression implements CodeExpression {
 
     // -------
 
+    @Override
     public CodeStructure getCodeStructure() {
         return codeStructure;
     }
 
+    @Override
     public CodeVariable getVariable() {
         return codeStructure.getVariable(this);
     }
 
+    @Override
     public CodeExpressionOrigin getOrigin() {
         return expressionOrigin;
     }
 
+    @Override
     public void setOrigin(CodeExpressionOrigin newOrigin) {
         CodeExpressionOrigin oldOrigin = expressionOrigin;
         if (oldOrigin == newOrigin)
@@ -168,6 +175,7 @@ final class DefaultCodeExpression implements CodeExpression {
     // UsedCodeObject implementation - registering objects that use
     // this expression
 
+    @Override
     public void addUsingObject(UsingCodeObject usingObject,
                                int useType,
                                Object useCategory)
@@ -182,6 +190,7 @@ final class DefaultCodeExpression implements CodeExpression {
             codeStructure.logUndoableChange(undoableChange);
     }
 
+    @Override
     public boolean removeUsingObject(UsingCodeObject usingObject) {
         CodeStructureChange undoableChange =
                 getExpressionUsage().removeUsingObject(
@@ -196,6 +205,7 @@ final class DefaultCodeExpression implements CodeExpression {
         return stillUsed;
     }
 
+    @Override
     public Iterator getUsingObjectsIterator(int useType, Object useCategory) {
         return getExpressionUsage().getUsingObjectsIterator(useType, useCategory);
     }
@@ -210,10 +220,12 @@ final class DefaultCodeExpression implements CodeExpression {
     // UsingCodeObject implementation - handling objects used by this expression
 
     // notifying about registering this object in used object
+    @Override
     public void usageRegistered(UsedCodeObject usedObject) {
     }
 
     // notifying about removing the used object from structure
+    @Override
     public boolean usedObjectRemoved(UsedCodeObject usedObject) {
 //        if (!(usedObject instanceof CodeExpression))
 //            return true;
@@ -222,10 +234,12 @@ final class DefaultCodeExpression implements CodeExpression {
         return false;
     }
 
+    @Override
     public UsedCodeObject getDefiningObject() {
         return getOrigin().getParentExpression();
     }
 
+    @Override
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
@@ -243,10 +257,12 @@ final class DefaultCodeExpression implements CodeExpression {
             this.newOrigin = newOrigin;
         }
 
+        @Override
         public void undo() {
             expressionOrigin = oldOrigin;
         }
 
+        @Override
         public void redo() {
             expressionOrigin = newOrigin;
         }
@@ -265,10 +281,12 @@ final class DefaultCodeExpression implements CodeExpression {
                 parameters = CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public boolean hasNext() {
             return index < parameters.length;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new java.util.NoSuchElementException();
@@ -279,6 +297,7 @@ final class DefaultCodeExpression implements CodeExpression {
             return obj;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

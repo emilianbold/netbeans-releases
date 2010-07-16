@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -151,6 +154,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
+        Boolean cdi = (Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI);
         // remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
@@ -160,14 +164,14 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 
-                librariesDefinition, serverLibraryName);
+                librariesDefinition, serverLibraryName, cdi);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(File dirF, String name, Profile j2eeProfile,
             String serverInstanceID, String warName, String ejbJarName, String carName,
             String mainClass, String platformName, String sourceLevel, ProgressHandle handle,
-            String librariesDefinition, String serverLibraryName) throws IOException {
+            String librariesDefinition, String serverLibraryName, Boolean cdi) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeProfile,
                 serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
@@ -215,6 +219,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setSourceLevel(sourceLevel);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
@@ -242,6 +247,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_AppClient"), 5);
@@ -268,6 +274,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_EJB"), 7);

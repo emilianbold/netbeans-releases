@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -173,10 +176,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         hide();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         hide();
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         hide();
     }
@@ -240,17 +245,14 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
     
     private void showJTree (JScrollPane view, Point pt) {
         JTree tree = (JTree) view.getViewport().getView();
-        Point p = SwingUtilities.convertPoint(view, 
-                pt.x, pt.y, tree);
+        Point p = SwingUtilities.convertPoint(view, pt.x, pt.y, tree);
         
-        int row = tree.getClosestRowForLocation(
-                p.x, p.y);
+        int row = tree.getClosestRowForLocation(p.x, p.y);
         
-        TreePath path = 
-                tree.getClosestPathForLocation(p.x, 
-                p.y);
+        TreePath path = tree.getClosestPathForLocation(p.x, p.y);
         
         Rectangle bds = tree.getPathBounds(path);
+        tree.getRowBounds(row);
         if (bds == null || !bds.contains(p)) {
             hide();
             return;
@@ -273,8 +275,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
     
     private void showRightTree(JScrollPane view, Point pt) {
         RightTree tree = (RightTree) view.getViewport().getView();
-        Point p = SwingUtilities.convertPoint(view, 
-                pt.x, pt.y, tree);
+        Point p = SwingUtilities.convertPoint(view, pt.x, pt.y, tree);
 
         TreePath path = tree.getTreePath(p.y);
         if (path == null) {return; }
@@ -302,9 +303,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             Rectangle[] rects = getRects(bds, visible);
             if (rects.length > 0) {
                 ensureOldPopupsHidden();
-                painter.configure(
-                        path.getLastPathComponent(),
-                        view, tree, path);
+                painter.configure(path.getLastPathComponent(), view, tree, path);
                 showPopups(rects, bds, visible, tree, view);
             } else {
                 hide();
@@ -401,7 +400,8 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         } else {
             if (bds.x < vis.x && bds.x + bds.width > vis.x + vis.width) {
                 Rectangle a = new Rectangle (bds.x, bds.y, vis.x - bds.x, bds.height);
-                Rectangle b = new Rectangle (vis.x + vis.width, bds.y, (bds.x + bds.width) - (vis.x + vis.width), bds.height);
+                Rectangle b = new Rectangle (vis.x + vis.width, bds.y, 
+                        (bds.x + bds.width) - (vis.x + vis.width), bds.height);
                 result = new Rectangle[] {a, b};
             } else if (bds.x < vis.x) {
                 result = new Rectangle[] {
@@ -409,7 +409,8 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
                 };
             } else if (bds.x + bds.width > vis.x + vis.width) {
                 result = new Rectangle[] {
-                    new Rectangle (vis.x + vis.width, bds.y, (bds.x + bds.width) - (vis.x + vis.width), bds.height)
+                    new Rectangle (vis.x + vis.width, bds.y, 
+                            (bds.x + bds.width) - (vis.x + vis.width), bds.height)
                 };
             } else {
                 result = new Rectangle[0];
@@ -437,8 +438,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             }
             if (pos.x > 0) { //Mac OS will reposition off-screen popups to x=0,
                 //so don't try to show them
-                popups[i] = getPopupFactory().getPopup(view, 
-                        part, pos.x, pos.y);
+                popups[i] = getPopupFactory().getPopup(view, part, pos.x, pos.y);
                 popups[i].show();
                 shown = true;
             }
@@ -550,7 +550,8 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             boolean exp = tree.isExpanded(path);
             boolean leaf = !exp && tree.getModel().isLeaf(nd);
             boolean lead = path.equals(tree.getSelectionModel().getLeadSelectionPath());
-            renderer = tree.getCellRenderer().getTreeCellRendererComponent(tree, nd, sel, exp, leaf, row, lead);
+            renderer = tree.getCellRenderer().getTreeCellRendererComponent(tree, 
+                    nd, sel, exp, leaf, row, lead);
             if (renderer != null) {
                 setComponent (renderer);
             }
@@ -584,7 +585,8 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
                     BufferedImage.TYPE_INT_ARGB_PRE); 
             
             if (gradientBg != null) {
-                gradientBg.paintGradient(renderer, nue.getGraphics(), 0, 1, d.width + 2, labelHeight);
+                gradientBg.paintGradient(renderer, nue.getGraphics(), 0, 1, 
+                        d.width + 2, labelHeight);
             }
             
             tree.getCellRendererPane().paintComponent(nue.getGraphics(), renderer,
@@ -604,7 +606,8 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             bg = list.getBackground();
             boolean sel = list.isSelectionEmpty() ? false :
                 list.getSelectionModel().isSelectedIndex(row);
-            renderer = list.getCellRenderer().getListCellRendererComponent(list, nd, row, sel, false);
+            renderer = list.getCellRenderer().getListCellRendererComponent(list, 
+                    nd, row, sel, false);
             if (renderer != null) {
                 setComponent (renderer);
             }
@@ -638,10 +641,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             Dimension d = jc.getPreferredSize();
             BufferedImage nue = new BufferedImage(d.width, d.height + 2, 
                     BufferedImage.TYPE_INT_ARGB_PRE);
-            SwingUtilities.paintComponent(nue.getGraphics(), jc, this, 0, 0, d.width, d.height + 2);
+            SwingUtilities.paintComponent(nue.getGraphics(), jc, this, 0, 0,
+                    d.width, d.height + 2);
             setImage(nue);
         }
         
+        @Override
         public Rectangle getBounds() {
             Dimension dd = getPreferredSize();
             return new Rectangle (0, 0, dd.width, dd.height);
@@ -652,6 +657,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             d = null;
         }
         
+        @Override
         public Dimension getPreferredSize() {
             if (d == null) {
                 d = new Dimension (img.getWidth(), img.getHeight());
@@ -659,10 +665,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             return d;
         }
         
+        @Override
         public Dimension getSize() {
             return getPreferredSize();
         }
         
+        @Override
         public void paint (Graphics g) {
             if (gradientBg != null) {
                 gradientBg.paintGradient(this, g, 0, 0, d.width, d.height);
@@ -684,9 +692,13 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             }
         }
         
+        @Override
         public void firePropertyChange (String s, Object a, Object b) {}
+        @Override
         public void invalidate() {}
+        @Override
         public void validate() {}
+        @Override
         public void revalidate() {}
     }
     

@@ -43,7 +43,7 @@ public class XSLTSourceMultiViewElementDesc
 
     private static final long serialVersionUID = 1L;
     public static final String PREFERED_ID = "xsltsource";    //NOI18N
-    private static final String DISPLAY_NAME = 
+    public static final String DISPLAY_NAME = 
         "LBL_SourceMultiview_DisplayName";                      //NOI18N
     private XSLTDataObject myDataObject;
     

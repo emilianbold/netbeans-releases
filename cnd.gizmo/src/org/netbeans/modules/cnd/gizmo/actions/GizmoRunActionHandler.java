@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,10 +37,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,11 +53,11 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
@@ -72,11 +78,13 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -100,10 +108,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
     }
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 
+    @Override
     public void execute(InputOutput io) {
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -132,6 +142,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             } else {
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
@@ -154,13 +165,14 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
-        if (compilerSet.isGnuCompiler()) {
+        if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
+        targetConf.putInfo(Charset.class.getName(), compilerSet.getEncoding().name());
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
@@ -169,7 +181,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
             String termPath = pae.getProfile().getTerminalPath();
             if (termPath != null) {
-                String termBaseName = IpeUtils.getBaseName(termPath);
+                String termBaseName = CndPathUtilitities.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
                     targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
@@ -183,19 +195,32 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
-            ((GizmoConfigurationOptions) options).configure(pae.getProject());
+            GizmoConfigurationOptions gizmoConfigurationOptions = ((GizmoConfigurationOptions) options);
+            gizmoConfigurationOptions.configure(pae.getProject());
+            Collection<String> toolNames  = gizmoConfigurationOptions.getActiveToolNames();
+            String collectedToolNames = "";//NOI18N
+            Iterator<String> it = toolNames.iterator();
+            while (it.hasNext()){
+                collectedToolNames += it.next() + ": " ;//NOI18N
+            }
+            UIGesturesSupport.submit("USG_CND_PROFILE_INDICATORS", collectedToolNames);//NOI18N
         }
 
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
 
 
-        //WE are here only when Profile On RUn 
+        //WE are here only when Profile On RUn
+        DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
+        sessionConfiguration.setDLightTarget(target);
+        sessionConfiguration.setDLightConfiguration(configuration);
+        sessionConfiguration.setSessionName(CndPathUtilitities.getBaseName(pae.getExecutable()));
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
-                target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
+                sessionConfiguration);
 
         DLightExecutorService.submit(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     session = handle.get();
@@ -209,10 +234,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }, "DLight Session for " + target.toString()); // NOI18N
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         if (session != null) {
             DLightToolkitManagement.getInstance().stopSession(session);
@@ -220,16 +247,19 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case INIT:
@@ -243,7 +273,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 targetFailed();
                 break;
             case TERMINATED:
-                targetFinished(event.status);
+                targetTerminated();
                 break;
             case DONE:
                 targetFinished(event.status);
@@ -268,33 +298,41 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
+    private void targetTerminated() {
+        // use \r\n to correctly move cursor in terminals as well
+        io.getOut().printf("\r\n"); // NOI18N
+        
+        StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
+        io.getErr().printf("%s\r\n", getMessage("Output.RunTerminated")); // NOI18N
+
+        for (ExecutionListener l : listeners) {
+            l.executionFinished(-1);
+        }
+    }
+
     private void targetFinished(Integer status) {
-        int exitCode = -1;
+        // use \r\n to correctly move cursor in terminals as well
+        io.getOut().printf("\r\n"); // NOI18N
 
-        io.getOut().println();
+        int exitCode = status.intValue();
+        boolean success = exitCode == 0;
 
-        if (status == null) {
-            StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
-            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
+        StatusDisplayer.getDefault().setStatusText(
+                getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
+
+        String time = formatTime(System.currentTimeMillis() - startTimeMillis);
+
+        if (success) {
+            // use \r\n to correctly move cursor in terminals as well
+            io.getOut().printf("%s\r\n", getMessage("Output.RunSuccessful", time)); // NOI18N);
         } else {
-            exitCode = status.intValue();
-            boolean success = exitCode == 0;
-
-            StatusDisplayer.getDefault().setStatusText(
-                    getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
-
-            String time = formatTime(System.currentTimeMillis() - startTimeMillis);
-            if (success) {
-                io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
-            } else {
-                io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
-            }
+            // use \r\n to correctly move cursor in terminals as well
+            io.getErr().printf("%s\r\n", getMessage("Output.RunFailed", exitCode, time)); // NOI18N
         }
 
         for (ExecutionListener l : listeners) {
             l.executionFinished(exitCode);
         }
-
     }
 
     private static String formatTime(long millis) {
@@ -323,6 +361,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
     private static class SimpleOutputConvertorFactory implements LineConvertorFactory {
 
+        @Override
         public LineConvertor newLineConvertor() {
             return LineConvertors.proxy(LineConvertors.filePattern(null, Pattern.compile("^file://([^:]*[^ ])(:)([0-9]*).*"), null, 1, 3), // NOI18N
                     LineConvertors.httpUrl());

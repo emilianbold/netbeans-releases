@@ -53,15 +53,16 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.CommonUtils;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.NewVirtualDatabaseWizardAction;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.NewVirtualTableAction;
 import org.netbeans.modules.etl.project.EtlproProject;
 import org.netbeans.modules.etl.project.MasterIndexAction;
-import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
-import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
-import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import org.netbeans.modules.etl.ui.view.cookies.RunCollaborationsAction;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-
 /**
  * Support for creating logical views.
  * @author Petr Hrebejk
@@ -197,6 +198,14 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(EtlproLogicalViewProvider.class,
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
+        }
+
+        @Override
         public Action[] getActions(boolean context) {
             EtlproProject pro = (EtlproProject) project;
             String prj_locn = pro.getProjectDirectory().getPath();
@@ -205,7 +214,9 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             } catch (FileStateInvalidException ex) {
                // Exceptions.printStackTrace(ex);
             }
-            MashupTableWizardIterator.setProjectInfo(pro.getName(), prj_locn, true);
+            ETLEditorSupport.setProjectInfo(pro.getName(), prj_locn, true);
+            CommonUtils.setProjectInfo(pro.getName(), prj_locn, true);
+            CommonUtils.isETL = true;
             if (context) {
                 return super.getActions(true);
             } else {
@@ -261,7 +272,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle5 = "Generate Schema...";
             String nbBundle6 = "Redeploy Project";
             String nbBundle7 = "Deploy Project";
-            String nbBundle10 = "Generate Bulk Loader";
+            //String nbBundle10 = "Generate Bulk Loader";
+            String nbBundle11 = "Generate Command Line ETL";
 
 
             List<Action> actions = new ArrayList<Action>(Arrays.asList(
@@ -274,11 +286,13 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, nbBundle4, null), // NOI18N
                         //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5, null), // NOI18N
 			SystemAction.get(MasterIndexAction.class),
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10, null), // NOI18N
+                        //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10, null), // NOI18N
                         null,
-                        SystemAction.get(NewFlatfileDatabaseWizardAction.class),
-                        SystemAction.get(NewFlatfileTableAction.class),
-                        //SystemAction.get(FlatfileDBViewerAction.class),
+                        SystemAction.get(NewVirtualDatabaseWizardAction.class),
+                        SystemAction.get(NewVirtualTableAction.class),
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_LOADER_ZIP,nbBundle11, null), // NOI18N
+                        SystemAction.get(RunCollaborationsAction.class),
                         null,
                         ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, nbBundle6, null), // NOI18N
                         ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, nbBundle7, null), // NOI18N
@@ -293,7 +307,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.deleteProjectAction(),
                         null,
                         SystemAction.get(org.openide.actions.FindAction.class)));
-            actions.addAll(Utilities.actionsForPath("Projects/Actions"));
+           //[FIXME_MOVE_TO61]actions.addAll(Utilities.actionsForPath("Projects/Actions"));
+		   //actions.addAll(Utilities.actionsForPath("Projects/Actions"));
             actions.addAll(Arrays.asList(
                         null,
                         SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),

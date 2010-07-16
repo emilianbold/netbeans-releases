@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,10 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringUtils {
+    public static final String USG_CND_REFACTORING = "USG_CND_REFACTORING"; // NOI18N
+    public static final String GENERATE_TRACKING = "GENERATE"; // NOI18N
+    public static final String FROM_EDITOR_TRACKING = "FROM_EDITOR"; // NOI18N
+
     public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
     
     private CsmRefactoringUtils() {
@@ -127,7 +134,7 @@ public final class CsmRefactoringUtils {
                 // try another projects which could share the same file
                 FileObject fileObject = CsmUtilities.getFileObject(contextFile);
                 if (fileObject != null) {
-                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject);
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject, false);
                     for (CsmFile csmFile : csmFiles) {
                         prjs.add(csmFile.getProject());
                     }
@@ -435,10 +442,13 @@ public final class CsmRefactoringUtils {
     }      
     
     private static CsmObject findInnerFileObject(CsmOffsetable csmOffsetable) {
-        CsmObject obj = findInnerFileObject(csmOffsetable.getContainingFile(), csmOffsetable.getStartOffset()-1);
-        if (obj == null) {
-            obj = csmOffsetable.getContainingFile();
+        final CsmFile containingFile = csmOffsetable.getContainingFile();
+        if (containingFile != null) {
+            CsmObject obj = findInnerFileObject(containingFile, csmOffsetable.getStartOffset()-1);
+            if (obj != null) {
+                return obj;
+            }
         }
-        return obj;
+        return containingFile;
     } 
 }

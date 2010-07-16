@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -56,7 +60,6 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
-import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -64,118 +67,122 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class Util {
 
-  private Util() {}
-  
-  public static void visit(NamedComponentReference<GlobalType> type, NamedComponentReference<GlobalElement> element, Referenceable target, Component component, List<Component> usage) {
-    visit(type, target, component, usage);
-    visit(element, target, component, usage);
-  }        
-          
-  public static void visit(Reference reference, Referenceable target, Component component, List<Component> usage) {
-    if (reference == null || reference.get() == null) {
-      return;
+    private Util() {
     }
+
+    public static void visit(NamedComponentReference<GlobalType> type, NamedComponentReference<GlobalElement> element, Referenceable target, Component component, List<Component> usage) {
+        visit(type, target, component, usage);
+        visit(element, target, component, usage);
+    }
+
+    public static void visit(Reference reference, Referenceable target, Component component, List<Component> usage) {
+        if (reference == null || reference.get() == null) {
+            return;
+        }
 //out();
 //out("   Visit: " + getName(reference.get()));
 //out("  target: " + target.getName());
-    if (target.equals(reference.get())) {
+        if (target.equals(reference.get())) {
 //out();
 //out("AdD: " + getName(component));
-      usage.add(component);
+            usage.add(component);
+        }
     }
-  }
 
-  public static void visit(QName qName, Referenceable target, Component component, List<Component> usage) {
+    public static void visit(QName qName, Referenceable target, Component component, List<Component> usage) {
 //out();
 //out("VISIT: " + qName);
-    if (target instanceof Named && contains(qName, (Named) target)) {
+        if (target instanceof Named && contains(qName, (Named) target)) {
 //out();
 //out("ADd: " + getName(component));
-      usage.add(component);
+            usage.add(component);
+        }
     }
-  }
 
-  private static boolean contains(QName qName, Named target) {
-    if (qName == null) {
+    private static boolean contains(QName qName, Named target) {
+        if (qName == null) {
 //out("qName is null");
-      return false;
-    }
-    String part = qName.getLocalPart();
+            return false;
+        }
+        String part = qName.getLocalPart();
 
-    if ( !part.equals(target.getName())) {
+        if (!part.equals(target.getName())) {
 //out("Target name != part");
 //out("         part: " + part);
 //out("  Target name: " + target.getName());
-      return false;
+            return false;
+        }
+        return qName.getNamespaceURI().equals(getNamespace(target.getModel()));
     }
-    return qName.getNamespaceURI().equals(getNamespace(target.getModel()));
-  }
 
-  private static String getNamespace(Model model) {
-    if (model instanceof SchemaModel) {
-      return ((SchemaModel) model).getSchema().getTargetNamespace();
+    private static String getNamespace(Model model) {
+        if (model instanceof SchemaModel) {
+            Schema schema = ((SchemaModel) model).getSchema();
+            if (schema != null) {
+                return schema.getTargetNamespace();
+            }
+        }
+        if (model instanceof WSDLModel) {
+            return ((WSDLModel) model).getDefinitions().getTargetNamespace();
+        }
+        return null;
     }
-    if (model instanceof WSDLModel) {
-      return ((WSDLModel) model).getDefinitions().getTargetNamespace();
-    }
-    return null;
-  }
 
-  public static String getName(Object component) {
-    if (component == null) {
-      return null;
-    }
-    if (component instanceof Named) {
-      String name = ((Named) component).getName();
+    public static String getName(Object component) {
+        if (component == null) {
+            return null;
+        }
+        if (component instanceof Named) {
+            String name = ((Named) component).getName();
 
-      if (name != null) {
-        return name;
-      }
+            if (name != null) {
+                return name;
+            }
+        }
+        return component.getClass().getName();
     }
-    return component.getClass().getName();
-  }
 
-  public static int checkQuery(Query query, String name) {
-    if (name == null || name.length() == 0) {
-      return -1;
-    }
-    if (query == null) {
-      return -1;
-    }
-    String path = query.getContent();
+    public static int checkQuery(Query query, String name) {
+        if (name == null || name.length() == 0) {
+            return -1;
+        }
+        if (query == null) {
+            return -1;
+        }
+        String path = query.getContent();
 
-    if (path == null) {
-      return -1;
+        if (path == null) {
+            return -1;
+        }
+        return checkQuery(path, name);
     }
-    return checkQuery(path, name);
-  }
 
-  private static int checkQuery(String path, String name) {
+    private static int checkQuery(String path, String name) {
 //out();
 //out("path: " + path);
 //out("name: " + name);
-    if (path.startsWith(name + "/")) {
-      return 0;
-    }
-    if (path.startsWith("/" + name + "/")) {
-      return 1;
-    }
-    int k = path.indexOf("/" + name + "/");
+        if (path.startsWith(name + "/")) {
+            return 0;
+        }
+        if (path.startsWith("/" + name + "/")) {
+            return 1;
+        }
+        int k = path.indexOf("/" + name + "/");
 
-    if (k != -1) {
-      return k + 1;
-    }
-    k = path.indexOf(":" + name + "/");
+        if (k != -1) {
+            return k + 1;
+        }
+        k = path.indexOf(":" + name + "/");
 
-    if (k != -1) {
-      return k + 1;
+        if (k != -1) {
+            return k + 1;
+        }
+        if (path.endsWith("/" + name)) {
+            return path.length() - name.length();
+        }
+        if (path.endsWith(":" + name)) {
+            return path.length() - name.length();
+        }
+        return -1;
     }
-    if (path.endsWith("/" + name)) {
-      return path.length() - name.length();
-    }
-    if (path.endsWith(":" + name)) {
-      return path.length() - name.length();
-    }
-    return -1;
-  }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -146,7 +149,6 @@ public class SchemaUsageRefactoringEngine {
         return null;
     }
  
-
     public void _refactorUsages(Model mod, Set<RefactoringElementImplementation> elements, AbstractRefactoring request) throws IOException {
         if (request == null || elements == null || mod == null) return;
         if (! (mod instanceof WSDLModel)) return;
@@ -163,11 +165,11 @@ public class SchemaUsageRefactoringEngine {
                     String newLocation = im.getLocation();
                     if(request instanceof RenameRefactoring ) {
                         newLocation = SharedUtils.calculateNewLocationString(im.getLocation(), (RenameRefactoring)request);
-                     } else if (request instanceof MoveRefactoring) {
+                    } else if (request instanceof MoveRefactoring) {
                         try {
                             newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
                         } catch (Exception e){}
-                     }
+                    }
                     im.setLocation(newLocation);
                 } else if (u.getLookup().lookup(SchemaModelReference.class)!=null) {
                     SchemaModelReference ref = u.getLookup().lookup(SchemaModelReference.class);
@@ -204,7 +206,6 @@ public class SchemaUsageRefactoringEngine {
         return sb.toString();
     }
     
-      
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
             return "location"; //NOI18N
@@ -214,7 +215,6 @@ public class SchemaUsageRefactoringEngine {
             return "ref"; //NO18N
         }
     }
-    
     
     public static ModelSource resolveModelSource(
             String location, Model currentModel, CatalogModel currentCatalog) {
@@ -267,13 +267,10 @@ public class SchemaUsageRefactoringEngine {
         return false;
     }
 
- //   @Override
     public String getModelReference(Component component) {
         if (component instanceof SchemaModelReference) {
             return ((SchemaModelReference)component).getSchemaLocation();
         }        
         return null;
     }
-    
-   
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,8 +80,6 @@ import org.openide.util.NbPreferences;
 public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;
-    private Set<ModelListener> listeners = new HashSet<ModelListener>();
-    private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
 
     public VariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -99,16 +100,10 @@ public class VariablesTableModel implements TableModel, Constants {
                     return ((ObjectVariable) row).getToStringValue ();
                 } catch (InvalidExpressionException ex) {
                     return getMessage (ex);
-                } finally {
-                    fireChildrenChange(row);
                 }
             else
             if (row instanceof Variable) {
-                try {
-                    return ((Variable) row).getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return ((Variable) row).getValue ();
             }
             if (row instanceof Operation ||
                 row == "lastOperations" || // NOI18N
@@ -143,18 +138,10 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
-                try {
-                        return w.getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return w.getValue ();
             } else 
             if (row instanceof Variable) {
-                try {
-                    return ((Variable) row).getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return ((Variable) row).getValue ();
             }
         }
         if (row instanceof JPDAClassType) {
@@ -224,7 +211,7 @@ public class VariablesTableModel implements TableModel, Constants {
                          row instanceof Field ||
                          row instanceof JPDAWatch
                     ) {
-                        if (WatchesNodeModel.isEmptyWatch(row)) {
+                        if (WatchesNodeModelFilter.isEmptyWatch(row)) {
                             return true;
                         } else {
                             return !debugger.canBeModified();
@@ -307,26 +294,12 @@ public class VariablesTableModel implements TableModel, Constants {
         throw new UnknownTypeException (row);
     }
     
-    private void fireChildrenChange(Object row) {
-        Set<ModelListener> ls;
-        synchronized(listeners) {
-            ls = new HashSet(listeners);
-        }
-        for (ModelListener ml : ls)
-            ml.modelChanged (
-                new ModelEvent.NodeChanged(this, row, ModelEvent.NodeChanged.CHILDREN_MASK)
-            );
-    }
-    
     /** 
      * Registers given listener.
      * 
      * @param l the listener to add
      */
     public void addModelListener (ModelListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
     }
 
     /** 
@@ -335,9 +308,6 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener (ModelListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
     }
     
     static String getShort (String c) {

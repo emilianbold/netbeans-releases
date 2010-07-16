@@ -9,13 +9,14 @@ Searchable Keys:
   field : columns|PRIVATE;;Array;
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
   method : [](name)|DOCUMENTED|
+  method : belongs_to
   method : column(name,type,options)|DOCUMENTED|;;TableDefinition;
   method : initialize(base)|PRIVATE|
   method : native|PRIVATE|
   method : new(base)|PRIVATE|STATIC|
   method : primary_key(name)|DOCUMENTED|
   method : references(*args)
-  method : timestamps|DOCUMENTED|
+  method : timestamps|DOCUMENTED|;;TableDefinition;
   method : to_sql|DOCUMENTED|
   require : schema_definitions
 
@@ -49,20 +50,20 @@ Searchable Keys:
   field : type|PRIVATE
   fqn : ActiveRecord::ConnectionAdapters::Column
   method : binary_to_string(value)|DOCUMENTED|STATIC|
-  method : extract_default(default)
+  method : extract_default(default);;NilClass|Fixnum|Integer|Float;
   method : extract_limit(sql_type)|PRIVATE|;;Integer;
   method : extract_precision(sql_type)|PRIVATE|;;Integer;
   method : extract_scale(sql_type)|PRIVATE|;;Fixnum|Integer;
-  method : fallback_string_to_date(string)|PROTECTED|STATIC|
-  method : fallback_string_to_time(string)|PROTECTED|STATIC|
-  method : fast_string_to_date(string)|PROTECTED|STATIC|
-  method : fast_string_to_time(string)|DOCUMENTED|PROTECTED|STATIC|
+  method : fallback_string_to_date(string)|PROTECTED|STATIC|;;NilClass|Date;
+  method : fallback_string_to_time(string)|PROTECTED|STATIC|;;NilClass;
+  method : fast_string_to_date(string)|PROTECTED|STATIC|;;NilClass|Date;
+  method : fast_string_to_time(string)|DOCUMENTED|PROTECTED|STATIC|;;NilClass;
   method : human_name|DOCUMENTED|
   method : initialize(name,default,sql_type,null)|DOCUMENTED|PRIVATE|;;NilClass;
   method : klass|DOCUMENTED|
   method : microseconds(time)|DOCUMENTED|PROTECTED|STATIC|;;Integer;
   method : new(name,default,sql_type,null)|DOCUMENTED|PRIVATE|STATIC|;;NilClass;
-  method : new_date(year,mon,mday)|PROTECTED|STATIC|;;Date;
+  method : new_date(year,mon,mday)|PROTECTED|STATIC|;;NilClass|Date;
   method : new_time(year,mon,mday,hour,min,sec,microsec)|PROTECTED|STATIC|;;NilClass;
   method : number?;;TrueClass|FalseClass;
   method : simplified_type(field_type)|PRIVATE|;;Symbol;
@@ -71,7 +72,7 @@ Searchable Keys:
   method : string_to_dummy_time(string)|STATIC|;;NilClass;
   method : string_to_time(string)|STATIC|;;NilClass;
   method : text?;;TrueClass|FalseClass;
-  method : type_cast(value)|DOCUMENTED|;;NilClass|Integer|Float;
+  method : type_cast(value)|DOCUMENTED|;;NilClass|Fixnum|Integer|Float;
   method : type_cast_code(var_name);;NilClass|String;
   method : value_to_boolean(value)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : value_to_decimal(value)|DOCUMENTED|STATIC|
@@ -104,6 +105,7 @@ Searchable Keys:
   method : add_column_options!(sql,options)|PRIVATE|NODOC|
   method : sql_type|NODOC|
   method : to_sql|NODOC|;;String;
+  method : to_s|NODOC|;;String;
   require : schema_definitions
 
 Not Searchable Keys:

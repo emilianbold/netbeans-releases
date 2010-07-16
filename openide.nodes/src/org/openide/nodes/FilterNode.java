@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -562,8 +565,14 @@ public class FilterNode extends Node {
     * @param type constants from <CODE>java.bean.BeanInfo</CODE>
     * @return icon to use to represent the bean
     */
-    public Image getIcon(int type) {
-        return original.getIcon(type);
+    public @Override Image getIcon(int type) {
+        Image icon = original.getIcon(type);
+        if (icon != null) {
+            return icon;
+        } else {
+            LOGGER.log(Level.WARNING, "Cannot return null from {0}.getIcon", original.getClass().getName());
+            return Node.EMPTY.getIcon(type);
+        }
     }
 
     /* Finds an icon for this node. This icon should represent the node
@@ -1310,27 +1319,28 @@ public class FilterNode extends Node {
         @Override
         EntrySupport entrySupport() {
             FilterChildrenSupport support = null;
-            synchronized (Children.class) {
-                if (entrySupport != null && !entrySupport.isInitialized()) {
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null && !getEntrySupport().isInitialized()) {
                     // support is not initialized, it should be checked against original
-                    support = (FilterChildrenSupport) entrySupport;
+                    support = (FilterChildrenSupport) getEntrySupport();
                 }
             }
 
             if (support != null) {
                 // get original support without lock
+                assert !Thread.holdsLock(org.openide.nodes.Children.class);
                 EntrySupport origSupport = original.getChildren().entrySupport();
-                synchronized (Children.class) {
-                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                synchronized (org.openide.nodes.Children.class) {
+                    if (getEntrySupport() == support && support.originalSupport() != origSupport) {
                         // original support was changed, force new support creation
-                        entrySupport = null;
+                        setEntrySupport(null);
                     }
                 }
             }
 
-            synchronized (Children.class) {
-                if (entrySupport != null) {
-                    return entrySupport;
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null) {
+                    return getEntrySupport();
                 }
             }
 
@@ -1339,14 +1349,15 @@ public class FilterNode extends Node {
             EntrySupport os = origChildren.entrySupport();
             boolean osIsLazy = origChildren.isLazy();
 
-            synchronized (Children.class) {
-                if (entrySupport != null) {
-                    return entrySupport;
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null) {
+                    return getEntrySupport();
                 }
                 lazySupport = osIsLazy;
-                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
-                postInitializeEntrySupport();
-                return entrySupport;
+                EntrySupport es = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                setEntrySupport(es);
+                postInitializeEntrySupport(es);
+                return getEntrySupport();
             }
         }
         
@@ -1409,7 +1420,9 @@ public class FilterNode extends Node {
                         this.original = newOriginal;
                     }
                     changed = true;
-                    entrySupport = null;
+                    synchronized (org.openide.nodes.Children.class) {
+                        setEntrySupport(null);
+                    }
 
                     if (LOG_ENABLED) {
                         LOGGER.finer("   firing node removal: " + snapshot); // NOI18N
@@ -1421,7 +1434,9 @@ public class FilterNode extends Node {
                 if (newOriginal != null) {
                     this.original = newOriginal;
                 }
-                entrySupport = null;
+                synchronized (org.openide.nodes.Children.class) {
+                    setEntrySupport(null);
+                }
             }
 
             if (init || newOriginal == null) {

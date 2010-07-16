@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,13 +59,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -71,8 +74,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
+import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -86,8 +89,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class AddOverrideAnnotation extends AbstractHint {
-    
-    /** Creates a new instance of AddOverrideAnnotation */
+
     public AddOverrideAnnotation() {
         super( true, true, AbstractHint.HintSeverity.WARNING );
     }
@@ -109,7 +111,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             ExecutableElement ee = (ExecutableElement) e;
             List<ElementDescription> result = new ArrayList<ElementDescription>();
 
-            AnnotationType type = IsOverriddenAnnotationHandler.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
+            AnnotationType type = ComputeOverriding.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
 
             boolean hasOverriddenAnnotation = false;
 
@@ -130,10 +132,7 @@ public class AddOverrideAnnotation extends AbstractHint {
                 addHint = true;
             } else {
                 if (type == AnnotationType.IMPLEMENTS) {
-                    String sourceLevel = SourceLevelQuery.getSourceLevel(compilationInfo.getFileObject());
-
-                    if (!"1.5".equals(sourceLevel))
-                        addHint = true;
+                    addHint = compilationInfo.getSourceVersion() != SourceVersion.RELEASE_5;
                 }
             }
 

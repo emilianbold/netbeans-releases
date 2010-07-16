@@ -67,7 +67,7 @@
         <Property name="name" type="java.lang.String" value="bindingConfigurationLabel" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel" name="commonMessagePanel">
+    <Component class="org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel" name="commonMessagePanel">
       <Properties>
         <Property name="name" type="java.lang.String" value="ShowErrorWarningPanel" noResource="true"/>
       </Properties>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,14 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 
 /**
@@ -54,17 +59,22 @@ import org.netbeans.modules.xml.schema.model.Attribute.Use;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class ElementResultItem extends CompletionResultItem {
-    
     private int caretPosition = 0;
+    private String replacingText;
     
     /**
      * Creates a new instance of ElementResultItem
      */
     public ElementResultItem(AbstractElement element, CompletionContext context) {
-        super(element, context);
+        this(element, context, null);
+    }
+
+    public ElementResultItem(AbstractElement element, CompletionContext context,
+        TokenSequence tokenSequence) {
+        super(element, context, tokenSequence);
         itemText = element.getName();
-        icon = new ImageIcon(CompletionResultItem.class.
-                getResource(ICON_LOCATION + ICON_ELEMENT));
+        icon = new ImageIcon(CompletionResultItem.class.getResource(
+            ICON_LOCATION + ICON_ELEMENT));
     }
     
     /**
@@ -76,7 +86,8 @@ public class ElementResultItem extends CompletionResultItem {
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ELEMENT));
     }
-        
+
+    @Override
     public String getDisplayText() {
         AbstractElement element = (AbstractElement)axiComponent;
         String cardinality = null;
@@ -97,28 +108,35 @@ public class ElementResultItem extends CompletionResultItem {
      * Add mandatory attributes. See issue: 108720
      */
     @Override
-    public String getReplacementText(){
+    public String getReplacementText() {
+        replacingText = null;
+
         AbstractElement element = (AbstractElement)axiComponent;
         StringBuffer buffer = new StringBuffer();
         boolean firstAttr = false;
-        for(AbstractAttribute aa : element.getAttributes()) {
-            if(aa instanceof AnyAttribute)
-                continue;
+        for (AbstractAttribute aa : element.getAttributes()) {
+            if (aa instanceof AnyAttribute) continue;
+            
             Attribute a = (Attribute)aa;
-            if(a.getUse() == Use.REQUIRED) {
-                if(buffer.length() == 0)
+            if (a.getUse() == Use.REQUIRED) {
+                if (buffer.length() == 0)
                     firstAttr = true;
-                buffer.append(" " + a.getName()+
-                        AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
-                if(firstAttr) {
-                    caretPosition = buffer.length() -1;
+                buffer.append(" " + a.getName() +
+                    AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
+                if (firstAttr) {
+                    caretPosition = buffer.length() - 1;
                     firstAttr = false;
                 }                
             }
         }
-        return itemText + buffer.toString();
+        replacingText = 
+            (CompletionUtil.TAG_FIRST_CHAR +
+            itemText + buffer.toString() +
+            CompletionUtil.TAG_LAST_CHAR);
+        return replacingText;
     }
         
+    @Override
     public CompletionPaintComponent getPaintComponent() {
         if(component == null) {
             component = new ElementPaintComponent(this);
@@ -133,6 +151,6 @@ public class ElementResultItem extends CompletionResultItem {
      */
     @Override
     public int getCaretPosition() {
-        return itemText.length() + caretPosition;
+        return ((replacingText == null ? 0 : replacingText.length()) + caretPosition);
     }    
 }

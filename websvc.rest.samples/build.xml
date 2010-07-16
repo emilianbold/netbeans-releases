@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -55,6 +58,8 @@ made subject to such option by the copyright holder.
                                 zip-rest-customer-db-client,
                                 zip-message-board-war,
                                 zip-lean-service-ecb-war,
+                                zip-fcb-maven-sample-nbm,
+                                zip-rest-crud-maven-sample-app,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -111,5 +116,21 @@ made subject to such option by the copyright holder.
         <zipfileset dir="LeanServiceECBComponentWithAjax"/>
         </zip>
     </target>
-    
+
+    <!-- Target for Facebook Module Maven sample -->
+    <target name="zip-fcb-maven-sample-nbm" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/FcbMavenModuleProject.zip"
+            update="true">
+        <zipfileset dir="../maven.samples/samples_src/facebook-module"/>
+        </zip>
+    </target>
+
+    <!-- Target for REST Maven Application sample -->
+    <target name="zip-rest-crud-maven-sample-app" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/RestRCPMvnAppSampleProject.zip"
+            update="true">
+        <zipfileset dir="../maven.samples/samples_src/rest-sample-application"/>
+        </zip>
+    </target>
+
 </project>

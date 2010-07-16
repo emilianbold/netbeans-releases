@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -72,11 +75,14 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
     
-    public FriendClassImpl(AST ast, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) {
+    public FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
-        AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
+        qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        if (qid == null) {
+            throw new AstRendererException(file, getStartOffset(), "Invalid friend class declaration."); // NOI18N
+        }
+        name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         classForwardUID = UIDCsmConverter.declarationToUID(cfd);
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
@@ -115,7 +121,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         CsmClass cls = getContainingClass();
         CharSequence clsQName = cls.getQualifiedName();
 	if( clsQName != null && clsQName.length() > 0 ) {
-            return CharSequenceKey.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
 	}
         return getName();
     }
@@ -134,7 +140,11 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
             cls = null;
             CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
             if(CsmBaseUtilities.isValid(cfd)) {
-                cls = cfd.getCsmClass();
+                if (cfd instanceof ClassForwardDeclarationImpl) {
+                    cls = ((ClassForwardDeclarationImpl)cfd).getCsmClass(resolver);
+                } else {
+                    cls = cfd.getCsmClass();
+                }
             }
             friendUID = UIDCsmConverter.declarationToUID(cls);
         }
@@ -191,7 +201,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
 
     ////////////////////////////////////////////////////////////////////////////

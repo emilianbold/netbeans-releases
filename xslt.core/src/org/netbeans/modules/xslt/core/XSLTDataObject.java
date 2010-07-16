@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,19 +44,17 @@
 package org.netbeans.modules.xslt.core;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.xml.transform.Source;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.xslt.core.multiview.XsltDesignViewOpenAction;
-import org.netbeans.modules.xslt.mapper.model.MapperContext;
+import org.netbeans.modules.xml.validation.core.Controller;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.modules.xslt.core.context.MapperContext;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
+import org.openide.actions.OpenAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
@@ -92,6 +93,8 @@ public class XSLTDataObject extends MultiDataObject {
         
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
+        cookies.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
+
     }
     
     @SuppressWarnings("unchecked")
@@ -129,13 +132,13 @@ public class XSLTDataObject extends MultiDataObject {
             };
             
             Lookup lookup = new ProxyLookup(
-                    // No need to add XSLTDataEditorSupport, since already added to the cookie set,
-                    // and thus already present in getCookieSet().getLookup().
-                    Lookups.fixed(new Class[] { XslModel.class, Controller.class, MapperContext.class }, conv),
-                    // Do not call super.getLookup(), it is deadlock-prone!
-                    getCookieSet().getLookup()
+                // No need to add XSLTDataEditorSupport, since already added to the cookie set,
+                // and thus already present in getCookieSet().getLookup().
+                Lookups.fixed(new Class[] { XslModel.class, Controller.class, MapperContext.class }, conv),
+                // Do not call super.getLookup(), it is deadlock-prone!
+                getCookieSet().getLookup()
             );
-            
+
             myLookup.compareAndSet(null, lookup);
         }
         return myLookup.get();
@@ -201,7 +204,9 @@ public class XSLTDataObject extends MultiDataObject {
         
         @Override
         public Action getPreferredAction() {
-            return SystemAction.get(XsltDesignViewOpenAction.class);
+//139025            return SystemAction.get(XsltDesignViewOpenAction.class);
+//            return super.getPreferredAction();//139025
+            return SystemAction.get(OpenAction.class);
 //            return new AbstractAction() {
 //                    private static final long serialVersionUID = 1L;
 //            public void actionPerformed(ActionEvent e) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -146,41 +149,89 @@ public final class DLightToolkitManagement {
      * @param configurationName configuration name to be used
      * @return session handler, this handler should be used to start {@link #startSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) }
      * or stop {@link #stopSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) } session.
+     * @deprecated use #createSession(DLightSessionConfiguration)
      */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final String configurationName) {
         return createSession(target, configurationName, null);
     }
 
+    /**
+     *
+     * @param target
+     * @param configurationName
+     * @param sessionName
+     * @return
+     * @deprecated use #createSession(DLightSessionConfiguration)
+     */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final String configurationName,
             final String sessionName) {
+        final DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
+        sessionConfiguration.setDLightConfigurationName(configurationName);
+        sessionConfiguration.setDLightTarget(target);
+        sessionConfiguration.setSessionName(sessionName);
         return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
 
+            @Override
             public DLightSessionHandler call() throws Exception {
-                return toolkitManager.createSession(target, configurationName, sessionName);
+                return toolkitManager.createSession(sessionConfiguration);
             }
         }, "DLight [" + configurationName + "] Session Creation for " + target); // NOI18N
     }
 
+    /**
+     *
+     * @param target
+     * @param configuration
+     * @return
+     * @deprecated use #createSession(DLightSessionConfiguration)
+     */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final DLightConfiguration configuration) {
         return createSession(target, configuration, null);
     }
 
+    /**
+     *
+     * @param target
+     * @param configuration
+     * @param sessionName
+     * @return
+     * @deprecated use #createSession(DLightSessionConfiguration)
+     */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final DLightConfiguration configuration,
             final String sessionName) {
+        final DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
+        sessionConfiguration.setDLightConfiguration(configuration);
+        sessionConfiguration.setDLightTarget(target);
+        sessionConfiguration.setSessionName(sessionName);
         return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
 
+            @Override
             public DLightSessionHandler call() throws Exception {
-                return toolkitManager.createSession(target, configuration, sessionName);
+                return toolkitManager.createSession(sessionConfiguration);
             }
         }, "DLight [" + configuration.getConfigurationName() + "] Session Creation for " + target); // NOI18N
+    }
+
+    public Future<DLightSessionHandler> createSession(final DLightSessionConfiguration sessionConfiguration) {
+        return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
+
+            @Override
+            public DLightSessionHandler call() throws Exception {
+                return toolkitManager.createSession(sessionConfiguration);
+            }
+        }, sessionConfiguration + ""); // NOI18N
     }
 
     /**
@@ -204,7 +255,8 @@ public final class DLightToolkitManagement {
     }
 
     /**
-     * Sesion handler, it can be retrived using {@link DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) }
+     * Session handler, it can be retrieved using
+     * {@link DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget, java.lang.String) }
      * method and used to start and stop D-Light Session.
      */
     public static final class DLightSessionHandler {
@@ -231,5 +283,5 @@ public final class DLightToolkitManagement {
         public DLightSessionInternalReference getSessionReferenceImpl(DLightSessionHandler handler) {
             return handler.getSessionReferenceImpl();
         }
-    }
+    }        
 }

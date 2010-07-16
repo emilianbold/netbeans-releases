@@ -28,18 +28,15 @@ package org.netbeans.modules.iep.editor.wizard;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

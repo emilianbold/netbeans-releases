@@ -124,6 +124,32 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
         return bpelContext;
     }
 
+    public boolean isMappableEntity(BpelEntity entity) {
+        return true;
+    }
+
+    private interface ContextCreator {
+        boolean accepted(BpelEntity selectedEntity);
+        BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup);
+    }
+
+    private class EmptyContextCreator implements ContextCreator {
+
+        /**
+         * @param selectedEntity - the selected bpel entity to show mapper
+         */
+        public boolean accepted(BpelEntity selectedEntity) {
+            return selectedEntity != null;
+        }
+
+        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
+            if (!accepted(selectedEntity)) {
+                return null;
+            }
+            return new BpelDesignContextImpl(null, selectedEntity, node, lookup);
+        }
+    }
+
     private class LoggingContextCreatorImpl implements ContextCreator {
 
         /**
@@ -169,14 +195,14 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
                     nextParent = nextParent != null ? nextParent.getParent() : null;
                     if (nextParent != null) {
                         context = new BpelDesignContextImpl(nextParent, 
-                            parent, selectedEntity, node, lookup);
+                            selectedEntity, node, lookup);
                     }
                 }
             } else if (entityType == Trace.class) {
                 BpelEntity parent = selectedEntity.getParent();
                 if (parent != null && parent instanceof ExtensibleElements) {
                     context = new BpelDesignContextImpl(parent, 
-                            null, selectedEntity, node, lookup);
+                            selectedEntity, node, lookup);
                 }
             } else if (entityType == Log.class || entityType == Alert.class) {
                 BpelEntity parent = selectedEntity.getParent();
@@ -184,12 +210,12 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
                     BpelEntity nextParent = parent.getParent();
                     if (nextParent instanceof ExtensibleElements) {
                         context = new BpelDesignContextImpl(nextParent, 
-                                selectedEntity, selectedEntity, node, lookup);
+                                selectedEntity, node, lookup);
                     }
                 }
             } else {
                 context = new BpelDesignContextImpl(selectedEntity, 
-                        null, selectedEntity, node, lookup);
+                        selectedEntity, node, lookup);
             } 
             //
             return context;

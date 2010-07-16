@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -148,9 +153,21 @@ public class ProxySettings {
     }
     
     public static char[] getAuthenticationPassword () {
-        return getPreferences ().get (PROXY_AUTHENTICATION_PASSWORD, "").toCharArray ();
+        String old = getPreferences().get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (old != null) {
+            getPreferences().remove(PROXY_AUTHENTICATION_PASSWORD);
+            setAuthenticationPassword(old.toCharArray());
+        }
+        char[] pwd = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
+        return pwd != null ? pwd : new char[0];
     }
     
+    public static void setAuthenticationPassword(char[] password) {
+        Keyring.save(ProxySettings.PROXY_AUTHENTICATION_PASSWORD, password,
+                // XXX consider including getHttpHost and/or getHttpsHost
+                NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));
+    }
+
     static void addPreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().addPreferenceChangeListener (l);
     }
@@ -158,7 +175,7 @@ public class ProxySettings {
     static void removePreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().removePreferenceChangeListener (l);
     }
-    
+
     static class SystemProxySettings extends ProxySettings {
         
         public static String getHttpHost () {

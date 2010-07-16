@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.io.IOException;
+import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
@@ -55,6 +60,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -64,6 +72,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -143,7 +152,25 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         return jsfSupport;
     }
 
+    //TODO: the method is supposed to refresh JUST the given library
+    public synchronized void libraryChanged(FaceletsLibrary library) {
+        faceletsLibraries = null; //refresh all
+    }
+
+    //called by JsfIndexer when scanning finishes
+    public synchronized void librariesChanged(Collection<String> librariesNamespaces) {
+	//just check if the library already exist and if not, refresh all libs
+
+	//if faceletsLibraries are null, we cannot call getLibraries() which could
+	//call back to the indexing
+	if(faceletsLibraries != null && !getLibraries().keySet().containsAll(librariesNamespaces)) {
+	    faceletsLibraries = null;
+	}
+    }
+
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent evt) {
+        //classpath changed, rescan libraries
         faceletsLibraries = null;
     }
 
@@ -193,10 +220,25 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     }
 
+    //handle progress
     private Map<String, FaceletsLibrary> findLibraries() {
+        ProgressHandle progress = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(FaceletsLibrarySupport.class, "MSG_ParsingFaceletsLibraries")); //NOI18N
+        progress.start();
+        progress.switchToIndeterminate();
+        try {
+            return _findLibraries();
+        } finally {
+            progress.finish();
+        }
+    }
+
+    private Map<String, FaceletsLibrary> _findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
-        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
+        LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" +
+                originalLoader.getClass().getName() +
+                ", the used URLClassLoader will also contain following roots:"); //NOI18N
 
         Collection<URL> urlsToLoad = new ArrayList<URL>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
@@ -216,7 +258,24 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             }
         }
         
-        ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader);
+        ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader) {
+
+	    //prevent services loading from mojarra's sources
+	    @Override
+	    public URL findResource(String name) {
+		return name.startsWith("META-INF/services") ? null : super.findResource(name); //NOI18N
+	    }
+
+	    @Override
+	    public Enumeration<URL> findResources(String name) throws IOException {
+		if(name.startsWith("META-INF/services")) { //NOI18N
+		    return Collections.enumeration(Collections.<URL>emptyList());
+		} else {
+		    return super.findResources(name);
+		}
+	    }
+	    
+	};
 
         try {
             Thread.currentThread().setContextClassLoader(proxyLoader);
@@ -239,8 +298,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
-        //searches in classpath jars for .taglib.xml files
-//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+        //searches source classpath for .taglib.xml files
+        ClassPath sourceClasspath = ClassPath.getClassPath(getJsfSupport().getWebModule().getDocumentBase(), ClassPath.SOURCE);
+        faceletTaglibProviders.add(new FaceletTaglibraryConfigProvider(sourceClasspath));
 
         //2. second add provider which looks for libs in the jars on the project classpath
         //we already identified the library descriptors during indexing, no need
@@ -251,6 +311,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
 
+            @Override
             public Collection<URL> getResources(ServletContext sc) {
                 return urls;
             }
@@ -275,10 +336,11 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             try {
                 libraryURLs.add(fo.getURL());
             } catch (FileStateInvalidException ex) {
-                Logger.global.log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+            @Override
             public Collection<URL> getResources(ServletContext sc) {
                 return libraryURLs;
             }
@@ -292,7 +354,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //process the found documents
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-        processor.process(documents);
+        processor.process(null, documents);
 
         Map<String, FaceletsLibrary> libsMap = new HashMap<String, FaceletsLibrary>();
         for (FaceletsLibrary lib : processor.compiler.libraries) {
@@ -305,13 +367,13 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
 
     private void debugLibraries() {
-        System.out.println("Facelets Libraries:");
-        System.out.println("====================");
+        System.out.println("Facelets Libraries:");  //NOI18N
+        System.out.println("====================");  //NOI18N
         for (FaceletsLibrary lib : faceletsLibraries.values()) {
-            System.out.println("Library: " + lib.getNamespace());
-            System.out.println("----------------------------------------------------");
+            System.out.println("Library: " + lib.getNamespace());  //NOI18N
+            System.out.println("----------------------------------------------------");  //NOI18N
             for (FaceletsLibrary.NamedComponent comp : lib.getComponents()) {
-                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");
+                System.out.println(comp.getName() + "(" + comp.getClass().getSimpleName() + ")");  //NOI18N
             }
             System.out.println();
         }

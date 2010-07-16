@@ -38,6 +38,6 @@ public interface MessageReference {
      *
      * @param operation - operation object in TMap model.
      */
-    void setOperationReference(OperationReference operation);
+    void setParent(OperationReference operation);
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,10 +42,15 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -50,13 +58,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.ProjectNameProvider;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -150,7 +157,6 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         projectFolderCheckBox = new JCheckBox();
         projectFolderLabel = new JLabel();
         projectFolderTextField = new JTextField();
@@ -158,7 +164,48 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderScrollPane = new JScrollPane();
         projectFolderTextArea = new JTextArea();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return projectFolderCheckBox;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return projectFolderCheckBox;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return projectFolderTextArea;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  projectFolderCheckBox){
+                    return projectFolderTextField;
+                }
+                if(aComponent ==  projectFolderBrowseButton){
+                    return projectFolderTextArea;
+                }
+                if(aComponent ==  projectFolderTextField){
+                    return projectFolderBrowseButton;
+                }
+                return projectFolderCheckBox;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  projectFolderTextField){
+                    return projectFolderCheckBox;
+                }
+                if(aComponent ==  projectFolderTextArea){
+                    return projectFolderBrowseButton;
+                }
+                if(aComponent ==  projectFolderBrowseButton){
+                    return projectFolderTextField;
+                }
+                return projectFolderTextArea;//end getComponentBefore
+
+            }}
+        );
+
         Mnemonics.setLocalizedText(projectFolderCheckBox, NbBundle.getMessage(ProjectFolder.class, "LBL_SeparateProjectFolder")); // NOI18N
+
         projectFolderLabel.setLabelFor(projectFolderTextField);
         Mnemonics.setLocalizedText(projectFolderLabel, NbBundle.getMessage(ProjectFolder.class, "LBL_MetadataFolder")); // NOI18N
         projectFolderLabel.setEnabled(false);
@@ -193,32 +240,32 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, projectFolderScrollPane)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(projectFolderCheckBox)
-                            .add(layout.createSequentialGroup()
-                                .add(projectFolderLabel)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(projectFolderBrowseButton)))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(projectFolderScrollPane, Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(projectFolderCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(projectFolderLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(projectFolderTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(projectFolderBrowseButton)))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(projectFolderCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(projectFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(projectFolderLabel)
-                    .add(projectFolderBrowseButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, 85, GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(projectFolderCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(projectFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(projectFolderLabel)
+                    .addComponent(projectFolderBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(projectFolderScrollPane, GroupLayout.PREFERRED_SIZE, 85, GroupLayout.PREFERRED_SIZE))
         );
 
         projectFolderCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -253,19 +300,23 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     private JTextField projectFolderTextField;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         setState(projectFolderCheckBox.isSelected());
         changeSupport.fireChange();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         processUpdate();
     }
@@ -274,6 +325,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         changeSupport.fireChange();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         setState(projectFolderCheckBox.isSelected());
     }

@@ -64,6 +64,7 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.sql.project.wsdl.GenFiles;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
@@ -151,6 +152,14 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(SQLproLogicalViewProvider.class,
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
+        }
+
         public Action[] getActions( boolean context ) {
             if ( context )
                 return super.getActions( true );
@@ -192,7 +201,7 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 				generateWSDL(actions);
 				actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
-                actions.addAll(Utilities.actionsForPath("Projects/Actions"));
+                //[FIXME_MOVE_TO61]actions.addAll(Utilities.actionsForPath("Projects/Actions"));
                 actions.add(null);
                 actions.add(brokenLinksAction);
                 actions.add(CommonProjectActions.customizeProjectAction());

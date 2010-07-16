@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,18 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -61,6 +70,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -76,10 +87,21 @@ public abstract class WebRestSupport extends RestSupport {
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
+    protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
+    protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
+    protected static final String JERSEY_PROP_PACKAGES_DESC = "Multiple packages, separated by semicolon(;), can be specified in param-value"; //NOI18N
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
         super(project);
+    }
+
+    @Override
+    public boolean isRestSupportOn() {
+        if (getAntProjectHelper() == null) {
+            return false;
+        }
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
     }
 
     @Override
@@ -146,7 +168,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
 
-    protected FileObject getDeploymentDescriptor() {
+    public FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
             return wmp.findWebModule(project.getProjectDirectory()).getDeploymentDescriptor();
@@ -240,7 +262,17 @@ public abstract class WebRestSupport extends RestSupport {
             if (adaptorServlet == null) {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(getServletAdapterClass());
+                boolean isSpring = hasSpringSupport();
+                if (isSpring) {
+                    adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                    InitParam initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                    initParam.setParamName(JERSEY_PROP_PACKAGES);
+                    initParam.setParamValue("."); //NOI18N
+                    initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                    adaptorServlet.addInitParam(initParam);
+                } else {
+                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                }
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
@@ -356,7 +388,7 @@ public abstract class WebRestSupport extends RestSupport {
         return Collections.emptyList();
     }
 
-    protected String setApplicationConfigProperty(boolean annotationConfigAvailable) {
+    protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
@@ -370,11 +402,71 @@ public abstract class WebRestSupport extends RestSupport {
                     applicationPath = applicationPath.substring(1);
                 }
                 setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+                RestConfig rc = RestConfig.IDE;
+                rc.setResourcePath(applicationPath);
+                rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+                return rc;
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
-                return configPanel.getApplicationPath();
+                RestConfig rc = RestConfig.USER;
+                rc.setResourcePath(configPanel.getApplicationPath());
+                rc.setJerseyLibSelected(true);
+                return rc;
+            }
+        } else {
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
+            RestConfig rc = RestConfig.USER;
+            rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+            return rc;
+        }
+        return RestConfig.USER;
+    }
+
+    protected void addJerseySpringJar() throws IOException {
+        FileObject srcRoot = findSourceRoot();
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource("com/sun/jersey/api/spring/Autowire.class") == null) { //NOI18N
+                File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+                if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+                    File[] jerseyJars = jerseyRoot.listFiles(new JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
+                    if (jerseyJars != null && jerseyJars.length>0) {
+                        URL url = FileUtil.getArchiveRoot(jerseyJars[0].toURI().toURL());
+                        ProjectClassPathModifier.addRoots(new URL[] {url}, srcRoot, ClassPath.COMPILE);
+                    }
+                }
             }
         }
-        return null;
+    }
+
+    @Override
+    public int getProjectType() {
+        return PROJECT_TYPE_WEB;
+    }
+
+    public static enum RestConfig {
+        IDE,
+        USER,
+        DD;
+
+        private String resourcePath;
+        private boolean jerseyLibSelected;
+
+        public boolean isJerseyLibSelected() {
+            return jerseyLibSelected;
+        }
+
+        public void setJerseyLibSelected(boolean jerseyLibSelected) {
+            this.jerseyLibSelected = jerseyLibSelected;
+        }
+
+        public String getResourcePath() {
+            return resourcePath;
+        }
+
+        public void setResourcePath(String reseourcePath) {
+            this.resourcePath = reseourcePath;
+        }
+
     }
 
 }

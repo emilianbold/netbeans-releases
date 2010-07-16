@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,10 +66,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.loader.CardChildren;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.CardState;
@@ -136,7 +141,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
-    protected ApduSupport createApduSupport(CardProperties t) {
+    protected UrlCapability createApduSupport(CardProperties t) {
         return new Apdu();
     }
 
@@ -196,7 +201,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
-    protected CardCustomizerProvider createCardCustomizerProvidert(CardProperties t) {
+    protected CardCustomizerProvider createCardCustomizerProvider(CardProperties t) {
         Lookup lkp = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + getPlatform().getPlatformKind());
         return lkp.lookup(CardCustomizerProvider.class);
     }
@@ -209,8 +214,12 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private String[] getDebugProxyCommandLine(Project project) {
         CardProperties p = getCapability(CardProperties.class);
         File jar = AntClasspathClosureProvider.getTargetArtifact(project);
-        String classpathClosure = AntClasspathClosureProvider.getClasspathClosure(project)
-                + File.pathSeparator + jar.getAbsolutePath();
+        String classpathClosure = AntClasspathClosureProvider.getClasspathClosure(project);
+        if (classpathClosure != null && !"".equals(classpathClosure)) {
+            classpathClosure += File.pathSeparator + jar.getAbsolutePath();
+        } else {
+            classpathClosure = jar.getAbsolutePath();
+        }
         return p.getDebugProxyCommandLine(getPlatform().toProperties(),
                 classpathClosure);
     }
@@ -218,14 +227,17 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private String[] getStartCommandLine(RunMode mode) {
         CardProperties p = getCapability(CardProperties.class);
         assert p != null;
-        boolean forDebug = mode == RunMode.DEBUG;
+        boolean forDebug = mode.isDebug();
+        boolean suspend = forDebug ? false : p.isSuspend();
         Properties props = getPlatform().toProperties();
-        return p.getRunCommandLine(props, forDebug, 0);
+        return p.getRunCommandLine(props, forDebug, suspend, false);
     }
 
-    private String[] getResumeCommandLine() {
+    private String[] getResumeCommandLine(RunMode mode) {
         CardProperties p = getCapability(CardProperties.class);
-        return p.getResumeCommandLine(getPlatform().toProperties());
+        boolean debug = mode.isDebug();
+        boolean suspend = debug ? false : p.isSuspend();
+        return p.getRunCommandLine(getPlatform().toProperties(), debug, suspend, true);
     }
 
     private String getDisplayName() {
@@ -480,11 +492,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
 
     private class Resume implements ResumeCapability {
 
-        public Condition resume() {
+        public Condition resume(RunMode mode) {
             if (!getState().isNotRunning()) {
                 return new ConditionImpl();
             }
-            String[] cls = getResumeCommandLine();
+            String[] cls = getResumeCommandLine(mode);
             if (cls == null || cls.length <= 0) {
                 return new ConditionImpl();
             }
@@ -571,16 +583,16 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         }
     }
 
-    private class Apdu implements ApduSupport {
+    private class Apdu implements UrlCapability {
 
         public ContactedProtocol getContactedProtocol() {
             String p = getCapability(CardProperties.class).getContactedProtocol();
-            return p == null ? null : ContactedProtocol.valueOf(p);
+            return p == null ? null : ContactedProtocol.forString(p);
         }
 
         public String getURL() {
             PortProvider p = getCapability(PortProvider.class);
-            if ((p.getHost() == null) || p.getPort(PortKind.HTTP) <= 0) {
+            if (p == null || p.getHost() == null || p.getPort(PortKind.HTTP) <= 0) {
                 return null;
             }
             return "http://" + p.getHost() + ":" + p.getPort(PortKind.HTTP) + "/"; //NOI18N
@@ -588,7 +600,10 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
 
         public String getManagerURL() {
             String url = getURL();
-            return url == null ? null : getURL() + "/cardmanager"; //NOI18N
+            if (url != null && !url.endsWith("/")) { //NOI18N
+                url += '/'; //NOI18N
+            }
+            return url == null ? null : url + "cardmanager"; //NOI18N
         }
 
         public String getListURL() {
@@ -626,6 +641,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
 
         public void clear() {
             rp.post(this);
+            RICard.this.removeCapability(this);
         }
 
         public void run() {
@@ -636,12 +652,19 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                 }
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClearEprom.class,
                         "MSG_DELETING_EPROM_FILE", getDisplayName())); //NOI18N
-                FileObject epromFile = getEpromFile(false);
+                EpromFileCapability epromFileCap = getCapability(EpromFileCapability.class);
+                FileObject epromFile = epromFileCap.getEpromFile();
                 assert epromFile != null : "ClearEprom should not be able to " + //NOI18N
                         "be invoked if no eprom file exists"; //NOI18N
                 epromFile.delete();
+                synchronized (this) {
+                    notifyAll(); //for unit tests
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+                if (RICard.this.getCapability(ClearEpromCapability.class) == null) {
+                    RICard.this.addCapability(this);
+                }
             }
         }
     }
@@ -698,7 +721,14 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private final class Eprom implements EpromFileCapability {
 
         public FileObject getEpromFile() {
-            return RICard.this.getEpromFile(false);
+            FileObject result = null;
+            FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+                    getPlatform().getSystemName(), false);
+            if (fld != null) {
+                result = fld.getFileObject(getSystemId(),
+                        JCConstants.EEPROM_FILE_EXTENSION);
+            }
+            return result;
         }
     }
 
@@ -707,45 +737,42 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
         public XListModel getContents() {
             assert !EventQueue.isDispatchThread() : "May not be called on event " + //NOI18N
                     "thread"; //NOI18N
-            ApduSupport apdu = getCapability(ApduSupport.class);
-            String url = apdu.getListURL();
-            if (url != null) {
-                InputStream in = null;
-                try {
-                    URL connectTo = new URL(url);
-                    in = connectTo.openStream();
+            UrlCapability urlCap = getCapability(UrlCapability.class);
+            if (urlCap != null) {
+                String url = urlCap.getListURL();
+                if (url != null) {
+                    InputStream in = null;
                     try {
-                        if (Thread.interrupted()) {
-                            return null;
-                        }
-                        XListModel mdl = new XListModel(in, ParseErrorHandler.NULL);
-                        return mdl;
-                    } catch (IOException ioe) {
-                        StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage(CardChildren.class,
-                                "MSG_LOAD_FAILED", url)); //NOI18N
-                        Logger.getLogger(CardChildren.class.getName()).log(
-                                Level.INFO, "Could not load children from " + //NOI18N
-                                "xlist command for " + url, ioe); //NOI18N
-                    } finally {
-                        in.close();
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(CardChildren.class.getName()).log(
-                            Level.INFO,
-                            "IOException getting children for URL from " + //NOI18N
-                            getSystemId() + ":" + url, ex); //NOI18N
-                } finally {
-                    try {
-                        if (in != null) {
+                        URL connectTo = new URL(url);
+                        in = connectTo.openStream();
+                        try {
+                            if (Thread.interrupted()) {
+                                return null;
+                            }
+                            XListModel mdl = new XListModel(in, ParseErrorHandler.NULL);
+                            return mdl;
+                        } catch (IOException ioe) {
+                            StatusDisplayer.getDefault().setStatusText(
+                                    NbBundle.getMessage(CardChildren.class,
+                                    "MSG_LOAD_FAILED", url)); //NOI18N
+                            Logger.getLogger(CardChildren.class.getName()).log(
+                                    Level.INFO, "Could not load children from " + //NOI18N
+                                    "xlist command for " + url, ioe); //NOI18N
+                        } finally {
                             in.close();
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger(CardChildren.class.getName()).log(
-                                Level.INFO, "IOException closing stream " + //NOI18N
-                                "for URL from " + //NOI18N
-                                getSystemId() + ":" + //NOI18N
-                                url, ex);
+                        //do not log - perfectly normal if remote process is
+                        //not running, which is a common occurence
+                    } finally {
+                        try {
+                            if (in != null) {
+                                in.close();
+                            }
+                        } catch (IOException ex) {
+                        //do not log - perfectly normal if remote process is
+                        //not running, which is a common occurence
+                        }
                     }
                 }
             }

@@ -53,8 +53,10 @@ public abstract class TMapComponentNodeChildren<T extends TMapComponent> extends
     
     public abstract Collection getNodeKeys();
 
+    public abstract boolean isSupportedKey(Object key);
+    
     protected Node[] createNodes(Object key) {
-        if (key  != null && key instanceof TMapComponent) {
+        if (isSupportedKey(key) && key instanceof TMapComponent) {
             NavigatorNodeFactory factory = NavigatorNodeFactory.getInstance();
             Node childNode = factory.createNode((TMapComponent)key, getLookup());
             if (childNode != null) {

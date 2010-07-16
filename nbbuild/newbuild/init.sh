@@ -48,8 +48,13 @@ if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
 fi
 
-export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
-export JAVA_HOME=$JDK_HOME
+export ANT_OPTS="-Xmx1500m -XX:MaxPermSize=256m"
+
+if [ -n ${JDK_HOME} ] && [ -z ${JAVA_HOME} ] ; then
+    export JAVA_HOME=$JDK_HOME
+elif [ -n ${JAVA_HOME} ] && [ -z ${JDK_HOME} ]; then
+    export JDK_HOME=$JAVA_HOME
+fi
 
 if [ -z ${DATESTAMP} ]; then
     if [ -z ${BUILD_ID} ]; then
@@ -97,7 +102,6 @@ IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
 MOBILITY_BUILD_LOG=$LOGS/$BASENAME-build-mobility.log
 VISUALWEB_BUILD_LOG=$LOGS/$BASENAME-build-visualweb.log
 UML_BUILD_LOG=$LOGS/$BASENAME-build-uml.log
-SOA_BUILD_LOG=$LOGS/$BASENAME-build-soa.log
 RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
 NBMS_BUILD_LOC=$LOGS/$BASENAME-build-nbms.log
 SCP_LOG=$LOGS/$BASENAME-scp.log

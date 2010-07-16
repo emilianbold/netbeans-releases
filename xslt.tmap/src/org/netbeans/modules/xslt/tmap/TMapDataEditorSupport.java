@@ -28,15 +28,15 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.misc.Xml;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -62,8 +62,6 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -215,10 +213,10 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                 if (mvp.preferredID().equals(
                         TMapSourceMultiViewElementDesc.PREFERED_ID)) 
                 {
-                    Line line = LineUtil.getLine(resultItem);
+                    Line line = Xml.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                      line.show(Line.SHOW_GOTO);
                     }
                 }
             }
@@ -227,7 +225,7 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
     
     private List<TopComponent> getAssociatedTopComponents() {
         // Create a list of TopComponents associated with the
-        // editor's schema data object, starting with the the
+        // editor's schema data object, starting with the
         // active TopComponent. Add all open TopComponents in
         // any mode that are associated with the DataObject.
         // [Note that EDITOR_MODE does not contain editors in
@@ -374,7 +372,7 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         });
     }
     
-    TMapEnv getEnv() {
+    protected TMapEnv getEnv() {
         return (TMapEnv) env;
     }
     

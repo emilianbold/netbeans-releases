@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,9 +81,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
-
-
 /**
  *
  * @author Sonali Kochar
@@ -90,7 +90,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
     private RenameRefactoring rename;
           
     public void cancelRequest() {
-        
     }
     
     public Problem fastCheckParameters() {
@@ -109,7 +108,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         
         return null;
     }
-    
     
     /**
      * Creates a new instance of XMLWhereUsedRefactoringPlugin
@@ -147,10 +145,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         if(error != null)
             return new Problem(isFatal(error), error.getMessage());
         
-              
         return null;
-       
-        
     }
     
     /** Collects refactoring elements for a given refactoring.
@@ -166,8 +161,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
             return null;
         if( !((obj instanceof Model) ||  (obj instanceof Nameable)) )
             return null;
-        
-       
+
         //get the session obj to pass to the FindSchemaUsageVisitor
         this.session = refactoringElements.getSession();
         //get the transaction object 
@@ -234,9 +228,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         return null;
     }
 
-      
-       
-        
     /** Does the change for a given refactoring.
      * @param refactoringElements Collection of refactoring elements 
      */
@@ -268,7 +259,4 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         }
         return null;
     }
-
-      
 }
-

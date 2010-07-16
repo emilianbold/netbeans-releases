@@ -36,9 +36,9 @@ import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.impl.ETLEngineImpl;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConstants;
+import com.sun.etl.utils.StringUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -143,9 +143,6 @@ public final class ETLScriptBuilderModel {
             String qualifiedOid = nameToDatabaseMap.get(connDefName);
 
             if (SQLUtils.getSupportedDBType(connDef.getDBType()) == DBConstants.AXION) {
-                //Fix for Axion Connection Definitions not being persisted in the engine file and causing a problem for 
-                //Staging Strategy.
-                connectionDefinitions.add(connDef);
                 if (qualifiedOid != null) {
                     nameToDatabaseMap.remove(connDefName);
                     nameToDatabaseMap.put(ETL_INSTANCE_DB_CONN_DEF_NAME, qualifiedOid);

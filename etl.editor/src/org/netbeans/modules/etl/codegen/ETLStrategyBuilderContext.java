@@ -21,7 +21,7 @@ package org.netbeans.modules.etl.codegen;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * This will be use as context to be passed from ETLProcessFlowGenerator to various

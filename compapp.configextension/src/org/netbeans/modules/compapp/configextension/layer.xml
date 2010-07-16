@@ -39,6 +39,26 @@
             </folder>
         </folder>
 
+        <folder name="WSDLQueryExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionSubType" stringvalue="consume"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="wsdl-query"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/httpbc/wsdl_query"/>
+            <attr name="description" stringvalue="WSDL Query Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <folder name="wsdl-query">
+                <file name="enabled">
+                    <attr name="type" stringvalue="Boolean"/>
+                    <attr name="defaultValue" stringvalue="true"/>
+                    <attr name="description" stringvalue="Whether to allow WSDL access through '?wsdl'"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+            </folder>
+        </folder>
+
         <folder name="SSLHostnameVerifierExtension">
             <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
             <attr name="extensionType" stringvalue="endpoint"/>
@@ -61,6 +81,26 @@
                     <attr name="description" stringvalue="Custom hostname verifier class name"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file-->
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            </folder>
+        </folder>
+
+        <folder name="SOAPHeadersExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="soapheaders"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/httpbc/soapheaders"/>
+            <attr name="description" stringvalue="SOAP Headers Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <folder name="soap-headers">
+                <file name="propagated">
+                    <attr name="type" stringvalue="Boolean"/>
+                    <attr name="defaultValue" stringvalue="true"/>
+                    <attr name="description" stringvalue="Whether to propagate SOAP headers"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
             </folder>
         </folder>
@@ -124,6 +164,7 @@
                     <folder name="suspend">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                     </folder>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </folder>
                 <file name="maxAttempts">
                     <attr name="type" stringvalue="Integer"/>
@@ -131,7 +172,7 @@
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
                 <file name="waitTime">
-                    <attr name="type" stringvalue="Integer"/>
+                    <attr name="type" stringvalue="PositiveInteger"/>
                     <attr name="description" stringvalue="Maximum redelivery wait time (mil seconds)"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
@@ -149,7 +190,7 @@
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
             <folder name="throttling">
                 <file name="maximumConcurrencyLimit">
-                    <attr name="type" stringvalue="Integer"/>
+                    <attr name="type" stringvalue="NonNegativeInteger"/>
                     <attr name="description" stringvalue="Maximim concurrency limit"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
@@ -162,14 +203,53 @@
             <attr name="extensionTarget" stringvalue="sun-http-binding"/>
             <attr name="prefix" stringvalue="wsit-callback-project"/>
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/wsit/callbackproject"/>
-            <attr name="description" stringvalue="WSIT Callback Project Extension"/>
+            <attr name="description" stringvalue="WSIT Extension"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modulefs/compapp/configextension/resources/config-ext.png"/>
             <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.WsitCallbackExtenionPropertyClassProvider"/>
             <folder name="WsitCallback">
                 <file name="CallbackProject">
                     <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.properties.CallbackProjectExtensionProperty"/>
                     <attr name="description" stringvalue="WSIT callback handler Java project"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="JAXWSHandlersExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="jaxws-handlers"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/httpbc/jaxws_handlers"/>
+            <attr name="description" stringvalue="JAX-WS Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.handlers.jaxws.JAXWSHandlersExtenionPropertyClassProvider"/>
+            <folder name="handler-chain">
+                <file name="dummy-attibute">
+                    <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.handlers.jaxws.properties.JAXWSHandlersExtensionProperty"/>
+                    <attr name="description" stringvalue="JAX-WS Handlers"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="JAXRSHandlersExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionSubType" stringvalue="provide"/>
+            <attr name="extensionTarget" stringvalue="sun-rest-binding"/>
+            <attr name="prefix" stringvalue="jaxrs-filters"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/restbc/jaxrs_filters"/>
+            <attr name="description" stringvalue="JAX-RS (Jersey) Extension"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.handlers.jaxrs.JAXRSHandlersExtenionPropertyClassProvider"/>
+            <folder name="filter-chain">
+                <file name="dummy-attibute">
+                    <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.handlers.jaxrs.properties.JAXRSHandlersExtensionProperty"/>
+                    <attr name="description" stringvalue="JAX-RS (Jersey) Filters"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </file>
             </folder>

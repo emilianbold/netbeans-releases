@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import org.netbeans.modules.sql.framework.ui.view.GroupByPropertyEditor;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.openide.nodes.Node;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * @author Ritesh Adval
@@ -151,6 +154,17 @@ public class TargetTableProperties extends TableProperties {
         return this.table.isTruncateBeforeLoad();
     }
 
+    /**
+     * Indicates whether constraints on target table should be disabled (cascade)
+     * before loading data. The constraints will be enabled once the data is loaded
+     * successfully
+     * 
+     * @return true if contraints should be disabled; false otherwise
+     */
+    public boolean isDisableConstraints() {
+        return this.table.isDisableConstraints();
+    }
+    
     public void setJoinCondition(SQLCondition filter) throws BaseException {
         table.setJoinCondition(filter);
         gNode.setConditionIcons();
@@ -214,5 +228,16 @@ public class TargetTableProperties extends TableProperties {
     public void setTruncateBeforeLoad(boolean flag) {
         this.table.setTruncateBeforeLoad(flag);
         setDirty(true);
+    }
+    
+    /**
+     * Sets whether constraints on target table should be disabled (cascade)
+     * before loading data. The constraints will be enabled once the data is loaded
+     * successfully
+     * 
+     * @param flag true if constraints should be truncated; false otherwise
+     */
+    public void setDisableConstraints(boolean flag) {
+        this.table.setDisableConstraints(flag);
     }
 }

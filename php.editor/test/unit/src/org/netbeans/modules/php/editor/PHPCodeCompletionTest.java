@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,12 +51,16 @@ import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
- * @author tomslot
+ * @author Radek Matous
  */
 public class PHPCodeCompletionTest extends PHPTestBase {
 
     public PHPCodeCompletionTest(String testName) {
         super(testName);
+    }
+
+    public void test186936() throws Exception {
+        checkCompletion("testfiles/completion/lib/test186936/issue186936.php", "$myFoo->^", false);
     }
 
     public void testPhpContextWithPrefix() throws Exception {
@@ -152,9 +159,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01^", false);
     }
 
-    public void testTypesInPHPDOC5() throws Exception {
+    /*public void testTypesInPHPDOC5() throws Exception {
         checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|@^", false);
-    }
+    }*/
 
 //    public void testNamespaces1() throws Exception {
 //        checkCompletion("testfiles/completion/lib/namespaces1.php", "use ^", false);
@@ -482,9 +489,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2 = new cls136188^", false);
     }
-    public void test136188_5() throws Exception {
+    //removed because of camel case CC
+    /*public void test136188_5() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
-    }
+    }*/
     public void test149519() throws Exception {
         checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
     }

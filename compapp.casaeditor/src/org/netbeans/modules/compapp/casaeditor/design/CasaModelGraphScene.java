@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -129,6 +133,9 @@ extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent, Casa
 implements PropertyChangeListener, CasaValidationListener {
 
     private static final Logger LOGGER = Logger.getLogger(CasaModelGraphScene.class.getName());
+
+    private static final String SOAP_BINDING = "soap"; // NOI18N
+    private static final String SOAP12_BINDING = "soap12"; // NOI18N
     
     private LayerWidget mMainLayer       = new LayerWidget(this);
     private LayerWidget mConnectionLayer = new LayerWidget(this);
@@ -142,7 +149,6 @@ implements PropertyChangeListener, CasaValidationListener {
 
     private WidgetAction mDoubleClickOpenAction = new DoubleClickToOpenAction();
     private WidgetAction mPopupMenuAction = new CasaPopupMenuAction(new CasaPopupMenuProvider());
-    private WidgetAction mMoveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
     private WidgetAction mMoveActionBindingRegion;
     private WidgetAction mMoveActionEngineRegion;
     private WidgetAction mMoveActionExternalRegion;
@@ -150,7 +156,6 @@ implements PropertyChangeListener, CasaValidationListener {
     private CasaRegionWidget mBindingRegion;
     private CasaRegionWidget mEngineRegion;
     private CasaRegionWidget mExternalRegion;
-    private int mMinimumWidthUnit = 100;
 
     private Widget mLeftResizer;
     private Widget mMiddleResizer;
@@ -169,12 +174,15 @@ implements PropertyChangeListener, CasaValidationListener {
     private boolean mIsAdjusting = false;
     
     
-    public CasaModelGraphScene(CasaDataObject dataObject, CasaWrapperModel model, CasaNodeFactory nodeFactory) {
-        setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
+    public CasaModelGraphScene(CasaDataObject dataObject, 
+            CasaWrapperModel model, CasaNodeFactory nodeFactory) {
+
+        setKeyEventProcessingType(
+                EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
         mDataObject = dataObject;
         mModel = model;
         mNodeFactory = nodeFactory;
-        
+
         CasaFactory.getCasaCustomizerRegistor().addPropertyListener(this);
                 
         // disallow negative coordinates to prevent the scene from shifting.
@@ -194,9 +202,13 @@ implements PropertyChangeListener, CasaValidationListener {
         WidgetMover moverBindingRegion  = new WidgetMover(mModel, false, false);
         WidgetMover moverEngineRegion   = new WidgetMover(mModel, true,  false);
         WidgetMover moverExternalRegion = new WidgetMover(mModel, true,  true);
-        mMoveActionBindingRegion  = ActionFactory.createMoveAction(moverBindingRegion,  moverBindingRegion);
-        mMoveActionEngineRegion   = ActionFactory.createMoveAction(moverEngineRegion,   moverEngineRegion);
-        mMoveActionExternalRegion = ActionFactory.createMoveAction(moverExternalRegion, moverExternalRegion);
+
+        mMoveActionBindingRegion = ActionFactory.createMoveAction(
+                moverBindingRegion, moverBindingRegion);
+        mMoveActionEngineRegion = ActionFactory.createMoveAction(
+                moverEngineRegion, moverEngineRegion);
+        mMoveActionExternalRegion = ActionFactory.createMoveAction(
+                moverExternalRegion, moverExternalRegion);
         
         TopComponent.getRegistry().addPropertyChangeListener(this);
         
@@ -263,7 +275,7 @@ implements PropertyChangeListener, CasaValidationListener {
         }
         
         if (anyBadPositions) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(getClass(), "Warning_Null_Position"));
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(getClass(), "Warning_Null_Position")); // NOI18N
         } else {
             mIsModelPositionsFinalized = true;
         }
@@ -295,14 +307,15 @@ implements PropertyChangeListener, CasaValidationListener {
                 this, 
                 mLeftResizer, 
                 mMiddleResizer);
-        getActions().addAction(new RegionResizeAction(this, mLeftResizer, mMiddleResizer, resizeHandler));
+        getActions().addAction(new RegionResizeAction(
+                this, mLeftResizer, mMiddleResizer, resizeHandler));
         
         // Add the rectangular selection action last.
         getActions().addAction(new CasaRectangularSelectAction(
                 new RectangularSelectDecorator() {
                     public Widget createSelectionWidget() {
                         Widget widget = new Widget(CasaModelGraphScene.this);
-                        widget.setBorder(org.netbeans.api.visual.border.BorderFactory.createDashedBorder(
+                        widget.setBorder(BorderFactory.createDashedBorder(
                                 Color.DARK_GRAY,
                                 4,
                                 3,
@@ -316,7 +329,8 @@ implements PropertyChangeListener, CasaValidationListener {
         
         getActions().addAction(mPopupMenuAction);
         getActions().addAction(new CasaRemoveAction(this, mModel));
-        getActions().addAction(CasaFactory.createAcceptAction(new CasaPaletteAcceptProvider(this, mModel)));
+        getActions().addAction(CasaFactory.createAcceptAction(
+                new CasaPaletteAcceptProvider(this, mModel)));
         getActions().addAction(CasaFactory.createCycleCasaSceneSelectAction());        
         
         addSceneListener(new BannerSceneListener(this));
@@ -473,13 +487,13 @@ implements PropertyChangeListener, CasaValidationListener {
         if (node instanceof CasaPort) {
             CasaPort port = (CasaPort) node;
             String bindingType = mModel.getBindingType(port);
-            widget = new CasaNodeWidgetBinding(this, bindingType);
+            widget = new CasaNodeWidgetBinding(this, bindingType, mModel);
             CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
 
             widget.setEditable(mModel.isEditable(port));
             // only soap binding support WSIT configuration.
-            if (bindingType.equalsIgnoreCase("SOAP") || // NOI18N
-                    bindingType.equalsIgnoreCase("SOAP12")) { // NOI18N
+            if (SOAP_BINDING.equalsIgnoreCase(bindingType) ||
+                    SOAP12_BINDING.equalsIgnoreCase(bindingType)) {
                 widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
             }
             widget.initializeGlassLayer(mGlassLayer);
@@ -494,11 +508,11 @@ implements PropertyChangeListener, CasaValidationListener {
             CasaRegionWidget region = null;
             
             if (!su.isInternal()) {
-                widget = new CasaNodeWidgetEngineExternal(this);
+                widget = new CasaNodeWidgetEngine.External(this);
                 region = mExternalRegion;
                 moveAction = mMoveActionExternalRegion;
             } else {
-                widget = new CasaNodeWidgetEngineInternal(this);
+                widget = new CasaNodeWidgetEngine.Internal(this);
                 region = mEngineRegion;
                 moveAction = mMoveActionEngineRegion;
             }
@@ -528,15 +542,16 @@ implements PropertyChangeListener, CasaValidationListener {
         boolean isConsumes = pin instanceof CasaConsumes;
         boolean isBinding = node instanceof CasaPort; 
         
-        if        (isBinding && isConsumes) {
-            widget = new CasaPinWidgetBindingConsumes(this);
-        } else if (isBinding && !isConsumes) {
-            widget = new CasaPinWidgetBindingProvides(this);
-        } else if (!isBinding && isConsumes) {
-            widget = new CasaPinWidgetEngineConsumes(this);
-        } else if (!isBinding && !isConsumes) {
-            widget = new CasaPinWidgetEngineProvides(this);
+        if (isBinding) {
+            widget = isConsumes ?
+                new CasaPinWidgetBinding.Consumes(this) :
+                new CasaPinWidgetBinding.Provides(this);
+        } else {
+            widget = isConsumes ?
+                new CasaPinWidgetEngine.Consumes(this) :
+                new CasaPinWidgetEngine.Provides(this);
         }
+
         ((CasaNodeWidget) findWidget(node)).attachPinWidget(widget);
         
         if (!isBinding) {
@@ -713,9 +728,13 @@ implements PropertyChangeListener, CasaValidationListener {
                 
                 if (activeNode != null) {
                     Node[] nodes = new Node[] { activeNode };
+
                     try {
                         mIsInternalNodeChange = true;
                         tc.setActivatedNodes(nodes);
+
+                        // #162336
+                        mDataObject.updateTopComponentActivatedNodesSaveCookie();
                     } finally {
                         mIsInternalNodeChange = false;
                     }
@@ -866,7 +885,8 @@ implements PropertyChangeListener, CasaValidationListener {
         return FileUtil.toFile(mDataObject.getFolder().getPrimaryFile().getParent()).getAbsolutePath();
         // return mDataObject.getFolder().getPrimaryFile().getParent().getPath();
     }
-        /**
+
+    /**
      * This method returns an identity code. It should be unique for each object in the scene.
      * The identity code is a Comparable and could be used for sorting.
      * The method implementation should be fast.

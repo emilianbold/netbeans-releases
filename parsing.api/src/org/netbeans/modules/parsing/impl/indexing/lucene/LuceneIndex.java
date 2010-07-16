@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,9 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -143,7 +146,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
-                
+
                 final List<LuceneDocument> toAdd;
                 final List<String> toRemove;
 
@@ -153,22 +156,24 @@ public class LuceneIndex implements IndexImpl, Evictable {
 
                     LuceneIndex.this.toAdd.clear();
                     LuceneIndex.this.toRemove.clear();
-                    if (indexedIndexables != null) {
-                        for(Indexable i : indexedIndexables) {
-                            LuceneIndex.this.staleFiles.remove(i.getRelativePath());
+
+                    if (!staleFiles.isEmpty()) {
+                        if (indexedIndexables != null) {
+                            for(Indexable i : indexedIndexables) {
+                                LuceneIndex.this.staleFiles.remove(i.getRelativePath());
+                            }
+                        } else {
+                            for(LuceneDocument ldoc : toAdd) {
+                                LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
+                            }
+                            LuceneIndex.this.staleFiles.removeAll(toRemove);
                         }
-                    } else {
-                        for(LuceneDocument ldoc : toAdd) {
-                            LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
-                        }
-                        LuceneIndex.this.staleFiles.removeAll(toRemove);
                     }
                 }
 
                 if (toAdd.size() > 0 || toRemove.size() > 0) {
                     flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener, optimize);
                 }
-                
                 return null;
             }
         });
@@ -183,11 +188,16 @@ public class LuceneIndex implements IndexImpl, Evictable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        
+
         return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
-
+                if (empty) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Ignoring empty index: {0}", indexFolder.getAbsolutePath());
+                    }
+                    return Collections.<IndexDocumentImpl>emptyList();
+                }
                 final IndexReader r = getReader();
                 if (r != null) {
                     // index exists
@@ -197,7 +207,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     return Collections.<IndexDocumentImpl>emptyList();
                 }
             }
-        });        
+        });
     }
 
     public void fileModified(String relativePath) {
@@ -222,10 +232,11 @@ public class LuceneIndex implements IndexImpl, Evictable {
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public LuceneIndex(final URL root) throws IOException {
-        assert root != null;
+    public LuceneIndex(final URL indexFolderUrl) throws IOException {
+        assert indexFolderUrl != null;
         try {
-            indexFolder = new File(root.toURI());
+            this.indexFolderUrl = indexFolderUrl;
+            indexFolder = new File(indexFolderUrl.toURI());
             directory = createDirectory(indexFolder);
         } catch (URISyntaxException e) {
             IOException ioe = new IOException();
@@ -321,7 +332,9 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
                         public Void run() throws IOException {
                             _closeReader();
-                            LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            }
                             return null;
                         }
                     });
@@ -343,6 +356,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     /* package */ static final int VERSION = 1;
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
+    private final URL indexFolderUrl;
     private final File indexFolder;
 
     //@GuardedBy (LuceneIndexManager.writeAccess)
@@ -350,6 +364,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private volatile IndexReader reader; //Cache, do not use this directly, use getReader
     private volatile boolean closed;
     private boolean valid;
+    private volatile boolean empty; //Volatile as there may be more readLocks in getReader and query
 
     private static final LMListener lmListener = new LMListener();
 
@@ -359,12 +374,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private final Set<String> staleFiles = new HashSet<String>();
 
     private void _hit() {
-        try {
-            final URL url = this.indexFolder.toURI().toURL();
-            IndexCacheFactory.getDefault().getCache().put(url, this);
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
+        IndexCacheFactory.getDefault().getCache().put(indexFolderUrl, this);
     }
 
     // called under LuceneIndexManager.writeAccess
@@ -466,9 +476,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case PREFIX:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term (fieldName, value);
@@ -477,9 +493,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case CASE_INSENSITIVE_PREFIX:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
@@ -540,9 +562,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case CASE_INSENSITIVE_CAMEL_CASE:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
@@ -569,22 +597,22 @@ public class LuceneIndex implements IndexImpl, Evictable {
             default:
                 throw new UnsupportedOperationException (kind.toString());
         }
-        TermDocs tds = in.termDocs();
-        final Iterator<Term> it = toSearch.iterator();
-        Set<Integer> docNums = new TreeSet<Integer>();
-        int[] docs = new int[25];
-        int[] freq = new int [25];
-        int len;
-        while (it.hasNext()) {
-            tds.seek(it.next());
-            while ((len = tds.read(docs, freq))>0) {
-                for (int i = 0; i < len; i++) {
-                    docNums.add (docs[i]);
-                }
-                if (len < docs.length) {
-                    break;
+        final TermDocs tds = in.termDocs();
+        final Set<Integer> docNums = new TreeSet<Integer>();
+        try {
+            int[] docs = new int[25];
+            int[] freq = new int [25];
+            int len;
+            for(Term t : toSearch) {
+                tds.seek(t);
+                while ((len = tds.read(docs, freq))>0) {
+                    for (int i = 0; i < len; i++) {
+                        docNums.add (docs[i]);
+                    }
                 }
             }
+        } finally {
+            tds.close();
         }
         final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
         for (Integer docNum : docNums) {
@@ -657,6 +685,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     out.optimize(false);
                 }
             } finally {
+                empty = false;
                 try {
                     out.close();
                 } finally {
@@ -684,18 +713,17 @@ public class LuceneIndex implements IndexImpl, Evictable {
         synchronized (this) {
             IndexReader r = reader;
             if (r == null) {
-                boolean exists = IndexReader.indexExists(this.directory);
-                if (exists) {
-                    //Issue #149757 - logging
-                    try {
-                        //It's important that no Query will get access to original IndexReader
-                        //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                        r = reader = new NoNormsReader(IndexReader.open(this.directory));
-                    } catch (IOException ioe) {
-                        throw annotateException(ioe, indexFolder);
-                    }
-                } else {
+                //Issue #149757 - logging
+                try {
+                    //It's important that no Query will get access to original IndexReader
+                    //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+                    r = reader = new NoNormsReader(IndexReader.open(this.directory));
+                } catch (FileNotFoundException fnf) {
+                    empty = true;
                     LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
+                    //pass - returns null
+                } catch (IOException ioe) {
+                    throw annotateException(ioe, indexFolder);
                 }
             }
             return r;
@@ -765,6 +793,24 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     result.add (new LuceneDocument(doc));
                 }
             }
+        }
+    }
+
+    private static void fieldSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
+        final Object prefixField = valueTerm.field(); // It's Object only to silence the stupid hint
+        final TermEnum en = in.terms(valueTerm);
+        try {
+            do {
+                Term term = en.term();
+                if (term != null && prefixField == term.field()) {
+                    toSearch.add (term);
+                }
+                else {
+                    break;
+                }
+            } while (en.next());
+        } finally {
+            en.close();
         }
     }
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -219,7 +222,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         final Component absoluteComp = absolute ? createAbsolutePanel(resourcePanelGUI) : null;
         final JCheckBox switchBox = new JCheckBox();
-        switchBox.setVisible(this.property instanceof RADProperty);
+        switchBox.setVisible((this.property instanceof RADProperty) && (this.property.getDefaultValue() != null));
         Mnemonics.setLocalizedText(switchBox, NbBundle.getMessage(FontEditor.class, "CTL_DeriveFont")); // NOI18N
         switchBox.setSelected(!absolute);
         final RelativeFontPanel relativeComp = new RelativeFontPanel();
@@ -244,6 +247,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         switchBox.addItemListener(new ItemListener() {
             private Component absoluteInLayout = absoluteComp;
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (switchBox.isSelected()) {
                     layout.replace(absoluteInLayout, relativeComp);
@@ -352,6 +356,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
     /** Name of the property this value belongs to. */
     public static final String ATTR_PROP_NAME = "property"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         if (!XML_FONT_ROOT.equals(element.getNodeName())) {
             // Backward compatibility with the default FontEditor from core
@@ -391,6 +396,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getUnwrappedValue();
         org.w3c.dom.Element el = doc.createElement(XML_FONT_ROOT);
@@ -441,6 +447,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
          */
         FormProperty property;
 
+        @Override
         public Object getDesignValue() {
             Font value = defaultValue(property);
             if (value != null) {
@@ -545,6 +552,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         void updateFromPropertyValue() {
             NbFont propertyValue = (NbFont) getUnwrappedValue();
+            if (propertyValue == null) return;
 
             ignoreUpdates = true;
             boolean changeItalic = (propertyValue.italic != null);
@@ -732,6 +740,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         private class Listener implements ItemListener, ChangeListener {
             // called when some of the checkboxes/radiobuttons is selected/unselected
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;
@@ -763,6 +772,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             }
 
             // called when the size of the font is changed in one of the spinners
+            @Override
             public void stateChanged(ChangeEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;

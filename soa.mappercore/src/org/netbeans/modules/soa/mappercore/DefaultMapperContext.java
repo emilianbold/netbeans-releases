@@ -27,6 +27,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,11 +86,27 @@ public class DefaultMapperContext implements MapperContext {
         return null;
     }
 
-    public JPopupMenu getCanvasPopupMenu(MapperModel mode, GraphItem item) {
-        return null;
+    public JPopupMenu getCanvasPopupMenu(MapperModel mode, GraphItem item, Mapper mapper) {
+        JPopupMenu mapperMenu = MapperPopupMenuFactory.
+                createMapperPopupMenu(mapper.getCanvas(), item);
+       
+        List<JMenu> listMenu = getMenuNewEllements(mode);
+        if (listMenu != null) {
+
+            JMenu menuItem = new JMenu(NbBundle.getMessage(Canvas.class,
+                    "NewMapperElement")); // NOI18N
+            
+            for (JMenu m : listMenu) {
+                menuItem.add(m);
+            }
+            mapperMenu.add(new JPopupMenu.Separator(), 0);
+            mapperMenu.add(menuItem, 0);
+        }
+       
+        return mapperMenu;
     }
 
-    public List<JMenu> getMenuNewEllements(MapperModel mode) {
+    protected List<JMenu> getMenuNewEllements(MapperModel mode) {
         return null;
     }
 }

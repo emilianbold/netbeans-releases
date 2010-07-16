@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,9 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -61,7 +66,7 @@ public final class HostInfoFactory {
     private HostInfoFactory() {
     }
 
-    static protected HostInfo newHostInfo(Properties initData) {
+    static HostInfo newHostInfo(Properties initData, Map<String, String> environment) {
         HostInfoImpl info = new HostInfoImpl();
 
         OSImpl _os = new OSImpl();
@@ -79,13 +84,19 @@ public final class HostInfoFactory {
             info.cpuFamily = CpuFamily.UNKNOWN;
         }
 
-        info.shell = initData.getProperty("SH", UNKNOWN); // NOI18N
+        info.loginShell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
+        info.userDir = initData.getProperty("USERDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
-        info.path = initData.getProperty("PATH", "/bin:/usr/bin"); // NOI18N
+
+        if (environment == null) {
+            info.environment = Collections.unmodifiableMap(Collections.<String, String>emptyMap());
+        } else {
+            info.environment = Collections.unmodifiableMap(environment);
+        }
 
         if (initData.containsKey("LOCALTIME")) { // NOI18N
-            long localTime = (Long)initData.get("LOCALTIME"); // NOI18N
+            long localTime = (Long) initData.get("LOCALTIME"); // NOI18N
             long remoteTime = getTime(initData, "DATETIME", localTime); // NOI18N
             info.clockSkew = remoteTime - localTime;
         }
@@ -126,40 +137,68 @@ public final class HostInfoFactory {
         private OS os;
         private CpuFamily cpuFamily;
         private String hostname;
-        private String shell;
+        private String loginShell;
         private String tempDir;
+        private String userDir;
         private int cpuNum;
         private long clockSkew;
-        private String path;
+        private Map<String, String> environment;
 
+        @Override
         public OS getOS() {
             return os;
         }
 
+        @Override
         public CpuFamily getCpuFamily() {
             return cpuFamily;
         }
 
+        @Override
         public int getCpuNum() {
             return cpuNum;
         }
 
+        @Override
         public OSFamily getOSFamily() {
             return os.getFamily();
         }
 
+        @Override
         public String getHostname() {
             return hostname;
         }
 
-        public String getShell() {
-            return shell;
+        @Override
+        public String getLoginShell() {
+            return loginShell;
         }
 
+        @Override
+        public String getShell() {
+            return "/bin/sh"; // NOI18N
+        }
+
+        @Override
         public String getTempDir() {
             return tempDir;
         }
 
+        @Override
+        public String getUserDir() {
+            return userDir;
+        }
+
+        @Override
+        public File getUserDirFile() {
+            if (getOSFamily() == OSFamily.WINDOWS) {
+                return new File(WindowsSupport.getInstance().convertToWindowsPath(userDir));
+            } else {
+                return new File(userDir);
+            }
+        }
+
+        @Override
         public File getTempDirFile() {
             if (getOSFamily() == OSFamily.WINDOWS) {
                 return new File(WindowsSupport.getInstance().convertToWindowsPath(tempDir));
@@ -168,12 +207,14 @@ public final class HostInfoFactory {
             }
         }
 
+        @Override
         public long getClockSkew() {
             return clockSkew;
         }
 
-        public String getPath() {
-            return path;
+        @Override
+        public Map<String, String> getEnvironment() {
+            return environment;
         }
     }
 
@@ -184,18 +225,22 @@ public final class HostInfoFactory {
         private String version = UNKNOWN;
         private Bitness bitness = Bitness._32;
 
+        @Override
         public Bitness getBitness() {
             return bitness;
         }
 
+        @Override
         public String getVersion() {
             return version;
         }
 
+        @Override
         public OSFamily getFamily() {
             return family;
         }
 
+        @Override
         public String getName() {
             return name;
         }

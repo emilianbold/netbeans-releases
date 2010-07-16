@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
@@ -91,33 +95,25 @@ public class GoToSuperTypeAction extends BaseAction {
         
         final List<ElementDescription> result = new ArrayList<ElementDescription>();
         final AnnotationType[] type  = new AnnotationType[1];
+        final int caretPos = target.getCaretPosition();
         
         try {
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED); //!!!
                     
-                    TreePath path = parameter.getTreeUtilities().pathFor(target.getCaretPosition());
-                    
-                    while (path != null && path.getLeaf().getKind() != Kind.METHOD) {
-                        path = path.getParentPath();
+                    ExecutableElement ee = resolveMethodElement(parameter, caretPos);
+
+                    if (ee == null) {
+                        ee = resolveMethodElement(parameter, caretPos + 1);
                     }
-                    
-                    if (path == null) {
+
+                    if (ee == null) {
                         Toolkit.getDefaultToolkit().beep();
                         return ;
                     }
                     
-                    Element resolved = parameter.getTrees().getElement(path);
-                    
-                    if (resolved == null || resolved.getKind() != ElementKind.METHOD) {
-                        Toolkit.getDefaultToolkit().beep();
-                        return ;
-                    }
-                    
-                    ExecutableElement ee = (ExecutableElement) resolved;
-                    
-                    type[0] = IsOverriddenAnnotationHandler.detectOverrides(parameter, (TypeElement) ee.getEnclosingElement(), ee, result);
+                    type[0] = ComputeOverriding.detectOverrides(parameter, (TypeElement) ee.getEnclosingElement(), ee, result);
                 }
                 
             }, true);
@@ -137,6 +133,26 @@ public class GoToSuperTypeAction extends BaseAction {
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         }
+    }
+
+    private static ExecutableElement resolveMethodElement(CompilationInfo info, int caret) {
+        TreePath path = info.getTreeUtilities().pathFor(caret);
+
+        while (path != null && path.getLeaf().getKind() != Kind.METHOD) {
+            path = path.getParentPath();
+        }
+
+        if (path == null) {
+            return null;
+        }
+
+        Element resolved = info.getTrees().getElement(path);
+
+        if (resolved == null || resolved.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+
+        return (ExecutableElement) resolved;
     }
 
 }

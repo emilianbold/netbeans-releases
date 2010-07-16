@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,18 +100,20 @@ public abstract class AbstractMethodGenerator {
      * Adds method to class
      */
     protected static void addMethod(final MethodModel methodModel, FileObject fileObject, final String className) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
-                boolean generateDefaultBody = (typeElement.getKind() != ElementKind.INTERFACE) && !methodModel.getModifiers().contains(Modifier.ABSTRACT);
-                MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel, generateDefaultBody);
-                ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
-                workingCopy.rewrite(classTree, newClassTree);
-            }
-        }).commit();
+        if (fileObject != null && methodModel != null){
+            JavaSource javaSource = JavaSource.forFileObject(fileObject);
+            javaSource.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
+                    boolean generateDefaultBody = (typeElement.getKind() != ElementKind.INTERFACE) && !methodModel.getModifiers().contains(Modifier.ABSTRACT);
+                    MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel, generateDefaultBody);
+                    ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+                    ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
+                    workingCopy.rewrite(classTree, newClassTree);
+                }
+            }).commit();
+        }
     }
     
     protected void saveXml() throws IOException {

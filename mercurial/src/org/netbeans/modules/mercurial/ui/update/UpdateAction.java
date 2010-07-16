@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,14 +50,14 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,17 +68,20 @@ import org.openide.util.NbBundle;
  */
 public class UpdateAction extends ContextAction {
     
-    private final VCSContext context;
-    private static String HG_TIP = "tip"; // NOI18N
+    private static final String HG_TIP = "tip"; // NOI18N
 
-    public UpdateAction(String name, VCSContext context) {
-        this.context = context;
-
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
-        update(context);
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Update"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        update(HgUtils.getCurrentContext(nodes));
     }
     
     public static void update(final VCSContext ctx){
@@ -91,7 +97,7 @@ public class UpdateAction extends ContextAction {
         File[] files = HgUtils.filterForRepository(ctx, root, false);
         String rev = null;
 
-        final Update update = new Update(root, files);
+        final Update update = new Update(root);
         if (!update.showDialog()) {
             return;
         }
@@ -137,19 +143,22 @@ public class UpdateAction extends ContextAction {
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
+                        // Force Status Refresh from this dir and below
+                        if(!bNoUpdates) {
+                            HgUtils.notifyUpdatedFiles(root, list);
+                            HgUtils.forceStatusRefreshProject(ctx);
+                        }
                         //logger.clearOutput();
                         logger.output(list);
                         logger.output(""); // NOI18N
                     }
 
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
-                
-                // Force Status Refresh from this dir and below
-                if(!bNoUpdates)
-                    HgUtils.forceStatusRefreshProject(ctx);
 
                 logger.outputInRed(
                         NbBundle.getMessage(UpdateAction.class,
@@ -159,8 +168,4 @@ public class UpdateAction extends ContextAction {
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    }     
 }

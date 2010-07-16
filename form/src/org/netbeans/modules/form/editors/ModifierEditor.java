@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -188,6 +191,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     }
 
     /** Set new value */
+    @Override
     public void setValue(Object object) throws IllegalArgumentException {
         if (object == null) {
             setModifier(0);
@@ -204,30 +208,36 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     /** @return the java source code representation
     * of the current value.
     */
+    @Override
     public String getJavaInitializationString() {
         return new Integer(getModifier()).toString();
     }
 
     /** Get the value */
+    @Override
     public Object getValue() {
         return new Integer(getModifier());
     }
 
     /** @return <CODE>false</CODE> */
+    @Override
     public boolean isPaintable() {
         return false;
     }
 
     /** Does nothing. */
+    @Override
     public void paintValue(Graphics g, Rectangle rectangle) {
     }
 
     /** @return textual representition of current value of the modifiers. */
+    @Override
     public String getAsText() {
         return Modifier.toString(getModifier());
     }
 
     /** Parse the text and sets the modifier editor value */
+    @Override
     public void setAsText(String string) throws IllegalArgumentException {
         int newValue = 0;
         int oldValue = modifier;
@@ -278,16 +288,19 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     }
 
     /** @return <CODE>null</CODE> */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** @return <CODE>this</CODE> */
+    @Override
     public Component getCustomEditor() {
         return this;
     }
     
     /** @return <CODE>true</CODE> */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -305,6 +318,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
      * This method is called by the IDE to pass
      * the environment to the property editor.
      */
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         type = env.getFeatureDescriptor().getValue(CUSTOM_EDITOR_TYPE);

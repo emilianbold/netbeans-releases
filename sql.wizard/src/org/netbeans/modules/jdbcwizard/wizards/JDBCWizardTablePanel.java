@@ -950,6 +950,8 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
+        this.metaDataTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JDBCWizardTablePanel.class, "JDBCWizardTablePanel.metaDataTable.accessibleName"));
+        this.metaDataTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JDBCWizardTablePanel.class, "JDBCWizardTablePanel.metaDataTable.accessibleDescription"));
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
                 .setCellRenderer(new MyButtonRenderer());
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
@@ -971,6 +973,8 @@ public class JDBCWizardTablePanel extends JPanel {
         this.metaDataTable = new MetaTableComponent();
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
+        this.metaDataTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JDBCWizardTablePanel.class, "JDBCWizardTablePanel.metaDataTable.accessibleName"));
+        this.metaDataTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JDBCWizardTablePanel.class, "JDBCWizardTablePanel.metaDataTable.accessibleDescription"));
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))
                 .setCellRenderer(new MyButtonRenderer());
         this.metaDataTable.getColumn(NbBundle.getMessage(JDBCWizardTablePanel.class,"LBL_PROP"))

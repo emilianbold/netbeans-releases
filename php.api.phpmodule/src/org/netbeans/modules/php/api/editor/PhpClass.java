@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,13 +45,14 @@ package org.netbeans.modules.php.api.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import org.openide.filesystems.FileObject;
 
 /**
  * Class representing a PHP class.
  * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpClass extends PhpElement {
+public final class PhpClass extends PhpBaseElement {
 
     private final Collection<Field> fields = new LinkedList<Field>();
     private final Collection<Method> methods = new LinkedList<Method>();
@@ -86,6 +90,14 @@ public final class PhpClass extends PhpElement {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
+    /**
+     * @since 1.32
+     */
+    public PhpClass addField(String name, PhpClass type, FileObject file, int offset) {
+        fields.add(new Field(name, type, file, offset));
+        return this;
+    }
+
     public PhpClass addMethod(String name, String fullyQualifiedName, int offset, String description) {
         methods.add(new Method(name, fullyQualifiedName, offset, description));
         return this;
@@ -116,9 +128,16 @@ public final class PhpClass extends PhpElement {
      * @since 1.13
      * @author Tomas Mysik
      */
-    public final class Field extends PhpElement {
+    public final class Field extends PhpBaseElement {
         Field(String name, String fullyQualifiedName, int offset, String description) {
             super(name, fullyQualifiedName, offset, description);
+        }
+
+        /**
+         * @since 1.32
+         */
+        Field(String name, PhpClass type, FileObject file, int offset) {
+            super(name, null, type, file, offset, null);
         }
 
         public PhpClass getPhpClass() {
@@ -132,7 +151,7 @@ public final class PhpClass extends PhpElement {
      * @since 1.13
      * @author Tomas Mysik
      */
-    public final class Method extends PhpElement {
+    public final class Method extends PhpBaseElement {
         Method(String name, String fullyQualifiedName, int offset, String description) {
             super(name, fullyQualifiedName, offset, description);
         }

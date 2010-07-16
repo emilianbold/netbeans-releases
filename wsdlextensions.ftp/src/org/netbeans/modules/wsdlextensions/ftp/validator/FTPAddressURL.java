@@ -30,7 +30,6 @@ package org.netbeans.modules.wsdlextensions.ftp.validator;
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponent;
 import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.xml.xam.spi.Validator;
 
@@ -271,4 +270,141 @@ public class FTPAddressURL implements AddressURL {
         return true;
     }
     
+    public boolean parse(Vector results, FTPComponent target) {
+        // if missing
+        if (url == null || url.trim().length() == 0 ) {
+            results.add(Util.getMessage("FTPAddress.MISSING_FTP_URL"));
+            return false;
+        }
+
+        // do not parse it if contains env vars
+        if ( Util.hasMigrationEnvVar(url) )
+            return true;
+        
+        // if still the place holder
+        if ( url.startsWith(FTP_URL_PLACEHOLDER) ) {
+            results.add(Util.getMessage("FTPAddress.REPLACE_FTP_URL_PLACEHOLDER_WITH_REAL_URL"));
+            return false;
+        }
+        
+        if ( !url.startsWith(FTP_URL_PREFIX) ) {
+            results.add(Util.getMessage("FTPAddress.INVALID_FTP_URL_PREFIX", new Object[] {url}));
+            return false;
+        }
+        scheme = "ftp";
+        if ( url.length() > FTP_URL_PREFIX.length() ) {
+            String rest = url.substring(FTP_URL_PREFIX.length());
+            if ( rest.indexOf(URL_PATH_DELIM) >= 0 ) {
+                results.add(Util.getMessage("FTPAddress.INVALID_FTP_URL_PATH_NOT_ALLOWED", new Object[] {url}));
+                return false;
+            }
+            
+            int l = rest.trim().length();
+            int i = 0;
+            StringBuffer cur = new StringBuffer();
+            int at = 0;
+            int col = 0;
+            List comps = new Vector();
+            while ( i < l ) {
+                char c = rest.charAt(i);
+                switch ( c ) {
+                    case '\\':
+                        if ( i + 1 < l ) {
+                            cur.append(rest.charAt(i+1));
+                            i = i + 2;
+                        }
+                        else {
+                            cur.append(c);
+                            i++;
+                        }
+                        break;
+                    case ':':
+                        col++;
+                        if ( col > 1 || cur.length() == 0 /* :password and :port are invalid */) {
+                            // in each part: either user:password
+                            // or host:port, there can be at most 1
+                            // ':' delimiter;
+                            results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL", new Object[] {url}));
+                            return false;
+                        }
+                        comps.add(cur.toString());
+                        cur = new StringBuffer();
+                        i++;
+                        break;
+                    case '@':
+                        at++;
+                        if ( at > 1 ) {
+                            // at most 1 '@' as delimiter;
+                            results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL", new Object[] {url}));
+                            return false;
+                        }
+                        // previously collected belongs to user_password
+                        comps.add(cur.toString());
+                        cur = new StringBuffer();
+                        col = 0;
+                        switch ( comps.size() ) {
+                            case 1:
+                                this.user = (String)comps.get(0);
+                                break;
+                            case 2:
+                                this.user = (String)comps.get(0);
+                                this.password = (String)comps.get(1);
+                                break;
+                            default:
+                                results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL", new Object[] {url}));
+                                return false;
+                        }
+                        comps = new Vector();
+                        i++;
+                        break;
+                    default:
+                        cur.append(c);
+                        i++;
+                }
+            }
+            
+            if ( cur != null && cur.length() > 0 )
+                comps.add(cur.toString());
+
+            switch ( comps.size() ) {
+                case 1:
+                    this.host = (String)comps.get(0);
+                    break;
+                case 2:
+                    this.host = (String)comps.get(0);
+                    this.port = (String)comps.get(1);
+                    boolean goodPort = true;
+                    if ( port != null && port.trim().length() > 0 ) {
+                        // must be a positive int
+                        try {
+                            int pt = Integer.parseInt(port);
+                            if ( pt <= 0 )
+                                goodPort = false;
+                        }
+                        catch (Exception e) {
+                            goodPort = false;
+                        }
+                    }
+
+                    if ( !goodPort ) {
+                        results.add(Util.getMessage("FTPAddress.INVALID_PORT_IN_URL", new Object[] {url}));
+                        return false;
+                    }
+                    
+                    break;
+                default:
+                    results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL", new Object[] {url}));
+                    return false;
+            }
+            
+            if ( host == null || host.trim().length() == 0 ) {
+                results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL_HOST_REQUIRED", new Object[] {url}));
+                return false;
+            }
+        } else {
+            results.add(Util.getMessage("FTPAddress.MALFORMED_FTP_URL", new Object[] {url}));
+            return false;
+        }
+        return true;
+    }
 }

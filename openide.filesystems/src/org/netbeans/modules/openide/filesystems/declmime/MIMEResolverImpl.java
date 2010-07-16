@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,8 +85,7 @@ public final class MIMEResolverImpl {
     // enable some tracing
     private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
         
-    private static final boolean CASE_INSENSITIVE =
-        Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+    private static final boolean CASE_INSENSITIVE = Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     // notification limit in bytes for reading file content. It should not exceed 4192 (4kB) because it is read in one disk touch.
     private static final int READ_LIMIT = 4000;
@@ -245,13 +248,12 @@ public final class MIMEResolverImpl {
         });
     }
 
-    /** Returns map of all registered MIMEResolver instances in revers order,
+    /** Lists registered MIMEResolver instances in reverse order,
      * i.e. first are ones with lower priority (position attribute higher)
      * and last are ones with highest prority (position attribute lower).
-     * @return map of all registered MIMEResolver instances in revers order
-     * (highest priority last)
+     * @return list of all registered MIMEResolver instances in reverse order
      */
-    public static Map<Integer, FileObject> getOrderedResolvers() {
+    public static Collection<? extends FileObject> getOrderedResolvers() {
         // scan resolvers and order them to be able to assign extension to mime type from resolver with the lowest position
         FileObject[] resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH).getChildren();
         TreeMap<Integer, FileObject> orderedResolvers = new TreeMap<Integer, FileObject>(Collections.reverseOrder());
@@ -265,7 +267,7 @@ public final class MIMEResolverImpl {
             }
             orderedResolvers.put(position, mimeResolverFO);
         }
-        return orderedResolvers;
+        return orderedResolvers.values();
     }
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1093,6 +1095,8 @@ public final class MIMEResolverImpl {
                     Object attr = fo.getAttribute(fatts[i]);
                     if (attr != null) {
                         if (!attr.toString().equals(vals[i]) && vals[i] != null) return false;
+                    } else {
+                        return false;
                     }
                 }
             }

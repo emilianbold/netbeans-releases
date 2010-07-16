@@ -26,10 +26,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConnectionParameters;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConnectionParameters;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * DBConnectionDefinitionTemplate basicaly reads the template and stores for codegen

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.core.output2/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/output2/Bundle.properties
-OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Provides: org.openide.windows.IOProvider
 AutoUpdate-Essential-Module: true
+OpenIDE-Module-Specification-Version: 1.19
 

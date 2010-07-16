@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,13 +44,17 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.text.JTextComponent;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -56,7 +63,11 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.ModificationResult.Difference.Kind;
 import org.netbeans.api.java.source.PositionConverter;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.parsing.api.Source;
@@ -67,6 +78,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -249,7 +261,20 @@ public abstract class JavaSourceAccessor {
      * @param info
      */
     public abstract void invalidate (CompilationInfo info);
-    
+
+    public abstract AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type);
+    public abstract AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t);
+
+    public static boolean holdsParserLock() {
+	return Utilities.holdsParserLock();
+    }
+
+    public abstract Difference createDifference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description);
+    public abstract Difference createNewFileDifference(JavaFileObject fileObject, String text);
+    public abstract ModificationResult createModificationResult(Map<FileObject, List<Difference>> diffs, Map<?, int[]> tag2Span);
+    public abstract Map<FileObject, List<Difference>> getDiffsFromModificationResult(ModificationResult mr);
+    public abstract Map<?, int[]> getTagsFromModificationResult(ModificationResult mr);
+
     private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         
         private final JavaSource javaSource;

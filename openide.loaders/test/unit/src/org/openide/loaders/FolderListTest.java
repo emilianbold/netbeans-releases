@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,17 +46,8 @@
 package org.openide.loaders;
 
 import java.util.logging.Level;
-import junit.framework.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.lang.ref.Reference;
-import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
-import org.openide.util.datatransfer.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
@@ -65,55 +59,83 @@ import org.openide.util.*;
 public class FolderListTest extends NbTestCase {
     private FileObject folder;
     private FolderList list;
+    private FileObject a;
+    private FileObject b;
+    private FileObject c;
     
     
     public FolderListTest(String testName) {
         super(testName);
     }
     
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(getWorkDir());
-        
+
         folder = FileUtil.createFolder(lfs.getRoot(), "folder");
 
-        FileUtil.createData(folder, "A.txt");
-        FileUtil.createData(folder, "B.txt");
-        FileUtil.createData(folder, "C.txt");
+        a = FileUtil.createData(folder, "A.txt");
+        b = FileUtil.createData(folder, "B.txt");
+        c = FileUtil.createData(folder, "C.txt");
         
         list = FolderList.find(folder, true);
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     public void testComputeChildrenList() throws Exception {
-        class L implements FolderListListener {
-            private int cnt;
-            private boolean finished;
-            
-            public void process(DataObject obj, List arr) {
-                cnt++;
-            }
-
-            public void finished(List arr) {
-                assertTrue(arr.isEmpty());
-                finished = true;
-            }
-        }
-        
         L listener = new L();       
         RequestProcessor.Task t = list.computeChildrenList(listener);
         t.waitFinished();
         
         assertEquals("Three files", 3, listener.cnt);
         assertTrue("finished", listener.finished);
+
+        assertEquals("a", a, listener.cummulate.get(0).getPrimaryFile());
+        assertEquals("c", b, listener.cummulate.get(1).getPrimaryFile());
+        assertEquals("b", c, listener.cummulate.get(2).getPrimaryFile());
+    }
+
+    public void testComputeChildrenListOrder() throws Exception {
+        list.computeChildrenList(new L()).waitFinished();
+        
+        a.setAttribute("position", 300);
+        b.setAttribute("position", 200);
+        c.setAttribute("position", 100);
+
+        L listener = new L();
+        RequestProcessor.Task t = list.computeChildrenList(listener);
+        t.waitFinished();
+
+        assertEquals("Three files", 3, listener.cnt);
+        assertTrue("finished", listener.finished);
+
+        assertEquals("a", a, listener.cummulate.get(2).getPrimaryFile());
+        assertEquals("c", b, listener.cummulate.get(1).getPrimaryFile());
+        assertEquals("b", c, listener.cummulate.get(0).getPrimaryFile());
     }
     
+    static class L implements FolderListListener {
+        int cnt;
+        boolean finished;
+        List<DataObject> cummulate = new ArrayList<DataObject>();
+
+        @Override
+        public void finished(List<DataObject> arr) {
+            assertTrue(arr.isEmpty());
+            finished = true;
+        }
+
+        @Override
+        public void process(DataObject obj, List<DataObject> arr) {
+            cnt++;
+            cummulate.add(obj);
+        }
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,10 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 
 /**
  * Factory for commonly needed generic project actions.
@@ -214,6 +219,21 @@ public class CommonProjectActions {
      */
     public static Action setProjectConfigurationAction() {
         return Utilities.getActionsFactory().setProjectConfigurationAction();
+    }
+
+    /**
+     * Loads actions to be displayed in the context menu of {@link LogicalViewProvider#createLogicalView}.
+     * The current implementation simply loads actions from {@code Projects/<projectType>/Actions}
+     * but in the future it may merge in actions from another location as well.
+     * <p>The folder is recommended to contain a link to {@code Projects/Actions} at some position
+     * in order to pick up miscellaneous actions applicable to all project types.
+     * @param projectType a type token, such as {@code org-netbeans-modules-java-j2seproject}
+     * @return a list of actions
+     * @since org.netbeans.modules.projectuiapi/1 1.43
+     */
+    public static Action[] forType(String projectType) {
+        List<? extends Action> actions = org.openide.util.Utilities.actionsForPath("Projects/" + projectType + "/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
 
 }

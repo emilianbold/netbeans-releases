@@ -33,7 +33,7 @@ import org.openide.util.Utilities;
  */
 public class XsltTransformationsNode extends FilterNode {
     
-    private static Image ICON = ImageUtilities.loadImage("org/netbeans/modules/xslt/project/resources/transformations.gif");
+    private static Image ICON = ImageUtilities.loadImage("org/netbeans/modules/xslt/project/resources/transformations.gif"); // NOI18N
     
     public XsltTransformationsNode(DataObject dObj) {
         super(dObj.getNodeDelegate());

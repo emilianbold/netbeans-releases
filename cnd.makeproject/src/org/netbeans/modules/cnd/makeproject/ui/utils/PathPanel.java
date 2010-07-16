@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,9 @@
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 
 public class PathPanel extends javax.swing.JPanel {
-    public static final int REL_OR_ABS = 0;
-    public static final int REL = 1;
-    public static final int ABS = 2;
-
     /** Creates new form PathPanel */
     public PathPanel() {
         initComponents();
@@ -55,21 +55,18 @@ public class PathPanel extends javax.swing.JPanel {
         pathButtonGroup.add(relRadioButton);
         pathButtonGroup.add(absRadioButton);
 
-	setMode(MakeOptions.getInstance().getPathMode());
+	setMode(MakeProjectOptions.getPathMode());
     }
     
-    public void setMode(int mode) {
+    private void setMode(int mode) {
 	MakeOptions.getInstance().setPathMode(mode);
-        if (mode == REL_OR_ABS)
+        if (mode == MakeProjectOptions.REL_OR_ABS) {
             relOrAbsRadioButton.setSelected(true);
-        else if (mode == REL)
+        } else if (mode == MakeProjectOptions.REL) {
             relRadioButton.setSelected(true);
-        else
+        } else {
             absRadioButton.setSelected(true);
-    }
-    
-    public static int getMode() {
-        return MakeOptions.getInstance().getPathMode();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -155,15 +152,15 @@ public class PathPanel extends javax.swing.JPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void absRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_absRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(ABS);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.ABS);
     }//GEN-LAST:event_absRadioButtonActionPerformed
 
     private void relRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(REL);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.REL);
     }//GEN-LAST:event_relRadioButtonActionPerformed
 
     private void relOrAbsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relOrAbsRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(REL_OR_ABS);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.REL_OR_ABS);
     }//GEN-LAST:event_relOrAbsRadioButtonActionPerformed
     
     

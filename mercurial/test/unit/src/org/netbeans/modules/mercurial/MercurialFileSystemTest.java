@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,9 @@ import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
@@ -145,24 +150,11 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
     private void commit(List<File> files) throws HgException {       
         
         List<File> filesToAdd = new ArrayList<File>();
-        FileInformation status;
         for (File file : files) {
-
-            status = HgCommand.getSingleStatus(getWorkDir(), file.getParentFile().getAbsolutePath(), file.getName());
-            if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {                   
+            if(findStatus(HgCommand.getStatus(getWorkDir(), Collections.singletonList(file)),
+                    FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
                 filesToAdd.add(file);
-
-                File parent = file.getParentFile();
-                while (!getWorkDir().equals(parent)) {
-                    status = HgCommand.getSingleStatus(getWorkDir(), parent.getParentFile().getAbsolutePath(), parent.getName());
-                    if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                        filesToAdd.add(0, parent);
-                        parent = parent.getParentFile();
-                    } else {
-                        break;
-                    }
-                }                                    
-            }    
+            }
         }            
             
         HgCommand.doAdd(getWorkDir(), filesToAdd, null);
@@ -178,15 +170,17 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
 //            assertStatus(file);
 //        }        
     }
-
-    private void assertStatus(File f) throws HgException {
-        FileInformation status;
-        status = HgCommand.getSingleStatus(getWorkDir(), f.getParentFile().getAbsolutePath(), f.getName());
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, status.getStatus());
-    }    
     
     private void init() throws HgException {
         HgCommand.doCreate(getWorkDir(), null);
     }    
 
+    private boolean findStatus(Map<File, FileInformation> statuses, int status) {
+        for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+            if (e.getValue().getStatus() == status) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

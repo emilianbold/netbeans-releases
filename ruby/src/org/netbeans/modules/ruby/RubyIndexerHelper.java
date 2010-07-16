@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -117,7 +120,7 @@ public final class RubyIndexerHelper {
             if (isRubyStubs(fo)) {
                 rdocs = getCallSeq(child, parserResult.getSnapshot());
             } else if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                rdocs = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), root);
+                rdocs = AstUtilities.gatherDocumentation(parserResult.getSnapshot(), child.getNode());
             }
 
             // See if the method takes blocks
@@ -310,8 +313,24 @@ public final class RubyIndexerHelper {
                 MethodDefNode method = (MethodDefNode) child.getNode();
                 //hashNames = getAttribute(file, fo, root, method);
                 hashNames = getAttribute(fo, root, method);
+                if (hashNames == null && rdocs != null && child instanceof MethodElement) {
+                    MethodElement me = (MethodElement) child;
+                    boolean match = false;
+                    // try first params with the splat operator
+                    for (String param : me.getParameters()) {
+                        if (param.startsWith("*")) {
+                            hashNames = HashNameAnalyzer.collect(param.substring(1), rdocs);
+                            match = true;
+                            break;
+                        }
+                    }
+                    // attempt to collect options from rdocs if if one the params is 'options'
+                    if (!match && me.getParameters().contains("options")) {
+                        hashNames = HashNameAnalyzer.collect("options", rdocs);
+                        match = true;
+                    }
+                }
             }
-            
             if (hashNames == null) {
                 hashNames = "";
             } else {
@@ -329,13 +348,7 @@ public final class RubyIndexerHelper {
                 }
             }
 
-            RubyType returnType = child.getType().isKnown()
-                    ? child.getType()
-                    : getReturnTypes(child, rdocs, knowledge);
-
-            if (returnType.isKnown()) {
-                child.setType(returnType);
-            }
+            RubyType returnType = child.getType();
 
             // See RubyIndexer for a description of the signature format
             if (blockArgs.length() > 0 || returnType.isKnown() || hashNames.length() > 0) {
@@ -473,40 +486,12 @@ public final class RubyIndexerHelper {
             String signature, int flags, ContextKnowledge knowledge) {
 
         RubyType type = methodElement.getType();
-        if (!type.isKnown()) {
-            List<String> rdocs = null;
-            if (TypeInferenceSettings.getDefault().getRdocTypeInference()) {
-                rdocs = AstUtilities.gatherDocumentation(knowledge.getParserResult().getSnapshot(), methodElement.getNode());
-            }
-            type = getReturnTypes(methodElement, rdocs, knowledge);
-        }
         if (type.isKnown()) {
-            methodElement.setType(type);
-            return signature + ";;" + methodElement.getType().asIndexedString() + ";"; // NOI18N
+            return signature + ";;" + type.asIndexedString() + ";"; // NOI18N
         }
         return signature;
     }
 
-    private static RubyType getReturnTypes(AstElement methodElement, List<String> callseq, ContextKnowledge knowledge) {
-
-        if (callseq != null) {
-            RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
-            if (types.isKnown()) {
-                return types;
-            }
-        }
-        
-        if (TypeInferenceSettings.getDefault().getMethodTypeInference()) {
-            AstPath path = new AstPath();
-            path.descend(knowledge.getRoot());
-            RubyTypeInferencer typeInferencer = RubyTypeInferencer.create(knowledge);
-            return typeInferencer.inferType(methodElement.getNode());
-        }
-
-        return RubyType.createUnknown();
-
-    }
-    
     // BEGIN AUTOMATICALLY GENERATED CODE. SEE THE http://hg.netbeans.org/main/misc/ruby/indexhelper PROJECT FOR DETAILS.
     public static final String HASH_KEY_BOOL = "bool"; // NOI18N
     public static final String HASH_KEY_STRING = "string"; // NOI18N
@@ -609,10 +594,10 @@ public final class RubyIndexerHelper {
                          return "options(=>anchor|only_path:bool|controller:controller|action:action|trailing_slash:bool|host|protocol),options(:back|\"http://)"; // NOI18N
                      }
                      if (sig.startsWith("render(")) { // NOI18N
-                         return "options(=>action:action|partial:partial|status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
+                         return "options(=>action:action|partial:partial|status:status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
                      }
                      if (sig.startsWith("render_to_string(")) { // NOI18N
-                         return "options(=>action:action|partial:partial|status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
+                         return "options(=>action:action|partial:partial|status:status|template|file:file|text:string|json|inline|nothing)"; // NOI18N
                      }
                      return null;
                 }
@@ -989,10 +974,10 @@ public final class RubyIndexerHelper {
                 if ("ActionController::Streaming".equals(clz)) { // NOI18N
                      String sig = sig(method);
                      if (sig.startsWith("send_file(")) { // NOI18N
-                         return "options(=>filename|type|disposition|stream|buffer_size|status)"; // NOI18N
+                         return "options(=>filename|type|disposition|stream|buffer_size|status:status)"; // NOI18N
                      }
                      if (sig.startsWith("send_data(")) { // NOI18N
-                         return "options(=>filename|type|disposition|status)"; // NOI18N
+                         return "options(=>filename|type|disposition|status:status)"; // NOI18N
                      }
                      return null;
                 }

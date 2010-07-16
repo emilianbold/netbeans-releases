@@ -85,7 +85,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
 
-            boolean isJSF20 = isJSF20(wm);
+            boolean isJSF20 = JSFUtils.isJSF20(wm);
             String templateFile = TEMPLATE_XHTML;
             if (isJSF20) {
                 templateFile = TEMPLATE_XHTML2;
@@ -95,12 +95,6 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             JSFFrameworkProvider.createFile(result, content, ENCODING); //NOI18N
         }
         return result;
-    }
-
-    private static boolean isJSF20(WebModule wm) {
-        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-        boolean isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
-        return isJSF20;
     }
 
     public Set instantiate(TemplateWizard wiz) throws IOException {
@@ -114,7 +108,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
-                final boolean isJSF20 = isJSF20(wm);
+                final boolean isJSF20 = JSFUtils.isJSF20(wm);
 
                 df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
                     public void run() throws IOException {

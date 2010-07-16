@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -59,11 +61,8 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
     public static class RemoteHostInfo extends HostInfoProvider {
 
         private final ExecutionEnvironment executionEnvironment;
-        private String home = null;
-        private PathMap mapper;
         private Map<String, String> envCache = null;
         private Boolean isCshShell;
-        private Integer platform;
 
         @Override
         public boolean fileExists(String path) {
@@ -90,10 +89,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public synchronized PathMap getMapper() {
-            if (mapper == null) {
-                mapper = RemotePathMap.getPathMap(executionEnvironment);
-            }
-            return mapper;
+            return RemotePathMap.getPathMap(executionEnvironment);
         }
 
         @Override
@@ -124,35 +120,6 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
                 isCshShell = Boolean.valueOf(support.run() != 0);
             }
             return isCshShell.booleanValue();
-        }
-
-        @Override
-        public int getPlatform() {
-            if (platform == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
-                int result;
-                if (support.run() == 0) {
-                    result = recognizePlatform(support.getOutput());
-                } else {
-                    result = PlatformTypes.PLATFORM_GENERIC;
-                }
-                platform = Integer.valueOf(result);
-            }
-            return platform.intValue();
-        }
-
-        private static int recognizePlatform(String platform) {
-            if (platform.startsWith("Windows")) { // NOI18N
-                return PlatformTypes.PLATFORM_WINDOWS;
-            } else if (platform.startsWith("Linux")) { // NOI18N
-                return PlatformTypes.PLATFORM_LINUX;
-            } else if (platform.startsWith("SunOS")) { // NOI18N
-                return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-            } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
-                return PlatformTypes.PLATFORM_MACOSX;
-            } else {
-                return PlatformTypes.PLATFORM_GENERIC;
-            }
         }
     }
 

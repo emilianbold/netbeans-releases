@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,16 +47,25 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.Module;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -74,6 +86,7 @@ implements PropertyChangeListener, LookupListener {
     private static FeatureManager INSTANCE;
     private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("FoD Processor"); // NOI18N
+
     private final Lookup.Result<ModuleInfo> result;
     private final ChangeSupport support;
     private Set<String> enabledCnbs = Collections.emptySet();
@@ -296,4 +309,240 @@ implements PropertyChangeListener, LookupListener {
         }).waitFinished();
     }
 
+
+    //
+    // Features Off Demand
+    //
+    private static final Logger LOG = Logger.getLogger(FeatureManager.class.getName());
+    static void associateFiles(List<FileObject> enabled) {
+        long when = 0;
+        for (FileObject f : enabled) {
+            long t = f.lastModified().getTime();
+            if (t > when) {
+                when = t;
+            }
+        }
+        for (FileObject f : enabled) {
+            LOG.log(Level.FINE, "Enabling ErgoControl for {0}", f);
+            try {
+                f.setAttribute("ergonomicsEnabled", when); // NOI18N
+                f.setAttribute("ergonomicsUnused", 0); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public static void incrementUnused(Project[] projects) throws IOException {
+        final FileObject fo = FileUtil.getConfigFile("Modules"); // NOI18N
+        if (fo == null) {
+            return;
+        }
+        final FileObject[] arr = fo.getChildren();
+
+        Set<String> enabled = new HashSet<String>();
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            Module m = (Module) mi;
+            if (m.isAutoload() || m.isEager() || m.isFixed()) {
+                continue;
+            }
+            if (m.isEnabled()) {
+                enabled.add(m.getCodeNameBase());
+            }
+        }
+
+
+        Map<String,Long> cnb2Date = new HashMap<String, Long>();
+        Map<Long,List<FileObject>> date2Files = new HashMap<Long,List<FileObject>>();
+        Set<String> explicitlyUsedCnbs = new HashSet<String>();
+        for (int i = 0; i < arr.length; i++) {
+            final FileObject module = arr[i];
+            final String cnb = module.getName().replace('-', '.');
+            final Object when = module.getAttribute("ergonomicsEnabled"); // NOI18N
+            LOG.log(Level.FINEST, "Controlling {0}: {1}", new Object[] { module, when });
+            if (!(when instanceof Long) || ((Long)when) < module.lastModified().getTime()) {
+                if (enabled.contains(cnb)) {
+                    explicitlyUsedCnbs.add(cnb);
+                }
+                continue;
+            }
+            final Long date = (Long) when;
+            cnb2Date.put(cnb, date);
+            List<FileObject> files = date2Files.get(date);
+            if (files == null) {
+                files = new ArrayList<FileObject>();
+                date2Files.put(date, files);
+            }
+            files.add(module);
+        }
+
+        Set<String> transitivelyUsedCnbs = transitiveDeps(explicitlyUsedCnbs);
+
+        List<FeatureInfo> unused = new ArrayList<FeatureInfo>();
+        NEXT_FEATURE: for (FeatureInfo fi : FeatureManager.features()) {
+            for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (!isModuleFrom(mi, fi.clusterName)) {
+                    continue;
+                }
+                if (transitivelyUsedCnbs.contains(mi.getCodeNameBase())) {
+                    LOG.log(Level.FINE, "Transitive dependency on {0}", mi.getCodeNameBase());
+                    markUsed(unused, fi, cnb2Date, date2Files);
+                    continue NEXT_FEATURE;
+                }
+            }
+            unused.add(fi);
+        }
+        for (int i = 0; i < projects.length; i++) {
+            FeatureProjectFactory.Data d = new FeatureProjectFactory.Data(
+                projects[i].getProjectDirectory(), true
+            );
+
+            for (FeatureInfo fi : FeatureManager.features()) {
+                if (!fi.isEnabled()) {
+                    continue;
+                }
+                if (fi.isProject(d) == 0) {
+                    continue;
+                }
+                markUsed(unused, fi, cnb2Date, date2Files);
+            }
+        }
+
+        Set<FileObject> processed = new HashSet<FileObject>();
+        for (FeatureInfo fi : unused) {
+            LOG.log(Level.FINE, "Unused feature {0}", fi.clusterName);
+            Long groupId = null;
+            for (String cnb : fi.getCodeNames()) {
+                if (groupId == null) {
+                    groupId = cnb2Date.get(cnb);
+                    if (groupId == null) {
+                        break;
+                    }
+                }
+                if (!groupId.equals(cnb2Date.get(cnb))) {
+                    date2Files.remove(groupId);
+                    groupId = null;
+                    break;
+                }
+            }
+            if (groupId != null) {
+                for (List<FileObject> list : date2Files.values()) {
+                    for (FileObject increment : list) {
+                        if (!processed.add(increment)) {
+                            continue;
+                        }
+                        int now = 0;
+                        Object obj = increment.getAttribute("ergonomicsUnused"); // NOI18N
+                        if (obj instanceof Number) {
+                            now = ((Number)obj).intValue();
+                        }
+                        now++;
+                        increment.setAttribute("ergonomicsUnused", now); // NOI18N
+                        LOG.log(Level.FINE, "Incremented to {0} for {1}", new Object[] { now, increment });
+                    }
+                }
+            }
+        }
+    }
+    public static void disableUnused(int howMuch) throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Modules"); // NOI18N
+        final FileObject[] arr = fo.getChildren();
+        boolean first = true;
+        for (int i = 0; i < arr.length; i++) {
+            FileObject module = arr[i];
+            final Object when = module.getAttribute("ergonomicsEnabled"); // NOI18N
+            LOG.log(Level.FINEST, "Checking {0}: {1}", new Object[] { module, when });
+            if (!(when instanceof Long) || ((Long) when) < module.lastModified().getTime()) {
+                continue;
+            }
+            final Object unused = module.getAttribute("ergonomicsUnused"); // NOI18N
+            LOG.log(Level.FINEST, "Unused {0}", unused);
+            if (!(unused instanceof Number) || ((Number)unused).intValue() < howMuch) {
+                continue;
+            }
+            String cnb = module.getName().replace('-', '.');
+            if (first) {
+                LOG.info("Long time unused modules found, disabling:"); // NOI18N
+                first = false;
+            }
+            LOG.info(cnb);
+            Object clean = module.getAttribute("removeWritables"); // NOI18N
+            if (clean instanceof Callable) {
+                ((Callable)clean).call();
+            }
+        }
+    }
+
+    private static Set<String> transitiveDeps(Set<String> cnbs) {
+        HashSet<String> all = new HashSet<String>();
+        all.addAll(cnbs);
+        for (;;) {
+            int prev = all.size();
+            for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (all.contains(mi.getCodeNameBase())) {
+                    for (Dependency d : mi.getDependencies()) {
+                        if (d.getType() != Dependency.TYPE_MODULE) {
+                            continue;
+                        }
+                        String moduleName = d.getName();
+                        int slash = moduleName.indexOf('/');
+                        if (slash != -1) {
+                            moduleName = moduleName.substring(0, slash);
+                        }
+                        all.add(moduleName);
+                    }
+                }
+            }
+            if (prev == all.size()) {
+                Set<String> test = null;
+                assert (test = new HashSet<String>(all)) != null;
+                if (test != null) {
+                    for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                        test.remove(mi.getCodeNameBase());
+                    }
+                    assert test.isEmpty() : "Only CNBs are in the set: " + test;
+                }
+                return all;
+            }
+        }
+    }
+    
+    static boolean isModuleFrom(ModuleInfo mi, String prefix) {
+        File f;
+        if (mi instanceof Module) {
+            f = ((Module)mi).getJarFile();
+        } else {
+            return false;
+        }
+        if (f != null && f.getParentFile().getName().equals("modules")) { // NOI18N
+            if (f.getParentFile().getParentFile().getName().startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static void markUsed(
+        List<FeatureInfo> unused,
+        FeatureInfo fi,
+        Map<String, Long> cnb2Date,
+        Map<Long, List<FileObject>> date2Files
+    ) throws IOException {
+        unused.remove(fi);
+        for (String cnb : fi.getCodeNames()) {
+            final Long thisIsUsedGroup = cnb2Date.get(cnb);
+            final List<FileObject> files = date2Files.get(thisIsUsedGroup);
+            if (files != null) {
+                for (FileObject usedFile : files) {
+                    Object prev = usedFile.getAttribute("ergonomicsUnused"); // NOI18N
+                    if (!(prev instanceof Number) || ((Number) prev).intValue() == 0) {
+                        LOG.log(Level.FINE, "Already marked as used: {0}", usedFile);
+                        continue;
+                    }
+                    LOG.log(Level.FINE, "Marking {0} as used", usedFile);
+                    usedFile.setAttribute("ergonomicsUnused", 0); // NOI18N
+                }
+                date2Files.remove(thisIsUsedGroup);
+            }
+        }
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -54,6 +59,7 @@ import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,6 +85,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -103,7 +111,9 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -121,7 +131,9 @@ import org.openide.windows.WindowManager;
  */
 public final class OpenProjectList {
     
-    public static final Comparator<Project> PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
+    public static Comparator<Project> projectByDisplayName() {
+        return new ProjectByDisplayNameComparator();
+    }
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
@@ -134,7 +146,7 @@ public final class OpenProjectList {
     // number of templates in LRU list
     private static final int NUM_TEMPLATES = 15;
     
-    static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
+    public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static StringBuffer details;
@@ -364,13 +376,30 @@ public final class OpenProjectList {
 
             log(Level.FINER, "updateGlobalState, done, notified"); // NOI18N
         }
+
+        boolean closeBeforeOpen(Project[] arr) {
+            NEXT: for (int i = 0; i < arr.length; i++) {
+                FileObject dir = arr[i].getProjectDirectory();
+                synchronized (toOpenProjects) {
+                    for (Iterator<Project> it = toOpenProjects.iterator(); it.hasNext();) {
+                        if (dir.equals(it.next().getProjectDirectory())) {
+                            it.remove();
+                            continue NEXT;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
             
         private void loadOnBackground() {
             lazilyOpenedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
             Project[] inital;
+            final LinkedList<Project> projects = URLs2Projects(URLs);
             synchronized (toOpenProjects) {
-                toOpenProjects.addAll(URLs2Projects(URLs));
+                toOpenProjects.addAll(projects);
                 log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }
@@ -378,8 +407,7 @@ public final class OpenProjectList {
             URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
             int max;
             synchronized (toOpenProjects) {
-                for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
-                    Project p = (Project)it.next();
+                for (Project p : toOpenProjects) {
                     INSTANCE.addModuleInfo(p);
                     // Set main project
                     try {
@@ -716,7 +744,11 @@ public final class OpenProjectList {
     }
        
     public void close( Project someProjects[], boolean notifyUI ) {
-        LOAD.waitFinished();
+        boolean doSave = false;
+        if (!LOAD.closeBeforeOpen(someProjects)) {
+            doSave = true;
+            LOAD.waitFinished();
+        }
         
         Project[] projects = new Project[someProjects.length];
         for (int i = 0; i < someProjects.length; i++) {
@@ -731,87 +763,95 @@ public final class OpenProjectList {
         try {
             LOAD.enter();
             ProjectUtilities.WaitCursor.show();
-        logProjects("close(): closing project: ", projects);
-        boolean mainClosed = false;
-        boolean someClosed = false;
-        List<Project> oldprjs = new ArrayList<Project>();
-        List<Project> newprjs = new ArrayList<Project>();
-        List<Project> notifyList = new ArrayList<Project>();
-        synchronized ( this ) {
-            oldprjs.addAll(openProjects);
-            for( int i = 0; i < projects.length; i++ ) {
-                Iterator<Project> it = openProjects.iterator();
-                boolean found = false;
-                while (it.hasNext()) {
-                    if (it.next().equals(projects[i])) {
-                        found = true;
-                        break;
+            logProjects("close(): closing project: ", projects);
+            boolean mainClosed = false;
+            boolean someClosed = false;
+            List<Project> oldprjs = new ArrayList<Project>();
+            List<Project> newprjs = new ArrayList<Project>();
+            final List<Project> notifyList = new ArrayList<Project>();
+            synchronized ( this ) {
+                oldprjs.addAll(openProjects);
+                for( int i = 0; i < projects.length; i++ ) {
+                    Iterator<Project> it = openProjects.iterator();
+                    boolean found = false;
+                    while (it.hasNext()) {
+                        if (it.next().equals(projects[i])) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        continue; // Nothing to remove
+                    }
+                    if ( !mainClosed ) {
+                        mainClosed = isMainProject( projects[i] );
+                    }
+                    // remove the project from openProjects
+                    it.remove();
+                    removeModuleInfo(projects[i]);
+
+                    projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
+
+                    notifyList.add(projects[i]);
+
+                    someClosed = true;
+                }
+                if ( someClosed ) {
+                    newprjs.addAll(openProjects);
+                    saveProjectList(openProjects);
+                }
+                if ( mainClosed ) {
+                    this.mainProject = null;
+                    saveMainProject( mainProject );
+                }
+            }
+            if (!notifyList.isEmpty()) {
+                for (Project p : notifyList) {
+                    recentProjects.add(p); // #183681: call outside of lock
+                    recentProjects.save();
+                }
+            }
+            //#125750 not necessary to call notifyClosed() under synchronized lock.
+            OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
+                public void run() {
+                    for (Project closed : notifyList) {
+                        notifyClosed(closed);
                     }
                 }
-                if (!found) {
-                    continue; // Nothing to remove
-                }
-                if ( !mainClosed ) {
-                    mainClosed = isMainProject( projects[i] );
-                }
-                // remove the project from openProjects
-                it.remove();
-                removeModuleInfo(projects[i]);
-                
-                projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
-                
-                recentProjects.add( projects[i] );
-                notifyList.add(projects[i]);
-                
-                someClosed = true;
-            }
+            });
+            logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
             if ( someClosed ) {
-                newprjs.addAll(openProjects);
-                saveProjectList(openProjects);
+                pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS,
+                                oldprjs.toArray(new Project[oldprjs.size()]), newprjs.toArray(new Project[newprjs.size()]) );
             }
             if ( mainClosed ) {
-                this.mainProject = null;
-                saveMainProject( mainProject );
+                pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
             }
             if ( someClosed ) {
-                recentProjects.save();
+                pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
             }
-        }
-        //#125750 not necessary to call notifyClosed() under synchronized lock.
-        for (Project closed : notifyList) {
-            notifyClosed( closed );
-        }
-        logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-        if ( someClosed ) {
-            pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, 
-                            oldprjs.toArray(new Project[oldprjs.size()]), newprjs.toArray(new Project[newprjs.size()]) );
-        }
-        if ( mainClosed ) {
-            pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
-        }
-        if ( someClosed ) {
-            pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
-        }
-        // Noticed in #72006: save them, in case e.g. editor stored bookmarks when receiving PROPERTY_OPEN_PROJECTS.
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i] instanceof LazyProject) {
-                //#147819 we need to ignore lazyProjects when saving, oh well.
-                continue;
+            if (doSave) {
+                // Noticed in #72006: save them, in case e.g. editor stored bookmarks when receiving PROPERTY_OPEN_PROJECTS.
+                for (int i = 0; i < projects.length; i++) {
+                    if (projects[i] instanceof LazyProject) {
+                        //#147819 we need to ignore lazyProjects when saving, oh well.
+                        continue;
+                    }
+                    try {
+                        ProjectManager.getDefault().saveProject(projects[i]);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
             }
-            try {
-                ProjectManager.getDefault().saveProject(projects[i]);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
-        log(removedRec,"org.netbeans.ui.projects");
-        removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
-        log(removedRec,"org.netbeans.ui.metrics.projects");
+            LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
+            log(removedRec, "org.netbeans.ui.projects");
+            removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
+            log(removedRec, "org.netbeans.ui.metrics.projects");
         } finally {
             ProjectUtilities.WaitCursor.hide();
             LOAD.exit();
-    }
+        }
     }
         
     public synchronized Project[] getOpenProjects() {
@@ -822,8 +862,7 @@ public final class OpenProjectList {
     
     public synchronized boolean isOpen( Project p ) {
         // XXX shouldn't this just use openProjects.contains(p)?
-        for( Iterator it = openProjects.iterator(); it.hasNext(); ) {
-            Project cp = (Project)it.next();
+        for(Project cp : openProjects) {
             if ( p.getProjectDirectory().equals( cp.getProjectDirectory() ) ) { 
                 return true;
             }
@@ -980,9 +1019,7 @@ public final class OpenProjectList {
     // Used from ProjectUiModule
     static void shutdown() {
         if (INSTANCE != null) {
-            Iterator it = INSTANCE.openProjects.iterator();
-            while (it.hasNext()) {
-                Project p = (Project)it.next();
+            for (Project p : INSTANCE.openProjects) {
                 notifyClosed(p);
             }
         }
@@ -1062,9 +1099,7 @@ public final class OpenProjectList {
     
     private static boolean notifyOpened(Project p) {
         boolean ok = true;
-        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
-            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
-            
+        for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
@@ -1080,13 +1115,15 @@ public final class OpenProjectList {
                 ok = false;
             }
         }
+        if (System.getProperty("test.whitelist.stage") == null) { // NOI18N
+            // disable warming up of templates when running ide.kit/test/whitelist
+            prepareTemplates(null, null, null, null, p, p.getLookup());
+        }
         return ok;
     }
     
     private static void notifyClosed(Project p) {
-        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
-            ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
-            
+        for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
@@ -1097,6 +1134,30 @@ public final class OpenProjectList {
         }
     }
     
+    public static boolean prepareTemplates(
+            JMenu menuItem, ActionListener menuListener,
+            MessageFormat templateName, String propertyName,
+            Project project, Lookup lookup) {
+        // check the action context for recommmended/privileged templates..
+        PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
+        boolean itemAdded = false;
+        for (DataObject template : OpenProjectList.getDefault().getTemplatesLRU(project, privs)) {
+            Node delegate = template.getNodeDelegate();
+            Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
+            String displayName = delegate.getDisplayName();
+            if (templateName != null) {
+                JMenuItem item = new JMenuItem(
+                        templateName.format(new Object[]{displayName}),
+                        icon);
+                item.addActionListener(menuListener);
+                item.putClientProperty(propertyName, template);
+                menuItem.add(item);
+            } // else being warmed up from notifyOpened
+            itemAdded = true;
+        }
+        return itemAdded;
+    }
+
     private boolean doOpenProject(final Project p) {
         boolean recentProjectsChanged;
         LOGGER.finer("doOpenProject(): opening project " + p.toString());
@@ -1156,8 +1217,8 @@ public final class OpenProjectList {
         OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
         List<String> names = new ArrayList<String>();
         List<ExtIcon> icons = new ArrayList<ExtIcon>();
-        for (Iterator<Project> it = projects.iterator(); it.hasNext(); ) {
-            ProjectInformation prjInfo = ProjectUtils.getInformation(it.next());
+        for (Project p : projects) {
+            ProjectInformation prjInfo = ProjectUtils.getInformation(p);
             names.add(prjInfo.getDisplayName());
             ExtIcon extIcon = new ExtIcon();
             extIcon.setIcon(prjInfo.getIcon());
@@ -1236,10 +1297,8 @@ public final class OpenProjectList {
         Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
         if (o != null) {
             assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-            Iterator categoriesIt = getCategories ((String)o).iterator ();
             boolean ok = false;
-            while (categoriesIt.hasNext ()) {
-                String category = (String)categoriesIt.next ();
+            for (String category : getCategories((String) o)) {
                 if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
                     ok = true;
                     break;
@@ -1293,54 +1352,44 @@ public final class OpenProjectList {
             }
         }
         
-        public synchronized void add( Project p ) {
-            int index = getIndex( p );
-            
-            if ( index == -1 ) {
-                // Project not in list
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "add new recent project: " + p);
-                }
-                if ( recentProjects.size() == size ) {
-                    // Need some space for the newly added project
-                    recentProjects.remove( size - 1 );
-                    recentProjectsInfos.remove(size - 1);
-                }
-                recentProjects.add( 0, new ProjectReference( p ) );
-                try {
-                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
+        public void add(Project p) {
+            UnloadedProjectInformation projectInfo;
+            try { // #183681: call outside of lock
+                projectInfo = ProjectInfoAccessor.DEFAULT.getProjectInfo(
                         ProjectUtils.getInformation(p).getDisplayName(),
                         ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL()));
-                } catch(FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
+                        p.getProjectDirectory().getURL());
+            } catch(FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                return;
             }
-            else {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "re-add recent project: " + p);
+            synchronized (this) {
+                int index = getIndex(p);
+                if (index == -1) {
+                    // Project not in list
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        log(Level.FINE, "add new recent project: " + p);
+                    }
+                    if (recentProjects.size() == size) {
+                        // Need some space for the newly added project
+                        recentProjects.remove(size - 1);
+                        recentProjectsInfos.remove(size - 1);
+                    }
+                } else {
+                    LOGGER.log(Level.FINE, "re-add recent project: {0} @{1}", new Object[] {p, index});
+                    // Project is in list => just move it to first place
+                    recentProjects.remove(index);
+                    recentProjectsInfos.remove(index);
                 }
-                // Project is in list => just move it to first place
-                recentProjects.remove( index );
-                recentProjects.add( 0, new ProjectReference( p ) );
-                recentProjectsInfos.remove(index);
-                try {
-                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
-                        ProjectUtils.getInformation(p).getDisplayName(),
-                        ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL()));
-                } catch(FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
+                recentProjects.add(0, new ProjectReference(p));
+                recentProjectsInfos.add(0, projectInfo);
             }
         }
         
         public synchronized boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "remove recent project: " + p);
-                }
+                LOGGER.log(Level.FINE, "remove recent project: {0} @{1}", new Object[] {p, index});
                 recentProjects.remove( index );
                 recentProjectsInfos.remove(index);
                 return true;
@@ -1398,8 +1447,7 @@ public final class OpenProjectList {
             List<Project> result = new ArrayList<Project>( recentProjects.size() );
             // Copy the list
             List<ProjectReference> references = new ArrayList<ProjectReference>( recentProjects );
-            for ( Iterator<ProjectReference> it = references.iterator(); it.hasNext(); ) {
-                ProjectReference pRef = it.next(); 
+            for (ProjectReference pRef : references) {
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
@@ -1433,15 +1481,17 @@ public final class OpenProjectList {
                 log(Level.FINE, "recent project list load: " + URLs);
             }
             recentProjects.clear();
-            for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
-                recentProjects.add( new ProjectReference( (URL)it.next() ) );
+            for (URL url : URLs) {
+                recentProjects.add(new ProjectReference(url));
             }
             recentProjectsInfos.clear();
-            for (Iterator iterNames = names.iterator(), iterURLs = URLs.iterator(), iterIcons = icons.iterator(); 
-                    (iterNames.hasNext() && iterURLs.hasNext() && iterIcons.hasNext()); ) {
-                String name = (String) iterNames.next();
-                URL url = (URL) iterURLs.next();
-                Icon icon = ((ExtIcon) iterIcons.next()).getIcon();
+            Iterator<String> iterNames = names.iterator();
+            Iterator<URL> iterURLs = URLs.iterator();
+            Iterator<ExtIcon> iterIcons = icons.iterator();
+            while (iterNames.hasNext() && iterURLs.hasNext() && iterIcons.hasNext()) {
+                String name = iterNames.next();
+                URL url = iterURLs.next();
+                Icon icon = iterIcons.next().getIcon();
                 recentProjectsInfos.add(ProjectInfoAccessor.DEFAULT.getProjectInfo(name, icon, url));
             }
             // if following is true then there was either some problem with serialization
@@ -1452,13 +1502,11 @@ public final class OpenProjectList {
                 recentProjectsInfos.clear();
             }
             // register project delete listener to all open projects
-            synchronized (this) {
                 for (Project p : openProjects) {
                     assert p != null : "There is null in " + openProjects;
                     assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
                     p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
                 }
-            }
         }
         
         public void save() {
@@ -1469,15 +1517,14 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                log(Level.FINE, "recent project list save: " + URLs);
-            }
+            List<UnloadedProjectInformation> _recentProjectsInfos = getRecentProjectsInfo();
+            LOGGER.log(Level.FINE, "save recent project list: recentProjects={0} recentProjectsInfos={1} URLs={2}",
+                    new Object[] {recentProjects, _recentProjectsInfos, URLs});
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
-            int listSize = recentProjectsInfos.size();
+            int listSize = _recentProjectsInfos.size();
             List<String> names = new ArrayList<String>(listSize);
             List<ExtIcon> icons = new ArrayList<ExtIcon>(listSize);
-            for (Iterator it = recentProjectsInfos.iterator(); it.hasNext(); ) {
-                UnloadedProjectInformation prjInfo = (UnloadedProjectInformation) it.next();
+            for (UnloadedProjectInformation prjInfo : _recentProjectsInfos) {
                 names.add(prjInfo.getDisplayName());
                 ExtIcon extIcon = new ExtIcon();
                 extIcon.setIcon(prjInfo.getIcon());
@@ -1502,20 +1549,22 @@ public final class OpenProjectList {
             
             int i = 0;
             
-            for( Iterator it = recentProjects.iterator(); it.hasNext(); i++) {
-                URL p2URL = ((ProjectReference)it.next()).getURL();
+            for (ProjectReference pRef : recentProjects) {
+                URL p2URL = pRef.getURL();
                 if ( pURL.equals( p2URL ) ) {
                     return i;
+                } else {
+                    i++;
                 }
             }
             
             return -1;
         }
         
-        private List<UnloadedProjectInformation> getRecentProjectsInfo() {
+        private synchronized List<UnloadedProjectInformation> getRecentProjectsInfo() {
             // #166408: refreshing is too time expensive and we want to be fast, not correct
             //refresh();
-            return recentProjectsInfos;
+            return new ArrayList<UnloadedProjectInformation>(recentProjectsInfos);
         }
         
         private class ProjectReference {
@@ -1588,14 +1637,29 @@ public final class OpenProjectList {
             public URL getURL() {
                 return projectURL;
             }
+
+            public @Override String toString() {
+                return projectURL.toString();
+            }
             
         }
         
     }
     
-    public static class ProjectByDisplayNameComparator implements Comparator<Project> {
+    private static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-	private static Comparator<Object> COLLATOR = Collator.getInstance();
+        private static Comparator<Object> COLLATOR = Collator.getInstance();
+
+        // memoize results since it could be called >1 time per project:
+        private final Map<Project,String> names = new HashMap<Project,String>();
+        private String getDisplayName(Project p) {
+            String n = names.get(p);
+            if (n == null) {
+                n = ProjectUtils.getInformation(p).getDisplayName();
+                names.put(p, n);
+            }
+            return n;
+        }
         
         public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
@@ -1608,8 +1672,8 @@ public final class OpenProjectList {
 //                return 1;
 //            }
             
-            String n1 = ProjectUtils.getInformation(p1).getDisplayName();
-            String n2 = ProjectUtils.getInformation(p2).getDisplayName();
+            String n1 = getDisplayName(p1);
+            String n2 = getDisplayName(p2);
             if (n1 != null && n2 != null) {
                 return COLLATOR.compare(n1, n2);
             } else if (n1 == null && n2 != null) {
@@ -1806,7 +1870,7 @@ public final class OpenProjectList {
             return;
         }
         for (Project p : projects) {
-            LOGGER.finer(message + p.toString());
+            LOGGER.log(Level.FINER, "{0} {1}", new Object[]{ message, p == null ? null : p.toString()});
         }
     }
     

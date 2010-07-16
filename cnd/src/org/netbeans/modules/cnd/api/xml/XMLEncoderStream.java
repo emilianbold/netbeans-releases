@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,8 +67,7 @@ import org.openide.xml.XMLUtil;
  * <li> Escaping of attribute values and content.
  * </ul>
  */
-
-public class XMLEncoderStream {
+public final class XMLEncoderStream {
 
     private String indentElement = "  ";	// NOI18N
     private int indent;
@@ -87,8 +89,9 @@ public class XMLEncoderStream {
 
     private void makeIndentElement(int indentChars) {
 	indentElement = "";		// NOI18N
-	if (indentChars > 20)
-	    indentChars = 20;
+	if (indentChars > 20) {
+            indentChars = 20;
+        }
 	for (int i = 0; i < indentChars; i++) {
 	    indentElement += " ";	// NOI18N
 	}
@@ -107,7 +110,6 @@ public class XMLEncoderStream {
      * version attribute. This goes hand-in-hand with
      * {@link XMLDecoder#checkVersion}
      */
-
     public void elementOpen(String tagName,
 			       int version,
 			       AttrValuePair[] attrs) {
@@ -127,7 +129,6 @@ public class XMLEncoderStream {
      &lt;tagName attr1="attr1" ...&gt;
      </pre>
      */
-
     public void elementOpen(String tagName, AttrValuePair[] attrs) {
 	elementOpen(tagName, -1, attrs);
     }
@@ -144,7 +145,6 @@ public class XMLEncoderStream {
      * version attribute. This goes hand-in-hand with
      * {@link XMLDecoder#checkVersion}
      */
-
     public void elementOpen(String tagName, int version) {
 	elementOpen(tagName, version, null);
     } 
@@ -158,7 +158,6 @@ public class XMLEncoderStream {
      &lt;tagName&gt;
      </pre>
      */
-
     public void elementOpen(String tagName) {
 	elementOpen(tagName, -1, null);
     } 
@@ -172,11 +171,11 @@ public class XMLEncoderStream {
      &lt;/tagName&gt;
      </pre>
      */
-
     public void elementClose(String tagName) {
 	indent--;
-	if (indent < 0)
-	    indent = 0;
+	if (indent < 0) {
+            indent = 0;
+        }
 	writeIndent();
 	writer.println("</" + tagName + ">");	// NOI18N
     } 
@@ -190,7 +189,6 @@ public class XMLEncoderStream {
      &lt;tagName attr1="attr1" .../&gt;
      </pre>
      */
-
     public void element(String tagName, AttrValuePair[] attrs) {
 	element(tagName, -1, attrs, null);
     }
@@ -204,7 +202,6 @@ public class XMLEncoderStream {
      &lt;tagName&gt;content&lt;/tagName&gt;
      </pre>
      */
-
     public void element(String tagName, String content) {
 	element(tagName, -1, null, content);
     }
@@ -224,7 +221,6 @@ public class XMLEncoderStream {
      * version attribute. This goes hand-in-hand with
      * {@link XMLDecoder#checkVersion}
      */
-
     public void element(String tagName, int version, AttrValuePair[] attrs,
 			String content) {
 	writeIndent();
@@ -255,10 +251,12 @@ public class XMLEncoderStream {
     } 
 
     private void writeIndent(int additionalIndent) {
-	for (int i = 0; i < indent; i++)
-	    writer.print(indentElement);
-	for (int i = 0; i < additionalIndent; i++)
-	    writer.print(' ');
+	for (int i = 0; i < indent; i++) {
+            writer.print(indentElement);
+        }
+	for (int i = 0; i < additionalIndent; i++) {
+            writer.print(' ');
+        }
     }
 
     private void writeIndent() {
@@ -287,8 +285,9 @@ public class XMLEncoderStream {
 			    AttrValuePair[] attrs,
 			    boolean format) {
 
-	if (!format)
-	    return false;
+	if (!format) {
+            return false;
+        }
 
 	int additionalIndent = 1 + tagName.length() + 1;
 	final int max = 80;
@@ -299,8 +298,9 @@ public class XMLEncoderStream {
 	    width += ("" + version).length();	// NOI18N
 	}
 
-	if (width > max)
-	    return true;
+	if (width > max) {
+            return true;
+        }
 
 	if (attrs != null) {
 	    for (int ax = 0; ax < attrs.length; ax++) {
@@ -311,8 +311,9 @@ public class XMLEncoderStream {
 		width += "=\"".length();	// NOI18N
 		width += avp.getValue().length();
 		width += "\"".length();	// NOI18N
-		if (width > max)
-		    return true;
+		if (width > max) {
+                    return true;
+                }
 	    }
 	}
 	return false;
@@ -372,7 +373,6 @@ public class XMLEncoderStream {
 	    try {
 		escapedValue = XMLUtil.toAttributeValue(value);
 	    } catch (java.io.CharConversionException e) {
-		;
 	    }
 	    return escapedValue;
 	}
@@ -390,7 +390,6 @@ public class XMLEncoderStream {
 	    try {
 		escapedContent = XMLUtil.toElementContent(content);
 	    } catch (java.io.CharConversionException e) {
-		;
 	    }
 	    return escapedContent;
 	}

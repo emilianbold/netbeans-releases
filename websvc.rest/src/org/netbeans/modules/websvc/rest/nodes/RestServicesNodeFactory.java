@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,7 @@ public class RestServicesNodeFactory implements NodeFactory {
     public RestServicesNodeFactory() {
     }
 
+    @Override
     public NodeList createNodes(Project p) {
         assert p != null;
 
@@ -92,10 +96,39 @@ public class RestServicesNodeFactory implements NodeFactory {
         private static final String NO_SERVICES = "no_rest_services";   //NOI18N
         private Project project;
         private List<String> result = new ArrayList<String>();
-        private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
-
+        private RequestProcessor.Task updateNodeTask =
+                new RequestProcessor("RestServicesNodeFactory-request-processor").create(new Runnable() { //NOI18N
+            @Override
             public void run() {
                 fireChange();
+            }
+        });
+        private RequestProcessor.Task restModelTask =
+                new RequestProcessor("RestServicesModel-request-processor").create(new Runnable() { //NOI18N
+            @Override
+            public void run() {
+                try {
+                    RestServicesModel model = getModel();
+                    if (model != null) {
+                        model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+
+                            @Override
+                            public Void run(RestServicesMetadata metadata) throws IOException {
+                                RestServices root = metadata.getRoot();
+
+                                if (root.sizeRestServiceDescription() > 0) {
+                                    result.add(KEY_SERVICES);
+                                } else {
+                                    result.add(NO_SERVICES);
+                                }
+                                return null;
+                            }
+                        });
+                        fireChange();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
@@ -104,6 +137,7 @@ public class RestServicesNodeFactory implements NodeFactory {
             this.project = proj;
         }
 
+        @Override
         public List<String> keys() {
             if (!result.isEmpty()) {
                 List<String> tmpResult = new ArrayList<String>();
@@ -116,32 +150,7 @@ public class RestServicesNodeFactory implements NodeFactory {
                 result.clear();
                 return tmpResult;
             } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
-                        try {
-                            RestServicesModel model = getModel();
-                            if (model != null) {
-                                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-
-                                    public Void run(RestServicesMetadata metadata) throws IOException {
-                                        RestServices root = metadata.getRoot();
-
-                                        if (root.sizeRestServiceDescription() > 0) {
-                                            result.add(KEY_SERVICES);
-                                        } else {
-                                            result.add(NO_SERVICES);
-                                        }
-                                        return null;
-                                    }
-                                });
-                                fireChange();
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
+                restModelTask.schedule(100);
             }
             return Collections.emptyList();
         }
@@ -154,10 +163,12 @@ public class RestServicesNodeFactory implements NodeFactory {
             return null;
         }
 
+        @Override
         public synchronized void addChangeListener(ChangeListener l) {
             listeners.add(l);
         }
 
+        @Override
         public synchronized void removeChangeListener(ChangeListener l) {
             listeners.remove(l);
         }
@@ -174,6 +185,7 @@ public class RestServicesNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public Node node(String key) {
             if (KEY_SERVICES.equals(key)) {
                 return new RestServicesNode(project);
@@ -181,6 +193,7 @@ public class RestServicesNodeFactory implements NodeFactory {
             return null;
         }
 
+        @Override
         public void addNotify() {
             RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             if (restSupport != null) {
@@ -188,6 +201,7 @@ public class RestServicesNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public void removeNotify() {
             RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             if (restSupport != null) {
@@ -195,8 +209,9 @@ public class RestServicesNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
+            updateNodeTask.schedule(100);
         }
     }
 }

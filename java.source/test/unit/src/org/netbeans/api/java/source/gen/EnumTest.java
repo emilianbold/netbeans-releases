@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,6 +80,8 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody2"));
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody3"));
 //        suite.addTest(new EnumTest("testConstantAddition"));
+//        suite.addTest(new EnumTest("testConstantAddition147590a"));
+//        suite.addTest(new EnumTest("testConstantAddition147590b"));
 //        suite.addTest(new EnumTest("testImplementsChange153066"));
 //        suite.addTest(new EnumTest("testAddFirstMemberWithoutSemicolon"));
 //        suite.addTest(new EnumTest("testAddFirstMemberWithSemicolonOneConstant"));
@@ -169,7 +174,7 @@ public class EnumTest extends GeneratorTest {
             "import java.util.*;\n" +
             "\n" +
             "public enum Test {\n" +
-            "    A, B, C2;\n" +
+            "    A, B, C2\n" +
             "    \n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
@@ -928,6 +933,96 @@ public class EnumTest extends GeneratorTest {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                //int mods = java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.FINAL | java.lang.reflect.Modifier.STATIC;
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                VariableTree newConstant = make.Variable(modifiers, "D", make.Identifier("Test"), null);
+                workingCopy.rewrite(clazz, make.insertClassMember(clazz, 2, newConstant));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testConstantAddition147590a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A;\n" +
+            "    \n" +
+            "    public void enumMethod() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, D;\n" +
+            "    \n" +
+            "    public void enumMethod() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                //int mods = java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.FINAL | java.lang.reflect.Modifier.STATIC;
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                VariableTree newConstant = make.Variable(modifiers, "D", make.Identifier("Test"), null);
+                workingCopy.rewrite(clazz, make.insertClassMember(clazz, 2, newConstant));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testConstantAddition147590b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, D\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {

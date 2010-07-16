@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.beans.Introspector;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -256,6 +260,7 @@ public class ActionManager {
         if (scanQueue == null) {
             scanQueue = Collections.synchronizedList(new ArrayList<FileObject>());
             rescanTimer = new Timer(3000, new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // Note: this code is called in AWT thread, as well stopAutoRescan.
                     if (scanQueue == null || scanQueue.isEmpty()) {
@@ -337,6 +342,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(action.getClassname());
         try {
             Integer result = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                @Override
                 Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return (int) controller.getTrees().getSourcePositions().getStartPosition(
                             controller.getCompilationUnit(), methodTree);
@@ -377,7 +383,7 @@ public class ActionManager {
                 lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         } catch (Exception ex) {
-            Logger.getLogger(ActionMethodTask.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
@@ -385,6 +391,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(className);
         try {
             Boolean result = new ActionMethodTask<Boolean>(sourceFile, methodName) {
+                @Override
                 Boolean run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return true;
                 }
@@ -417,8 +424,10 @@ public class ActionManager {
             }
             JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -503,6 +512,7 @@ public class ActionManager {
                 }
                 Document doc = ec.getDocument();
                 Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    @Override
                     Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
@@ -542,6 +552,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(className);
         try {
             String result = new ClassTask<String>(sourceFile) {
+                @Override
                 String run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     for (TypeElement el: ElementFilter.typesIn(classElement.getEnclosedElements())) {
                         if (el.getSimpleName().toString().equals(taskName)) {
@@ -752,9 +763,9 @@ public class ActionManager {
                         prop.setValue(null);
                         prop.setValue(action);
                     } catch (IllegalAccessException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     } catch (InvocationTargetException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
@@ -777,8 +788,10 @@ public class ActionManager {
             }
             JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -885,6 +898,7 @@ public class ActionManager {
             // generate Task impl class if does not already exist
             if (newTaskName != null) {
                 Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    @Override
                     Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
@@ -952,6 +966,7 @@ public class ActionManager {
             } else {
                 // in general java source add at the end of the class
                 Integer result = new ClassTask<Integer>(sourceFile) {
+                    @Override
                     Integer run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), classTree);
@@ -977,16 +992,16 @@ public class ActionManager {
         String getterName = "is"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
         String setterName = "set"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
         
-        buf.append(indent+"private boolean " + prop + " = false;\n"); // NOI18N
-        buf.append(indent+"public boolean " + getterName + "() {\n"); // NOI18N
-        buf.append(indent+indent+"return " + prop + ";\n"); // NOI18N
-        buf.append(indent+"}\n"); // NOI18N
+        buf.append(indent).append("private boolean ").append(prop).append(" = false;\n"); // NOI18N
+        buf.append(indent).append("public boolean ").append(getterName).append("() {\n"); // NOI18N
+        buf.append(indent).append(indent).append("return ").append(prop).append(";\n"); // NOI18N
+        buf.append(indent).append("}\n"); // NOI18N
         buf.append("\n"); // NOI18N
-        buf.append(indent+"public void "+setterName+"(boolean b) {\n"); // NOI18N
-        buf.append(indent+indent+"boolean old = " + getterName + "();\n"); // NOI18N
-        buf.append(indent+indent+"this."+prop + " = b;\n"); // NOI18N
-        buf.append(indent+indent+"firePropertyChange(\""+prop+"\", old, "+getterName+"());\n"); // NOI18N
-        buf.append(indent+"}\n\n"); // NOI18N
+        buf.append(indent).append("public void ").append(setterName).append("(boolean b) {\n"); // NOI18N
+        buf.append(indent).append(indent).append("boolean old = ").append(getterName).append("();\n"); // NOI18N
+        buf.append(indent).append(indent).append("this.").append(prop).append(" = b;\n"); // NOI18N
+        buf.append(indent).append(indent).append("firePropertyChange(\"").append(prop).append("\", old, ").append(getterName).append("());\n"); // NOI18N
+        buf.append(indent).append("}\n\n"); // NOI18N
         return buf.toString();
     }
     
@@ -1035,6 +1050,7 @@ public class ActionManager {
 
     private static int[] getAnnotationPositions(ProxyAction action, FileObject sourceFile) throws IOException {
         return new ActionMethodTask<int[]>(sourceFile, action.getMethodName()) {
+            @Override
             int[] run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                 CompilationUnitTree cut = controller.getCompilationUnit();
                 Trees trees = controller.getTrees();
@@ -1100,7 +1116,7 @@ public class ActionManager {
                     FormModel mod = getFormModel(formfile);
                     deleteAction(action, mod);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }
@@ -1191,6 +1207,7 @@ public class ActionManager {
         }
         try {
             List<ProxyAction> result = new ClassTask<List<ProxyAction>>(sourceFile) {
+                @Override
                 List<ProxyAction> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     // collect the superclasses (e.g. to get actions also from the base Application class)
                     List<TypeElement> classList = new LinkedList<TypeElement>();
@@ -1259,6 +1276,7 @@ public class ActionManager {
     static List<String> findBooleanProperties(FileObject fo) {
         try {
             return new ClassTask<List<String>>(fo) {
+                @Override
                 List<String> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     List<String> props = new java.util.ArrayList<String>();
                     // loop through the methods in this class
@@ -1266,8 +1284,10 @@ public class ActionManager {
                         if(el.getModifiers().contains(Modifier.PUBLIC)) {
                             if(TypeKind.BOOLEAN.equals(el.getReturnType().getKind())) {
                                 String name = el.getSimpleName().toString();
-                                if(name.startsWith("is")) {
-                                    props.add(name.substring(2,3).toLowerCase()+name.substring(3));//el.getSimpleName().toString().substring(3));
+                                if(name.startsWith("is") && name.length()>2) { // NOI18N
+                                    props.add(Introspector.decapitalize(name.substring(2)));
+                                } else if (name.startsWith("get") && name.length()>3) { // NOI18N
+                                    props.add(Introspector.decapitalize(name.substring(3)));
                                 }
                             }
                         }
@@ -1276,6 +1296,7 @@ public class ActionManager {
                 }
             }.execute();
         } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return new ArrayList<String>();
         }
     }
@@ -1283,6 +1304,7 @@ public class ActionManager {
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
             new ActionMethodTask<Object>(sourceFile, action.getMethodName()) {
+                @Override
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     org.jdesktop.application.Action ann = methodElement.getAnnotation(org.jdesktop.application.Action.class);
                     if (ann != null) {
@@ -1374,13 +1396,14 @@ public class ActionManager {
     
     private String getKey(ProxyAction act) {
         if(act == null) { return "null"; } // NOI18N
-        String s = new String(act.getId() + ":"+act.getClassname()).intern();//NOI18N
+        String s = (act.getId()+":"+act.getClassname()).intern(); //NOI18N
         return s;
     }
     
     
     private void fireStructureChanged() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 PropertyChangeEvent pce = new PropertyChangeEvent(ActionManager.this,"allActions",null,actions);//NOI18N
                 for(PropertyChangeListener pcl : pcls) {
@@ -1393,6 +1416,7 @@ public class ActionManager {
     // hack: make it change just the action
     private void fireActionChanged(final ProxyAction act) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 for(ActionChangedListener acl : acls) {
                     acl.actionChanged(act);
@@ -1424,10 +1448,12 @@ public class ActionManager {
         abstract T run(CompilationController controller, ClassTree classTree, TypeElement classElement);
         
         // CancellableTask
+        @Override
         public void cancel() {
         }
         
         // CancellableTask
+        @Override
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
@@ -1455,6 +1481,7 @@ public class ActionManager {
             this.methodName = methodName;
         }
         
+        @Override
         T run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
             for (ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
                 if (el.getSimpleName().toString().equals(methodName)
@@ -1481,6 +1508,7 @@ public class ActionManager {
         }
         
         formModel.addFormModelListener(new FormModelListener() {
+            @Override
             public void formChanged(FormModelEvent[] events) {
                 if(events != null) {
                     for(FormModelEvent e : events) {
@@ -1492,6 +1520,7 @@ public class ActionManager {
                             final FormModelListener ths = this;
                             final FormModel mod = e.getFormModel();
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     mod.removeFormModelListener(ths);
                                     registeredForms.remove(mod);

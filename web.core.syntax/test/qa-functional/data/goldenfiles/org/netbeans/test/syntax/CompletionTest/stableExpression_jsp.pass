@@ -3,7 +3,9 @@ Calendar calendar
 Date date
 Integer integer
 applicationScope[]
+cc
 cookie[]
+facesContext
 headerValues[]
 header[]
 initParam[]
@@ -25,7 +27,9 @@ Calendar calendar
 Date date
 Integer integer
 applicationScope[]
+cc
 cookie[]
+facesContext
 headerValues[]
 header[]
 initParam[]

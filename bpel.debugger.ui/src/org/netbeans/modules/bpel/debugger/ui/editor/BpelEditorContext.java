@@ -49,8 +49,6 @@ import org.openide.text.Line;
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.spi.EditorContext;
 import org.openide.nodes.Node;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -335,7 +333,7 @@ public class BpelEditorContext implements EditorContext {
                     
                     final Line line = 
                             lineCookie.getLineSet().getCurrent(lineNumber - 1);
-                    line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                    line.show(Line.SHOW_GOTO);
                 }
             }
         });
@@ -343,7 +341,7 @@ public class BpelEditorContext implements EditorContext {
     
     private List<TopComponent> getAssociatedTopComponents(DataObject targetDO) {
         // Create a list of TopComponents associated with the
-        // editor's schema data object, starting with the the
+        // editor's schema data object, starting with the
         // active TopComponent. Add all open TopComponents in
         // any mode that are associated with the DataObject.
         // [Note that EDITOR_MODE does not contain editors in

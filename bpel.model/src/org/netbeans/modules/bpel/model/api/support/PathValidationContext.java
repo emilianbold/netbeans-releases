@@ -20,9 +20,7 @@ package org.netbeans.modules.bpel.model.api.support;
 
 import java.text.MessageFormat;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
@@ -32,7 +30,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.util.NbBundle;
 
 /**
@@ -174,6 +171,8 @@ public class PathValidationContext implements XPathValidationContext {
                 resultType,
                 (BpelEntity)ce, 
                 str);
-        getVVisitor().getResultItems().add(resultItem);
+        if (getVVisitor() != null) {
+            getVVisitor().getResultItems().add(resultItem);
+        }
     }
 }

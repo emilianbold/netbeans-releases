@@ -50,7 +50,7 @@ import org.netbeans.modules.sql.framework.ui.editor.property.IPropertySheet;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyViewManager;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.XmlUtil;
+import com.sun.etl.utils.XmlUtil;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 

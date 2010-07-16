@@ -26,12 +26,15 @@ import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.TimeEvent;
 import org.netbeans.modules.bpel.model.api.TimeEventHolder;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
 import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
 import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
+
 
 /**
  * The implementation of the MapperTreeModel for target tree for
@@ -63,7 +66,7 @@ public class DateValueTreeModel implements SoaTreeModel,
     }
     
     public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public TreeStructureProvider getTreeStructureProvider() {
@@ -71,7 +74,7 @@ public class DateValueTreeModel implements SoaTreeModel,
     }
 
     public TreeItemActionsProvider getTreeItemActionsProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public Object getRoot() {
@@ -114,7 +117,7 @@ public class DateValueTreeModel implements SoaTreeModel,
         return isLeaf(treeItem);
     }
 
-    public List getExtensionModelList() {
+    public List<SoaTreeExtensionModel> getExtensionModelList() {
         return null;
     }
 

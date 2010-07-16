@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -69,7 +73,9 @@ import org.openide.util.NbBundle;
 * @author   Jan Jancura
 */
 public final class ConnectAction extends AbstractAction {
-    
+
+    private ConnectorPanel cp;
+    private DialogDescriptor descr;
     private Dialog dialog;
     private JButton bOk;
     private JButton bCancel;
@@ -103,8 +109,8 @@ public final class ConnectAction extends AbstractAction {
         bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")); // NOI18N
         bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
         bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
-        ConnectorPanel cp = new ConnectorPanel ();
-        DialogDescriptor descr = new DialogDescriptor (
+        cp = new ConnectorPanel ();
+        descr = new DialogDescriptor (
             cp,
             NbBundle.getMessage (ConnectAction.class, "CTL_Connect_to_running_process"),
             true, // modal
@@ -115,6 +121,7 @@ public final class ConnectAction extends AbstractAction {
         });
         notificationSupport = descr.createNotificationLineSupport();
         descr.setClosingOptions (new Object [0]);
+        descr.setHelpCtx(HelpCtx.findHelp(cp)); // This is mandatory so that the descriptor tracks the changes in help correctly.
         dialog = DialogDisplayer.getDefault ().createDialog (descr);
         dialog.setVisible(true);
     }
@@ -178,6 +185,7 @@ public final class ConnectAction extends AbstractAction {
             if (evt.getPropertyName () == ConnectorPanel.PROP_TYPE) {
                 stopListening ();
                 notificationSupport.clearMessages();
+                descr.setHelpCtx(HelpCtx.findHelp(cp));
                 setValid ();
                 startListening ();
             } else if (evt.getPropertyName () == Controller.PROP_VALID) {

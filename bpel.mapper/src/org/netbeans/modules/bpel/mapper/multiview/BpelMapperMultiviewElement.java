@@ -21,8 +21,10 @@ package org.netbeans.modules.bpel.mapper.multiview;
 import javax.accessibility.AccessibleContext;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperFactory;
+import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.spi.MapperSpi;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,14 +51,17 @@ public class BpelMapperMultiviewElement extends MapperMultiviewElement {
     }
 
     @Override
-    protected DesignContextController createDesignContextController() {
-//        return new DesignContextControllerImpl(this);
-        return new DesignContextControllerImpl2(this);
+    protected BpelDesignContextController createDesignContextController() {
+        return new BpelMapperDcc(this);
     }
 
     @Override
     protected Mapper createMapper(MapperModel mModel) {
-        return BpelMapperFactory.createMapper(mModel);
+        return new BpelMapperFactory().createMapper(mModel);
+    }
+
+    public MapperSpi getMapperSpi() {
+        return BpelMapperSpiImpl.singleton();
     }
 
 }

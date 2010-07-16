@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * "k" tokens are stored in the buffer.  More tokens may be stored during
  * guess mode (testing syntactic predicate), or when LT(i>k) is referenced.
  * Consumption of tokens is deferred.  In other words, reading the next
- * token is not done by conume(), but deferred until needed by LA or LT.
+ * token is not done by consume(), but deferred until needed by LA or LT.
  * <p>
  *
  * @see org.netbeans.modules.cnd.antlr.Token
@@ -37,11 +37,11 @@ public class TokenBuffer {
     /** Record every single token pulled from the source so we can reproduce
      *  chunks of it later.
      */
-    private final List tokens;
+    private final List<Token> tokens;
 
     // type buffer data (created to improve performance of LA)
     private int size = 0;
-    private int[] data;
+    private short[] data;
 
     /** Create a token buffer */
     public TokenBuffer(TokenStream input) {
@@ -50,16 +50,20 @@ public class TokenBuffer {
 
     /** Create a token buffer */
     public TokenBuffer(TokenStream input, int initialCapacity) {
-        tokens = new ArrayList(initialCapacity);
-        data = new int[initialCapacity];
+        tokens = new ArrayList<Token>(initialCapacity);
+        data = new short[initialCapacity];
         // fill buffer
         try {
             int pos = 0;
             Token t = input.nextToken();
-            while ( (t != null) && (t.getType() != Token.EOF_TYPE) ) {
+            int type;
+            while ( (t != null) && ((type = t.getType()) != Token.EOF_TYPE) ) {
                 tokens.add(t);
-                if (pos == data.length) resizeData();
-                data[pos++] = t.getType();
+                if (pos == data.length) {
+                    resizeData();
+                }
+                assert type < Short.MAX_VALUE;
+                data[pos++] = (short) type;
                 t = input.nextToken();
             }
             size = pos;
@@ -69,18 +73,9 @@ public class TokenBuffer {
         }
     }
 
-    /** Reset the input buffer to empty state */
-    /*public final void reset() {
-        nMarkers = 0;
-        p = 0;
-        size = 0;
-        tokens.clear();
-        data = null;
-    }*/
-    
     // double data size
-    private final void resizeData() {
-        int[] newdata = new int[data.length*2]; // resize
+    private void resizeData() {
+        short[] newdata = new short[data.length*2]; // resize
         System.arraycopy(data, 0, newdata, 0, data.length);
         data = newdata;
     }
@@ -89,11 +84,6 @@ public class TokenBuffer {
     public final void consume() {
         p++;
     }
-
-    /** return the Tokenizer (needed by ParseView) */
-    /*public TokenStream getInput() {
-        return input;
-    }*/
 
     /** Get a lookahead token value */
     public final int LA(int i) {
@@ -109,15 +99,10 @@ public class TokenBuffer {
         if ( (p+i-1) >= tokens.size() ) {
                 return TokenImpl.EOF_TOKEN;
         }
-        return (Token)tokens.get(p + i - 1);
+        return tokens.get(p + i - 1);
     }
 
-    /** Get token at absolute position (indexed from 0) */
-    /*public final Token get(int i) {
-        return (Token)tokens.get(i);
-    }*/
-
-	/**Return an integer marker that can be used to rewind the buffer to
+    /**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
     public final int mark() {

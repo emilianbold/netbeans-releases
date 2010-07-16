@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+    <title>Enabling DTrace for Profiling C/C++/Fortran Applications</title>
+  </head>
+  <body>
+    <h2>
+       Enabling DTrace for Profiling C/C++/Fortran Applications
+    </h2>
+    <p>
+       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+    </p> 
+    
+      <p>In order to use the tools in the C/C++ DTrace Extended profile configuration,
+          the Solaris user account that you use when you run the IDE
+          must have sufficient DTrace privileges to observe system behavior.
+    The user account must have the dtrace_user, dtrace_proc, and dtrace_kernel privileges.</p>
+      <p>When you try to run the tools without sufficient privileges, a message about
+      special access required is displayed along with a Repair button. You can click the Repair
+      button and enter the password for a privileged account such as root. The IDE then temporarily
+      grants the required privileges to your account. To avoid these messages, you can grant
+      the DTrace privileges to your account permanently.
+      </p>
+    <p>
+    To check your DTrace privileges, type the following at the command prompt:<br>
+    <b><code>/bin/ppriv $$ </code></b>
+    </p>
+    <p>
+    If your account has the required privileges, the ppriv command should return something similar to:</p>
+    <p>
+    <pre>E: basic,dtrace_kernel,dtrace_proc,dtrace_user
+I: basic,dtrace_kernel,dtrace_proc,dtrace_user
+P: basic,dtrace_kernel,dtrace_proc,dtrace_user
+L: all</pre>
+    </p>
+    <p>The line that starts with "I:" is important because it specifies privileges that are inherited by programs
+        started from your shell. If your account doesn't have the required inheritable privileges, and you do not have administrator privileges or root access to your system, you should
+    ask your system administrator to add the dtrace_user, dtrace_proc, and dtrace_kernel inheritable privileges
+    to your account. </p>
+    <p>
+    If you have administrator privileges or root access to your system, you can grant your user account the required privileges as described below.
+</p>
+<b>To permanently grant required DTrace privileges to a user account:</b>
+<ol><li>Make sure the user account whose privileges you want to modify is logged out of the system.</li>
+    <li>Log in as superuser (root) or another administrator user.</li>
+    <li>Type the following at the command prompt, and replace <i> username</i> with the user account name you are modifying:<br>
+       $  <b><code>usermod -K defaultpriv=basic,dtrace_kernel,dtrace_user,dtrace_proc</code></b><i> username</i></li>
+    </ol>
+ You can then log in to the user account, start the IDE, and use the profiling tools with the DTrace data provider.   </p>
+    <p>
+        <b>To temporarily grant required DTrace privileges to a user account:</b>
+    <ol>
+        <li>Type the following to determine the process ID of the shell's process:<br>
+            $ <b><code>echo $$</code></b>
+        <li>Become superuser (root) or another administrator user.</li>
+        <li>Type the following, and replace <i>process-ID</i> with the process ID that was returned from the echo command :<br>
+
+$ <b><code>ppriv -s I+dtrace_user,dtrace_proc,dtrace_kernel</code></b> <i>process-ID</i>
+    </ol>
+All commands typed in the shell specified by <i>process-ID</i>  now inherit the required privileges. The user account can start
+the IDE in this shell and use the tools in the C/C++ DTrace Extended profile configuration.
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+          <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

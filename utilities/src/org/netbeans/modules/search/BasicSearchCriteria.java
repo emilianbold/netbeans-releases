@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -256,6 +259,18 @@ final class BasicSearchCriteria {
      * Tries to compile the regular expression pattern, thus checking its
      * validity. In case of success, the compiled pattern is stored
      * to {@link #textPattern}, otherwise the field is set to {@code null}.
+     *
+     * <p>Actually, this method defines a pattern used in searching, i.e. it
+     * defines behaviour of the searching. It should be the same as behavior of
+     * the Find action (Ctrl+F) in the Editor to avoid any confusions
+     * (see Bug #175101).
+     * Hence, this implementation should specify default flags in
+     * the call of the method {@link Pattern#compile(java.lang.String, int)
+     * java.util.regex.Pattern.compile(String regex, int flags)} that are the
+     * same as in the implementation of the Find action
+     * (i.e in the method {@code getFinder} of the class
+     * {@code org.netbeans.modules.editor.lib2.search.DocumentFinder}).
+     * </p>
      * 
      * @return  {@code true} if the regexp pattern expression was valid;
      *          {@code false} otherwise
@@ -277,6 +292,7 @@ final class BasicSearchCriteria {
                 flags |= Pattern.CASE_INSENSITIVE;
                 flags |= Pattern.UNICODE_CASE;
             }
+            flags |= Pattern.MULTILINE; // #175101
             textPattern = Pattern.compile(textPatternExpr, flags);
             return true;
         } catch (PatternSyntaxException ex) {

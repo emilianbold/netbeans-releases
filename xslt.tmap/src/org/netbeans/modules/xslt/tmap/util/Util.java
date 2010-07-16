@@ -64,10 +64,15 @@ import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 
 /**
  *
@@ -151,11 +156,6 @@ public class Util {
         }
 
         return fromRelativePathPart.append(toRelativePathPart).toString();
-    }
-
-    public static Project getProject(FileObject projectFo) {
-        FileObject projectRoot = null;
-        return projectFo == null ? null : FileOwnerQuery.getOwner(projectFo);
     }
 
     public static FileObject getProjectRoot(FileObject projectFo) {
@@ -273,11 +273,15 @@ public class Util {
         }
 
         FileObject projectFo = FileUtil.toFileObject(projectFile);
-        Project project = getProject(projectFo);
+        Project project = SoaUtil.getProject(projectFo);
 
         return project == null ? null : getXsltMapFo(project);
     }
 
+    public static TMapModel getTMapModel(Project project) {
+        return getTMapModel(getTMapFo(project));
+    }
+    
     public static TMapModel getTMapModel(FileObject tmapFo) {
         TMapModel model = null;
         if (tmapFo != null) {
@@ -297,17 +301,16 @@ public class Util {
         }
 
         try {
-            tMapFo = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+            tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     projectSource, "transformmap"); //NOI18N
 
-// 142908
-//            String projectNamespace = "http://enterprise.netbeans.org/transformmap/" + ProjectUtils.getInformation(project).getName(); // NOI18N
-//
-//            initialiseNamespace(tMapFo, projectNamespace);
-//
-//            if (tMapFo != null) {
-//                SoaUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
-//            }
+            String projectNamespace = "http://enterprise.netbeans.org/transformmap/" + ProjectUtils.getInformation(project).getName(); // NOI18N
+
+            initialiseNamespace(tMapFo, projectNamespace);
+
+            if (tMapFo != null) {
+                SoaUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
+            }
 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -581,6 +584,25 @@ public class Util {
 
         return namespace;
     }
+    
+    public static String getTargetNamespace(Model model) {
+        if (model == null) {
+            return null;
+        } 
+        
+        if (model instanceof WSDLModel) {
+            Definitions rootComponent = ((WSDLModel)model).getDefinitions();
+            return rootComponent != null ? rootComponent.getTargetNamespace() : null;
+        } else if (model instanceof SchemaModel) {
+            Schema rootComponent = ((SchemaModel)model).getSchema();
+            return rootComponent != null ? rootComponent.getTargetNamespace() : null;        
+        } else if (model instanceof TMapModel) {
+            TransformMap rootComponent = ((TMapModel)model).getTransformMap();
+            return rootComponent != null ? rootComponent.getTargetNamespace() : null;
+        } 
+        
+        return null;
+    }
 
     public static String getMessageType(Operation operation, boolean isInput) {
         if (operation == null) {
@@ -692,6 +714,10 @@ public class Util {
     }
 
     public static String getLocalizedAttribute(String attributeValue, String attributeName) {
+        return getLocalizedAttribute(attributeValue, attributeName, "LBL_ATTRIBUTE_HTML_TEMPLATE");
+    }
+    
+    public static String getLocalizedAttribute(String attributeValue, String attributeName, String template) {
         if (attributeValue == null) {
             return TMapComponentNode.EMPTY_STRING;
         }
@@ -700,9 +726,18 @@ public class Util {
         attributeValue = attributeValue == null ? TMapComponentNode.EMPTY_STRING : attributeValue;
         return NbBundle.getMessage(
                 TMapComponentNode.class,
-                "LBL_ATTRIBUTE_HTML_TEMPLATE", // NOI18N
+                template, // NOI18N
                 attributeName,
                 attributeValue);
     }
+
+    public static String getLocalizedAttributeTemplate2(String attributeValue, String attributeName) {
+        return getLocalizedAttribute(attributeValue, attributeName, "LBL_ATTRIBUTE_HTML_TEMPLATE2");
+    }
+
+    public static final boolean isValidNCName(String str) {
+        return org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(str);
+    }
+    
     private static String GRAY_COLOR = "#999999";
 }

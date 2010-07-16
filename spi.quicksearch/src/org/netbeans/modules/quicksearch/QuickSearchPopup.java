@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,8 +88,8 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private int catWidth;
     private int resultWidth;
     private Task evalTask;
+    private static final RequestProcessor RP = new RequestProcessor(QuickSearchPopup.class);
 
-    /** Creates new form SilverPopup */
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
@@ -99,6 +102,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
             jList1.setBackground(QuickSearchComboBar.getResultBackground());
 
         updateStatusPanel();
+        setVisible(false);
     }
 
     void invoke() {
@@ -115,12 +119,18 @@ public class QuickSearchPopup extends javax.swing.JPanel
         if (oldSel >= 0 && oldSel < jList1.getModel().getSize() - 1) {
             jList1.setSelectedIndex(oldSel + 1);
         }
+        if (jList1.getModel().getSize() > 0) {
+            setVisible(true);
+        }
     }
 
     void selectPrev() {
         int oldSel = jList1.getSelectedIndex();
         if (oldSel > 0) {
             jList1.setSelectedIndex(oldSel - 1);
+        }
+        if (jList1.getModel().getSize() > 0) {
+            setVisible(true);
         }
     }
 
@@ -150,6 +160,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     /** implementation of ActionListener, called by timer,
      * actually runs search */
+    @Override
     public void actionPerformed(ActionEvent e) {
         updateTimer.stop();
         // search only if we are not cancelled already
@@ -160,7 +171,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
             evalTask = CommandEvaluator.evaluate(searchedText, rModel);
             evalTask.addTaskListener(this);
             // start waiting on all providers execution
-            RequestProcessor.getDefault().post(evalTask);
+            RP.post(evalTask);
         }
     }
 
@@ -329,13 +340,21 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             if (jList1.getSelectedIndex() >= modelSize) {
                 jList1.setSelectedIndex(modelSize - 1);
             }
-            setVisible(true);
+            if (explicitlyInvoked || !searchedText.isEmpty()) {
+                setVisible(true);
+            }
         } else {
             setVisible(false);
         }
+        explicitlyInvoked = false;
 
         // needed on JDK 1.5.x to repaint correctly
         revalidate();
+    }
+    private boolean explicitlyInvoked = false;
+    /** User actually pressed Ctrl-I; display popup even just for Recent Searches. */
+    void explicitlyInvoked() {
+        explicitlyInvoked = true;
     }
 
     public int getCategoryWidth () {

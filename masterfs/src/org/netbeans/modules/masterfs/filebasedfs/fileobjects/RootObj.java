@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
@@ -122,18 +127,21 @@ public final class RootObj<T extends FileObject> extends FileObject {
         if (attrName.equals("SupportsRefreshForNoPublicAPI")) {
             return true;
         }
+        if (attrName.equals("refreshSlow")) {
+            return new RefreshSlow();
+        }
         return getRealRoot().getAttribute(attrName);
     }
 
     public final void setAttribute(final String attrName, final Object value) throws IOException {
         if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File[])) {//NOI18N
-            invokeRefreshFor((File[])value);
+            invokeRefreshFor(null, (File[])value);
             return;
         }        
         getRealRoot().setAttribute(attrName, value);
     }
     
-    private void invokeRefreshFor(File[] files) {
+    static void invokeRefreshFor(RefreshSlow slow, File[] files) {
         //first normalize
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -168,22 +176,30 @@ public final class RootObj<T extends FileObject> extends FileObject {
                 }
                 lf.add(file);
             }
-        }        
+        }
+        if (slow != null) {
+            int cnt = 0;
+            for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
+                FileObjectFactory factory = entry.getKey();
+                cnt += factory.getSize();
+            }
+            slow.estimate(cnt);
+        }
         for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
             FileObjectFactory factory = entry.getKey();
             List<File> lf = entry.getValue();
             if (lf.size() == 1) {
                 for (File file : lf) {
                     if (file.getParentFile() == null) {
-                        factory.refresh(true);
+                        factory.refresh(slow, true);
                     } else {
-                        factory.refreshFor(file);
+                        factory.refreshFor(slow, file);
                     }
                 }
             } else if (lf.size() > 1) {
                 final File[] arr = lf.toArray(new File[lf.size()]);
                 Arrays.sort(arr);
-                factory.refreshFor(arr);
+                factory.refreshFor(slow, arr);
             }
         }
     }

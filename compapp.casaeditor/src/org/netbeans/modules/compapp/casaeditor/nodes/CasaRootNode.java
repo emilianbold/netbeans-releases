@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,16 +47,12 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
@@ -62,14 +61,14 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddJBIModuleAction;
 import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
-import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
+import org.netbeans.modules.compapp.casaeditor.properties.ShowHoveringHighlightProperty;
+import org.netbeans.modules.compapp.casaeditor.properties.ShowToolTipProperty;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -96,7 +95,7 @@ public class CasaRootNode extends CasaNode {
         super(data, new MyChildren(data, factory), factory);
     }
 
-
+    @Override
     public String getName() {
         DataObject dataObject = getDataObject();
         if (dataObject != null) {
@@ -105,6 +104,7 @@ public class CasaRootNode extends CasaNode {
         return NbBundle.getMessage(getClass(), "LBL_CasaModel");        // NOI18N
     }
 
+    @Override
     protected void setupPropertySheet(Sheet sheet) {
         final CasaWrapperModel model = (CasaWrapperModel) getData();
         if (model == null) {
@@ -116,22 +116,33 @@ public class CasaRootNode extends CasaNode {
 
         String propertyName = NbBundle.getMessage(LookAndFeelProperty.class, "LBL_LookAndFeel"); // NOI18N
         try {
+            // global L&F properties
             Node.Property property = new LookAndFeelProperty(this);
             mainPropertySet.put(property);
         } catch (Exception e) {
             mainPropertySet.put(PropertyUtils.createErrorProperty(propertyName));
             ErrorManager.getDefault().notify(e);
         }
+
+        // project-specific L&F properties
+        Node.Property property = new ShowToolTipProperty(this);
+        mainPropertySet.put(property);
+
+        property = new ShowHoveringHighlightProperty(this);
+        mainPropertySet.put(property);
     }
 
+    @Override
     public Image getIcon(int type) {
         return ICON;
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return ICON;
     }
 
+    @Override
     public boolean isValidSceneActionForLocation(Action action, Widget widget, Point sceneLocation) {
         if (action instanceof AddJBIModuleAction) {
             CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
@@ -170,9 +181,11 @@ public class CasaRootNode extends CasaNode {
         return true;
     }
 
+    @Override
     protected void addCustomActions(List<Action> actions) {
         final Project jbiProject = getModel().getJBIProject();
-        actions.add(new AddJBIModuleAction(jbiProject));
+        actions.add(new AddJBIModuleAction(jbiProject, true));
+        actions.add(new AddJBIModuleAction(jbiProject, false));
         actions.add(SystemAction.get(LoadWSDLPortsAction.class));
         actions.add(SystemAction.get(AddWSDLPortsAction.class));
         actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
@@ -181,13 +194,14 @@ public class CasaRootNode extends CasaNode {
     }
 
 
-
     private static class MyChildren extends CasaNodeChildren<String> {
         private WeakReference mReference;
+
         public MyChildren(Object data, CasaNodeFactory factory) {
             super(data, factory);
             mReference = new WeakReference<Object>(data);
         }
+
         protected Node[] createNodes(String keyName) {
             if (mReference.get() != null) {
                 try {
@@ -208,6 +222,8 @@ public class CasaRootNode extends CasaNode {
             }
             return null;
         }
+
+        @Override
         public Object getChildKeys(Object data)  {
             return CHILD_TYPES;
         }

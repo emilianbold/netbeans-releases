@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -225,7 +227,7 @@ public class IcanproViews {
     }
 
     private static final class DocBaseNode extends FilterNode {
-        private static Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/sql/project/ui/resources/docjar.gif", true ); // NOI18N
+        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/sql/project/ui/resources/docjar.gif", true ); // NOI18N
 
         DocBaseNode (Node orig) {
             super (orig);
@@ -242,7 +244,7 @@ public class IcanproViews {
         private Image computeIcon( boolean opened, int type ) {
             Node folderNode = getOriginal();
             Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
-            return ImageUtilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
+            return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
         }
 
         public String getDisplayName () {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -60,9 +64,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.util.RequestProcessor;
 
@@ -79,11 +85,14 @@ public final class CreateTestAction extends TestAction {
     }
 
     /* public members */
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(CreateTestAction.class,
                                    "LBL_Action_CreateTest");            //NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CreateTestAction.class);
     }
@@ -289,12 +298,17 @@ public final class CreateTestAction extends TestAction {
             return;
         }
 
+        final DataObject[] modified = DataObject.getRegistry().getModified();
+
         // show configuration dialog
         // when dialog is canceled, escape the action
-        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes);
+        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes, 
+                                            modified.length == 0 ? false: true);
         if (!cfg.configure()) {
             return;
         }
+
+        saveAll(modified); // #149048
 
         /* Store the configuration data: */
         final boolean singleClass = cfg.isSingleClass();
@@ -307,6 +321,7 @@ public final class CreateTestAction extends TestAction {
         cfg = null;
 
         RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     /* Now create the tests: */
                     final FileObject[] testFileObjects
@@ -323,6 +338,7 @@ public final class CreateTestAction extends TestAction {
                             final EditorCookie ec = dobj.getCookie(EditorCookie.class);
                             if (ec != null) {
                                 EventQueue.invokeLater(new Runnable() {
+                                        @Override
                                         public void run() {
                                             ec.open();
                                         }
@@ -422,6 +438,19 @@ public final class CreateTestAction extends TestAction {
             node = node.getParentNode();
         }
         return false;
+    }
+
+    private void saveAll(DataObject[] dataObjects) {
+        for(DataObject dataObject: dataObjects) {
+            SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+            if(saveCookie != null) {
+                try {
+                    saveCookie.save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 
 }

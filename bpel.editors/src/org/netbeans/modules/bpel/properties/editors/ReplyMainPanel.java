@@ -519,6 +519,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 omElement, myFaultName.getLocalPart(), msgRef.get(),
                 Constants.MessageDirection.FAULT);
         chooser.initControls();
+        chooser.setEditor(myEditor);
         //
         String title = NbBundle.getMessage(
                 FormBundle.class, "DLG_NewFaultVariable"); // NOI18N
@@ -791,7 +792,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+                    .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -806,10 +807,9 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnChooseFaultVariable))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(fldFaultName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                                .add(fldFaultName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnChooseFaultName)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
+                                .add(btnChooseFaultName))))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblPartnerLink)
@@ -817,14 +817,14 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                             .add(lblName))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbxOperation, 0, 396, Short.MAX_VALUE)
-                            .add(cbxPartnerLink, 0, 396, Short.MAX_VALUE)
-                            .add(fldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)))
+                            .add(cbxOperation, 0, 384, Short.MAX_VALUE)
+                            .add(cbxPartnerLink, 0, 384, Short.MAX_VALUE)
+                            .add(fldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(lblOutputVariable)
                         .add(7, 7, 7)
-                        .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                        .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnNewOutputVariable)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -834,10 +834,9 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                     .add(layout.createSequentialGroup()
                         .add(lblMessageExchange)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                        .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnChooseMessEx)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                        .add(btnChooseMessEx)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

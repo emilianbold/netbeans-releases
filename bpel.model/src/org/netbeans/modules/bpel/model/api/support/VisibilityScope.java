@@ -21,7 +21,6 @@ package org.netbeans.modules.bpel.model.api.support;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -80,7 +79,7 @@ public class VisibilityScope {
     }
 
     private void calculateScopeList(final BpelEntity modelElement) {
-        myScopeList = new LinkedList<BaseScope>();
+        myScopeList = new ArrayList<BaseScope>();
         FindHelper helper =
                 (FindHelper)Lookup.getDefault().lookup(FindHelper.class);
         Iterator<BaseScope> itr = helper.scopeIterator(modelElement);
@@ -96,7 +95,7 @@ public class VisibilityScope {
     }
     
     private void calculateVarScopeList(final BpelEntity modelElement) {
-        myVarScopeList = new LinkedList<VariableDeclarationScope>();
+        myVarScopeList = new ArrayList<VariableDeclarationScope>();
         FindHelper helper =
                 (FindHelper)Lookup.getDefault().lookup(FindHelper.class);
         Iterator<VariableDeclarationScope> itr =

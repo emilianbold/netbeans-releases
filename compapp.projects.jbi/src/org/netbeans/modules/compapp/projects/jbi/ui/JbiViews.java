@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -435,59 +438,4 @@ class JbiViews {
         
     }
     
-    
-    
-    
-    
-//    private static final class DocBaseNode extends FilterNode {
-//        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage(
-//                "org/netbeans/modules/compapp/projects/jbi/ui/resources/configbadge.gif", true ); // NOI18N
-//
-//        /**
-//         * Creates a new DocBaseNode object.
-//         *
-//         * @param orig DOCUMENT ME!
-//         */
-//        DocBaseNode(Node orig) {
-//            super(orig, new DocBaseChildren(orig));
-//        }
-//
-//        /**
-//         * DOCUMENT ME!
-//         *
-//         * @param type DOCUMENT ME!
-//         *
-//         * @return DOCUMENT ME!
-//         */
-//        public Image getIcon(int type) {
-//            return computeIcon(false, type);
-//        }
-//
-//        /**
-//         * DOCUMENT ME!
-//         *
-//         * @param type DOCUMENT ME!
-//         *
-//         * @return DOCUMENT ME!
-//         */
-//        public Image getOpenedIcon(int type) {
-//            return computeIcon(true, type);
-//        }
-//
-//        private Image computeIcon(boolean opened, int type) {
-//            Node folderNode = getOriginal();
-//            Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
-//
-//            return Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
-//        }
-//
-//        /**
-//         * DOCUMENT ME!
-//         *
-//         * @return DOCUMENT ME!
-//         */
-//        public String getDisplayName() {
-//            return NbBundle.getMessage(JbiViews.class, "LBL_Node_DocBase"); // NOI18N
-//        }
-//    }
 }

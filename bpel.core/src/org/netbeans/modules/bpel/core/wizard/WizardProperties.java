@@ -16,13 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.core.wizard;
 
 public class WizardProperties {
 
     public static final String NAMESPACE = "namespace"; //NOI18N
-
-
 }

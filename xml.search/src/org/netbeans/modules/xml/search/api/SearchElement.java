@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,102 +51,106 @@ import javax.swing.Icon;
  */
 public interface SearchElement {
 
-  /**
-   * Returns name of element.
-   * @return name of element
-   */
-  String getName();
+    /**
+     * Returns name of element.
+     * @return name of element
+     */
+    String getName();
 
-  /**
-   * Returns tool tip of element.
-   * @return tool tip of element
-   */
-  String getToolTip();
+    /**
+     * Returns tool tip of element.
+     * @return tool tip of element
+     */
+    String getToolTip();
 
-  /**
-   * Returns icon of element.
-   * @return icon of element
-   */
-  Icon getIcon();
+    /**
+     * Returns icon of element.
+     * @return icon of element
+     */
+    Icon getIcon();
 
-  /**
-   * Returns parent of element.
-   * @return parent of element
-   */
-  SearchElement getParent();
-  
-  /**
-   * Goes to the source of element.
-   */
-  void gotoSource();
+    /**
+     * Returns parent of element.
+     * @return parent of element
+     */
+    SearchElement getParent();
 
-  /**
-   * Goes to the visual of element.
-   */
-  void gotoVisual();
+    /**
+     * Goes to the source of element.
+     */
+    void gotoSource();
 
-  /**
-   * Returns true if element is deleted.
-   * @return true if element is deleted
-   */
-  boolean isDeleted();
+    /**
+     * Goes to the visual of element.
+     */
+    void gotoVisual();
 
-  /**
-   * Highlights element.
-   */
-  void highlight();
+    /**
+     * Returns true if element is deleted.
+     * @return true if element is deleted
+     */
+    boolean isDeleted();
 
-  /**
-   * Unhighlights element.
-   */
-  void unhighlight();
+    /**
+     * Highlights element.
+     */
+    void highlight();
 
-  // --------------------------------------------
-  public class Adapter implements SearchElement {
+    /**
+     * Unhighlights element.
+     */
+    void unhighlight();
 
-    public Adapter(String name, String toolTip, Icon icon, SearchElement parent) {
-      myName = name;
-      myToolTip = toolTip;
-      myIcon = icon;
-      myParent = parent;
+    // --------------------------------------------
+    public class Adapter implements SearchElement {
+
+        public Adapter(String name, String toolTip, Icon icon, SearchElement parent) {
+            myName = name;
+            myToolTip = toolTip;
+            myIcon = icon;
+            myParent = parent;
+        }
+
+        public String getName() {
+            return myName;
+        }
+
+        public String getToolTip() {
+            return myToolTip;
+        }
+
+        public Icon getIcon() {
+            return myIcon;
+        }
+
+        public SearchElement getParent() {
+            return myParent;
+        }
+
+        public boolean isDeleted() {
+            return false;
+        }
+
+        public void gotoSource() {
+        }
+
+        public void gotoVisual() {
+        }
+
+        public void highlight() {
+        }
+
+        public void unhighlight() {
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+
+        private Icon myIcon;
+        private String myName;
+        private String myToolTip;
+        private SearchElement myParent;
     }
-
-    public String getName() {
-      return myName;
-    }
-
-    public String getToolTip() {
-      return myToolTip;
-    }
-
-    public Icon getIcon() {
-      return myIcon;
-    }
-
-    public SearchElement getParent() {
-      return myParent;
-    }
-
-    public boolean isDeleted() {
-      return false;
-    }
-
-    public void gotoSource() {}
-
-    public void gotoVisual() {}
-
-    public void highlight() {}
-
-    public void unhighlight() {}
-
-    @Override
-    public String toString() {
-      return getName();
-    }
-
-    private Icon myIcon;
-    private String myName;
-    private String myToolTip;
-    private SearchElement myParent;
-  }
 }

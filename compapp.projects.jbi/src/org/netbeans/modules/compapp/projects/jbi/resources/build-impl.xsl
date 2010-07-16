@@ -1,44 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common
+  Development and Distribution License("CDDL") (collectively, the
+  "License"). You may not use this file except in compliance with the
+  License. You can obtain a copy of the License at
+  http://www.netbeans.org/cddl-gplv2.html
+  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+  specific language governing permissions and limitations under the
+  License. When distributing the software, include this License Header
+  Notice in each file and include the License file at
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Oracle in the GPL Version 2 section of the License file that
+  accompanied this code. If applicable, add the following below the
+  License Header, with the fields enclosed by brackets [] replaced by
+  your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
 
-Contributor(s):
+  Contributor(s):
 
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
 
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
+  If you wish your version of this file to be governed by only the CDDL
+  or only the GPL Version 2, indicate your decision by adding
+  "[Contributor] elects to include this software in this distribution
+  under the [CDDL or GPL Version 2] license." If you do not indicate a
+  single choice of license, a recipient has the option to distribute
+  your version of this file under either the CDDL, the GPL Version 2 or
+  to extend the choice of license to its licensees as provided above.
+  However, if you add GPL Version 2 code and therefore, elected the GPL
+  Version 2 license, then the option applies only if the new code is
+  made subject to such option by the copyright holder.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -49,70 +51,50 @@ made subject to such option by the copyright holder.
                 exclude-result-prefixes="xalan p ejb projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
-        
-        <xsl:comment><![CDATA[
-        *** GENERATED FROM project.xml - DO NOT EDIT  ***
-        ***         EDIT ../build.xml INSTEAD         ***
 
-        For the purpose of easier reading the script
-        is divided into following sections:
+        <xsl:comment>
+            *** GENERATED FROM project.xml - DO NOT EDIT ***
+            ***           EDIT ../build.xml INSTEAD      ***
+        </xsl:comment>
 
-        - initialization
-        - compilation
-        - dist
-        - execution
-        - debugging
-        - cleanup
-
-        ]]></xsl:comment>
-        
         <xsl:variable name="name" select="/p:project/p:configuration/ejb:data/ejb:name"/>
         <project name="{$name}-jbi-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-            
-            <fail message="Please build using Ant 1.7.1 or higher.">
-                <condition>
-                    <not>
-                        <antversion atleast="1.7.1"/>
-                    </not>
-                </condition>
-            </fail>
 
             <target name="default">
                 <xsl:attribute name="depends">dist</xsl:attribute>
-                <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
-            
-            <xsl:comment> 
-                INITIALIZATION SECTION 
+
+            <xsl:comment>
+                INITIALIZATION SECTION
             </xsl:comment>
-            
+
             <target name="pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="init-private">
                 <xsl:attribute name="depends">pre-init</xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
             </target>
-            
+
             <target name="init-userdir">
                 <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
                 <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
             </target>
-            
+
             <target name="init-user">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
-            
+
             <target name="init-project">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
-            
+
             <target name="do-init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
@@ -123,7 +105,7 @@ made subject to such option by the copyright holder.
                     <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
                     <echo file="${{file.tmp}}">
                         platform.home=$${platforms.${platform.active}.home}
-                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
+                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}
                         build.compiler=$${platforms.${platform.active}.compiler}
                         platform.java=$${platforms.${platform.active}.java}
                         platform.javac=$${platforms.${platform.active}.javac}
@@ -131,37 +113,25 @@ made subject to such option by the copyright holder.
                     <property file="${{file.tmp}}"/>
                     <delete file="${{file.tmp}}"/>
                     <fail unless="platform.home">Must set platform.home</fail>
-                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
-                <property name="default.javac.source" value="1.4"/>
-                <property name="default.javac.target" value="1.4"/>
-                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
-                    <fail unless="manifest.file">Must set manifest.file</fail>
-                </xsl:if>
+
                 <!-- Start Test Framework-->
                 <condition property="have.tests">
                     <or>
                         <available file="${{test.dir}}"/>
                     </or>
                 </condition>
-                <condition property="netbeans.home+have.tests">
-                    <and>
-                        <isset property="netbeans.home"/>
-                        <isset property="have.tests"/>
-                    </and>
-                </condition>
                 <!-- End Test Framework-->
             </target>
-            
+
             <target name="post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="init-check">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
@@ -182,16 +152,18 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{soa.module.install.dir}}/org-netbeans-modules-compapp-projects-jbi.jar"/>
                     <pathelement location="${{soa.module.install.dir}}/org-netbeans-modules-compapp-manager-jbi.jar"/>
                     <pathelement location="${{soa.module.install.dir}}/org-netbeans-soa-libs-xmlbeans.jar"/>
-                    <pathelement location="${{soa.module.install.dir}}/ext/jbi/jbi-admin-common.jar"/>
+                    <pathelement location="${{soa.module.install.dir}}/ext/jbi-admin-common.jar"/>
                     <pathelement location="${{soa.module.install.dir}}/../ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/lib/org-openide-modules.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-options.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-text.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/modules/org-openide-dialogs.jar"/>
-                    <pathelement location="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/lib/org-openide-util.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/lib/org-openide-util-lookup.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/lib/org-openide-modules.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-options.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-text.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-openide-dialogs.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/modules/org-netbeans-modules-keyring.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/xerces-2.8.0.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-retriever.jar"/>
@@ -199,49 +171,49 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-wsdl-model.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
-                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor.jar"/>    
-                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib.jar"/>    
-                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>  
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-projectapi.jar"/>
-                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-classfile.jar"/>   
                     <pathelement location="${{ide.module.install.dir}}/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{xml.module.install.dir}}/org-netbeans-modules-xml-wsdl-extensions.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/jaxb/api/jaxb-api.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/jaxb/jaxb-impl.jar"/>
-                    <pathelement location="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>   
-                    <pathelement location="${{enterprise.module.install.dir}}/org-netbeans-modules-j2eeserver.jar"/> 
-                    <pathelement location="${{enterprise.module.install.dir}}/ext/jsr88javax.jar"/> 
+                    <pathelement location="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>
+                    <pathelement location="${{java.module.install.dir}}/org-netbeans-modules-classfile.jar"/>
+                    <pathelement location="${{enterprise.module.install.dir}}/org-netbeans-modules-j2eeserver.jar"/>
+                    <pathelement location="${{enterprise.module.install.dir}}/ext/jsr88javax.jar"/>
                 </path>
-                
+
                 <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
-                
+
                 <taskdef name="jbi-deploy-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.DeployServiceAssembly">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
-                
+
                 <taskdef name="setup-debug-environment" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.SetUpDebugEnvironment">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
-                
+
                 <taskdef name="teardown-debug-environment" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.TearDownDebugEnvironment">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
-                                
+
                 <taskdef name="jbi-javaee-dist" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildJavaEESU">
                     <classpath refid="ant.task.classpath"/>
                 </taskdef>
             </target>
-            
+
             <target name="init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,-init-taskdefs</xsl:attribute>
             </target>
-            
+
             <xsl:comment>
                 COMPILATION SECTION
             </xsl:comment>
-            
+
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
                 <xsl:with-param name="type" select="'CAPS.asa'"/>
@@ -251,7 +223,7 @@ made subject to such option by the copyright holder.
                 <xsl:with-param name="targetname" select="'deps-javaee-jar'"/>
                 <xsl:with-param name="type" select="'CAPS.asa'"/>
             </xsl:call-template>
-            
+
             <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <target name="wscompile-init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
@@ -261,12 +233,12 @@ made subject to such option by the copyright holder.
                     <mkdir dir="${{build.generated.dir}}/wssrc"/>
                 </target>
             </xsl:if>
-            
+
             <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                 <xsl:variable name="wsname">
                     <xsl:value-of select="ejb:web-service-name"/>
                 </xsl:variable>
-                
+
                 <target name="{$wsname}_wscompile" depends="wscompile-init">
                     <wscompile
                         server="true"
@@ -283,12 +255,12 @@ made subject to such option by the copyright holder.
                     </wscompile>
                 </target>
             </xsl:for-each>
-            
+
             <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <xsl:variable name="wsclientname">
                     <xsl:value-of select="ejb:web-service-client-name"/>
                 </xsl:variable>
-                
+
                 <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
                     <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
                           tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
@@ -309,17 +281,17 @@ made subject to such option by the copyright holder.
                     </wscompile>
                 </target>
             </xsl:for-each>
-            
+
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
-            
+
             <target name="pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="library-inclusion-in-archive" depends="compile">
                 <xsl:for-each select="//ejb:included-library">
                     <xsl:variable name="included.prop.name">
@@ -328,9 +300,9 @@ made subject to such option by the copyright holder.
                     <unjar dest="${{build.classes.dir}}">
                         <xsl:attribute name="src">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                     </unjar>
-                </xsl:for-each>   
-            </target> 
-            
+                </xsl:for-each>
+            </target>
+
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:for-each select="//ejb:included-library">
                     <xsl:variable name="included.prop.name">
@@ -346,7 +318,7 @@ made subject to such option by the copyright holder.
                     <copy todir="${{build.classes.dir}}">
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                     </copy>
-                </xsl:for-each>   
+                </xsl:for-each>
                 <manifest file="${{build.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
@@ -357,22 +329,22 @@ made subject to such option by the copyright holder.
                                 </xsl:variable>
                                 <xsl:if test="position()>1">,</xsl:if>
                                 <xsl:value-of select="$base.prop.name"/>
-                            </xsl:for-each>  
+                            </xsl:for-each>
                         </xsl:attribute>
                     </attribute>
                 </manifest>
             </target>
-            
+
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
-                    <delete> 
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
+                    <delete>
                         <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
             </target>
-            
+
             <target name="post-compile">
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                     <xsl:attribute name="depends">
@@ -388,17 +360,16 @@ made subject to such option by the copyright holder.
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
-                <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
-            
+
             <target name="pre-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
@@ -410,23 +381,22 @@ made subject to such option by the copyright holder.
                 </ejbproject:javac>
                 -->
             </target>
-            
+
             <target name="post-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
-            </target>            
-            
+            </target>
+
             <xsl:comment>
                 DIST BUILDING SECTION
             </xsl:comment>
-            
+
             <target name="jbi-build">
-                <xsl:attribute name="depends">init,init-deploy,deps-jar, deps-javaee-jar</xsl:attribute>
-                <xsl:attribute name="description">Build Service Assembly.</xsl:attribute>
+                <xsl:attribute name="depends">init,init-deploy,deps-jar,deps-javaee-jar</xsl:attribute>
                 <mkdir dir="${{src.dir}}"/>
                 <copy todir="${{src.dir}}/../jbiServiceUnits" overwrite="true">
                     <fileset dir="${{src.dir}}"/>
@@ -446,151 +416,139 @@ made subject to such option by the copyright holder.
                     <fileset dir="${{build.dir}}" excludes="jar/*" />
                 </jar>
             </target>
-            
+
             <target name="jbi-clean-build">
                 <xsl:attribute name="depends">init,init-deploy,clean,jbi-build</xsl:attribute>
-                <xsl:attribute name="description">Clean and Build Service Assembly.</xsl:attribute>
             </target>
-         
+
             <target name="dist">
                 <xsl:attribute name="depends">jbi-build</xsl:attribute>
-                <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
-            
+
             <xsl:comment>
                 EXECUTION SECTION
             </xsl:comment>
             <target name="run">
                 <xsl:attribute name="depends">jbi-build,run-jbi-deploy</xsl:attribute>
-                <xsl:attribute name="description">Deploy to server.</xsl:attribute>
             </target>
-            
-            <target name="init-deploy">
+
+            <target name="init-deploy" depends="init-server-password">
                 <property name="include.jar.manifest" value=""/>
             </target>
-            
+
+            <target name="init-server-password" unless="server.password">
+                <property name="server.password" value=""/>
+            </target>
+
             <target name="run-jbi-deploy">
-                <xsl:attribute name="depends">jbi-build</xsl:attribute>   
-                <!--
-                <echo>JBI Location is: ${com.sun.aas.installRoot}/platform/bin/jbi_admin.xml</echo>
-                <echo>JBI JMX Port is: ${com.sun.jbi.management.JmxPort}</echo>
-                <echo>Server Instance Location is: ${com.sun.appserver.instance.location}</echo>
-                -->
-                <!--
-                <echo>JBI host name is: ${com.sun.appserver.instance.hostName}</echo>
-                <echo>JBI admin port is: ${com.sun.appserver.instance.administrationPort}</echo>                
-                <echo>User name is: ${com.sun.appserver.instance.userName}</echo>
-                <echo>Password is: ${com.sun.appserver.instance.password}</echo>
-                <echo>Service assembly ID is: ${jbi.service-assembly.id}</echo>
-                -->
+                <xsl:attribute name="depends">jbi-build</xsl:attribute>
                 <property name="j2ee.server.instance" value=""/>
                 <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
-                
+
                 <jbi-deploy-service-assembly
                     serviceAssemblyID="${{jbi.service-assembly.id}}"
                     serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
                     netBeansUserDir="${{netbeans.user}}"
-                    j2eeServerInstance="${{j2ee.server.instance}}"/>
-                
+                    j2eeServerInstance="${{j2ee.server.instance}}"
+                    password="${{server.password}}"/>
+
             </target>
-            
-            <target name="undeploy">
-                <xsl:attribute name="depends">init</xsl:attribute>
-                
+
+            <target name="run-jbi-deploy-without-build">
+                <xsl:attribute name="depends">init,init-deploy</xsl:attribute>
                 <property name="j2ee.server.instance" value=""/>
                 <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
-                
-                <jbi-deploy-service-assembly 
+
+                <jbi-deploy-service-assembly
+                    serviceAssemblyID="${{jbi.service-assembly.id}}"
+                    serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
+                    netBeansUserDir="${{netbeans.user}}"
+                    j2eeServerInstance="${{j2ee.server.instance}}"
+                    password="${{server.password}}"/>
+
+            </target>
+
+            <target name="undeploy">
+                <xsl:attribute name="depends">init,init-server-password</xsl:attribute>
+
+                <property name="j2ee.server.instance" value=""/>
+                <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
+
+                <jbi-deploy-service-assembly
                     undeployServiceAssembly="true"
                     serviceAssemblyID="${{jbi.service-assembly.id}}"
                     serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
                     netBeansUserDir="${{netbeans.user}}"
-                    j2eeServerInstance="${{j2ee.server.instance}}"/>
+                    j2eeServerInstance="${{j2ee.server.instance}}"
+                    password="${{server.password}}"/>
             </target>
-            
+
             <target name="-pre-debug">
                 <property name="inDebug" value="true"/>
-                <setup-debug-environment 
-                    netBeansUserDir="${{netbeans.user}}" 
+                <setup-debug-environment
+                    netBeansUserDir="${{netbeans.user}}"
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
             </target>
-            
+
             <target name="-post-debug">
                 <property name="inDebug" value="false"/>
                 <teardown-debug-environment
-                    netBeansUserDir="${{netbeans.user}}" 
+                    netBeansUserDir="${{netbeans.user}}"
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
 
             </target>
-            
+
             <xsl:comment>
                 DEBUGGING SECTION
             </xsl:comment>
+
             <target name="debug">
-                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
                 <xsl:attribute name ="depends">run,-pre-debug</xsl:attribute>
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <!--
-                <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
-                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                    <classpath>
-                        <path path="${{debug.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <path path="${{web.docbase.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                </nbjpdaconnect>
-                -->
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
             </target>
-            
+
             <target name="pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <fail unless="fix.includes">Must set fix.includes</fail>
                 <property name="javac.includes" value="${{fix.includes}}.java"/>
             </target>
-            
+
             <target name="do-debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
                 <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
             </target>
-            
+
             <target name="debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
             </target>
-            
+
             <xsl:comment>
                 CLEANUP SECTION
             </xsl:comment>
-            
+
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'"/>
             </xsl:call-template>
-                        
+
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
                 <delete dir="${{source.root}}/jbiServiceUnits"/>
             </target>
-            
+
             <target name="post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
             <target name="clean">
                 <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
-                <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
-            
-            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean service assembly."/>
+
+            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build"/>
             <target name="clear-casa">
                 <delete file="${{source.root}}/conf/${{jbi.service-assembly.id}}.casa"/>
                 <delete file="${{src.dir}}/${{jbi.service-assembly.id}}.wsdl"/>
@@ -599,16 +557,15 @@ made subject to such option by the copyright holder.
             <!-- Start Test Framework -->
             <xsl:comment>
                 JUNIT EXECUTION SECTION
-                ======================= 
             </xsl:comment>
             <target name="-pre-test-run" if="have.tests" depends="init">
                 <mkdir dir="${{test.results.dir}}"/>
                 <path id="unit.test.classpath">
                     <pathelement path="${{soa.module.install.dir}}/org-netbeans-modules-compapp-manager-jbi.jar"/>
                     <pathelement path="${{soa.module.install.dir}}/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement path="${{soa.module.install.dir}}/ext/jbi/jbi-admin-common.jar"/>
-                    <pathelement path="${{soa.module.install.dir}}/ext/jbi/catd.jar"/>
-                    <pathelement path="${{java.module.install.dir}}/ext/junit-3.8.2.jar"/>                        
+                    <pathelement path="${{soa.module.install.dir}}/ext/jbi-admin-common.jar"/>
+                    <pathelement path="${{soa.module.install.dir}}/ext/catd.jar"/>
+                    <pathelement path="${{java.module.install.dir}}/ext/junit-3.8.2.jar"/>
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/api/saaj-api.jar"/>
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/saaj-impl.jar"/>
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/FastInfoset.jar"/>
@@ -627,34 +584,44 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement path="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>   
-                    <pathelement path="${{netbeans.home}}/lib/org-openide-modules.jar"/>
-                    <pathelement path="${{netbeans.home}}/lib/org-openide-util.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-options.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-text.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
-                    <pathelement path="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-csl-api.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/lib/org-openide-modules.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/lib/org-openide-util.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/lib/org-openide-util-lookup.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-awt.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-options.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-text.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-loaders.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-nodes.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/core/org-openide-filesystems.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-netbeans-modules-keyring.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/org-openide-dialogs.jar"/>
+                    <pathelement path="${{esb.netbeans.platform}}/modules/ext/jna-3.0.9.jar"/>
                 </path>
             </target>
-            <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
+            <target name="-do-test-run" if="have.tests" depends="init,-pre-test-run,init-server-password">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" tempdir="${{java.io.tmpdir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
+                    <jvmarg value="-Xmx256m"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
+                    <sysproperty key="ServerPassword" value="${{server.password}}"/>
+                    <sysproperty key="java.awt.headless" value="${{java.awt.headless}}"/>
+                    <sysproperty key="GenerateATSOutput" value="${{generate.ats.output}}"/>
                     <sysproperty key="org.netbeans.modules.compapp.catd.context" value="${{org.netbeans.modules.compapp.catd.context}}"/>
-                    <!-- 
+                    <!--
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence
                     1. "outfile" attribute of test element must be either in pattern TEST-{TestClassName} (example:
                     "TEST-ConfiguredTest") or not-specified (which default to TEST-{TestClassName})
-                        
+
                     2. "type" attribute of formatter must be "xml"
                     -->
                     <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${{test.results.dir}}">
                     </test>
-                    
+
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
                         <mapper to="*" from="test-sys-prop.*" type="glob"/>
@@ -663,23 +630,27 @@ made subject to such option by the copyright holder.
                     <formatter type="xml"/>
                 </junit>
             </target>
-            <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
+            <target name="-do-single-test-run" if="have.tests" depends="init,-pre-test-run,init-server-password">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" tempdir="${{java.io.tmpdir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath refid="unit.test.classpath"/>
+                    <jvmarg value="-Xmx256m"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
+                    <sysproperty key="ServerPassword" value="${{server.password}}"/>
+                    <sysproperty key="java.awt.headless" value="${{java.awt.headless}}"/>
+                    <sysproperty key="GenerateATSOutput" value="${{generate.ats.output}}"/>
                     <sysproperty key="inDebug" value="${{inDebug}}"/>
                     <sysproperty key="org.netbeans.modules.compapp.catd.context" value="${{org.netbeans.modules.compapp.catd.context}}"/>
-                    <!-- 
+                    <!--
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence
                     1. "outfile" attribute of test element must be either in pattern TEST-{TestClassName} (example:
                     "TEST-ConfiguredTest") or not-specified (which default to TEST-{TestClassName})
-                        
+
                     2. "type" attribute of formatter must be "xml"
                     -->
                     <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${{test.results.dir}}">
                     </test>
-                    
+
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
                         <mapper to="*" from="test-sys-prop.*" type="glob"/>
@@ -695,19 +666,19 @@ made subject to such option by the copyright holder.
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
             <target name="test-report" if="have.tests" depends="init"/>
-            <target name="-test-browse" if="netbeans.home+have.tests" depends="init"/>
-            <target name="test" depends="init,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse" description="Run unit tests."/>
-            <target name="test-single" depends="init,-pre-test-run,-do-single-test-run,test-report,-post-single-test-run,-test-browse" description="Run unit tests."/>
-            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,-post-debug,test-report,-post-single-test-run,-test-browse" description="Debug unit tests."/>
-            
+            <target name="-test-browse" if="have.tests" depends="init"/>
+            <target name="test" depends="init,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse" />
+            <target name="test-single" depends="init,-pre-test-run,-do-single-test-run,test-report,-post-single-test-run,-test-browse"/>
+            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,-post-debug,test-report,-post-single-test-run,-test-browse"/>
+
             <target name="-post-unit-test-run" if="have.tests+tests.failed" depends="init,-pre-test-run,-do-test-run">
                 <echo>Some tests failed; see details above.</echo>
             </target>
-            <target name="unit-test" depends="init,-pre-test-run,-do-test-run,test-report,-post-unit-test-run,-test-browse" description="Run unit tests in a batch."/>
-            <target name="jbi-unit-test" depends="run,unit-test,undeploy" description="build, deploy, test, and undeploy."/>
+            <target name="unit-test" depends="init,-pre-test-run,-do-test-run,test-report,-post-unit-test-run,-test-browse"/>
+            <target name="jbi-unit-test" depends="run,unit-test,undeploy"/>
             <!-- End Test Framework -->
         </project>
-        
+
         <!-- TBD items:
 
         Could pass <propertyset> to run, debug, etc. under Ant 1.6,
@@ -726,7 +697,7 @@ made subject to such option by the copyright holder.
         -->
 
     </xsl:template>
-    
+
     <!---
     Generic template to build subdependencies of a certain type.
     Feel free to copy into other modules.
@@ -788,14 +759,14 @@ made subject to such option by the copyright holder.
                     </property>
                     <available property="se.jar.name">
                         <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/SEDeployment.jar</xsl:text></xsl:attribute>
-                        <xsl:attribute name="value"><xsl:text>SEDeployment.jar</xsl:text></xsl:attribute>   
+                        <xsl:attribute name="value"><xsl:text>SEDeployment.jar</xsl:text></xsl:attribute>
                     </available>
                     -->
                     <!--
-                    <condition property="se.jar.name" value="SEDeployment.jar">   
+                    <condition property="se.jar.name" value="SEDeployment.jar">
                         <xsl:attribute name="else"><xsl:value-of select="$subproj"/><xsl:text>.jar</xsl:text></xsl:attribute>
                         <available>
-                            <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/SEDeployment.jar</xsl:text></xsl:attribute>                            
+                            <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/SEDeployment.jar</xsl:text></xsl:attribute>
                         </available>
                     </condition>
                     -->
@@ -803,7 +774,7 @@ made subject to such option by the copyright holder.
                     <basename>
                         <xsl:attribute name="property"><xsl:value-of select="$subproj"/><xsl:text>.se.jar.name</xsl:text></xsl:attribute>
                         <xsl:attribute name="file">${reference.<xsl:value-of select="$subproj"/>.dist_se}</xsl:attribute>
-                    </basename> 
+                    </basename>
                     -->
                     <property>
                         <xsl:attribute name="name"><xsl:value-of select="$subproj"/><xsl:text>.su.name</xsl:text></xsl:attribute>
@@ -822,17 +793,17 @@ made subject to such option by the copyright holder.
                             <include name="META-INF/jbi.xml"/>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
-                    </unzip>  
+                    </unzip>
                     <property>
                         <xsl:attribute name="name"><xsl:value-of select="$subproj"/><xsl:text>.su.dir</xsl:text></xsl:attribute>
                         <xsl:attribute name="value">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     </property>
-                    <move> 
+                    <move>
                         <xsl:attribute name="file">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF/jbi.xml</xsl:text></xsl:attribute>
                         <xsl:attribute name="todir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}</xsl:text></xsl:attribute>
-                    </move>        
+                    </move>
                     <move>
-                        <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/${</xsl:text><xsl:value-of select="$subproj"/><xsl:text>.su.name}</xsl:text></xsl:attribute>                        
+                        <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/${</xsl:text><xsl:value-of select="$subproj"/><xsl:text>.su.name}</xsl:text></xsl:attribute>
                         <fileset>
                             <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/>.su.dir}<xsl:text>/META-INF</xsl:text></xsl:attribute>
                         </fileset>
@@ -841,7 +812,7 @@ made subject to such option by the copyright holder.
             </xsl:for-each>
         </target>
     </xsl:template>
-    
+
     <xsl:template name="deps.javaee.target">
         <xsl:param name="targetname"/>
         <xsl:param name="type"/>
@@ -893,7 +864,7 @@ made subject to such option by the copyright holder.
                 <property>
                     <xsl:attribute name="name"><xsl:value-of select="$subproj"/>.su.dir</xsl:attribute>
                     <xsl:attribute name="value">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
-                </property>                
+                </property>
                 <unzip>
                     <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
@@ -904,7 +875,7 @@ made subject to such option by the copyright holder.
                         <include name="**/*.XSD"/>
                         <include name="META-INF/jbi.xml"/>
                     </patternset>
-                </unzip>  
+                </unzip>
                 <unzip>
                     <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/</xsl:text><xsl:value-of select="$subproj"/></xsl:attribute>
@@ -913,13 +884,13 @@ made subject to such option by the copyright holder.
                     </patternset>
                 </unzip>
                 <jbi-javaee-dist>
-                    <xsl:attribute name="projectName"><xsl:value-of select="$subproj"/></xsl:attribute>                                        
+                    <xsl:attribute name="projectName"><xsl:value-of select="$subproj"/></xsl:attribute>
                     <xsl:attribute name="subprojJar">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
-                    <xsl:attribute name="subprojDir">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>                    
+                    <xsl:attribute name="subprojDir">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>
                     <xsl:attribute name="suExtractDir">${<xsl:value-of select="$subproj"/>.su.dir}</xsl:attribute>
                     <xsl:attribute name="subprojResource">${resource.<xsl:value-of select="$subproj"/>}</xsl:attribute>
-                </jbi-javaee-dist>                
+                </jbi-javaee-dist>
             </xsl:for-each>
         </target>
-    </xsl:template>    
+    </xsl:template>
 </xsl:stylesheet>

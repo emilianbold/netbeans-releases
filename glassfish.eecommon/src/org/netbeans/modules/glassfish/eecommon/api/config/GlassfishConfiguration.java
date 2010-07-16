@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.glassfish.eecommon.api.config;
@@ -49,7 +52,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -111,7 +113,7 @@ public abstract class GlassfishConfiguration implements
 
 
     protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
-        this(module, J2eeModuleHelper.getJ2eeModuleHelper(module.getType()));
+        this(module, J2eeModuleHelper.getSunDDModuleHelper(module.getType()));
     }
 
     protected GlassfishConfiguration(J2eeModule module, J2eeModuleHelper moduleHelper) throws ConfigurationException {
@@ -124,36 +126,36 @@ public abstract class GlassfishConfiguration implements
             throw new ConfigurationException("Unsupported module type: " + module.getType());
         }
 
-        addConfiguration(primarySunDD, this);
-
-        // Default to 8.1 in new beans.  This is set by the bean parser
-        // in the appropriate root type, if reading from existing file(s).
-        this.appServerVersion = ASDDVersion.SUN_APPSERVER_8_1;
-        this.deferredAppServerChange = false;
+        if (null == primarySunDD) {
+            throw new ConfigurationException("No primarySunDD for module type: " + module.getType());
+        }
 
         try {
-            Object mt = module.getType();
-            ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
+
+            if (null == primarySunDD.getParentFile()) {
+                throw new ConfigurationException("module is not initialized completely");
+            }
+            addConfiguration(primarySunDD, this);
+
+            // Default to 8.1 in new beans.  This is set by the bean parser
+            // in the appropriate root type, if reading from existing file(s).
+            this.appServerVersion = ASDDVersion.SUN_APPSERVER_8_1;
+            this.deferredAppServerChange = false;
+            J2eeModule.Type mt = module.getType();
             String moduleVersion = module.getModuleVersion();
 
             minASVersion = computeMinASVersion(moduleVersion);
             maxASVersion = computeMaxASVersion();
             appServerVersion = maxASVersion;
 
-            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
+            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(mt, moduleVersion);
             boolean isPreJavaEE5 = (j2eeVersion != null) ?
                     (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
             if (!primarySunDD.exists()) {
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
-                if (J2eeModule.WAR.equals(moduleType) || isPreJavaEE5) {
-                    try {
-                        createDefaultSunDD(primarySunDD);
-                    } catch (IOException ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying to create " + primarySunDD.getPath(); // Requires I18N
-                        displayError(ex, defaultMessage);
-                    }
+                if (J2eeModule.Type.WAR.equals(mt) || isPreJavaEE5) {
+                    createDefaultSunDD(primarySunDD);
                 }
             }
 
@@ -166,7 +168,7 @@ public abstract class GlassfishConfiguration implements
                 File configDir = primarySunDD.getParentFile();
                 FileObject configFolder = FileUtil.toFileObject(configDir);
                 if(configFolder != null) {
-                    FolderListener.createListener(primarySunDD, configFolder, moduleType);
+                    FolderListener.createListener(primarySunDD, configFolder, mt);
                 }
 
                 // Attach listeners to the standard descriptors to handle automatic
@@ -174,8 +176,14 @@ public abstract class GlassfishConfiguration implements
                 addDescriptorListener(getStandardRootDD());
                 addDescriptorListener(getWebServicesRootDD());
             }
+        } catch (IOException ioe) {
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ioe);
+            throw ce;
         } catch (RuntimeException ex) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ex);
+            throw ce;
         }
 
     }
@@ -193,8 +201,9 @@ public abstract class GlassfishConfiguration implements
 
         GlassfishConfiguration storedCfg = getConfiguration(primarySunDD);
         if (storedCfg != this) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, "Stored DeploymentConfiguration ("
-                    + storedCfg + ") instance not the one being disposed of (" + this + ").");
+            Logger.getLogger("glassfish-eecommon").log(Level.INFO, 
+                    "Stored DeploymentConfiguration ({0}) instance not the one being disposed of ({1}).",
+                    new Object[]{storedCfg, this});
         }
 
         if (storedCfg != null) {
@@ -296,7 +305,8 @@ public abstract class GlassfishConfiguration implements
         "J2EE",
         "JavaEEPlusSIP",
         "gfv3",
-        "gfv3ee6"
+        "gfv3ee6",
+        "gfv3ee6wc"
     };
 
     protected ASDDVersion getTargetAppServerVersion() {
@@ -335,6 +345,10 @@ public abstract class GlassfishConfiguration implements
     protected ASDDVersion getInstalledAppServerVersion(File asInstallFolder) {
         File dtdFolder = new File(asInstallFolder, "lib/dtds/"); // NOI18N
         if (dtdFolder.exists()) {
+            if (new File(dtdFolder, "sun-web-app_3_0-0.dtd").exists()) {
+                // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
+                return ASDDVersion.SUN_APPSERVER_10_0;
+            }
             if (new File(dtdFolder, "sun-domain_1_3.dtd").exists()) {
                 // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
                 return ASDDVersion.SUN_APPSERVER_9_0;
@@ -358,11 +372,8 @@ public abstract class GlassfishConfiguration implements
     // of unsupported features (e.g. CMP, etc.)
     // ------------------------------------------------------------------------
 
-    protected void createDefaultSunDD(File sunDDFile) throws IOException {
-        boolean isPreAS90 = false; // FIXME (ASDDVersion.SUN_APPSERVER_9_0.compareTo(appServerVersion) > 0);
-        String resource = "org-netbeans-modules-j2ee-sun-ddui" + // NOI18N
-                (isPreAS90 ? "-version-8_2/" : "/") + sunDDFile.getName(); // NOI18N
-        FileObject sunDDTemplate = FileUtil.getConfigFile(resource);
+    private void createDefaultSunDD(File sunDDFile) throws IOException {
+        FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
             FileSystem fs = configFolder.getFileSystem();
@@ -381,7 +392,7 @@ public abstract class GlassfishConfiguration implements
 
     public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             stdRootDD = j2eeModuleHelper.getStandardRootDD(module);
         }
@@ -390,7 +401,7 @@ public abstract class GlassfishConfiguration implements
 
     public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
         org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             wsRootDD = j2eeModuleHelper.getWebServicesRootDD(module);
         }
@@ -575,6 +586,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of ContextRootConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String getContextRoot() throws ConfigurationException {
         String contextRoot = null;
         if (J2eeModule.Type.WAR.equals(module.getType())) {
@@ -593,58 +605,70 @@ public abstract class GlassfishConfiguration implements
             }
         } else {
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: " + module.getType());
+                    "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
+                    module.getType());
         }
         return contextRoot;
     }
 
+    @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
-        if (J2eeModule.Type.WAR.equals(module.getType())) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        FileObject primarySunDDFO = getSunDD(primarySunDD, true);
-                        if (primarySunDDFO != null) {
-                            RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
-                            if (rootDD instanceof SunWebApp) {
-                                SunWebApp swa = (SunWebApp) rootDD;
-                                if (contextRoot == null || contextRoot.trim().length() == 0) {
-                                    swa.setContextRoot("/"); //NOI18N
-                                } else {
-                                    swa.setContextRoot(contextRoot);
+        try {
+            if (J2eeModule.Type.WAR.equals(module.getType())) {
+                final FileObject primarySunDDFO = getSunDD(primarySunDD, true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (primarySunDDFO != null) {
+                                RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                                if (rootDD instanceof SunWebApp) {
+                                    SunWebApp swa = (SunWebApp) rootDD;
+                                    if (contextRoot == null || contextRoot.trim().length() == 0) {
+                                        swa.setContextRoot("/"); //NOI18N
+                                    } else {
+                                        swa.setContextRoot(contextRoot);
+                                    }
+                                    swa.write(primarySunDDFO);
                                 }
-                                swa.write(primarySunDDFO);
                             }
+                        } catch (IOException ex) {
+                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                            String defaultMessage = " trying set context-root in sun-web.xml";
+                            displayError(ex, defaultMessage);
+                        } catch (Exception ex) {
+                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                            String defaultMessage = " trying set context-root in sun-web.xml";
+                            displayError(ex, defaultMessage);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying set context-root in sun-web.xml";
-                        displayError(ex, defaultMessage);
-                    } catch (Exception ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying set context-root in sun-web.xml";
-                        displayError(ex, defaultMessage);
                     }
-                }
-            });
-        } else {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
-        }
+                });
+            } else {
+                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
+                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: {0}",
+                        module.getType());
+            }
+        } catch (IOException ex) {
+            throw new ConfigurationException("",ex);
+        } 
     }
 
 
     // ------------------------------------------------------------------------
     // Implementation of DatasourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public abstract Set<Datasource> getDatasources() throws ConfigurationException;
 
+    @Override
     public abstract boolean supportsCreateDatasource();
 
-    public abstract Datasource createDatasource(String jndiName, String url, 
+    @Override
+    public abstract Datasource createDatasource(String jndiName, String url,
             String username, String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException;
 
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
@@ -691,6 +715,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
         // validation
@@ -751,6 +776,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName)) {
@@ -783,6 +809,7 @@ public abstract class GlassfishConfiguration implements
 
         return jndiName;    }
 
+    @Override
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(ejbName) || Utils.strEmpty(referenceName)) {
@@ -829,6 +856,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of EjbResourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(ejbName)) {
@@ -868,6 +896,7 @@ public abstract class GlassfishConfiguration implements
         return jndiName;
     }
 
+    @Override
     public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
@@ -929,6 +958,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindEjbReferenceForEjb(String ejbName, String ejbType, String referenceName,
             String jndiName) throws ConfigurationException {
         // validation
@@ -1003,13 +1033,17 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of MessageDestinationConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public abstract Set<MessageDestination> getMessageDestinations() throws ConfigurationException;
 
+    @Override
     public abstract boolean supportsCreateMessageDestination();
 
+    @Override
     public abstract MessageDestination createMessageDestination(String name, Type type)
             throws UnsupportedOperationException, ConfigurationException;
 
+    @Override
     public void bindMdbToMessageDestination(String mdbName, String name, Type type) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(mdbName) || Utils.strEmpty(name)) {
@@ -1041,7 +1075,7 @@ public abstract class GlassfishConfiguration implements
 //                    /* I think the following is not needed. These entries are being created through
 //                     * some other path - Peter
 //                     */
-//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination destination = 
+//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination destination =
 //                            findNamedBean(eb, mdbName, EnterpriseBeans.MESSAGE_DESTINATION,
 //                            org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.JNDI_NAME);
 //                    if (destination == null) {
@@ -1069,6 +1103,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(mdbName)) {
@@ -1106,6 +1141,7 @@ public abstract class GlassfishConfiguration implements
         return destinationName;
     }
 
+    @Override
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, Type type) throws ConfigurationException {
         // validation
@@ -1172,6 +1208,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType, String referenceName,
             String connectionFactoryName, String destName, Type type) throws ConfigurationException {
         try {
@@ -1353,7 +1390,7 @@ public abstract class GlassfishConfiguration implements
             getWebServicesRootDD() : getStandardRootDD());
     }
 
-    protected void addDescriptorListener(org.netbeans.modules.j2ee.dd.api.common.RootInterface rootDD) {
+    private void addDescriptorListener(org.netbeans.modules.j2ee.dd.api.common.RootInterface rootDD) {
         if(rootDD != null) {
             descriptorListener.addListener(rootDD);
         }

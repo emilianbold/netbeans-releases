@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.refactoring.ruby;
 import java.awt.Color;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,6 +80,7 @@ import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -144,7 +149,7 @@ public class RetoucheUtils {
             simpleName = c2n.getName();
             name = AstUtilities.getFqn(c2n);
         } else if (node instanceof AliasNode) {
-            name = ((AliasNode)node).getNewName();
+            name = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
         }
         
         if (name == null && node instanceof INameNode) {
@@ -396,11 +401,26 @@ public class RetoucheUtils {
 //        return getClasspathInfoFor(ctx.getFileObject());
 //    }
 //
+
+    public static Collection<FileObject> getProjectRoots(FileObject fileInProject) {
+        Project owner = FileOwnerQuery.getOwner(fileInProject);
+        // XXX won't owner always be a RubyBaseProject?
+        if (owner instanceof RubyBaseProject) {
+            Collection<FileObject> result =  new HashSet<FileObject>();
+            result.addAll(Arrays.asList(((RubyBaseProject) owner).getSourceRootFiles()));
+            result.addAll(Arrays.asList(((RubyBaseProject) owner).getTestSourceRootFiles()));
+            return result;
+        } else {
+            // fallback
+            return QuerySupport.findRoots(fileInProject,
+                    null, Collections.<String>emptySet(), Collections.<String>emptySet());
+        }
+    }
+
     public static Set<FileObject> getRubyFilesInProject(FileObject fileInProject) {
         Set<FileObject> files = new HashSet<FileObject>(100);
-        // XXX: user ruby specific classpath IDs
-        Collection<FileObject> sourceRoots = QuerySupport.findRoots(fileInProject, 
-                null, Collections.<String>emptySet(), Collections.<String>emptySet());
+        Project owner = FileOwnerQuery.getOwner(fileInProject);
+        Collection<FileObject> sourceRoots = getProjectRoots(fileInProject);
         for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming
@@ -412,6 +432,7 @@ public class RetoucheUtils {
 
         return files;
     }
+
     
     private static void addRubyFiles(Set<FileObject> files, FileObject f) {
         if (f.isFolder()) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
 import java.io.File;
@@ -54,11 +57,12 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -82,7 +86,6 @@ class FilesystemHandler extends VCSInterceptor {
      * Stores .svn folders that should be deleted ASAP.
      */
     private final Set<File> invalidMetadata = new HashSet<File>(5);
-    private final RequestProcessor parallelRP = new RequestProcessor("Subversion FS handler", 50);
 
     public FilesystemHandler(Subversion svn) {
         cache = svn.getStatusCache();
@@ -154,6 +157,7 @@ class FilesystemHandler extends VCSInterceptor {
         // there was no doDelete event for the file ->
         // could be deleted externaly, so try to handle it by 'svn rm' too
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     File parent = file.getParentFile();
@@ -252,37 +256,9 @@ class FilesystemHandler extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {
         Subversion.LOG.fine("doMove " + from +  " -> " + to);
         if (SwingUtilities.isEventDispatchThread()) {
-
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-            final Throwable innerT[] = new Throwable[1];
-            Runnable outOfAwt = new Runnable() {
-                public void run() {
-                    try {
-                        svnMoveImplementation(from, to);
-                    } catch (Throwable t) {
-                        innerT[0] = t;
-                    }
-                }
-            };
-
-            parallelRP.post(outOfAwt).waitFinished();
-            if (innerT[0] != null) {
-                if (innerT[0] instanceof IOException) {
-                    throw (IOException) innerT[0];
-                } else if (innerT[0] instanceof RuntimeException) {
-                    throw (RuntimeException) innerT[0];
-                } else if (innerT[0] instanceof Error) {
-                    throw (Error) innerT[0];
-                } else {
-                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
-                }
-            }
-
-            // end of hack
-
-        } else {
-            svnMoveImplementation(from, to);
         }
+        svnMoveImplementation(from, to);
     }
 
     @Override
@@ -346,6 +322,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void afterCreate(final File file) {
         Subversion.LOG.fine("afterCreate " + file);
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 if (file == null) return;
                 // I. refresh cache
@@ -369,6 +346,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
         Subversion.LOG.fine("afterChange " + file);
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
                     cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
@@ -383,17 +361,29 @@ class FilesystemHandler extends VCSInterceptor {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
+                @Override
                 public void run() {
+                    if (!SvnClientFactory.isClientAvailable()) {
+                        Subversion.LOG.fine(" skipping ProvidedExtensions.Refresh due to missing client"); //NOI18N
+                        return;
+                    }
+                    if (!SvnUtils.isManaged(file)) {
+                        return;
+                    }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(file);
-                        Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
-                        StatusAction.executeStatus(file, client, null);
+                        if (client != null) {
+                            Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
+                            StatusAction.executeStatus(file, client, null, false); // no need to contact server
+                        }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
                 }
             };
+        } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new SvnSearchHistorySupport(file);
         } else {
             return super.getAttribute(file, attrName);
         }
@@ -402,6 +392,20 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void beforeEdit(File file) {
         NotificationsManager.getInstance().scheduleFor(file);
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (SvnUtils.isAdministrative(dir.getName())) {
+            retval = 0;
+        }
+        return retval;
+    }
+
+    @Override
+    public boolean isMutable(File file) {
+        return SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
     }
 
     private String getRemoteRepository(File file) {
@@ -519,7 +523,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
 
                 if (parent != null) {
-                    assert SvnUtils.isManaged(parent);  // see implsMove above
+                    assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
                     // a direct cache call could, because of the synchrone svnMoveImplementation handling,
                     // trigger an reentrant call on FS => we have to check manually
                     if (!hasMetadata(parent)) {
@@ -543,6 +547,7 @@ class FilesystemHandler extends VCSInterceptor {
                         SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                         try {
                             srcChildren = SvnUtils.listRecursively(from);
+                            boolean moved = true;
                             if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) && 
                                     (!status.isCopied() || (url != null && url.equals(toUrl)))) {
                                 // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
@@ -553,13 +558,13 @@ class FilesystemHandler extends VCSInterceptor {
                                 revertDeleted(client, toStatus, to, false);
 
                                 client.revert(from, true);
-                                from.renameTo(to);
+                                moved = from.renameTo(to);
                             } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                     || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                                 // check if the file wasn't just deleted in this session
                                 revertDeleted(client, toStatus, to, false);
 
-                                from.renameTo(to);
+                                moved = from.renameTo(to);
                             } else {
                                 SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
                                 SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
@@ -579,6 +584,9 @@ class FilesystemHandler extends VCSInterceptor {
                                                 + ": cannot rename {0} to {1}", new Object[] {from, to});
                                     }
                                 }
+                            }
+                            if (!moved) {
+                                Subversion.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {from, to});
                             }
                         } finally {
                             // we moved the files so schedule them a for a refresh

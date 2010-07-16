@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import javax.xml.XMLConstants;
@@ -41,9 +37,19 @@ class WSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
             String refString , WSDLReferenceBuilder.WSDLResolver resolver )
     {
         super( type, parent, refString );
+
+//        if (myResolver != null) {
+//          enabled = myResolver.getClass().getName().contains("OperationResolver");
+//        }
+
+//if (enabled) System.out.println();
+//if (enabled) System.out.println("<WSDLReferenceImpl>: " + hashCode() + " " + target);
         setReferenced( target );
         myResolver = resolver;
+//if (enabled) System.out.println("type: " + type.getName());
     }
+
+//private boolean enabled = false;
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.xam.Reference#get()
@@ -51,6 +57,8 @@ class WSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
     public T get() {
         if ( getReferenced() == null ){
             T ret = myResolver.resolve( this );
+//if (enabled) System.out.println("myResolver: " + myResolver.getClass().getName());
+//if (enabled) System.out.println(" !!!!!!!!! : " + ret);
             setReferenced( ret );
             return ret;
         }
@@ -95,5 +103,4 @@ class WSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
     }
     
     private WSDLReferenceBuilder.WSDLResolver myResolver;
-
 }

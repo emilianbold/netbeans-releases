@@ -37,7 +37,9 @@ import org.w3c.dom.Node;
  */
 public class WatchesNodeModel implements NodeModel, Constants {
     public static final String WATCH_ICON =
-        "org/netbeans/modules/bpel/debugger/ui/resources/image/watches/watch";
+        "org/netbeans/modules/debugger/resources/watchesView/Watch";
+    public static final String NEW_WATCH_ICON =
+        "org/netbeans/modules/bpel/debugger/ui/resources/image/watch/new_watch";
     
     final ContextProvider myContextProvider;
     final BpelDebugger myDebugger;
@@ -59,6 +61,12 @@ public class WatchesNodeModel implements NodeModel, Constants {
         if (object == TreeModel.ROOT) {
             return NbBundle.getBundle(WatchesNodeModel.class).
                 getString ("CTL_Watch_Column_Name_Name");  // NOI18N
+        }
+
+        if (object == WatchesTreeModel.ADD_NEW_WATCH) {
+            return "<html><font color=\"#808080\">&lt;" + // NOI18N
+                    NbBundle.getBundle(WatchesNodeModel.class).getString ("CTL_Add_New_Watch") + // NOI18N
+                    "&gt;</font></html>";  // NOI18N;
         }
         
         if (object instanceof BpelWatch) {
@@ -89,6 +97,10 @@ public class WatchesNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return WATCH_ICON;
+        }
+
+        if (object == WatchesTreeModel.ADD_NEW_WATCH) {
+            return NEW_WATCH_ICON;
         }
         
         if (object instanceof BpelWatch) {

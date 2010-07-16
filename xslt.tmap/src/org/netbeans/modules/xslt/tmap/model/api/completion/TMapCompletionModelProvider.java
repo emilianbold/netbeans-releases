@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.tmap.model.api.completion;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
@@ -29,14 +30,13 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.tmap.TMapConstants;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class TMapCompletionModelProvider extends CompletionModelProvider {
 
     @Override
@@ -45,7 +45,7 @@ public class TMapCompletionModelProvider extends CompletionModelProvider {
             return null;
         }
 
-        SchemaModel schemaModel = getTMapSchemaModel();
+        SchemaModel schemaModel = getTMapSchemaModel(SoaUtil.isAllowBetaFeatures(SoaUtil.getProject(context.getPrimaryFile())));
         if (schemaModel == null) {
             return null;
         }
@@ -55,8 +55,13 @@ public class TMapCompletionModelProvider extends CompletionModelProvider {
     }
 
     private boolean isTMapFile(CompletionContext context) {
-        FileObject fo = context.getPrimaryFile();
-        if (!TMapConstants.TRANSFORMMAP_XML.equals(fo.getNameExt())) {
+        if (context == null) return false;
+
+        FileObject primaryFile = context.getPrimaryFile();
+        if ((primaryFile == null) || (primaryFile.getNameExt() == null)) return false;
+        
+        String nameExt = primaryFile.getNameExt();
+        if (!TMapConstants.TRANSFORMMAP_XML.equals(nameExt)) {
             return false;
         }
     
@@ -82,10 +87,13 @@ public class TMapCompletionModelProvider extends CompletionModelProvider {
         return false;
     }
     
-    private SchemaModel getTMapSchemaModel() {
+    private SchemaModel getTMapSchemaModel(boolean isExtSchema) {
+//        System.out.println("completion provider: isAllowBetaFeatures: "+isExtSchema);
         try {
             
-            FileObject tmapSchemaFo = FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xsd"); // NOI18N
+            FileObject tmapSchemaFo = Repository.getDefault().
+                    getDefaultFileSystem().findResource("org-netbeans-xsltpro/"
+                    +(isExtSchema ? "transformmap_ext.xsd" : "transformmap.xsd")); // NOI18N
             if (tmapSchemaFo == null) {
                 return null;
             }

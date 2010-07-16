@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -73,13 +78,11 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -373,22 +376,41 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         return 0;
     }
     
-    public boolean isLeaf (Object o) throws UnknownTypeException {
+    public boolean isLeaf (final Object o) throws UnknownTypeException {
         if (o.equals (ROOT))
             return false;
-        if (o instanceof AbstractVariable)
+        if (o instanceof AbstractVariable) {
+            if (o instanceof FieldVariable) {
+                return true;
+            }
+            if (o instanceof Refreshable && !((Refreshable) o).isCurrent()) {
+                debugger.getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ((Refreshable) o).refresh();
+                        } catch (RefreshFailedException ex) {
+                            return ;
+                        }
+                        if (!(((AbstractVariable) o).getInnerValue () instanceof ObjectReference)) {
+                            fireNodeChildrenChanged(o);
+                        }
+                    }
+                });
+                return false;
+            }
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
+        }
         if (o.toString().startsWith("SubArray")) {
             return false;
         }
         if (o.equals ("NoInfo")) // NOI18N
             return true;
         if (o instanceof JPDAClassType) return false;
-        if (o instanceof Operation) return !JPDAUtils.IS_JDK_16;
+        if (o instanceof Operation) return false;
         if (o == "lastOperations") return false;
         if (o == NO_DEBUG_INFO) return true;
         if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
-            return !JPDAUtils.IS_JDK_16;
+            return false;
         }
         throw new UnknownTypeException (o);
     }
@@ -448,7 +470,20 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             );
     }
 
-    
+    private void fireNodeChildrenChanged(Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        int i, k = ls.size ();
+        for (i = 0; i < k; i++) {
+            ls.get(i).modelChanged (
+                new ModelEvent.NodeChanged(this, node, ModelEvent.NodeChanged.CHILDREN_MASK)
+            );
+        }
+    }
+
+
     // private methods .........................................................
     
     private Object[] getLocalVariables (

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,11 +103,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                     descriptions = new ArrayList<ElementNode.Description>();
                     map.put(method.getEnclosingElement(), descriptions);
                 }
-                descriptions.add(ElementNode.Description.create(method, null, true, false));
+                descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
             }
             List<ElementNode.Description> implementDescriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                implementDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+                implementDescriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
             if (!implementDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(implementDescriptions), true));
             map = new LinkedHashMap<Element, List<ElementNode.Description>>();
@@ -118,11 +121,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                     if( !orderedElements.contains( e ) )
                         orderedElements.add( e );
                 }
-                descriptions.add(ElementNode.Description.create(method, null, true, false));
+                descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
             }
             List<ElementNode.Description> overrideDescriptions = new ArrayList<ElementNode.Description>();
             for (Element e : orderedElements)
-                overrideDescriptions.add(ElementNode.Description.create(e, map.get( e ), false, false));
+                overrideDescriptions.add(ElementNode.Description.create(controller, e, map.get( e ), false, false));
             if (!overrideDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(overrideDescriptions), false));
             return ret;
@@ -160,6 +163,8 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            if (path == null)
+                                return;
                             int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                             ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())

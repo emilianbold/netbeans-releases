@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +59,8 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -69,8 +73,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
@@ -88,7 +91,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "codeblocks"; //NOI18N
+    private static final String FOLD_CLASS = "tags"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -129,7 +132,7 @@ public class PhpStructureScanner implements StructureScanner {
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
             for (ConstantElement constant : declaredConstants) {
-                namespaceChildren.add(new PHPSimpleStructureItem(constant, "const"));
+                namespaceChildren.add(new PHPConstantStructureItem(constant, "const"));
             }
             Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
             for (TypeScope type : declaredTypes) {
@@ -157,7 +160,7 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {
-                    children.add(new PHPSimpleStructureItem(classConstant, "con"));//NOI18N
+                    children.add(new PHPConstantStructureItem(classConstant, "con"));//NOI18N
                 }
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
@@ -215,7 +218,10 @@ public class PhpStructureScanner implements StructureScanner {
                 if (scope instanceof TypeScope) {
                     getRanges(folds, FOLD_CLASS).add(offsetRange);
                 } else {
-                    getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    //NamespaceScope excluded until getBlockRange() return proper vaalues
+                    if (scope instanceof FunctionScope || scope instanceof MethodScope /*|| scope instanceof NamespaceScope*/) {
+                        getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    } 
                 }
             }
             Source source = info.getSnapshot().getSource();
@@ -375,13 +381,13 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.appendText("(");   //NOI18N
 
             //NOI18N
-            List<? extends Parameter> parameters = function.getParameters();
+            //NOI18N
+            List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
                 boolean first = true;
-                for (Parameter formalParameter : parameters) {
+                for (ParameterElement formalParameter : parameters) {
                     String name = formalParameter.getName();
-
-                    List<QualifiedName> types = formalParameter.getTypes();
+                    Set<TypeResolver> types = formalParameter.getTypes();
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
@@ -390,13 +396,20 @@ public class PhpStructureScanner implements StructureScanner {
 
                         if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            for (Iterator<QualifiedName> it = types.iterator(); it.hasNext();) {
-                                QualifiedName qualifiedName = it.next();
-                                formatter.appendText(qualifiedName.toName().toString());
-                                if (it.hasNext()) {
-                                    formatter.appendText("|");//NOI18N
+                            StringBuilder typeSb = new StringBuilder();
+                            for (TypeResolver typeResolver : types) {
+                                if (typeResolver.isResolved()) {
+                                    QualifiedName typeName = typeResolver.getTypeName(false);
+                                    if (typeName != null) {
+                                        if (typeSb.length() > 0) {
+                                            typeSb.append("|");//NOI18N
+                                        }
+                                        typeSb.append(typeName.toString());
+                                    }
                                 }
-                                
+                            }
+                            if (typeSb.length() > 0) {
+                                formatter.appendText(typeSb.toString());
                             }
                             formatter.appendText(" ");   //NOI18N
 
@@ -538,6 +551,32 @@ public class PhpStructureScanner implements StructureScanner {
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
+            return formatter.getText();
+        }
+
+    }
+
+    private class PHPConstantStructureItem extends PHPStructureItem {
+        public PHPConstantStructureItem(ConstantElement elementHandle, String prefix) {
+            super(elementHandle, null, prefix);
+        }
+
+        public ConstantElement getConstant() {
+            return (ConstantElement) getModelElement();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            final ConstantElement constant = getConstant();
+            String value = constant.getValue();
+            if (value != null) {
+                formatter.appendText(" ");//NOI18N
+                formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
+                formatter.appendText(value);
+                formatter.appendHtml(CLOSE_FONT);
+            }            
             return formatter.getText();
         }
 

@@ -26,19 +26,18 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public class AddInvokeAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddInvokeAction() {
+        super("webservice/invoke"); // NOI18N
     }    
     
     protected String getBundleName() {
-        return NodeType.INVOKE.getDisplayName(); // NOI18N
+        return NodeType.INVOKE.getDisplayName();
     }
     
     public ActionType getType() {
@@ -53,5 +52,4 @@ public class AddInvokeAction extends AddPaletteActivityAction {
     protected ExtendableActivity getPaletteActivity(BpelModel model) {
         return model.getBuilder().createInvoke();
     }
-
 }

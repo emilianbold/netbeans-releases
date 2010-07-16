@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
  */
 package org.netbeans.modules.websvc.rest.projects;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
@@ -52,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -122,7 +125,25 @@ public class WebProjectRestSupport extends WebRestSupport {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
                 if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    adaptorServlet.setServletClass(this.getServletAdapterClass());
+                    boolean isSpring = hasSpringSupport();
+                    if (isSpring) {
+                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                        InitParam initParam = 
+                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
+                                "ParamName", //NOI18N
+                                JERSEY_PROP_PACKAGES); //NOI18N
+                        if (initParam == null) {
+                            try {
+                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                                initParam.setParamName(JERSEY_PROP_PACKAGES);
+                                initParam.setParamValue("."); //NOI18N
+                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                                adaptorServlet.addInitParam(initParam);
+                            } catch (ClassNotFoundException ex) {}
+                        }
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
                     webApp.write(ddFO);
                 }
             }
@@ -136,21 +157,30 @@ public class WebProjectRestSupport extends WebRestSupport {
         new AntFilesHelper(this).initRestBuildExtension();
     }
 
+    @Override
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
-        String resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
+        WebRestSupport.RestConfig restConfig = null;
         if (!isRestSupportOn()) {
             needsRefresh = true;
-            setProjectProperty(REST_SUPPORT_ON, "true");
-            resourceUrl = setApplicationConfigProperty(RestUtils.isAnnotationConfigAvailable(project));
+            restConfig = setApplicationConfigProperty(RestUtils.isAnnotationConfigAvailable(project));
         }
 
         extendBuildScripts();
 
-        addSwdpLibrary();
-
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+
         if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
+
+            String resourceUrl = null;
+            if (restConfig != null) {
+                resourceUrl = restConfig.getResourcePath();
+            } else {
+                resourceUrl = getApplicationPathFromDD();
+            }
+            if (resourceUrl == null) {
+                resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
+            }
             addResourceConfigToWebApp(resourceUrl);
         }
         if (CONFIG_TYPE_IDE.equals(restConfigType)) {
@@ -158,6 +188,13 @@ public class WebProjectRestSupport extends WebRestSupport {
             if (buildFo != null) {
                 ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
             }
+        }
+
+        boolean addJerseyLib = (restConfig != null && restConfig.isJerseyLibSelected());
+        addSwdpLibrary(addJerseyLib, restConfigType);
+
+        if (hasSpringSupport()) {
+            addJerseySpringJar();
         }
         ProjectManager.getDefault().saveProject(getProject());
         if (needsRefresh) {
@@ -171,7 +208,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                     ClassPath.COMPILE,
                     ClassPath.EXECUTE
                 });
-        setProjectProperty(REST_SUPPORT_ON, "false"); //NOI18N
+        removeProjectProperties(new String[]{PROP_REST_CONFIG_TYPE, PROP_REST_RESOURCES_PATH});
         ProjectManager.getDefault().saveProject(getProject());
     }
 
@@ -192,26 +229,23 @@ public class WebProjectRestSupport extends WebRestSupport {
     @Override
     public boolean hasSwdpLibrary() {
         J2eePlatform platform = getPlatform();
-        if (platform == null) {
-            return false;
-        }
-        if(platformHasRestLib(platform)){
+        if (platform != null && platformHasRestLib(platform)){
             return true;
         }
-        boolean hasRestBeansApi = false;
-        boolean hasRestBeansImpl = false;
-        for (File file : platform.getClasspathEntries()) {
-            String jarName = file.getName();
-            if (jarName.equals(REST_API_JAR)) {
-                hasRestBeansApi = true;
-            }
-            if (jarName.startsWith(REST_RI_JAR) && jarName.endsWith(".jar")) { //NOI18N
-                hasRestBeansImpl = true;
-            }
-            if (hasRestBeansApi && hasRestBeansImpl) {
-                return true;
-            }
-        }
+//        boolean hasRestBeansApi = false;
+//        boolean hasRestBeansImpl = false;
+//        for (File file : platform.getClasspathEntries()) {
+//            String jarName = file.getName();
+//            if (jarName.equals(REST_API_JAR)) {
+//                hasRestBeansApi = true;
+//            }
+//            if (jarName.startsWith(REST_RI_JAR) && jarName.endsWith(".jar")) { //NOI18N
+//                hasRestBeansImpl = true;
+//            }
+//            if (hasRestBeansApi && hasRestBeansImpl) {
+//                return true;
+//            }
+//        }
         return false;
     }
 
@@ -227,12 +261,9 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private void addSwdpLibrary() throws IOException {
+    private void addSwdpLibrary(boolean addJerseyLib, String configType) throws IOException {
         // get or create REST library, from selected J2EE server, and add it to project's classpath
-        if (!hasSwdpLibrary()) {
-            //platform does not have swdp library, so add defaults {restapi, restlib}
-            addSwdpLibrary(classPathTypes);
-        } else {//add library jars from platform
+        if (addJerseyLib && hasSwdpLibrary()) {
             J2eePlatform platform = getPlatform();
             if (platform != null) {
                 WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
@@ -247,11 +278,23 @@ public class WebProjectRestSupport extends WebRestSupport {
                     }
                 }
             }
+        } else {
+            if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+                // javax.ws.rs.ApplicationPath needs to be on classpath
+                addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
+            } else {
+                addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
+            }
         }
     }
 
     private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        return "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        if (libName.startsWith(GFV3_RESTLIB)) {
+            return GFV3_RESTLIB;
+        } else {
+            return libName;
+        }
     }
 
     private J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){
@@ -336,7 +379,11 @@ public class WebProjectRestSupport extends WebRestSupport {
     private String getApplicationPathFromAnnotations(final String applPathFromDD) {
         List<RestApplication> restApplications = getRestApplications();
         if (applPathFromDD == null) {
-            return getApplicationPathFromDialog(restApplications);
+            if (restApplications.size() == 0) {
+                return null;
+            } else {
+                return getApplicationPathFromDialog(restApplications);
+            }
         } else {
             if (restApplications.size() == 0) {
                 return applPathFromDD;
@@ -378,5 +425,5 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
         return null;
     }
-   
+
 }

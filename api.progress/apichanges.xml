@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -105,6 +108,48 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="modalRunMethods">
+        <api name="progress_api"/>
+        <summary>SPI added</summary>
+        <version major="1" minor="19"/>
+        <date day="8" month="2" year="2010"/>
+        <author login="tboudreau"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added methods to ProgressUtils for invoking a runnable or
+                similar with
+                a modal dialog blocking the UI and showing progress:
+                </p>
+                <ul>
+                    <li><code>public static void showProgressDialogAndRun(Runnable operation, String displayName)</code></li>
+                    <li><code>public static &lt;T&gt; T showProgressDialogAndRun(final ProgressRunnable&lt;T&gt; operation, final String displayName, boolean includeDetailLabel)</code></li>
+                    <li><code>public static void showProgressDialogAndRun(Runnable operation, ProgressHandle progress, boolean includeDetailLabel)</code></li>
+                    <li><code>public static RequestProcessor.Task showProgressDialogAndRunLater(Runnable operation, ProgressHandle progress, boolean includeDetailLabel)</code></li>
+                </ul>
+                <p>
+                Added interface ProgressRunnable for performing background
+                work, and an SPI class ProgressRunOffEdtProvider which is
+                implemented by the Progress UI module.
+            </p>
+        </description>
+        <issue number="165005"/>
+    </change>
+    <change id="spi">
+        <api name="progress_api"/>
+        <summary>SPI added</summary>
+        <version major="1" minor="18"/>
+        <date day="8" month="1" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                An internal SPI package was exposed. Normal modules should not
+                need to access this package.
+            </p>
+        </description>
+        <issue number="177945"/>
+    </change>
     <change id="ProgressUtils">
         <api name="progress_api"/>
         <summary><code>ProgressUtils</code> class with <code>runOffEventDispatchThread</code> methods was added.</summary>

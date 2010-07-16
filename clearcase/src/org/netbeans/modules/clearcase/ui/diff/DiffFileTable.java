@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,12 +64,18 @@ import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.clearcase.Clearcase;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.openide.cookies.EditorCookie;
+import org.openide.util.WeakListeners;
 
 /**
  * 
@@ -78,6 +87,14 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     private JTable table;
     private JScrollPane     component;
     private Node[] nodes = new Node[0];
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private EditorCookie[] editorCookies;
     
     private String []   tableColumns; 
     private TableSorter sorter;
@@ -123,6 +140,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     };
     private final MultiDiffPanel master;
+    private PropertyChangeListener changeListener;
 
     public DiffFileTable(MultiDiffPanel master) {
         this.master = master;
@@ -227,9 +245,52 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         tableModel.setProperties(properties);
     }
 
-    void setTableModel(Node [] nodes) {
-        this.nodes = nodes;
-        tableModel.setNodes(nodes);
+    void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
+        this.editorCookies = editorCookies;
+        tableModel.setNodes(nodes = setupsToNodes(setups));
+        changeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                Object source = e.getSource();
+                String propertyName = e.getPropertyName();
+                if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
+                        && (source instanceof EditorCookie.Observable)) {
+                    statusModifiedChanged((EditorCookie.Observable) source);
+                }
+            }
+        };
+        for (EditorCookie editorCookie : this.editorCookies) {
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(WeakListeners.propertyChange(changeListener, editorCookie));
+            }
+        }
+    }
+
+    /**
+     * Updates the corresponding table row - makes the file name bold or plain,
+     * depending on the new <em>modified</em> state of the corresponing file.
+     *
+     * @param  editorCookie  {@code EditorCookie} that fired the change
+     *                       if <em>modified</em> status
+     */
+    private void statusModifiedChanged(EditorCookie editorCookie) {
+        int index = CollectionUtils.findInArray(editorCookies, editorCookie);
+
+        if (index == -1) {
+            assert false;
+            return;
+        }
+
+        tableModel.fireTableChanged(
+              new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
+    }
+
+    private static Node[] setupsToNodes(Setup[] setups) {
+        Node[] nodes = new Node[setups.length];
+        for (int i = 0; i < setups.length; i++) {
+            nodes[i] = setups[i].getNode();
+        }
+        return nodes;
     }
 
     void focus() {
@@ -335,20 +396,26 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     public void valueChanged(ListSelectionEvent e) {
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) return; // table is no longer in component hierarchy
-        master.setSelectedIndex(table.getSelectedRow());
+
+        master.tableRowSelected(table.getSelectedRow());
     }
     
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
             if (modelColumnIndex == 0) {
-                Node node = nodes[sorter.modelIndex(row)];
-                if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                int modelRow = sorter.modelIndex(row);
+                String htmlDisplayName
+                       = DiffUtils.getHtmlDisplayName(nodes[modelRow],
+                                                      isModified(modelRow),
+                                                      isSelected);
+                if (htmlDisplayName != null) {
+                    value = "<html>" + htmlDisplayName;                 //NOI18N
                 }
             }
             if (modelColumnIndex == 2) {
@@ -362,6 +429,11 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
+        }
+
+        private boolean isModified(int row) {
+            EditorCookie editorCookie = editorCookies[row];
+            return (editorCookie != null) ? editorCookie.isModified() : false;
         }
     }
 }

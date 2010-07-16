@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,9 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -124,6 +129,18 @@ public class UtilitiesTest extends NbTestCase {
                                 "test.Foo<? super java.lang.Number>");
     }
 
+    public void testFieldGroup1() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { |private int a, b, c;| }", 3);
+    }
+
+    public void testFieldGroup2() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { |int a, b, c;| }", 3);
+    }
+
+    public void testFieldGroup3() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { private int a; |private int b;| private int c; }", 1);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
@@ -185,6 +202,44 @@ public class UtilitiesTest extends NbTestCase {
         TypeMirror type = info.getTrees().getTypeMirror(tp);
         TypeMirror resolved = Utilities.resolveCapturedType(info, type);
 
-        assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(resolved, true).toString());
+        assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(info, resolved, true).toString());
+    }
+
+    private void performResolveFieldGroupTest(String code, int numOfElements) throws Exception {
+        String[] split = code.split("\\|");
+        int start = split[0].length();
+        int end   = split[0].length() + split[1].length();
+
+        code = split[0] + split[1] + split[2];
+
+        prepareTest(code);
+
+        TreePath tp = info.getTreeUtilities().pathFor(start + 1);
+
+        while (tp.getLeaf().getKind() != Kind.VARIABLE) {
+            tp = tp.getParentPath();
+        }
+
+        Collection<? extends TreePath> tps = Utilities.resolveFieldGroup(info, tp);
+
+        assertFieldGroup(info, tps, start, end, numOfElements);
+
+        for (TreePath inGroup : tps) {
+            assertFieldGroup(info, Utilities.resolveFieldGroup(info, inGroup), start, end, numOfElements);
+        }
+    }
+
+    private static void assertFieldGroup(CompilationInfo info, Collection<? extends TreePath> group, int goldenStart, int goldenEnd, int numOfElements) {
+        assertEquals(numOfElements, group.size());
+        
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), group.iterator().next().getLeaf());
+        int end = -1;
+
+        for (TreePath tp : group) {
+            end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tp.getLeaf());
+        }
+
+        assertEquals(goldenStart, start);
+        assertEquals(goldenEnd, end);
     }
 }

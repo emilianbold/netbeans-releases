@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,7 +50,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.instance"/>
         </folder>
     </folder>
-    <folder name="UI">
+    <!--folder name="UI">
         <folder name="Services">
             <folder name="IDEConfiguration">
                 <folder name="ServerAndExternalToolSettings">
@@ -57,7 +60,7 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-    </folder>
+    </folder-->
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-etl+xml">
@@ -77,14 +80,14 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Menu">
+    <!--folder name="Menu">
         <folder name="Tools">
             <file name="NewFFDBAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mashup.db.wizard.NewFFDBAction"/>
                 <attr name="position" intvalue="1250"/>
             </file>
         </folder>
-    </folder>
+    </folder-->
     <folder name="Templates">
         <folder name="SOA_ETL">
             <attr name="position" intvalue="105"/>
@@ -104,7 +107,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <!-- Recognize text/x-etl+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-etl-mime-resolver.xml" url="integrator-mime-resolver.xml">
+            <file name="org-netbeans-modules-etl-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/>
                 <attr name="position" intvalue="447"/>
@@ -1612,7 +1615,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1250"/>
+                    <attr name="position" intvalue="317"/>
                 </file>
             </folder>
         </folder>

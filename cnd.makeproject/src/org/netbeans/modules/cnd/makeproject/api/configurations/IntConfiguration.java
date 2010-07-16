@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,16 +46,16 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 public class IntConfiguration {
 
     private IntConfiguration master;
-    private int def;
+    private byte def;
     private String[] names;
     private String[] options;
-    private int value;
+    private byte value;
     private boolean modified;
     private boolean dirty = false;
 
     public IntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
         this.master = master;
-        this.def = def;
+        this.def = (byte) def;
         this.names = names;
         this.options = options;
         reset();
@@ -67,7 +70,7 @@ public class IntConfiguration {
     }
 
     public void setValue(int value) {
-        this.value = value;
+        this.value = (byte) value;
         if (master != null) {
             setModified(true);
         } else {
@@ -94,7 +97,7 @@ public class IntConfiguration {
         }
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -115,12 +118,12 @@ public class IntConfiguration {
     }
 
     public void setDefault(int def) {
-        this.def = def;
+        this.def = (byte) def;
         setModified(value != getDefault());
     }
 
-    public void reset() {
-        value = getDefault();
+    public final void reset() {
+        value = (byte) getDefault();
         setModified(false);
     }
 
@@ -154,4 +157,10 @@ public class IntConfiguration {
         clone.setModified(getModified());
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "(" + getValue() + ")" + getName(); // NOI18N
+    }
+
 }

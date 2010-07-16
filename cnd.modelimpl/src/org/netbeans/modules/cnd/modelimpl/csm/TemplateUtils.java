@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -93,9 +96,15 @@ public class TemplateUtils {
     }
     
     public static final String TYPENAME_STRING = "class"; //NOI18N
+
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters) {
+        addSpecializationSuffix(firstChild, res, parameters, false);
+    }
     
-    public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters, boolean checkForSpecialization) {
         int depth = 0;
+        int paramsNumber = 0;
+        StringBuilder sb = new StringBuilder(res.toString()); // NOI18N
         for (AST child = firstChild; child != null; child = child.getNextSibling()) {
             if (child.getType() == CPPTokenTypes.LESSTHAN) {
                 depth++;
@@ -105,6 +114,7 @@ public class TemplateUtils {
                 AST grandChild = child.getFirstChild();
                 if (grandChild != null) {
                     addSpecializationSuffix(grandChild, sb, parameters);
+                    paramsNumber++;
                 }
             } else if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
                 sb.append(child.getText());
@@ -113,14 +123,22 @@ public class TemplateUtils {
                 if (grandChild != null) {
                     addSpecializationSuffix(grandChild, sb, parameters);
                 }
-                sb.append('>');
+                addGREATERTHAN(sb);
                 sb.append(' ');
+                paramsNumber++;
+            } else if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                addGREATERTHAN(sb);
+                depth--;
+                if (depth == 0) {
+                    break;
+                }
             } else {
                 String text = child.getText();
                 if (parameters != null) {
                     for (CsmTemplateParameter param : parameters) {
                         if (param.getName().toString().equals(text)) {
                             text = TYPENAME_STRING;
+                            paramsNumber++;
                         }
                     }
                 }
@@ -134,15 +152,19 @@ public class TemplateUtils {
                     }
                 }
                 sb.append(text);
-
-                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
-                    depth--;
-                    if (depth == 0) {
-                        break;
-                    }
-                }
             }
         }
+        if(!checkForSpecialization || parameters == null || paramsNumber != parameters.size()) {
+            res.append(sb.toString().substring(res.length()));
+        }
+    }
+
+    public static void addGREATERTHAN(StringBuilder sb) {
+        // IZ#179276
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '>') {
+            sb.append(' ');
+        }
+        sb.append('>');
     }
     
     public static boolean isPartialClassSpecialization(AST ast) {
@@ -363,14 +385,12 @@ public class TemplateUtils {
 
     public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        while(inst != null) {
-            newMapping.putAll(inst.getMapping());
+        if (inst != null) {
             CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
             if(decl instanceof CsmInstantiation) {
-                inst = (CsmInstantiation) decl;
-            } else {
-                break;
+                newMapping.putAll(gatherMapping((CsmInstantiation) decl));
             }
+            newMapping.putAll(inst.getMapping());
         }
         return newMapping;
     }

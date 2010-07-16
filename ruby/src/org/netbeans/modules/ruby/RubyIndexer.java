@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -128,7 +131,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     static final String FIELD_EXTEND_WITH = "extendWith"; //NOI18N
 
     // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
-    final private static String[] FIXED_COLUMN_TYPES = new String[] {  
+    final static String[] FIXED_COLUMN_TYPES = new String[] {  
         // MUST BE SORTED - this array is binary searched!
         "binary", "boolean", "date", "datetime",  "decimal", "float", "integer", // NOI18N
         "string", "text", "time", "timestamp" }; // NOI18N
@@ -218,7 +221,16 @@ public class RubyIndexer extends EmbeddingIndexer {
      * The name of the method that sets the table name for an AR model class.
      */
     private static final String SET_TABLE_NAME = "set_table_name"; //NOII8N
-    
+
+    /**
+     * The fields required to be loaded when constructing {@code IndexedClass}es.
+     * Excludes methods/fields etc.
+     */
+    static final String[] CLASS_FIELDS = {
+        FIELD_EXTENDS_NAME, FIELD_FQN_NAME, FIELD_IN, FIELD_CLASS_NAME, FIELD_CLASS_ATTRS,
+        FIELD_CASE_INSENSITIVE_CLASS_NAME, FIELD_REQUIRE, FIELD_INCLUDES,
+        FIELD_EXTEND_WITH
+    };
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -282,7 +294,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static int getModifiersFlag(Set<Modifier> modifiers) {
+    static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {
             flags |= IndexedMethod.PRIVATE;
@@ -355,7 +367,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static class TreeAnalyzer {
+    static final class TreeAnalyzer {
 
         private final FileObject file;
         private final IndexingSupport support;
@@ -367,6 +379,8 @@ public class RubyIndexer extends EmbeddingIndexer {
         private String url;
         private final boolean platform;
         private final ContextKnowledge knowledge;
+        private final MigrationIndexer migrationIndexer;
+        private final RailsIndexer railsIndexer;
 
         private TreeAnalyzer(RubyParseResult result,
                 IndexingSupport support,
@@ -380,13 +394,39 @@ public class RubyIndexer extends EmbeddingIndexer {
             this.documents = new ArrayList<IndexDocument>();
             this.platform = RubyUtils.isPlatformFile(file);
             this.knowledge = knowledge;
+            this.migrationIndexer = new MigrationIndexer(knowledge, this);
+            this.railsIndexer = new RailsIndexer(knowledge, this);
         }
 
-        private String getRequireString(Set<String> requireSet) {
+        FileObject getFile() {
+            return file;
+        }
+
+        IndexingSupport getSupport() {
+            return support;
+        }
+
+        Indexable getIndexable() {
+            return indexable;
+        }
+
+        String getUrl() {
+            return url;
+        }
+
+        RubyParseResult getResult() {
+            return result;
+        }
+
+        MigrationIndexer getMigrationIndexer() {
+            return migrationIndexer;
+        }
+
+        String getRequireString(Set<String> requireSet) {
             return asCommaSeparatedString(requireSet);
         }
 
-        private String getIncludedString(Set<String> includes) {
+        String getIncludedString(Set<String> includes) {
             return asCommaSeparatedString(includes);
         }
 
@@ -427,12 +467,12 @@ public class RubyIndexer extends EmbeddingIndexer {
             if (Character.isDigit(fileName.charAt(0)) &&
                     (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
                 if (file != null && file.getParent() != null && file.getParent().getName().equals("migrate")) { // NOI18N
-                    handleMigration();
+                    migrationIndexer.handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
                 }
             } else if ("schema.rb".equals(fileName)) { //NOI18N
                 if (file != null && file.getParent() != null && file.getParent().getName().equals("db")) { // NOI18N
-                    handleMigration();
+                    migrationIndexer.handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
                 }
             }
@@ -446,58 +486,9 @@ public class RubyIndexer extends EmbeddingIndexer {
             requires = getRequireString(ar.getRequires());
             List<?extends AstElement> structure = ar.getElements();
 
-            // Rails special case
-            // in case of 2.3.2 fall through to do normal indexing as well, these special cases
-            // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
-            // if rails is in vendor/rails, we can't tell the version from
-            // the path, so playing safe and falling through to do also normal
-            // indexing in that case
-            boolean fallThrough = RubyUtils.isRails23OrHigher(file.getPath())
-                    || file.getPath().contains("vendor/rails"); //NOI18N
-            if (fileName.startsWith("acti")) { // NOI18N
-                if ("action_controller.rb".equals(fileName)) { // NOI18N
-                    // Locate "ActionController::Base.class_eval do"
-                    // and take those include statements and stick them into ActionController::Base
-                    handleRailsBase("ActionController"); // NOI18N
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("active_record.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActiveRecord"); // NOI18N
-//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
-                    // HACK
-                    handleMigrations();
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActionMailer"); // NOI18N
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("action_view.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActionView"); // NOI18N
-
-                    // HACK
-                    handleActionViewHelpers();
-                    if (!fallThrough) {
-                        return;
-                    }
-
-                //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
-                    // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
-                    // Gotta make this shiznit smarter!
-                    //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
-                    //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
-                }
-            } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
-                handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
-                if (!fallThrough) {
-                    return;
-                }
-            } else if (fileName.equals("schema_definitions.rb")) {
-                handleSchemaDefinitions();
-                // Fall through - also do normal indexing on the file
+            // rails special cases
+            if (!railsIndexer.index()) {
+                return;
             }
 
             if ((structure == null) || (structure.size() == 0)) {
@@ -517,118 +508,8 @@ public class RubyIndexer extends EmbeddingIndexer {
             analyze(structure);
         }
 
-        private void handleSchemaDefinitions() {
-            // Make sure we're in Rails 2.0...
-            if (url.indexOf("activerecord-2") == -1) { // NOI18N
-                return;
-            }
-            
-            Node root = AstUtilities.getRoot(result);
-
-            if (root == null) {
-                return;
-            }
-
-            Set<String> includeSet = new HashSet<String>();
-            Set<String> requireSet = new HashSet<String>();
-            scan(root, includeSet, requireSet);
-
-            IndexDocument document = support.createDocument(indexable);
-            documents.add(document);
-
-            // TODO:
-            //addIncluded(indexed);
-            String r = getRequireString(requireSet);
-            if (r != null) {
-                document.addPair(FIELD_REQUIRES, r, false, true);
-            }
-
-            addRequire(document);
-
-            String includes = getIncludedString(includeSet);
-
-            if (includes != null) {
-                document.addPair(FIELD_INCLUDES, includes, false, true);
-            }
-
-            int flags = 0;
-            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
-
-            String clz = "TableDefinition";
-            String classIn = "ActiveRecord::ConnectionAdapters";
-            String classFqn = classIn + "::" + clz;
-            String clzNoCase = clz.toLowerCase();
-            
-            document.addPair(FIELD_FQN_NAME, classFqn, true, true);
-            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true, true);
-            document.addPair(FIELD_CLASS_NAME, clz, true, true);
-            document.addPair(FIELD_IN, classIn, false, true);
-
-            // Insert methods:
-            for (String type : new String[] { "string", "text", "integer", "float", "decimal", "datetime", "timestamp", "time", "date", "binary", "boolean" }) { // NOI18N
-                Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
-
-                int mflags = getModifiersFlag(modifiers);
-                StringBuilder sb = new StringBuilder();
-                sb.append(type);
-                sb.append("(names,options);"); // NOI18N
-                sb.append(IndexedElement.flagToFirstChar(mflags));
-                sb.append(IndexedElement.flagToSecondChar(mflags));
-                sb.append(";;;options(=>limit|default:nil|null:bool|precision|scale)"); // NOI18N
-
-                String signature = sb.toString();
-
-                document.addPair(FIELD_METHOD_NAME, signature, true, true);
-            }
-        }
-
-        private void handleRailsBase(String classIn) {
-            handleRailsClass(classIn, classIn + "::Base", "Base", "base"); // NOI18N
-        }
-
-        /** There's some pretty complicated dynamic behavior in Rails in how
-         * the ActionController::Base class is decorated with module mixins;
-         * my code cannot handle this directly, but it's a really important
-         * special case to handle such that code completion works in the very
-         * key controller classes edited by users. (This logic is replicated
-         * in several other classes too - ActiveRecord etc.)
-         */
-        private void handleRailsClass(String classIn, String classFqn, String clz, String clzNoCase) {
-            Node root = knowledge.getRoot();
-
-            IndexDocument document = support.createDocument(indexable);
-            documents.add(document);
-
-            Set<String> includeSet = new HashSet<String>();
-            Set<String> requireSet = new HashSet<String>();
-            scan(root, includeSet, requireSet);
-
-            // TODO:
-            //addIncluded(indexed);
-            String r = getRequireString(requireSet);
-            if (r != null) {
-                document.addPair(FIELD_REQUIRES, r, false, true);
-            }
-
-            addRequire(document);
-
-            String includes = getIncludedString(includeSet);
-
-            if (includes != null) {
-                document.addPair(FIELD_INCLUDES, includes, false, true);
-            }
-
-            int flags = 0;
-            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
-
-            document.addPair(FIELD_FQN_NAME, classFqn, true, true);
-            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true, true);
-            document.addPair(FIELD_CLASS_NAME, clz, true, true);
-            document.addPair(FIELD_IN, classIn, false, true);
-        }
-
         /** Add an entry for a class which provides the given includes */
-        private void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
+        void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
             IndexDocument document = support.createDocument(indexable);
             documents.add(document);
 
@@ -646,393 +527,6 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
         }
         
-        /** Add an include of ActiveRecord::ConnectionAdapters::SchemaStatements from ActiveRecord::Migration.
-         * This is a hack. I'm not sure how the SchemaStatements methods end up in a Migration. I've sent
-         * some querying e-mails to find out; if you, the reader, know - please let me know so I can track
-         * down why the source modeller isn't finding this relationship. */
-        private void handleMigrations() {
-            int flags = 0;
-            addClassIncludes("Migration", "ActiveRecord::Migration", "ActiveRecord", flags, 
-                    "ActiveRecord::ConnectionAdapters::SchemaStatements");
-        }
-
-        /** Handle a migration file */
-        private void handleMigration() {
-            Node root = knowledge.getRoot();
-
-            // Look for self.up methods and register all column deltas
-            // create_table: create new table
-            //  t.column: add column to the given table
-            // add_column, remove_column: add column to the given table
-            // rename_table, rename_column: renaming
-            // rename_column, change_column - ditto for columns
-            
-            // It's going to be hard to deal with something like mephisto's 044_store_single_filter.rb
-            // where it's doing conditional logic on the models... schema.rb is more useful here.
-            // In the next release, try to use schema.rb if it's known to exist and be up to date
-            
-            // Find self.up
-            String fileName = file.getName();
-            Node top = null;
-            String version;
-            if ("schema".equals(fileName)) { // NOI18N
-                top = root;
-                // Use a special version greater than all allowed migrations such
-                // that I can find this when querying
-                version = SCHEMA_INDEX_VERSION; // NOI18N
-            } else {
-                String migrationClass;
-                if (fileName.charAt(3) == '_') {
-                    version = fileName.substring(0,3);
-                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
-                } else {
-                    // Rails 2.1 stores it in UTC format
-                    version = fileName.substring(0,14);
-                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(15)); // Strip off version prefix
-                }
-                String sig = migrationClass + "#up"; // NOI18N
-                Node def = AstUtilities.findBySignature(root, sig);
-
-                if (def == null) {
-                    return;
-                }
-                
-                top = def;
-            }
-            
-            // Iterate through the file and find tables and such
-            // Map from table name to column names
-            Map<String,List<String>> items = new HashMap<String,List<String>>();
-            scanMigration(top, items, null);
-            
-            if (items.size() > 0) {
-                for (Map.Entry<String,List<String>> entry : items.entrySet()) {
-                    IndexDocument document = support.createDocument(indexable);
-                    documents.add(document);
-                    
-                    String tableName = entry.getKey();
-                    document.addPair(FIELD_DB_TABLE, tableName, true, true);
-                    document.addPair(FIELD_DB_VERSION, version, false, true);
-                    
-                    List<String> columns = entry.getValue();
-                    for (String column : columns) {
-                        document.addPair(FIELD_DB_COLUMN, column, false, true);
-                    }
-                }
-            }
-        }
-        
-        private void scanMigration(Node node, Map<String,List<String>> items, String currentTable) {
-            if (node.getNodeType() == NodeType.FCALLNODE) {
-                // create_table etc.
-                String name = AstUtilities.getCallName(node);
-                if ("create_table".equals(name)) { // NOI18N
-                    // Compute the call name, and any column names
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() > 0) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() == NodeType.ARRAYNODE) {
-                            List grandChildren = child.childNodes();
-                            if (grandChildren.size() > 0) {
-                                Node grandChild = (Node)grandChildren.get(0);
-                                if (grandChild.getNodeType() == NodeType.SYMBOLNODE || 
-                                        grandChild.getNodeType() == NodeType.STRNODE) {
-                                    String tableName = getString(grandChild);
-                                    items.put(tableName, new ArrayList<String>());
-                                    if (childNodes.size() > 1) {
-                                        Node n = (Node) childNodes.get(1);
-                                        if (n.getNodeType() == NodeType.ITERNODE) {
-                                            scanMigration(n, items, tableName);
-                                        }
-                                    }
-                                    
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                } else if ("add_column".equals(name) || "remove_column".equals(name)) { // NOI18N
-                    List<Node> symbols = new ArrayList<Node>();
-                    // Ugh - this won't work right for complicated migrations which
-                    // are for example iterating over table like Mephisto's store_single_filter
-                    // migration
-                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                    if (symbols.size() >= 2) {
-                        String tableName = getString(symbols.get(0));
-                        String columnName = getString(symbols.get(1));
-                        String columnType = null;
-                        boolean isAdd = "add_column".equals(name); // NOI18N
-                        if (isAdd && symbols.size() >= 3) {
-                            columnType = getString(symbols.get(2));
-                        }
-
-                        List<String> list = items.get(tableName);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(tableName, list);
-                        }
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(columnName);
-                        sb.append(';');
-                        if (isAdd) {
-                            if (columnType != null) {
-                                sb.append(columnType);
-                            }
-                        } else {
-                            sb.append("-");
-                        }
-                        list.add(sb.toString());
-                    }
-                    
-                    return;
-                } else if ("rename_column".equals(name)) { // NOI18N
-                    // Simulate as a delete old, add new
-                    List<Node> symbols = new ArrayList<Node>();
-                    // Ugh - this won't work right for complicated migrations which
-                    // are for example iterating over table like Mephisto's store_single_filter
-                    // migration
-                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                    if (symbols.size() >= 3) {
-                        String tableName = getString(symbols.get(0));
-                        String oldCol = getString(symbols.get(1));
-                        String newCol = getString(symbols.get(2));
-
-                        List<String> list = items.get(tableName);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(tableName, list);
-                        }
-                        list.add(oldCol + ";-"); // NOI18N
-                        list.add(newCol);
-                    }
-                    
-                    return;
-                }
-            } else if (node.getNodeType() == NodeType.CALLNODE && currentTable != null) {
-                // t.column, applying to an outer table
-                String name = AstUtilities.getCallName(node);
-                if ("column".equals(name)) {  // NOI18N
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() >= 2) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() != NodeType.DVARNODE) {
-                            // Not a call on the block var corresponding to the table 
-                            // Later, validate more closely that we're making a call
-                            // on the actual block variable passed in from the create_table call!
-                            return;
-                        }
-
-                        child = (Node)childNodes.get(1);
-                        List<Node> symbols = new ArrayList<Node>();
-                        AstUtilities.addNodesByType(child, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                        if (symbols.size() >= 2) {
-                            String columnName = getString(symbols.get(0));
-                            String columnType = getString(symbols.get(1));
-                        
-                            List<String> list = items.get(currentTable);
-                            if (list == null) {
-                                list = new ArrayList<String>();
-                                items.put(currentTable, list);
-                            }
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(columnName);
-                            sb.append(';');
-                            sb.append(columnType);
-                            list.add(sb.toString());
-                        }
-
-                    }
-
-                    return;
-                } else if ("timestamps".equals(name)) { // NOI18N
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() >= 1) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() != NodeType.DVARNODE) {
-                            // Not a call on the block var corresponding to the table 
-                            // Later, validate more closely that we're making a call
-                            // on the actual block variable passed in from the create_table call!
-                            return;
-                        }
-                        
-                        // Insert timestamp codes
-                        //    column(:created_at, :datetime)
-                        //    column(:updated_at, :datetime)
-                        List<String> list = items.get(currentTable);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(currentTable, list);
-                        }
-                        list.add("created_at;datetime"); // NOI18N
-                        list.add("updated_at;datetime"); // NOI18N
-                    }
-                 } else {
-                    // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
-                    int columnTypeIndex = Arrays.binarySearch(FIXED_COLUMN_TYPES, name);
-                    if (columnTypeIndex >= 0 && columnTypeIndex < FIXED_COLUMN_TYPES.length) {
-                        String columnType = FIXED_COLUMN_TYPES[columnTypeIndex];
-                        List childNodes = node.childNodes();
-                        if (childNodes.size() >= 2) {
-                            Node child = (Node)childNodes.get(0);
-                            if (child.getNodeType() != NodeType.DVARNODE) {
-                                // Not a call on the block var corresponding to the table 
-                                // Later, validate more closely that we're making a call
-                                // on the actual block variable passed in from the create_table call!
-                                return;
-                            }
-
-                            child = (Node)childNodes.get(1);
-                            List<Node> args = child.childNodes();
-                            for (Node n : args) {
-                                if (n.getNodeType() == NodeType.SYMBOLNODE || n.getNodeType() == NodeType.STRNODE) {
-                                    String columnName = getString(n);
-                                    
-                                    List<String> list = items.get(currentTable);
-                                    if (list == null) {
-                                        list = new ArrayList<String>();
-                                        items.put(currentTable, list);
-                                    }
-                                    StringBuilder sb = new StringBuilder();
-                                    sb.append(columnName);
-                                    sb.append(';');
-                                    sb.append(columnType);
-                                    list.add(sb.toString());
-                                }
-                            }
-                        }
-
-                        return;
-                    
-                    }
-                }
-            }
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                scanMigration(child, items, currentTable);
-            }            
-        }
-
-        private String getString(Node node) {
-            if (node.getNodeType() == NodeType.STRNODE) {
-                return ((StrNode)node).getValue().toString();
-            } else {
-                return ((INameNode)node).getName();
-            }
-        }
-
-        /** 
-         * Action view has some special loading behavior of helpers - see actionview's
-         * "load_helpers" method.
-         * @todo Make sure that the Partials loading is working too
-         */
-        private void handleActionViewHelpers() {
-            if (file == null || file.getParent() == null) {
-                return;
-            }
-            assert file.getName().equals("action_view");
-            
-            FileObject helpers = file.getParent().getFileObject("action_view/helpers"); // NOI18N
-            if (helpers == null) {
-                return;
-            }
-            
-            StringBuilder include = new StringBuilder();
-            
-            for (FileObject helper : helpers.getChildren()) {
-                String name = helper.getName();
-                if (name.endsWith("_helper")) { // NOI18N
-                    String className = RubyUtils.underlinedNameToCamel(name);
-                    String fqn = "ActionView::Helpers::" + className; // NOI18N
-                    if (include.length() > 0) {
-                        include.append(",");
-                    }
-                    include.append(fqn);
-                }
-            }
-            
-            if (include.length() > 0) {
-                int flags = 0;
-                addClassIncludes("Base", "ActionView::Base", "ActionView", flags, 
-                        include.toString());
-            }
-        }
-        
-        private boolean scan(Node node, Set<String> includes, Set<String> requires) {
-            boolean found = false;
-
-            if (node instanceof FCallNode) {
-                String name = ((INameNode)node).getName();
-
-                if (name.equals("require")) { // XXX Load too?
-
-                    Node argsNode = ((FCallNode)node).getArgsNode();
-
-                    if (argsNode instanceof ListNode) {
-                        ListNode args = (ListNode)argsNode;
-
-                        if (args.size() > 0) {
-                            Node n = args.get(0);
-
-                            // For dynamically computed strings, we have n instanceof DStrNode
-                            // but I can't handle these anyway
-                        
-                            if (n instanceof StrNode) {
-                                String require = ((StrNode)n).getValue();
-
-                                if ((require != null) && (require.length() > 0)) {
-                                    requires.add(require.toString());
-                                }
-                            }
-                        }
-                    }
-                } else if ((includes != null) && name.equals("include")) {
-                    Node argsNode = ((FCallNode)node).getArgsNode();
-
-                    if (argsNode instanceof ListNode) {
-                        ListNode args = (ListNode)argsNode;
-
-                        if (args.size() > 0) {
-                            Node n = args.get(0);
-
-                            if (n instanceof Colon2Node) {
-                                includes.add(AstUtilities.getFqn((Colon2Node)n));
-                            } else if (n instanceof INameNode) {
-                                includes.add(((INameNode)n).getName());
-                            }
-                        }
-                    }
-                }
-            } else if (node instanceof CallNode) {
-                // Look for ActionController::Base.class_eval do block to make
-                // sure we have the right special case
-                CallNode call = (CallNode)node;
-
-                if (call.getName().equals("class_eval")) { // NOI18N
-                    found = true;
-
-                    // TODO Make sure the receivernode is ActionController::Base?
-                }
-            }
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                if (scan(child, includes, requires)) {
-                    found = true;
-                }
-            }
-
-            return found;
-        }
-
         private void analyze(List<?extends AstElement> structure) {
             List<AstElement> topLevelMethods = null;
             IndexDocument globalDoc = null;
@@ -1061,6 +555,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                         topLevelMethods.add(element);
                     }
+                    
                     break;
                     
                 case GLOBAL: {
@@ -1146,6 +641,9 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                 if (element.getKind() == ElementKind.CLASS) {
                     ClassElement classElement = (ClassElement)element;
+                    if (classElement.isVirtual()) {
+                        flags |= IndexedElement.VIRTUAL;
+                    }
                     fqn = classElement.getFqn();
 
                     if (node instanceof SClassNode) {
@@ -1161,7 +659,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             // - I won't index those.
                             return document;
                         }
-                    } else {
+                    } else if (node instanceof ClassNode) {
                         ClassNode clz = (ClassNode)node;
                         Node superNode = clz.getSuperNode();
                         String superClass = null;
@@ -1181,11 +679,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                     }
 
-                    String includes = getIncludedString(classElement.getIncludes());
-
-                    if (includes != null) {
-                        document.addPair(FIELD_INCLUDES, includes, false, true);
-                    }
                 } else {
                     assert element.getKind() == ElementKind.MODULE;
 
@@ -1199,6 +692,11 @@ public class RubyIndexer extends EmbeddingIndexer {
                     }
 
                     flags |= IndexedClass.MODULE;
+                }
+
+                String includes = getIncludedString(((ClassElement) element).getIncludes());
+                if (includes != null) {
+                    document.addPair(FIELD_INCLUDES, includes, false, true);
                 }
 
                 String name = element.getName();
@@ -1310,12 +808,6 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                         break;
                     }
-
-                        case CALL: {
-                            System.out.println("Huh: " + child);
-                            break;
-                        }
-
 
                     case CONSTRUCTOR:
                     case METHOD: {
@@ -1579,7 +1071,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             return false;
         }
 
-        private void addRequire(IndexDocument document) {
+        void addRequire(IndexDocument document) {
             // Don't generate "require" clauses for anything in generated ruby;
             // these classes are all built in and do not require any includes
             // (besides, the file names are bogus - they are just derived from

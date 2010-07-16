@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,7 @@ import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 public class AddViewDialog {
 
@@ -107,14 +111,17 @@ public class AddViewDialog {
             pane.add(namefld);
             DocumentListener docListener = new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     validate();
                 }
@@ -155,12 +162,14 @@ public class AddViewDialog {
             pane.add(spane);
 
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     return AddViewDDL.addView(spec, 
                                             schemaName,
@@ -177,7 +186,7 @@ public class AddViewDialog {
                             if (cause instanceof DDLException) {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
-                                LOGGER.log(Level.INFO, null, cause);
+                                LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                                 DbUtilities.reportError(NbBundle.getMessage (AddViewDialog.class, "ERR_UnableToCreateView"), e.getMessage());
                             }
                         }
@@ -188,6 +197,7 @@ public class AddViewDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewDialogA11yDesc")); //NOI18N
 
             descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddViewDialog.class, "AddViewTitle"), true, listener); //NOI18N
+            descriptor.setHelpCtx(new HelpCtx("createviews")); // NOI18N
             statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
@@ -197,7 +207,7 @@ public class AddViewDialog {
             dialog.setResizable(true);
             validate();
         } catch (MissingResourceException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
     }
 

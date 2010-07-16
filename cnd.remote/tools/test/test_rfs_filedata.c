@@ -16,7 +16,7 @@ void *start_routine(void *data) {
 }
 
 static void test_trivial() {
-    file_data *fd = find_file_data("/tmp/asd", 0);
+    file_data *fd = find_file_data("/tmp/asd");
     pthread_t thread1, thread2;
     pthread_create(&thread1, NULL, &start_routine, fd);
     pthread_create(&thread2, NULL, &start_routine, fd);
@@ -30,10 +30,7 @@ static void test_trivial() {
 }
 
 static int test_tree_search_printing_visitor(file_data *fd, void* data) {
-    #if !TRACE
-    #error TRACE should be defined
-    #endif
-    printf("VISITOR: \"%s\" cnt=%d\n", fd->filename, fd->cnt);
+    printf("VISITOR: \"%s\"\n", fd->filename);
 }
 
 static void print_tree() {
@@ -49,32 +46,66 @@ static void fill_tree_from_file(const char* test_file_name, int trace) {
     }
     int cnt = 0;
     char filename[1024];
+    start_adding_file_data();
     while (fgets(filename, sizeof(filename), file) != NULL) {
         // remove the trailing '\n'
         int len = strlen(filename);
         filename[len-1] = 0;
         if (trace) printf("Adding \"%s\"\n", filename);
-        file_data *fd = find_file_data(filename);
+        file_data *fd = add_file_data(filename, INITIAL);
         if (fd) {
-            fd->cnt++;
-            if (trace) printf("Got data for %s: %X %d\n", filename, fd, fd->cnt);
+            if (trace) printf("Added %s: %X\n", filename, fd);
         } else {
             fprintf(stderr, "Error: find_file_data returned NULL for %s\n", filename);
         }
         cnt++;
     }
+    stop_adding_file_data();
     printf("Added %d elements\n", cnt);
+    fclose(file);
 }
 
-static void test_tree_search_single_thread(const char* test_file_name) {
-    fill_tree_from_file(test_file_name, 0);
+static void find_tree_from_file(const char* test_file_name, int trace) {
+    FILE* file = fopen(test_file_name, "r");
+    if (!file) {
+        fprintf(stderr, "Error opening %s: ", test_file_name);
+        perror(NULL);
+        return;
+    }
+    int cnt = 0;
+    char filename[1024];
+    while (fgets(filename, sizeof(filename), file) != NULL) {
+        // remove the trailing '\n'
+        int len = strlen(filename);
+        filename[len-1] = 0;
+        if (trace) printf("Searching \"%s\"\n", filename);
+        file_data *fd = find_file_data(filename);
+        if (fd) {
+            if (trace) printf("Got data for %s: %X%s\n", filename, fd, fd->filename);
+        } else {
+            fprintf(stderr, "Error: find_file_data returned NULL for %s\n", filename);
+        }
+        cnt++;
+    }
+    const char *inexistent_name = "inexistent file ";
+    file_data *fd = find_file_data(inexistent_name);
+    if (fd) {
+        fprintf(stderr, "Error: find_file_data should NULL for %s\n", inexistent_name);
+    }
+    printf("Tested %d elements\n", cnt);
+}
+
+static void test_tree_search_single_thread(const char* test_file_name, int trace) {
+    fill_tree_from_file(test_file_name, trace);
+    find_tree_from_file(test_file_name, trace);
     print_tree();
 }
 
 void *test_tree_search_multy_thread_start_routine(void* data) {
-    fill_tree_from_file((const char*) data, 0);
+    find_tree_from_file((const char*) data, 0);
 }
 static void test_tree_search_multy_thread(char* test_file_name, int num_threads) {
+    fill_tree_from_file(test_file_name, 1);
     pthread_t threads[num_threads];
     int i;
     for (i = 0; i < num_threads; i++) {
@@ -90,7 +121,7 @@ static void test_tree_search_multy_thread(char* test_file_name, int num_threads)
 }
 
 int main(int argc, char** argv) {
-    //test_tree_search_single_thread("/tmp/test_tree_search");
-    test_tree_search_multy_thread("/tmp/test_tree_search", 10);
+    test_tree_search_single_thread("/tmp/test_tree_search", 1);
+    //test_tree_search_multy_thread("/tmp/test_tree_search", 10);
     return 0;
 }

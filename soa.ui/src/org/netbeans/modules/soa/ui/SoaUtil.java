@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,14 +53,17 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.awt.UndoRedo;
 import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
@@ -68,28 +74,26 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.text.Line;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import javax.swing.text.AbstractDocument;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.NbPreferences;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.schema.model.AppInfo;
+import org.netbeans.modules.xml.schema.model.Annotation;
 
 /**
  * @author nk160297
@@ -104,6 +108,11 @@ public class SoaUtil {
     
     private SoaUtil() {}
 
+    public static boolean equal(Object o1, Object o2) {
+        if (o1 == o2) return true;
+        return (o1 == null || o2 == null) ? false : o1.equals(o2);
+    }
+    
     public static String getGrayString(String message) {
         return getGrayString("", message);
     }
@@ -226,7 +235,7 @@ public class SoaUtil {
         if (badgeImage == null) {
             return originalImage;
         }
-        Image image = ImageUtilities.mergeImages(originalImage, badgeImage, x, y );
+        Image image = org.openide.util.ImageUtilities.mergeImages(originalImage, badgeImage, x, y );
         return image;
     }
     
@@ -311,7 +320,6 @@ public class SoaUtil {
         return false;
     }
     
-    // vlv
     public static void fixEncoding(DataObject data, FileObject dir) throws IOException {
       DataEditorSupport support = data.getLookup().lookup(DataEditorSupport.class);
 
@@ -377,7 +385,6 @@ public class SoaUtil {
                 return null;
             }
         }
-        
         return tc;
     }
 
@@ -504,9 +511,106 @@ public class SoaUtil {
                 root = new File(filename);
             }
         }
-
         return root;
     }
     
+    public static Project getProject(FileObject projectFo) {
+        FileObject projectRoot = null;
+        return projectFo == null ? null : FileOwnerQuery.getOwner(projectFo);
+    }
 
+    public static boolean isAllowBetaFeatures(Model model) {
+        return isAllowBetaFeatures(getProject(getFileObjectByModel(model)));
+    }
+
+    public static boolean isAllowBetaFeatures(Project project) {
+        if (project == null) {
+            return false;
+        }
+        AntProjectHelper pHelper = project.getLookup().lookup(AntProjectHelper.class);
+        if (pHelper == null) {
+            return false;
+        }
+        
+        return Boolean.parseBoolean(pHelper.getStandardPropertyEvaluator().getProperty("allow.beta.features"));
+    }
+    
+    private static boolean get(String name, boolean defaultValue) {
+      return getPreferences().getBoolean(name, defaultValue);
+    }
+
+    private static Preferences getPreferences() {
+      return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
+    } 
+
+    public static boolean isHL7(Object object) {
+        if ( !(object instanceof SchemaComponent)) {
+            return false;
+        }
+        if ( !(object instanceof Named)) {
+            return false;
+        }
+        SchemaComponent component = (SchemaComponent) object;
+        String namespace = component.getModel().getSchema().getTargetNamespace();
+
+        return HL7_NAMESPACE.equals(namespace);
+    }
+
+    public static String checkHL7(Named named) {
+        String name = named.getName();
+
+        if ( !(named instanceof SchemaComponent)) {
+            return name;
+        }
+        SchemaComponent component = (SchemaComponent) named;
+        String namespace = component.getModel().getSchema().getTargetNamespace();
+
+        if ( !HL7_NAMESPACE.equals(namespace)) {
+            return name;
+        }
+        if (component instanceof TypeContainer) {
+            NamedComponentReference<? extends GlobalType> type = ((TypeContainer) component).getType();
+
+            if (type != null && type.get() != null) {
+                component = type.get();
+            }
+        }
+        Annotation annotation = component.getAnnotation();
+
+        if (annotation == null) {
+            return name;
+        }
+        Collection<AppInfo> appInfos = annotation.getAppInfos();
+
+        if (appInfos == null || appInfos.size() == 0) {
+            return name;
+        }
+        AppInfo appInfo = appInfos.iterator().next();
+
+        if (appInfo == null) {
+            return name;
+        }
+        return getLongName(name, appInfo.getContentFragment());
+    }
+
+    private static String getLongName(String name, String fragment) {
+        if (fragment == null) {
+            return name;
+        }
+        int k1 = fragment.indexOf(START_LONG_NAME);
+
+        if (k1 == -1) {
+            return name;
+        }
+        int k2 = fragment.indexOf(END_LONG_NAME);
+
+        if (k2 == -1) {
+            return name;
+        }
+        return fragment.substring(k1 + START_LONG_NAME.length(), k2);
+    }
+
+    private static final String START_LONG_NAME = "<hl7:LongName>"; // NOI18N
+    private static final String END_LONG_NAME = "</hl7:LongName>"; // NOI18N
+    private static final String HL7_NAMESPACE = "urn:hl7-org:v2xml"; // NOI18N
 }

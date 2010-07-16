@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,8 +55,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -86,6 +87,9 @@ import org.openide.util.Task;
 public abstract class CLIHandler extends Object {
     /** lenght of the key used for connecting */
     private static final int KEY_LENGTH = 10;
+    private static final byte[] VERSION = {
+        'N', 'B', 'C', 'L', 'I', 0, 0, 0, 0, 1
+    };
     /** ok reply */
     private static final int REPLY_OK = 1;
     /** sends exit code */
@@ -103,6 +107,8 @@ public abstract class CLIHandler extends Object {
     private static final int REPLY_AVAILABLE = 12;
     /** request to write to stderr */
     private static final int REPLY_ERROR = 13;
+    /** returns version of the protocol */
+    private static final int REPLY_VERSION = 14;
     
     /**
      * Used during bootstrap sequence. Should only be used by core, not modules.
@@ -259,6 +265,7 @@ public abstract class CLIHandler extends Object {
      */
     static final class Status {
         public static final int CANNOT_CONNECT = -255;
+        public static final int CANNOT_WRITE = -254;
         
         private final File lockFile;
         private final int port;
@@ -442,6 +449,9 @@ public abstract class CLIHandler extends Object {
     private static InetAddress localHostAddress () throws IOException {
         java.net.NetworkInterface net = java.net.NetworkInterface.getByName ("lo");
         if (net == null || !net.getInetAddresses().hasMoreElements()) {
+            net = java.net.NetworkInterface.getByInetAddress(InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+        }
+        if (net == null || !net.getInetAddresses().hasMoreElements()) {
             return InetAddress.getLocalHost();
         }
         else {
@@ -484,30 +494,55 @@ public abstract class CLIHandler extends Object {
         if ("memory".equals(home)) { // NOI18N
             return new Status(0);
         }
-        
-        if (runWhenHome != null) {
-            // notify that we have successfully identified the home property
-            runWhenHome.run ();
-        }
-        
-        
+
         File lockFile = new File(home, "lock"); // NOI18N
         
         for (int i = 0; i < 5; i++) {
             // try few times to succeed
             try {
-                if (lockFile.exists()) {
+                if (lockFile.isFile()) {
+                    if (!cleanLockFile && !lockFile.canWrite()) {
+                        return new Status(Status.CANNOT_WRITE);
+                    }
                     enterState(5, block);
+                    if (runWhenHome != null) {
+                        // notify that we have successfully identified the home property
+                        runWhenHome.run();
+                        runWhenHome = null;
+                    }
                     throw new IOException("EXISTS"); // NOI18N
                 }
                 
                 if (i == 0 && checkHelp(args, handlers)) {
+                    if (runWhenHome != null) {
+                        // notify that we have successfully identified the home property
+                        runWhenHome.run();
+                        runWhenHome = null;
+                    }
                     return new Status(2);
                 }
                 
                 lockFile.getParentFile().mkdirs();
-                lockFile.createNewFile();
+                try {
+                    if (!lockFile.createNewFile()) {
+                        if (!cleanLockFile && !lockFile.canWrite()) {
+                            return new Status(Status.CANNOT_WRITE);
+                        }
+                    }
+                } catch (IOException ex) {
+                    if (!cleanLockFile && !lockFile.getParentFile().canWrite()) {
+                        return new Status(Status.CANNOT_WRITE);
+                    }
+                    throw ex;
+                }
                 lockFile.deleteOnExit();
+
+                if (runWhenHome != null) {
+                    // notify that we have successfully identified the home property
+                    runWhenHome.run ();
+                    runWhenHome = null;
+                }
+
                 secureAccess(lockFile);
                 
                 enterState(10, block);
@@ -650,14 +685,20 @@ public abstract class CLIHandler extends Object {
                 }
                 
                 if (key != null && port != -1) {
-                    try {
+                    int version = -1;
+                    RESTART: for (;;) try {
                         // ok, try to connect
                         enterState(28, block);
                         Socket socket = new Socket(localHostAddress (), port);
                         // wait max of 1s for reply
                         socket.setSoTimeout(5000);
                         DataOutputStream os = new DataOutputStream(socket.getOutputStream());
-                        os.write(key);
+                        if (version == -1) {
+                            os.write(VERSION);
+                        } else {
+                            os.write(key);
+                        }
+                        assert VERSION.length == key.length;
                         os.flush();
                         
                         enterState(30, block);
@@ -672,7 +713,19 @@ public abstract class CLIHandler extends Object {
                             enterState(34, block);
                             
                             switch (reply) {
+                                case REPLY_VERSION:
+                                    version = replyStream.readInt();
+                                    os.write(key);
+                                    os.flush();
+                                    break;
                                 case REPLY_FAIL:
+                                    if (version == -1) {
+                                        os.close();
+                                        replyStream.close();
+                                        socket.close();
+                                        version = 0;
+                                        continue RESTART;
+                                    }
                                     enterState(36, block);
                                     break COMMUNICATION;
                                 case REPLY_OK:
@@ -705,7 +758,11 @@ public abstract class CLIHandler extends Object {
                                         outputArr = new byte[howMuch];
                                     }
                                     int really = args.getInputStream().read(outputArr, 0, howMuch);
-                                    os.write(really);
+                                    if (version >= 1) {
+                                        os.writeInt(really);
+                                    } else {
+                                        os.write(really);
+                                    }
                                     if (really > 0) {
                                         os.write(outputArr, 0, really);
                                     }
@@ -753,16 +810,20 @@ public abstract class CLIHandler extends Object {
                         
                         // connection ok, butlockFile secret key not recognized
                         // delete the lock file
+                        break RESTART;
                     } catch (java.net.SocketTimeoutException ex2) {
                         // connection failed, the port is dead
                         enterState(33, block);
+                        break RESTART;
                     } catch (java.net.ConnectException ex2) {
                         // connection failed, the port is dead
                         enterState(33, block);
+                        break RESTART;
                     } catch (IOException ex2) {
                         // some strange exception
                         ex2.printStackTrace();
                         enterState(33, block);
+                        break RESTART;
                     }
                     
                     boolean isSameHost = true;
@@ -800,49 +861,8 @@ public abstract class CLIHandler extends Object {
     /** Make the file readable just to its owner.
      */
     private static void secureAccess(final File file) throws IOException {
-        // using 1.6 method if available to make the file readable just 
-        // to its owner
-        boolean success = false;
-        
-        String vm = System.getProperty("java.version"); // NOI18N
-        if (vm != null && vm.startsWith("1.6")) { // NOI18N
-            try {
-                Method m = File.class.getMethod("setReadable", new Class[] { Boolean.TYPE, Boolean.TYPE }); // NOI18N
-                Object s1 = m.invoke(file, new Object[] {Boolean.FALSE, Boolean.FALSE});
-                Object s2 = m.invoke(file, new Object[] {Boolean.TRUE, Boolean.TRUE});
-                success = Boolean.TRUE.equals(s1) && Boolean.TRUE.equals(s2);
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-            } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
-            }
-        }
-        if (success) {
-            return;
-        }
-        try {
-            // try to make it only user-readable (on Unix)
-            // since people are likely to leave a+r on their userdir
-            File chmod = new File("/bin/chmod"); // NOI18N
-            if (!chmod.isFile()) {
-                // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
-                chmod = new File("/usr/bin/chmod"); // NOI18N
-            }
-            if (chmod.isFile()) {
-                int chmoded = Runtime.getRuntime().exec(new String[] {
-                    chmod.getAbsolutePath(),
-                    "go-rwx", // NOI18N
-                    file.getAbsolutePath()
-                }).waitFor();
-                if (chmoded != 0) {
-                    throw new IOException("could not run " + chmod + " go-rwx " + file); // NOI18N
-                }
-            }
-        } catch (InterruptedException e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
-        }
+        file.setReadable(false, false);
+        file.setReadable(true, true);
     }
 
     /** Class that represents available arguments to the CLI
@@ -989,7 +1009,7 @@ public abstract class CLIHandler extends Object {
                 try {
                     handleConnect(work);
                 } catch (IOException ex) {
-                    OUTPUT.log(Level.WARNING, null, ex);
+                    OUTPUT.log(Level.INFO, null, ex);
                 }
                 return;
             }
@@ -1042,17 +1062,33 @@ public abstract class CLIHandler extends Object {
         }
         
         private void handleConnect(Socket s) throws IOException {
-            
+            int requestedVersion;
             byte[] check = new byte[key.length];
             DataInputStream is = new DataInputStream(s.getInputStream());
             
             enterState(70, block);
-            
+
             is.readFully(check);
+
+            final DataOutputStream os = new DataOutputStream(s.getOutputStream());
+
+            boolean match = true;
+            for (int i = 0; i < VERSION.length - 1; i++) {
+                if (VERSION[i] != check[i]) {
+                    match = false;
+                }
+            }
+            if (match) {
+                requestedVersion = check[VERSION.length - 1];
+                os.write(REPLY_VERSION);
+                os.writeInt(VERSION[VERSION.length - 1]);
+                os.flush();
+                is.readFully(check);
+            } else {
+                requestedVersion = 0;
+            }
             
             enterState(90, block);
-            
-            final DataOutputStream os = new DataOutputStream(s.getOutputStream());
             
             if (Arrays.equals(check, key)) {
                 while (!waitFinishInstallationIsOver (2000)) {
@@ -1074,7 +1110,7 @@ public abstract class CLIHandler extends Object {
                 
                 final Args arguments = new Args(
                     args, 
-                    new IS(is, os), 
+                    new IS(is, os, requestedVersion),
                     new OS(os, REPLY_WRITE), 
                     new OS(os, REPLY_ERROR), 
                     currentDir
@@ -1189,12 +1225,14 @@ public abstract class CLIHandler extends Object {
         }
         
         private static final class IS extends InputStream {
-            private DataInputStream is;
-            private DataOutputStream os;
+            private final DataInputStream is;
+            private final DataOutputStream os;
+            private final int requestedVersion;
             
-            public IS(DataInputStream is, DataOutputStream os) {
+            public IS(DataInputStream is, DataOutputStream os, int version) {
                 this.is = is;
                 this.os = os;
+                this.requestedVersion = version;
             }
             
             public int read() throws IOException {
@@ -1228,7 +1266,7 @@ public abstract class CLIHandler extends Object {
                 os.writeInt(len);
                 os.flush();
                 // read provided data
-                int really = is.read ();
+                int really = requestedVersion >= 1 ? is.readInt() : is.read ();
                 if (really > 0) {
                     return is.read(b, off, really);
                 } else {

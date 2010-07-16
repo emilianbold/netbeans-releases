@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,7 +104,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public int run() {
         if (!isFailedOrCancelled()) {
-            RemoteUtil.LOGGER.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
+            RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport<Init>: Running [{0}] on {1}", new Object[]{cmd, executionEnvironment});
             if (SwingUtilities.isEventDispatchThread()) {
                 String text = "Running remote command in EDT: " + cmd; //NOI18N
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
@@ -115,12 +118,10 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
             try {
 //                final String substitutedCommand = substituteCommand();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-
                 if (args == null) {
                     pb.setCommandLine(cmd);
                 } else {
-                    pb.setExecutable(cmd);
-                    pb.setArguments(args);
+                    pb.setExecutable(cmd).setArguments(args);
                 }
 
                 pb.getEnvironment().putAll(env);
@@ -148,13 +149,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 //                } catch (InterruptedException e) {
 //                }
                 int rc = process.waitFor();
-                RemoteUtil.LOGGER.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
+                RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport: {0} on {1} finished; rc={2}", new Object[]{cmd, executionEnvironment, rc});
                 String errMsg;
                 while ((errMsg = remoteProcessErr.readLine()) != null) {
                     if (errMsg != null) {
                         err.append(errMsg).append('\n');
                         if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                            RemoteUtil.LOGGER.finest("RemoteCommandSupport ERROR: " + errMsg);
+                            RemoteUtil.LOGGER.log(Level.FINEST, "RemoteCommandSupport ERROR: {0}", errMsg);
                         }
                     }
                 }
@@ -168,7 +169,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 // log just for information, it's quite normal
                 RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("IO failure during running " + cmd);
+                RemoteUtil.LOGGER.log(Level.WARNING, "IO failure during running {0} at {1}", new Object[]{cmd, env});
             } finally {
                 if (remoteProcessOut != null) {
                     try {

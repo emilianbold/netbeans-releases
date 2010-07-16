@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,83 +51,83 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  */
 public interface SearchOption {
 
-  /**
-   * Returns text to be found.
-   * @return text to be found
-   */
-  String getText();
+    /**
+     * Returns text to be found.
+     * @return text to be found
+     */
+    String getText();
 
-  /**
-   * Returns provider.
-   * @return provider
-   */
-  SearchProvider getProvider();
+    /**
+     * Returns provider.
+     * @return provider
+     */
+    SearchProvider getProvider();
 
-  /**
-   * Returns target to be found.
-   * @return target to be found
-   */
-  SearchTarget getTarget();
+    /**
+     * Returns target to be found.
+     * @return target to be found
+     */
+    SearchTarget getTarget();
 
-  /**
-   * Returns search match.
-   * @return search match
-   */
-  SearchMatch getSearchMatch();
+    /**
+     * Returns search match.
+     * @return search match
+     */
+    SearchMatch getSearchMatch();
 
-  /**
-   * Returns true if search is case sensitive.
-   * @return true if search is case sensitive
-   */
-  boolean isCaseSensitive();
+    /**
+     * Returns true if search is case sensitive.
+     * @return true if search is case sensitive
+     */
+    boolean isCaseSensitive();
 
-  /**
-   * Returns true if search will be performed in selection.
-   * @return true if search will be performed in selection
-   */
-  boolean useSelection();
+    /**
+     * Returns true if search will be performed in selection.
+     * @return true if search will be performed in selection
+     */
+    boolean useSelection();
 
-  // ------------------------------------------
-  public class Adapter implements SearchOption {
+    // ------------------------------------------
+    public class Adapter implements SearchOption {
 
-    public Adapter(String text, SearchProvider provider, SearchTarget target, SearchMatch match, boolean caseSensitive, boolean useSelection) {
-      myText = text;
-      myProvider = provider;
-      myTarget = target;
-      mySearchMatch = match;
-      myCaseSensitive = caseSensitive;
-      myUseSelection = useSelection;
+        public Adapter(String text, SearchProvider provider, SearchTarget target, SearchMatch match, boolean caseSensitive, boolean useSelection) {
+            myText = text;
+            myProvider = provider;
+            myTarget = target;
+            mySearchMatch = match;
+            myCaseSensitive = caseSensitive;
+            myUseSelection = useSelection;
+        }
+
+        public String getText() {
+            return myText;
+        }
+
+        public SearchProvider getProvider() {
+            return myProvider;
+        }
+
+        public SearchTarget getTarget() {
+            return myTarget;
+        }
+
+        public SearchMatch getSearchMatch() {
+            return mySearchMatch;
+        }
+
+        public boolean isCaseSensitive() {
+            return myCaseSensitive;
+        }
+
+        public boolean useSelection() {
+            return myUseSelection;
+        }
+
+        private String myText;
+        private SearchTarget myTarget;
+        private SearchProvider myProvider;
+        private SearchMatch mySearchMatch;
+        private boolean myCaseSensitive;
+        private boolean myUseSelection;
     }
-
-    public String getText() {
-      return myText;
-    }
-
-    public SearchProvider getProvider() {
-      return myProvider;
-    }
-
-    public SearchTarget getTarget() {
-      return myTarget;
-    }
-
-    public SearchMatch getSearchMatch() {
-      return mySearchMatch;
-    }
-
-    public boolean isCaseSensitive() {
-      return myCaseSensitive;
-    }
-
-    public boolean useSelection() {
-      return myUseSelection;
-    }
-
-    private String myText;
-    private SearchTarget myTarget;
-    private SearchProvider myProvider;
-    private SearchMatch mySearchMatch;
-    private boolean myCaseSensitive;
-    private boolean myUseSelection;
-  }
 }

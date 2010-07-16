@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,53 +69,43 @@ public class OpenCookieFactory {
     }
     
     public static OpenCookie create(Project project, String className, String methodName) {
-        
-        try {
-            FileObject source = SourceGroupSupport.getFileObjectFromClassName(className, project);
-            
-            return new OpenCookieImpl(source, className, methodName);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return null;
+        return new OpenCookieImpl(project, className, methodName);
     }
     
     private static class OpenCookieImpl implements OpenCookie {
-        private DataObject dataObj;
-        private JavaSource javaSource;
         private String className;
         private String methodName;
+        private Project project;
         
-        public OpenCookieImpl(FileObject source, String className, String methodName) {
-            try {
-                dataObj = DataObject.find(source);
-            } catch (Exception de) {
-                Exceptions.printStackTrace(de);
-            }
-            
-            javaSource = JavaSource.forFileObject(source);
+        public OpenCookieImpl(Project project, String className, String methodName) {
+            this.project = project;
             this.className = className;
             this.methodName = methodName;
-        }
+        } 
         
+        @Override
         public void open() {
-            if (dataObj == null) return;
-            
-            OpenCookie oc = (OpenCookie) dataObj.getCookie(OpenCookie.class);
-            
-            if (oc != null) {
-                oc.open();
-            }
-            
-            LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
-          
-            if (lc != null) {
-                long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
-                Line line = lc.getLineSet().getOriginal((int) position[0]);
-                line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE, (int) position[1]);
+            try {
+                FileObject source = SourceGroupSupport.getFileObjectFromClassName(className, project);
+                if (source != null) {
+                    DataObject dataObj = DataObject.find(source);
+                    if (dataObj != null) {
+                        OpenCookie oc = (OpenCookie) dataObj.getCookie(OpenCookie.class);
+                        if (oc != null) {
+                            oc.open();
+                        }
+                        JavaSource javaSource = JavaSource.forFileObject(source);
+                        LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
+                        if (lc != null) {
+                            long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
+                            Line line = lc.getLineSet().getOriginal((int) position[0]);
+                            line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE, (int) position[1]);
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
-    
 }

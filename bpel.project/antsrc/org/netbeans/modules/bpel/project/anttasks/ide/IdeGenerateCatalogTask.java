@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,12 @@
 package org.netbeans.modules.bpel.project.anttasks.ide;
 
 import java.io.File;
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import java.io.IOException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Reference;
 import org.netbeans.modules.bpel.project.anttasks.util.PackageCatalogArtifacts;
+import org.xml.sax.SAXException;
 
 /**
  * Generates JBI Descriptor
@@ -55,18 +59,26 @@ public class IdeGenerateCatalogTask extends Task {
     
     @Override
     public void execute() throws BuildException {
+//System.out.println();
+//System.out.println("1");
+//System.out.println();
         if (this.mSourceDirectory == null) {
             throw new BuildException(
                     "No directory is set for source files."); // NOI18N
         }
+//System.out.println("2");
+        File sourceDirectory = new File(this.mSourceDirectory);
+        File buildDirectory = new File(this.mBuildDirectory);
+//System.out.println("3");
         
-        final File sourceDirectory = new File(this.mSourceDirectory);
-        final File buildDirectory = new File(this.mBuildDirectory);
-        
-        //CommandlineBpelProjectXmlCatalogProvider.
-        //        getInstance().setSourceDirectory(this.mSourceDirectory);
-        
-        new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
+        try {
+            new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
+        } catch (SAXException e) {
+            throw new BuildException("Failed to create an XML catalog.", e);
+        } catch (IOException e) {
+            throw new BuildException("Failed to create an XML catalog.", e);
+        }
+//System.out.println("4");
     }
     
     public IdeGenerateCatalogTask() {}
@@ -86,8 +98,7 @@ public class IdeGenerateCatalogTask extends Task {
         return this.mSourceDirectory;
     }
     
-    public void setProjectClassPath(String projectClassPath) {
-    }
+    public void setProjectClassPath(String projectClassPath) {}
     
     private String mSourceDirectory = null;
     private String mBuildDirectory = null;

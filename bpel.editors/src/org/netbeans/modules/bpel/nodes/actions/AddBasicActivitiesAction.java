@@ -44,6 +44,8 @@ public class AddBasicActivitiesAction extends BpelNodeAction {
     private static ActSubMenuModel model = new ActSubMenuModel(null);
     private static AddPaletteActivityAction[] BASIC_ACTIVITIES = new AddPaletteActivityAction[] {
             (AddPaletteActivityAction)SystemAction.get(AddAssignAction.class),
+            (AddPaletteActivityAction)SystemAction.get(AddJavaScriptAction.class),
+            (AddPaletteActivityAction)SystemAction.get(AddValidateAction.class),
             (AddPaletteActivityAction)SystemAction.get(AddEmptyAction.class),
             (AddPaletteActivityAction)SystemAction.get(AddWaitAction.class),
             (AddPaletteActivityAction)SystemAction.get(AddThrowAction.class),

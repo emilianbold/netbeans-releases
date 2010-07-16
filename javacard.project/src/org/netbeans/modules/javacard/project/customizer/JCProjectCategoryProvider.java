@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,8 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesPanel;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.filesystems.FileObject;
 
@@ -69,40 +74,54 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
         JCProjectProperties uiProps = context.lookup(JCProjectProperties.class);
         JCProject p = context.lookup(JCProject.class);
         ProjectKind kind = p.kind();
-
+        JComponent result;
         switch (id) {
             case CUSTOMIZER_ID_DEPENDENCIES :
-                return new DependenciesPanel(uiProps);
+                result = new DependenciesPanel(uiProps);
+                break;
             case CUSTOMIZER_ID_COMPILING :
-                return new CompilingPanel (uiProps);
+                result = new CompilingPanel (uiProps);
+                break;
             case CUSTOMIZER_ID_APPLET :
-                return new AppletCustomizer((AppletProjectProperties) uiProps, category);
+                result = new AppletCustomizer((AppletProjectProperties) uiProps, category);
+                break;
             case CUSTOMIZER_ID_PACKAGING :
-                return new PackagingCustomizer((ClassicAppletProjectProperties) uiProps, category);
+                result = new PackagingCustomizer((ClassicAppletProjectProperties) uiProps, category);
+                break;
             case CUSTOMIZER_ID_RUN :
                 switch (kind) {
                     case CLASSIC_APPLET :
                     case EXTENDED_APPLET :
-                        return new AppletProjectCustomizerRun((AppletProjectProperties) uiProps);
+                        result = new AppletProjectCustomizerRun((AppletProjectProperties) uiProps);
+                        break;
                     case WEB :
-                        return new WebProjectCustomizerRun ((WebProjectProperties) uiProps);
+                        result = new WebProjectCustomizerRun ((WebProjectProperties) uiProps);
+                        break;
                     case EXTENSION_LIBRARY :
                     case CLASSIC_LIBRARY :
-                        RunCustomizer result = new RunCustomizer (uiProps);
-                        result.getValidationGroup().addUI(new CategoryValidationUI(category));
-                        return result;
+                        result = new RunCustomizer (uiProps);
+                        break;
                     default :
                         throw new AssertionError();
                 }
+                break;
             case CUSTOMIZER_ID_SECURITY :
-                return new SecurityCustomizer (uiProps, category);
+                result = new SecurityCustomizer (uiProps, category);
+                break;
             case CUSTOMIZER_ID_SOURCES :
-                return new CustomizerSources (uiProps);
+                result = new CustomizerSources (uiProps);
+                break;
             case CUSTOMIZER_ID_WEB :
-                return new WebCustomizer ((WebProjectProperties) uiProps, category);
+                result = new WebCustomizer ((WebProjectProperties) uiProps, category);
+                break;
             default :
                 throw new AssertionError();
         }
+        if (result instanceof ValidationGroupProvider) {
+            ValidationGroup vg = ((ValidationGroupProvider) result).getValidationGroup();
+            vg.addUI(new CategoryValidationUI(category));
+        }
+        return result;
     }
 
     public static JCProjectCategoryProvider create(FileObject fo) {
@@ -110,7 +129,7 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
         return new JCProjectCategoryProvider (id);
     }
 
-    private static class CategoryValidationUI implements ValidationUI {
+    private static final class CategoryValidationUI implements ValidationUI {
         private final Category category;
         public CategoryValidationUI(Category category) {
             this.category = category;
@@ -118,12 +137,12 @@ public class JCProjectCategoryProvider implements ProjectCustomizer.CompositeCat
 
         public void clearProblem() {
             category.setValid(true);
+            category.setErrorMessage(null);
         }
 
         public void setProblem(Problem prblm) {
             category.setValid(prblm.isFatal());
             category.setErrorMessage(prblm.getMessage());
         }
-
     }
 }

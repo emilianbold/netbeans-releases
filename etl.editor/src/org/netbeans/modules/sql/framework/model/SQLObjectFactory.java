@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,8 +58,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Attribute;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
 
 
@@ -86,7 +89,7 @@ public class SQLObjectFactory {
 
     /**
      * Creates a new SQLObject instance of the type represented by the given tag name.
-     * Does not add the the vended SQLObject to a SQLDefinitionImpl instance. To correctly
+     * Does not add the vended SQLObject to a SQLDefinitionImpl instance. To correctly
      * associate the returned SQLObject instance with a SQLDefinitionImpl instance, the
      * calling method should call SQLDefinitionImpl.addSQLObject(SQLObject).
      * 
@@ -152,7 +155,7 @@ public class SQLObjectFactory {
     }
 
     /**
-     * Creates a new SQLObject instance of the given type. Does not add the the vended
+     * Creates a new SQLObject instance of the given type. Does not add the vended
      * SQLObject to a SQLDefinitionImpl instance. To correctly associate the returned
      * SQLObject instance with a SQLDefinitionImpl instance, the calling method should
      * call SQLDefinitionImpl.addSQLObject(SQLObject).
@@ -206,7 +209,7 @@ public class SQLObjectFactory {
 
     /**
      * Creates a new SQLObject representing a SQLOperator implementation, using the given
-     * Element for initialization. Does not add the the vended SQLObject to a
+     * Element for initialization. Does not add the vended SQLObject to a
      * SQLDefinitionImpl instance. To correctly associate the returned SQLObject instance
      * with a SQLDefinitionImpl instance, the calling method should call
      * SQLDefinition.addSQLObject(SQLObject).

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -335,10 +338,9 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
-                JarEntry updaterJarEntry = null;
-                JarFile updaterJarFile = null;
-                File updaterTargetCluster = null;
                 File targetCluster = null;
+                List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
+                
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) {
@@ -359,41 +361,56 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US));
-                    
-                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
+                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
                     
-                    // check if 'updater.jar' is being installed
-                    if (AUTOUPDATE_SERVICES_MODULE.equals (moduleImpl.getCodeName ())) {
-                        err.log (Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
-                        JarFile jf = new JarFile (dest);
-                        try {
-                            for (JarEntry entry : Collections.list (jf.entries ())) {
-                                if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.toString ())) {
-                                    err.log (Level.FINE, ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH + " is being installed from " + moduleImpl.getCodeName ());
-                                    updaterJarEntry = entry;
-                                    updaterJarFile = jf;
-                                    updaterTargetCluster = targetCluster;
-                                    needsRestart = true;
-                                    break;
-                                }
-                            }
-                        } finally {
-                            if (jf != null && ! jf.equals (updaterJarFile)) {
-                                jf.close ();
-                            }
-                        }
+                    // check if 'updater.jar' or 'updater_<branding>_<locale>.jar' is being installed
+                    if (AUTOUPDATE_SERVICES_MODULE.equals(moduleImpl.getCodeName())) {
+                        err.log(Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
                     }
-                    
+
+                    JarFile jf = new JarFile(dest);
+                    boolean added = false;
+                    try {
+                       for (JarEntry entry : Collections.list(jf.entries())) {
+                            if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
+                                    entry.toString().matches(ModuleUpdater.AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
+                                err.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
+                                updaterFiles.add(new UpdaterInfo(entry, jf, targetCluster));
+                                needsRestart = true;
+                                added = true;
+                             }
+                         }
+                    } finally {
+                        if (jf != null && !added) {
+                            jf.close();
+                        }
+                     }
+
+
                     needsRestart |= needsRestart(installed != null, moduleImpl, dest);
                 }
                 
                 try {
                     // store source of installed files
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
-                    if (updaterJarFile != null) {
-                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, updaterTargetCluster);
+                    for(int i=0;i<updaterFiles.size();i++) {
+                        UpdaterInfo info = updaterFiles.get(i);
+                        Utilities.writeUpdateOfUpdaterJar (info.getUpdaterJarEntry(), info.getUpdaterJarFile(), info.getUpdaterTargetCluster());
+                        boolean hasAnotherEntryInSameJarFile = false;
+                        for(int j = i + 1; j < updaterFiles.size(); j++) {
+                            if(updaterFiles.get(j).getUpdaterJarFile() == info.getUpdaterJarFile()) {
+                                hasAnotherEntryInSameJarFile = true;
+                                break;
+                            }
+                        }
+                        if (!hasAnotherEntryInSameJarFile) {
+                            try {
+                                info.getUpdaterJarFile().close();
+                            } catch (IOException e) {
+                                err.log(Level.INFO, "Cannot close jar file " + info.getUpdaterJarFile());
+                            }
+                        }
                     }
 
                     if (! needsRestart) {
@@ -707,9 +724,7 @@ public class InstallSupportImpl {
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
         }
 
-        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
-
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
         
         // skip already downloaded modules
         if (dest.exists ()) {
@@ -779,8 +794,7 @@ public class InstallSupportImpl {
         File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
-        boolean isNbm = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbm);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
         assert dest.exists () : dest.getAbsolutePath();        
         
         int wasVerified = 0;
@@ -791,22 +805,25 @@ public class InstallSupportImpl {
         return wasVerified;
     }
     
-    static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
+    static File getDestination (File targetCluster, String codeName, URL source) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
         File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
         String fileName = codeName.replace ('.', '-');
-        File destFile = new File (destDir, fileName + (isNbmFile ? Utilities.NBM_EXTENTSION : ""));
+        String filePath = source.getFile().toLowerCase(Locale.US);
+        String ext = filePath.endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US)) ?
+            Utilities.NBM_EXTENTSION : (
+            filePath.endsWith(Utilities.JAR_EXTENSION.toLowerCase(Locale.US)) ?
+                Utilities.JAR_EXTENSION : ""
+            );
+
+        File destFile = new File (destDir, fileName + ext);
         err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }
     
-    private static File getDestination (File targetCluster, String codeName) {
-        return getDestination (targetCluster, codeName, true);
-    }
-
     private boolean cancelled() {
         synchronized (this) {
             return STEP.CANCEL == currentStep;
@@ -1133,5 +1150,40 @@ public class InstallSupportImpl {
             es = Executors.newSingleThreadExecutor ();
         }
         return es;
+    }
+        private static class UpdaterInfo {
+        private JarEntry updaterJarEntry;
+        private JarFile updaterJarFile;
+        private File updaterTargetCluster;
+
+        public UpdaterInfo(JarEntry updaterJarEntry, JarFile updaterJarFile, File updaterTargetCluster) {
+            this.updaterJarEntry = updaterJarEntry;
+            this.updaterJarFile = updaterJarFile;
+            this.updaterTargetCluster = updaterTargetCluster;
+        }
+
+        public JarEntry getUpdaterJarEntry() {
+            return updaterJarEntry;
+        }
+
+        public void setUpdaterJarEntry(JarEntry updaterJarEntry) {
+            this.updaterJarEntry = updaterJarEntry;
+        }
+
+        public JarFile getUpdaterJarFile() {
+            return updaterJarFile;
+        }
+
+        public void setUpdaterJarFile(JarFile updaterJarFile) {
+            this.updaterJarFile = updaterJarFile;
+        }
+
+        public File getUpdaterTargetCluster() {
+            return updaterTargetCluster;
+        }
+
+        public void setUpdaterTargetCluster(File updaterTargetCluster) {
+            this.updaterTargetCluster = updaterTargetCluster;
+        }
     }
 }

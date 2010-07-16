@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,7 @@ import org.openide.util.TaskListener;
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
+public final class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private static final long serialVersionUID = -286975118754121236L;
 
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
@@ -121,6 +124,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     public boolean open(final RemoteConfiguration remoteConfiguration) {
         testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
+            @Override
             public void run() {
                 testConnection();
             }
@@ -134,6 +138,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
         testConnectionTask.addTaskListener(new TaskListener() {
+            @Override
             public void taskFinished(Task task) {
                 enableTestConnection();
             }
@@ -141,6 +146,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (getConfigurations().isEmpty()) {
                         // no config available => show add config dialog
@@ -167,17 +173,20 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     private void registerListeners() {
         configList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 setEnabledRemoveButton();
                 selectCurrentConfig();
             }
         });
         addButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 addConfig();
             }
         });
         removeButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 removeConfig();
             }
@@ -509,51 +518,51 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(addButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton))
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
-                    .add(testConnectionButton)
-                    .add(configurationPanelScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeButton))
+                    .addComponent(configScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                    .addComponent(testConnectionButton)
+                    .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {addButton, removeButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, removeButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(nameLabel)
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(6, 6, 6)
-                        .add(configurationPanelScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addButton)
-                    .add(removeButton)
-                    .add(testConnectionButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(configScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(nameLabel)
+                            .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addButton)
+                    .addComponent(removeButton)
+                    .addComponent(testConnectionButton))
                 .addContainerGap())
         );
 
@@ -596,6 +605,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private javax.swing.JButton testConnectionButton;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Configuration cfg = getSelectedConfiguration();
         if (cfg != null) {
@@ -615,6 +625,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
@@ -648,10 +659,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         private final List<Configuration> data = new ArrayList<Configuration>();
 
+        @Override
         public int getSize() {
             return data.size();
         }
 
+        @Override
         public Configuration getElementAt(int index) {
             return data.get(index);
         }
@@ -713,31 +726,39 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private static final class EmptyConfigurationPanel implements RemoteConfigurationPanel {
         private static final JPanel PANEL = new JPanel();
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public JComponent getComponent() {
             return PANEL;
         }
 
+        @Override
         public boolean isValidConfiguration() {
             return true;
         }
 
+        @Override
         public String getError() {
             return null;
         }
 
+        @Override
         public String getWarning() {
             return null;
         }
 
+        @Override
         public void read(Configuration configuration) {
         }
 
+        @Override
         public void store(Configuration configuration) {
         }
     }

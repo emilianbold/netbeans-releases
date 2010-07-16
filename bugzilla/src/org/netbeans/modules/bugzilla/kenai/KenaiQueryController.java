@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,14 +43,20 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.List;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -90,6 +99,9 @@ public class KenaiQueryController extends QueryController {
                             sb.append(data.get(0));
                         }
                         urlParameters = sb.toString();
+
+                        // select only if owner awailable
+                        selectFirstProduct();
                     }
                 }
                 if(urlParameters == null) {
@@ -101,6 +113,7 @@ public class KenaiQueryController extends QueryController {
         } else {
             super.populate(urlParameters);
             disableProduct();
+            selectFirstProduct();
         }
     }
 
@@ -120,6 +133,30 @@ public class KenaiQueryController extends QueryController {
         super.closed();
         // override
         scheduleForRefresh();
+    }
+
+    @Override
+    protected void openIssue(BugzillaIssue issue) {
+        if(issue != null) {
+            if(!checkIssueProduct(issue)) {
+                return;
+            }
+        }
+        super.openIssue(issue);
+    }
+
+    private boolean checkIssueProduct(BugzillaIssue issue) {
+        String issueProduct = issue.getFieldValue(IssueField.PRODUCT);
+        if(!issueProduct.equals(product)) {
+            Confirmation dd = new DialogDescriptor.Confirmation(
+                                NbBundle.getMessage(
+                                    KenaiQueryController.class,
+                                    "MSG_WrongProjectWarning",
+                                    new Object[] {issue.getID(), issueProduct}),
+                                Confirmation.YES_NO_OPTION);
+            return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
+        }
+        return true;
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {

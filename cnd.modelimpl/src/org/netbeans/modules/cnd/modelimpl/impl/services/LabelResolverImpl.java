@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -138,14 +141,14 @@ public final class LabelResolverImpl extends CsmLabelResolver {
         }
         private void addLabelDefinition(CsmLabel stmt){
             if (kinds.contains(LabelKind.Definiton)) {
-                if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
+                if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }
             }
         }
         private void addLabelReference(CsmGotoStatement stmt){
             if (kinds.contains(LabelKind.Reference)) {
-                if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
+                if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }
             }

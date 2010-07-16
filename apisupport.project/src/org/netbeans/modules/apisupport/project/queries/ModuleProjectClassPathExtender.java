@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,12 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -60,29 +64,23 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Makes sure you can safely use natural layout in forms you develop for your module.
- * @author Jesse Glick
- * @see "#62942"
+ * Adds module dependencies that seem to correspond to some more visible artifact.
+ * <ol>
+ * <li>A library containing a classpath volume of the form jar:nbinst://code.name.base/...!/
+ *     will be added as a dep on code.name.base.
+ * </ol>
  */
 public final class ModuleProjectClassPathExtender extends ProjectClassPathModifierImplementation {
 
-    private static final String LAYOUT_MODULE = "org.jdesktop.layout";
-    private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
-    private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
-
     private final NbModuleProject project;
 
-    /**
-     * Create new extender.
-     * @param project a module project
-     */
     public ModuleProjectClassPathExtender(NbModuleProject project) {
         this.project = project;
     }
@@ -99,41 +97,40 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
     }
 
     protected String[] getExtensibleClassPathTypes(SourceGroup sourceGroup) {
+        // XXX EXECUTE could be supported if desired (just add a runtime-only module dep)
         return new String[] {ClassPath.COMPILE};
     }
 
     protected boolean addLibraries(Library[] libraries, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
         boolean cpChanged = false;
-        if (libraries.length == 0) {
-            return false;
-        }
         for (Library library : libraries) {
-            String libName = library.getName();
-            if ("swing-layout".equals(libName)) {
-                ModuleEntry entry = project.getModuleList().getEntry(LAYOUT_MODULE);
-                if (entry != null) {
-                    boolean res = Util.addDependency(project, LAYOUT_MODULE);
-                    cpChanged = cpChanged || res;
-                } else {
-                    IOException e = new IOException("no module " + LAYOUT_MODULE); // NOI18N
-                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", LAYOUT_MODULE));
-                    throw e;
-                }
-            } else if ("junit_4".equals(libName)) {
-                try {
-                    resolveJUnitDependencies(project, "unit", true);
-                } catch (IOException ex) {
-                    // if only nbjunit cannot be found, add at least junit4
-                    if (ex.getMessage().indexOf(NBJUNIT_MODULE) != -1) {
-                        resolveJUnitDependencies(project, "unit", false);
-                    } else {
-                        throw ex;
+            for (URL u : library.getContent("classpath")) { // NOI18N
+                URL jar = FileUtil.getArchiveFile(u);
+                if (jar != null && jar.getProtocol().equals("nbinst")) { // NOI18N
+                    String cnb = jar.getHost();
+                    if (cnb != null && cnb.length() > 0) {
+                        ModuleEntry entry = project.getModuleList().getEntry(cnb);
+                        if (entry != null) {
+                            if (sourceGroup.getRootFolder() == project.getSourceDirectory()) {
+                                cpChanged |= Util.addDependency(project, cnb);
+                            } else if (sourceGroup.getRootFolder() == project.getTestSourceDirectory("unit")) { // NOI18N
+                                ProjectXMLManager pxm = new ProjectXMLManager(project);
+                                cpChanged |= pxm.addTestDependency("unit", new TestModuleDependency(entry, false, false, true)); // NOI18N
+                            } else {
+                                throw new UnsupportedOperationException("wrong source group");
+                            }
+                            continue;
+                        } else {
+                            IOException e = new IOException("no module " + cnb); // NOI18N
+                            Exceptions.attachLocalizedMessage(e,
+                                    NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", cnb));
+                            throw e;
+                        }
                     }
                 }
-                cpChanged = true;
-            } else {
-                IOException e = new IOException("unknown lib " + libName); // NOI18N
-                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_unsupported_library", library.getDisplayName()));
+                IOException e = new IOException("unknown lib " + library.getName()); // NOI18N
+                Exceptions.attachLocalizedMessage(e,
+                        NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_unsupported_library", library.getDisplayName()));
                 throw e;
             }
         }
@@ -148,18 +145,40 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
     }
 
     protected boolean addRoots(URL[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
-        UnsupportedOperationException e = new UnsupportedOperationException("not implemented: " + Arrays.asList(classPathRoots)); // NOI18N
-        // XXX handle >1 args
-        String displayName = classPathRoots.length > 0 ? classPathRoots[0].toString() : "<nothing>";
-        if (classPathRoots.length > 0 && "file".equals(classPathRoots[0].getProtocol())) { // NOI18N
-            try {
-                displayName = new File(classPathRoots[0].toURI()).getAbsolutePath();
-            } catch (URISyntaxException x) {
-                assert false : x;
+        if (sourceGroup.getRootFolder() != project.getSourceDirectory()) {
+            throw new UnsupportedOperationException("cannot add raw JARs to test roots");
+        }
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        Map<String,String> origCpexts = pxm.getClassPathExtensions();
+        Map<String,String> cpexts = new LinkedHashMap<String,String>(origCpexts);
+        boolean cpChanged = false;
+        for (URL root : classPathRoots) {
+            File jar = FileUtil.archiveOrDirForURL(root);
+            if (jar == null || !jar.isFile()) {
+                throw new UnsupportedOperationException("cannot add: " + root);
+            }
+            String relativePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + jar.getName();
+            String binaryOrigin = Util.CPEXT_BINARY_PATH + jar.getName();
+            File target = project.getHelper().resolveFile(binaryOrigin);
+            if (jar.equals(target)) { // already in place
+                cpexts.put(relativePath, binaryOrigin);
+            } else {
+                if (!target.isFile() || target.length() != jar.length()) {
+                    cpChanged = true; // probably fresh JAR; XXX check contents
+                }
+                String[] result = Util.copyClassPathExtensionJar(FileUtil.toFile(project.getProjectDirectory()), jar);
+                assert result != null : jar;
+                assert result[0].equals(relativePath) : result[0];
+                assert result[1].equals(binaryOrigin) : result[1];
+                cpexts.put(relativePath, binaryOrigin);
             }
         }
-        Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_jar", displayName));
-        throw e;
+        if (!cpexts.equals(origCpexts)) {
+            pxm.replaceClassPathExtensions(cpexts);
+            ProjectManager.getDefault().saveProject(project);
+            cpChanged = true;
+        }
+        return cpChanged;
     }
 
     protected boolean removeRoots(URL[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
@@ -182,20 +201,4 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
         throw new UnsupportedOperationException();
     }
 
-    public static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
-        ModuleList moduleList = project.getModuleList();
-        ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
-        ModuleEntry nbjunit = moduleList.getEntry(NBJUNIT_MODULE);
-        if (junit4 == null || (addNBJUnit && nbjunit == null)) {
-            String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
-            IOException e = new IOException("no module " + m); // NOI18N
-            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", m));
-            throw e;
-        }
-        ProjectXMLManager pxm = new ProjectXMLManager(project);
-        pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
-        if (addNBJUnit) {
-            pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
-        }
-    }
 }

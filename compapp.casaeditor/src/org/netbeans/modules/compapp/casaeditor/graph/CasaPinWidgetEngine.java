@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,14 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
-import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
@@ -53,91 +54,88 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author rdara
+ * @author jqian
  */
-public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizable {
-    
+public abstract class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizable {
+
+    private static final Image IMAGE_ARROW_RIGHT_PROVIDES = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png"); // NOI18N
+    private static final Image IMAGE_ARROW_RIGHT_PROVIDES_CLASSIC = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRightClassic.png"); // NOI18N
+
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRightClassic.png"); // NOI18N
+
+
     private static final int LABEL_MAX_CHAR = 48;
-//    private static final int VERTICAL_GAP = 3;
-    
+
     private LabelWidget mNameWidget;
+
+    // The empty widget is needed in order to avoid long label running out of
+    // the bounds of the SE SU widget box.
     private ImageWidget mEmptyWidget;
-    private Image mCurrentImage;
-    
-    private static final boolean DEBUG = false;
-    
+
+    private boolean minimized;
+
     public CasaPinWidgetEngine(Scene scene, Image pinImage, Image classicPinImage) {
         super(scene, pinImage, classicPinImage);
-        
-        mCurrentImage = getPinImage();
-                
+
         mEmptyWidget = new ImageWidget(scene);
         mEmptyWidget.setPreferredBounds(mImageWidget.getPreferredBounds());
-                
+
         mNameWidget = new LabelWidget(scene);
         mNameWidget.setOpaque(false);
-        
-        switch(getDirection()) {
-            case LEFT :
-                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
+
+        switch (getDirection()) {
+            case LEFT:
+                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(
+                        LayoutFactory.SerialAlignment.LEFT_TOP, 5));
                 addChild(mImageWidget);
                 addChild(mNameWidget);
                 addChild(mEmptyWidget);
                 break;
             case RIGHT :
-                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
+                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(
+                        LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
                 addChild(mEmptyWidget);
                 addChild(mNameWidget);
                 addChild(mImageWidget);
                 break;
         }
-        
-        if (DEBUG) {
-            setBorder(new LineBorder(Color.blue));
-            mImageWidget.setBorder(new LineBorder(Color.red));
-            mEmptyWidget.setBorder(new LineBorder(Color.green));
-            mNameWidget.setBorder(new LineBorder(Color.red));            
-        }
     }
-        
-    @Override
-    protected void setSelected(boolean isSelected) {
-        super.setSelected(isSelected);
-        
-        mCurrentImage = mImageWidget.getImage();
-    }
-    
+
     protected void setPinName(String name) {
         String displayedText = name;
         if (displayedText.length() > LABEL_MAX_CHAR) {
-            displayedText = displayedText.substring(0, LABEL_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");   // NOI18N
+            displayedText = displayedText.substring(0, LABEL_MAX_CHAR) +
+                    NbBundle.getMessage(getClass(), "ELLIPSIS");   // NOI18N
         }
         mNameWidget.setLabel(displayedText);
 
         Widget widget = getParentWidget();
-        while(!(widget instanceof CasaNodeWidgetEngine)) {
+        while (!(widget instanceof CasaNodeWidgetEngine)) {
             widget = widget.getParentWidget();
         }
         ((CasaNodeWidgetEngine) widget).readjustBounds();
     }
-    
-    protected Directions getDirection() {
-        return Directions.LEFT;
-    }
-    
+
     @Override
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, getDirection(), 0);
     }
-    
+
     public void setLabelFont(Font font) {
         mNameWidget.setFont(font);
     }
-    
+
     public void setLabelColor(Color color) {
         mNameWidget.setForeground(color);
     }
@@ -147,11 +145,54 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
     }
 
     public void setMinimized(boolean isMinimized) {
+        minimized = isMinimized;
+
         Rectangle rect = isMinimized ? new Rectangle() : null;
         mNameWidget.setPreferredBounds(rect);
         mImageWidget.setPreferredBounds(rect);
         setPreferredBounds(rect);
-                
-        mImageWidget.setImage(isMinimized ? null : mCurrentImage);
+
+        mImageWidget.setImage(getPinImage());
+    }
+
+    public boolean isMinimized() {
+        return minimized;
+    }
+
+    @Override
+    protected Image getPinImage() {
+        return isMinimized() ? null : super.getPinImage();
+    }
+
+    protected abstract Directions getDirection();
+
+    /**
+     * The Provide Pin inside Service Engine Service Unit Widget.
+     */
+    public static class Provides extends CasaPinWidgetEngine {
+
+        public Provides(Scene scene) {
+            super(scene, IMAGE_ARROW_RIGHT_PROVIDES, IMAGE_ARROW_RIGHT_PROVIDES_CLASSIC);
+        }
+
+        @Override
+        protected Directions getDirection() {
+            return Directions.LEFT;
+        }
+    }
+
+    /**
+     * The Consume Pin inside Service Engine Service Unit Widget.
+     */
+    public static class Consumes extends CasaPinWidgetEngine {
+
+        public Consumes(Scene scene) {
+            super(scene, IMAGE_ARROW_RIGHT_CONSUMES, IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC);
+        }
+
+        @Override
+        protected Directions getDirection() {
+            return Directions.RIGHT;
+        }
     }
 }

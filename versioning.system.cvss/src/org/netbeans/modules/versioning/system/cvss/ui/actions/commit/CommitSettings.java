@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,12 +64,13 @@ import javax.swing.event.DocumentEvent;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.*;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 
 /**
  * Customization of commits.
@@ -75,6 +79,7 @@ import javax.swing.SwingUtilities;
  */
 public class CommitSettings extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener, DocumentListener {
     
+    public static final String COLUMN_NAME_COMMIT    = "commit"; // NOI18N
     static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     static final String COLUMN_NAME_STICKY  = "sticky"; // NOI18N
     static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
@@ -89,12 +94,12 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         private final CommitOptions options;
         private final CvsFileNode   node;
 
-        public CommitFile(CvsFileNode node, CommitOptions options) {
+        CommitFile(CvsFileNode node, CommitOptions options) {
             this.node = node;
             this.options = options;
         }
 
-        public CommitOptions getOptions() {
+        CommitOptions getOptions() {
             return options;
         }
 
@@ -131,25 +136,24 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         return taMessage.getText();
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                taMessage.selectAll();
-                taMessage.requestFocus();  // #67106
-            }
-        });
+        taMessage.selectAll();
+        taMessage.requestFocus();  // #67106
     }
 
+    @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             commitTable.dataChanged();
@@ -175,25 +179,35 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(commitTable.getComponent(), gridBagConstraints);
-        List<String> messages = Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-        if (messages.size() > 0) {
-            taMessage.setText(messages.get(0));
+        String message = CvsModuleConfig.getDefault().getLastCanceledCommitMessage();
+        if (message.isEmpty() && new StringSelector.RecentMessageSelector(CvsModuleConfig.getDefault().getPreferences()).isAutoFill()) {
+            List<String> messages = Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+            if (messages.size() > 0) {
+                message = messages.get(0);
+            }
+        }
+        if (!message.isEmpty()) {
+            taMessage.setText(message);
         } else {
             loadTemplate(true);
         }
 
         taMessage.getDocument().addDocumentListener(this);
         onCommitMessageChanged();
+        Spellchecker.register (taMessage);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
@@ -237,7 +251,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"),   // NOI18N
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(CvsModuleConfig.getDefault().getPreferences());
+        String message = selector.getRecentMessage(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"),   // NOI18N
                                                NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Title"),   // NOI18N
             Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
@@ -383,6 +398,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     private org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea taMessage;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }

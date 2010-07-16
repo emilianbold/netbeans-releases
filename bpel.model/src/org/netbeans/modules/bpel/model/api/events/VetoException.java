@@ -28,7 +28,7 @@ package org.netbeans.modules.bpel.model.api.events;
  *
  * @author ads
  */
-public class VetoException extends Exception {
+public class VetoException extends org.netbeans.modules.soa.ui.properties.VetoException {
 
     private static final long serialVersionUID = 3499029788731463455L;
 
@@ -42,19 +42,6 @@ public class VetoException extends Exception {
      *            event that model is tying to fire.
      */
     public VetoException( String message, ChangeEvent event ) {
-        super(message);
-        myEvent = event;
+        super(message, event);
     }
-
-    /**
-     * Returns event that was trying to fire in model.
-     * 
-     * @return subject event.
-     */
-    public ChangeEvent getChangeEvent() {
-        return myEvent;
-    }
-
-    private final ChangeEvent myEvent;
-
 }

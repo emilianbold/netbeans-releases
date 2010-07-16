@@ -145,7 +145,7 @@ public class RightStripe extends JPanel implements ComponentListener,
         if (bounds == null) {
             bounds = pattern.getBounds();
         }
-
+        
         DiagramView view = pattern.getView();
         
         Point p1 = view.convertDiagramToScreen(bounds.getTopLeft());
@@ -258,35 +258,35 @@ public class RightStripe extends JPanel implements ComponentListener,
         
         Pattern nextPattern = cell.getNextPattern(designView.getSelectionModel()
                 .getSelectedPattern());
-
+        
         if (nextPattern != null) {
             if (nextPattern != designView.getSelectionModel().getSelectedPattern()) {
                 designView.getSelectionModel().setSelectedPattern(nextPattern);
             }
-
+            
             DiagramView diagramView = nextPattern.getView();
             
             Rectangle rect = getPatternBounds(nextPattern);
-            Rectangle visibleRect = designView.getVisibleRect();
-
+            Rectangle visibleRect = diagramView.getVisibleRect();
+            
             int dx1 = 0;
             int dx2 = 0;
-
+            
             if (diagramView instanceof ProcessView) {
                 DiagramView providersView = designView.getProvidersView();
-                DiagramView consumersView = designView.getConsumersView();
+                DiagramView сonsumersView = designView.getConsumersView();
 
-                if (consumersView.isVisible()) {
-                    dx1 = consumersView.getWidth();
+                if (сonsumersView.isVisible()) {
+                    dx1 = сonsumersView.getWidth();
                 }
-
+                
                 if (providersView.isVisible()) {
                     dx2 = providersView.getWidth();
                 }
             }
-
+            
             visibleRect.x += dx1;
-            visibleRect.width -= dx1 + dx2;
+            visibleRect.width = visibleRect.width - dx1 - dx2;
             
             if (rect.height <= visibleRect.height) {
                 visibleRect.y = Math.max(0, rect.y + (rect.height 
@@ -297,15 +297,15 @@ public class RightStripe extends JPanel implements ComponentListener,
             
             visibleRect.x = Math.max(0, rect.x + (rect.width
                         - visibleRect.width) / 2);
-
+            
             visibleRect.x -= dx1;
-            visibleRect.width += dx1 + dx2;
+            visibleRect.width = visibleRect.width + dx1 + dx2;
             
             diagramView.scrollRectToVisible(visibleRect);
         }
     }
 
-
+    
     public void mouseEntered(MouseEvent e) {
         updateCursor(e.getPoint());
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
@@ -60,11 +64,11 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Vladimir Kvashin
  */
-public class SwitchProjectAction extends NodeAction {
+public final class SwitchProjectAction extends NodeAction {
     
     private JCheckBoxMenuItem presenter;
     private ModelImpl model;
-    private static boolean running = false;
+    private final AtomicBoolean running = new AtomicBoolean(false);
     
     private enum State {
         Enabled, Disabled, Indeterminate
@@ -102,18 +106,18 @@ public class SwitchProjectAction extends NodeAction {
     private JMenuItem getPresenter() {
         final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
         if( projects == null ) {
-            presenter.setEnabled(!running);
+            presenter.setEnabled(!running.get());
             presenter.setSelected(false);
         }
         else {
 	    try {
 		State state = getState(projects);
 		if( state == State.Indeterminate ) {
-		    presenter.setEnabled(!running);
+		    presenter.setEnabled(!running.get());
 		    presenter.setSelected(false);
 		}
 		else {
-		    presenter.setEnabled(!running);
+		    presenter.setEnabled(!running.get());
 		    presenter.setSelected(state == State.Enabled);
 		}
 	    }
@@ -176,7 +180,7 @@ public class SwitchProjectAction extends NodeAction {
         if( model == null ) {
             return false;
         }
-	if( running ) {
+	if( running.get() ) {
 	    return false;
 	}
         Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
@@ -192,13 +196,15 @@ public class SwitchProjectAction extends NodeAction {
     
     /** Actually nobody but us call this since we have a presenter. */
     public void performAction(final Node[] activatedNodes) {
-	running = true;
+	if (!running.compareAndSet(false, true)) {
+            return;
+        }
 	model.enqueue(new Runnable() {
 	    public void run() {
                 try {
                     performAction(getNativeProjects(getActivatedNodes()));
                 } finally {
-                    running = false;
+                    running.set(false);
                 }
 	    }
 	}, "Switching code model ON/OFF"); //NOI18N

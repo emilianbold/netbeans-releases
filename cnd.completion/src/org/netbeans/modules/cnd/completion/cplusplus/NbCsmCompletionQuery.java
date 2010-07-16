@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -52,17 +57,13 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
@@ -70,18 +71,14 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 
 /**
  * Java completion query which is aware of project context.
@@ -119,7 +116,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         if (this.csmFile == null) {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
-                this.csmFile = CsmUtilities.getCsmFile(bDoc, true);
+                this.csmFile = CsmUtilities.getCsmFile(bDoc, true, false);
                 String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
                 if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
                     // this is context based code completion
@@ -128,8 +125,23 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         offsetInFile = (Integer) inputAttributes.getValue(path, "dialogBinding.offset"); //NOI18N
                         Integer length = (Integer) inputAttributes.getValue(path, "dialogBinding.length"); //NOI18N
-                        if (offsetInFile != null && length != null) {
+                        if ((offsetInFile != null) && (offsetInFile.intValue() != -1) && (length != null)) {
                             offsetInFile = Integer.valueOf(offsetInFile.intValue() - length.intValue());
+                        }
+                        if ((offsetInFile == null) || (offsetInFile.intValue() == -1)) {
+                            // try line number info
+                            Integer lineInFile = (Integer) inputAttributes.getValue(path, "dialogBinding.line"); //NOI18N
+                            if (lineInFile != null && (lineInFile.intValue() >= 0)) {
+                                FileObject fo = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                                Document aDoc = CsmUtilities.getDocument(fo);
+                                if (aDoc instanceof StyledDocument) {
+                                    try {
+                                        offsetInFile = NbDocument.findLineOffset((StyledDocument)aDoc, lineInFile.intValue());
+                                    } catch (IndexOutOfBoundsException ex) {
+                                        // skip
+                                    }
+                                }
+                            }
                         }
                     }
                     CompletionSupport sup = CompletionSupport.get(bDoc);

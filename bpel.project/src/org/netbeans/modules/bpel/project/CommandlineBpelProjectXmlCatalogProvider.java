@@ -43,6 +43,7 @@ public class CommandlineBpelProjectXmlCatalogProvider {
     
     private URI mProjectCatalogUri = null;
     private URI mRetrieverCatalogUri = null;
+    private File myProjectDir;
    
     private CommandlineBpelProjectXmlCatalogProvider() {
         // Does nothing
@@ -74,8 +75,9 @@ public class CommandlineBpelProjectXmlCatalogProvider {
         mRetrieverCatalogPath = (retrieverCatalogDir + File.separator + "catalog.xml").replace('\\','/');;
         mRetrieverPath = (retrieverCatalogDir + File.separator + "src").replace('\\','/');
         
-        mProjectCatalogUri = new File((projectDir + File.separator + "catalog.xml").replace('\\','/')).toURI();
+        mProjectCatalogUri = getProjectCatalogFile(projectDir).toURI();
         mRetrieverCatalogUri = new File(mRetrieverCatalogPath).toURI();
+        myProjectDir = new File(projectDir);
     }
     
     /**
@@ -102,5 +104,13 @@ public class CommandlineBpelProjectXmlCatalogProvider {
      */
     public URI getProjectCatalogUri() {
         return mProjectCatalogUri;
+    }        
+
+    public static File getProjectCatalogFile(String projectDir) {
+        return new File((projectDir + File.separator + "catalog.xml").replace('\\','/'));
+    }        
+
+    public File getProjectDir() {
+        return myProjectDir;
     }        
 }

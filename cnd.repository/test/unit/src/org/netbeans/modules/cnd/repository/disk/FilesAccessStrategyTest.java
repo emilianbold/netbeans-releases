@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test for FilesAccessStrategyImpl
@@ -55,7 +59,7 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
  */
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private static final Random rnd = new Random();
 
     static {
@@ -116,6 +120,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     public void testMultyThread() throws Exception {
 
         String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        dataPath = dataPath+"/org"; //NOI18N
 
         String[] units = new String[]{
             "FilesAccessStrategyTestUnit1", "FilesAccessStrategyTestUnit2",
@@ -185,11 +190,21 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         }
         sleep(1000); // wait threads to start
 
-        for (int lap = 0; lap < lapsCount; lap++) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                proceed = false;
+            }
+        }, 60*1000);
+
+        loop:for (int lap = 0; lap < lapsCount; lap++) {
             if (TRACE) {
                 System.out.printf("Writing objects: lap %d\n", lap);
             }
             for (int i = 0; i < objects.length; i++) {
+                if (!proceed) {
+                    break loop;
+                }
                 strategy.write(objects[i].getKey(), objects[i]);
                 if (lap == 0) {
                     filled = i;

@@ -1,0 +1,22 @@
+{
+    java.util.prefs.Preferences prefs = org.openide.util.NbPreferences.forModule(this.getClass());
+    String auth_token = prefs.get("flickr_auth_token", null);
+    if (auth_token == null) {
+        String api_key = prefs.get("flickr_api_key", null);
+        String frob = getFrob();
+        String[] queryParamNames = new String[]{"api_key", "frob", "method"};
+        String[] queryParamValues = new String[]{api_key, frob, "flickr.auth.getToken"};
+        String sig = signParams(queryParamNames, queryParamValues);
+        String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("api_sig", sig).get(String.class);
+        try {
+            auth_token = result.substring(result.indexOf("<token>") + 7, result.indexOf("</token>"));
+            prefs.put("flickr_auth_token",auth_token);
+            String user_nsid = result.substring(result.indexOf("nsid=\"") + 6);
+            user_nsid = user_nsid.substring(0, user_nsid.indexOf("\""));
+            prefs.put("flickr_user_nsid",user_nsid);
+        } catch (Exception ex) {
+            throw new java.io.IOException("Failed to get authentication token: " + result);
+        }
+    }
+    return auth_token;
+}

@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,7 +19,7 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
 by Sun in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
@@ -27,7 +30,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -69,7 +72,7 @@ made subject to such option by the copyright holder.
             <folder name="Output">
                 <file name="AnalyzerAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
-                    <attr name="position" intvalue="2467" />
+                    <attr name="position" intvalue="2467"/>
                 </file>
             </folder>
         </folder>
@@ -82,6 +85,15 @@ made subject to such option by the copyright holder.
             <folder name="output">
                 <file name="AnalyzerTopComponent.wstcref" url="AnalyzerTopComponentWstcref.xml">
                     <attr name="position" intvalue="2350"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
                 </file>
             </folder>
         </folder>
@@ -105,20 +117,20 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="RefactoringActions">
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1700"/>
                     </file>
                     <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
@@ -137,8 +149,13 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
-                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance" />
+                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
+                <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
+                <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance"/>
+                <folder name="AnnotationProcessors">
+                    <file name="org-netbeans-modules-java-hints-infrastructure-SuppressWarningsCompletion.instance" />
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -156,34 +173,25 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-errors-RemoveUselessCast.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-SuppressWarningsFixer.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-NotInitializedVariable.instance"/>                
+                <file name="org-netbeans-modules-java-hints-errors-ConvertToDiamond.instance"/>
+                <folder name="text">
+                    <folder name="x-jsp">
+                        <file name="org-netbeans-modules-java-hints-errors-ImportClass.instance"/>
+                    </folder>
+                </folder>
             </folder>
                 
             <folder name="hints">
                 <folder name="general">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                     <file name="org-netbeans-modules-java-hints-WrongPackageSuggestion.instance"/>
-                    <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance"/>
                     <file name="org-netbeans-modules-java-hints-AssignmentToItself.instance"/>
                     <file name="org-netbeans-modules-java-hints-MissingHashCode.instance"/>                    
-                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance"/>
                     <file name="org-netbeans-modules-java-hints-WrongStringComparison.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideField.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideFieldByVar.instance"/>
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getArrayEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getArrayEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getIncompatibleEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getIncompatibleEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getDelegate.instance">
-                        <attr name="nonGUI" boolvalue="true"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getDelegate"/>
-                    </file>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
-                    <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
-                    <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
-                    <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
                     <file name="org-netbeans-modules-java-hints-SerialVersionUID.instance"/>
                 </folder>
 
@@ -204,6 +212,10 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance"/>
                     <file name="org-netbeans-modules-java-hints-AnnotationAsSuperInterface.instance"/>
+                    <file name="org-netbeans-modules-java-hints-StaticImport.instance"/>
+                    <file name="CanUseDiamond.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createCanUseDiamond"/>
+                    </file>
                 </folder>
                 
                 <folder name="imports">
@@ -326,20 +338,70 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
 
+                <folder name="performance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
                 <!--
                 <folder name="typos">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java-hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-SuspiciousNamesCombination.instance" />
                 </folder>
                 -->
-            </folder>    
+                <folder name="initialization">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="logging">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="finalization">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="encapsulation">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="class_structure">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="assignment_issues">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="bitwise_operations">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="code_maturity">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="bugs">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="thread">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance"/>
+                    <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
+                </folder>
+
+                <folder name="suggestions">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+            </folder>
 
             <folder name="suggestions">
                 <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInner.instance"/>
                 <file name="org-netbeans-modules-java-hints-DeclarationForInstanceOf.instance"/>
+                <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance"/>
+                <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
             </folder>
          </folder>
-        
     </folder>
     
     <folder name="OptionsDialog">

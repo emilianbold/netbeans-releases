@@ -36,6 +36,7 @@ package org.netbeans.modules.db.util;
  * @version 1.13, 05/05/07
  * @see     Preferences
  * @since   1.4
+ * @deprecated Use Keyring API instead.
  */
 public class Base64 {
     /**

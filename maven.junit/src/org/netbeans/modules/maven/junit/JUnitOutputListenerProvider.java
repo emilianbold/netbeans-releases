@@ -44,13 +44,16 @@ package org.netbeans.modules.maven.junit;
 import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
@@ -148,9 +151,12 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 public void rerun() {
                     RunUtils.executeMaven(config);
                 }
-                public boolean enabled() {
+                public void rerun(Set<Testcase> tests) {
+                    //not implemented yet
+                }
+                public boolean enabled(RerunType type) {
                     //TODO debug doesn't property update debug port in runconfig..
-                    return fType.equals(TestSession.SessionType.TEST);
+                    return RerunType.ALL.equals(type) && fType.equals(TestSession.SessionType.TEST);
                 }
                 public void addChangeListener(ChangeListener listener) {
                 }
@@ -258,7 +264,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 String time = testcase.getAttributeValue("time");
                 if (time != null) {
-                    float fl = Float.parseFloat(time);
+                    float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
                     test.setTimeMillis((long)(fl * 1000));
                 }
                 String classname = testcase.getAttributeValue("classname");
@@ -269,7 +275,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 session.addTestCase(test);
             }
             String time = testSuite.getAttributeValue("time");
-            float fl = Float.parseFloat(time);
+            float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
         } catch (Exception exc) {

@@ -20,9 +20,6 @@
 package org.netbeans.modules.wsdlextensions.ftp.impl;
 
 import org.netbeans.modules.wsdlextensions.ftp.FTPMessage;
-import java.util.Collection;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponent;
 import org.netbeans.modules.wsdlextensions.ftp.FTPQName;
@@ -38,7 +35,7 @@ public class FTPMessageImpl extends FTPComponentImpl implements FTPMessage {
     }
     
     public FTPMessageImpl(WSDLModel model){
-        this(model, createPrefixedElement(FTPQName.TRANSFER.getQName(), model));
+        this(model, createPrefixedElement(FTPQName.MESSAGE.getQName(), model));
     }
     
     public void accept(FTPComponent.Visitor visitor) {
@@ -87,7 +84,7 @@ public class FTPMessageImpl extends FTPComponentImpl implements FTPMessage {
 
     public boolean getArchiveEnabled() {
         String s = getAttribute(FTPAttribute.FTP_ARCHIVE_ENABLED_PROPERTY);
-        return s != null && s.equals("true");
+        return s == null || s.equals("true");
     }
 
     public void setArchiveEnabled(boolean b) {
@@ -138,10 +135,35 @@ public class FTPMessageImpl extends FTPComponentImpl implements FTPMessage {
 
     public boolean getStagingEnabled() {
         String s = getAttribute(FTPAttribute.FTP_STAGING_ENABLED_PROPERTY);
-        return s != null && s.equals("true");
+        return s == null || s.trim().equals("true"); // defaults to true
     }
 
     public void setStagingEnabled(boolean b) {
         setAttribute(FTP_STAGING_ENABLED_PROPERTY, FTPAttribute.FTP_STAGING_ENABLED_PROPERTY, b ? "true" : "false");
+    }
+
+    public String getFileType() {
+        return getAttribute(FTPAttribute.FTP_FILETYPE_PROPERTY);
+    }
+
+    public void setFileType(String s) {
+        setAttribute(FTP_FILE_TYPE_PROPERTY, FTPAttribute.FTP_FILETYPE_PROPERTY, s);
+    }
+
+    public boolean getForwardAsAttachment() {
+        String s = getAttribute(FTPAttribute.FTP_FWDATTACH_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setForwardAsAttachment(boolean b) {
+        setAttribute(FTP_FWD_ATTACH_PROPERTY, FTPAttribute.FTP_FWDATTACH_PROPERTY, b ? "true" : "false");
+    }
+
+    public String getCharacterEncoding() {
+        return getAttribute(FTPAttribute.FTP_CHAR_ENCODE_PROPERTY);
+    }
+
+    public void setCharacterEncoding(String s) {
+        setAttribute(FTP_CHAR_ENCODE_PROPERTY, FTPAttribute.FTP_CHAR_ENCODE_PROPERTY, s);
     }
 }

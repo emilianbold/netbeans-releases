@@ -1,0 +1,32 @@
+{
+    response.setContentType("text/html;charset=UTF-8");
+    java.io.PrintWriter out = response.getWriter();
+    try {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Facebook Authorization Page</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<p>Please click on the following link to log into your Flickr account and authorize this application to access your account:</p>");
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        String sessionKey = (String) session.getAttribute("flickr_auth_token");
+        if (sessionKey != null) {
+            out.println("<p>Already logged in.</b>");
+        } else {
+            String perms = "delete"; // setting read+write+delete permissions. Other possible values are write|read
+            String[] queryParamNames = new String[]{"api_key", "perms"};
+            String[] queryParamValues = new String[]{api_key, perms};
+            String sig = signParams(queryParamNames, queryParamValues);
+            out.println("<a href=\"http://www.flickr.com/services/auth/?api_key="+api_key+"&perms="+perms+"&api_sig="+sig+"\">Flickr Login</a>");
+            String loginURL = request.getRequestURL().toString();
+            String callbackUrl = loginURL.substring(0, loginURL.lastIndexOf("/FlickrLoginServlet"));
+            out.println("<br><br>Ensure you specified correctly the application Callback URL to: <b>" + callbackUrl + "/FlickrCallbackServlet</b><br>");
+            out.println("<br>Help: To set up Canvas Callback URL go to " + "<a href=\"http://www.flickr.com/services/api/\">http://www.flickr.com/services/api/</a> , select <i>API Keys</i>, click <i>your web application</i> and go to <i>Admin/Edit(authentication flow)</i> section");
+        }
+        out.println("</body>");
+        out.println("</html>");
+        //
+    } finally {
+        out.close();
+    }
+}

@@ -42,55 +42,37 @@
 package org.netbeans.modules.maven.nodes;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.ProblemsPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.actions.FindAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 
 /** A node to represent project root.
  *
- * @author Milos Kleint 
+ * @author Milos Kleint
  */
 public class MavenProjectNode extends AbstractNode {
     private static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
      private static String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(MavenProjectNode.class, "ICON_BrokenProjectBadge");//NOI18N
-     
+
      private NbMavenProjectImpl project;
      private ProjectInformation info;
      private ProblemReporterImpl reporter;
@@ -102,6 +84,7 @@ public class MavenProjectNode extends AbstractNode {
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
+                    fireNameChange(null, getName());
                     fireDisplayNameChange(null, getDisplayName());
                     fireIconChange();
                 }
@@ -114,6 +97,7 @@ public class MavenProjectNode extends AbstractNode {
                     public void run() {
                         fireIconChange();
                         fireOpenedIconChange();
+                        fireNameChange(null, getName());
                         fireDisplayNameChange(null, getDisplayName());
                         fireShortDescriptionChange(null, getShortDescription());
                     }
@@ -122,12 +106,15 @@ public class MavenProjectNode extends AbstractNode {
         });
     }
 
-    
+    public @Override String getName() {
+        return project.getName();
+    }
+
     @Override
     public String getDisplayName() {
         return project.getDisplayName();
     }
-    
+
     @Override
     public Image getIcon(int param) {
         Image img = ImageUtilities.icon2Image(info.getIcon());
@@ -138,7 +125,7 @@ public class MavenProjectNode extends AbstractNode {
         }
         return img;
     }
-    
+
     @Override
     public Image getOpenedIcon(int param) {
         Image img = ImageUtilities.icon2Image(info.getIcon());
@@ -149,71 +136,11 @@ public class MavenProjectNode extends AbstractNode {
         }
         return img;
     }
-    
-    @Override
-    public javax.swing.Action[] getActions(boolean param) {
-        ArrayList<Action> lst = new ArrayList<Action>();
-        ActionProviderImpl provider = project.getLookup().lookup(ActionProviderImpl.class);
-        lst.add(CommonProjectActions.newFileAction());
-        lst.add(null);
-    
-        lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build"), null));
-        lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean_Build"), null));
-        lst.add(ProjectSensitiveActions.projectCommandAction("build-with-dependencies", NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null));
-        lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(MavenProjectNode.class, "ACT_Clean"), null));
-        lst.add(ProjectSensitiveActions.projectCommandAction("javadoc", NbBundle.getMessage(MavenProjectNode.class, "ACT_Javadoc"), null)); //NOI18N
-        lst.add(null);
-        lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(MavenProjectNode.class, "ACT_Run"), null));
-        lst.addAll(Utilities.actionsForPath("Projects/Debugger_Actions_temporary")); //NOI18N
-        lst.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(MavenProjectNode.class, "ACT_Test"), null));
 
-        List<? extends Action> acts = Utilities.actionsForPath("Projects/org-netbeans-modules-maven/ProjectActions"); //NOI18N
-        for (Action ac : acts) {
-            if (ac != null && ac.isEnabled()) {
-                lst.add(ac);
-            }
-        }
-        lst.add(null);
-
-        lst.add(provider.createCustomPopupAction()); 
-//        if (project.getLookup().lookup(ConfigurationProviderEnabler.class).isConfigurationEnabled()) {
-            lst.add(CommonProjectActions.setProjectConfigurationAction());
-//        } else {
-//            lst.add(provider.createProfilesPopupAction());
-//        }
-
-        lst.add(null);
-        lst.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
-        
-        // separator
-        lst.add(null);
-        lst.add(NbMavenProjectImpl.createRefreshAction());
-        lst.add(CommonProjectActions.setAsMainProjectAction());
-        lst.add(CommonProjectActions.openSubprojectsAction());
-        if (NbMavenProject.TYPE_POM.equalsIgnoreCase(project.getProjectWatcher().getPackagingType())) { //NOI18N
-            lst.add(new CloseSuprojectsAction());
-        }
-        lst.add(CommonProjectActions.closeProjectAction());
-        lst.add(null);
-        lst.add(SystemAction.get(FindAction.class));
-        lst.add(null);
-        lst.add(CommonProjectActions.renameProjectAction());
-        lst.add(CommonProjectActions.moveProjectAction());
-        lst.add(CommonProjectActions.copyProjectAction());
-        lst.add(CommonProjectActions.deleteProjectAction());
-            
-        lst.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
-        lst.add(null);
-        if (reporter.getReports().size() > 0) {
-            lst.add(new ShowProblemsAction());
-        }
-        
-        lst.add(CommonProjectActions.customizeProjectAction());
-        
-        return lst.toArray(new Action[lst.size()]);
+    public @Override Action[] getActions(boolean param) {
+        return CommonProjectActions.forType("org-netbeans-modules-maven"); // NOI18N
     }
-    
+
     @Override
     public String getShortDescription() {
         StringBuffer buf = new StringBuffer();
@@ -258,41 +185,7 @@ public class MavenProjectNode extends AbstractNode {
             buf.append(token);
         }
         return buf.toString();
-        
-    }
-    
-    private class CloseSuprojectsAction extends AbstractAction {
-        public CloseSuprojectsAction() {
-            putValue(Action.NAME, NbBundle.getMessage(MavenProjectNode.class, "ACT_CloseRequired"));
-        }
 
-        public void actionPerformed(ActionEvent e) {
-            SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> lst = subs.getSubprojects();
-            Project[] arr = lst.toArray(new Project[lst.size()]);
-            OpenProjects.getDefault().close(arr);
-        }
     }
-    
-    private class ShowProblemsAction extends AbstractAction {
-        
-        public ShowProblemsAction() {
-            putValue(Action.NAME, NbBundle.getMessage(MavenProjectNode.class, "ACT_ShowProblems"));
-        }
-        
-        public void actionPerformed(ActionEvent arg0) {
-            JButton butt = new JButton();
-            
-            ProblemsPanel panel = new ProblemsPanel(reporter);
-            panel.setActionButton(butt);
-            JButton close = new JButton();
-            panel.setCloseButton(close);
-            close.setText(NbBundle.getMessage(MavenProjectNode.class, "BTN_Close"));
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(MavenProjectNode.class, "TIT_Show_Problems"));
-            dd.setOptions(new Object[] { butt,  close});
-            dd.setClosingOptions(new Object[] { close });
-            dd.setModal(false);
-            DialogDisplayer.getDefault().notify(dd);
-        }
-    }
+
 }

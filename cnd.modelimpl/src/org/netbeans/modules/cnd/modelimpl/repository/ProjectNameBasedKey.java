@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,21 +54,24 @@ import java.io.IOException;
 /*package*/
 abstract class ProjectNameBasedKey extends AbstractKey {
 
-    private final int unitIndex;
+    private final short unitIndex;
 
-    protected ProjectNameBasedKey(String project) {
+    protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
-        this.unitIndex = KeyUtilities.getUnitId(project);
+        this.unitIndex = (short)KeyUtilities.getUnitId(project);
     }
 
+    @Override
     public String toString() {
         return getProjectName().toString();
     }
 
+    @Override
     public int hashCode() {
         return unitIndex;
     }
 
+    @Override
     public final int getUnitId() {
         return unitIndex;
     }
@@ -84,22 +90,26 @@ abstract class ProjectNameBasedKey extends AbstractKey {
         return getUnit();
     }
 
+    @Override
     public void write(DataOutput aStream) throws IOException {
-        aStream.writeInt(this.unitIndex);
+        aStream.writeShort(this.unitIndex);
     }
 
     protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-        this.unitIndex = aStream.readInt();
+        this.unitIndex = aStream.readShort();
     }
 
+    @Override
     public int getDepth() {
         return 0;
     }
 
+    @Override
     public CharSequence getAt(int level) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public CharSequence getUnit() {
         // having this functionality here to be sure unit is the same thing as project
         return KeyUtilities.getUnitName(this.unitIndex);

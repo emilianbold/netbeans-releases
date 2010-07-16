@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.19.1
+#Signature file v4.1
+#Version 1.28
 
 CLSS public abstract interface java.io.Serializable
 
@@ -7,7 +7,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -24,7 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -40,7 +40,7 @@ meth public java.lang.String toString()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -58,6 +58,7 @@ fld public final static java.lang.String PROP_ENTRIES = "entries"
 fld public final static java.lang.String PROP_INCLUDES = "includes"
 fld public final static java.lang.String PROP_ROOTS = "roots"
 fld public final static java.lang.String SOURCE = "classpath/source"
+fld public final static org.netbeans.api.java.classpath.ClassPath EMPTY
 innr public final Entry
 innr public final static !enum PathConversionMode
 meth public final boolean contains(org.openide.filesystems.FileObject)
@@ -76,10 +77,11 @@ meth public java.util.List<org.netbeans.api.java.classpath.ClassPath$Entry> entr
 meth public org.openide.filesystems.FileObject[] getRoots()
 meth public static org.netbeans.api.java.classpath.ClassPath getClassPath(org.openide.filesystems.FileObject,java.lang.String)
 supr java.lang.Object
-hfds EMPTY_REF,LOG,entriesCache,impl,implementations,invalidEntries,invalidRoots,pListener,propSupport,refClassLoader,root2Filter,rootsCache,rootsListener,weakPListener
+hfds EMPTY_REF,LOG,caller,entriesCache,impl,implementations,invalidEntries,invalidRoots,pListener,propSupport,refClassLoader,root2Filter,rootsCache,rootsListener,weakPListeners
 hcls RootsListener,SPIListener
 
 CLSS public final org.netbeans.api.java.classpath.ClassPath$Entry
+ outer org.netbeans.api.java.classpath.ClassPath
 meth public boolean equals(java.lang.Object)
 meth public boolean includes(java.lang.String)
 meth public boolean includes(java.net.URL)
@@ -95,6 +97,7 @@ supr java.lang.Object
 hfds filter,lastError,root,url
 
 CLSS public final static !enum org.netbeans.api.java.classpath.ClassPath$PathConversionMode
+ outer org.netbeans.api.java.classpath.ClassPath
 fld public final static org.netbeans.api.java.classpath.ClassPath$PathConversionMode FAIL
 fld public final static org.netbeans.api.java.classpath.ClassPath$PathConversionMode PRINT
 fld public final static org.netbeans.api.java.classpath.ClassPath$PathConversionMode SKIP
@@ -128,10 +131,47 @@ intf java.util.EventListener
 meth public abstract void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
 meth public abstract void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
 
+CLSS public org.netbeans.api.java.classpath.JavaClassPathConstants
+cons public init()
+fld public final static java.lang.String PROCESSOR_PATH = "classpath/processor"
+supr java.lang.Object
+
 CLSS public org.netbeans.api.java.queries.AccessibilityQuery
 meth public static java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
 supr java.lang.Object
 hfds implementations
+
+CLSS public org.netbeans.api.java.queries.AnnotationProcessingQuery
+innr public abstract interface static Result
+innr public final static !enum Trigger
+meth public static org.netbeans.api.java.queries.AnnotationProcessingQuery$Result getAnnotationProcessingOptions(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds EMPTY
+
+CLSS public abstract interface static org.netbeans.api.java.queries.AnnotationProcessingQuery$Result
+ outer org.netbeans.api.java.queries.AnnotationProcessingQuery
+meth public abstract java.lang.Iterable<? extends java.lang.String> annotationProcessorsToRun()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public abstract java.net.URL sourceOutputDirectory()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public abstract java.util.Map<? extends java.lang.String,? extends java.lang.String> processorOptions()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract java.util.Set<? extends org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger> annotationProcessingEnabled()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final static !enum org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger
+ outer org.netbeans.api.java.queries.AnnotationProcessingQuery
+fld public final static org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger IN_EDITOR
+fld public final static org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger ON_SCAN
+meth public static org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger valueOf(java.lang.String)
+meth public static org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger[] values()
+supr java.lang.Enum<org.netbeans.api.java.queries.AnnotationProcessingQuery$Trigger>
 
 CLSS public final org.netbeans.api.java.queries.BinaryForSourceQuery
 innr public abstract interface static Result
@@ -140,6 +180,7 @@ supr java.lang.Object
 hcls DefaultResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.BinaryForSourceQuery$Result
+ outer org.netbeans.api.java.queries.BinaryForSourceQuery
 meth public abstract java.net.URL[] getRoots()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
@@ -152,6 +193,7 @@ hfds EMPTY_RESULT,ERR,implementations
 hcls EmptyResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result
+ outer org.netbeans.api.java.queries.JavadocForBinaryQuery
 meth public abstract java.net.URL[] getRoots()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
@@ -166,11 +208,13 @@ hfds EMPTY_RESULT,EMPTY_RESULT2,LOG,implementations
 hcls EmptyResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.SourceForBinaryQuery$Result
+ outer org.netbeans.api.java.queries.SourceForBinaryQuery
 meth public abstract org.openide.filesystems.FileObject[] getRoots()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public static org.netbeans.api.java.queries.SourceForBinaryQuery$Result2
+ outer org.netbeans.api.java.queries.SourceForBinaryQuery
 intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public boolean preferSources()
 meth public org.openide.filesystems.FileObject[] getRoots()
@@ -229,7 +273,7 @@ meth public static org.netbeans.spi.java.classpath.PathResourceImplementation cr
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.java.classpath.support.CompositePathResourceBase
-cons public CompositePathResourceBase()
+cons public init()
 intf org.netbeans.spi.java.classpath.PathResourceImplementation
 meth protected abstract org.netbeans.spi.java.classpath.ClassPathImplementation createContent()
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -241,7 +285,7 @@ supr java.lang.Object
 hfds model,pListeners,roots
 
 CLSS public abstract org.netbeans.spi.java.classpath.support.PathResourceBase
-cons public PathResourceBase()
+cons public init()
 intf org.netbeans.spi.java.classpath.PathResourceImplementation
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
@@ -251,6 +295,9 @@ hfds pListeners
 
 CLSS public abstract interface org.netbeans.spi.java.queries.AccessibilityQueryImplementation
 meth public abstract java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
+
+CLSS public abstract interface org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation
+meth public abstract org.netbeans.api.java.queries.AnnotationProcessingQuery$Result getAnnotationProcessingOptions(org.openide.filesystems.FileObject)
 
 CLSS public abstract interface org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation
 meth public abstract org.netbeans.api.java.queries.BinaryForSourceQuery$Result findBinaryRoots(java.net.URL)
@@ -271,6 +318,7 @@ intf org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
 meth public abstract org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result findSourceRoots2(java.net.URL)
 
 CLSS public abstract interface static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result
+ outer org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2
 intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public abstract boolean preferSources()
 
@@ -282,7 +330,7 @@ meth public abstract java.net.URL findSource(org.openide.filesystems.FileObject)
 meth public abstract java.net.URL findUnitTest(org.openide.filesystems.FileObject)
 
 CLSS public abstract org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base
-cons public SourceForBinaryQueryImpl2Base()
+cons public init()
 intf org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2
 meth protected final org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2$Result asResult(org.netbeans.api.java.queries.SourceForBinaryQuery$Result)
 supr java.lang.Object

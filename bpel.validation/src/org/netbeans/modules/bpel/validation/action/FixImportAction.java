@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,81 +44,106 @@
 package org.netbeans.modules.bpel.validation.action;
 
 import java.awt.event.ActionEvent;
-import org.openide.nodes.Node;
+import java.util.List;
 
-import org.netbeans.modules.xml.xam.Model;
+import org.openide.nodes.Node;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.xml.validation.core.Controller;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
-
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.05.20
  */
-public final class FixImportAction extends IconAction {
+public class FixImportAction extends IconAction {
 
-  public FixImportAction() {
-    super(
-      i18n(FixImportAction.class, "CTL_Fix_Import_Action"), // NOI18N
-      i18n(FixImportAction.class, "TLT_Fix_Import_Action"), // NOI18N
-      null
-    );
-  }
+    public FixImportAction() {
+        this(i18n(FixImportAction.class, "CTL_Fix_Import_Action"), i18n(FixImportAction.class, "TLT_Fix_Import_Action")); // NOI18N
+    }
 
-  public void actionPerformed(ActionEvent event) {
-    Node node = getSelectedNode();
+    protected FixImportAction(String name, String tooltip) {
+        super(name, tooltip, null);
+    }
+
+    public void actionPerformed(ActionEvent event) {
+        Node node = getSelectedNode();
 //out();
 //out("node: " + node);
 
-    if (node == null) {
-      return;
-    }
-    Controller controller = node.getLookup().lookup(Controller.class);
+        if (node == null) {
+            return;
+        }
+        Controller controller = node.getLookup().lookup(Controller.class);
 
-    if (controller == null) {
-      return;
-    }
+        if (controller == null) {
+            return;
+        }
 //out("controller: " + controller);
-    Model model = controller.getModel();
+
+        if ( !(controller.getModel() instanceof BpelModel)) {
+            return;
+        }
+        BpelModel model = (BpelModel) controller.getModel();
+
+        if ( !checkValidationError(controller)) {
+            return;
+        }
 //out("model: " + model);
+        Process process = model.getProcess();
 
-    if ( !(model instanceof BpelModel)) {
-      return;
-    }
-    fixImport((BpelModel) model, controller);
-  }
+        if (process == null) {
+            return;
+        }
+        Import[] imports = process.getImports();
 
-  private void fixImport(BpelModel model, Controller controller) {
-    Process process = model.getProcess();
-
-    if (process == null) {
-      return;
-    }
-    Import [] imports = process.getImports();
-
-    if (imports == null) {
-      return;
-    }
+        if (imports == null) {
+            return;
+        }
 //out();
-    for (int i=imports.length - 1; i >= 0; i--) {
+        for (int i = imports.length - 1; i >= 0; i--) {
 //out();
 //out("see: " + imports[i].getLocation());
-      model.startTransaction();
-      process.removeImport(i);
+            model.startTransaction();
+            process.removeImport(i);
 
-      if (controller.validate(ValidationType.PARTIAL).isEmpty()) {
-        model.endTransaction();
-//out("     REMOVE");
-      }
-      else {
-        model.rollbackTransaction();
+            if (hasValidationError(controller)) {
+                model.rollbackTransaction();
 //out("     ++");
-      }
+            }
+            else {
+                model.endTransaction();
+//out("     remove");
+            }
+        }
     }
-  }
+
+    protected boolean hasValidationError(Controller controller) {
+        org.netbeans.modules.bpel.validation.xpath.Validator.doForceXPathValidation = true;
+        List<ResultItem> results = controller.validate(ValidationType.PARTIAL);
+        org.netbeans.modules.bpel.validation.xpath.Validator.doForceXPathValidation = false;
+        return hasValidationError(results);
+    }
+
+    private boolean hasValidationError(List<ResultItem> results) {
+        for (ResultItem item : results) {
+            if (item.getType() == ResultType.ERROR) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean checkValidationError(Controller controller) {
+        if ( !hasValidationError(controller)) {
+            return true;
+        }
+        printInformation(i18n(FixImportAction.class, "MSG_Fix_Validation_Errors")); // NOI18N
+        return false;
+    }
 }

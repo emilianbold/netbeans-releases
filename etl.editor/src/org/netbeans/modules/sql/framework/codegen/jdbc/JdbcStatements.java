@@ -39,10 +39,10 @@ import org.netbeans.modules.sql.framework.model.SourceColumn;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.jdbc.SQLUtils;
-import com.sun.sql.framework.utils.RuntimeAttribute;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.jdbc.SQLUtils;
+import com.sun.etl.utils.RuntimeAttribute;
 /**
  * For JDBC or ANSI standard Database code generations.
  * @author Girish Patil

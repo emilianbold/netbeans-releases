@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
             String platformName, String sourceLevel) throws IOException {
         NewEarProjectWizardIterator.testableInstantiate(prjDirF, name,
                 j2eeProfile, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null, false);
     }
     
     /**
@@ -133,7 +136,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null, false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         FileObject testEAFO = FileUtil.toFileObject(new File(getWorkDir(), "testEA"));
@@ -161,7 +164,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null,false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");
@@ -193,7 +196,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null,false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");

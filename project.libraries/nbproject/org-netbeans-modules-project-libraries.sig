@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 1.20.1
+#Signature file v4.1
+#Version 1.25
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -50,12 +50,15 @@ meth public static org.netbeans.api.project.libraries.LibraryChooser$Panel creat
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$Filter
+ outer org.netbeans.api.project.libraries.LibraryChooser
 meth public abstract boolean accept(org.netbeans.api.project.libraries.Library)
 
 CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler
+ outer org.netbeans.api.project.libraries.LibraryChooser
 meth public abstract org.netbeans.api.project.libraries.Library importLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
 
 CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$Panel
+ outer org.netbeans.api.project.libraries.LibraryChooser
 fld public final static java.lang.String PROP_SELECTED_LIBRARIES = "selectedLibraries"
 meth public abstract java.awt.Component getVisualComponent()
 meth public abstract java.util.Set<org.netbeans.api.project.libraries.Library> getSelectedLibraries()
@@ -99,7 +102,7 @@ meth public abstract {org.netbeans.spi.project.libraries.ArealLibraryProvider%0}
 meth public abstract {org.netbeans.spi.project.libraries.ArealLibraryProvider%1} createLibrary(java.lang.String,java.lang.String,{org.netbeans.spi.project.libraries.ArealLibraryProvider%0},java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
 
 CLSS public org.netbeans.spi.project.libraries.LibraryCustomizerContext
-cons public LibraryCustomizerContext(org.netbeans.spi.project.libraries.LibraryImplementation,org.netbeans.spi.project.libraries.LibraryStorageArea)
+cons public init(org.netbeans.spi.project.libraries.LibraryImplementation,org.netbeans.spi.project.libraries.LibraryStorageArea)
 meth public org.netbeans.spi.project.libraries.LibraryImplementation getLibraryImplementation()
 meth public org.netbeans.spi.project.libraries.LibraryImplementation2 getLibraryImplementation2()
 meth public org.netbeans.spi.project.libraries.LibraryStorageArea getLibraryStorageArea()
@@ -164,7 +167,7 @@ meth public static org.openide.filesystems.FileObject resolveLibraryEntryFileObj
 supr java.lang.Object
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -181,5 +184,6 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 

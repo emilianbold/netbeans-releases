@@ -63,6 +63,8 @@ public class JDBCWizardContext extends HashMap {
 
     public static final String SELECTEDTABLES = "selected_tables";
     
+    public static final String SELECTEDPROCEDURES = "selected_procedures";
+    
     public static final String CONNECTION_INFO="connection_info";
 
     public static final String DBTYPE = "db_type";

@@ -45,71 +45,33 @@ package org.netbeans.modules.bpel.model.api.support;
  */
 public enum TBoolean implements EnumValue {
 
-    NO("no"), YES("yes"), INVALID();        // NOI18N
+    NO("no"), YES("yes"), INVALID(null); // NOI18N
 
-    TBoolean() {
-    }
-
-    TBoolean( String v ) {
+    private TBoolean(String v) {
         value = v;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    /** {@inheritDoc} */
     public String toString() {
-        return ""+value;
+        return value;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.netbeans.modules.soa.model.bpel.api.support.EnumValue#isInvalid()
-     */
-    /** {@inheritDoc} */
     public boolean isInvalid() {
-        return this.equals(INVALID);
+        return equals(INVALID);
     }
 
-    /**
-     * @deprecated Method can return null value. So it means that 
-     * boolean type is not appropriate type for represent this enum.
-     * @return boolean representation of enumeration.
-     */
-    @Deprecated
-    public Boolean getBoolean() {
-        if (this.equals(NO)) {
-            return Boolean.FALSE;
-        }
-        if ( this.equals(YES) ) {
-            return Boolean.TRUE;
-        }
-        return null;
-    }
-
-    /**
-     * Returns enum by its string value.
-     * 
-     * @param str
-     *            string representation.
-     * @return enum.
-     */
-    public static TBoolean forString( String str ) {
-        if ( str== null ){
+    public static TBoolean forString(String str) {
+        if (str == null) {
             return null;
         }
-        TBoolean[] values = TBoolean.values();
+        TBoolean[] values = values();
+
         for (TBoolean value : values) {
-            if (value.toString().equals(str)) {
+            if (str.equals(value.toString())) {
                 return value;
             }
         }
         return INVALID;
     }
     
-
     private String value;
 }

@@ -1,7 +1,10 @@
 //
 // DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 //
-// Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+// Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+//
+// Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+// Other names may be trademarks of their respective owners.
 //
 // The contents of this file are subject to the terms of either the GNU
 // General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
 // specific language governing permissions and limitations under the
 // License.  When distributing the software, include this License Header
 // Notice in each file and include the License file at
-// nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+// nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 // particular file as subject to the "Classpath" exception as provided
-// by Sun in the GPL Version 2 section of the License file that
+// by Oracle in the GPL Version 2 section of the License file that
 // accompanied this code. If applicable, add the following below the
 // License Header, with the fields enclosed by brackets [] replaced by
 // your own identifying information:
@@ -46,7 +49,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 
 }
 
@@ -55,7 +58,9 @@ options {
 } 
 
 {
+@org.netbeans.api.annotations.common.SuppressWarnings("DLS")
 @SuppressWarnings({"unchecked", "cast", "fallthrough"})
+final /*final class attribute gives us performance */
 }
 class APTLexer extends Lexer;
 
@@ -68,13 +73,106 @@ options {
 
 // DW 4/11/02 put in to support manual hoisting
 tokens {
-    FLOATONE;
-    FLOATTWO;
-    ELLIPSIS;
-    HEXADECIMALINT;
-    DOT;
-    OCTALINT;
-    DECIMALINT;
+    // tokens with constant text, we put them in small indices to reduce size
+        ELLIPSIS;
+        DOT;
+	ASSIGNEQUAL;
+	COLON;
+	COMMA;
+	QUESTIONMARK;
+	SEMICOLON;
+	POINTERTO;
+	LPAREN;
+	RPAREN;
+	LSQUARE;
+	RSQUARE;
+	LCURLY;
+	RCURLY;
+	EQUAL;
+	NOTEQUAL;
+	LESSTHANOREQUALTO;
+	LESSTHAN;
+	GREATERTHANOREQUALTO;
+	GREATERTHAN;
+	DIVIDE;
+	DIVIDEEQUAL;
+	PLUS;
+	PLUSEQUAL;
+	PLUSPLUS;
+	MINUS;
+	MINUSEQUAL;
+	MINUSMINUS;
+	STAR;
+	TIMESEQUAL;
+	MOD;
+	MODEQUAL;
+	SHIFTRIGHT;
+	SHIFTRIGHTEQUAL;
+	SHIFTLEFT;
+	SHIFTLEFTEQUAL;
+	AND;
+	NOT;
+	OR;
+	AMPERSAND;
+	BITWISEANDEQUAL;
+	TILDE;
+	BITWISEOR;
+	BITWISEOREQUAL;
+	BITWISEXOR;
+	BITWISEXOREQUAL;
+	POINTERTOMBR;
+	DOTMBR;
+	SCOPE;
+        AT;
+        DOLLAR;
+        BACK_SLASH;
+
+	DEFINED;
+	DBL_SHARP;
+	SHARP;
+        FUN_LIKE_MACRO_LPAREN;
+
+        // marker for last const text token
+        LAST_CONST_TEXT_TOKEN;
+
+        // other tokens
+        FLOATONE;
+        FLOATTWO;
+        HEXADECIMALINT;
+        OCTALINT;
+        DECIMALINT;
+
+	Whitespace;
+	EndOfLine;
+	Skip;
+	PreProcComment;
+	PPLiterals;
+	Space;
+	PreProcBlockComment;
+	PreProcLineComment;
+	Comment;
+	CPPComment;
+	CHAR_LITERAL;
+	STRING_LITERAL;
+	InterStringWhitespace;
+	StringPart;
+	Escape;
+	Digit;
+	Decimal;
+	LongSuffix;
+	UnsignedSuffix;
+	FloatSuffix;
+	Exponent;
+	Vocabulary;
+	NUMBER;
+	ID;
+        BINARYINT;
+
+    // preprocessor specific tokens
+    INCLUDE_STRING;
+    SYS_INCLUDE_STRING;
+    END_PREPROC_DIRECTIVE;
+
     // preprocessor directives
     INCLUDE;
     INCLUDE_NEXT;
@@ -141,7 +239,7 @@ tokens {
     LITERAL___declspec="__declspec"; // NOI18N
     LITERAL_class="class"; // NOI18N
     LITERAL_struct="struct"; // NOI18N
-    LITERAL_union="union"; // NOI18N    
+    LITERAL_union="union"; // NOI18N
     LITERAL_this="this"; // NOI18N
     LITERAL_true="true"; // NOI18N
     LITERAL_false="false"; // NOI18N
@@ -194,116 +292,261 @@ tokens {
     LITERAL___restrict="__restrict"; // NOI18N
     LITERAL___complex__="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
-    LITERAL___real="__real__"; // NOI18N          
+    LITERAL___real="__real__"; // NOI18N
     LITERAL___global="__global"; // NOI18N
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
-
-	ASSIGNEQUAL;
-	COLON;
-	COMMA;
-	QUESTIONMARK;
-	SEMICOLON;
-	POINTERTO;
-	LPAREN;
-	RPAREN;
-	LSQUARE;
-	RSQUARE;
-	LCURLY;
-	RCURLY;
-	EQUAL;
-	NOTEQUAL;
-	LESSTHANOREQUALTO;
-	LESSTHAN;
-	GREATERTHANOREQUALTO;
-	GREATERTHAN;
-	DIVIDE;
-	DIVIDEEQUAL;
-	PLUS;
-	PLUSEQUAL;
-	PLUSPLUS;
-	MINUS;
-	MINUSEQUAL;
-	MINUSMINUS;
-	STAR;
-	TIMESEQUAL;
-	MOD;
-	MODEQUAL;
-	SHIFTRIGHT;
-	SHIFTRIGHTEQUAL;
-	SHIFTLEFT;
-	SHIFTLEFTEQUAL;
-	AND;
-	NOT;
-	OR;
-	AMPERSAND;
-	BITWISEANDEQUAL;
-	TILDE;
-	BITWISEOR;
-	BITWISEOREQUAL;
-	BITWISEXOR;
-	BITWISEXOREQUAL;
-	POINTERTOMBR;
-	DOTMBR;
-	SCOPE;
-	Whitespace;
-	EndOfLine;
-	DEFINED;
-	DBL_SHARP;
-	SHARP;
-	Skip;
-	PreProcComment;
-	PPLiterals;
-	Space;
-	PreProcBlockComment;
-	PreProcLineComment;
-	Comment;
-	CPPComment;
-	CHAR_LITERAL;
-	STRING_LITERAL;
-	InterStringWhitespace;
-	StringPart;
-	Escape;
-	Digit;
-	Decimal;
-	LongSuffix;
-	UnsignedSuffix;
-	FloatSuffix;
-	Exponent;
-	Vocabulary;
-	NUMBER;
-	ID;
-        BINARYINT;
-
-    // preprocessor specific tokens
-    INCLUDE_STRING;
-    SYS_INCLUDE_STRING;
-    END_PREPROC_DIRECTIVE;
-    FUN_LIKE_MACRO_LPAREN;
-    BACK_SLASH;
-
     LITERAL___attribute="__attribute"; // NOI18N
+
+
+    // Fortran tokens
+
+    T_CLOSE;
+    T_BLOCK;
+    T_GE;
+    T_CONTAINS;
+    T_ABSTRACT;
+    T_CLASS;
+    T_NOPASS;
+    T_UNFORMATTED;
+    T_LESSTHAN;
+    T_ENDSUBROUTINE;
+    T_GT;
+    T_IDENT;
+    T_INTERFACE;
+    T_RETURN;
+    T_XYZ;
+    T_EOF;
+    T_CALL;
+    T_EOS;
+    T_GO;
+    T_AND;
+    T_PERCENT;
+    T_PRINT;
+    T_ALLOCATE_STMT_1;
+    T_SUBROUTINE;
+    T_CONTROL_EDIT_DESC;
+    T_ENUMERATOR;
+    Alphanumeric_Character;
+    T_DEFINED_OP;
+    T_KIND;
+    T_STOP;
+    T_GREATERTHAN_EQ;
+    T_CHAR_STRING_EDIT_DESC;
+    T_ALLOCATABLE;
+    T_ENDINTERFACE;
+    T_END;
+    T_ASTERISK;
+    T_PRIVATE;
+    T_DOUBLEPRECISION;
+    T_CASE;
+    T_IMPLICIT;
+    T_IF;
+    T_THEN;
+    T_DIMENSION;
+    T_GOTO;
+    T_ENDMODULE;
+    T_IN;
+    T_WRITE;
+    T_FORMATTED;
+    WS;
+    T_DATA;
+    T_FALSE;
+    T_WHERE;
+    T_ENDIF;
+    T_SLASH;
+    SQ_Rep_Char;
+    T_GENERIC;
+    T_RECURSIVE;
+    DQ_Rep_Char;
+    T_ELSEIF;
+    T_BLOCKDATA;
+    OCTAL_CONSTANT;
+    T_SELECTTYPE;
+    T_MINUS;
+    T_SELECT;
+    T_FINAL;
+    T_UNDERSCORE;
+    T_IMPORT;
+    T_USE;
+    T_FILE;
+    T_RPAREN;
+    T_INTENT;
+    T_ENDBLOCK;
+    T_ASSIGNMENT_STMT;
+    T_PAUSE;
+    T_BACKSPACE;
+    T_ENDFILE;
+    T_EQUALS;
+    T_NON_INTRINSIC;
+    T_SELECTCASE;
+    T_DIGIT_STRING;
+    T_COLON_COLON;
+    T_NON_OVERRIDABLE;
+    Special_Character;
+    T_INCLUDE;
+    T_OPEN;
+    T_POWER;
+    T_ASSOCIATE;
+    T_CHAR_CONSTANT;
+    T_OPERATOR;
+    T_TO;
+    T_ENDASSOCIATE;
+    T_EQ;
+    T_GREATERTHAN;
+    T_DATA_EDIT_DESC;
+    T_INQUIRE_STMT_2;
+    T_EQV;
+    HEX_CONSTANT;
+    Digit_String;
+    T_ELEMENTAL;
+    T_CHARACTER;
+    PREPROCESS_LINE;
+    T_NULLIFY;
+    T_REWIND;
+    T_ARITHMETIC_IF_STMT;
+    T_FORALL_CONSTRUCT_STMT;
+    T_BIND;
+    T_ENDFORALL;
+    T_DO;
+    T_WHERE_STMT;
+    T_POINTER;
+    T_PROGRAM;
+    T_ENDTYPE;
+    T_WAIT;
+    T_ELSE;
+    T_IF_STMT;
+    T_RBRACKET;
+    T_LPAREN;
+    T_EXTENDS;
+    T_OPTIONAL;
+    T_DOUBLE;
+    T_MODULE;
+    T_READ;
+    T_ALLOCATE;
+    T_INTEGER;
+    T_OR;
+    T_EQUIVALENCE;
+    T_PERIOD;
+    T_ENTRY;
+    T_LABEL_DO_TERMINAL;
+    T_REAL;
+    T_CYCLE;
+    T_PROCEDURE;
+    T_EQ_EQ;
+    T_SLASH_EQ;
+    T_ENDSELECT;
+    T_PURE;
+    T_TRUE;
+    T_NE;
+    T_INTRINSIC;
+    T_PASS;
+    T_REAL_CONSTANT;
+    LINE_COMMENT;
+    T_PERIOD_EXPONENT;
+    T_ENDWHERE;
+    MISC_CHAR;
+    T_FORMAT;
+    T_DEFAULT;
+    T_SLASH_SLASH;
+    T_NONE;
+    T_NAMELIST;
+    T_SEQUENCE;
+    T_PRECISION;
+    T_ASYNCHRONOUS;
+    T_COMMA;
+    T_RESULT;
+    T_ENDBLOCKDATA;
+    T_LOGICAL;
+    T_VALUE;
+    Letter;
+    T_FORALL;
+    T_SAVE;
+    T_HOLLERITH;
+    T_FLUSH;
+    T_WHILE;
+    T_INQUIRE;
+    T_DEFERRED;
+    T_FORALL_STMT;
+    T_ASSIGN;
+    T_LBRACKET;
+    T_EXTERNAL;
+    T_VOLATILE;
+    T_OUT;
+    CONTINUE_CHAR;
+    T_COLON;
+    T_COMPLEX;
+    T_PLUS;
+    T_STMT_FUNCTION;
+    T_ONLY;
+    T_PROTECTED;
+    T_COMMON;
+    T_INOUT;
+    T_NEQV;
+    T_PUBLIC;
+    T_ENDDO;
+    T_ENDPROGRAM;
+    T_ENDFUNCTION;
+    T_WHERE_CONSTRUCT_STMT;
+    T_ELSEWHERE;
+    T_ENUM;
+    //Digit;
+    T_PARAMETER;
+    T_TARGET;
+    T_DOUBLECOMPLEX;
+    T_PTR_ASSIGNMENT_STMT;
+    T_TYPE;
+    T_LESSTHAN_EQ;
+    T_DEALLOCATE;
+    T_LT;
+    T_FUNCTION;
+    T_EQ_GT;
+    T_ENDENUM;
+    BINARY_CONSTANT;
+    T_LE;
+    T_LEN;
+    T_CONTINUE;
+    T_NOT;
+    Rep_Char;
+    T_ASSIGNMENT;
+    T_EXIT;
 }
 {
-
-
     private boolean reportErrors;
-    public void init(String filename, int flags) {
+    private Language lang;
+
+    public static enum Language {
+        C,
+        CPP,
+        FORTRAN
+    };
+
+
+    public void init(String filename, int flags, String language) {
         preprocPossible = true;
         preprocPending = false;
         reportErrors = true;
 
         setFilename(filename);
+
+        if(language.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
+            lang = Language.FORTRAN;
+        } else {
+            lang = Language.CPP;
+        }
+
 //        if ((flags & CPPParser.CPP_SUPPRESS_ERRORS) > 0) {
 //            reportErrors = false;
 //        }
     }
 
     // overriden to avoid class loading
+    @Override
     public void setTokenObjectClass(String cl) {
     }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
+    @Override
     protected APTToken createToken(int type) {
         return APTUtils.createAPTToken(type);
     }
@@ -313,6 +556,7 @@ tokens {
         APTUtils.setTokenText((APTToken)_token, buf, start, count);
     }
 
+    @Override
     public void traceIn(String rname) {
         traceDepth ++;
         traceIndent();
@@ -473,12 +717,8 @@ tokens {
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){
                 return null;
             }
-        } 
-        APTToken k = (APTToken)super.makeToken(t);
-        k.setOffset(tokenStartOffset);
-        k.setEndOffset(offset);
-        k.setEndColumn(inputState.getColumn());
-        k.setEndLine(inputState.getLine());
+        }
+        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine());
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()
@@ -547,6 +787,16 @@ tokens {
     }
 }
 
+/* Comments: */
+
+FORTRAN_COMMENT options { constText=true; } :
+    {lang == Language.FORTRAN && inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ')}?
+    ('!' | ('c'|'C') | '*')
+    (~('\n' | '\r'))*
+    {$setType(FORTRAN_COMMENT);}
+    ;
+
+
 /* Operators: */
 
 COMMA          options { constText=true; } : ',' ;
@@ -583,8 +833,8 @@ FIRST_ASSIGN options { constText=true; } :
 FIRST_DIVIDE :
     '/' ( {$setType(DIVIDE);}               //DIVIDE          : '/' ;
     | '=' {$setType(DIVIDEEQUAL);} )        //DIVIDEEQUAL     : "/=" ;
-    | COMMENT {$setType(COMMENT);}
-    | CPP_COMMENT {$setType(CPP_COMMENT);};
+    | {(lang == Language.CPP || lang == Language.C)}? COMMENT {$setType(COMMENT);}
+    | {lang == Language.CPP}? CPP_COMMENT {$setType(CPP_COMMENT);};
 
 FIRST_STAR options { constText=true; } :
     '*' ( {$setType(STAR);}                 //STAR            : '*' ;
@@ -603,25 +853,28 @@ FIRST_AMPERSAND options { constText=true; } :
     | '&' {$setType(AND);}                  //AND             : "&&" ;
     | '=' {$setType(BITWISEANDEQUAL);});    //BITWISEANDEQUAL : "&=" ;
 
+
+/* Comments: */
+
+protected COMMENT :
+		"/*"
+		( options {greedy=false;}:
+			EndOfLine {deferredNewline();}
+                        | . )*
+		"*/"
+	;
+
+protected CPP_COMMENT
+	:
+		"//" ( '\\' EndOfLine {deferredNewline();}
+                     |  ~('\n' | '\r')
+                     )*
+	;
+
 FIRST_OR options { constText=true; } :
     '|' ({$setType(BITWISEOR);}             //BITWISEOR       : '|' ;
     | '=' {$setType(BITWISEOREQUAL);}       //BITWISEOREQUAL  : "|=" ;
     | '|' {$setType(OR);});                 //OR              : "||" ;
-
-protected COMMENT : 
-		"/*"   
-		( options {greedy=false;}:
-			EndOfLine {deferredNewline();}
-                        | . )*
-		"*/"              
-	;
-
-protected CPP_COMMENT 
-	:	
-		"//" ( '\\' ('\n' | '\r') 
-                     |  ~('\n' | '\r')
-                     )* 
-	;
 
 FIRST_BITWISEXOR options { constText=true; } :
     '^' ( {$setType(BITWISEXOR);}           //BITWISEXOR      : '^' ;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
@@ -58,8 +61,10 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
@@ -75,6 +80,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
         private static final String ERROR = "<error>"; //NOI18N
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
@@ -192,6 +198,7 @@ public class GetterSetterGenerator implements CodeGenerator {
         this.isUpperCase = isUpperCase;
     }
 
+    @Override
     public String getDisplayName() {
         if (type == GeneratorUtils.Kind.GETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter"); //NOI18N
@@ -202,7 +209,9 @@ public class GetterSetterGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
     }
 
+    @Override
     public void invoke() {
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "GETTER_SETTER"); // NOI18N
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title = GeneratorUtils.getGetterSetterDisplayName(type);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);

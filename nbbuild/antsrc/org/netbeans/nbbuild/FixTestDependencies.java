@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
@@ -113,11 +118,11 @@ public class FixTestDependencies extends Task {
                 String part2 = xml.substring(xsdIndex + oldXsd.length(), xml.length());
                 xml = part1 + "3" + part2;
                 
-                int projectType = ParseProjectXml.TYPE_NB_ORG;
+                ModuleType projectType = ModuleType.NB_ORG;
                 if (xml.contains("<suite-component/>")) {
-                    projectType = ParseProjectXml.TYPE_SUITE;
+                    projectType = ModuleType.SUITE;
                 } else if (xml.contains("<standalone/>")) {
-                    projectType = ParseProjectXml.TYPE_STANDALONE;
+                    projectType = ModuleType.STANDALONE;
                 } 
                 //grrr
                 int typeStart = xml.indexOf("<code-name-base>");
@@ -129,11 +134,11 @@ public class FixTestDependencies extends Task {
                 if (cnb.length() <= 0) {
                     throw new BuildException("Invalid codename base:" + cnb);
                 }
+                final boolean td = xml.contains("<test-dependencies>");
                 // test if project.xml contains test-deps
-                if (xml.contains("<test-dependencies>") && !testFix) {
+                if (td && !testFix) {
                     // yes -> exit
-                    log("<test-dependencies> already exists.");
-                    log("update only schema version");
+                    xml = fixOpenideUtil(xml);
                     PrintStream ps = new PrintStream(projectXmlFile);
                     ps.print(xml);
                     ps.close();                  
@@ -153,10 +158,16 @@ public class FixTestDependencies extends Task {
                 Set<String> runtimeTestCNB = new TreeSet<String>();
 
                 Properties projectProperties = getTestProperties();
-                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
-                readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
-                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
-                readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
+                boolean found;
+                found = readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
+                found |= readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
+                found |= readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
+                found |= readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
+
+                if (!found && !td) {
+                    return;
+                }
+
                 updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
 
                 StringWriter writer = new StringWriter();
@@ -220,7 +231,7 @@ public class FixTestDependencies extends Task {
                 resultXml.append(xml.substring(moduleDepEnd + 1, xml.length()));
                 if (!testFix) {
                    PrintStream ps = new PrintStream(projectXmlFile);
-                   ps.print(resultXml);
+                   ps.print(fixOpenideUtil(resultXml.toString()));
                    ps.close();
                 } else {
                     System.out.println(resultXml);
@@ -234,7 +245,7 @@ public class FixTestDependencies extends Task {
         // store project.properties and project.xml
     }
 
-    private Set<ModuleListParser.Entry> getModuleList(final int projectType) throws IOException {
+    private Set<ModuleListParser.Entry> getModuleList(final ModuleType projectType) throws IOException {
         if (cachedEntries == null ) {
           // scan for all modules
             @SuppressWarnings("unchecked")
@@ -255,7 +266,7 @@ public class FixTestDependencies extends Task {
     }
     /** parses all codenamebases from path
      */
-     void readCodeNameBases(Set<String> compileCNB,
+     boolean readCodeNameBases(Set<String> compileCNB,
             Set <String> testsCNB,
             Properties projectPropertis,
             String property,
@@ -343,7 +354,9 @@ public class FixTestDependencies extends Task {
                 }
             } // while
             projectPropertis.setProperty(property,newProp.toString());
+            return true;
         }
+        return false;
     }
     
     private void addDependencies(PrintWriter buffer, Set<String> moduleCNB, Set<String> testCNB, boolean compile, boolean recursive) {
@@ -370,7 +383,7 @@ public class FixTestDependencies extends Task {
     
     private Properties getTestProperties() throws IOException {
         if (propertiesFile == null || !propertiesFile.isFile()) {
-            throw new BuildException("Property file doesn't exist");
+            return new Properties();
         }
         Properties props = new Properties();
         FileInputStream fis = new FileInputStream(propertiesFile);
@@ -393,22 +406,30 @@ public class FixTestDependencies extends Task {
         return null;
     }
     private void updateProperties(Properties projectProperties,String names[]) {
+        if (propertiesFile == null) {
+            return;
+        }
         try {
-            
-            // read properties
-            BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
             List<String> lines = new ArrayList<String>();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
+            if (propertiesFile.isFile()) {
+                // read properties
+                BufferedReader reader = new BufferedReader (new FileReader(propertiesFile));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+                reader.close();
             }
-            reader.close();
             
             // merge properties
             for (String propName : names) {
                String value = projectProperties.getProperty(propName);
                lines = replaceProperty(propName,value,lines);    
             }
+            if (lines.isEmpty() && !propertiesFile.isFile()) {
+                return;
+            }
+
             // store properties
             PrintStream ps = new PrintStream(propertiesFile);
             for (String l : lines) {
@@ -444,6 +465,33 @@ public class FixTestDependencies extends Task {
             retLines.add(line);
         }
         return retLines;
-    } 
+    }
+
+    private String fixOpenideUtil(String xml) {
+        Pattern l = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.openide.util.lookup</code-name-base>", Pattern.MULTILINE);
+        if (l.matcher(xml).find()) {
+            return xml;
+        }
+
+        Pattern p = Pattern.compile(
+                "^ *<test-dependency>[^/]*" +
+                "<code-name-base>org.openide.util</code-name-base>", Pattern.MULTILINE);
+
+        Matcher m = p.matcher(xml);
+        if (m.find()) {
+            final String txt = "</test-dependency>";
+            final int s = m.start();
+            int end = xml.indexOf(txt, s);
+            if (end == -1) {
+                throw new BuildException("No end of dependency " + xml);
+            }
+            final int e = end + txt.length();
+            String dep = xml.substring(s, e);
+            return xml.substring(0, s) + dep + '\n' + dep.replace("org.openide.util", "org.openide.util.lookup") + xml.substring(e);
+        }
+        return xml;
+    }
 
 }

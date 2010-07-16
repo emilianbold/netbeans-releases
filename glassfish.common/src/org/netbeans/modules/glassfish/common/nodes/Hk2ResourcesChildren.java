@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,7 @@ import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -79,8 +83,9 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         this.type = type;
     }
 
+    @Override
     public void updateKeys(){
-        Vector keys = new Vector();
+        Vector<AbstractNode> keys = new Vector<AbstractNode>();
         String[] childTypes = NodeTypes.getChildTypes(type);
         if((childTypes != null) && (childTypes.length > 1)) {
             for(int i = 0; i < childTypes.length; i++) {
@@ -97,8 +102,8 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             if (commonSupport != null) {
                 try {
                     java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                    CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
-                    Decorator decorator = DecoratorManager.findDecorator(childtype, null);
+                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                    Decorator decorator = DecoratorManager.findDecorator(childtype, null,true);
                     List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
                     for (ResourceDesc resource : reslourcesList) {
                         keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
@@ -122,6 +127,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
 
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof Hk2ItemNode){
             return new Node [] { (Hk2ItemNode) key };
@@ -147,6 +153,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             this.customizer = customizer;
         }
 
+        @Override
         public void updateKeys() {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -157,8 +164,8 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                     if (commonSupport != null) {
                         try {
                             java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                            CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
-                            Decorator decorator = DecoratorManager.findDecorator(type, null);
+                            CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                            Decorator decorator = DecoratorManager.findDecorator(type, null,true);
                             if (decorator == null) {
                                 if (type.equals(GlassfishModule.JDBC_RESOURCE)) {
                                     decorator = Hk2ItemNode.JDBC_MANAGED_DATASOURCES;
@@ -192,6 +199,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
         }
 
+        @Override
         protected org.openide.nodes.Node[] createNodes(Object key) {
             if (key instanceof Hk2ItemNode) {
                 return new Node[]{(Hk2ItemNode) key};

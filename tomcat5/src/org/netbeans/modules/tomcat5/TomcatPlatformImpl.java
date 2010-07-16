@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,11 @@ package org.netbeans.modules.tomcat5;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -58,7 +63,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -444,27 +448,31 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         
         return false;
     }
-        
-    public Set/*<Object>*/ getSupportedModuleTypes() {
-        Set moduleTypes = new HashSet(1);
-        moduleTypes.add(J2eeModule.WAR);
-        return moduleTypes;
+
+    @Override
+    public Set<J2eeModule.Type> getSupportedTypes() {
+        return Collections.singleton(J2eeModule.Type.WAR);
     }
-    
-    public Set/*<String>*/ getSupportedSpecVersions() {
-        Set specVersions = new HashSet(3);
-        specVersions.add(J2eeModule.J2EE_13);
-        specVersions.add(J2eeModule.J2EE_14);
+
+    @Override
+    public Set<Profile> getSupportedProfiles() {
+        Set<Profile> profiles = new HashSet<Profile>(5);
+        profiles.add(Profile.J2EE_13);
+        profiles.add(Profile.J2EE_14);
         if (manager.isTomcat60()) {
-            specVersions.add(J2eeModule.JAVA_EE_5);
+            profiles.add(Profile.JAVA_EE_5);
         }
-        return specVersions;
+        if (manager.isTomcat70()) {
+            profiles.add(Profile.JAVA_EE_6_WEB);
+        }
+        return profiles;
     }
     
     public Set/*<String>*/ getSupportedJavaPlatformVersions() {
         Set versions = new HashSet();
         versions.add("1.4"); // NOI18N
         versions.add("1.5"); // NOI18N
+        versions.add("1.6"); // NOI18N
         return versions;
     }
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,28 +41,20 @@
  */
 package org.netbeans.modules.dlight.procfs.processinfo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.concurrent.CancellationException;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -76,123 +71,81 @@ public class ProcBasedProcessInfoProviderTest extends NativeExecutionBaseTestCas
         super(name, execEnv);
     }
 
+    @SuppressWarnings("unchecked")
     public static Test suite() {
         return new NativeExecutionBaseTestSuite(ProcBasedProcessInfoProviderTest.class);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    @Override
-    public void setUp() {
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getProcessInfo method, of class ProcBasedProcessInfoProvider.
-     */
-    @org.junit.Test
-    public void testGetLocalProcessInfo() {
-        System.out.println("getProcessInfo (local test)");
+    public void testGetProcessInfoLocal() throws Exception {
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         ProcBasedProcessInfoProviderFactory instance = new ProcBasedProcessInfoProviderFactory();
 
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
-        boolean isSolaris = Utilities.getOperatingSystem() == Utilities.OS_SOLARIS;
-
-        if (isSolaris) {
-            // On solaris proc provider is enabled
-            // Be sure that Factory returns not null value and
-            // that provider returns not null info
-            try {
-                ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $$ && sleep 4");
-                Process p = pb.start();
-                long time = System.nanoTime() / 1000 / 1000 / 1000;
-                String pid = new BufferedReader(new InputStreamReader(p.getInputStream())).readLine();
-                ProcessInfoProvider pip = instance.getProvider(execEnv, Integer.parseInt(pid));
-                assertNotNull(pip);
-                ProcessInfo info = pip.getProcessInfo();
-                assertNotNull(info);
-                long processStartTime = info.getCreationTimestamp(TimeUnit.SECONDS);
-                assertTrue(Math.abs(processStartTime - time) < 2);
-
-                p.waitFor();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-                fail();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                fail();
-            }
-        } else {
+        if (Utilities.getOperatingSystem() != Utilities.OS_SOLARIS) {
             ProcessInfoProvider pip = instance.getProvider(execEnv, 0);
             assertNull(pip);
+            return;
+        }
+
+        // Be sure that Factory returns not null value and
+        // that provider returns not null info
+        long timeBefore = System.nanoTime();
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        assertNotNull(hostInfo);
+
+        Process p = new ProcessBuilder(hostInfo.getShell(), "-c", "/bin/echo $$ && sleep 100").start();
+        try {
+            int pid = new Scanner(p.getInputStream()).nextInt();
+
+            ProcessInfoProvider pip = instance.getProvider(execEnv, pid);
+            assertNotNull(pip);
+
+            ProcessInfo info = pip.getProcessInfo();
+            assertNotNull(info);
+
+            long processStartTime = info.getCreationTimestamp(TimeUnit.NANOSECONDS);
+            long timeAfter = System.nanoTime();
+            assertTrue(0 < processStartTime - timeBefore);
+            assertTrue(0 < timeAfter - processStartTime);
+        } finally {
+            p.destroy();
         }
     }
 
-    @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
-    public void testGetProcessInfo() {
-        try {
-            System.out.println("getProcessInfo");
-            ProcBasedProcessInfoProviderFactory instance = new ProcBasedProcessInfoProviderFactory();
-            ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-            HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
-            boolean isSolaris = hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS;
+    public void testGetProcessInfo() throws Exception {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ProcBasedProcessInfoProviderFactory instance = new ProcBasedProcessInfoProviderFactory();
 
-            if (!isSolaris) {
-                ProcessInfoProvider pip = instance.getProvider(execEnv, 0);
-                assertNull(pip);
-                return;
-            }
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        
+        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            ProcessInfoProvider pip = instance.getProvider(execEnv, 0);
+            assertNull(pip);
+            return;
+        }
 
-            long lastTS = -1;
+        long[] startTimes = new long[3];
 
-            Process[] processes = new Process[3];
+        for (int i = 0; i < 3; i++) {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(hostInfo.getShell()).setArguments("-c", "/bin/echo $$ && sleep 100");
+            Process p = npb.call();
+            try {
+                int pid = new Scanner(p.getInputStream()).nextInt();
 
-            for (int i = 0; i < 3; i++) {
-                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-                npb.setExecutable("/bin/sh").setArguments("-c", "/bin/echo $$ && sleep 5");
-                Process p = npb.call();
-                processes[i] = p;
-                String pid = new BufferedReader(new InputStreamReader(p.getInputStream())).readLine();
-                ProcessInfoProvider pip = instance.getProvider(execEnv, Integer.parseInt(pid));
+                ProcessInfoProvider pip = instance.getProvider(execEnv, pid);
                 assertNotNull(pip);
+
                 ProcessInfo info = pip.getProcessInfo();
                 assertNotNull(info);
-                long processStartTime = info.getCreationTimestamp(TimeUnit.MILLISECONDS);
 
-                if (lastTS > 0) {
-                    assertTrue(processStartTime - lastTS < 2000);
-                }
-
-                lastTS = processStartTime;
+                startTimes[i] = info.getCreationTimestamp(TimeUnit.NANOSECONDS);
+            } finally {
+                p.destroy();
             }
-
-            for (int i = 0; i < 3; i++) {
-                if (processes[i] != null) {
-                    try {
-                        processes[i].waitFor();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            fail();
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-            fail();
         }
+
+        assertTrue(0 < startTimes[1] - startTimes[0]);
+        assertTrue(0 < startTimes[2] - startTimes[1]);
     }
 }

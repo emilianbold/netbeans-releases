@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -75,11 +79,11 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -146,7 +150,7 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
         
         for (FileObject file : sources[0]) {
-            if (TaskCache.getDefault().isInError(file, true)) {
+            if (ErrorsCache.isInError(file, true)) {
                 JButton btnRunAnyway = new JButton();
                 org.openide.awt.Mnemonics.setLocalizedText(btnRunAnyway, org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway"));
                 btnRunAnyway.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSN_BTN_RunAnyway"));
@@ -260,9 +264,15 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            File index = JavaIndex.getClassFolder(sr.getURL(), true);
+            URL srURL = sr.getURL();
+            File index = JavaIndex.getClassFolder(srURL, true);
 
             if (index == null) {
+                //#181992: (not nice) ignore the annotation processing target directory:
+                if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                    continue;
+                }
+                
                 return null;
             }
 
@@ -639,8 +649,13 @@ public class BuildArtifactMapperImpl {
         private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();
         private final Map<FileObject, Reference<Status>> file2Status = new WeakHashMap<FileObject, Reference<Status>>();
 
-        public synchronized Status getStatus(FileObject file) {
-            Reference<Status> statusRef = file2Status.get(file);
+        public Status getStatus(FileObject file) {
+            Reference<Status> statusRef;
+
+            synchronized(this) {
+                statusRef = file2Status.get(file);
+            }
+            
             Status result = statusRef != null ? statusRef.get() : null;
 
             if (result != null) {
@@ -670,18 +685,25 @@ public class BuildArtifactMapperImpl {
                 File target = getTarget(owner.getURL());
                 File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
 
-                Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
-                FileChangeListenerImpl l = ref != null ? ref.get() : null;
+                synchronized(this) {
+                    Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
+                    FileChangeListenerImpl l = ref != null ? ref.get() : null;
 
-                if (l == null) {
-                    file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
-                    listener2File.put(l, tagFile);
-                    FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                    if (l == null) {
+                        file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
+                        listener2File.put(l, tagFile);
+                        FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                    }
+
+                    Reference<Status> prevRef = file2Status.get(file);
+                    result = prevRef != null ? prevRef.get() : null;
+
+                    if (result == null) {
+                        file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
+                    }
+
+                    return result;
                 }
-
-                file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
-
-                return result;
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
                 return null;

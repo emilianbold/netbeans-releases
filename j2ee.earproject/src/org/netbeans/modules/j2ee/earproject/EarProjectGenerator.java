@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -132,8 +135,9 @@ public final class EarProjectGenerator {
         this.j2eeProfile = j2eeProfile;
         this.serverInstanceID = serverInstanceID;
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";       
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel != null && (sourceLevel.equals("1.7")))
+            sourceLevel = "1.6";
         this.sourceLevel = sourceLevel;
         this.librariesDefinition = librariesDefinition;
         this.serverLibraryName = serverLibraryName;
@@ -627,21 +631,15 @@ public final class EarProjectGenerator {
         }
         ep.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
 
-        Deployment deployment = Deployment.getDefault();
-        ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
-        
-        if (h.isSharableProject() && serverLibraryName != null) {
-            ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
-        }
-        
         String srcLevel = sourceLevel;
         if (srcLevel == null) {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
             srcLevel = v.toString();
             // #89131: these levels are not actually distinct from 1.5.
-            if (srcLevel.equals("1.6") || srcLevel.equals("1.7"))
-                srcLevel = "1.5";       
+            // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+            if (srcLevel.equals("1.7"))
+                srcLevel = "1.6";
         }
         ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel); //NOI18N
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
@@ -667,7 +665,7 @@ public final class EarProjectGenerator {
         
         EditableProperties privateEP = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        EarProjectProperties.storeJ2EEServerProperties(serverInstanceID, p, ep, privateEP, serverLibraryName);
+        J2EEProjectProperties.setServerProperties(ep, privateEP, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.EAR);
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
@@ -701,8 +699,9 @@ public final class EarProjectGenerator {
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 // #89131: these levels are not actually distinct from 1.5.
                                 String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                                    srcLevel = "1.5";
+                                // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+                                if (sourceLevel.equals("1.7"))
+                                    srcLevel = "1.6";
                                 ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
                                 ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -717,20 +716,6 @@ public final class EarProjectGenerator {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-    }
-    
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':');
-            }
-        }
-        return classpath.toString();
     }
     
     private FileObject getJavaRoot(final FileObject moduleRoot) throws IOException {

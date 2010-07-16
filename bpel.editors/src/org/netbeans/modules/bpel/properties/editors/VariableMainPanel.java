@@ -45,7 +45,6 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Reference;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 /**
  * @author nk160297
@@ -157,9 +156,11 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
             }
             //
             if (model != null){
+                // Check if the model visible implicitly
                 new ImportRegistrationHelper(var.getBpelModel()).addImport(model);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
         return true;

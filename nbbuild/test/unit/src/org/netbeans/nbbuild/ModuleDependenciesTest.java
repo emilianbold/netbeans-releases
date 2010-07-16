@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -331,34 +334,19 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        // this will succeed, limit of 5 is ok
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
-        if (!res.equals(
+        assertEquals(
             "MODULE my.another.module (base)\n" +
             "  FRIEND my.module (extra)\n" +
             "  FRIEND my.very.public.module (extra)\n" +
+            "  WARNING: excessive number of intercluster friends (2)\n" +
             "  PACKAGE friend.recursive\n" +
             "  PACKAGE friend.recursive.sub\n" +
             "  PACKAGE friend.there\n" +
-            ""
-        )) {
-            fail("Unexpected res:\n" + res);
-        }
-        
-        
-        friendPkg.delete();
-        
-        try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
-            fail("This should fail");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
-            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
-                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
-            }
-        }
+            "", res);
     }
     
     public void testThereExternalsAreCountedAsWell() throws Exception {
@@ -408,34 +396,19 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        // this will succeed, limit of 5 is ok
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
-        if (!res.equals(
+        assertEquals(
             "MODULE my.another.module (base)\n" +
             "  EXTERNAL my.module\n" +
             "  EXTERNAL my.very.public.module\n" +
+            "  WARNING: excessive number of intercluster friends (2)\n" +
             "  PACKAGE friend.recursive\n" +
             "  PACKAGE friend.recursive.sub\n" +
             "  PACKAGE friend.there\n" +
-            ""
-        )) {
-            fail("Unexpected res:\n" + res);
-        }
-        
-        
-        friendPkg.delete();
-        
-        try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
-            fail("This should fail");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
-            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
-                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
-            }
-        }
+            "", res);
     }
     
     public void testPublicPackagesOfAModuleThatDoesNotDefineThemButTheyAreProvidedByModuleTheModuleDependsOn () throws Exception {
@@ -563,11 +536,11 @@ public class ModuleDependenciesTest extends NbTestCase {
             "    <input name=\"ignore\" >" +
             "      <jars dir='" + parent + "' > " +
             "        <include name='" + ignoreModule.getName () + "' />" +
-            "        <include name='" + hugeModule.getName () + "' />" +
             "      </jars>" +
             "    </input>" +
             "    <input name=\"ahoj\" >" +
             "      <jars dir='" + parent + "' > " +
+            "        <include name='" + hugeModule.getName () + "' />" +
             "        <include name='" + withoutPkgs.getName () + "' />" +
             "      </jars>" +
             "    </input>" +
@@ -1390,7 +1363,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
     }
     
-    public void testPrintNamesOfPackagesSharedBetweenMoreModules () throws Exception {
+    public void testPrintNamesOfPackagesSharedBetweenMoreModules() throws Exception {
         File notAModule = generateJar (new String[] { "org/shared/not/X.class", "org/shared/yes/X.html" }, createManifest ());
         
         Manifest m = createManifest ();
@@ -1434,7 +1407,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         String res = readFile (output);
         
-        assertEquals ("No not package", -1, res.indexOf ("not"));
+        assertEquals("No not package: '" + res + "'", -1, res.indexOf("org.shared.not"));
         assertEquals ("No default pkg", -1, res.indexOf ("\n\n"));
         assertEquals ("No ork pkg", -1, res.indexOf ("org\n"));
         assertEquals ("No ork pkg", -1, res.indexOf ("org/shared\n"));

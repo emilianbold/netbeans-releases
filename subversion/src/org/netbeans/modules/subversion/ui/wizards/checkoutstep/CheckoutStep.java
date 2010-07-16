@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,6 +81,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     
     private CheckoutPanel workdirPanel;
     private RepositoryPaths repositoryPaths;
+    private boolean invalidTarget;
 
     @Override
     public HelpCtx getHelp() {    
@@ -111,7 +115,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                         workdirPanel.repositoryPathTextField, 
                         workdirPanel.browseRepositoryButton, 
                         workdirPanel.revisionTextField, 
-                        workdirPanel.searchRevisionButton
+                        workdirPanel.searchRevisionButton,
+                        workdirPanel.browseRevisionButton
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CheckoutStep.class, "LBL_BrowserMessage");
             int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
@@ -136,13 +141,15 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             if (file.exists() == false) {
                 boolean done = file.mkdirs();
                 if (done == false) {
-                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2013") + file.getPath(), false));// NOI18N
+                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2013") + file.getPath(), false));// NOI18N
+                    invalidTarget = true;
                 }
             }
         }
     }
 
     private boolean validateUserInput(boolean full) {                
+        invalidTarget = false;
         if(repositoryPaths != null) {
             try {           
                 repositoryPaths.getRepositoryFiles();
@@ -283,7 +290,11 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
 
     public void focusLost(FocusEvent e) {
-        validateUserInput(true);
+        if (!invalidTarget) {
+            // click on Finish triggers in a series of focus events which results in deletion of the invalid target message
+            // so do not validate when Finish is clicked and the message is shown
+            validateUserInput(true);
+        }
         repositoryFoldersChanged();
     }
         
@@ -326,6 +337,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public boolean isAtWorkingDirLevel() {
         return workdirPanel.atWorkingDirLevelCheckBox.isSelected();
+    }
+
+    public boolean isExport() {
+        return workdirPanel.exportCheckBox.isSelected();
     }
 
     private void repositoryFoldersChanged() {

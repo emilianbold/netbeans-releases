@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CancellationException;
@@ -48,6 +52,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -55,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -106,6 +112,34 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //        }
 //    }
 
+    @org.junit.Test
+    public void testCpuFamily() throws Exception {
+        class Pair {
+            public Pair(String mspec, HostInfo.CpuFamily cpuFamily) {
+                this.mspec = mspec;
+                this.cpuFamily = cpuFamily;
+            }
+            public final String mspec;
+            public final HostInfo.CpuFamily cpuFamily;
+        }
+        Pair[] pairs = new Pair[] {
+            new Pair("intel-S2", HostInfo.CpuFamily.X86),
+            new Pair("sparc-S2", HostInfo.CpuFamily.SPARC),
+            new Pair("intel-Linux", HostInfo.CpuFamily.X86)
+//            new Pair("intel-FreeBSD", HostInfo.CpuFamily.X86)
+        };
+        for (Pair pair : pairs) {
+            ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(pair.mspec);
+            if (env == null) {
+                System.err.printf("Warning: execution environment not found for mspec {0}\n" + pair.mspec);
+            } else {
+                ConnectionManager.getInstance().connectTo(env);
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                assertEquals("CPU family for " + env, pair.cpuFamily, hostInfo.getCpuFamily());
+            }
+        }
+    }
+
     /**
      * This test assures that only first call to getHostInfo does the job.
      * So any subsequent call should return cached result.
@@ -117,9 +151,9 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
      */
     @org.junit.Test
     public void testMultipleGetInfo() {
-        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
-
         final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+
+        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
 
         try {
             // Reset hosts data - it may be already collected in previous tests
@@ -130,6 +164,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
             Thread fetchingThread = new Thread(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         HostInfoUtils.getHostInfo(local);
@@ -230,7 +265,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //            System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "false"); // NOI18N
 //        }
 //    }
-
 //    @Test
 //    public void testGetPlatformLocal() throws Exception {
 //        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
@@ -264,12 +298,10 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //                break;
 //        }
 //    }
-
 //    @Test
 //    public void testGetPlatformRemote() throws Exception {
 //        testGetPlatform("my_host", "my_login", 22, "pwd", "SOLARIS", "86");
 //    }
-
 //    private void testGetPlatform(String host, String user, int port, String passwd,
 //            String osTypeShouldContain, String hardwareTypeShouldContain) throws Exception {
 //        ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(user, host, port);
@@ -320,7 +352,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
             assertNull(result);
         } finally {
-            CommonTasksSupport.rmDir(env, testDir, true, null);
+            CommonTasksSupport.rmDir(env, testDir, true, new PrintWriter(System.err));
         }
 
     }
@@ -334,6 +366,11 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         assertNotNull(info);
 
         if (info.getShell() == null) {
+            return;
+        }
+
+        if (!info.getOSFamily().isUnix()) {
+            System.out.println("Skipped on " + info.getOSFamily().name()); // NOI18N
             return;
         }
 
@@ -383,27 +420,30 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         assertNotNull(info);
 
         if (info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
+            System.out.println("Skipped on " + info.getOSFamily().name()); // NOI18N
             return;
         }
 
-        File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
-        testDir.mkdir();
-        File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
-        testFile.createNewFile();
+        final File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
+
+        if (!testDir.exists()) {
+            boolean mkdirResult = testDir.mkdir();
+            assertTrue("Failed to create directory " + testDir, mkdirResult); // NOI18N
+        }
+
+        final File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
+
+        assertTrue("Cannot create test file in " + testDir, testFile.exists() && testFile.canWrite()); // NOI18N
 
         System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
-        try {
 
+        try {
             String result;
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", testDir.getAbsolutePath()), testFile.getName(), true); // NOI18N
             assertNotNull(result);
 
-            if (info.getShell() != null) {
-                assertEquals(result, WindowsSupport.getInstance().convertToShellPath(testFile.getCanonicalPath()));
-            } else {
-                assertEquals(result, testFile.getCanonicalPath());
-            }
+            assertEquals(testFile.getCanonicalPath(), result);
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", "c:\\Windows\\system32"), "cmd.exe", true); // NOI18N
             assertNotNull(result);
@@ -411,10 +451,8 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", true); // NOI18N
             assertNotNull(result);
 
-            if (info.getShell() != null) {
-                result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", WindowsSupport.getInstance().convertToShellPath("c:\\Windows\\system32")), "cmd.exe", false); // NOI18N
-                assertNotNull(result);
-            }
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows\\system32"), "cmd.exe", false); // NOI18N
+            assertNotNull(result);
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", false); // NOI18N
             assertNull(result);
@@ -426,7 +464,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             testDir.delete();
         }
     }
-
 //    private void testLoggers() {
 //        Logger logger = Logger.getAnonymousLogger();
 //        logger.setLevel(Level.FINEST);

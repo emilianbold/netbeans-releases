@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,23 +43,15 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
-import org.netbeans.modules.php.dbgp.SessionProgress;
-import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.w3c.dom.Node;
 
-
 /**
- * @author ads
+ * @author Radek Matous
  *
  */
 public class StatusResponse extends DbgpResponse {
-
-    private static final String REASON = "reason";        
-    
+    private static final String REASON = "reason";            
     private static final String STATUS = "status";
     
     StatusResponse( Node node ) {
@@ -82,45 +77,6 @@ public class StatusResponse extends DbgpResponse {
         Reason reason = getReason();
         assert status != null;
         assert reason != null;
-        dbgSession.setStatus(status);
-        if (status.isBreak() &&  reason.isOK()) {
-            StackGetCommand getCommand = new StackGetCommand(dbgSession.getTransactionId());
-            dbgSession.sendCommandLater(getCommand);
-            IDESessionBridge bridge = dbgSession.getBridge();
-            if (bridge != null) {
-                bridge.setSuspended( true );
-                updateThreadsModel(bridge, dbgSession);
-            }
-        } else if ((status.isStopping() || status.isStopped()) && reason.isOK()) {
-            StopCommand stopCommand = new StopCommand( dbgSession.getTransactionId() );
-            dbgSession.sendCommandLater(stopCommand);
-            dbgSession.cancel();
-            if (dbgSession.getOptions().isDebugForFirstPageOnly()) {
-                SessionProgress sp = SessionProgress.forSessionId(dbgSession.getSessionId());
-                if (sp != null) {
-                    sp.cancel();
-                    return;
-                }
-            }
-            setNextSessionAsCurrent();
-        }
-    }
-
-    //written with js debugger in mind (although probably would be  better to handle it in js code)
-    private void setNextSessionAsCurrent() {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            if (session.lookupFirst(null, DebugSession.class) == null) {
-                DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                break;
-            }
-        }
-    }
-
-    private static void updateThreadsModel(IDESessionBridge bridge, DebugSession dbgSession) {
-        ThreadsModel threadsModel = bridge.getThreadsModel();
-        if (threadsModel != null) {
-            threadsModel.updateSession(dbgSession);
-        }
+        dbgSession.processStatus(status, reason, command);
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,14 +45,13 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Vector;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -60,15 +62,16 @@ import org.openide.util.RequestProcessor;
  */
 public class PredefinedPanel extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP = new RequestProcessor("Reset Compiler Settings", 2); // NOI18N
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
-    private CCCCompiler compiler;
+    private AbstractCompiler compiler;
     private ParserSettingsPanel parserSettingsPanel;
 
     private boolean settingsReseted = false;
 
     /** Creates new form PredefinedPanel */
-    public PredefinedPanel(CCCCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
+    public PredefinedPanel(AbstractCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
@@ -78,25 +81,26 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         setOpaque(false);
     }
-    private static final int INSETS = 0;
-    private static final double WEIGTH = 0.1;
 
     private void updatePanels(final boolean reset) {
-        RequestProcessor.getDefault().post(new Runnable(){
+        RP.post(new Runnable(){
+            @Override
             public void run() {
                 if (reset) {
-                    compiler.resetSystemIncludesAndDefines();
+                    compiler.resetSystemProperties();
                 }
                 final List<String> includesList = compiler.getSystemIncludeDirectories();
                 final List<String> definesList = compiler.getSystemPreprocessorSymbols();
 
                 SwingUtilities.invokeLater(new Runnable(){
+                    @Override
                     public void run() {
                         if (includesPanel != null) {
                             includes.remove(includesPanel);
                         }
                         includes.add(includesPanel = new IncludesPanel(includesList));
                         Collections.sort(definesList, new Comparator<String>() {
+                            @Override
                             public int compare(String s1, String s2) {
                                 return s1.compareToIgnoreCase(s2);
                             }
@@ -123,9 +127,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
         boolean wasChanges = settingsReseted;
         settingsReseted = false;
         if (includesPanel != null && definitionsPanel != null) {
-            Vector<String> tmpIncludes = includesPanel.getListData();
+            List<String> tmpIncludes = includesPanel.getListData();
             wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
-            Vector<String> definitions = definitionsPanel.getListData();
+            List<String> definitions = definitionsPanel.getListData();
             wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         }
         return wasChanges;
@@ -138,8 +142,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
         updatePanels(false);
     }
 
-    public void updateCompiler(CCCCompiler compiler) {
+    public void updateCompiler(AbstractCompiler compiler) {
         this.compiler = compiler;
+        updatePanels(false);
     }
 
     /** This method is called from within the constructor to
@@ -177,37 +182,34 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         jLabel1.setText(bundle.getString("CODE_ASSISTANCE_COMMENT")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(includes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, macros, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(resetButton)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                .addComponent(macros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(resetButton)))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(includes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(macros, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(resetButton)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(macros, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(resetButton)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
-        String txt = getString("RESET_QUESTION"); // NOI18N
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-            updatePanels(true);
-        }
+        // This can be undone now. No need to show confirmation dialog.
+        updatePanels(true);
     }//GEN-LAST:event_resetButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel includes;
@@ -296,8 +298,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);
@@ -399,8 +401,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

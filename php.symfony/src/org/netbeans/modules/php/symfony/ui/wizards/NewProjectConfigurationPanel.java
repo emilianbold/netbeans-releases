@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,10 +42,7 @@
 
 package org.netbeans.modules.php.symfony.ui.wizards;
 
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -52,15 +52,16 @@ import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -74,8 +75,8 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik
  */
-public class NewProjectConfigurationPanel extends JPanel {
-    private static final long serialVersionUID = -1785087564128594L;
+public final class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
+    private static final long serialVersionUID = -1785087654312318594L;
     private static final String APP_FRONTEND = "frontend"; // NOI18N
     private static final String APP_BACKEND = "backend"; // NOI18N
     private static final Pattern APP_NAME_PATTERN = Pattern.compile("\\S+"); // NOI18N
@@ -110,11 +111,24 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherParamsTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
         generateProjectLabel.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 enableOptionsLabel();
             }
         });
         enableOptionsLabel();
+    }
+
+    @Override
+    public void addNotify() {
+        SymfonyOptions.getInstance().addChangeListener(this);
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        SymfonyOptions.getInstance().removeChangeListener(this);
+        super.removeNotify();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -209,6 +223,7 @@ public class NewProjectConfigurationPanel extends JPanel {
 
     private void initApp(JCheckBox nameCheckBox, final JLabel paramsLabel, final JTextField paramsTextField, final JTextField nameTextField) {
         nameCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 visibleApp(e.getStateChange() == ItemEvent.SELECTED, paramsLabel, paramsTextField, nameTextField);
             }
@@ -246,69 +261,7 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherParamsTextField = new JTextField();
         infoLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return otherParamsTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return otherParamsTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return otherParamsTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  backendCheckBox){
-                    return backendParamsTextField;
-                }
-                if(aComponent ==  otherCheckBox){
-                    return otherNameTextField;
-                }
-                if(aComponent ==  projectParamsTextField){
-                    return frontendCheckBox;
-                }
-                if(aComponent ==  backendParamsTextField){
-                    return otherCheckBox;
-                }
-                if(aComponent ==  frontendCheckBox){
-                    return frontendParamsTextField;
-                }
-                if(aComponent ==  frontendParamsTextField){
-                    return backendCheckBox;
-                }
-                if(aComponent ==  otherNameTextField){
-                    return otherParamsTextField;
-                }
-                return otherParamsTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  backendParamsTextField){
-                    return backendCheckBox;
-                }
-                if(aComponent ==  otherNameTextField){
-                    return otherCheckBox;
-                }
-                if(aComponent ==  frontendCheckBox){
-                    return projectParamsTextField;
-                }
-                if(aComponent ==  otherCheckBox){
-                    return backendParamsTextField;
-                }
-                if(aComponent ==  frontendParamsTextField){
-                    return frontendCheckBox;
-                }
-                if(aComponent ==  backendCheckBox){
-                    return frontendParamsTextField;
-                }
-                if(aComponent ==  otherParamsTextField){
-                    return otherNameTextField;
-                }
-                return otherParamsTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         generateProjectLabel.setLabelFor(frontendCheckBox);
         Mnemonics.setLocalizedText(generateProjectLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.text")); // NOI18N
@@ -350,93 +303,93 @@ public class NewProjectConfigurationPanel extends JPanel {
         infoLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(backendParamsLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(backendParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
-                    .add(backendCheckBox))
-                .add(0, 0, 0))
-            .add(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(backendParamsLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(backendParamsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                    .addComponent(backendCheckBox))
+                .addGap(0, 0, 0))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(otherParamsLabel))
-                    .add(otherCheckBox))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(otherParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
-                    .add(otherNameTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
-                .add(0, 0, 0))
-            .add(layout.createSequentialGroup()
-                .add(generateProjectLabel)
-                .addPreferredGap(LayoutStyle.RELATED, 290, Short.MAX_VALUE)
-                .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(29, 29, 29)
-                .add(frontendParamsLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(frontendParamsTextField, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(otherParamsLabel))
+                    .addComponent(otherCheckBox))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(otherParamsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .addComponent(otherNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(generateProjectLabel)
+                .addPreferredGap(ComponentPlacement.RELATED, 290, Short.MAX_VALUE)
+                .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(29, 29, 29)
+                .addComponent(frontendParamsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(frontendParamsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(frontendCheckBox)
+                .addComponent(frontendCheckBox)
                 .addContainerGap(367, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectParamsLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(projectParamsTextField, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(generateAppsLabel)
+                .addComponent(projectParamsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(projectParamsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(generateAppsLabel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(generateProjectLabel)
-                    .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(projectParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(projectParamsLabel))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(generateAppsLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(frontendCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(frontendParamsLabel)
-                    .add(frontendParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(backendCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(backendParamsLabel)
-                    .add(backendParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(otherCheckBox)
-                    .add(otherNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(otherParamsLabel)
-                    .add(otherParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(generateProjectLabel)
+                    .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(projectParamsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(projectParamsLabel))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(generateAppsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(frontendCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(frontendParamsLabel)
+                    .addComponent(frontendParamsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(backendCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(backendParamsLabel)
+                    .addComponent(backendParamsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(otherCheckBox)
+                    .addComponent(otherNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(otherParamsLabel)
+                    .addComponent(otherParamsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         generateProjectLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -503,23 +456,32 @@ public class NewProjectConfigurationPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultItemListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }
         private void processUpdate() {
             fireChange();
         }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
     }
 }

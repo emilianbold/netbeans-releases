@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,7 +74,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         collectionTypeComboBox.setSelectedIndex(0);
     }
     
-    public void initialize(CollectionType collectionType, FetchType fetchType, boolean fullyQualifiedTblName, boolean regenSchemaAttrs) {
+    public void initialize(CollectionType collectionType, FetchType fetchType, boolean fullyQualifiedTblName, boolean regenSchemaAttrs, boolean useColumnNamesInRelationships) {
         
         switch(fetchType) {
             case EAGER:
@@ -99,6 +102,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         
         tableNameCheckBox.setSelected(fullyQualifiedTblName);
         regenTablesCheckBox.setSelected(regenSchemaAttrs);
+        relationshipColumnNamesCheckBox.setSelected(useColumnNamesInRelationships);
     }
     
     public FetchType getFetchType() {
@@ -131,6 +135,10 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         return regenTablesCheckBox.isSelected();
     }
 
+    public boolean isUseColumnNamesInRelationships() {
+        return relationshipColumnNamesCheckBox.isSelected();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -149,6 +157,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         descLabel = new javax.swing.JLabel();
         collectionTypeLabel = new javax.swing.JLabel();
         collectionTypeComboBox = new javax.swing.JComboBox();
+        relationshipColumnNamesCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_MappingOptions")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -189,7 +198,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         add(regenTablesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -219,6 +228,15 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(collectionTypeComboBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(relationshipColumnNamesCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.relationshipColumnNamesCheckBox.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(relationshipColumnNamesCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -230,6 +248,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fetchLabel;
     private javax.swing.JPanel paddingPanel;
     private javax.swing.JCheckBox regenTablesCheckBox;
+    private javax.swing.JCheckBox relationshipColumnNamesCheckBox;
     private javax.swing.JCheckBox tableNameCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -267,8 +286,9 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
                 FetchType fetchType = helper.getFetchType();
                 boolean fullTblName = helper.isFullyQualifiedTableNames();
                 boolean regenSchema = helper.isRegenTablesAttrs();
+                boolean useColumnNamesInRelationships = helper.isUseColumnNamesInRelationships();
                 CollectionType clcType = helper.getCollectionType();
-                getComponent().initialize(clcType, fetchType, fullTblName, regenSchema);
+                getComponent().initialize(clcType, fetchType, fullTblName, regenSchema, useColumnNamesInRelationships);
             }
         }
 
@@ -282,6 +302,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
             helper.setFetchType(mPanel.getFetchType());
             helper.setFullyQualifiedTableNames(mPanel.isFullyQualifiedTableName());
             helper.setRegenTablesAttrs(mPanel.isRegenSchemaAttributes());
+            helper.setUseColumnNamesInRelationships(mPanel.isUseColumnNamesInRelationships());
             helper.setCollectionType(mPanel.getCollectionType());
         }
 

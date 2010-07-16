@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -248,7 +251,9 @@ public final class DependenciesResolver {
         return val == null ? null : resolveFileObject(val);
     }
 
+    public static final Logger LOGGER = Logger.getLogger(DependenciesResolver.class.getName());
     public void save(JCProject project, ResolvedDependencies dependencies, Element cfgRoot) throws IOException {
+        LOGGER.log (Level.FINER, "Save project metadata {0}", project.getProjectDirectory()); //NOI18N
 //        assert !EventQueue.isDispatchThread() : "Saving project props on EQ not allowed"; //NOI18N
         if (!ProjectManager.mutex().isWriteAccess()) {
             throw new IllegalStateException("Not in ProjectManager.mutex().writeAccess()"); //NOI18N
@@ -298,6 +303,7 @@ public final class DependenciesResolver {
             el.setAttribute(DependenciesParser.ID, dep.getID());
             el.setAttribute(DependenciesParser.KIND, dep.getKind().name());
             el.setAttribute(DependenciesParser.DEPLOYMENT_STRATEGY, dep.getDeploymentStrategy().name());
+            LOGGER.log (Level.FINER, "Created element {0} for {1} ({2})", new Object[] { el, dep, r}); //NOI18N
             nue.appendChild(el);
         }
         cfgRoot.appendChild(nue);
@@ -349,6 +355,7 @@ public final class DependenciesResolver {
                 sb.append(f.getAbsolutePath());
             }
         }
+        LOGGER.log (Level.FINER, "Set deprecated class.path prop to {0}", sb); //NOI18N
         pubProps.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
         project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pubProps);
         try {

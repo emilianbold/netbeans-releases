@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import org.netbeans.modules.form.RADVisualComponent.MenuType;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
@@ -290,7 +293,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     private static Class[] getPossibleSubmenus(MenuType menuContainerType) {
         if (supportedMenus == null) {
-            supportedMenus = new HashMap<MenuType, Class[]>();
+            supportedMenus = new EnumMap<MenuType, Class[]>(MenuType.class);
             supportedMenus.put(MenuType.JMenuBar, new Class[] { JMenu.class });
             supportedMenus.put(MenuType.JMenu,
                                new Class[] { JMenuItem.class,
@@ -325,6 +328,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     // the following methods implement ComponentContainer interface
 
     /** @return all subcomponents (including the menu component) */
+    @Override
     public RADComponent[] getSubBeans() {
         int n = subComponents.size();
         if (containerMenu != null)
@@ -338,6 +342,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
             subComponents = new ArrayList<RADVisualComponent>(initComponents.length);
@@ -360,6 +365,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             refillContainerInstance();
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADVisualComponent[] components = new RADVisualComponent[subComponents.size()];
         LayoutConstraints[] constraints;
@@ -387,6 +393,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void add(RADComponent comp) {
         add(comp, -1);
     }
@@ -419,6 +426,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (comp == containerMenu) {
             containerMenu = null;
@@ -431,11 +439,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             else {
                 getContainerDelegate(getBeanInstance()).remove(index);
             }
-            if (subComponents.remove(comp))
+            if (subComponents.remove((RADVisualComponent)comp))
                 comp.setParentComponent(null);
         }
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         if (comp != null && comp == containerMenu)
             return subComponents.size();

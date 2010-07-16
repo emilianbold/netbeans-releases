@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.servlet.jsp.tagext.TagData;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
@@ -81,10 +86,16 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.common.taginfo.AttrValueType;
+import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
+import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
+import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
+import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -187,7 +198,11 @@ public class JsfHtmlExtension extends HtmlExtension {
 
                             if (node.getNamespacePrefix() != null) {
                                 Set<ColoringAttributes> coloring = tldl == null ? ColoringAttributes.CLASS_SET : ColoringAttributes.METHOD_SET;
-                                highlight(snapshot, node, highlights, coloring);
+                                try {
+                                    highlight(snapshot, node, highlights, coloring);
+                                } catch (BadLocationException ex) {
+                                    //just ignore
+                                }
                             }
                         }
                     }
@@ -197,7 +212,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void highlight(Snapshot s, AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) {
+    private void highlight(Snapshot s, AstNode node, Map<OffsetRange, Set<ColoringAttributes>> hls, Set<ColoringAttributes> cas) throws BadLocationException {
         // "<div" id='x'> part
         int prefixLen = node.type() == AstNode.NodeType.OPEN_TAG ? 1 : 2; //"<" open; "</" close
         hls.put(getDocumentOffsetRange(s, node.startOffset(), node.startOffset() + node.name().length() + prefixLen /* tag open symbol len */),
@@ -208,8 +223,15 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private OffsetRange getDocumentOffsetRange(Snapshot s, int astFrom, int astTo) {
-        return new OffsetRange(s.getOriginalOffset(astFrom), s.getOriginalOffset(astTo));
+    private OffsetRange getDocumentOffsetRange(Snapshot s, int astFrom, int astTo) throws BadLocationException {
+        int from = s.getOriginalOffset(astFrom);
+        int to = s.getOriginalOffset(astTo);
+
+        if(from == -1 || to == -1) {
+            throw new BadLocationException("Cannot convert snapshot offset to document offset", -1); //NOI18N
+        }
+
+        return new OffsetRange(from, to);
     }
 
     @Override
@@ -319,31 +341,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         FaceletsLibrary flib = libs.get(namespace);
         if(flib == null) {
-            //#171735 - strange, how can the flib be null???
-            StringBuffer msg = new StringBuffer();
-
-            msg.append("Cannot find facelets library when completing tag " + queriedNode.toString() +
-                    ", namespace prefix=" + nsPrefix +
-                    ", namespace = " + namespace +
-                    ", declared libraries: "); //NOI18N
-
-            for(String uri : declaredNS.keySet()) {
-                msg.append(uri);
-                msg.append(" => "); //NOI18N
-                msg.append(declaredNS.get(uri));
-                msg.append(", "); //NOI18N
-            }
-
-            msg.append(", facelets libraries: "); //NOI18N
-
-            for(String uri : libs.keySet()) {
-                msg.append(uri);
-                msg.append(" => "); //NOI18N
-                msg.append(declaredNS.get(uri));
-                msg.append(", "); //NOI18N
-            }
-            throw new IllegalStateException(msg.toString());
-            //<<< end of issue debug
+	    //The facelets library not found. This happens if one declares
+	    //a namespace which is not matched to any existing library
+            return Collections.emptyList();
         }
         
         TldLibrary.Tag tag = flib.getTag(tagName);
@@ -382,6 +382,42 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
+        String ns = context.getCurrentNode().getNamespace();
+        if(ns != null) {
+            String attrName = context.getAttributeName();
+            String tagName = context.getCurrentNode().getNameWithoutPrefix();
+            LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
+
+            if (lib != null){
+                TagMetadata tag = lib.getTag(tagName);
+
+                if (tag != null){
+                    TagAttrMetadata attr = tag.getAttribute(attrName);
+
+                    if (attr != null){
+                        Collection<AttrValueType> valueTypes = attr.getValueTypes();
+
+                        if (valueTypes != null){
+                            for (AttrValueType valueType : valueTypes){
+                                String[] possibleVals = valueType.getPossibleValues();
+
+                                if (possibleVals != null){
+                                    for (String val : possibleVals){
+                                        if (val.startsWith(context.getPrefix())){
+                                            CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
+                                                    context.getCCItemStartOffset());
+
+                                            items.add(itm);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
 
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) {
             //xml namespace completion for facelets namespaces
@@ -422,7 +458,8 @@ public class JsfHtmlExtension extends HtmlExtension {
                     if (component == null) {
                         return DeclarationLocation.NONE;
                     }
-                    FileObject file = component.getComponentModel().getSourceFile();
+		    CompositeComponentModel model = component.getComponentModel();
+                    FileObject file = model.getSourceFile();
 
                     //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
                     int astOffset = snapshot.getEmbeddedOffset(caretOffset);
@@ -536,8 +573,18 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
+    @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         //just delegate to the hints registry and add all gathered results
         hints.addAll(HintsRegistry.getDefault().gatherHints(context));
+    }
+
+    @Override
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
+	//inject composite component support
+	Hint injectCC = InjectCompositeComponent.getHint(context, start, end);
+	if(injectCC != null) {
+	    hints.add(injectCC);
+	}
     }
 }

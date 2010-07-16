@@ -25,10 +25,10 @@
         part of a module suite. Available NetBeans platforms are those that have been registered in the 
         <a href="../NbPlatformCustomizer.html">NetBeans Platform Manager</a>.</li>
         <li><b>Module Dependencies.</b> Displays an alphabetical list of declared module dependencies, 
-        from the <tt>nbproject/project.xml</tt> file. Each list entry is displayed as the module�s
+        from the <tt>nbproject/project.xml</tt> file. Each list entry is displayed as the module's
         localized display name. 
         <p>Click Add to <a href="../AddModulePanel.html">add a new module dependency</a>. The new dependency will initially request a
-        major release version and specification version as taken from the module�s manifest and be included in 
+        major release version and specification version as taken from the module's manifest and be included in
         the classpath if there are any available packages. The new dependency will be selected so that you may use Edit
         to <a href="EditDependencyPanel.html">customize</a> it immediately. If multiple dependencies were added, just one of them will be selected automatically.
         Click Remove to delete the selected item.
@@ -36,6 +36,10 @@
         Displays a list entry for each token (sorted alphabetically). <p>Click Add to select a token from a of all available tokens, 
         based on <tt>OpenIDE-Module-Provides</tt> of all available modules, as well as any special tokens defined by the Modules API. 
         Click Remove to delete the selected item.
+        <li><b>Wrapped JARs.</b> Bundles an external JAR file with the module. Note that this is not
+        a modular approach; ideally you would create a separate module containing the external JAR,
+        rather than including it in the same module where you want to use it. Click Export to
+        add the public classes in the JAR to the public interface of the module.
     </ul>
     <dl>
         <dt><a name="seealso">See Also</a></dt>

@@ -21,9 +21,9 @@ package org.netbeans.modules.bpel.mapper.predicates.editor;
 
 import org.netbeans.modules.bpel.mapper.model.GraphBuilderVisitor;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
-import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.BpelFinderListBuilder;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
@@ -37,7 +37,7 @@ public class PredicateGraphBuilderVisitor extends GraphBuilderVisitor {
     private XPathSchemaContext mSContext;
     
     public PredicateGraphBuilderVisitor(XPathSchemaContext sContext, 
-        Graph graph, MapperSwingTreeModel leftTreeModel, 
+        Graph graph, MapperSwingTreeModel leftTreeModel,
         boolean connectToTargetTree, BpelDesignContext context) {
         super(graph, leftTreeModel, connectToTargetTree, context);
         mSContext = sContext;
@@ -56,7 +56,9 @@ public class PredicateGraphBuilderVisitor extends GraphBuilderVisitor {
         LocationStep[] steps = path.getSteps();
         LocationStep lastLocationStep = steps[steps.length - 1];
         XPathSchemaContext sContext = lastLocationStep.getSchemaContext();
-        connectToLeftTree(FinderListBuilder.build(sContext));
+        if (sContext != null) {
+            connectToLeftTree(BpelFinderListBuilder.singl().build(sContext));
+        }
     }
     
 }

@@ -3,7 +3,10 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +18,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -66,7 +69,7 @@ help() {
     echo "      [-n|--netbeans]     <path to NetBeans (with CND) installation>"
     echo "                          (default is ${DWARF_TEST_NB_INSTALL})"
     echo "      [-c|--cnd]          <path to CND module installation>"
-    echo "                          (default is ${DWARF_TEST_NB_INSTALL}/cnd1)"
+    echo "                          (default is ${DWARF_TEST_NB_INSTALL}/cnd)"
     echo "      [-p|--path]         <path to g++ substitution script>"
     echo "                          (default is ${DWARF_TEST_PATH})"
     echo "      [-t|--temp]         <path to temporary files>"
@@ -90,7 +93,7 @@ set_defaults() {
     #DWARF_TEST_PATH="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"}
     DWARF_TEST_INSTALL="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"
     DWARF_TEST_NB_INSTALL="/opt/netbeans"
-    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd3"
+    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd"
 
     DWARF_TEST_PATH=${DWARF_TEST_PATH:-${BIN_DIR}}
     #DWARF_TEST_INSTALL="${DWARF_TEST_INSTALL:-${DWARF_TEST_PATH}/install}"
@@ -209,7 +212,7 @@ parse_params() {
  
      #### setting DWARF_TEST_CND_INSTALL (its default depends on parameters)
      if [ -z ${DWARF_TEST_CND_INSTALL} ]; then
-         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd1
+         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd
      fi
  
      platform=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-openide-util.jar | sed 's/\.\/\(.*\)\/lib.*/\1/'`

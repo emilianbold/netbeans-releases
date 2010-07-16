@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,34 +45,31 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.EventQueue;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-//import java.util.HashSet;
-//import java.util.Set;
-//import org.netbeans.api.project.FileOwnerQuery;
-//import org.netbeans.api.project.Project;
-//import org.netbeans.api.project.ProjectUtils;
-//import org.netbeans.api.project.ui.OpenProjects;
-//import org.openide.DialogDisplayer;
-//import org.openide.DialogDisplayer;
-//import org.openide.NotifyDescriptor;
-import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -84,18 +84,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
- * Open the layer file(s) declaring the SFS node.
- * 
- * @author Sandip Chitale
+ * Open the layer file or annotation declaring the SFS node.
  */
 public class OpenLayerFilesAction extends CookieAction {
 
-    protected void performAction(final Node[] activatedNodes) {
+    protected @Override void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
                     FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
                     openLayersForFile(f);
@@ -107,178 +105,161 @@ public class OpenLayerFilesAction extends CookieAction {
     }
 
     private void openLayersForFile(FileObject f) throws FileStateInvalidException {
-        FileSystem fs = f.getFileSystem();
-        while (fs instanceof LayerFileSystem) {
-            try {
-                FileSystem[] delegates = ((LayerFileSystem) fs).getLayerFileSystems();
-                if (delegates != null && delegates.length > 0) {
-                    fs = delegates[0];
-                    if (fs instanceof LayerFileSystem) {
-                        // keep going
-                        continue;
-                    } else if (fs instanceof WritableXMLFileSystem) {
-                        // Now, try other layer files visible to the module project
-                        for (int i = 0; i < delegates.length; i++) {
-                            fs = delegates[i];
-                            if (fs == null) {
-                                continue;
-                            }
-                            FileObject originalF = fs.findResource(f.getPath());
-                            if (fs instanceof WritableXMLFileSystem) {
-                                // Issue # 118839
-                                // Avoid CCE
-                                // try current module project's layer file.
-                                if (originalF != null) {
-                                    URL url = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-                                    FileObject layerFileObject = URLMapper.findFileObject(url);
-                                    if (layerFileObject != null) {
-                                        try {
-                                            DataObject layerDataObject = DataObject.find(layerFileObject);
-                                            openLayerFileAndFind(layerDataObject, originalF);
-                                        } catch (DataObjectNotFoundException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                }
-                            } else {
-                                URL[] urls = null;
-                                boolean isCandidate = originalF != null;
-                                if (fs instanceof XMLFileSystem) {
-                                    XMLFileSystem xMLFileSystem = (XMLFileSystem) fs;
-                                    // Have to use deprecated API to get all the Xml URLs
-                                    urls = xMLFileSystem.getXmlUrls();
-                                } else if (isCandidate) {
-                                    // try cached LFS layers
-                                    File jar = PlatformLayersCacheManager.findOriginatingJar(fs);
-                                    if (jar != null) {
-                                        ManifestManager mm = ManifestManager.getInstanceFromJAR(jar, true);
-                                        String layer = mm.getLayer();
-                                        String generatedLayer = mm.getGeneratedLayer();
-                                        List<URL> urll = new ArrayList<URL>(2);
-                                        URI juri = jar.toURI();
-                                        if (layer != null) {
-                                            urll.add(new URL("jar:" + juri + "!/" + layer));
-                                        }
-                                        if (generatedLayer != null) {
-                                            urll.add(new URL("jar:" + juri + "!/" + generatedLayer));
-                                        }
-                                        urls = urll.toArray(new URL[urll.size()]);
-                                    }
-                                }
-                                if (urls == null) {
-                                    continue;
-                                }
-                                for (URL url : urls) {
-                                    try {
-                                        // Build an XML FS for the given URL
-                                        XMLFileSystem aXMLFileSystem = new XMLFileSystem(url);
-                                        // Find the resource using the file path
-                                        originalF = aXMLFileSystem.findResource(f.getPath());
-                                        // Found?
-                                        if (originalF != null) {
-                                            // locate the layer's file object and open it
-                                            FileObject layerFileObject = URLMapper.findFileObject(url);
-                                            if (layerFileObject != null) {
-                                                try {
-                                                    DataObject layerDataObject = DataObject.find(layerFileObject);
-                                                    openLayerFileAndFind(layerDataObject, originalF);
-                                                } catch (DataObjectNotFoundException ex) {
-                                                    Exceptions.printStackTrace(ex);
-                                                }
-                                            }
-                                        }
-                                    } catch (SAXException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                            }
-                        }
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        if (location != null) {
+            for (URL u : location) {
+                FileObject layer = URLMapper.findFileObject(u);
+                if (layer != null) {
+                    try {
+                        openLayerFileAndFind(DataObject.find(layer), f);
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
 
-    private static void openLayerFileAndFind(DataObject layerDataObject, FileObject originalF) {
-        EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
-        if (editorCookie != null) {
-            editorCookie.open();
-            final LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
-            if (lineCookie != null) {
-                List<FileObject> lineage = new LinkedList<FileObject>();
-                FileObject parent = originalF;
-                while (parent != null) {
-                    if (parent.getParent() != null) {
-                        lineage.add(0, parent);
-                    }
-                    parent = parent.getParent();
+    private static void openLayerFileAndFind(DataObject layerDataObject, final FileObject originalF) {
+        try {
+            InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            final AtomicInteger line = new AtomicInteger();
+            final AtomicReference<String> originatingElement = new AtomicReference<String>("");
+            class Handler extends DefaultHandler2 {
+                private Locator locator;
+                private String path;
+                public @Override void setDocumentLocator(Locator l) {
+                    locator = l;
                 }
-                try {
-                    InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    SAXParser parser = factory.newSAXParser();
-                    final int[] line = new int[1];
-                    //final int[] col = new int[1];
-                    class Handler extends DefaultHandler {
-                        private Locator locator;
-                        private Iterator<FileObject> lineageIterator;
-                        private FileObject lookingFor;
-                        Handler(List<FileObject> lineage) {
-                            lineageIterator = lineage.iterator();
-                            lookingFor = lineageIterator.next(); 
-                        }
-                        @Override
-                        public void setDocumentLocator(Locator l) {
-                            locator = l;
-                        }
-                        @Override
-                        public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
-                            if (line[0] == 0) {
-                                if (((lookingFor.isFolder() ? "folder".equals(qname) : "file".equals(qname)) &&
-                                    lookingFor.getNameExt().equals(attr.getValue("name")))) { // NOI18N
-                                    if (lineageIterator.hasNext()) {
-                                        lookingFor = lineageIterator.next();
-                                    } else {
-                                        line[0] = locator.getLineNumber();
-                                        // col[0] = locator.getColumnNumber();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    parser.parse(in, new Handler(lineage));
-                    if (line[0] < 1) {
+                public @Override void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                    if (!qname.matches("file|folder")) { // NOI18N
                         return;
                     }
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            lineCookie.getLineSet().getCurrent(line[0] - 1).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS /*, Math.max(0, col[0])*/);
-                        }
-                    });
-                } catch (Exception e) {
+                    String n = attr.getValue("name"); // NOI18N
+                    path = path == null ? n : path + '/' + n;
+                    if (line.get() == 0 && originalF.getPath().equals(path)) {
+                        line.set(locator.getLineNumber());
+                    }
+                }
+                public @Override void endElement(String uri, String localname, String qname) throws SAXException {
+                    if (!qname.matches("file|folder")) { // NOI18N
+                        return;
+                    }
+                    int slash = path.lastIndexOf('/');
+                    path = slash == -1 ? null : path.substring(0, slash);
+                }
+                public @Override void comment(char[] ch, int start, int length) throws SAXException {
+                    if (originatingElement.get().isEmpty() && originalF.getPath().equals(path)) {
+                        originatingElement.set(new String(ch, start, length));
+                    }
+                }
+            }
+            DefaultHandler2 handler = new Handler();
+            parser.getXMLReader().setProperty("http://xml.org/sax/properties/lexical-handler", handler); // NOI18N
+            parser.parse(in, handler);
+            if (line.get() < 1) {
+                return;
+            }
+            String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
+            if (originatingElement.get().matches(javaIdentifier + "([.]" + javaIdentifier + ")+(\\(\\))?")) {
+                if (openOriginatingElement(layerDataObject.getPrimaryFile(), originatingElement.get())) {
                     return;
                 }
             }
+            EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
+            if (editorCookie != null) {
+                editorCookie.open();
+                final LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
+                if (lineCookie != null) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            lineCookie.getLineSet().getCurrent(line.get() - 1).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                        }
+                    });
+                }
+            }
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return;
         }
     }        
+    
+    private static boolean openOriginatingElement(FileObject layer, final String origEl) throws Exception {
+        final Project prj = FileOwnerQuery.getOwner(layer);
+        if (prj == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.no_project", FileUtil.getFileDisplayName(layer)), 1);
+            return false;
+        }
+        final String prjName = ProjectUtils.getInformation(prj).getDisplayName();
+        NbModuleProvider nbm = prj.getLookup().lookup(NbModuleProvider.class);
+        if (nbm == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.not_module", prjName), 1);
+            return false;
+        }
+        FileObject src = nbm.getSourceDirectory();
+        if (src == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.no_src_dir", prjName), 1);
+            return false;
+        }
+        final AtomicBoolean success = new AtomicBoolean();
+        JavaSource.create(ClasspathInfo.create(src)).runWhenScanFinished(new Task<CompilationController>() {
+            public @Override void run(CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+                Element el;
+                TypeElement type = cc.getElements().getTypeElement(origEl);
+                if (type != null) {
+                    el = type;
+                } else {
+                    PackageElement pkg = cc.getElements().getPackageElement(origEl);
+                    if (pkg != null) {
+                        el = pkg;
+                    } else {
+                        int dot = origEl.lastIndexOf('.');
+                        String clazz = origEl.substring(0, dot);
+                        type = cc.getElements().getTypeElement(clazz);
+                        if (type == null) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.class_not_found", origEl, prjName), 1);
+                            return;
+                        }
+                        String member = origEl.substring(dot + 1);
+                        el = null;
+                        for (Element nested : type.getEnclosedElements()) {
+                            if (nested.toString().equals(member)) {
+                                el = nested;
+                                break;
+                            }
+                        }
+                        if (el == null) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.member_not_found", member, clazz), 1);
+                            return;
+                        }
+                    }
+                }
+                if (ElementOpen.open(cc.getClasspathInfo(), el)) {
+                    success.set(true);
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.could_not_open", origEl), 1);
+                }
+            }
+        }, true).get();
+        return success.get();
+    }
 
-    public String getName() {
-         return NbBundle.getMessage(OpenLayerFilesAction.class, "LBL_open_layer_files_action");
+    public @Override String getName() {
+         return NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.label");
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] {DataObject.class};
+    protected @Override Class<?>[] cookieClasses() {
+        return new Class<?>[] {DataObject.class};
     }
     
-    protected int mode() {
+    protected @Override int mode() {
         return MODE_EXACTLY_ONE;
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return null;
     }
     

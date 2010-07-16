@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,7 +19,7 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
 by Sun in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
@@ -47,7 +50,7 @@ made subject to such option by the copyright holder.
             <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junit.Bundle#junit"/>
             </file>
-            <file name="junit-4.5.xml" url="junit_4_5_lib.xml">
+            <file name="junit-4.8.2.xml" url="junit_4_8_2_lib.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junit.Bundle#junit_4"/>
             </file>
         </folder>
@@ -144,7 +147,14 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+
+            <file name="junit-custom.xml" url="templates/junit-custom.xml">
+                <attr name="position" intvalue="0"/>
+                <attr name="template" boolvalue="false"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
+            </file>
+
         </folder>
     </folder>
 
@@ -159,6 +169,14 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="220"/>
                         </file>
                     </folder>
+                    <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1795"/>
+                    </file>
+                    <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1797"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -169,6 +187,17 @@ made subject to such option by the copyright holder.
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-junit-CreateTestAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     

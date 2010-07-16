@@ -21,7 +21,7 @@ package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -54,8 +53,7 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
-import org.netbeans.modules.iep.model.TableInputOperatorComponent;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -84,8 +82,9 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
     }
     
     private class MyCustomizer extends DefaultCustomizer {
-        protected PropertyPanel mIsGlobalPanel;
+        //protected PropertyPanel mIsGlobalPanel;
         protected PropertyPanel mGlobalIdPanel;
+        protected PropertyPanel mIsDoNotCreateTable;
         private TableInputConfigurationPanel mConfigPanel;
                 
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
@@ -113,7 +112,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -137,7 +136,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
@@ -169,6 +168,32 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mOutputSchemaNamePanel.component[1], gbc);
             
+            //do not create table check box
+            gbc.gridx = 3;
+            gbc.gridy = 1;
+            gbc.gridwidth = 2;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            Property doNotCreateTableProp = mComponent.getProperty(PROP_DO_NOT_CREATE_TABLE);
+            
+            String doNotCreateTableLabel = NbBundle.getMessage(TableInputCustomEditor.class, "TableInputCustomEditor.DO_NOT_CREATE_TABLE");
+            mIsDoNotCreateTable = PropertyPanel.createCheckBoxPanel(doNotCreateTableLabel, doNotCreateTableProp);
+            String acsd = NbBundle.getMessage(TableInputCustomEditor.class, "ACSD_TableInputCustomEditor.DO_NOT_CREATE_TABLE");;
+            ((JCheckBox)mIsDoNotCreateTable.input[0]).getAccessibleContext().setAccessibleDescription(acsd);
+            
+            String tooltip = NbBundle.getMessage(TableInputCustomEditor.class, "TOOLTIP_TableInputCustomEditor.DO_NOT_CREATE_TABLE");;
+            ((JCheckBox)mIsDoNotCreateTable.input[0]).setToolTipText(tooltip);
+            
+            if (!doNotCreateTableProp.getPropertyType().isWritable()) {
+                ((JCheckBox)mIsDoNotCreateTable.input[0]).setEnabled(false);
+                
+            }
+            pane.add(mIsDoNotCreateTable.panel, gbc);
+            
+            
             // struct
             gbc.gridx = 2;
             gbc.gridy = 0;
@@ -181,7 +206,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // is global
-            gbc.gridx = 3;
+            /*gbc.gridx = 3;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
@@ -189,16 +214,16 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             gbc.weightx = 0.0D;
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
-            Property isGlobalProp = mComponent.getProperty(IS_GLOBAL_KEY);
+            Property isGlobalProp = mComponent.getProperty(PROP_IS_GLOBAL);
             String isGlobalStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.IS_GLOBAL");
             mIsGlobalPanel = PropertyPanel.createCheckBoxPanel(isGlobalStr, isGlobalProp);
             if (!isGlobalProp.getPropertyType().isWritable()) {
                 ((JCheckBox)mIsGlobalPanel.input[0]).setEnabled(false);
             }
-            pane.add(mIsGlobalPanel.panel, gbc);
+            pane.add(mIsGlobalPanel.panel, gbc); */
             
             //select external table
-            JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(TableInputCustomEditor.class, "TableInputCustomEditor.SELECT_TABLE"));
+            /*JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(TableInputCustomEditor.class, "TableInputCustomEditor.SELECT_TABLE"));
             selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
             //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 4;
@@ -210,15 +235,16 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
             pane.add(selectIEPProcessButton, gbc);
-            
+            */
             
             //second row
             // global id
-            Property globalIdProp = mComponent.getProperty(GLOBAL_ID_KEY);
+            Property globalIdProp = mComponent.getProperty(PROP_GLOBAL_ID);
             String globalIdStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.GLOBAL_ID");
             mGlobalIdPanel = PropertyPanel.createSingleLineTextPanel(globalIdStr, globalIdProp, false);
             gbc.gridx = 3;
-            gbc.gridy = 1;
+            //gbc.gridy = 1;
+            gbc.gridy = 0;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
@@ -228,7 +254,8 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             pane.add(mGlobalIdPanel.component[0], gbc);
             
             gbc.gridx = 4;
-            gbc.gridy = 1;
+            //gbc.gridy = 1;
+            gbc.gridy = 0;
             gbc.gridwidth = 1;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
@@ -256,9 +283,10 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             try {
 //                mConfigPanel.validate(evt);
 //                mSelectPanel.validateContent(evt);
-                boolean isGlobal = mIsGlobalPanel.getBooleanValue();
+                //boolean isGlobal = mIsGlobalPanel.getBooleanValue();
                 String globalId = mGlobalIdPanel.getStringValue();
-                if (isGlobal && (globalId == null || globalId.trim().equals(""))) {
+                //if (isGlobal && (globalId == null || globalId.trim().equals(""))) {
+                if (globalId == null || globalId.trim().equals("")) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.GLOBAL_ID_MUST_BE_DEFINED_FOR_A_GLOBAL_ENTITY");
                     throw new PropertyVetoException(msg, evt);
@@ -273,9 +301,9 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
         
         public void setValue() {
             super.setValue();
-            mIsGlobalPanel.store();
+            //mIsGlobalPanel.store();
             mGlobalIdPanel.store();
-            
+            mIsDoNotCreateTable.store();
             
 //            mConfigPanel.store();
 //            //set documentation
@@ -296,8 +324,8 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
                 boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
                 if (!cancelled) {
                 
-                    List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
-                    List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+                    List<TableInfo> tables = (List<TableInfo>) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+                    List<ColumnInfo> columns = (List<ColumnInfo>) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
                     String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
                     
                     List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();

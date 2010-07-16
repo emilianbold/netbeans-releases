@@ -33,49 +33,44 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.0//EN' 'http://www.netbeans.org/dtds/filesystem-1_0.dtd'>
-
 <filesystem>
     <folder name="WSDLEditor">
         <file name="file-ext.xsd" url="file-ext.xsd">
             <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/file/" />
             <attr name="prefix" stringvalue="file" />
         </file>
-        
         <folder name ="Binding">
             <file name="FileBinding">
                 <attr name="xsdFileName" stringvalue="file-ext" />
                 <attr name="element" stringvalue="binding" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.file.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/throw16.png" /> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/throw16.png" />
             </file>
         </folder>
-     
         <folder name ="BindingOperation">
             <file name="FileBindingOperation">
                 <attr name="xsdFileName" stringvalue="file-ext" />
                 <attr name="element" stringvalue="operation" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.file.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/onalarm16x16.png" /> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/onalarm16x16.png" />
             </file>
         </folder>
-			
         <folder name ="BindingOperationInput">
             <file name="FileBindingMessage">
                 <attr name="xsdFileName" stringvalue="file-ext" />
                 <attr name="element" stringvalue="message" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.file.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/onmessage16x16.png" /> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/onmessage16x16.png" />
             </file>
-        </folder>	        
-	      
+        </folder>
         <folder name ="BindingOperationOutput">
             <file name="FileBindingMessage">
                 <attr name="xsdFileName" stringvalue="file-ext" />
                 <attr name="element" stringvalue="message" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.file.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/scope16x16.png" /> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/scope16x16.png" />
             </file>
-	</folder>	        
+        </folder>	        
 	<!--
         <folder name ="BindingOperationFault">
 		      <file name="FileBindingOperationFault">
@@ -86,18 +81,16 @@ Microsystems, Inc. All Rights Reserved.
 		      </file>
 		      
         </folder>
-        -->     
+        -->
         <folder name ="ServicePort">
             <file name="FileServicePort" >
                 <attr name="xsdFileName" stringvalue="file-ext" />
                 <attr name="element" stringvalue="address" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.file.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/while16x16.png" /> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/file/resources/while16x16.png" />
             </file>
-        </folder>	        
+        </folder>
     </folder>
-  
-
     <folder name="SeeBeyondJbiComponents">
         <!-- JBI Component -->
         <folder name="sun-file-binding">
@@ -109,5 +102,4 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-  
 </filesystem>

@@ -2,7 +2,10 @@
 <!--
    - DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
    -
-   - Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+   - Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+   -
+   - Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+   - Other names may be trademarks of their respective owners.
    -
    - The contents of this file are subject to the terms of either the GNU
    - General Public License Version 2 only ("GPL") or the Common
@@ -14,7 +17,7 @@
    - specific language governing permissions and limitations under the
    - License.  When distributing the software, include this License Header
    - Notice in each file and include the License file at
-   - nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+   - nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
    - particular file as subject to the "Classpath" exception as provided
    - by Sun in the GPL Version 2 section of the License file that
    - accompanied this code. If applicable, add the following below the
@@ -115,7 +118,7 @@ is the proper place.
         <description>
             Semantics of <code>readProperties</code> method has been extended
             to allow the method to return an object. Read
-            <a href="@TOP@/org/netbeans/spi/settings/doc-files/api.html#xmlprops">more</a>.
+            <a href="@TOP@/org/netbeans/spi/settings/package-summary.html#xmlprops">more</a>.
         </description>
         <issue number="155962"/>
     </change>
@@ -184,7 +187,7 @@ is the proper place.
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description> 
-            Provides support for <a href="@org-openide-util@/org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath(String)</a>
+            Provides support for <a href="@org-openide-util-lookup@/org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath(String)</a>
             method in order to replace now deprecated <a href="@org-openide-loaders@/org/openide/loaders/FolderLookup.html">FolderLookup</a>.
         </description>
         <issue number="98426"/>

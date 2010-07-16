@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Notification Stream Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Notification Stream Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Notification Stream operator takes a relation as input, 
+and outputs a stream that consists of events whose presence is determined by a specified time interval.</p>
+
+
+
+<p>Assume that the following conditions are true:</p>
+
+<ul>
+  <li>The time interval of the Notification Stream operator is set to 1 minute.</li>
+  <li>An event arrives at the input relation at 2:00 in the afternoon.</li>
+</ul>
+
+<p>If the event is still in the relation at 2:01 in the afternoon, then the event is included in the output stream for the first time.</p>
+<p>If the event is still in the relation at 2:02 in the afternoon, then the event is included in the output stream for the second time.</p>
+<p>If the event is still in the relation at 2:03 in the afternoon, then the event is included in the output stream for the third time.</p>
+<p>If the event is no longer in the relation at 2:04 in the afternoon, then the event is no longer included in the output stream.</p>
+
+
+
+<p>The scenario in <a href="gapwindow_propedit.html">Using the Gap Window Operator</a> 
+involves creating a relation that indicates which message is missing at any point in time. 
+You could use the Notification Stream operator to create an output stream of resend requests for the missing messages. 
+Connect the Gap Window operator to a Notification Stream operator, configure the time interval, and then send the output to a Stream Output operator.</p>
+
+
+
+<p><strong>To use the Notification Stream operator:</strong></p>
+
+<ol>
+  <li>Drag a Notification Stream operator from the Palette to the Design view.</li>
+  <li>Connect the input of the new Notification Stream operator to an operator that has relation output.</li>
+  <li>Double-click the Notification Stream operator. The property editor opens. Notice that the component has inherited the schema of its input relation.</li>
+  <li>Use the Notify Every field and drop-down list to specify the time interval.</li>
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="gapwindow_propedit.html">Using the Gap Window Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

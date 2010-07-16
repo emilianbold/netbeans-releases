@@ -3,26 +3,6 @@
 <%!
 <%--
 <%=
-< jsp:attribute >
-< jsp:body >
-< jsp:declaration >
-< jsp:directive.include / >
-< jsp:directive.page / >
-< jsp:element >
-< jsp:expression >
-< jsp:fallback >
-< jsp:forward >
-< jsp:getProperty / >
-< jsp:include >
-< jsp:output >
-< jsp:param / >
-< jsp:params >
-< jsp:plugin >
-< jsp:root >
-< jsp:scriptlet >
-< jsp:setProperty / >
-< jsp:text >
-< jsp:useBean >
 <a >
 <abbr >
 <acronym >
@@ -70,6 +50,26 @@
 <input >
 <ins >
 <isindex >
+< jsp:attribute >
+< jsp:body >
+< jsp:declaration >
+< jsp:directive.include / >
+< jsp:directive.page / >
+< jsp:element >
+< jsp:expression >
+< jsp:fallback >
+< jsp:forward >
+< jsp:getProperty / >
+< jsp:include >
+< jsp:output >
+< jsp:param / >
+< jsp:params >
+< jsp:plugin >
+< jsp:root >
+< jsp:scriptlet >
+< jsp:setProperty / >
+< jsp:text >
+< jsp:useBean >
 <kbd >
 <label >
 <legend >

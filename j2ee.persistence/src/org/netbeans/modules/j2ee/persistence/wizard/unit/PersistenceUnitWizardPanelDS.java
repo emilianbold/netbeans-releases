@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,14 +45,18 @@
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
@@ -57,7 +64,9 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
+import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,6 +101,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         
         unitNameTextField.getDocument().addDocumentListener(new ValidationListener());
         errorMessage.setForeground(Color.RED);
+        updateWarning();
     }
     
     /**
@@ -112,6 +122,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         dsPopulator.connect(dsCombo);
         
         dsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 checkValidity();
             }
@@ -119,12 +130,15 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         
         ((JTextComponent)dsCombo.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValidity();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValidity();
             }
@@ -144,6 +158,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
     }
     
+    @Override
     public String getPersistenceUnitName() {
         return unitNameTextField.getText();
     }
@@ -152,6 +167,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         return ((JTextComponent)dsCombo.getEditor().getEditorComponent()).getText();
     }
     
+    @Override
     public void setPreselectedDB(String db) {
         boolean hasItem = false;
         for (int i = 0; i < dsCombo.getItemCount(); i++) {
@@ -181,6 +197,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     }
     
     
+    @Override
     public String getTableGeneration() {
         if (ddlCreate.isSelected()) {
             return Provider.TABLE_GENERATION_CREATE;
@@ -191,6 +208,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
     }
     
+    @Override
     public boolean isValidPanel() {
         try{
             if (!isNameValid()){
@@ -211,6 +229,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         return Strings.isEmpty(getPersistenceUnitName()) ? false : isNameUnique();
     }
     
+    @Override
     public Provider getSelectedProvider() {
         return (Provider) providerCombo.getSelectedItem();
     }
@@ -241,7 +260,9 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         dsCombo = new javax.swing.JComboBox();
         persistenceProviderLabel = new javax.swing.JLabel();
         providerCombo = new javax.swing.JComboBox();
+        warnPanel = new javax.swing.JPanel();
         errorMessage = new javax.swing.JLabel();
+        createPUWarningLabel = new ShyLabel();
 
         setName(org.openide.util.NbBundle.getMessage(PersistenceUnitWizardPanelDS.class, "LBL_Step1")); // NOI18N
 
@@ -288,13 +309,29 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/unit/Bundle"); // NOI18N
         persistenceProviderLabel.setText(bundle.getString("LBL_PersistenceProvider")); // NOI18N
 
+        providerCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                providerComboItemStateChanged(evt);
+            }
+        });
+
+        warnPanel.setLayout(new java.awt.BorderLayout());
+
+        errorMessage.setMinimumSize(new java.awt.Dimension(10, 10));
+        errorMessage.setPreferredSize(new java.awt.Dimension(20, 20));
+        warnPanel.add(errorMessage, java.awt.BorderLayout.NORTH);
+
+        createPUWarningLabel.setText(" ");
+        createPUWarningLabel.setPreferredSize(new java.awt.Dimension(4, 20));
+        warnPanel.add(createPUWarningLabel, java.awt.BorderLayout.PAGE_END);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(unitNameLabel)
                             .add(persistenceProviderLabel)
@@ -304,7 +341,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
                             .add(unitNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                             .add(providerCombo, 0, 380, Short.MAX_VALUE)
                             .add(dsCombo, 0, 380, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(ddlCreate)
@@ -312,9 +349,9 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
                         .add(ddlDropCreate)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(ddlUnkown))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jtaCheckBox)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(errorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE))
+                    .add(jtaCheckBox)
+                    .add(jLabel1)
+                    .add(warnPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -341,9 +378,9 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
                     .add(ddlDropCreate)
                     .add(ddlUnkown)
                     .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(errorMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(warnPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         unitNameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UnitName")); // NOI18N
@@ -358,9 +395,15 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         persistenceProviderLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Provider")); // NOI18N
         providerCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Provider")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void providerComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_providerComboItemStateChanged
+        // TODO add your handling code here:
+        updateWarning();
+    }//GEN-LAST:event_providerComboItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel createPUWarningLabel;
     private javax.swing.JLabel datasourceLabel;
     private javax.swing.JRadioButton ddlCreate;
     private javax.swing.JRadioButton ddlDropCreate;
@@ -375,7 +418,33 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     private javax.swing.ButtonGroup tableCreationButtonGroup;
     private javax.swing.JLabel unitNameLabel;
     private javax.swing.JTextField unitNameTextField;
+    private javax.swing.JPanel warnPanel;
     // End of variables declaration//GEN-END:variables
+
+    private void updateWarning() {
+        Object provObj = providerCombo.getSelectedItem();
+        Provider prov = (Provider) (provObj instanceof Provider ? provObj : null);
+        String warning = null;
+        if(prov != null){
+            if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
+                    String sourceLevel = SourceLevelChecker.getSourceLevel(project);
+                    if(sourceLevel !=null ){
+                        if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6))
+                        warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                    }
+            }
+        }
+        ImageIcon icon = null;
+        if(warning != null){
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif", false); //NOI18N
+        } else {
+            warning = "  ";
+        }
+        createPUWarningLabel.setIcon(icon);
+        createPUWarningLabel.setText(warning);
+        createPUWarningLabel.setToolTipText(warning);
+    }
+    // End of variables declaration
     
     /**
      * Document listener that invokes <code>checkValidity</code> when
@@ -390,6 +459,25 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
         public void changedUpdate(DocumentEvent e) {
             checkValidity();
+        }
+    }
+    /**
+     * A crude attempt at a label which doesn't expand its parent.
+     */
+    private static final class ShyLabel extends JLabel {
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension size = super.getPreferredSize();
+            size.width = 0;
+            return size;
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            Dimension size = super.getMinimumSize();
+            size.width = 0;
+            return size;
         }
     }
 }

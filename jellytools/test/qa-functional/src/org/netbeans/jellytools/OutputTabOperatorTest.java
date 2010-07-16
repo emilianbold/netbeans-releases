@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
 
     static final String[] tests = new String[] {
         "testMakeComponentVisible",
+        "testToolbarButtons",
         "testFindLine",
         "testGetText",
         "testWaitText",
@@ -91,30 +95,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new OutputTabOperatorTest("testMakeComponentVisible"));
-        suite.addTest(new OutputTabOperatorTest("testFindLine"));
-        suite.addTest(new OutputTabOperatorTest("testGetText"));
-        suite.addTest(new OutputTabOperatorTest("testWaitText"));
-        suite.addTest(new OutputTabOperatorTest("testGetLineCount"));
-        suite.addTest(new OutputTabOperatorTest("testGetLine"));
-        suite.addTest(new OutputTabOperatorTest("testGetLength"));
-        suite.addTest(new OutputTabOperatorTest("testVerify"));
-        suite.addTest(new OutputTabOperatorTest("testSelectAll"));
-        suite.addTest(new OutputTabOperatorTest("testCopy"));
-        suite.addTest(new OutputTabOperatorTest("testFind"));
-        suite.addTest(new OutputTabOperatorTest("testFindNext"));
-        suite.addTest(new OutputTabOperatorTest("testSaveAs"));
-        //suite.addTest(new OutputTabOperatorTest("testNextError"));
-        //suite.addTest(new OutputTabOperatorTest("testPreviousError"));
-        suite.addTest(new OutputTabOperatorTest("testWrapText"));
-        suite.addTest(new OutputTabOperatorTest("testClear"));
-        suite.addTest(new OutputTabOperatorTest("testClose"));
-        return suite;
-         */
+    public static NbTest suite() {        
         return (NbTest) createModuleTest(OutputTabOperatorTest.class, tests);
     }
     
@@ -151,6 +132,21 @@ public class OutputTabOperatorTest extends JellyTestCase {
         // should be improved to use 2 terms and activate the hidden one
         outputTabOperator.makeComponentVisible();
         assertTrue(targetName+" output tab should be visible.", outputTabOperator.isShowing());
+    }
+
+    /**
+     * Tests presence and, where possible, functionality of buttons on the left
+     * side (toolbar) of the output tab.
+     */
+    public void testToolbarButtons()
+    {
+        outputTabOperator.clear();
+        outputTabOperator.btnReRun().push();
+        outputTabOperator.waitText("BUILD SUCCESSFUL");
+
+        assertFalse("When there's no task running, the Stop button should be disabled!", outputTabOperator.btnStop().isEnabled());
+        outputTabOperator.btnAntSettings().push();
+        new OptionsOperator().close();
     }
 
     /**

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,10 +55,13 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.Test;
+import junit.framework.TestResult;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
@@ -72,6 +78,21 @@ import org.openide.util.Lookup;
  */
 public class HighlightingManagerTest extends NbTestCase {
     
+    public static Test suite() {
+        return new NbTestSuite(HighlightingManagerTest.class) {
+            public @Override void run(TestResult result) {
+// XXX: needs a way how to run each test case in a separate JVM or how to replace HighlightingManager.LINEWRAP_ENABLED
+//                System.out.println("Running tests for: org.netbeans.editor.linewrap=true");
+//                System.setProperty("org.netbeans.editor.linewrap", "true");
+//                super.run(result);
+
+                System.out.println("Running tests for: org.netbeans.editor.linewrap=false");
+                System.setProperty("org.netbeans.editor.linewrap", "false");
+                super.run(result);
+            }
+        };
+    }
+
     /** Creates a new instance of HighlightingManagerTest */
     public HighlightingManagerTest(String name) {
         super(name);

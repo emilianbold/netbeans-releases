@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -91,29 +90,30 @@ public class OnMessageNode extends BpelNode<OnMessage> {
         messagePropertySet.put(customizer);
         //
         Node.Property property;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 PartnerLinkReference.PARTNER_LINK, PARTNER_LINK,
                 "getPartnerLink", "setPartnerLink", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 PortTypeReference.PORT_TYPE, PORT_TYPE,
                 "getPortType", "setPortType", "removePortType"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 OperationReference.OPERATION, OPERATION,
                 "getOperation", "setOperation", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 VariableReference.VARIABLE, INPUT,
                 "getVariable", "setVariable", "removeVariable"); // NOI18N
@@ -121,7 +121,7 @@ public class OnMessageNode extends BpelNode<OnMessage> {
         //
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -138,6 +138,7 @@ public class OnMessageNode extends BpelNode<OnMessage> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,

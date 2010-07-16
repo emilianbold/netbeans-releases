@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,29 +43,20 @@
  */
 package org.netbeans.modules.css.actions;
 
-import java.awt.event.ActionEvent;
-import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
 
-import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.filesystems.*;
 import org.openide.cookies.*;
+import org.openide.util.actions.NodeAction;
 
 import org.w3c.css.sac.*;
 
-import org.netbeans.modules.css.*;
 
 /**
  * Action that reparses stylesheet and reports any syntax errors.
@@ -70,16 +64,7 @@ import org.netbeans.modules.css.*;
  * @author Petr Kuzel
  * @author Marek Fukala
  */
-public class CheckStyleAction extends BaseAction implements ErrorHandler, DocumentHandler {
-    
-    public static final String checkStyleAction =  NbBundle.getMessage(CheckStyleAction.class, "NAME_check_CSS"); // NOI18N
-    
-    public CheckStyleAction() {
-        super(checkStyleAction);
-            putValue("helpID", CheckStyleAction.class.getName()); // NOI18N
-            putValue(SHORT_DESCRIPTION, checkStyleAction);
-            putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/css/resources/checkStyleAction.gif"); // NOI18N
-    }
+public class CheckStyleAction extends NodeAction implements ErrorHandler, DocumentHandler {
     
     //check status
     private boolean failed;
@@ -88,52 +73,79 @@ public class CheckStyleAction extends BaseAction implements ErrorHandler, Docume
     private DataObject csso;
     private CssDisplayer disp;      //and its displayer
     
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        
-        failed = false;
-        warnings = 0;
-        
-        disp = new CssDisplayer();
-        
-        Parser parser = new org.w3c.flute.parser.Parser();
-        parser.setErrorHandler(this);
-        parser.setDocumentHandler(this);
-        
-        BaseDocument bdoc = Utilities.getDocument(target);
-        if(bdoc == null) {
-            return ; //no document?!?!
-        }
-        csso = NbEditorUtilities.getDataObject(bdoc);
-        if(csso == null) {
-            return ; //document not backuped by DataObject
-        }
-        
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(CheckStyleAction.class, "NAME_check_CSS"); // NOI18N
+    }
+
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/css/resources/checkStyleAction.gif"; //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CheckStyleAction.class.getName());
+    }
+
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
         try {
-            //save it first
-            SaveCookie cake = csso.getCookie(SaveCookie.class);
-            if (cake != null)
-                cake.save();
+            assert activatedNodes.length > 0;
+            Node node = activatedNodes[0];
+            EditorCookie ec = node.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+            csso = node.getLookup().lookup(DataObject.class);
+            if (csso == null) {
+                return; //document not backuped by DataObject
+            }
             
-            String uri = csso.getPrimaryFile().getURL().toExternalForm();
-            
-            parser.parseStyleSheet(uri);
+            BaseDocument bdoc = (BaseDocument) ec.openDocument();
+            if (bdoc == null) {
+                return; //no document?!?!
+            }
+            failed = false;
+            warnings = 0;
+            disp = new CssDisplayer();
+            Parser parser = new org.w3c.flute.parser.Parser();
+            parser.setErrorHandler(this);
+            parser.setDocumentHandler(this);
+
+            try {
+                //save it first
+                SaveCookie cake = csso.getCookie(SaveCookie.class);
+                if (cake != null) {
+                    cake.save();
+                }
+                String uri = csso.getPrimaryFile().getURL().toExternalForm();
+                parser.parseStyleSheet(uri);
+            } catch (IOException ex) {
+                // ??? provide better feedback TopManager.getDefault().getErrorManager().notify(ex);
+                failed = true;
+            } catch (CSSParseException ex) {
+                // ??? provide better feedback
+                failed = true;
+            } catch (Throwable t) {
+                disp.display("Unexpected exception from CSS parser: " + t.getMessage()); //NOI18N
+                Logger.global.log(Level.INFO, "Unexpected exception from CSS parser", t); //NOI18N
+                failed = true;
+            }
+            if ((failed == true) || (warnings > 0)) {
+                disp.moveToFront();
+            }
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(XMLDisplayer.class, "TEXT_PART_CSS_checking") + " " + getStatus() + "."); // NOI18N
         } catch (IOException ex) {
-            // ??? provide better feedback TopManager.getDefault().getErrorManager().notify(ex);
-            failed = true;
-        } catch (CSSParseException ex) {
-            // ??? provide better feedback
-            failed = true;
-        } catch (Throwable t) {
-            disp.display("Unexpected exception from CSS parser: " + t.getMessage()); //NOI18N
-            Logger.global.log(Level.INFO, "Unexpected exception from CSS parser", t); //NOI18N
-            failed = true;
+            Exceptions.printStackTrace(ex);
         }
-        
-        if ( ( failed == true ) ||
-                ( warnings > 0 ) ) {
-            disp.moveToFront();
-        }
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (XMLDisplayer.class, "TEXT_PART_CSS_checking") + " " + getStatus() + "."); // NOI18N
     }
     
     
@@ -204,4 +216,5 @@ public class CheckStyleAction extends BaseAction implements ErrorHandler, Docume
     
     public void property(String name,LexicalUnit value,boolean important) throws CSSException {
     }
+
 }

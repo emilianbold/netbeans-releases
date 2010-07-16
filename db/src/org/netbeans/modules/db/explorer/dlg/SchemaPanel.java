@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -71,18 +74,22 @@ public class SchemaPanel extends javax.swing.JPanel {
         initAccessibility();
 
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            @Override
             public void connectionStarted() {
                 startProgress();
             }
             
+            @Override
             public void connectionStep(String step) {
                 setProgressMessage(step);
             }
 
+            @Override
             public void connectionFinished() {
                 stopProgress(true);
             }
 
+            @Override
             public void connectionFailed() {
                 stopProgress(false);
             }
@@ -208,12 +215,12 @@ public class SchemaPanel extends javax.swing.JPanel {
         return available;
     }
     
-    public boolean setSchemas(Vector items, String schema) {
+    public boolean setSchemas(List<String> items, String schema) {
         schemaComboBox.removeAllItems();
         for (int i = 0; i < items.size(); i++)
-            schemaComboBox.addItem(items.elementAt(i));
+            schemaComboBox.addItem(items.get(i));
 
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             schemaComboBox.addItem(NbBundle.getMessage (SchemaPanel.class, "TXT_NoSchema")); //NOI18N
             schemaComboBox.setEnabled(false);
         } else
@@ -244,6 +251,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(null);
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
@@ -256,6 +264,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressMessageLabel.setText(message);
             }
@@ -272,6 +281,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle != null)
                 {

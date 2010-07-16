@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -27,7 +30,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -105,6 +108,48 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TypeUtilities.getTypeName">
+             <api name="general"/>
+             <summary>Added TypeUtilities.getTypeName method.</summary>
+             <version major="0" minor="62"/>
+             <date day="13" month="7" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TypeUtilities.getTypeName</code> method, which
+                 allows to print type to string.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TypeUtilities"/>
+             <issue number="104194"/>
+        </change>
+        <change id="SourceUtils.getAttributeValueCompletions">
+             <api name="general"/>
+             <summary>Added SourceUtils.getAttributeValueCompletions method.</summary>
+             <version major="0" minor="57"/>
+             <date day="2" month="3" year="2010"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>SourceUtils.getAttributeValueCompletions</code> method, which
+                 returns a list of completions for an annotation attribute value suggested by
+                 annotation processors.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="111292"/>
+        </change>
+        <change id="TreeUtilities.exotic">
+             <api name="general"/>
+             <summary>Added support for encoding/decoding exotic identifiers to TreeUtilities.</summary>
+             <version major="0" minor="56"/>
+             <date day="24" month="2" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                Added support for encoding/decoding exotic identifiers to <code>TreeUtilities</code>.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="180842"/>
+        </change>
         <change id="GeneratorUtilities.copyComments">
              <api name="general"/>
              <summary>Added GeneratorUtilities.copyComments method.</summary>

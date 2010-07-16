@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,13 @@
 
 package org.openide.loaders;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -73,15 +75,6 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
 
     static {
         System.setProperty ("org.openide.util.Lookup", GLkp.class.getName());
-    }
-
-    public static Test suite() {
-        Test t = null;
-        t = new NbTestSuite(FolderLookupTest.class);
-        if (t == null) {
-            t = new FolderLookupTest("testFolderLookupIsUpdatedQuicklyForSubfolders");
-        }
-        return t;
     }
 
     @Override
@@ -248,6 +241,29 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
 
     }
 
+    public void testHandleDataShadow() throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/",
+            "BB/",
+            "BB/java-io-IOException.instance"
+        };
+        TestUtilHid.destroyLocalFileSystem (getName());
+        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
+
+        FileObject aa = lfs.findResource("/AA");
+        FileObject bb = lfs.findResource("/BB");
+
+        DataFolder a = DataFolder.findFolder (aa);
+        DataFolder b = DataFolder.findFolder (bb);
+
+        b.createShadow(a);
+
+        FolderLookup fl = new FolderLookup(b);
+        IOException io = fl.getLookup().lookup(IOException.class);
+
+        assertNotNull("IO Exception found", io);
+    }
+    
     public void testFindInstanceNotCreatedByYouIssue24986 () throws Exception {
         String fsstruct [] = new String [] {
             "AA/",

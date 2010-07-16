@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,15 +46,21 @@ package org.netbeans.api.debugger.jpda;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -61,8 +70,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 
@@ -409,7 +417,7 @@ public class LineBreakpoint extends JPDABreakpoint {
                 fileName = fo.getNameExt();
             }
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
         }
         if (fileName == null) fileName = url;
         return "LineBreakpoint " + fileName + " : " + lineNumber;
@@ -419,12 +427,12 @@ public class LineBreakpoint extends JPDABreakpoint {
                                             implements Comparable, FileChangeListener,
                                                        ChangeListener, PropertyChangeListener {
         
-       // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
-       private FileObject fo;
-       private ChangeListener registryListener;
-       private FileChangeListener fileListener;
+        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
+        private FileObject fo;
+        private ChangeListener registryListener;
+        private FileChangeListener fileListener;
        
-       public LineBreakpointImpl(String url) {
+        public LineBreakpointImpl(String url) {
             super(url);
             if (url.length() > 0) {
                 try {
@@ -462,6 +470,11 @@ public class LineBreakpoint extends JPDABreakpoint {
                     ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
                 }
             }
+        }
+
+        @Override
+        public GroupProperties getGroupProperties() {
+            return new LineGroupProperties();
         }
 
         public int compareTo(Object o) {
@@ -556,7 +569,58 @@ public class LineBreakpoint extends JPDABreakpoint {
                 }
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
+                firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
+            } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
+                enginePropertyChange(evt);
             }
+        }
+
+        private final class LineGroupProperties extends GroupProperties {
+
+            @Override
+            public String getType() {
+                return NbBundle.getMessage(LineBreakpoint.class, "LineBrkp_Type");
+            }
+
+            @Override
+            public String getLanguage() {
+                return "Java";
+            }
+
+            @Override
+            public FileObject[] getFiles() {
+                return new FileObject[] { fo };
+            }
+
+            @Override
+            public Project[] getProjects() {
+                FileObject f = fo;
+                while (f != null) {
+                    f = f.getParent();
+                    if (f != null && ProjectManager.getDefault().isProject(f)) {
+                        break;
+                    }
+                }
+                if (f != null) {
+                    try {
+                        return new Project[] { ProjectManager.getDefault().findProject(f) };
+                    } catch (IOException ex) {
+                    } catch (IllegalArgumentException ex) {
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public DebuggerEngine[] getEngines() {
+                return LineBreakpointImpl.this.getEngines();
+            }
+
+            @Override
+            public boolean isHidden() {
+                return LineBreakpointImpl.this.isHidden();
+            }
+
         }
 
     }

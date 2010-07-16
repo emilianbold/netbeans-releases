@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -96,7 +100,9 @@ import org.apache.xmlbeans.soap.SchemaWSDLArrayType;
 import org.openide.util.NbBundle;
 
 public class SampleXmlUtil {
+
     private boolean _soapEnc;
+    private List<SchemaType> _typeSet = new ArrayList<SchemaType>();
     
     public SampleXmlUtil(boolean soapEnc) {
         _soapEnc = soapEnc;
@@ -132,7 +138,7 @@ public class SampleXmlUtil {
     
     
     private boolean ignoreOptional;
-    
+
     /**
      * Cursor position
      * Before:
@@ -141,21 +147,21 @@ public class SampleXmlUtil {
      * <theElement><lots of stuff/>^</theElement>
      */
     public void createSampleForType(SchemaType stype, XmlCursor xmlc) {
-        if (_typeStack.contains( stype ))
+        if (_typeSet.contains(stype)) {
             return;
-        
-        _typeStack.add( stype );
-        
+        }
+        _typeSet.add(stype);
+
         try {
             if (stype.isSimpleType() || stype.isURType()) {
                 processSimpleType(stype, xmlc);
                 return;
             }
-            
+
             // complex Type
             // <theElement>^</theElement>
             processAttributes(stype, xmlc);
-            
+
             // <theElement attri1="string">^</theElement>
             switch (stype.getContentType()) {
                 case SchemaType.NOT_COMPLEX_TYPE :
@@ -181,7 +187,11 @@ public class SampleXmlUtil {
                     break;
             }
         } finally {
-            _typeStack.remove( _typeStack.size() - 1 );
+            // 12/04/2009: Temp hack for PIX/PDQ v3 to avoid OOME
+            if (!stype.toString().endsWith("@urn:hl7-org:v3")) {
+            //if (!("urn:hl7-org:v3").equals(stype.getName().getNamespaceURI())) {
+                _typeSet.remove( _typeSet.size() - 1 );
+            }
         }
     }
     
@@ -998,13 +1008,13 @@ public class SampleXmlUtil {
         
         xmlc.toPrevToken();
         // -> <elem>stuff^</elem>
-        
+
         createSampleForType(element.getType(), xmlc);
         // -> <elem>stuff</elem>^
         xmlc.toNextToken();
         
     }
-    
+
     private void moveToken(int numToMove, XmlCursor xmlc) {
         for (int i = 0; i < Math.abs(numToMove); i++) {
             if (numToMove < 0) {
@@ -1134,8 +1144,6 @@ public class SampleXmlUtil {
         
         return returnParticleType.toString();
     }
-    
-    private ArrayList _typeStack = new ArrayList();
     
     public boolean isIgnoreOptional() {
         return ignoreOptional;

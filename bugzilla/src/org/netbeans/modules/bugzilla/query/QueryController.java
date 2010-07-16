@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -55,6 +59,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -68,7 +73,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -79,11 +83,11 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -172,6 +176,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.removeButton.addActionListener(this);
         panel.refreshConfigurationButton.addActionListener(this);
         panel.findIssuesButton.addActionListener(this);
+        panel.cloneQueryButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -246,7 +251,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query));
+        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query, issueTable));
         issueTable.setRenderer(renderer);
     }
 
@@ -321,7 +326,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (QueryParameter p : parameters.values()) {
                 sb.append(p.get());
             }
@@ -334,10 +339,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void postPopulate(final String urlParameters, final boolean forceRefresh) {
-        enableFields(false);
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -348,19 +353,33 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
-        panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
-        t[0] = rp.post(new Runnable() {
+
+        EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
+                enableFields(false);
+                panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
                 handle.start();
+            }
+        });
+
+        t[0] = rp.post(new Runnable() {
+            @Override
+            public void run() {
                 try {
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
                     populate(urlParameters);
                 } finally {
-                    enableFields(true);
-                    handle.finish();
-                    panel.showRetrievingProgress(false, null, !query.isSaved());
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableFields(true);
+                            handle.finish();
+                            panel.showRetrievingProgress(false, null, !query.isSaved());
+                        }
+                    });
                 }
             }
         });
@@ -368,22 +387,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void populate(final String urlParameters) {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-            Bugzilla.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
-            BugzillaCommand cmd = new BugzillaCommand() {
+            final BugzillaConfiguration bc = repository.getConfiguration();
+            if(bc == null || !bc.isValid()) {
+                // XXX nice errro msg?
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
                 @Override
-                public void execute() throws CoreException, IOException, MalformedURLException {
-                    BugzillaConfiguration bc = repository.getConfiguration();
-                    if(bc == null || !bc.isValid()) {
-                        // XXX nice errro msg?
-                        return;
-                    }
+                public void run() {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-                    if (panel.productList.getModel().getSize() > 0) {
-                        panel.productList.setSelectedIndex(0);
-                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-                    }
+                    populateProductDetails();
                     if(isNetbeans) {
                         issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
                     } else {
@@ -407,12 +423,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         panel.refreshCheckBox.setSelected(autoRefresh);
                     }
                 }
+            });
 
-            };
-            repository.getExecutor().execute(cmd);
         } finally {
             if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-                Bugzilla.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
     }
@@ -420,6 +435,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private String getDefaultParameters() {
         return BugzillaUtil.isNbRepository(repository) ? BugzillaConstants.DEFAULT_NB_STATUS_PARAMETERS : BugzillaConstants.DEFAULT_STATUS_PARAMETERS;
     }
+
     protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);
@@ -432,6 +448,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void disableProduct() { // XXX whatever field
         productParameter.setAlwaysDisabled(true);
+    }
+
+    protected void selectFirstProduct() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if(panel.productList.getModel().getSize() > 0) {
+                    panel.productList.setSelectedIndex(0);
+                }
+            }
+        });
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -508,6 +535,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onRefreshConfiguration();
         } else if (e.getSource() == panel.findIssuesButton) {
             onFindIssues();
+        } else if (e.getSource() == panel.cloneQueryButton) {
+            onCloneQuery();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -550,11 +579,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFilterChange(Filter filter) {
-        query.setFilter(filter);
+        selectFilter(filter);
     }
 
     private void onSave(final boolean refresh) {
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Bugzilla.LOG.fine("on save start");
                 String name = query.getDisplayName();
@@ -563,7 +593,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(name == null) {
                         return;
                     }
-                    panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
                 save(name);
@@ -595,30 +624,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private String getSaveName() {
-        String name = null;
-        if(BugzillaUtil.show(
-                panel.savePanel,
-                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
-                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
-        {
-            name = panel.queryNameTextField.getText();
-            if(name == null || name.trim().equals("")) { // NOI18N
+        QueryNameValidator v = new QueryNameValidator() {
+            @Override
+            public String isValid(String name) {
+                Query[] queries = repository.getQueries ();
+                for (Query q : queries) {
+                    if(q.getDisplayName().equals(name)) {
+                        return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
+                    }
+                }
                 return null;
             }
-            Query[] queries = repository.getQueries();
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(name)) {
-                    panel.saveErrorLabel.setVisible(true);
-                    name = getSaveName();
-                    panel.saveErrorLabel.setVisible(false);
-                    break;
-                }
-            }
-        } else {
-            return null;
-        }
-        return name;
+        };
+        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel"));
     }
 
     private void onCancelChanges() {
@@ -631,10 +649,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setAsSaved();
     }
 
-    public void selectFilter(Filter filter) {
+    public void selectFilter(final Filter filter) {
         if(filter != null) {
-            panel.filterComboBox.setSelectedItem(filter);
-
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
             Issue[] issues = query.getIssues();
             int c = 0;
@@ -643,7 +659,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(filter.accept(issue)) c++;
                 }
             }
-            setIssueCount(c);
+            final int issueCount = c;
+
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    panel.filterComboBox.setSelectedItem(filter);
+                    setIssueCount(issueCount);
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
+            }
         }
         issueTable.setFilter(filter);
     }
@@ -669,6 +698,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -678,15 +708,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
         t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id);
-                    if (issue != null) {
-                        issue.open();
-                    } else {
-                        // XXX nice message?
-                    }
+                    openIssue((BugzillaIssue)repository.getIssue(id));
                 } finally {
                     handle.finish();
                 }
@@ -695,12 +721,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
         t[0].schedule(0);
     }
 
+    protected void openIssue(BugzillaIssue issue) {
+        if (issue != null) {
+            issue.open();
+        } else {
+            // XXX nice message?
+        }
+    }
+
     private void onWeb() {
         String params = getUrlParameters();
         String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
 
         final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 URL url;
                 try {
@@ -766,6 +801,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onMarkSeen() {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
@@ -787,6 +823,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     remove();
                 }
@@ -796,6 +833,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onFindIssues() {
         Query.openNew(repository);
+    }
+
+    private void onCloneQuery() {
+        String p = getUrlParameters();
+        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
+        BugtrackingUtil.openQuery(q, getRepository(), false);
     }
 
     private void onAutoRefresh() {
@@ -866,6 +909,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
+        Collections.sort(newComponents);
+        Collections.sort(newVersions);
+
         componentParameter.setParameterValues(toParameterValues(newComponents));
         versionParameter.setParameterValues(toParameterValues(newVersions));
         if(isNetbeans) {
@@ -933,6 +979,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 String msg =
                     count == 1 ?
@@ -947,18 +994,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return panel.urlPanel.isVisible();
     }
 
+    void switchToDeterminateProgress(long issuesCount) {
+        if(refreshTask != null) {
+            refreshTask.switchToDeterminateProgress(issuesCount);
+        }
+    }
+
+    void addProgressUnit(String issueDesc) {
+        if(refreshTask != null) {
+            refreshTask.addProgressUnit(issueDesc);
+        }
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
         private int counter;
         private boolean autoRefresh;
+        private long progressMaxWorkunits;
+        private int progressWorkunits;
 
         public QueryTask() {
             query.addNotifyListener(this);
         }
 
-        private void startQuery() {
-            enableFields(false);
+        private synchronized void startQuery() {
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         QueryController.class,
@@ -968,17 +1028,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
                                 query.getDisplayName() :
                                 repository.getDisplayName()}),
                     this);
-            panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    enableFields(false);
+                    panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+                }
+            });
             handle.start();
         }
 
-        private void finnishQuery() {
+        private synchronized void finnishQuery() {
             task = null;
             if(handle != null) {
                 handle.finish();
                 handle = null;
             }
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
@@ -988,8 +1055,25 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
+        synchronized void switchToDeterminateProgress(long progressMaxWorkunits) {
+            if(handle != null) {
+                handle.switchToDeterminate((int) progressMaxWorkunits);
+                this.progressMaxWorkunits = progressMaxWorkunits;
+                this.progressWorkunits = 0;
+            }
+        }
+
+        synchronized void addProgressUnit(String issueDesc) {
+            if(handle != null && progressWorkunits < progressMaxWorkunits) {
+                handle.progress(
+                    NbBundle.getMessage(
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                    ++progressWorkunits);
+            }
+        }
+
         public void executeQuery() {
-            panel.setQueryRunning(true);
+            setQueryRunning(true);
             // XXX isn't persistent and should be merged with refresh
             String lastChageFrom = panel.changedFromTextField.getText().trim();
             if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
@@ -1004,12 +1088,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     query.refresh(getUrlParameters(), autoRefresh);
                 }
             } finally {
-                panel.setQueryRunning(false);
+                setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
                 task = null;
             }
 
         }
 
+        private void setQueryRunning(final boolean running) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    panel.setQueryRunning(running);
+                }
+            });
+        }
+
+        @Override
         public void run() {
             startQuery();
             try {
@@ -1028,6 +1122,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             task.schedule(0);
         }
 
+        @Override
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
@@ -1036,15 +1131,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return true;
         }
 
+        @Override
         public void notifyData(final Issue issue) {
+            if(!query.contains(issue)) {
+                // XXX this is quite ugly - the query notifies an archoived issue
+                // but it doesn't "contain" it!
+                return;
+            }
             setIssueCount(++counter);
+            if(counter == 1) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        panel.showNoContentPanel(false);;
+                    }
+                });
+            }
         }
 
+        @Override
         public void started() {
             counter = 0;
             setIssueCount(counter);
         }
 
+        @Override
         public void finished() { }
     }
 

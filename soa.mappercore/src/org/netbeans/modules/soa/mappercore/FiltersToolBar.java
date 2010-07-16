@@ -25,37 +25,21 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
-import javax.swing.JButton;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.Link;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.soa.mappercore.model.SourcePin;
-import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
-import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -474,63 +458,9 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            LeftTree leftTree = mapper.getLeftTree();
-            
-            MapperModel mapperModel = mapper.getFilteredModel();
-            TreeModel treeModel = leftTree.getModel();
-
-            if (mapperModel == null || treeModel == null) return;
-            
-            Object root = mapperModel.getRoot();
-            if (root == null) return;
-            
-            TreePath rootTreePath = new TreePath(root);
-            
-            Set<TreePath> treePathes = new HashSet<TreePath>();
-            collectMappedNodes(mapperModel, rootTreePath, treePathes);
-            
-            for (TreePath treePath : treePathes) {
-                if (Utils.isTreePathExpandable(treeModel, treePath)) {
-                    leftTree.expandPath(treePath);
-                }
-            }
+            mapper.expandMappedLeftTreeItems();
         }
         
-        private void collectMappedNodes(MapperModel mapperModel, 
-                TreePath rightTreePath, Set<TreePath> result) 
-        {
-            Graph graph = mapperModel.getGraph(rightTreePath);
-            if (graph != null && graph.hasIngoingLinks()) {
-                List<Link> links = graph.getIngoingLinks();
-                if (links != null) {
-                    for (Link link : links) {
-                        SourcePin sourcePin = link.getSource();
-                        if (sourcePin instanceof TreeSourcePin) {
-                            TreePath treePath = ((TreeSourcePin) sourcePin)
-                                    .getTreePath();
-                            TreePath parentPath = (treePath == null) ? null 
-                                    : treePath.getParentPath();
-                                    
-                            if (parentPath != null) {
-                                result.add(parentPath);
-                            }
-                        }
-                    }
-                }
-            }
-                    
-            Object node = rightTreePath.getLastPathComponent();
-            if (!mapperModel.isLeaf(node) 
-                    && mapperModel.searchGraphsInside(rightTreePath))
-            {
-                int childCount = mapperModel.getChildCount(node);
-                for (int i = 0; i < childCount; i++) {
-                    Object child = mapperModel.getChild(node, i);
-                    collectMappedNodes(mapperModel, rightTreePath
-                            .pathByAddingChild(child), result);
-                }
-            }
-        }
     }
     
 }

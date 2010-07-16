@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -50,6 +54,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -65,10 +72,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -78,6 +88,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -100,6 +111,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private TableClosure tableClosure;
 
     private boolean sourceSchemaUpdateEnabled;
+    private boolean allowUpdateRecreate = true;
+
+    private String[] filterComboTxts = {
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_UPDATE")//NOI18N
+    };
+    private TableUISupport.FilterAvailable filterAvailable = TableUISupport.FilterAvailable.ANY;
 
     private Project project;
 
@@ -107,6 +126,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         initComponents();
 
         ListSelectionListener selectionListener = new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 updateButtons();
             }
@@ -125,9 +145,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
-        if (enabled) {
+        {
             boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
-            if (withDatasources) {
+            if (withDatasources && enabled) {
                 initializeWithDatasources();
             } else {
                 initializeWithDbConnections();
@@ -141,12 +161,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
 
             selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
-        } else {
-            datasourceRadioButton.setEnabled(false);
-            datasourceComboBox.setEnabled(false);
-            dbschemaRadioButton.setEnabled(false);
-            dbschemaComboBox.setEnabled(false);
-        }
+        } 
 
         // hack to ensure the progress dialog displayed by updateSourceSchema()
         // is displayed on top of the wizard dialog. Needed because when initialize()
@@ -154,6 +169,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         // would be displayed before the wizard dialog.
         sourceSchemaUpdateEnabled = true;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updateSourceSchema();
             }
@@ -211,7 +227,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 // only if a database connection can be found for it and we can
                 // connect to that connection without displaying a dialog
                 if (withDatasources) {
-                    if (selectDatasource(tableSourceName)) {
+                    if (selectDatasource(tableSourceName, false)) {
                         return;
                     }
                 }
@@ -233,6 +249,44 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     return;
                 }
                 break;
+            }
+        }
+        
+        //try to find pu for the project
+        //nothing is selected based on previos selection, try to select based on persistence.xml
+        boolean puExists = false;
+        try {
+            puExists = ProviderUtil.persistenceExists(project);
+        } catch (InvalidPersistenceXmlException ex) {
+        }
+
+        if(puExists){
+            PUDataObject pud = null;
+            try {
+                pud = ProviderUtil.getPUDataObject(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            PersistenceUnit pu = (pud !=null && pud.getPersistence().getPersistenceUnit().length==1) ? pud.getPersistence().getPersistenceUnit()[0] : null;
+            if(pu !=null ){
+                if(withDatasources){
+                    String jtaDs = pu.getJtaDataSource();
+                    if(jtaDs !=null ){
+                        selectDatasource(jtaDs, true);
+                    }
+                    else {
+                        String nJtaDs = pu.getNonJtaDataSource();
+                        if(nJtaDs != null) {
+                            selectDatasource(nJtaDs, true);
+                        }
+                    }
+                } else {
+                    //try to find jdbc connection
+                    DatabaseConnection cn = ProviderUtil.getConnection(pu);
+                    if(cn != null){
+                        datasourceComboBox.setSelectedItem(cn);
+                    }
+                }
             }
         }
 
@@ -277,8 +331,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     /**
      * Tries to select the given data source and returns true if successful.
+     * @param skipChecks if need just to select without verifications
      */
-    private boolean selectDatasource(String jndiName) {
+    private boolean selectDatasource(String jndiName, boolean skipChecks) {
         JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
         if (dsProvider == null){
             return false;
@@ -300,12 +355,25 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         if (dbconns.size() == 0) {
             return false;
         }
-        DatabaseConnection dbconn = dbconns.get(0);
-        if (dbconn.getJDBCConnection() == null) {
-            return false;
+        if(!skipChecks){
+            DatabaseConnection dbcon = dbconns.get(0);
+            if (dbcon.getJDBCConnection() == null) {
+                return false;
+            }
         }
-        datasourceComboBox.setSelectedItem(datasource);
-        if (!datasource.equals(datasourceComboBox.getSelectedItem())) {
+        boolean selected = false;
+        for(int i=0; i<datasourceComboBox.getItemCount(); i++){
+            Object item = datasourceComboBox.getItemAt(i);
+            JPADataSource jpaDS = dsProvider != null ? dsProvider.toJPADataSource(item) : null;
+            if(jpaDS!=null){
+                if(datasource.getJndiName().equals(jpaDS.getJndiName()) && datasource.getUrl().equals(jpaDS.getUrl()) && datasource.getUsername().equals(jpaDS.getUsername())){
+                    datasourceComboBox.setSelectedIndex(i);
+                    selected = true;
+                    break;
+                }
+            }
+        }
+        if (!selected) {
             return false;
         }
         datasourceRadioButton.setSelected(true);
@@ -316,12 +384,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
      * Tries to select the given connection and returns true if successful.
      */
     private boolean selectDbConnection(String name) {
-        DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(name);
-        if (dbconn == null || dbconn.getJDBCConnection() == null) {
+        DatabaseConnection dbcon = ConnectionManager.getDefault().getConnection(name);
+        if (dbcon == null || dbcon.getJDBCConnection() == null) {
             return false;
         }
-        datasourceComboBox.setSelectedItem(dbconn);
-        if (!dbconn.equals(datasourceComboBox.getSelectedItem())) {
+        datasourceComboBox.setSelectedItem(dbcon);
+        if (!dbcon.equals(datasourceComboBox.getSelectedItem())) {
             return false;
         }
         datasourceRadioButton.setSelected(true);
@@ -332,12 +400,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
      * Tries to select the given dbschema file and returns true if successful.
      */
     private boolean selectDBSchemaFile(String name) {
-        FileObject dbschemaFile = FileUtil.toFileObject(new File(name));
-        if (dbschemaFile == null) {
+        FileObject dbschemaFl = FileUtil.toFileObject(new File(name));
+        if (dbschemaFl == null) {
             return false;
         }
-        dbschemaComboBox.setSelectedItem(dbschemaFile);
-        if (!dbschemaFile.equals(dbschemaComboBox.getSelectedItem())) {
+        dbschemaComboBox.setSelectedItem(dbschemaFl);
+        if (!dbschemaFl.equals(dbschemaComboBox.getSelectedItem())) {
             return false;
         }
         dbschemaRadioButton.setSelected(true);
@@ -363,6 +431,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     public TableClosure getTableClosure() {
         return tableClosure;
     }
+
 
     private void updateSourceSchema() {
         if (!sourceSchemaUpdateEnabled) {
@@ -433,7 +502,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         tableClosure = new TableClosure(tableProvider);
         tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
 
-        TableUISupport.connectAvailable(availableTablesList, tableClosure);
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
         TableUISupport.connectSelected(selectedTablesList, tableClosure);
 
         updateButtons();
@@ -452,28 +521,31 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     private void updateButtons() {
-        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList, true);
         addButton.setEnabled(tableClosure.canAddAllTables(addTables));
 
-        addAllButton.setEnabled(tableClosure.canAddSomeTables(tableClosure.getAvailableTables()));
+        addAllButton.setEnabled(TableUISupport.getEnabledTables(availableTablesList).size()>0);
 
         Set<Table> tables = TableUISupport.getSelectedTables(selectedTablesList);
         removeButton.setEnabled(tableClosure.canRemoveAllTables(tables));
 
         removeAllButton.setEnabled(tableClosure.getSelectedTables().size() > 0);
-        tableError.setText("");
+        String problems = "";
         for (Table t : addTables) {
             if (t.isDisabled()) {
                 if (t.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[] {t.getName(), existingClass}));
-                    break;
+                    if(allowUpdateRecreate){
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    } else {
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    }
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()}));
-                    break;
+                    problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()});
                 }
             }
         }
+        tableError.setText(problems);tableError.setCaretPosition(0);
     }
 
     /** This method is called from within the constructor to
@@ -503,7 +575,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         addAllButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
         tableClosureCheckBox = new javax.swing.JCheckBox();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        addAllTypeCombo = new javax.swing.JComboBox();
+        tableErrorScroll = new javax.swing.JScrollPane();
         tableError = new javax.swing.JTextPane();
 
         setName(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_DatabaseTables")); // NOI18N
@@ -558,6 +631,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         tablesPanel.add(availableTablesScrollPane, gridBagConstraints);
@@ -617,7 +691,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         buttonPanel.add(addAllButton, gridBagConstraints);
@@ -630,7 +704,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(removeAllButton, gridBagConstraints);
@@ -655,15 +729,34 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
 
-        jScrollPane3.setBorder(null);
+        addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(filterComboTxts));
+        addAllTypeCombo.setEditor(null);
+        addAllTypeCombo.setRenderer(new ItemListCellRenderer());
+        addAllTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addAllTypeComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        tablesPanel.add(addAllTypeCombo, gridBagConstraints);
+        addAllTypeCombo.getAccessibleContext().setAccessibleName("Tables filter");
+        addAllTypeCombo.getAccessibleContext().setAccessibleDescription("Tables filter");
+
+        tableErrorScroll.setBorder(null);
 
         tableError.setEditable(false);
+        tableError.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tableError.setOpaque(false);
-        jScrollPane3.setViewportView(tableError);
+        tableErrorScroll.setViewportView(tableError);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -678,7 +771,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
                     .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -693,7 +786,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, Short.MAX_VALUE)
                 .add(tablesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(tableErrorScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -710,7 +803,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeAllButtonActionPerformed
 
     private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
-        tableClosure.addAllTables();
+        Set<Table> tables = TableUISupport.getEnabledTables(availableTablesList);
+        tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
 
@@ -727,7 +821,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList, true);
         tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
@@ -754,9 +848,21 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         updateSourceSchema();
     }//GEN-LAST:event_datasourceRadioButtonItemStateChanged
 
+    private void addAllTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllTypeComboActionPerformed
+        if(filterComboTxts[0].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.ANY;
+        } else if (filterComboTxts[1].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.NEW;
+        } else {
+            filterAvailable = filterAvailable.UPDATE;
+        }
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
+    }//GEN-LAST:event_addAllTypeComboActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
+    private javax.swing.JComboBox addAllTypeCombo;
     private javax.swing.JButton addButton;
     private javax.swing.JLabel availableTablesLabel;
     private javax.swing.JList availableTablesList;
@@ -766,7 +872,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton datasourceRadioButton;
     private javax.swing.JComboBox dbschemaComboBox;
     private javax.swing.JRadioButton dbschemaRadioButton;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton removeAllButton;
     private javax.swing.JButton removeButton;
     private javax.swing.ButtonGroup schemaSource;
@@ -775,11 +880,13 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane selectedTablesScrollPane;
     private javax.swing.JCheckBox tableClosureCheckBox;
     private javax.swing.JTextPane tableError;
+    private javax.swing.JScrollPane tableErrorScroll;
     private javax.swing.JPanel tablesPanel;
     // End of variables declaration//GEN-END:variables
 
     private final class TablesPanel extends JPanel {
 
+        @Override
         public void doLayout() {
             super.doLayout();
 
@@ -794,6 +901,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
                 availableBounds.width = equalWidth;
                 availableTablesScrollPane.setBounds(availableBounds);
+
+                Rectangle addAllCmbRec = addAllTypeCombo.getBounds();
+                if((addAllCmbRec.x+addAllCmbRec.width)!=(availableBounds.x+availableBounds.width)){
+                    addAllCmbRec.x=(availableBounds.x+availableBounds.width)-addAllCmbRec.width;
+                    addAllTypeCombo.setBounds(addAllCmbRec);
+                }
 
                 Rectangle buttonBounds = buttonPanel.getBounds();
                 buttonBounds.x += xOffset;
@@ -834,6 +947,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             title = wizardTitle;
         }
 
+        @Override
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
                 component = new DatabaseTablesPanel();
@@ -842,6 +956,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             return component;
         }
 
+        @Override
         public HelpCtx getHelp() {
             if (cmp) {
                 return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + DatabaseTablesPanel.class.getSimpleName()); // NOI18N
@@ -850,14 +965,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
 
+        @Override
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
             wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
@@ -877,11 +995,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public boolean isValid() {
-            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
-                setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
-                return false;
-            }
+
 
             // TODO: RETOUCHE
             //            if (JavaMetamodel.getManager().isScanInProgress()) {
@@ -889,6 +1005,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 if (!waitingForScan) {
                     waitingForScan = true;
                     RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                        @Override
                         public void run() {
                             // TODO: RETOUCHE
                             //                            JavaMetamodel.getManager().waitScanFinished();
@@ -926,9 +1043,16 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
 
             setErrorMessage(" "); // NOI18N
+
+            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
+                setWarningMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
+                //return false;
+            }
+
             return true;
         }
 
+        @Override
         public void storeSettings(WizardDescriptor settings) {
             RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
@@ -945,6 +1069,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             helper.setTableClosure(getComponent().getTableClosure());
         }
 
+        @Override
         public void stateChanged(ChangeEvent event) {
             changeSupport.fireChange();
         }
@@ -955,6 +1080,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         private void setWarningMessage(String warningMessage) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
+        }
+    }
+    private class ItemListCellRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel)component;
+
+                label.setText(value.toString());
+             return label;
         }
     }
 }

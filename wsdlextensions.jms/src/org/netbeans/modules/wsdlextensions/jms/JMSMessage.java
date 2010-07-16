@@ -40,6 +40,9 @@ public interface JMSMessage extends JMSComponent {
 
     public static final String ATTR_USE_TYPE_LITERAL = "literal";
     public static final String ATTR_USE_TYPE_ENCODED = "encoded";
+     public static final String ATTR_BYTES_PART = "bytesPart";
+    
+    public static final String ATTR_FORWARD_AS_ATTACHMENT = "forwardAsAttachment";
             
     public String getMessageType();
     public void setMessageType(String val);
@@ -50,6 +53,9 @@ public interface JMSMessage extends JMSComponent {
     public String getTextPart();
     public void setTextPart(String val);
     
+    public String getBytesPart();
+    public void setBytesPart(String val);
+
     public String getCorrelationIdPart();
     public void setCorrelationIdPart(String val);
 
@@ -73,4 +79,16 @@ public interface JMSMessage extends JMSComponent {
     
     public void setJMSEncodingStyle(String val);
     public String getJMSEncodingStyle();    
+    
+    /**
+     * Return true if payload is to be send as an attachment
+     * @return boolean
+     */
+    public boolean getForwardAsAttachment();
+    
+    /**
+     * Set the forward as attachment flag
+     * @param b
+     */
+    public void setForwardAsAttachment(boolean b);     
 }

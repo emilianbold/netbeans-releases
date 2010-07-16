@@ -22,14 +22,21 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.soa.ui.util.ModelUtil;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.util.TMapUtil;
 import org.openide.util.NbBundle;
 
 
@@ -58,6 +65,12 @@ public class AttributeAccess {
             return stringValue;
         } else if (ParamType.class.isAssignableFrom(clazz)) {
             return ParamType.parseParamType(stringValue);
+        } else if (QName.class.isAssignableFrom(clazz)) {
+            return TMapUtil.getQName(stringValue, getComponent());
+        }
+        else if ( Referenceable.class.isAssignableFrom( clazz )){
+            Reference ref = getReferenceValueOf(attr, stringValue, clazz);
+            return ref;
         }
         assert false;
         return null;
@@ -323,6 +336,34 @@ public class AttributeAccess {
 ////
     //==========================================================================
     
+    
+    @SuppressWarnings("unchecked")
+    private Reference getReferenceValueOf( Attribute attr, String stringValue, 
+            Class c ) 
+    {
+        if (TMapReferenceable.class.isAssignableFrom(c)) {
+            TMapReference ref = TMapReferenceBuilder.getInstance().build(c,
+                    getComponent(), stringValue);
+            TMapReferenceBuilder.getInstance().setAttribute(ref, attr);
+            return ref;
+        }
+        else if ( ReferenceableWSDLComponent.class.isAssignableFrom( c)){
+            WSDLReference ref = WSDLReferenceBuilder.getInstance().build( c , 
+                    getComponent() , stringValue );
+            WSDLReferenceBuilder.getInstance().setAttribute(ref, attr);
+            return ref;
+        }
+//        else if ( ReferenceableSchemaComponent.class.isAssignableFrom( c )){
+//            SchemaReference ref = SchemaReferenceBuilder.getInstance().build( c , 
+//                    getEntity() , stringValue );
+//            SchemaReferenceBuilder.getInstance().setAttribute(ref, attr);
+//            return ref; 
+//        }
+        assert false;
+        return null;
+    }
+
+
     private TMapComponentAbstract getComponent(){
         return myComponent;
     }

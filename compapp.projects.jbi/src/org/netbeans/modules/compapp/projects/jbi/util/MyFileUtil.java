@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,12 @@
 
 package org.netbeans.modules.compapp.projects.jbi.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -51,6 +57,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -142,7 +150,7 @@ public class MyFileUtil {
         String fileName = file.getName();
         BufferedReader reader = new BufferedReader(new FileReader(file));
         
-        File tempFile = File.createTempFile(fileName, "tmp"); // NOI18N
+        File tempFile = File.createTempFile("tmp_" + fileName, "tmp"); // NOI18N
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
         
         String line;
@@ -179,13 +187,29 @@ public class MyFileUtil {
     
     public static void copy(File srcFile, File destFile) 
     throws FileNotFoundException, IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(srcFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(destFile));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            writer.write(line + LINE_SEPARATOR);
+        FileInputStream in = new FileInputStream(srcFile);      
+        FileOutputStream out = new FileOutputStream(destFile);
+
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
         }
-        reader.close();
-        writer.close();
-    }    
+        in.close();
+        out.close();
+    }
+
+    public static long getFileChecksum(File file)
+            throws FileNotFoundException, IOException {
+        
+        FileInputStream is = new FileInputStream(file);
+        CheckedInputStream check = new CheckedInputStream(is, new CRC32());
+        BufferedInputStream in = new BufferedInputStream(check);
+        while (in.read() != -1) {
+            // Read file in completely
+        }
+        long checksum = check.getChecksum().getValue();
+        //System.out.println("Checksum for " + file.getCanonicalPath() + " is " + checksum);
+        return checksum;
+    }
 }

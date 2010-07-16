@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.api.java.source;
 
+import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -48,6 +52,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
+import javax.annotation.processing.Completion;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -71,28 +77,27 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
-import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -108,10 +113,9 @@ import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -121,8 +125,8 @@ import org.openide.util.Utilities;
  */
 public class SourceUtils {    
      
-    private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
-    
+    private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
+
     private SourceUtils() {}
     
     /**
@@ -163,7 +167,58 @@ public class SourceUtils {
         Type.TypeVar bound = ((Type.WildcardType)wildcardType).bound;
         return bound != null ? bound.bound : null;
     }
-    
+
+    /**
+     * Returns a list of completions for an annotation attribute value suggested by
+     * annotation processors.
+     * 
+     * @param info the CompilationInfo used to resolve annotation processors
+     * @param element the element being annotated
+     * @param annotation the (perhaps partial) annotation being applied to the element
+     * @param member the annotation member to return possible completions for
+     * @param userText source code text to be completed
+     * @return suggested completions to the annotation member
+     * 
+     * @since 0.57
+     */
+    public static List<? extends Completion> getAttributeValueCompletions(CompilationInfo info, Element element, AnnotationMirror annotation, ExecutableElement member, String userText) {
+        List<Completion> completions = new LinkedList<Completion>();
+        if (info.getPhase().compareTo(Phase.ELEMENTS_RESOLVED) >= 0) {
+            String fqn = ((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
+            Iterable<? extends Processor> processors = info.impl.getJavacTask().getProcessors();
+            if (processors != null) {
+                for (Processor processor : processors) {
+                    boolean match = false;
+                    for (String sat : processor.getSupportedAnnotationTypes()) {
+                        if ("*".equals(sat)) { //NOI18N
+                            match = true;
+                            break;
+                        } else if (sat.endsWith(".*")) { //NOI18N
+                            sat = sat.substring(0, sat.length() - 1);
+                            if (fqn.startsWith(sat)) {
+                                match = true;
+                                break;
+                            }
+                        } else if (fqn.equals(sat)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        try {
+                            for (Completion c : processor.getCompletions(element, annotation, member, userText)) {
+                                completions.add(c);
+                            }
+                        } catch (Exception e) {
+                            Logger.getLogger(processor.getClass().getName()).log(Level.INFO, e.getMessage(), e);
+                        }
+                    }
+                }
+            }
+        }
+        return completions;
+    }
+
     /**
      * Returns the type element within which this member or constructor
      * is declared. Does not accept packages
@@ -271,27 +326,38 @@ public class SourceUtils {
             return fqn;
         
         //not imported/visible so far by any means:
-        if (info instanceof WorkingCopy) {
-            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
-            cut = nue != null ? nue : cut;
-            ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                                copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                                copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));                                
-                            }
-                        }).commit();
-                    } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
+        String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
+        if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
+            if (info instanceof WorkingCopy) {
+                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
+                cut = nue != null ? nue : cut;
+                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                    copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));
+                                }
+                            }).commit();
+                        } catch (Exception e) {
+                            Exceptions.printStackTrace(e);
+                        }
                     }
-                }
-            });
+                });
+            }
+        } else { // embedded java, look up the handler for the top level language
+            Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
+            Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
+
+            for (ImportProcessor importsProcesor : instances) {
+                importsProcesor.addImport(info.getDocument(), fqn);
+            }
+            
         }
         TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {
@@ -402,7 +468,8 @@ public class SourceUtils {
             List<FileObject> fos = cp.findAllResources(pkgName);
             for (FileObject fo : fos) {
                 FileObject root = cp.findOwnerRoot(fo);
-                assert root != null;
+                if (root == null)
+                    continue;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));
@@ -474,195 +541,16 @@ public class SourceUtils {
      * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
      * For {@link PackageElement} it returns the package-summary.html for given package.
      * @param element to find the Javadoc for
-     * @param cpInfo classpaths used to resolve
+     * @param cpInfo classpaths used to resolve (currently unused)
      * @return the URL of the javadoc page or null when the javadoc is not available.
      */
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
     public static URL getJavadoc (final Element element, final ClasspathInfo cpInfo) {      
-        if (element == null || cpInfo == null) {
-            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getJavadoc");  //NOI18N
-        }
-        
-        ClassSymbol clsSym = null;
-        String pkgName;
-        String pageName;
-        boolean buildFragment = false;
-        if (element.getKind() == ElementKind.PACKAGE) {
-            List<? extends Element> els = element.getEnclosedElements();            
-            for (Element e :els) {
-                if (e.getKind().isClass() || e.getKind().isInterface()) {
-                    clsSym = (ClassSymbol) e;
-                    break;
-                }
-            }
-            if (clsSym == null) {
-                return null;
-            }
-            pkgName = FileObjects.convertPackage2Folder(((PackageElement)element).getQualifiedName().toString());
-            pageName = PACKAGE_SUMMARY;
-        }
-        else {
-            Element e = element;
-            StringBuilder sb = new StringBuilder();
-            while(e.getKind() != ElementKind.PACKAGE) {
-                if (e.getKind().isClass() || e.getKind().isInterface()) {
-                    if (sb.length() > 0)
-                        sb.insert(0, '.');
-                    sb.insert(0, e.getSimpleName());
-                    if (clsSym == null)
-                        clsSym = (ClassSymbol)e;
-                }
-                e = e.getEnclosingElement();
-            }
-            if (clsSym == null)
-                return null;
-            pkgName = FileObjects.convertPackage2Folder(((PackageElement)e).getQualifiedName().toString());
-            pageName = sb.toString();
-            buildFragment = element != clsSym;
-        }
-        
-        if (clsSym.completer != null) {
-            clsSym.complete();
-        }
-        
-        URL sourceRoot = null;
-        Set<URL> binaries = new HashSet<URL>();        
-        try {
-            if (clsSym.classfile != null) {
-                FileObject  fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
-                StringTokenizer tk = new StringTokenizer(pkgName,"/");             //NOI18N
-                for (int i=0 ;fo != null && i<=tk.countTokens(); i++) {
-                    fo = fo.getParent();
-                }
-                if (fo != null) {
-                    URL url = fo.getURL();
-                    sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
-                    if (sourceRoot == null) {
-                        binaries.add(url);
-                    } else {
-                        // sourceRoot may be a class root in reality
-                        binaries.add(sourceRoot);
-                    }
-                }
-            }
-            if (sourceRoot != null) {
-                FileObject sourceFo = URLMapper.findFileObject(sourceRoot);
-                if (sourceFo != null) {
-                    ClassPath exec = ClassPath.getClassPath(sourceFo, ClassPath.EXECUTE);
-                    ClassPath compile = ClassPath.getClassPath(sourceFo, ClassPath.COMPILE);
-                    ClassPath source = ClassPath.getClassPath(sourceFo, ClassPath.SOURCE);
-                    if (exec == null) {
-                        exec = compile;
-                        compile = null;
-                    }
-                    if (exec != null && source != null) {
-                        Set<URL> roots = new HashSet<URL>();
-                        for (ClassPath.Entry e : exec.entries()) {
-                            roots.add(e.getURL());
-                        }
-                        if (compile != null) {
-                            for (ClassPath.Entry e : compile.entries()) {
-                                roots.remove(e.getURL());
-                            }
-                        }
-                        List<FileObject> sourceRoots = Arrays.asList(source.getRoots());
-out:                    for (URL e : roots) {
-                            FileObject[] res = SourceForBinaryQuery.findSourceRoots(e).getRoots();
-                            for (FileObject fo : res) {
-                                if (sourceRoots.contains(fo)) {
-                                    binaries.add(e);
-                                    continue out;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            for (URL binary : binaries) {
-                Result javadocResult = JavadocForBinaryQuery.findJavadoc(binary);
-                URL[] result = javadocResult.getRoots();
-                for (int cntr = 0; cntr < result.length; cntr++) {
-                    if (!result[cntr].toExternalForm().endsWith("/")) { // NOI18N
-                        Logger.getLogger(SourceUtils.class.getName()).log(Level.WARNING, "JavadocForBinaryQuery.Result: {0} returned non-folder URL: {1}, ignoring", new Object[] {javadocResult.getClass(), result[cntr].toExternalForm()});
-                        result[cntr] = null;
-                    }
-                }
-                ClassPath cp = ClassPathSupport.createClassPath(result);
-                FileObject fo = cp.findResource(pkgName);
-                if (fo != null) {
-                    for (FileObject child : fo.getChildren()) {
-                        if (pageName.equals(child.getName()) && FileObjects.HTML.equalsIgnoreCase(child.getExt())) {
-                            URL url = child.getURL();
-                            CharSequence fragment = null;
-                            if (url != null && buildFragment) {
-                                fragment = getFragment(element);
-                            }
-                            if (fragment != null && fragment.length() > 0) {
-                                try {
-                                    // Javadoc fragments may contain chars that must be escaped to comply with RFC 2396.
-                                    // Unfortunately URLEncoder escapes almost everything but
-                                    // spaces replaces with '+' char which is wrong so it is
-                                    // replaced with "%20"escape sequence here.
-                                    String encodedfragment = URLEncoder.encode(fragment.toString(), "UTF-8"); // NOI18N
-                                    encodedfragment = encodedfragment.replace("+", "%20"); // NOI18N
-                                    return new URI(url.toExternalForm() + '#' + encodedfragment).toURL();
-                                } catch (URISyntaxException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (UnsupportedEncodingException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (MalformedURLException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                            return url;
-                        }
-                    }
-                }
-            }
-            
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
-        catch (FileStateInvalidException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
-    }
-    
-    private static CharSequence getFragment(Element e) {
-        StringBuilder sb = new StringBuilder();
-        if (!e.getKind().isClass() && !e.getKind().isInterface()) {
-            if (e.getKind() == ElementKind.CONSTRUCTOR) {
-                sb.append(e.getEnclosingElement().getSimpleName());
-            } else {
-                sb.append(e.getSimpleName());
-            }
-            if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-                ExecutableElement ee = (ExecutableElement)e;
-                sb.append('('); //NOI18N
-                for (Iterator<? extends VariableElement> it = ee.getParameters().iterator(); it.hasNext();) {
-                    VariableElement param = it.next();
-                    appendType(sb, param.asType(), ee.isVarArgs() && !it.hasNext());
-                    if (it.hasNext())
-                        sb.append(", ");
-                }
-                sb.append(')'); //NOI18N
-            }
-        }
-        return sb;
-    }
-    
-    private static void appendType(StringBuilder sb, TypeMirror type, boolean varArg) {
-        switch (type.getKind()) {
-            case ARRAY:
-                appendType(sb, ((ArrayType)type).getComponentType(), false);
-                sb.append(varArg ? "..." : "[]"); //NOI18N
-                break;
-            case DECLARED:
-                sb.append(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName());
-                break;
-            default:
-                sb.append(type);
+        JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element);
+        if (page == null) {
+            return null;
+        } else {
+            page.close();
+            return page.getLocation();
         }
     }
     
@@ -828,17 +716,46 @@ out:                    for (URL e : roots) {
         if (qualifiedName == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
+        //Fast path check by index - main in sources
+        for (ClassPath.Entry entry : cpInfo.getClassPath(PathKind.SOURCE).entries()) {
+            final Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(entry.getURL());
+            try {
+                final URI root = entry.getURL().toURI();
+                for (URL mainClass : mainClasses) {
+                    try {
+                        URI relative = root.relativize(mainClass.toURI());
+                        final String resourceNameNoExt = FileObjects.stripExtension(relative.getPath());
+                        final String ffqn = FileObjects.convertFolder2Package(resourceNameNoExt,'/');  //NOI18N
+                        if (qualifiedName.equals(ffqn)) {
+                            final ClassPath bootCp = cpInfo.getClassPath(PathKind.BOOT);
+                            if (bootCp.findResource(resourceNameNoExt + '.' + FileObjects.CLASS)!=null) {
+                                //Resource in platform, fall back to slow path
+                                break;
+                            } else {
+                                return true;
+                            }
+                        }
+                    } catch (URISyntaxException e) {
+                        LOG.info("Ignoring fast check for file: " + mainClass.toString() + " due to: " + e.getMessage()); //NOI18N
+                    }
+                }
+            } catch (URISyntaxException e) {
+                LOG.info("Ignoring fast check for root: " + entry.getURL().toString() + " due to: " + e.getMessage()); //NOI18N
+            }
+        }
+        //Slow path fallback - for main in libraries
         final boolean[] result = new boolean[]{false};
         JavaSource js = JavaSource.create(cpInfo);
         try {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
-                    TypeElement type = ((JavacElements)control.getElements()).getTypeElementByBinaryName(qualifiedName);
+                    final JavacElements elms = (JavacElements)control.getElements();
+                    TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
                     if (type == null) {
                         return;
                     }
-                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
+                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
                     for (ExecutableElement method : methods) {
                         if (SourceUtils.isMainMethod(method)) {
                             result[0] = true;

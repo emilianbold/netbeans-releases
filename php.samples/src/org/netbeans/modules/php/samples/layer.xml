@@ -14,23 +14,14 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/AirAlliance.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                   <!--
-                    <file name="BookORama" url="BookORama.zip">
+                    <file name="Jobeet" url="Jobeet.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Jobeet.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/BookORama.html"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Jobeet.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                    <file name="Tahuayo" url="Tahuayo.zip">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Tahuayo.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file>
-                    -->
-                    
                 </folder>
-                
             </folder>
         </folder>
     </folder>

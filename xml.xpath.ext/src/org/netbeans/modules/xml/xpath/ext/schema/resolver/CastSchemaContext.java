@@ -22,15 +22,18 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import org.netbeans.modules.xml.xpath.ext.spi.*;
 import java.util.Collections;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 
 /**
  * The schema context, which relates to a Type Cast step. 
  * 
  * @author nk160297
  */
-public class CastSchemaContext implements XPathSchemaContext {
+public class CastSchemaContext implements WrappingSchemaContext {
 
     // The context, which this Cast context based on. 
     private XPathSchemaContext mBaseContext; 
@@ -39,7 +42,7 @@ public class CastSchemaContext implements XPathSchemaContext {
     private Set<SchemaCompPair> mCompPairSet;
 
     private boolean lastInChain = false;
-    
+
     public CastSchemaContext(XPathSchemaContext baseContext, 
             XPathCast xPathCast) {
         mBaseContext = baseContext;
@@ -62,7 +65,7 @@ public class CastSchemaContext implements XPathSchemaContext {
         if (mCompPairSet == null) {
             XPathSchemaContext parentContext = getParentContext();
             SchemaCompHolder parentCompHolder = 
-                    Utilities.getSchemaCompHolder(parentContext);
+                    Utilities.getSchemaCompHolder(parentContext, false);
             //
             GlobalType type = mXPathCast.getType();
             SchemaCompPair sCompPair = new SchemaCompPair(type, parentCompHolder);
@@ -101,44 +104,34 @@ public class CastSchemaContext implements XPathSchemaContext {
         return sb.toString();
     }
 
+    public String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms) {
+        // Doesn't change anything here. The TypeCast is invisible in XPath!
+        return mBaseContext.getExpressionString(nsContext, sms);
+    }
+
     @Override
     public boolean equals(Object obj)  {
         if (obj instanceof CastSchemaContext) {
-            //
             CastSchemaContext other = (CastSchemaContext)obj;
-            if (this.mBaseContext.equals(other.mBaseContext) && 
-                    this.mXPathCast.getType().equals(other.mXPathCast.getType())) {
-                return true;
-            }
-            //
-            return false;
-        } else if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equals(
-                    this, (XPathSchemaContext)obj);
+            return XPathUtils.equal(
+                    this.mBaseContext, other.mBaseContext) &&
+                    XPathUtils.equal(
+                    this.mXPathCast.getType(), other.mXPathCast.getType());
         }
         //
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.mBaseContext != null ? this.mBaseContext.hashCode() : 0);
+        hash = 89 * hash + (this.mXPathCast != null ? this.mXPathCast.hashCode() : 0);
+        return hash;
+    }
     
     public boolean equalsChain(XPathSchemaContext other) {
-        if (equals(other)) {
-            //
-            // Compare parent contexts
-            XPathSchemaContext parentCont1 = this.getParentContext();
-            XPathSchemaContext parentCont2 = other.getParentContext();
-            if (parentCont1 != null && parentCont2 != null) {
-                boolean result = parentCont1.equalsChain(parentCont2);
-                if (!result) {
-                    return false;
-                }
-            } else if ((parentCont1 == null && parentCont2 != null) || 
-                    (parentCont1 != null && parentCont2 == null)) {
-                return false;
-            } 
-            //
-            return true;
-        }
-        return false;
+        return XPathSchemaContext.Utilities.equalsChain(this, other);
     }
 
     public boolean isLastInChain() {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,23 +53,20 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.AllFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private JList exeList;
-    private FileFilter elfExecutableFileFilter = ElfExecutableFileFilter.getInstance();
-    private FileFilter exeExecutableFileFilter = PeExecutableFileFilter.getInstance();
-    private FileFilter machOExecutableFileFilter = MacOSXExecutableFileFilter.getInstance();
+    private FileFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private FileFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private FileFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -90,14 +90,17 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
         documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateExe();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateExe();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateExe();
             }
@@ -114,8 +117,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         validateExe();
     }
 
-    class MyListSelectionListener implements ListSelectionListener {
+    private final class MyListSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting() == false) {
                 int i = exeList.getSelectedIndex();
@@ -159,13 +163,16 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             // Something is wrong
             return new String[]{};
         }
-        ArrayList<String> list = new ArrayList<String>();
-        addExecutables(root, list);
-        return list.toArray(new String[list.size()]);
+        ArrayList<String> aLlist = new ArrayList<String>();
+        addExecutables(root, aLlist);
+        return aLlist.toArray(new String[aLlist.size()]);
     }
 
     private void addExecutables(File dir, List<String> filesAdded) {
         File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 // FIXUP: is this the best way to deal with files under SCCS?
@@ -179,14 +186,14 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 }
                 addExecutables(files[i], filesAdded);
             } else {
-                if (AllFileFilter.getInstance().accept(files[i])) {
+                if (FileFilterFactory.getAllFileFilter().accept(files[i])) {
                     continue;
                 }
-                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                     if (exeExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
-                } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+                } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     if (machOExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
@@ -311,12 +318,12 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             seed = System.getProperty("user.home"); // NOI18N
         }
         FileFilter[] filters;
-        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
-            filters = new FileFilter[]{PeExecutableFileFilter.getInstance()};
-        } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
-            filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance()};
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+            filters = new FileFilter[]{FileFilterFactory.getPeExecutableFileFilter()};
+        } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            filters = new FileFilter[]{FileFilterFactory.getMacOSXExecutableFileFilter()};
         } else {
-            filters = new FileFilter[]{ElfExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter()};
         }
         JFileChooser fileChooser = new FileChooser(
                 getString("CHOOSER_TITLE_TXT"),
@@ -330,7 +337,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             return;
         }
 
-        String path = FilePathAdaptor.normalize(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

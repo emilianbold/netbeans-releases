@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
@@ -67,6 +72,9 @@ import org.openide.text.NbDocument;
  */
 public class GsfSemanticLayer extends AbstractHighlightsContainer implements DocumentListener {
     
+    // -J-Dorg.netbeans.modules.csl.editor.semantic.GsfSemanticLayer.level=FINE
+    private static final Logger LOG = Logger.getLogger(GsfSemanticLayer.class.getName());
+
     //private Map<Token, Coloring> colorings;
     private SortedSet<SequenceElement> colorings;
     private int version;
@@ -97,7 +105,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         NbDocument.runAtomic((StyledDocument) doc, 
 //        SwingUtilities.invokeLater(
         /*doc.render(*/new Runnable() {
-            public void run() {
+            public @Override void run() {
                 synchronized (GsfSemanticLayer.this) {
                     GsfSemanticLayer.this.colorings = colorings;
                     GsfSemanticLayer.this.edits = new ArrayList<Edit>();
@@ -132,6 +140,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         return version;
     }
     
+    @Override
     public synchronized HighlightsSequence getHighlights(int startOffset, int endOffset) {
         if (colorings.isEmpty()) {
             return HighlightsSequence.EMPTY;
@@ -145,34 +154,40 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     }
     
     synchronized AttributeSet getColoring(Coloring c, Language language) {
+        AttributeSet a = null;
         Map<Coloring,AttributeSet> map = CACHE.get(language);
         if (map == null) {
-            AttributeSet a = language.getColoringManager().getColoringImpl(c);
+            a = language.getColoringManager().getColoringImpl(c);
             map = new HashMap<Coloring,AttributeSet>();
             map.put(c, a);
             CACHE.put(language, map);
-            return a;
         } else {
-            AttributeSet a = map.get(c);
+            a = map.get(c);
             if (a == null) {
                 map.put(c, a = language.getColoringManager().getColoringImpl(c));
             }
-            return a;
         }
+        if (a == null) {
+            LOG.log(Level.FINE, "Null AttributeSet for coloring {0} in language {1}", new Object [] { c, language });
+        }
+        return a;
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         synchronized (GsfSemanticLayer.this) {
             edits.add(new Edit(e.getOffset(), e.getLength(), true));
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         synchronized (GsfSemanticLayer.this) {
             edits.add(new Edit(e.getOffset(), e.getLength(), false));
         }
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
     
@@ -249,6 +264,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
             iterator = subMap.iterator();
         }
 
+        @Override
         public boolean moveNext() {
             if (iterator != null && iterator.hasNext()) {
                 element = iterator.next();
@@ -263,14 +279,17 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
             }
         }
 
+        @Override
         public int getStartOffset() {
             return layer.getShiftedPos(element.range.getStart());
         }
 
+        @Override
         public int getEndOffset() {
             return layer.getShiftedPos(element.range.getEnd());
         }
 
+        @Override
         public AttributeSet getAttributes() {
             Coloring coloring = element.coloring;
             return layer.getColoring(coloring, element.language);

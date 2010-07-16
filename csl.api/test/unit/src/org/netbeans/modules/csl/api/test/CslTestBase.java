@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,6 +70,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -160,7 +164,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.PreviewableFix;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
+import org.netbeans.modules.csl.core.CslEditorKit;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfReformatTaskFactory;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -171,6 +175,7 @@ import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -2068,8 +2073,7 @@ public abstract class CslTestBase extends NbTestCase {
         org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
         assertNotNull(language);
         if (!language.useCustomEditorKit()) {
-            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
-            return factory.kit();
+            return new CslEditorKit(mimeType);
         }
         fail("Must override getEditorKit() for useCustomEditorKit languages");
         return null;
@@ -2107,7 +2111,27 @@ public abstract class CslTestBase extends NbTestCase {
 
         JEditorPane pane = new JEditorPane();
         pane.setContentType(getPreferredMimeType());
-        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
+        final NbEditorKit kit = ((NbEditorKit)getEditorKit(getPreferredMimeType()));
+
+
+        Thread preload = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Preload actions and other stuff
+                if (kit instanceof Callable) {
+                    try {
+                        ((Callable) kit).call();
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                kit.getActions();
+            }
+        });
+        preload.start();
+        preload.join();
+        pane.setEditorKit(kit);
         pane.setText(text);
 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
@@ -3756,7 +3780,7 @@ public abstract class CslTestBase extends NbTestCase {
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
                 
-                Document document = pr.getSnapshot().getSource().getDocument(false);
+                Document document = pr.getSnapshot().getSource().getDocument(true);
                 assert document != null : test;
 
                 // remember the original document content, we are going to destroy it
@@ -3993,6 +4017,49 @@ public abstract class CslTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
     
+    @SuppressWarnings("unchecked")
+    protected final void ensureRegistered(AstRule hint) throws Exception {
+        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        assertNotNull(language.getHintsProvider());
+        GsfHintsManager hintsManager = language.getHintsManager();
+        Map<?, List<? extends AstRule>> hints = (Map<?, List<? extends AstRule>>)hintsManager.getHints();
+        Set<?> kinds = hint.getKinds();
+        for (Object nodeType : kinds) {
+            List<? extends AstRule> rules = hints.get(nodeType);
+            assertNotNull(rules);
+            boolean found = false;
+            for (AstRule rule : rules) {
+                if (rule.getClass() == hint.getClass()) {
+                    found  = true;
+                    break;
+                }
+            }
+
+            assertTrue(found);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final void ensureRegistered(ErrorRule hint) throws Exception {
+        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        assertNotNull(language.getHintsProvider());
+        GsfHintsManager hintsManager = language.getHintsManager();
+        Map<?, List<? extends ErrorRule>> hints = (Map<?, List<? extends ErrorRule>>)hintsManager.getErrors();
+        Set<?> kinds = hint.getCodes();
+        for (Object codes : kinds) {
+            List<? extends ErrorRule> rules = hints.get(codes);
+            assertNotNull(rules);
+            boolean found = false;
+            for (ErrorRule rule : rules) {
+                if (rule.getClass() == hint.getClass()) {
+                    found  = true;
+                    break;
+                }
+            }
+
+            assertTrue(found);
+        }
+    }
 //    public void ensureRegistered(AstRule hint) throws Exception {
 //        Map<Integer, List<AstRule>> hints = JsRulesManager.getInstance().getHints();
 //        Set<Integer> kinds = hint.getKinds();

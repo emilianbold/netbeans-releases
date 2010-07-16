@@ -20,7 +20,10 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.table.ReadOnlyNoExpressionDefaultMoveableRowTableModel;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,6 +33,7 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
@@ -39,8 +43,7 @@ import javax.swing.border.TitledBorder;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -90,7 +93,7 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -114,7 +117,7 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
@@ -158,7 +161,7 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // include timestamp
-            Property includeTimestampProp = mComponent.getProperty(INCLUDE_TIMESTAMP_KEY);
+            Property includeTimestampProp = mComponent.getProperty(PROP_INCLUDE_TIMESTAMP);
             String includeTimestampStr = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "CustomEditor.INCLUDE_TIMESTAMP");
             mIncludeTimestampPanel = PropertyPanel.createCheckBoxPanel(includeTimestampStr, includeTimestampProp);
             gbc.gridx = 3;
@@ -171,9 +174,12 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mIncludeTimestampPanel.panel, gbc);
             
+            String acsd = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "ACSD_BatchedStreamOutputCustomEditor.INCLUDE_TIMESTAMP");
+            ((JCheckBox)mIncludeTimestampPanel.input[0]).getAccessibleContext().setAccessibleDescription(acsd);
+            
             // batch size
-            Property batchSizeProp = mComponent.getProperty(BATCH_SIZE_KEY);
-            String batchSizeStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.BATCH_SIZE");
+            Property batchSizeProp = mComponent.getProperty(PROP_BATCH_SIZE);
+            String batchSizeStr = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "CustomEditor.BATCH_SIZE");
             mBatchSizePanel = PropertyPanel.createIntNumberPanel(batchSizeStr,batchSizeProp, false);
             gbc.gridx = 3;
             gbc.gridy = 1;
@@ -196,9 +202,9 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             pane.add(mBatchSizePanel.component[1], gbc);            
             
             // maximum delay
-            String maximumDelayStr = NbBundle.getMessage(TimeBasedAggregatorCustomEditor.class, "CustomEditor.MAXIMUM_DELAY");
-            Property maximumDelayProp = mComponent.getProperty(MAXIMUM_DELAY_SIZE_KEY);
-            Property maximumDelayUnitProp = mComponent.getProperty(MAXIMUM_DELAY_UNIT_KEY);
+            String maximumDelayStr = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "CustomEditor.MAXIMUM_DELAY");
+            Property maximumDelayProp = mComponent.getProperty(PROP_MAXIMUM_DELAY_SIZE);
+            Property maximumDelayUnitProp = mComponent.getProperty(PROP_MAXIMUM_DELAY_UNIT);
             mMaximumDelayPanel = PropertyPanel.createDurationPanel(maximumDelayStr,maximumDelayProp,maximumDelayUnitProp, false);
             gbc.gridx = 3;
             gbc.gridy = 2;
@@ -230,6 +236,13 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mMaximumDelayPanel.component[2], gbc);
 
+//          accessibilty for notification duration
+            String acsn = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "ACSN_BatchedStreamOutputCustomEditor.MAXIMUM_DELAY");
+            acsd = NbBundle.getMessage(BatchedStreamOutputCustomEditor.class, "ACSD_BatchedStreamOutputCustomEditor.MAXIMUM_DELAY");
+            
+            mMaximumDelayPanel.component[2].getAccessibleContext().setAccessibleName(acsn);
+            mMaximumDelayPanel.component[2].getAccessibleContext().setAccessibleDescription(acsd);
+            
             // glue
             gbc.gridx = 6;
             gbc.gridy = 0;
@@ -257,5 +270,23 @@ public class BatchedStreamOutputCustomEditor extends DefaultCustomEditor {
             mMaximumDelayPanel.store();
         }
         
+        @Override
+        protected SelectPanel createSelectPanel(OperatorComponent component) {
+            return new MySelectPanel(component);
+        }
+        
+        class MySelectPanel extends SelectPanel {
+
+            public MySelectPanel(OperatorComponent component) {
+                 super(component);
+             }
+                     
+             @Override
+             protected DefaultMoveableRowTableModel createTableModel() {
+                 return new ReadOnlyNoExpressionDefaultMoveableRowTableModel();
+             }
+         }
+         
+
     }
 }

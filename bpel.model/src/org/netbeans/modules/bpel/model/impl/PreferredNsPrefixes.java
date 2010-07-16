@@ -16,10 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.HashMap;
+import javax.xml.XMLConstants;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
 import org.netbeans.modules.bpel.model.ext.Extensions;
 
@@ -32,28 +33,22 @@ public final class PreferredNsPrefixes {
 
     private static HashMap<String, String> uriToPrefixMap;
 
-    /**
-     * Returns either the preferred prefix or null.
-     * @param nsUri
-     * @return
-     */
     public static synchronized String getPreferredPrefix(String nsUri) {
         if (uriToPrefixMap == null) {
             uriToPrefixMap = new HashMap<String, String>();
-            //
-            // Initialize the map
-            uriToPrefixMap.put(BpelXPathExtFunctionMetadata.SUN_EXT_FUNC_NS, 
-                    "sxxf"); // NOI18N
-            
+            uriToPrefixMap.put(BpelXPathExtFunctionMetadata.SUN_EXT_FUNC_NS, "sxxf"); // NOI18N
             uriToPrefixMap.put(Extensions.TRACE_EXT_URI, "sxt"); // NOI18N
-            uriToPrefixMap.put(Extensions.ERROR_EXT_URI, "sxeh"); // NOI18N
+            uriToPrefixMap.put(Extensions.ERROR_HANDLER_URI, "sxeh"); // NOI18N
             uriToPrefixMap.put(Extensions.TRANSACTION_EXT_URI, "sxtx"); // NOI18N
-            uriToPrefixMap.put(Extensions.EDITOR_EXT_URI, "sxed"); // NOI18N
+//            uriToPrefixMap.put(Extensions.EDITOR_EXT_URI, "sxed"); // NOI18N
+            uriToPrefixMap.put(Extensions.EDITOR2_EXT_URI, "sxed"); // NOI18N
+            uriToPrefixMap.put(Extensions.NM_PROPERTY_EXT_URI, "sxnmp"); // NOI18N
+            uriToPrefixMap.put(Extensions.SUN_JS_EXT_URI, "sxdh"); // NOI18N
+            uriToPrefixMap.put(BpelEntity.WS_ADDRESSING_2004_08_NS_URI, "wsa"); // NOI18N
+            uriToPrefixMap.put(BpelEntity.WS_BPEL_SERVICE_REF_NS_URI, "sref"); // NOI18N
+            uriToPrefixMap.put(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi"); // NOI18N
         }
-        //
         String prefix = uriToPrefixMap.get(nsUri);
         return prefix;
     }
-    
 }
-

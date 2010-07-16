@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -36,20 +39,17 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
-import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
@@ -59,60 +59,50 @@ import org.openide.WizardDescriptor;
  *
  * @author radval
  */
-public class IEPWizardHelper {
+public class IEPWizardHelper implements SharedConstants {
 
     public static void processUsingExistingSchema(IEPModel model, WizardDescriptor wizard) {
-    //if user has provided attribute list
+        //if user has provided attribute list
         //use it and create a stream input.
         List<PlaceholderSchemaAttribute> attrList = (List<PlaceholderSchemaAttribute>) wizard.getProperty(WizardConstants.WIZARD_SELECTED_ATTRIBUTE_LIST_KEY);
-        
-        if(attrList != null && !attrList.isEmpty()) {
+
+        if (attrList != null && !attrList.isEmpty()) {
             IEPComponentFactory factory = model.getFactory();
-            
+
             //stream input
             String ctPath = "/IEP/Input/StreamInput"; //NOT I18N
-            OperatorComponent operator = ModelObjectFactory.getInstance().createOperatorComponent(ctPath, model);
+            OperatorComponent operator = model.getFactory().createOperator(model, ctPath);
             OperatorComponentContainer opContainer = model.getPlanComponent().getOperatorComponentContainer();
-                
+
             model.startTransaction();
             String name = NameGenerator.generateNewName(opContainer, operator.getComponentType());
-            operator.setDisplayName(name);
+            operator.setString(PROP_NAME, name);
 
             String id = NameGenerator.generateId(opContainer, "o");
-            operator.setId(id);
+            operator.setString(PROP_ID, id);
             operator.setName(id);
             operator.setTitle(id);
+            operator.setInt(PROP_X, 50);
+            operator.setInt(PROP_Y, 50);
 
-            operator.setX(50);
-            operator.setY(50);
-
-                
             opContainer.addChildComponent(operator);
-                
+
             //create schema
             SchemaComponent sComponent = factory.createSchema(model);
             SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
-
-            
             String schemaName = NameGenerator.generateSchemaName(scContainer);
-            
-
             sComponent.setName(schemaName);
             sComponent.setTitle(schemaName);
 
-            
-                        
-                        
-                        
             List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
-            
+
             Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
-            
-            while(it.hasNext()) {
+
+            while (it.hasNext()) {
                 PlaceholderSchemaAttribute attr = it.next();
                 SchemaAttribute sa = factory.createSchemaAttribute(model);
                 String attrName = attr.getAttributeName();
-                if(attrName == null || attrName.trim().equals("")) {
+                if (attrName == null || attrName.trim().equals("")) {
                     continue;
                 }
                 sa.setName(attrName);
@@ -121,15 +111,14 @@ public class IEPWizardHelper {
                 sa.setAttributeType(attr.getAttributeType());
                 sa.setAttributeSize(attr.getAttributeSize());
                 sa.setAttributeScale(attr.getAttributeScale());
-                
+
                 attrs.add(sa);
             }
-            
+
             sComponent.setSchemaAttributes(attrs);
             scContainer.addSchemaComponent(sComponent);
-            
-            Property outputSchema = operator.getProperty(SharedConstants.OUTPUT_SCHEMA_ID_KEY);
-            outputSchema.setValue(sComponent.getName());
+
+            operator.setString(PROP_OUTPUT_SCHEMA_ID, sComponent.getName());
             model.endTransaction();
         }
     }

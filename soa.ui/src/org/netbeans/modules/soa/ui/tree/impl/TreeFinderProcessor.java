@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,6 @@
 
 package org.netbeans.modules.soa.ui.tree.impl;
 
-import org.netbeans.modules.soa.ui.tree.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -150,8 +152,53 @@ public class TreeFinderProcessor {
         return result;
     }
 
+    
     /**
-     * An auxiliary method is intended to help seach nodes recursively.
+     * Looks for the tree pathes which tail satisfies the search conditions, 
+     * which are specified by the finder.
+     * 
+     * @param list of finders
+     * @return List of tree items 
+     */
+    public List<TreePath> findAllTreePaths(TreeItemFinder finder) {
+        List<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>(1);
+        finderList.add(finder);
+        return findAllTreePaths(finderList);
+    }
+    
+    
+    /**
+     * Looks for the tree pathes which tail satisfies the search conditions, 
+     * which are specified by the finderList argument.
+     * 
+     * @param list of finders
+     * @return List of tree items 
+     */
+    public List<TreePath> findAllTreePaths(List<TreeItemFinder> finderList) {
+        if (finderList == null || finderList.isEmpty()) {
+            return null;
+        }
+        //
+        ArrayList<List<Object>> foundLocations = new ArrayList<List<Object>>();
+        //
+        Object rootNode = mTreeModel.getRoot();
+        Stack<Object> locationStack = new Stack<Object>();
+        locationStack.push(rootNode);
+        //
+        for (TreeItemFinder finder : finderList) {
+            fillNodesList(foundLocations, locationStack, finder, -1, false);
+        }
+        //
+        ArrayList<TreePath> result = new ArrayList<TreePath>();
+        for (List<Object> location : foundLocations) {
+            TreePath treePath = new TreePath(location.toArray());
+            result.add(treePath);
+        }
+        return result;
+    }
+    
+    /**
+     * An auxiliary method is intended to help search nodes recursively.
      * The locationStack parameter specifies a chain of MapperTreeNode 
      * objects, which points to the tree node, from which the searching 
      * has to be started. 
@@ -212,7 +259,7 @@ public class TreeFinderProcessor {
     //-------------------------------------------------------------------------
     
     /**
-     * An auxiliary method is intended to help seach nodes recursively.
+     * An auxiliary method is intended to help search nodes recursively.
      * See description of the findFirstNode method. 
      * Unlike the findFirstNode it can find more then one node.
      */

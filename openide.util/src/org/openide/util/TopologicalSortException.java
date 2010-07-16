@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ public final class TopologicalSortException extends Exception {
     private Collection vertexes;
 
     /** map with edges */
-    private Map edges;
+    private Map<?,? extends Collection<?>> edges;
 
     /** result if called twice */
     private Set[] result;
@@ -69,7 +72,7 @@ public final class TopologicalSortException extends Exception {
     /** vertexes sorted by increasing value of y */
     private Stack<Vertex> dualGraph = new Stack<Vertex>();
 
-    TopologicalSortException(Collection vertexes, Map edges) {
+    TopologicalSortException(Collection vertexes, Map<?,? extends Collection<?>> edges) {
         this.vertexes = vertexes;
         this.edges = edges;
     }
@@ -134,13 +137,23 @@ public final class TopologicalSortException extends Exception {
     }
 
     private void printDebug(java.io.PrintWriter w) {
-        w.print("TopologicalSortException - Collection: "); // NOI18N
-        w.print(vertexes);
-        w.print(" with edges "); // NOI18N
-        w.print(edges);
+        Set<Object> relevantVertices = new HashSet<Object>();
+        Set<?>[] bad = unsortableSets();
+        for (Set<?> s : bad) {
+            relevantVertices.addAll(s);
+        }
+        Map<Object,Collection<?>> relevantEdges = new HashMap<Object,Collection<?>>();
+        for (Map.Entry<?,? extends Collection<?>> entry : edges.entrySet()) {
+            Set<Object> relevant = new HashSet<Object>(entry.getValue());
+            relevant.add(entry.getKey());
+            relevant.retainAll(relevantVertices);
+            if (!relevant.isEmpty()) {
+                relevantEdges.put(entry.getKey(), entry.getValue());
+            }
+        }
+        w.print("TopologicalSortException - Collection with relevant edges "); // NOI18N
+        w.print(relevantEdges);
         w.println(" cannot be sorted"); // NOI18N
-
-        Set[] bad = unsortableSets();
 
         for (int i = 0; i < bad.length; i++) {
             w.print(" Conflict #"); // NOI18N

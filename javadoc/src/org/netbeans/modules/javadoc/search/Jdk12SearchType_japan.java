@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,15 +49,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import org.openide.util.Exceptions;
-import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * Jdk12SearchType.java
  *
  * @author Petr Hrebejk, Petr Suchomel
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class, position=100)
+@ServiceProvider(service=JavadocSearchType.class, position=100)
 public final class Jdk12SearchType_japan extends Jdk12SearchType {
 
     private String  japanEncoding;
@@ -88,13 +92,13 @@ public final class Jdk12SearchType_japan extends Jdk12SearchType {
      * @see IndexSearchThread
      */    
     @Override
-    public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
+    public IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
         //here you can send one more parameter .. getJapanEncoding
         return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive(), getJapanEncoding() );
     }    
 
     @Override
-    public boolean accepts(org.openide.filesystems.FileObject root, String encoding) {
+    public boolean accepts(URL root, String encoding) {
         if (encoding == null) {
             return false;
         }
@@ -111,11 +115,10 @@ public final class Jdk12SearchType_japan extends Jdk12SearchType {
         
         if ("utf-8".equals(encoding)) { // NOI18N
             try {
-                FileObject fo = root.getFileObject("allclasses-frame.html"); // NOI18N
-                if (fo == null) {
+                InputStream is = URLUtils.open(root, "allclasses-frame.html"); // NOI18N
+                if (is == null) {
                     return false;
                 }
-                InputStream is = fo.getInputStream();
                 boolean jazip = false;
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader(is, encoding));

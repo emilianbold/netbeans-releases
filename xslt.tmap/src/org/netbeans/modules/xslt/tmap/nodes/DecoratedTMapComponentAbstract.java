@@ -33,13 +33,19 @@ public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent>
 {
 
     private T myOrig;
+    private Object myAlternativeRef;
     
     public DecoratedTMapComponentAbstract(T orig) {
+        this(orig, null);
+    }
+
+    public DecoratedTMapComponentAbstract(T orig, Object alternativeRef) {
         myOrig = orig;
+        myAlternativeRef = alternativeRef;
     }
 
     public String getName() {
-        T ref = getOriginal();
+        T ref = getReference();
         String name = null;
         if (ref != null && ref instanceof Nameable) {
             name = ((Nameable)ref).getName();
@@ -70,8 +76,12 @@ public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent>
         return type != null ? type.getImage(): NodeType.UNKNOWN_TYPE.getImage();
     }
 
-    public T getOriginal() {
+    public T getReference() {
         return myOrig;
+    }
+
+    public Object getAlternativeReference() {
+        return myAlternativeRef;
     }
 
     @Override
@@ -81,8 +91,8 @@ public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent>
         }
         
         if (obj instanceof DecoratedTMapComponent) {
-            TMapComponent objComponent = ((DecoratedTMapComponent)obj).getOriginal();
-            TMapComponent origComponent = getOriginal();
+            Object objComponent = ((DecoratedTMapComponent)obj).getReference();
+            TMapComponent origComponent = getReference();
             if (origComponent != null ) {
                 return origComponent.equals(objComponent);
             }
@@ -92,7 +102,7 @@ public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent>
 
     @Override
     public int hashCode() {
-        TMapComponent origComponent = getOriginal();
+        TMapComponent origComponent = getReference();
         return origComponent == null ? origComponent.hashCode() : super.hashCode();
     }
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -387,14 +390,18 @@ public class CodeStructure {
     }
 
     private static class GlobalUsingObject implements UsingCodeObject {
+        @Override
         public void usageRegistered(UsedCodeObject usedObject) {
         }
+        @Override
         public boolean usedObjectRemoved(UsedCodeObject usedObject) {
             return true;
         }
+        @Override
         public UsedCodeObject getDefiningObject() {
             return null;
         }
+        @Override
         public Iterator getUsedObjectsIterator() {
             return null;
         }
@@ -738,7 +745,7 @@ public class CodeStructure {
         redoMap.clear();
         lastUndone = -1;
 
-        if (undoMap.size() == 0)
+        if (undoMap.isEmpty())
             oldestMark = undoRedoMark;
 
         t("adding undoable change "+undoRedoMark); // NOI18N
@@ -862,29 +869,35 @@ public class CodeStructure {
             this.name = name;
         }
 
+        @Override
         public int getType() {
             return (type & DEFAULT_TYPE) != DEFAULT_TYPE ?
                    type : getDefaultVariableType();
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Class getDeclaredType() {
             return declaredType;
         }
 
+        @Override
         public String getDeclaredTypeParameters() {
             return declaredTypeParameters;
         }
 
+        @Override
         public Collection getAttachedExpressions() {
             return expressionsMap != null ?
                      Collections.unmodifiableCollection(expressionsMap.keySet()) :
                      Collections.EMPTY_LIST;
         }
 
+        @Override
         public CodeStatement getDeclaration() {
             if (declarationStatement == null)
                 declarationStatement =
@@ -892,6 +905,7 @@ public class CodeStructure {
             return declarationStatement;
         }
 
+        @Override
         public CodeStatement getAssignment(CodeExpression expression) {
             return expressionsMap != null ? expressionsMap.get(expression) : null;
         }
@@ -929,6 +943,7 @@ public class CodeStructure {
             this.subIterator = subIterator;
         }
 
+        @Override
         public boolean hasNext() {
             if (currentVar != null)
                 return true;
@@ -949,6 +964,7 @@ public class CodeStructure {
             return false;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -958,6 +974,7 @@ public class CodeStructure {
             return var;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -978,6 +995,7 @@ public class CodeStructure {
             variable = var;
         }
 
+        @Override
         public void undo() {
             switch (changeType) {
                 case VARIABLE_CREATE:
@@ -1005,6 +1023,7 @@ public class CodeStructure {
             }
         }
 
+        @Override
         public void redo() {
             switch (changeType) {
                 case VARIABLE_CREATE:

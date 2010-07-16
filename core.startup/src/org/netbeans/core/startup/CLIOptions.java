@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.core.startup;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Locale;
@@ -91,12 +95,13 @@ public class CLIOptions extends CLIHandler {
     protected int cli(Args arguments) {
         return cli(arguments.getArguments());
     }
-    
+
+    private static boolean gui = true;
     
     /** Checks whether we are supposed to use GUI features or not.
      */
     public static boolean isGui () {
-        return "true".equals (System.getProperty ("org.openide.TopManager.GUI")); // NOI18N
+        return gui && !GraphicsEnvironment.isHeadless();
     }
     
     private static boolean isOption (String value, String optionName) {
@@ -118,8 +123,7 @@ public class CLIOptions extends CLIHandler {
             }
             boolean used = true;
             if (isOption (args[i], "nogui")) { // NOI18N
-                System.getProperties().put("org.openide.TopManager", "org.netbeans.core.NonGui"); // NOI18N
-                System.setProperty ("org.openide.TopManager.GUI", "false"); // NOI18N
+                gui = false;
             } else if (isOption (args[i], "nosplash")) { // NOI18N
                 noSplash = true;
             } else if (isOption (args[i], "noinfo")) { // NOI18N

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,14 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javacard.ri.card;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.util.Map;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import org.netbeans.modules.javacard.common.KeysAndValues;
@@ -58,16 +62,17 @@ import org.netbeans.validation.api.ui.ValidationGroup;
  * @author Tim Boudreau
  */
 public class CustomizerProvider implements CardCustomizerProvider {
-    private final Map<Card, CardCustomizer> m = new WeakHashMap<Card, CardCustomizer>();
+    private final WeakHashMap<Card, Reference<CardCustomizer>> m = new WeakHashMap<Card, Reference<CardCustomizer>>();
     public CardCustomizer getCardCustomizer(Card card) {
         CardProperties props = card.getCapability(CardProperties.class);
         if (props != null) {
             synchronized (this) {
-                CardCustomizer cc = m.get(card);
+                Reference<CardCustomizer> ref = m.get(card);
+                CardCustomizer cc = ref == null ? null : ref.get();
                 if (cc == null) {
                     Properties p = props.toProperties();
                     cc = new CC(p);
-                    m.put(card, cc);
+                    m.put(card, new WeakReference<CardCustomizer>(cc));
                 }
                 return cc;
             }
@@ -96,14 +101,15 @@ public class CustomizerProvider implements CardCustomizerProvider {
         }
 
         public boolean isContentValid() {
-            getComponent();
-            return !pnl.getValidationGroup().validateAll().isFatal();
+            return pnl != null && !pnl.getValidationGroup().validateAll().isFatal();
         }
 
         public Component getComponent() {
             assert EventQueue.isDispatchThread();
             if (pnl == null) {
                 pnl = new DevicePropertiesPanel(props);
+            } else {
+                pnl.read(new KeysAndValues.PropertiesAdapter(props));
             }
             return pnl;
         }

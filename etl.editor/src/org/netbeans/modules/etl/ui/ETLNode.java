@@ -48,7 +48,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** A node to represent this object. */
 public class ETLNode extends DataNode implements PropertyChangeListener {

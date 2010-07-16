@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,7 @@ final class PrintDetailsTask implements Runnable {
     /** */
     private static final int BUFFER_SIZE = 8;
     /** */
-    private final Object[] objects;
+    private final List<MatchingObject> objects;
     /** */
     private final BasicSearchCriteria basicSearchCriteria;
     /** */
@@ -75,7 +78,7 @@ final class PrintDetailsTask implements Runnable {
     
     
     /** Creates a new instance of PrintDetailsTask */
-    PrintDetailsTask(final Object[] matchingObjects,
+    PrintDetailsTask(final List<MatchingObject> matchingObjects,
                      final BasicSearchCriteria basicCriteria,
                      final List<SearchType> searchTypes) {
         this.objects = matchingObjects;
@@ -84,17 +87,18 @@ final class PrintDetailsTask implements Runnable {
     }
     
     /** */
+    @Override
     public void run() {
         displayer = new SearchDisplayer();
         callDisplayerFromAWT("prepareOutput");                    //NOI18N
         
         int freeBufSpace = 0;
-        for (Object obj : objects) {
+        for (MatchingObject obj : objects) {
 
             /* Collect details about the found node: */
             Node[] allDetails = null;
             if (basicSearchCriteria != null) {
-                Node[] details = basicSearchCriteria.getDetails(obj);
+                Node[] details = basicSearchCriteria.getDetails(obj.object);
                 if (details != null && details.length != 0) {
                     allDetails = details;
                 }
@@ -216,6 +220,7 @@ final class PrintDetailsTask implements Runnable {
             final Method method = SearchDisplayer.class
                                   .getDeclaredMethod(methodName, new Class[0]);
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         method.invoke(displayer, (Object[]) null);

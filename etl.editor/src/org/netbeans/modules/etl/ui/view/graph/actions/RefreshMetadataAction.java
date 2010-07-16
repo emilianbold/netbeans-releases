@@ -16,7 +16,7 @@
 
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
-import com.sun.sql.framework.exception.DBSQLException;
+import com.sun.etl.exception.DBSQLException;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -101,9 +101,9 @@ public class RefreshMetadataAction extends GraphAction {
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
-                Exceptions.printStackTrace(ex);
+                mLogger.infoNoloc(ex.getMessage());                
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+               mLogger.infoNoloc(ex.getMessage());
             }
         }
 
@@ -130,9 +130,9 @@ public class RefreshMetadataAction extends GraphAction {
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
-                Exceptions.printStackTrace(ex);
+                 mLogger.infoNoloc(ex.getMessage());
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                mLogger.infoNoloc(ex.getMessage());
             }
         }
           BasicTopView gvMgr = (BasicTopView) graphView.getGraphViewContainer();

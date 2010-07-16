@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,8 +104,7 @@ final class RegexpMaker {
                 if (wholeWords && bufIsEmpty && isWordChar(c)) {
                     buf.append(checkNotAfterWordChar);
                 }
-                buf.append('\\');
-                if (isSimpleCharacter(c)) {
+                if ((c == 'n') || isSpecialCharacter(c)) {
                     buf.append('\\');
                 }
                 buf.append(c);
@@ -129,7 +131,7 @@ final class RegexpMaker {
                     if (wholeWords && bufIsEmpty && isWordChar(c)) {
                         buf.append(checkNotAfterWordChar);
                     }
-                    if (!isSimpleCharacter(c)) {
+                    if (isSpecialCharacter(c)) {
                         buf.append('\\');
                     }
                     buf.append(c);
@@ -275,7 +277,7 @@ final class RegexpMaker {
         boolean starPresent = false;
         for (char c : simplePatternList.toCharArray()) {
             if (quoted) {
-                if (!isSimpleCharacter(c)) {
+                if ((c == 'n') || isSpecialCharacter(c)) {
                     buf.append('\\');
                 }
                 buf.append(c);
@@ -302,7 +304,7 @@ final class RegexpMaker {
                     if (c == '\\') {
                         quoted = true;
                     } else {
-                        if (!isSimpleCharacter(c)) {
+                        if (isSpecialCharacter(c)) {
                             buf.append('\\');
                         }
                         buf.append(c);
@@ -321,13 +323,21 @@ final class RegexpMaker {
         return buf.toString();
     }
     
-    private static boolean isSimpleCharacter(char c) {
-        int cint = (int) c;
-        return (cint == 0x20)                               //space
-                || (cint > 0x7f)                            //non-ASCII
-                || (cint >= 0x30) && (cint <= 0x39)          //'0' .. '9'
-                || (cint & ~0x7f) == 0
-                    && ((cint &= ~0x20) >= 0x41) && (cint <= 0x5a); //a..z,A..Z
+    private static boolean isSpecialCharacter(char c) {
+        return (c > 0x20) && (c < 0x80) && !isAlnum(c);
+    }
+
+    private static boolean isAlnum(char c) {
+        return isAlpha(c) || isDigit(c);
+}
+
+    private static boolean isAlpha(char c) {
+        c |= 0x20;  //to lower case
+        return (c >= 'a') && (c <= 'z');
+    }
+
+    private static boolean isDigit(char c) {
+        return (c >= '0') && (c <= '9');
     }
 
 }

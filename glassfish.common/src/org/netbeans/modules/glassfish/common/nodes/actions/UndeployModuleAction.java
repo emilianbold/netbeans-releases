@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,10 +62,13 @@ import org.openide.util.actions.NodeAction;
  */
 public class UndeployModuleAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] nodes) {
         if((nodes == null) || (nodes.length < 1)) {
             return;
         }
+
+        RequestProcessor undeployer = new RequestProcessor("gf-undeployer");
         
         for(Node node : nodes) {
             UndeployModuleCookie uCookie = node.getCookie(UndeployModuleCookie.class);
@@ -70,24 +76,28 @@ public class UndeployModuleAction extends NodeAction {
             if(uCookie != null) {
                 final Future<OperationState> result = uCookie.undeploy();
                 final Node pNode = node.getParentNode().getParentNode();
+                final Node fnode = node;
 
-                RequestProcessor.getDefault().post(new Runnable() {
+                undeployer.post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             result.get(ServerUtilities.ACTION_TIMEOUT, ServerUtilities.ACTION_TIMEOUT_UNIT);
-                            if(pNode != null) {
-                                Node[] nodes = pNode.getChildren().getNodes();
-                                for(Node node : nodes) {
-                                    RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-                                    if(cookie != null) {
-                                        cookie.refresh();
-                                    }
+                        } catch(TimeoutException ex) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, "Undeploy action timed out for " + fnode.getDisplayName());
+                        } catch (InterruptedException ie) {
+                            // we can ignore this
+                        }catch(Exception ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+                        if(pNode != null) {
+                            Node[] nodes = pNode.getChildren().getNodes();
+                            for(Node node : nodes) {
+                                RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
+                                if(cookie != null) {
+                                    cookie.refresh(null, fnode.getDisplayName());
                                 }
                             }
-                        } catch(TimeoutException ex) {
-                            Logger.getLogger("glassfish").log(Level.WARNING, "Timeout waiting on undeploy.", ex);
-                        } catch(Exception ex) {
-                            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                         }
                     }
                 });
@@ -95,6 +105,7 @@ public class UndeployModuleAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for(Node node : nodes) {
             UndeployModuleCookie cookie = node.getCookie(UndeployModuleCookie.class);
@@ -106,6 +117,7 @@ public class UndeployModuleAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(UndeployModuleAction.class, "LBL_UndeployAction");
     }
@@ -115,6 +127,7 @@ public class UndeployModuleAction extends NodeAction {
         return false;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

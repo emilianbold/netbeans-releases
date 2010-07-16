@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,10 +46,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 
@@ -104,8 +108,8 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
             }
 
             @Override
-            public PhpKind getPhpKind() {
-                return PhpKind.CLASS;
+            public PhpElementKind getPhpElementKind() {
+                return PhpElementKind.CLASS;
             }
         };
     }
@@ -140,11 +144,11 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
                 typeOffset+getReturnType().length());
     }
 
-    public List<? extends Parameter> getParameters() {
+    public List<? extends ParameterElement> getParameters() {
         return Collections.emptyList();
     }
     
     public PhpModifiers getAccessModifiers() {
-        return new PhpModifiers(PhpModifiers.PUBLIC);
+        return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
 }

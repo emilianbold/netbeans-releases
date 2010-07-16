@@ -18,18 +18,10 @@
  */
 package org.netbeans.modules.bpel.design.decoration;
 
-import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.decoration.components.DecorationComponent;
-import org.netbeans.modules.bpel.design.decoration.components.ZoomableDecorationComponent;
-import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.xam.Model;
@@ -55,7 +47,6 @@ public class DecorationManager {
             return emptyDecoration;
         }
         BpelEntity entity = p.getOMReference();
-
         Decoration result = null;
 
         if (entity != null) {

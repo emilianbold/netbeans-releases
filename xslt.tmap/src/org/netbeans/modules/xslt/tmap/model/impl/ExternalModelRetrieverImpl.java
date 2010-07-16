@@ -39,8 +39,12 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.util.ImportHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -49,7 +53,6 @@ import org.openide.filesystems.FileUtil;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever.class)
 public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
 
     public ExternalModelRetrieverImpl() {
@@ -63,11 +66,32 @@ public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
         }
         List<WSDLModel> list = new LinkedList<WSDLModel>();
         
-        collectWsdlModelsViaFS(model, namespace, list);
+//        collectWsdlModelsViaFS(model, namespace, list);
+        // while transformmap had been updated to use import we have to use import too
+        collectWsdlModelsViaImports(model, namespace, list);
         
         return list;
     }
     
+    private void collectWsdlModelsViaImports( TMapModel model, String namespace, List<WSDLModel> list) {
+        TransformMap tMap = model.getTransformMap();
+        if (tMap == null) {
+            return;
+        }
+
+        List<Import> imports = tMap.getImports();
+
+        for (Import imp : imports) {
+            if (namespace.equals(imp.getNamespace())) {
+                WSDLModel wsdlModel = ImportHelper.getWsdlModel(imp);
+
+                if (wsdlModel != null && wsdlModel.getState() == Model.State.VALID ){
+                    list.add( wsdlModel);
+                }
+            }
+        }
+    }
+
     private static void collectWsdlModelsViaFS( TMapModel model, 
             String namespace, List<WSDLModel> list ) 
     {

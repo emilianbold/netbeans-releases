@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,16 +44,13 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.openide.util.Lookup;
 
@@ -158,25 +158,6 @@ public abstract class CsmUsingResolver {
      */
     public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace namespace);
 
-    /**
-     * converts collection of using declarations into ordered list of namespaces
-     * each namespace occurs only once according it's first using directive in 'decls' list
-     */
-    public static Collection<CsmDeclaration> extractDeclarations(Collection<CsmUsingDeclaration> decls) {
-        // TODO check the correctness of order
-        LinkedHashMap<CharSequence, CsmDeclaration> out = new LinkedHashMap<CharSequence, CsmDeclaration>(decls.size());
-        for (CsmUsingDeclaration decl : decls) {
-            CsmDeclaration ref = decl.getReferencedDeclaration();
-            if (ref != null) {
-                CharSequence name = decl.getName();
-                // remove previous inclusion
-                out.remove(name);
-                out.put(name, ref);
-            }
-        }
-        return new ArrayList<CsmDeclaration>(out.values());
-    }
-
     //
     // Implementation of the default resolver
     //
@@ -184,18 +165,22 @@ public abstract class CsmUsingResolver {
         Empty() {
         }
 
+        @Override
         public Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmDeclaration>emptyList();
         }
         
+        @Override
         public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
             return Collections.<CsmDeclaration>emptyList();
         }
 
+        @Override
         public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
             return Collections.<CsmUsingDirective>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespace>emptyList();
         }
@@ -204,14 +189,17 @@ public abstract class CsmUsingResolver {
 //            return Collections.<CsmNamespaceDefinition>emptyList();
 //        }
     
+        @Override
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace ns) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject prj) {
             return Collections.<CsmNamespace>emptyList();
         }

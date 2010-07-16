@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.history.RepositoryRevision.Event;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -56,6 +60,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -63,6 +68,8 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.util.Cancellable;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -99,11 +106,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"))); // NOI18N
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.addPropertyChangeListener(this);
         if (!dividerSet) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     dividerSet = true;
                     diffView.setDividerLocation(0.33);
@@ -112,15 +121,18 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
         cancelBackgroundTasks();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             final Node [] nodes = (Node[]) evt.getNewValue();
@@ -138,6 +150,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     RepositoryRevision container1 = nodes[0].getLookup().lookup(RepositoryRevision.class);
                     RepositoryRevision.Event r1 = nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
@@ -185,6 +198,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
+    @Override
     public Collection getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
@@ -204,12 +218,23 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         return parent.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
 
-    protected void showDiffError(String s) {
-        setBottomComponent(new NoContentPanel(s));
+    protected void showDiffError (final String s) {
+        Runnable inAWT = new Runnable() {
+            @Override
+            public void run() {
+                setBottomComponent(new NoContentPanel(s));
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            inAWT.run();
+        } else {
+            EventQueue.invokeLater(inAWT);
+        }
     }
 
     protected SvnProgressSupport createShowDiffTask(Event header, String revision1, String revision2, boolean showLastDifference) {
@@ -217,6 +242,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void setBottomComponent(Component component) {
+        assert EventQueue.isDispatchThread();
         int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
@@ -253,7 +279,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        List<RepositoryRevision.Event> revs = container.getEvents(true);
 
         RepositoryRevision.Event newest = getEventForRoots(container);
         if(newest == null) {
@@ -264,7 +290,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     protected RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        List<RepositoryRevision.Event> revs = container.getEvents(true);
 
         //try to get the root
         File[] roots = parent.getRoots();
@@ -336,7 +362,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         
         private final RepositoryRevision.Event header;
         private final String revision1;
-        private final String revision2;
+        private String revision2;
         private boolean showLastDifference;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
@@ -349,14 +375,46 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         @Override
         protected void perform() {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); // NOI18N
-            final Diff diff = Diff.getDefault();
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
+            File file = header.getFile();
+
+            String title1 = revision1;
+            String title2 = revision2;
+
+            String pegRevision1 = header.getChangedPath().getAction() == 'D' ? revision1 : revision2;
+            String pegRevision2 = revision2;
+            if(header.isFakeRoot()) {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(file);
+                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                    if(info != null) {
+                        pegRevision1 = info.getRevision().toString();
+                        pegRevision2 = pegRevision1;
+                    }
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.WARNING, file != null ? file.getAbsolutePath() : "null", ex); // NOI18N
+                }
+            }
+
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1,
-                    header.getChangedPath().getAction() == 'D' ? revision1 : revision2, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
+            final DiffStreamSource s1 = new DiffStreamSource(
+                    file,
+                    repotUrl,
+                    fileUrl,
+                    revision1,
+                    pegRevision1, title1);
+
+            final DiffStreamSource s2 = 
+                    new DiffStreamSource(
+                        file,
+                        repotUrl, fileUrl,
+                        revision2,
+                        pegRevision2,
+                        title2);
+
             this.setCancellableDelegate(new Cancellable() {
+                @Override
                 public boolean cancel() {
                     s1.cancel();
                     s2.cancel();
@@ -379,25 +437,45 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (currentTask != this) return;
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (isCanceled()) {
                             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
-                        final DiffController view = DiffController.create(s1, s2);
+                        final DiffController view = DiffController.createEnhanced(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());
+                            final int dl = diffView.getDividerLocation();
                             if (!setLocation(view)) {
                                 view.addPropertyChangeListener(new PropertyChangeListener() {
+                                    @Override
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         view.removePropertyChangeListener(this);
                                         setLocation(view);
+                                        Runnable inAWT = new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                parent.refreshComponents(false);
+                                            }
+                                        };
+                                        if (EventQueue.isDispatchThread()) {
+                                            inAWT.run();
+                                        } else {
+                                            EventQueue.invokeLater(inAWT);
+                                        }
                                     }
                                 });
                             }
                             parent.refreshComponents(false);
+                            EventQueue.invokeLater(new Runnable () {
+                                @Override
+                                public void run() {
+                                    diffView.setDividerLocation(dl);
+                                }
+                            });
                         }
                     } catch (IOException e) {
                         Subversion.LOG.log(Level.INFO, null, e);

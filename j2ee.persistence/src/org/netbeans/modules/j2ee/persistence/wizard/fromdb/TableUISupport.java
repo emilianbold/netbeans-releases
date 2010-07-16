@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -61,6 +66,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
@@ -79,11 +85,14 @@ public class TableUISupport {
         return new TableJList();
     }
 
-    public static void connectAvailable(JList availableTablesList, TableClosure tableClosure) {
+    public static void connectAvailable(JList availableTablesList, TableClosure tableClosure, FilterAvailable filter) {
         availableTablesList.setModel(new AvailableTablesModel(tableClosure));
 
         if (!(availableTablesList.getCellRenderer() instanceof AvailableTableRenderer)) {
-            availableTablesList.setCellRenderer(new AvailableTableRenderer());
+            availableTablesList.setCellRenderer(new AvailableTableRenderer(filter));
+        } else {
+            AvailableTableRenderer renderer = (AvailableTableRenderer) availableTablesList.getCellRenderer();
+            renderer.updateFilter(filter);
         }
     }
 
@@ -95,12 +104,32 @@ public class TableUISupport {
         }
     }
 
-    public static Set<Table> getSelectedTables(JList list) {
+    public static Set<Table> getSelectedTables(JList list){
+        return getSelectedTables(list, false);
+    }
+
+    public static Set<Table> getSelectedTables(JList list, boolean enabledOnly) {
         Set<Table> result = new HashSet<Table>();
 
-        Object[] selectedValues = list.getSelectedValues();
-        for (int i = 0; i < selectedValues.length; i++) {
-            result.add((Table)selectedValues[i]);
+        int[] selected = list.getSelectedIndices();
+        for (int i = 0; i < selected.length; i++) {
+            Table table = (Table)list.getModel().getElementAt(selected[i]);
+            if(enabledOnly){
+                if(!list.getCellRenderer().getListCellRendererComponent(list, table, selected[i], false, false).isEnabled())continue;
+            }
+            result.add(table);
+        }
+
+        return result;
+    }
+
+    public static Set<Table> getEnabledTables(JList list) {
+        Set<Table> result = new HashSet<Table>();
+
+        for (int i = 0; i < list.getModel().getSize(); i++) {
+            Table table = (Table)list.getModel().getElementAt(i);
+            if(!list.getCellRenderer().getListCellRendererComponent(list, table, i, false, false).isEnabled())continue;
+            result.add(table);
         }
 
         return result;
@@ -194,6 +223,11 @@ public class TableUISupport {
     }
 
     private static final class AvailableTableRenderer extends DefaultListCellRenderer {
+        private FilterAvailable filter;
+
+        public AvailableTableRenderer(FilterAvailable filter){
+            this.filter = filter;
+        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             DisabledReason disabledReason = null;
@@ -213,10 +247,17 @@ public class TableUISupport {
             }
 
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            component.setEnabled(disabledReason == null);
+            boolean needDisable = (disabledReason instanceof Table.NoPrimaryKeyDisabledReason) || 
+                    (filter.equals(FilterAvailable.NEW) && (disabledReason instanceof Table.ExistingDisabledReason)) ||
+                    (filter.equals(FilterAvailable.UPDATE) && (disabledReason==null));
+            component.setEnabled(!needDisable);
             component.setToolTipText(disabledReason != null ? disabledReason.getDescription() : null);
 
             return component;
+        }
+
+        void updateFilter (FilterAvailable filter){
+            this.filter = filter;
         }
 
     }
@@ -229,13 +270,20 @@ public class TableUISupport {
             Object displayName = null;
             boolean referenced = false;
             TableClosure tableClosure = null;
-
+            DisabledReason disabledReason = null;
             if (value instanceof Table) {
                 table = (Table)value;
-                if(((Table)value).isTable())
-                    displayName = table.getName();
-                else
-                    displayName = table.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
+
+                disabledReason = table.getDisabledReason();
+                if (disabledReason!= null) {
+                    displayName = NbBundle.getMessage(TableUISupport.class, "LBL_TableNameWithDisabledReason", table.getName(), disabledReason.getDisplayName());
+                } else {
+                    if(((Table)value).isTable())
+                        displayName = table.getName();
+                    else
+                        displayName = table.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
+                }
+
 
                 if (list.getModel() instanceof SelectedTablesModel) {
                     SelectedTablesModel model = (SelectedTablesModel)list.getModel();
@@ -247,8 +295,13 @@ public class TableUISupport {
             }
 
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            component.setEnabled(!referenced);
-            component.setToolTipText(referenced ? getTableTooltip(table, tableClosure) : null); // NOI18N
+            component.setEnabled(!referenced && !(table.isDisabled()));
+            String tooltip = referenced ? getTableTooltip(table, tableClosure) : null;
+            if (table.isDisabled()){
+                String descr = table.getDisabledReason().getDescription();
+                tooltip = tooltip == null ? descr : tooltip.concat("<br>" + descr); //NOI18N
+            } 
+            component.setToolTipText(tooltip); 
 
             return component;
         }
@@ -310,6 +363,10 @@ public class TableUISupport {
             this.tables = selectedTables.getTables();
         }
 
+        SelectedTables getSelectedTables(){
+            return selectedTables;
+        }
+
         public Table getTableAt(int rowIndex) {
             return tables.get(rowIndex);
         }
@@ -327,7 +384,7 @@ public class TableUISupport {
         }
 
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -339,6 +396,9 @@ public class TableUISupport {
                     Table table = tables.get(rowIndex);
                     return selectedTables.getClassName(table);
 
+                case 2:
+                    return selectedTables.getUpdateType(tables.get(rowIndex)).getName();
+
                 default:
                     assert false;
             }
@@ -347,17 +407,23 @@ public class TableUISupport {
         }
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if (columnIndex != 1) {
-                return;
-            }
-
             Table table = tables.get(rowIndex);
-            selectedTables.setClassName(table, (String)value);
+            switch(columnIndex){
+                case 1:{
+                    selectedTables.setClassName(table, (String)value);
+                    fireTableRowsUpdated(rowIndex, rowIndex);
+                    return;
+                }
+                case 2:{
+                    selectedTables.setUpdateType(table, (UpdateType)value);
+                    return;
+                }
+            }
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             Table table = tables.get(rowIndex);
-            return !table.isJoin() && columnIndex == 1;
+            return !table.isJoin() && (columnIndex == 1 || columnIndex == 2);
         }
 
         public String getColumnName(int column) {
@@ -368,6 +434,9 @@ public class TableUISupport {
                 case 1:
                     return NbBundle.getMessage(TableUISupport.class, "LBL_ClassName");
 
+                case 2:
+                    return NbBundle.getMessage(TableUISupport.class, "LBL_GenerationType");
+
                 default:
                     assert false;
             }
@@ -375,6 +444,27 @@ public class TableUISupport {
             return null;
         }
     }
+
+    static final class ClassNamesTable extends JTable{
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            if (column == 2){
+                if (getModel() instanceof TableClassNamesModel) {
+                    TableClassNamesModel model = (TableClassNamesModel)getModel();
+                    Table table = model.getTableAt(row);
+                    DisabledReason dr = table.getDisabledReason();
+                    boolean existing = dr instanceof Table.ExistingDisabledReason;
+                    if (existing){
+                        return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.UPDATE, UpdateType.RECREATE}));
+                    } else {
+                        return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.NEW}));
+                    }
+                }
+            } 
+            return super.getCellEditor(row, column);
+        }
+    }
+
 
     private static final class TableClassNameRenderer extends DefaultTableCellRenderer {
         private static Color errorForeground;
@@ -444,4 +534,6 @@ public class TableUISupport {
             return -1;
         }
     }
+
+    public enum FilterAvailable{ANY,NEW,UPDATE};
 }

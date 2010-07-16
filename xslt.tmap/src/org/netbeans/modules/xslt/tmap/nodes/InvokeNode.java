@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.xslt.tmap.nodes;
 
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.Constants;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
@@ -42,7 +44,12 @@ public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
         super(new DecoratedInvoke(ref), children, lookup);
     }
     
+    @Override
+    public NodeType getNodeType() {
+        return NodeType.INVOKE;
+    }
 
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         if (getReference() == null) {
@@ -51,36 +58,32 @@ public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
         }
         //
         Sheet.Set mainPropertySet =
-                getPropertySet(sheet);
+                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
         //
-        Node.Property prop;
-//142908
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.PARTNER_LINK_TYPE,
-                "getPartnerLinkType", "setPartnerLinkType"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Named.NAME_PROPERTY, PropertyType.NAME, "getName", "setName", null); // NOI18N
         //
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.ROLE,
-                "getRole", "setRole"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        
-//142908        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-//                PropertyType.NAME,
-//                "getName", "setName"); // NOI18N
-//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-//        //
-//        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-//                PropertyType.PORT_TYPE,
-//                "getPortType", "setPortType"); // NOI18N
-//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+// operation property covers portType too        
+//        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+//                Invoke.PORT_TYPE, PropertyType.PORT_TYPE,
+//                "getPortType", "setPortType", null); // NOI18N
         //
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.OPERATION,
-                "getOperation", "setOperation"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Invoke.OPERATION_NAME, PropertyType.OPERATION,
+                "getOperation", "setOperation", null); // NOI18N
         //
         return sheet;
     }
     
+    @Override
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES,
+            
+        };
+    }
 }

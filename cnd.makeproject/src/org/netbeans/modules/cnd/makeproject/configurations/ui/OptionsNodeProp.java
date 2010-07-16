@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,9 @@ import java.beans.PropertyEditorSupport;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -57,11 +60,11 @@ public class OptionsNodeProp extends PropertySupport<String> {
     private OptionsConfiguration commandLineConfiguration;
     private BooleanConfiguration inheritValues;
     private AllOptionsProvider optionsProvider;
-    private BasicCompiler compiler;
+    private AbstractCompiler compiler;
     private String delimiter = ""; // NOI18N
     private String[] texts;
 
-    public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, BasicCompiler compiler, String delimiter, String[] texts) {
+    public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, AbstractCompiler compiler, String delimiter, String[] texts) {
         super("ID", String.class, texts[0], texts[1], true, true); // NOI18N
         this.commandLineConfiguration = commandLineConfiguration;
         this.inheritValues = inheritValues;
@@ -82,10 +85,12 @@ public class OptionsNodeProp extends PropertySupport<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return commandLineConfiguration.getValue();
     }
 
+    @Override
     public void setValue(String v) {
         String s = CppUtils.reformatWhitespaces(v);
         commandLineConfiguration.setValue(s);
@@ -157,6 +162,7 @@ public class OptionsNodeProp extends PropertySupport<String> {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

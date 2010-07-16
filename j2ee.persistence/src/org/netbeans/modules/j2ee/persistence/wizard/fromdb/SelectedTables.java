@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ public final class SelectedTables {
     private final PersistenceGenerator persistenceGen;
     private final Map<Table, String> table2ClassName = new HashMap<Table, String>();
     private final Map<Table, Set<Problem>> table2Problems = new TreeMap<Table, Set<Problem>>();
+    private final Map<Table, UpdateType> table2UpdateType = new HashMap<Table, UpdateType>();
 
     private final ChangeListener tableClosureListener = new TableClosureListener();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -129,6 +133,7 @@ public final class SelectedTables {
             }
             this.tableClosure = tableClosure;
             table2ClassName.clear();
+            table2UpdateType.clear();
             this.tableClosure.addChangeListener(tableClosureListener);
             return true;
         }
@@ -232,6 +237,38 @@ public final class SelectedTables {
         changeSupport.fireChange();
     }
 
+    public void setUpdateType(Table table, UpdateType updateType) {
+        assert table != null;
+        assert updateType != null;
+
+        table2UpdateType.put(table, updateType);
+        changeSupport.fireChange();
+    }
+
+
+    public UpdateType getUpdateType(Table table) {
+        assert table != null;
+        UpdateType ut = table2UpdateType.get(table);
+
+        if (table.getDisabledReason() instanceof Table.ExistingDisabledReason){
+            if (ut == null || ut == UpdateType.NEW){
+                table2UpdateType.remove(table);
+                ut = UpdateType.UPDATE;
+            }
+        } else {
+            if (ut != null){
+                table2UpdateType.remove(table);
+            }
+            ut = UpdateType.NEW;
+        }
+
+        return ut;
+    }
+
+    FileObject getTargetFolder(){
+        return targetFolder;
+    }
+
     private void putProblems(Table table, Set<Problem> problems) {
         if (problems.isEmpty()) {
             table2Problems.remove(table);
@@ -248,9 +285,11 @@ public final class SelectedTables {
         if (JavaPersistenceQLKeywords.isKeyword(className)) {
             problems.add(Problem.JPA_QL_IDENTIFIER);
         }
+/* commented to have an ability to update entity classes
         if (targetFolder != null && targetFolder.getFileObject(className, "java") != null) { // NOI18N
             problems.add(Problem.ALREADY_EXISTS);
         }
+ */
         return problems;
     }
 

@@ -89,42 +89,51 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     // attributes
 
     // child elements
+    @Override
     public Parent getPomParent() {
         return getChild(Parent.class);
     }
 
+    @Override
     public void setPomParent(Parent parent) {
         setChild(Parent.class, getModel().getPOMQNames().PARENT.getName(), parent,
                 getClassesBefore(ORDER, Parent.class));
     }
 
+    @Override
     public Prerequisites getPrerequisites() {
         return getChild(Prerequisites.class);
     }
 
+    @Override
     public void setPrerequisites(Prerequisites prerequisites) {
         setChild(Prerequisites.class, getModel().getPOMQNames().PREREQUISITES.getName(), prerequisites,
                 getClassesBefore(ORDER, Prerequisites.class));
     }
 
+    @Override
     public IssueManagement getIssueManagement() {
         return getChild(IssueManagement.class);
     }
 
+    @Override
     public void setIssueManagement(IssueManagement issueManagement) {
         setChild(IssueManagement.class, getModel().getPOMQNames().ISSUEMANAGEMENT.getName(), issueManagement,
                 getClassesBefore(ORDER, IssueManagement.class));
     }
 
+    @Override
     public CiManagement getCiManagement() {
         return getChild(CiManagement.class);
     }
 
+    @Override
     public void setCiManagement(CiManagement ciManagement) {
         setChild(CiManagement.class, getModel().getPOMQNames().CIMANAGEMENT.getName(), ciManagement,
                 getClassesBefore(ORDER, CiManagement.class));
     }
 
+    @Override
     public List<MailingList> getMailingLists() {
         ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
         if (childs != null) {
@@ -133,6 +142,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addMailingList(MailingList mailingList) {
         ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
         if (childs == null) {
@@ -146,6 +156,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(mailingList);
     }
 
+    @Override
     public void removeMailingList(MailingList mailingList) {
         ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
         if (childs != null) {
@@ -153,6 +164,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public List<Developer> getDevelopers() {
         ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
         if (childs != null) {
@@ -161,6 +173,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addDeveloper(Developer dev) {
         ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
         if (childs == null) {
@@ -174,6 +187,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(dev);
     }
 
+    @Override
     public void removeDeveloper(Developer dev) {
         ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
         if (childs != null) {
@@ -181,6 +195,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public List<Contributor> getContributors() {
         ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
         if (childs != null) {
@@ -189,6 +204,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addContributor(Contributor contributor) {
         ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
         if (childs == null) {
@@ -202,6 +218,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(contributor);
     }
 
+    @Override
     public void removeContributor(Contributor contributor) {
         ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
         if (childs != null) {
@@ -209,6 +226,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public List<License> getLicenses() {
         ModelList<License> childs = getChild(LicenseImpl.List.class);
         if (childs != null) {
@@ -217,6 +235,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addLicense(License license) {
         ModelList<License> childs = getChild(LicenseImpl.List.class);
         if (childs == null) {
@@ -230,6 +249,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(license);
     }
 
+    @Override
     public void removeLicense(License lic) {
         ModelList<License> childs = getChild(LicenseImpl.List.class);
         if (childs != null) {
@@ -237,33 +257,40 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public Scm getScm() {
         return getChild(Scm.class);
     }
 
+    @Override
     public void setScm(Scm scm) {
         setChild(Scm.class, getModel().getPOMQNames().SCM.getName(), scm,
                 getClassesBefore(ORDER, Scm.class));
     }
 
+    @Override
     public Organization getOrganization() {
         return getChild(Organization.class);
     }
 
+    @Override
     public void setOrganization(Organization organization) {
         setChild(Organization.class, getModel().getPOMQNames().ORGANIZATION.getName(), organization,
                 getClassesBefore(ORDER, Organization.class));
     }
 
+    @Override
     public Build getBuild() {
         return getChild(Build.class);
     }
 
+    @Override
     public void setBuild(Build build) {
         setChild(Build.class, getModel().getPOMQNames().BUILD.getName(), build,
                 getClassesBefore(ORDER, Build.class));
     }
 
+    @Override
     public List<Profile> getProfiles() {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs != null) {
@@ -272,6 +299,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addProfile(Profile profile) {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs == null) {
@@ -285,6 +313,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(profile);
     }
 
+    @Override
     public void removeProfile(Profile profile) {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs != null) {
@@ -293,6 +322,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
 
+    @Override
     public List<Repository> getRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -301,6 +331,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs == null) {
@@ -314,6 +345,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(repo);
     }
 
+    @Override
     public void removeRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -321,6 +353,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public List<Repository> getPluginRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -329,6 +362,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addPluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs == null) {
@@ -342,6 +376,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(repo);
     }
 
+    @Override
     public void removePluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -349,6 +384,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public List<Dependency> getDependencies() {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -357,6 +393,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
@@ -370,6 +407,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         childs.addListChild(dep);
     }
 
+    @Override
     public void removeDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -377,95 +415,116 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public Reporting getReporting() {
         return getChild(Reporting.class);
     }
 
+    @Override
     public void setReporting(Reporting reporting) {
         setChild(Reporting.class, getModel().getPOMQNames().REPORTING.getName(), reporting,
                 getClassesBefore(ORDER, Reporting.class));
     }
 
+    @Override
     public DependencyManagement getDependencyManagement() {
         return getChild(DependencyManagement.class);
     }
 
+    @Override
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
         setChild(DependencyManagement.class, getModel().getPOMQNames().DEPENDENCYMANAGEMENT.getName(), dependencyManagement,
                 getClassesBefore(ORDER, DependencyManagement.class));
     }
 
+    @Override
     public DistributionManagement getDistributionManagement() {
         return getChild(DistributionManagement.class);
     }
 
+    @Override
     public void setDistributionManagement(DistributionManagement distributionManagement) {
         setChild(DistributionManagement.class, getModel().getPOMQNames().DISTRIBUTIONMANAGEMENT.getName(), distributionManagement,
                 getClassesBefore(ORDER, DistributionManagement.class));
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getModelVersion() {
         return getChildElementText(getModel().getPOMQNames().MODELVERSION.getQName());
     }
 
+    @Override
     public String getPackaging() {
         return getChildElementText(getModel().getPOMQNames().PACKAGING.getQName());
     }
 
+    @Override
     public void setPackaging(String pack) {
         setChildElementText(getModel().getPOMQNames().PACKAGING.getName(), pack,
                 getModel().getPOMQNames().PACKAGING.getQName());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getDescription() {
         return getChildElementText(getModel().getPOMQNames().DESCRIPTION.getQName());
     }
 
+    @Override
     public void setDescription(String description) {
         setChildElementText(getModel().getPOMQNames().DESCRIPTION.getName(), description,
                 getModel().getPOMQNames().DESCRIPTION.getQName());
     }
 
+    @Override
     public String getURL() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setURL(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getInceptionYear() {
         return getChildElementText(getModel().getPOMQNames().INCEPTIONYEAR.getQName());
     }
 
+    @Override
     public void setInceptionYear(String inceptionYear) {
         setChildElementText(getModel().getPOMQNames().INCEPTIONYEAR.getName(), inceptionYear,
                 getModel().getPOMQNames().INCEPTIONYEAR.getQName());
     }
 
+    @Override
     public Properties getProperties() {
         return getChild(Properties.class);
     }
 
+    @Override
     public void setProperties(Properties props) {
         setChild(Reporting.class, getModel().getPOMQNames().PROPERTIES.getName(), props,
                 getClassesBefore(ORDER, Properties.class));
     }
 
+    @Override
     public List<String> getModules() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -476,6 +535,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public void addModule(String module) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -497,6 +557,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public void removeModule(String module) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -507,13 +568,18 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
         assert groupId != null;
         assert artifactId != null;
-        java.util.List<Dependency> deps = getDependencies();
+        List<Dependency> deps = getDependencies();
         if (deps != null) {
             for (Dependency d : deps) {
-                if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId()) &&
+                String realGroupId = d.getGroupId();
+                if ("${project.groupId}".equals(realGroupId)) {
+                    realGroupId = getGroupId();
+                }
+                if (groupId.equals(realGroupId) && artifactId.equals(d.getArtifactId()) &&
                         (classifier == null || classifier.equals(d.getClassifier()))) {
                     return d;
                 }
@@ -522,9 +588,10 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public Profile findProfileById(String id) {
         assert id != null;
-        java.util.List<Profile> profiles = getProfiles();
+        List<Profile> profiles = getProfiles();
         if (profiles != null) {
             for (Profile p : profiles) {
                 if (id.equals(p.getId())) {
@@ -535,4 +602,20 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    public static class PList extends DependencyImpl.List {
+
+        public PList(POMModel model, Element element) {
+            super(model, element);
+        }
+
+        public PList(POMModel model) {
+            super(model);
+        }
+
+        @Override
+        protected DependencyContainer getDependencyContainer() {
+            return getModel().getProject();
+        }
+
+    }
 }

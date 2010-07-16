@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,12 +49,14 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 
@@ -68,7 +73,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     static final long serialVersionUID = 4248268998485315735L;
 
     private static PaletteTopComponent instance;
-    
+
     /** Creates new PaletteTopComponent */
     private PaletteTopComponent() {
         setName(Utils.getBundleString("CTL_Component_palette"));  // NOI18N
@@ -160,6 +165,27 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     @Override
     public HelpCtx getHelpCtx() {
         return PalettePanel.getDefault().getHelpCtx();
+    }
+
+    static void showPalette() {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
+        if (null == palette) {
+            Logger.getLogger(PaletteSwitch.class.getName()).log(Level.INFO, "Cannot find CommonPalette component."); // NOI18N
+
+            //for unit-testing
+            palette = getDefault();
+        }
+        if (!palette.isOpened()) {
+            palette.open();
+        }
+    }
+    
+    static void hidePalette() {
+        TopComponent palette = instance;
+        if (palette != null && palette.isOpened()) {
+            palette.close();
+        }
     }
     
     final static class ResolvableHelper implements java.io.Serializable {

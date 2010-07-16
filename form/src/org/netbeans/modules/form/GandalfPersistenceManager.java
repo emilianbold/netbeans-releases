@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.apache.xerces.parsers.DOMParser;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -190,6 +194,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private FormModel formModel;
 
+    private String prefetchedSuperclassName;
+
     private List<Throwable> nonfatalErrors;
     
     // ErrorManager.findAnnotation() doesnt work properly, I will also store msg
@@ -250,17 +256,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @return true if this persistence manager can load the form
      * @exception PersistenceException if any unexpected problem occurred
      */
+    @Override
     public boolean canLoadForm(FormDataObject formObject)
         throws PersistenceException
     {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            org.w3c.dom.Document doc = XMLUtil.parse(
-                new org.xml.sax.InputSource(formFile.getURL().toExternalForm()),
-                false, false, null, null);
-
-            mainElement = doc.getDocumentElement();
+            // We don't use XMLUtil.parse() because there is a bug
+            // in the default JDK 6 DOM parser, see issue 181955
+            DOMParser parser = new DOMParser();
+            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
             throw new PersistenceException(ex, "Cannot open form file"); // NOI18N
@@ -282,7 +289,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents loading the form
      */
-    public void loadForm(FormDataObject formObject,
+    @Override
+    public synchronized void loadForm(FormDataObject formObject,
                          FormModel formModel,
                          List<Throwable> nonfatalErrors)
         throws PersistenceException
@@ -318,10 +326,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
-                                            formFile.getURL().toExternalForm()),
-                                        false, false, null, null)
-                          .getDocumentElement();
+            // We don't use XMLUtil.parse() because there is a bug
+            // in the default JDK 6 DOM parser, see issue 181955
+            DOMParser parser = new DOMParser();
+            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
             PersistenceException pe = new PersistenceException(
@@ -386,7 +395,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (!underTest) { // try declared superclass from java source first
             // (don't scan java source in tests, we only use the basic form types)
-            try { 
+            try {
                 declaredSuperclassName = getSuperClassName(javaFile);
                 if (declaredSuperclassName != null) {
                     Class designClass = getFormDesignClass(declaredSuperclassName);
@@ -422,6 +431,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             catch (LinkageError ex) {
                 formBaseClassEx = ex;
+            }
+            finally {
+                prefetchedSuperclassName = null;
             }
         }
 
@@ -588,17 +600,32 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formModel = null;
         return formModel;
     }
-    
+
+    /**
+     * For special use when form superclass is being determined before the form
+     * is started to be loaded. Assuming loadForm is called for the form in
+     * the same EDT round then. See FormDesigner.PreLoadTask.
+     */
+    void setPrefetchedSuperclassName(String clsName) {
+        prefetchedSuperclassName = clsName;
+    }
+
+    private String getSuperClassName(FileObject javaFile) throws IllegalArgumentException, IOException {
+        return prefetchedSuperclassName != null ? prefetchedSuperclassName : determineSuperClassName(javaFile);
+    }
+
     /**
      * gets superclass if the 'extends' keyword is present
      */
-    private static String getSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
+    static String determineSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
         final String javaFileName = javaFile.getName();
         final String[] result = new String[1];
         JavaSource js = JavaSource.forFileObject(javaFile);
         js.runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree formClass = null;
@@ -2876,7 +2903,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (eventListener == null || paramTypes == null)
             return eventName;
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("$"); // NOI18N
         buf.append(eventListener);
         buf.append("."); // NOI18N
@@ -3043,7 +3070,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents saving the form
      */
-    public void saveForm(FormDataObject formObject,
+    @Override
+    public synchronized void saveForm(FormDataObject formObject,
                          FormModel formModel,
                          List<Throwable> nonfatalErrors)
         throws PersistenceException
@@ -3079,7 +3107,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
+        buf.append("<?xml version=\"1.1\" encoding=\""); // NOI18N
         buf.append(encoding);
         buf.append("\" ?>\n\n"); // NOI18N
 
@@ -3457,7 +3485,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (convIndex >= 0) { // standard constraints (saved in buf2)
             buf.append(indent);
             addElementOpen(buf, XML_CONSTRAINTS);
-            buf.append(indent + ONE_INDENT);
+            buf.append(indent).append(ONE_INDENT);
             addElementOpenAttr(
                 buf,
                 XML_CONSTRAINT,
@@ -3468,7 +3496,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                    layout31ConstraintsNames[convIndex]) }
             );
             buf.append(buf2);
-            buf.append(indent + ONE_INDENT);
+            buf.append(indent).append(ONE_INDENT);
             addElementClose(buf, XML_CONSTRAINT);
             buf.append(indent);
             addElementClose(buf, XML_CONSTRAINTS);
@@ -3658,7 +3686,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 for (int i = 0; i < children.length; i++) {
                     String elementType = children[i] instanceof ComponentContainer
                             ? XML_MENU_CONTAINER : XML_MENU_COMPONENT;
-                    buf.append(indent + ONE_INDENT);
+                    buf.append(indent).append(ONE_INDENT);
                     addElementOpenAttr(
                         buf,
                         elementType,
@@ -3666,7 +3694,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         new String[] { children[i].getBeanClass().getName(),
                                        children[i].getName() });
                     saveMenuComponent(children[i], buf, indent + ONE_INDENT + ONE_INDENT);
-                    buf.append(indent + ONE_INDENT); addElementClose(buf, elementType);
+                    buf.append(indent).append(ONE_INDENT); addElementClose(buf, elementType);
                 }
                 buf.append(indent); addElementClose(buf, XML_SUB_COMPONENTS);
             }
@@ -3736,7 +3764,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             FormProperty prop = props[i];
             if (!prop.isChanged() || ResourceSupport.isInjectedProperty(prop)) {
                 if (prop.getPreCode() != null || prop.getPostCode() != null) {
-                    buf.append(indent + ONE_INDENT);
+                    buf.append(indent).append(ONE_INDENT);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
                         buf,
@@ -3885,7 +3913,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		}                
             }		    
             else {
-                buf.append(indent + ONE_INDENT);
+                buf.append(indent).append(ONE_INDENT);
                 addLeafElementOpenAttr(
                     buf,
                     XML_SERIALIZED_PROPERTY_VALUE,
@@ -4031,7 +4059,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
             }
             else {
-                buf.append(indent + ONE_INDENT);
+                buf.append(indent).append(ONE_INDENT);
                 addLeafElementOpenAttr(
                     buf,
                     XML_SERIALIZED_PROPERTY_VALUE,
@@ -4410,14 +4438,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         throws InstantiationException,
                IllegalAccessException
     {
-        PropertyEditor ed;
+        PropertyEditor ed = null;
         if (editorClass.equals(RADConnectionPropertyEditor.class)) {
             ed = new RADConnectionPropertyEditor(propertyType);
         } else if (editorClass.equals(ComponentChooserEditor.class)) {
             ed = new ComponentChooserEditor(new Class[] {propertyType});
-        } else if (editorClass.equals(EnumEditor.class) && (property instanceof RADProperty)) {
-            RADProperty prop = (RADProperty)property;
-            ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+        } else if (editorClass.equals(EnumEditor.class)) {
+            if (property instanceof RADProperty) {
+                RADProperty prop = (RADProperty)property;
+                ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+            }
             if (ed == null) {
                 ed = RADProperty.createDefaultEnumEditor(propertyType);
             }
@@ -4612,7 +4642,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (metaObject instanceof Constructor) {
             Constructor ctor = (Constructor) metaObject;
-            StringBuffer buf3 = new StringBuffer();
+            StringBuilder buf3 = new StringBuilder();
             Class[] paramTypes = ctor.getParameterTypes();
 
             for (int i=0; i < paramTypes.length; i++) {
@@ -4727,7 +4757,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static void saveMethod(Method method,
                                    StringBuffer buf, String indent)
     {
-        StringBuffer buf2 = new StringBuffer();
+        StringBuilder buf2 = new StringBuilder();
         Class[] paramTypes = method.getParameterTypes();
 
         for (int i=0; i < paramTypes.length; i++) {
@@ -5647,12 +5677,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         oos.close();
 
         byte[] bosBytes = bos.toByteArray();
-        StringBuffer buf = new StringBuffer(bosBytes.length*4);
+        StringBuilder buf = new StringBuilder(bosBytes.length*4);
         for (int i=0; i < bosBytes.length; i++) {
             if (i+1 < bosBytes.length)
-                buf.append(bosBytes[i]+","); // NOI18N
+                buf.append(bosBytes[i]).append(","); // NOI18N
             else
-                buf.append(""+bosBytes[i]); // NOI18N
+                buf.append("").append(bosBytes[i]); // NOI18N
         }
         return buf.toString();
     }
@@ -5753,6 +5783,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // probably not necessary, but there is no guarantee that
             // the order of attributes will remain the same in DOM
             Collections.sort(attribList, new Comparator<org.w3c.dom.Node>() {
+                @Override
                 public int compare(org.w3c.dom.Node n1, org.w3c.dom.Node n2) {
                     return n1.getNodeName().compareTo(n2.getNodeName());
                 }
@@ -5796,7 +5827,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (text == null)
             return ""; // NOI18N
 
-        StringBuffer sb = new StringBuffer(text.length());
+        StringBuilder sb = new StringBuilder(text.length());
         for (int i=0; i<text.length(); i++) {
             char c = text.charAt(i);
             if (c >= 0x0020 && c <= 0x007f) {
@@ -5809,7 +5840,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     default: sb.append(c); break;
                 }
             } else {
-                sb.append("&#x" + Integer.toHexString(c) + ";"); // NOI18N
+                sb.append("&#x").append(Integer.toHexString(c)).append(";"); // NOI18N
             }
         }
 
@@ -5926,7 +5957,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return errMsg;
 
         String link = null;
-        StringBuffer pathBuf = new StringBuffer();
+        StringBuilder pathBuf = new StringBuilder();
         for (int i=path.size()-1; i >= 0; i--) {
             pathBuf.append(path.get(i));
             if (i > 0) {
@@ -5955,7 +5986,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             format = property ? "FMT_ERR_LoadingLayoutConstraintsProperty" : // NOI18N
                                 "FMT_ERR_LoadingLayoutConstraints"; // NOI18N
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(FormUtils.getFormattedBundleString(
                         format, new Object[] { pathBuf.toString() }));
         buf.append("\n"); // NOI18N
@@ -6141,11 +6172,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String getKey() {                
                 return getKey(beanName, property.getName());
             }                        
-            String getSourceKey() {                                    
-                return getKey(value.getRADComponent().getName(), getValueName());
+            String getSourceKey() {
+                RADComponent comp = value.getRADComponent();
+                String key = null;
+                if (comp!=null) { // Issue 180640
+                    key = getKey(comp.getName(), getValueName());
+                }
+                return key;
             }                
             private String getKey(String beanName, String propertyName) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append("["); // NOI18N
                 sb.append(beanName);
                 sb.append(", "); // NOI18N

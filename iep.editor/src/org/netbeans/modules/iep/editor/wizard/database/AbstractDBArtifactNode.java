@@ -6,7 +6,6 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import org.netbeans.modules.iep.editor.xsd.TreeNodeInterface;
-import org.netbeans.modules.iep.editor.xsd.nodes.*;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 /**

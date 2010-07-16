@@ -61,14 +61,12 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Task;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 import java.util.List;
 import javax.swing.text.StyledDocument;
@@ -78,8 +76,8 @@ import org.openide.awt.StatusDisplayer;
 
 import org.openide.text.Line;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.Output;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
@@ -99,10 +97,10 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
         obj = sobj;
         setMIMEType(ETLDataLoader.MIME_TYPE);
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
-        //PRJ_PATH = PRJ_PATH.replace('/', '\\');
+        PRJ_PATH = PRJ_PATH.replace('/', '\\');
         PRJ_NAME = sobj.getFolder().getPrimaryFile().getParent().getName();
-        //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
-        //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
+    //Project prj = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+    //java.util.logging.Logger.getLogger(ETLEditorSupport.class.getName()).info("ETLEditorSupport project " + prj);
     }
 
     /*public static void getPath() {
@@ -256,7 +254,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
             // Validate the collabModel and update badge
             updateBadge(etlDataObject);
-            if(updatedDuringLoad){
+            if (updatedDuringLoad) {
                 updatedDuringLoad = false;
                 synchDocument();
                 super.saveDocument();
@@ -308,7 +306,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                 doc.remove(0, getDocument().getLength());
                 doc.insertString(0, content, null);
             }
-            //etlDataObject.getModel().setDirty(true);
+            etlDataObject.getModel().setDirty(true);
             etlDataObject.setModified(true);
             updateBadge(etlDataObject);
         } catch (Exception ex) {
@@ -325,17 +323,18 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     errCount++;
                 }
             }
-            ETLNode node = (ETLNode) etlDataObject.getNodeDelegate();
+            if (etlDataObject.isValid()) {
+                ETLNode node = (ETLNode) etlDataObject.getNodeDelegate();
 
-            if (errCount > 0) {
-                node.setCollabState(ETLNode.ERROR);
-            } else if (!list.isEmpty()) {
-                node.setCollabState(ETLNode.WARNING);
-            } else {
-                node.setCollabState(ETLNode.VALID);
+                if (errCount > 0) {
+                    node.setCollabState(ETLNode.ERROR);
+                } else if (!list.isEmpty()) {
+                    node.setCollabState(ETLNode.WARNING);
+                } else {
+                    node.setCollabState(ETLNode.VALID);
+                }
+                multiviewTC.setIcon(node.getIcon(0));
             }
-            multiviewTC.setIcon(node.getIcon(0));
-
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -373,6 +372,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
         }
     }
+
     public boolean silentClose() {
         return super.close(false);
     }
@@ -383,7 +383,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
      * a reference to Schema DataObject only - to be serializable with the
      * multiview TopComponent without problems.
      */
-    public static class CloseHandler  implements CloseOperationHandler, Serializable {
+    public static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private CloseHandler() {
             super();
@@ -403,26 +403,26 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
             if (etlEditor == null) {
                 return true;
             }
-          //  if (etlEditor != null) {
-                // This handles saving the document.
-                boolean close = etlEditor.canClose();
-                if (close) {
-                    if (dataObject.isValid()) {
+            //  if (etlEditor != null) {
+            // This handles saving the document.
+            boolean close = etlEditor.canClose();
+            if (close) {
+                if (dataObject.isValid()) {
                     // In case user discarded edits, need to reload.
                     if (dataObject.isModified()) {
-                    // In case user discarded edits, need to reload.
-                    etlEditor.reloadDocument().waitFinished();
+                        // In case user discarded edits, need to reload.
+                        etlEditor.reloadDocument().waitFinished();
                     }
-                    
+
                     etlEditor.syncModel();
                     // Need to properly close the support, too.
                     etlEditor.notifyClosed();
-                    }
-                    dataObject.setModified(false);
                 }
-                return close;
-           // }
-          //  return true;
+                dataObject.setModified(false);
+            }
+            return close;
+        // }
+        //  return true;
         }
         private static final long serialVersionUID = -3838395157610633251L;
         private ETLDataObject dataObject;
@@ -444,8 +444,8 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     public boolean validateXML(CookieObserver observer) {
         List validationResults;
 
-        ValidationOutputWindowController validationController =
-                new ValidationOutputWindowController();
+        Output validationController =
+                new Output();
         validationResults = validationController.validate((Model) ((ETLDataObject) this.getDataObject()).getLookup().lookup(Model.class));
 
         /* Send the complete/slow validation results to the validation
@@ -524,7 +524,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                     Line line = ValidationUtil.getLine(resultItem);
 
                     if (line != null) {
-                        line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                        line.show(Line.SHOW_GOTO);
                     }
                 }
 
@@ -679,14 +679,23 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    updateTitles();
-                }
-            });
-        }
+        // Update later to avoid an infinite loop.
+        EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                updateTitles();
+            }
+        });
+    }
+
     public void setUpdatedDuringLoad(boolean val) {
         updatedDuringLoad = val;
     }
+
+    public static void setProjectInfo(String name, String prjInfo, boolean value) {
+        IS_PROJECT_CALL = value;
+        ETLEditorSupport.PRJ_NAME = name;
+        ETLEditorSupport.PRJ_PATH = prjInfo;
+    }
+    public static boolean IS_PROJECT_CALL = false;
 }

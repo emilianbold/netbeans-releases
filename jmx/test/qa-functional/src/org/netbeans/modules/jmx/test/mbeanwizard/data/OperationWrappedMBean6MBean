@@ -8,7 +8,7 @@ package com.foo.bar;
 
 /**
  * Interface OperationWrappedMBean6MBean
- * 
+ *
  * @author <author>
  */
 public interface OperationWrappedMBean6MBean

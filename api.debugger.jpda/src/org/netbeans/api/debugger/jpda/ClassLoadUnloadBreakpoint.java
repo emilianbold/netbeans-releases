@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,17 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -60,7 +73,7 @@ import java.util.Arrays;
  *
  * @author Jan Jancura
  */
-public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
+public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
@@ -99,7 +112,7 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         boolean isExclusionFilter,
         int breakpointType
     ) {
-        ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpoint ();
+        ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpointImpl ();
         if (isExclusionFilter)
             b.setClassExclusionFilters (new String[] {classNameFilter});
         else
@@ -197,4 +210,80 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
     public String toString () {
         return "ClassLoadUnloadBreakpoint " + Arrays.toString(classFilters);
     }
+
+    private static final class ClassLoadUnloadBreakpointImpl extends ClassLoadUnloadBreakpoint implements PropertyChangeListener {
+
+        @Override
+        public GroupProperties getGroupProperties() {
+            return new ClassGroupProperties();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            enginePropertyChange(evt);
+        }
+
+
+        private final class ClassGroupProperties extends GroupProperties {
+
+            @Override
+            public String getType() {
+                return NbBundle.getMessage(ClassLoadUnloadBreakpoint.class, "ClassBrkp_Type");
+            }
+
+            @Override
+            public String getLanguage() {
+                return "Java";
+            }
+
+            @Override
+            public FileObject[] getFiles() {
+                String[] filters = getClassFilters();
+                String[] exfilters = getClassExclusionFilters();
+                List<FileObject> files = new ArrayList<FileObject>();
+                for (int i = 0; i < filters.length; i++) {
+                    // TODO: annotate also other matched classes
+                    if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                        fillFilesForClass(filters[i], files);
+                    }
+                }
+                return files.toArray(new FileObject[] {});
+            }
+
+            @Override
+            public Project[] getProjects() {
+                FileObject[] files = getFiles();
+                List<Project> projects = new ArrayList<Project>();
+                for (FileObject f : files) {
+                    while (f != null) {
+                        f = f.getParent();
+                        if (f != null && ProjectManager.getDefault().isProject(f)) {
+                            break;
+                        }
+                    }
+                    if (f != null) {
+                        try {
+                            projects.add(ProjectManager.getDefault().findProject(f));
+                        } catch (IOException ex) {
+                        } catch (IllegalArgumentException ex) {
+                        }
+                    }
+                }
+                return projects.toArray(new Project[] {});
+            }
+
+            @Override
+            public DebuggerEngine[] getEngines() {
+                return ClassLoadUnloadBreakpointImpl.this.getEngines();
+            }
+
+            @Override
+            public boolean isHidden() {
+                return ClassLoadUnloadBreakpointImpl.this.isHidden();
+            }
+        }
+
+    }
+
+
 }

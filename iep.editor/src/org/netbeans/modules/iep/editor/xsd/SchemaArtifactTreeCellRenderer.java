@@ -94,8 +94,7 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             checkBoxRenderer.setBackground(textBackground);
           }
             
-            
-            comp = checkBoxRenderer;
+          comp = checkBoxRenderer;
           
         } else {
             if(icon != null) {

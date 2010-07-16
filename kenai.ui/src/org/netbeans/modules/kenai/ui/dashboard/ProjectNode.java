@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.RemoveProjectAction;
 import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
@@ -62,6 +66,7 @@ import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -77,7 +82,7 @@ public class ProjectNode extends TreeListNode {
 
     private JPanel component = null;
     private JLabel lbl = null;
-//    private LinkButton btnBookmark = null;
+    private LinkButton btnBookmark = null;
     private JLabel myPrjLabel;
     private LinkButton btnClose = null;
 
@@ -98,8 +103,24 @@ public class ProjectNode extends TreeListNode {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
-                    if( null != lbl )
+                    if (evt.getNewValue() != null || evt.getOldValue() !=null) {
+                        try {
+                            boolean m = project.getKenaiProject().getKenai().getMyProjects().contains(project.getKenaiProject());
+                            if (m != isMemberProject) {
+                                DashboardImpl.getInstance().refreshMemberProjects(false);
+                            }
+                            isMemberProject = m;
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if( null != lbl ) {
                         lbl.setText(project.getDisplayName());
+                        lbl.setFont( isMemberProject ? boldFont : regFont );                    
+                    }
+                    if (null != btnBookmark) {
+                        btnBookmark.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                    }
                 }
             }
         };
@@ -145,11 +166,11 @@ public class ProjectNode extends TreeListNode {
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-//                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true),
-//                        accessor.getBookmarkAction(project)); //NOI18N
-//                btnBookmark.setRolloverEnabled(true);
-//                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), // NOI18N
+                        accessor.getBookmarkAction(project)); //NOI18N
+                btnBookmark.setRolloverEnabled(true);
+                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 myPrjLabel = new JLabel();
                 component.add( myPrjLabel, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
@@ -160,12 +181,12 @@ public class ProjectNode extends TreeListNode {
             }
             lbl.setForeground(foreground);
             lbl.setFont( isMemberProject ? boldFont : regFont );
-//            btnBookmark.setForeground(foreground, isSelected);
-//            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
-//            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
-//            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            btnBookmark.setForeground(foreground, isSelected);
+            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             if (isMemberProject) {
                 myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
                 myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N

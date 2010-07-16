@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 
 import javax.swing.text.Document;
 
@@ -60,6 +64,7 @@ import org.netbeans.modules.web.core.syntax.checker.JspElChecker;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -120,29 +125,26 @@ public class ElChecker extends HintsProvider {
             TokenSequence<ELTokenId> tokenSequence, FileObject fileObject,
             List<Map<Class<? extends ELExpression>, ELExpression>> expressions ) 
     {
-        JsfElExpression elExpr = new JsfElExpression( webModule , doc );
-        elExpr.parse(offset);
-        
-        int startOffset = elExpr.getStartOffset();
-        if ( startOffset == -1){
-            tokenSequence.move(offset);
-            if ( !tokenSequence.movePrevious() ){
-                return;
+        try {
+            JsfElExpression elExpr = new JsfElExpression(webModule, doc, offset);
+            elExpr.parse();
+            int startOffset = elExpr.getStartOffset();
+            if (startOffset == -1) {
+                tokenSequence.move(offset);
+                if (!tokenSequence.movePrevious()) {
+                    return;
+                }
+                collectExpressions(webModule, doc, tokenSequence.offset(), tokenSequence, fileObject, expressions);
+            } else {
+                ELExpression expr = myJspChecker.parseExpression(doc, elExpr.getContextOffset());
+                Map<Class<? extends ELExpression>, ELExpression> map = new HashMap<Class<? extends ELExpression>, ELExpression>();
+                map.put(elExpr.getClass(), elExpr);
+                map.put(expr.getClass(), expr);
+                expressions.add(map);
+                collectExpressions(webModule, doc, startOffset, tokenSequence, fileObject, expressions);
             }
-            collectExpressions(webModule, doc, tokenSequence.offset(), tokenSequence, 
-                    fileObject, expressions);
-        }
-        else {
-            ELExpression expr = myJspChecker.parseExpression( doc, elExpr.getContextOffset());
-            
-            Map<Class<? extends ELExpression>, ELExpression> map = new HashMap<
-                Class<? extends ELExpression>, ELExpression>();
-            map.put(elExpr.getClass(), elExpr);
-            map.put( expr.getClass(), expr);
-            expressions.add( map );
-            
-            collectExpressions(webModule, doc, startOffset, tokenSequence, 
-                    fileObject, expressions );
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

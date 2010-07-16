@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,7 +64,7 @@ import org.openide.util.Parameters;
 /**
  * Makes it easier to implement <code>org.netbeans.spi.project.ActionProvider</code> in a standard way
  * by running targets in Ant scripts.
- * @see <a href="@PROJECTS/PROJECTAPI@/org/netbeans/spi/project/ActionProvider.html"><code>ActionProvider</code></a>
+ * @see <a href="@org-netbeans-modules-projectapi@/org/netbeans/spi/project/ActionProvider.html"><code>ActionProvider</code></a>
  * @author Jesse Glick
  */
 public final class ActionUtils {
@@ -120,7 +123,7 @@ public final class ActionUtils {
      *               or null to not check suffixes
      * @param strict if true, all files in the selection have to be accepted
      * @return a nonempty selection of disk files, or null
-     * @see <a href="@PROJECTS/PROJECTAPI@/org/netbeans/spi/project/ActionProvider.html#isActionEnabled(java.lang.String,%20org.openide.util.Lookup)"><code>ActionProvider.isActionEnabled(...)</code></a>
+     * @see <a href="@org-netbeans-modules-projectapi@/org/netbeans/spi/project/ActionProvider.html#isActionEnabled(java.lang.String,%20org.openide.util.Lookup)"><code>ActionProvider.isActionEnabled(...)</code></a>
      */
     public static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String suffix, boolean strict) {
         if (dir != null && !dir.isFolder()) {

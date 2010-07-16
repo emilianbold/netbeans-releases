@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 
 /**
  * Test several simple lexer impls.
@@ -121,4 +126,34 @@ public class EmbeddingUpdateTest extends NbTestCase {
         doc.insertString(3, "x", null); // there will be empty /**/
     }        
         
+    public void testEmbeddingActivityChange() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        doc.putProperty(Language.class,TestTokenId.language());
+        doc.insertString(0, "a/*abc def*/", null);
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
+        TokenSequence<?> ets = ts.embedded();
+        assertNotNull(ets);
+        assertTrue(ts.moveNext());
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
+        assertFalse(ets.moveNext());
+
+        MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+        TokenHierarchyControl control = input.tokenHierarchyControl();
+        control.setActive(false);
+        control.setActive(true);
+
+    }
+
 }

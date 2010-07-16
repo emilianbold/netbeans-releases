@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,8 @@
  */
 package org.netbeans.modules.mercurial.ui.repository;
 
-import java.net.MalformedURLException;
 import org.netbeans.modules.mercurial.config.Scrambler;
 import java.net.URISyntaxException;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,10 +58,6 @@ public class RepositoryConnection {
     private String externalCommand;
     private boolean savePassword;
     
-    public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.externalCommand, rc.savePassword);
-    }
-    
     public RepositoryConnection(String url) throws URISyntaxException {
         this(new HgURL(url), null, false);
     }
@@ -72,7 +67,7 @@ public class RepositoryConnection {
                                 String password,
                                 String externalCommand,
                                 boolean savePassword) throws URISyntaxException {
-        this(new HgURL(url, username, password), externalCommand, savePassword);
+        this(new HgURL(url, username, password == null ? null : password.toCharArray()), externalCommand, savePassword);
     }
 
     public RepositoryConnection(HgURL url, String externalCommand, boolean savePassword) {
@@ -89,7 +84,7 @@ public class RepositoryConnection {
         return url.getUsername();
     }
 
-    String getPassword() {
+    char[] getPassword() {
         return url.getPassword();
     }
 
@@ -128,62 +123,9 @@ public class RepositoryConnection {
         return url.toString();
     }
 
-    private void parseUrlString(String urlString) throws MalformedURLException {
-        int hostIdx = urlString.indexOf("://");                         // NOI18N
-    //    int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
-    //    if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
-    //        svnRevision = SVNRevision.HEAD;
-    //    } else /*if (acceptRevision)*/ {
-    //        if( idx + 1 < urlString.length()) {
-    //            String revisionString = "";                             // NOI18N
-    //            try {
-    //                revisionString = urlString.substring(idx + 1);
-    //                svnRevision = SvnUtils.getSVNRevision(revisionString);
-    //            } catch (NumberFormatException ex) {
-    //                throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));     // NOI18N
-    //            }
-    //        } else {
-    //            svnRevision = SVNRevision.HEAD;
-    //        }
-    //        urlString = urlString.substring(0, idx);
-    //    }    
-        //urlO = removeEmptyPathSegments(new URL(urlString));
-        //hgUrl = new HgURL(urlString);
-    }
-    
-    //private URL removeEmptyPathSegments(URL url) throws MalformedURLException {
-    //    String[] pathSegments = url.getPathSegments();
-    //    StringBuffer urlString = new StringBuffer();
-    //    urlString.append(url.getProtocol());
-    //    urlString.append("://");                                                // NOI18N
-    //    urlString.append(HgUtils.ripUserFromHost(url.getHost()));
-    //    if(url.getPort() > 0) {
-    //        urlString.append(":");                                              // NOI18N
-    //        urlString.append(url.getPort());
-    //    }
-    //    boolean gotSegments = false;
-    //    for (int i = 0; i < pathSegments.length; i++) {
-    //        if(!pathSegments[i].trim().equals("")) {                            // NOI18N
-    //            gotSegments = true;
-    //            urlString.append("/");                                          // NOI18N
-    //            urlString.append(pathSegments[i]);                
-    //        }
-    //    }
-    //    try {
-    //        if(gotSegments) {
-    //            return new URL(urlString.toString());
-    //        } else {
-    //            return url;
-    //        }
-    //    } catch (MalformedURLException ex) {
-    //        throw ex;
-    //    }
-    //}
-    
     public static String getString(RepositoryConnection rc) {
         String url = rc.url.toUrlStringWithoutUserInfo();
         String username = rc.getUsername();
-        String password = rc.getPassword();
         String extCommand = rc.getExternalCommand();
 
         StringBuffer sb = new StringBuffer();        
@@ -193,9 +135,7 @@ public class RepositoryConnection {
             sb.append(username);
         }
         sb.append(RC_DELIMITER);
-        if (password != null) {
-            sb.append(Scrambler.getInstance().scramble(password));
-        }
+        sb.append("");                                              //NOI18N
         sb.append(RC_DELIMITER);
         if (extCommand != null) {
             sb.append(extCommand);

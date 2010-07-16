@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,7 +82,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new ExtractInterfaceRefactoringUI(selectedElement, info);
+                    return wrap(new ExtractInterfaceRefactoringUI(selectedElement, info));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -94,7 +97,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         } else {
@@ -110,7 +113,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -147,7 +150,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new ExtractSuperclassRefactoringUI(selectedElement, info);
+                    return wrap(new ExtractSuperclassRefactoringUI(selectedElement, info));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -162,7 +165,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         } else {
@@ -178,7 +181,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -217,7 +220,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     selectedElement = findSelectedClassMemberDeclaration(selectedElement, info);
                     return selectedElement != null
-                            ? new PushDownRefactoringUI(selectedElement, info)
+                            ? wrap(new PushDownRefactoringUI(selectedElement, info))
                             : null;
                     
                 }
@@ -234,7 +237,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -250,7 +253,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -289,7 +292,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     selectedElement = findSelectedClassMemberDeclaration(selectedElement, info);
                     return selectedElement != null
-                            ? new PullUpRefactoringUI(selectedElement, info)
+                            ? wrap(new PullUpRefactoringUI(selectedElement, info))
                             : null;
                 }
             };
@@ -305,7 +308,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -321,7 +324,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -385,7 +388,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     if (selected == null || !(selected.getKind().isClass() || selected.getKind().isInterface())) {
                         s = TreePathHandle.create(RetoucheUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true), info);
                     }
-                    return new UseSuperTypeRefactoringUI(s);
+                    return wrap(new UseSuperTypeRefactoringUI(s));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -400,7 +403,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         } else {
@@ -416,7 +419,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -458,7 +461,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int endOffset,
                         CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    return ChangeParametersUI.create(selectedElement, info);
+                    return wrap(ChangeParametersUI.create(selectedElement, info));
                 }
             };
         } else {
@@ -473,7 +476,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -523,7 +526,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         selectedElement = TreePathHandle.create(enclosing, info);
                     }
                     return selectedElement != null && resolved !=null
-                            ? new InnerToOuterRefactoringUI(selectedElement, info)
+                            ? wrap(new InnerToOuterRefactoringUI(selectedElement, info))
                             : null;
                 }
             };
@@ -539,7 +542,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -577,7 +580,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new EncapsulateFieldUI(selectedElement, info);
+                    return wrap(new EncapsulateFieldUI(selectedElement, info));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -592,7 +595,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -609,11 +612,15 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+    }
+    
+    protected RefactoringUI wrap(RefactoringUI orig) {
+        return orig;
     }
     
     private static TreePathHandle findSelectedClassMemberDeclaration(TreePathHandle path, final CompilationInfo info) {

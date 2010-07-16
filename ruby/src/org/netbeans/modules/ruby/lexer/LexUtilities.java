@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -148,7 +151,7 @@ public class LexUtilities {
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(BaseDocument doc, int offset) {
-        TokenHierarchy<?> th = TokenHierarchy.get((Document)doc);
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         return getRubyTokenSequence(th, offset);
     }
     
@@ -174,7 +177,7 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(TokenHierarchy<?> th, int offset) {
+    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
 
         if (ts == null) {
@@ -718,7 +721,7 @@ public class LexUtilities {
      * @return The offset of the beginning of the require string, or -1
      *     if the offset is not inside a require string.
      */
-    public static int getRequireStringOffset(int caretOffset, TokenHierarchy<?> th) {
+    public static int getRequireStringOffset(int caretOffset, TokenHierarchy<Document> th) {
         TokenEvaluator evaluator = new TokenEvaluator() {
 
             @Override
@@ -788,7 +791,7 @@ public class LexUtilities {
         return getStringOffset(caretOffset, th, evaluator);
     }
 
-    private static int getStringOffset(int caretOffset, TokenHierarchy<?> th, TokenEvaluator evaluator) {
+    private static int getStringOffset(int caretOffset, TokenHierarchy<Document> th, TokenEvaluator evaluator) {
         TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 
         if (ts == null) {
@@ -874,15 +877,15 @@ public class LexUtilities {
         abstract int returnValue();
     }
 
-    public static int getSingleQuotedStringOffset(int caretOffset, TokenHierarchy<?> th) {
+    public static int getSingleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {
         return getLiteralStringOffset(caretOffset, th, RubyTokenId.STRING_BEGIN);
     }
 
-    public static int getDoubleQuotedStringOffset(int caretOffset, TokenHierarchy<?> th) {
+    public static int getDoubleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {
         return getLiteralStringOffset(caretOffset, th, RubyTokenId.QUOTED_STRING_BEGIN);
     }
 
-    public static int getRegexpOffset(int caretOffset, TokenHierarchy<?> th) {
+    public static int getRegexpOffset(int caretOffset, TokenHierarchy<Document> th) {
         return getLiteralStringOffset(caretOffset, th, RubyTokenId.REGEXP_BEGIN);
     }
 
@@ -891,7 +894,7 @@ public class LexUtilities {
      * offset. Return -1 otherwise.
      */
     @SuppressWarnings("unchecked")
-    private static int getLiteralStringOffset(int caretOffset, TokenHierarchy<?> th,
+    private static int getLiteralStringOffset(int caretOffset, TokenHierarchy<Document> th,
         RubyTokenId begin) {
         TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 

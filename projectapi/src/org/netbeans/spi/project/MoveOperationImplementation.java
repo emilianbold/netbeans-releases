@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,16 +67,19 @@ import org.netbeans.api.project.Project;
  * The project type is not required to put an implementation of this interface into the project's
  * lookup if the above two cases should not be supported.
  *
+ * <p><strong>Implementations are encouraged to implement {@link MoveOrRenameOperationImplementation} instead.</strong>
+ *
  * @author Jan Lahoda
  * @since 1.7
  */
 public interface MoveOperationImplementation extends DataFilesProviderImplementation {
     
     /**Pre-move notification. The exact meaning is left on the project implementors, but
-     * typically this means to undeloy the application and remove all artifacts
+     * typically this means to undeploy the application and remove all artifacts
      * created by the build project.
      *
      * @throws IOException if an I/O operation fails.
+     * @see MoveOrRenameOperationImplementation#notifyRenaming
      */
     public void notifyMoving() throws IOException;
     
@@ -87,6 +93,7 @@ public interface MoveOperationImplementation extends DataFilesProviderImplementa
      * @param nueName new name for the newly created project.
      *
      * @throws IOException if an I/O operation fails.
+     * @see MoveOrRenameOperationImplementation#notifyRenamed
      */
     public void notifyMoved(Project original, File originalPath, String nueName) throws IOException;
     

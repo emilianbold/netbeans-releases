@@ -198,7 +198,29 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 //                return;
 //            }
             
+<<<<<<< local
             embedder = EmbedderFactory.createExecuteEmbedder();
+=======
+            File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
+            File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", "org.netbeans.modules.maven.embedder", false);//NOI18N
+            DefaultConfiguration settConfig = new DefaultConfiguration();
+            settConfig.setGlobalSettingsFile(globalSettingsPath);
+            if (userSettingsPath.exists()) {
+                settConfig.setUserSettingsFile(userSettingsPath);
+            }
+            ConfigurationValidationResult setres = MavenEmbedder.validateConfiguration(settConfig);
+            if (!setres.isValid()) {
+                if (setres.getUserSettingsException() != null) {
+                    CLIReportingUtils.showError("Error reading user settings: ", setres.getUserSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
+                }
+                if (setres.getUserSettingsException() != null) {
+                    CLIReportingUtils.showError("Error reading global settings: ", setres.getGlobalSettingsException(), req.isShowErrors(), new DefaultCoreErrorReporter(), out);//NOI18N - part of maven output
+                }
+                return;
+            }
+            
+            embedder = EmbedderFactory.createExecuteEmbedder(out);
+>>>>>>> other
             super.buildPlan.setEmbedder(embedder);
             
             req.addActiveProfiles(clonedConfig.getActivatedProfiles());
@@ -448,7 +470,12 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             java.lang.reflect.Field fld = shutdown.getDeclaredField("hooks"); //NOI18N
             if (fld != null) {
                 fld.setAccessible(true);
-                Collection set = (Collection) fld.get(null);
+                Object o = fld.get(null);
+                if (!(o instanceof Collection)) {
+                    //TODO what object are we using now?
+                    return;
+                }
+                Collection set = (Collection) o;
                 if (set != null) {
                     // objects are Shutdown.WrappedHook instances
                     for (Object wr : new ArrayList(set)) {

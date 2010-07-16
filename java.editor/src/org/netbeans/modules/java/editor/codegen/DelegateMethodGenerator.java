@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -232,14 +235,14 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         descriptions = new ArrayList<ElementNode.Description>();
                         map.put(field.getEnclosingElement(), descriptions);
                     }
-                    descriptions.add(ElementNode.Description.create(field, null, false, false));
+                    descriptions.add(ElementNode.Description.create(info, field, null, false, false));
                 }
             }
             scope = scope.getEnclosingScope();
         }
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-            descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+            descriptions.add(ElementNode.Description.create(info, entry.getKey(), entry.getValue(), false, false));
         }
         
         return descriptions;
@@ -260,12 +263,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         descriptions = new ArrayList<ElementNode.Description>();
                         map.put(method.getEnclosingElement(), descriptions);
                     }
-                    descriptions.add(ElementNode.Description.create(method, null, true, false));
+                    descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                 }
             }
             List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-                descriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(),
+                descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(),
                         false, false));
             }
             if (!descriptions.isEmpty()) {

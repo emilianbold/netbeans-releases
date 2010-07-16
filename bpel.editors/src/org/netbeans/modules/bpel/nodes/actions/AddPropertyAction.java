@@ -98,8 +98,7 @@ public class AddPropertyAction extends BpelNodeAction {
                         CorrelationProperty.class);
                 newCorrPropRefList.add(newPropRef);
                 //
-                new ImportRegistrationHelper(correlationSet.getBpelModel())
-                .addImport(property.getModel());
+                new ImportRegistrationHelper(correlationSet.getBpelModel()).addImport(property.getModel());
             }
         }
         //

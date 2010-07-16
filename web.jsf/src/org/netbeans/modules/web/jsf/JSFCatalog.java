@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 
@@ -72,7 +74,19 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     public static final String JSF_ID_2_0="SCHEMA:"+JSF_2_0; // NOI18N
     private static final String URL_JSF_1_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.xsd"; // NOI18N
     private static final String URL_JSF_2_0="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_0.xsd"; // NOI18N
-    
+
+    //facelets
+    private static final String FILE_FACELETS_TAGLIB_SCHAMA_20="web-facelettaglibary_2_0.xsd"; //NOI18N
+    private static final String FILE_FACELETS_TAGLIB_DTD_10="facelet-taglib_1_0.dtd"; //NOI18N
+
+    private static final String URL_FACELETS_TAGLIB_SCHEMA_20 = JAVAEE_NS + "/" + FILE_FACELETS_TAGLIB_SCHAMA_20; // NOI18N
+    private static final String ID_FACELETS_TAGLIB_SCHEMA_20 ="SCHEMA:" + URL_FACELETS_TAGLIB_SCHEMA_20;
+    private static final String ID_FACELETS_TAGLIB_DTD_10 = "-//Sun Microsystems, Inc.//DTD Facelet Taglib 1.0//EN"; //NOI18N
+
+    private static final String RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20 ="nbres:/org/netbeans/modules/web/jsf/resources/" + FILE_FACELETS_TAGLIB_SCHAMA_20; // NOI18N
+    private static final String RESOURCE_URL_FACELETS_TAGLIB_DTD_10 ="nbres:/org/netbeans/modules/web/jsf/resources/" + FILE_FACELETS_TAGLIB_DTD_10; // NOI18N
+
+
     /** Creates a new instance of StrutsCatalog */
     public JSFCatalog() {
     }
@@ -87,6 +101,8 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         list.add(JSF_ID_1_1);
         list.add(JSF_ID_1_2);
         list.add(JSF_ID_2_0);
+        list.add(ID_FACELETS_TAGLIB_DTD_10);
+        list.add(ID_FACELETS_TAGLIB_SCHEMA_20);
         return list.listIterator();
     }
     
@@ -103,6 +119,10 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return URL_JSF_1_2;
         else if (JSF_ID_2_0.equals(publicId))
             return URL_JSF_2_0;
+        else if (ID_FACELETS_TAGLIB_DTD_10.equals(publicId))
+            return RESOURCE_URL_FACELETS_TAGLIB_DTD_10;
+        else if(ID_FACELETS_TAGLIB_SCHEMA_20.equals(publicId))
+            return RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20;
         else return null;
     }
     
@@ -168,14 +188,20 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return new org.xml.sax.InputSource(URL_JSF_1_0);
         } else if (JSF_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_1);
+        } else if(ID_FACELETS_TAGLIB_DTD_10.equals(publicId)) {
+            return new org.xml.sax.InputSource(RESOURCE_URL_FACELETS_TAGLIB_DTD_10);
         } else if (JSF_1_2.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_2);
         } else if (JSF_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_JSF_2_0);
+        } else if (URL_FACELETS_TAGLIB_SCHEMA_20.equals(systemId)) {
+            return new org.xml.sax.InputSource(RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20);
         } else if (systemId!=null && systemId.endsWith(JSF_1_2_XSD)) {
             return new org.xml.sax.InputSource(URL_JSF_1_2);    
         } else if (systemId!=null && systemId.endsWith(JSF_2_0_XSD)) {
             return new org.xml.sax.InputSource(URL_JSF_2_0);
+        } else if (systemId!=null && systemId.endsWith(FILE_FACELETS_TAGLIB_SCHAMA_20)) {
+            return new org.xml.sax.InputSource(RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20);
         } else {
             return null;
         }

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Templates">
+        <folder name="SOA_BPEL">
+            <file name="LTemplate.ldif" url="LTemplate.ldif">
+                <attr name="position" intvalue="200"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldiffile16x16.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.wsdlextensions.ldap.resources.NewFileIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/LTemplate.html"/>
+                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
+            </file>
+        </folder>
+    </folder>    
+
+    <folder name="Actions">
+        <folder name="Other">
+            <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.instance"/>
+            <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.instance"/>
+        </folder>
+    </folder>
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ldif">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <!--attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/-->
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.instance"/>
+                    </file>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/-->
+                    <!--attr name="org-openide-actions-FileSystemAction.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow" boolvalue="true"/-->
+                    <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.instance"/>
+                    </file>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/-->
+                    <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <!--attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/-->
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <!--attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/-->
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <!--attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/-->
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <!--attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/-->
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow" boolvalue="true"/-->
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="LResolver.xml" url="LResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="WSDLEditor">
+        <file name="ldap-ext.xsd" url="ldap-ext.xsd">
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/ldap/"/>
+            <attr name="prefix" stringvalue="ldap"/>
+        </file>
+        
+        <folder name="Binding">
+            <file name="LDAPBinding">
+                <attr name="xsdFileName" stringvalue="ldap-ext"/>
+                <attr name="element" stringvalue="binding"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/> 
+            </file>
+        </folder>
+        
+        <folder name="BindingOperation">
+            <file name="LDAPBindingOperation">
+                <attr name="xsdFileName" stringvalue="ldap-ext"/>
+                <attr name="element" stringvalue="operation"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/> 
+            </file>
+        </folder>
+        
+        <folder name="BindingOperationInput">
+            <file name="LDAPBindingOperationInput">
+                <attr name="xsdFileName" stringvalue="ldap-ext"/>
+                <attr name="element" stringvalue="input"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/> 
+            </file>
+            
+        </folder>           
+        
+        <folder name="BindingOperationOutput">
+            <file name="LDAPBindingOperationOutput">
+                <attr name="xsdFileName" stringvalue="ldap-ext"/>
+                <attr name="element" stringvalue="output"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/> 
+            </file>
+            
+        </folder>           
+        
+        
+        <folder name="ServicePort">
+            <file name="LDAPServicePort">
+                <attr name="xsdFileName" stringvalue="ldap-ext"/>
+                <attr name="element" stringvalue="address"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/> 
+            </file>
+        </folder>           
+    </folder>
+    
+    
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="sun-ldap-binding">
+            <attr name="id" stringvalue="sun-ldap-binding"/>
+            <attr name="description" stringvalue="LDAP binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="ldap.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/ldap/"/>
+            </file>
+        </folder>
+    </folder>  
+
+    <folder name="bpel-nmproperties">
+        <folder name="ldap-bc">
+            <attr name="display-name" stringvalue="LDAP BC"/>
+            <folder name="ldap-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+                    <file name="enable-dynamic-endpoint">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.use.dynamic.endpoint"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Enable Dynamic Endpoint"/>
+                    </file>
+                    <file name="location">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Location"/>
+                    </file>
+                    <file name="principal">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.principal"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Principal"/>
+                    </file>
+                    <file name="credential">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.credential"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Credential"/>
+                    </file>
+                    <file name="ssltype">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.ssltype"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Ssl Type"/>
+                    </file>
+                    <file name="authentication">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.authentication"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Authentication"/>
+                    </file>
+                    <file name="protocol">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.protocol"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Protocol"/>
+                    </file>
+                    <file name="truststore">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststore"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Truststore"/>
+                    </file>
+                    <file name="truststorepassword">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststorepassword"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Truststore Password"/>
+                    </file>
+                    <file name="truststoretype">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststoretype"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Truststore Type"/>
+                    </file>
+                    <file name="keystore">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystore"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Keystore"/>
+                    </file>
+                    <file name="keystorepassword">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystorepassword"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Keystore Password"/>
+                    </file>
+                    <file name="keystoreusername">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystoreusername"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Keystore Username"/>
+                    </file>
+                    <file name="keystoretype">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystoretype"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Keystore Type"/>
+                    </file>
+                    <file name="tlssecurity">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.tlssecurity"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="TLS Security"/>
+                    </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

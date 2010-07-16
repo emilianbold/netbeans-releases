@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,9 +64,18 @@ import org.openide.util.actions.SystemAction;
  *
  * <p>This filesystem has no form of storage in and of itself. Rather, it composes and proxies one or more
  * "delegate" filesystems. The result is that of a "layered" sandwich of filesystems, each able to provide files
- * to appear in the merged result. The layers are ordered so that a filesystem in "front" can override one in
- * "back". Often the frontmost layer will be writable, and all changes to the filesystem are sent to this layer,
+ * to appear in the merged result.
+ * Often the frontmost layer will be writable, and all changes to the filesystem are sent to this layer,
  * but that behavior is configurable.
+ *
+ * <p>The layers are ordered so that entries in a filesystem in "front" can override one in "back".
+ * Since it is often not straightforward to arrange layers so that particular overrides work,
+ * as of org.openide.filesystems 7.36
+ * you may set the special file attribute {@code weight} to any {@link Number} on a layer entry.
+ * (If unspecified, the implicit default value is zero.)
+ * A variant with a higher weight will override one with a lower weight even if it is further back.
+ * (The exception is that entries in a writable frontmost layer always override other layers,
+ * regardless of weight.)
  *
  * <p>Creating a new <code>MultiFileSystem</code> is easy in the simplest cases: just call {@link
  * #MultiFileSystem(FileSystem[])} and pass a list of delegates. If you pass it only read-only delegates, the
@@ -130,6 +142,8 @@ public class MultiFileSystem extends FileSystem {
 
     /** root */
     private transient MultiFileObject root;
+    /** known attributes on read only FS roots */
+    private transient Set<String> rootAttributes;
 
     /** Creates new empty MultiFileSystem. Useful only for
     * subclasses.
@@ -171,6 +185,7 @@ public class MultiFileSystem extends FileSystem {
 
         // set them
         this.systems = fileSystems;
+        this.rootAttributes = null;
 
         getMultiRoot().updateAllAfterSetDelegates(oldSystems);
 
@@ -221,19 +236,19 @@ public class MultiFileSystem extends FileSystem {
 
     /** This filesystem is readonly if it has not writable system.
     */
-    public boolean isReadOnly() {
+    public @Override boolean isReadOnly() {
         return WRITE_SYSTEM_INDEX >= systems.length || systems[WRITE_SYSTEM_INDEX] == null || systems[WRITE_SYSTEM_INDEX].isReadOnly();
     }
 
     /** The name of the filesystem.
     */
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return NbBundle.getMessage(MultiFileSystem.class, "CTL_MultiFileSystem");
     }
 
     /** Root of the filesystem.
     */
-    public FileObject getRoot() {
+    public @Override FileObject getRoot() {
         return getMultiRoot();
     }
 
@@ -335,7 +350,7 @@ public class MultiFileSystem extends FileSystem {
     * @return FileObject that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
     */
-    public FileObject findResource(String name) {
+    public @Override FileObject findResource(String name) {
         if (name.length() == 0) {
             return getMultiRoot();
         } else {
@@ -402,7 +417,7 @@ public class MultiFileSystem extends FileSystem {
         Enumeration<? extends FileObject> allFiles = folder.getChildren(rec);
 
         class OnlyHidden implements Enumerations.Processor<FileObject, String> {
-            public String process(FileObject obj, Collection<FileObject> ignore) {
+            public @Override String process(FileObject obj, Collection<FileObject> ignore) {
                 String sf = obj.getPath();
 
                 if (sf.endsWith(MASK)) {
@@ -446,6 +461,26 @@ public class MultiFileSystem extends FileSystem {
         }
 
         return systems[WRITE_SYSTEM_INDEX];
+    }
+
+    private final ThreadLocal<Boolean> insideWritableLayer = new ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
+    FileSystem writableLayer(String path) {
+        if (!insideWritableLayer.get() && /* #183936 */!isReadOnly()) {
+            // #181460: avoid stack overflow when createWritableOn calls e.g. findResource
+            insideWritableLayer.set(true);
+            try {
+                return createWritableOn(path);
+            } catch (IOException x) {
+                // ignore
+            } finally {
+                insideWritableLayer.set(false);
+            }
+        }
+        return systems.length > WRITE_SYSTEM_INDEX ? systems[WRITE_SYSTEM_INDEX] : null;
     }
 
     /** Special case of createWritableOn (@see #createWritableOn).
@@ -555,8 +590,9 @@ public class MultiFileSystem extends FileSystem {
     Enumeration<FileObject> delegates(final String name) {
         Enumeration<FileSystem> en = Enumerations.array(systems);
 
+        // XXX order (stably) by weight
         class Resources implements Enumerations.Processor<FileSystem, FileObject> {
-            public FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
+            public @Override FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
                 if (fs == null) {
                     return null;
                 } else {
@@ -622,5 +658,29 @@ public class MultiFileSystem extends FileSystem {
 
     static boolean isMaskFile(FileObject fo) {
         return fo.getExt().endsWith(MASK);
+    }
+
+    boolean canHaveRootAttributeOnReadOnlyFS(String name) {
+        Set<String> tmp = rootAttributes;
+        if (tmp == null) {
+            tmp = new HashSet<String>();
+            for (FileSystem fs : getDelegates()) {
+                if (fs == null) {
+                    continue;
+                }
+                if (!fs.isReadOnly()) {
+                    continue;
+                }
+                Enumeration<String> en = fs.getRoot().getAttributes();
+                while (en.hasMoreElements()) {
+                    tmp.add(en.nextElement());
+                }
+                rootAttributes = tmp;
+            }
+        }
+        if (tmp == Collections.<String>emptySet()) {
+            return true;
+        }
+        return tmp.contains(name);
     }
 }

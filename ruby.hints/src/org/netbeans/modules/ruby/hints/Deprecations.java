@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,19 +79,26 @@ import org.openide.util.NbBundle;
  */
 public class Deprecations extends RubyAstRule {
     
-    private static class Deprecation {
-        private String oldName;
-        private String newName;
+    static class Deprecation {
+        final String oldName;
+        final String newName;
         /** Key: {0} is the old name, {1} is the new name */
-        private String descriptionKey;
-        private String helpUrl;
+        final String descriptionKey;
+        final String helpUrl;
+        final boolean enableFix;
 
         public Deprecation(String oldName, String newName, String descriptionKey,
                 String helpUrl) {
+            this(oldName, newName, descriptionKey, helpUrl, true);
+        }
+
+        public Deprecation(String oldName, String newName, String descriptionKey,
+                String helpUrl, boolean enableFix) {
             this.oldName = oldName;
             this.newName = newName;
             this.descriptionKey = descriptionKey;
             this.helpUrl = helpUrl;
+            this.enableFix = enableFix;
         }
     }
     
@@ -241,7 +251,7 @@ public class Deprecations extends RubyAstRule {
         return null;
     }
     
-    private static class DeprecationCallFix implements PreviewableFix {
+    static class DeprecationCallFix implements PreviewableFix {
 
         private final RubyRuleContext context;
         private final Node node;
@@ -278,7 +288,12 @@ public class Deprecations extends RubyAstRule {
 
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
-            OffsetRange range = AstUtilities.getCallRange(node);
+            OffsetRange range = null;
+            if (AstUtilities.isCall(node)) {
+                range = AstUtilities.getCallRange(node);
+            } else {
+                range = AstUtilities.getRange(node);
+            }
             
             EditList list = new EditList(doc);
             if (range != OffsetRange.NONE) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,11 +42,16 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.util.List;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Test for reaction for external modifications
@@ -81,7 +89,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final TraceModelBase traceModel = new TraceModelBase(true);
         //traceModel.setUseSysPredefined(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
-        ModelImpl model = traceModel.getModel();
+        //ModelImpl model = traceModel.getModel();
         //ModelSupport.instance().setModel(model);
         final CsmProject project = traceModel.getProject();
 
@@ -89,10 +97,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
         writeFile(sourceFile, "void " + newName + "() {};");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileChanged(project, sourceFile);
 
         project.waitParse();
         assertNotNull(newName + " should be found", findDeclaration(newName, project));
@@ -111,22 +116,17 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final CsmProject project = traceModel.getProject();
 
         project.waitParse();
-        CsmFile csmFile = project.findFile(sourceFile.getAbsolutePath());
+        CsmFile csmFile = project.findFile(sourceFile.getAbsolutePath(), false);
         assertNotNull(csmFile);
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
-        // This call ensures that workDir content is fully cached,
-        // so that subsequent creation of test.h will be noticed.
-        FileUtil.toFileObject(workDir).getChildren();
-
         writeFile(headerFile, "void foo();\n");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileAdded(project, headerFile);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
@@ -144,23 +144,101 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final CsmProject project = traceModel.getProject();
 
         project.waitParse();
-        CsmFile csmFile = project.findFile(headerFile1.getAbsolutePath());
+        CsmFile csmFile = project.findFile(headerFile1.getAbsolutePath(), false);
         assertNotNull(csmFile);
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
-        // This call ensures that workDir content is fully cached,
-        // so that subsequent creation of test2.h will be noticed.
-        FileUtil.toFileObject(workDir).getChildren();
-
         writeFile(headerFile2, "void foo();\n");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileAdded(project, headerFile2);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
+    public void testDeadCodeBlocks() throws Exception {
+        File workDir = getWorkDir();
+        File sourceFile = new File(workDir, "test1.cc");
+        String visibleFunction = "visibleFunction";
+        String hiddenFunction = "hiddenFunction";
+        String oldText =
+                "\n" +
+                "void " + visibleFunction + "() {\n" +
+                "   int a;\n" +
+                "#ifdef MACRO\n" +
+                "   int hiddenVar = 0;\n" +
+                "#endif\n" +
+                "   int b;\n" +
+                "}\n" +
+                "\n" +
+                "" +
+                "#ifdef MACRO\n" +
+                "void " + hiddenFunction + "() {\n" +
+                "}\n" +
+                "#endif\n";
+        String newText =
+                "#define MACRO\n" +
+                "\n" +
+                oldText;
+
+        writeFile(sourceFile, oldText);
+
+        final TraceModelBase traceModel = new TraceModelBase(true);
+        traceModel.processArguments(sourceFile.getAbsolutePath());
+        final CsmProject project = traceModel.getProject();
+
+        project.waitParse();
+        assertNotNull(visibleFunction + " should be found", findDeclaration(visibleFunction, project));
+        assertNull(hiddenFunction + " should not be found", findDeclaration(hiddenFunction, project));
+        CsmFile fileImpl = getCsmFile(sourceFile);
+        checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][] {{4, 13, 5, 22}, {10, 13, 12, 2}});
+        writeFile(sourceFile, newText);
+        fireFileChanged(project, sourceFile);
+
+        project.waitParse();
+        assertNotNull(visibleFunction + " should be found", findDeclaration(visibleFunction, project));
+        assertNotNull(hiddenFunction + " should be found", findDeclaration(hiddenFunction, project));
+        checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][]{});
+
+    }
+    
+    private void fireFileChanged(final CsmProject project, File sourceFile) {
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileChanged(sourceFile);
+        }
+    }
+
+    private void fireFileAdded(final CsmProject project, File sourceFile) {
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileAdded(sourceFile);
+        }
+    }
+
+    private void checkDeadBlocks(final CsmProject project, final CsmFile csmFile, String msg, int[][] expectedDeadBlocks) throws BadLocationException {
+        // test for #185712: external modifications breaks dead blocks information in editor
+        project.waitParse();
+        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
+        if (unusedCodeBlocks.isEmpty()) {
+            System.err.println("NO DEAD BLOCKS");
+        } else {
+            for (int i = 0; i < unusedCodeBlocks.size(); i++) {
+                CsmOffsetable csmOffsetable = unusedCodeBlocks.get(i);
+                System.err.printf("DEAD BLOCK %d: [%d:%d-%d:%d]\n", i, csmOffsetable.getStartPosition().getLine(), csmOffsetable.getStartPosition().getColumn(),
+                                                                        csmOffsetable.getEndPosition().getLine(), csmOffsetable.getEndPosition().getColumn());
+                if (i < expectedDeadBlocks.length) {
+                    assertEquals("different dead blocks start line ", expectedDeadBlocks[i][0], csmOffsetable.getStartPosition().getLine());
+                    assertEquals("different dead blocks start column ", expectedDeadBlocks[i][1], csmOffsetable.getStartPosition().getColumn());
+                    assertEquals("different dead blocks end line ", expectedDeadBlocks[i][2], csmOffsetable.getEndPosition().getLine());
+                    assertEquals("different dead blocks end column ", expectedDeadBlocks[i][3], csmOffsetable.getEndPosition().getColumn());
+                }
+            }
+        }
+        assertEquals(msg + csmFile.getAbsolutePath(), expectedDeadBlocks.length, unusedCodeBlocks.size());
+    }
 }

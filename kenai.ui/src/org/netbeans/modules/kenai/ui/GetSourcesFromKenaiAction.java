@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,8 +50,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
@@ -109,67 +113,69 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
         
         if (options[0].equals(option)) {
-            
-            final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
-            final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
-            if (sourcesInfo == null) {
-                return;
-            }
+            try {
+                final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+                if (sourcesInfo == null) {
+                    return;
+                }
+                final KenaiFeature feature = sourcesInfo.feature;
+                final PasswordAuthentication passwdAuth = KenaiProject.forRepository(feature.getLocation()).getKenai().getPasswordAuthentication();
+                if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                    if (Subversion.isClientAvailable(true)) {
+                        UIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
+                        RequestProcessor.getDefault().post(new Runnable() {
 
-            final KenaiFeature feature = sourcesInfo.feature;
+                            public void run() {
+                                try {
 
-            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-                if (Subversion.isClientAvailable(true)) {
-                    UIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
+                                    if (passwdAuth != null) {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                                    } else {
+                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
+                                            new File(sourcesInfo.localFolderPath), true);
+                                    }
+                                if (srcHandle!=null) {
+                                        srcHandle.refresh();
+                                    }
+
+                                } catch (MalformedURLException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IOException ex) {
+                                    if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
+                                        // DO SOMETHING, svn client is unavailable
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
+                    UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
                     RequestProcessor.getDefault().post(new Runnable() {
-
                         public void run() {
                             try {
 
                                 if (passwdAuth != null) {
-                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                            new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
+                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true); // NOI18N
                                 } else {
-                                    Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
-                                            new File(sourcesInfo.localFolderPath), true);
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
+                                    "", "", "",true); // NOI18N
                                 }
-                                if (srcHandle!=null) {
+                                if (srcHandle != null) {
                                     srcHandle.refresh();
                                 }
-
                             } catch (MalformedURLException ex) {
                                 Exceptions.printStackTrace(ex);
-                            } catch (IOException ex) {
-                                if (Subversion.CLIENT_UNAVAILABLE_ERROR_MESSAGE.equals(ex.getMessage())) {
-                                    // DO SOMETHING, svn client is unavailable
-                                }
                             }
                         }
                     });
                 }
-            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
-                UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-
-                            if (passwdAuth != null) {
-                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true); // NOI18N
-                            } else {
-                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
-                                    "", "", "",true); // NOI18N
-                            }
-                            if (srcHandle != null) {
-                                srcHandle.refresh();
-                            }
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
+                // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
+                // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
         }
 
     }

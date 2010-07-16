@@ -28,6 +28,7 @@ import org.netbeans.modules.wsdlextensions.file.model.FileQName;
 
 /**
  * @author sweng
+ * @author jfu
  */
 public class FileAddressImpl extends FileComponentImpl implements FileAddress {
     public FileAddressImpl(WSDLModel model, Element e) {
@@ -89,6 +90,31 @@ public class FileAddressImpl extends FileComponentImpl implements FileAddress {
 
     public String getSeqName() {
         return getAttribute(FileAttribute.FILE_ADDRESS_SEQ_NAME);
+    }
+
+    public void setPersistenceBaseLoc(String val) {
+        setAttribute(ATTR_FILE_PERSIST_BASELOC, FileAttribute.FILE_ADDRESS_PERSIST_BASE_PROPERTY, val);
+    }
+
+    public String getPersistenceBaseLoc() {
+        return getAttribute(FileAttribute.FILE_ADDRESS_PERSIST_BASE_PROPERTY);
+    }
+
+    public void setRecursive(boolean val) {
+        setAttribute(ATTR_FILE_RECURSIVE, FileAttribute.FILE_ADDRESS_RECURSIVE, val? "true" : "false");
+    }
+
+    public boolean getRecursive() {
+        String s = getAttribute(FileAttribute.FILE_ADDRESS_RECURSIVE);
+        return s != null && s.equals("true");
+    }
+
+    public void setRecursiveExclude(String val) {
+        setAttribute(ATTR_FILE_RECURSIVE_EXCLUDE, FileAttribute.FILE_ADDRESS_RECURSIVE_EXCLUDE, val);
+    }
+
+    public String getRecursiveExclude() {
+        return getAttribute(FileAttribute.FILE_ADDRESS_RECURSIVE_EXCLUDE);
     }
     
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -87,7 +91,6 @@ final class NewProjectIterator extends BasicWizardIterator {
         "org.netbeans.modules.projectuiapi", // NOI18N
         "org.netbeans.modules.projectapi", // NOI18N
         "org.openide.awt", // NOI18N
-        "org.jdesktop.layout", // NOI18N
     };
     
     private NewProjectIterator() { /* Use factory method. */ };
@@ -210,7 +213,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
         // 3. create sample template
-        FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
+        FileObject xml = LayerHandle.forProject(project).getLayerFile();
         FileObject parent = xml != null ? xml.getParent() : null;
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!

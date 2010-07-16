@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,7 +58,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openfile.OpenFileImpl.class, position=50)
+@org.openide.util.lookup.ServiceProvider(
+          service=org.netbeans.modules.openfile.OpenFileImpl.class, position=50)
 public class ProjectOpenFileImpl implements OpenFileImpl {
 
     public boolean open(FileObject fileObject, int line) {
@@ -63,14 +67,33 @@ public class ProjectOpenFileImpl implements OpenFileImpl {
             try {
                 Project p = ProjectManager.getDefault().findProject(fileObject);
                 if (p != null) {
-                    OpenProjects.getDefault().open(new Project[] {p}, false, true);
+                    openProject(p); // #171842
                     return true;
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ProjectOpenFileImpl.class.getName()).log(Level.WARNING, null, ex);
+                Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                                                           null, ex);
             }
         }
         return false;
+    }
+
+    /**
+     * Opens the specified project asynchronously. This method helps to avoid
+     * blocking of the current thread (e.g. AWT thread) on long-time operation
+     * of opening the project.
+     *
+     * @param p the project.
+     */
+    private void openProject(final Project p) {
+        Runnable r =new Runnable() {
+
+            @Override
+            public void run() {
+                OpenProjects.getDefault().open(new Project[] {p}, false, true);
+            }
+        };
+        new Thread(r, "Open " + p).start(); // NOI18N
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,8 +76,7 @@ import org.xml.sax.SAXParseException;
  * Validates the syntax and semantics of one or more JNLP files.
  * Any other JNLP fragments referred to recursively from these files will be validated as well.
  * JNLP files must specify a document type, normally:
- * &lt;!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
- * (including the misspelling: see bug #6613630, corrected for the 6.0 version of the DTD).
+ * &lt;!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
  * The codebase specified in the file is used as is if a file: URL;
  * if $$codebase, it is taken to be the immediately containing directory, to match the behavior of JnlpDownloadServlet;
  * if a remote URL, it is also taken to be the immediately containing directory,
@@ -142,9 +144,7 @@ public class VerifyJNLP extends Task {
                 }
             }, new EntityResolver() {
                 public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    if ("-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN".equals(publicId)) {
-                        return new InputSource(VerifyJNLP.class.getResource("JNLP-1.5.dtd").toString());
-                    } else if ("-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN".equals(publicId)) {
+                    if ("-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN".equals(publicId)) {
                         return new InputSource(VerifyJNLP.class.getResource("JNLP-6.0.dtd").toString());
                     } else {
                         return null;

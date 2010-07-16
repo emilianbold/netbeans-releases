@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,14 +55,14 @@ import sun.misc.BASE64Encoder;
  *
  */
 public abstract class DbgpCommand {
-
     private static final String DATA_SEPARATOR = " -- ";        // NOI18N
-
     private static final String TRANSACTION_OPT = " -i ";       // NOI18N
+    private String command;
+    private String transactionId;
 
     DbgpCommand( String command , String transactionId ){
-        myCommand = command;
-        myTransaction = transactionId;
+        this.command = command;
+        this.transactionId = transactionId;
     }
     
     public void send(OutputStream out) throws IOException {
@@ -69,7 +72,7 @@ public abstract class DbgpCommand {
             encodedData = encoder.encode( getData().getBytes( 
                     DbgpMessage.ISO_CHARSET) );
         }
-        StringBuilder dataToSend = new StringBuilder( myCommand );
+        StringBuilder dataToSend = new StringBuilder( getCommand());
         dataToSend.append( getArgumentString() );
         if ( encodedData != null ){
             dataToSend.append( DATA_SEPARATOR );
@@ -86,7 +89,7 @@ public abstract class DbgpCommand {
     }
     
     public String getTransactionId() {
-        return myTransaction;
+        return transactionId;
     }
     
     public abstract boolean wantAcknowledgment();
@@ -95,6 +98,9 @@ public abstract class DbgpCommand {
         return null;
     }
     
+    public String getCommand() {
+        return command;
+    }
     
     protected String getArguments() {
         return "";
@@ -102,15 +108,10 @@ public abstract class DbgpCommand {
     
     private String getArgumentString(){
         if ( getArguments() != null && getArguments().length() >0 ) {
-            return TRANSACTION_OPT + myTransaction+ " " +getArguments();
+            return TRANSACTION_OPT + transactionId+ " " +getArguments();
         }
         else {
-            return TRANSACTION_OPT + myTransaction;
+            return TRANSACTION_OPT + transactionId;
         }
-    }
-    
-    private String myCommand;
-    
-    private String myTransaction;
-    
+    }       
 }

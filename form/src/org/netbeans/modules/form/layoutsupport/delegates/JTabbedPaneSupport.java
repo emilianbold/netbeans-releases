@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - JTabbedPane.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JTabbedPane.class;
     }
@@ -457,6 +461,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
         // -----------
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new FormProperty[] {
@@ -465,10 +470,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabTitle"), // NOI18N
                                  getBundle().getString("HINT_tabTitle")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return title;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             title = (String)value;
                         }
@@ -494,10 +501,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabIcon"), // NOI18N
                                  getBundle().getString("HINT_tabIcon")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return icon;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             icon = (Icon)value;
                         }
@@ -525,10 +534,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabToolTip"), // NOI18N
                                  getBundle().getString("HINT_tabToolTip")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return toolTip;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             toolTip = (String)value;
                         }
@@ -566,10 +577,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return title;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             LayoutConstraints constr = new TabConstraints(title);
             org.netbeans.modules.form.FormUtils.copyProperties(

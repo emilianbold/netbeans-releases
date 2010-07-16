@@ -19,30 +19,19 @@
 
 package org.netbeans.modules.bpel.mapper.multiview;
 
-import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
-import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
-import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Branches;
-import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.ElseIf;
-import org.netbeans.modules.bpel.model.api.FinalCounterValue;
-import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.ForEach;
-import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.Literal;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
-import org.netbeans.modules.bpel.model.api.Query;
-import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
-import org.netbeans.modules.bpel.model.api.StartCounterValue;
-import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
@@ -51,61 +40,81 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- * @author Vitaly Bychkov
+ * @author Nikita Krjukov
  */
 public class BpelDesignContextFactory implements DesignContextFactory {
 
-    private static final BpelDesignContextFactory INSTANCE = new BpelDesignContextFactory();
-    private final ContextCreator[] contextCreators;
+    private static Set<Class> mMappableObjects = new HashSet<Class>();
 
-    private BpelDesignContextFactory() {
-        contextCreators = new ContextCreator[] {
-            new AssignContextCreator(),
-            new BooleanConditionContextCreator(),
-            new TimeConditionContextCreator(),
-            new ForEachContextCreator(),
-            new EmptyContextCreator()};
+    static {
+        mMappableObjects.add(Assign.class);
+        mMappableObjects.add(Copy.class);
+        //
+        mMappableObjects.add(Wait.class);
+        mMappableObjects.add(OnAlarmPick.class);
+        mMappableObjects.add(OnAlarmEvent.class);
+        //
+        mMappableObjects.add(If.class);
+        mMappableObjects.add(ElseIf.class);
+        mMappableObjects.add(While.class);
+        mMappableObjects.add(RepeatUntil.class);
+        //
+        mMappableObjects.add(ForEach.class);
     }
+
+    private static final BpelDesignContextFactory INSTANCE = new BpelDesignContextFactory();
 
     public static BpelDesignContextFactory getInstance() {
         return INSTANCE;
     }
 
-    public boolean isMappableEntity(BpelEntity entity) {
-        if (entity == null) {
-            return false;
-        }
-        boolean isMappable = false;
-        assert contextCreators != null;
-        for (BpelDesignContextFactory.ContextCreator contextCreator : contextCreators) {
-            if (contextCreator.accepted(entity)
-                    && !(contextCreator instanceof EmptyContextCreator))
-            {
-                isMappable = true;
-                break;
-            }
-        }
+    private BpelDesignContextFactory() {}
 
-        return isMappable;
-    }
+    //==========================================================================
 
     public BpelDesignContext createBpelDesignContext(
-                    BpelEntity selectedEntity, Node node, Lookup lookup)
-    {
-        if (selectedEntity == null || node == null || lookup == null) {
+                    BpelEntity selectedEntity, Node node, Lookup lookup) {
+        //
+        if (selectedEntity == null) {
             return null;
         }
-
+        //
         BpelDesignContext context = null;
-
-        assert contextCreators != null;
-        for (BpelDesignContextFactory.ContextCreator contextCreator : contextCreators) {
-            if (contextCreator.accepted(selectedEntity)) {
-                context = contextCreator.create(selectedEntity, node, lookup);
+        //
+        // Initially set mapper's context entity to the selected entity.
+        BpelEntity contextEntity = selectedEntity;
+        while (contextEntity != null) {
+            Class<? extends BpelEntity> entityType = contextEntity.getElementType();
+            if (mMappableObjects.contains(entityType)) {
+                // 
+                // Special case only for the Copy entity
+                if (entityType == Copy.class) {
+                    BpelEntity parent = contextEntity.getParent();
+                    if (parent != null && parent.getElementType() == Assign.class) {
+                        contextEntity = parent;
+                        context = new BpelDesignContextImpl(parent, selectedEntity,
+                                node, lookup);
+                    }
+                } else {
+                    context = new BpelDesignContextImpl(contextEntity,
+                            selectedEntity, node, lookup);
+                }
                 break;
             }
+            if (Activity.class.isAssignableFrom(entityType)) {
+                // Break search because reaching another BPEL Activity
+                // It means that the mapper isn't acceptable for the selected BPEL entity.
+                break;
+            }
+            //
+            // Go to parent entity
+            contextEntity = contextEntity.getParent();
         }
-
+        //
+        if (context == null) {
+            // Create an empty context
+            context = new BpelDesignContextImpl(null, selectedEntity, node, lookup);
+        }
         return context;
     }
 
@@ -137,334 +146,33 @@ public class BpelDesignContextFactory implements DesignContextFactory {
         return bpelContext;
     }
 
-    public BpelDesignContext getProcessContext(BpelModel currentBpelModel, Lookup lookup) {
-        if (currentBpelModel == null) {
-            return null;
+    public boolean isMappableEntity(BpelEntity entity) {
+        //
+        if (entity == null) {
+            return false;
         }
-
-        BpelEntity bpelEntity = currentBpelModel.getProcess();
-        Node node = null;
-        if (bpelEntity != null) {
-            node = FactoryAccess.getPropertyNodeFactory().createNode(NodeType.PROCESS, bpelEntity, lookup);
+        //
+        BpelDesignContext context = null;
+        //
+        // Initially set mapper's context entity to the selected entity.
+        BpelEntity contextEntity = entity;
+        while (contextEntity != null) {
+            Class<? extends BpelEntity> entityType = contextEntity.getElementType();
+            if (mMappableObjects.contains(entityType)) {
+                //
+                return true;
+            }
+            if (Activity.class.isAssignableFrom(entityType)) {
+                // Break search because reaching another BPEL Activity
+                // It means that the mapper isn't acceptable for the selected BPEL entity.
+                break;
+            }
+            //
+            // Go to parent entity
+            contextEntity = contextEntity.getParent();
         }
-
-        BpelDesignContext bpelContext =
-                createBpelDesignContext(bpelEntity, node, lookup);
-        return bpelContext;
+        //
+        return context != null;
     }
 
-    private class AssignContextCreator implements ContextCreator {
-
-        /**
-         *
-         * @param selectedEntity - the selected bpel entity to show mapper
-         * @return true if selected Entity is Assign or Assign bpel descendant - Copy, From or To
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            if (selectedEntity == null) {
-                return false;
-            }
-            //
-            boolean accept = false;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == Assign.class) {
-                accept = true;
-            } else if (entityType == Copy.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == Assign.class) {
-                    accept = true;
-                }
-            } else if (entityType == From.class || entityType ==  To.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == Copy.class) {
-                    BpelEntity nextParent = parent.getParent();
-                    if (nextParent != null &&
-                            nextParent.getElementType() == Assign.class) {
-                        accept = true;
-                    }
-                }
-            } else if (entityType == Query.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null) {
-                    entityType = parent.getElementType();
-                    if (entityType == From.class || entityType == To.class) {
-                        parent = parent.getParent();
-                        if (parent != null && parent.getElementType() == Copy.class) {
-                            BpelEntity nextParent = parent.getParent();
-                            if (nextParent != null &&
-                                    nextParent.getElementType() == Assign.class) {
-                                accept = true;
-                            }
-                        }
-                    }
-                }
-            } else if (entityType == Literal.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == From.class) {
-                    parent = parent.getParent();
-                    if (parent != null && parent.getElementType() == Copy.class) {
-                        BpelEntity nextParent = parent.getParent();
-                        if (nextParent != null &&
-                                nextParent.getElementType() == Assign.class) {
-                            accept = true;
-                        }
-                    }
-                }
-            }
-            //
-            return accept;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            //
-            BpelDesignContext context =  null;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == Assign.class) {
-                context = new BpelDesignContextImpl(selectedEntity,
-                        selectedEntity, selectedEntity, node, lookup);
-            } else if (entityType == Copy.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == Assign.class) {
-                    context = new BpelDesignContextImpl(parent,
-                            selectedEntity, selectedEntity, node, lookup);
-                }
-            } else if (entityType == From.class || entityType ==  To.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == Copy.class) {
-                    BpelEntity nextParent = parent.getParent();
-                    if (nextParent != null &&
-                            nextParent.getElementType() == Assign.class) {
-                        context = new BpelDesignContextImpl(nextParent,
-                                parent, selectedEntity, node, lookup);
-                    }
-                }
-            } else if (entityType == Query.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null) {
-                    entityType = parent.getElementType();
-                    if (entityType == From.class || entityType == To.class) {
-                        parent = parent.getParent();
-                        if (parent != null && parent.getElementType() == Copy.class) {
-                            BpelEntity nextParent = parent.getParent();
-                            if (nextParent != null &&
-                                    nextParent.getElementType() == Assign.class) {
-                                context = new BpelDesignContextImpl(nextParent,
-                                        parent, selectedEntity, node, lookup);
-                            }
-                        }
-                    }
-                }
-            } else if (entityType == Literal.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == From.class) {
-                    parent = parent.getParent();
-                    if (parent != null && parent.getElementType() == Copy.class) {
-                        BpelEntity nextParent = parent.getParent();
-                        if (nextParent != null &&
-                                nextParent.getElementType() == Assign.class) {
-                            context = new BpelDesignContextImpl(nextParent,
-                                    parent, selectedEntity, node, lookup);
-                        }
-                    }
-                }
-            }
-            //
-            return context;
-        }
-    }
-
-    private class TimeConditionContextCreator implements ContextCreator {
-
-        /**
-         * @param selectedEntity - the selected bpel entity to show mapper
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            if (selectedEntity == null) {
-                return false;
-            }
-
-            boolean accept = false;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == Wait.class ||
-                    entityType == OnAlarmPick.class ||
-                    entityType == OnAlarmEvent.class) {
-                accept = true;
-            } else if (entityType == For.class ||
-                    entityType == RepeatEvery.class ||
-                    entityType == DeadlineExpression.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                entityType = parent.getElementType();
-                if (entityType == Wait.class ||
-                    entityType == OnAlarmPick.class ||
-                    entityType == OnAlarmEvent.class) {
-                    accept = true;
-                }
-            }
-
-            return accept;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            //
-            BpelDesignContext context =  null;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == Wait.class ||
-                    entityType == OnAlarmPick.class ||
-                    entityType == OnAlarmEvent.class) {
-                context = new BpelDesignContextImpl(selectedEntity,
-                        selectedEntity, selectedEntity, node, lookup);
-            } else if (entityType == For.class ||
-                    entityType == RepeatEvery.class ||
-                    entityType == DeadlineExpression.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                entityType = parent.getElementType();
-                if (entityType == Wait.class ||
-                    entityType == OnAlarmPick.class ||
-                    entityType == OnAlarmEvent.class) {
-                    //
-                    context = new BpelDesignContextImpl(parent,
-                            parent, selectedEntity, node, lookup);
-                }
-            }
-            //
-            return context;
-        }
-    }
-
-    private class BooleanConditionContextCreator implements ContextCreator {
-
-        /**
-         * @param selectedEntity - the selected bpel entity to show mapper
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            if (selectedEntity == null) {
-                return false;
-            }
-            //
-            boolean accept = false;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == If.class ||
-                    entityType == ElseIf.class ||
-                    entityType == While.class ||
-                    entityType == RepeatUntil.class) {
-                accept = true;
-            } else if (entityType == BooleanExpr.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                entityType = parent.getElementType();
-                if (entityType == If.class ||
-                    entityType == ElseIf.class ||
-                    entityType == While.class ||
-                    entityType == RepeatUntil.class) {
-                    accept = true;
-                }
-            }
-            //
-            return accept;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            //
-            BpelDesignContext context =  null;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == If.class ||
-                    entityType == ElseIf.class ||
-                    entityType == While.class ||
-                    entityType == RepeatUntil.class) {
-                context = new BpelDesignContextImpl(selectedEntity,
-                        selectedEntity, selectedEntity, node, lookup);
-            } else if (entityType == BooleanExpr.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                entityType = parent.getElementType();
-                if (entityType == If.class ||
-                    entityType == ElseIf.class ||
-                    entityType == While.class ||
-                    entityType == RepeatUntil.class) {
-                    context = new BpelDesignContextImpl(parent, parent,
-                            selectedEntity, node, lookup);
-                }
-            }
-            //
-            return context;
-        }
-    }
-
-    private class ForEachContextCreator implements ContextCreator {
-
-        /**
-         * @param selectedEntity - the selected bpel entity to show mapper
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            if (selectedEntity == null) {
-                return false;
-            }
-            //
-            boolean accept = false;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == ForEach.class) {
-                accept = true;
-            } else if (entityType == StartCounterValue.class ||
-                    entityType == FinalCounterValue.class ||
-                    entityType == CompletionCondition.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == ForEach.class) {
-                    accept = true;
-                }
-            } else if (entityType == Branches.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null &&
-                        parent.getElementType() == CompletionCondition.class) {
-                    BpelEntity nextParent = parent.getParent();
-                    if (nextParent != null &&
-                            nextParent.getElementType() == ForEach.class) {
-                        accept = true;
-                    }
-                }
-            }
-            //
-            return accept;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            //
-            BpelDesignContext context =  null;
-            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == ForEach.class) {
-                context = new BpelDesignContextImpl(selectedEntity,
-                        selectedEntity, selectedEntity, node, lookup);
-            } else if (entityType == StartCounterValue.class ||
-                    entityType == FinalCounterValue.class ||
-                    entityType == CompletionCondition.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == ForEach.class) {
-                    context = new BpelDesignContextImpl(parent,
-                            selectedEntity, selectedEntity, node, lookup);
-                }
-            } else if (entityType == Branches.class) {
-                BpelEntity parent = selectedEntity.getParent();
-                if (parent != null &&
-                        parent.getElementType() == CompletionCondition.class) {
-                    BpelEntity nextParent = parent.getParent();
-                    if (nextParent != null &&
-                            nextParent.getElementType() == ForEach.class) {
-                        context = new BpelDesignContextImpl(nextParent,
-                            parent, selectedEntity, node, lookup);
-                    }
-                }
-            }
-            //
-            return context;
-        }
-    }
 }

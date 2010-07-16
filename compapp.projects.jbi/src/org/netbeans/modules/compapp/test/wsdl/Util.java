@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,20 +74,19 @@ import org.openide.util.Exceptions;
 public class Util {
     private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.Util"); // NOI18N
     
-    public static ExtensibilityElement getAssignableExtensiblityElement(
-            List<ExtensibilityElement> list, Class type) {
-        List<ExtensibilityElement> eelist = 
-                getAssignableExtensiblityElementList(list, type);
+    public static <T extends ExtensibilityElement> T getAssignableExtensiblityElement(
+            List<ExtensibilityElement> list, Class<T> type) {
+        List<T> eelist = getAssignableExtensiblityElements(list, type);
         return eelist.size() > 0? eelist.get(0) : null;
     }
     
-    public static List<ExtensibilityElement> getAssignableExtensiblityElementList(
-            List<ExtensibilityElement> list, Class type) {
-        List<ExtensibilityElement> result = new ArrayList<ExtensibilityElement>();
+    public static <T extends ExtensibilityElement> List<T> getAssignableExtensiblityElements(
+            List<ExtensibilityElement> list, Class<T> type) {
+        List<T> result = new ArrayList<T>();
         
         for (ExtensibilityElement ee : list) {
-            if(type.isAssignableFrom(ee.getClass())) {
-                result.add(ee);
+            if (type.isAssignableFrom(ee.getClass())) {
+                result.add((T)ee);
             }
         }
         

@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.iep.editor.palette;
 
-import java.io.IOException;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;

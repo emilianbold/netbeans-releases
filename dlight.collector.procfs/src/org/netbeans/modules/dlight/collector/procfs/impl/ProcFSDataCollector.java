@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,9 +62,11 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.Info;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
@@ -75,6 +81,7 @@ import org.netbeans.modules.dlight.procfs.api.SamplingData;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReaderFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -98,6 +105,7 @@ public class ProcFSDataCollector
     private final List<DataTableMetadata> providedDataTables;
     private SQLDataStorage sqlStorage;
     private PreparedStatement insertMSAStatement = null;
+    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
 
     public ProcFSDataCollector(ProcFSDCConfiguration configuration) {
         this.configuration = configuration;
@@ -118,6 +126,72 @@ public class ProcFSDataCollector
         }
 
         providedDataTables = Collections.unmodifiableList(tables);
+    }
+
+/**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    @Override
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    @Override
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final CollectorState state) {
+        DataCollectorListener[] ll;
+
+        synchronized (this) {
+            ll = listeners.toArray(new DataCollectorListener[0]);
+        }
+
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DataCollectorListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        l.collectorStateChanged(ProcFSDataCollector.this, state);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     @Override
@@ -250,8 +324,24 @@ public class ProcFSDataCollector
         final int pid = ((AttachableTarget) target).getPID();
         final ProcReader reader = ProcReaderFactory.getReader(target.getExecEnv(), pid);
 
+        DLightTargetAccessor<? extends DLightTarget> targetAccess = DLightTargetAccessor.getDefault();
+        Info targetInfo = targetAccess.getDLightTargetInfo(target);
+        String attachTimeString = targetInfo.getInfo().get("AttachTimeNano"); // NOI18N
+        // If the target was started using "attach",
+        // then current time will be used
+        // as an offset of collected data events...
+        // If it is a "regular" run, then a fair ts (from proc)
+        // will be used.
+        long attachTime = 0;
+        if (attachTimeString != null) {
+            try {
+                attachTime = Long.parseLong(attachTimeString);
+            } catch (NumberFormatException nfe) {
+            }
+        }
+
         mainLoop = DLightExecutorService.scheduleAtFixedRate(
-                new FetchAndUpdateTask(reader),
+                new FetchAndUpdateTask(reader, attachTime),
                 1, TimeUnit.SECONDS,
                 "ProcFSDataCollector data fetching loop"); // NOI18N
     }
@@ -286,13 +376,15 @@ public class ProcFSDataCollector
         private final ProcReader reader;
         private final LWPsTracker lwpsTracker = new LWPsTracker();
         private final AtomicLong processStartTime = new AtomicLong(0);
+        private final long attachTimeNano;
 
-        public FetchAndUpdateTask(final ProcReader reader) {
+        public FetchAndUpdateTask(final ProcReader reader, long attachTimeNano) {
             this.reader = reader;
+            this.attachTimeNano = attachTimeNano;
         }
 
         private final long toNanoOffset(long timenano) {
-            return timenano - processStartTime.get();
+            return timenano - ((attachTimeNano > 0) ? attachTimeNano : processStartTime.get());
         }
 
         public void run() {
@@ -421,7 +513,7 @@ public class ProcFSDataCollector
                 if (thread_started) {
                     try {
                         insertStatement.setInt(1, id);
-                        insertStatement.setLong(2, toNanoOffset(lwp_usageInfo.getUsageInfo().pr_create)); // USE MILLISECONDS PASSED FROM START
+                        insertStatement.setLong(2, toNanoOffset(attachTimeNano > 0 ? attachTimeNano : lwp_usageInfo.getUsageInfo().pr_create)); // USE MILLISECONDS PASSED FROM START
                         insertStatement.executeUpdate();
                     } catch (SQLException ex) {
                         if (log.isLoggable(Level.FINE)) {

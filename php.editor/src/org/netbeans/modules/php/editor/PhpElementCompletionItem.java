@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,14 +42,21 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.net.MalformedURLException;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.elements.VariableElementImpl;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Convert {@link PhpElement PHP element} to {@link CompletionProposal}.
+ * Convert {@link PhpBaseElement PHP element} to {@link CompletionProposal}.
  * @author Tomas Mysik
  */
 public final class PhpElementCompletionItem {
@@ -54,7 +64,7 @@ public final class PhpElementCompletionItem {
     private PhpElementCompletionItem() {
     }
 
-    static CompletionProposal fromPhpElement(PhpElement element, CompletionRequest request) {
+    static CompletionProposal fromPhpElement(PhpBaseElement element, CompletionRequest request) {
         assert element != null;
         if (element instanceof PhpVariable) {
             return new PhpVariableCompletionItem((PhpVariable) element, request);
@@ -66,23 +76,34 @@ public final class PhpElementCompletionItem {
         private final PhpVariable variable;
 
         public PhpVariableCompletionItem(PhpVariable variable, CompletionRequest request) {
-            super(new IndexedConstant(variable.getName(), null, null, null, variable.getOffset(), 0, null), request);
+            super(VariableElementImpl.create(variable.getName(), variable.getOffset(), getFileNameUrl(variable), null, Collections.<TypeResolver>emptySet()), request);
             this.variable = variable;
-        }
-
-        private PhpVariableCompletionItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            variable = null;
         }
 
         @Override
         protected String getTypeName() {
-            return variable.getFullyQualifiedName();
+            String fullyQualifiedName = variable.getFullyQualifiedName();
+            if (fullyQualifiedName != null) {
+                return fullyQualifiedName;
+            }
+            return super.getTypeName();
         }
 
         @Override
         public boolean isSmart() {
             return true;
+        }
+
+        private static String getFileNameUrl(PhpVariable variable) {
+            FileObject file = variable.getFile();
+            if (file != null && file.isValid()) {
+                try {
+                    return FileUtil.toFile(file).toURI().toURL().toExternalForm();
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(PhpElementCompletionItem.class.getName()).log(Level.WARNING, null, ex);
+                }
+            }
+            return null;
         }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,21 +50,17 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -72,34 +71,40 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PushOtherAction extends ContextAction implements ChangeListener {
+public class PushOtherAction extends ContextAction {
     
-    private final VCSContext context;
-    private Repository repository = null;
-    private JButton pushButton = null;
-    private JButton cancelButton = null;
-
-    public PushOtherAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+            return false;
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PushOther";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-
-        if (repository == null) {
-            int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
-            String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title, true);
-            repository.addChangeListener(this);
-        }
-        pushButton = new JButton();
+        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
+        String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
+        final JButton pushButton = new JButton();
+        final Repository repository = new Repository(repositoryModeMask, title, true);
+        repository.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                pushButton.setEnabled(repository.isValid());
+            }
+        });
         org.openide.awt.Mnemonics.setLocalizedText(pushButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Push")); // NOI18N
         pushButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSD_Push_Action_Push")); // NOI18N
         pushButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSN_Push_Action_Push")); // NOI18N
-        cancelButton = new JButton();
+        JButton cancelButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSD_Push_Action_Cancel")); //NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSN_Push_Action_Cancel")); // NOI18N
@@ -130,10 +135,6 @@ public class PushOtherAction extends ContextAction implements ChangeListener {
             push(context, root, pushPath);
         }
     }
-    
-    public void stateChanged(ChangeEvent evt) {
-        pushButton.setEnabled(repository.isValid());
-    }
 
     public static void push(final VCSContext ctx, final File root, final HgURL pushPath) {
         if (root == null || pushPath == null) return;
@@ -149,12 +150,5 @@ public class PushOtherAction extends ContextAction implements ChangeListener {
 
         support.start(rp, root,
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 }

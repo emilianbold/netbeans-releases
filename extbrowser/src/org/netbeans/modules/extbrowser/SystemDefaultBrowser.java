@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,8 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.Desktop;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -64,64 +66,29 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     private static final long serialVersionUID = -7317179197254112564L;
     private static final Logger logger = Logger.getLogger(SystemDefaultBrowser.class.getName());
 
-    private static interface BrowseInvoker {
-
-        void browse(URI uri) throws IOException;
-    }
-    private static BrowseInvoker JDK_6_DESKTOP_BROWSE;
+    private static final boolean ACTIVE;
     static {
         if (Boolean.getBoolean("org.netbeans.modules.extbrowser.UseDesktopBrowse")) {
-            try {
-                if (Boolean.getBoolean("java.net.useSystemProxies") && Utilities.isUnix()) {
-                    // remove this check if JDK's bug 6496491 is fixed or if we can assume ORBit >= 2.14.2 and gnome-vfs >= 2.16.1
-                    logger.log(Level.FINE, "Ignoring java.awt.Desktop.browse support to avoid hang from #89540");
-                } else {
-                    Class desktop = Class.forName("java.awt.Desktop"); // NOI18N
-                    Method isDesktopSupported = desktop.getMethod("isDesktopSupported", null); // NOI18N
-                    Boolean b = (Boolean) isDesktopSupported.invoke(null, null);
-                    logger.log(Level.FINE, "java.awt.Desktop found, isDesktopSupported returned " + b);
-                    if (b.booleanValue()) {
-                        final Object desktopInstance = desktop.getMethod("getDesktop", null).invoke(null, null); // NOI18N
-                        Class desktopAction = Class.forName("java.awt.Desktop$Action"); // NOI18N
-                        Method isSupported = desktop.getMethod("isSupported", new Class[]{desktopAction}); // NOI18N
-                        Object browseConst = desktopAction.getField("BROWSE").get(null); // NOI18N
-                        b = (Boolean) isSupported.invoke(desktopInstance, new Object[] {browseConst});
-                        logger.log(Level.FINE, "java.awt.Desktop found, isSupported(Action.BROWSE) returned " + b);
-                        if (b.booleanValue()) {
-                            final Method browse = desktop.getMethod("browse", new Class[]{URI.class}); // NOI18N
-                            JDK_6_DESKTOP_BROWSE = new BrowseInvoker() {
-
-                                public void browse(URI uri) throws IOException {
-                                    try {
-                                        browse.invoke(desktopInstance, new Object[]{uri});
-                                    } catch (InvocationTargetException e) {
-                                        throw (IOException) e.getTargetException();
-                                    } catch (Exception e) {
-                                        Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.WARNING, null, e);
-                                    }
-                                }
-                            };
-                            logger.log(Level.FINE, "java.awt.Desktop.browse support");
-                        }
-                    }
-                }
-            } catch (ClassNotFoundException e) {
-                // JDK 5, ignore
-                logger.log(Level.FINE, "java.awt.Desktop class not found, disabling JDK 6 browse functionality");
-            } catch (Exception e) {
-                logger.log(Level.WARNING, null, e);
+            if (Boolean.getBoolean("java.net.useSystemProxies") && Utilities.isUnix()) {
+                // remove this check if JDK's bug 6496491 is fixed or if we can assume ORBit >= 2.14.2 and gnome-vfs >= 2.16.1
+                logger.log(Level.FINE, "Ignoring java.awt.Desktop.browse support to avoid hang from #89540");
+                ACTIVE = false;
+            } else {
+                ACTIVE = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
             }
+        } else {
+            ACTIVE = false;
         }
     }
 
     /** Determines whether the browser should be visible or not
-     *  @return true when OS is not Windows and is not Unix with Default Browser capability and is not JDK 6.
+     *  @return true when OS is not Windows and is not Unix with Default Browser capability and Desktop is inactive.
      *          false in all other cases.
      */
     public static Boolean isHidden() {
         return Boolean.valueOf(
                 (!Utilities.isWindows() && !defaultBrowserUnixReady() && !Utilities.isMac())
-                && JDK_6_DESKTOP_BROWSE == null);
+                && !ACTIVE);
     }
 
     private static boolean defaultBrowserUnixReady() {
@@ -138,7 +105,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return browserImpl implementation of browser.
      */
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
-        if (JDK_6_DESKTOP_BROWSE != null) {
+        if (ACTIVE) {
             return new Jdk6BrowserImpl();
         } else if (Utilities.isWindows()) {
             return new NbDdeBrowserImpl(this);
@@ -178,7 +145,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                 "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
                 ExtWebBrowser.UnixBrowserFormat.getHint());
         }
-        if (!Utilities.isWindows() || JDK_6_DESKTOP_BROWSE != null) {
+        if (!Utilities.isWindows() || ACTIVE) {
             return new NbProcessDescriptor("", ""); // NOI18N
         }
 
@@ -210,17 +177,17 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     private static final class Jdk6BrowserImpl extends ExtBrowserImpl {
 
         public Jdk6BrowserImpl() {
-            assert JDK_6_DESKTOP_BROWSE != null;
+            assert ACTIVE;
         }
 
         public void setURL(URL url) {
             URL extURL = URLUtil.createExternalURL(url, false);
             try {
                 URI uri = extURL.toURI();
-                logger.fine("Calling java.awt.Desktop.browse(" + uri + ")");
-                JDK_6_DESKTOP_BROWSE.browse(uri);
+                logger.log(Level.FINE, "Calling java.awt.Desktop.browse({0})", uri);
+                Desktop.getDesktop().browse(uri);
             } catch (URISyntaxException e) {
-                logger.severe("The URL:\n" + extURL + "\nis not fully RFC 2396 compliant and cannot " + "be used with Desktop.browse()."); //NOI18N
+                logger.log(Level.SEVERE,"The URL:\n{0}" + "\nis not fully RFC 2396 compliant and cannot be used with Desktop.browse().", extURL);
             } catch (IOException e) {
                 // Report in GUI?
                 logger.log(Level.WARNING, null, e);

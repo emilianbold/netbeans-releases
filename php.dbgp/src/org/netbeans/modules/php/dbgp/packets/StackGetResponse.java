@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import org.netbeans.modules.php.dbgp.annotations.CallStackAnnotation;
 import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.models.CallStackModel;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.text.Line;
 import org.w3c.dom.Node;
 
@@ -90,7 +94,7 @@ public class StackGetResponse extends DbgpResponse {
         annotateStackTrace(session , stacks);
         
         DebugSession currentSession = SessionManager.getInstance().
-            getCurrentSession(session.getSessionId());
+            getSession(session.getSessionId());
         // perform views update only if response appears in current session
         if ( currentSession != session ){
             return;
@@ -137,24 +141,27 @@ public class StackGetResponse extends DbgpResponse {
     }
 
     public static void updateWatchView( DebugSession session ) {
-        Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
-        for (Watch watch : allWatches) {
-            String expression = watch.getExpression();
-            EvalCommand command = new EvalCommand( session.getTransactionId());
-            command.setData( expression );
-            /* TODO : uncommented but it may cause following problems: 
-             * I found a bug in XDEbug with eval command:
-             * after response to eval request it performs two actions:
-             * 1) Stops script execution ( and debugging ) unexpectedly
-             * 2) Response with unexpected "response" packet that don't contain
-             * "command" attribute with "status" attribute equals to "stopped"
-             * and "reason" equals "ok".
-             * 
-             * XDrbug bug submitted: 
-             * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
-             * 
-             */ 
-            session.sendCommandLater(command);
+        if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+            Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
+            for (Watch watch : allWatches) {
+                String expression = watch.getExpression();
+                EvalCommand command = new EvalCommand( session.getTransactionId());
+                command.setData( expression );
+                /* TODO : uncommented but it may cause following problems:
+                 * I found a bug in XDEbug with eval command:
+                 * after response to eval request it performs two actions:
+                 * 1) Stops script execution ( and debugging ) unexpectedly
+                 * 2) Response with unexpected "response" packet that don't contain
+                 * "command" attribute with "status" attribute equals to "stopped"
+                 * and "reason" equals "ok".
+                 *
+                 * XDrbug bug submitted:
+                 * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
+                 *
+                 */
+
+                session.sendCommandLater(command);
+            }
         }
     }
 

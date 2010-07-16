@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,10 @@ import org.openide.util.NbBundle;
 public class RubyUtils {
     
     public static final String RUBY_MIME_TYPE = RubyInstallation.RUBY_MIME_TYPE; // NOI18N
+    private static final String CONTROLLER_SUFFIX = "Controller";
+    private static final String HELPER_SUFFIX = "Helper";
+    private static final String CONTROLLER_FILE_SUFFIX = "_controller.rb"; // NOI18N
+
 
     private static final Logger LOGGER = Logger.getLogger(RubyUtils.class.getName());
 
@@ -541,12 +548,10 @@ public class RubyUtils {
         return Collections.emptyList();
     }
 
-    private static final String CONTROLLER_SUFFIX = "_controller.rb"; // NOI18N
-    
     private static void addControllerNames(FileObject file, List<String> names, boolean lowercase) {
         final String filename = file.getNameExt();
-        if (filename.endsWith(CONTROLLER_SUFFIX)) {
-            String name = filename.substring(0, filename.length()-CONTROLLER_SUFFIX.length());
+        if (filename.endsWith(CONTROLLER_FILE_SUFFIX)) {
+            String name = filename.substring(0, filename.length()-CONTROLLER_FILE_SUFFIX.length());
             if (!lowercase) {
                 name = underlinedNameToCamel(name);
             }
@@ -818,13 +823,12 @@ public class RubyUtils {
             return false;
         }
         String[] version = m.group(2).split("\\.");
-        if (Integer.parseInt(version[0]) < 2) {
-            return false;
+        int major = Integer.parseInt(version[0]);
+        int minor = Integer.parseInt(version[1]);
+        if (major == 2) {
+            return minor >= 3;
         }
-        if (Integer.parseInt(version[1]) < 3) {
-            return false;
-        }
-        return true;
+        return major > 2 ? true : false;
     }
 
     // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject
@@ -890,4 +894,42 @@ public class RubyUtils {
 
         return project.getProjectDirectory().getFileObject("app/"); //NOI18N
     }
+
+    static String helperName(String controllerName) {
+        return baseName(controllerName) + HELPER_SUFFIX; //NOI18N
+    }
+
+    static String controllerName(String baseName) {
+        return baseName(baseName) + CONTROLLER_SUFFIX;
+    }
+
+    static String baseName(String controllerName) {
+        if (controllerName.endsWith(CONTROLLER_SUFFIX)) {
+            return controllerName.substring(0, controllerName.length() - CONTROLLER_SUFFIX.length());
+        }
+        return controllerName;
+
+    }
+
+    /**
+     * Adds the given {@code toAdd} to the end of the given {@code array}.
+     * 
+     * @param array
+     * @param toAdd
+     * @return
+     */
+    static String[] addToArray(String[] array, String... toAdd) {
+        if (toAdd == null || toAdd.length == 0) {
+            return array;
+        }
+        String[] result = new String[array.length + toAdd.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        for (int i = array.length; i < array.length + toAdd.length; i++) {
+            result[i] = toAdd[i - array.length];
+        }
+        return result;
+    }
+
 }

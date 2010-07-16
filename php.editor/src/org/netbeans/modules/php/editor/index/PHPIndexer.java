@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -59,6 +63,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -74,6 +80,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -119,25 +126,27 @@ public final class PHPIndexer extends EmbeddingIndexer {
     // ;flags;;args;offset;docoffset;browsercompat;types;
     // (between flags and args you have the case sensitive name for flags)
 
-    static final String FIELD_BASE = "base"; //NOI18N
-    static final String FIELD_EXTEND = "extend"; //NOI18N
-    static final String FIELD_CLASS = "clz"; //NOI18N
-    static final String FIELD_IFACE = "iface"; //NOI18N
-    static final String FIELD_CONST = "const"; //NOI18N
-    static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
-    static final String FIELD_FIELD = "field"; //NOI18N
-    static final String FIELD_METHOD = "method"; //NOI18N
-    static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
-    static final String FIELD_INCLUDE = "include"; //NOI18N
-    static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
-    static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
-    static final String FIELD_NAMESPACE = "ns"; //NOI18N
+    public static final String FIELD_BASE = "base"; //NOI18N
+    public static final String FIELD_EXTEND = "extend"; //NOI18N
+    public static final String FIELD_CLASS = "clz"; //NOI18N
+    public static final String FIELD_SUPER_CLASS = "superclz"; //NOI18N
+    public static final String FIELD_IFACE = "iface"; //NOI18N
+    public static final String FIELD_SUPER_IFACE = "superiface"; //NOI18N
+    public static final String FIELD_CONST = "const"; //NOI18N
+    public static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
+    public static final String FIELD_FIELD = "field"; //NOI18N
+    public static final String FIELD_METHOD = "method"; //NOI18N
+    public static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
+    public static final String FIELD_INCLUDE = "include"; //NOI18N
+    public static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
+    public static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+    public static final String FIELD_NAMESPACE = "ns"; //NOI18N
 
-    static final String FIELD_VAR = "var"; //NOI18N
+    public static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
-    static final String FIELD_TOP_LEVEL = "top"; //NOI18N
+    public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    static final String [] ALL_FIELDS = new String [] {
+    public static final String [] ALL_FIELDS = new String [] {
         FIELD_BASE,
         FIELD_EXTEND,
         FIELD_CLASS,
@@ -175,7 +184,9 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
             String processedFileURL = null;
             try {
-                processedFileURL = r.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
+                assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+                processedFileURL = fileObject.getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -183,10 +194,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
-            PHPIndex.clearNamespaceCache();
+            IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = r.getModel();
+            Model model = r.getModel(false);
             final FileScope fileScope = model.getFileScope();
             IndexDocument reverseIdxDocument = support.createDocument(indexable);
             documents.add(reverseIdxDocument);
@@ -194,6 +205,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 IndexDocument classDocument = support.createDocument(indexable);
                 documents.add(classDocument);
                 classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
+                QualifiedName superClassName = classScope.getSuperClassName();
+                if (superClassName != null) {
+                    final String name = superClassName.getName();
+                    final String namespaceName = superClassName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
+                Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
+                for (QualifiedName superIfaceName : superInterfaces) {
+                    final String name = superIfaceName.getName();
+                    final String namespaceName = superIfaceName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
 
                 for (MethodScope methodScope : classScope.getDeclaredMethods()) {
@@ -201,10 +224,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
                     if (methodScope.isConstructor()) {
                         classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
                     }
-                }
-                Collection<? extends MethodScope> declaredConstructors = classScope.getDeclaredConstructors();
-                if (declaredConstructors.isEmpty()) {
-                    classDocument.addPair(FIELD_CONSTRUCTOR,classScope.getDefaultConstructorIndexSignature(), false, true);
                 }
                 for (FieldElement fieldElement : classScope.getDeclaredFields()) {
                     classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
@@ -217,6 +236,13 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 IndexDocument classDocument = support.createDocument(indexable);
                 documents.add(classDocument);
                 classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
+                Set<QualifiedName> superInterfaces = ifaceSCope.getSuperInterfaces();
+                for (QualifiedName superIfaceName : superInterfaces) {
+                    final String name = superIfaceName.getName();
+                    final String namespaceName = superIfaceName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
+
                 classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
                 for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
                     classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
@@ -288,7 +314,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         // Filter out JavaScript stuff
         return url.indexOf("jsstubs") == -1 && // NOI18N
                 // Filter out Ruby stuff
-                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/ruby/") == -1 &&  // NOI18N
                 url.indexOf("/gems/") == -1 &&  // NOI18N
                 url.indexOf("lib/ruby/") == -1; // NOI18N
      }
@@ -296,7 +322,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 10;
+        public static final int VERSION = 16;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

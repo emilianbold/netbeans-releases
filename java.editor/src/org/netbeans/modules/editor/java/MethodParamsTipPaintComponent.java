@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,11 +68,23 @@ public class MethodParamsTipPaintComponent extends JToolTip {
     private int idx;
     private JTextComponent component;
 
-    public MethodParamsTipPaintComponent(List<List<String>> params, int idx, JTextComponent component){
+    public MethodParamsTipPaintComponent(JTextComponent component){
         super();
+        this.component = component;
+    }
+    
+    void setData(List<List<String>> params, int idx) {
         this.params = params;
         this.idx = idx;
-        this.component = component;
+    }
+    
+    void clearData() {
+        this.params = null;
+        this.idx = -1;
+    }
+    
+    boolean hasData() {
+        return params != null;
     }
     
     public void paintComponent(Graphics g) {
@@ -96,21 +111,23 @@ public class MethodParamsTipPaintComponent extends JToolTip {
 
         int startX = drawX;
         drawWidth = drawX;
-        for (List<String> p : params) {
-            int i = 0;
-            int plen = p.size() - 1;
-            for (String s : p) {
-                if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
-                    drawY += fontHeight;
-                    drawX = startX + getWidth("        ", drawFont); //NOI18N
+        if (params != null) {
+            for (List<String> p : params) {
+                int i = 0;
+                int plen = p.size() - 1;
+                for (String s : p) {
+                    if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
+                        drawY += fontHeight;
+                        drawX = startX + getWidth("        ", drawFont); //NOI18N
+                    }
+                    drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
+                    if (drawWidth < drawX)
+                        drawWidth = drawX;
+                    i++;
                 }
-                drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
-                if (drawWidth < drawX)
-                    drawWidth = drawX;
-                i++;
+                drawY += fontHeight;
+                drawX = startX;
             }
-            drawY += fontHeight;
-            drawX = startX;
         }
         drawHeight = drawY - fontHeight + descent;
         if (in != null) {

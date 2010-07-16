@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,15 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -50,26 +62,33 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.DateFormat;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -78,30 +97,27 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
-import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -115,9 +131,10 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -127,7 +144,8 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -137,6 +155,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
+    private static final RequestProcessor RP = new RequestProcessor("JIRA Issue Panel", 5, false); // NOI18N
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
@@ -147,50 +166,62 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private IssueLinksPanel issueLinksPanel;
     private boolean skipReload;
     private boolean reloading;
-    private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
+    private Map<NbJiraIssue.IssueField,Object> initialValues = new EnumMap<NbJiraIssue.IssueField,Object>(NbJiraIssue.IssueField.class);
     private PropertyChangeListener tasklistListener;
 
     public IssuePanel() {
         initComponents();
-        createdField.setBackground(getBackground());
-        updatedField.setBackground(getBackground());
-        originalEstimateField.setBackground(getBackground());
-        remainingEstimateField.setBackground(getBackground());
-        timeSpentField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        projectField.setBackground(getBackground());
-        statusField.setBackground(getBackground());
+        updateReadOnlyField(createdField);
+        updateReadOnlyField(updatedField);
+        updateReadOnlyField(originalEstimateField);
+        updateReadOnlyField(remainingEstimateField);
+        updateReadOnlyField(timeSpentField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(projectField);
+        updateReadOnlyField(statusField);
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
         parentHeaderPanel.setBackground(getBackground());
-        BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
-        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
-        BugtrackingUtil.issue163946Hack(componentScrollPane);
-        BugtrackingUtil.issue163946Hack(affectsVersionScrollPane);
-        BugtrackingUtil.issue163946Hack(fixVersionScrollPane);
-        BugtrackingUtil.issue163946Hack(environmentScrollPane);
-        BugtrackingUtil.issue163946Hack(addCommentScrollPane);
+        UIUtils.fixFocusTraversalKeys(environmentArea);
+        UIUtils.fixFocusTraversalKeys(addCommentArea);
+        UIUtils.issue163946Hack(componentScrollPane);
+        UIUtils.issue163946Hack(affectsVersionScrollPane);
+        UIUtils.issue163946Hack(fixVersionScrollPane);
+        UIUtils.issue163946Hack(environmentScrollPane);
+        UIUtils.issue163946Hack(addCommentScrollPane);
         summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         initIssueLinksPanel();
+        initSpellChecker();
+        initDefaultButton();
         attachFieldStatusListeners();
         attachHideStatusListener();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            issue.opened();
-        }
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
     }
 
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
         }
+        field.setBackground(getBackground());
+    }
+
+    NbJiraIssue getIssue() {
+        return issue;
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -242,8 +273,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         componentList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof org.eclipse.mylyn.internal.jira.core.model.Component) {
-                    value = ((org.eclipse.mylyn.internal.jira.core.model.Component)value).getName();
+                if (value instanceof com.atlassian.connector.eclipse.internal.jira.core.model.Component) {
+                    value = ((com.atlassian.connector.eclipse.internal.jira.core.model.Component)value).getName();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
@@ -259,6 +290,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initProjectCombo() {
         Project[] projects = issue.getRepository().getConfiguration().getProjects();
         DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
+        model.setSelectedItem(null); // Make sure nothing is pre-selected
         projectCombo.setModel(model);
     }
 
@@ -283,7 +315,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initAssigneeCombo() {
         assigneeCombo.setRenderer(new RepositoryUserRenderer());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 final Collection<RepositoryUser> users = issue.getRepository().getUsers();
                 final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
@@ -291,6 +324,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     assignedModel.addElement(user);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         reloading = true;
                         try {
@@ -326,6 +360,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initCommentsPanel() {
         commentsPanel = new CommentsPanel();
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            @Override
             public void append(String text) {
                 addCommentArea.append(text);
                 addCommentArea.requestFocus();
@@ -334,6 +369,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentPanel, commentsPanel);
+    }
+
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
     }
 
     private Map<String,JLabel> customFieldLabels = new HashMap<String,JLabel>();
@@ -403,18 +443,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         affectsVersionList.addListSelectionListener(new CancelHighlightListener(affectsVersionLabel));
         fixVersionList.addListSelectionListener(new CancelHighlightListener(fixVersionLabel));
         addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
+        addCommentArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(addCommentArea);
+            }
+        });
     }
 
     private void attachHideStatusListener() {
         assigneeField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 if (!reloading) {
                     assigneeStatusLabel.setVisible(false);
@@ -423,7 +472,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -517,7 +566,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final String parentKey = issue.getParentKey();
         boolean hasParent = (parentKey != null) && (parentKey.trim().length() > 0);
         if  (hasParent) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
                     if (parentIssue == null) {
@@ -525,6 +575,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                     final Issue parent = parentIssue;
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             parentHeaderPanel.setVisible(true);
                             parentHeaderPanel.removeAll();
@@ -533,6 +584,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             JLabel parentLabel = new JLabel();
                             parentLabel.setText(parent.getSummary());
                             LinkButton parentButton = new LinkButton(new AbstractAction() {
+                                @Override
                                 public void actionPerformed(ActionEvent e) {
                                     parent.open();
                                 }
@@ -590,15 +642,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
             String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-            String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
+            String creation = JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                KenaiUserUI ku = new KenaiUserUI(reporter);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -624,9 +675,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
-                KenaiUserUI ku = new KenaiUserUI(assignee);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;
@@ -637,9 +687,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(assigneeField, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(assigneeCombo, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
-            reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+            reloadField(updatedField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
             fixPrefSize(updatedField);
-            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
+            reloadField(dueField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
 
             // Work-log
             String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
@@ -666,14 +716,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
             // Comments
             commentsPanel.setIssue(issue);
-            BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+            UIUtils.keepFocusedComponentVisible(commentsPanel);
             if (force) {
                 addCommentArea.setText(""); // NOI18N
             }
 
             // Attachments
             attachmentsPanel.setIssue(issue);
-            BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+            UIUtils.keepFocusedComponentVisible(attachmentsPanel);
 
             // Issue-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);
@@ -707,10 +757,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     });
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 TableSorter sorter = new TableSorter(tableModel);
                                 subTaskTable.setModel(sorter);
@@ -805,7 +857,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         List<String> keys = new ArrayList<String>(values.length);
         for (int i=0; i<values.length; i++) {
             switch (field) {
-                case COMPONENT: keys.add(((org.eclipse.mylyn.internal.jira.core.model.Component)values[i]).getId()); break;
+                case COMPONENT: keys.add(((com.atlassian.connector.eclipse.internal.jira.core.model.Component)values[i]).getId()); break;
                 case AFFECTSVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 case FIXVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 default: throw new UnsupportedOperationException();
@@ -911,9 +963,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         panel.add(label3, c);
     }
 
-    private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
+    private List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<org.eclipse.mylyn.internal.jira.core.model.Component> components = new ArrayList<org.eclipse.mylyn.internal.jira.core.model.Component>(componentIds.size());
+        List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> components = new ArrayList<com.atlassian.connector.eclipse.internal.jira.core.model.Component>(componentIds.size());
         for (String id : componentIds) {
             components.add(config.getComponentById(projectId, id));
         }
@@ -929,37 +981,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return versions;
     }
 
-    private String dateByMillis(String text, boolean includeTime) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
-                return format.format(new Date(millis));
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return ""; // NOI18N
-    }
-
-    private Date dateByMillis(String text) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                return new Date(millis);
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return null;
-    }
-
     private int toInt(String text) {
         if (text.trim().length() > 0) {
             try {
                 return Integer.parseInt(text);
             } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
+                Jira.LOG.log(Level.INFO, nfex.getMessage(), nfex);
             }
         }
         return 0;
@@ -970,6 +997,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadForm(force);
         } else {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     reloadForm(force);
                 }
@@ -978,6 +1006,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() != issue) {
                 return;
@@ -989,16 +1018,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        issue.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getSource() != issue) {
-                    return;
-                }
-                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    reloadFormInAWT(false);
-                } 
-            }
-        });
         IssueCacheUtils.removeCacheListener(issue, cacheListener);
         IssueCacheUtils.addCacheListener(issue, cacheListener);
     }
@@ -1100,7 +1119,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 JiraIssueProvider provider = JiraIssueProvider.getInstance();
                 if (provider == null || issue.isNew()) { // do not enable button for new issues
@@ -1111,6 +1131,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     attachTasklistListener(provider);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
                                 isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
@@ -1127,9 +1148,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // listens on events comming from the tasklist, like when an issue is removed, etc.
             // needed to correctly update tasklistButton label and status
             tasklistListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (JiraIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
                         Runnable inAWT = new Runnable() {
+                            @Override
                             public void run() {
                                 updateTasklistButton();
                             }
@@ -1151,12 +1174,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.start();
         handle.switchToIndeterminate();
         skipReload = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     change.run();
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             skipReload = false;
                         }
@@ -1269,6 +1294,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         originalEstimatePanel = new javax.swing.JPanel();
         remainingEstimatePanel = new javax.swing.JPanel();
         timeSpentPanel = new javax.swing.JPanel();
@@ -1395,12 +1421,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         environmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.environmentLabel.text")); // NOI18N
 
+        environmentArea.setLineWrap(true);
         environmentArea.setRows(5);
         environmentScrollPane.setViewportView(environmentArea);
 
         addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
         addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
@@ -1492,6 +1521,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
 
+        showInBrowserButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.showInBrowserButton.text")); // NOI18N
+        showInBrowserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showInBrowserButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout actionPanelLayout = new org.jdesktop.layout.GroupLayout(actionPanel);
         actionPanel.setLayout(actionPanelLayout);
         actionPanelLayout.setHorizontalGroup(
@@ -1509,7 +1545,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .add(stopProgressButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(closeIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(reopenIssueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
@@ -1535,6 +1572,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .add(logWorkButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1569,7 +1608,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             .add(separator)
             .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(475, Short.MAX_VALUE)
+                .addContainerGap(635, Short.MAX_VALUE)
                 .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -1616,7 +1655,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(originalEstimateHint)
                             .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummyIssueLinksPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
@@ -1787,7 +1826,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(originalEstimateLabelNew))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(originalEstimateHint)
+                .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(submitButton)
@@ -1817,22 +1856,22 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msg);
         handle.start();
         handle.switchToIndeterminate();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
+
                 // The project meta-data may not be initialized.
                 // Their intialization must be performed outside event-dispatch thread
                 try {
-                    JiraConfiguration config =  issue.getRepository().getConfiguration();
+                    JiraConfiguration config = issue.getRepository().getConfiguration();
                     config.ensureProjectLoaded(project);
-                    if (project.getIssueTypes() == null) {
-                        // The cached project data had been created before we started
-                        // to use project specific issue types. Forcing reload.
-                        config.forceProjectReload(project);
-                    }
+                    config.ensureIssueTypes(project);
                 } finally {
                     handle.finish();
                 }
+
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run () {
                         boolean oldReloading = reloading;
                         reloading = wasReloading;
@@ -1855,7 +1894,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
-                        for (org.eclipse.mylyn.internal.jira.core.model.Component component : config.getComponents(project)) {
+                        for (com.atlassian.connector.eclipse.internal.jira.core.model.Component component : config.getComponents(project)) {
                             componentModel.addElement(component);
                         }
                         componentList.setModel(componentModel);
@@ -1884,7 +1923,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
                                 reloadForm(false);
                             } catch (CoreException cex) {
-                                cex.printStackTrace();
+                                Jira.LOG.log(Level.INFO, cex.getMessage(), cex);
                             }
                         }
                     }
@@ -1899,7 +1938,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
         handle.start();
         handle.switchToIndeterminate();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 IssueCache cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
@@ -1968,14 +2008,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 boolean ret = false;
                 boolean wasNew = issue.isNew();
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.exists()) {
+                        if (attachment.exists() && attachment.isFile()) {
                             issue.addAttachment(attachment, null, null);
                         } else {
                             // PENDING notify user
@@ -1983,6 +2024,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             skipReload = false;
                         }
@@ -2026,6 +2068,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.startProgress();
                 issue.submitAndRefresh();
@@ -2037,6 +2080,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.stopProgress();
                 issue.submitAndRefresh();
@@ -2053,6 +2097,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             final Resolution resolution = panel.getSelectedResolution();
             final String comment = panel.getComment();
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.resolve(resolution, comment);
                     issue.submitAndRefresh();
@@ -2080,6 +2125,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String message = MessageFormat.format(pattern, issue.getKey());
             final String comment = panel.getComment();
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.close(newResolution, comment);
                     issue.submitAndRefresh();
@@ -2093,6 +2139,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.reopen(null);
                 issue.submitAndRefresh();
@@ -2106,6 +2153,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
                     int remainingEstimate = panel.getRemainingEstimate();
@@ -2145,7 +2193,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         try {
             connector.getTaskDataHandler().initializeSubTaskData(issue.getTaskRepository(), subTask.getTaskData(), issue.getTaskData(), new NullProgressMonitor());
         } catch (CoreException cex) {
-            cex.printStackTrace();
+            Jira.LOG.log(Level.INFO, cex.getMessage(), cex);
         }
         subTask.open();
     }//GEN-LAST:event_createSubtaskButtonActionPerformed
@@ -2160,6 +2208,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             assigneeCombo.setSelectedItem(assignee);
         }
     }//GEN-LAST:event_assigneeComboActionPerformed
+
+    private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
+        try {
+            URL url = new URL(issue.getRepository().getUrl() + "/browse/" + issue.getKey()); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException muex) {
+            Jira.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+        }
+    }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel actionLabel;
@@ -2227,6 +2284,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel resolutionLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
     private javax.swing.JSeparator separator;
+    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
     private org.netbeans.modules.bugtracking.util.LinkButton startProgressButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JTextField statusField;
@@ -2249,18 +2307,22 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return getMinimumSize(); // Issue 176085
     }
 
+    @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return getUnitIncrement();
     }
 
+    @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
     }
 
+    @Override
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
@@ -2285,6 +2347,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return true;
     }
 
+    @Override
     public boolean getScrollableTracksViewportHeight() {
         return false;
     }
@@ -2300,6 +2363,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return unitIncrement;
     }
 
+    void makeCaretVisible(JTextArea textArea) {
+        int pos = textArea.getCaretPosition();
+        try {
+            Rectangle rec = textArea.getUI().modelToView(textArea, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textArea, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
+    }
+
     class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
         private JLabel label;
 
@@ -2307,22 +2383,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             this.label = label;
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -2334,20 +2415,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     class RevalidatingListener implements DocumentListener, Runnable {
         private boolean ignoreUpdate;
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             if (ignoreUpdate) return;
             ignoreUpdate = true;
             EventQueue.invokeLater(this);
         }
 
+        @Override
         public void run() {
             revalidate();
             repaint();

@@ -421,7 +421,7 @@ public class TestAttr extends BaseTest
 			//	Add a brand new element, setting attributes
 			setTest("add a brand new element, setting attributes");
 			idx = new Index();
-			idx.setAttributeValue("cross-ref", "yes");
+			idx.setAttributeValue(Index.CROSSREF, "yes");
 			idx.setAttributeValue("color", "blue");
 			idx.setWord("my word");
 			idx.setAttributeValue("word", "freq", "123");

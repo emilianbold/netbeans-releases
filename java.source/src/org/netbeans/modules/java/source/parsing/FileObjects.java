@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,9 +80,12 @@ import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -106,8 +112,11 @@ public class FileObjects {
     public static final String SIG   = "sig";  //NOI18N
     public static final String RS    = "rs";   //NOI18N
     public static final String RX    = "rx";   //NOI18N
-    
-    
+    public static final String RAPT  = "rapt"; //NOI18N
+    public static final String RES   = "res";  //NOI18N
+
+    public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+
     /** Creates a new instance of FileObjects */
     private FileObjects() {
     }
@@ -181,7 +190,7 @@ public class FileObjects {
         assert file != null;
         assert root != null;
         String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
-        return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter, encoding);
+        return new FileBase( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter, encoding);
     }
     
     public static JavaFileObject templateFileObject (final FileObject root, final String path, String name) {
@@ -209,7 +218,94 @@ public class FileObjects {
     public static SourceFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
         return nbFileObject (file, root, null, false);
     }
-    
+
+        /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject} which may not exist (the FileObject is resolved on demand)
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param path of the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static SourceFileObject nbFileObject (final URL path, final FileObject root) throws IOException {
+        final SourceFileObject.Handle handle = new SourceFileObject.Handle(root){
+
+            @Override
+            protected FileObject resolveFileObject(boolean write) {
+                FileObject res = super.resolveFileObject(write);
+                if (res == null) {
+                    try {
+                        if (write) {
+                            //Create the file
+                            file = FileUtil.createData(root,getRelativePath());
+                        } else {
+                            //Resolve file
+                            file = URLMapper.findFileObject(path);
+                        }
+                        res = file;
+                    } catch (IOException e) {
+                        //pass, return null
+                    }
+                }
+                return res;
+            }
+
+            protected URL getURL() throws IOException {
+                return path;
+            }
+
+            protected String getExt() {
+                String ext = super.getExt();
+                if (ext == null) {
+                    ext = FileObjects.getExtension(path.getPath());
+                }
+                return ext;
+            }
+
+            protected String getName(boolean includeExtension) {
+                String name = super.getName(includeExtension);
+                if (name == null) {
+                    name = FileObjects.getBaseName(path.getPath(),'/'); //NOI18N
+                    if (!includeExtension) {
+                        name = FileObjects.stripExtension(name);
+                    }
+                }
+                return name;
+            }
+
+            protected String getRelativePath() {
+                String relativePath = super.getRelativePath();
+                if (relativePath == null) {
+                    try {
+                        relativePath = FileObjects.getRelativePath(root.getURL(), path);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return relativePath;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (file != null) {
+                    return super.equals(obj);
+                } else if (obj instanceof SourceFileObject.Handle) {
+                    try {
+                        return getURL().equals(((SourceFileObject.Handle) obj).getURL());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return false;
+            }
+
+        };
+        return new SourceFileObject(handle, null);
+    }
+
     /**
      * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
      * Any client which needs to create {@link JavaFileObject} for java
@@ -271,7 +367,7 @@ public class FileObjects {
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
      */
-    public static FileObjects.InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
+    public static InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
         final URI uri, final long lastModified, final CharSequence content) {
         Parameters.notNull("pkg", pkg);
         Parameters.notNull("name", name);
@@ -418,12 +514,15 @@ public class FileObjects {
         }
         
     }
-    
+
     public static String convertPackage2Folder( String packageName ) {
-        return packageName.replace( '.', '/' );
-    }    
-    
-    
+        return convertPackage2Folder(packageName, '/' );
+    }
+
+    public static String convertPackage2Folder(final String packageName, final char separatorChar) {
+        return packageName.replace( '.',separatorChar);
+    }
+
     public static String convertFolder2Package (String packageName) {
         return convertFolder2Package (packageName, '/');    //NOI18N
     }
@@ -431,11 +530,16 @@ public class FileObjects {
     public static String convertFolder2Package( String packageName, char folderSeparator ) {
         return packageName.replace( folderSeparator, '.' );
     }
-    
+
+    public static boolean isParentOf (final URL folder, final URL file) {
+        assert folder != null && file != null;
+        return file.toExternalForm().startsWith(folder.toExternalForm());
+    }
     
     public static String getRelativePath (final String packageName, final String relativeName) {
         StringBuilder relativePath = new StringBuilder ();
         relativePath.append(packageName.replace('.','/'));
+        relativePath.append('/');
         relativePath.append(relativeName);
         return relativePath.toString();
     }
@@ -501,25 +605,6 @@ public class FileObjects {
             }
         }
         folder.delete();
-    }
-    
-    // Private methods ---------------------------------------------------------
-    
-    // Innerclasses ------------------------------------------------------------
-    
-    /**
-     * JavaFileObject which is able to infer itself.
-     * 
-     */
-    public static interface InferableJavaFileObject extends JavaFileObject {
-        
-        /**
-         * Returns binary name of the {@link JavaFileObject}.
-         * @return the binary name or null when {@link JavaFileObject}
-         * is not able to infer.
-         */
-        public String inferBinaryName ();
-        
     }
     
     public static abstract class Base implements InferableJavaFileObject {
@@ -616,35 +701,122 @@ public class FileObjects {
             };
         }
     }
-    
-    public static abstract class FileBase extends Base {
-        
+
+    public static class FileBase extends Base {
+
         protected final File f;
-        
-        protected FileBase (final File file, final String pkgName, final String name) {
+        private final JavaFileFilterImplementation filter;
+        private final Charset encoding;
+        private URI uriCache;
+
+        protected FileBase (final File file,
+                final String pkgName,
+                final String name,
+                final JavaFileFilterImplementation filter,
+                final Charset encoding) {
             super (pkgName, name);
             assert file != null;
             this.f = file;
+            this.filter = filter;
+            this.encoding = encoding;
         }
-        
+
         public File getFile () {
             return this.f;
-        }                
+        }
+
+        @Override
+        public InputStream openInputStream() throws IOException {
+	    return new BufferedInputStream (new FileInputStream(f));
+	}
+
+        @Override
+	public Reader openReader (boolean b) throws IOException {
+	    return encoding == null ?
+                new InputStreamReader(openInputStream()):
+                new InputStreamReader(openInputStream(), encoding);
+	}
+
+        @Override
+	public OutputStream openOutputStream() throws IOException {
+            final File parent = f.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+	    return new FileOutputStream(f);
+	}
+
+        @Override
+	public Writer openWriter() throws IOException {
+            if (encoding != null) {
+                return new OutputStreamWriter(openOutputStream(), encoding);
+            } else {
+                return new OutputStreamWriter(openOutputStream());
+            }
+	}
+
+        @Override
+	public boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
+	    boolean res = super.isNameCompatible(simplename, kind);
+            if (res) {
+                return res;
+            }
+            else if (Utilities.isWindows()) {
+                return nameWithoutExt.equalsIgnoreCase(simplename);
+            }
+            else {
+                return false;
+            }
+	}
+
+        @Override
+        public URI toUri () {
+            if (this.uriCache == null) {
+                this.uriCache = f.toURI();
+            }
+            return this.uriCache;
+        }
+
+        @Override
+        public long getLastModified() {
+	    return f.lastModified();
+	}
+
+        @Override
+	public boolean delete() {
+	    return f.delete();
+	}
+
+        @Override
+	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
+        }
+
+	@Override
+	public boolean equals(final Object other) {
+	    if (!(other instanceof FileBase))
+		return false;
+	    final FileBase o = (FileBase) other;
+	    return f.equals(o.f);
+	}
+
+	@Override
+	public int hashCode() {
+	    return f.hashCode();
+	}
     }
-    
-    
+
     public static class InvalidFileException extends IOException {
-        
+
         public InvalidFileException () {
             super ();
         }
-        
+
         public InvalidFileException (final FileObject fo) {
             super (NbBundle.getMessage(FileObjects.class,"FMT_InvalidFile",FileUtil.getFileDisplayName(fo)));
         }
     }
-    
-    
+
     public static String getRelativePath (final File root, final File fo) {
         final String rootPath = root.getAbsolutePath();
         final String foPath = fo.getAbsolutePath();
@@ -658,124 +830,51 @@ public class FileObjects {
             return ""; //NOI18N
         }
         return foPath.substring(index);
-    }           
-    
-    private static class RegularFileObject extends FileBase {
-        
-        private URI uriCache;
-        private final JavaFileFilterImplementation filter;
-        private final Charset encoding;
+    }
 
-	public RegularFileObject(final File f, final String packageName, final String baseName, final JavaFileFilterImplementation filter, Charset encoding) {
-            super (f, packageName, baseName);
-            this.filter = filter;
-            this.encoding = encoding;
-	}               
+    public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
+        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        return path.replace(File.separatorChar, '/');
+    }
 
-        public InputStream openInputStream() throws IOException {
-	    return new BufferedInputStream (new FileInputStream(f));
-	}
+    public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
+        char[] result;
+        Reader in;
 
-	public Reader openReader (boolean b) throws IOException {
-	    throw new UnsupportedOperationException();
-	}
-
-	public OutputStream openOutputStream() throws IOException {
-	    return new FileOutputStream(f);
-	}
-
-	public Writer openWriter() throws IOException {
-            if (encoding != null) {
-                return new OutputStreamWriter(new FileOutputStream(f), encoding);
-            } else {
-                return new OutputStreamWriter(new FileOutputStream(f));
-            }
-	}
-
-	public @Override boolean isNameCompatible(String simplename, JavaFileObject.Kind kind) {
-	    boolean res = super.isNameCompatible(simplename, kind);
-            if (res) {
-                return res;
-            }
-            else if (Utilities.isWindows()) {
-                return nameWithoutExt.equalsIgnoreCase(simplename);
-            }
-            else {
-                return false;
-            }
-	} 	   
-        
-        public URI toUri () {
-            if (this.uriCache == null) {
-                this.uriCache = f.toURI();
-            }
-            return this.uriCache;
+        if (encoding != null) {
+            in = new InputStreamReader (ins, encoding);
+        } else {
+            in = new InputStreamReader (ins);
         }
-
-        public long getLastModified() {
-	    return f.lastModified();
-	}
-
-	public boolean delete() {
-	    return f.delete();
-	}
-
-	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-        return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
-    }
-	@Override
-	public boolean equals(Object other) {
-	    if (!(other instanceof RegularFileObject))
-		return false;
-	    RegularFileObject o = (RegularFileObject) other;
-	    return f.equals(o.f);
-	}
-
-	@Override
-	public int hashCode() {
-	    return f.hashCode();
-	}
-        
-    }
-    
-	public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
-            char[] result;
-            Reader in;
-
-            if (encoding != null) {
-                in = new InputStreamReader (ins, encoding);
-            } else {
-                in = new InputStreamReader (ins);
-            }
-            if (filter != null) {
-                in = filter.filterReader(in);
-            }
-            int red = 0;
-            try {
-                int len = (int) expectedLength;
-                if (len == 0) len++; //len - red would be 0 while reading from the stream
-                result = new char [len+1];
-                int rv;
-                while ((rv=in.read(result,red,len-red))>=0) {
-                    red += rv;
-                    //In case the filter enlarged the file
-                    if (red == len) {
-                        char[] _tmp = new char[2*len];
-                        System.arraycopy(result, 0, _tmp, 0, len);
-                        result = _tmp;
-                        len = result.length;
-                    }
+        if (filter != null) {
+            in = filter.filterReader(in);
+        }
+        int red = 0;
+        try {
+            int len = (int) expectedLength;
+            if (len == 0) len++; //len - red would be 0 while reading from the stream
+            result = new char [len+1];
+            int rv;
+            while ((rv=in.read(result,red,len-red))>=0) {
+                red += rv;
+                //In case the filter enlarged the file
+                if (red == len) {
+                    char[] _tmp = new char[2*len];
+                    System.arraycopy(result, 0, _tmp, 0, len);
+                    result = _tmp;
+                    len = result.length;
                 }
-            } finally {
-                in.close();
             }
-            result[red++]='\n'; //NOI18N
-            CharSequence buffer = CharBuffer.wrap (result, 0, red);
-            return buffer;
-	}
-    
-    private static class NewFromTemplateFileObject extends RegularFileObject {
-        
+        } finally {
+            in.close();
+        }
+        result[red++]='\n'; //NOI18N
+        CharSequence buffer = CharBuffer.wrap (result, 0, red);
+        return buffer;
+    }
+
+    private static class NewFromTemplateFileObject extends FileBase {
+
         public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
             super (f,packageName,baseName, filter, encoding);
         }

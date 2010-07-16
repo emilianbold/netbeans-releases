@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,32 +40,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include <alloca.h>
 
 #include "rfs_filedata.h"
+#include "rfs_util.h"
 
-static file_data *root = NULL;
-static pthread_mutex_t file_data_tree_mutex = PTHREAD_MUTEX_INITIALIZER;
+/** */
+static file_data **data = NULL;
+static int data_cnt;
 
-static file_data *new_file_data(const char* filename, enum file_state state) {
-    int namelen = strlen(filename);
-    int size = sizeof(file_data) + namelen + 1;
-    file_data *fd = (file_data*) malloc(size);
-    pthread_mutex_init(&fd->cond_mutex, NULL);
-    pthread_cond_init(&fd->cond, NULL);
-    fd->state = state;
-    strcpy(fd->filename, filename);
-    fd->left = fd->right = NULL;
-    #if DEBUG_FILE_DATA
-    fd->cnt = 0;
-    #endif
-    return fd;
-}
+// --- start of adding file data stuff
+
+/**
+ * Files are added one by one, so we don't know file count.
+ * That's why on the adding phase we use linked list
+ */
+struct adding_file_data_node {
+    struct adding_file_data_node *next;
+    file_data* fd;
+};
+
+static struct adding_file_data_node *adding_file_data_root;
+
+static enum {
+    FILE_DATA_INITIAL,
+    FILE_DATA_ADDING,
+    FILE_DATA_ADDED }
+adding_file_data_state = FILE_DATA_INITIAL;
+
+
+// --- end of adding file data stuff
 
 void wait_on_file_data(file_data *fd) {
     pthread_mutex_lock(&fd->cond_mutex);
@@ -76,103 +83,73 @@ void signal_on_file_data(file_data *fd) {
     pthread_mutex_unlock(&fd->cond_mutex);
 }
 
-static int visit_file_data_impl(file_data *fd, int (*visitor) (file_data*, void*), void *data) {
-    if (fd) {
-        if (visitor(fd, data) &&
-                visit_file_data_impl(fd->left, visitor, data) &&
-                visit_file_data_impl(fd->right, visitor, data)) {
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-    return 1;
-}
-
 void visit_file_data(int (*visitor) (file_data*, void*), void *data) {
-    visit_file_data_impl(root, visitor, data);
+    //visit_file_data_impl...
 }
 
-// temporary FIXUP: should be static
-static file_data *find_or_insert_file_data(const char* filename, int create, enum file_state state) {
-    file_data *result = NULL;
-    pthread_mutex_lock(&file_data_tree_mutex);
-    if (root) {
-        file_data *curr = root;
-        // a clumsy, but very straightforward tree search
-        while (1) {
-            int cmp = strcmp(filename, curr->filename);
-            if (cmp == 0) {
-                result = curr;
-                break;
-            } else if(cmp < 0) {
-                if(curr->left) {
-                    cmp = strcmp(filename, curr->left->filename);
-                    if (cmp == 0) {
-                        result = curr->left;
-                        break;
-                    } else if(cmp < 0) {
-                        curr = curr->left;
-                    } else if (create) { // cmp > 0
-                        result = new_file_data(filename, state);
-                        result->left = curr->left; // right is nulled by new_file_data
-                        curr->left = result;
-                        break;
-                    } else {
-                        result = NULL;
-                        break;
-                    }
-                } else {
-                    if (create) {
-                        curr->left = result = new_file_data(filename, state);
-                    } else {
-                        result = NULL;
-                    }
-                    break;
-                }
-            } else { // cmp > 0
-                if (curr->right) {
-                    cmp = strcmp(filename, curr->right->filename);
-                    if (cmp == 0) {
-                        result = curr->right;
-                        break;
-                    } else if(cmp < 0) {
-                        if (create) {
-                            result = new_file_data(filename, state);
-                            result->right = curr->right;
-                            curr->right = result;
-                        } else {
-                            result = NULL;
-                        }
-                        break;
-                    } else { // cmp > 0
-                        curr = curr->right;
-                    }
-                } else {
-                    if (create) {
-                        curr->right = result = new_file_data(filename, state);
-                    } else {
-                        result = NULL;
-                    }
-                    break;
-                }
-            }
-        }
+static int compare_file_data(const void *d1, const void *d2) {
+    if (!d1) {
+        return d2 ? -1 : 0;
+    } else if (!d2) {
+        return 1;
     } else {
-        if (create) {
-            result = root = new_file_data(filename, state);
-        } else {
-            result = NULL;
-        }
+        file_data *fd1 = *((file_data **) d1);
+        file_data *fd2 = *((file_data **) d2);
+        int result = strcmp(fd1->filename, fd2->filename);
+        return result;
     }
-    pthread_mutex_unlock(&file_data_tree_mutex);
-    return result;
-}
-
-file_data *insert_file_data(const char* filename, enum file_state state) {
-    return find_or_insert_file_data(filename, 1, state);
 }
 
 file_data *find_file_data(const char* filename) {
-    return find_or_insert_file_data(filename, 0, -1);
+    if (adding_file_data_state != FILE_DATA_ADDED || data == NULL) {
+        report_error("wrong state: find_file_data is called before filling file data\n");
+        return NULL;
+    }
+    file_data *key = (file_data*) alloca(sizeof(file_data) + strlen(filename) + 1);
+    strcpy(key->filename, filename);
+    int el_size = sizeof(struct file_data *);
+    file_data **result = (file_data**) bsearch(&key, data, data_cnt, el_size, compare_file_data);
+    return result ? *result : NULL;
+}
+
+void start_adding_file_data() {
+    if (adding_file_data_state != FILE_DATA_INITIAL) {
+        report_error("wrong state: start_adding_file_data should be only called once!\n");
+        return;
+    }
+    adding_file_data_root = NULL;
+    adding_file_data_state = FILE_DATA_ADDING;
+    data_cnt = 0;
+}
+
+void stop_adding_file_data() {
+    int el_size = sizeof(struct file_data *);
+    data = malloc(data_cnt * el_size);
+    int next = 0;
+    while (adding_file_data_root) {
+        data[next++] = adding_file_data_root->fd;
+        void* to_be_freed = adding_file_data_root;
+        adding_file_data_root = adding_file_data_root->next;
+        free(to_be_freed);
+    }
+    qsort(data, data_cnt, el_size, compare_file_data);
+    adding_file_data_root = NULL;
+    adding_file_data_state = FILE_DATA_ADDED;
+}
+
+file_data *add_file_data(const char* filename, enum file_state state) {
+    if (adding_file_data_state != FILE_DATA_ADDING) {
+        report_error("wrong state: add_file_data is called before start_adding_file_data\n");
+        return NULL;
+    }
+    data_cnt++;
+    struct adding_file_data_node *node = malloc(sizeof(struct adding_file_data_node));
+
+    node->fd = (file_data*) malloc(sizeof(file_data) + strlen(filename) + 1);
+    pthread_mutex_init(&node->fd->cond_mutex, NULL);
+    pthread_cond_init(&node->fd->cond, NULL);
+    strcpy(node->fd->filename, filename);
+    node->fd->state = state;
+    node->next = adding_file_data_root;
+    adding_file_data_root = node;
 }

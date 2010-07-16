@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,22 +43,18 @@
  */
 package org.netbeans.modules.clearcase;
 
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
-import javax.swing.event.ChangeListener;
 import java.util.regex.Pattern;
 import java.io.File;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 
 /**
  * Hides files that are known to clearcase and should not be visible.
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
-public class ClearcaseVisibilityQuery implements VisibilityQueryImplementation {
+public class ClearcaseVisibilityQuery extends VCSVisibilityQuery {
 
     private static final Pattern unloadedPattern = Pattern.compile(".*\\.unloaded(\\.\\d+)?");    
     private static final Pattern updtPattern = Pattern.compile("update\\..*?\\.updt");
@@ -71,11 +70,10 @@ public class ClearcaseVisibilityQuery implements VisibilityQueryImplementation {
      * @param file a file to test
      * @return visibility of the file
      */
-    public boolean isVisible(FileObject file) {
-        File f = FileUtil.toFile(file);
-        if (f == null || !isManagedByClearcase(f)) return true;
-        String name = file.getNameExt();
-        if (file.isFolder()) {
+    public boolean isVisible(File file) {
+        if (file == null || !isManagedByClearcase(file)) return true;
+        String name = file.getName();
+        if (file.isDirectory()) {
             return !name.equals("lost+found");
         } else {
             return !name.equals("view.dat") &&                 
@@ -95,9 +93,4 @@ public class ClearcaseVisibilityQuery implements VisibilityQueryImplementation {
         return VersioningSupport.getOwner(file) instanceof ClearcaseVCS;
     }
 
-    public void addChangeListener(ChangeListener l) {
     }
-
-    public void removeChangeListener(ChangeListener l) {
-    }
-}

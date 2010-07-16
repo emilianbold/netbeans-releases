@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,12 +55,14 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -85,21 +90,6 @@ final class MainImpl extends Object {
         }
 
         m.get().invoke(null, new Object[] {args});
-    }
-
-    /** Returns string describing usage of the system. Does that by talking to
-     * all registered handlers and asking them to show their usage.
-     *
-     * @return the usage string for the system
-     */
-    public static String usage () throws Exception {
-        java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream ();
-        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream ();
-
-        String[] newArgs = { "--help" };
-
-        execute(newArgs, System.in, os, err, null);
-        return new String (os.toByteArray ());
     }
 
     /** Constructs the correct ClassLoader, finds main method to execute
@@ -183,7 +173,7 @@ final class MainImpl extends Object {
             MainImpl.class.getClassLoader()
         });
 
-        // Needed for Lookup.getDefault to find NbTopManager.Lkp.
+        // Needed for Lookup.getDefault to find MainLookup.
         // Note that ModuleManager.updateContextClassLoaders will later change
         // the loader on this and other threads to be MM.SystemClassLoader anyway.
         Thread.currentThread().setContextClassLoader (loader);
@@ -198,8 +188,21 @@ final class MainImpl extends Object {
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null,
-                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
-                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                javax.swing.JOptionPane.OK_CANCEL_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            if (value == javax.swing.JOptionPane.OK_OPTION) {
+                result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
+            }
+
+        }
+        if (result.getExitCode () == CLIHandler.Status.CANNOT_WRITE) {
+            int value = javax.swing.JOptionPane.showConfirmDialog (
+                null,
+                MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWrite"), user),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWriteTitle"),
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
@@ -282,7 +285,7 @@ final class MainImpl extends Object {
                     InputStream is = u.openStream();
                     mf = new java.util.jar.Manifest(is);
                     is.close();
-                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
                     if (value != null) {
                         break;
                     }

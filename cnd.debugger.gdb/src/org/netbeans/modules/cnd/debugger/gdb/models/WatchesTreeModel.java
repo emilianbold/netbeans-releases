@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -60,6 +62,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /*
@@ -75,7 +78,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
     private Listener listener;
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
-    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private final AbstractVariable EMPTY_WATCH = new EmptyWatch();
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
@@ -123,7 +126,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             
             // 2) create GdbWatches for Watches
             int i, k = fws.length;
-            AbstractVariable[] gws = new AbstractVariable[k];
+            AbstractVariable[] gws = new AbstractVariable[k+1];
             for (i = 0; i < k; i++) {
                 AbstractVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
@@ -133,6 +136,8 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
                 }
                 gws[i] = gw;
             }
+
+            gws[k] = EMPTY_WATCH;
             
             if (listener == null) {
                 listener = new Listener(this, debugger);
@@ -154,6 +159,9 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return false;
+        }
+        if (node == EMPTY_WATCH) {
+            return true;
         }
         if (node instanceof Watch) {
             return true;
@@ -327,7 +335,9 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             }
             
             if (task == null) {
-                task = RequestProcessor.getDefault().create(new Runnable() {
+                GdbDebugger d = debugger.get();
+                RequestProcessor rp = (d != null) ? d.getRequestProcessor() : RequestProcessor.getDefault();
+                task = rp.create(new Runnable() {
                     public void run() {
                         m.fireTreeChanged();
                     }
@@ -354,6 +364,48 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
                 task.cancel();
                 task = null;
             }
+        }
+    }
+
+    /**
+     * The last empty watch, that can be used to enter new watch expressions.
+     */
+    final class EmptyWatch extends AbstractVariable {
+        public EmptyWatch() {
+            super(null, null);
+        }
+
+        @Override
+        protected void selfDestroy() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+
+        @Override
+        public String getName() {
+            return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName() //NOI18N
+                        NbBundle.getBundle (VariablesNodeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint") + //NOI18N
+                        "&gt;</font></html>"; //NOI18N
+        }
+
+        @Override
+        public String getType() {
+            return ""; // NOI18N
+        }
+
+        @Override
+        public String getValue() {
+            return ""; // NOI18N
+        }
+
+        public void setExpression(String expr) {
+            String infoStr = NbBundle.getBundle(WatchesTreeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint");
+            infoStr = '<' + infoStr + '>';
+            if (expr == null || expr.trim().length() == 0 || infoStr.equals(expr)) {
+                return; // cancel action
+            }
+            DebuggerManager.getDebuggerManager().createWatch(expr);
+
+            fireNodeChanged(EmptyWatch.this);
         }
     }
 }

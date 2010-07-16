@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.openide.ErrorManager;
 import org.netbeans.junit.*;
 
@@ -59,15 +61,6 @@ public class RequestProcessorTest extends NbTestCase {
 
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new RequestProcessorTest("testPriorityInversionOnFinishedTasks");
-        if (t == null) {
-            t = new NbTestSuite(RequestProcessorTest.class);
-        }
-        return t;
     }
 
     @Override
@@ -233,6 +226,10 @@ public class RequestProcessorTest extends NbTestCase {
         
     }
 
+    static final class Priority {
+        static final RequestProcessor RP = new RequestProcessor(Priority.class);
+    }
+
     /**
      * A test that check that priorities are handled well.
      */
@@ -270,7 +267,7 @@ public class RequestProcessorTest extends NbTestCase {
             r[i] = new R(i);
         }
         
-        RequestProcessor rp = new RequestProcessor("PrioriyTest");
+        RequestProcessor rp = Priority.RP;
         
         RequestProcessor.Task t[] = new RequestProcessor.Task[5];
         synchronized (r[0]) {

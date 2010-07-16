@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,12 @@ public final class DDType {
     private static final String NAME_SUNWEBAPP = "sun-web.xml"; // NOI18N
     private static final String NAME_SUNRESOURCE = "sun-resources.xml"; // NOI18N
     
+    private static final String NAME_GFAPPCLIENT = "glassfish-application-client.xml"; // NOI18N
+    private static final String NAME_GFAPPLICATION = "glassfish-application.xml"; // NOI18N
+    private static final String NAME_GFEJBJAR = "glassfish-ejb-jar.xml"; // NOI18N
+    private static final String NAME_GFWEBAPP = "glassfish-web.xml"; // NOI18N
+    private static final String NAME_GFRESOURCE = "glassfish-resources.xml"; // NOI18N
+
     // Type declarations for the different descriptor types.
     public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
     public static DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
@@ -52,6 +61,12 @@ public final class DDType {
     public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
     public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, ModuleType.EJB, DDViewFactory.SunCmpMappingsDDViewFactory.class);
     public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
+
+    public static DDType DD_GF_WEB_APP = new DDType(NAME_GFWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
+    public static DDType DD_GF_EJB_JAR = new DDType(NAME_GFEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
+    public static DDType DD_GF_APP_CLIENT = new DDType(NAME_GFAPPCLIENT, ModuleType.CAR, DDViewFactory.SunAppClientDDViewFactory.class);
+    public static DDType DD_GF_APPLICATION = new DDType(NAME_GFAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
+    public static DDType DD_GF_RESOURCE = new DDType(NAME_GFRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
 
     // Various indexes for finding a DDType object
     private static Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
@@ -63,6 +78,11 @@ public final class DDType {
         fileToTypeMap.put(NAME_SUNAPPCLIENT, DD_SUN_APP_CLIENT);
         fileToTypeMap.put(NAME_SUNCMPMAPPING, DD_SUN_CMP_MAPPINGS);
         fileToTypeMap.put(NAME_SUNRESOURCE, DD_SUN_RESOURCE);
+        fileToTypeMap.put(NAME_GFWEBAPP, DD_GF_WEB_APP);
+        fileToTypeMap.put(NAME_GFEJBJAR, DD_GF_EJB_JAR);
+        fileToTypeMap.put(NAME_GFAPPLICATION, DD_GF_APPLICATION);
+        fileToTypeMap.put(NAME_GFAPPCLIENT, DD_GF_APP_CLIENT);
+        fileToTypeMap.put(NAME_GFRESOURCE, DD_GF_RESOURCE);
     }
     
     public static DDType getDDType(String fileName) {

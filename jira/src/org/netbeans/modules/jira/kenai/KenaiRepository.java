@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,13 @@
 
 package org.netbeans.modules.jira.kenai;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -47,23 +57,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.eclipse.core.runtime.CoreException;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -83,12 +87,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        Kenai.getDefault().addPropertyChangeListener(this);
+        KenaiUtil.getKenaiAccessor().addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
 
     @Override
@@ -133,7 +137,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         obj2[obj2.length - 2] = Jira.getInstance().getKenaiSupport();
         return obj2;
     }
-    
+
+    public String getHost() {
+        return host;
+    }
+
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
@@ -229,13 +237,10 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    protected JiraConfiguration createConfiguration(JiraClient client) {
+    protected JiraConfiguration createConfiguration(JiraClient client) throws CoreException {
         KenaiConfiguration c = new KenaiConfiguration(client, this);
-        if(c != null) {
-            c.addProject(projectName);
-            return c;
-        }
-        return null;        
+        c.addProject(projectName);
+        return c;
     }
 
     protected void setCredentials(String user, String password) {
@@ -244,7 +249,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!KenaiUtil.isLoggedIn()) {
+        if(!KenaiUtil.isLoggedIn(kenaiProject.getWebLocation())) {
             return;
         }
         super.getRemoteFilters();
@@ -252,7 +257,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -265,16 +270,16 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return true;
     }
 
-    private static String getKenaiUser() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiUser(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getUserName();
         }
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiPassword(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return new String(pa.getPassword());
         }
@@ -317,7 +322,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(projectName.toLowerCase());
+         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(kenaiProject);
          if (users.isEmpty()) {
              // fallback - try cache
              users = super.getUsers();
@@ -329,18 +334,20 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+        if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
 //            if(myIssues != null) {
 //                KenaiQueryController c = (KenaiQueryController) myIssues.getController();
 //                c.populate(getQueryUrl());
 //            }
-
+            
             // XXX move to spi?
             // get kenai credentials
             String user;
             String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            PasswordAuthentication pa =
+                KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = new String(pa.getPassword());

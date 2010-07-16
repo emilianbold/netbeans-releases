@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -100,30 +104,26 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
-    public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(localRef, ejbRefName, true, referencingFile, referencingClass);
+    public String addEjbLocalReference(EjbReference localRef, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(localRef, refType, ejbRefName, true, referencingFile, referencingClass);
     }
     
-    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
+    public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
     
-    private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
+    private String addReference(final EjbReference ejbReference, EjbReference.EjbRefIType refType, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
-        WebApp webApp = getWebApp();
-        if (webApp == null){
-            return null;
-        }
         
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-        final String[] ejbName = new String[1];
-        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
-                return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+        String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            public String run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
         });
 
+        FileObject ejbReferenceEjbClassFO = SourceUtils.getFileObject(ejbReference.getComponentName(refType), ejbReference.getClasspathInfo());
+        assert ejbReferenceEjbClassFO != null : "Reference FileObject not found: " + ejbReference.getComponentName(refType);
         Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
@@ -132,11 +132,22 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         String[] names = new String[] { "" };
         if (moduleJarTarget != null) {
             names = moduleJarTarget.getArtifactLocations()[0].getPath().split("/");  //NOI18N
+            try {
+                ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{moduleJarTarget},
+                        new URI[]{moduleJarTarget.getArtifactLocations()[0]}, webProject.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        WebApp webApp = getWebApp();
+        if (webApp == null){
+            return null;
         }
 
         String jarName = names[names.length - 1] + "#";
-        final String ejbLink = jarName + ejbName[0];
-        
+        final String ejbLink = jarName + ejbName;
+
         if (local) {
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
             // EjbLocalRef can come from Ejb project
@@ -160,15 +171,6 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
                 newRef.setRemote(ejbReference.getRemote());
                 getWebApp().addEjbRef(newRef);
             } catch (ClassNotFoundException ex){}
-        }
-        
-        if (moduleJarTarget != null) {
-            try {
-                ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{moduleJarTarget},
-                        new URI[]{moduleJarTarget.getArtifactLocations()[0]}, webProject.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
         }
         
         writeDD(referencingFile, referencingClass);

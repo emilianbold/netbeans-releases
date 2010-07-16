@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,24 +42,28 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
@@ -68,32 +75,48 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
+import org.netbeans.api.diff.PatchUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
+import org.netbeans.modules.bugzilla.commands.SubmitCommand;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue extends Issue {
+public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
-    public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
-    public static final String RESOLVE_DUPLICATE = "DUPLICATE";         //NOI18N
+    public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
+    public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
+    public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
@@ -111,8 +134,18 @@ public class BugzillaIssue extends Issue {
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
     static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
+    static final String LABEL_NAME_PRODUCT      = "bugzilla.issue.product";     // NOI18N
+    static final String LABEL_NAME_COMPONENT    = "bugzilla.issue.component";   // NOI18N
+    static final String LABEL_NAME_VERSION      = "bugzilla.issue.version";     // NOI18N
+    static final String LABEL_NAME_OS           = "bugzilla.issue.os";          // NOI18N
+    static final String LABEL_NAME_PLATFORM     = "bugzilla.issue.platform";    // NOI18N
+    static final String LABEL_NAME_MILESTONE    = "bugzilla.issue.milestone";   // NOI18N
+    static final String LABEL_NAME_REPORTER     = "bugzilla.issue.reporter";    // NOI18N
+    static final String LABEL_NAME_MODIFICATION = "bugzilla.issue.modified";    // NOI18N
+    static final String LABEL_NAME_QA_CONTACT   = "bugzilla.issue.qa_contact";  // NOI18N
+    static final String LABEL_NAME_KEYWORDS     = "bugzilla.issue.keywords";    // NOI18N
+    static final String LABEL_NAME_WHITEBOARD   = "bugzilla.issue.whiteboard";  // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -135,70 +168,6 @@ public class BugzillaIssue extends Issue {
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
     private String initialProduct = null;
-
-    enum IssueField {
-        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
-        WHITEBOARD(BugzillaAttribute.STATUS_WHITEBOARD.getKey(), "LBL_WHITEBOARD"),
-        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
-        PRIORITY(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY"),
-        RESOLUTION(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"),
-        PRODUCT(BugzillaAttribute.PRODUCT.getKey(), "LBL_PRODUCT"),
-        COMPONENT(BugzillaAttribute.COMPONENT.getKey(), "LBL_COMPONENT"),
-        VERSION(BugzillaAttribute.VERSION.getKey(), "LBL_VERSION"),
-        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey(), "LBL_PLATFORM"),
-        OS(BugzillaAttribute.OP_SYS.getKey(), "LBL_OS"),
-        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey(), "LBL_MILESTONE"),
-        REPORTER(BugzillaAttribute.REPORTER.getKey(), "LBL_REPORTER"),
-        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey(), "LBL_REPORTER_NAME"),
-        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey(), "LBL_ASSIGNED_TO"),
-        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey(), "LBL_ASSIGNED_TO_NAME"),
-        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey(), "LBL_QA_CONTACT"),
-        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey(), "LBL_QA_CONTACT_NAME"),
-        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey(), "LBL_DEPENDS_ON"),
-        BLOCKS(BugzillaAttribute.BLOCKED.getKey(), "LBL_BLOCKS"),
-        URL(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL"),
-        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS"),
-        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY"),
-        ISSUE_TYPE("cf_bug_type", "LBL_ISSUE_TYPE"),
-        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION"),
-        CREATION(TaskAttribute.DATE_CREATION, "LBL_CREATION"),
-        CC(BugzillaAttribute.CC.getKey(), "LBL_CC"),
-        MODIFICATION(TaskAttribute.DATE_MODIFICATION, null),
-        NEWCC(BugzillaAttribute.NEWCC.getKey(), null),
-        REMOVECC(BugzillaAttribute.REMOVECC.getKey(), null),
-        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
-
-        private final String key;
-        private final String displayNameKey;
-        private boolean singleAttribute;
-
-        IssueField(String key, String displayNameKey) {
-            this(key, displayNameKey, true);
-        }
-
-        IssueField(String key, String displayNameKey, boolean singleAttribute) {
-            this.key = key;
-            this.singleAttribute = singleAttribute;
-            this.displayNameKey = displayNameKey;
-        }
-
-        public String getKey() {
-            return key;
-        }
-        public boolean isSingleAttribute() {
-            return singleAttribute;
-        }
-        public boolean isReadOnly() {
-            return !singleAttribute;
-        }
-
-        public String getDisplayName() {
-            assert displayNameKey != null; // shouldn't be called for a field with a null display name
-            return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
-        }
-
-    }
 
     private Map<String, String> attributes;
     private Map<String, TaskOperation> availableOperations;
@@ -239,9 +208,13 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public String getDisplayName() {
-        return data.isNew() ?
+        return getDisplayName(data);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
+        return taskData.isNew() ?
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override
@@ -265,17 +238,17 @@ public class BugzillaIssue extends Issue {
 
     public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
         ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
-        BugzillaConfiguration bc = repository.getConfiguration();
         JTable t = new JTable();
-        return new ColumnDescriptor[] {
-            new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+        List<ColumnDescriptor<String>> ret = new LinkedList<ColumnDescriptor<String>>();
+        
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(6, t)),
-            new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                              UIUtils.getColumnWidthInPixels(6, t)));
+            ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
-                                              loc.getString("CTL_Issue_Summary_Desc")),           // NOI18N
-            BugzillaUtil.isNbRepository(repository)
+                                              loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
+            ret.add(BugzillaUtil.isNbRepository(repository)
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
@@ -285,25 +258,74 @@ public class BugzillaIssue extends Issue {
                                               new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),           // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                               loc.getString("CTL_Issue_Priority_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Priority_Desc"),           // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                               loc.getString("CTL_Issue_Status_Title"),            // NOI18N
                                               loc.getString("CTL_Issue_Status_Desc"),             // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                               loc.getString("CTL_Issue_Resolution_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Resolution_Desc"),         // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),           // NOI18N
-                                              0)
-        };
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRODUCT, String.class,
+                                              loc.getString("CTL_Issue_Product_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Product_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_COMPONENT, String.class,
+                                              loc.getString("CTL_Issue_Component_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Component_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Version_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Version_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_OS, String.class,
+                                              loc.getString("CTL_Issue_OS_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_OS_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PLATFORM, String.class,
+                                              loc.getString("CTL_Issue_Platform_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Platform_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MILESTONE, String.class,
+                                              loc.getString("CTL_Issue_Milestone_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Milestone_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_REPORTER, String.class,
+                                              loc.getString("CTL_Issue_Reporter_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Reporter_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MODIFICATION, String.class,
+                                              loc.getString("CTL_Issue_Modification_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Modification_Desc"),           // NOI18N
+                                              0, false));
+            if(BugzillaUtil.showQAContact(repository)) {
+                ret.add(new ColumnDescriptor<String>(LABEL_NAME_QA_CONTACT, String.class,
+                                              loc.getString("CTL_Issue_QA_Contact_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_QA_Contact_Desc"),           // NOI18N
+                                              0, false));
+            }
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_KEYWORDS, String.class,
+                                              loc.getString("CTL_Issue_Keywords_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Keywords_Desc"),           // NOI18N
+                                              0, false));
+            if(BugzillaUtil.showStatusWhiteboard(repository)) {
+                ret.add(new ColumnDescriptor<String>(LABEL_NAME_WHITEBOARD, String.class,
+                                              loc.getString("CTL_Issue_Whiteboard_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Whiteboard_Desc"),           // NOI18N
+                                              0, false));
+            }
+        return ret.toArray(new ColumnDescriptor[ret.size()]);
     }
+
 
     @Override
     public BugtrackingController getController() {
@@ -332,15 +354,14 @@ public class BugzillaIssue extends Issue {
         return super.getSelection();
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : IssueField.values()) {
+            for (IssueField field : getBugzillaRepository().getConfiguration().getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
-                    attributes.put(field.key, value);
+                    attributes.put(field.getKey(), value);
                 }
             }
         }
@@ -407,13 +428,12 @@ public class BugzillaIssue extends Issue {
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
-            for (IssueField f : IssueField.values()) {
-                switch(f) {
-                    case MODIFICATION :
-                    case REPORTER_NAME :
-                    case QA_CONTACT_NAME :
-                    case ASSIGNED_TO_NAME :
-                        continue;
+            for (IssueField f : getBugzillaRepository().getConfiguration().getFields()) {
+                if (f==IssueField.MODIFICATION
+                        || f==IssueField.REPORTER_NAME
+                        || f==IssueField.QA_CONTACT_NAME
+                        || f==IssueField.ASSIGNED_TO_NAME) {
+                    continue;
                 }
                 String value = getFieldValue(f);
                 String seenValue = getSeenValue(f);
@@ -425,93 +445,70 @@ public class BugzillaIssue extends Issue {
             if(changedCount == 1) {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
-                            break;
-                        case CC :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS");
-                            break;
-                        case KEYWORDS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS");
-                            break;
-                        case DEPENDS_ON :
-                        case BLOCKS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
-                            break;
-                        case COMMENT_COUNT :
-                            String value = getFieldValue(changedField);
-                            String seenValue = getSeenValue(changedField);
-                            if(seenValue.equals("")) {
-                                seenValue = "0";
-                            }
-                            int count = 0;
-                            try {
-                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                            } catch(NumberFormatException ex) {
-                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
-                            }
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
-                            break;
-                        case ATTACHEMENT_COUNT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED");
-                            break;
-                        default :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)});
+                    if (changedField == IssueField.SUMMARY) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.CC) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.KEYWORDS) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.COMMENT_COUNT) {
+                        String value = getFieldValue(changedField);
+                        String seenValue = getSeenValue(changedField);
+                        if(seenValue.equals("")) { // NOI18N
+                            seenValue = "0"; // NOI18N
+                        }
+                        int count = 0;
+                        try {
+                            count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                        } catch(NumberFormatException ex) {
+                            Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                        }
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
+                    } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
+                    } else {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)}); // NOI18N
                     }
                 }
                 return ret;
             } else {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
-                            break;
-                        case PRIORITY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
-                            break;
-                        case SEVERITY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY", new Object[] {changedCount});
-                            break;
-                        case ISSUE_TYPE :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ISSUE_TYPE", new Object[] {changedCount});
-                            break;
-                        case PRODUCT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT", new Object[] {changedCount});
-                            break;
-                        case COMPONENT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
-                            break;
-                        case PLATFORM :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM", new Object[] {changedCount});
-                            break;
-                        case VERSION :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
-                            break;
-                        case MILESTONE :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
-                            break;
-                        case KEYWORDS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS", new Object[] {changedCount});
-                            break;
-                        case URL :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL", new Object[] {changedCount});
-                            break;
-                        case ASSIGNED_TO :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
-                            break;
-                        case QA_CONTACT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT", new Object[] {changedCount});
-                            break;
-                        case DEPENDS_ON :
-                        case BLOCKS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
-                            break;
-                        default :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                    String key;
+                    if (changedField == IssueField.SUMMARY) {
+                        key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
+                    } else if (changedField == IssueField.PRIORITY) {
+                        key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
+                    } else if (changedField == IssueField.SEVERITY) {
+                        key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
+                    } else if (changedField == IssueField.ISSUE_TYPE) {
+                        key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
+                    } else if (changedField == IssueField.PRODUCT) {
+                        key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
+                    } else if (changedField == IssueField.COMPONENT) {
+                        key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
+                    } else if (changedField == IssueField.PLATFORM) {
+                        key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
+                    } else if (changedField == IssueField.VERSION) {
+                        key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
+                    } else if (changedField == IssueField.MILESTONE) {
+                        key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
+                    } else if (changedField == IssueField.KEYWORDS) {
+                        key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
+                    } else if (changedField == IssueField.URL) {
+                        key = "LBL_CHANGES_INCL_URL"; // NOI18N
+                    } else if (changedField == IssueField.ASSIGNED_TO) {
+                        key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
+                    } else if (changedField == IssueField.QA_CONTACT) {
+                        key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
+                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                        key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
+                    } else {
+                        key = "LBL_CHANGES"; // NOI18N
                     }
-                    return ret;
+                    return NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
                 }
             }
         }
@@ -530,6 +527,18 @@ public class BugzillaIssue extends Issue {
         return taskData.getTaskId();
     }
 
+    /**
+     * Returns the id from the given taskData or null if taskData.isNew()
+     * @param taskData
+     * @return id or null
+     */
+    public static String getSummary(TaskData taskData) {
+        if(taskData.isNew()) {
+            return null;
+        }
+        return getFieldValue(IssueField.SUMMARY, taskData);
+    }
+
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
     }
@@ -538,10 +547,12 @@ public class BugzillaIssue extends Issue {
         return repository;
     }
 
+    @Override
     public String getID() {
         return getID(data);
     }
 
+    @Override
     public String getSummary() {
         return getFieldValue(IssueField.SUMMARY);
     }
@@ -552,9 +563,11 @@ public class BugzillaIssue extends Issue {
         attributes = null; // reset
         availableOperations = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -569,15 +582,19 @@ public class BugzillaIssue extends Issue {
      * @param f
      * @return
      */
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
+        return getFieldValue(f, data);
+    }
+
+    private static String getFieldValue(IssueField f, TaskData taskData) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
+            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.getKey());
             // returning 0 would set status MODIFIED instead of NEW
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
@@ -590,11 +607,11 @@ public class BugzillaIssue extends Issue {
      * @param a
      * @return
      */
-    private String listValues(TaskAttribute a) {
+    private static String listValues(TaskAttribute a) {
         if(a == null) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         List<String> l = a.getValues();
         for (int i = 0; i < l.size(); i++) {
             String s = l.get(i);
@@ -608,30 +625,31 @@ public class BugzillaIssue extends Issue {
 
     void setFieldValue(IssueField f, String value) {
         if(f.isReadOnly()) {
-            assert false : "can't set value into IssueField " + f.name();       // NOI18N
+            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
             return;
         }
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
         }
+        Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
         a.setValue(value);
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         a.setValues(ccs);
     }
 
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
                 return a.getValues();
             } else {
@@ -701,7 +719,9 @@ public class BugzillaIssue extends Issue {
     }
 
     boolean canReassign() {
-        boolean oldRepository = (getBugzillaRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        BugzillaConfiguration rc = getBugzillaRepository().getConfiguration();
+        final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
+        boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0 : false;
         if (oldRepository) {
             TaskAttribute rta = data.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
@@ -738,16 +758,16 @@ public class BugzillaIssue extends Issue {
         ta.setValue(operation.name());
     }
 
-    Attachment[] getAttachments() {
+    List<Attachment> getAttachments() {
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
-            return new Attachment[0];
+            return Collections.emptyList();
         }
         List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
             attachments.add(new Attachment(taskAttribute));
         }
-        return attachments.toArray(new Attachment[attachments.size()]);
+        return attachments;
     }
 
     void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -773,21 +793,12 @@ public class BugzillaIssue extends Issue {
         a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
         a.setValue(contentType);
 
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                refresh();
-                Bugzilla.getInstance().getClient(repository)
-                        .postAttachment(
-                            getID(),
-                            comment,
-                            attachmentSource,
-                            attAttribute,
-                            new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
-            }
-        };
+        refresh(); // refresh might fail, but be optimistic and still try to force add attachment
+        AddAttachmentCommand cmd = new AddAttachmentCommand(getID(), repository, comment, attachmentSource, file, attAttribute);
         repository.getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            refresh(getID(), true); // XXX to much refresh - is there no other way?
+        }
     }
 
     Comment[] getComments() {
@@ -803,6 +814,7 @@ public class BugzillaIssue extends Issue {
     }
 
     // XXX carefull - implicit refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
@@ -812,23 +824,45 @@ public class BugzillaIssue extends Issue {
 
         // resolved attrs
         if(close) {
+            Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
             resolve(RESOLVE_FIXED); // XXX constant?
+
+            // check for other preselections
+            Properties p = System.getProperties();
+            Enumeration<Object> keys = p.keys();
+            List<String> keyList = new LinkedList<String>();
+            while(keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
+                    keyList.add(key.toString());
+                }
+            }
+            for (String key : keyList) {
+                String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
+                String value = p.getProperty(key);
+                IssueField issueField = repository.getConfiguration().getField(fieldName);
+                if(issueField != null) {
+                    if(issueField.isReadOnly()) {
+                        Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
+                    } else {
+                        setFieldValue(issueField, value);
+                    }
+                } else {
+                    Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                }
+            }
+
         }
         if(comment != null) {
             addComment(comment);
-        }
+        }        
 
-        BugzillaCommand submitCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     public void addComment(String comment) {
         if(comment != null) {
+            Bugzilla.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
             TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
         }
@@ -836,7 +870,10 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public void attachPatch(File file, String description) {
-        addAttachment(file, null, description, null, true);
+        boolean isPatch = true;
+        // HACK for attaching hg bundles - they are NOT patches
+        isPatch = !file.getName().endsWith(".hg"); // NOI18N
+        addAttachment(file, null, description, null, isPatch);
     }
 
     private void prepareSubmit() {
@@ -856,31 +893,28 @@ public class BugzillaIssue extends Issue {
         prepareSubmit();
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        final RepositoryResponse[] rr = new RepositoryResponse[1];
-        final BugzillaCommand submitCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                // submit
-                rr[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
-                // XXX evaluate rr
-            }
-        };
+        
+        SubmitCommand submitCmd = new SubmitCommand(getTaskRepository(), data);
         repository.getExecutor().execute(submitCmd);
 
-        BugzillaCommand refreshCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                if (!wasNew) {
-                    refresh();
+        if (!wasNew) {
+            refresh();
+        } else {
+            RepositoryResponse rr = submitCmd.getRepositoryResponse();
+            if(!submitCmd.hasFailed()) {
+                assert rr != null;
+                String id = rr.getTaskId();
+                Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
+                refresh(id, true);
+            } else {
+                Bugzilla.LOG.log(Level.FINE, "submiting failed");
+                if(rr != null) {
+                    Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
                 } else {
-                    if(!submitCmd.hasFailed()) {
-                        assert rr[0] != null;
-                        refresh(rr[0].getTaskId(), true);
-                    }
+                    Bugzilla.LOG.log(Level.FINE, "no repository response available");
                 }
             }
-        };
-        repository.getExecutor().execute(refreshCmd);
+        }
 
         if(submitCmd.hasFailed()) {
             return false;
@@ -909,26 +943,33 @@ public class BugzillaIssue extends Issue {
         return true;
     }
 
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
     }
 
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
+            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", id);
             TaskData td = BugzillaUtil.getTaskData(repository, id);
             if(td == null) {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
     }
 
     /**
@@ -968,7 +1009,7 @@ public class BugzillaIssue extends Issue {
 
     String getSeenValue(IssueField f) {
         Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.key) : null;
+        String seenValue = attr != null ? attr.get(f.getKey()) : null;
         if(seenValue == null) {
             seenValue = "";                                                     // NOI18N
         }
@@ -1121,15 +1162,156 @@ public class BugzillaIssue extends Issue {
         }
 
         public void getAttachementData(final OutputStream os) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-            BugzillaCommand cmd = new BugzillaCommand() {
-                @Override
-                public void execute() throws CoreException, IOException, MalformedURLException {
-                    Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
-                }
-            };
-            repository.getExecutor().execute(cmd);
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+            repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
+
+        void open() {
+            String progressFormat = NbBundle.getMessage(
+                                        DefaultAttachmentAction.class,
+                                        "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        File file = saveToTempFile();
+                        String contentType = getContentType();
+                        if ("image/png".equals(contentType)             //NOI18N
+                                || "image/gif".equals(contentType)      //NOI18N
+                                || "image/jpeg".equals(contentType)) {  //NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
+                        } else {
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
+                    } catch (IOException ioex) {
+                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
+        }
+
+        void saveToFile() {
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            SaveAttachmentAction.class,
+                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            getAttachementData(new FileOutputStream(file));
+                        } catch (IOException ioex) {
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        void applyPatch() {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            ApplyPatchAction.class,
+                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            File file = saveToTempFile();
+                            PatchUtils.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        private File saveToTempFile() throws IOException {
+            int index = filename.lastIndexOf('.'); // NOI18N
+            String prefix = (index == -1) ? filename : filename.substring(0, index);
+            String suffix = (index == -1) ? null : filename.substring(index);
+            if (prefix.length()<3) {
+                prefix = prefix + "tmp";                                //NOI18N
+            }
+            File file = File.createTempFile(prefix, suffix);
+            getAttachementData(new FileOutputStream(file));
+            return file;
+        }
+
+        class DefaultAttachmentAction extends AbstractAction {
+
+            public DefaultAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   DefaultAttachmentAction.class,
+                                   "Attachment.DefaultAction.name"));   //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.open();
+            }
+        }
+
+        class SaveAttachmentAction extends AbstractAction {
+
+            public SaveAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   SaveAttachmentAction.class,
+                                   "Attachment.SaveAction.name"));      //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.saveToFile();
+            }
+        }
+
+        class ApplyPatchAction extends AbstractAction {
+
+            public ApplyPatchAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   ApplyPatchAction.class,
+                                   "Attachment.ApplyPatchAction.name"));//NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.applyPatch();
+            }
+        }
+
     }
 
 }

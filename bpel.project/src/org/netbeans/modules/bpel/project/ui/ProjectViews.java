@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
+import org.netbeans.modules.xml.reference.ReferenceNode;
 import org.netbeans.modules.bpel.project.ProjectConstants;
 
 class ProjectViews {
@@ -86,11 +90,13 @@ class ProjectViews {
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
         private static final String SOURCE_NODE = "source_node"; // NOI18N
+        private static final String RESOURCE_NODE = "resource_node"; // NOI18N
 
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
+        private Node myReferenceNode;
 
         public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
             assert helper != null;
@@ -98,6 +104,7 @@ class ProjectViews {
             projectDir = helper.getProjectDirectory();
             this.evaluator = evaluator;
             this.project = project;
+            myReferenceNode = new ReferenceNode(project);
         }
 
         @Override
@@ -115,6 +122,8 @@ class ProjectViews {
             if (srcDir != null) {
                 l.add(SOURCE_NODE);
             }
+            l.add(RESOURCE_NODE);
+
             if (l.size() > 0) {
                 setKeys(l);
             }
@@ -149,6 +158,9 @@ class ProjectViews {
                 break;
               }
             }
+          }
+          else if (key == RESOURCE_NODE) {
+            node = myReferenceNode;
           }
           return node == null ? new Node [0] : new Node [] { node };
         }

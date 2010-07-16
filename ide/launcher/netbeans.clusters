@@ -1,30 +1,30 @@
 # platform cluster first
-platform11
+platform
 # application cluster second
-nb6.8
+nb
 # ergonomics cluster if present
-ergonomics2
+ergonomics
 # and now the rest
-ide12
-java3
-xml2
-apisupport1
-webcommon1
-websvccommon1
-enterprise6
-mobility8
-profiler3
-ruby2
-python1
-php1
-visualweb2
-soa2
-identity2
-uml6
+ide
+java
+xml
+apisupport
+webcommon
+websvccommon
+enterprise
+mobility
+profiler
+ruby
+python
+php
+visualweb
+soa
+identity
+uml
 harness
-cnd3
-dlight2
-groovy2
+cnd
+dlight
+groovy
 extra
-javafx2
-javacard1
+javafx
+javacard

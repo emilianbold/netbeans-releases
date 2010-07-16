@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,6 @@ package org.netbeans.modules.mercurial.ui.rollback;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
@@ -59,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Pull action for mercurial: 
@@ -68,17 +70,22 @@ import org.openide.NotifyDescriptor;
  */
 public class BackoutAction extends ContextAction {
     
-    private final VCSContext context;
     private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}";
     public static final String HG_BACKOUT_REVISION = " {revision}";
     private static String HG_TIP = "tip"; // NOI18N
             
-    public BackoutAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Backout";                                  //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         backout(context);
     }
     
@@ -107,7 +114,7 @@ public class BackoutAction extends ContextAction {
         String rev = null;
         String commitMsg = null;
 
-        final Backout backout = new Backout(root, repoRev, files);
+        final Backout backout = new Backout(root, repoRev);
         if (!backout.showDialog()) {
             return;
         }
@@ -183,6 +190,8 @@ public class BackoutAction extends ContextAction {
                             HgUtils.forceStatusRefresh(root);
                         }
                     }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -196,9 +205,5 @@ public class BackoutAction extends ContextAction {
             }
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

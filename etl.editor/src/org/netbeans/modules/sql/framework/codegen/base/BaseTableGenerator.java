@@ -20,7 +20,7 @@ package org.netbeans.modules.sql.framework.codegen.base;
 
 import org.netbeans.modules.sql.framework.codegen.AbstractGenerator;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * @author Ritesh Adval

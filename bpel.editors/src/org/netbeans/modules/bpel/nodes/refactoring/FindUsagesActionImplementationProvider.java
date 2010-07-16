@@ -30,7 +30,6 @@ import org.openide.util.actions.SystemAction;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class)
 public class FindUsagesActionImplementationProvider extends ActionsImplementationProvider {
     
     private FindUsagesAction findUsagesAction;

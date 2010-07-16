@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -91,7 +92,7 @@ public class SourcesPanel extends JPanel {
         comSourceLevel.setEditable(false);
         sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
         comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
-            "1.3", "1.4", "1.5", "1.6" //NOI18N
+            "1.3", "1.4", "1.5", "1.6", "1.7" //NOI18N
         }));
         
         comSourceLevel.setSelectedItem(sourceLevel);
@@ -100,20 +101,14 @@ public class SourcesPanel extends JPanel {
             enc = PluginPropertyUtils.getPluginProperty(project,
                     Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null);
         }
-        Charset chs = null;
+        encoding = enc;
         if (enc != null) {
-            chs = Charset.forName(enc);
-        }
-        if (chs == null) {
-            String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_RESOURCES, Constants.ENCODING_PARAM, null);
-            if (resourceEnc != null) {
-                chs = Charset.forName(resourceEnc);
+            try {
+                Charset chs = Charset.forName(enc);
+                encoding = chs.name();
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + enc); //NOI18N
             }
-        }
-        if (chs != null) {
-            encoding = chs.name();
         }
         // TODO oh well, we fallback to default platform encoding.. that's correct
         // for times before the http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding
@@ -124,16 +119,18 @@ public class SourcesPanel extends JPanel {
         }
         defaultEncoding = Charset.defaultCharset().toString();
         
-        comEncoding.setModel(new EncodingModel(encoding));
-        comEncoding.setRenderer(new EncodingRenderer());
+        comEncoding.setModel(ProjectCustomizer.encodingModel(encoding));
+        comEncoding.setRenderer(ProjectCustomizer.encodingRenderer());
         
         comSourceLevel.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handleSourceLevelChange();
             }
         });
         
         comEncoding.addActionListener(new ActionListener () {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handleEncodingChange();
             }            
@@ -169,65 +166,6 @@ public class SourcesPanel extends JPanel {
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.BOLD));
         }
     }
-    
-    
-
-    private static class EncodingRenderer extends DefaultListCellRenderer {
-        
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset; 
-            return super.getListCellRendererComponent(list, ((Charset)value).displayName(), index, isSelected, cellHasFocus);
-        }
-    }
-    
-    private static class EncodingModel extends DefaultComboBoxModel {
-        
-        public EncodingModel (String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset (originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding); //NOI18N
-                }
-            }
-            if (defEnc == null) {
-                defEnc = FileEncodingQuery.getDefaultEncoding();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-    
-    private static class UnknownCharset extends Charset {
-        
-        UnknownCharset (String name) {
-            super (name, new String[0]);
-        }
-    
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
-}
     
     /** This method is called from within the constructor to
      * initialize the form.

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -237,7 +240,7 @@ class FilesystemHandler extends VCSInterceptor {
             //        options.setModeratelyQuiet(true);
                     final ExecutorGroup refreshCommandGroup = new ExecutorGroup(null);
                     refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null));
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             refreshCommandGroup.execute();
                         }
@@ -248,6 +251,20 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             return super.getAttribute(file, attrName);
         }
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(dir)) {
+            retval = 0;
+        }
+        return retval;
+    }
+
+    @Override
+    public boolean isMutable(File file) {
+        return org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file) || super.isMutable(file);
     }
 
     // private methods ---------------------------

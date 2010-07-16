@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,13 +50,11 @@ import java.util.logging.Logger;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.asm.core.dataobjects.AsmObjectUtilities;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.cnd.asm.model.AsmSyntaxProvider;
@@ -62,11 +63,10 @@ import org.netbeans.modules.cnd.asm.model.AsmModelAccessor;
 import org.netbeans.modules.cnd.asm.model.AsmModelProvider;
 import org.netbeans.modules.cnd.asm.model.AsmSyntax;
 import org.netbeans.modules.cnd.asm.model.AsmTypesProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
 public class AsmEditorKit extends NbEditorKit {
-
-    public static final String MIME_TYPE = "text/x-asm"; // NOI18N
 
     /** Initialize document by adding the draw-layers for example. */
     @Override
@@ -77,7 +77,7 @@ public class AsmEditorKit extends NbEditorKit {
 
     @Override
     public String getContentType() {
-        return MIME_TYPE;
+        return MIMENames.ASM_MIME_TYPE;
     }
 
     private static final class LangInitializer implements DocumentListener {
@@ -86,13 +86,16 @@ public class AsmEditorKit extends NbEditorKit {
         LangInitializer(Document doc) {
             this.doc = doc;
         }
+        @Override
         public void insertUpdate(DocumentEvent e) {
             initLanguage();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             initLanguage();
         }

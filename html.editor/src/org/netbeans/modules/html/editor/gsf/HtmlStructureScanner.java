@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -134,7 +137,7 @@ public class HtmlStructureScanner implements StructureScanner {
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
-                            if(node.type() == AstNode.NodeType.TAG) {
+                            if(node.type() == AstNode.NodeType.OPEN_TAG) {
                                 tags.add(new OffsetRange(so, eo));
                             } else {
                                 comments.add(new OffsetRange(so, eo));
@@ -277,16 +280,8 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            //potentialy incorrect workaround for ElementNode.updateRecursively(StructureItem) method.
-            //If the StructureItem says it is a leaf then if a new node is created inside
-            //the navigator representation - ElementNode still holds empty children list 
-            //which is not an instance of ElementChildren and then the subnodes are not refreshed.
-            //possible fix would be to modify the ElementNode constructor to always create 
-            //ElementChildren even if the node is a leaf, but I am not sure whether it may 
-            //have some bad influence on other things.
-            return false;
-            
-            //return handle.node().children().isEmpty();
+            //The child if empty if it hasn't any nested items. If it has only text it's empty.
+            return getNestedItems().isEmpty();
         }
 
         @Override

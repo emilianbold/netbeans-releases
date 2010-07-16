@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.actions.SystemAction;
 
 /**
- *
  * @author nk160297
  */
 public class PartnerLinkNode extends BpelNode<PartnerLink> {
@@ -84,30 +83,31 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
         mainPropertySet.put(customizer);
         //
         Node.Property prop;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        prop = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        prop = propUtil.registerCalculatedProperty(this, mainPropertySet,
                 WSDL_FILE, "getWsdlFile", null); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        prop = propUtil.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.PARTNER_LINK_TYPE, PARTNER_LINK_TYPE,
                 "getPartnerLinkType", "setPartnerLinkType", null); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        prop = propUtil.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.MY_ROLE, MY_ROLE,
                 "getMyRole", "setMyRole", "removeMyRole"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        prop = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        prop = propUtil.registerAttributeProperty(this, mainPropertySet,
                 PartnerLink.PARTNER_ROLE, PARTNER_ROLE,
                 "getPartnerRole", "setPartnerRole", "removePartnerRole"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -193,15 +193,16 @@ public class PartnerLinkNode extends BpelNode<PartnerLink> {
     @Override
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
-//            ActionType.GO_TO_SOURCE,
-//            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.FIND_USAGES,
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
             ActionType.OPEN_PL_IN_EDITOR,
+            ActionType.UPDATE_WEB_SERVICE,
+            ActionType.OPEN_WEB_SERVICE_MODULE,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,

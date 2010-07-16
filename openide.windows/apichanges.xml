@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -48,7 +51,39 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
-
+<change id="retain.non.persistent.topcomponent.locations">
+    <api name="winsys"/>
+    <summary>Annotation to retain the location of non-persistent TopComponents
+    if the user drags them to another location on the screen.
+    </summary>
+    <version major="6" minor="32"/>
+    <date day="14" month="1" year="2010"/>
+    <author login="tboudreau"/>
+    <compatibility addition="yes" binary="compatible" source="compatible"
+    semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added an annotation, <code>org.openide.windows.RetainLocation</code>
+        which can be applied to TopComponents whose
+        persistence type is PERSISTENCE_NEVER.  There has been a long-term
+        problem that such components can be defined as singleton components,
+        and the first time they are opened, they appear in the correct place.
+        However, on restart or after the first time they are closed, their
+        persistence information, including the containing Mode, is lost, and
+        thereafter they open in the editor area.
+        <p/>
+        This patch does not affect the current behavior of such components.
+        However, if you add this annotation to the component, it will remember
+        (storage in NbPreferences) the ID of its last known parent mode.  A
+        minor patch to the window system's code for deciding if a Mode should
+        be persistent causes it to now interpret any Mode containing a
+        TopComponent annotated with <code>RetainLocation</code> as being one
+        it should persist, so that if the user creates a transient Mode by
+        dragging the window to a new location on screen, the data about that
+        location is not lost on shutdown.
+    </description>
+    <class package="org.openide.windows" name="RetainLocation"/>
+    <issue number="168060"/>
+</change>
 <change id="wm_openedtcs">
     <api name="winsys"/>
     <summary>New method to retrieve the list of TopComponents opened in a Mode.</summary>

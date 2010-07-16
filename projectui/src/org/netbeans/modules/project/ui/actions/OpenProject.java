@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,21 +47,17 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
-import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -69,14 +68,13 @@ public class OpenProject extends BasicAction {
     private static final String DISPLAY_NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Tooltip" ); // NOI18N
         
-    /** Creates a new instance of BrowserAction */
     public OpenProject() {
         super( DISPLAY_NAME, ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/openProject.png", false));
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }
 
-    public void actionPerformed( ActionEvent evt ) {
+    public @Override void actionPerformed(ActionEvent evt) {
         Project projectToExpand = null;
         JFileChooser chooser = ProjectChooserAccessory.createProjectChooser( true ); // Create the jFileChooser
         chooser.setMultiSelectionEnabled( true );
@@ -147,33 +145,7 @@ public class OpenProject extends BasicAction {
                         true,                             // open asynchronously
                         mainProject);
                     
-                    final ProjectTab ptLogical  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-                    
-                    // invoke later to select the being opened project if the focus is outside ProjectTab
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            Node root = ptLogical.getExplorerManager ().getRootContext ();
-                            
-                            ArrayList<Node> nodes = new ArrayList<Node>( projectDirs.length );
-                            for( int i = 0; i < projectDirs.length; i++ ) {                
-                                Node projNode = root.getChildren ().findChild (projectDirs[i].getName () );
-                                if ( projNode != null ) {
-                                    nodes.add( projNode );
-                                }
-                            }
-                            try {
-                                Node[] nodesArray = new Node[ nodes.size() ];
-                                nodes.toArray( nodesArray );
-                                ptLogical.getExplorerManager ().setSelectedNodes (nodesArray);
-                                if (!Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
-                                    ptLogical.open ();
-                                    ptLogical.requestActive ();
-                                }
-                            } catch (Exception ignore) {
-                                // may ignore it
-                            }
-                        }
-                    });
+                    ProjectUtilities.makeProjectTabVisible();
                     break; // and exit the loop
                 }
             }

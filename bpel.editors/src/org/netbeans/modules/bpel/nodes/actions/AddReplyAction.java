@@ -42,6 +42,7 @@ public class AddReplyAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddReplyAction() {
+        super("webservice/reply"); // NOI18N
     }    
     
     protected String getBundleName() {

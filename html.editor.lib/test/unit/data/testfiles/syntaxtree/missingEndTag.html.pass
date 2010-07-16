@@ -1,9 +1,5 @@
 root:ROOT(0-38)
    <table>(0-7/37)[RR];S:root
-      TEXT(7-12)
       <tr>(12-16/29)[RO!]unresolved_tag ;S:root,table
-         TEXT(16-25)
          <a>(25-28/29)[RR]unexpected_tag missing_required_end_tag ;S:root,table,tr
-            TEXT(28-29)
    </table>(29-37)[RR!];S:root,table,tr,a
-   TEXT(37-38)

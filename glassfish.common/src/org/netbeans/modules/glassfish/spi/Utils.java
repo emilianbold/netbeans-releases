@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
 package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -50,6 +54,9 @@ import java.net.SocketTimeoutException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -108,6 +115,82 @@ public class Utils {
             // we can actually trust the canWrite() implementation...
             return f.canWrite();
         }
+    }
+
+    public static final String VERSIONED_JAR_SUFFIX_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
+
+    /**
+     *
+     * @param jarNamePattern the name pattern to search for
+     * @param modulesDir the place to look for the pattern
+     * @return the jar file that matches the pattern, null otherwise.
+     *
+     * @since 1.5
+     */
+    public static File getFileFromPattern(String jarNamePattern, File modulesDir) {
+        // if asserts are on... blame the caller
+        assert jarNamePattern != null : "jarNamePattern should not be null";
+        // if this is in production, asserts are off and we should handle this a bit more gracefully
+        if (null == jarNamePattern) {
+            // and log an error message
+            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid jarNamePattern",
+                    new NullPointerException("jarNamePattern"));
+            return null;
+        }
+
+        // if asserts are on... blame the caller
+        assert modulesDir != null : "modulesDir  should not be null";
+        // if this is in production, asserts are off and we should handle this a bit more gracefully
+        if (null == modulesDir) {
+            // and log an error message
+            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid param",
+                    new NullPointerException("modulesDir"));
+            return null;
+        }
+
+        int subindex = jarNamePattern.lastIndexOf("/");
+        if (subindex != -1) {
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex + 1);
+            modulesDir = new File(modulesDir, subdir);
+        }
+        if (modulesDir.canRead() && modulesDir.isDirectory()) {
+            // try the express check...
+            String expressPattern = jarNamePattern.replace(ServerUtilities.GFV3_VERSION_MATCHER, ".jar"); // NOI18N
+            File candidate = new File(modulesDir, expressPattern);
+            if (!"".equals(expressPattern) && candidate.exists()) {
+                return candidate;
+            }
+            // try the longer check...
+            File[] candidates = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+            if (candidates != null && candidates.length > 0) {
+                return candidates[0]; // the first one
+            }
+        }
+        return null;
+    }
+
+    private static class VersionFilter implements FileFilter {
+
+        private final Pattern pattern;
+
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
+        }
+
+        @Override
+        public boolean accept(File file) {
+            return pattern.matcher(file.getName()).matches();
+        }
+
+    }
+
+    public static String sanitizeName(String name) {
+        if (null == name || name.matches("[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#:]*")) {
+            return name;
+        }
+        // the string is bad...
+        return "_" + name.replaceAll("[^\\p{L}\\p{N}\\-_./;#:]", "_");
     }
 
     /**
@@ -282,4 +365,23 @@ public class Utils {
         (byte) 'H', (byte) 'T', (byte) 'T', (byte) 'P', (byte) '/', (byte) '1',
         (byte) '.', (byte) '0', (byte)'\n', (byte)'\n'
     };
+
+    public static void doCopy(FileObject from, FileObject toParent) throws IOException {
+        if (null != from) {
+            if (from.isFolder()) {
+                //FileObject copy = toParent.getF
+                FileObject copy = FileUtil.createFolder(toParent,from.getNameExt());
+                FileObject[] kids = from.getChildren();
+                for (int i = 0; i < kids.length; i++) {
+                    doCopy(kids[i], copy);
+                }
+            } else {
+                assert from.isData();
+                FileObject target = toParent.getFileObject(from.getName(),from.getExt());
+                if (null == target) {
+                    FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
+                }
+            }
+        }
+    }
 }

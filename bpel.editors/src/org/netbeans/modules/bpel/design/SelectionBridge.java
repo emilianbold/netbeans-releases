@@ -19,13 +19,8 @@
 package org.netbeans.modules.bpel.design;
 
 import java.awt.Container;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -36,35 +31,32 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
-
 /**
  *
  * @author root
  */
 public class SelectionBridge implements
         PropertyChangeListener,
-        DiagramSelectionListener
-       
-{
+        DiagramSelectionListener {
+
     private DesignView designView;
     private boolean insideChangeNode = false;
-    
+
     public SelectionBridge(DesignView designView) {
         this.designView = designView;
-        
+
         TopComponent.getRegistry().addPropertyChangeListener(this);
-        
+
         designView.getSelectionModel().addSelectionListener(this);
     }
-    
-    public void release(){
+
+    public void release() {
         TopComponent.getRegistry().removePropertyChangeListener(this);
         designView.getSelectionModel().removeSelectionListener(this);
         designView = null;
     }
-    
- 
-     public void selectionChanged(BpelEntity oldSelection, final BpelEntity newSelection) {
+
+    public void selectionChanged(BpelEntity oldSelection, final BpelEntity newSelection) {
         try {
 
             Node node = null;
@@ -104,88 +96,88 @@ public class SelectionBridge implements
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
+
     public void propertyChange(PropertyChangeEvent evt) {
-        
-        if (designView != null ) {
-            if (! designView.isVisible()) {
+
+        if (designView != null) {
+            if (!designView.isVisible()) {
                 return;
             }
         }
-        
+
         if (insideChangeNode) {
             return;
         }
-        
+
         String propertyName = evt.getPropertyName();
-        
+
         //ignore this event if model is in broken state
-        if( designView.getBPELModel().getState() != BpelModel.State.VALID){
+        if (designView.getBPELModel().getState() != BpelModel.State.VALID) {
             return;
         }
-        
+
         if (propertyName.equals(TopComponent.Registry.PROP_ACTIVATED_NODES)) {
             Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
             if (nodes.length != 1) {
                 return;
             }
-            
+
             TopComponent tc = TopComponent.getRegistry().getActivated();
             /* Ignore event coming from my TC */
-            if (nodes[0] instanceof BpelNode){
-                
+            if (nodes[0] instanceof BpelNode) {
+
                 Object ref = ((BpelNode) nodes[0]).getReference();
                 if (ref == null) {
                     return;
                 }
-                
-                if ( ref instanceof BpelEntity ){
+
+                if (ref instanceof BpelEntity) {
                     BpelEntity entity = (BpelEntity) ref;
-                    
+
                     /**
                      * Iterate up to the root of entity hierarchy
                      * To find first entity wrapped with pattern
                      **/
                     designView.getModel().expandToBeVisible(entity);
-                    
+
                     Pattern pattern = null;
-                    
-                    while (entity != null){
+
+                    while (entity != null) {
                         pattern = designView.getModel().getPattern(entity);
-                        if (pattern != null){
+                        if (pattern != null) {
                             break;
                         }
                         entity = entity.getParent();
                     }
-                    
-                    if (pattern != null){
+
+                    if (pattern != null) {
                         designView.getSelectionModel().setSelected(entity);
                     }
-                    
+
                     designView.scrollSelectedToView();
                 }
             }
         }
     }
-     
+
     private void setActivatedNodes(final Node[] nodes) {
         try {
             TopComponent targetTopComponent = null;
-            Container container = (Container)designView;
+            Container container = (Container) designView;
             while (container != null) { // Find TopComponent
+
                 if (container instanceof TopComponent) {
                     targetTopComponent = (TopComponent) container;
                     break;
-                    
+
                 }
                 container = container.getParent();
             }
-            if(targetTopComponent != null) {
+            if (targetTopComponent != null) {
                 targetTopComponent.setActivatedNodes(nodes);
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-    
-    
 }

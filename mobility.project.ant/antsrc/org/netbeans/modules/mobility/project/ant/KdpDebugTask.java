@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -153,7 +156,7 @@ public class KdpDebugTask extends Task {
     
     @Override
     public void execute() throws BuildException {
-        
+
         Project project = getProject();
         if (name == null) name = project.getProperty("app.codename"); //NOI18N
         if (name == null) throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Session_name_missing"), getLocation()); //NOI18N
@@ -179,7 +182,7 @@ public class KdpDebugTask extends Task {
         String jar = project.getProperty("dist.jar"); //NOI18N
         if (dist != null && jar != null) {
             File jarFile = new File(project.getBaseDir(), dist + '/' + jar);
-            if (jarFile.isFile() && jarFile.length() > 50000) {
+            if (jarFile.isFile() && jarFile.length() > 50000 && this.timeout != 0) {
                 long newTimeoutAdd = jarFile.length() - 50000;
                 log(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_Add_time_out", Long.toString(newTimeoutAdd/1000)));
                 timeout = newTimeoutAdd + timeout;
@@ -258,9 +261,9 @@ public class KdpDebugTask extends Task {
                     ie.printStackTrace();
                 }
             }
-        } while (!debuggerConnected && (System.currentTimeMillis() < this.startTime + this.timeout));
+        } while (!debuggerConnected && (System.currentTimeMillis() < this.startTime + this.timeout) && this.timeout != 0);
         
-        if (!debuggerConnected) {
+        if (!debuggerConnected && this.timeout != 0) { //timeout == 0, forever
             int attemptTime = (int) ((System.currentTimeMillis() - this.startTime) / 1000);
             log(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", Integer.toString(attemptCount), Integer.toString(attemptTime)));
             throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", //NOI18N

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,7 +91,8 @@ import org.openide.windows.TopComponent;
  */
 public class JSFConfigEditorSupport extends DataEditorSupport
         implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie  {
-    
+
+    private static final RequestProcessor requestProcessor = new RequestProcessor(JSFConfigEditorSupport.class);
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -185,10 +189,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                String displayName = messageName();
+                String displayName = messageHtmlName();
                 
                 if (! displayName.equals(tc.getDisplayName())){
-                    tc.setDisplayName(displayName);
+                    tc.setHtmlDisplayName(displayName);
                 }
                 // XXX should probably set htmlDisplayName too, from messageHtmlName
                 // XXX should probably use messageToolTip instead
@@ -196,7 +200,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             }
         });
     }
-    
+
     private void initialize() {
         // Create DocumentListener
         final DocumentListener docListener = new DocumentListener() {
@@ -342,9 +346,9 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 }
             };
             if (parsingDocumentTask != null)
-                parsingDocumentTask = RequestProcessor.getDefault().post(r, AUTO_PARSING_DELAY);
+                parsingDocumentTask = requestProcessor.post(r, AUTO_PARSING_DELAY);
             else
-                parsingDocumentTask = RequestProcessor.getDefault().post(r, 100);
+                parsingDocumentTask = requestProcessor.post(r, 100);
         }
     }
     
@@ -368,17 +372,24 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
-        try {
-            // synchronize the model with the document. See issue #116315
-            JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
-            if (configModel != null) {
-                // the model can be null, if the file wasn't opened.
-                configModel.sync();
+        requestProcessor.post(new Runnable() {
+
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                try {
+                    // synchronize the model with the document. See issue #116315
+                    JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
+                    if (configModel != null) {
+                        // the model can be null, if the file wasn't opened.
+                        configModel.sync();
+                    }
+                } catch (IOException ex) {
+                    // Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync Config Model took: "+ (System.currentTimeMillis() - time) + " ms");   //NOI18N
             }
-        } catch (IOException ex) {
-            // Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
-        
+        });
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */

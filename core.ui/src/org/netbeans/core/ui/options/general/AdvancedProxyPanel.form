@@ -6,15 +6,12 @@
       <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="ACD_AdvancedProxyPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,13,0,0,3,33"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -23,66 +20,64 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                      <Component id="cbUseProxyAuthentication" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+              <Component id="cbUseProxyAuthentication" min="-2" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sSeparator" pref="512" max="32767" attributes="1"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lUserName" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lUserPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="pfUserPassword" max="32767" attributes="3"/>
-                          <Component id="tfUserName" alignment="0" pref="399" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="pfUserPassword" pref="423" max="32767" attributes="2"/>
+                          <Component id="tfUserName" alignment="0" pref="423" max="32767" attributes="2"/>
                       </Group>
                   </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="sSeparator" min="-2" pref="414" max="-2" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lHttpProxyHost" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lHttpsProxyHost" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lSocksHost" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lNonProxyHosts" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lHttpProxyHost" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lHttpsProxyHost" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lSocksHost" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lNonProxyHosts" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="lNonProxyHostsDescription" alignment="0" min="-2" pref="349" max="-2" attributes="1"/>
-                              <Component id="cbSameProxySettings" alignment="0" min="-2" pref="325" max="-2" attributes="1"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="tfHttpProxyHost" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tfSocksHost" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tfHttpsProxyHost" alignment="0" pref="281" max="32767" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="lHttpProxyPort" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lHttpsProxyPort" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lSocksPort" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="tfHttpProxyPort" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tfSocksPort" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tfHttpsProxyPort" alignment="0" max="32767" attributes="1"/>
-                                  </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lNonProxyHostsDescription" alignment="0" min="-2" pref="349" max="-2" attributes="1"/>
+                          <Component id="cbSameProxySettings" alignment="0" min="-2" pref="325" max="-2" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="tfHttpProxyHost" alignment="0" pref="281" max="32767" attributes="2"/>
+                                  <Component id="tfSocksHost" alignment="0" pref="281" max="32767" attributes="2"/>
+                                  <Component id="tfHttpsProxyHost" alignment="0" pref="281" max="32767" attributes="2"/>
                               </Group>
-                              <Component id="tfNonProxyHosts" alignment="0" max="32767" attributes="1"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="lHttpProxyPort" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lHttpsProxyPort" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lSocksPort" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="tfHttpProxyPort" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="tfSocksPort" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="tfHttpsProxyPort" alignment="0" max="32767" attributes="1"/>
+                              </Group>
                           </Group>
+                          <Component id="tfNonProxyHosts" alignment="0" pref="388" max="32767" attributes="2"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -145,7 +140,7 @@
           <ComponentRef name="tfHttpProxyHost"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpProxyHost" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpProxyHost" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -159,7 +154,7 @@
     <Component class="javax.swing.JCheckBox" name="cbSameProxySettings">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_cbSameProxySettings" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_cbSameProxySettings" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -182,7 +177,7 @@
           <ComponentRef name="tfHttpsProxyHost"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpsProxyHots" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpsProxyHots" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -199,7 +194,7 @@
           <ComponentRef name="tfSocksHost"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lSocksHost" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lSocksHost" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -216,7 +211,7 @@
           <ComponentRef name="tfHttpProxyPort"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpProxyPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpProxyPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -226,7 +221,7 @@
           <ComponentRef name="tfHttpsProxyPort"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpsProxyPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lHttpsProxyPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -236,7 +231,7 @@
           <ComponentRef name="tfSocksPort"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lSocksPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lSocksPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -276,9 +271,12 @@
           <ComponentRef name="tfNonProxyHosts"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lNonProxyHosts" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lNonProxyHosts" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="tfNonProxyHosts">
       <AccessibilityProperties>
@@ -290,7 +288,7 @@
     <Component class="javax.swing.JLabel" name="lNonProxyHostsDescription">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lNonProxyHostsDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lNonProxyHostsDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -299,7 +297,7 @@
     <Component class="javax.swing.JCheckBox" name="cbUseProxyAuthentication">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_cbUseProxyAuthentication" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_cbUseProxyAuthentication" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -322,7 +320,7 @@
           <ComponentRef name="tfUserName"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lUserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lUserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -332,7 +330,7 @@
           <ComponentRef name="pfUserPassword"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lUserPassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_AdvancedProxyPanel_lUserPassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

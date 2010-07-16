@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="JavaCard3">
+            <file name="StartAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createStartAction"/>
+                <attr name="position" intvalue="101"/>
+            </file>
+            <file name="ResumeAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createResumeAction"/>
+                <attr name="position" intvalue="201"/>
+            </file>
+            <file name="ResumeDebugAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createResumeIntoDebugModeAction"/>
+                <attr name="position" intvalue="211"/>
+            </file>
+            <file name="StopAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createStopAction"/>
+                <attr name="position" intvalue="301"/>
+            </file>
+            <file name="RunActionsSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="401"/>
+            </file>
+            <file name="ClearEpromAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createClearEpromAction"/>
+                <attr name="position" intvalue="501"/>
+            </file>
+            <file name="EpromActionsSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="601"/>
+            </file>
+            <file name="org-openide-actions-DeleteAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                <attr name="position" intvalue="701"/>
+            </file>
+            <file name="DeleteActionSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="801"/>
+            </file>
+            <file name="org-netbeans-modules-javacard-ri-platform-loader-RefreshChildrenAction.instance">
+                <attr name="position" intvalue="901"/>
+            </file>
+            <file name="CustomizeAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createCustomizeAction"/>
+                <attr name="position" intvalue="1001"/>
+            </file>
+            
+        </folder>
+    </folder>
     <folder name="org-netbeans-modules-javacard-spi">
         <folder name="kinds">
             <folder name="RI">
@@ -31,6 +79,7 @@
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="application/javacard"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/ri.png"/>
+                        <attr name="position" intvalue="1034"/>
                     </file>
                 </folder>
             </folder>
@@ -41,6 +90,53 @@
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="application/x-javacardserver"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/loader/card.png"/>
+                        <attr name="position" intvalue="1022"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="StartAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/StartAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="ResumeAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/ResumeAction.instance"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="ResumeDebugAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/ResumeDebugAction.instance"/>
+                        <attr name="position" intvalue="210"/>
+                    </file>
+                    <file name="StopAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/StopAction.instance"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="RunActionsSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="ClearEpromAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/ClearEpromAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="EpromActionsSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="DeleteActionSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="RefreshChildrenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-ri-platform-loader-RefreshChildrenAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="CustomizeAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/CustomizeAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>

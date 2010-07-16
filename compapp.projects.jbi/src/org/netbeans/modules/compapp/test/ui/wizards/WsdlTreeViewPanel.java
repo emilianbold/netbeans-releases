@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Set;
@@ -94,33 +96,35 @@ public class WsdlTreeViewPanel extends JPanel implements ExplorerManager.Provide
         
         mManager = new ExplorerManager();
         mManager.addPropertyChangeListener(new ExplorerPropertyChangeListener());
-        if(mProject != null) {
-            
-            SourceGroup[] ownerSourceGroup;
-            
-            List<SourceGroup> sourceGroupsList = new ArrayList<SourceGroup>();
 
-            //wsdl in JbiProject 
-            ownerSourceGroup = getSourceGroups(mProject);            
+        if (mProject != null) {
             
-            //find depedent projects
-            Set dependentProjects = ProjectUtil.getClasspathProjects(mProject);
-            Iterator it = dependentProjects.iterator();
-            while(it.hasNext()) {
-                Project dProject = (Project) it.next();
+            SourceGroup[] ownerProjectSourceGroup;
+            
+            List<SourceGroup> dependentProjectSourceGroups = new ArrayList<SourceGroup>();
+
+            // wsdls in JbiProject
+            ownerProjectSourceGroup = getSourceGroups(mProject);
+            
+            // find depedent projects (JBI module projects and their referened projects)
+            // #149180
+            Set<Project> dependentProjects = 
+                    ProjectUtil.getClasspathProjects(mProject, true);
+
+            for (Project dProject : dependentProjects) {
                 SourceGroup[] groups = getSourceGroups(dProject);
                 
-                if(groups != null && groups.length > 0) {
-                    for(int i = 0; i < groups.length; i++) {
-                        sourceGroupsList.add(groups[i]);
+                if (groups != null) {
+                    for (SourceGroup group : groups) {
+                        dependentProjectSourceGroups.add(group);
                     }
                 }
             }
             
             AbstractNode rootNode = new AbstractNode(
                 new WsdlViewNodes.SourceGroups(mProject,
-                            ownerSourceGroup,
-                            sourceGroupsList.toArray(new SourceGroup[]{})));
+                            ownerProjectSourceGroup,
+                            dependentProjectSourceGroups.toArray(new SourceGroup[]{})));
             mManager.setRootContext( rootNode );
         }        
         

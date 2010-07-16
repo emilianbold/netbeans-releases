@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="jdbcwsdl" targetNamespace="http://j2ee.netbeans.org/wsdl/jdbcbc"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="http://j2ee.netbeans.org/wsdl/jdbcbc" 
+    xmlns:ns="http://j2ee.netbeans.org/xsd/tableSchema"
+    xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:jdbc="http://schemas.sun.com/jbi/wsdl-extensions/jdbc/">
+    <types>
+	<xsd:schema targetNamespace="http://j2ee.netbeans.org/wsdl/jdbcbc">
+            <xsd:import namespace="http://j2ee.netbeans.org/xsd/tableSchema" schemaLocation="jdbc.xsd.template"/>
+	</xsd:schema>
+    </types>
+    <message name="inputMsg">
+        <part name="part" element="ns:CUSTOMER"/>
+    </message>
+    <message name="outputMsg">
+        <part name="part" element="ns:CUSTOMER"/>
+    </message>
+    <message name="RetMsg">
+         <part name="part" type="xsd:int"/>
+    </message>
+    <portType name="jdbcPortType">
+        <operation name="insert">
+            <input name="inputInsert" message="tns:inputMsg"/>
+	    	<output name="outputInsert" message="tns:RetMsg"/>
+        </operation>
+	 <operation name="update">
+            <input name="inputUpdate" message="tns:inputMsg"/>
+        	<output name="outputUpdate" message="tns:RetMsg"/>
+        </operation>
+	 <operation name="delete">
+            <input name="inputDelete" message="tns:inputMsg"/>
+            <output name="outputDelete" message="tns:RetMsg"/>
+        </operation>
+	 <operation name="find">
+            <input name="inputFind" message="tns:inputMsg"/>
+            <output name="outputFind" message="tns:outputMsg"/>
+        </operation>
+	<operation name="pollrecords">
+            <input name="inputPoll" message="tns:inputMsg"/>
+        </operation>
+    </portType>
+    <binding name="binding" type="tns:jdbcPortType">
+        <jdbc:binding/>
+        <operation name="insert">
+            <jdbc:operation/>
+            <input name="inputInsert">
+               <jdbc:input operationType="insert" numberOfRecords="1" paramOrder="specify param order" sql="insertQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>
+            </input>
+	    <output name="outputInsert">
+                <jdbc:output returnPartName="part"/>
+            </output>
+         </operation>
+	 <operation name="update">
+            <jdbc:operation/>
+            <input name="inputUpdate">
+		<jdbc:input operationType="update" numberOfRecords="1" paramOrder="specify param order" sql="updateQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+	    </input>
+	    <output name="outputUpdate">
+                <jdbc:output returnPartName="part"/>
+            </output>
+        </operation>
+	 <operation name="delete">
+            <jdbc:operation/>
+            <input name="inputDelete">
+		<jdbc:input operationType="delete" numberOfRecords="1" paramOrder="specify param order" sql="deleteQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+	    </input>
+	    <output name="outputDelete">
+                <jdbc:output returnPartName="part"/>
+            </output>
+        </operation>
+	 <operation name="find">
+            <jdbc:operation/>
+            <input name="inputFind">
+		<jdbc:input operationType="find" numberOfRecords="1" paramOrder="specify param order" sql="findQuery" PKName="testID" PollMilliSeconds="" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+	     </input>
+            <output name="outputFind">
+                <jdbc:output returnPartName="part"/>
+            </output>
+        </operation>
+	<operation name="pollrecords">
+            <jdbc:operation/>
+            <input name="inputPoll">
+		<jdbc:input operationType="poll" numberOfRecords="1" paramOrder="specify param order" sql="pollQuery" PKName="testID" PollMilliSeconds="5000" Transaction="XATransaction" MarkColumnValue="2" PollingPostProcessing="MoveRow" TableName="APP.TestOutbound" MarkColumnName="testFlag" MoveRowToTableName="TestTable"/>		
+	    </input>
+        </operation>
+    </binding>
+    <service name="service">
+        <port name="port" binding="tns:binding">
+            <jdbc:address jndiName="jndiname"/>
+        </port>
+    </service>
+    <plink:partnerLinkType name="jdbcpartner">
+        <plink:role name="jdbcPortTypeRole" portType="tns:jdbcPortType"/>
+    </plink:partnerLinkType>
+</definitions>

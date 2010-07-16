@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,13 +48,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -170,26 +177,55 @@ public final class CacheFolder {
         return dataFolder[0];
     }
 
-    private static String getNbUserDir () {
-        final String nbUserProp = System.getProperty(NB_USER_DIR);
-        return nbUserProp;
+    public static synchronized Iterable<? extends FileObject> findRootsWithCacheUnderFolder(FileObject folder) throws IOException {
+        URL folderURL = folder.getURL();
+        String prefix = folderURL.toExternalForm();
+        final FileObject _cacheFolder = getCacheFolder();
+        List<FileObject> result = new LinkedList<FileObject>();
+        loadSegments(_cacheFolder);
+        for (Entry<String, String> e : invertedSegments.entrySet()) {
+            if (e.getKey().startsWith(prefix)) {
+                FileObject fo = URLMapper.findFileObject(new URL(e.getKey()));
+                
+                if (fo != null) {
+                    result.add(fo);
+                }
+            }
+        }
+
+        return result;
     }
-    
+
     public static synchronized FileObject getCacheFolder () {
         if (cacheFolder == null) {
-            final String nbUserDirProp = getNbUserDir();
-            assert nbUserDirProp != null;
+            final String nbUserDirProp = System.getProperty(NB_USER_DIR);
+            if (nbUserDirProp == null) {
+                throw new IllegalStateException("No " + NB_USER_DIR + " system property"); //NOI18N
+            }
+
             final File nbUserDir = new File (nbUserDirProp);
             File cache = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
             if (!cache.exists()) {
-                boolean created = cache.mkdirs();                
-                assert created : "Cannot create cache folder";  //NOI18N
+                cache.mkdirs();
+                if (!cache.exists()) {
+                    throw new IllegalStateException("Can't create indices cache folder " + cache.getAbsolutePath()); //NOI18N
+                }
             }
-            else {
-                assert cache.isDirectory() && cache.canRead() && cache.canWrite();
+
+            if (!cache.isDirectory()) {
+                throw new IllegalStateException("Indices cache folder " + cache.getAbsolutePath() + " is not a folder"); //NOI18N
             }
+            if (!cache.canRead()) {
+                throw new IllegalStateException("Can't read from indices cache folder " + cache.getAbsolutePath()); //NOI18N
+            }
+            if (!cache.canWrite()) {
+                throw new IllegalStateException("Can't write to indices cache folder " + cache.getAbsolutePath()); //NOI18N
+            }
+
             cacheFolder = FileUtil.toFileObject(cache);
-            assert cacheFolder != null;
+            if (cacheFolder == null) {
+                throw new IllegalStateException("Can't convert indices cache folder " + cache.getAbsolutePath() + " to FileObject"); //NOI18N
+            }
         }
         return cacheFolder;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,7 +86,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private ParamTableModel model;
     private ChangeListener parent;
 
-    private static final String DEFAULT_VALUES_ONLY_IN_DEFINITION = "UseDefaultValueOnlyInFunctionDefinition"; // NOI18N
+    private static final String DEFAULT_VALUES_ONLY_IN_DECLARATION = "UseDefaultValueOnlyInFunctionDefinition"; // NOI18N
 
     private static Action editAction = null;
     private String returnType;
@@ -125,7 +128,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         this.parent = parent;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
-        defaultsOnlyInFunDefinition.setSelected(isUseDefaultValueOnlyInFunctionDefinition());
+        defaultsOnlyInFunDeclaration.setSelected(isUseDefaultValueOnlyInFunctionDeclaration());
     }
     
     private boolean initialized = false;
@@ -169,8 +172,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         return CsmVisibility.NONE;
     }
 
-    protected boolean isUseDefaultValueOnlyInFunctionDefinition() {
-        return NbPreferences.forModule(ChangeParametersPanel.class).getBoolean(DEFAULT_VALUES_ONLY_IN_DEFINITION, false);
+    protected boolean isUseDefaultValueOnlyInFunctionDeclaration() {
+        return NbPreferences.forModule(ChangeParametersPanel.class).getBoolean(DEFAULT_VALUES_ONLY_IN_DECLARATION, false);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -184,7 +187,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         modifiersPanel = new javax.swing.JPanel();
         modifiersLabel = new javax.swing.JLabel();
         modifiersCombo = new javax.swing.JComboBox();
-        defaultsOnlyInFunDefinition = new javax.swing.JCheckBox();
+        defaultsOnlyInFunDeclaration = new javax.swing.JCheckBox();
         eastPanel = new javax.swing.JPanel();
         buttonsPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
@@ -229,10 +232,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         modifiersPanel.add(modifiersCombo, gridBagConstraints);
         modifiersCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_modifiersCombo")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(defaultsOnlyInFunDefinition, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.defaultsOnlyInFunDefinition.text")); // NOI18N
-        defaultsOnlyInFunDefinition.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(defaultsOnlyInFunDeclaration, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "ChangeParametersPanel.defaultsOnlyInFunDeclaration.text")); // NOI18N
+        defaultsOnlyInFunDeclaration.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                defaultsOnlyInFunDefinitionActionPerformed(evt);
+                defaultsOnlyInFunDeclarationActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -241,7 +244,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        modifiersPanel.add(defaultsOnlyInFunDefinition, gridBagConstraints);
+        modifiersPanel.add(defaultsOnlyInFunDeclaration, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -413,15 +416,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         model.addRow(new Object[] { "par" + rowCount, "int", "0", Integer.valueOf(-1), Boolean.TRUE }); // NOI18N
     }//GEN-LAST:event_addButtonActionPerformed
 
-    private void defaultsOnlyInFunDefinitionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultsOnlyInFunDefinitionActionPerformed
-        NbPreferences.forModule(ChangeParametersPanel.class).putBoolean(DEFAULT_VALUES_ONLY_IN_DEFINITION, defaultsOnlyInFunDefinition.isSelected());
+    private void defaultsOnlyInFunDeclarationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultsOnlyInFunDeclarationActionPerformed
+        NbPreferences.forModule(ChangeParametersPanel.class).putBoolean(DEFAULT_VALUES_ONLY_IN_DECLARATION, defaultsOnlyInFunDeclaration.isSelected());
         previewChange.setText(genDeclarationString());
-    }//GEN-LAST:event_defaultsOnlyInFunDefinitionActionPerformed
+    }//GEN-LAST:event_defaultsOnlyInFunDeclarationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JPanel buttonsPanel;
-    private javax.swing.JCheckBox defaultsOnlyInFunDefinition;
+    private javax.swing.JCheckBox defaultsOnlyInFunDeclaration;
     private javax.swing.JPanel eastPanel;
     private javax.swing.JPanel fillPanel;
     private javax.swing.JComboBox modifiersCombo;
@@ -512,7 +515,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         if (CsmKindUtilities.isMethod(functionObj)) {
             CsmMethod method = (CsmMethod)functionObj;
             if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                allMethods.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
+                allMethods.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
                 assert !allMethods.isEmpty() : "must be at least start object " + method;
             }
         }

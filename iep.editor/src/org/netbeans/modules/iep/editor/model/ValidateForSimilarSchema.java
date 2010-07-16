@@ -23,14 +23,14 @@ package org.netbeans.modules.iep.editor.model;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidator;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgPsI18n;
+import org.netbeans.modules.tbls.model.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentValidationMsg;
+import org.netbeans.modules.tbls.model.TcgComponentValidationReport;
+import org.netbeans.modules.tbls.model.TcgComponentValidator;
+import org.netbeans.modules.tbls.model.TcgModelConstants;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,26 +50,26 @@ public class ValidateForSimilarSchema implements TcgComponentValidator, SharedCo
     
     public TcgComponentValidationReport validate(TcgComponent component) {
         TcgComponentValidationReport report = mDefaultValidator.validate(component);
-        List messageList = report.getMessageList();
+        List<TcgComponentValidationMsg> messageList = report.getMessageList();
         String type = VALIDATION_OK_KEY;
         TcgComponent parent = component.getParent().getParent();
-        TcgComponent schemas = parent.getComponent(SCHEMAS_KEY);
-        TcgComponent operators = parent.getComponent(OPERATORS_KEY);
+        TcgComponent schemas = parent.getComponent(COMP_SCHEMAS);
+        TcgComponent operators = parent.getComponent(COMP_OPERATORS);
         try {
             TcgComponent sca = null;
             TcgComponent scb = null;
-            List inputIdList = component.getProperty(INPUT_ID_LIST_KEY).getListValue();
+            List inputIdList = component.getProperty(PROP_INPUT_ID_LIST).getListValue();
             if(inputIdList.size() > 1) {
                 String id = (String)inputIdList.get(0);
                 TcgComponent input = operators.getComponent(id);
-                String outputSchemaId = input.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
+                String outputSchemaId = input.getProperty(PROP_OUTPUT_SCHEMA_ID).getStringValue();
                 sca = schemas.getComponent(outputSchemaId);
                 
             }
             for(int i = 1, I = inputIdList.size(); i < I; i++) {
                 String id = (String)inputIdList.get(i);
                 TcgComponent input = operators.getComponent(id);
-                String outputSchemaId = input.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
+                String outputSchemaId = input.getProperty(PROP_OUTPUT_SCHEMA_ID).getStringValue();
                 scb = schemas.getComponent(outputSchemaId);
                 if(!ensureSchemasAreSame(sca,scb)) {
                     addErrorMessage(messageList,null,"ValidateForSimilarSchema.input_schemas_are_not_same");
@@ -84,7 +84,7 @@ public class ValidateForSimilarSchema implements TcgComponentValidator, SharedCo
         return new TcgComponentValidationReport(component, type, messageList, report.getChildReportList());
     }
     
-    private void addErrorMessage(List mL ,TcgComponentType compType, String messageKey ) {
+    private void addErrorMessage(List<TcgComponentValidationMsg> mL ,TcgComponentType compType, String messageKey ) {
         TcgComponentValidationMsg  msg = new TcgComponentValidationMsg(VALIDATION_ERROR_KEY,
                 ((compType==null)? "":"'" + TcgPsI18n.getDisplayName(compType) + "' ") +
                 NbBundle.getMessage(ValidateForSimilarSchema.class,
@@ -119,13 +119,13 @@ public class ValidateForSimilarSchema implements TcgComponentValidator, SharedCo
             if (!cola.getProperty(TcgModelConstants.NAME_KEY).getStringValue().equals(colb.getProperty(TcgModelConstants.NAME_KEY).getStringValue())) {
                 return false;
             }
-            if (!cola.getProperty(TYPE_KEY).getStringValue().equals(colb.getProperty(TYPE_KEY).getStringValue())) {
+            if (!cola.getProperty(PROP_TYPE).getStringValue().equals(colb.getProperty(PROP_TYPE).getStringValue())) {
                 return false;
             }
-            if (!cola.getProperty(SIZE_KEY).getStringValue().equals(colb.getProperty(SIZE_KEY).getStringValue())) {
+            if (!cola.getProperty(PROP_SIZE).getStringValue().equals(colb.getProperty(PROP_SIZE).getStringValue())) {
                 return false;
             }
-            if (!cola.getProperty(SCALE_KEY).getStringValue().equals(colb.getProperty(SCALE_KEY).getStringValue())) {
+            if (!cola.getProperty(PROP_SCALE).getStringValue().equals(colb.getProperty(PROP_SCALE).getStringValue())) {
                 return false;
             }
         } catch(Exception e) {

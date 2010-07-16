@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,10 +76,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.wizard.EntityClosure;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -344,7 +353,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     // End of variables declaration//GEN-END:variables
 
 
-    public static List<String> getPropertyNames(Project project, String entityClass, boolean collection) {
+    public List<String> getPropertyNames(Project project, String entityClass, boolean collection) {
         List<String> res = new ArrayList<String>();
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         assert wm != null;
@@ -352,7 +361,28 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         for (FacesManagedBean b : beans) {
             res.addAll(getManagedBeanPropertyNames(project, b.getManagedBeanClass(), entityClass, b.getManagedBeanName(), collection));
         }
+        //check web beans
+        List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(getWebBeansModel(wm));
+        for (WebBean bean : namedElements) {
+            String beanName = bean.getName();
+            String className = bean.getBeanClassName();
+            if ((beanName != null)) {
+                res.addAll(getManagedBeanPropertyNames(project, className, entityClass, beanName, collection));
+            }
+        }
+
+
         return res;
+    }
+
+    private MetadataModel<WebBeansModel> webBeansModel;
+    
+    public synchronized MetadataModel<WebBeansModel> getWebBeansModel(WebModule wm) {
+        if(webBeansModel == null) {
+            ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm);
+            webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+        }
+        return webBeansModel;
     }
 
     public static List<String> getManagedBeanPropertyNames(Project project,

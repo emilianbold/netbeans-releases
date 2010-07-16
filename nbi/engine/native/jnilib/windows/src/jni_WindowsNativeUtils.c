@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -43,21 +46,6 @@
 #include "../../.common/src/CommonUtils.h"
 #include "WindowsUtils.h"
 #include "jni_WindowsNativeUtils.h"
-
-////////////////////////////////////////////////////////////////////////////////
-// Globals
-// double equivalent for the maximum value for a signed 32-bit integer, will be
-// used to emulate 64-bit integer
-const double E32 = 4294967296.;
-
-// defines a functional pointer. will be used to get a handle of the available
-// disk space calculation function
-typedef BOOL(WINAPI *P_GDFSE) (LPCWSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
-
-// emulates a 64 bits integer. computations will actually be made on doubles.
-typedef struct int64s {
-    unsigned long Low, High;
-} int64t;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -181,30 +169,24 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
 JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_getFreeSpace0(JNIEnv* jEnv, jobject jObject, jstring jPath) {
     WCHAR*  path = getWideChars(jEnv, jPath);
     jlong  size = 0;
-    
-    P_GDFSE pGetDiskFreeSpaceEx = NULL;
-    
-    // get the handle of the disk space calculation function
-    pGetDiskFreeSpaceEx = (P_GDFSE) GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDiskFreeSpaceExW");
-    
-    // if the handle was obtained successfully, get the disk space
-    if (pGetDiskFreeSpaceEx) {
-        int64t bytes;
-        
-        // if the calculation as successfull return the double equivalent of
-        // the emulated 64-bit integer
-        if (pGetDiskFreeSpaceEx(path, (PULARGE_INTEGER) &bytes, NULL, NULL)) {
-            size = (jlong) ((double) bytes.High*E32 + bytes.Low);
-        } else {
-            throwException(jEnv, "Native error");
+    typedef struct int64s { unsigned long Low, High; } int64t;
+    int64t bytes;
+    if (GetDiskFreeSpaceExW(path, (PULARGE_INTEGER) &bytes, NULL, NULL)) {
+        unsigned long h = bytes.High;
+        // workaround of using missing _allmul function
+        // replace multiplication by sum
+        // (2^32 * high + low) = 2^32 + 2^32 + ... (bytes.High times total) + bytes.Low     
+        // can be relatively expensive on big sizes (peta bytes and more)
+        while(h > 0) {
+            h--;
+            size+=4294967296L;
         }
+        size+= bytes.Low;
     } else {
         throwException(jEnv, "Native error");
     }
     
-    if (path != NULL) {
-        free(path);
-    }
+    FREE(path);
     
     return size;
 }
@@ -239,19 +221,20 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
             }
             // make sure description length is less than MAX_PATH
             if ((errorCode == 0) && (description != NULL)) {
-                if (wcslen(description) < MAX_PATH) {
+                if (WCSLEN(description) < MAX_PATH) {
                     if (!SUCCEEDED(shell->lpVtbl->SetDescription(shell, description))) {
                         throwException(jEnv, "Native error (-3)");
                         errorCode = -3;
                     }
                 } else {
-                    unsigned short *desc = (unsigned short *) malloc(sizeof(unsigned short) * MAX_PATH);
-                    desc = wcsncpy(desc, description, MAX_PATH - 1);
+                    unsigned short *desc = (unsigned short *) MALLOC(sizeof(unsigned short) * MAX_PATH);
+                    ZERO(desc, sizeof(unsigned short) * MAX_PATH);
+                    desc = WCSNCPY(desc, description, MAX_PATH);
                     if (!SUCCEEDED(shell->lpVtbl->SetDescription(shell, desc))) {
                         throwException(jEnv, "Native error (-4)");
                         errorCode = -4;
                     }
-                    free(desc);
+                    FREE(desc);
                 }
             }
             if ((errorCode == 0) && (arguments != NULL)) {
@@ -308,24 +291,12 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         CoUninitialize();
     }
     
-    if(shortcutPath != NULL) {
-        free(shortcutPath);
-    }
-    if(targetPath != NULL) {
-        free(targetPath);
-    }
-    if(description != NULL) {
-        free(description);
-    }
-    if(iconPath != NULL) {
-        free(iconPath);
-    }
-    if(workingDirectory != NULL) {
-        free(workingDirectory);
-    }
-    if(arguments != NULL) {
-        free(arguments);
-    }
+    FREE(shortcutPath);
+    FREE(targetPath);
+    FREE(description);
+    FREE(iconPath);
+    FREE(workingDirectory);
+    FREE(arguments);
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_deleteFileOnReboot0(JNIEnv* jEnv, jobject jObject, jstring jPath) {
@@ -343,9 +314,9 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     STARTUPINFOW si;
     PROCESS_INFORMATION pi;
     
-    memset(&si, 0, sizeof(si));
+    ZERO(&si, sizeof(si));
     si.cb = sizeof(si);
-    memset(&pi, 0, sizeof(pi));
+    ZERO(&pi, sizeof(pi));
     if(!CreateProcessW(NULL,   // executable name - use command line
             command,    // command line
             NULL,   // process security attribute
@@ -402,10 +373,10 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     // Get the security descriptor
     if (!GetFileSecurityW(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,  pSD, nLength, &nLength)) {
         throwException(jEnv, "Unable to obtain security descriptor.\n");
-        free(path);
+        FREE(path);
         return (-3);
     }
-    free(path);
+    FREE(path);
     
     /* Perform security impersonation of the user and open */
     /* the resulting thread token. */
@@ -422,7 +393,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     }
     RevertToSelf();
     
-    memset(&GenericMapping, 0x00, sizeof (GENERIC_MAPPING));
+    ZERO(&GenericMapping, sizeof (GENERIC_MAPPING));
     
     DesiredAccess = DesiredAccess | STANDARD_RIGHTS_READ;
     GenericMapping.GenericRead = FILE_GENERIC_READ;

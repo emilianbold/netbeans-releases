@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,7 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
         super(name);
     }
 
-    public void testParseLogWithMoreSuites() throws Exception {
+    public void testParseCommands() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands.xml")));
 
         List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
@@ -74,6 +77,32 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
         assertEquals("Generates Doctrine model, SQL, initializes database, load data and run all tests", command.getDescription());
 
         command = commands.get(61);
+        assertEquals("test:unit", command.getCommand());
+        assertEquals("Launches unit tests", command.getDescription());
+    }
+
+    public void testParseCommandsIssue179717() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands-issue179717.xml")));
+
+        List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
+        SymfonyCommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(82, commands.size());
+
+        SymfonyCommandVO command = commands.get(0);
+        assertEquals("help", command.getCommand());
+        assertEquals("Displays help for a task", command.getDescription());
+
+        command = commands.get(9);
+        assertEquals("apostrophe:repair-tree", command.getCommand());
+        assertEquals("", command.getDescription());
+
+        command = commands.get(10);
+        assertEquals("apostrophe:ssh", command.getCommand());
+        assertEquals("Opens an interactive ssh connection to the specified server using the username, port and hostname in properties.ini", command.getDescription());
+
+        command = commands.get(81);
         assertEquals("test:unit", command.getCommand());
         assertEquals("Launches unit tests", command.getDescription());
     }

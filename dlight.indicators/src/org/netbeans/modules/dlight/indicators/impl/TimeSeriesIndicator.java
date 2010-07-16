@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,17 @@ package org.netbeans.modules.dlight.indicators.impl;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -56,6 +67,8 @@ import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
@@ -64,16 +77,23 @@ import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.indicators.DetailDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorActionsProvider;
+import org.netbeans.modules.dlight.spi.indicator.PersistentIndicator;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -82,7 +102,7 @@ import org.openide.util.Lookup;
  * @author Alexey Vladykin
  */
 public final class TimeSeriesIndicator
-        extends Indicator<TimeSeriesIndicatorConfiguration>
+        extends PersistentIndicator<TimeSeriesIndicatorConfiguration>
         implements ViewportAware, DataFilterListener {
 
     private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
@@ -92,11 +112,16 @@ public final class TimeSeriesIndicator
     private TimeSeriesPlot graph;
     private Legend legend;
     private JButton button;
-    private final int graphCount;
+    private final int timeSeriesCount;
     private int tickCounter;
     private List<Action> popupActions;
     private volatile boolean isInitialized = false;
     private final TimeSeriesIndicatorConfiguration configuration;
+    private final List<TimeSeriesDescriptor> timeSeriesList;
+    private final List<DetailDescriptor> detailsList;
+    private final DataTableMetadata timeSeriesTable;
+    private final DataTableMetadata detailsTable;
+    private volatile Map<String, String> detailsValues;
     private final UILock uiLock = new UILock();
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
@@ -104,10 +129,14 @@ public final class TimeSeriesIndicator
         this.configuration = configuration;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
-        this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
-        this.data = new TimeSeriesDataContainer(accessor.getGranularity(configuration), accessor.getAggregation(configuration), graphCount, accessor.getLastNonNull(configuration));
-        this.data.put(0, new float[graphCount]);
-
+        this.timeSeriesList = accessor.getTimeSeriesDescriptors(configuration);
+        this.timeSeriesCount = timeSeriesList.size();
+        this.data = new TimeSeriesDataContainer(accessor.getGranularity(configuration), accessor.getAggregation(configuration), timeSeriesCount, accessor.getLastNonNull(configuration));
+        this.data.put(0, new float[timeSeriesCount]);
+        this.timeSeriesTable = createTimeSeriesTableMetadata(accessor.getPersistencePrefix(configuration), timeSeriesList);
+        this.detailsList = accessor.getDetailDescriptors(configuration);
+        this.detailsTable = createDetailsTableMetadata(accessor.getPersistencePrefix(configuration), detailsList);
+        this.detailsValues = Collections.emptyMap();
     }
 
     @Override
@@ -121,7 +150,7 @@ public final class TimeSeriesIndicator
         synchronized (uiLock) {
             this.graph = createGraph(configuration, data);
             TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-            this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
+            this.legend = new Legend(timeSeriesList, detailsList);
             this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
             this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
                     legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
@@ -153,6 +182,29 @@ public final class TimeSeriesIndicator
         graph.getHorizontalAxis().setMinimumSize(timeAxisSize);
         graph.getHorizontalAxis().setPreferredSize(timeAxisSize);
         return graph;
+    }
+
+    private static DataTableMetadata createTimeSeriesTableMetadata(String tablePrefix, List<TimeSeriesDescriptor> timeSeriesList) {
+        DataTableMetadata table = null;
+        if (!timeSeriesList.isEmpty()) {
+            List<Column> timeSeriesColumns = new ArrayList<Column>(timeSeriesList.size());
+            timeSeriesColumns.add(new Column("timestamp", Long.class)); // NOI18N
+            for (TimeSeriesDescriptor timeSeries : timeSeriesList) {
+                timeSeriesColumns.add(new Column(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeries), Float.class));
+            }
+            table = new DataTableMetadata(tablePrefix + "_series", timeSeriesColumns, null); // NOI18N
+        }
+        return table;
+    }
+
+    private static DataTableMetadata createDetailsTableMetadata(String tablePrefix, List<DetailDescriptor> detailsList) {
+        DataTableMetadata table = null;
+        if (!detailsList.isEmpty()) {
+            List<Column> detailsColumns = Arrays.asList(
+                    new Column("name", String.class), new Column("value", String.class)); // NOI18N
+            table = new DataTableMetadata(tablePrefix + "_details", detailsColumns, null); // NOI18N
+        }
+        return table;
     }
 
     public ViewportModel getViewportModel() {
@@ -215,6 +267,7 @@ public final class TimeSeriesIndicator
     protected void tick() {
         ++tickCounter;
         this.data.grow(tickCounter);
+        this.detailsValues = dataRowHandler.getDetails();
         refresh();
     }
 
@@ -241,7 +294,7 @@ public final class TimeSeriesIndicator
     }
 
     private void refresh() {
-        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
+        for (Map.Entry<String, String> entry : detailsValues.entrySet()) {
             legend.updateDetail(entry.getKey(), entry.getValue());
         }
         graph.repaintAll();
@@ -275,6 +328,128 @@ public final class TimeSeriesIndicator
             panel.setPopupActions(actions);
         }
         this.popupActions = actions;
+    }
+
+    @Override
+    public DataStorageType getDataStorageType() {
+        return DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE);
+    }
+
+    @Override
+    public List<DataTableMetadata> getDataTableMetadata() {
+        if (timeSeriesTable != null && detailsTable != null) {
+            return Collections.unmodifiableList(Arrays.asList(timeSeriesTable, detailsTable));
+        } else if (timeSeriesTable != null) {
+            return Collections.singletonList(timeSeriesTable);
+        } else if (detailsTable != null) {
+            return Collections.singletonList(detailsTable);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public boolean loadState(DataStorage storage) {
+        if (1 < data.size()) {
+            throw new IllegalStateException("Indicator must contain no data when loading"); // NOI18N
+        }
+
+        SQLDataStorage sqlStorage = (SQLDataStorage) storage;
+
+        if (timeSeriesTable != null) {
+            try {
+                ResultSet rs = sqlStorage.select(timeSeriesTable.getName(), timeSeriesTable.getColumns());
+                try {
+                    while (rs.next()) {
+                        long timestamp = rs.getLong(1);
+                        float[] dataArray = new float[timeSeriesCount];
+                        for (int i = 0; i < timeSeriesList.size(); ++i) {
+                            dataArray[i] = rs.getFloat(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeriesList.get(i)));
+                        }
+                        data.put(timestamp, dataArray);
+                    }
+                } finally {
+                    rs.close();
+                }
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+
+        if (detailsTable != null) {
+            try {
+                Map<String, String> map = new HashMap<String, String>();
+                ResultSet rs = sqlStorage.select(detailsTable.getName(), detailsTable.getColumns());
+                try {
+                    while (rs.next()) {
+                        String key = rs.getString(1);
+                        String value = rs.getString(2);
+                        map.put(key, value);
+                    }
+                } finally {
+                    rs.close();
+                }
+                detailsValues = map;
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean saveState(DataStorage storage) {
+        SQLDataStorage sqlStorage = (SQLDataStorage) storage;
+
+        if (timeSeriesTable != null) {
+            List<String> columnNames = timeSeriesTable.getColumnNames();
+            List<DataRow> dataRows = new ArrayList<DataRow>();
+            for (int i = 0; i < data.size(); ++i) {
+                float[] dataArray = data.get(i);
+                if (dataArray != null) {
+                    List<Object> dataList = new ArrayList<Object>(1 + columnNames.size());
+                    dataList.add(i * TimeSeriesIndicatorConfigurationAccessor.getDefault().getGranularity(configuration));
+                    for (float x : dataArray) {
+                        dataList.add(x);
+                    }
+                    dataRows.add(new DataRow(columnNames, dataList));
+                }
+            }
+            sqlStorage.syncAddData(timeSeriesTable.getName(), dataRows);
+        }
+
+        if (detailsTable != null) {
+            List<String> columnNames = detailsTable.getColumnNames();
+            List<DataRow> dataRows = new ArrayList<DataRow>();
+            for (Map.Entry<String, String> entry : detailsValues.entrySet()) {
+                dataRows.add(new DataRow(columnNames, Arrays.asList(entry.getKey(), entry.getValue())));
+            }
+            sqlStorage.syncAddData(detailsTable.getName(), dataRows);
+        }
+
+        return true;
+    }
+
+    // for tests
+    /*package*/ void dumpData(PrintStream out) {
+        out.println("Time Series Data:"); // NOI18N
+        for (int i = 0; i < data.size(); ++i) {
+            out.printf("%d =>", i); // NOI18N
+            for (float x : data.get(i)) {
+                out.printf(" %.2f", x); // NOI18N
+            }
+            out.println();
+        }
+
+        out.println("Details:"); // NOI18N
+        Set<String> details = new TreeSet<String>(detailsValues.keySet());
+        for (String detail : details) {
+            out.printf("%s => %s\n", detail, detailsValues.get(detail)); // NOI18N
+        }
+        out.flush();
     }
 
     private final static class UILock {

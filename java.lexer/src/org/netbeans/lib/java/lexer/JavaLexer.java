@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,7 +83,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
         assert (info.state() == null); // never set to non-null value in state()
         
         Integer ver = (Integer)info.getAttributeValue("version");
-        this.version = (ver != null) ? ver.intValue() : 5; // Use Java 1.5 by default
+        this.version = (ver != null) ? ver.intValue() : 7; // TODO: Java 1.7 used by default
     }
     
     public Object state() {
@@ -90,19 +93,26 @@ public class JavaLexer implements Lexer<JavaTokenId> {
     public Token<JavaTokenId> nextToken() {
         while(true) {
             int c = input.read();
+            JavaTokenId lookupId = null;
             switch (c) {
+                case '#':
+                    if (this.version < 7 || input.read() != '"') {
+                        return token(JavaTokenId.ERROR);
+                    }
+                    lookupId = JavaTokenId.IDENTIFIER;
                 case '"': // string literal
+                    if (lookupId == null) lookupId = JavaTokenId.STRING_LITERAL;
                     while (true)
                         switch (input.read()) {
                             case '"': // NOI18N
-                                return token(JavaTokenId.STRING_LITERAL);
+                                return token(lookupId);
                             case '\\':
                                 input.read();
                                 break;
                             case '\r': input.consumeNewline();
                             case '\n':
                             case EOF:
-                                return tokenFactory.createToken(JavaTokenId.STRING_LITERAL,
+                                return tokenFactory.createToken(lookupId, //XXX: \n handling for exotic identifiers?
                                         input.readLength(), PartType.START);
                         }
 

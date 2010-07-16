@@ -24,7 +24,7 @@
             <folder name="SOA">
                 <file name="emptyXsltpro.xml">
                     <attr name="template" boolvalue="true"/>
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="300"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xslt.project.wizard.NewXsltproProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.wizard.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xsltProjectIcon.png"/>
@@ -56,5 +56,9 @@
             <attr name="description" stringvalue="This is a xslt service engine."/>
             <attr name="type" stringvalue="Engine"/>
         </file>
+    </folder>
+
+    <folder name="xslt-project-resources">
+        <file name="catalog.xml" url="catalog.xml"/>
     </folder>
 </filesystem>

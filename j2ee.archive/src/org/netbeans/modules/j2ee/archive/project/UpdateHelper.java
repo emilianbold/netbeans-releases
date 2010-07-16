@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -277,7 +281,7 @@ public class UpdateHelper {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,DATA); //NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, ArchiveProjectType.PROJECT_CONFIGURATION_NS);
                 Element sourceRoots = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS,"source-roots");  //NOI18N
                 Element root = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,"root");   //NOI18N
                 root.setAttribute ("id","src.dir");   //NOI18N
@@ -294,7 +298,7 @@ public class UpdateHelper {
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,DATA); //NOI18N
-                    copyDocument (doc, oldRoot, newRoot);
+                    XMLUtil.copyDocument (oldRoot, newRoot, ArchiveProjectType.PROJECT_CONFIGURATION_NS);
                     cachedElement = updateMinAntVersion (newRoot, doc);
                 }
             }
@@ -317,38 +321,6 @@ public class UpdateHelper {
         return cachedProperties;
     }
 
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,newElement);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
-        }
-    }
     public static final String MINIMUM_ANT_VERSION = "1.6.5"; // NOI18N
     
     private static Element updateMinAntVersion (final Element root, final Document doc) {

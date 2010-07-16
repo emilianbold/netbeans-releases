@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,7 @@ import org.openide.util.WeakListeners;
  * @author vita
  */
 public abstract class IndexerCache <T> {
+    private static final RequestProcessor RP = new RequestProcessor("Indexer Cache"); // NOI18N
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -355,7 +359,7 @@ public abstract class IndexerCache <T> {
                 }
 
                 final boolean fastTrackOnly;
-                if (mimeTypesToCheck == null || mimeTypesToCheck.size() == 0) {
+                if (mimeTypesToCheck == null || mimeTypesToCheck.isEmpty()) {
                     mimeTypesToCheck = Util.getAllMimeTypes();
                     fastTrackOnly = false;
                 } else {
@@ -428,8 +432,8 @@ public abstract class IndexerCache <T> {
                 }
 
                 if (fastTrackOnly) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
+                    RP.post(new Runnable() {
+                        public @Override void run() {
                             resetCache();
                             getData(null);
                         }
@@ -511,11 +515,15 @@ public abstract class IndexerCache <T> {
             if (props != null) {
                 for (Map.Entry<Object, Object> entry : props.entrySet()) {
                     String indexerName = ((String) entry.getKey()).trim();
-                    int indexerVersion = 0;
+                    int indexerVersion = -1;
                     Set<String> indexerMimeTypes = new HashSet<String>();
                     String[] indexerData = ((String) entry.getValue()).trim().split(","); //NOI18N
                     if (indexerData.length > 0) {
-                        indexerVersion = Integer.parseInt(indexerData[0]);
+                        try {
+                            indexerVersion = Integer.parseInt(indexerData[0]);
+                        } catch (NumberFormatException nfe) {
+                            // ignore
+                        }
                         if (indexerData.length > 1) {
                             for (int i = 1; i < indexerData.length; i++) {
                                 String mimeType = indexerData[i];
@@ -618,6 +626,7 @@ public abstract class IndexerCache <T> {
         // LookupListener implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             task.schedule(0);
         }
@@ -626,6 +635,7 @@ public abstract class IndexerCache <T> {
         // PropertyChangeListener implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || EditorSettings.PROP_MIME_TYPES.equals(evt.getPropertyName())) {
                 task.schedule(123);
@@ -636,6 +646,7 @@ public abstract class IndexerCache <T> {
         // Runnable implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void run() {
             resetCache();
         }
@@ -645,7 +656,7 @@ public abstract class IndexerCache <T> {
         // --------------------------------------------------------------------
 
         private final Map<String, Lookup.Result<T>> results = new HashMap<String, Lookup.Result<T>>();
-        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private final RequestProcessor.Task task = RP.create(this);
 
     } // End of Tracker class
 
@@ -685,6 +696,7 @@ public abstract class IndexerCache <T> {
             orderByResolvers = order != null && order.size() > 0 ? order : null;
         }
 
+        @Override
         public int compare(IndexerInfo<T> o1, IndexerInfo<T> o2) {
             if (orderByResolvers != null) {
                 return compareByResolvers(o1, o2);

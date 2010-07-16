@@ -54,6 +54,12 @@ public class GraphView extends javax.swing.JPanel {
         this.add(BorderLayout.CENTER, this.mCanvas);
     }
 
+    public void cleanup() {
+	if(this.mCanvas != null) {
+	    this.mCanvas.cleanup();
+	}
+    }
+    
     public PlanCanvas getPlanCanvas() {
         return this.mCanvas;
     }

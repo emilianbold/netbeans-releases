@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -78,10 +80,12 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         this.isContainerManaged = Util.isContainerManaged(project);
     }
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public java.awt.Component getComponent() {
         if (panel == null) {
             if (isContainerManaged) {
@@ -92,6 +96,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
                 panel = jdbcPanel;
             }
             panel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -105,10 +110,12 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return panel;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new HelpCtx(PersistenceUnitWizardDescriptor.class);
     }
     
+    @Override
     public boolean isValid() {
         if (wizardDescriptor == null) {
             return true;
@@ -136,43 +143,52 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         project = Templates.getProject(wizardDescriptor);
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
     
+    @Override
     public void storeSettings(Object settings) {
     }
     
+    @Override
     public boolean isFinishPanel() {
         return isValid();
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
     
-    String getPersistenceUnitName() {
+    public String getPersistenceUnitName() {
         return panel.getPersistenceUnitName();
     }
     
-    DatabaseConnection getPersistenceConnection() {
+    public DatabaseConnection getPersistenceConnection() {
         return jdbcPanel == null ? null : jdbcPanel.getPersistenceConnection();
     }
     
-    String getDatasource() {
+    public String getDatasource() {
         return datasourcePanel == null ? null : datasourcePanel.getDatasource();
     }
+
+    public String getDBResourceSelection() {
+        return getPersistenceConnection()!=null ? getPersistenceConnection().getName() : getDatasource();
+    }
     
-    boolean isContainerManaged() {
+    public boolean isContainerManaged() {
         return isContainerManaged;
     }
     
-    boolean isJTA() {
+    public boolean isJTA() {
         return datasourcePanel == null ? false : datasourcePanel.isJTA();
     }
     
@@ -180,15 +196,15 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return datasourcePanel == null ? false : datasourcePanel.isNonDefaultProviderEnabled();
     }
     
-    String getNonDefaultProvider() {
+    public String getNonDefaultProvider() {
         return datasourcePanel == null ? null : datasourcePanel.getNonDefaultProvider();
     }
     
-    String getTableGeneration() {
+    public String getTableGeneration() {
         return panel.getTableGeneration();
     }
     
-    Provider getSelectedProvider(){
+    public Provider getSelectedProvider(){
         return panel.getSelectedProvider();
     }
 }

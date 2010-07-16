@@ -10,7 +10,7 @@ if [ -n "$2" ] && [ -n "$3" ] ; then
    doVerify=1
 fi
 
-javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
 unpackCommand="$javaPath/bin/unpack200"
 javaCommand="$javaPath/bin/java"
 packCommand="$javaPath/bin/pack200"
@@ -42,6 +42,15 @@ do
         echo "Packed file $f.pack(.gz) exists, skipping packing of the original file $f"
         continue
     fi
+    if [ -f `echo $f | sed 's/.jar/.jad/'` ] ; then
+        echo "Jar Descriptor (.jad) exists, skipping packing of the original file $f"
+        continue
+    fi
+    if [ 2 -eq `unzip -l "$f" 2>/dev/null | grep "META-INF/" | sed "s/.*META-INF\///g" | grep "\.SF\|\.RSA\|\.DSA"| wc -l` ] ; then
+        echo "Jar file $f is signed, skipping packing"
+        continue
+    fi
+
     echo Packing $f
     $packCommand -J-Xmx256m -g $f.pack $f
     if [ 0 -eq $? ] ; then

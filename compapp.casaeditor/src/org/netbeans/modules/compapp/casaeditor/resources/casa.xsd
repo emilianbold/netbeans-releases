@@ -11,9 +11,9 @@
     <xsd:complexType name="tConnection">
         <xsd:complexContent>
             <xsd:extension xmlns:tns="http://java.sun.com/xml/ns/casa" base="tns:tExtensible">
-                <xsd:attribute name="consumer" type="xsd:IDREF"/>
-                <xsd:attribute name="provider" type="xsd:IDREF"/>
-                <xsd:attribute name="state">
+                <xsd:attribute name="consumer" type="xsd:IDREF" use="required"/>
+                <xsd:attribute name="provider" type="xsd:IDREF" use="required"/>
+                <xsd:attribute name="state" use="required">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:string">
                             <xsd:enumeration value="deleted"/>
@@ -33,14 +33,14 @@
     <xsd:complexType name="tConsumes">
         <xsd:complexContent>
             <xsd:extension xmlns:tns="http://java.sun.com/xml/ns/casa" base="tns:tExtensible">
-                <xsd:attribute name="endpoint" type="xsd:IDREF"/>
+                <xsd:attribute name="endpoint" type="xsd:IDREF" use="required"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="tProvides">
         <xsd:complexContent>
             <xsd:extension xmlns:tns="http://java.sun.com/xml/ns/casa" base="tns:tExtensible">
-                <xsd:attribute name="endpoint" type="xsd:IDREF"/>
+                <xsd:attribute name="endpoint" type="xsd:IDREF" use="required"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -53,9 +53,17 @@
             <xsd:element name="consumes" type="tns:tConsumes"></xsd:element>
             <xsd:element name="provides" type="tns:tProvides"></xsd:element>
         </xsd:all>
-        <xsd:attribute name="x" type="xsd:int"/>
-        <xsd:attribute name="y" type="xsd:int"/>
+        <xsd:attribute name="x" type="xsd:int" use="required"/>
+        <xsd:attribute name="y" type="xsd:int" use="required"/>
         <xsd:attribute name="bindingType" type="xsd:string"/>
+        <xsd:attribute name="state" default="normal">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="deleted"/>
+                    <xsd:enumeration value="normal"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
     </xsd:complexType>
     <xsd:complexType name="tPorts">
         <xsd:sequence>
@@ -66,11 +74,11 @@
         <xsd:sequence>
             <xsd:element name="ports" type="tns:tPorts"></xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="artifacts-zip" type="xsd:string"/>
-        <xsd:attribute name="component-name" type="xsd:string"/>
-        <xsd:attribute name="description" type="xsd:string"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="unit-name" type="xsd:string"/>
+        <xsd:attribute name="artifacts-zip" type="xsd:string" use="required"/>
+        <xsd:attribute name="component-name" type="xsd:string" use="required"/>
+        <xsd:attribute name="description" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="unit-name" type="xsd:string" use="required"/>
     </xsd:complexType>
     <xsd:complexType name="tServiceEngineServiceUnit">
         <xsd:sequence maxOccurs="unbounded" minOccurs="0">
@@ -79,19 +87,19 @@
                 <xsd:element name="provides" type="tns:tProvides"></xsd:element>
             </xsd:choice>
         </xsd:sequence>
-        <xsd:attribute name="artifacts-zip" type="xsd:string"/>
-        <xsd:attribute name="component-name" type="xsd:string"/>
-        <xsd:attribute name="description" type="xsd:string"/>
-        <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="unit-name" type="xsd:string"/>
-        <xsd:attribute name="x" type="xsd:int"/>
-        <xsd:attribute name="y" type="xsd:int"/>
-        <xsd:attribute name="defined" type="xsd:boolean"/>
-        <xsd:attribute name="unknown" type="xsd:boolean"/>
-        <xsd:attribute name="internal" type="xsd:boolean"/>
+        <xsd:attribute name="artifacts-zip" type="xsd:string" use="required"/>
+        <xsd:attribute name="component-name" type="xsd:string" use="required"/>
+        <xsd:attribute name="description" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="unit-name" type="xsd:string" use="required"/>
+        <xsd:attribute name="x" type="xsd:int" use="required"/>
+        <xsd:attribute name="y" type="xsd:int" use="required"/>
+        <xsd:attribute name="defined" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="unknown" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="internal" type="xsd:boolean" use="required"/>
     </xsd:complexType>
     <xsd:complexType name="tRegion">
-        <xsd:attribute name="name">
+        <xsd:attribute name="name" use="required">
             <xsd:simpleType>
                 <xsd:restriction base="xsd:string">
                     <xsd:enumeration value="WSDL Endpoints"/>
@@ -100,7 +108,7 @@
                 </xsd:restriction>
             </xsd:simpleType>
         </xsd:attribute>
-        <xsd:attribute name="width" type="xsd:int"/>
+        <xsd:attribute name="width" type="xsd:int" use="required"/>
     </xsd:complexType>
     <xsd:complexType name="tRegions">
         <xsd:sequence>
@@ -123,10 +131,13 @@
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="tEndpoint">
-        <xsd:attribute name="name" type="xsd:ID"/>
-        <xsd:attribute name="endpoint-name" type="xsd:NCName"/>
-        <xsd:attribute name="interface-name" type="xsd:QName"/>
-        <xsd:attribute name="service-name" type="xsd:QName"/>
+        <xsd:attribute name="name" type="xsd:ID" use="required"/>
+        <xsd:attribute name="endpoint-name" type="xsd:NCName" use="required"/>
+        <xsd:attribute name="interface-name" type="xsd:QName" use="required"/>
+        <xsd:attribute name="service-name" type="xsd:QName" use="required"/>
+        <xsd:attribute name="display-name" type="xsd:string"/>
+        <xsd:attribute name="file-path" type="xsd:string"/>
+        <xsd:attribute name="process-name" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="tEndpoints">
         <xsd:sequence>
@@ -151,6 +162,8 @@
             <xsd:element name="services" type="tns:tServices"></xsd:element>
             <xsd:element name="regions" type="tns:tRegions"></xsd:element>
         </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:decimal" default="1.0"/>
     </xsd:complexType>
     <xsd:element name="casa" type="tns:tCasa"></xsd:element>
 </xsd:schema>
+

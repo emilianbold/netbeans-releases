@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,7 @@ import org.openide.util.Utilities;
  * This class represents a pin widget in the VMD plug-in.
  *
  * @author David Kaspar
+ * @author Jun Qian
  */
 public abstract class CasaPinWidget extends ErrableWidget {
     
@@ -102,8 +106,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
         mPinImage = pinImage;
         mClassicPinImage = classicPinImage;
         
-        mImageWidget = new ImageWidget(scene);
-        mImageWidget.setImage(getPinImage());
+        mImageWidget = new ImageWidget(scene, getPinImage());
         
         setOpaque(false);
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
@@ -142,8 +145,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
             mImageWidget.setImage(originalImage);
         }
     }
-    
-    
+        
     /**
      * Called to notify about the change of the widget state.
      * @param previousState the previous state
@@ -197,7 +199,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
      * @param name the pin name
      * @param glyphs the pin glyphs
      */
-    public void setProperties (String name) {
+    public void setProperties(String name) {
         setPinName(name);
     }
     
@@ -232,10 +234,10 @@ public abstract class CasaPinWidget extends ErrableWidget {
         }
     }
     
-    private Image createHighlightedImage(Image src) {
+    private static Image createHighlightedImage(Image src) {
         RescaleOp convolution = new RescaleOp(HIGHLIGHT_LIGHT_FACTOR, 0, null);
         BufferedImage bs = toBufferedImage(src);
-	return convolution.filter(bs, bs);
+        return convolution.filter(bs, bs);
     }
     
     private static final BufferedImage toBufferedImage(Image img) {
@@ -266,6 +268,6 @@ public abstract class CasaPinWidget extends ErrableWidget {
                 null);
         
         return buffImage;
-    }
+    }    
     
 }

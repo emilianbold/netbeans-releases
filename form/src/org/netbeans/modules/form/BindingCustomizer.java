@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -293,6 +296,7 @@ public class BindingCustomizer extends JPanel {
                 null
             );
             tabbedPane.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     dd.setHelpCtx(new HelpCtx((tabbedPane.getSelectedIndex() == 1) ?
                         "gui.binding-customizer.advanced" : "gui.binding-customizer.basic")); // NOI18N
@@ -354,6 +358,7 @@ public class BindingCustomizer extends JPanel {
     private void initButtons(ResourceBundle bundle) {
         okButton = new JButton(bundle.getString("MSG_BindingCustomizer_OK")); // NOI18N
         okButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 if (getBindingFromUI()) {
                     oldNullValue = null;
@@ -1062,10 +1067,12 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                     null);
             final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
             new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         final RADComponent data = task.get();
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 if (data != null) {
                                     // refresh source components combo
@@ -1193,6 +1200,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
      * Comparator of <code>RADComponent</code>s.
      */
     private static class RADComponentComparator implements Comparator<RADComponent> {
+        @Override
         public int compare(RADComponent o1, RADComponent o2) {
             String name1 = o1.getName();
             String name2 = o2.getName();
@@ -1375,6 +1383,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
            this.treeModel = treeModel;
        }
        
+        @Override
         public String pathToString(TreePath path) {
             StringBuilder sb = new StringBuilder();
             Object[] items = path.getPath();
@@ -1388,6 +1397,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             return "null".equals(value) ? "null" : BindingDesignSupport.elWrap(sb.toString()); // NOI18N
         }
         
+        @Override
         public TreePath stringToPath(String value) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeModel.getRoot();
             if (BindingDesignSupport.isSimpleExpression(value)) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
-import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
@@ -67,15 +69,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.openide.util.Cancellable;
 
@@ -103,7 +109,7 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
     public ToggleButtonModel ENABLE_DEPRECATION_BUTTON_MODEL;
     public ToggleButtonModel SIGN_JAR_BUTTON_MODEL;
     public Document KEYSTORE_DOCUMENT;
-    private StoreGroup group = new StoreGroup();
+    private JCStoreGroup group = new JCStoreGroup();
     private StoreGroup passwordsGroup = new StoreGroup();
 
     public JCProjectProperties(JCProject project) {
@@ -132,7 +138,11 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
         GENERATE_DEBUG_INFO_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_JAVAC_DEBUG);
         ENABLE_DEPRECATION_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_JAVAC_DEPRECATION);
         SIGN_JAR_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_SIGN_JAR);
-        KEYSTORE_DOCUMENT = group.createStringDocument(eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH);
+        KEYSTORE_DOCUMENT = group.createResolvingDocument(eval,
+                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH,
+                JavacardPlatformKeyNames.PLATFORM_HOME,
+                JavacardPlatformKeyNames.PLATFORM_RI_HOME,
+                "basedir"); //NOI18N
         KEYSTORE_ALIAS_DOCUMENT = group.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS);
         KEYSTORE_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD);
         KEYSTORE_ALIAS_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD);
@@ -299,22 +309,25 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
         }
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private void storeRoots(SourceRoots roots, DefaultTableModel tableModel, EditableProperties props) throws MalformedURLException {
-        Vector data = tableModel.getDataVector();
+        Vector<?> data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String[] rootLabels = new String[data.size()];
         for (int i = 0; i < data.size(); i++) {
-            File f = (File) ((Vector<Object>) data.elementAt(i)).elementAt(0);
+            Vector<?> v = (Vector<?>) data.elementAt(i);
+            File f = (File) v.elementAt(0);
             rootURLs[i] = getRootURL(f, null);
-            rootLabels[i] = (String) ((Vector<Object>) data.elementAt(i)).elementAt(1);
+            rootLabels[i] = (String) v.elementAt(1);
         }
         roots.putRoots(rootURLs, rootLabels);
         String[] rootPropertyNames = roots.getRootProperties();
         FileObject[] rootFolders = roots.getRoots();
-        assert rootPropertyNames.length == rootFolders.length;
+        //rootPropertyNames will contain anything starting with "src." - this can include unrelated stuff
+        //key off rootFolders, not rootPropertyNames
         List <Integer> foreignRootIndices = new LinkedList<Integer>();
         FileObject projectDir = project.getProjectDirectory();
-        for (int i=0; i < rootPropertyNames.length; i++) {
+        for (int i=0; i < rootFolders.length; i++) {
             String rootProp = rootPropertyNames[i];
             if (FileUtil.isParentOf(projectDir, rootFolders[i])) {
                 String relPath = FileUtil.getRelativePath(projectDir, rootFolders[i]);

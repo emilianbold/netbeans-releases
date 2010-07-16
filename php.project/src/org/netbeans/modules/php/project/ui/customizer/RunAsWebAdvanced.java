@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,6 +66,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -69,8 +76,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -124,6 +129,7 @@ public class RunAsWebAdvanced extends JPanel {
         pathMappingTable.addMouseListener(new LocalPathCellMouseListener(pathMappingTable));
 
         ActionListener debugUrlListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 validateFields();
             }
@@ -132,23 +138,28 @@ public class RunAsWebAdvanced extends JPanel {
         askUrlRadioButton.addActionListener(debugUrlListener);
         doNotOpenBrowserRadioButton.addActionListener(debugUrlListener);
         pathMappingTableModel.addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 handleButtonStates();
                 validateFields();
             }
         });
         pathMappingTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 handleButtonStates();
             }
         });
         DocumentListener defaultDocumentListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -395,24 +406,80 @@ public class RunAsWebAdvanced extends JPanel {
         proxyPortLabel = new JLabel();
         proxyPortTextField = new JTextField();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return removePathMappingButton;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return removePathMappingButton;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return proxyPortTextField;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  removePathMappingButton){
+                    return proxyHostTextField;
+                }
+                if(aComponent ==  newPathMappingButton){
+                    return removePathMappingButton;
+                }
+                if(aComponent ==  proxyHostTextField){
+                    return proxyPortTextField;
+                }
+                if(aComponent ==  defaultUrlRadioButton){
+                    return askUrlRadioButton;
+                }
+                if(aComponent ==  askUrlRadioButton){
+                    return doNotOpenBrowserRadioButton;
+                }
+                if(aComponent ==  doNotOpenBrowserRadioButton){
+                    return newPathMappingButton;
+                }
+                return removePathMappingButton;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  proxyHostTextField){
+                    return removePathMappingButton;
+                }
+                if(aComponent ==  removePathMappingButton){
+                    return newPathMappingButton;
+                }
+                if(aComponent ==  proxyPortTextField){
+                    return proxyHostTextField;
+                }
+                if(aComponent ==  askUrlRadioButton){
+                    return defaultUrlRadioButton;
+                }
+                if(aComponent ==  doNotOpenBrowserRadioButton){
+                    return askUrlRadioButton;
+                }
+                if(aComponent ==  newPathMappingButton){
+                    return doNotOpenBrowserRadioButton;
+                }
+                return proxyPortTextField;//end getComponentBefore
+
+            }}
+        );
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
-
         Mnemonics.setLocalizedText(debugUrlLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.text")); // NOI18N
+
         debugUrlButtonGroup.add(defaultUrlRadioButton);
         defaultUrlRadioButton.setSelected(true);
-
         Mnemonics.setLocalizedText(defaultUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.text")); // NOI18N
+
         defaultUrlPreviewLabel.setLabelFor(defaultUrlRadioButton);
-
         Mnemonics.setLocalizedText(defaultUrlPreviewLabel, "dummy"); // NOI18N
+
         debugUrlButtonGroup.add(askUrlRadioButton);
-
         Mnemonics.setLocalizedText(askUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.text")); // NOI18N
-        debugUrlButtonGroup.add(doNotOpenBrowserRadioButton);
 
+        debugUrlButtonGroup.add(doNotOpenBrowserRadioButton);
         Mnemonics.setLocalizedText(doNotOpenBrowserRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.text")); // NOI18N
+
         pathMappingLabel.setLabelFor(pathMappingTable);
 
         Mnemonics.setLocalizedText(pathMappingLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.text"));
@@ -438,7 +505,6 @@ public class RunAsWebAdvanced extends JPanel {
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
 
-
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
@@ -446,9 +512,10 @@ public class RunAsWebAdvanced extends JPanel {
         });
         Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
-        proxyHostLabel.setLabelFor(proxyHostTextField);
 
+        proxyHostLabel.setLabelFor(proxyHostTextField);
         Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text")); // NOI18N
+
         proxyPortLabel.setLabelFor(proxyPortTextField);
 
         Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
@@ -458,71 +525,71 @@ public class RunAsWebAdvanced extends JPanel {
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(removePathMappingButton)
-                            .add(newPathMappingButton)))
-                    .add(debugUrlLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(defaultUrlRadioButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(defaultUrlPreviewLabel))
-                    .add(askUrlRadioButton)
-                    .add(doNotOpenBrowserRadioButton)
-                    .add(pathMappingLabel)
-                    .add(pathMappingInfoLabel)
-                    .add(proxyLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(proxyHostLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyPortLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(removePathMappingButton)
+                            .addComponent(newPathMappingButton)))
+                    .addComponent(debugUrlLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultUrlRadioButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(defaultUrlPreviewLabel))
+                    .addComponent(askUrlRadioButton)
+                    .addComponent(doNotOpenBrowserRadioButton)
+                    .addComponent(pathMappingLabel)
+                    .addComponent(pathMappingInfoLabel)
+                    .addComponent(proxyLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(proxyHostLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyPortLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        layout.linkSize(new Component[] {newPathMappingButton, removePathMappingButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {newPathMappingButton, removePathMappingButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(debugUrlLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(defaultUrlRadioButton)
-                    .add(defaultUrlPreviewLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(askUrlRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(doNotOpenBrowserRadioButton)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(pathMappingLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(newPathMappingButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removePathMappingButton))
-                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(pathMappingInfoLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(proxyLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(proxyHostLabel)
-                    .add(proxyPortLabel)
-                    .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(debugUrlLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultUrlRadioButton)
+                    .addComponent(defaultUrlPreviewLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(askUrlRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(doNotOpenBrowserRadioButton)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(pathMappingLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(newPathMappingButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removePathMappingButton))
+                    .addComponent(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(pathMappingInfoLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(proxyLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(proxyHostLabel)
+                    .addComponent(proxyPortLabel)
+                    .addComponent(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -632,6 +699,7 @@ public class RunAsWebAdvanced extends JPanel {
 
     private final class LocalPathCellRenderer implements TableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             LocalPathCell localPathCell = (LocalPathCell) value;
             // #164688 - sorry, no idea how this can happen

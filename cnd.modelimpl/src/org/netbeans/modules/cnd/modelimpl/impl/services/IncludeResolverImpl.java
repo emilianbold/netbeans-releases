@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -65,7 +69,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -159,16 +163,20 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     public String getIncludeDirective(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-            if (file.equals(currentFile) || file.isHeaderFile()) {
-                return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
-            } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
-                if (!decls.isEmpty()) {
-                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+            if (file != null) {
+                if (file.equals(currentFile) || file.isHeaderFile()) {
+                    return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
+                } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                    if (!decls.isEmpty()) {
+                        return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                    }
                 }
+            } else {
+                System.err.println("can not find for item " + item); // NOI18N;
             }
         } else if (!CsmKindUtilities.isNamespace(item)) {
-            System.err.println("not yet handled object " + item);
+            System.err.println("not yet handled object " + item); // NOI18N;
         }
         return ""; // NOI18N
     }
@@ -204,7 +212,8 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         if (CsmKindUtilities.isOffsetable(item)) {
             if (currentFile instanceof FileImpl) {
                 NativeFileItem nativeFile = ((FileImpl) currentFile).getNativeFileItem();
-                String incFilePath = ((CsmOffsetable) item).getContainingFile().getAbsolutePath().toString();
+                CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+                String incFilePath = incFile.getAbsolutePath().toString();
 
                 StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
 
@@ -219,7 +228,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         String bestSystemPath = getRelativePath(nativeFile.getSystemIncludePaths(), incFilePath);
                         if (!bestSystemPath.equals("")) { // NOI18N
                             includeDirective.append("<"); // NOI18N
-                            includeDirective.append(IpeUtils.toRelativePath(bestSystemPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(bestSystemPath, incFilePath));
                             includeDirective.append(">"); // NOI18N
                             return includeDirective.toString();
                         }
@@ -232,9 +241,9 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         }
                         String bestUserPath = getRelativePath(nativeFile.getUserIncludePaths(), incFilePath);
                         if (bestUserPath.length() < projectPath.length()) {
-                            includeDirective.append(IpeUtils.toRelativePath(projectPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
                         } else {
-                            includeDirective.append(IpeUtils.toRelativePath(bestUserPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(bestUserPath, incFilePath));
                         }
                         if (!bestUserPath.equals("") || !projectPath.equals("")) // NOI18N
                         {
@@ -260,6 +269,52 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
+    @Override
+    public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+        if (CsmKindUtilities.isOffsetable(item)) {
+            CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+            if (incFile != null) {
+                if (incFile.isHeaderFile()) {
+                    return getLocalIncludeDerectiveByHeaderFilePath(path, item).replace('\\', '/'); // NOI18N;
+                } else if (incFile.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    Collection<CsmOffsetableDeclaration> decls = incFile.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                    if (!decls.isEmpty()) {
+                        return getLocalIncludeDerectiveByHeaderFilePath(path, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                    }
+                } else if (incFile.isSourceFile() && CsmKindUtilities.isFunctionDefinition(item)) {
+                    return getLocalIncludeDerectiveByHeaderFilePath(path, ((CsmFunction) item).getDeclaration()).replace('\\', '/'); // NOI18N;
+                }
+            } else {
+                System.err.println("can not find for item " + item); // NOI18N;
+            }
+        } else if (!CsmKindUtilities.isNamespace(item)) {
+            System.err.println("not yet handled object " + item); // NOI18N;
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLocalIncludeDerectiveByHeaderFilePath(String path, CsmObject item) {
+        CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+        if(incFile.isHeaderFile()) {
+            String incFilePath = incFile.getAbsolutePath().toString();
+
+            StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
+            includeDirective.append("\""); // NOI18N
+            String projectPath = path;
+            if (!incFilePath.startsWith(projectPath)) {
+                projectPath = ""; // NOI18N
+            }
+            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
+            if (!projectPath.equals("")) // NOI18N
+            {
+                includeDirective.append("\""); // NOI18N
+                return includeDirective.toString();
+            }
+        }
+        return "";
+    }
+
+    
     // Returns relative path for file from list of paths
     private String getRelativePath(List<String> paths, String filePath) {
         String goodPath = ""; // NOI18N

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.openide.explorer.TTVEnvBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
+import org.netbeans.swing.outline.OutlineModel;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -366,7 +370,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         return nullPanel;
     }
 
-    private PropertyPanel editor=null;
+    protected PropertyPanel editor=null;
     private PropertyPanel getEditor(Property p, Node n) {
         int prefs = PropertyPanel.PREF_TABLEUI;
 
@@ -763,6 +767,52 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                         outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
                     }
                 });
+            }
+        }
+        
+        // PropUtils
+        static final boolean psCommitOnFocusLoss = !Boolean.getBoolean("netbeans.ps.NoCommitOnFocusLoss");  // NOI18N
+
+        @Override
+        public boolean stopCellEditing() {
+            InplaceEditor inplaceEditor = editor.getInplaceEditor();
+            if (inplaceEditor != null) {
+                //JTable with client property terminateEditOnFocusLost will try to
+                //update the value.  That's not what we want, as it means you can
+                //have a partial value, open a custom editor and get an error because
+                //the table tried to write the partial value, when it lost focus
+                //to a custom editor.
+                if (!/*PropUtils.*/psCommitOnFocusLoss) {
+                    Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+                    if (
+                        (!(c instanceof JTable)) && (!inplaceEditor.isKnownComponent(c)) &&
+                            (c != inplaceEditor.getComponent())
+                    ) {
+                        // Focused component is unknown - discarding
+                        return false;
+                    }
+                }
+                editor.commit();
+            }
+
+            PropertiesRowModel prm = null;
+            if (outline instanceof OutlineView.OutlineViewOutline) {
+                OutlineView.OutlineViewOutline ovo = (OutlineView.OutlineViewOutline) outline;
+                prm = ovo.getRowModel();
+            }
+            if (prm != null) {
+                // See PropertiesRowModel.setValueFor()
+                // Intentionally do nothing when the cell editor components are
+                // PropertyPanels that will propagate the change into the target
+                // property object - no need to do anything in the set value method.
+                prm.setIgnoreSetValue(true);
+            }
+            try {
+                return super.stopCellEditing();
+            } finally {
+                if (prm != null) {
+                    prm.setIgnoreSetValue(false);
+                }
             }
         }
         @Override

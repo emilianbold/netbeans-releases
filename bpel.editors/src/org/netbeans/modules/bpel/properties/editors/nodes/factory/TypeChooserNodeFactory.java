@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.properties.editors.nodes.factory;
 
-import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.soa.ui.axinodes.AxiomChildren;
 import org.netbeans.modules.soa.ui.axinodes.AxiomTreeNodeFactory;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
@@ -39,12 +38,19 @@ import org.netbeans.modules.bpel.nodes.children.SchemaImportsChildren;
 import org.netbeans.modules.bpel.nodes.children.WsdlImportsChildren;
 import org.netbeans.modules.bpel.properties.Constants.StereotypeFilter;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
+import org.netbeans.modules.xml.reference.ReferenceChild;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -151,6 +157,7 @@ public class TypeChooserNodeFactory implements NodeFactory<NodeType> {
                 }
                 return newNode;
             case WSDL_FILE:
+            case FAULT_MESSAGE:
                 assert ref instanceof WSDLModel;
                 WSDLModel wsdlModel = (WSDLModel)ref;
                 //
@@ -192,10 +199,42 @@ public class TypeChooserNodeFactory implements NodeFactory<NodeType> {
 //            case GLOBAL_SIMPLE_TYPE:
 //                newNode = myDelegate.createNode(nodeType, ref, lookup);
 //                return newNode;
+            case REFERENCED_RESOURCE:
+                assert ref instanceof ReferenceChild;
+                //
+                FileObject fileObj = ((ReferenceChild) ref).getFileObject();
+
+                if (fileObj == null) {
+                    return myDelegate.createNode(nodeType, ref, lookup);
+                }
+                String extension = fileObj.getExt();
+
+                if (ReferenceUtil.XSD.equalsIgnoreCase(extension)) {
+                    ModelSource modelSource = Utilities.getModelSource(
+                            fileObj, true);
+                    if (modelSource != null) {
+                        SchemaModel xsdModel = SchemaModelFactory.getDefault().
+                                getModel(modelSource);
+                        if (xsdModel != null) {
+                            children = new SchemaCategoriesChildren(xsdModel, lookup);
+                        }
+                    }
+                } else if (ReferenceUtil.WSDL.equalsIgnoreCase(extension)) {
+                    ModelSource modelSource = Utilities.getModelSource(
+                            fileObj, true);
+                    if (modelSource != null) {
+                        WSDLModel wModel = WSDLModelFactory.getDefault().
+                                getModel(modelSource);
+                        if (wModel != null) {
+                            children = new WsdlTypesChildren(wModel, lookup);
+                        }
+                    }
+                }
+                newNode = myDelegate.createNode(nodeType, ref, children, lookup);
+                return newNode;
             default:
                 newNode = myDelegate.createNode(nodeType, ref, lookup);
                 return newNode;
         }
     }
-    
 }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -335,7 +338,7 @@ made subject to such option by the copyright holder.
             <li>
                 <api group="java" name="Ant" type="import" category="third" url="http://ant.apache.org/">
                     Ant itself, of course.
-                    1.5.3+ is required, 1.7.1 recommended (and currently bundled); some features may be limited to newer versions.
+                    1.5.3+ is required, 1.8.1 recommended (and currently bundled); some features may be limited to newer versions.
                 </api>
             </li>
         </ol>
@@ -482,7 +485,7 @@ made subject to such option by the copyright holder.
                     <code>InstalledFileLocator</code> is used to find
                     <code>ant/lib/ant.jar</code> and the default Ant installation
                     is taken to be the parent directory of the containing directory
-                    of this (e.g. <code>ide5/ant/</code>).
+                    of this (e.g. <code>ide/ant/</code>).
                 </p>
                 <p>
                     If any files <code>ant/patches/*.jar</code> exist, they are

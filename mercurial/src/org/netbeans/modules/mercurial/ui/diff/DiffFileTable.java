@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,10 +62,32 @@ import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Component;
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
+import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.mercurial.ui.status.OpenInEditorAction;
+import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Mnemonics;
+import org.openide.awt.MouseUtils;
+import org.openide.cookies.EditorCookie;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 
 /**
  * 
@@ -73,7 +98,15 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     private NodeTableModel tableModel;
     private JTable table;
     private JScrollPane     component;
-    private Node [] nodes = new Node[0];
+    private DiffNode [] nodes = new DiffNode[0];
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private EditorCookie[] editorCookies;
     
     private String []   tableColumns; 
     private TableSorter sorter;
@@ -122,6 +155,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     };
     private final MultiDiffPanel master;
+    private PropertyChangeListener changeListener;
 
     public DiffFileTable(MultiDiffPanel master) {
         this.master = master;
@@ -130,7 +164,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         sorter.setColumnComparator(Node.Property.class, DiffFileTable.NodeComparator);
         table = new SortedTable(sorter);
         table.getSelectionModel().addListSelectionListener(this);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
@@ -139,7 +173,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new DiffTableCellRenderer());
-        table.getSelectionModel().addListSelectionListener(this);
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffFileTable.class, "ACSN_DiffTable")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffFileTable.class, "ACSD_DiffTable")); // NOI18N
@@ -227,9 +260,51 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         tableModel.setProperties(properties);
     }
 
-    void setTableModel(Node [] nodes) {
-        this.nodes = nodes;
-        tableModel.setNodes(nodes);
+    void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
+        this.editorCookies = editorCookies;
+        tableModel.setNodes(nodes = setupsToNodes(setups));
+        changeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                Object source = e.getSource();
+                String propertyName = e.getPropertyName();
+                if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
+                        && (source instanceof EditorCookie.Observable)) {
+                    statusModifiedChanged((EditorCookie.Observable) source);
+                }
+            }
+        };
+        for (EditorCookie editorCookie : this.editorCookies) {
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(WeakListeners.propertyChange(changeListener, editorCookie));
+            }
+        }
+    }
+
+    /**
+     * Updates the corresponding table row - makes the file name bold or plain,
+     * depending on the new <em>modified</em> state of the corresponing file.
+     *
+     * @param  editorCookie  {@code EditorCookie} that fired the change
+     *                       if <em>modified</em> status
+     */
+    private void statusModifiedChanged(EditorCookie editorCookie) {
+        int index = CollectionUtils.findInArray(editorCookies, editorCookie);
+
+        if (index == -1) {
+            return;
+        }
+
+        tableModel.fireTableChanged(
+              new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
+    }
+
+    private static DiffNode[] setupsToNodes(Setup[] setups) {
+        DiffNode[] nodes = new DiffNode[setups.length];
+        for (int i = 0; i < setups.length; i++) {
+            nodes[i] = setups[i].getNode();
+        }
+        return nodes;
     }
 
     void focus() {
@@ -289,21 +364,80 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // invoke later so the selection on the table will be set first
-//                JPopupMenu menu = getPopup();
-//                menu.show(table, e.getX(), e.getY());
+                JPopupMenu menu = getPopup();
+                menu.show(table, e.getX(), e.getY());
             }
         });
     }
 
     private void showPopup(Point p) {
-//        JPopupMenu menu = getPopup();
-//        menu.show(table, p.x, p.y);
+        JPopupMenu menu = getPopup();
+        menu.show(table, p.x, p.y);
     }
 
     private JPopupMenu getPopup() {
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
+
+        item = menu.add(new OpenInEditorAction());
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+
+        menu.addSeparator();
+        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class),
+                                               ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(null) ?
+                                               actionString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
+                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+
+        boolean allLocallyDeleted = true;
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        Set<File> files = HgUtils.getCurrentContext(null).getRootFiles();
+
+        for (File file : files) {
+            FileInformation info = cache.getStatus(file);
+            if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                allLocallyDeleted = false;
+            }
+        }
+        if (allLocallyDeleted) {
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete"))); //NOI18N
+        } else {
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean"))); //NOI18N
+        }
+        Mnemonics.setLocalizedText(item, item.getText());
+
+        item = menu.add(new AbstractAction(actionString("CTL_PopupMenuItem_ExportDiffChanges")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SystemAction.get(ExportDiffChangesAction.class).performContextAction(null, true);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+
+        String label;
+        ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+        if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
+            label = actionString("CTL_PopupMenuItem_IncludeInCommit");  //NOI18N
+        } else {
+            label = actionString("CTL_PopupMenuItem_ExcludeFromCommit"); //NOI18N
+        }
+        item = menu.add(new SystemActionBridge(exclude, label));
+        Mnemonics.setLocalizedText(item, item.getText());
+
         return menu;
+    }
+
+    /**
+     * Workaround.
+     * I18N Test Wizard searches for keys in syncview package Bundle.properties
+     */
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(MercurialAnnotator.class);
+        return actionsLoc.getString(key);
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -325,7 +459,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     }
 
     public void mouseClicked(MouseEvent e) {
-/*
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
             if (row == -1) return;
@@ -336,26 +469,55 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         }
-*/
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
-        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
-        if (tc == null) return; // table is no longer in component hierarchy
-        master.setSelectedIndex(table.getSelectedRow());
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
+        ListSelectionModel selectionModel = table.getSelectionModel();
+        int min = selectionModel.getMinSelectionIndex();
+        int max = selectionModel.getMaxSelectionIndex();
+        if (min != -1 && min == max) {
+            // single selection
+            master.tableRowSelected(table.getSelectedRow());
+        } else {
+            List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
+            if (min != -1) {
+                for (int i = min; i <= max; i++) {
+                    if (selectionModel.isSelectedIndex(i)) {
+                        int idx = sorter.modelIndex(i);
+                        selectedNodes.add(nodes[idx]);
+                    }
+                }
+            }
+            final TopComponent tc = (TopComponent) master.getClientProperty(TopComponent.class);
+            if (tc == null) return; // table is no longer in component hierarchy
+            Node [] nodesToActivate = selectedNodes.toArray(new Node[selectedNodes.size()]);
+            tc.setActivatedNodes(nodesToActivate);
+        }
     }
     
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
             if (modelColumnIndex == 0) {
-                Node node = nodes[sorter.modelIndex(row)];
-                if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                int modelRow = sorter.modelIndex(row);
+                String htmlDisplayName
+                       = DiffUtils.getHtmlDisplayName(nodes[modelRow],
+                                                      isModified(modelRow),
+                                                      isSelected);
+                if (HgModuleConfig.getDefault().isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getAbsolutePath())) {
+                    htmlDisplayName = "<s>" + (htmlDisplayName == null ? nodes[modelRow].getName() : htmlDisplayName) + "</s>"; //NOI18N
+                }
+                if (htmlDisplayName != null) {
+                    value = "<html>" + htmlDisplayName;                 //NOI18N
                 }
             }
             if (modelColumnIndex == 2) {
@@ -369,6 +531,11 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
+        }
+
+        private boolean isModified(int row) {
+            EditorCookie editorCookie = editorCookies[row];
+            return (editorCookie != null) ? editorCookie.isModified() : false;
         }
     }
 }

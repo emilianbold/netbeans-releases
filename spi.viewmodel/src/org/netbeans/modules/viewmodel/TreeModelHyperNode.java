@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.datatransfer.Transferable;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,12 +53,14 @@ import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -91,16 +97,71 @@ public class TreeModelHyperNode extends TreeModelNode {
     }
 
     @Override
-    protected void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
+    protected void refreshTheChildren(Set<Models.CompoundModel> models, TreeModelChildren.RefreshingInfo refreshInfo) {
         //System.err.println("HYPER node: refreshTheChildren("+model+", "+refreshInfo+")");
         //Thread.dumpStack();
         Children ch = getChildren();
         if (ch instanceof TreeModelChildren) {
             HyperModelChildren hch = (HyperModelChildren) ch;
             //hch.cleanCachedChildren(model);
-            hch.refreshChildren(hch.new HyperRefreshingInfo(refreshInfo, model));
+            hch.refreshChildren(hch.new HyperRefreshingInfo(refreshInfo, models));
         } else {
             setChildren(new HyperModelChildren (this.model, treeModelRoot, object));
+        }
+    }
+
+    @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
+        //System.err.println("\nTreeModelHyperNode.getDropType("+model+", \n"+action+", "+index+")");
+        if (index < 0) {
+            // Drop to an area outside models. Try to find some that accepts it:
+            PasteType p;
+            CompoundModel mm = model.getMain();
+            try {
+                p = mm.getDropType(object, t, action, index);
+            } catch (UnknownTypeException e) {
+                p = null;
+            }
+            if (p == null) {
+                for (CompoundModel m : model.getModels()) {
+                    if (m != mm) {
+                        try {
+                            p = m.getDropType(object, t, action, index);
+                            if (p != null) break;
+                        } catch (UnknownTypeException ex) {
+                        }
+                    }
+                }
+            }
+            //System.err.println("  PasteType = "+p+"\n");
+            return p;
+        } else {
+            // Drop between nodes of some model.
+            PasteType p = null;
+            HyperModelChildren hch = (HyperModelChildren) getChildren();
+            int index1 = (index > 0) ? index - 1 : index; // node above
+            int[] modelIndexPtr = new int[] { -1 };
+            CompoundModel cm1 = hch.getRootModelByIndex(index1, modelIndexPtr);
+            if (cm1 != null) {
+                try {
+                    if (index1 < index) modelIndexPtr[0]++;
+                    //System.err.println("\nTreeModelHyperNode.getDropType("+cm1+", \n"+action+", "+modelIndexPtr[0]+")");
+                    p = cm1.getDropType(object, t, action, modelIndexPtr[0]);
+                } catch (UnknownTypeException e) {
+                }
+            }
+            if (p == null && index1 < index) { // node below
+                CompoundModel cm2 = hch.getRootModelByIndex(index, modelIndexPtr);
+                if (cm2 != null && cm2 != cm1) {
+                    try {
+                        //System.err.println("\nTreeModelHyperNode.getDropType("+cm2+", \n"+action+", "+modelIndexPtr[0]+")");
+                        p = cm2.getDropType(object, t, action, modelIndexPtr[0]);
+                    } catch (UnknownTypeException e) {
+                    }
+                }
+            }
+            //System.err.println("  PasteType = "+p+"\n");
+            return p;
         }
     }
 
@@ -109,6 +170,7 @@ public class TreeModelHyperNode extends TreeModelNode {
         private HyperCompoundModel model;
         private final java.util.Map<Object, Models.CompoundModel> rootModelsByChildren = new HashMap<Object, Models.CompoundModel>();
         private final java.util.Map<Models.CompoundModel, Object[]> rootChildrenByModels = new HashMap<Models.CompoundModel, Object[]>();
+        private final int[] rootModelIndexes; // Children indexes of root models. First is 0.
 
         public HyperModelChildren (
             HyperCompoundModel model,
@@ -117,6 +179,7 @@ public class TreeModelHyperNode extends TreeModelNode {
         ) {
             super(null, model.getColumns(), treeModelRoot, object);
             this.model = model;
+            this.rootModelIndexes = new int[model.getModels().length + 1];
         }
 
         // TODO: Run children of individual models according to individual asynchronous specifications
@@ -143,6 +206,16 @@ public class TreeModelHyperNode extends TreeModelNode {
             return exec;
         }
 
+        CompoundModel getRootModelByIndex(int index, int[] modelIndexPtr) {
+            for (int i = 1; i < rootModelIndexes.length; i++) {
+                if (rootModelIndexes[i] > index) {
+                    modelIndexPtr[0] = index - rootModelIndexes[i - 1];
+                    return model.getModels()[i - 1];
+                }
+            }
+            return null;
+        }
+
         @Override
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
             if (refreshInfo instanceof HyperRefreshingInfo) {
@@ -153,6 +226,7 @@ public class TreeModelHyperNode extends TreeModelNode {
             }
             Object[] ch = null;
             TreeModelFilter tf = model.getTreeFilter();
+            int i = 0, totalCount = 0;
             for (Models.CompoundModel m : model.getModels()) {
                 Object[] mch;
                 synchronized (rootChildrenByModels) {
@@ -184,6 +258,8 @@ public class TreeModelHyperNode extends TreeModelNode {
                         rootChildrenByModels.put(m, mch);
                     }
                 }
+                rootModelIndexes[i++] = totalCount;
+                totalCount += mch.length;
                 if (ch == null) {
                     ch = mch;
                 } else {
@@ -194,6 +270,7 @@ public class TreeModelHyperNode extends TreeModelNode {
                     ch = nch;
                 }
             }
+            rootModelIndexes[i] = totalCount;
             return ch;
         }
 
@@ -254,6 +331,7 @@ public class TreeModelHyperNode extends TreeModelNode {
                 treeModelRoot,
                 object
             );
+            //System.err.println("created node for ("+object+") = "+tmn);
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
@@ -271,10 +349,9 @@ public class TreeModelHyperNode extends TreeModelNode {
 
             private final Set<Models.CompoundModel> models;
 
-            public HyperRefreshingInfo(RefreshingInfo ri, Models.CompoundModel model) {
+            public HyperRefreshingInfo(RefreshingInfo ri, Set<Models.CompoundModel> models) {
                 super(ri.refreshSubNodes);
-                this.models = new HashSet<Models.CompoundModel>();
-                this.models.add(model);
+                this.models = models;
             }
 
             @Override

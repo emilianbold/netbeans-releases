@@ -37,8 +37,8 @@ import org.netbeans.modules.bpel.design.model.elements.ContentElement;
 import org.netbeans.modules.bpel.design.model.elements.ProcessBorder;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.nodes.synchronizer.ModelSynchronizer;
-import org.netbeans.modules.bpel.nodes.synchronizer.SynchronisationListener;
+import org.netbeans.modules.soa.ui.nodes.synchronizer.ModelSynchronizer;
+import org.netbeans.modules.soa.ui.nodes.synchronizer.SynchronisationListener;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
@@ -219,13 +219,16 @@ public class PartnerlinkPattern extends CompositePattern implements Synchronisat
         if (role == null) {
             return;
         }
-
         String roleName = role.getName();
+
         if (roleName == null) {
             return;
         }
-        //
-
+        // # 168027
+        // # 168092
+        if (myRole != null && myRole.get() == null) {
+            return;
+        }
         boolean isMyRole = false;
 
         if (myRole != null) {
@@ -233,22 +236,19 @@ public class PartnerlinkPattern extends CompositePattern implements Synchronisat
         } else if (partnerRole != null) {
             isMyRole = !partnerRole.references(role);
         } else {
-            //ignore PLs which have no roles settings;
+            // ignore PLs which have no roles settings;
             return;
         }
-
         NamedComponentReference<PortType> ptReference = role.getPortType();
+
         if (ptReference == null) {
             return;
         }
-        //
         PortType ptype = ptReference.get();
+
         if (ptype == null) {
             return;
         }
-
-
-        //
         for (Operation op : ptype.getOperations()) {
             VisualElement e = (isMyRole)
                     ? new InvokeOperationElement()

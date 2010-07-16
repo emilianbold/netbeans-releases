@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,23 +42,14 @@
 
 package org.netbeans;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ClassLoader;
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -69,12 +63,7 @@ public class ArchiveTest extends NbTestCase {
 
     private File jar;
     private Module module;
-    
-    
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(ArchiveTest.class);
-    }
+    private CharSequence log;
     
     public ArchiveTest(String testName) {
         super(testName);
@@ -85,8 +74,8 @@ public class ArchiveTest extends NbTestCase {
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
-        ide = new File(install, "ide8");
+        platform = new File(install, "platform");
+        ide = new File(install, "ide");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());
@@ -94,7 +83,8 @@ public class ArchiveTest extends NbTestCase {
         System.setProperty("netbeans.user", userdir.getPath());
         
         jar = createModule("org.openide.sample", platform,
-            "Class-Path", "ext/non-existant.jar",
+            "Class-Path", "ext/non-existent.jar",
+            "OpenIDE-Module-Public-Packages", "-",
             "OpenIDE-Module", "org.openide.sample"
         );
         MockModuleInstaller installer = new MockModuleInstaller();
@@ -102,6 +92,7 @@ public class ArchiveTest extends NbTestCase {
         ModuleManager mgr = new ModuleManager(installer, ev);
         mgr.mutexPrivileged().enterWriteAccess();
         module = mgr.create(jar, null, false, false, false);
+        log = Log.enable("org.netbeans", Level.WARNING);
         mgr.enable(module);
         mgr.mutexPrivileged().exitWriteAccess();
 
@@ -126,10 +117,9 @@ public class ArchiveTest extends NbTestCase {
         assertNull("Resource not found", l.getResource("fake/not-org.openide.sample"));
         assertNull("Resource not found", l.getResource("default.properties"));
 
-        CharSequence log = Log.enable("org.netbeans", Level.WARNING);
         JarClassLoader.saveArchive();
         Stamps.getModulesJARs().waitFor(false);
-        if (log.length() > 0) {
+        if (log.length() > 0) { // #159093
             fail("There shall be no warning even if the Class-Path file is not existent:\n" + log);
         }
     }

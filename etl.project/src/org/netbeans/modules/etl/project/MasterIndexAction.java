@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,12 +82,12 @@ public class MasterIndexAction  extends CallableSystemAction {
     ArrayList childrenForeignKey = new ArrayList();
     ArrayList orderByFields = new ArrayList();
     private static transient final Logger mLogger = Logger.getLogger(MasterIndexAction.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
     private static String objDefn = null;
     
     @Override
     public void performAction() {
-        mLogger.infoNoloc(mLoc.t("Generating Schema ... "));
+        mLogger.infoNoloc(Localizer.get().t("Generating Schema ... "));
         //System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
         dialog.setVisible(true);
@@ -102,11 +105,11 @@ public class MasterIndexAction  extends CallableSystemAction {
                 dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
             }
             String msg = "Generated the Schema Successfully";
-            mLogger.infoNoloc(mLoc.t(msg));            
+            mLogger.infoNoloc(Localizer.get().t(msg));            
             //JOptionPane.showMessageDialog(new JFrame(), msg, "Generate Schema", JOptionPane.INFORMATION_MESSAGE);
         }else{
             String errMsg = "The dialog is cancelled or any one of the fields are empty";
-            mLogger.infoNoloc(mLoc.t(errMsg));
+            mLogger.infoNoloc(Localizer.get().t(errMsg));
             //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -128,11 +131,11 @@ public class MasterIndexAction  extends CallableSystemAction {
             DocumentBuilder root = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             docroot = root.parse(CONFIG_DIR + fs + OBJECTDEF).getDocumentElement();
         } catch (SAXException ex) {
-            mLogger.infoNoloc(mLoc.t("SAX Exception : " + CONFIG_DIR + fs + OBJECTDEF));
+            mLogger.infoNoloc(Localizer.get().t("SAX Exception : " + CONFIG_DIR + fs + OBJECTDEF));
         } catch (IOException ex) {
-            mLogger.infoNoloc(mLoc.t("Cannot I/O document : " + CONFIG_DIR + fs + OBJECTDEF));
+            mLogger.infoNoloc(Localizer.get().t("Cannot I/O document : " + CONFIG_DIR + fs + OBJECTDEF));
         } catch (ParserConfigurationException ex) {
-            mLogger.infoNoloc(mLoc.t("Cannot Parse document : " + CONFIG_DIR + fs + OBJECTDEF));
+            mLogger.infoNoloc(Localizer.get().t("Cannot Parse document : " + CONFIG_DIR + fs + OBJECTDEF));
         }
 
         // Parse Relations

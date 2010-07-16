@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -108,6 +111,7 @@ public class LocalHistory {
     private final Set<File> touchedFiles = new HashSet<File>();
     
     private LocalHistoryVCS lhvcs;
+    private RequestProcessor parallelRP;
 
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
@@ -145,7 +149,7 @@ public class LocalHistory {
         if(s != null) {
             getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        getParallelRequestProcessor().post(new Runnable() {
             public void run() {                       
                 setRoots(OpenProjects.getDefault().getOpenProjects());                                
                 OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(openProjectsListener, null));                                  
@@ -312,7 +316,7 @@ public class LocalHistory {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
                 final Project[] projects = (Project[]) evt.getNewValue();
-                RequestProcessor.getDefault().post(new Runnable() {
+                getParallelRequestProcessor().post(new Runnable() {
                     public void run() {               
                         setRoots(projects);
                     }
@@ -393,6 +397,13 @@ public class LocalHistory {
         sb.append('\t');
         sb.append(Thread.currentThread().getName());            
         LocalHistory.LOG.fine(sb.toString()); // NOI18N
+    }
+
+    public RequestProcessor getParallelRequestProcessor() {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("LocalHistory.ParallelTasks", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
 
     private class OpenedFilesListener implements PropertyChangeListener {

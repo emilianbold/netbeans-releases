@@ -29,11 +29,16 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
+import org.netbeans.modules.iep.project.ui.customizer.IepProjectCustomizerProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -53,9 +58,9 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -72,7 +77,7 @@ import org.w3c.dom.Text;
  */
 public final class IepProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/iep/project/ui/resources/iepProject.gif", false); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/iep/project/ui/resources/iepProject.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
 
@@ -127,7 +132,7 @@ public final class IepProject implements Project, AntProjectListener {
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IepProjectLogicalViewProvider.class, "LBL_Node_Sources"); //NOI18N
 
@@ -138,7 +143,11 @@ public final class IepProject implements Project, AntProjectListener {
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", 
                 org.netbeans.modules.xml.catalogsupport.ProjectConstants.SOURCES_TYPE_XML,
                 srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -156,6 +165,8 @@ public final class IepProject implements Project, AntProjectListener {
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
+            new IcanproProjectEncodingQueryImpl(evaluator()),
+            sourcesHelper.createSources(),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
                 new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
@@ -318,13 +329,42 @@ public final class IepProject implements Project, AntProjectListener {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-
+                    ep.setProperty("netbeans.buildnumber", System.getProperty("netbeans.buildnumber"));
+                    
+                    
                     File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
                     if (f != null) {
                         ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
                     }
 
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    
+                    
+                    // Add project encoding for old projects
+                  EditableProperties projectEP = helper.getProperties(
+                                  AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                  if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                      projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
+                              // FIXME: maybe we should use Charset.defaultCharset() instead?
+                              // See comments in IcanproProjectEncodingQueryImpl.java
+                              FileEncodingQuery.getDefaultEncoding().name());
+                  } 
+                  
+                  //Add allow.build.with.error for old projects
+                   if (projectEP.getProperty(org.netbeans.modules.iep.project.ProjectConstants.ALLOW_BUILD_WITH_ERROR) == null) {
+                      projectEP.setProperty(org.netbeans.modules.iep.project.ProjectConstants.ALLOW_BUILD_WITH_ERROR,
+                              "false");
+                  }
+                  
+                  //Add always.generate.abstract.wsdl for old projects
+                   if (projectEP.getProperty(org.netbeans.modules.iep.project.ProjectConstants.ALWAYS_GENERATE_ABSTRACT_WSDL) == null) {
+                      projectEP.setProperty(org.netbeans.modules.iep.project.ProjectConstants.ALWAYS_GENERATE_ABSTRACT_WSDL,
+                              "false");
+                  }
+                  
+                  helper.putProperties(
+                          AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+                  
                     try {
                         ProjectManager.getDefault().saveProject(IepProject.this);
                     } catch (IOException e) {
@@ -383,7 +423,8 @@ public final class IepProject implements Project, AntProjectListener {
         };
 
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/SOA_IEP/EventProcess.iep",
+            "Templates/SOA_IEP/EventProcessor.iep", // NOI18N
+            "Templates/XML/WSDL.wsdl",            // NOI18N
         };
 
         public String[] getRecommendedTypes() {

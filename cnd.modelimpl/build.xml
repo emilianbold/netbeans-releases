@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -65,6 +68,14 @@ made subject to such option by the copyright holder.
 
         <property name="antlr.apt.grammar.dir" location="../cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support"/>
         <property name="antlr.apt.output.dir" location="${antlr.apt.grammar.dir}/generated"/>
+
+         <!-- Expression evaluator -->
+        <property name="antlr3.evaluator.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser/generated"/>
+        <property name="antlr3.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr3.jar"/>
+        <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
+
+         <!-- Open Fortran Parser -->
+         <property name="open.fortran.parser.src.dir" location="external"/>
     </target>
     
     <target name="clean" depends="projectized-common.clean, init-antlr">
@@ -76,14 +87,17 @@ made subject to such option by the copyright holder.
             <fileset dir="${antlr.folding.dir}" includes="CPPFolding*"/>
         </delete>   
 		-->
+
+        <delete dir="${antlr3.evaluator.output.dir}"/>
     </target>
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
-        <!-- CPP grammar -->
         <mkdir dir="${antlr.output.dir}"/>
         <copy file="${antlr.apt.output.dir}/APTTokenTypes.txt"
-                    todir="${antlr.output.dir}" 
-                    overwrite="true"/>        
+                    todir="${antlr.output.dir}"
+                    overwrite="true"/>
+
+        <!-- CPP grammar -->
         <!--
         <antlr target="${antlr.grammar.dir}/cppparser.g"
             outputdirectory="${antlr.output.dir}" traceParser="no">
@@ -96,7 +110,77 @@ made subject to such option by the copyright holder.
             <!--<arg value="-traceParser"/>-->
             <arg value="${antlr.grammar.dir}/cppparser.g"/>
             <classpath path="${antlr.jar}"/>
-        </java>        
+        </java>
+
+        <!-- Vocab for Antlr 3 -->
+        <mkdir dir="${antlr.output.dir}"/>
+        <copy file="${antlr.apt.output.dir}/APTTokenTypes.txt"
+                    tofile="${antlr.output.dir}/APTTokenTypes.tokens"
+                    overwrite="true"/>
+
+        <replaceregexp file="${antlr.output.dir}/APTTokenTypes.tokens"
+            match='(.*)=".*"(.*)' replace="\1\2" flags="g" />
+        <replaceregexp file="${antlr.output.dir}/APTTokenTypes.tokens"
+            match='//.*'
+            replace="" />
+        <replaceregexp file="${antlr.output.dir}/APTTokenTypes.tokens"
+            match='APTGenerated    // output token vocab name'
+            replace="" />
+
+        <concat destfile="${antlr.output.dir}/APTTokenTypes.tokens2">
+            <fileset dir= "${antlr.output.dir}" includes="APTTokenTypes.tokens"/>
+            <filterchain>
+                <tokenfilter><ignoreblank/></tokenfilter>
+            </filterchain>
+        </concat>
+        <move file="${antlr.output.dir}/APTTokenTypes.tokens2"
+            tofile="${antlr.output.dir}/APTTokenTypes.tokens"
+            overwrite="true" />
+
+        <!-- Fortran grammar -->
+
+        <echo message="Extracting Open Fortran Parser" />
+        <unzip src="${open.fortran.parser.src.dir}/open-fortran-parser-0.7.1.2.zip"
+            dest="${antlr.grammar.dir}"/>
+
+        <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
+        <java classname="org.antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${antlr.output.dir}"/>
+            <arg value="${antlr.grammar.dir}/FortranParser.g"/>
+            <classpath path="${antlr3.jar}"/>
+        </java>
+
+        <replaceregexp file="${antlr.output.dir}/FortranParser.java"
+            match='^public class FortranParser (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser \1'
+            flags="mg" />
+        <replaceregexp file="${antlr.output.dir}/FortranParser_FortranParser2.java"
+            match='^public class FortranParser_FortranParser2 (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser_FortranParser2 \1'
+            flags="mg" />
+
+        <!-- Expression evaluator -->
+        <mkdir dir="${antlr3.evaluator.output.dir}"/>
+        <copy file="${antlr.output.dir}/APTTokenTypes.tokens"
+                    tofile="${antlr3.evaluator.output.dir}/APTTokenTypes.tokens"
+                    overwrite="true"/>
+
+        <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
+        <java classname="org.antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${antlr3.evaluator.output.dir}"/>
+            <arg value="${antlr3.evaluator.grammar.dir}/Evaluator.g"/>
+            <classpath path="${antlr3.jar}"/>
+        </java>
+
+        <replaceregexp file="${antlr3.evaluator.output.dir}/EvaluatorParser.java"
+            match='^public class EvaluatorParser (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class EvaluatorParser \1'
+            flags="mg" />
+
+        <delete file="${antlr3.evaluator.output.dir}/EvaluatorLexer.java" />
+
     </target>
     
     <target name="do-test-build" depends="-build-cnd-tests,projectized-common.do-test-build">

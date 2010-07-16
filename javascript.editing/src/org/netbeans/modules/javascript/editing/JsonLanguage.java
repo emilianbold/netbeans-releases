@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,17 +42,49 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.IndexSearcher;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 /**
  * Configuration for JSON
  *
  * @author Tor Norbye
  */
-public class JsonLanguage extends JsLanguage {
+@LanguageRegistration(mimeType="text/x-json") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=JsClassPathProvider.BOOT_CP, binaryLibraryPathIds={})
+public class JsonLanguage extends DefaultLanguageConfig {
+
+    public JsonLanguage() {
+        JsLanguage.registerJsClassPathIfNeeded();
+    }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return JsUtils.getLineCommentPrefix();
+    }
+
+    @Override
+    public boolean isIdentifierChar(char c) {
+        return JsUtils.isIdentifierChar(c);
+    }
+
+    @Override
+    public Language getLexerLanguage() {
+        return JsTokenId.language();
+    }
 
     @Override
     public String getDisplayName() {
@@ -62,19 +97,39 @@ public class JsonLanguage extends JsLanguage {
     }
 
     @Override
-    public boolean hasStructureScanner() {
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(JsClassPathProvider.BOOT_CP);
+    }
+
+    // Service Registrations
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new JsKeystrokeHandler();
+    }
+
+    @Override
+    public boolean hasFormatter() {
         return true;
     }
 
     @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        // No JSON indexing
-        return null;
+    public Formatter getFormatter() {
+        return new JsFormatter();
     }
 
     @Override
-    public IndexSearcher getIndexSearcher() {
-        return null;
+    public Parser getParser() {
+        return new JsParser();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsCodeCompletion();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override
@@ -83,7 +138,22 @@ public class JsonLanguage extends JsLanguage {
     }
 
     @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new JsOccurrenceFinder();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsRenameHandler();
     }
 }

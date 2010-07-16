@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,15 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Data model used across the <em>New Module Installer</em>.
@@ -54,6 +60,8 @@ import org.openide.filesystems.FileObject;
 final class DataModel extends BasicWizardIterator.BasicDataModel {
 
     static final String OPENIDE_MODULE_INSTALL = "OpenIDE-Module-Install"; // NOI18N
+    static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; // NOI18N
+    static final String IMPORT_PACKAGE = "Import-Package"; // NOI18N
     private static final String INSTALLER_CLASS_NAME = "Installer"; // NOI18N
     
     private CreatedModifiedFiles cmf;
@@ -71,6 +79,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     private void regenerate() {
         cmf = new CreatedModifiedFiles(getProject());
+
+        boolean osgi = false;
+        try {
+            osgi = getProject().getLookup().lookup(NbModuleProvider.class).hasDependency("org.netbeans.libs.osgi"); // NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         // obtain unique class name
         String className = INSTALLER_CLASS_NAME;
@@ -87,15 +102,25 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         basicTokens.put("CLASS_NAME", className); // NOI18N
         // XXX use nbresloc URL protocol rather than
         // DataModel.class.getResource(...) and all such a cases below
-        FileObject template = CreatedModifiedFiles.getTemplate("moduleInstall.java"); // NOI18N
+        FileObject template;
+        if (osgi) {
+            template = CreatedModifiedFiles.getTemplate("moduleActivator.java"); // NOI18N
+        } else {
+            template = CreatedModifiedFiles.getTemplate("moduleInstall.java"); // NOI18N
+            cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N
+            cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        }
         cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
         
-        cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         
         // add manifest attribute
         Map<String, String> attribs = new HashMap<String, String>();
-        attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
+        if (osgi) {
+            attribs.put(BUNDLE_ACTIVATOR, getPackageName() + '.' + className);
+            attribs.put(IMPORT_PACKAGE, "org.osgi.framework"); // NOI18N
+        } else {
+            attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
+        }
         cmf.add(cmf.manifestModification(null, attribs));
     }
     

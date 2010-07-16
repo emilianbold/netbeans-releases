@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,10 +55,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 import org.openide.windows.IOProvider;
 import org.openide.windows.OutputWriter;
@@ -63,7 +64,6 @@ import org.openide.windows.OutputWriter;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -74,9 +74,10 @@ import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectActionPerformer;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
+import org.openide.util.ImageUtilities;
 
 /**
- * DOCUMENT ME!
+ * Container node for JBI Modules.
  *
  * @author 
  * @version 
@@ -147,30 +148,16 @@ public class JbiModuleViewNode extends AbstractNode {
             children.addNotify();
         }
 
-    //JbiModuleViewChildren ch = new JbiModuleViewChildren(project.getProjectProperties());
-    //this.setChildren(ch);
-    // ch.addNotify();
+        //JbiModuleViewChildren ch = new JbiModuleViewChildren(project.getProjectProperties());
+        //this.setChildren(ch);
+        //ch.addNotify();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param type DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param type DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
@@ -191,14 +178,24 @@ public class JbiModuleViewNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         ResourceBundle bundle = NbBundle.getBundle(JbiModuleViewNode.class);
-        int actCnt = 0;
-        Action[] actions = null;
-        Action addJBIModule = new AbstractAction(bundle.getString("LBL_AddProjectAction_Name"), null) {
 
+        List<Action> actions = new ArrayList<Action>();
+
+        Action addJBIModuleAction = new AbstractAction(
+                bundle.getString("LBL_AddProjectAction_Name"), null) { // NOI18N
             public void actionPerformed(ActionEvent e) {
-                new AddProjectAction().perform(project);
+                new AddProjectAction(true).perform(project);
             }
         };
+        actions.add(addJBIModuleAction);
+
+        Action addExternalJBIModuleAction = new AbstractAction(
+                bundle.getString("LBL_AddExternalProjectAction_Name"), null) { // NOI18N
+            public void actionPerformed(ActionEvent e) {
+                new AddProjectAction(false).perform(project);
+            }
+        };
+        actions.add(addExternalJBIModuleAction);
 
         // Add Actions added by other modules.        
         JbiInstalledProjectPluginInfo plugins = JbiInstalledProjectPluginInfo.getProjectPluginInfo();
@@ -216,47 +213,25 @@ public class JbiModuleViewNode extends AbstractNode {
             }
 
             if (pluginActions.size() > 0) {
-                actions = new Action[pluginActions.size() + 1];
-                actions[actCnt++] = addJBIModule;
                 for (final JbiProjectActionPerformer act : pluginActions) {
-                    actions[actCnt++] = new AbstractAction( act.getLabel() 
-
-                           , 
-                            act.getIcon()
-                        
-                    
-                
-            
-        
-           ) {
-
+                    actions.add(new AbstractAction(act.getLabel(), act.getIcon()) {
                         public void actionPerformed(ActionEvent e) {
                             act.perform(project);
                         }
-                    };
+                    });
                 }
             }
         }
 
-        if (actions == null) {
-            actions = new Action[1];
-            actions[0] = addJBIModule;
-        }
-
-        return actions;
+        return actions.toArray(new Action[0]);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
 
-    // When you have help, change to:
-    // return new HelpCtx(LogicalViewNode.class);
+        // When you have help, change to:
+        // return new HelpCtx(LogicalViewNode.class);
     }
 
     private void log(String str) {

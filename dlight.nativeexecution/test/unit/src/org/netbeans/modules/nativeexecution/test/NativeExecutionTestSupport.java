@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -113,24 +117,25 @@ public class NativeExecutionTestSupport {
                     defaultTestExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
                 }
                 if (defaultTestExecutionEnvironment != null) {
-                    if (connect) {
-                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd, false);
-                    } else if(passwd != null && passwd.length > 0) {
-                        PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd, false);
+                    if(passwd != null && passwd.length > 0) {
+                        PasswordManager.getInstance().storePassword(defaultTestExecutionEnvironment, passwd, false);
                     }
+                    
+                    if (connect) {
+                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment);
+                    } 
                 }
             }
         }
         return defaultTestExecutionEnvironment;
     }
 
-    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException {
-        ExecutionEnvironment result = null;
+    private interface UsetrInfoProcessor {
+        /** @return true to proceed, false to cancel */
+        boolean processLine(String spec, ExecutionEnvironment env, char[] passwd);
+    }
 
-        if (mspec == null) {
-            return null;
-        }
-
+    private static void processTestUserInfo(UsetrInfoProcessor processor) throws IOException {
         String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
         File userInfoFile = null;
 
@@ -145,7 +150,7 @@ public class NativeExecutionTestSupport {
         }
 
         if (userInfoFile == null || ! userInfoFile.exists()) {
-            return null;
+            return;
         }
 
         BufferedReader rcReader = new BufferedReader(new FileReader(userInfoFile));
@@ -166,36 +171,72 @@ public class NativeExecutionTestSupport {
                 continue;
             }
 
-            if (mspec.equals(spec)) {
-                m = pwdPattern.matcher(loginInfo);
-                String remoteHKey = null;
+            m = pwdPattern.matcher(loginInfo);
+            String remoteHKey = null;
 
-                if (m.matches()) {
-                    passwd = m.group(2).toCharArray();
-                    remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N                    
-                } else {
-                    remoteHKey = loginInfo;
-                }
+            if (m.matches()) {
+                passwd = m.group(2).toCharArray();
+                remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N
+            } else {
+                remoteHKey = loginInfo;
+            }
 
-                result = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+            if (!processor.processLine(spec, env, passwd)) {
                 break;
             }
         }
-
-        if (result != null) {
-            if (passwd != null) {
-                PasswordManager.getInstance().put(result, passwd, false);
-            }
-            //ConnectionManager.getInstance().connectTo(result, passwd, false);
-        }
-
-        spec2env.put(mspec, result);
-        env2spec.put(result, mspec);
-        return result;
     }
 
+    public static ExecutionEnvironment getTestExecutionEnvironment(final String mspec) throws IOException {
+        if (mspec == null) {
+            return null;
+        }
+        final AtomicReference<ExecutionEnvironment> result = new AtomicReference<ExecutionEnvironment>();
+        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        processTestUserInfo(new UsetrInfoProcessor() {
+            @Override
+            public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {
+                if (mspec.equals(spec)) {
+                    result.set(e);
+                    passwd.set(p);
+                    return false;
+                }
+                return true;
+            }
+        });
+        if (result.get() != null) {
+            if (passwd.get() != null) {
+                PasswordManager.getInstance().storePassword(result.get(), passwd.get(), false);
+            }
+        }
+
+        spec2env.put(mspec, result.get());
+        env2spec.put(result.get(), mspec);
+        return result.get();
+    }
+
+    public static char[] getTestPassword(final ExecutionEnvironment env) throws IOException {
+        if (env == null) {
+            return null;
+        }
+        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        processTestUserInfo(new UsetrInfoProcessor() {
+            @Override
+            public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {
+                if (env.equals(e)) {
+                    passwd.set(p);
+                    return false;
+                }
+                return true;
+            }
+        });
+        return passwd.get();
+    }
+
+
     /**
-     * Gets an MSpec string, which was used for getting the given environent
+     * Gets an MSpec string, which was used for getting the given environment
      * (i.e. it's an inverse of getTestExecutionEnvironment(String))
      */
     public static String getMspec(ExecutionEnvironment execEnv) {

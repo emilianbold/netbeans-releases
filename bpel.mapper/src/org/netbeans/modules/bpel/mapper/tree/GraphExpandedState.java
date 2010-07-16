@@ -23,6 +23,8 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.RightTree;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperSwingTreeModel;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperTreeNode;
 
 /**
  *

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,6 @@ import javax.swing.text.Element;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
 
@@ -238,26 +240,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return getFixLineSyntaxState().getSyntaxUpdateTokenList();
     }
     
-    public String getDrawLayerName() {
-        if (getType() != DocumentEvent.EventType.CHANGE) {
-            throw new IllegalStateException("Can be called for CHANGE events only."); // NOI18N
-        }
-
-        DrawLayerChange dlc = (DrawLayerChange)findEdit(DrawLayerChange.class);
-
-        return (dlc != null) ? dlc.getDrawLayerName() : null;
-    }
-
-    public int getDrawLayerVisibility() {
-        if (getType() != DocumentEvent.EventType.CHANGE) {
-            throw new IllegalStateException("Can be called for CHANGE events only."); // NOI18N
-        }
-
-        DrawLayerChange dlc = (DrawLayerChange)findEdit(DrawLayerChange.class);
-
-        return (dlc != null) ? dlc.getDrawLayerVisibility() : -1;
-    }
-
     /** Whether this event is being fired because it's being undone. */
     public boolean isInUndo() {
         return inUndo;
@@ -268,7 +250,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return inRedo;
     }
 
-    public void undo() throws CannotUndoException {
+    public @Override void undo() throws CannotUndoException {
         BaseDocument doc = (BaseDocument)getDocument();
         doc.incrementDocVersion();
 
@@ -283,7 +265,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         boolean modFinished = false;
 
         // Super of undo()
-        doc.extWriteLock(); // call this extWriteLock() instead of writeLock()
+        doc.atomicLockImpl();
         try {
             if (!canUndo()) {
                 throw new CannotUndoException();
@@ -313,22 +295,22 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             } else {
                 doc.fireChangedUpdate(this);
             }
+
+            if (previous != null) {
+                previous.undo();
+            }
         } finally {
-            doc.extWriteUnlock(); // call this extWriteUnlock() instead of writeUnlock()
+            doc.atomicUnlockImpl(false);
             if (notifyMod) {
                 doc.notifyModifyCheckEnd(modFinished);
             }
+            inUndo = false;
         }
         // End super of undo()
 
-        if (previous != null) {
-            previous.undo();
-        }
-
-        inUndo = false;
     }
 
-    public void redo() throws CannotRedoException {
+    public @Override void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
         doc.incrementDocVersion();
         
@@ -339,16 +321,20 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             throw new CannotRedoException();
         }
 
+        // Must atomicLock() since otherwise if "previous" is a compound edit
+        // then it would do atomic lock and then atomic unlock which would think
+        // that it's lastAtomic so it would clear the STATUS var but because of that
+        // doc.notifyModifyCheckEnd(modFinished); here would fail with NPE.
+
+        doc.atomicLockImpl();
         inRedo = true;
-        if (previous != null) {
-            previous.redo();
-        }
-
         boolean modFinished = false; // Whether modification succeeded
-
-        // Super of redo()
-        doc.extWriteLock(); // call this extWriteLock() instead of writeLock()
         try {
+            if (previous != null) {
+                previous.redo();
+            }
+
+            // Super of redo()
 
             if (!canRedo()) {
                 throw new CannotRedoException();
@@ -376,7 +362,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 doc.fireChangedUpdate(this);
             }
         } finally {
-            doc.extWriteUnlock(); // call this extWriteUnlock() instead of writeUnlock()
+            doc.atomicUnlockImpl(false);
             if (notifyMod) {
                 doc.notifyModifyCheckEnd(modFinished);
             }
@@ -386,7 +372,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         inRedo = false;
     }
 
-    public boolean addEdit(UndoableEdit anEdit) {
+    public @Override boolean addEdit(UndoableEdit anEdit) {
         // Super of addEdit()
 
         // if the number of changes gets too great, start using
@@ -458,7 +444,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         }
     }
 
-    public boolean canUndo() {
+    public @Override boolean canUndo() {
         // Super of canUndo
 	return !inProgress2 && alive2 && hasBeenDone2
         // End super of canUndo
@@ -470,24 +456,24 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
      * 
      * @see	#isInProgress
      */
-    public boolean canRedo() {
+    public @Override boolean canRedo() {
         // Super of canRedo
 	return !inProgress2 && alive2 && !hasBeenDone2;
         // End super of canRedo
     }
 
-    public boolean isInProgress() {
+    public @Override boolean isInProgress() {
         // Super of isInProgress()
         return inProgress2;
         // End super of isInProgress()
     }
 
-    public String getUndoPresentationName() {
-        return "";
+    public @Override String getUndoPresentationName() {
+        return ""; //NOI18N
     }
 
-    public String getRedoPresentationName() {
-        return "";
+    public @Override String getRedoPresentationName() {
+        return ""; //NOI18N
     }
 
     /** Returns true if this event can be merged by the previous
@@ -532,7 +518,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     * parts (words) and undoing/redoing them at once.
     * This method returns true whether 
     */
-    public boolean replaceEdit(UndoableEdit anEdit) {
+    public @Override boolean replaceEdit(UndoableEdit anEdit) {
         BaseDocument doc = (BaseDocument)getDocument();
         if (anEdit instanceof BaseDocument.AtomicCompoundEdit) {
             BaseDocument.AtomicCompoundEdit compEdit
@@ -557,7 +543,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return false;
     }
 
-    public void die() {
+    public @Override void die() {
         // Super of die()
 	int size = edits.size();
 	for (int i = size-1; i >= 0; i--)
@@ -575,13 +561,13 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         }
     }
 
-    public void end() {
+    public @Override void end() {
         // Super of end()
 	inProgress2 = false;
         // End super of end()
     }
 
-    public DocumentEvent.ElementChange getChange(Element elem) {
+    public @Override DocumentEvent.ElementChange getChange(Element elem) {
         // Super of getChange()
         if (changeLookup2 != null) {
             return (DocumentEvent.ElementChange) changeLookup2.get(elem);
@@ -601,33 +587,11 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     }
 
 
-    public String toString() {
+    public @Override String toString() {
         return System.identityHashCode(this) + " " + super.toString() // NOI18N
                + ", type=" + getType() // NOI18N
                + ((getType() != DocumentEvent.EventType.CHANGE)
                   ? ("text='" + getText() + "'") : ""); // NOI18N
     }
 
-    /** Edit describing the change of the document draw-layers */
-    static class DrawLayerChange extends AbstractUndoableEdit {
-
-        String drawLayerName;
-
-        int drawLayerVisibility;
-
-        DrawLayerChange(String drawLayerName, int drawLayerVisibility) {
-            this.drawLayerName = drawLayerName;
-            this.drawLayerVisibility = drawLayerVisibility;
-        }
-
-        public String getDrawLayerName() {
-            return drawLayerName;
-        }
-
-        public int getDrawLayerVisibility() {
-            return drawLayerVisibility;
-        }
-
-    }
-    
 }

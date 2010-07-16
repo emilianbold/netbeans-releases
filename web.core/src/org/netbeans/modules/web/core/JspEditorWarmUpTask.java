@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -66,7 +67,6 @@ import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.core.palette.JspPaletteFactory;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -229,63 +229,66 @@ public class JspEditorWarmUpTask implements Runnable{
                     try {
                         final View rootView = Utilities.getDocumentView(pane);
                         LockView lockView = LockView.get(rootView);
-                        lockView.lock();
-                        try {
-                            int viewCount = rootView.getViewCount();
 
-                            // Force switch the line views from estimated spans to exact measurements
-                            Runnable resetChildrenEstimatedSpans = new Runnable() {
-                                public void run() {
-                                    int cnt = rootView.getViewCount();                            
-                                    for (int j = 0; j < cnt; j++) {
-                                        View v = rootView.getView(j);
-                                        if (v instanceof EstimatedSpanView) {
-                                            ((EstimatedSpanView)v).setEstimatedSpan(false);
+                        if (lockView != null){
+                            lockView.lock();
+                            try {
+                                int viewCount = rootView.getViewCount();
+
+                                // Force switch the line views from estimated spans to exact measurements
+                                Runnable resetChildrenEstimatedSpans = new Runnable() {
+                                    public void run() {
+                                        int cnt = rootView.getViewCount();
+                                        for (int j = 0; j < cnt; j++) {
+                                            View v = rootView.getView(j);
+                                            if (v instanceof EstimatedSpanView) {
+                                                ((EstimatedSpanView)v).setEstimatedSpan(false);
+                                            }
                                         }
                                     }
+                                };
+                                if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
+                                    ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
+                                        renderWithUpdateLayout(resetChildrenEstimatedSpans);
+                                } else { // not specialized instance => run normally
+                                    resetChildrenEstimatedSpans.run();
                                 }
-                            };
-                            if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
-                                ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
-                                    renderWithUpdateLayout(resetChildrenEstimatedSpans);
-                            } else { // not specialized instance => run normally
-                                resetChildrenEstimatedSpans.run();
-                            }
 
-                            // Get child allocation for each line
-                            for (int j = 0; j < viewCount; j++) {
-                                Rectangle alloc = new Rectangle(0, 0,
-                                    (int)rootView.getPreferredSpan(View.X_AXIS),
-                                    (int)rootView.getPreferredSpan(View.Y_AXIS)
-                                );
-                                rootView.getChildAllocation(j, alloc);
-                            }
-
-                            // Test modelToView and viewToModel
-                            if (false) { // Disabled because of #
-                                float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
-                                float maybeLineSpan = rootViewYSpan / viewCount;
-                                Point point = new Point();
-                                point.x = 5; // likely somewhere inside the first char on the line
+                                // Get child allocation for each line
                                 for (int j = 0; j < viewCount; j++) {
-                                    pane.modelToView(rootView.getView(j).getStartOffset());
-
-                                    point.y = (int)(j * maybeLineSpan);
-                                    int pos = pane.viewToModel(point);
+                                    Rectangle alloc = new Rectangle(0, 0,
+                                        (int)rootView.getPreferredSpan(View.X_AXIS),
+                                        (int)rootView.getPreferredSpan(View.Y_AXIS)
+                                    );
+                                    rootView.getChildAllocation(j, alloc);
                                 }
+
+                                // Test modelToView and viewToModel
+                                if (false) { // Disabled because of #
+                                    float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
+                                    float maybeLineSpan = rootViewYSpan / viewCount;
+                                    Point point = new Point();
+                                    point.x = 5; // likely somewhere inside the first char on the line
+                                    for (int j = 0; j < viewCount; j++) {
+                                        pane.modelToView(rootView.getView(j).getStartOffset());
+
+                                        point.y = (int)(j * maybeLineSpan);
+                                        int pos = pane.viewToModel(point);
+                                    }
+                                }
+
+                                int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
+                                int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
+                                Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
+
+                                // Paint into buffered image
+                                for (int i = PAINT_COUNT - 1; i >= 0; i--) {
+                                    rootView.paint(bGraphics, alloc);
+                                }
+
+                            } finally {
+                                lockView.unlock();
                             }
-
-                            int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
-                            int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
-                            Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
-
-                            // Paint into buffered image
-                            for (int i = PAINT_COUNT - 1; i >= 0; i--) {
-                                rootView.paint(bGraphics, alloc);
-                            }
-
-                        } finally {
-                            lockView.unlock();
                         }
                     } finally {
                         doc.readUnlock();
@@ -315,14 +318,6 @@ public class JspEditorWarmUpTask implements Runnable{
                 frame.dispose();
                 pane.setEditorKit(null);
 
-                // #45934 - initialize palette here to make first-time 
-                // JSP opening faster
-                try {
-                    JspPaletteFactory.getPalette();
-                } catch (IOException e) {
-                    LOG.log(Level.INFO, "Palette per-initialization failed", e);
-                }
-                
                 // Candidates Annotations.getLineAnnotations()
 
                 LOG.fine("View hierarchy initialized: " // NOI18N

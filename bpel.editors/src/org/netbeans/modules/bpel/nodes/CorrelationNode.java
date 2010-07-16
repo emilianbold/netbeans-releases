@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -73,16 +72,17 @@ public class CorrelationNode extends BpelNode<Correlation> {
         //
         Sheet.Set mainPropertySet = 
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 BaseCorrelation.SET, CORRELATION_SET, 
                 "getSet", null, null); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 BaseCorrelation.INITIATE, CORRELATION_INITIATE, 
                 "getInitiate", "setInitiate", "removeInitiate"); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -104,6 +104,7 @@ public class CorrelationNode extends BpelNode<Correlation> {
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,

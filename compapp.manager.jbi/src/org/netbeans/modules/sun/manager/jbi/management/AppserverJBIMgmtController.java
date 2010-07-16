@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,12 +76,12 @@ public class AppserverJBIMgmtController {
 
     // original MBeanServerConnection from NetBeans
     private MBeanServerConnection mBeanServerConnection;
-    
+
     // MBeanServerConnection with classpath problem fixed
     private MBeanServerConnection myMBeanServerConnection;
-    
+
     private ManagementClient managementClient;
-    
+
     // cached services
     private AdministrationService administrationService;
     private DeploymentService deploymentService;
@@ -87,14 +90,14 @@ public class AppserverJBIMgmtController {
     private PerformanceMeasurementServiceWrapper performanceMeasurementServiceWrapper;
     private RuntimeManagementServiceWrapper runtimeManagementServiceWrapper;
     private NotificationService notificationService;
-    
+
     private boolean notificationServiceChecked;
-    
+
     private String hostName;
     private String port;
     private String userName;
     private String password;
-    
+
     public static final String SERVER_TARGET = "server";
     private static final String HOST_MBEAN_NAME =
             "com.sun.appserv:name=server,type=virtual-server,category=monitor,server=server"; // NOI18N
@@ -114,11 +117,11 @@ public class AppserverJBIMgmtController {
     }
 
     public boolean isJBIFrameworkEnabled() {
-        JBIFrameworkService service = 
+        JBIFrameworkService service =
                 new JBIFrameworkService(mBeanServerConnection);
         return service.isJbiFrameworkEnabled();
     }
-    
+
     public AdministrationService getAdministrationService()
             throws ManagementRemoteException {
         if (administrationService == null) {
@@ -139,7 +142,7 @@ public class AppserverJBIMgmtController {
             throws ManagementRemoteException {
         if (installationService == null) {
             installationService = managementClient.getInstallationService();
-        }        
+        }
         return installationService;
     }
 
@@ -150,20 +153,20 @@ public class AppserverJBIMgmtController {
         }
         return configurationService;
     }
-    
+
     public NotificationService getNotificationService()
             throws ManagementRemoteException {
 
         if (!notificationServiceChecked && notificationService == null) {
             notificationServiceChecked = true;
-            String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();  
-            
+            String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();
+
             if (password == null || password.equals("") || userName == null || userName.equals("")) { // NOI18N
                 if (userName == null) {
                     userName = ""; // NOI18N
                 }
                 PasswordPanel passwordPanel = new PasswordPanel(userName);
-            
+
                 DialogDescriptor dd = new DialogDescriptor(passwordPanel, hostName);
                 //passwordPanel.setPrompt(title);
                 java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
@@ -174,17 +177,37 @@ public class AppserverJBIMgmtController {
                     password = passwordPanel.getTPassword();
                 }
             }
-            
-            notificationService = 
-                    //managementClient.getNotificationService(); // DOES NOT WORK
-                    //ManagementClientFactory.getInstance(mBeanServerConnection, true).getNotificationService(); // DOES NOT WORK
-                    //ManagementClientFactory.getInstance("localhost", 8686, "admin", "adminadmin").getNotificationService(); // WORKS
-                    ManagementClientFactory.getInstance(hostName, Integer.parseInt(rmiPortString), userName, password).getNotificationService();
+
+            try {
+                notificationService =
+                        //managementClient.getNotificationService(); // DOES NOT WORK
+                        //ManagementClientFactory.getInstance(mBeanServerConnection, true).getNotificationService(); // DOES NOT WORK
+                        //ManagementClientFactory.getInstance("localhost", 8686, "admin", "adminadmin").getNotificationService(); // WORKS
+                        ManagementClientFactory.getInstance(hostName, Integer.parseInt(rmiPortString), userName, password).getNotificationService();
+            } catch (ManagementRemoteException ex) {
+                // #163645 The username and password in the .nbattrs file might
+                // not be valid if the user has choosen non-default username and
+                // password during installation. Let's give the user another
+                // chance to specify the correct username and password.
+                PasswordPanel passwordPanel = new PasswordPanel(userName);
+
+                DialogDescriptor dd = new DialogDescriptor(passwordPanel, hostName);
+                java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
+                dialog.setVisible(true);
+
+                if (dd.getValue().equals(NotifyDescriptor.OK_OPTION)) {
+                    userName = passwordPanel.getUsername();
+                    password = passwordPanel.getTPassword();
+                }
+
+                notificationService =
+                        ManagementClientFactory.getInstance(hostName, Integer.parseInt(rmiPortString), userName, password).getNotificationService();
+            }
         }
         return notificationService;
     }
 
-    public PerformanceMeasurementServiceWrapper 
+    public PerformanceMeasurementServiceWrapper
             getPerformanceMeasurementServiceWrapper()
             throws ManagementRemoteException {
         if (performanceMeasurementServiceWrapper == null) {
@@ -198,13 +221,13 @@ public class AppserverJBIMgmtController {
     public RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper()
             throws ManagementRemoteException {
         if (runtimeManagementServiceWrapper == null) {
-            runtimeManagementServiceWrapper = 
+            runtimeManagementServiceWrapper =
                     new RuntimeManagementServiceWrapperImpl(
                     managementClient.getRuntimeManagementService());
         }
         return runtimeManagementServiceWrapper;
     }
-   
+
     private void init() {
 
         // The MBeanServerConnection we get from NetBeans
@@ -239,7 +262,7 @@ public class AppserverJBIMgmtController {
                         }
                     }
 
-                    // If there is no match, and there is only one instance 
+                    // If there is no match, and there is only one instance
                     // available, then use it.
                     if (serverInstance == null) {
                         if (instances.size() == 1) {
@@ -248,7 +271,7 @@ public class AppserverJBIMgmtController {
                         }
                     }
 
-                    // If there is no match, and there is only one remote 
+                    // If there is no match, and there is only one remote
                     // instance available, use it.
                     if (serverInstance == null) {
                         int remoteInstances = 0;
@@ -314,9 +337,9 @@ public class AppserverJBIMgmtController {
 
             String host = (String) mBeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
 
-            // InetAddress's getCanonicalHostName() is a best-effort method 
+            // InetAddress's getCanonicalHostName() is a best-effort method
             // and doesn't work if the name service is not available. (cordova)
-            // IP address is not reliable either. 
+            // IP address is not reliable either.
             String instanceHostCanonicalHostName = InetAddress.getByName(instanceHost).getCanonicalHostName();
             String hostCanonicalHostName = InetAddress.getByName(host).getCanonicalHostName();
             String instanceHostAddress = InetAddress.getByName(instanceHost).getHostAddress();
@@ -342,15 +365,15 @@ public class AppserverJBIMgmtController {
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
                 assert localInstanceLocation != null;
-                
+
                 localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-                
+
                 if (isLocalHost) {
                     logger.fine("    localInstanceLocation=" + localInstanceLocation);
                     logger.fine("                  appBase=" + appBase);
                 }
 
-                if (!isLocalHost || 
+                if (!isLocalHost ||
                         appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase()) &&
                         new File(localInstanceLocation).exists()) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);

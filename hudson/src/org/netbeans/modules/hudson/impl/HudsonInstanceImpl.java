@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,6 +91,9 @@ import org.openide.util.RequestProcessor.Task;
 public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
 
     private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(HudsonInstanceImpl.class.getName(),
+            // Permit concurrent connections to several servers; semaphore serializes per server.
+            10);
     
     private HudsonInstanceProperties properties;
     private final HudsonConnector connector;
@@ -101,6 +107,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
+    private HudsonView primaryView;
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     private ProblemNotificationController problemNotificationController;
     /**
@@ -221,6 +228,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         version = null;
         jobs.clear();
         views.clear();
+        primaryView = null;
         
         // Fire changes
         fireStateChanges();
@@ -279,14 +287,22 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         props.put(INSTANCE_SUPPRESSED_JOBS, HudsonInstanceProperties.join(suppressed));
     }
     
-    public synchronized Collection<HudsonView> getViews() {
+    public @Override synchronized Collection<HudsonView> getViews() {
         return views;
     }
     
-    public synchronized void setViews(Collection<HudsonView> views) {
-        this.views = views;
+    public @Override synchronized HudsonView getPrimaryView() {
+        if (primaryView == null) {
+            primaryView = new HudsonViewImpl(this, "All", getUrl()); // NOI18N
+        }
+        return primaryView;
     }
     
+    synchronized void setViews(Collection<HudsonView> views, HudsonView primaryView) {
+        this.views = views;
+        this.primaryView = primaryView;
+    }
+
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
@@ -309,7 +325,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             
             handle.get().start();
             
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     synchThread.set(Thread.currentThread());
                     try {

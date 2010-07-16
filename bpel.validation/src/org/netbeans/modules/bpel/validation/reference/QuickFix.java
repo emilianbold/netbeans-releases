@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,14 +43,14 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 
-import org.netbeans.modules.soa.validation.core.QuickFix.Adapter;
-import org.netbeans.modules.soa.validation.util.SetUtil;
+import org.netbeans.modules.xml.validation.core.QuickFix.Adapter;
+import org.netbeans.modules.xml.validation.core.SetUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.NamedElement;
@@ -57,7 +60,7 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -65,86 +68,87 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class QuickFix {
 
-  private QuickFix() {}
+    private QuickFix() {
+    }
 
-  static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
+    static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
 //out();
 //out("reference: " + reference.getClass().getName());
 //out("         : " + reference.getType().getName());
-    if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
-      if (entity instanceof VariableReference) {
+        if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
+            if (entity instanceof VariableReference) {
 //out("  VAR");
-        return new SetVariable((VariableReference) entity, reference.getRefString());
-      }
-    }
+                return new SetVariable((VariableReference) entity, reference.getRefString());
+            }
+        }
 //out("  null");
-    return null;
-  }
-
-  // -----------------------------------------------
-  private static class SetVariable extends Adapter {
-  
-    SetVariable(VariableReference reference, String name) {
-      myReference = reference;
-      myName = name;
+        return null;
     }
 
-    @Override
-    public String doFix() {
-      Variable [] variables = getAppropriateVariables();
+    // -----------------------------------------------
+    private static class SetVariable extends Adapter {
 
-      if (variables == null) {
-        return null;
-      }
-      Variable variable = variables [0];
-      myReference.setVariable(((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
-      return i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
+        private VariableReference myReference;
+        private String myName;
+
+        SetVariable(VariableReference reference, String name) {
+            myReference = reference;
+            myName = name;
+        }
+
+        @Override
+        public String doFix() {
+            Variable[] variables = getAppropriateVariables();
+
+            if (variables == null) {
+                return null;
+            }
+            Variable variable = variables[0];
+            myReference.setVariable(((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
+            return i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
+        }
+
+        private Variable[] getAppropriateVariables() {
+            BpelModel model = ((BpelEntity) myReference).getBpelModel();
+
+            if (model == null) {
+                return null;
+            }
+            Process process = model.getProcess();
+
+            if (process == null) {
+                return null;
+            }
+            VariableContainer container = process.getVariableContainer();
+
+            if (container == null) {
+                return null;
+            }
+            Variable[] variables = container.getVariables();
+
+            if (variables == null) {
+                return null;
+            }
+            List<Named> named = SetUtil.getAppropriate(toList(variables), myName);
+
+            if (named.size() == 0) {
+                return null;
+            }
+            Variable[] appropriate = new Variable[named.size()];
+
+            for (int i = 0; i < named.size(); i++) {
+                appropriate[i] = (Variable) named.get(i);
+            }
+            return appropriate;
+        }
+
+        private List<Named> toList(Variable[] elements) {
+            List<Named> list = new ArrayList<Named>();
+
+            for (NamedElement element : elements) {
+                list.add(element);
+            }
+            return list;
+        }
     }
-
-    private Variable [] getAppropriateVariables() {
-      BpelModel model = ((BpelEntity) myReference).getBpelModel();
-
-      if (model == null) {
-        return null;
-      }
-      Process process = model.getProcess();
-
-      if (process == null) {
-        return null;
-      }
-      VariableContainer container = process.getVariableContainer();
-      
-      if (container == null) {
-        return null;
-      }
-      Variable [] variables = container.getVariables();
-
-      if (variables == null) {
-        return null;
-      }
-      List<Named> named = SetUtil.getAppropriate(toList(variables), myName);
-
-      if (named.size() == 0) {
-        return null;
-      }
-      Variable [] appropriate = new Variable [named.size()];
-
-      for (int i=0; i < named.size(); i++) {
-        appropriate [i] = (Variable) named.get(i);
-      }
-      return appropriate;
-    }
-
-    private List<Named> toList(Variable [] elements) {
-      List<Named> list = new LinkedList<Named>();
-
-      for (NamedElement element : elements) {
-        list.add(element);
-      }
-      return list;
-    }
-
-    private String myName;
-    private VariableReference myReference;
-  }
 }

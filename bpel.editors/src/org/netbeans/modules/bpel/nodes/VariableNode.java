@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import java.awt.Image;
 import javax.swing.Action;
@@ -166,23 +165,24 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         //
         CustomEditorProperty customizer = new CustomEditorProperty(this);
         mainPropertySet.put(customizer);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
         VariableDeclaration varDecl = getReference();
         if (varDecl instanceof Variable) {
-            PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+            propUtil.registerAttributeProperty(this, mainPropertySet,
                     NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         } else {
-            PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+            propUtil.registerAttributeProperty(this, mainPropertySet,
                     NamedElement.NAME, NAME, "getVariableName", null, null); // NOI18N
         }
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 VARIABLE_STEREOTYPE, "getVariableStereotype", null); // NOI18N
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 VARIABLE_TYPE_QNAME, "getVariableQNameType", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -237,6 +237,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_TYPE_SOURCE,
+            ActionType.GO_TO_REFERENCE,
             ActionType.FIND_USAGES,
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,

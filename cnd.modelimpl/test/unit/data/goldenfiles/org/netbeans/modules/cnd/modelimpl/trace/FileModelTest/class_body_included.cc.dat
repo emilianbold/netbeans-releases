@@ -14,14 +14,26 @@ Includes:
 Macros:
 #define 'BOO' [7:1/92-7:12/103]
 #define 'FOO' [4:1/32-4:12/43]
-CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=29 SCOPE: $Global$ 
+CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=1 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
+        FUNCTION class_body_included_foo [2:11/11-4:11/42] MethodImpl SCOPE: ClassWithIncludedBody 
+            DEFINITION: null
+            SIGNATURE class_body_included_foo()
+            UNIQUE NAME F:ClassWithIncludedBody::class_body_included_foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [2:11/11-2:15/15]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=29 SCOPE: $Global$ 
+CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:2/187] lcurly=1 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
+        FUNCTION class_body_included_foo [2:11/11-4:11/42] MethodImpl SCOPE: ClassWithIncludedBody 
+            DEFINITION: null
+            SIGNATURE class_body_included_foo()
+            UNIQUE NAME F:ClassWithIncludedBody::class_body_included_foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [2:11/11-2:15/15]
 FUNCTION class_body_included_foo [2:1/11-2:32/42] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE class_body_included_foo()

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,17 +41,23 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Utilities;
 
@@ -56,12 +65,13 @@ import org.openide.util.Utilities;
  * This map is a wrapper of Map&lt;String, String&gt; that expangs
  * macros on insertion...
  */
-public class MacroMap implements Cloneable {
+public final class MacroMap implements Cloneable {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final ExecutionEnvironment execEnv;
     private final MacroExpander macroExpander;
     private final TreeMap<String, String> map;
+    private final Set<String> varsForExport = new HashSet<String>();
     private final boolean isWindows;
 
     private MacroMap(final ExecutionEnvironment execEnv, final MacroExpander macroExpander) {
@@ -74,9 +84,20 @@ public class MacroMap implements Cloneable {
         } else {
             map = new TreeMap<String, String>();
         }
+
+        if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            // This always should be true
+            try {
+                map.putAll(HostInfoUtils.getHostInfo(execEnv).getEnvironment());
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
+            }
+        }
+
+        varsForExport.addAll(Arrays.asList(EnvWriter.wellKnownVars));
     }
 
-    public final static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
+    public static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
         return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv));
     }
 
@@ -132,6 +153,8 @@ public class MacroMap implements Cloneable {
         } catch (ParseException ex) {
         }
 
+        varsForExport.add(key);
+
         return map.put(key, result);
     }
 
@@ -143,9 +166,13 @@ public class MacroMap implements Cloneable {
         return map.get(key);
     }
 
+    public Set<String> getExportVariablesSet() {
+        return Collections.unmodifiableSet(varsForExport);
+    }
+
     @Override
     public final String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("{"); // NOI18N
 
         for (Entry<String, String> entry : map.entrySet()) {
@@ -171,6 +198,7 @@ public class MacroMap implements Cloneable {
     public MacroMap clone() {
         MacroMap clone = new MacroMap(execEnv, macroExpander);
         clone.map.putAll(map);
+        clone.varsForExport.addAll(varsForExport);
         return clone;
     }
 
@@ -200,11 +228,16 @@ public class MacroMap implements Cloneable {
         }
     }
 
+    public void remove(String name) {
+        map.remove(name);
+    }
+
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
 
         public CaseInsensitiveComparator() {
         }
 
+        @Override
         public int compare(String s1, String s2) {
             if (s1 == null && s2 == null) {
                 return 0;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,10 +104,6 @@ public final class TreeViewTest extends NbTestCase {
         }
     }
 
-//    public static TreeViewTest suite() {
-//        return new TreeViewTest("test");
-//    }
-
     /**
      * Tests whether <code>JTree</code>'s property <code>scrollsOnExpand</code>
      * is taken into account in
@@ -168,6 +167,52 @@ public final class TreeViewTest extends NbTestCase {
 
         EventQueue.invokeLater(new Tester(true, 1));    //just collapse the tree
         Thread.sleep(2000);
+    }
+
+    public void testExpandNodePreparedOutsideOfAWT() throws Exception {
+        assertFalse(EventQueue.isDispatchThread());
+
+        class OutOfAWT extends Keys {
+            Exception noAWTAddNotify;
+            Exception noAWTCreateNodes;
+
+            public OutOfAWT(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected void addNotify() {
+                if (EventQueue.isDispatchThread()) {
+                    noAWTAddNotify = new Exception();
+                }
+                super.addNotify();
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (EventQueue.isDispatchThread()) {
+                    noAWTCreateNodes = new Exception();
+                }
+                return super.createNodes(key);
+            }
+        }
+        AbstractNode root = new AbstractNode(new Children.Array());
+        final OutOfAWT ch = new OutOfAWT(false, "A", "B", "C");
+        AbstractNode an = new AbstractNode(ch);
+        root.getChildren().add(new Node[] { an });
+        testWindow = new ExplorerWindow();
+        testWindow.showWindow();
+        testWindow.getExplorerManager().setRootContext(root);
+
+        testWindow.treeView.expandNode(an);
+        Thread.sleep(2000);
+
+        if (ch.noAWTAddNotify != null) {
+            throw ch.noAWTAddNotify;
+        }
+        if (ch.noAWTCreateNodes != null) {
+            throw ch.noAWTCreateNodes;
+        }
     }
     
     

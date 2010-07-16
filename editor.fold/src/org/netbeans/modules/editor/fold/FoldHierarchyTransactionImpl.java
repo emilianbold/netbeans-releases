@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -229,13 +232,14 @@ public final class FoldHierarchyTransactionImpl {
                 FoldStateChange change = stateChanges[i];
                 Fold fold = change.getFold();
                 updateAffectedOffsets(fold);
-                int origOffset = change.getOriginalStartOffset();
-                if (origOffset != -1) {
-                    updateAffectedStartOffset(origOffset);
+                int startOffset = change.getOriginalStartOffset();
+                int endOffset = change.getOriginalEndOffset();
+                assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
+                if (startOffset != -1) {
+                    updateAffectedStartOffset(startOffset);
                 }
-                origOffset = change.getOriginalEndOffset();
-                if (origOffset != -1) {
-                    updateAffectedEndOffset(origOffset);
+                if (endOffset != -1) {
+                    updateAffectedEndOffset(endOffset);
                 }
             }
 
@@ -275,7 +279,8 @@ public final class FoldHierarchyTransactionImpl {
     
     private void insertCheckEndOffset(Fold fold, DocumentEvent evt)
     throws BadLocationException {
-        int insertEndOffset = evt.getOffset() + evt.getLength();
+        int insertOffset = evt.getOffset();
+        int insertEndOffset = insertOffset + evt.getLength();
         // Find first fold that starts at (or best represents) the insertEndOffset
         int childIndex = FoldUtilitiesImpl.findFoldStartIndex(fold, insertEndOffset, false);
         if (childIndex >= 0) { // could be at end of the child fold with the index
@@ -296,14 +301,25 @@ public final class FoldHierarchyTransactionImpl {
                 insertCheckEndOffset(childFold, evt);
 
                 // Inform the fold about insertion
-                ApiPackageAccessor.get().foldInsertUpdate(childFold, evt);
+                ApiPackageAccessor api = ApiPackageAccessor.get();
+                api.foldInsertUpdate(childFold, evt);
 
                 if (childFoldEndOffset == insertEndOffset) {
+                    Document doc = evt.getDocument();
+                    int childFoldStartOffset = childFold.getStartOffset();
+                    assert (childFoldStartOffset <= childFoldEndOffset);
+                    if (childFoldStartOffset == childFoldEndOffset) {
+                        // Reset start-position of the fold since otherwise
+                        // the subsequent resetting of end-position produces a new position
+                        // which could eventully swap with the original start position.
+                        api.foldSetStartOffset(childFold, doc, insertOffset);
+                        api.foldStateChangeStartOffsetChanged(getFoldStateChange(childFold), childFoldStartOffset);
+                    }
                     // Now correct the end offset to the one before insertion
-                    setEndOffset(childFold, evt.getDocument(), evt.getOffset());
+                    api.foldSetEndOffset(childFold, doc, insertOffset);
+                    api.foldStateChangeEndOffsetChanged(getFoldStateChange(childFold), childFoldEndOffset);
                     
                 } else { // not right at the end of the fold -> check damaged
-                    ApiPackageAccessor api = ApiPackageAccessor.get();
                     if (api.foldIsStartDamaged(childFold) || api.foldIsEndDamaged(childFold)) {
                         execution.remove(childFold, this);
                         removeDamagedNotify(childFold);
@@ -326,14 +342,6 @@ public final class FoldHierarchyTransactionImpl {
         return getOperation(fold).getManager();
     }
     
-    private void setEndOffset(Fold fold, Document doc, int endOffset)
-    throws BadLocationException {
-        int origEndOffset = fold.getEndOffset();
-        ApiPackageAccessor api = ApiPackageAccessor.get();
-        api.foldSetEndOffset(fold, doc, endOffset);
-        api.foldStateChangeEndOffsetChanged(getFoldStateChange(fold), origEndOffset);
-    }
-
     public void setCollapsed(Fold fold, boolean collapsed) {
         boolean oldCollapsed = fold.isCollapsed();
         if (oldCollapsed != collapsed) {
@@ -1020,8 +1028,12 @@ public final class FoldHierarchyTransactionImpl {
     
     
     private void updateAffectedOffsets(Fold fold) {
-        updateAffectedStartOffset(fold.getStartOffset());
-        updateAffectedEndOffset(fold.getEndOffset());
+        int startOffset = fold.getStartOffset();
+        int endOffset = fold.getEndOffset();
+        assert (startOffset <= endOffset) : "startOffset=" + startOffset + // NOI18N
+                " > endOffset=" + endOffset + ", fold=" + fold; // NOI18N
+        updateAffectedStartOffset(startOffset);
+        updateAffectedEndOffset(endOffset);
     }
 
     /**

@@ -93,7 +93,7 @@ class GraphConstructor implements DependencyNodeVisitor {
             primary = true;
         } else {
             if (grNode == null) {
-                grNode = new ArtifactGraphNode(null);
+                grNode = new ArtifactGraphNode(node);
                 Artifact a = node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact() : node.getArtifact();
                 cache.put(a.getDependencyConflictId(), grNode);
             }

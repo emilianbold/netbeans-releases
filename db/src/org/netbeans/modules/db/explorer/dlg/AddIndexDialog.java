@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ public class AddIndexDialog {
     JTextField namefld;
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
-    private static Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
     
     public AddIndexDialog(Collection columns, final Specification spec, final String tablename, final String schemaName) {
         try {
@@ -173,11 +176,13 @@ public class AddIndexDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexDialogA11yDesc"));  // NOI18N
             
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         try {
                             result = false;
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     AddIndexDDL ddl = new AddIndexDDL(spec, schemaName, tablename);
 
@@ -195,7 +200,7 @@ public class AddIndexDialog {
                             if (cause instanceof DDLException) {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
-                                LOGGER.log(Level.INFO, null, cause);
+                                LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                                 DbUtilities.reportError(NbBundle.getMessage (AddIndexDialog.class, "ERR_UnableToAddIndex"), e.getMessage());
                             }
                         }
@@ -211,7 +216,7 @@ public class AddIndexDialog {
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, e.getLocalizedMessage(), e);
         }
     }
 
@@ -245,6 +250,7 @@ public class AddIndexDialog {
             set = new HashSet<String> ();
         }
 
+        @Override
         public void actionPerformed(ActionEvent event)
         {
             JCheckBox cbx = (JCheckBox)event.getSource();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,13 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.util.*;
-import java.util.regex.*;
-
-import org.openide.filesystems.FileObject;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
@@ -53,7 +59,6 @@ import org.openide.ErrorManager;
  * search in it.
  *
  * @author  Petr Suchomel
- * @version 1.1
  */
 public abstract class JavadocSearchType {
 
@@ -62,16 +67,17 @@ public abstract class JavadocSearchType {
      * @return File object containing index-files e.g index-files directory
      *         or index-all.html.
      */
-    public abstract FileObject getDocFileObject( FileObject apidocRoot );
+    public abstract URL getDocFileObject(URL apidocRoot);
     
     private Pattern[]  overviewLabelFilters;
 
     private synchronized void prepareOverviewFilter() {
-        if (overviewLabelFilters != null)
+        if (overviewLabelFilters != null) {
             return;
+        }
         String filter = NbBundle.getMessage(JavadocSearchType.class, "FILTER_OverviewIndiceLabel"); // NOI18N
         StringTokenizer tok = new StringTokenizer(filter, "\n"); // NOI18N
-        LinkedList ll = new LinkedList();
+        List<Pattern> ll = new LinkedList<Pattern>();
         while (tok.hasMoreTokens()) {
             try {
                 String expr = tok.nextToken();
@@ -81,7 +87,7 @@ public abstract class JavadocSearchType {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        overviewLabelFilters = (Pattern[])ll.toArray(new Pattern[ll.size()]);
+        overviewLabelFilters = ll.toArray(new Pattern[ll.size()]);
     }
     
     /**
@@ -111,7 +117,7 @@ public abstract class JavadocSearchType {
      * @param diiConsumer consumer for parse events
      * @return IndexSearchThread
      */    
-    public abstract IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer );
+    public abstract IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer);
     
 
     /**
@@ -119,6 +125,6 @@ public abstract class JavadocSearchType {
      * @param apidocRoot root of the javadoc
      * @param encoding of the javadoc, may be null if the javadoc has no encoding
      */
-    public abstract boolean accepts (FileObject apidocRoot, String encoding);
+    public abstract boolean accepts(URL apidocRoot, String encoding);
 
 }

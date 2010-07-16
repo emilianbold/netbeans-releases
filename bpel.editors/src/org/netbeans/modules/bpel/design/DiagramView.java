@@ -15,27 +15,14 @@ import java.awt.dnd.Autoscroll;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import org.netbeans.modules.bpel.design.BWGraphics2D;
-import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.DiagramViewLayout;
-import org.netbeans.modules.bpel.design.DiagramFontUtil;
-import org.netbeans.modules.bpel.design.GUtils;
-import org.netbeans.modules.bpel.design.MouseHandler;
-import org.netbeans.modules.bpel.design.NameEditor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
-import org.netbeans.modules.bpel.design.decoration.components.DiagramButton;
-import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.layout.LayoutManager;
 import org.netbeans.modules.bpel.design.model.connections.Connection;
-import org.netbeans.modules.bpel.design.model.connections.ConnectionManager;
 import org.netbeans.modules.bpel.design.model.elements.BorderElement;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
@@ -379,6 +366,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         }
     }
 
+    @Override
     public String getToolTipText(MouseEvent event) {
         Point point = getMousePosition();
 
@@ -411,7 +399,6 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         }
         if (result == null) {
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     ToolTipManager.sharedInstance().setEnabled(false);
                     ToolTipManager.sharedInstance().setEnabled(true);

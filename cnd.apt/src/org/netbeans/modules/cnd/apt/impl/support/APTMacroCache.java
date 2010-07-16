@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,6 +119,7 @@ public abstract class APTMacroCache  {
          * @exception NullPointerException If the <code>text</code> parameter
          *                                 is <code>null</code>.
          */
+        @Override
         public APTMacro getMacro(APTMacro macro) {
             if (macro == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
@@ -123,30 +127,31 @@ public abstract class APTMacroCache  {
             APTMacro outMacro = null;
 
             synchronized (lock) {
-                outMacro = storage.addOrGet(macro);
+                outMacro = storage.putIfAbsent(macro);
             }
             assert (outMacro != null);
             assert (outMacro.equals(macro));
             return outMacro;
         }
 
+        @Override
         public final void dispose() {
             if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                 Object[] arr = storage.toArray();
                 System.out.println("Dispose macro cache "+arr.length + " " + getClass().getName()); // NOI18N
-                Map<Class, Integer> classes = new HashMap<Class,Integer>();
+                Map<Class<?>, Integer> classes = new HashMap<Class<?>,Integer>();
                 for(Object o : arr){
                     if (o != null) {
                         Integer i = classes.get(o.getClass());
                         if (i != null) {
-                            i = new Integer(i.intValue() + 1);
+                            i = Integer.valueOf(i.intValue() + 1);
                         } else {
-                            i = new Integer(1);
+                            i = Integer.valueOf(1);
                         }
                         classes.put(o.getClass(), i);
                     }
                 }
-                for(Map.Entry<Class,Integer> e:classes.entrySet()){
+                for(Map.Entry<Class<?>,Integer> e:classes.entrySet()){
                     System.out.println("   "+e.getValue()+" of "+e.getKey().getName()); // NOI18N
                 }
             }
@@ -185,10 +190,12 @@ public abstract class APTMacroCache  {
             return instances[index];
         }
 
+        @Override
         public APTMacro getMacro(APTMacro macro) {
             return getDelegate(macro).getMacro(macro);
         }
 
+        @Override
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 instances[i].dispose();

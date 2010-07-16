@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -201,6 +204,25 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return retValue.toString();
         }
 
+        boolean equalsIgnoreInvalidFlag(State obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || (obj.getClass() != this.getClass())) {
+                return false;
+            }
+            StateImpl other = (StateImpl) obj;
+            // we do not compare macroStates because in case of
+            // parsing from the same include sequence they are equal
+            if (this.isCompileContext() != other.isCompileContext()) {
+                return false;
+            }
+            if (this.inclState != other.inclState && (this.inclState == null || !this.inclState.equals(other.inclState))) {
+                return false;
+            }
+            return true;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -212,10 +234,16 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             StateImpl other = (StateImpl)obj;
             // we do not compare macroStates because in case of 
             // parsing from the same include sequence they are equal
-            return this.isCompileContext() == other.isCompileContext() &&
-                    this.isValid() == other.isValid() && 
-                    ( (this.inclState == null && other.inclState == null) ||
-                      (this.inclState.equals(other.inclState)));
+            if (this.isCompileContext() != other.isCompileContext()) {
+                return false;
+            }
+            if (this.isValid() != other.isValid()) {
+                return false;
+            }
+            if (this.inclState != other.inclState && (this.inclState == null || !this.inclState.equals(other.inclState))) {
+                return false;
+            }
+            return true;
         }
 
         @Override

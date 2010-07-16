@@ -35,14 +35,20 @@ pack_all_components()
 	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
 
         cd $NB_ALL/nbbuild/netbeans
-	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
-	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
-	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
-	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
-	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
+#       cp $JAVAFX_DIR/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip 
+#	cp $JAVAFX_DIR/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip     || exit 1
+#	cp $JAVAFX_DIR/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip       || exit 1
+#	cp $JAVAFX_DIR/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
+#	cp $JAVAFX_DIR/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
+
+#        cp $JAVAFX_DIR/javafx/dist/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-windows.zip     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-linux.zip       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-mac.zip         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-solaris-x86.zip $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
+        cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
 	rm -rf javafx*
     fi
-
     cd $NB_ALL/nbbuild
 
     #Pack the distributions
@@ -70,9 +76,6 @@ pack_all_components()
     #pack_component $DIST_DIR/zip/moduleclusters $NAME extra-core-browser-macosx      "$config/$codename-macosx.xml     $update_tracking/$codename-macosx.xml  $modules/$codename-macosx.jar  $locale/$codename-macosx_*.jar  $native/macosx/xulrunner $native/macosx/libcocoautils.jnilib"
 
     rm -rf extra
-
-    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
-    rm -rf soa*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
@@ -133,9 +136,6 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME ergonomics "ergonomics*"
     rm -rf ergonomics*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
-    rm -rf soa*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME apisupport "apisupport*"
     rm -rf apisupport*
 
@@ -145,7 +145,10 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME python "python*"
+    rm -rf python*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "*"
 }
 
 pack_all_components $DIST $BASENAME
@@ -155,6 +158,10 @@ if [ $ML_BUILD == 1 ]; then
     rm -rf $NB_ALL/nbbuild/netbeans
     mv $NB_ALL/nbbuild/netbeans-ml $NB_ALL/nbbuild/netbeans
 
+    JAVAFX_PATH_ORG=$JAVAFX_PATH
+    JAVAFX_PATH=$JAVAFX_PATH/ml
+
     mkdir -p $DIST/ml/zip
     pack_all_components $DIST/ml $BASENAME-ml
+    JAVAFX_PATH=$JAVAFX_PATH_ORG
 fi

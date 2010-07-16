@@ -76,6 +76,7 @@ import org.openide.util.RequestProcessor;
 public class CopyResourcesOnSave extends FileChangeAdapter {
 
     private static CopyResourcesOnSave instance = new CopyResourcesOnSave();
+    private static final RequestProcessor RP = new RequestProcessor("CopyResourcesOnSave"); //NOI18N
 
     private boolean isAdded = false;
     /** Creates a new instance of CopyOnSaveSupport */
@@ -136,6 +137,10 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (prj == null) {
             return null;
         }
+        //#180447
+        if (!prj.getProjectDirectory().isValid()) {
+            return null;
+        }
         NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
         if (mvn == null) {
             return null;
@@ -152,7 +157,8 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     @Override
     public void fileChanged(final FileEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fileChanged(fe);
                 }
@@ -173,7 +179,8 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     @Override
     public void fileDataCreated(final FileEvent fe) {
        if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fileDataCreated(fe);
                 }
@@ -194,7 +201,8 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     @Override
     public void fileRenamed(final FileRenameEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fileRenamed(fe);
                 }
@@ -228,7 +236,8 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     @Override
     public void fileDeleted(final FileEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fileDeleted(fe);
                 }

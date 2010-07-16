@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -55,6 +59,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -68,15 +73,17 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     private final ClassPath delegate;
     private final ClassIndexManager manager;
     private final boolean forcePrefSources;
+    private final boolean apt;
     private List<PathResourceImplementation> resources;
     private long eventId;
     
-    private SourcePath (final ClassPath delegate, final boolean bkgComp) {
+    private SourcePath (final ClassPath delegate, final boolean bkgComp, final boolean apt) {
         this.delegate = delegate;
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
         this.forcePrefSources = bkgComp;
+        this.apt = apt;
     }
     
     public List<? extends PathResourceImplementation> getResources() {
@@ -91,9 +98,16 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
         for (ClassPath.Entry entry : delegate.entries()) {
             if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
-                res.add(new FR (entry));
+                if (!apt) {
+                    res.add(new FR (entry));
+                } else {
+                    final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
+                    if (aptRoot != null) {
+                        res.add(ClassPathSupport.createResource(aptRoot));
+                    }
+                }
             }
-        }
+        }                
         synchronized (this) {
             if (currentEventId == this.eventId) {
                 if (this.resources == null) {
@@ -197,9 +211,14 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         
     }
     
-    public static ClassPath create (final ClassPath cp, final boolean bkgComp) {
+    public static ClassPath sources (final ClassPath cp, final boolean bkgComp) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp));
+        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, false));
+    }
+
+    public static ClassPath apt (final ClassPath cp, final boolean bkgComp) {
+        assert cp != null;
+        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, true));
     }
 
 }

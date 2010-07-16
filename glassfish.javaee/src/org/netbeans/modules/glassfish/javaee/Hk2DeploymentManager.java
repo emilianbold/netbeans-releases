@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -112,10 +115,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
         String t = moduleArchive.getName();
-        final String moduleName = t.substring(0, t.length() - 4);
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
         // 
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());
@@ -139,6 +143,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         ResourceRegistrationHelper.deployResources(moduleArchive,this);
         if (restart) {
             restartProgress.addProgressListener(new ProgressListener() {
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         commonSupport.deploy(deployProgress, moduleArchive, moduleName);
@@ -164,6 +169,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws java.lang.UnsupportedOperationException
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan)
             throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
@@ -196,6 +202,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                             commonSupport.deploy(progressObject, moduleArchive, moduleName);
@@ -218,6 +225,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException
      */
+    @Override
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject)
             throws InvalidModuleException {
         return new Hk2Configuration(deployableObject);
@@ -232,6 +240,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target [] targetList, InputStream moduleArchive, InputStream deploymentPlan)
             throws IllegalStateException {
         throw new UnsupportedOperationException(
@@ -247,6 +256,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject distribute(Target [] targetList, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan)
             throws IllegalStateException {
         throw new UnsupportedOperationException(
@@ -262,6 +272,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws java.lang.UnsupportedOperationException
      * @throws java.lang.IllegalStateException
      */
+    @Override
     public ProgressObject redeploy(TargetModuleID [] moduleIDList, InputStream moduleArchive, InputStream deploymentPlan) 
             throws UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException(
@@ -274,6 +285,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject undeploy(TargetModuleID [] targetModuleIDs) 
             throws IllegalStateException {
         // !PW FIXME handle arrays with length > 1 (EARs?)
@@ -294,6 +306,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject stop(TargetModuleID[] moduleIDList) throws IllegalStateException {
         return new DummyProgressObject(moduleIDList[0]);
     }
@@ -304,6 +317,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public ProgressObject start(TargetModuleID [] moduleIDList) throws IllegalStateException {
         return new DummyProgressObject(moduleIDList[0]);
     }
@@ -313,6 +327,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param locale 
      * @throws java.lang.UnsupportedOperationException 
      */
+    @Override
     public void setLocale(java.util.Locale locale) throws UnsupportedOperationException {
     }
 
@@ -321,6 +336,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param locale 
      * @return 
      */
+    @Override
     public boolean isLocaleSupported(java.util.Locale locale) {
         return false;
     }
@@ -333,6 +349,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getAvailableModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         return getDeployedModules(moduleType, targetList);
@@ -347,6 +364,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getNonRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         Logger.getLogger("glassfish-javaee").log(Level.WARNING,
@@ -362,6 +380,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws javax.enterprise.deploy.spi.exceptions.TargetException 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public TargetModuleID [] getRunningModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
         return getDeployedModules(moduleType, targetList);
@@ -397,6 +416,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param dConfigBeanVersionType 
      * @throws javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException 
      */
+    @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType version) throws DConfigBeanVersionUnsupportedException {
     }
 
@@ -405,6 +425,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @param dConfigBeanVersionType 
      * @return 
      */
+    @Override
     public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType version) {
         return false;
     }
@@ -412,6 +433,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     /**
      * 
      */
+    @Override
     public void release() {
     }
 
@@ -419,6 +441,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public boolean isRedeploySupported() {
         return isLocal();
     }
@@ -427,6 +450,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale getCurrentLocale() {
         return null;
     }
@@ -435,6 +459,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public DConfigBeanVersionType getDConfigBeanVersion() {
         return null;
     }
@@ -443,6 +468,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale getDefaultLocale() {
         return null;
     }
@@ -451,6 +477,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * 
      * @return 
      */
+    @Override
     public java.util.Locale[] getSupportedLocales() {
         return new java.util.Locale[] { java.util.Locale.getDefault() };
     }
@@ -460,6 +487,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @return 
      * @throws java.lang.IllegalStateException 
      */
+    @Override
     public Target[] getTargets() throws IllegalStateException {
         InstanceProperties ip = getInstanceProperties();
         if (null == ip) {
@@ -531,7 +559,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
-    private final String constructServerUri(String host, String port, String path) {
+    private String constructServerUri(String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
         builder.append(Utils.getHttpListenerProtocol(host, port));
         builder.append("://"); // NOI18N

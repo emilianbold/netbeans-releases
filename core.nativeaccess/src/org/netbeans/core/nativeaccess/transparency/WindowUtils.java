@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -106,6 +109,8 @@ import org.netbeans.core.nativeaccess.transparency.win32.W32API.HWND;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides additional features on a Java {@link Window}.  
@@ -317,19 +322,8 @@ public class WindowUtils {
          * displayable.
          */
         protected void whenDisplayable(Component w, final Runnable action) {
-            if (w.isDisplayable() && (!Holder.requiresVisible || w.isVisible())) {
+            if (w.isDisplayable()) {
                 action.run();
-            }
-            else if (Holder.requiresVisible) {
-                getWindow(w).addWindowListener(new WindowAdapter() {
-                    public void windowOpened(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                        action.run();
-                    }
-                    public void windowClosed(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                    }
-                });
             }
             else {
                 // Hierarchy events are fired in direct response to
@@ -537,7 +531,6 @@ public class WindowUtils {
          * handle can be obtained. This wart is caused by the Java
          * 1.4/X11 implementation.
          */
-        public static boolean requiresVisible;
         public static final NativeWindowUtils INSTANCE;
         static {
             if (Platform.isWindows()) {
@@ -548,8 +541,6 @@ public class WindowUtils {
             }
             else if (Platform.isX11()) {
                 INSTANCE = new X11WindowUtils();
-                requiresVisible = System.getProperty("java.version")
-                                        .matches("^1\\.4\\..*");
             }
             else {
                 String os = System.getProperty("os.name");
@@ -1177,8 +1168,9 @@ public class WindowUtils {
                                                 X11.PropModeReplace,
                                                 patom.getPointer(), 1);
                         }
-                    }
-                    finally {
+                    } catch( IllegalStateException isE ) {
+                        Logger.getLogger(WindowUtils.class.getName()).log(Level.INFO, null, isE);
+                    } finally {
                         x11.XCloseDisplay(dpy);
                     }
                 }

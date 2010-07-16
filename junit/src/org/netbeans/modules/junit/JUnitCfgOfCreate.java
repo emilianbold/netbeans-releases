@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -152,15 +155,21 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private static final int MSG_TYPE_CLASSNAME_INVALID = 1;
     /** layer index for a message about non-default class name */
     private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 2;
+    /** layer index for a message about modified files */
+    private static final int MSG_TYPE_MODIFIED_FILES = 3;
     /** */
-    private MessageStack msgStack = new MessageStack(3);
+    private MessageStack msgStack = new MessageStack(4);
 
     /**
      * Creates a JUnit configuration panel.
      *
-     * @param  nodes  nodes selected when the Create Tests action was invoked
+     * @param nodes  nodes selected when the Create Tests action was invoked
+     * @param isShowMsgFilesWillBeSaved if {@code true} then a warning message
+     *        like "Warning: All modified files will be saved." will be
+     *        displayed on the panel, otherwise (i.e. if {@code false}) then
+     *        the message won't be displayed.
      */
-    JUnitCfgOfCreate(Node[] nodes) {
+    JUnitCfgOfCreate(Node[] nodes, boolean isShowMsgFilesWillBeSaved) {
         assert (nodes != null) && (nodes.length != 0);
         
         this.nodes = nodes;
@@ -169,6 +178,10 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         initBundle();
         try {
             initComponents();
+            if(isShowMsgFilesWillBeSaved) {
+                String msg = bundle.getString("MSG_MODIFIED_FILES"); // NOI18N
+                setMessage(msg, MSG_TYPE_MODIFIED_FILES);
+            }
             setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
             addAccessibleDescriptions();
             initializeCheckBoxStates();
@@ -297,6 +310,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         btnOK.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JUnitCfgOfCreate.class, "AD_OK"));
         btnOK.setEnabled(isAcceptable());
         addChangeListener(changeListener = new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 btnOK.setEnabled(isAcceptable());
             }
@@ -445,6 +459,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private final class CheckBoxListener implements ItemListener {
         public CheckBoxListener () {}
         
+        @Override
         public void itemStateChanged(ItemEvent e) {
             final Object source = e.getSource();
             
@@ -584,6 +599,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * @param  e  event describing the state change event
      *            (unused in this method)
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
         checkClassNameValidity();
         checkAcceptability();
@@ -925,6 +941,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             setOpaque(true);
         }
         
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,

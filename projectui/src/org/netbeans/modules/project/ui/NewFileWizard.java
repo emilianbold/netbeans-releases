@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class NewFileWizard extends TemplateWizard {
 
@@ -81,7 +85,7 @@ public final class NewFileWizard extends TemplateWizard {
                 // check ProjectChooserFactory.WIZARD_KEY_PROJECT property
                 if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals(evt.getPropertyName())) {
                     Project newProject = (Project) evt.getNewValue();
-                    if (!getCurrentProject().equals(newProject)) {
+                    if (!Utilities.compareObjects(getCurrentProject(), newProject)) {
                         // set the new project and force reload panels in wizard
                         setCurrentProject(newProject);
                         try {
@@ -143,7 +147,7 @@ public final class NewFileWizard extends TemplateWizard {
 
     protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
         Sources c = ProjectUtils.getSources(getCurrentProject());
-        return Templates.createSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC));
+        return Templates.buildSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC)).create();
     }
 }
  

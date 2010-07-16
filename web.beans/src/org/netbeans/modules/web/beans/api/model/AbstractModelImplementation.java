@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@
 package org.netbeans.modules.web.beans.api.model;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+import org.openide.util.Lookup;
 
 
 /**
@@ -53,6 +58,10 @@ public abstract class AbstractModelImplementation {
         myUnit = unit;
         myModel = new WebBeansModel( this );
     }
+    
+    public ModelUnit getModelUnit(){
+        return myUnit;
+    }
 
     protected AnnotationModelHelper getHelper(){
         return getModelUnit().getHelper();
@@ -62,8 +71,12 @@ public abstract class AbstractModelImplementation {
         return myModel;
     }
     
-    public ModelUnit getModelUnit(){
-        return myUnit;
+    protected BeansModel getBeansModel(){
+        return BeansModelFactory.getModel(getModelUnit());
+    }
+    
+    protected WebBeansModelProvider getProvider(){
+        return Lookup.getDefault().lookup( WebBeansModelProvider.class);
     }
     
     private ModelUnit myUnit;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,13 +72,17 @@ import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.options.AnnotationColorProvider;
+import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
+import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.ui.export.ExportAction;
+import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -85,32 +92,6 @@ import org.openide.util.ImageUtilities;
  * @author Maros Sandor
  */
 public class Annotator {
-
-    private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
-    private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
-    private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
-    private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
-    private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
-    private static MessageFormat newInRepositoryFormat = getFormat("newInRepositoryFormat"); // NOI18N
-    private static MessageFormat modifiedInRepositoryFormat = getFormat("modifiedInRepositoryFormat"); // NOI18N
-    private static MessageFormat removedInRepositoryFormat = getFormat("removedInRepositoryFormat"); // NOI18N
-    private static MessageFormat conflictFormat = getFormat("conflictFormat"); // NOI18N
-    private static MessageFormat mergeableFormat = getFormat("mergeableFormat"); // NOI18N
-    private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
-
-    private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
-    private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat newInRepositoryTooltipFormat = getFormat("newInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat modifiedInRepositoryTooltipFormat = getFormat("modifiedInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat removedInRepositoryTooltipFormat = getFormat("removedInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat conflictTooltipFormat = getFormat("conflictTooltipFormat"); // NOI18N
-    private static MessageFormat mergeableTooltipFormat = getFormat("mergeableTooltipFormat"); // NOI18N
-    private static MessageFormat excludedTooltipFormat = getFormat("excludedTooltipFormat"); // NOI18N
-
     private static String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png";
 
@@ -146,13 +127,6 @@ public class Annotator {
     }
 
     private void initDefaults() {
-        Field [] fields = Annotator.class.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            String name = fields[i].getName();
-            if (name.endsWith("Format")) {  // NOI18N
-                initDefaultColor(name.substring(0, name.length() - 6));
-            }
-        }
         refresh();
     }
 
@@ -170,30 +144,6 @@ public class Annotator {
             emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
         cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
-    }
-
-    private void initDefaultColor(String name) {
-        String color = System.getProperty("svn.color." + name);  // NOI18N
-        if (color == null) return;
-        setAnnotationColor(name, color);
-    }
-
-    /**
-     * Changes annotation color of files.
-     *
-     * @param name name of the color to change. Can be one of:
-     * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository,
-     * removedInRepository, conflict, mergeable, excluded.
-     * @param colorString new color in the format: 4455AA (RGB hexadecimal)
-     */
-    private void setAnnotationColor(String name, String colorString) {
-        try {
-            Field field = Annotator.class.getDeclaredField(name + "Format");  // NOI18N
-            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
-            field.set(null, format);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid color name");  // NOI18N
-        }
     }
 
     /**
@@ -244,33 +194,35 @@ public class Annotator {
 
         // aligned with SvnUtils.getComparableStatus
 
-        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return conflictFormat.format(new Object [] { name, textAnnotation });
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return getAnnotationProvider().TREECONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
-            return mergeableFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MERGEABLE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return newLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
 
         // repository changes - lower annotator priority
 
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
-            return removedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
-            return newInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
-            return modifiedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return excludedFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             return name;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -349,13 +301,13 @@ public class Annotator {
         } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
             return name;
         } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return excludedFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
             return name;
         } else if (match(status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
@@ -459,6 +411,7 @@ public class Annotator {
             actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
+            actions.add(SystemAction.get(UpdateToAction.class));
             actions.add(null);
             actions.add(SystemAction.get(StatusAction.class));
             actions.add(SystemAction.get(DiffAction.class));
@@ -471,6 +424,7 @@ public class Annotator {
             actions.add(SystemAction.get(CreateCopyAction.class));
             actions.add(SystemAction.get(SwitchToAction.class));
             actions.add(SystemAction.get(MergeAction.class));
+            actions.add(SystemAction.get(ExportAction.class));
             actions.add(null);
             actions.add(SystemAction.get(BlameAction.class));
             actions.add(SystemAction.get(SearchHistoryAction.class));
@@ -479,6 +433,8 @@ public class Annotator {
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
             actions.add(null);
+            actions.add(SystemAction.get(CleanupAction.class));
+            actions.add(SystemAction.get(VersioningInfoAction.class));
             actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
@@ -497,11 +453,13 @@ public class Annotator {
                 if (onlyProjects) {
                     actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
                 }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateToAction.class), loc.getString("CTL_PopupMenuItem_UpdateTo"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportAction.class), loc.getString("CTL_PopupMenuItem_Export"), context));
                 actions.add(null);
                 if (!onlyFolders) {
                     actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
@@ -518,8 +476,18 @@ public class Annotator {
                                                                 ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ?
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") :
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
+                        ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
+                        ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
+                        : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
+                actions.add(SystemActionBridge.createAction(
+                                SystemAction.get(CleanupAction.class),
+                                loc.getString("CTL_PopupMenuItem_Cleanup"), context));
+                actions.add(SystemActionBridge.createAction(
+                                SystemAction.get(VersioningInfoAction.class),
+                                loc.getString("CTL_PopupMenuItem_VersioningInfo"), context));
                 actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(SvnPropertiesAction.class),
                                 loc.getString("CTL_PopupMenuItem_Properties"), context));
@@ -616,33 +584,35 @@ public class Annotator {
         if(mostImportantInfo == null) return null;
         String statusText = null;
         int status = mostImportantInfo.getStatus();
-        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            statusText = conflictTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            statusText = getAnnotationProvider().TREECONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
-            statusText = mergeableTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().MERGEABLE_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            statusText = deletedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            statusText = removedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            statusText = newLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            statusText = addedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            statusText = modifiedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
 
         // repository changes - lower annotator priority
 
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
-            statusText = removedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
-            statusText = newInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().NEW_IN_REPOSITORY_FILE.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
-            statusText = modifiedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
             statusText = null;
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            statusText = excludedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+            statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             statusText = null;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -688,12 +658,13 @@ public class Annotator {
         boolean available = true;
         if (!SvnClientFactory.isInitialized()) {
             Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
-                    SvnClientFactory.init();
-                    if (files != null && files.length > 0) {
-                        // ask annotator again
-                        Subversion.getInstance().refreshAnnotations(files);
+                    if (SvnClientFactory.isInitialized()) {
+                        return;
                     }
+                    SvnClientFactory.init();
+                    Subversion.getInstance().refreshAllAnnotations();
                 }
             });
             Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
@@ -703,5 +674,9 @@ public class Annotator {
             available = false;
         }
         return available;
+    }
+
+    private AnnotationColorProvider getAnnotationProvider() {
+        return AnnotationColorProvider.getInstance();
     }
 }

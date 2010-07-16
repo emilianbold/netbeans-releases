@@ -198,7 +198,8 @@ public class ProjectLogicalViewProvider implements LogicalViewProvider {
         return false;
     }
 
-    /** Filter node containin additional features for the J2SE physical
+    /**
+     * Filter node containin additional features for the physical
      */
     private final class IcanLogicalViewRootNode extends AbstractNode {
 
@@ -207,12 +208,20 @@ public class ProjectLogicalViewProvider implements LogicalViewProvider {
 
         public IcanLogicalViewRootNode(Children children) {
             super(children, createLookup(project));
-            setIconBaseWithExtension("org/netbeans/modules/bpel/project/resources/bpelProject.png"); // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/bpel/project/ui/resources/projectIcon.gif"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
+        }
+
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(ProjectLogicalViewProvider.class,
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
         }
 
         public HelpCtx getHelpCtx() {
@@ -260,7 +269,7 @@ public class ProjectLogicalViewProvider implements LogicalViewProvider {
                 actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
                 // add versioning support
-                //[MOVE_TO_61_FIXME]actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
+                actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
 //              null,
 //              SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                 actions.add(null);

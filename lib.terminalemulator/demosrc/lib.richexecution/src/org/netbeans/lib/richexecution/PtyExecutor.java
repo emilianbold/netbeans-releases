@@ -1,8 +1,11 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -270,28 +273,15 @@ public final class PtyExecutor {
         return wrapperCmd;
     }
 
-    /**
-     * Construct a ProcessBuilder from the given Program.
-     * @param program
-     * @return
-     */
-    private static ProcessBuilder processBuilder(Program program) {
-        ProcessBuilder pb = new ProcessBuilder(program.command());
-        pb.directory(program.directory());
-        pb.environment().putAll(program.environment());
-        // LATER pb.redirectErrorStream(program.redirectErrorStream());
-        return pb;
-    }
-
     public final PtyProcess start(Program program, Pty pty) {
         Process process;
         int pid = -1;
         try {
-            List<String> wrappedCmd = wrappedCmd(program.command(), pty);
-            // OLD program.processBuilder().command(wrappedCmd);
-            program.command(wrappedCmd);
-            // OLD process = program.processBuilder().start();
-            process = processBuilder(program).start();
+	    ProcessBuilder pb = new ProcessBuilder(wrappedCmd(program.command(), pty));
+	    pb.directory(program.directory());
+	    pb.environment().putAll(program.environment());
+	    // LATER pb.redirectErrorStream(program.redirectErrorStream());
+	    process = pb.start();
         } catch (IOException ex) {
             Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
             return null;

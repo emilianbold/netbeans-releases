@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,19 +46,14 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.spi.UpgradableProjectLookupProvider;
-import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
-public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
+public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction {
     
     private Lookup context;
     
@@ -66,9 +64,10 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     public UpdateProjectAction(Lookup actionContext) {
         super(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.Name"));
         this.context = actionContext;
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
     }
 
-    public void actionPerformed(ActionEvent ignore) {
+    public @Override void actionPerformed(ActionEvent ignore) {
         new UpdateAllProjects().update(false);
     }
 
@@ -83,33 +82,8 @@ public final class UpdateProjectAction extends AbstractAction implements Context
         return upgradable != null && upgradable.isUpgradable();
     }
     
-    public Action createContextAwareInstance(Lookup actionContext) {
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);
-    }
-
-    public JMenuItem getPopupPresenter() {
-        return new Menu();
-    }
-
-    private class Menu extends JMenuItem implements DynamicMenuContent {
-
-        public Menu() {
-            Actions.connect(this, UpdateProjectAction.this);
-            Mnemonics.setLocalizedText(this, (String) getValue(NAME));
-        }
-
-        public JComponent[] getMenuPresenters() {
-            if (UpdateProjectAction.this.isEnabled()) {
-                return new JComponent[] {this};
-            } else {
-                return new JComponent[0];
-            }
-        }
-
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return getMenuPresenters();
-        }
-
     }
 
 }

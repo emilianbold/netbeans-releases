@@ -110,7 +110,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         add(filtersPanel, BorderLayout.SOUTH);
         
         manager.setRootContext(ElementNode.getWaitNode());
-        
     }
 
     @Override
@@ -119,7 +118,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView.requestFocusInWindow();
         return result;
     }
-    
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        elementView.requestFocus();
+    }
+
     public org.openide.util.Lookup getLookup() {
         // XXX Check for chenge of FileObject
         return lookup;
@@ -330,9 +335,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     };
         
     private class MyBeanTreeView extends BeanTreeView implements ToolTipManagerEx.ToolTipProvider {
+
+        private final ToolTipManagerEx toolTipManager;
         
         public MyBeanTreeView() {
-            new ToolTipManagerEx( this );
+            toolTipManager = new ToolTipManagerEx( this );
             setUseSubstringInQuickSearch(true);
         }
         
@@ -470,8 +477,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         @Override
         public void removeNotify() {
             super.removeNotify();
-            
             inHierarchy = false;
+            this.toolTipManager.hideTipWindow();
         }
 
         @Override

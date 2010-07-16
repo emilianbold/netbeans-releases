@@ -20,6 +20,14 @@
 
 package org.netbeans.modules.iep.editor.designer;
 
+import org.netbeans.modules.iep.editor.ps.PropertyPanel;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.openide.util.NbBundle;
+
 import com.nwoods.jgo.DomDoc;
 import com.nwoods.jgo.DomElement;
 import com.nwoods.jgo.DomNode;
@@ -31,8 +39,10 @@ import com.nwoods.jgo.JGoText;
  * SimpleNodeLabel is just a JGoText that treats a single click as a command
  * to start editing the text of the label.
  */
-public class SimpleNodeLabel extends JGoText {
-   /** Create an empty label for a SimpleNode.  Call initialize() before using. */
+public class SimpleNodeLabel extends JGoText implements SharedConstants {
+    JGoArea mParent = null;
+    
+    /** Create an empty label for a SimpleNode.  Call initialize() before using. */
     public SimpleNodeLabel() {
         super();
     }
@@ -40,15 +50,16 @@ public class SimpleNodeLabel extends JGoText {
     /** Create a label containing the given text for a SimpleNode */
     public SimpleNodeLabel(String text, JGoArea parent) {
         super(text);
+        mParent = parent;
         initialize(text, parent);
     }
     
     public void initialize(String text, JGoArea parent) {
-        setSelectable(false);
+        setSelectable(true);
         setDraggable(false);
         setResizable(false);
         setVisible(true);
-        setEditable(false);
+        setEditable(true);
         setEditOnSingleClick(false);
         setTransparent(true);
         setAlignment(JGoText.ALIGN_CENTER);
@@ -61,6 +72,47 @@ public class SimpleNodeLabel extends JGoText {
         setItalic(false);
     }
     
+    public JGoArea getParent() {
+	return mParent;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.nwoods.jgo.JGoText#setText(java.lang.String)
+     */
+    @Override
+    public void setText(String str) {
+	String oldVal = getText();
+	if (mParent != null && mParent instanceof EntityNode) {
+	    EntityNode node = (EntityNode) mParent;
+	    OperatorComponent comp =  node.getModelComponent();
+	    IEPModel model = comp.getModel();
+	    Property mProperty = comp.getProperty(PROP_NAME);
+	    String modelVal = mProperty.getValue();
+            OperatorComponentContainer ocContainer = model.getPlanComponent().getOperatorComponentContainer();
+            if (oldVal.equals(str)) {
+        	return;
+            }
+            if (modelVal.equals(str)) { 
+        	// accounts for condition that ueser changed the name value 
+        	// in the property dialog of operator.
+        	super.setText(str);
+        	return;
+            }
+	    if(ocContainer.findOperator(str) != null) {
+		// popup info dialog that tells the user that the name is already in use.
+		String msg = NbBundle.getMessage(SimpleNodeLabel.class,
+			"SimpleNodeLabel.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
+			str);
+		PlanCanvas.showInformationDialog(msg);
+		return;
+	    } else {
+		super.setText(str);
+	    }
+	} else {
+	    super.setText(str);
+	}
+    }
+
     public void SVGWriteObject(DomDoc svgDoc, DomElement jGoElementGroup) {
         // Add <SimpleNodeLabel> element
         if (svgDoc.JGoXMLOutputEnabled()) {

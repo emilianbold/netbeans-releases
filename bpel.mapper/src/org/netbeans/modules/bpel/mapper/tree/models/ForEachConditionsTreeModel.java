@@ -29,6 +29,7 @@ import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
 
 /**
  * The implementation of the MapperTreeModel for target tree for
@@ -61,7 +62,7 @@ public class ForEachConditionsTreeModel implements SoaTreeModel,
     }
 
     public TreeItemInfoProvider getTreeItemInfoProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public TreeStructureProvider getTreeStructureProvider() {
@@ -69,7 +70,7 @@ public class ForEachConditionsTreeModel implements SoaTreeModel,
     }
 
     public TreeItemActionsProvider getTreeItemActionsProvider() {
-        return SimpleTreeInfoProvider.getInstance();
+        return BpelSimpleTreeInfoProvider.getInstance();
     }
 
     public Object getRoot() {

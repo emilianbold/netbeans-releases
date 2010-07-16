@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,21 +44,37 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.util.Trees;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-import com.sun.source.tree.*;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+
+import static org.netbeans.api.java.lexer.JavaTokenId.LINE_COMMENT;
+import static org.netbeans.api.java.lexer.JavaTokenId.BLOCK_COMMENT;
+import static org.netbeans.api.java.lexer.JavaTokenId.JAVADOC_COMMENT;
+import static org.netbeans.api.java.lexer.JavaTokenId.WHITESPACE;
 
 /**
  *
@@ -75,27 +94,23 @@ public class RenameTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
-        if (renameInComments) {
+        if (!renameInComments) {
+            return super.visitCompilationUnit(node, p);
+        }
+
+        if (p.getKind() == ElementKind.PARAMETER) {
+            renameParameterInMethodComments(p);
+
+        } else {
             String originalName = getOldSimpleName(p);
             if (originalName!=null) {
                 TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
                 while (ts.moveNext()) {
-                    Token t = ts.token();
-
-                    if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
-                        int index = -1;
-                        String text = t.text().toString();
-
-                        while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
-                            if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1))) {
-                                continue;
-                            }
-                            if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length()))) {
-                                continue;
-                            }
-                            workingCopy.rewriteInComment(ts.offset() + index, originalName.length(), newName);
-                        }
+                    Token<JavaTokenId> t = ts.token();
+                    
+                    if (isComment(t)) {
+                        rewriteAllInComment(t.text().toString(), ts.offset(), originalName);
                     }
                 }
             }
@@ -157,6 +172,7 @@ public class RenameTransformer extends RefactoringVisitor {
                     return;
                 }
                 Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(),new ElementUtilities.ElementAcceptor() {
+                    @Override
                     public boolean accept(Element e, TypeMirror type) {
                         return id.equals(e.getSimpleName());
                     }
@@ -256,5 +272,81 @@ public class RenameTransformer extends RefactoringVisitor {
             }
         }
         return false;
+    }
+
+    /**
+     * Renames the method (or constructor) parameter in comments. This method
+     * considers comments before and inside the method declaration, and within
+     * the method body.
+     *
+     * @param parameter the method or constructor parameter {@link Element}
+     */
+    private void renameParameterInMethodComments(final Element parameter) {
+        final Tree method = workingCopy.getTrees().getPath(parameter).getParentPath().getLeaf();
+
+        final String originalName = getOldSimpleName(parameter);
+        final int methodStart = (int) workingCopy.getTrees().getSourcePositions()
+                .getStartPosition(workingCopy.getCompilationUnit(), method);
+        final TokenSequence<JavaTokenId> tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+        //renaming in comments before the method/constructor
+        tokenSequence.move(methodStart);
+        while (tokenSequence.movePrevious()) {
+            final Token<JavaTokenId> token = tokenSequence.token();
+            if (isComment(token)) {
+                rewriteAllInComment(token.text().toString(), tokenSequence.offset(), originalName);
+            } else if (token.id() != WHITESPACE) {
+                break;
+            }            
+        }
+
+        //renaming in comments within the method/constructor declaration and body
+        final int methodEnd = (int) workingCopy.getTrees().getSourcePositions()
+                .getEndPosition(workingCopy.getCompilationUnit(), method);
+
+        tokenSequence.move(methodStart);
+        while (tokenSequence.moveNext() && tokenSequence.offset() < methodEnd) {
+            final Token<JavaTokenId> token = tokenSequence.token();
+            if (isComment(token)) {
+                rewriteAllInComment(token.text().toString(), tokenSequence.offset(), originalName);
+            }
+        }
+    }
+
+    /**
+     * Checks if {@code token} represents a comment.
+     * 
+     * @param token the {@link Token} to check
+     * @return {@code true} if {@code token} represents a line comment, block
+     *   comment or javadoc; {@code false} otherwise.
+     */
+    private boolean isComment(final Token<JavaTokenId> token) {
+        switch (token.id()) {
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case JAVADOC_COMMENT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Changes all occurrences of {@code originalName} to the new name in the comment {@code text}.
+     *
+     * @param text the text of the comment token
+     * @param offset the offset of the comment token
+     * @param originalName the old name to change
+     */
+    private void rewriteAllInComment(final String text, final int offset, final String originalName) {
+        for (int index = text.indexOf(originalName); index != -1; index = text.indexOf(originalName, index + 1)) {
+            if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1))) {
+                continue;
+            }
+            if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length()))) {
+                continue;
+            }
+            workingCopy.rewriteInComment(offset + index, originalName.length(), newName);
+        }
     }
 }

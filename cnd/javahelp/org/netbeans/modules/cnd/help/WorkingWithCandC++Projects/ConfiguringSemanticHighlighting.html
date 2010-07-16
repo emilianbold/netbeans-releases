@@ -8,16 +8,16 @@ Use is subject to license terms.
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
 type="text/css">
-<title>Configuring C and C++ Semantic Highlighting</title>
+<title>Configuring Highlighting for C and C++ Projects</title>
 </head>
 <body>
-<h2>Configuring C and C++ Semantic Highlighting</h2>
+<h2>Configuring Highlighting for C and C++ Projects</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>
 You can use the Options window to configure semantic highlighting for your 
 C and C++ projects.  The IDE can display various code elements with text highlights
 such as different colors, underlining, or font weights to make the code easier to understand.</p>
-<p><b>To configure C and C++ semantic highlighting:</b></p>
+<p><b>To configure highlighting:</b></p>
 <ol>
 <li>Choose Tools &gt; Options.</li>
 <li>
@@ -62,6 +62,9 @@ typedefs are highlighted.
     each change, to keep the syntax highlighting accurate. If you deselect this option, reparsing occurs only
     when the file is saved. Deselecting this option might be useful when working with very large files
     if reparsing causes delays, but might cause temporary inaccuracy with highlighting.</li>
+<li><b>Show Overridden Annotations.</b> If this option is selected, the editor will show pop-up annotations for
+methods that override a parent method, or that are overridden by a descendent class. The annotations contain links to
+the associated methods and classes.</li>
 
 </ul>
 <table>
@@ -70,14 +73,11 @@ typedefs are highlighted.
 </tr>
 <tr>
 <td width="23"></td>
-<a href="ConfiguringProjectSettings.html">Configuring C and 
-C++ Project Settings</a><br>
-<a href="ConfiguringParsingSettings.html">Configuring C and 
-C++ Parser Settings</a><br>
+<a href="ConfiguringProjectSettings.html">Configuring Project Options for C/C++/Fortran Projects</a><br>
+<a href="ConfiguringParsingSettings.html">Configuring Code Assistance Settings for C and C++ Projects</a><br>
 <a href="ConfiguringCodeStyle.html">Configuring C and C++ 
 Formatting Style</a><br>
-<a href="ConfiguringFileExtensions.html">Configuring C and C++ 
-File Extensions</a><br>
+<a href="ConfiguringFileExtensions.html">Configuring  File Extensions for C/C++/Fortran Projects</a><br>
 <a href="SettingCandC++ProjectProperties.html">Setting Project
 Properties</a>
 </td>

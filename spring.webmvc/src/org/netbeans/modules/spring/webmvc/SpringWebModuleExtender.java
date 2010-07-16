@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -199,6 +204,13 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     public Set<FileObject> extend(WebModule webModule) {
         CreateSpringConfig createSpringConfig = new CreateSpringConfig(webModule);
         FileObject webInf = webModule.getWebInf();
+        if (webInf == null) {
+            try {
+                webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
+            } catch (IOException ex) {
+                   LOGGER.log(Level.WARNING, "Exception during creating WEB-INF directory", ex); //NOI18N
+            }
+        }
         if (webInf != null) {
             try {
                 FileSystem fs = webInf.getFileSystem();
@@ -227,6 +239,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public void run() throws IOException {
             // MODIFY WEB.XML
             FileObject dd = webModule.getDeploymentDescriptor();
+            //we need deployment descriptor, create if null
+            if(dd==null)
+            {
+                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
+            }
             if (dd != null) {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
@@ -249,25 +266,44 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
             List<Library> libraries = new ArrayList<Library>(3);
-            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
-            Library springLibrary = null;
-            if (webMVCLibrary != null) {
-                libraries.add(webMVCLibrary);
-                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
-                    // In case this is an user library with a monolithic Spring.
-                    springLibrary = webMVCLibrary;
+            Library springLibrary = component.getSpringLibrary();
+            String version = component.getSpringLibraryVersion();
+            Library webMVCLibrary = null;
+            if (springLibrary != null) {
+                libraries.add(springLibrary);
+                if (SpringUtilities.isSpringWebMVCLibrary(springLibrary)) {
+                    webMVCLibrary = springLibrary;
                 }
             } else {
-                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+                LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
             }
-            if (springLibrary == null) {
-                springLibrary = SpringUtilities.findSpringLibrary();
-                if (springLibrary != null){
-                    libraries.add(springLibrary);
+            if (webMVCLibrary == null) {
+                webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary(version);
+                if (webMVCLibrary !=null) {
+                    libraries.add(webMVCLibrary);
                 } else {
-                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+                    LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library with version "+version+" found."));
                 }
             }
+//            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
+//            Library springLibrary = null;
+//            if (webMVCLibrary != null) {
+//                libraries.add(webMVCLibrary);
+//                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
+//                    // In case this is an user library with a monolithic Spring.
+//                    springLibrary = webMVCLibrary;
+//                }
+//            } else {
+//                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+//            }
+//            if (springLibrary == null) {
+//                springLibrary = SpringUtilities.findSpringLibrary();
+//                if (springLibrary != null){
+//                    libraries.add(springLibrary);
+//                } else {
+//                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+//                }
+//            }
             if (includeJstl) {
                 Library jstlLibrary = SpringUtilities.findJSTLibrary();
                 if (jstlLibrary != null) {
@@ -287,13 +323,18 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
             final List<File> newConfigFiles = new ArrayList<File>(2);
-            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
+            HashMap<String, Object> params = new HashMap<String, Object>();
+            if (version.startsWith("3.0")) {    //NOI18N
+                params.put("springVersion3", Boolean.TRUE); //NOI18N
+            }
+            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext",params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             String fullIndexUrl = SpringWebFrameworkUtils.instantiateDispatcherMapping(dispatcherMapping, "index"); // NOI18N
             String simpleIndexUrl = SpringWebFrameworkUtils.getSimpleDispatcherURL(fullIndexUrl);
             Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", simpleIndexUrl)); // NOI18N
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
+            params.putAll(indexUrlParams);
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N

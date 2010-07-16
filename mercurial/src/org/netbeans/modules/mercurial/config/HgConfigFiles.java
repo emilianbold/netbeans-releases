@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,9 +56,11 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.ini4j.Config;
 import org.ini4j.Ini;
-import org.ini4j.InvalidIniFormatException;
+import org.ini4j.InvalidFileFormatException;
+import org.ini4j.Profile.Section;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -92,7 +97,11 @@ public class HgConfigFiles {
     private static final String WINDOWS_HG_RC_FILE = "Mercurial.ini";                                 // NOI18N
     private static final String WINDOWS_DEFAULT_MECURIAL_INI_PATH = "C:\\Mercurial\\Mercurial.ini";                                 // NOI18N
     private boolean bIsProjectConfig;
-    private InvalidIniFormatException initException;
+    private IOException initException;
+    /**
+     * fileName of the configuration file
+     */
+    private String configFileName;
     /**
      * Creates a new instance
      */
@@ -101,9 +110,10 @@ public class HgConfigFiles {
         // get the system hgrc file
         Config.getGlobal().setEscape(false); // escaping characters disabled
         if(Utilities.isWindows()) {
-            hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
-        }else{
-            hgrc = loadSystemAndGlobalFile(HG_RC_FILE);
+            // on windows both Mercurial.ini and .hgrc are allowed
+            hgrc = loadSystemAndGlobalFile(new String[] {WINDOWS_HG_RC_FILE, "." + HG_RC_FILE}); //NOI18N
+        } else {
+            hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
         }
     }
     
@@ -136,8 +146,10 @@ public class HgConfigFiles {
             setProperty(HG_UI_SECTION, HG_USERNAME, value);
         } else if (name.equals(HG_DEFAULT_PUSH)) { 
             setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value);
+            HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_DEFAULT_PULL)) { 
             setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value);
+            HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_EXTENSIONS_HGK)) { 
             // Allow hgext.hgk to be set to some other user defined value if required
             if(getProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK).equals("")){
@@ -165,9 +177,9 @@ public class HgConfigFiles {
             inisection.put(name, value);
         }
         if (!bIsProjectConfig && Utilities.isWindows()) {
-            storeIni(hgrc, WINDOWS_HG_RC_FILE);
+            storeIni(hgrc, configFileName);
         } else {
-            storeIni(hgrc, HG_RC_FILE);
+            storeIni(hgrc, configFileName);
         }
     }
 
@@ -208,9 +220,9 @@ public class HgConfigFiles {
         if (inisection != null) {
              inisection.clear();
             if (!bIsProjectConfig && Utilities.isWindows()) {
-                storeIni(hgrc, WINDOWS_HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             } else {
-                storeIni(hgrc, HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             }
          }
     }
@@ -220,9 +232,9 @@ public class HgConfigFiles {
         if (inisection != null) {
              inisection.remove(name);
             if (!bIsProjectConfig && Utilities.isWindows()) {
-                storeIni(hgrc, WINDOWS_HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             } else {
-                storeIni(hgrc, HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             }
          }
     }
@@ -266,9 +278,10 @@ public class HgConfigFiles {
     private void doReload () {
         if (dir == null) {
             if(!bIsProjectConfig && Utilities.isWindows()) {
-                hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
-            }else{    
-                hgrc = loadSystemAndGlobalFile(HG_RC_FILE);                                          
+                // on windows both Mercurial.ini and .hgrc are allowed
+                hgrc = loadSystemAndGlobalFile(new String[] {WINDOWS_HG_RC_FILE, "." + HG_RC_FILE}); //NOI18N
+            } else {
+                hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
             }
         } else {
             hgrc = loadRepoHgrcFile(dir);                                      
@@ -333,14 +346,14 @@ public class HgConfigFiles {
             }
         } catch (FileNotFoundException ex) {
             // ignore
-        } catch (InvalidIniFormatException ex) {
+        } catch (InvalidFileFormatException ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
             initException = ex;
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot parse configuration file", ex); // NOI18N
-            initException = new InvalidIniFormatException(ex);
+            initException = new IOException(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -351,7 +364,8 @@ public class HgConfigFiles {
      * Loads Repository configuration file  <repo>/.hg/hgrc on all platforms
      * */
     private Ini loadRepoHgrcFile(File dir) {
-        String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N 
+        String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N
+        configFileName = HG_RC_FILE;
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         system = createIni(file);
@@ -373,20 +387,28 @@ public class HgConfigFiles {
      * @param fileName the file name
      * @return an Ini instance holding the configuration file. 
      */       
-    private Ini loadSystemAndGlobalFile(String fileName) {
+    private Ini loadSystemAndGlobalFile(String[] fileNames) {
         // config files from userdir
-        String filePath = getUserConfigPath() + fileName;
-        File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
-        system = createIni(file);
+        for (String userConfigFileName : fileNames) {
+            String filePath = getUserConfigPath() + userConfigFileName;
+            File file = FileUtil.normalizeFile(new File(filePath));
+            system = createIni(file);
+            if (system != null) {
+                configFileName = userConfigFileName;
+                break;
+            }
+            Mercurial.LOG.log(Level.INFO, "Could not load the file {0}.", filePath); //NOI18N
+        }
         
         if(system == null) {
+            configFileName = fileNames[0];
             system = createIni();
-            Mercurial.LOG.log(Level.INFO, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
+            Mercurial.LOG.log(Level.INFO, "Could not load the user config file. Falling back on hg defaults."); //NOI18N
         }
         
         Ini global = null;
-        File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
+        File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileNames[0]));
         global = createIni(gFile);   // NOI18N
 
         if(global != null) {

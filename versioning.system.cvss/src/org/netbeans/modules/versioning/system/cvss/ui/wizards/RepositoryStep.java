@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,7 +63,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import javax.net.SocketFactory;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
@@ -70,6 +72,7 @@ import java.net.SocketAddress;
 import java.net.InetSocketAddress;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  * UI for CvsRootSettings. After initialization data
@@ -145,7 +148,16 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         updatePasswordTask = requestProcessor.create(new Runnable() {
             public void run() {
                 String cvsRoot = selectedCvsRoot();
-                String password = PasswordsFile.findPassword(cvsRoot);
+                char[] passwordChars = KeyringSupport.read(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot);
+                String password;
+                if (passwordChars != null) {
+                    password = new String(passwordChars);
+                } else {
+                    password = PasswordsFile.findPassword(cvsRoot);
+                    if (password != null) {
+                        KeyringSupport.save(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot.toString(), password.toCharArray(), null);
+                    }
+                }
                 if (password != null && passwordExpected) {
                     String fakePasswordWithProperLen = new String(password).substring(1);
                     scrambledPassword = password;
@@ -303,12 +315,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         }
                     }
 
-                } catch (IOException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                    String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
-                    fail(msg);
                 } catch (AuthenticationException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, "Connection authentification verification failed.");  // NOI18N
@@ -325,6 +331,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                             msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
                         }
                     }
+                    fail(msg);
+                } catch (Exception e) {
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
                     fail(msg);
                 } finally {
                     if (sock != null) {
@@ -403,22 +415,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         String root = selectedCvsRoot();
         CVSRoot cvsRoot = CVSRoot.parse(root);
         if (root.startsWith(":pserver:")) { // NOI18N
-            try {
-                // CVSclient library reads password directly from .cvspass file
-                // store it here into the file. It's potentionally necessary for
-                // next step branch and module browsers
-
-                PasswordsFile.storePassword(root, getScrambledPassword());
-            } catch (IOException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2020"));
-                err.notify(e);
-            }
+            KeyringSupport.save(CvsModuleConfig.PREFIX_KEYRING_KEY, root, getScrambledPassword().toCharArray(), null);
         } else if (root.startsWith(":ext:")) {  // NOI18N
             boolean internalSsh = repositoryPanel.internalSshRadioButton.isSelected();
             CvsModuleConfig.ExtSettings extSettings = new CvsModuleConfig.ExtSettings();
             extSettings.extUseInternalSsh = internalSsh;
-            extSettings.extPassword = repositoryPanel.extPasswordField.getText();
+            extSettings.extPassword = repositoryPanel.extPasswordField.getPassword();
             extSettings.extRememberPassword = repositoryPanel.extREmemberPasswordCheckBox.isSelected();
             extSettings.extCommand = repositoryPanel.extCommandTextField.getText();
             CvsModuleConfig.getDefault().getPreferences().putBoolean(USE_INTERNAL_SSH, internalSsh);
@@ -470,7 +472,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                 if (CvsModuleConfig.getDefault().hasExtSettingsFor(root)) {
                     CvsModuleConfig.ExtSettings extSettings = CvsModuleConfig.getDefault().getExtSettingsFor(root);
                     repositoryPanel.internalSshRadioButton.setSelected(extSettings.extUseInternalSsh);
-                    repositoryPanel.extPasswordField.setText(extSettings.extPassword);
+                    repositoryPanel.extPasswordField.setText(new String(extSettings.extPassword));
                     repositoryPanel.extREmemberPasswordCheckBox.setSelected(extSettings.extRememberPassword);
                     repositoryPanel.extCommandTextField.setText(extSettings.extCommand);
                 }

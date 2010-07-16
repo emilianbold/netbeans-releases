@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,9 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
+import org.netbeans.modules.subversion.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.ui.status.SyncFileNode;
+import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -56,22 +62,24 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
  */
 public class DiffAction extends ContextAction {
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff";    // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return getDirectoryEnabledStatus();
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
     
-    public static void diff(Context ctx, int type, String contextName) {
-        
-        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
+    public static void diff(Context ctx, int type, String contextName, boolean initialStatusRefreshDisabled) {
+        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName, initialStatusRefreshDisabled); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
@@ -79,7 +87,7 @@ public class DiffAction extends ContextAction {
     }
 
     public static void diff(File file, String rev1, String rev2) {
-        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();
@@ -94,15 +102,32 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
     
-    protected void performContextAction(Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-        
-        Context ctx = getContext(nodes);
-        String contextName = getContextDisplayName(nodes);
-        diff(ctx, Setup.DIFFTYPE_LOCAL, contextName);        
+    @Override
+    protected void performContextAction(final Node[] nodes) {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            @Override
+            public void run() {
+                Context ctx = getContext(nodes);
+                String contextName = getContextDisplayName(nodes);
+                diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName, isSvnNodes(nodes));
+            }
+        });
     }
-   
+    
+    /**
+     * Returns true if the given nodes are from the versioning view.
+     * In such case the deep scan is not required because the files and their statuses should already be known
+     * @param nodes
+     * @return
+     */
+    private static boolean isSvnNodes (Node[] nodes) {
+        boolean fromSubversionView = true;
+        for (Node node : nodes) {
+            if (!(node instanceof SyncFileNode)) {
+                fromSubversionView = false;
+                break;
+            }
+        }
+        return fromSubversionView;
+    }   
 }

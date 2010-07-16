@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,7 +63,7 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -265,11 +268,11 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     }
 
                     RepositoryFile[] repositoryFiles = new RepositoryFile[] { repositoryFile };
-                    CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, true, this);
+                    CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, true, false, this);
                     Subversion.getInstance().versionedFilesChanged();
                     SvnUtils.refreshParents(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-                    Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory);
+                    Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory, false);
                     if(isCanceled()) {                        
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         return;

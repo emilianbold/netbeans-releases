@@ -134,6 +134,15 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 DELETE_ALL_ACTION
             };
         }
+
+        if (node == WatchesTreeModel.ADD_NEW_WATCH) {
+            return new Action [] {
+                NEW_WATCH_ACTION,
+                null,
+                DELETE_ACTION,
+                DELETE_ALL_ACTION
+            };
+        }
         
         if (node instanceof BpelWatch) {
             return new Action [] {
@@ -155,7 +164,12 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) {
             return;
         }
-        
+
+        if (node == WatchesTreeModel.ADD_NEW_WATCH) {
+            newWatch();
+            return;
+        }
+
         if (node instanceof BpelWatch) {
             return;
         }

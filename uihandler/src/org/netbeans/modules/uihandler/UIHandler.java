@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -105,12 +108,13 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
         } else {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
-                byte[] nps = (byte[]) record.getParameters()[0];
-                long time = (Long) record.getParameters()[1];
+                Object[] params = record.getParameters();
+                byte[] nps = (byte[]) params[0];
+                long time = (Long) params[1];
+                String slownessType = params.length > 2 ? params[2].toString() : null;
                 assert nps != null: "nps param should be not null";
                 assert nps.length > 0 : "nps param should not be empty";
-                assert time >= 1000 : "1s is minimal reportable time";
-                reporter.notifySlowness(nps, time);
+                reporter.notifySlowness(nps, time, slownessType);
                 return;
             }
         }

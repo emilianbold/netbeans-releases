@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -155,7 +158,7 @@ public class CompletionTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -460,6 +463,7 @@ public class CompletionTest extends J2eeTestCase {
             // dump CC result to golden file
             Iterator items = comp.getCompletionItems().iterator();
             CompletionItem selectedItem = null;
+	    boolean startsWith = false;
             while (items.hasNext()) {
                 TextGraphics2D g = new TextGraphics2D(comp.getSource());
                 Object next = items.next();
@@ -475,10 +479,13 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
-                if ((selectedItem == null) && (dispText.contains(step.getChoice()))) {
-                    assertInstanceOf(CompletionItem.class, next);
+                if ((selectedItem == null || !startsWith) && (dispText.startsWith(step.getChoice()))) {
+		    startsWith = true;
                     selectedItem = (CompletionItem) next;
                 }
+		if ((selectedItem == null) && (dispText.contains(step.getChoice()))){
+		    selectedItem = (CompletionItem) next;	
+		} 
                 if (printDirectly && !isJavaScript()) {
                     logIntoRef(dispText);
                 } else {
@@ -534,6 +541,9 @@ public class CompletionTest extends J2eeTestCase {
     private void logIntoRef(String message){
         message = message.replaceAll("<\\?>", "");
         message = message.replaceAll("<\\? >", "");
+        if (message.length() > 30){
+            message = message.substring(0,30);
+        }
         ref(message);
     }
 

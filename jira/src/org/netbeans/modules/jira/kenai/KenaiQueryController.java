@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,13 +42,20 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,6 +93,31 @@ public class KenaiQueryController extends QueryController
             true,
             autoRefresh
         );
+    }
+
+    @Override
+    protected void openIssue(NbJiraIssue issue) {
+        if(issue != null) {
+            if(!checkIssueProduct(issue)) {
+                return;
+            }
+        }
+        super.openIssue(issue);
+    }
+
+    private boolean checkIssueProduct(NbJiraIssue issue) {
+        String issueProject = issue.getFieldValue(IssueField.PROJECT);
+        Project project = issue.getRepository().getConfiguration().getProjectById(issueProject);
+        if (project==null || !project.getKey().equals(projectName)) {
+            Confirmation dd = new DialogDescriptor.Confirmation(
+                                NbBundle.getMessage(
+                                    KenaiQueryController.class,
+                                    "MSG_WrongProjectWarning",
+                                    new Object[] {issue.getID(), issueProject}),
+                                Confirmation.YES_NO_OPTION);
+            return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
+        }
+        return true;
     }
 
 }

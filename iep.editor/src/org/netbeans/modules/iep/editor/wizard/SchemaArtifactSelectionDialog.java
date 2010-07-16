@@ -5,18 +5,9 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JDialog;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.iep.editor.xsd.nodes.FolderNode;
-import org.netbeans.modules.iep.editor.xsd.nodes.ProjectNode;
-import org.netbeans.modules.iep.editor.xsd.nodes.SchemaArtifactTreeModel;
-import org.netbeans.modules.iep.editor.xsd.nodes.SchemaElementNode;
-import org.netbeans.modules.iep.editor.xsd.nodes.SchemaFileNode;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,7 +58,13 @@ public class SchemaArtifactSelectionDialog {
         List<AXIComponent> artifactNamesList = new ArrayList<AXIComponent>();
         SchemaArtifactSelectionPanel panel = new SchemaArtifactSelectionPanel(existingArtificatNames, project);
         
-        DialogDescriptor dd = new DialogDescriptor(panel, "Select schema elements or types", true, null);
+        String title = NbBundle.getMessage(SchemaArtifactSelectionDialog.class, "SchemaArtifactSelectionDialog.Title");
+        String tooltip = NbBundle.getMessage(SchemaArtifactSelectionDialog.class, "SchemaArtifactSelectionDialog.Tooltip");
+        
+        panel.setToolTipText(tooltip);
+        panel.getAccessibleContext().setAccessibleDescription(tooltip);
+        
+        DialogDescriptor dd = new DialogDescriptor(panel, tooltip, true, null);
         DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
         
         dDisplayer.notify(dd);

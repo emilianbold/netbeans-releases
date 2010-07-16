@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -61,7 +62,6 @@ import org.netbeans.modules.wsdlextensions.file.model.FileOperation;
  *
  * @author sweng
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class FileComponentValidator
         implements Validator, FileComponent.Visitor {
         	
@@ -315,7 +315,28 @@ public class FileComponentValidator
     }
 
     public void visit(FileOperation target) {
-        // no attributes defined
+          Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+          //for backward compatiblity verb is not required.
+          
+//           if ( target.getVerb() == null|| 
+//                 target.getVerb().trim().equals("") ) {
+//                results.add(new Validator.ResultItem(this,
+//                        Validator.ResultType.ERROR,
+//                        target,
+//                        getMessage("FileOperationValidation.missing_verb")));
+//            } 
+          
+          // if verb is defined, its value must be valid
+          String verb = target.getVerb();
+          if(verb!= null && verb.trim().length()>0){
+              if (!("poll".equals(verb) || "read".equals(verb) || "write".equals(verb))) {
+                  results.add(new Validator.ResultItem(this,
+                          Validator.ResultType.ERROR,
+                          target,
+                          getMessage("FileOperationValidation.invalid_verb")));
+              }
+          }
     }
 
     public void visit(FileMessage target) {
@@ -342,7 +363,7 @@ public class FileComponentValidator
         }
         
         // validating: if fileNameIsPattern="true", fileName must be a valid pattern
-        if ( target.getFileNameIsPattern()) {
+        if ( target.getFileNameIsPattern() && !target.getFileNameIsRegex()) {
             boolean hasVarRef = false;
             try {
                 hasVarRef = Utils.hasMigrationEnvVarRef(target.getFileName());
@@ -360,6 +381,30 @@ public class FileComponentValidator
                         Validator.ResultType.ERROR,
                         target,
                         getMessage("FileMessageValidation.invalid_file_name_pattern", target.getFileName())));
+            }
+        }
+        
+        // validating: if fileNameIsRegex="true", fileName is a valid regex pattern.
+        if ( target.getFileNameIsRegex()) {
+            boolean hasVarRef = false;
+            try {
+                hasVarRef = Utils.hasMigrationEnvVarRef(target.getFileName());
+            }
+            catch (Exception ex) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Exception_searching_varref_in_file_name_pattern", new Object[] {target.getFileName(), ex})));
+            }
+            try {
+                if (!hasVarRef) {
+                    Pattern.compile(target.getFileName());
+                }
+            } catch (PatternSyntaxException ex) {
+            	results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.invalid_regex_file_name_pattern", target.getFileName())));
             }
         }
         
@@ -384,12 +429,13 @@ public class FileComponentValidator
                         target,
                         getMessage("FileMessageValidation.invalid_file_type", target.getFileType())));
              }
-             if (target.getFileType().equals("binary")) {
-                 results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.WARNING,
-                        target,
-                        getMessage("FileMessageValidation.unsupported_file_type", target.getFileType())));
-             }
+             
+//             if (target.getFileType().equals("binary")) {
+//                 results.add(new Validator.ResultItem(this,
+//                        Validator.ResultType.WARNING,
+//                        target,
+//                        getMessage("FileMessageValidation.unsupported_file_type", target.getFileType())));
+//             }
         }
         
         // validating: handling multiple records

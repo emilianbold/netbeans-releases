@@ -1,7 +1,10 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+# Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -62,10 +65,18 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     super(files)
   end
 
+  def self.is_1_2_7_or_newer
+    if Spec::VERSION::MAJOR == 1
+      Spec::VERSION::MINOR >= 3 || (Spec::VERSION::MINOR >= 2 && Spec::VERSION::TINY >= 7)
+    else
+      Spec::VERSION::MAJOR >= 2
+    end
+  end
+
   def run
     prepare
     success = true
-    if @options.line_number != nil
+    if @options.line_number && !NbRspecMediator.is_1_2_7_or_newer # NbSpecParser not needed for >= 1.2.7
       @spec_parser = NbSpecParser.create(@options)
       @spec_parser.spec_name_for(@options.files[0], @options.line_number)
     end

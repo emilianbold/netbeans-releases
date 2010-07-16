@@ -20,14 +20,14 @@
 package org.netbeans.modules.iep.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.DefaultValidator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidator;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.model.DefaultValidator;
+import org.netbeans.modules.tbls.editor.ps.TcgPsI18n;
+import org.netbeans.modules.tbls.model.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponentValidationMsg;
+import org.netbeans.modules.tbls.model.TcgComponentValidationReport;
+import org.netbeans.modules.tbls.model.TcgComponentValidator;
+import org.netbeans.modules.tbls.model.TcgProperty;
 import org.openide.util.NbBundle;
 
 /**
@@ -43,15 +43,15 @@ public class DefaultOperatorValidator implements TcgComponentValidator, SharedCo
     
     public TcgComponentValidationReport validate(TcgComponent component) {
         TcgComponentValidationReport report = mDefaultValidator.validate(component);
-        List messageList = report.getMessageList();
+        List<TcgComponentValidationMsg> messageList = report.getMessageList();
         
         String type = report.getType();
         try {
-            TcgProperty isGlobal = component.getProperty(IS_GLOBAL_KEY);
+            TcgProperty isGlobal = component.getProperty(PROP_IS_GLOBAL);
             if (!isGlobal.getBoolValue()) {
                 return report;
             }
-            TcgProperty glbID = component.getProperty(GLOBAL_ID_KEY);
+            TcgProperty glbID = component.getProperty(PROP_GLOBAL_ID);
             if (!glbID.hasValue() || glbID.getStringValue().trim().equals("")) {
                 messageList.add(
                         new TcgComponentValidationMsg(VALIDATION_ERROR_KEY,

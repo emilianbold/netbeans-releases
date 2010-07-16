@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,10 +59,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  */
 public class HashMapRepository implements Repository {
 
+    @Override
     public void debugDistribution() {
     }
 
-    /** repersents a single unit */
+    /** represents a single unit */
     private static class Unit {
         
         private Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
@@ -113,48 +117,58 @@ public class HashMapRepository implements Repository {
         return unit;
     }
     
+    @Override
     public void put(Key key, Persistent obj) {
         assert obj != null;
         getUnit(key.getUnit()).put(key, obj);
     }
 
+    @Override
     public Persistent get(Key key) {
         return getUnit(key.getUnit()).get(key);
     }
 
+    @Override
     public Persistent tryGet(Key key) {
 	return get(key);
     }
     
+    @Override
     public void remove(Key key) {
         getUnit(key.getUnit()).remove(key);
     }
 
+    @Override
     public void hang(Key key, Persistent obj) {
         put(key, obj);
     }
 
+    @Override
     public void debugClear() {
         // do nothing
     }
     
+    @Override
     public void shutdown() {
         synchronized( unitsLock ) {
             units.clear();
         }
     }
 
-    public void openUnit(int unitId, String unitName) {
+    @Override
+    public void openUnit(int unitId, CharSequence unitName) {
     }
     
-    public synchronized void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
+    @Override
+    public synchronized void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
         removeUnit(unitName);
     }
     
-    public synchronized void removeUnit(String unitName) {
+    @Override
+    public synchronized void removeUnit(CharSequence unitName) {
         for( Iterator<CharSequence> iter = units.keySet().iterator(); iter.hasNext(); ) {
             CharSequence key = iter.next();
-            if( key.toString().equals(unitName)) {
+            if( key.equals(unitName)) {
                 synchronized( unitsLock ) {
                     iter.remove();
                     return;
@@ -163,18 +177,22 @@ public class HashMapRepository implements Repository {
         }
     }
 
+    @Override
     public void cleanCaches() {
         // do nothing
     }
 
+    @Override
     public void registerRepositoryListener(RepositoryListener aListener) {
         // do nothing
     }
 
+    @Override
     public void unregisterRepositoryListener(RepositoryListener aListener) {
         // do nothing
     }
 
+    @Override
     public void startup(int persistMechanismVersion) {
     }
 

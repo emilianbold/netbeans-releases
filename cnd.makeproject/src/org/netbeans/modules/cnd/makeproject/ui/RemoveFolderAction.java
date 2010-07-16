@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import org.netbeans.api.project.Project;
@@ -53,43 +55,44 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class RemoveFolderAction extends NodeAction {
+
     public String getName() {
-	return NbBundle.getBundle(getClass()).getString("CTL_RemoveFolderActionName"); // NOI18N
+        return NbBundle.getBundle(getClass()).getString("CTL_RemoveFolderActionName"); // NOI18N
     }
 
     public void performAction(Node[] activatedNodes) {
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	    assert folder != null;
-            
-            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Project project = (Project) n.getValue("Project"); // NOI18N
+            Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+            assert folder != null;
+
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             if (!makeConfigurationDescriptor.okToChange()) {
                 return;
             }
-            
-	    String txt = NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTxt", folder.getDisplayName()); // NOI18N
-	    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTitle"), NotifyDescriptor.OK_CANCEL_OPTION); // NOI18N
-	    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-		Folder parentFolder = folder.getParent();
-		assert parentFolder != null;
-		parentFolder.removeFolderAction(folder);
-	    }
-	}
+
+            String txt = NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTxt", folder.getDisplayName()); // NOI18N
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTitle"), NotifyDescriptor.OK_CANCEL_OPTION); // NOI18N
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+                Folder parentFolder = folder.getParent();
+                assert parentFolder != null;
+                parentFolder.removeFolderAction(folder);
+            }
+        }
     }
 
     public boolean enable(Node[] activatedNodes) {
-	return true;
+        return true;
     }
 
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
 
     @Override
     protected boolean asynchronous() {
-	return false;
+        return false;
     }
 }

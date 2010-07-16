@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui;
 
 import org.openide.nodes.Node;
@@ -26,10 +24,8 @@ import org.openide.nodes.Node;
  * This handler is used by PackageViewChildren.PackageNode.setName() method.
  * PackageNode.setName() uses  Lookup.getDefault() to lookup for instances of
  * packageRenameHandler. If there is one instance found, it's handleRename(...)
- * method is called to handle rename request. More than one instance of
- * PackageRenameHandler is not allowed.
- *
- * @since 1.5
+ * method is called to handle rename request.
+ * 
  * @author Jan Becicka
  */
 public interface PackageRenameHandler {

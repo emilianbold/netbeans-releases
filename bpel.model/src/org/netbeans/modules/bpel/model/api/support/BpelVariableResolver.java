@@ -95,8 +95,7 @@ class BpelVariableResolver implements VariableResolver<XPathBpelVariable> {
                 String correctPrefix = nsContext.getPrefix(processNsUri);
                 String varName = varQName.getLocalPart();
                 if (myVContext != null) {
-                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class, "WRONG_VARIABLE_PREFIX"), varName, 
-                            prefix, correctPrefix); // NOI18N
+                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class, "WRONG_VARIABLE_PREFIX"), varName, prefix, correctPrefix); // NOI18N
                 }
                 return null;
             }

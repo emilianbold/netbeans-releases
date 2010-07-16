@@ -16,9 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
 
@@ -29,33 +29,37 @@ import org.w3c.dom.Element;
  *
  * JMSJNDIEnvEntryImpl
  */
-public class JMSJNDIEnvEntryImpl extends JMSComponentImpl implements JMSJNDIEnvEntry  {
-    
+public class JMSJNDIEnvEntryImpl extends JMSComponentImpl implements JMSJNDIEnvEntry {
+
     public JMSJNDIEnvEntryImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
-    public JMSJNDIEnvEntryImpl(WSDLModel model){
+
+    public JMSJNDIEnvEntryImpl(WSDLModel model) {
         this(model, createPrefixedElement(JMSQName.JNDIENVENTRY.getQName(), model));
     }
 
     public String getName() {
-        return getAttribute(JMSJNDIEnvEntry.ATTR_NAME);        
+        return getAttribute(JMSJNDIEnvEntry.ATTR_NAME);
     }
 
     public void setName(String val) {
-        setAttribute(JMSJNDIEnvEntry.ATTR_NAME, 
-                     JMSAttribute.JMS_JNDIENVENTRY_NAME,
-                     val);        
+        setAttribute(JMSJNDIEnvEntry.ATTR_NAME,
+                JMSAttribute.JMS_JNDIENVENTRY_NAME,
+                val);
     }
 
     public String getValue() {
-        return getAttribute(JMSJNDIEnvEntry.ATTR_VALUE);        
+        return getAttribute(JMSJNDIEnvEntry.ATTR_VALUE);
     }
 
     public void setValue(String val) {
-        setAttribute(JMSJNDIEnvEntry.ATTR_VALUE, 
-                     JMSAttribute.JMS_JNDIENVENTRY_VALUE,
-                     val);        
-    }    
+        setAttribute(JMSJNDIEnvEntry.ATTR_VALUE,
+                JMSAttribute.JMS_JNDIENVENTRY_VALUE,
+                val);
+    }
+
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }
 }

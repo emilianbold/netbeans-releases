@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.output.View;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -57,36 +60,32 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class SearchAction extends IconAction {
 
-  public SearchAction() {
-    this("LBL_Search_Action", "TLT_Search_Action", "search"); // NOI18N
-  }
-
-  private SearchAction(String name, String toolTip, String icon) {
-    super(
-      i18n(SearchAction.class, name),
-      i18n(SearchAction.class, toolTip),
-      icon(View.class, icon)
-    );
-    setEnabled(false);
-  }
-
-  public void actionPerformed(ActionEvent event) {
-    SearchManager.getDefault().showSearch(getProvider(getLastNode()));
-  }
-
-  private SearchProvider getProvider(Node node) {
-    DataObject data = getDataObject(node);
-
-    if (data == null) {
-      return null;
+    public SearchAction() {
+        this("LBL_Search_Action", "TLT_Search_Action", "search"); // NOI18N
     }
-    return data.getLookup().lookup(SearchProvider.class);
-  }
 
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
+    private SearchAction(String name, String toolTip, String icon) {
+        super(i18n(SearchAction.class, name), i18n(SearchAction.class, toolTip), icon(View.class, icon));
+        setEnabled(false);
+    }
 
-  public static final Action DEFAULT = new SearchAction();
+    public void actionPerformed(ActionEvent event) {
+        SearchManager.getDefault().showSearch(getProvider(getLastNode()));
+    }
+
+    private SearchProvider getProvider(Node node) {
+        DataObject data = getDataObject(node);
+
+        if (data == null) {
+            return null;
+        }
+        return data.getLookup().lookup(SearchProvider.class);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public static final Action DEFAULT = new SearchAction();
 }

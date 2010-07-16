@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,7 +76,31 @@ public final class ImportUtils {
         return res;
     }
 
+    public static List<String> normalizeParameters(List<String> list){
+        List<String> res = new ArrayList<String>();
+        for (String s : list){
+            if (s.indexOf('=')>0){
+                if(s.indexOf('\\') > 0){
+                    s = s.replace('\\', '/');
+                }
+                if(s.indexOf('"')>0) {
+                    s = s.replace("\"", ""); // NOI18N
+                }
+            }
+            res.add(s);
+        }
+        return res;
+    }
+
     public static List<String> parseEnvironment(String s) {
+        return parse(s, true);
+    }
+
+    public static List<String> parseArgs(String s) {
+        return parse(s, false);
+    }
+
+    private static List<String> parse(String s, boolean onlyEnv) {
         List<String> res = new ArrayList<String>();
         if (s == null) {
             return res;
@@ -81,6 +108,7 @@ public final class ImportUtils {
         StringBuilder key = new StringBuilder();
         StringBuilder value = new StringBuilder();
         int inQuote = 0;
+        int q = 0;
         boolean inValue = false;
         for(int i = 0; i < s.length(); ) {
             char c = s.charAt(i);
@@ -93,19 +121,25 @@ public final class ImportUtils {
                         i++;
                         continue;
                     }
+                    if (!onlyEnv) {
+                        key.append(c);
+                    }
                     i++;
-                    int q = 0;
+                    q = 0;
                     for(;i < s.length(); i++){
                         c = s.charAt(i);
-                        if (s.charAt(i) == '"' || s.charAt(i) == '\''){ //NOI18N
+                        if (c == '"' || c == '\''){ //NOI18N
                             if (q == 0) {
                                 q = c;
                             } else if (q == c) {
                                 q = 0;
                             }
                         }
-                        if (q == 0 && s.charAt(i) == ' '){ //NOI18N
+                        if (q == 0 && c == ' '){ //NOI18N
                             break;
+                        }
+                        if (!onlyEnv) {
+                            key.append(c);
                         }
                     }
                     continue;
@@ -122,7 +156,12 @@ public final class ImportUtils {
                             res.add(key+"="+value); //NOI18N
                         }
                         inValue = false;
+                    } else if (!onlyEnv){
+                        if (key.length() > 0) {
+                            res.add(key.toString());
+                        }
                     }
+
                     key.setLength(0);
                     value.setLength(0);
                     i++;
@@ -130,6 +169,26 @@ public final class ImportUtils {
                 case '\'': //NOI18N
                 case '"': //NOI18N
                     if (inQuote == 0) {
+                        if (!onlyEnv && !inValue){
+                            q = 0;
+                            for(;i < s.length(); i++){
+                                c = s.charAt(i);
+                                if (c == '"' || c == '\''){ //NOI18N
+                                    if (q == 0) {
+                                        q = c;
+                                        continue;
+                                    } else if (q == c) {
+                                        q = 0;
+                                        continue;
+                                    }
+                                }
+                                if (q == 0 && c == ' '){ //NOI18N
+                                    break;
+                                }
+                                key.append(c);
+                            }
+                            continue;
+                        }
                         inQuote = c;
                     } else if (inQuote == c) {
                         inQuote = 0;
@@ -147,6 +206,8 @@ public final class ImportUtils {
                     } else {
                         if (inValue) {
                             value.append(c);
+                        } else if (!onlyEnv){
+                            key.append(c);
                         }
                     }
                     i++;
@@ -164,6 +225,10 @@ public final class ImportUtils {
         if (inValue) {
             if (key.length() > 0) {
                 res.add(key+"="+value); //NOI18N
+            }
+        } else if (!onlyEnv){
+            if (key.length() > 0) {
+                res.add(key.toString());
             }
         }
         return res;

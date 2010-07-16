@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -249,6 +255,18 @@ public final class HintsControllerImpl {
     
     public static synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
+    }
+
+    private static final Map<Fix, Iterable<? extends Fix>> fix2Subfixes = new WeakHashMap<Fix, Iterable<? extends Fix>>();
+
+    public static void attachSubfixes(Fix fix, Iterable<? extends Fix> subfixes) {
+        fix2Subfixes.put(fix, subfixes);
+    }
+
+    public static Iterable<? extends Fix> getSubfixes(Fix fix) {
+        Iterable<? extends Fix> ret = fix2Subfixes.get(fix);
+
+        return ret != null ? ret : Collections.<Fix>emptyList();
     }
     
     public static class CompoundLazyFixList implements LazyFixList, PropertyChangeListener {

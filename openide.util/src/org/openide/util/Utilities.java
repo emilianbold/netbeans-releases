@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.openide.util;
 
-import org.netbeans.modules.openide.util.ActiveQueue;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -105,9 +107,10 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.implspi.ActiveQueue;
+import org.openide.util.actions.ActionPresenterProvider;
 
 /** Otherwise uncategorized useful static methods.
 *
@@ -2737,10 +2740,10 @@ widthcheck:  {
                     }
                 } else {
                     // We need to correctly handle mnemonics with '&' etc.
-                     item = AWTBridge.getDefault().createPopupPresenter(action);
+                     item = ActionPresenterProvider.getDefault().createPopupPresenter(action);
                 }
 
-                for (Component c : AWTBridge.getDefault().convertComponents(item)) {
+                for (Component c : ActionPresenterProvider.getDefault().convertComponents(item)) {
                     if (c instanceof JSeparator) {
                         components.add(null);
                     } else {
@@ -2753,7 +2756,7 @@ widthcheck:  {
         }
 
         // Now create actual menu. Strip adjacent, leading, and trailing separators.
-        JPopupMenu menu = AWTBridge.getDefault().createEmptyPopup();
+        JPopupMenu menu = ActionPresenterProvider.getDefault().createEmptyPopup();
         boolean nonempty = false; // has anything been added yet?
         boolean pendingSep = false; // should there be a separator before any following item?
         for (Component c : components) {

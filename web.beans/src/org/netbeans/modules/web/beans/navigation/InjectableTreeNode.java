@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -70,20 +74,29 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private static final long serialVersionUID = -6398205566811265151L;
     
     InjectableTreeNode(FileObject fileObject,
-        T element, CompilationInfo compilationInfo) 
+        T element, DeclaredType parentType, boolean disabled , 
+        CompilationInfo compilationInfo) 
     {
         myFileObject = fileObject;
         myElementHandle = ElementHandle.create(element);
         myElementKind = element.getKind();
         myModifiers = element.getModifiers();
         myCpInfo = compilationInfo.getClasspathInfo();
+        isDisabled = disabled;
 
         setName(element.getSimpleName().toString());
         setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
-        setLabel(Utils.format(element));
-        setFQNLabel(Utils.format(element, false, true));
-        setToolTip(Utils.format(element, true, 
+        setLabel(Utils.format(element, parentType, compilationInfo));
+        setFQNLabel(Utils.format(element, parentType, compilationInfo , false, true));
+        setToolTip(Utils.format(element, parentType, compilationInfo, true, 
                 WebBeansNavigationOptions.isShowFQN()));            
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.JavaElement#isDisabled()
+     */
+    public boolean isDisabled() {
+        return isDisabled;
     }
 
     public FileObject getFileObject() {
@@ -185,7 +198,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     protected void openElementHandle() {
     	if (myFileObject == null) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel())); // NOI18N
             return;
         }
@@ -196,7 +209,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
 
         if (!ElementOpen.open(myCpInfo, myElementHandle)) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel()));// NOI18N
         }
     }
@@ -212,5 +225,6 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private Icon myIcon ;
     private ElementJavadoc myJavaDoc;
     private final ClasspathInfo myCpInfo;
+    private boolean isDisabled;
 
 }

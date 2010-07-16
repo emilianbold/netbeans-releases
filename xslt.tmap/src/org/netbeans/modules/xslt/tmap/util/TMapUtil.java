@@ -21,6 +21,8 @@ package org.netbeans.modules.xslt.tmap.util;
 import java.io.File;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.text.StyledDocument;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -29,16 +31,22 @@ import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xslt.model.Attribute;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.impl.TMapReferenceBuilder;
 import org.netbeans.modules.xslt.tmap.multiview.source.TMapSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.multiview.tree.TreeMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.nodes.NavigatorNodeFactory;
@@ -52,8 +60,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
+import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -295,7 +302,7 @@ public class TMapUtil {
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                    l.show(Line.SHOW_GOTO, column);
                     openActiveSourceEditor();
                 }
             });
@@ -312,4 +319,39 @@ public class TMapUtil {
         SoaUtil.openActiveMVEditor(TMapSourceMultiViewElementDesc.PREFERED_ID);
     }
     
+    public static QName getQName(String value, TMapComponent component) {
+        if (value == null) {
+            return null;
+        }
+        String[] splited = new String[2];
+        splitQName(value, splited);
+        String uri = component.getNamespaceContext().getNamespaceURI(splited[0]);
+
+        if (uri == null) {
+            return null;
+        }
+        return new QName(uri, splited[1]);
+    }
+
+    public static void splitQName(String qName, String[] result) {
+        assert qName != null;
+        assert result != null;
+        String[] parts = qName.split(":"); //NOI18N
+
+        String prefix;
+        String localName;
+        if (parts.length == 2) {
+            prefix = parts[0];
+            localName = parts[1];
+        } else {
+            prefix = null;
+            localName = parts[0];
+        }
+        if (result.length > 0) {
+            result[0] = prefix;
+        }
+        if (result.length > 1) {
+            result[1] = localName;
+        }
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,12 +52,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
@@ -76,6 +81,12 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProvidedExtensionsTest extends NbTestCase {
     private ProvidedExtensionsImpl iListener;
+
+    static {
+        MockServices.setServices(AnnotationProviderImpl.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         AnnotationProvider provider = (AnnotationProvider)Lookups.metaInfServices(
@@ -141,10 +152,11 @@ public class ProvidedExtensionsTest extends NbTestCase {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
         assertNotNull(iListener);
+        int nCalls = iListener.implsCanWriteCalls;
         FileObject toChange = fo.createData("cw");
         assertNotNull(toChange);
         boolean cw = toChange.canWrite();
-        assertEquals(1, iListener.implsCanWriteCalls);            
+        assertEquals(nCalls + 1, iListener.implsCanWriteCalls);
     }
     
     public void testImplsMove() throws IOException {
@@ -228,17 +240,102 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
     }
 
-    public void testAfterAtomicAction() throws IOException {
+    public void testDuringAtomicAction() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
+        iListener.clear();
         fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                FileUtil.createData(new File(getWorkDir(),"a/b/c/d/e/f/g.txt"));
-                assertEquals(0, iListener.implsCreateSuccessCalls);
+                FileObject f = FileUtil.createData(new File(getWorkDir(), "a/b/c/d/e/f/g.txt"));
+                assertEquals(7, iListener.implsCreateSuccessCalls);
+                f.delete();
+                assertEquals(1, iListener.implsDeleteSuccessCalls);
             }            
         });
-        assertEquals(7, iListener.implsCreateSuccessCalls);
     }
     
+    public void testCreatedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject[] children = fo.getChildren(); // scan folder
+
+        FileObject folder = fo.createFolder("folder");
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        File f = new File(FileUtil.toFile(fo), "file");
+        f.createNewFile();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+    }
+
+    public void testDeletedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject file = fo.createData("file");
+
+        iListener.clear();
+        FileUtil.toFile(file).delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+    }
+
+    public void testFileChangedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject file = fo.createData("file");
+        FileUtil.toFile(file).setLastModified(System.currentTimeMillis() - 10000);
+        fo.refresh();
+
+        iListener.clear();
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(FileUtil.toFile(file));
+            fos.write("data".getBytes());
+            fos.flush();
+        } finally {
+            if(fos != null) fos.close();
+        }
+        assertEquals(0, iListener.implsFileChangedCalls);
+        fo.refresh();
+        file.refresh();
+        assertEquals(1, iListener.implsFileChangedCalls);
+    }
+
+    public void testMove_BeforeSuccessFailure() throws IOException {
+        FileObject fromFolder = FileUtil.toFileObject(getWorkDir()).createFolder("moveFrom");
+        FileObject toFolder = FileUtil.toFileObject(getWorkDir()).createFolder("moveTo");
+        assertNotNull(fromFolder);
+        assertNotNull(toFolder);
+        FileObject toMove = fromFolder.createData("aa");
+        assertNotNull(toMove);
+        iListener.clear();
+
+        assertNotNull(iListener);
+        assertEquals(0,iListener.beforeMoveCalls);
+        assertEquals(0,iListener.moveSuccessCalls);
+        assertEquals(0,iListener.moveFailureCalls);
+
+        // move
+        FileLock lock = toMove.lock();
+        toMove.move(lock, toFolder, toMove.getName(), toMove.getExt());
+        assertFalse(toMove.isValid());
+        assertEquals(1,iListener.beforeMoveCalls);
+        assertEquals(1,iListener.moveSuccessCalls);
+
+        iListener.clear();
+        try {
+            // success
+            assertEquals(0,iListener.moveSuccessCalls);
+            assertEquals(0,iListener.moveFailureCalls);
+
+            // move to itself => failure
+            toMove.move(lock, toFolder, toMove.getName(), toMove.getExt());
+            fail();
+        } catch (IOException ex) {
+            // failure
+            assertEquals(0,iListener.moveSuccessCalls);
+            assertEquals(1,iListener.moveFailureCalls);
+        }
+    }
+
     public void testImplsRename2() throws IOException {
         final List events = new ArrayList();
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -353,6 +450,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
             iListener.setImplsRenameRetVal(true);
             FileChangeListener fcl =  new FileChangeAdapter() {
+                @Override
                 public void fileRenamed(FileRenameEvent fe)  {
                     try {                        
                         File f = FileUtil.toFile(toRename);
@@ -434,7 +532,6 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
 
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends InterceptionListenerTest.AnnotationProviderImpl  {
         private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this);
         public InterceptionListener getInterceptionListener() {
@@ -443,19 +540,31 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     public static class ProvidedExtensionsImpl extends ProvidedExtensions  {
+        private static File refreshCallForDir;
+        private static long refreshCallRetValue;
+        private static List<File> refreshCallToAdd;
         private int implsMoveCalls;
         private int moveImplCalls;
         private int implsRenameCalls;
         private int renameImplCalls;
         private int implsBeforeChangeCalls;
         private int implsCreateSuccessCalls;        
+        private int implsDeleteSuccessCalls;
+        private int implsCreatedExternallyCalls;
+        private int implsDeletedExternallyCalls;
+        private int implsFileChangedCalls;
         private int implsFileLockCalls;
         private int implsFileUnlockCalls;
         private int implsCanWriteCalls;
+        private int beforeMoveCalls;
+        private int moveSuccessCalls;
+        private int moveFailureCalls;
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
         private static boolean implsDeleteRetVal = false;
+
+        private static int cnt;
         
         public static FileLock lock;
         private final AnnotationProviderImpl provider;
@@ -466,6 +575,15 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         public ProvidedExtensionsImpl(AnnotationProviderImpl p) {
             this.provider = p;
+            cnt++;
+        }
+        
+        public static void assertCreated(String msg, boolean reallyCreated) {
+            if (reallyCreated) {
+                assertEquals(msg, 1, cnt);
+            } else {
+                assertEquals(msg, 0, cnt);
+            }
         }
         
         public void clear() {
@@ -475,6 +593,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
             renameImplCalls = 0;
             implsBeforeChangeCalls = 0;
             implsCreateSuccessCalls = 0;
+            implsDeleteSuccessCalls = 0;
+            implsCreatedExternallyCalls = 0;
+            implsDeletedExternallyCalls = 0;
+            implsFileChangedCalls = 0;
+            beforeMoveCalls = 0;
+            moveSuccessCalls = 0;
+            moveFailureCalls = 0;
             implsFileLockCalls = 0;
             implsCanWriteCalls = 0;
         }
@@ -501,14 +626,63 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsCreateSuccessCalls++;
         }
 
+        public void deleteSuccess(FileObject fo) {
+            implsDeleteSuccessCalls++;
+        }
+
         public void beforeChange(FileObject f) {
             assertNotNull(FileUtil.toFile(f));
             implsBeforeChangeCalls++;
-        }    
+        }
         
+        public void createdExternally(FileObject fo) {
+            implsCreatedExternallyCalls++;
+        }
+
+        public void deletedExternally(FileObject fo) {
+            implsDeletedExternallyCalls++;
+        }
+
+        public void fileChanged(FileObject fo) {
+            implsFileChangedCalls++;
+        }
+
+        public void beforeMove(FileObject fo, File to) {
+            beforeMoveCalls++;
+        }
+
+        public void moveSuccess(FileObject fo, File to) {
+            moveSuccessCalls++;
+        }
+
+        public void moveFailure(FileObject fo, File to) {
+            moveFailureCalls++;
+        }
+
+        public static void nextRefreshCall(File forDir, long retValue, File... toAdd) {
+            refreshCallForDir = forDir;
+            refreshCallRetValue = retValue;
+            refreshCallToAdd = Arrays.asList(toAdd);
+        }
+
+        @Override
+        public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+            if (dir.equals(refreshCallForDir)) {
+                children.addAll(refreshCallToAdd);
+                long r = refreshCallRetValue;
+                refreshCallForDir = null;
+                refreshCallToAdd = null;
+                refreshCallRetValue = -1;
+                return r;
+            }
+            return -1;
+        }
+        
+        @Override
         public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {
             return (!isImplsDeleteRetVal()) ? null : new ProvidedExtensions.DeleteHandler(){
                 final Set s = new HashSet();
+                @Override
                 public boolean delete(File file) {
                     if (file.isDirectory()) {
                         File[] childs = file.listFiles(new FileFilter() {
@@ -530,6 +704,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             };
         }
                 
+        @Override
         public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
             implsRenameCalls++;
             final File f = new File(from.getParentFile(),newName);
@@ -542,6 +717,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             };
         }
         
+        @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
             implsMoveCalls++;
             return (!isImplsMoveRetVal()) ? null : new ProvidedExtensions.IOHandler(){
@@ -554,15 +730,19 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     assertFalse(to.exists());
                     
                     assertFalse(from.equals(to));
-                    InputStream inputStream = new FileInputStream(from);
-                    OutputStream outputStream = new FileOutputStream(to);
-                    try {
-                        FileUtil.copy(inputStream, outputStream);
-                    } finally {
-                        if (inputStream != null) inputStream.close();
-                        if (outputStream != null) outputStream.close();
+                    if (from.isDirectory()) {
+                        from.renameTo(to);
+                    } else {
+                        InputStream inputStream = new FileInputStream(from);
+                        OutputStream outputStream = new FileOutputStream(to);
+                        try {
+                            FileUtil.copy(inputStream, outputStream);
+                        } finally {
+                            if (inputStream != null) inputStream.close();
+                            if (outputStream != null) outputStream.close();
+                        }
+                        assertTrue(from.delete());
                     }
-                    assertTrue(from.delete());
                     
                     assertFalse(from.exists());
                     assertTrue(to.exists());
@@ -577,29 +757,29 @@ public class ProvidedExtensionsTest extends NbTestCase {
         public static void setLock(FileLock lock) {
             ProvidedExtensionsImpl.lock = lock;
         }
-        
+
         public static boolean isImplsMoveRetVal() {
             return implsMoveRetVal;
         }
-        
+
         public static void setImplsMoveRetVal(boolean implsMoveRetVal) {
             ProvidedExtensionsImpl.implsMoveRetVal = implsMoveRetVal;
         }
-        
+
         public static boolean isImplsRenameRetVal() {
             return implsRenameRetVal;
         }
-        
+
         public static void setImplsRenameRetVal(boolean implsRenameRetVal) {
             ProvidedExtensionsImpl.implsRenameRetVal = implsRenameRetVal;
         }
-               
+
         public static boolean isImplsDeleteRetVal() {
             return implsDeleteRetVal;
         }
-        
+
         public static void setImplsDeleteRetVal(boolean implsDeleteRetVal) {
             ProvidedExtensionsImpl.implsDeleteRetVal = implsDeleteRetVal;
-        }                
+        }
     }
 }

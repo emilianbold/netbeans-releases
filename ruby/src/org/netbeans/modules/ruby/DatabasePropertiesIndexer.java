@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,18 +68,22 @@ final class DatabasePropertiesIndexer {
     private final QuerySupport.Kind kind;
     private final String classFqn;
     private final Set<IndexedMethod> methods;
+    private final boolean includeDynamicFinders;
 
-    public DatabasePropertiesIndexer(RubyIndex index, String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
+    private DatabasePropertiesIndexer(RubyIndex index, String prefix, 
+            QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods,
+            boolean includeDynamicFinders) {
         this.index = index;
         this.prefix = prefix;
         this.kind = kind;
         this.classFqn = classFqn;
         this.methods = methods;
+        this.includeDynamicFinders = includeDynamicFinders;
     }
 
     static void indexDatabaseProperties(RubyIndex index, String prefix, QuerySupport.Kind kind,
-            String classFqn, Set<IndexedMethod> methods) {
-        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods);
+            String classFqn, Set<IndexedMethod> methods, boolean includeDynamicFinders) {
+        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods, includeDynamicFinders);
         indexer.addDatabaseProperties();
     }
 
@@ -142,7 +149,9 @@ final class DatabasePropertiesIndexer {
             createMethodsForColumns(tableName, columnDefs, fileUrls, currentCols);
 
             // dynamic finders
-            createDynamicFinders(tableName, columnDefs, fileUrls, currentCols);
+            if (includeDynamicFinders) {
+                createDynamicFinders(tableName, columnDefs, fileUrls, currentCols);
+            }
         }
     }
 

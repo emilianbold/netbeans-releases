@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -138,6 +141,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             designer.setTopDesignComponent(radContainer, true);
             // terrible hack - wait for designer update
             invokeLater(2, new Runnable() {
+                @Override
                 public void run() {
                     containerProxy.addAllProxies();
                 }
@@ -353,6 +357,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
      * once, before the Customizer has been added to any parent AWT container.
      * @param bean  The object to be customized.
      */
+    @Override
     public void setObject(Object bean) {
         layoutSupport = (GridBagLayoutSupport) bean;
 //                        ((LayoutSupportManager)bean).getLayoutDelegate();
@@ -391,6 +396,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     // Form listener implementation
 
     class FormListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events != null && GridBagCustomizer.this.isShowing()) {
                 boolean modifying = false;
@@ -408,6 +414,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 // (it would be much nicer to have some listener on
                 //  FormDesigner directly...)
                 invokeLater(3, new Runnable() {
+                    @Override
                     public void run() {
                         containerProxy.updateAllProxies();
                     }
@@ -423,6 +430,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         try {
             while (count > 0) {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                     }
                 });
@@ -439,6 +447,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             task.run();
         else
             SwingUtilities.invokeLater(new Runnable() {
+            @Override
                 public void run() {
                     invokeLater(count-1, task);
                 }
@@ -1332,10 +1341,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             setBounds(Utilities.findCenterBounds(size));
         }
 
+        @Override
         public void setObject(Object bean) {
             customizerPanel.setObject(bean);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if (ev.getActionCommand().equals("close")) // NOI18N
                 dispose();

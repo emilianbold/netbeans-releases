@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,19 +43,24 @@
 package org.netbeans.modules.php.api.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -61,6 +69,8 @@ import org.xml.sax.XMLReader;
  * @author Tomas Mysik
  */
 public final class FileUtils {
+    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+
     /**
      * Constant for PHP MIME type.
      * @since 1.15
@@ -84,13 +94,27 @@ public final class FileUtils {
     }
 
     /**
-     * Find all the files (absolute path) with the given "filename" os user's PATH.
+     * Find all the files (absolute path) with the given "filename" on user's PATH.
      * <p>
      * This method is suitable for *nix as well as windows.
      * @param filename the name of a file to find.
      * @return list of absolute paths of found files.
+     * @see #findFileOnUsersPath(String[])
      */
     public static List<String> findFileOnUsersPath(String filename) {
+        return findFileOnUsersPath(new String[]{filename});
+    }
+
+    /**
+     * Find all the files (absolute path) with the given "filename" on user's PATH.
+     * <p>
+     * This method is suitable for *nix as well as windows.
+     * @param filename the name of a file to find, more names can be provided.
+     * @return list of absolute paths of found files (order preserved according to input names).
+     * @see #findFileOnUsersPath(String)
+     * @since 1.33
+     */
+    public static List<String> findFileOnUsersPath(String... filename) {
         Parameters.notNull("filename", filename);
 
         String path = System.getenv("PATH"); // NOI18N
@@ -99,18 +123,43 @@ public final class FileUtils {
         }
         // on linux there are usually duplicities in PATH
         Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
-                // not optimal but should be ok
-                if (!found.contains(absolutePath)) {
-                    found.add(absolutePath);
+        List<String> found = new ArrayList<String>(dirs.size() * filename.length);
+        for (String f : filename) {
+            for (String d : dirs) {
+                File file = new File(d, f);
+                if (file.isFile()) {
+                    String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
+                    // not optimal but should be ok
+                    if (!found.contains(absolutePath)) {
+                        found.add(absolutePath);
+                    }
                 }
             }
         }
         return found;
+    }
+
+    /**
+     * Get the OS-dependent script extension.
+     * <ul>Currently it returns (for dotted version):
+     *   <li><tt>.bat</tt> on Windows
+     *   <li><tt>.sh</tt> anywhere else
+     * </ul>
+     * @param withDot return "." as well, e.g. <tt>.sh</tt>
+     * @return the OS-dependent script extension
+     * @since 1.33
+     */
+    public static String getScriptExtension(boolean withDot) {
+        StringBuilder sb = new StringBuilder(4);
+        if (withDot) {
+            sb.append("."); // NOI18N
+        }
+        if (Utilities.isWindows()) {
+            sb.append("bat"); // NOI18N
+        } else {
+            sb.append("sh"); // NOI18N
+        }
+        return sb.toString();
     }
 
     /**
@@ -146,5 +195,98 @@ public final class FileUtils {
         } catch (ParserConfigurationException ex) {
             throw new SAXException("Cannot create SAX parser", ex);
         }
+    }
+
+    /**
+     * Validate a script path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid script means that the <tt>filePath</tt> represents a valid, readable file
+     * with absolute file path.
+     * @param filePath a file path to validate
+     * @param scriptName the display name of the script
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateDirectory(String)
+     * @since 1.35
+     */
+    public static String validateScript(String filePath, String scriptName) {
+        if (!StringUtils.hasText(filePath)) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_NoScript", scriptName);
+        }
+
+        File file = new File(filePath);
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptNotAbsolutePath", scriptName);
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptNotFile", scriptName);
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptCannotRead", scriptName);
+        }
+        return null;
+    }
+
+    /**
+     * Validate a directory path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid directory means that the <tt>dirPath</tt> represents a valid, writable directory
+     * with absolute file path.
+     * @param dirPath a file path to validate
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateScript(String, String)
+     * @see #isDirectoryWritable(File)
+     * @since 1.35
+     */
+    public static String validateDirectory(String dirPath) {
+        if (!StringUtils.hasText(dirPath)) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_DirEmpty");
+        }
+
+        File dir = new File(dirPath);
+        if (!dir.isAbsolute()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotAbsolute");
+        } else if (!dir.isDirectory()) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_NotDir");
+        } else if (!isDirectoryWritable(dir)) {
+            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotWritable");
+        }
+        return null;
+    }
+
+    // #144928, #157417
+    /**
+     * Handles correctly 'feature' of Windows (read-only flag, "Program Files" directory on Windows Vista).
+     * @param directory a directory to check
+     * @return <code>true</code> if directory is writable
+     * @since 1.35
+     */
+    public static boolean isDirectoryWritable(File directory) {
+        if (!directory.isDirectory()) {
+            // #157591
+            LOGGER.log(Level.FINE, "{0} is not a folder", directory);
+            return false;
+        }
+        boolean windows = Utilities.isWindows();
+        LOGGER.log(Level.FINE, "On Windows: {0}", windows);
+
+        boolean canWrite = directory.canWrite();
+        LOGGER.log(Level.FINE, "Folder {0} is writable: {1}", new Object[] {directory, canWrite});
+        if (!windows) {
+            // we are not on windows => result is ok
+            return canWrite;
+        }
+
+        // on windows
+        LOGGER.fine("Trying to create temp file");
+        try {
+            File tmpFile = File.createTempFile("netbeans", null, directory);
+            LOGGER.log(Level.FINE, "Temp file {0} created", tmpFile);
+            tmpFile.delete();
+            LOGGER.log(Level.FINE, "Temp file {0} deleted", tmpFile);
+        } catch (IOException exc) {
+            LOGGER.log(Level.FINE, exc.getMessage(), exc);
+            return false;
+        }
+        return true;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,7 @@ public class CookieActionTest extends NbTestCase {
     private CookieNode n1, n2;
     private Node n3;
     
+    @Override
     protected void setUp() throws Exception {
         a1 = SystemAction.get(SimpleCookieAction.class);
         n1 = new CookieNode();
@@ -87,6 +91,7 @@ public class CookieActionTest extends NbTestCase {
         n2.setName("n2");
         n3 = new AbstractNode(Children.LEAF);
         n3.setName("n3");
+        SimpleCookieAction.runOn.clear();
     }
     
     /**
@@ -206,6 +211,23 @@ public class CookieActionTest extends NbTestCase {
             n2.setHasCookie(true);
         }
     }
+
+    public void testAsynchronousInvocationIsOKOnClone() throws Exception {
+        SimpleCookieAction s = SimpleCookieAction.get(AsynchSimpleCookieAction.class);
+
+        CookieNode node = new CookieNode();
+        node.setHasCookie(true);
+        Action clone = s.createContextAwareInstance(node.getLookup());
+        assertTrue("Enabled", clone.isEnabled());
+        synchronized (SimpleCookieAction.runOn) {
+            assertTrue("Empty now", SimpleCookieAction.runOn.isEmpty());
+            clone.actionPerformed(new ActionEvent(this, 0, ""));
+            SimpleCookieAction.runOn.wait();
+            assertEquals("One list is there", 1, SimpleCookieAction.runOn.size());
+            assertEquals("It has one node", 1, SimpleCookieAction.runOn.get(0).size());
+            assertEquals("it is our node", node, SimpleCookieAction.runOn.get(0).get(0));
+        }
+    }
     
     //
     // cloneAction support
@@ -292,24 +314,40 @@ public class CookieActionTest extends NbTestCase {
     }
     
     public static class SimpleCookieAction extends CookieAction {
+        @Override
         protected int mode() {
             return MODE_EXACTLY_ONE;
         }
+        @Override
         protected Class[] cookieClasses() {
             return new Class[] {OpenCookie.class};
         }
-        public static final List runOn = new ArrayList(); // List<List<Node>>
+        public static final List<List<Node>> runOn = new ArrayList<List<Node>>();
+        @Override
         protected void performAction(Node[] activatedNodes) {
-            runOn.add(Arrays.asList(activatedNodes));
+            synchronized (runOn) {
+                runOn.add(Arrays.asList(activatedNodes));
+                runOn.notifyAll();
+            }
         }
+        @Override
         public String getName() {
             return "SimpleCookieAction";
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
+        @Override
         protected boolean asynchronous() {
             return false;
+        }
+    }
+
+    public static class AsynchSimpleCookieAction extends SimpleCookieAction {
+        @Override
+        protected boolean asynchronous() {
+            return true;
         }
     }
     

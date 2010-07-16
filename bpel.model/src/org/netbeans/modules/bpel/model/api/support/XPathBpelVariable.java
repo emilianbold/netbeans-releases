@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.model.api.support;
 
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
@@ -34,19 +35,19 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
  */
 public final class XPathBpelVariable implements XPathVariable {
 
-    private AbstractVariableDeclaration myVarDecl;
+    private VariableDeclaration myVarDecl;
     private Part myPart;
 
     /**
      * The part can be null.
      */ 
-    public XPathBpelVariable(AbstractVariableDeclaration var, Part part) {
+    public XPathBpelVariable(VariableDeclaration var, Part part) {
         assert var != null;
         myVarDecl = var;
         myPart = part;
     }
     
-    public AbstractVariableDeclaration getVarDecl() {
+    public VariableDeclaration getVarDecl() {
         return myVarDecl;
     }
     
@@ -105,7 +106,7 @@ public final class XPathBpelVariable implements XPathVariable {
         // It looks like a prefix is not required for BPEL variables
         return new QName(totalVarName);
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof XPathBpelVariable)) {
@@ -132,9 +133,21 @@ public final class XPathBpelVariable implements XPathVariable {
         //
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + (this.myVarDecl != null ? this.myVarDecl.getVariableName().hashCode() : 0);
+        hash = 67 * hash + (this.myPart != null ? this.myPart.getName().hashCode() : 0);
+        return hash;
+    }
     
     @Override
     public String toString() {
+        return getExpressionString();
+    }
+
+    public String getExpressionString() {
         String varName = myVarDecl.getVariableName();
         if (myPart == null) {
             return "$" + varName;

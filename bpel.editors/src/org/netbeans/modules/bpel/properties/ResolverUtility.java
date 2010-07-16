@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xpath.ext.schema.GetNameVisitor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.schema.model.Schema;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -121,8 +122,8 @@ public final class ResolverUtility {
                 compName = ((Named)comp).getName();
             }
         } else if (comp instanceof SchemaComponent) {
-            targetNamespace = ((SchemaComponent)comp).getModel().
-                    getSchema().getTargetNamespace();
+            Schema schema = ((SchemaComponent)comp).getModel().getSchema();
+            targetNamespace = schema == null ? null : schema.getTargetNamespace();
             GetNameVisitor nameVisitor = new GetNameVisitor();
             ((SchemaComponent)comp).accept(nameVisitor);
             compName = nameVisitor.getName();
@@ -290,6 +291,10 @@ public final class ResolverUtility {
         return null;
     }
     
+    public static FileObject getFileObjectByImport(Import inport) {
+      return getImportedFileObject(inport);
+    }
+
     public static FileObject getImportedFileObject(Import importObj) {
         ModelSource modelSource = getImportedModelSource(importObj);
         

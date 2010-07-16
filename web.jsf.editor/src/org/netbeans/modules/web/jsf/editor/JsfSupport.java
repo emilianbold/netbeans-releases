@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,9 +41,9 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -48,8 +51,12 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
@@ -95,10 +102,14 @@ public class JsfSupport {
         if (wm == null) {
             return null;
         }
+	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+	if(classPath == null) {
+	    return null;
+	}
         synchronized (INSTANCIES) {
             JsfSupport instance = INSTANCIES.get(wm);
             if (instance == null) {
-                instance = new JsfSupport(wm);
+                instance = new JsfSupport(wm, classPath);
                 INSTANCIES.put(wm, instance);
             }
             return instance;
@@ -111,14 +122,14 @@ public class JsfSupport {
     private WebModule wm;
     private ClassPath classpath;
     private JsfIndex index;
+    private MetadataModel<WebBeansModel> webBeansModel;
 
-    private JsfSupport(WebModule wm) {
+    private JsfSupport(WebModule wm, ClassPath classPath) {
         assert wm != null;
 
         this.wm = wm;
 
-        this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-        
+        this.classpath = classPath;
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
@@ -187,13 +198,22 @@ public class JsfSupport {
 
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-            try {
-                this.index = JsfIndex.create(wm);
-            } catch (IOException ex) {
-                Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
-            }
+	    this.index = JsfIndex.create(wm);
         }
         return this.index;
     }
 
+    public FaceletsLibrarySupport getFaceletsLibrarySupport() {
+	return faceletsLibrarySupport;
+    }
+
+    public synchronized MetadataModel<WebBeansModel> getWebBeansModel() {
+	if(webBeansModel == null) {
+	    ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(getWebModule());
+	    webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+	}
+	return webBeansModel;
+    }
+
+    
 }

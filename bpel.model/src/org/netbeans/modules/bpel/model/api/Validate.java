@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.api;
 
 import java.util.List;
@@ -59,7 +55,7 @@ public interface Validate extends Activity, ReferenceCollection {
      * 
      * @return Value of attribute "variables"
      */
-    List<BpelReference<VariableDeclaration>> getVaraibles();
+    List<BpelReference<VariableDeclaration>> getVariables();
 
     /**
      * Set value for "variables" attribute.
@@ -67,5 +63,9 @@ public interface Validate extends Activity, ReferenceCollection {
      * @param list
      *            List with variable references.
      */
-    void setVaraibles( List<BpelReference<VariableDeclaration>> list );
+    void setVariables(List<BpelReference<VariableDeclaration>> list);
+
+    String getVariablesList();
+    void setVariablesList(String value);
+    void removeVariablesList();
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,11 +66,12 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
-import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
 import org.netbeans.modules.hudson.util.Utilities;
+import org.openide.actions.DeleteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.AbstractNode;
@@ -103,6 +108,7 @@ public class HudsonInstanceNode extends AbstractNode {
         setDisplayName(instance.getName());
         setShortDescription(instance.getUrl());
         setIconBaseWithExtension(ICON_BASE);
+        setValue("customDelete", true); // NOI18N
         
         this.instance = instance;
         
@@ -143,7 +149,7 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        if (!instance.getViews().isEmpty()) {
+        if (instance.getViews().size() > 1) {
             actions.add(new ViewSwitcher());
             actions.add(null);
         }
@@ -154,11 +160,19 @@ public class HudsonInstanceNode extends AbstractNode {
         if (!instance.isPersisted()) {
             actions.add(SystemAction.get(PersistInstanceAction.class));
         } else {
-            actions.add(SystemAction.get(RemoveInstanceAction.class));
+            actions.add(SystemAction.get(DeleteAction.class));
         }
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[0]);
+    }
+
+    public @Override boolean canDestroy() {
+        return instance.isPersisted();
+    }
+
+    public @Override void destroy() throws IOException {
+        HudsonManagerImpl.getDefault().removeInstance(instance);
     }
 
     public @Override PropertySet[] getPropertySets() {
@@ -243,7 +257,7 @@ public class HudsonInstanceNode extends AbstractNode {
         
         private void refreshKeys() {
             List<HudsonJob> jobs = new ArrayList<HudsonJob>();
-            HudsonView view = null;
+            HudsonView view = instance.getPrimaryView();
             String selectedView = instance.prefs().get(SELECTED_VIEW, null);
             if (selectedView != null) {
                 for (HudsonView v : instance.getViews()) {
@@ -254,7 +268,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 }
             }
             for (HudsonJob job : instance.getJobs()) {
-                if (view != null && !job.getViews().contains(view)) {
+                if (!job.getViews().contains(view)) {
                     continue;
                 }
                 jobs.add(job);
@@ -283,8 +297,9 @@ public class HudsonInstanceNode extends AbstractNode {
                 public JComponent[] getMenuPresenters() {
                     removeAll();
                     String selectedView = instance.prefs().get(SELECTED_VIEW, null);
-                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.all_view"));
-                    item.setSelected(selectedView == null);
+                    String primaryViewName = instance.getPrimaryView().getName();
+                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(primaryViewName);
+                    item.setSelected(selectedView == null || selectedView.equals(primaryViewName));
                     item.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             instance.prefs().remove(SELECTED_VIEW);
@@ -293,11 +308,15 @@ public class HudsonInstanceNode extends AbstractNode {
                     add(item);
                     addSeparator();
                     for (final HudsonView view : instance.getViews()) {
-                        item = new JRadioButtonMenuItem(view.getName());
-                        item.setSelected(view.getName().equals(selectedView));
+                        final String name = view.getName();
+                        if (name.equals(primaryViewName)) {
+                            continue;
+                        }
+                        item = new JRadioButtonMenuItem(name);
+                        item.setSelected(name.equals(selectedView));
                         item.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                instance.prefs().put(SELECTED_VIEW, view.getName());
+                                instance.prefs().put(SELECTED_VIEW, name);
                             }
                         });
                         add(item);

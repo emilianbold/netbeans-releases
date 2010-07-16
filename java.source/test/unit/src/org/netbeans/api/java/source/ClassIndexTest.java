@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,13 +80,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class ClassIndexTest extends NbTestCase {
-    
+
     private static FileObject srcRoot;
     private static FileObject srcRoot2;
     private static FileObject binRoot;
@@ -101,9 +105,7 @@ public class ClassIndexTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-//        clearWorkDir();
-        clearAllButCaches ();        
-        
+        clearWorkDir();
         File cache = new File(getWorkDir(), "cache");       //NOI18N
         cache.mkdirs();
         IndexUtil.setCacheFolder(cache);
@@ -130,25 +132,12 @@ public class ClassIndexTest extends NbTestCase {
         bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         MockServices.setServices(ClassPathProviderImpl.class, SFBQ.class);
     }
-    
-    //where
-    private void clearAllButCaches () throws IOException {
-        File f = new File (getWorkDir(),"src/foo");         //NOI18N
-        File[] c = f.listFiles();
-        if (c != null) {
-            for (File x : c) {
-                x.delete();
-            }
-        }
-        f.delete();
-    }
-    
 
     @Override
     protected void tearDown() throws Exception {
         MockServices.setServices();
-    }        
-    
+    }
+
     public void testEvents () throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
@@ -159,7 +148,7 @@ public class ClassIndexTest extends NbTestCase {
         index.getPackageNames("org", true, EnumSet.of(ClassIndex.SearchScope.SOURCE));
         final CIL testListener = new CIL ();
         index.addClassIndexListener(testListener);
-        
+
         Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED);
         testListener.setExpectedEvents (et);
         createFile ("foo/A.java", "package foo;\n public class A {}");

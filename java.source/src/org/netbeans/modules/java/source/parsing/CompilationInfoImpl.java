@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,24 +78,22 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public final class CompilationInfoImpl {
-    
+
     private JavaSource.Phase phase = JavaSource.Phase.MODIFIED;
-    private CompilationUnitTree compilationUnit;    
-    
+    private CompilationUnitTree compilationUnit;
+
     private JavacTaskImpl javacTask;
     private final ClasspathInfo cpInfo;
     Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
     private final FileObject root;
-    final JavaFileObject jfo;    
+    final JavaFileObject jfo;
     //@NotThreadSafe    //accessed under parser lock
     private Snapshot snapshot;
     private final JavacParser parser;
     private final boolean isClassFile;
-    boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase
-    private final boolean clone;
-        
+
     /**
      * Creates a new CompilationInfoImpl for given source file
      * @param parser used to parse the file
@@ -106,8 +107,7 @@ public final class CompilationInfoImpl {
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
-                         final Snapshot snapshot, 
-                         final boolean clone) throws IOException {
+                         final Snapshot snapshot) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -119,9 +119,8 @@ public final class CompilationInfoImpl {
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
         this.isClassFile = false;
-        this.clone = clone;
     }
-    
+
     /**
      * Creates a new CompilationInfoImpl for classpaths
      * @param cpInfo classpaths
@@ -135,9 +134,8 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = false;
-        this.clone = false;
     }
-    
+
     /**
      * Creates a new CompilationInfoImpl for a class file
      * @param cpInfo classpaths
@@ -157,9 +155,8 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
-        this.clone = false;
     }
-    
+
     void update (final Snapshot snapshot) throws IOException {
         assert snapshot != null;
         JavacParser.jfoProvider.update(this.jfo, snapshot.getText());
@@ -350,7 +347,7 @@ public final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false, false, clone);
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
@@ -389,7 +386,7 @@ public final class CompilationInfoImpl {
     public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
             javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
-                    clone ? null : this.parser, new DiagnosticListenerImpl(this.jfo), null);
+                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }

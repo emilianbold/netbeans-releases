@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,11 +49,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
@@ -59,6 +59,7 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -69,35 +70,39 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PullOtherAction extends ContextAction implements ChangeListener {
+public class PullOtherAction extends ContextAction {
     
-    private final VCSContext context;
-    private Repository repository = null;
-    private JButton pullButton = null;
-    private JButton cancelButton = null;
-
-    public PullOtherAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PullOther";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        if (repository == null) {
-            int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
-            String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title, true);
-            repository.addChangeListener(this);
-        }
-
-        pullButton = new JButton();
+        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
+        String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
+        final JButton pullButton = new JButton();
+        final Repository repository = new Repository(repositoryModeMask, title, true);
+        repository.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                pullButton.setEnabled(repository.isValid());
+            }
+        });
+        
         org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_Pull_Action_Pull")); // NOI18N
         pullButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSD_Pull_Action_Pull")); // NOI18N
         pullButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSN_Pull_Action_Pull")); // NOI18N
-        cancelButton = new JButton();
+        JButton cancelButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_Pull_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSD_Pull_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSN_Pull_Action_Cancel")); // NOI18N
@@ -128,11 +133,13 @@ public class PullOtherAction extends ContextAction implements ChangeListener {
             pull(context, root, pullSource);
         }
     }
-    
-    public void stateChanged(ChangeEvent evt) {
-        pullButton.setEnabled(repository.isValid());
-    }
 
+    /**
+     *
+     * @param ctx
+     * @param root
+     * @param pullSource password is nulled
+     */
     public static void pull(final VCSContext ctx, final File root, final HgURL pullSource) {
         if (root == null || pullSource == null) return;
         final String fromPrjName = NbBundle.getMessage(PullAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N
@@ -145,9 +152,5 @@ public class PullOtherAction extends ContextAction implements ChangeListener {
 
         support.start(rp, root,
                 org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,29 +73,34 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     CsmNamespace findNamespace( CharSequence qualifiedName );
     
     /**
-     * Finds compound classifier (clas or enum) by its qualified name
+     * Finds compound classifier (class or enum) by its qualified name
      */
     CsmClassifier findClassifier(CharSequence qualifiedName);
 
     /**
-     * Finds all compound classifier (clas, struct, union, enum, typedef, classforward) by its qualified name
+     * Finds all compound classifier (class, struct, union, enum, typedef, classforward) by its qualified name
      */
     Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName);
+
+    /**
+     * Finds all inheritances by its name
+     */
+    Collection<CsmInheritance> findInheritances(CharSequence name);
     
     /**
-     * Finds declaration by its nuique name
+     * Finds declaration by its unique name
      */
     CsmDeclaration findDeclaration(CharSequence uniqueName);
     
     /**
-     * Finds declarations by its nuique name
+     * Finds declarations by its unique name
      */
     Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName);
 
     /**
      * Finds file by object that can be absolute path or native file item
      */
-    CsmFile findFile(Object absolutePathOrNativeFileItem);
+    public abstract CsmFile findFile(Object absolutePathOrNativeFileItem, boolean snapShot);
 
     /**
      * Gets the collection of source project files.
@@ -100,12 +108,12 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     Collection<CsmFile> getSourceFiles();
     
     /**
-     * Gets the collection of heaher project files.
+     * Gets the collection of header project files.
      */
     Collection<CsmFile> getHeaderFiles();
     
     /**
-     * Gets the collection of all (source and heaher) project files.
+     * Gets the collection of all (source and header) project files.
      */
     Collection<CsmFile> getAllFiles();
     

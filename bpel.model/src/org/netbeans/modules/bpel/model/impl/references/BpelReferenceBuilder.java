@@ -19,7 +19,7 @@
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.bpel.model.api.BaseScope;
@@ -64,7 +64,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 public final class BpelReferenceBuilder {
 
     private BpelReferenceBuilder() {
-        myCollection = new LinkedList<BpelReferenceFactory>();
+        myCollection = new ArrayList<BpelReferenceFactory>();
         myCollection.add( new PartnerLinkReferenceFactory() );
         myCollection.add( new LinkReferenceFactory() );
         myCollection.add( new CorrelationSetReferenceFactory() );

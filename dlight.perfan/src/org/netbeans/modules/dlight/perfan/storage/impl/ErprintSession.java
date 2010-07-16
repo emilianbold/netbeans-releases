@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
@@ -60,6 +64,7 @@ public class ErprintSession {
     private final SunStudioFiltersProvider dataFiltersProvider;
     private String filterString;
     private volatile boolean ready;
+    private volatile boolean error;
     private volatile boolean stopped;
 
     private ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
@@ -88,6 +93,7 @@ public class ErprintSession {
     public static final ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
         final ErprintSession session = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
         session.ready = false;
+        session.error = false;
         session.stopped = false;
 
         Runnable r = new Runnable() {
@@ -106,8 +112,14 @@ public class ErprintSession {
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
+                    } catch (ConnectException ex) {
+                        //Exceptions.printStackTrace(ex);
+                        session.error = true;
+                        return;
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        //Exceptions.printStackTrace(ex);
+                        session.error = true;
+                        return;
                     }
                 }
             }
@@ -149,6 +161,9 @@ public class ErprintSession {
         while (!ready) {
             if (Thread.interrupted()) {
                 throw new IOException("Interrupted during warmup"); // NOI18N
+            }
+            if (error) {
+                throw new IOException("Error during warmup"); // NOI18N
             }
 
             try {

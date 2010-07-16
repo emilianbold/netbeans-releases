@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -123,11 +126,15 @@ public class Utilities {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
+    public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
 
-    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
+    private static final String[] FIRST_CLASS_MODULES = new String [] {
+        "org.netbeans.modules.autoupdate.services",   // NOI18N
+        "org.netbeans.modules.autoupdate.ui"          // NOI18N
+    };
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
 
     private static final String USER_KS_KEY = "userKS";
@@ -232,7 +239,7 @@ public class Utilities {
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
-                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), true).getName());
+                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution()).getName());
 
                 root.appendChild( module );
                 isEmpty = false;
@@ -396,9 +403,11 @@ public class Utilities {
     }
     
     static void writeUpdateOfUpdaterJar (JarEntry updaterJarEntry, JarFile updaterJar, File targetCluster) {
+        String entryPath = updaterJarEntry.getName();
+        String entryName = entryPath.contains("/") ? entryPath.substring(entryPath.lastIndexOf("/") + 1) : entryPath;
         File dest = new File (targetCluster, UpdaterDispatcher.UPDATE_DIR + // updater
                                 UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.NEW_UPDATER_DIR + // new_updater
-                                UpdateTracking.FILE_SEPARATOR + ModuleUpdater.UPDATER_JAR
+                                UpdateTracking.FILE_SEPARATOR + entryName
                                 );
         
         dest.getParentFile ().mkdirs ();
@@ -948,7 +957,7 @@ public class Utilities {
             if (cluster.equals (c)) {
                 Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
                 module.setAttribute(ATTR_NBM_NAME,
-                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), true).getName ());
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution()).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
                 isEmpty = false;
@@ -1001,15 +1010,20 @@ public class Utilities {
     }
 
     public static boolean isFirstClassModule (UpdateUnit u) {
+        String codeName = u.getCodeName();
         String names = System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
         if (names == null || names.length () == 0) {
-            names = FIRST_CLASS_MODULES;
-        }
-
-        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
-        while (en.hasMoreTokens ()) {
-            if(en.nextToken ().trim().equals(u.getCodeName())) {
-                return true;
+            for(String m : FIRST_CLASS_MODULES) {
+                if(m.equals(codeName)) {
+                    return true;
+                }
+            }
+        } else {
+            StringTokenizer en = new StringTokenizer(names, ","); // NOI18N
+            while (en.hasMoreTokens()) {
+                if (en.nextToken().trim().equals(codeName)) {
+                    return true;
+                }
             }
         }
         return false;

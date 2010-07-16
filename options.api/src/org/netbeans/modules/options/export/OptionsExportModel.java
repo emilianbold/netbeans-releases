@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -703,7 +707,7 @@ public final class OptionsExportModel {
         if (include) {
             // check excludes
             for (String pattern : excludePatterns) {
-                if (matches(relativePath, pattern)) {
+                if (!pattern.contains("#") && matches(relativePath, pattern)) {
                     return false;
                 }
             }
@@ -799,16 +803,63 @@ public final class OptionsExportModel {
             zipOutputStream.closeEntry();
         } else {  // import to userdir
             OutputStream out = null;
-            try {
-                File targetFile = new File(targetUserdir, relativePath);
-                LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
-                ensureParent(targetFile);
-                out = new FileOutputStream(targetFile);
-                copyFileOrProperties(relativePath, includeKeys, excludeKeys, out);
-            } finally {
-                if (out != null) {
-                    out.close();
+            File targetFile = new File(targetUserdir, relativePath);
+            LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
+            ensureParent(targetFile);
+            if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
+                // copy entire file
+                try {
+                    out = new FileOutputStream(targetFile);
+                    copyFile(relativePath, out);
+                } finally {
+                    if (out != null) {
+                        out.close();
+                    }
                 }
+            } else {
+                mergeProperties(relativePath, includeKeys, excludeKeys);
+            }
+        }
+    }
+
+    /** Merge source properties to existing target properties.
+     * @param relativePath relative path
+     * @param includeKeys keys to include
+     * @param excludeKeys keys to exclude
+     * @throws IOException if I/O fails
+     */
+    private void mergeProperties(String relativePath, Set<String> includeKeys, Set<String> excludeKeys) throws IOException {
+        if (!includeKeys.isEmpty()) {
+            currentProperties.keySet().retainAll(includeKeys);
+        }
+        currentProperties.keySet().removeAll(excludeKeys);
+        LOGGER.log(Level.FINE, "  Keys merged with existing properties: {0}", currentProperties.keySet());  //NOI18N
+        if (currentProperties.isEmpty()) {
+            return;
+        }
+        EditableProperties targetProperties = new EditableProperties(false);
+        InputStream in = null;
+        File targetFile = new File(targetUserdir, relativePath);
+        try {
+            if (targetFile.exists()) {
+                in = new FileInputStream(targetFile);
+                targetProperties.load(in);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        for (Entry<String, String> entry : currentProperties.entrySet()) {
+            targetProperties.put(entry.getKey(), entry.getValue());
+        }
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(targetFile);
+            targetProperties.store(out);
+        } finally {
+            if (out != null) {
+                out.close();
             }
         }
     }

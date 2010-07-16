@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,46 +41,51 @@
  */
 package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 100)
 public class UnixHostInfoProvider implements HostInfoProvider {
 
+    private static final String PATH_VAR = "PATH"; // NOI18N
+    private static final String PATH_TO_PREPEND = "/bin:/usr/bin"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final File hostinfoScript;
 
-
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
-        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", null, false); // NOI18N
+        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
         if (hostinfoScript == null) {
             log.severe("Unable to find hostinfo.sh script!"); // NOI18N
         }
     }
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         if (hostinfoScript == null) {
             return null;
@@ -89,26 +97,40 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             return null;
         }
 
-        Properties props = execEnv.isLocal()
-                ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+        final Properties info;
+        final Map<String, String> environment;
 
-        return HostInfoFactory.newHostInfo(props);
+        if (execEnv.isLocal()) {
+            environment = new HashMap<String, String>(System.getenv());
+            info = getLocalHostInfo();
+        } else {
+            environment = new HashMap<String, String>();
+            info = getRemoteHostInfo(execEnv, environment);
+        }
+
+        // Add /bin:/usr/bin
+        String path = PATH_TO_PREPEND;
+
+        if (environment.containsKey(PATH_VAR)) {
+            path += ":" + environment.get(PATH_VAR); // NOI18N
+        }
+
+        environment.put(PATH_VAR, path); // NOI18N
+
+        return HostInfoFactory.newHostInfo(info, environment);
     }
 
     private Properties getLocalHostInfo() throws IOException {
         Properties hostInfo = new Properties();
 
         try {
-            String shell = "sh"; // NOI18N
-
-            ProcessBuilder pb = new ProcessBuilder(shell, // NOI18N
+            ProcessBuilder pb = new ProcessBuilder("/bin/sh", // NOI18N
                     hostinfoScript.getAbsolutePath());
 
             File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
             String tmpDirBase = tmpDirFile.getCanonicalPath();
 
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
-            pb.environment().put("PATH", pb.environment().get("PATH") + File.pathSeparator + "/bin:/usr/bin"); // NOI18N
             pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
 
             Process hostinfoProcess = pb.start();
@@ -136,70 +158,73 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
-        final ConnectionManager cm = ConnectionManager.getInstance();
-
-        if (!cm.isConnectedTo(execEnv)) {
-            cm.connectTo(execEnv);
-        }
-
+    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv, Map<String, String> environmentToFill) throws IOException {
         Properties hostInfo = new Properties();
-        OutputStream hiOutputStream = null;
-        InputStream hiInputStream = null;
+        ChannelStreams sh_channels = null;
 
         try {
-            final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(cm, execEnv, true);
+            sh_channels = JschSupport.startCommand(execEnv, "/bin/sh -s", null); // NOI18N
 
-            if (session != null) {
-                ChannelExec echannel = null;
+            long localStartTime = System.currentTimeMillis();
 
-                synchronized (session) {
-                    echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                    echannel.setEnv("PATH", "/bin:/usr/bin"); // NOI18N
-                    echannel.setCommand("sh -s"); // NOI18N
-                    echannel.connect();
-                }
+            OutputStream out = sh_channels.in;
+            InputStream in = sh_channels.out;
 
-                long localStartTime = System.currentTimeMillis();
+            // echannel.setEnv() didn't work, so writing this directly
+            out.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+            out.flush();
 
-                hiOutputStream = echannel.getOutputStream();
-                hiInputStream = echannel.getInputStream();
+            BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
+            String scriptLine = scriptReader.readLine();
 
-                // echannel.setEnv() didn't work, so writing this directly
-                hiOutputStream.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
-                hiOutputStream.flush();
-
-                BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
-                String scriptLine = scriptReader.readLine();
-
-                while (scriptLine != null) {
-                    hiOutputStream.write((scriptLine + '\n').getBytes());
-                    hiOutputStream.flush();
-                    scriptLine = scriptReader.readLine();
-                }
-
-                scriptReader.close();
-                hostInfo.load(hiInputStream);
-
-                long localEndTime = System.currentTimeMillis();
-
-                hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
+            while (scriptLine != null) {
+                out.write((scriptLine + '\n').getBytes());
+                out.flush();
+                scriptLine = scriptReader.readLine();
             }
+
+            scriptReader.close();
+            hostInfo.load(in);
+
+            long localEndTime = System.currentTimeMillis();
+
+            hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
         } catch (JSchException ex) {
             throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
-            try {
-                if (hiOutputStream != null) {
-                    hiOutputStream.close();
+            if (sh_channels != null) {
+                if (sh_channels.channel != null) {
+                    try {
+                        ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(execEnv, sh_channels.channel);
+                    } catch (JSchException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            } catch (IOException ex) {
             }
-            try {
-                if (hiInputStream != null) {
-                    hiInputStream.close();
+        }
+
+        ChannelStreams login_shell_channels = null;
+
+        try {
+            login_shell_channels = JschSupport.startLoginShellSession(execEnv);
+            login_shell_channels.in.write(("/usr/bin/env || /bin/env\n").getBytes()); // NOI18N
+            login_shell_channels.in.flush();
+            login_shell_channels.in.close();
+
+            EnvReader reader = new EnvReader(login_shell_channels.out, true);
+            environmentToFill.putAll(reader.call());
+        } catch (Exception ex) {
+        } finally {
+            if (login_shell_channels != null) {
+                if (login_shell_channels.channel != null) {
+                    try {
+                        ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(execEnv, login_shell_channels.channel);
+                    } catch (JSchException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            } catch (IOException ex) {
             }
         }
 

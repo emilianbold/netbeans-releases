@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.checkout;
 
+import org.netbeans.modules.subversion.util.CheckoutCompleted;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -78,6 +82,7 @@ public final class CheckoutAction extends CallableSystemAction {
         RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
         File workDir = wizard.getWorkdir();
         boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
+        boolean doExport = wizard.isExport();
         boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
 
         SvnClient client;
@@ -88,7 +93,7 @@ public final class CheckoutAction extends CallableSystemAction {
             return;
         }
 
-        performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, showCheckoutCompleted);
+        performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
     }
     
     public String getName() {
@@ -114,6 +119,7 @@ public final class CheckoutAction extends CallableSystemAction {
         final RepositoryFile[] repositoryFiles,
         final File workingDir,
         final boolean atWorkingDirLevel,
+        final boolean doExport,
         final boolean showCheckoutCompleted)
     {
         SvnProgressSupport support = new SvnProgressSupport() {
@@ -121,18 +127,20 @@ public final class CheckoutAction extends CallableSystemAction {
                 try {
                     setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
                     setCancellableDelegate(client);
-                    checkout(client, repository, repositoryFiles, workingDir, atWorkingDirLevel, this);
+                    client.addNotifyListener(this);
+                    checkout(client, repository, repositoryFiles, workingDir, atWorkingDirLevel, doExport, this);
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     return;
                 } finally {
                     Subversion.getInstance().versionedFilesChanged();
+                    client.removeNotifyListener(this);
                 }
                 if(isCanceled()) {
                     return;
                 }
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
-                if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, this);
+                if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, doExport, this);
             }
         };
         return support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
@@ -143,6 +151,7 @@ public final class CheckoutAction extends CallableSystemAction {
                                 final RepositoryFile[] repositoryFiles,
                                 final File workingDir,
                                 final boolean atWorkingDirLevel,
+                                final boolean doExport,
                                 final SvnProgressSupport support)
     throws SVNClientException
     {
@@ -160,7 +169,11 @@ public final class CheckoutAction extends CallableSystemAction {
             if(support!=null && support.isCanceled()) { 
                 return;
             }
-            client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+            if(doExport) {
+                client.doExport(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+            } else {
+                client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+            }
             if(support!=null && support.isCanceled()) {
                 return;                
             }            
@@ -171,6 +184,7 @@ public final class CheckoutAction extends CallableSystemAction {
         final RepositoryFile[] repositoryFiles,
         final File workingDir,
         final boolean atWorkingDirLevel,
+        final boolean doExport,
         final SvnProgressSupport support)
     {
         String[] folders;
@@ -194,7 +208,7 @@ public final class CheckoutAction extends CallableSystemAction {
         if (support != null && support.isCanceled()) {
             return;
         }
-        cc.scanForProjects(support);
+        cc.scanForProjects(support, doExport ? CheckoutCompleted.Type.EXPORT : CheckoutCompleted.Type.CHECKOUT);
         return;
     }
 

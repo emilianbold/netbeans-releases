@@ -1,0 +1,275 @@
+/*
+Design by Metamorphosis Design
+http://www.metamorphozis.com
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+*
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+a:link {
+    color: #db763a;
+    text-decoration:none;
+}
+
+a:hover {
+    text-decoration: none;
+    color: #000000;
+}
+
+a:visited {
+    color: #db763a;
+}
+
+body{
+    background: #E19D3D url(images/bg.jpg) top repeat-x;
+    font: 12px Arial, Helvetica, sans-serif;
+    color: #000000;
+    margin: 0 auto;
+    padding: 0px;
+}
+
+#content{
+    margin: 0 auto;
+    width: 100%;
+    text-align: left;
+}
+
+#main{
+    width: 925px;
+    margin: 0 auto;
+    clear:both;
+    background: url(images/back_main.png) repeat-y;
+}
+
+#main_top
+{
+    background: url(images/main_top.png) no-repeat;
+    width: 925px;
+    margin: 0 auto;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+#main_bottom
+{
+    background: url(images/main_bottom.png) no-repeat;
+    height: 13px;
+}
+
+#header{
+    height: 254px;
+    width: 100%;
+    background: url(images/header.jpg) no-repeat top center;
+}
+
+#logo{
+    height: 174px;
+    text-align: left;
+    padding-left: 100px;
+    padding-top: 30px;
+}
+
+
+#logo a {
+    text-decoration: none;
+    text-transform: lowercase;
+    font-style: italic;
+    font-size: 18px;
+    color: #ffffff;
+}
+#logo H2 a{
+    font-size: 12px;
+}
+
+
+#menu{
+    width: 700px;
+    height: 51px;
+    margin: 0 auto;
+    margin-bottom: 30px;
+}
+
+#menu ul {
+    list-style: none;
+    padding: 0px;
+}
+
+#menu li {
+    list-style: none;
+    padding: 0px;
+    display: inline;
+
+}
+
+#menu a {
+    float: left;
+    width: 135px;
+    height: 32px;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+    padding-top: 20px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+#menu a:hover{
+    color: #ffffff;
+    background: url(images/menhov.jpg) no-repeat;
+}
+
+#left{
+    width: 206px;
+}
+
+#left a{
+    color: #A66501;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+#left a:hover{
+    color: #000000;
+}
+
+#lefttop{
+    background: url(images/lefttop.jpg) no-repeat;
+    height: 8px;
+}
+
+#left H3{
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 23px;
+    font-weight: normal;
+    color: #ffffff;
+    width: 246px;
+    height: 65px;
+    padding-left: 25px;
+    padding-top: 5px;
+    background: url(images/left_title.jpg) no-repeat;
+    margin-left: 8px;
+}
+
+#left ul {
+    list-style: none;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
+
+#left ul li{
+    height: 20px;
+    margin-top: 4px;
+    background: url(images/small.gif) no-repeat 1px 5px;
+}
+
+#categories ul li{
+    padding-left: 15px;
+    padding-top: 1px;
+}
+
+#partners ul li{
+    padding-left: 15px;
+    padding-top: 1px;
+}
+
+#right_tab{
+    float: right;
+    width: 667px;
+}
+
+#righttop{
+    background: url(images/righttop.jpg) no-repeat;
+    height: 8px;
+}
+
+.text{
+    padding-left: 15px;
+    padding-right: 25px;
+}
+
+#right_tab H4{
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 18px;
+    font-weight: normal;
+    color: #A66501;
+    height: 30px;
+    padding-left: 25px;
+    padding-top: 18px;
+    margin-left: 11px;
+}
+
+#right_tab p {
+    margin: 0;
+    padding: 0;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+
+#right_tab h2 {
+    margin: 0;
+    padding: 0;
+    padding-top: 10px;
+    color: #196050;
+}
+
+.date {
+    margin-left: 11px;
+    padding-bottom: 15px;
+    height: 38px;
+    width: 544px;
+
+}
+
+.dateleft{
+    background:url(images/comment.gif) no-repeat;
+    padding-left: 20px;
+    height: 16px;
+    margin-top: 4px;
+    width:200px;
+    margin-left: 135px;
+    width: 130px;
+}
+
+.dateright{
+    margin-top: 2px;
+    margin-left: 15px;
+    background:url(images/timeicon.gif) no-repeat left;
+    padding-left: 25px;
+    height: 16px;
+    float: left;
+}
+
+.dateleft a,.dateright a{
+    color: #db763a;
+    text-decoration: none;
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 10px;
+}
+
+#footer {
+    height: 61px;
+    clear: both;
+    margin: 0 auto;
+    padding-top: 40px;
+    background: #DB9736 url(images/footer.jpg) repeat-x top;
+}
+
+#footer p {
+    margin: 0;
+    font-size: 10px;
+    text-align: center;
+    color: #ffffff;
+}
+
+#footer a {
+    color: #ffffff;
+}

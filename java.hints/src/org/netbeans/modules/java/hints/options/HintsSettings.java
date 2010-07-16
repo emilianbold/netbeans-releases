@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +45,11 @@ package org.netbeans.modules.java.hints.options;
 
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -72,41 +79,55 @@ public class HintsSettings {
     
     /** For current profile
      */ 
-    public static boolean isEnabled( AbstractHint hint ) {
-        Preferences p = hint.getPreferences(HintsSettings.getCurrentProfileId());
+    public static boolean isEnabled( HintMetadata hint ) {
+        Preferences p = RulesManager.getPreferences(hint.id, HintsSettings.getCurrentProfileId());
         return isEnabled(hint, p);
     }
     
     /** For current profile
      */ 
-    public static boolean isShowInTaskList( AbstractHint hint ) {
-        Preferences p = hint.getPreferences(HintsSettings.getCurrentProfileId());
+    public static boolean isShowInTaskList( HintMetadata hint ) {
+        Preferences p = RulesManager.getPreferences(hint.id, HintsSettings.getCurrentProfileId());
         return isShowInTaskList(hint, p);
     }
     
       
-    public static boolean isEnabled( AbstractHint hint, Preferences preferences ) {        
-        return preferences.getBoolean(ENABLED_KEY, HINTS_ACCESSOR.isEnabledDefault(hint));
+    public static boolean isEnabled( HintMetadata metadata, Preferences preferences ) {
+        return preferences.getBoolean(ENABLED_KEY, metadata.enabled);
     }
     
+    public static boolean isEnabled( AbstractHint hint, Preferences preferences ) {
+        return preferences.getBoolean(ENABLED_KEY, HintsSettings.HINTS_ACCESSOR.isEnabledDefault(hint));
+    }
+
+    public static void setEnabled( HintMetadata metadata, boolean value ) {
+	setEnabled(RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), value);
+	fireChangeEvent();
+    }
+
     public static void setEnabled( Preferences p, boolean value ) {
         p.putBoolean(ENABLED_KEY, value);
     }
       
-    public static boolean isShowInTaskList( AbstractHint hint, Preferences preferences ) {
-        Preferences p = hint.getPreferences(HintsSettings.getCurrentProfileId());
-        return preferences.getBoolean(IN_TASK_LIST_KEY, HINTS_ACCESSOR.isShowInTaskListDefault(hint));
+    public static boolean isShowInTaskList( HintMetadata hint, Preferences preferences ) {
+        Preferences p = RulesManager.getPreferences(hint.id, HintsSettings.getCurrentProfileId());
+        return preferences.getBoolean(IN_TASK_LIST_KEY, hint.showInTaskList);
     }
     
     public static void setShowInTaskList( Preferences p, boolean value ) {
         p.putBoolean(IN_TASK_LIST_KEY, value);
     }
       
+    public static AbstractHint.HintSeverity getSeverity( HintMetadata hint, Preferences preferences ) {
+        String s = preferences.get(SEVERITY_KEY, null );
+        return s == null ? hint.severity : AbstractHint.HintSeverity.valueOf(s);
+    }
+    
     public static AbstractHint.HintSeverity getSeverity( AbstractHint hint, Preferences preferences ) {
         String s = preferences.get(SEVERITY_KEY, null );
         return s == null ? HINTS_ACCESSOR.severiryDefault(hint) : AbstractHint.HintSeverity.valueOf(s);
     }
-    
+
     public static void setSeverity( Preferences p, AbstractHint.HintSeverity severity ) {
         p.put(SEVERITY_KEY, severity.name());
     }
@@ -123,6 +144,20 @@ public class HintsSettings {
     
     public static Map<String, Preferences> getPreferencesOverride() {
         return preferencesOverride;
+    }
+
+    private static final ChangeSupport cs = new ChangeSupport(HintsSettings.class);
+
+    public static void addChangeListener(ChangeListener l) {
+	cs.addChangeListener(l);
+    }
+
+    public static void removeChangeListener(ChangeListener l) {
+	cs.removeChangeListener(l);
+    }
+
+    public static void fireChangeEvent() {
+	cs.fireChange();
     }
     
     public static interface HintsAccessor {

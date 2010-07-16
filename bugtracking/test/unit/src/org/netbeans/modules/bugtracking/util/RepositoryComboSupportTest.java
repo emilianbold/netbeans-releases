@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,9 +55,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.dummies.DummyKenaiRepositories;
+import org.netbeans.modules.bugtracking.kenai.spi.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
+import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
@@ -102,7 +106,7 @@ public class RepositoryComboSupportTest {
     }
 
     private static DummyTopComponentRegistry getTopComponentRegistry() {
-        return Lookup.getDefault().lookup(DummyTopComponentRegistry.class);
+        return Lookup.getDefault().lookup(DummyWindowManager.class).registry;
     }
 
     private static DummyBugtrackingOwnerSupport getBugtrackingOwnerSupport() {
@@ -830,7 +834,7 @@ public class RepositoryComboSupportTest {
             super(ic);
             ic.add(new DummyKenaiRepositories());
             ic.add(new DummyBugtrackingConnector());
-            ic.add(new DummyTopComponentRegistry());
+            ic.add(new DummyWindowManager());
             ic.add(new DummyBugtrackingOwnerSupport());
         }
     }

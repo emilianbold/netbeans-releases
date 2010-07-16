@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,12 +50,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
@@ -87,6 +96,7 @@ public final class SessionGenerator {
 
     // informations collected in wizard
     private final FileObject pkg;
+    private FileObject remotePkg;
     private final boolean hasRemote;
     private final boolean hasLocal;
     private final String sessionType;
@@ -109,6 +119,9 @@ public final class SessionGenerator {
 
     private final Map<String, String> templateParameters;
 
+    private Project projectForRemoteInterface;
+    private String remoteInterfacePackageName;
+
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
         return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, false);
@@ -117,6 +130,7 @@ public final class SessionGenerator {
     protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, boolean isTest) {
         this.pkg = pkg;
+        this.remotePkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
         this.sessionType = sessionType;
@@ -145,7 +159,27 @@ public final class SessionGenerator {
             this.templateParameters.put("user", "{user}");
         }
     }
-    
+
+    public void setRemoteInterfaceDestination(Project projectForRemoteInterface, String remoteInterfacePackageName) throws IOException {
+        this.projectForRemoteInterface = projectForRemoteInterface;
+        this.remoteInterfacePackageName = remoteInterfacePackageName;
+        assert ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0;
+        FileObject root = ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)[0].getRootFolder();
+        remotePkg = FileUtil.createFolder(root, remoteInterfacePackageName.replace('.', '/'));
+        // add project where remote interface is defined to classpath of project where EJB is going to be implemented:
+        ProjectClassPathModifier.addProjects(new Project[]{projectForRemoteInterface}, pkg, ClassPath.COMPILE);
+        // make sure project where remote interfrace is going to be defined has javax.ejb API available:
+        assert LibraryManager.getDefault().getLibrary("javaee-api-6.0") != null;
+        if (ClassPath.getClassPath(remotePkg, ClassPath.COMPILE).findResource("javax/ejb") == null) {
+            try {
+                // for Maven, first try CPExtender.CLASSPATH_COMPILE_ONLY = "classpath/compile_only", see bug 186221.
+                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, "classpath/compile_only");
+            } catch (UnsupportedOperationException e) {
+                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, ClassPath.COMPILE);
+            }
+        }
+    }
+
     public FileObject generate() throws IOException {
         FileObject resultFileObject = null;
         if (isSimplified) {
@@ -183,8 +217,8 @@ public final class SessionGenerator {
     private FileObject generateEJB21Classes() throws IOException {
         FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS, pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
-            GenerationUtils.createClass(EJB21_REMOTE,  pkg, remoteName, null, templateParameters);
-            GenerationUtils.createClass(EJB21_REMOTEHOME, pkg, remoteHomeName, null, templateParameters);
+            GenerationUtils.createClass(EJB21_REMOTE,  remotePkg, remoteName, null, templateParameters);
+            GenerationUtils.createClass(EJB21_REMOTEHOME, remotePkg, remoteHomeName, null, templateParameters);
         }
         if (hasLocal) {
             GenerationUtils.createClass(EJB21_LOCAL, pkg, localName, null, templateParameters);
@@ -221,7 +255,7 @@ public final class SessionGenerator {
 
         final FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
-            GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null, templateParameters);
+            GenerationUtils.createClass(EJB30_REMOTE, remotePkg, remoteName, null, templateParameters);
         }
         if (hasLocal) {
             GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null, templateParameters);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -102,10 +105,12 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
         elementOrTypeTextField = new javax.swing.JTextField();
         browseBtn = new javax.swing.JButton();
 
+        setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         setName("Form"); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
         elementOrTypeTextField.setEditable(false);
+        elementOrTypeTextField.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         elementOrTypeTextField.setFocusable(false);
         elementOrTypeTextField.setMargin(new java.awt.Insets(0, 0, 0, 0));
         elementOrTypeTextField.setName("elementOrTypeTextField"); // NOI18N
@@ -116,6 +121,7 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
 
         browseBtn.setBackground(new java.awt.Color(255, 255, 255));
         browseBtn.setText("...");
+        browseBtn.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         browseBtn.setFocusCycleRoot(true);
         browseBtn.setMargin(new java.awt.Insets(0, 14, 0, 14));
         browseBtn.setMaximumSize(new java.awt.Dimension(16, 16));

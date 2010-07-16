@@ -49,6 +49,7 @@ import org.netbeans.modules.bpel.model.api.EventHandlers;
 import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.netbeans.modules.bpel.model.api.Extension;
+import org.netbeans.modules.bpel.model.api.ExtensionAssignOperation;
 import org.netbeans.modules.bpel.model.api.ExtensionContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -117,7 +118,6 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
 
     public BpelBuilderImpl( BpelModelImpl model ) {
         myModel = model;
-
         mySupport = new ChangeEventSupport();
     }
 
@@ -128,7 +128,8 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
      */
     public ExtendableActivity createActivity( ActivityDescriptor descriptor ) {
         ActivityBuilder builder = getActivityBuilder( descriptor );
-        if ( builder== null ){
+
+        if (builder == null) {
             return null;
         }
         return builder.build( this );
@@ -185,7 +186,16 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
      * @see org.netbeans.modules.soa.model.bpel20.api.BPELElementsBuilder#createAssign()
      */
     public Assign createAssign() {
-        return new AssignImpl(this);
+        return new AssignImpl(this, false);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.netbeans.modules.soa.model.bpel20.api.BPELElementsBuilder#createAssign()
+     */
+    public Assign createJavaScript() {
+        return new AssignImpl(this, true);
     }
 
     /*
@@ -223,7 +233,6 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
     public Flow createFlow() {
         return new FlowImpl(this);
     }
-
 
     /*
      * (non-Javadoc)
@@ -478,6 +487,11 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
      */
     public Copy createCopy() {
         return new CopyImpl(this);
+    }
+    
+    /** {@inheritDoc} */
+    public ExtensionAssignOperation createExtensionAssignOperation() {
+        return new ExtensionAssignOperationImpl(this);
     }
 
     /*

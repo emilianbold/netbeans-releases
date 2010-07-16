@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -52,6 +54,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot.MemoryAccessTyp
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
+import org.netbeans.modules.dlight.threads.api.Datarace;
 
 /**
  * @author Alexey Vladykin
@@ -95,7 +98,7 @@ public final class DataraceImpl implements Datarace {
 
 
     private static final Pattern RACE_PATTERN = Pattern.compile("Race\\s+#(\\d+),\\s+Vaddr:\\s+(0x(.+)|\\(Multiple\\s+Addresses\\)|Multiple\\s+addresses)"); // NOI18N
-    private static final Pattern DUMP_PATTERN = Pattern.compile("\\s+Trace\\s+\\d+"); // NOI18N
+    private static final Pattern DUMP_PATTERN = Pattern.compile("\\s+.*Trace\\s+\\d+"); // NOI18N
     private static final Pattern SNAPSHOT_PATTERN = Pattern.compile(" *Access +\\d+: +(Read|Write) *"); // NOI18N
 
     public static List<DataraceImpl> fromErprint(String[] lines) {

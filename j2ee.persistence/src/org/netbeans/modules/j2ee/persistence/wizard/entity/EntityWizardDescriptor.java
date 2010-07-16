@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,6 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
@@ -66,14 +68,17 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
     private WizardDescriptor wizardDescriptor;
     private Project project;
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.add(l);
     }
     
+    @Override
     public java.awt.Component getComponent() {
         if (p == null) {
             p = new EntityWizardPanel(this);
             p.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(EntityWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -87,10 +92,12 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return p;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new HelpCtx(EntityWizardDescriptor.class);
     }
     
+    @Override
     public boolean isValid() {
         // XXX add the following checks
         // p.getName = valid NmToken
@@ -112,6 +119,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return true;
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         if (project == null) {
@@ -121,25 +129,25 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         
         try{
             if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
-                String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit");
-                p.setPersistenceUnitButtonVisibility(true, warning);
+                p.setPersistenceUnitButtonVisibility(true);
             } else {
-                p.setPersistenceUnitButtonVisibility(false, null);
+                p.setPersistenceUnitButtonVisibility(false);
             }
         } catch (InvalidPersistenceXmlException ipx){
-            String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath());
-            p.setPersistenceUnitButtonVisibility(false, warning);
+            p.setPersistenceUnitButtonVisibility(false);
         }
     }
     
     private boolean isPersistenceUnitDefined() throws InvalidPersistenceXmlException {
-        return ProviderUtil.persistenceExists(project) || getPersistenceUnit() != null;
+        return ProviderUtil.persistenceExists(project);
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.remove(l);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         
     }
@@ -148,13 +156,21 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return p.getPrimaryKeyClassName();
     }
     
-    public PersistenceUnit getPersistenceUnit(){
-        return p.getPersistenceUnit();
+//    public PersistenceUnit getPersistenceUnit(){
+//        return p.getPersistenceUnit();
+//    }
+
+    public boolean isCreatePU(){
+        return p.isCreatePU();
     }
+
+    @Override
     public boolean isFinishPanel() {
         return isValid();
     }
     
+    
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (changeListeners) {
@@ -166,9 +182,11 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
-    
+
+
 }
 

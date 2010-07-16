@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -41,149 +44,124 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="cnd" default="netbeans" basedir=".">
+<project name="cnd" default="build" basedir=".">
 
     <property name="nbroot" location=".."/>
-    <property name="nbext_root" location="${nbroot}/nbbuild"/>
-    <property name="cluster.config" value="cnd"/>
+    <property name="nbbuild" location="${nbroot}/nbbuild"/>
 
-    <!-- Plain <subant> is unusable in Ant 1.7.1: https://issues.apache.org/bugzilla/show_bug.cgi?id=30569 -->
-    <taskdef  name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef  name="sortsuitemodules" classname="org.netbeans.nbbuild.SortSuiteModules" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="cnd.lexer,cnd.asm,cnd,cnd.makeproject,cnd.api.model,
-        cnd.antlr,cnd.api.project,cnd.modelimpl,cnd.classview,cnd.completion,cnd.debugger.gdb,cnd.modelutil,
-        cnd.modelui,cnd.highlight,cnd.gotodeclaration,cnd.apt,cnd.folding,cnd.dwarfdump,
-        cnd.repository,cnd.discovery,cnd.dwarfdiscovery,cnd.modeldiscovery,cnd.navigation,
-        cnd.qnavigator,cnd.remote,cnd.repository.api,cnd.utils"/>
-    <pathconvert property="modules.fullpath">
-        <path>
-            <dirset dir="${nbroot}" includes="${submodules}"/>
-        </path>
-        <mapper type="identity"/>
-    </pathconvert>
-    <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+    <!-- When updating an entry within ZIP archive, Ant compares
+         timestamps of the entry and the replacement file. If entry
+         is newer that replacement file, no update is performed.
+         In our case the replacement must be unconditional. -->
+    <macrodef name="replace-zip-entry">
+        <attribute name="zipfile"/>
+        <attribute name="oldentry"/>
+        <attribute name="newentry"/>
+        <sequential>
+            <zip destfile="@{zipfile}.tmp">
+                <zipfileset
+                    src="@{zipfile}"
+                    excludes="@{oldentry}"/>
+                <zipfileset
+                    file="@{newentry}"
+                    fullpath="@{oldentry}"/>
+            </zip>
+            <move overwrite="true"
+                  file="@{zipfile}.tmp"
+                  tofile="@{zipfile}"/>
+        </sequential>
+    </macrodef>
 
-    <property name="build.compiler.debug" value="on"/>
-
-
-    <target name="init">
-        <property name="buildnumber" value="dev"/>
-        <echo message="buildnumber = ${buildnumber}"/>
+    <target name="-init-tasks">
+        <taskdef name="sortmodules"
+                classname="org.netbeans.nbbuild.SortSuiteModules"
+                classpath="${nbbuild}/nbantext.jar"/>
     </target>
 
-    <target name="compile">
-        <subant-junit failonerror="true" target="compile"><buildpath path="${modules.sorted}"/></subant-junit>
-    </target>
-
-    <target name="jars" depends="init,compile">
-        <subant-junit failonerror="true" target="jars"><buildpath path="${modules.sorted}"/></subant-junit>
-    </target>
-
-    <target name="release">
-        <subant-junit failonerror="true" target="release"><buildpath path="${modules.sorted}"/></subant-junit>
-    </target>
-
-    <target name="javahelp">
-        <subant-junit failonerror="true" target="javahelp"><buildpath path="${modules.sorted}"/></subant-junit>
-    </target>
-
-    <target name="netbeans">
-        <subant-junit failonerror="true" target="netbeans"><buildpath path="${modules.sorted}"/></subant-junit>
-    </target>
-
-    <target name="nbm" depends="netbeans">
-        <subant-junit failonerror="true" target="nbm"><buildpath path="${modules.sorted}"/></subant-junit>
+    <target name="-init-modules" depends="-init-tasks">
+        <loadproperties srcfile="${nbbuild}/cluster.properties"/>
+        <pathconvert property="cnd.modules.fullpath">
+            <path>
+                <dirset dir="${nbroot}" includes="${nb.cluster.cnd}" excludes="jellytools.cnd"/>
+            </path>
+            <mapper type="identity"/>
+        </pathconvert>
+        <sortmodules unsortedmodules="${cnd.modules.fullpath}" sortedmodulesproperty="cnd.modules.sorted" sorttests="true"/>
+        <pathconvert property="cnd.modules.xref.fullpath">
+            <path>
+                <dirset dir="${nbroot}" includes="cnd.completion, cnd.refactoring, cnd.navigation, cnd.highlight"/>
+            </path>
+            <mapper type="identity"/>
+        </pathconvert>
     </target>
 
     <target name="clean">
-        <delete file="cnd-nbms.zip"/>
-
-        <subant-junit failonerror="true" target="clean"><buildpath path="${modules.sorted}"/></subant-junit>
+        <!-- Regular "clean" fails if external files content is changed.
+             So we first delete these files by hand. -->
+        <delete>
+             <fileset dir="${nbroot}">
+                  <include name="*/external/*.jar"/>
+                  <include name="*/external/*.zip"/>
+             </fileset>
+        </delete>
+        <subant buildpath="${nbroot}" target="clean">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
     </target>
 
-    <target name="real-clean" depends="clean">
-        <delete dir="javadoc"/>
-
-        <subant-junit failonerror="true" target="real-clean"><buildpath path="${modules.sorted}"/></subant-junit>
+    <target name="build">
+        <subant buildpath="${nbroot}" target="build">
+            <property name="cluster.config" value="cnd"/>
+            <property name="buildnum" value="dev"/>
+        </subant>
+        <antcall target="-replace-jsch-in-build"/>
     </target>
 
-    <target name="all" depends="clean,nbm">
-        <subant-junit failonerror="true" target="all"><buildpath path="${modules.sorted}"/></subant-junit>
+    <target name="-replace-jsch-in-build" if="replace.jsch.jar">
+        <replace-zip-entry
+            zipfile="${nbbuild}/NetBeans-dev-cnd.zip"
+            oldentry="netbeans/ide/modules/ext/jsch-0.1.41.jar"
+            newentry="${replace.jsch.jar}"/>
     </target>
 
-    <target name="javadoc">
-        <subant-junit failonerror="true" target="javadoc"><buildpath path="${modules.sorted}"/></subant-junit>
+    <target name="build-test-dist">
+        <subant buildpath="${nbroot}" target="build-test-dist">
+            <property name="cluster.config" value="cnd"/>
+            <property name="test.fail.on.error" value="true"/>
+        </subant>
+        <antcall target="-replace-jsch-in-testdist"/>
     </target>
 
-
-    <!-- Update www documents. -->
-    <target name="www">
-        <ant dir="www" target="all"/>
+    <target name="-replace-jsch-in-testdist" if="replace.jsch.jar">
+        <replace-zip-entry
+            zipfile="${nbbuild}/build/testdist.zip"
+            oldentry="extralibs/jsch-0.1.41.jar"
+            newentry="${replace.jsch.jar}"/>
     </target>
 
-
-    <!-- Create zip archive from all nbm files. -->
-    <target name="zip" depends="nbm">
-        <zip zipfile="cnd-nbms.zip"
-             basedir="."
-             includes="*.nbm"
-             compress="true"/>
+    <target name="test-build" depends="-init-modules">
+        <subant buildpath="${cnd.modules.sorted}" target="test-build">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
     </target>
 
-    <target name="test" description="Run all tests">
-        <subant target="test" buildpath="../cnd" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.editor" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.lexer" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.folding" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.modelimpl" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.modelui" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.refactoring" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.classview" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.repository" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.discovery" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.dwarfdiscovery" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.modeldiscovery" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.makeproject" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.remote" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.gotodeclaration" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.debugger.gdb" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.gizmo" inheritrefs="false" inheritall="false" failonerror="false"/>
+    <target name="test" depends="-init-modules" description="run tests">
+        <subant buildpath="${cnd.modules.sorted}" target="test">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
     </target>
 
-    <target name="test-build" description="Compile all tests">
-        <subant target="test-build" buildpath="../dlight.nativeexecution"/>
-        <subant target="test-build" buildpath="../cnd"/>
-        <subant target="test-build" buildpath="../cnd.editor"/>
-        <subant target="test-build" buildpath="../cnd.lexer"/>
-        <subant target="test-build" buildpath="../cnd.folding"/>
-        <subant target="test-build" buildpath="../cnd.modelimpl"/>
-        <subant target="test-build" buildpath="../cnd.modelui"/>
-        <subant target="test-build" buildpath="../cnd.completion"/>
-        <subant target="test-build" buildpath="../cnd.refactoring"/>
-        <subant target="test-build" buildpath="../cnd.classview"/>
-        <subant target="test-build" buildpath="../cnd.repository"/>
-        <subant target="test-build" buildpath="../cnd.navigation"/>
-        <subant target="test-build" buildpath="../cnd.highlight"/>
-        <subant target="test-build" buildpath="../cnd.discovery"/>
-        <subant target="test-build" buildpath="../cnd.dwarfdiscovery"/>
-        <subant target="test-build" buildpath="../cnd.modeldiscovery"/>
-        <subant target="test-build" buildpath="../cnd.makeproject"/>
-        <subant target="test-build" buildpath="../cnd.remote"/>
-        <subant target="test-build" buildpath="../cnd.gotodeclaration"/>
-        <subant target="test-build" buildpath="../cnd.debugger.gdb"/>
-        <subant target="test-build" buildpath="../cnd.gizmo"/>
-        <!-- not included in tests -->
-        <subant target="test-build" buildpath="../cnd.utils"/>
+    <target name="test-xref" depends="-init-modules" description="run xRef tests only">
+        <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
     </target>
 
-    <target name="xref-test" description="Run XRef tests">
-        <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.refactoring" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>
-        <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
+    <target name="coverage-report" depends="-init-modules">
+        <subant buildpath="${cnd.modules.sorted}" target="coverage-report">
+            <property name="cluster.config" value="cnd"/>
+            <property name="coverage.report.format" value="xml"/>
+        </subant>
     </target>
 
     <target name="rebuild-dlight" description="rebuild dlight cluster">
@@ -203,42 +181,6 @@ made subject to such option by the copyright holder.
         <exec executable="sh">
             <arg value="i18n-check.sh"/>
         </exec>
-        <!--
-        <exec executable="perl">
-            <arg value="../nbbuild/misc/i18ncheck.pl"/>
-            <arg value="../cnd.asm/src"/>
-            <arg value="../cnd/src"/>
-            <arg value="../cnd.antlr/src"/>
-            <arg value="../cnd.api.model/src"/>
-            <arg value="../cnd.api.project/src"/>
-            <arg value="../cnd.apt/src"/>
-            <arg value="../cnd.callgraph/src"/>
-            <arg value="../cnd.classview/src"/>
-            <arg value="../cnd.completion/src"/>
-            <arg value="../cnd.debugger.gdb/src"/>
-            <arg value="../cnd.discovery/src"/>
-            <arg value="../cnd.dwarfdiscovery/src"/>
-            <arg value="../cnd.dwarfdump/src"/>
-            <arg value="../cnd.editor/src"/>
-            <arg value="../cnd.folding/src"/>
-            <arg value="../cnd.gotodeclaration/src"/>
-            <arg value="../cnd.highlight/src"/>
-            <arg value="../cnd.lexer/src"/>
-            <arg value="../cnd.makeproject/src"/>
-            <arg value="../cnd.model.services/src"/>
-            <arg value="../cnd.modeldiscovery/src"/>
-            <arg value="../cnd.modelimpl/src"/>
-            <arg value="../cnd.modelui/src"/>
-            <arg value="../cnd.modelutil/src"/>
-            <arg value="../cnd.navigation/src"/>
-            <arg value="../cnd.qnavigator/src"/>
-            <arg value="../cnd.refactoring/src"/>
-            <arg value="../cnd.remote/src"/>
-            <arg value="../cnd.repository/src"/>
-            <arg value="../cnd.repository.api/src"/>
-            <arg value="../cnd.utils/src"/>
-        </exec>
-        -->
     </target>
 
 </project>

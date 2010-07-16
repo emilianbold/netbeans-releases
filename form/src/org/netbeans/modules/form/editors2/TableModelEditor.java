@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,25 +68,30 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         support = new PropertyChangeSupport (this);
     }
 
+    @Override
     public Object getValue () {
         return table;
     }
 
+    @Override
     public void setValue (Object value) {
         table = new NbTableModel ((TableModel) value);
         support.firePropertyChange ("", null, null); // NOI18N
     }
 
+    @Override
     public String getAsText () {
         return null;
     }
 
+    @Override
     public void setAsText (String string) {
     }
 
+    @Override
     public String getJavaInitializationString () {
         TableModel m = (TableModel) getValue ();
-        StringBuffer titlesSB = new StringBuffer ();
+        StringBuilder titlesSB = new StringBuilder ();
         int i = m.getColumnCount ();
         int j = m.getRowCount ();
         titlesSB.append ("{\n\t\t"); // NOI18N
@@ -100,7 +108,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         titlesSB.append ("\n\t}"); // NOI18N
 
         boolean generateTypes = false;
-        StringBuffer typesSB = new StringBuffer ();
+        StringBuilder typesSB = new StringBuilder ();
         typesSB.append ("{\n\t\t"); // NOI18N
         if (i > 0) {
             typesSB.append (m.getColumnClass (0).getName ()).append (".class"); // NOI18N
@@ -115,7 +123,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         typesSB.append ("\n\t}"); // NOI18N
 
         boolean generateEditable = false;
-        StringBuffer editableSB = new StringBuffer ();
+        StringBuilder editableSB = new StringBuilder ();
         editableSB.append ("{\n\t\t"); // NOI18N
         if (i > 0) {
             editableSB.append (m.isCellEditable (0, 0));
@@ -127,7 +135,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         }
         editableSB.append ("\n\t}"); // NOI18N
 
-        StringBuffer dataSB = new StringBuffer ();
+        StringBuilder dataSB = new StringBuilder ();
         dataSB.append ("{\n\t\t"); // NOI18N
         if (j > 0) {
             for (int l = 0; l < j; l++) {
@@ -181,36 +189,44 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         }
     }
 
+    @Override
     public String[] getTags () {
         return null;
     }
 
+    @Override
     public boolean isPaintable () {
         return true;
     }
 
+    @Override
     public void paintValue (Graphics g, Rectangle rectangle) {
         String msg = NbBundle.getMessage(TableModelEditor.class, "MSG_TableModel"); // NOI18N
         FontMetrics fm = g.getFontMetrics();
         g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
+    @Override
     public boolean supportsCustomEditor () {
         return true;
     }
 
+    @Override
     public Component getCustomEditor () {
         return new CustomTableModelEditor(this, env);
     }
 
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
     }
 
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
         support.addPropertyChangeListener (propertyChangeListener);
     }
 
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener propertyChangeListener) {
         support.removePropertyChangeListener (propertyChangeListener);
     }
@@ -229,6 +245,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
     private static final String ATTR_EDITABLE = "editable"; // NOI18N
     private static final String ATTR_VALUE = "value"; // NOI18N
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element tableEl = doc.createElement(XML_TABLE);
 
@@ -265,6 +282,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         return tableEl;
     }
 
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws IOException {
         if (!XML_TABLE.equals(element.getNodeName()))
             throw new IOException(getReadingErrorMessage()); // NOI18N
@@ -384,7 +402,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
             // check the row count
             if (columnData.size() != rowCount) {
-                if (columnData.size() == 0)
+                if (columnData.isEmpty())
                     for (int ii=0; ii < rowCount; ii++)
                         columnData.add(null);
                 else
@@ -485,6 +503,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
     }
     
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(getClass()).getString("CTL_TableModelEditor_DisplayName"); // NOI18N
     }
@@ -579,11 +598,13 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         }
 
         // from TableModel
+        @Override
         public int getRowCount() {
             return rowCount;
         }
 
         // from TableModel
+        @Override
         public int getColumnCount() {
             return columns.size();
         }
@@ -610,6 +631,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         }
 
         // from TableModel
+        @Override
         public Object getValueAt(int row, int column) {
             ColumnItem ci = columns.get(column);
             return ci.rows.get(row);
@@ -760,6 +782,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                 ci.title = getBundle().getString("CTL_Title")+" "+Integer.toString(toIndex);
         }
 
+        @Override
         public void writeExternal(ObjectOutput oo) throws IOException {
             // backward compatibility must be ensured... (table model was implemented using arrays sooner)
             oo.writeInt(rowCount);
@@ -790,6 +813,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                 }
         }
 
+        @Override
         public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
             // reading is in the previous format (when table model was implemented using arrays)
             rowCount = oi.readInt();

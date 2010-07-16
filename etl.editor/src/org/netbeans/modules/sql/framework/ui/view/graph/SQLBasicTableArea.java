@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,17 +91,17 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnNode;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnTreePanel;
 import org.openide.windows.WindowManager;
-import net.java.hulp.i18n.Logger;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoPort;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.StringUtil;
 import java.awt.event.InputEvent;
-import javax.swing.KeyStroke;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * This class represents the table rendered on the canvas. It implements custom rendering
@@ -119,7 +122,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     private int tableType;
     private JMenuItem selectColumnsItem;
     private JMenuItem removeItem;
-    private static transient final Logger mLogger = Logger.getLogger(SQLBasicTableArea.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(SQLBasicTableArea.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLBasicTableArea() {
@@ -197,7 +201,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         String nbBundle1 = mLoc.t("BUND426: Select Columns...");
         String lbl = nbBundle1.substring(15);
         selectColumnsItem = new JMenuItem(lbl, new ImageIcon(selectColumnsUrl));
-        selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
+        //selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
     }
@@ -682,8 +686,9 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_EXTRACTION, metTabMod, extractionPredicate);
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT168: Error setting filter icon for ({0})", table.getDisplayName()), ex);
-
+                String msg = mLoc.t("EDIT168: Error setting filter icon for ({0})", table.getDisplayName());
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, ex.getMessage());
                 return;
             }
         }
@@ -698,8 +703,9 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_VALIDATION, metTabMod, validationPredicate);
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT169: Error setting validation icon for ({0})", table.getDisplayName()), ex);
-
+                String msg = mLoc.t("EDIT169: Error setting validation icon for ({0})", table.getDisplayName());
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, ex.getMessage());
                 return;
             }
         }

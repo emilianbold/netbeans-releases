@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,14 +60,14 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
 
     public void testLogStatementLogger() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test() { System.out.println(\"\");|new java.io.FileInputStream(\"\");}}",
+                       "package test; public class Test {public void test() { System.out.println(\"\"); |new java.io.FileInputStream(\"\");}}",
                        "FixImpl",
                        "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
     }
 
     public void testLogStatementExceptions() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test() {System.out.println(\"\");|new java.io.FileInputStream(\"\");}}",
+                       "package test; public class Test {public void test() {System.out.println(\"\"); |new java.io.FileInputStream(\"\");}}",
                        "FixImpl",
                        "package test; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Exceptions.printStackTrace(ex); } }}");
     }
@@ -76,7 +79,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
             ErrorFixesFakeHint.setUseLogger(false);
 
             performFixTest("test/Test.java",
-                    "package test; public class Test {public void test() {System.out.println(\"\");|new java.io.FileInputStream(\"\");}}",
+                    "package test; public class Test {public void test() {System.out.println(\"\"); |new java.io.FileInputStream(\"\");}}",
                     "FixImpl",
                     "package test; import java.io.FileNotFoundException; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { ex.printStackTrace(); } }}");
         } finally {
@@ -86,14 +89,14 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
 
     public void test117085a() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test(Exception ex) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
+                       "package test; public class Test {public void test(Exception ex) {System.out.println(\"\"); |x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex1); } } private void x() throws Exception {}}");
     }
 
     public void test117085b() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test(Exception ex) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
+                       "package test; public class Test {public void test(Exception ex) {System.out.println(\"\"); |x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import org.openide.util.Exceptions; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { Exceptions.printStackTrace(ex1); } } private void x() throws Exception {}}");
     }
@@ -105,7 +108,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
             ErrorFixesFakeHint.setUseLogger(false);
 
             performFixTest("test/Test.java",
-                    "package test; public class Test {public void test(Exception ex) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
+                    "package test; public class Test {public void test(Exception ex) {System.out.println(\"\"); |x();} private void x() throws Exception {}}",
                     "FixImpl",
                     "package test; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { ex1.printStackTrace(); } } private void x() throws Exception {}}");
         } finally {
@@ -115,14 +118,14 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
 
     public void test117085d() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test(Exception ex, Exception ex1) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
+                       "package test; public class Test {public void test(Exception ex, Exception ex1) {System.out.println(\"\"); |x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex, Exception ex1) {try { System.out.println(\"\"); x(); } catch (Exception ex2) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex2); } } private void x() throws Exception {}}");
     }
 
     public void test117085e() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {System.out.println(\"\");|x();}}} private void x() throws Exception {}}",
+                       "package test; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {System.out.println(\"\"); |x();}}} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {try { System.out.println(\"\"); x(); } catch (Exception ex2) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex2); } }}} private void x() throws Exception {}}");
     }
@@ -136,7 +139,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     
     public void test143965() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test { { int h; thr|ow new Exception();} }",
+                       "package test; public class Test { {\n int h; thr|ow new Exception();} }",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test { { try { int h; throw new Exception(); } catch (Exception ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } }");
     }

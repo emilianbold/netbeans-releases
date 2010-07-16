@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,22 +91,26 @@ final class AntBasedGenericType implements AntBasedProjectType {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.image2Icon(ImageUtilities.loadImage(iconResource, true));
+        return ImageUtilities.loadImageIcon(iconResource, true);
     }
 
+    @Override
     public String getType() {
         return type;
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? configNames[0] : configNames[1];
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? configNamespaces[0] : configNamespaces[1];
     }
 
 
+    @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         if (l == null) {
@@ -128,11 +135,11 @@ final class AntBasedGenericType implements AntBasedProjectType {
             if (ex.getTargetException() instanceof RuntimeException) {
                 throw (RuntimeException)ex.getTargetException();
             }
-            throw (IllegalArgumentException)new IllegalArgumentException().initCause(ex);
+            throw new IllegalArgumentException(ex);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw (IllegalArgumentException)new IllegalArgumentException().initCause(ex);
+            throw new IllegalArgumentException(ex);
         }
     }
 }

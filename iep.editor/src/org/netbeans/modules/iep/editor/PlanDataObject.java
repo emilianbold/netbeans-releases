@@ -20,10 +20,12 @@
 package org.netbeans.modules.iep.editor;
 
 
+
 import java.io.IOException;
 
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -54,6 +56,8 @@ public class PlanDataObject extends MultiDataObject {
         // editor support defines MIME type understood by EditorKits registry
         set.add(editorSupport);
         
+        mSaveCookie = new IEPSaveCookie(getPlanEditorSupport());
+        
 //      Add check and validate cookies
         InputSource is = DataObjectAdapters.inputSource(this);
         set.add(new CheckXMLSupport(is));
@@ -63,12 +67,13 @@ public class PlanDataObject extends MultiDataObject {
         
         set.add(new PlanReportCookie(this));
         
-        SaveCookie saveCookie = set.getCookie(SaveCookie.class);
+//        SaveCookie saveCookie = set.getCookie(SaveCookie.class);
         
         // add support for viewing a prompt in the IDE
         // getCookieSet().add(new PlanOpenSupport(getPrimaryEntry()));
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // If you add context help, change to:
@@ -92,6 +97,35 @@ public class PlanDataObject extends MultiDataObject {
     }
 
     @Override
+    protected void handleDelete() throws IOException {
+        if (isModified()) {
+            setModified(false);
+        }
+        
+        if(getSaveCookie() != null) {
+            getSaveCookie().cleanup();
+        }
+        
+        getPlanEditorSupport().getEnv().unmarkModified();
+        super.handleDelete();
+    }
+
+    @Override
+    protected FileObject handleMove(DataFolder df) throws IOException {
+        //make sure we save file before moving This is what jave move does.
+        
+        if(isModified()) {
+            SaveCookie sCookie = this.getCookie(SaveCookie.class);
+            if(sCookie != null) {
+                sCookie.save();
+            }
+        }
+
+        return super.handleMove(df);
+    }
+
+    
+    @Override
     public void setModified(boolean modified) {
         super.setModified(modified);
         if (modified) {
@@ -101,10 +135,10 @@ public class PlanDataObject extends MultiDataObject {
         }
     }
 
-    private SaveCookie getSaveCookie() {
-        if(mSaveCookie == null && getPlanEditorSupport() != null) {
-            mSaveCookie = new IEPSaveCookie(getPlanEditorSupport());
-        }
+    private IEPSaveCookie getSaveCookie() {
+//        if(mSaveCookie == null && getPlanEditorSupport() != null) {
+//            mSaveCookie = new IEPSaveCookie(getPlanEditorSupport());
+//        }
         
         return mSaveCookie;
     }

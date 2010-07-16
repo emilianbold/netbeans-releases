@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,19 +52,20 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
+public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
     
+    @Override
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
+        if(notification.getService() != VCSKenaiAccessor.Service.VCS_SVN) {
             LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
             return;
         }

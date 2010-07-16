@@ -2,6 +2,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          version="2.4"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/javacard/jcweb-app_3_0.xsd">
+    <description>The web application deployment descriptor conveys web application model
+elements and configuration information of an application between application
+developers, application assemblers, and deployers.</description>
     <display-name>${projectnamespaces}</display-name>
     <servlet>
         <servlet-name>${classname}</servlet-name>

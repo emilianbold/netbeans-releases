@@ -39,6 +39,7 @@ public interface JMSOperation extends JMSComponent {
     public static final String ATTR_DESTINATION = "destination";
     public static final String ATTR_DESTINATION_TYPE = "destinationType";
     public static final String ATTR_TRANSACTION = "transaction";
+    public static final String ATTR_VERB = "verb";
     
     // provider (outbound)
     public static final String ATTR_TIME_TO_LIVE = "timeToLive";
@@ -110,8 +111,8 @@ public interface JMSOperation extends JMSComponent {
     public int getBatchSize();
     public void setBatchSize(int val);        
     
-    public int getMaxConcurrentConsumers();
-    public void setMaxConcurrentConsumers(int val);       
+    public String getMaxConcurrentConsumers();
+    public void setMaxConcurrentConsumers(String val);       
     
     public String getRedeliveryHandling();
     public void setRedeliveryHandling(String val);
@@ -119,4 +120,6 @@ public interface JMSOperation extends JMSComponent {
     public String getConcurrencyMode();
     public void setConcurrencyMode(String val);
     
+    public String getVerb();
+    public void setVerb(String val);
 }

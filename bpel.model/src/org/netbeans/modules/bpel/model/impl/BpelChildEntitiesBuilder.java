@@ -47,6 +47,15 @@ class BpelChildEntitiesBuilder {
         assert parent != null;
         
         String namespace = element.getNamespaceURI();
+        
+        // 153564 - special place for the out of tree elements 
+        if (namespace == null  && (parent == null || !parent.isInDocumentModel())) {
+            BpelContainer effParent = getEffectiveParent();
+            if (effParent != null) {
+                namespace = ((BpelContainerImpl) parent).lookupNamespaceURI(element.getPrefix());
+            }
+        }
+        
         if ( namespace == null && parent instanceof BpelContainerImpl ) {
             namespace = ((BpelContainerImpl) parent).lookupNamespaceURI(element
                     .getPrefix());
@@ -80,9 +89,10 @@ class BpelChildEntitiesBuilder {
             Collection<EntityFactory> factories = 
                 getModel().getEntityRegistry().getFactories();
             for (EntityFactory factory : factories) {
-                if ( factory.isApplicable( element.getNamespaceURI()) ){
+//                if ( factory.isApplicable( element.getNamespaceURI()) ){
+                if ( factory.isApplicable( namespace) ){
                     if ( factory.getElementQNames().contains(elementQName)) {
-                        BpelEntity entity = factory.create( parent , element );
+                        BpelEntity entity = factory.create( parent , element, namespace );
                         if ( entity!= null ){
                             return entity;
                         }
@@ -94,9 +104,33 @@ class BpelChildEntitiesBuilder {
         return null;
     }
     
+    //153564
+    /**
+     * 
+     * @param effectiveParent required in some cases e.g. cut action -
+     * we have non in model tree but it 
+     * neccessary to know about the real parent
+     */
+    void setEffectiveParent(BpelContainer effectiveParent) {
+        myEffectiveParent = effectiveParent;
+    }
+    
+    // 153564
+    /**
+     * 
+     * @return effective parent if setted 
+     * required in case cut action - we have non in model tree but it 
+     * neccessary to know about the real parent
+     */
+    BpelContainer getEffectiveParent() {
+        return myEffectiveParent;
+    }
+    
     private BpelModelImpl getModel() {
         return myModel;
     }
     
+    
     private BpelModelImpl myModel;
+    private BpelContainer myEffectiveParent;
 }

@@ -20,22 +20,23 @@ package org.netbeans.modules.bpel.nodes.children;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import org.netbeans.modules.bpel.core.BPELCatalog;
+import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.properties.editors.controls.filter.ChildTypeFilter;
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.CategoryFolderNode;
 import org.netbeans.modules.bpel.nodes.ReloadableChildren;
 import org.netbeans.modules.bpel.properties.Constants.StereotypeFilter;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
+import org.netbeans.modules.bpel.model.api.support.ExtensionModelRetriever;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.xml.reference.ReferenceChild;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -52,8 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author nk160297
  */
-public class AllImportsChildren extends Children.Keys
-        implements ReloadableChildren {
+public class AllImportsChildren extends Children.Keys {
     
     private Lookup myLookup;
     private Process myProcess;
@@ -83,10 +83,13 @@ public class AllImportsChildren extends Children.Keys
         FileObject bpelFo = (FileObject)bpelModel.getModelSource().
                 getLookup().lookup(FileObject.class);
         FileObject bpelFolderFo = bpelFo.getParent();
+        BusinessProcessHelper bpHelper = (BusinessProcessHelper)myLookup.
+                lookup(BusinessProcessHelper.class);
         //
         ArrayList<Node> nodesList = new ArrayList<Node>();
+        ArrayList<Node> notImportedNodesList = new ArrayList<Node>();
         ArrayList<FileObject> importedFiles = new ArrayList<FileObject>();
-        //
+
         // Create import nodes
         Import[] importsArr = myProcess.getImports();
         for (Import importObj : importsArr) {
@@ -111,82 +114,116 @@ public class AllImportsChildren extends Children.Keys
             }
         }
         //
-        // Check if it is necessary to show not imported Schema files
-        boolean showSchemaFiles = true;
-        boolean showWsdlFiles = true;
-        ChildTypeFilter filter =
-                (ChildTypeFilter)myLookup.lookup(ChildTypeFilter.class);
-        if (filter != null) {
-            // Here the ChildTypeFilter is implied which doesn't require
-            // a parent node, so the null is used.
-            // See the TypeChooserPanel.constructRootNode()
-            showSchemaFiles = filter.isPairAllowed(null, NodeType.SCHEMA_FILE);
-            showWsdlFiles = filter.isPairAllowed(null, NodeType.WSDL_FILE);
-        }
-        //
         // Create Schema file nodes
-        if (showSchemaFiles) {
-            BusinessProcessHelper bpHelper = (BusinessProcessHelper)myLookup.
-                    lookup(BusinessProcessHelper.class);
-            Collection<FileObject> schemaFiles = bpHelper.getSchemaFilesInProject();
-            for (FileObject schemaFile : schemaFiles) {
-                if (importedFiles.contains(schemaFile)) {
-                    // Skip imported Schema files
-                    continue;
-                }
-                //
-                String extension = schemaFile.getExt();
-                {
-                    ModelSource modelSource = Utilities.getModelSource(
-                            schemaFile, true);
-                    if (modelSource != null) {
-                        SchemaModel schemaModel = SchemaModelFactory.getDefault().
-                                getModel(modelSource);
-                        if (schemaModel != null) {
-                            Node newNode = nodeFactory.createNode(
-                                    NodeType.SCHEMA_FILE, schemaModel, myLookup);
-                            if (newNode != null) {
-                                nodesList.add(newNode);
-                            }
-                        }
+        Collection<FileObject> schemaFiles = bpHelper.getSchemaFilesInProject();
+        for (FileObject schemaFile : schemaFiles) {
+            if (importedFiles.contains(schemaFile)) {
+                // Skip imported Schema files
+                continue;
+            }
+            //
+            ModelSource modelSource = Utilities.getModelSource(
+                    schemaFile, true);
+            if (modelSource != null) {
+                SchemaModel schemaModel = SchemaModelFactory.getDefault().
+                        getModel(modelSource);
+                if (schemaModel != null) {
+                    Node newNode = nodeFactory.createNode(
+                            NodeType.SCHEMA_FILE, schemaModel, myLookup);
+                    if (newNode != null) {
+                        notImportedNodesList.add(newNode);
                     }
                 }
             }
         }
         //
         // Create WSDL file nodes
-        if (showWsdlFiles) {
-            BusinessProcessHelper bpHelper = (BusinessProcessHelper)myLookup.
-                    lookup(BusinessProcessHelper.class);
-            Collection<FileObject> wsdlFiles = bpHelper.getWSDLFilesInProject();
-            for (FileObject wsdlFile : wsdlFiles) {
-                if (importedFiles.contains(wsdlFile)) {
-                    // Skip imported WSDL files
-                    continue;
-                }
-                //
-                String extension = wsdlFile.getExt();
-                {
-                    ModelSource modelSource = Utilities.getModelSource(
-                            wsdlFile, true);
-                    if (modelSource != null) {
-                        WSDLModel wsdlModel = WSDLModelFactory.getDefault().
-                                getModel(modelSource);
-                        if (wsdlModel != null) {
-                            Node newNode = nodeFactory.createNode(
-                                    NodeType.WSDL_FILE, wsdlModel, myLookup);
-                            if (newNode != null) {
-                                nodesList.add(newNode);
-                            }
-                        }
+        Collection<FileObject> wsdlFiles = bpHelper.getWSDLFilesInProject();
+        for (FileObject wsdlFile : wsdlFiles) {
+            if (importedFiles.contains(wsdlFile)) {
+                // Skip imported WSDL files
+                continue;
+            }
+            //
+            ModelSource modelSource = Utilities.getModelSource(
+                    wsdlFile, true);
+            if (modelSource != null) {
+                WSDLModel wsdlModel = WSDLModelFactory.getDefault().
+                        getModel(modelSource);
+                if (wsdlModel != null) {
+                    Node newNode = nodeFactory.createNode(
+                            NodeType.WSDL_FILE, wsdlModel, myLookup);
+                    if (newNode != null) {
+                        notImportedNodesList.add(newNode);
                     }
                 }
             }
         }
+
+        // Fault Message
+        nodesList.add(0, nodeFactory.createNode(NodeType.FAULT_MESSAGE,
+                ExtensionModelRetriever.getFaultMessageModel(), myLookup));
+
+        // Add Not Imported files folder
+        if (!notImportedNodesList.isEmpty()) {
+            Children notImported = new Children.Array();
+            notImported.add(notImportedNodesList.toArray(
+                    new Node[notImportedNodesList.size()]));
+            //
+            Node notImportedNodesFolder = new CategoryFolderNode(
+                    NodeType.NOT_IMPORTED_FILES, notImported, myLookup);
+            nodesList.add(0, notImportedNodesFolder);
+        }
+        // Add referenced projects folder
+        Project myProj = Utils.safeGetProject(bpelModel);
+        
+        if (myProj != null) {
+            //
+            List<Project> refProjList = ReferenceUtil.getReferencedProjects(myProj);
+            if (refProjList != null && !refProjList.isEmpty()) {
+                Children children = new RefProjectsChildren(refProjList, myLookup);
+                Node refProjFolder = new CategoryFolderNode(
+                        NodeType.REFERENCED_PROJECTS, children, myLookup);
+                nodesList.add(0, refProjFolder);
+            }
+            //
+            // Add referenced resources folder
+            ArrayList<Node> refResNodesList = new ArrayList<Node>();
+            //
+            List<ReferenceChild> xsdNodes = ReferenceUtil.getReferencedResources(myProj, ReferenceUtil.XSD);
+//System.out.println();
+//System.out.println("xsd: " + xsdNodes.size());
+            for (ReferenceChild xsdNode : xsdNodes) {
+                Node newNode = nodeFactory.createNode(NodeType.REFERENCED_RESOURCE, xsdNode, myLookup);
+                if (newNode != null) {
+                    refResNodesList.add(newNode);
+                }
+            }
+            //
+            List<ReferenceChild> wsdlNodes = ReferenceUtil.getReferencedResources(myProj, ReferenceUtil.WSDL);
+
+            for (ReferenceChild wsdlNode : wsdlNodes) {
+                Node newNode = nodeFactory.createNode(NodeType.REFERENCED_RESOURCE, wsdlNode, myLookup);
+                if (newNode != null) {
+                    refResNodesList.add(newNode);
+                }
+            }
+            //
+            if (!refResNodesList.isEmpty()) {
+                Children refResChildren = new Children.Array();
+                refResChildren.add(refResNodesList.toArray(new Node[refResNodesList.size()]));
+                Node refResourcesFolder = new CategoryFolderNode(NodeType.REFERENCED_RESOURCES, refResChildren, myLookup);
+                nodesList.add(0, refResourcesFolder);
+            }
+        }
         //
-        // Sort all nodes alphabetically
-        Comparator comparator = new BpelNode.NameComparator();
-        Collections.sort(nodesList, comparator);
+        // Add Global Catalog folder
+        boolean globalCatalogAllowed = true;
+        if ( globalCatalogAllowed ) {
+            // Create Schema file nodes
+            Children children = new BpelGlobalCatalogChildren(bpelModel, myLookup);
+            nodesList.add(0, new CategoryFolderNode(NodeType.BPEL_GLOBAL_CATALOG, children, myLookup));
+        }
         //
         // Add "Build In Types" category node if they are allowed
         // The node is added to the beginning of the list!
@@ -204,29 +241,9 @@ public class AllImportsChildren extends Children.Keys
                     NodeType.PRIMITIVE_TYPE, children, myLookup);
             nodesList.add(0, primitiveTypesNode);
         }
-        
-        boolean globalBpelCatalogAllowed = true;
-        if ( globalBpelCatalogAllowed ) {
-            
-            BPELCatalog bpelCatalog = BPELCatalog.getDefault();
-
         //
-        // Create Schema file nodes
-            
-            Children children = bpelCatalog != null 
-                    ? new BpelGlobalCatalogChildren(bpelModel, bpelCatalog, myLookup)
-                    : Children.LEAF;
-            Node globalBpelCatalogNode = new CategoryFolderNode(
-                    NodeType.BPEL_GLOBAL_CATALOG, children, myLookup);
-            nodesList.add(1, globalBpelCatalogNode);
-        }
-        //
-        Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);
-        return nodes;
+        Node[] resultNodes = nodesList.toArray(new Node[nodesList.size()]);
+        return resultNodes;
     }
     
-    public void reload() {
-        // setKeys(new Object[] {new Object()});
-        setKeys(createKeys());
-    }
 }

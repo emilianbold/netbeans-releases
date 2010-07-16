@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,40 +47,31 @@ package org.netbeans.core.windows;
 
 
 import java.awt.EventQueue;
-import org.netbeans.core.NbTopManager;
+import org.netbeans.core.WindowSystem;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.services.DialogDisplayerImpl;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
- * Implementation of WindowSystem interface (declared in core NbTopManager).
+ * Implementation of WindowSystem interface
  *
  * @author  Peter Zavadsky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.NbTopManager.WindowSystem.class)
-public class WindowSystemImpl implements NbTopManager.WindowSystem {
-
-    /** Creates a new instance of WindowSystemImpl */
-    public WindowSystemImpl() {
-    }
-
+@ServiceProvider(service=WindowSystem.class)
+public class WindowSystemImpl implements WindowSystem {
 
     public void init() {
         assert !EventQueue.isDispatchThread();
         MainWindow.init();
     }
 
-    // Persistence
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method.
-     * Loads window system persistent data. */
     public void load() {
         WindowManagerImpl.assertEventDispatchThread();
         
         PersistenceHandler.getDefault().load();
     }
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Saves window system persistent data. */
     public void save() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -85,8 +79,6 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     }
     
     // GUI
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Shows window system. */
     public void show() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -94,8 +86,6 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         ShortcutAndMenuKeyEventProcessor.install();
         WindowManagerImpl.getInstance().setVisible(true);
     }
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Hides window system. */
     public void hide() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -103,20 +93,19 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
-    /**
-     * Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Clears the window system model - does not delete the configuration
-     * under Windows2Local! You have to delete the folder before calling
-     * this method to really reset the window system state.
-     */
-    public void clear() {
-        WindowManagerImpl.assertEventDispatchThread();
-        hide();
-        WindowManagerImpl.getInstance().resetModel();
-        PersistenceManager.getDefault().clear();
-        PersistenceHandler.getDefault().clear();
-        load();
-        show();        
-    }
-    
+//    /**
+//     * Clears the window system model - does not delete the configuration
+//     * under Windows2Local! You have to delete the folder before calling
+//     * this method to really reset the window system state.
+//     */
+//    public void clear() {
+//        WindowManagerImpl.assertEventDispatchThread();
+//        hide();
+//        WindowManagerImpl.getInstance().resetModel();
+//        PersistenceManager.getDefault().clear();
+//        PersistenceHandler.getDefault().clear();
+//        load();
+//        show();
+//    }
+//
 }

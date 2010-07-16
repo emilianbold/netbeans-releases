@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,6 +87,8 @@ import org.apache.tools.ant.types.FilterChain;
 import org.apache.tools.ant.types.RegularExpression;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.types.resources.JavaResource;
 import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FileNameMapper;
@@ -146,7 +151,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
         }
         BufferedImage badgeIcon;
         try {
-            badgeIcon = badgeFile == null ? null : ImageIO.read(badgeFile);
+            badgeIcon = badgeFile == null ? ImageIO.read(ExtractLayer.class.getResourceAsStream("badge.png")) : ImageIO.read(badgeFile);
         } catch (IOException ex) {
             throw new BuildException("Error reading " + badgeFile, ex);
         }
@@ -476,7 +481,11 @@ implements FileNameMapper, URIResolver, EntityResolver {
                 final String prfx = "nbresloc:";
                 if (!url.startsWith(prfx)) {
                     if (localAllowed) {
-                        copy.add(".*/" + url);
+                        if (url.startsWith("/")) {
+                            copy.add(url.substring(1));
+                        } else {
+                            copy.add(".*/" + url);
+                        }
                         return;
                     } else {
                         throw new BuildException("Unknown urlvalue was: " + url);

@@ -1,102 +1,92 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
   <title>Glossary - Java Card 3 Development
-  </title>
-
-</head>
-
-<body class="body">
-
-<a name="Glossary"></a><h2>Glossary</h2>
-<dl><a name="z400006b6767"></a><dt><?GT ELSE><b>3GPP</dt><?GT ELSE></b><dd><p class="p">Third Generation Partnership Project (3GPP) formed by telecommunications associations to develop 3rd Generation
+   </title></head><body class="body"><a name="Glossary"></a><h2>Java Card 3 Glossary</h2>
+<dl><a name="z400006b6767"></a><dt> <b>3GPP</dt> </b><dd><p class="p">Third Generation Partnership Project (3GPP) formed by telecommunications associations to develop 3rd Generation
 Mobile System specifications for systems deployed across the GSM market. These specifications are available
-on the 3GPP web site.</p></dd>A<a name="z400006b1007008"></a><dt><?GT ELSE><b>AID (application identifier)</dt><?GT ELSE></b><dd><p class="p">defined by ISO 7816, a string used to uniquely identify card applet applications
+on the 3GPP web site.</p></dd>A<a name="z400006b1007008"></a><dt> <b>AID (application identifier)</dt> </b><dd><p class="p">defined by ISO 7816, a string used to uniquely identify card applet applications
 and certain types of files in card file systems. An AID consists of
 two distinct pieces: a 5-byte RID (resource identifier) and a 0 to 11-byte
 PIX (proprietary identifier extension). The RID is a resource identifier assigned to companies
 by ISO. The PIX identifiers are assigned by companies.</p><p class="p">A unique AID is associated with each applet class in an applet application
 module. In addition, a unique AID is assigned to each applet instance during
 installation. This applet instance AID is used by an off-card client to select
-the applet instance for APDU communication sessions.</p><p class="p">Applet instance URIs are constructed from their applet instance AID using the "aid"
-registry-based namespace authority as follows:</p><p class="p"><tt>//aid/&#60;RID&#62;/&#60;PIX&#62;</tt></p><p class="p">where <tt>&#60;RID&#62;</tt> (resource identifier) and <tt>&#60;PIX&#62;</tt> (proprietary identifier extension) are components of the
-AID.</p></dd><a name="z400006b1007040"></a><dt><?GT ELSE><b>Ant</dt><?GT ELSE></b><dd><p class="p">a platform-independent software tool written in the Java programming language that is used
-for automating build processes.</p></dd><a name="z400006b1007071"></a><dt><?GT ELSE><b>APDU</dt><?GT ELSE></b><dd><p class="p">an acronym for Application Protocol Data Unit as defined by ISO 7816-4 specifications.
+the applet instance for APDU communication sessions.</p><p class="p">Applet instance URIs are constructed from their applet instance AID using the &quot;aid&quot;
+registry-based namespace authority as follows:</p><p class="p"><tt>//aid/&lt;RID&gt;/&lt;PIX&gt;</tt></p><p class="p">where <tt>&lt;RID&gt;</tt> (resource identifier) and <tt>&lt;PIX&gt;</tt> (proprietary identifier extension) are components of the
+AID.</p></dd><a name="z400006b1007040"></a><dt> <b>Ant</dt> </b><dd><p class="p">a platform-independent software tool written in the Java programming language that is used
+for automating build processes.</p></dd><a name="z400006b1007071"></a><dt> <b>APDU</dt> </b><dd><p class="p">an acronym for Application Protocol Data Unit as defined by ISO 7816-4 specifications.
 ISO 7816-4 defines the application protocol data unit (APDU) protocol as an application-level
 protocol between a smart card and an application on the device. There are two
 types of APDU messages, command APDUs and response APDUs. For detailed information on
-the APDU protocol see the ISO 7816-4 specifications.</p></dd><a name="z400006b1007104"></a><dt><?GT ELSE><b>APDU-based application environment</dt><?GT ELSE></b><dd><p class="p">consists of all the functionalities and system services available to applet applications, such
-as the services provided by the applet container.</p></dd><a name="z400006b1007128"></a><dt><?GT ELSE><b>API</dt><?GT ELSE></b><dd><p class="p">an acronym for Application Programming Interface. The API defines calling conventions by which
-an application program accesses the operating system and other services.</p></dd><a name="z400006b1007486"></a><dt><?GT ELSE><b>applet</dt><?GT ELSE></b><dd><p class="p">a stateless software component that can only execute in a container on the
+the APDU protocol see the ISO 7816-4 specifications.</p></dd><a name="z400006b1007104"></a><dt> <b>APDU-based application environment</dt> </b><dd><p class="p">consists of all the functionalities and system services available to applet applications, such
+as the services provided by the applet container.</p></dd><a name="z400006b1007128"></a><dt> <b>API</dt> </b><dd><p class="p">an acronym for Application Programming Interface. The API defines calling conventions by which
+an application program accesses the operating system and other services.</p></dd><a name="z400006b1007486"></a><dt> <b>applet</dt> </b><dd><p class="p">a stateless software component that can only execute in a container on the
 client platform. Within the context of this document, a Java Card applet, which
 is the basic component of applet-based applications and which runs in the APDU
-application environment.</p></dd><a name="z400006b1007517"></a><dt><?GT ELSE><b>applet application</dt><?GT ELSE></b><dd><p class="p">an application that consists of one or more applets.</p></dd><a name="z400006b1007557"></a><dt><?GT ELSE><b>applet container</dt><?GT ELSE></b><dd><p class="p">contains applet-based applications and manages their lifecycles through the applet framework API. Also
-provides the communication services over which APDU commands and responses are sent.</p></dd><a name="z400006b1007590"></a><dt><?GT ELSE><b>applet framework</dt><?GT ELSE></b><dd><p class="p">an API that enables applet applications to be built.</p></dd><a name="z400006b1007622"></a><dt><?GT ELSE><b>application descriptor</dt><?GT ELSE></b><dd><p class="p">see <a href="#bbggfchf">descriptor</a>.</p></dd><a name="z400006b1007653"></a><dt><?GT ELSE><b>application developer</dt><?GT ELSE></b><dd><p class="p">The producer of an application. The output of an application developer is a
+application environment.</p></dd><a name="z400006b1007517"></a><dt> <b>applet application</dt> </b><dd><p class="p">an application that consists of one or more applets.</p></dd><a name="z400006b1007557"></a><dt> <b>applet container</dt> </b><dd><p class="p">contains applet-based applications and manages their lifecycles through the applet framework API. Also
+provides the communication services over which APDU commands and responses are sent.</p></dd><a name="z400006b1007590"></a><dt> <b>applet framework</dt> </b><dd><p class="p">an API that enables applet applications to be built.</p></dd><a name="z400006b1007622"></a><dt> <b>application descriptor</dt> </b><dd><p class="p">see <a href="#bbggfchf">descriptor</a>.</p></dd><a name="z400006b1007653"></a><dt> <b>application developer</dt> </b><dd><p class="p">The producer of an application. The output of an application developer is a
 set of application classes and resources, and supporting libraries and files for the
 application. The application developer is typically an application domain expert. The developer is required
 to be aware of the application environment and its consequences when programming, including
-concurrency considerations, and create the application accordingly.</p></dd><a name="z400006b1007685"></a><dt><?GT ELSE><b>application group</dt><?GT ELSE></b><dd><p class="p">a set of one or more applications executing in a common group context.</p></dd><a name="z400006b1007710"></a><dt><?GT ELSE><b>application URI</dt><?GT ELSE></b><dd><p class="p">a URI uniquely identifying an application instance on the platform.</p></dd><a name="z400006b1007742"></a><dt><?GT ELSE><b>atomicity</dt><?GT ELSE></b><dd><p class="p">a property of transactions that requires all operations of a transaction be performed
-successfully for the transaction to be considered complete. If all of a transaction&#8217;s
-operations cannot be performed, none of them can be performed.</p></dd>C<a name="z400006b1007780"></a><dt><?GT ELSE><b>classic applet</dt><?GT ELSE></b><dd><p class="p">applets with the same capabilities as those in previous versions of the Java
-Card platform and in the Classic Edition.</p></dd><a name="z400006b1008350"></a><dt><?GT ELSE><b>Classic Edition</dt><?GT ELSE></b><dd><p class="p">one of the two editions in the Java Card 3 Platform. The Classic
+concurrency considerations, and create the application accordingly.</p></dd><a name="z400006b1007685"></a><dt> <b>application group</dt> </b><dd><p class="p">a set of one or more applications executing in a common group context.</p></dd><a name="z400006b1007710"></a><dt> <b>application URI</dt> </b><dd><p class="p">a URI uniquely identifying an application instance on the platform.</p></dd><a name="z400006b1007742"></a><dt> <b>atomicity</dt> </b><dd><p class="p">a property of transactions that requires all operations of a transaction be performed
+successfully for the transaction to be considered complete. If all of a transaction&#39;s
+operations cannot be performed, none of them can be performed.</p></dd>C<a name="z400006b1007780"></a><dt> <b>classic applet</dt> </b><dd><p class="p">applets with the same capabilities as those in previous versions of the Java
+Card platform and in the Classic Edition.</p></dd><a name="z400006b1008350"></a><dt> <b>Classic Edition</dt> </b><dd><p class="p">one of the two editions in the Java Card 3 Platform. The Classic
 Edition is based on an evolution of the Java Card Platform, Version 2.2.2
 and is backward compatible with it, targeting resource-constrained devices that solely support applet-based
-applications.</p></dd><a name="z400006b1008391"></a><dt><?GT ELSE><b>Connected Edition</dt><?GT ELSE></b><dd><p class="p">one of the two editions in the Java Card 3 Platform. The Connected
+applications.</p></dd><a name="z400006b1008391"></a><dt> <b>Connected Edition</dt> </b><dd><p class="p">one of the two editions in the Java Card 3 Platform. The Connected
 Edition has a significantly enhanced runtime environment and a new virtual machine. It
 includes new network-oriented features, such as support for web applications, including the Java&#8482;
 Servlet APIs, and also support for applets with extended and advanced capabilities. An application
 written for or an implementation of the Connected Edition may use features found
-in the Classic Edition.</p></dd><a name="z400006b1008420"></a><dt><?GT ELSE><b>Converter</dt><?GT ELSE></b><dd><p class="p">a piece of software that preprocesses all of the Java programming language class
+in the Classic Edition.</p></dd><a name="z400006b1008420"></a><dt> <b>Converter</dt> </b><dd><p class="p">a piece of software that preprocesses all of the Java programming language class
 files of a classic applet application that make up a package, and converts
 the package into a standalone classic applet application module distribution format (CAP file). The
-Converter also produces an export file.</p></dd><a name="bbgdicbe"></a><dt><?GT ELSE><b>create</dt><?GT ELSE></b><dd><p class="p">indicates that a web application of a <a href="#bbgjfhff">module</a> or an application group,
+Converter also produces an export file.</p></dd><a name="bbgdicbe"></a><dt> <b>create</dt> </b><dd><p class="p">indicates that a web application of a <a href="#bbgjfhff">module</a> or an application group,
 that was loaded by <a href="#bbgejijj">load</a>, needs to be created. As a result, the required
-application is accessible through some Web-Context root.</p></dd>D<a name="z400006b1008484"></a><dt><?GT ELSE><b>delete</dt><?GT ELSE></b><dd><p class="p">indicates that a web application instance created by <a href="#bbgdicbe">create</a> needs to be deleted.</p></dd><a name="bbggfchf"></a><dt><?GT ELSE><b>descriptor</dt><?GT ELSE></b><dd><p class="p">a document that describes the configuration and deployment information of an application. A
+application is accessible through some Web-Context root.</p></dd>D<a name="z400006b1008484"></a><dt> <b>delete</dt> </b><dd><p class="p">indicates that a web application instance created by <a href="#bbgdicbe">create</a> needs to be deleted.</p></dd><a name="bbggfchf"></a><dt> <b>descriptor</dt> </b><dd><p class="p">a document that describes the configuration and deployment information of an application. A
 deployment descriptor conveys the elements and configuration information of an application between application developers,
 application assemblers, and deployers. A runtime descriptor describes the configuration and deployment information of
 an application that are specific to an operating environment to which the application
-is to be deployed.</p></dd><a name="z400006b1009288"></a><dt><?GT ELSE><b>distribution format</dt><?GT ELSE></b><dd><p class="p">structure and encoding of a distribution or deployment unit intended for public distribution..</p></dd>E<a name="z400006b1008521"></a><dt><?GT ELSE><b>ETSI</dt><?GT ELSE></b><dd><p class="p">the European Telecommunications Standards Institute (ETSI) is an official European Standards Organization that
+is to be deployed.</p></dd><a name="z400006b1009288"></a><dt> <b>distribution format</dt> </b><dd><p class="p">structure and encoding of a distribution or deployment unit intended for public distribution..</p></dd>E<a name="z400006b1008521"></a><dt> <b>ETSI</dt> </b><dd><p class="p">the European Telecommunications Standards Institute (ETSI) is an official European Standards Organization that
 develops and publishes standards for information and communications technologies. Additional information is available on
-the ETSI web site.</p></dd><a name="z400006b1009320"></a><dt><?GT ELSE><b>extended applet </dt><?GT ELSE></b><dd><p class="p">an applet with extended and advanced capabilities (compared to a classic applet) such
-as the capabilities to manipulate String objects and open network connections.</p></dd>G<a name="z400006b1009099"></a><dt><?GT ELSE><b>garbage collection</dt><?GT ELSE></b><dd><p class="p">the process by which dynamically allocated storage is automatically reclaimed during the execution
-of a program.</p></dd><a name="z400006b1009123"></a><dt><?GT ELSE><b>global array</dt><?GT ELSE></b><dd><p class="p">an applet environment array objects accessible from any context.</p></dd><a name="z400006b1009147"></a><dt><?GT ELSE><b>global authentication</dt><?GT ELSE></b><dd><p class="p">the scope of a user authentication that can be tracked globally (card-wide). Global
+the ETSI web site.</p></dd><a name="z400006b1009320"></a><dt> <b>extended applet </dt> </b><dd><p class="p">an applet with extended and advanced capabilities (compared to a classic applet) such
+as the capabilities to manipulate String objects and open network connections.</p></dd>G<a name="z400006b1009099"></a><dt> <b>garbage collection</dt> </b><dd><p class="p">the process by which dynamically allocated storage is automatically reclaimed during the execution
+of a program.</p></dd><a name="z400006b1009123"></a><dt> <b>global array</dt> </b><dd><p class="p">an applet environment array objects accessible from any context.</p></dd><a name="z400006b1009147"></a><dt> <b>global authentication</dt> </b><dd><p class="p">the scope of a user authentication that can be tracked globally (card-wide). Global
 authentication is restricted to card-holder-users. Authorization to access resources protected by a globally
-authenticated card-holder-user identity is granted to all users.</p></dd><a name="z400006b1009171"></a><dt><?GT ELSE><b>GlobalPlatform (GP)</dt><?GT ELSE></b><dd><p class="p">an international association of companies and organizations that establish and maintain interoperable specifications
+authenticated card-holder-user identity is granted to all users.</p></dd><a name="z400006b1009171"></a><dt> <b>GlobalPlatform (GP)</dt> </b><dd><p class="p">an international association of companies and organizations that establish and maintain interoperable specifications
 for single and multi-application smart cards, acceptance devices, and infrastructure systems. Additional information is
-available on the GlobalPlatform web site.</p></dd><a name="z400006b1009206"></a><dt><?GT ELSE><b>group context</dt><?GT ELSE></b><dd><p class="p">protected object space associated with each application group and Java Card RE. All
-objects owned by an application belong to the context of the application group.</p></dd><a name="z400006b1009262"></a><dt><?GT ELSE><b>ETSI</dt><?GT ELSE></b><dd><p class="p">the European Telecommunications Standards Institute (ETSI) is an official European Standards Organization that
+available on the GlobalPlatform web site.</p></dd><a name="z400006b1009206"></a><dt> <b>group context</dt> </b><dd><p class="p">protected object space associated with each application group and Java Card RE. All
+objects owned by an application belong to the context of the application group.</p></dd><a name="z400006b1009262"></a><dt> <b>ETSI</dt> </b><dd><p class="p">the European Telecommunications Standards Institute (ETSI) is an official European Standards Organization that
 develops and publishes standards for information and communications technologies. Additional information is available on
-the ETSI web site.</p></dd>I<a name="z400006b1009234"></a><dt><?GT ELSE><b>ISO</dt><?GT ELSE></b><dd><p class="p">the International Standards Organization (ISO) is a non-governmental organization of national standards institutes that
+the ETSI web site.</p></dd>I<a name="z400006b1009234"></a><dt> <b>ISO</dt> </b><dd><p class="p">the International Standards Organization (ISO) is a non-governmental organization of national standards institutes that
 develops and publishes international standards for both public and private sectors. Additional information
-is available on the ISO web site.</p></dd>J<a name="z400006b1009782"></a><dt><?GT ELSE><b>JAR file</dt><?GT ELSE></b><dd><p class="p">an acronym for Java Archive file, which is a file format used for
-aggregating and compressing many files into one.</p></dd><a name="z400006b1009929"></a><dt><?GT ELSE><b>Java Card Runtime Environment</dt><?GT ELSE></b><dd><p class="p">consists of the Java Card virtual machine and the associated native methods.</p></dd><a name="z400006b1009953"></a><dt><?GT ELSE><b>Java Card Virtual Machine (Java Card VM)</dt><?GT ELSE></b><dd><p class="p">a subset of the Java virtual machine, which is designed to be run
+is available on the ISO web site.</p></dd>J<a name="z400006b1009782"></a><dt> <b>JAR file</dt> </b><dd><p class="p">an acronym for Java Archive file, which is a file format used for
+aggregating and compressing many files into one.</p></dd><a name="z400006b1009929"></a><dt> <b>Java Card Runtime Environment</dt> </b><dd><p class="p">consists of the Java Card virtual machine and the associated native methods.</p></dd><a name="z400006b1009953"></a><dt> <b>Java Card Virtual Machine (Java Card VM)</dt> </b><dd><p class="p">a subset of the Java virtual machine, which is designed to be run
 on smart cards and other resource-constrained devices. The Java Card VM acts an
 engine that loads Java class files and executes them with a particular set
-of semantics.</p></dd><a name="z400006b1009977"></a><dt><?GT ELSE><b>JDK software</dt><?GT ELSE></b><dd><p class="p">an acronym for Java Development Kit. The JDK software is a Sun Microsystems,
+of semantics.</p></dd><a name="z400006b1009977"></a><dt> <b>JDK software</dt> </b><dd><p class="p">an acronym for Java Development Kit. The JDK software is a 
 Inc. product that provides the environment required for software development in the Java
 programming language. The JDK software is available for a variety of operating systems, for
-example Sun Microsystems Solaris OS and Microsoft Windows.</p></dd>K<a name="z400006b1010001"></a><dt><?GT ELSE><b>KVM</dt><?GT ELSE></b><dd><p class="p">a virtual machine for small devices, the KVM is derived from the Java
+example Solaris OS and Microsoft Windows.</p></dd>K<a name="z400006b1010001"></a><dt> <b>KVM</dt> </b><dd><p class="p">a virtual machine for small devices, the KVM is derived from the Java
 virtual machine (JVM) but is written in the C programming language and has
 a smaller footprint than the JVM. The KVM supports a subset of the
-JVM features.</p></dd>L<a name="z400006b1010240"></a><dt><?GT ELSE><b>list</dt><?GT ELSE></b><dd><p class="p">indicates that the client is requesting information about all loaded application groups and
-instances.</p></dd><a name="bbgejijj"></a><dt><?GT ELSE><b>load</dt><?GT ELSE></b><dd><p class="p">indicates that a <a href="#bbgjfhff">module</a> or an application group needs to be deployed onto
-the card but not yet made accessible..</p></dd>M<a name="z400006b1010274"></a><dt><?GT ELSE><b>mask production (masking)</dt><?GT ELSE></b><dd><p class="p">refers to embedding the Java Card virtual machine, runtime environment, and applications in
-the read-only memory of a smart card during manufacture.</p></dd><a name="z400006b1010198"></a><dt><?GT ELSE><b>mode (communication)</dt><?GT ELSE></b><dd><p class="p">designates the type or protocol of communication (HTTPS, SSL/TLS, SIO...) and the mode
-of operation (client or server) that characterizes a communication endpoint.</p></dd><a name="bbgjfhff"></a><dt><?GT ELSE><b>module</dt><?GT ELSE></b><dd><p class="p">a unit of distribution and deployment of component applications. Modules or component applications
+JVM features.</p></dd>L<a name="z400006b1010240"></a><dt> <b>list</dt> </b><dd><p class="p">indicates that the client is requesting information about all loaded application groups and
+instances.</p></dd><a name="bbgejijj"></a><dt> <b>load</dt> </b><dd><p class="p">indicates that a <a href="#bbgjfhff">module</a> or an application group needs to be deployed onto
+the card but not yet made accessible..</p></dd>M<a name="z400006b1010274"></a><dt> <b>mask production (masking)</dt> </b><dd><p class="p">refers to embedding the Java Card virtual machine, runtime environment, and applications in
+the read-only memory of a smart card during manufacture.</p></dd><a name="z400006b1010198"></a><dt> <b>mode (communication)</dt> </b><dd><p class="p">designates the type or protocol of communication (HTTPS, SSL/TLS, SIO...) and the mode
+of operation (client or server) that characterizes a communication endpoint.</p></dd><a name="bbgjfhff"></a><dt> <b>module</dt> </b><dd><p class="p">a unit of distribution and deployment of component applications. Modules or component applications
 are individual applications (standalone) and can be assembled into application groups. Applications that rely
 on a single component application can be deployed directly as standalone application modules
-in addition to deployment as application groups.</p></dd><a name="z400006b1010073"></a><dt><?GT ELSE><b>MMC</dt><?GT ELSE></b><dd><p class="p">MultiMediaCard (MMC) is a flash memory card standard developed and published by the
-MultiMediaCard Association.</p></dd>N<a name="z400006b1010308"></a><dt><?GT ELSE><b>namespace</dt><?GT ELSE></b><dd><p class="p">a set of names in which all names are unique.</p></dd><a name="z400006b1010877"></a><dt><?GT ELSE><b>non-volatile memory</dt><?GT ELSE></b><dd><p class="p">memory that is expected to retain its contents between card tear and power
-up events or across a reset event on the smart card device.</p></dd><a name="z400006b1010901"></a><dt><?GT ELSE><b>normalization (classic applet)</dt><?GT ELSE></b><dd><p class="p">the process of transforming and repackaging a Java application packaged for the Java
+in addition to deployment as application groups.</p></dd><a name="z400006b1010073"></a><dt> <b>MMC</dt> </b><dd><p class="p">MultiMediaCard (MMC) is a flash memory card standard developed and published by the
+MultiMediaCard Association.</p></dd>N<a name="z400006b1010308"></a><dt> <b>namespace</dt> </b><dd><p class="p">a set of names in which all names are unique.</p></dd><a name="z400006b1010877"></a><dt> <b>non-volatile memory</dt> </b><dd><p class="p">memory that is expected to retain its contents between card tear and power
+up events or across a reset event on the smart card device.</p></dd><a name="z400006b1010901"></a><dt> <b>normalization (classic applet)</dt> </b><dd><p class="p">the process of transforming and repackaging a Java application packaged for the Java
 Card Platform, Version 2.2.2, for deployment on both the Java Card 3 Platform,
-Connected Edition and the Java Card 3 Platform, Classic Edition.</p></dd><a name="z400006b1010925"></a><dt><?GT ELSE><b>normalization (URI)</dt><?GT ELSE></b><dd><p class="p">the process of removing unnecessary "."  and ".." segments from the path
-component of a hierarchical URI.</p></dd><a name="z400006b1010949"></a><dt><?GT ELSE><b>Normalizer</dt><?GT ELSE></b><dd><p class="p">in the Connected Edition, a backwards compatibility tool that allows Java applications programmed
+Connected Edition and the Java Card 3 Platform, Classic Edition.</p></dd><a name="z400006b1010925"></a><dt> <b>normalization (URI)</dt> </b><dd><p class="p">the process of removing unnecessary &quot;.&quot;  and &quot;..&quot; segments from the path
+component of a hierarchical URI.</p></dd><a name="z400006b1010949"></a><dt> <b>Normalizer</dt> </b><dd><p class="p">in the Connected Edition, a backwards compatibility tool that allows Java applications programmed
 for the Java Card Platform, Version 2.2.2, to be deployed on both the
 Java Card 3 Platform, Connected Edition and on the Java Card 3 Platform,
 Classic Edition. It also allows Java applications packaged for Version 2.2.2 to be transformed
@@ -105,85 +95,85 @@ and Classic Editions.</p><p class="p">In the Classic Edition, a compatibility to
 modules for Java Card 3 platform classic applets they are creating or from
 classic applets created for previous versions of the Java Card platform. These application modules
 contain CAP files and are downloadable on both the Java Card 3 platform
-Classic Edition and Connected Edition smart cards</p></dd>O<a name="z400006b1011140"></a><dt><?GT ELSE><b>off-card client</dt><?GT ELSE></b><dd><p class="p">see <a href="#bbgdeffi">off-card client application</a>.</p></dd><a name="bbgdeffi"></a><dt><?GT ELSE><b>off-card client application</dt><?GT ELSE></b><dd><p class="p">an application that is not resident on the card, but runs at the
-request of a user&#8217;s actions.</p></dd><a name="z400006b1010982"></a><dt><?GT ELSE><b>off-card installer</dt><?GT ELSE></b><dd><p class="p">the off-card application that transmits the application and library executables to the card
-manager application running on the card.</p></dd>P<a name="z400006b1011205"></a><dt><?GT ELSE><b>package</dt><?GT ELSE></b><dd><p class="p">a namespace within the Java programming language that can have classes and interfaces.</p></dd><a name="z400006b1011506"></a><dt><?GT ELSE><b>platform protection domain</dt><?GT ELSE></b><dd><p class="p">a set of permissions granted to an application or group of applications by
+Classic Edition and Connected Edition smart cards</p></dd>O<a name="z400006b1011140"></a><dt> <b>off-card client</dt> </b><dd><p class="p">see <a href="#bbgdeffi">off-card client application</a>.</p></dd><a name="bbgdeffi"></a><dt> <b>off-card client application</dt> </b><dd><p class="p">an application that is not resident on the card, but runs at the
+request of a user&#39;s actions.</p></dd><a name="z400006b1010982"></a><dt> <b>off-card installer</dt> </b><dd><p class="p">the off-card application that transmits the application and library executables to the card
+manager application running on the card.</p></dd>P<a name="z400006b1011205"></a><dt> <b>package</dt> </b><dd><p class="p">a namespace within the Java programming language that can have classes and interfaces.</p></dd><a name="z400006b1011506"></a><dt> <b>platform protection domain</dt> </b><dd><p class="p">a set of permissions granted to an application or group of applications by
 the platform security policy. A platform protection domain is defined by two sets
 of permissions: a set of included permissions that are granted and a set
-of excluded permissions that are denied and can never be granted.</p></dd><a name="z400006b1011534"></a><dt><?GT ELSE><b>platform security policy</dt><?GT ELSE></b><dd><p class="p">the permission-based security policy that maps application models to sets of permissions granted
+of excluded permissions that are denied and can never be granted.</p></dd><a name="z400006b1011534"></a><dt> <b>platform security policy</dt> </b><dd><p class="p">the permission-based security policy that maps application models to sets of permissions granted
 to applications implementing these application models. For each of the application models, the platform
 security policy guarantees the consistency and integrity of the applications implementing the application
-model.</p></dd><a name="z400006b1011564"></a><dt><?GT ELSE><b>protected content</dt><?GT ELSE></b><dd><p class="p">see <a href="#bbgdijjj">protected resource</a>.</p></dd><a name="bbgdijjj"></a><dt><?GT ELSE><b>protected resource</dt><?GT ELSE></b><dd><p class="p">an application or system resource that is protected by an access control mechanism.</p></dd><a name="z400006b1011620"></a><dt><?GT ELSE><b>protection domain</dt><?GT ELSE></b><dd><p class="p">a set of permissions granted to an application or group of applications.</p></dd>R<a name="z400006b1011239"></a><dt><?GT ELSE><b>RAM (random access memory)</dt><?GT ELSE></b><dd><p class="p">temporary working space for storing and modifying data. RAM is non-persistent memory; that
+model.</p></dd><a name="z400006b1011564"></a><dt> <b>protected content</dt> </b><dd><p class="p">see <a href="#bbgdijjj">protected resource</a>.</p></dd><a name="bbgdijjj"></a><dt> <b>protected resource</dt> </b><dd><p class="p">an application or system resource that is protected by an access control mechanism.</p></dd><a name="z400006b1011620"></a><dt> <b>protection domain</dt> </b><dd><p class="p">a set of permissions granted to an application or group of applications.</p></dd>R<a name="z400006b1011239"></a><dt> <b>RAM (random access memory)</dt> </b><dd><p class="p">temporary working space for storing and modifying data. RAM is non-persistent memory; that
 is, the information content is not preserved when power is removed from the
 memory cell. RAM can be accessed an unlimited number of times and none
-of the restrictions of EEPROM apply</p></dd><a name="z400006b1011758"></a><dt><?GT ELSE><b>reference implementation</dt><?GT ELSE></b><dd><p class="p">a fully functional and compatible implementation of a given technology. It enables developers
-to build prototypes of applications based on the technology.</p></dd><a name="z400006b1011782"></a><dt><?GT ELSE><b>reference applications</dt><?GT ELSE></b><dd><p class="p">blue print-like applications that demonstrate the interactions between various applications on the card
-using advanced features such as SIO and events.</p></dd><a name="z400006b1011806"></a><dt><?GT ELSE><b>remote user</dt><?GT ELSE></b><dd><p class="p">an user whose identity may be assumed by a remote entity, such as
-a remote card administrator.</p></dd><a name="z400006b1011830"></a><dt><?GT ELSE><b>remotely accessible web application</dt><?GT ELSE></b><dd><p class="p">an application that is not expected to interact with the card holder but
-with other-users, potentially remote.</p></dd><a name="z400006b1011854"></a><dt><?GT ELSE><b>restartable task</dt><?GT ELSE></b><dd><p class="p">an object implementing the Runnable interface that has been registered for recurrent execution
-over card sessions. A task executes in its own thread.</p></dd><a name="z400006b1011878"></a><dt><?GT ELSE><b>restartable task registry</dt><?GT ELSE></b><dd><p class="p">a Java Card RE facility that is used for registering tasks for recurrent
-execution over card sessions.</p></dd>S<a name="z400006b1011273"></a><dt><?GT ELSE><b>security requirements</dt><?GT ELSE></b><dd><p class="p">the required security characteristics for a particular secure communication being established by either
-an application or by the web container on behalf of a web application.</p></dd><a name="z400006b1012050"></a><dt><?GT ELSE><b>server application</dt><?GT ELSE></b><dd><p class="p">an on-card application that provides a service to its clients.</p></dd><a name="bbgedgdg"></a><dt><?GT ELSE><b>service</dt><?GT ELSE></b><dd><p class="p">a shareable interface object that a server application uses to provide a set
-of well-defined functionalities to its clients.</p></dd><a name="z400006b1012106"></a><dt><?GT ELSE><b>service facility</dt><?GT ELSE></b><dd><p class="p">a Java Card RE facility (or subsystem) that is used for inter-application communications.</p></dd><a name="z400006b1012134"></a><dt><?GT ELSE><b>service factory</dt><?GT ELSE></b><dd><p class="p">an object that the Java Card RE invokes to create a service -
+of the restrictions of EEPROM apply</p></dd><a name="z400006b1011758"></a><dt> <b>reference implementation</dt> </b><dd><p class="p">a fully functional and compatible implementation of a given technology. It enables developers
+to build prototypes of applications based on the technology.</p></dd><a name="z400006b1011782"></a><dt> <b>reference applications</dt> </b><dd><p class="p">blue print-like applications that demonstrate the interactions between various applications on the card
+using advanced features such as SIO and events.</p></dd><a name="z400006b1011806"></a><dt> <b>remote user</dt> </b><dd><p class="p">an user whose identity may be assumed by a remote entity, such as
+a remote card administrator.</p></dd><a name="z400006b1011830"></a><dt> <b>remotely accessible web application</dt> </b><dd><p class="p">an application that is not expected to interact with the card holder but
+with other-users, potentially remote.</p></dd><a name="z400006b1011854"></a><dt> <b>restartable task</dt> </b><dd><p class="p">an object implementing the Runnable interface that has been registered for recurrent execution
+over card sessions. A task executes in its own thread.</p></dd><a name="z400006b1011878"></a><dt> <b>restartable task registry</dt> </b><dd><p class="p">a Java Card RE facility that is used for registering tasks for recurrent
+execution over card sessions.</p></dd>S<a name="z400006b1011273"></a><dt> <b>security requirements</dt> </b><dd><p class="p">the required security characteristics for a particular secure communication being established by either
+an application or by the web container on behalf of a web application.</p></dd><a name="z400006b1012050"></a><dt> <b>server application</dt> </b><dd><p class="p">an on-card application that provides a service to its clients.</p></dd><a name="bbgedgdg"></a><dt> <b>service</dt> </b><dd><p class="p">a shareable interface object that a server application uses to provide a set
+of well-defined functionalities to its clients.</p></dd><a name="z400006b1012106"></a><dt> <b>service facility</dt> </b><dd><p class="p">a Java Card RE facility (or subsystem) that is used for inter-application communications.</p></dd><a name="z400006b1012134"></a><dt> <b>service factory</dt> </b><dd><p class="p">an object that the Java Card RE invokes to create a service -
 on behalf of the server application that registered that service - for a
-client application that looked up the service.</p></dd><a name="z400006b1012162"></a><dt><?GT ELSE><b>service registry</dt><?GT ELSE></b><dd><p class="p">the core component of the service facility. The service facility is used for
-registering and looking up services.</p></dd><a name="z400006b1012186"></a><dt><?GT ELSE><b>service URI</dt><?GT ELSE></b><dd><p class="p">a URI that uniquely identifies a service provided by a server application.</p></dd><a name="z400006b1012306"></a><dt><?GT ELSE><b>servlet</dt><?GT ELSE></b><dd><p class="p">a web application component, managed by a container, that generates dynamic web content
-and that runs in the web application environment.</p></dd><a name="z400006b1012330"></a><dt><?GT ELSE><b>servlet container</dt><?GT ELSE></b><dd><p class="p">see <a href="#bbggdgii">web application container</a>.</p></dd><a name="z400006b1012354"></a><dt><?GT ELSE><b>servlet context</dt><?GT ELSE></b><dd><p class="p">a container-managed object that defines a servlet&#8217;s view of the web application within
+client application that looked up the service.</p></dd><a name="z400006b1012162"></a><dt> <b>service registry</dt> </b><dd><p class="p">the core component of the service facility. The service facility is used for
+registering and looking up services.</p></dd><a name="z400006b1012186"></a><dt> <b>service URI</dt> </b><dd><p class="p">a URI that uniquely identifies a service provided by a server application.</p></dd><a name="z400006b1012306"></a><dt> <b>servlet</dt> </b><dd><p class="p">a web application component, managed by a container, that generates dynamic web content
+and that runs in the web application environment.</p></dd><a name="z400006b1012330"></a><dt> <b>servlet container</dt> </b><dd><p class="p">see <a href="#bbggdgii">web application container</a>.</p></dd><a name="z400006b1012354"></a><dt> <b>servlet context</dt> </b><dd><p class="p">a container-managed object that defines a servlet&#39;s view of the web application within
 which the servlet is running. A servlet context is rooted at a known
-path within a web server: a context path.</p></dd><a name="z400006b1012378"></a><dt><?GT ELSE><b>servlet mapping</dt><?GT ELSE></b><dd><p class="p">a servlet definition that is associated by a servlet container with a URL
+path within a web server: a context path.</p></dd><a name="z400006b1012378"></a><dt> <b>servlet mapping</dt> </b><dd><p class="p">a servlet definition that is associated by a servlet container with a URL
 path pattern. All requests to that path pattern are handled by the servlet
-associated with the servlet definition. See <i>Java Servlet Specification, Connected Edition</i>.</p></dd><a name="z400006b1012436"></a><dt><?GT ELSE><b>shareable interface</dt><?GT ELSE></b><dd><p class="p">an interface that defines a set of shared methods. These interface methods can
+associated with the servlet definition. See <i>Java Servlet Specification, Connected Edition</i>.</p></dd><a name="z400006b1012436"></a><dt> <b>shareable interface</dt> </b><dd><p class="p">an interface that defines a set of shared methods. These interface methods can
 be invoked from an application in one group context when the object implementing
-them is owned by an application in another group context.</p></dd><a name="z400006b1012460"></a><dt><?GT ELSE><b>shareable interface object (SIO)</dt><?GT ELSE></b><dd><p class="p">an object that implements the shareable interface.</p></dd><a name="z400006b1012484"></a><dt><?GT ELSE><b>shareable interface object-based service</dt><?GT ELSE></b><dd><p class="p">see <a href="#bbgedgdg">service</a>.</p></dd><a name="z400006b1012508"></a><dt><?GT ELSE><b>smart card</dt><?GT ELSE></b><dd><p class="p">a card that stores and processes information through the electronic circuits embedded in
+them is owned by an application in another group context.</p></dd><a name="z400006b1012460"></a><dt> <b>shareable interface object (SIO)</dt> </b><dd><p class="p">an object that implements the shareable interface.</p></dd><a name="z400006b1012484"></a><dt> <b>shareable interface object-based service</dt> </b><dd><p class="p">see <a href="#bbgedgdg">service</a>.</p></dd><a name="z400006b1012508"></a><dt> <b>smart card</dt> </b><dd><p class="p">a card that stores and processes information through the electronic circuits embedded in
 silicon in the substrate of its body. Unlike magnetic stripe cards, smart cards
 carry both processing power and information. They do not require access to remote
-databases at the time of a transaction.</p></dd><a name="bbggbdgb"></a><dt><?GT ELSE><b>SSL</dt><?GT ELSE></b><dd><p class="p">Secure Socket Layer (SSL), like the later <a href="#bbgcjegi">TLS</a> protocol, is a cryptographic
+databases at the time of a transaction.</p></dd><a name="bbggbdgb"></a><dt> <b>SSL</dt> </b><dd><p class="p">Secure Socket Layer (SSL), like the later <a href="#bbgcjegi">TLS</a> protocol, is a cryptographic
 protocol for securely transmitting documents by using a two key cryptographic system (a public
-key and a private key) to encrypt and decrypt data.</p></dd>T<a name="z400006b1011314"></a><dt><?GT ELSE><b>terminal</dt><?GT ELSE></b><dd><p class="p">is typically a computer in its own right with an interface which connects
-with a smart card to exchange and process data.</p></dd><a name="z400006b1012833"></a><dt><?GT ELSE><b>thread</dt><?GT ELSE></b><dd><p class="p">the basic unit of program execution. A process can have several threads running
+key and a private key) to encrypt and decrypt data.</p></dd>T<a name="z400006b1011314"></a><dt> <b>terminal</dt> </b><dd><p class="p">is typically a computer in its own right with an interface which connects
+with a smart card to exchange and process data.</p></dd><a name="z400006b1012833"></a><dt> <b>thread</dt> </b><dd><p class="p">the basic unit of program execution. A process can have several threads running
 concurrently each performing a different job, such as waiting for events or performing
 a time consuming job that the program doesn't need to complete before going
-on. When a thread has finished its job, it is suspended or destroyed.</p></dd><a name="z400006b1012869"></a><dt><?GT ELSE><b>thread&#8217;s active context</dt><?GT ELSE></b><dd><p class="p">when an object instance method is invoked, the owning context of the object
+on. When a thread has finished its job, it is suspended or destroyed.</p></dd><a name="z400006b1012869"></a><dt> <b>thread&#39;s active context</dt> </b><dd><p class="p">when an object instance method is invoked, the owning context of the object
 becomes the currently active context for that particular thread of execution. Synonymous with
-<b>currently active context</b>.</p></dd><a name="z400006b1012897"></a><dt><?GT ELSE><b>transaction</dt><?GT ELSE></b><dd><p class="p">an atomic operation in which the developer defines the extent of the operation
-by indicating in the program code the beginning and end of the transaction.</p></dd><a name="z400006b1012927"></a><dt><?GT ELSE><b>transaction facility</dt><?GT ELSE></b><dd><p class="p">a Java Card RE facility that enables an application to complete a single
-logical operation on application data atomically, consistently and durably within a transaction.</p></dd><a name="z400006b1012955"></a><dt><?GT ELSE><b>transient object</dt><?GT ELSE></b><dd><p class="p">the state of transient objects do not persist from one card session to
+<b>currently active context</b>.</p></dd><a name="z400006b1012897"></a><dt> <b>transaction</dt> </b><dd><p class="p">an atomic operation in which the developer defines the extent of the operation
+by indicating in the program code the beginning and end of the transaction.</p></dd><a name="z400006b1012927"></a><dt> <b>transaction facility</dt> </b><dd><p class="p">a Java Card RE facility that enables an application to complete a single
+logical operation on application data atomically, consistently and durably within a transaction.</p></dd><a name="z400006b1012955"></a><dt> <b>transient object</dt> </b><dd><p class="p">the state of transient objects do not persist from one card session to
 the next, and are reset to a default state at specified intervals. Updates
 to the values of transient objects are not atomic and are not affected
-by transactions.</p></dd><a name="z400006b1012983"></a><dt><?GT ELSE><b>transferable classes</dt><?GT ELSE></b><dd><p class="p">classes whose instances can have their ownership transferred to a context different from
+by transactions.</p></dd><a name="z400006b1012983"></a><dt> <b>transferable classes</dt> </b><dd><p class="p">classes whose instances can have their ownership transferred to a context different from
 their currently owning context. Transferable classes are of two types:</p><p class="p"><b>Implicitly transferable classes</b> - Classes whose instances are not bound to any context (group contexts or
 Java Card RE context) and can, therefore, be passed and shared between contexts
-without any firewall restrictions. Examples are Boolean and literal String objects.</p><p class="p"><b>Explicitly transferable classes</b> - Classes whose instances must have their ownership explicitly transferred to another application&#8217;s
+without any firewall restrictions. Examples are Boolean and literal String objects.</p><p class="p"><b>Explicitly transferable classes</b> - Classes whose instances must have their ownership explicitly transferred to another application&#39;s
 group context in order to be accessible to that other application. Examples are
-arrays and newly created String objects.</p></dd><a name="z400006b1013011"></a><dt><?GT ELSE><b>transfer of ownership</dt><?GT ELSE></b><dd><p class="p">a Java Card RE facility that allows for an application to transfer the
+arrays and newly created String objects.</p></dd><a name="z400006b1013011"></a><dt> <b>transfer of ownership</dt> </b><dd><p class="p">a Java Card RE facility that allows for an application to transfer the
 ownership of objects it owns to an other application. Only instances of transferable
-classes can have their ownership transferred.</p></dd><a name="z400006b1013041"></a><dt><?GT ELSE><b>trusted client</dt><?GT ELSE></b><dd><p class="p">an on-card or off-card application client that an on-card application trusts on the
-basis of credentials presented by the client.</p></dd><a name="z400006b1013069"></a><dt><?GT ELSE><b>trusted client credentials</dt><?GT ELSE></b><dd><p class="p">credentials that an on-card application uses to ascertain the identity of clients it
-trusts.</p></dd><a name="bbgcjegi"></a><dt><?GT ELSE><b>TLS</dt><?GT ELSE></b><dd><p class="p">Transport Layer Security (TLS), like the earlier <a href="#bbggbdgb">SSL</a> protocol, is a cryptographic protocol
+classes can have their ownership transferred.</p></dd><a name="z400006b1013041"></a><dt> <b>trusted client</dt> </b><dd><p class="p">an on-card or off-card application client that an on-card application trusts on the
+basis of credentials presented by the client.</p></dd><a name="z400006b1013069"></a><dt> <b>trusted client credentials</dt> </b><dd><p class="p">credentials that an on-card application uses to ascertain the identity of clients it
+trusts.</p></dd><a name="bbgcjegi"></a><dt> <b>TLS</dt> </b><dd><p class="p">Transport Layer Security (TLS), like the earlier <a href="#bbggbdgb">SSL</a> protocol, is a cryptographic protocol
 for securely transmitting documents either by endpoint authentication of the server or by
-mutual authentication of the server and the client.</p></dd>U<a name="z400006b1011352"></a><dt><?GT ELSE><b>unload</dt><?GT ELSE></b><dd><p class="p">indicates that the module or application group that was loaded by load needs
+mutual authentication of the server and the client.</p></dd>U<a name="z400006b1011352"></a><dt> <b>unload</dt> </b><dd><p class="p">indicates that the module or application group that was loaded by load needs
 to be removed completely from the card. By default, if there are some
 instance(s) created, then unload will fail. Optional <tt>-f</tt> (or <tt>&#8211;-force</tt>) will attempt to delete
-all instances before unloading.</p></dd><a name="z400006b1013438"></a><dt><?GT ELSE><b>uniform resource identifier (URI)</dt><?GT ELSE></b><dd><p class="p">a compact string of characters used to identify or name an abstract or
+all instances before unloading.</p></dd><a name="z400006b1013438"></a><dt> <b>uniform resource identifier (URI)</dt> </b><dd><p class="p">a compact string of characters used to identify or name an abstract or
 physical resource. A URI can be further classified as a uniform resource locator
 (URL), a uniform resource name (URN), or both. See RFC 3986 for more
-information.</p></dd><a name="z400006b1013466"></a><dt><?GT ELSE><b>uniform resource locator (URL)</dt><?GT ELSE></b><dd><p class="p">a compact string representation used to locate resources available via network protocols or
+information.</p></dd><a name="z400006b1013466"></a><dt> <b>uniform resource locator (URL)</dt> </b><dd><p class="p">a compact string representation used to locate resources available via network protocols or
 other protocols. Once the resource represented by a URL has been accessed, various
 operations may be performed on that resource. See RFC 1738 for more information.
-A URL is a type of uniform resource identifier (URI).</p></dd><a name="z400006b1013494"></a><dt><?GT ELSE><b>USB</dt><?GT ELSE></b><dd><p class="p">Universal Serial Bus (USB) is a serial bus specification developed and published by
+A URL is a type of uniform resource identifier (URI).</p></dd><a name="z400006b1013494"></a><dt> <b>USB</dt> </b><dd><p class="p">Universal Serial Bus (USB) is a serial bus specification developed and published by
 the USB Implementers Forum that when implemented enables external devices such as flash
-drives, PDAs, and printers to connect to a host controller.</p></dd>V<a name="z400006b1012696"></a><dt><?GT ELSE><b>verification</dt><?GT ELSE></b><dd><p class="p">a process performed on an application or library executable that ensures that the
-binary representation of the application or library is structurally correct.</p></dd><a name="z400006b1013580"></a><dt><?GT ELSE><b>volatile memory</dt><?GT ELSE></b><dd><p class="p">memory that is not expected to retain its contents between card tear and
-power up events or across a reset event on the smart card device.</p></dd><a name="z400006b1013608"></a><dt><?GT ELSE><b>volatile object</dt><?GT ELSE></b><dd><p class="p">an object that is ideally suited to be stored in volatile memory. This
+drives, PDAs, and printers to connect to a host controller.</p></dd>V<a name="z400006b1012696"></a><dt> <b>verification</dt> </b><dd><p class="p">a process performed on an application or library executable that ensures that the
+binary representation of the application or library is structurally correct.</p></dd><a name="z400006b1013580"></a><dt> <b>volatile memory</dt> </b><dd><p class="p">memory that is not expected to retain its contents between card tear and
+power up events or across a reset event on the smart card device.</p></dd><a name="z400006b1013608"></a><dt> <b>volatile object</dt> </b><dd><p class="p">an object that is ideally suited to be stored in volatile memory. This
 type of object is intended for a short-lived object or an object which
 requires frequent updates. A volatile object is garbage collected on card tear (or
-reset).</p></dd>W<a name="z400006b1012730"></a><dt><?GT ELSE><b>web application</dt><?GT ELSE></b><dd><p class="p">a collection of servlets, HTML documents, and other web resources that might include
+reset).</p></dd>W<a name="z400006b1012730"></a><dt> <b>web application</dt> </b><dd><p class="p">a collection of servlets, HTML documents, and other web resources that might include
 image files, compressed archives, and other data. A web application is packaged into
 a web application archive.</p><p class="p">All compatible servlet containers must accept a web application and perform a deployment
 of its contents into their runtime. This may mean that a container can
 run the application directly from a web application archive file or it may
 mean that it will move the contents of a web application into the
-appropriate locations for that particular container. See Java Servlet Specification, Connected Edition.</p></dd><a name="z400006b1013689"></a><dt><?GT ELSE><b>web application archive</dt><?GT ELSE></b><dd><p class="p">the physical representation of a web application module. A single file that contains
+appropriate locations for that particular container. See Java Servlet Specification, Connected Edition.</p></dd><a name="z400006b1013689"></a><dt> <b>web application archive</dt> </b><dd><p class="p">the physical representation of a web application module. A single file that contains
 all of the components of a web application. This archive file is created
 by using standard JAR file tools, which allow any or all of the
 web components to be signed.</p><p class="p">A web application archive file is identified by the .war extension and is
@@ -191,13 +181,11 @@ often referred to as a WAR file. A new extension is used instead
 of .jar because that extension is reserved for files which contain a set
 of class files and that can be placed in the classpath. As the
 contents of a web application archive are not suitable for such use, a
-new extension was required. See Java Servlet Specification, Connected Edition.</p></dd><a name="bbggdgii"></a><dt><?GT ELSE><b>web application container</dt><?GT ELSE></b><dd><p class="p">contains and manages web applications and their components (for example, servlets) through their
+new extension was required. See Java Servlet Specification, Connected Edition.</p></dd><a name="bbggdgii"></a><dt> <b>web application container</dt> </b><dd><p class="p">contains and manages web applications and their components (for example, servlets) through their
 lifecycle. Also provides the network services over which HTTP requests and responses are sent
-and manages security of web applications.</p></dd><a name="z400006b1013741"></a><dt><?GT ELSE><b>web application environment</dt><?GT ELSE></b><dd><p class="p">in addition to the Java Card RE, consists of all the functionalities and
+and manages security of web applications.</p></dd><a name="z400006b1013741"></a><dt> <b>web application environment</dt> </b><dd><p class="p">in addition to the Java Card RE, consists of all the functionalities and
 system services available to web applications, such as the services provided by the
-web application container.</p></dd><a name="z400006b1013765"></a><dt><?GT ELSE><b>web client</dt><?GT ELSE></b><dd><p class="p">an off-card entity that requests services from an on-card web application. A typical
+web application container.</p></dd><a name="z400006b1013765"></a><dt> <b>web client</dt> </b><dd><p class="p">an off-card entity that requests services from an on-card web application. A typical
 example is a web browser.</p></dd></dl>
-
-
 </body>
 </html>

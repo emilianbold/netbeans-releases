@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,9 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
@@ -75,6 +81,9 @@ public class GeneralPHP extends JellyTestCase {
     protected boolean bRandomCheck = false;
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
+    static final String SAMPLES = "Samples";
+    static final String PROJECT_JOBEET = "Jobeet";
+    static final String PROJECT_AirAliance = "Air Alliance Sample Application";
     static protected final int COMPLETION_LIST_THRESHOLD = 5000;
     protected static final String PHP_EXTENSION = ".php";
 
@@ -126,6 +135,34 @@ public class GeneralPHP extends JellyTestCase {
         } catch (InterruptedException ex) {
             System.out.println("=== Interrupted sleep ===");
         }
+    }
+
+    protected String CreateSamplePHPApplication(String type) {
+        NewProjectWizardOperator.invoke().cancel();
+
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
+
+        opNewProjectWizard.selectCategory(SAMPLES + "|" + PHP_CATEGORY_NAME);
+//        opNewProjectWizard.selectCategory(PHP_CATEGORY_NAME);
+
+        String typeName = "";
+
+        if (type == "Jobeet") {
+            opNewProjectWizard.selectProject(PROJECT_JOBEET);
+        } else if (type == "AirAlliance") {
+            opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        }
+
+        opNewProjectWizard.next();
+
+        JDialogOperator jdNew = new JDialogOperator("New PHP Sample Project");
+        JTextComponentOperator jtName = new JTextComponentOperator(jdNew, 0);
+
+        String sResult = jtName.getText();
+
+        opNewProjectWizard.finish();
+        return sResult;
+
     }
 
     // All defaults including name
@@ -591,5 +628,93 @@ public class GeneralPHP extends JellyTestCase {
                 eoCode.deleteLine(iWalkUpLine);
             }
         }
+    }
+
+    public boolean DeleteFileContent(EditorOperator eoPHP) {
+        eoPHP.setCaretPositionToLine(1);
+        while (eoPHP.getText().length() != 0) {
+            eoPHP.deleteLine(eoPHP.getLineNumber());
+            Sleep(1000);
+        }
+        return true;
+    }
+
+    public JDialogOperator selectPHPFromEditorOptions(int mode) {
+
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+        JDialogOperator window = new JDialogOperator("Options");
+        if (mode == 0) {
+        window.pressKey(KeyEvent.VK_RIGHT);
+        Sleep(1000);
+
+        for (int i = 0; i <= 4; i++) {
+            window.pressKey(KeyEvent.VK_TAB);
+            Sleep(1000);
+        }
+        window.pressKey(KeyEvent.VK_RIGHT);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_SPACE);
+        Sleep(1000);
+        }
+        window.pressKey(KeyEvent.VK_TAB);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_DOWN);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_DOWN);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_ENTER);
+        Sleep(1000);
+        
+        return window;
+    }
+
+    public void setMethodParametersWrappingOptions(int state) {
+
+        JDialogOperator window = selectPHPFromEditorOptions(1);
+
+        //categories - check if they are all present
+        JComboBoxOperator category = new JComboBoxOperator(window, 2);
+        category.selectItem(5);
+
+        JComboBoxOperator wrappingCombo = new JComboBoxOperator(window, 2);
+        if (state == 0) {
+            wrappingCombo.selectItem(2);
+        }
+        if (state == 1) {
+            wrappingCombo.selectItem(0);
+        }
+        if (state == 2) {
+            wrappingCombo.selectItem(1);
+        }
+        Sleep(10000);
+        JButtonOperator jbOK = new JButtonOperator(window, "OK");
+        jbOK.push();
+        Sleep(1000);
+        window.waitClosed();
+    }
+
+    public void setPHPIndentation(int initialIndentation, int contIndentation, int arrayDeclarationIndentation) {
+        JDialogOperator window = selectPHPFromEditorOptions(1);
+
+        //categories - check if they are all present
+        JComboBoxOperator category = new JComboBoxOperator(window, 1);
+        category.selectItem("Tabs And Indents");
+
+        JTextFieldOperator initialIndentTextField = new JTextFieldOperator(window, 1);
+        initialIndentTextField.clearText();
+        initialIndentTextField.enterText(
+                String.valueOf(initialIndentation));
+
+        JTextFieldOperator contIndentTextField = new JTextFieldOperator(window, 2);
+        contIndentTextField.clearText();
+        contIndentTextField.enterText(
+                String.valueOf(contIndentation));
+
+        JTextFieldOperator arrayDeclarationIndentTextField = new JTextFieldOperator(window, 1);
+        arrayDeclarationIndentTextField.clearText();
+        arrayDeclarationIndentTextField.enterText(
+                String.valueOf(arrayDeclarationIndentation));
+
+
     }
 }

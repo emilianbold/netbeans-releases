@@ -52,7 +52,6 @@ public final class VisualPropertySupport {
     }
         
     public void register( JCheckBox component, String propertyName ) {
-        
         Boolean value = (Boolean)getAsType( propertyName, Boolean.class );
         component2property.put( component, propertyName );
         component.setSelected( value != null && value.booleanValue() );
@@ -144,7 +143,6 @@ public final class VisualPropertySupport {
     }
     
     private Object getAsType( String propertyName, Class expectedType, boolean throwException ) {
-        
         Object value = webProperties.get( propertyName );
         
         if ( value == null || expectedType.isInstance( value ) ) {

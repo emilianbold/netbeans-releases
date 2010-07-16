@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,8 +60,8 @@ public class Hk2ApplicationNode extends Hk2ItemNode {
     public Hk2ApplicationNode(final Lookup lookup, final AppDesc app, final Decorator decorator) {
         super(Children.LEAF, lookup, app.getName(), decorator);
         setDisplayName(app.getName());
-        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
-
+        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "<br>enabled: " + app.getEnabled() + "</html>");
+        
         // !PW FIXME should method of retrieving context root be controlled by decorator?
         if(decorator.canShowBrowser()) {
             getCookieSet().add(new OpenURLActionCookie() {

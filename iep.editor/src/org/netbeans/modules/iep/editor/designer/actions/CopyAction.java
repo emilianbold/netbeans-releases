@@ -2,7 +2,6 @@ package org.netbeans.modules.iep.editor.designer.actions;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 
 import javax.swing.ImageIcon;
@@ -10,7 +9,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.iep.editor.designer.PdAction;
 import org.netbeans.modules.iep.editor.designer.PdModel;
 import org.netbeans.modules.iep.editor.designer.PlanCanvas;
-import org.netbeans.modules.iep.editor.util.ImageUtil;
+import org.netbeans.modules.tbls.model.ImageUtil;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoGlobal;

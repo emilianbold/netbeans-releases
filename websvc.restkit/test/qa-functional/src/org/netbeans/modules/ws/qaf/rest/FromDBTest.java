@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,6 @@ import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -76,12 +77,8 @@ public class FromDBTest extends CRUDTest {
     }
 
     public void testFromDB() throws IOException {
-         // closing Tasks tab
-        new OutputWindowViewAction().performMenu();
-        new ActionNoBlock("Window|Tasks", null).performMenu();
-        new ActionNoBlock("Window|Close Window", null).performMenu();
-        copyDBSchema();
         createPU();
+        copyDBSchema();
         //RESTful Web Services from Database
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromDatabase");
         createNewWSFile(getProject(), restLabel);
@@ -117,28 +114,20 @@ public class FromDBTest extends CRUDTest {
         waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
-        assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+            assertEquals("Some files were not generated", 29, files.size()); //NOI18N
+        } else {
+            assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+        }
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
-    }
-
-    private void createPU() {
-        //Persistence
-        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
-        //Persistence Unit
-        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
-        createNewFile(getProject(), category, puLabel);
-        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
-        WizardOperator wo = new WizardOperator(title);
-        new JComboBoxOperator(wo, 1).selectItem("jdbc/sample"); //NOI18N
-        wo.finish();
     }
 
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(FromDBTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(FromDBTest.class),
                 "testFromDB", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N

@@ -6,7 +6,6 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -15,22 +14,22 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.TableInputOperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponent;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  radval
  */
-public class TableInputConfigurationPanel extends javax.swing.JPanel {
+public class TableInputConfigurationPanel extends javax.swing.JPanel implements SharedConstants {
 
     private static final String CONFIG_INTERNAL_TABLE = "CONFIG_INTERNAL_TABLE";
     
@@ -44,30 +43,28 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
 
     private CardLayout mCardLayout;
     
-    private TableInputOperatorComponent mComponent;
+    private OperatorComponent mComponent;
     
     private SelectPanel mSelectPanel;
     
     /** Creates new form TableInputConfigurationPanel */
-    public TableInputConfigurationPanel(TableInputOperatorComponent op, SelectPanel selectPanel) {
+    public TableInputConfigurationPanel(OperatorComponent op, SelectPanel selectPanel) {
         this.mComponent = op;
         this.mSelectPanel = selectPanel;
         initComponents();
         init();
-        
     }
 
     public void validate(PropertyChangeEvent evt) throws PropertyVetoException {
-     
         //validate name
         String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
-        Property nameProp = mComponent.getProperty(SharedConstants.NAME_KEY);
+        Property nameProp = mComponent.getProperty(PROP_NAME);
         GUIValidationHelper.validateProperty(nameStr, getOperatorName(), nameProp, evt);
        
         GUIValidationHelper.validateForUniqueOperatorName(mComponent.getModel(), mComponent, getOperatorName(), evt);
       
         //validate schema
-        Property outputSchemaNameProp = mComponent.getProperty(SharedConstants.OUTPUT_SCHEMA_ID_KEY);
+        Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
         String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
         GUIValidationHelper.validateProperty(outputSchemaNameStr, getOutputSchemaName(), outputSchemaNameProp, evt);
         
@@ -92,7 +89,7 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
             
             // schema
             String newSchemaName = getOutputSchemaName();;
-            SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+            SchemaComponent outputSchema = mComponent.getOutputSchema();
             String schemaName = null;
             if(outputSchema != null) {
                 schemaName = outputSchema.getName();
@@ -113,7 +110,7 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
                     scContainer.addSchemaComponent(sc);
                     scContainer.removeSchemaComponent(outputSchema);
 
-                    mComponent.setOutputSchemaId(sc);
+                    mComponent.setOutputSchema(sc);
                 }else {
                     outputSchema.setSchemaAttributes(attrs);
                 }
@@ -125,22 +122,22 @@ public class TableInputConfigurationPanel extends javax.swing.JPanel {
                 sc.setSchemaAttributes(attrs);
 
                 scContainer.addSchemaComponent(sc);
-                mComponent.setOutputSchemaId(sc);
+                mComponent.setOutputSchema(sc);
             }
             
             //globalid
-            mComponent.setGlobalId(getGlobalId());
+            mComponent.setString(PROP_GLOBAL_ID, getGlobalId());
             
             if(configurationTypeComboBox.getSelectedItem().equals(externalTableType)) {
                 //external table
-                mComponent.setExternalTableName(mExternalTableConfigPanel.getExternalTableName());
+                mComponent.setString(PROP_EXTERNAL_TABLE_NAME, mExternalTableConfigPanel.getExternalTableName());
                 //jndi name
-                mComponent.setDatabaseJndiName(mExternalTableConfigPanel.getJNDIName());
+                mComponent.setString(PROP_DATABASE_JNDI_NAME, mExternalTableConfigPanel.getJNDIName());
             } else {
                 //external table
-                mComponent.setExternalTableName("");
+                mComponent.setString(PROP_EXTERNAL_TABLE_NAME, "");
                 //jndi name
-                mComponent.setDatabaseJndiName("");
+                mComponent.setString(PROP_DATABASE_JNDI_NAME, "");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,7 +237,7 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         //option gui
         
         //external table name
-        String externalTableName = mComponent.getExternalTableName();
+        String externalTableName = mComponent.getString(PROP_EXTERNAL_TABLE_NAME);
         if(externalTableName != null && !externalTableName.trim().equals("")) {
             configurationTypeComboBox.setSelectedItem(externalTableType);
             mCardLayout.show(this.configurationPanel, CONFIG_EXTERNAL_TABLE);
@@ -248,7 +245,7 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         }
         
         //jndi name
-        String databaseJNDIName  = mComponent.getDatabaseJndiName();
+        String databaseJNDIName  = mComponent.getString(PROP_DATABASE_JNDI_NAME);
         if(databaseJNDIName != null) {
             mExternalTableConfigPanel.setJNDIName(databaseJNDIName);
         }
@@ -258,12 +255,12 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
         setOperatorName(operatorName);
         
         //output schema
-        SchemaComponent sc = mComponent.getOutputSchemaId();
+        SchemaComponent sc = mComponent.getOutputSchema();
         if(sc != null) {
             String outputSchemaName = sc.getName();
             setOutputSchemaName(outputSchemaName);
         } else {
-            if (mComponent.isSchemaOwner()) {
+            if (mComponent.getBoolean(PROP_IS_SCHEMA_OWNER)) {
               IEPModel model = mComponent.getModel();
               String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
               setOutputSchemaName(schemaName);
@@ -272,7 +269,7 @@ private void configurationTypeComboBoxItemStateChanged(java.awt.event.ItemEvent 
                 
         
         //global id
-        String globalId = mComponent.getGlobalId();
+        String globalId = mComponent.getString(PROP_GLOBAL_ID);
         setGlobalId(globalId);
         
         

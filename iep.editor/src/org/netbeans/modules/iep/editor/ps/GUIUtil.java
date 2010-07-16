@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,19 +42,26 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
+import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import javax.swing.ImageIcon;
+import javax.swing.table.TableModel;
+
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.tbls.model.ImageUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,12 +71,33 @@ public class GUIUtil {
 
     static Set<String> usedupNames = new HashSet<String>();
     
+    private static ImageIcon mNoDropCursor = ImageUtil.getImageIcon("cursorsnone.gif");
+    
     static {
     
         for(int i = 0; i < SharedConstants.RESERVED_COLUMN_NAMES.length; i++) {
             usedupNames.add(SharedConstants.RESERVED_COLUMN_NAMES[i]);
         }    
     }
+    
+    private static List<String> mSqlTypesNoSize = new ArrayList<String>();
+    
+    static {
+        mSqlTypesNoSize.add(SharedConstants.SQL_TYPE_DATE);
+        mSqlTypesNoSize.add(SharedConstants.SQL_TYPE_TIME);
+        mSqlTypesNoSize.add(SharedConstants.SQL_TYPE_TIMESTAMP);
+        mSqlTypesNoSize.add(SharedConstants.SQL_TYPE_CLOB);
+    }
+    
+    private static List<String> mSqlTypesNoScale = new ArrayList<String>();
+    
+    static {
+        mSqlTypesNoScale.add(SharedConstants.SQL_TYPE_DATE);
+        mSqlTypesNoScale.add(SharedConstants.SQL_TYPE_TIME);
+        mSqlTypesNoScale.add(SharedConstants.SQL_TYPE_TIMESTAMP);
+        mSqlTypesNoScale.add(SharedConstants.SQL_TYPE_CLOB);
+    }
+    
     
     public static List<String> convertCommaSeperatedValuesToList(String commaSeperatedValues) {
         List<String> list = new ArrayList<String>();
@@ -146,4 +177,52 @@ public class GUIUtil {
             return recordSchema;
         }
 
+    
+    public static boolean isSizeValidForSQLType(int row, int column, TableModel model) {
+        boolean valid = true;
+        
+        String selectedType = (String) model.getValueAt(row, column);
+        if(selectedType != null &&  mSqlTypesNoSize.contains(selectedType)) {
+            valid = false;
+        }
+        
+        return valid;
+    }
+    
+    /**
+     * 
+     * @param row row
+     * @param column column representing sql type
+     * @param model
+     * @return
+     */
+    public static boolean isScaleValidForSQLType(int row, int column, TableModel model) {
+        boolean valid = true;
+        
+        String selectedType = (String) model.getValueAt(row, column);
+        if(selectedType != null &&  mSqlTypesNoScale.contains(selectedType)) {
+            valid = false;
+        }
+        return valid;
+    }
+    
+    public static String getDefaultStringForSize(int row, int column, TableModel model) {
+        return NbBundle.getMessage(GUIUtil.class, "GUIUtil_DefaultStringSize");
+    }
+    
+    /**
+     * 
+     * @param row row
+     * @param column column representing sql type
+     * @param model
+     * @return
+     */
+    public static String getDefaultStringForScale(int row, int column, TableModel model) {
+        return NbBundle.getMessage(GUIUtil.class, "GUIUtil_DefaultStringScale");
+    }
+    
+    
+    public static Cursor getNoDropCursor() {
+        return null;
+    }
 }

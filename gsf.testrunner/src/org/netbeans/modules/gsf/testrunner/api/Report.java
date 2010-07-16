@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ public final class Report {
      * number of recognized (by the parser) passed test reports
      */
     private int totalTests;
+    private int passed;
     private int failures;
     private int errors;
     private int pending;
@@ -103,7 +107,7 @@ public final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (!Status.isFailure(test.getStatus())) {
+        if (!Status.isFailureOrError(test.getStatus())) {
             detectedPassedTests++;
         }
     }
@@ -114,6 +118,7 @@ public final class Report {
         synchronized(this){
             this.suiteClassName = report.suiteClassName;
             this.totalTests = report.totalTests;
+            this.passed = report.passed;
             this.failures = report.failures;
             this.errors = report.errors;
             this.pending = report.pending;
@@ -165,9 +170,9 @@ public final class Report {
      */
     public boolean containsFailed() {
         assert EventQueue.isDispatchThread();
-        
+
         /* Called from the EventDispatch thread */
-        
+
         return (failures + errors) != 0;
     }
 
@@ -197,6 +202,20 @@ public final class Report {
      */
     public void setTotalTests(int totalTests) {
         this.totalTests = totalTests;
+    }
+
+    /**
+     * @return the passed
+     */
+    public int getPassed() {
+        return passed;
+    }
+
+    /**
+     * @param passed the passed to set
+     */
+    public void setPassed(int passed) {
+        this.passed = passed;
     }
 
     /**
@@ -304,5 +323,13 @@ public final class Report {
 
     public void setSkipped(boolean skipped) {
         this.skipped = skipped;
+    }
+
+    int getStatusMask(){
+        int statusMask = 0;
+        statusMask |= getPassed() > 0 ? Status.PASSED.getBitMask() : 0;
+        statusMask |= getFailures() > 0 ? Status.FAILED.getBitMask() : 0;
+        statusMask |= getErrors() > 0 ? Status.ERROR.getBitMask() : 0;
+        return statusMask;
     }
 }

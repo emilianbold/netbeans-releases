@@ -19,16 +19,15 @@
 package org.netbeans.modules.bpel.mapper.multiview;
 
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -61,9 +60,7 @@ public class BpelMapperMultiviewElementDesc
     }
 
     public Image getIcon() {
-        return ImageUtilities.loadImage(
-                "org/netbeans/modules/bpel/mapper/resources/mapper.png",//NOI18N
-                true);
+        return myDataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
     }
 
     public HelpCtx getHelpCtx() {

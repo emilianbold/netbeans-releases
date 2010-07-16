@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +60,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.makeproject.MakeSharabilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -63,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
@@ -72,6 +78,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /** Customization of Make project
+ * shows dialog
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
 
@@ -86,8 +93,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
+    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -95,16 +103,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
+    @Override
     public void showCustomizer() {
-        showCustomizer(null, null, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Project), null, null);
     }
 
     public void showCustomizer(Item item) {
-        showCustomizer(null, item, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Item), item, null);
     }
 
     public void showCustomizer(Folder folder) {
-        showCustomizer(null, null, folder);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Folder), null, folder);
     }
 
     public void showCustomizer(String preselectedNodeName) {
@@ -118,6 +127,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
@@ -139,7 +149,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         if (folder != null) {
             // Make sure all FolderConfigurations are created (they are lazyly created)
-            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfs();
+            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
@@ -175,7 +185,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
         ArrayList<JComponent> controls = new ArrayList<JComponent>();
         controls.add(options[OPTION_OK]);
-        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
+        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, Collections.unmodifiableCollection(controls));
         ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
         options[OPTION_OK].addActionListener(optionsListener);
         options[OPTION_CANCEL].addActionListener(optionsListener);
@@ -213,13 +223,18 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
         dialog.setVisible(true);
+        MakeContext lastContext = innerPane.getLastContext();
+        String nodeName = innerPane.getCurrentNodeName();
+        if (lastContext != null) {
+            lastCurrentNodeName.put(lastContext.getKind(), nodeName);
+        }
         if (currentCommand.equals(COMMAND_CANCEL)) {
             fireActionEvent(new ActionEvent(project, 0, currentCommand));
         }
     }
 
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener implements ActionListener {
+    private final class OptionListener implements ActionListener {
 
         private Project project;
         private ConfigurationDescriptor projectDescriptor;
@@ -237,6 +252,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             this.item = item;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             currentCommand = e.getActionCommand();
 
@@ -257,14 +273,23 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
                 List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                 List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
                 Configuration oldActive = projectDescriptor.getConfs().getActive();
                 Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 
                 projectDescriptor.assign(clonedProjectdescriptor);
                 projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606
+
+                // IZ#179995
+                MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
+                if (query != null) {
+                    query.update();
+                }
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
@@ -289,22 +314,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
 
     private void fireActionEvent(ActionEvent e) {
-        Iterator it;
+        Iterator<ActionListener> it;
 
         synchronized (actionListenerList) {
             it = new HashSet<ActionListener>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
-            ((ActionListener) it.next()).actionPerformed(e);
+            it.next().actionPerformed(e);
         }
     }
     /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-
     private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeCustomizerProvider.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getBundle(MakeCustomizerProvider.class).getString(s);
     }
 }

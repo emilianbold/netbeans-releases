@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,25 +63,10 @@ import org.openide.nodes.Node;
 public abstract class SearchHistoryAction extends ContextAction {
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-    private final VCSContext context;
-    private File repositoryRoot;
-    private File[] files;
-
-    protected String getBaseName(Node [] activatedNodes) {
-        return "CTL_MenuItem_SearchHistory"; // NOI18N
-    }
-
-    public SearchHistoryAction (VCSContext context) {
-        this.context = context;
-    }
-
-    protected VCSContext getContext () {
-        return context;
-    }
 
     @Override
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
     protected static void outputSearchContextTab (File repositoryRoot, String title) {
@@ -114,8 +102,9 @@ public abstract class SearchHistoryAction extends ContextAction {
         logger.closeLog();
     }
 
-    protected File getRepositoryRoot () {
-        if (repositoryRoot == null && context != null) {
+    protected File getRepositoryRoot (VCSContext context) {
+        File repositoryRoot = null;
+        if (context != null) {
             final File roots[] = HgUtils.getActionRoots(context);
             if (roots != null && roots.length > 0) {
                 repositoryRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -124,12 +113,10 @@ public abstract class SearchHistoryAction extends ContextAction {
         return repositoryRoot;
     }
 
-    protected File[] getFiles () {
-        if (files == null) {
-            File repository = getRepositoryRoot();
-            if (repository != null) {
-                files = HgUtils.filterForRepository(context, repository, false);
-            }
+    protected File[] getFiles (VCSContext context, File repository) {
+        File[] files = null;
+        if (repository != null) {
+            files = HgUtils.filterForRepository(context, repository, false);
         }
         return files;
     }

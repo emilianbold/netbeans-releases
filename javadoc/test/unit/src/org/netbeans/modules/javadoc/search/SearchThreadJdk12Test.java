@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,11 +45,11 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.LinkedList;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -62,7 +65,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         File dataFile = getDataDir();
         assertNotNull("missing data file", dataFile);
         fs = new LocalFileSystem();
@@ -70,8 +73,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Class() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DataFlavor";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -81,14 +83,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 6, diiConsumer.l.size());
         
         // class DataFlavor
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DataFlavor", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - class java.awt.datatransfer.DataFlavor.", dii.getRemark());
         assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
         // constructor
-        dii = (DocIndexItem) diiConsumer.l.get(1);
+        dii = diiConsumer.l.get(1);
         assertEquals("field", "DataFlavor()", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
@@ -97,8 +99,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK14_Interface() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DatabaseMetaData";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -108,7 +109,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // DatabaseMetaData
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DatabaseMetaData", dii.getField());
         assertEquals("declaring class", "DatabaseMetaData", dii.getDeclaringClass());
         assertEquals("remark", " - interface java.sql.DatabaseMetaData.", dii.getRemark());
@@ -117,8 +118,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Exception() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "DataFormatException";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -128,7 +128,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 3, diiConsumer.l.size());
         
         // DataFormatException
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DataFormatException", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - exception java.util.zip.DataFormatException.", dii.getRemark());
@@ -136,7 +136,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html"));
         
         // DataFormatException(String) - constructor
-        dii = (DocIndexItem) diiConsumer.l.get(2);
+        dii = diiConsumer.l.get(2);
         assertEquals("field", "DataFormatException(String)", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.util.zip.DataFormatException", dii.getRemark());
@@ -145,8 +145,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Method() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "damageLineRange";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -156,7 +155,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // damageLineRange(int, int, Shape, Component)
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "damageLineRange(int, int, Shape, Component)", dii.getField());
         assertEquals("declaring class", "PlainView", dii.getDeclaringClass());
         assertEquals("remark", " - Method in class javax.swing.text.PlainView", dii.getRemark());
@@ -165,8 +164,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK14_Variables() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK14_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK14_INDEX_PATH).getURL();
         
         String toFind = "darkShadow";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -176,7 +174,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 4, diiConsumer.l.size());
         
         // darkShadow
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "darkShadow", dii.getField());
         assertEquals("declaring class", "BasicBorders.ButtonBorder", dii.getDeclaringClass());
         assertEquals("remark", " - Variable in class javax.swing.plaf.basic.BasicBorders.ButtonBorder", dii.getRemark());
@@ -184,7 +182,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/basic/BasicBorders.ButtonBorder.html#darkShadow"));
         
         // darkShadowColor - static variable
-        dii = (DocIndexItem) diiConsumer.l.get(3);
+        dii = diiConsumer.l.get(3);
         assertEquals("field", "darkShadowColor", dii.getField());
         assertEquals("declaring class", "MetalSliderUI", dii.getDeclaringClass());
         assertEquals("remark", " - Static variable in class javax.swing.plaf.metal.MetalSliderUI", dii.getRemark());
@@ -193,8 +191,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Class() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DataFlavor";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -204,14 +201,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 6, diiConsumer.l.size());
         
         // class DataFlavor
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DataFlavor", dii.getField());
         assertEquals("declaring class", "java.awt.datatransfer", dii.getDeclaringClass());
         assertEquals("remark", " - Class in java.awt.datatransfer", dii.getRemark());
         assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
         // constructor
-        dii = (DocIndexItem) diiConsumer.l.get(1);
+        dii = diiConsumer.l.get(1);
         assertEquals("field", "DataFlavor()", dii.getField());
         assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
@@ -221,8 +218,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
 
     public void testSearchInJDK15_GenericClass_54244() throws Exception {
         // see issue #54244
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DemoHashMap";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -232,14 +228,14 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 2, diiConsumer.l.size());
         
         // class DemoHashMap<K,V>
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DemoHashMap", dii.getField());
         assertEquals("declaring class", "java.util", dii.getDeclaringClass());
         assertEquals("remark", " - Class in java.util", dii.getRemark());
         assertEquals("package", "java.util.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/DemoHashMap.html"));
         // generic constructor DemoHashMap(Map<? extends K, ? extends V>)
-        dii = (DocIndexItem) diiConsumer.l.get(1);
+        dii = diiConsumer.l.get(1);
         assertEquals("field", "DemoHashMap(Map<? extends K, ? extends V>)", dii.getField());
         assertEquals("declaring class", "DemoHashMap", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for class java.util.DemoHashMap", dii.getRemark());
@@ -248,8 +244,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Method() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "damageLineRange";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -259,7 +254,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // damageLineRange(int, int, Shape, Component)
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "damageLineRange(int, int, Shape, Component)", dii.getField());
         assertEquals("declaring class", "PlainView", dii.getDeclaringClass());
         assertEquals("remark", " - Method in class javax.swing.text.PlainView", dii.getRemark());
@@ -268,8 +263,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Variables() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "darkShadow";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -279,7 +273,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 4, diiConsumer.l.size());
         
         // darkShadow
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "darkShadow", dii.getField());
         assertEquals("declaring class", "BasicBorders.ButtonBorder", dii.getDeclaringClass());
         assertEquals("remark", " - Variable in class javax.swing.plaf.basic.BasicBorders.ButtonBorder", dii.getRemark());
@@ -287,7 +281,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertTrue("url", dii.getURL().toString().endsWith("api/javax/swing/plaf/basic/BasicBorders.ButtonBorder.html#darkShadow"));
         
         // darkShadowColor - static variable
-        dii = (DocIndexItem) diiConsumer.l.get(3);
+        dii = diiConsumer.l.get(3);
         assertEquals("field", "darkShadowColor", dii.getField());
         assertEquals("declaring class", "MetalSliderUI", dii.getDeclaringClass());
         assertEquals("remark", " - Static variable in class javax.swing.plaf.metal.MetalSliderUI", dii.getRemark());
@@ -296,8 +290,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
 
     public void testSearchInJDK15_Exception() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DataFormatException";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -307,7 +300,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 3, diiConsumer.l.size());
         
         // DataFormatException
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DataFormatException", dii.getField());
         assertEquals("declaring class", "java.util.zip", dii.getDeclaringClass());
         assertEquals("remark", " - Exception in java.util.zip", dii.getRemark());
@@ -315,7 +308,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertTrue("url", dii.getURL().toString().endsWith("api/java/util/zip/DataFormatException.html"));
         
         // DataFormatException(String) - constructor
-        dii = (DocIndexItem) diiConsumer.l.get(2);
+        dii = diiConsumer.l.get(2);
         assertEquals("field", "DataFormatException(String)", dii.getField());
         assertEquals("declaring class", "DataFormatException", dii.getDeclaringClass());
         assertEquals("remark", " - Constructor for exception java.util.zip.DataFormatException", dii.getRemark());
@@ -324,8 +317,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_Interface() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DatabaseMetaData";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -335,7 +327,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // DatabaseMetaData
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DatabaseMetaData", dii.getField());
         assertEquals("declaring class", "java.sql", dii.getDeclaringClass());
         assertEquals("remark", " - Interface in java.sql", dii.getRemark());
@@ -344,8 +336,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_Enum() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "DemoMemoryType";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -355,7 +346,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // DemoMemoryType
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "DemoMemoryType", dii.getField());
         assertEquals("declaring class", "java.lang.management", dii.getDeclaringClass());
         assertEquals("remark", " - Enum in java.lang.management", dii.getRemark());
@@ -364,8 +355,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     }
     
     public void testSearchInJDK15_AnnotationType() throws Exception {
-        FileObject idxFolder = fs.findResource(JDK15_INDEX_PATH);
-        assertNotNull(idxFolder);
+        URL idxFolder = fs.findResource(JDK15_INDEX_PATH).getURL();
         
         String toFind = "Deprecated";
         MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
@@ -375,7 +365,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("search result", 1, diiConsumer.l.size());
         
         // Deprecated
-        DocIndexItem dii = (DocIndexItem) diiConsumer.l.get(0);
+        DocIndexItem dii = diiConsumer.l.get(0);
         assertEquals("field", "Deprecated", dii.getField());
         assertEquals("declaring class", "java.lang", dii.getDeclaringClass());
         assertEquals("remark", " - Annotation Type in java.lang", dii.getRemark());
@@ -385,9 +375,9 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     
     private static final class MyDocIndexItemConsumer implements IndexSearchThread.DocIndexItemConsumer {
         boolean isFinished = false;
-        List l = new LinkedList();
+        List<DocIndexItem> l = new LinkedList<DocIndexItem>();
             
-        public void addDocIndexItem(DocIndexItem dii) {
+        public @Override void addDocIndexItem(DocIndexItem dii) {
 //            try {
 //            System.out.println("dc: " + dii.getDeclaringClass() + ", field: " + dii.getField() +
 //                    ", pkg: " + dii.getPackage() + ", remark: " + dii.getRemark() + ", url: " + dii.getURL().toString());
@@ -397,7 +387,7 @@ public final class SearchThreadJdk12Test extends NbTestCase {
             l.add(dii);
         }
 
-        public void indexSearchThreadFinished(IndexSearchThread ist) {
+        public @Override void indexSearchThreadFinished(IndexSearchThread ist) {
 //            System.out.println("-------------------------------");
             isFinished = true;
         }

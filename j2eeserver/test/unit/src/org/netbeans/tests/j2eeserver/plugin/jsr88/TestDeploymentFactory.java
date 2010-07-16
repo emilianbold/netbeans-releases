@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,14 +50,22 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 
 /**
  *
- * @author  gfink
+ * @author Petr Hejl
  */
 public class TestDeploymentFactory implements DeploymentFactory {
-    
+
     private Map managers = new HashMap();
 
+    private final String prefix;
+
     /** Creates a new instance of DepFactory */
-    public TestDeploymentFactory() {
+    protected TestDeploymentFactory(String prefix) {
+        assert prefix != null;
+        this.prefix = prefix;
+    }
+
+    public static TestDeploymentFactory create(Map map) {
+        return new TestDeploymentFactory((String) map.get("prefix"));
     }
 
     public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
@@ -84,7 +95,7 @@ public class TestDeploymentFactory implements DeploymentFactory {
     }
     
     public boolean handlesURI(String str) {
-        return (str != null && str.startsWith("fooservice"));
+        return (str != null && str.startsWith(prefix));
     }
     
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,12 +58,12 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
  *
@@ -68,44 +71,42 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 public class DerbyDataStorage extends SQLDataStorage {
 
     private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
-    private static final String SQL_QUERY_DELIMETER = "";
-    private static final String tmpDir;
+    private static final String SQL_QUERY_DELIMETER = ""; // NOI18N
+    private static final File tmpDir;
     private static final AtomicInteger dbIndex = new AtomicInteger();
-    private static boolean driverLoaded = false;
+//    private static boolean driverLoaded = false;
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private String dbURL;
     private final List<DataTableMetadata> tableMetadatas;
 
     static {
-        String tempDir = null;
+        File tempDir = null;
+
         try {
             HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-            tempDir = hi.getTempDir();
-            if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                tempDir = WindowsSupport.getInstance().convertToWindowsPath(tempDir);
-            }
+            tempDir = hi.getTempDirFile();
         } catch (IOException ex) {
         } catch (CancellationException ex) {
         }
 
         if (tempDir == null) {
-            tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
+            tempDir = new File(System.getProperty("java.io.tmpdir")); // NOI18N
         }
 
-        tmpDir = tempDir;
-        String systemDir = tmpDir + "/derby_dlight"; // NOI18N
+        tmpDir = new File(tempDir, "/derby_dlight"); // NOI18N
+
         try {
-            
-            System.setProperty("derby.system.home", systemDir); // NOI18N
+            System.setProperty("derby.system.home", tmpDir.getAbsolutePath()); // NOI18N
             Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
-            logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded "); // NOI18N
+            logger.log(Level.INFO, "Driver for Derby(JavaDB) ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-        File tmpDirFile = new File(systemDir); // NOI18N
 
-        if (tmpDirFile.exists()) {
-            final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+        if (tmpDir.exists()) {
+            final File[] files = tmpDir.listFiles(new FilenameFilter() {
+
+                @Override
                 public boolean accept(File dir, String name) {
                     return dir.isDirectory() && name.startsWith("DerbyDlight"); // NOI18N
                 }
@@ -114,11 +115,23 @@ public class DerbyDataStorage extends SQLDataStorage {
             int newValue = 0;
             for (int i = 0; i < files.length; i++) {
                 String suffix = files[i].getName().substring(generalNameLength);
-                try{
+                try {
                     newValue = Math.max(newValue, Integer.valueOf(suffix));
-                }catch (NumberFormatException e){}
+                } catch (NumberFormatException e) {
+                }
             }
-           dbIndex.getAndSet(newValue);            
+
+            dbIndex.getAndSet(newValue);
+            
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (File file : files) {
+                        Util.deleteLocalDirectory(file);
+                    }
+                }
+            }, "DerbyDataStorage removing old data bases");//NOI18N
         }
     }
 
@@ -135,7 +148,7 @@ public class DerbyDataStorage extends SQLDataStorage {
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
-    private DerbyDataStorage(String url) throws SQLException {
+    DerbyDataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
@@ -143,13 +156,17 @@ public class DerbyDataStorage extends SQLDataStorage {
         connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
     }
 
+    String getURL() {
+        return dbURL;
+    }
+
     @Override
     public boolean shutdown() {
         //remove folder
         boolean result = super.shutdown();
-        String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));//NOI18N
+        String dbName = dbURL.substring(dbURL.lastIndexOf(':') + 1, dbURL.indexOf(';'));
         //and now get number
-        result = result && Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)); // NOI18N
+        result = Util.deleteLocalDirectory(new File(tmpDir, dbName)) && result;
         return result;
     }
 
@@ -192,7 +209,6 @@ public class DerbyDataStorage extends SQLDataStorage {
 //    public List<FunctionCall> getCallStack(int stackId) {
 //        return stackStorage.getStack(stackId);
 //    }
-
 //    public void flush() {
 //        try {
 //            stackStorage.flush();
@@ -200,7 +216,6 @@ public class DerbyDataStorage extends SQLDataStorage {
 //            logger.log(Level.SEVERE, null, ex);
 //        }
 //    }
-
 //    public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) {
 //        try {
 //            return stackStorage.getPeriodicStacks(startTime, endTime, interval);
@@ -235,7 +250,6 @@ public class DerbyDataStorage extends SQLDataStorage {
 //    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
-
     @Override
     protected String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
@@ -248,12 +262,17 @@ public class DerbyDataStorage extends SQLDataStorage {
 //    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
 //        return stackStorage.getThreadDump(timestamp, threadID, threadState);
 //    }
-
+    @Override
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
     }
 
+    @Override
     public boolean supportsType(DataStorageType storageType) {
         return getStorageTypes().contains(storageType);
+    }
+
+    @Override
+    public void loadSchema() {
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,12 +82,12 @@ import org.openide.util.Utilities;
  * <li>{@link #renderString renderString} will check the string for opening HTML tags
  * (upper or lower but not mixed case) and call either {@link #renderPlainString renderPlainString}
  * or {@link #renderHTML renderHTML} as appropriate.  Note this method does not tolerate
- * whitespace in opening html tags - it expects exactly 6 characters to make up
+ * whitespace in opening HTML tags - it expects exactly 6 characters to make up
  * the opening tag if present.</li>
  * <li>{@link #renderPlainString renderPlainString} simply renders a string to the graphics context,
- * takes the same agruments as {@link #renderHTML renderHTML}, but will also honor
+ * takes the same arguments as {@link #renderHTML renderHTML}, but will also honor
  * {@link #STYLE_TRUNCATE}, so strings can be rendered with trailing
- * elipsis if there is not enough space</li>
+ * ellipsis if there is not enough space</li>
  * <li>{@link #renderHTML renderHTML} renders whatever is passed to it as HTML, regardless
  * of whether it has opening HTML tags or not.  It can be used to render plain
  * strings, but {@link #renderPlainString renderPlainString} is faster for that. It is useful
@@ -129,7 +132,7 @@ import org.openide.util.Utilities;
  * <tr>
  *  <td><code>&lt;font&gt;</code></td>
  *  <td>Font color - font attributes other than color are not supported.  Colors
- *  may be specified as hexidecimal strings, such as #FF0000 or as logical colors
+ *  may be specified as hexadecimal strings, such as #FF0000 or as logical colors
  *  defined in the current look and feel by specifying a ! character as the first
  *  character of the color name.  Logical colors are colors available from the
  *  current look and feel's UIManager.  For example,
@@ -205,7 +208,6 @@ import org.openide.util.Utilities;
  * @author  Tim Boudreau
  */
 public final class HtmlRenderer {
-    private static HtmlRendererImpl LABEL = null;
 
     /** Stack object used during HTML rendering to hold previous colors in
      * the case of nested color entries. */
@@ -214,7 +216,7 @@ public final class HtmlRenderer {
     /**
      * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
      * {@link #renderHTML renderHTML}, and {@link Renderer#setRenderStyle}
-     * if painting should simply be cut off at the boundary of the cooordinates passed.
+     * if painting should simply be cut off at the boundary of the coordinates passed.
      */
     public static final int STYLE_CLIP = 0;
 
@@ -1403,7 +1405,7 @@ public final class HtmlRenderer {
         void setHtml(boolean val);
 
         /**
-         * Set the rendering style - this can be JLabel-style truncated-with-elipsis (...) text, or clipped text.
+         * Set the rendering style - this can be JLabel-style truncated-with-ellipsis (...) text, or clipped text.
          * The default is {@link #STYLE_CLIP}.
          *
          * @param style The text style

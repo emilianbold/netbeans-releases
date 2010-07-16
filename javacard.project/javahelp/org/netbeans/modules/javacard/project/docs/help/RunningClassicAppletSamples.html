@@ -1,47 +1,32 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-  <title>Running Classic Applet Samples - Java Card 3 Development
-  </title>
-
-</head>
-
-<body class="body">
-
-<a name="RunningClassicAppletSamples"></a><h2>Running Classic Applet Samples</h2>
-<p class="p">The following topic describes how to run the classic applet sample, <tt>ClassicChannels</tt>, provided
-in the Java Card 3 Development Kit. The sample demonstrates the features of the
-Java Card API, Connected Edition, scenarios of package masking, and post-manufacture installation.</p><p class="p">The <tt>ClassicChannels</tt> sample demonstrates the behavior of Java Card technology-based logical channels by
-showing how two applets that interact with each other can each be selected for
-use at the same time.</p><p class="p">The applets may use a contact or contactless interface for communication with the
-terminal. The <tt>ClassicChannels</tt> sample demonstrates the selection of an applet on both interfaces.
-The sample also demonstrates use of ExtendedLength APDU.</p><p class="p">While it is connected, the user&#8217;s account is debited on a unit of
-time basis. The debit rate is based on whether the connection is local
-or remote, and uses either the contacted or contactless interface.</p><p class="p">The sample employs two applets to simulate the behavior of logical channels:</p>
-<ul class="ul"><li class="li"><p class="p">The <tt>ConnectionManager</tt> applet manages the connection.</p></li>
-<li class="li"><p class="p"><tt>AccountAccessor</tt> applet manages the account.</p></li></ul>
-<p class="p">When the user turns on the device, the <tt>ConnectionManager</tt> applet is selected. The
-<tt>ConnectionManager</tt> implements the <tt>ExtendedLength</tt> interface to handle APDUs with larger data segments such as
-the ones used for key exchange in the sample. Every unit of time
-the terminal sends a message containing the area code to the card.</p><p class="p">When the user wants to use the service, the <tt>AccountAccessor</tt> applet is selected
-on another logical channel so that the terminal can query the balance. The
-<tt>AccountAccessor</tt> can return the balance only if the <tt>ConnectionManager</tt> is active. The <tt>ConnectionManager</tt> applet
-sets the connection and tracks the connection status. Based on the value of
-an area code variable, the <tt>ConnectionManager</tt> determines whether the connection is local or remote.
-It also determines whether the connection is contacted or contactless. <tt>AccountAccessor</tt> uses this information
-to debit the account at the appropriate rate. The connection is disabled when
-the user completes the call or when the account is depleted.</p><p class="p">The <tt>ClassicChannels</tt> sample is located in the <b>JC_CONNECTED_HOME</b>\<tt>samples\classic_applets </tt>folder.</p>
-<hr><p class="p"><b>Note - </b><b>JC_CONNECTED_HOME</b> represents the directory in which the Java Card 3 Development Kit, Connected
-Edition was installed.</p>
+  <title>Run HelloWorld Classic Applet Sample - Java Card 3 Development
+   </title></head><body class="body"><a name="RunningClassicAppletSamples"></a>
+   <h2>Run <tt>HelloWorld</tt> Classic Applet Sample</h2>
+   <p>This <tt>HelloWorld</tt> sample demonstrates the basic structure of a Java Card 3 platform
+classic applet that developers can use to develop, deploy, create, execute, delete, and unload
+classic applets. It is a minimal classic applet utilizing the simplest source code
+and meta-files. This sample contains one project that demonstrates the function of a
+classic applet.</p><p>Running the sample consists of using the IDE to start the <tt>HelloWorld</tt>
+applet. When running, the project installs the applet, processes an incoming APDU, and responds
+with a text greeting.</p>
+<h2>Before You Begin</h2>
+<p>Before performing the following procedure, either download and install the Java Card 3
+Development Kit, Connected Edition on your development system or download the sample from
+the Kenai Java Card 3 repository. See <a href="GetAdditionalClassicAppletSamples.html">Getting Additional Classic Applet Samples</a> for instructions required to download samples
+from the Kenai Java Card 3 repository.</p>
+<hr><p class="p"><b>Note - </b>Refer to the Development Kit documentation for additional details about working with the
+Development Kit.</p>
 <hr>
-
-
-
+<ol class="ol">
+<li><b>Click File &#62; Open Project in the main window.</b></li>
+<li><b>Go to the <b></b><tt>\samples\classic_applets </tt>folder and open the <tt>HelloWorld</tt> project.</b></li>
+<li><b>Click the run button in the main window. </b><p>The IDE compiles, builds, and runs the sample. When the sample runs, it
+creates an output file.</p></li>
+<li><b>Verify that the contents of the output file are the same as the
+contents of the <tt>HelloWorld.expected.out</tt> file.</b></li></ol>
 </body>
 </html>

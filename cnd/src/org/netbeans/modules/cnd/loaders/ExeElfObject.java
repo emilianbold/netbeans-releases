@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.lang.Runtime;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,10 +52,8 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileLock;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
 
 /** Superclass for Elf objects in the Repository.
@@ -69,23 +69,17 @@ public class ExeElfObject extends ExeObject {
 	super(pf, loader);
     }
   
-    protected void init() {
-	CookieSet cookies = getCookieSet();
-    
-	// Add whatever capabilities you need, e.g.:
-	//cookies.add(new BinaryExecSupport(getPrimaryEntry()));
-    }
-  
+    @Override
     protected Node createNodeDelegate() {
 	return new ExeNode(this);
     }
-
 
     /**
      *  Renames all entries and changes their files to new ones.
      *  We only override this to prevent you from changing the template
      *  name to something invalid (like an empty name)
      */
+    @Override
     protected FileObject handleRename(String name) throws IOException {
         FileLock lock = getPrimaryFile().lock();
         int pos = name.lastIndexOf('.');
@@ -104,6 +98,16 @@ public class ExeElfObject extends ExeObject {
         return getPrimaryFile ();
     }
 
+    /*
+     * Return name with extension so renaming etc works
+     */
+    @Override
+    public String getName() {
+	String ename = getPrimaryFile().getNameExt();
+	return ename;
+    }
+
+    @Override
     protected DataObject handleCopy(DataFolder df) throws IOException {
 	// let super do the job and then set the execution flag on the copy
 	DataObject dao = super.handleCopy(df);
@@ -111,6 +115,7 @@ public class ExeElfObject extends ExeObject {
 	return dao;
     }
 
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
 	// let super do the job and then set the execution flag on the copy
 	FileObject fob = super.handleMove(df);
@@ -119,9 +124,9 @@ public class ExeElfObject extends ExeObject {
     }
 
     private void setExecutionFlags(FileObject fob) throws IOException {
-	if (fob != null)
-	    Runtime.getRuntime().exec("/bin/chmod +x " + // NOI18N
-		    FileUtil.toFile(fob).getPath());
+	if (fob != null) {
+            Runtime.getRuntime().exec("/bin/chmod +x " + FileUtil.toFile(fob).getPath()); // NOI18N
+        }
     }
 }
 

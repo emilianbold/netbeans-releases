@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,10 @@
 package org.openide.explorer.view;
 
 import java.awt.Image;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
@@ -118,6 +124,25 @@ public class VisualizerNodeTest extends NbTestCase {
         
         assertEquals("Child check", "c", ta.getChildAt(2).toString());
         assertEquals("Counter should be 1", 1, lch.cnt);
+    }
+
+    public void testLazyVisDestroy() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        List<String> arr = Collections.nCopies(100, "A");
+        lch.keys(arr.toArray(new String[0]));
+
+        TreeNode ta = Visualizer.findVisualizer(a);
+        final TreeNode snd = ta.getChildAt(2);
+
+        Reference<Node> sndNode = new WeakReference<Node>(Visualizer.findNode(snd));
+
+        assertEquals("Child check", "A", snd.toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+
+        a.destroy();
+
+        assertGC("Whole subtree under a can be GCed now", sndNode);
     }
     
     public void testLazyFilterGet() throws Exception {

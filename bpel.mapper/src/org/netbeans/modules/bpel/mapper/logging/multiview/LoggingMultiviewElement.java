@@ -21,10 +21,12 @@ package org.netbeans.modules.bpel.mapper.logging.multiview;
 import javax.accessibility.AccessibleContext;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperFactory;
-import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextController;
+import org.netbeans.modules.bpel.mapper.multiview.BpelMapperSpiImpl;
 import org.netbeans.modules.bpel.mapper.multiview.MapperMultiviewElement;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.spi.MapperSpi;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,14 +53,17 @@ public class LoggingMultiviewElement extends MapperMultiviewElement {
     }
 
     @Override
-    protected DesignContextController createDesignContextController() {
-        //return new DesignContextControllerImpl(this);
-        return new DesignContextControllerImpl2(this);
+    protected BpelDesignContextController createDesignContextController() {
+        return new LoggingDcc(this);
     }
 
     @Override
     protected Mapper createMapper(MapperModel mModel) {
         return LoggingMapperFactory.createMapper(mModel);
+    }
+
+    public MapperSpi getMapperSpi() {
+        return BpelMapperSpiImpl.singleton();
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,6 @@ package org.netbeans.modules.mercurial.ui.diff;
 import java.util.Set;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 
@@ -58,12 +59,14 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
 /**
  * ExportDiff action for mercurial:
@@ -73,19 +76,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class ExportDiffAction extends ContextAction {
 
-    private final VCSContext context;
-
-    public ExportDiffAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
-    public void performAction(ActionEvent e) {
-        exportDiff(context);
-    }
-
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> roots = context.getFiles();
         if(roots == null) return false;
         if(!HgUtils.isFromHgRepository(context)) return false;
@@ -98,6 +91,16 @@ public class ExportDiffAction extends ContextAction {
             }
         }
         return true;
+    }
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ExportDiff"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        exportDiff(context);
     }
 
     private static void exportDiff(VCSContext ctx) {
@@ -129,7 +132,7 @@ public class ExportDiffAction extends ContextAction {
         final File root = repoRev.getRepositoryRoot();
         if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
-        final String revStr = repoRev.getLog().getRevision();
+        final String revStr = repoRev.getLog().getRevisionNumber();
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
             public void writeDiffFile (final File toFile) {
                 saveFolderToPrefs(toFile);
@@ -154,7 +157,7 @@ public class ExportDiffAction extends ContextAction {
             return;
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
             public void writeDiffFile (final File toFile) {
-                final String revStr = getSelectionRevision();
+                final String revStr = repoRev.getLog().getRevisionNumber();
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
@@ -178,7 +181,7 @@ public class ExportDiffAction extends ContextAction {
                     NbBundle.getMessage(ExportDiffAction.class,
                     "MSG_EXPORT_TITLE_SEP")); // NOI18N
 
-            if (revStr != null && NbBundle.getMessage(ExportDiffAction.class,
+            if (revStr != null && NbBundle.getMessage(ChangesetPickerPanel.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
                 logger.output(
                         NbBundle.getMessage(ExportDiffAction.class,
@@ -210,7 +213,7 @@ public class ExportDiffAction extends ContextAction {
                 NbBundle.getMessage(ExportDiffAction.class,
                 "MSG_EXPORT_FILE_TITLE_SEP")); // NOI18N
 
-        if (NbBundle.getMessage(ExportDiffAction.class,
+        if (NbBundle.getMessage(ChangesetPickerPanel.class,
                 "MSG_Revision_Default").startsWith(revStr)) {
             logger.output(
                     NbBundle.getMessage(ExportDiffAction.class,

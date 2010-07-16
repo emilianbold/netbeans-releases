@@ -24,9 +24,8 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 
 /**

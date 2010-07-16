@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,6 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -86,7 +88,7 @@ public class FileObjectTestHid extends TestBaseHid {
     
     @Override
     protected void setUp() throws java.lang.Exception {
-        MockServices.setServices();
+        FileSystemFactoryHid.setServices(this);
         
         super.setUp();
         
@@ -106,7 +108,7 @@ public class FileObjectTestHid extends TestBaseHid {
         root = null;
         //assertGC("", ref);
     }
-    
+
     public void testEventsDelivery81746() throws Exception {
         doEventsDelivery81746(1);
     }
@@ -435,6 +437,34 @@ public class FileObjectTestHid extends TestBaseHid {
         } finally {
             lock.releaseLock();
         }
+    }
+
+    public void  testMoveFolder() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+        FileObject fold2 = fold.createFolder("B");
+
+        FileObject toMove = fold1.createFolder("something");
+        toMove.createData("kid");
+        FileLock lock = toMove.lock();
+        FileObject last = null;
+        try {
+            FileObject toMove2 = null;
+            assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            assertNotNull(last = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue("Folder remains folder", last.isFolder());
+        assertEquals("One child remains", 1, last.getChildren().length);
+        FileObject created = last.getChildren()[0];
+        assertEquals("kid", created.getNameExt());
+        assertTrue("is data", created.isData());
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */
@@ -1128,7 +1158,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public void testGetMIMETypeWithResolver() {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        FileSystemFactoryHid.setServices(this, MR.class);
         
         String actualMT = fo.getMIMEType();
         assertNotNull("MIMEResolver not accessed at all.", MR.tested);
@@ -1139,19 +1169,30 @@ public class FileObjectTestHid extends TestBaseHid {
      * without unnecessary disk accesses and whether cache is freed when
      * undelying file is modified.
      */
+    static Object holder;
     public void testGetMIMETypeCached() throws IOException {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        holder = fo;
+        FileObject fo2 = getTestFile2(root);
+        FileSystemFactoryHid.setServices(this, MR.class);
+        assertEquals("MIME type properly", fo.getExt(), fo.getMIMEType());
+        Reference<Object> ref = new WeakReference<Object>(MR.tested);
+        MR.tested = null;
 
         StatFiles accessCounter = new StatFiles();
         accessCounter.register();
         for (int i = 0; i < 100; i++) {
-            assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
-            assertNotNull("MIMEResolver not accessed at all.", MR.tested);
+            assertEquals("Wrong MIME type OK (" + i + ")", fo.getExt(), fo.getMIMEType());
+            if (MR.tested != null) {
+                MR.access.printStackTrace();
+                assertNull("But without access to resolver (" + i + ")", MR.tested);
+            }
+//            assertNotGC("CachedObject cannot be GCed while fo exists", ref);
         }
         accessCounter.unregister();
         accessCounter.getResults().assertResult(2, StatFiles.READ);
+
         
         if(fo.canWrite()) {
             String beforeRename = fo.getMIMEType();
@@ -1167,12 +1208,33 @@ public class FileObjectTestHid extends TestBaseHid {
             MR.tested = null;
             assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
             assertNotNull("After file modification cache must be cleaned and MIMEResolver accessed.", MR.tested);
+
+            ref = new WeakReference<Object>(MR.tested);
+            MR.tested = null;
+
+            assertNotNull("Returns something", fo2.getMIMEType());
+            if (ref.get() == MR.tested) {
+                fail("Surprising these two shall be different: " + ref.get() + " and " + MR.tested);
+            }
+            assertGC("Now the old cached fo can be GCed now", ref);
         }
     }
 
+    @RandomlyFails // NB-Core-Build #4274
+    public void testGetMIMETypeCachedInAtomicAction() throws IOException {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                testGetMIMETypeCached();
+            }
+        });
+    }
+
     public static final class MR extends MIMEResolver {
-        public static FileObject tested;
+        static Exception access;
+        static FileObject tested;
         
+        @Override
         public String findMIMEType(FileObject fo) {
             try {
                 return f(fo);
@@ -1186,6 +1248,7 @@ public class FileObjectTestHid extends TestBaseHid {
             is.read(arr);
             is.close();
             tested = fo;
+            access = new Exception("Access for " + fo);
             return fo.getExt();
         }
     }

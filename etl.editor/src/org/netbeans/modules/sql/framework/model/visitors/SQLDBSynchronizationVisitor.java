@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,7 @@
  */
 package org.netbeans.modules.sql.framework.model.visitors;
 
-import com.sun.sql.framework.exception.DBSQLException;
+import com.sun.etl.exception.DBSQLException;
 import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
@@ -56,7 +59,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import java.util.ArrayList;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -103,7 +105,6 @@ public class SQLDBSynchronizationVisitor {
                     // *** UPDATE ***
                     copyFrom(newColumn, collabColumn, ignorePrecision);
                     tableModel.updateColumn(collabColName, collabColumn);
-                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     String desc = collabColumn.getQualifiedName() + " was updated from Database " + table.getParent().getModelName();
                     ValidationInfo vInfo = new ValidationInfoImpl(collabColumn, desc, ValidationInfo.VALIDATION_WARNING);
                     infoList.add(vInfo);
@@ -116,8 +117,7 @@ public class SQLDBSynchronizationVisitor {
         if (!columnMatched) {
             // *** DELETE *** the column
             table.deleteColumn(collabColumn.getName());
-            tableModel.removeColumn(collabColumn); 
-            DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
+            tableModel.removeColumn(collabColumn);
             String desc = collabColumn.getQualifiedName() + " was deleted since it no longer exists in Database " + table.getParent().getModelName();
             ValidationInfo vInfo = new ValidationInfoImpl(collabColumn, desc, ValidationInfo.VALIDATION_WARNING);
             infoList.add(vInfo);
@@ -209,7 +209,6 @@ public class SQLDBSynchronizationVisitor {
             // *** ADD *** the column
             table.addColumn(col);
             tableModel.addColumn(col);
-            DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
             String desc1 = "Found new column in Database -> " + table.getParent().getModelName() + col.getQualifiedName() + " was added";
             ValidationInfo vInfo1 = new ValidationInfoImpl(collabColumn, desc1, ValidationInfo.VALIDATION_INFO);
             infoList.add(vInfo1);
@@ -283,7 +282,7 @@ public class SQLDBSynchronizationVisitor {
                     ValidationInfo vInfo = new ValidationInfoImpl(collabTable, nbBundle1, ValidationInfo.VALIDATION_INFO);
                     infoList.add(vInfo);
                     return;
-                }
+                }                
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
             } else {

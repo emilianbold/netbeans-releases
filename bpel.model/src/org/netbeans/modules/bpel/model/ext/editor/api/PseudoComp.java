@@ -29,7 +29,6 @@ package org.netbeans.modules.bpel.model.ext.editor.api;
 
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.OutOfImportReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
@@ -40,7 +39,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
  * @author nk160297
  * @version 1.0
  */
-public interface PseudoComp extends ExtensionEntity, BpelContainer, 
+public interface PseudoComp extends LocationStepModifier, BpelContainer,
         ReferenceCollection, OutOfImportReference {
     
     String getParentPath();
@@ -61,8 +60,5 @@ public interface PseudoComp extends ExtensionEntity, BpelContainer,
      */
     boolean isAttribute();
     void setIsAttribute(boolean newValue);
-
-    Source getSource();
-    void setSource(Source source);
 
 }

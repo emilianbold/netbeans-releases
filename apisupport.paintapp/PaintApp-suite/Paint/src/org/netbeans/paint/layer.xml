@@ -1,81 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-<!--
-  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
-
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-
-  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
-    may be used to endorse or promote products derived from this software without
-    specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-  THE POSSIBILITY OF SUCH DAMAGE.
--->
 <filesystem>
     <folder name="Actions">
-        <folder name="Edit">
+        <folder name="File">
             <file name="org-netbeans-paint-NewCanvasAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.paint.NewCanvasAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.paint.Bundle#CTL_NewCanvasAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/paint/new-canvas.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/paint/new_icon.png"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
             </file>
-            <file name="org-netbeans-paint-SaveCanvasAction.instance"/>
+            <file name="org-openide-actions-SaveAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="delegate" newvalue="org.openide.actions.SaveAction"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="surviveFocusChange" boolvalue="false"/>
+                <attr name="displayName" bundlevalue="org/openide/actions/Bundle#Save"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/actions/save.png"/>
+                <attr name="type" stringvalue="org.openide.cookies.SaveCookie"/>
+            </file>
+            <file name="org-netbeans-core-actions-SystemExit.instance">
+                <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
+        </folder>
+        <folder name="System">
+            <file name="org-openide-actions-GarbageCollectAction.instance">
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
     </folder>
     <folder name="Menu">
         <folder name="File">
-            <attr name="position" intvalue="100"/>
-            <file name="org-netbeans-paint-separatorBefore.instance">
+            <attr name="position" intvalue="0"/>
+            <file name="NewCanvasAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-paint-NewCanvasAction.instance"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="SaveAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-openide-actions-SaveAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="SeparatorAfterSave.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="410"/>
+                <attr name="position" intvalue="110"/>
             </file>
-            <file name="org-netbeans-paint-NewCanvasAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-NewCanvasAction.instance"/>
-                <attr name="position" intvalue="420"/>
-            </file>
-            <file name="org-netbeans-paint-SaveCanvasAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-SaveCanvasAction.instance"/>
-                <attr name="position" intvalue="430"/>
-            </file>
-            <file name="org-netbeans-paint-separatorAfter.instance">
+            <file name="SeparatorBeforeExit.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="440"/>
+                <attr name="position" intvalue="3990"/>
+            </file>
+            <file name="ExitAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-core-actions-SystemExit.instance"/>
+                <attr name="position" intvalue="4000"/>
             </file>
         </folder>
-        <folder name="Tools">
-            <attr name="position" intvalue="1000"/>
+        <folder name="Window">
+            <attr name="position" intvalue="400"/>
+            <file name="SeparatorBeforeFullscreen.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="3990"/>
+            </file>
+            <file name="ToggleFullScreenAction.shadow">
+                <attr name="position" intvalue="4000"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
+            </file>
+            <folder name="Output_hidden"/>
         </folder>
-        <folder name="View_hidden"/>
+        <folder name="Help">
+            <attr name="position" intvalue="500"/>
+            <file name="org-netbeans-core-actions-AboutAction.instance"/>
+        </folder>
         <folder name="GoTo_hidden"/>
+        <folder name="Tools_hidden"/>
+        <folder name="View_hidden"/>
     </folder>
     <folder name="Toolbars">
         <folder name="File">
-            <file name="org-netbeans-paint-NewCanvasAction.shadow">
-                <attr name="position" intvalue="110"/>
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-NewCanvasAction.instance"/>
+            <file name="NewCanvasAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-paint-NewCanvasAction.instance"/>
+                <attr name="position" intvalue="0"/>
             </file>
-            <file name="org-netbeans-paint-SaveCanvasAction.shadow">
-                <attr name="position" intvalue="120"/>
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-SaveCanvasAction.instance"/>
+            <file name="SaveAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-openide-actions-SaveAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+        <folder name="Memory">
+            <file name="Memory.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-GarbageCollectAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>
     </folder>

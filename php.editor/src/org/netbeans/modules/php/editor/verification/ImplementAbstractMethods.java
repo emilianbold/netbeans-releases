@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,11 +56,15 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.util.NbBundle;
 
@@ -66,18 +72,22 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class ImplementAbstractMethods extends AbstractRule {
+    @Override
     public String getId() {
         return "Implement.Abstract.Methods";//NOI18N
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDesc");//NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDispName");//NOI18N
     }
 
+    @Override
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         final BaseDocument doc = context.doc;
         final int caretOffset = context.caretOffset;
@@ -105,41 +115,20 @@ public class ImplementAbstractMethods extends AbstractRule {
         List<FixInfo> retval = new ArrayList<FixInfo>();
         for (TypeScope typeScope : allTypes) {
             if (!isInside(typeScope.getOffset(), lineBegin, lineEnd)) continue;
-            LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
-            ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope) typeScope).getSuperClasses()) : null;
-            Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
-            if ((cls != null || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
-                Set<String> methNames = new HashSet<String>();
-                Collection<? extends MethodScope> allInheritedMethods = typeScope.getMethods();
-                Collection<? extends MethodScope> allMethods = typeScope.getDeclaredMethods();
-                Set<String> methodNames = new HashSet<String>();
-                for (MethodScope methodScope : allMethods) {
-                    methodNames.add(methodScope.getName());
-                }
-                for (MethodScope methodScope : allInheritedMethods) {
-                    Scope inScope = methodScope.getInScope();
-                    if (inScope instanceof InterfaceScope || methodScope.getPhpModifiers().isAbstract()) {
-                        if (!methodNames.contains(methodScope.getName())) {
-                            abstrMethods.add(methodScope);
-                        }
-                    } else {
-                        methNames.add(methodScope.getName());
-                    }
-                }
-                for (Iterator<? extends MethodScope> it = abstrMethods.iterator(); it.hasNext();) {
-                    MethodScope methodScope = it.next();
-                    if (methNames.contains(methodScope.getName())) {
-                        it.remove();
-                    }
-                }
-            }
-            if (!abstrMethods.isEmpty()) {
-                LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
-                for (MethodScope methodScope : abstrMethods) {
-                    String skeleton = methodScope.getClassSkeleton();
+            Index index = context.getIndex();
+            ElementFilter declaredMethods = ElementFilter.forExcludedNames(toNames(index.getDeclaredMethods(typeScope)), PhpElementKind.METHOD);
+            Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(typeScope, typeScope));
+            LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
+
+            for (MethodElement methodElement : accessibleMethods) {
+                final TypeElement type = methodElement.getType();
+                if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
+                    String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody);
                     skeleton = skeleton.replace("abstract ", ""); //NOI18N
                     methodSkeletons.add(skeleton);
                 }
+            }
+            if (!methodSkeletons.isEmpty()) {
                 int offset = getOffset(typeScope, context);
                 if (offset != -1) {
                     retval.add(new FixInfo(typeScope, methodSkeletons, offset));
@@ -147,6 +136,14 @@ public class ImplementAbstractMethods extends AbstractRule {
             }
         }
         return retval;
+    }
+
+    private static Set<String> toNames(Set<? extends PhpElement> elements) {
+        Set<String> names = new HashSet<String>();
+        for (PhpElement elem : elements) {
+            names.add(elem.getName());
+        }
+        return names;
     }
 
     private static int getOffset(TypeScope typeScope, PHPRuleContext context) throws BadLocationException {
@@ -177,18 +174,22 @@ public class ImplementAbstractMethods extends AbstractRule {
             this.fixInfo = fixInfo;
         }
 
+        @Override
         public String getDescription() {
             return ImplementAbstractMethods.this.getDescription();
         }
 
+        @Override
         public void implement() throws Exception {
             getEditList().apply();
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }

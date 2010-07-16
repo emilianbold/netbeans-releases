@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,19 +48,9 @@
 
 package org.netbeans.modules.mercurial.ui.diff;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,39 +61,6 @@ public class ExportAsFilePanel extends AbstractExportDiffPanel {
     /** Creates new form ExportAsFilePanel */
     public ExportAsFilePanel() {
         initComponents();
-    }
-
-    private void onBrowseClick() {
-        File oldFile = null;
-        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
-        fileChooser.setDialogTitle(NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));                                            // NO I18N
-        fileChooser.setMultiSelectionEnabled(false);
-        FileFilter[] old = fileChooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            FileFilter fileFilter = old[i];
-            fileChooser.removeChoosableFileFilter(fileFilter);
-
-        }
-        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
-        fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
-        fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));
-        DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));              // NO I18N
-        dd.setOptions(new Object[0]);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        fileChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String state = e.getActionCommand();
-                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File f = fileChooser.getSelectedFile();
-                    if (f != null) {
-                        outputFileTextField.setText(f.getAbsolutePath());
-                    }
-                }
-                dialog.dispose();
-            }
-        });
-        dialog.setVisible(true);
     }
 
     /** This method is called from within the constructor to

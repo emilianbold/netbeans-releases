@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,18 +61,14 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.text.Keymap;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderInstance;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.actions.Presenter;
 
@@ -96,20 +95,15 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     /* FolderInstance that will track all the changes in backingFolder */
     private Folder processor;
 
-    //needed to turn off the painting of toolbar button borders on ocean/jdk1.5
+    //needed to turn off the painting of toolbar button borders on ocean
     private static final boolean isMetalLaF =
             MetalLookAndFeel.class.isAssignableFrom(UIManager.getLookAndFeel().getClass());
-    private static final boolean isJdk15;
-    private static final boolean isJdk16;
     
     static final long serialVersionUID = 5011742660516204764L;
-
     static {
-        String javaVersion = System.getProperty( "java.version" );
-        isJdk15 = javaVersion.startsWith( "1.5" );
-        isJdk16 = javaVersion.startsWith( "1.6" );
+        AcceleratorBinding.init();
     }
-    
+
     /** Create a new Toolbar with empty name. */
     public Toolbar () {
         this (""); // NOI18N
@@ -188,14 +182,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
             ((JComponent) c).setOpaque(false);
-            if( isMetalLaF && (isJdk15 || isJdk16)) {
-                //JDK 1.5 metal/ocean resets borders, so fix it this way
+            if (isMetalLaF) {
+                //metal/ocean resets borders, so fix it this way
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
             }
             //This is active for GTK L&F. It should be fixed in JDK
             //but it is not fixed in JDK 6.0.
-            if( isJdk16 && !isMetalLaF ) {
+            if (!isMetalLaF) {
                 ((AbstractButton) c).setMargin( emptyInsets );
             }
             if( null != label && c != label ) {
@@ -419,7 +413,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
                     if (obj instanceof Presenter.Toolbar) {
                         if (obj instanceof Action && file != null) {
-                            setAccelerator((Action)obj, file.getPrimaryFile());
+                            AcceleratorBinding.setAccelerator((Action)obj, file.getPrimaryFile());
                         }
                         obj = ((Presenter.Toolbar) obj).getToolbarPresenter();
                     }
@@ -455,7 +449,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                         b.putClientProperty("file", file);
                         org.openide.awt.Toolbar.this.add(b);
                         if (file != null) {
-                            setAccelerator(a, file.getPrimaryFile());
+                            AcceleratorBinding.setAccelerator(a, file.getPrimaryFile());
                         }
                         continue;
                     }
@@ -488,25 +482,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
     } // end of inner class Folder
-
-    static void setAccelerator(Action a, FileObject file) {
-        if (file == null) {
-            return;
-        }
-        a.putValue("definingFile", file); // cf. o.n.core.NbKeymap.getKeyStrokesForAction
-        KeyStroke[] keys;
-        try {
-            assert a.getValue("definingFile") == file : a.getClass() + " violated Action.putValue contract";
-            Keymap keymap = Lookup.getDefault().lookup(Keymap.class);
-            keys = keymap != null ? keymap.getKeyStrokesForAction(a) : new KeyStroke[0];
-            assert keys != null : keymap;
-        } finally {
-            a.putValue("definingFile", null);
-        }
-        if (keys.length > 0) {
-            a.putValue(Action.ACCELERATOR_KEY, keys[0]);
-        }
-    }
 
     @Override
     public void setUI(javax.swing.plaf.ToolBarUI ui) {

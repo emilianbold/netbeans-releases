@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,19 +65,15 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
@@ -90,7 +89,6 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -108,9 +106,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
-
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
@@ -234,6 +230,7 @@ final public class WebProjectProperties {
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
+    DefaultListModel JAVAC_PROCESSORPATH_MODEL;
 
     // CustomizerCompile
     ButtonModel JAVAC_DEPRECATION_MODEL; 
@@ -241,6 +238,9 @@ final public class WebProjectProperties {
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     ButtonModel COMPILE_JSP_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     
     // CustomizerWar
     Document WAR_NAME_MODEL; 
@@ -298,6 +298,12 @@ final public class WebProjectProperties {
     
     Task loadingFrameworksTask = null;
 
+    //Hotfix of the issue #70058 (copied from J2seProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
+    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
+    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+
     WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
@@ -354,14 +360,20 @@ final public class WebProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
 
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES) );
+        String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
+        processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
+        JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (J2eeModule.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
-            minimalSourceLevel = new SpecificationVersion(J2eeModule.JAVA_EE_5);
+        Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+        if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.6");
+        } else if (Profile.JAVA_EE_5.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.5");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
@@ -376,6 +388,13 @@ final public class WebProjectProperties {
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
         JAVAC_DEBUG_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVAC_DEBUG );
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null)
+            annotationProcessors = ""; //NOI18N
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         COMPILE_JSP_MODEL = projectGroup.createToggleButtonModel( evaluator, COMPILE_JSPS );
         
@@ -462,10 +481,15 @@ final public class WebProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+
+            if (COMPILE_JSP_MODEL.isSelected()) {
+                WebProject.makeSureProjectHasJspCompilationLibraries(refHelper);
+            }
             
             Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             FileObject webInf = project.getAPIWebModule().getWebInf();
-            if (shouldCreateWebXml() && webInf != null) {
+            FileObject ddFo = project.getAPIWebModule().getDeploymentDescriptor();
+            if (ddFo == null && shouldCreateWebXml() && webInf != null) {
                 DDHelper.createWebXml(j2eeProfile, webInf);
             }
 
@@ -638,6 +662,7 @@ final public class WebProjectProperties {
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] war_includes = cs.encodeToStrings( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
         String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ), null );
+        String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -674,6 +699,7 @@ final public class WebProjectProperties {
         
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
@@ -688,26 +714,14 @@ final public class WebProjectProperties {
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
 
-        // Configure new server instance
-        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
-                WebProjectProperties.J2EE_PLATFORM_CLASSPATH);
-
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties, instanceId,
+                    cs, javaClasspathList,
+                    new CallbackImpl(project), project,
+                    project.getAPIWebModule().getJ2eeProfile(), J2eeModule.Type.WAR);
         }
 
-        // Configure server libraries (if any)
-        boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, javaClasspathList);
-
-        // Configure classpath from server (no server libraries)
-        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, true);
-        }
-        
         // Set new context path
         try {
             String clsPth = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
@@ -728,6 +742,20 @@ final public class WebProjectProperties {
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements())
+                sb.append(',');
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
+
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
@@ -781,12 +809,14 @@ final public class WebProjectProperties {
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES ) );
 
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ) );
@@ -843,15 +873,16 @@ final public class WebProjectProperties {
         save();
     }
     
-    public static void setServerInstance(final Project project, final UpdateHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final WebProject project, final UpdateHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
-                    setNewServerInstanceValue(serverInstanceID, project, projectProps,
-                            privateProps, !serverLibUsed);
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID, 
+                            null, null, new CallbackImpl(project), project,
+                            project.getAPIWebModule().getJ2eeProfile(), J2eeModule.Type.WAR);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -867,188 +898,6 @@ final public class WebProjectProperties {
         additionalProperties.put(propertyName, propertyValue);
     }
     
-    private static void setNewServerInstanceValue(String newServInstID, Project project,
-            EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-
-        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
-
-        // update j2ee.platform.classpath
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((WebProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
-        }
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
-        if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.type (throws NPE)
-            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-            
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-            removeServerClasspathProperties(privateProps);
-            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT);
-
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-            return;
-        }
-        ((WebProject) project).registerJ2eePlatformListener(j2eePlatform);
-        if (setFromServer) {
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-
-            // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
-                privateProps.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                        Utils.toClasspathString(ejbClasspath));
-            } else {
-                privateProps.remove(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH);
-            }
-
-            // update j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-            }
-
-            WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
-            if (wsStack != null) {
-                WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT);
-                if (wsTool!= null && wsTool.getLibraries().length > 0) {
-                    String librariesList = Utils.toClasspathString(wsTool.getLibraries());
-                    privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
-                    privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
-                } else {
-                    privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-                    privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-                }
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-            }
-        }
-        // set j2ee.platform.jsr109 support
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) { 
-            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT, 
-                    "true"); //NOI18N
-        } else {
-            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT);
-        }
-        
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.WAR, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (antDeployPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
-        }
-        // ui log for the server change
-        if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class), "UI_WEB_PROJECT_SERVER_CHANGED", // NOI18N
-                    new Object[] { Deployment.getDefault().getServerID(oldServInstID),
-                        oldServInstID,
-                        Deployment.getDefault().getServerID(newServInstID),
-                        newServInstID });
-        }
-        if (newServInstID != null) {
-            logServInstID = newServInstID;
-        }
-        else if (oldServInstID != null) {
-            logServInstID = oldServInstID;
-        }
-        else {
-            logServInstID = null;
-        }
-    }
-
-    private static void removeServerClasspathProperties(EditableProperties props) {
-        props.remove(J2EE_PLATFORM_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-    }
-
-    private static boolean setServerClasspathProperties(EditableProperties props,
-            EditableProperties privateProps, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-
-        if (serverItems.isEmpty()) {
-            removeServerClasspathProperties(props);
-            return false;
-        }
-        removeServerClasspathProperties(privateProps);
-
-        props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsgenerate")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsinterop")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsjwsdp")); // NOI18N
-        return true;
-    }
-    
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
-    }
-
     private static void setNewContextPathValue(String contextPath, Project project, EditableProperties projectProps, EditableProperties privateProps) {
         if (contextPath == null)
             return;
@@ -1056,7 +905,21 @@ final public class WebProjectProperties {
         cp = contextPath;    
         serverId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
     }
-    
+
+    //Hotfix of the issue #70058 (copied from J2SEProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static String encodeBoolean (boolean value, Integer kind) {
+        if ( kind == BOOLEAN_KIND_ED ) {
+            return value ? "on" : "off"; // NOI18N
+        }
+        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+            return value ? "yes" : "no";
+        }
+        else {
+            return value ? "true" : "false"; // NOI18N
+        }
+    }
+
     public ClassPathTableModel getJavaClassPathModel() {
         return JAVAC_CLASSPATH_MODEL;
     }
@@ -1097,5 +960,25 @@ final public class WebProjectProperties {
         includes = v.getIncludePattern();
         excludes = v.getExcludePattern();
     }
-    
+
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private WebProject project;
+
+        public CallbackImpl(WebProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+        
+    }
+
 }

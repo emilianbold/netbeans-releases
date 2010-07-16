@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,12 +46,17 @@ package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -56,24 +64,32 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-import org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -88,8 +104,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        assert WLBaseDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return new J2eePlatformImplImpl((WLBaseDeploymentManager)dm);
+        assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
+        return new J2eePlatformImplImpl((WLDeploymentManager)dm);
     }
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
@@ -103,8 +119,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         private final Set<Profile> PROFILES = new HashSet<Profile>();
-        
-//        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
+
         private String platformRoot;
         
         private LibraryImplementation[] libraries = null;
@@ -119,9 +134,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * The server's deployment manager, to be exact the plugin's wrapper for
          * it
          */
-        WLBaseDeploymentManager dm;
+        private final WLDeploymentManager dm;
+
+        private final ChangeListener domainChangeListener;
         
-        public J2eePlatformImplImpl(WLBaseDeploymentManager dm) {
+        public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
             
             // Allow J2EE 1.4 Projects
@@ -133,6 +150,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (version != null && version.contains("10")) { // NOI18N
                 PROFILES.add(Profile.JAVA_EE_5);
             }
+
+            domainChangeListener = new DomainChangeListener(this);
+            dm.addDomainChangeListener(WeakListeners.change(domainChangeListener, dm));
         }
         
         public boolean isToolSupported(String toolName) {
@@ -178,7 +198,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.io.File[] getPlatformRoots() {
-            return new File[]{new File(getPlatformRoot())};
+            File server = new File(getPlatformRoot());
+            File domain = new File(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR));
+
+            assert server.isAbsolute();
+            assert domain.isAbsolute();
+            
+            return new File[] {server, domain};
         }
         
         public LibraryImplementation[] getLibraries() {
@@ -186,6 +213,60 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 initLibraries();
             }
             return libraries;
+        }
+
+        @Override
+        public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+            // FIXME cache & listen for file changes
+            String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+            assert domainDir != null;
+            String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            assert serverDir != null;
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+
+            Map<ServerLibrary, List<File>> serverLibraries =  null;
+            try {
+                serverLibraries = support.getClasspathEntries(libraries);
+            } catch (ConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            if (serverLibraries == null || serverLibraries.isEmpty()) {
+                return getLibraries();
+            }
+
+            List<LibraryImplementation> serverImpl = new ArrayList<LibraryImplementation>(Arrays.asList(getLibraries()));
+            for (Map.Entry<ServerLibrary, List<File>> entry : serverLibraries.entrySet()) {
+                LibraryImplementation library = new J2eeLibraryTypeProvider().
+                        createLibrary();
+                ServerLibrary lib = entry.getKey();
+                // really localized ?
+                // FIXME more accurate name needed ?
+                if (lib.getSpecificationTitle() == null && lib.getName() == null) {
+                    library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
+                        "UNKNOWN_SERVER_LIBRARY_NAME"));
+                } else {
+                    library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
+                        "SERVER_LIBRARY_NAME", new Object[] {
+                            lib.getSpecificationTitle() == null ? lib.getName() : lib.getSpecificationTitle(),
+                            lib.getSpecificationVersion() == null ? "" : lib.getSpecificationVersion()}));
+                }
+
+                List<URL> cp = new ArrayList<URL>();
+                for (File file : entry.getValue()) {
+                    try {
+                        cp.add(fileToUrl(file));
+                    } catch (MalformedURLException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+
+                library.setContent(J2eeLibraryTypeProvider.
+                        VOLUME_TYPE_CLASSPATH, cp);
+                serverImpl.add(library);
+            }
+
+            return serverImpl.toArray(new LibraryImplementation[serverImpl.size()]);
         }
         
         private void initLibraries() {
@@ -200,7 +281,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             
             // add the required jars to the library
             try {
-                List list = new ArrayList();
+                List<URL> list = new ArrayList<URL>();
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
@@ -208,17 +289,19 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     list.addAll(getJarClassPath(apiFile));
                 }
 
+                addPersistenceLibrary(list);
+
                 // file needed for jsp parsing WL9 and WL10
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
-               File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-               if (j2eeDoc != null) {
-                   list = new ArrayList();
-                   list.add(fileToUrl(j2eeDoc));
-                   library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-               }
+                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
+                if (j2eeDoc != null) {
+                    list = new ArrayList();
+                    list.add(fileToUrl(j2eeDoc));
+                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+                }
             } catch (MalformedURLException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
             }
@@ -246,7 +329,41 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public String getDisplayName() {
             return NbBundle.getMessage(WLJ2eePlatformFactory.class, "PLATFORM_NAME"); // NOI18N
         }
-        
+
+        //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
+        private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
+            File platformRootFile = new File(getPlatformRoot());
+            File middleware = null;
+            String mwHome = dm.getProductProperties().getMiddlewareHome();
+            if (mwHome != null) {
+                middleware = new File(mwHome);
+            }
+            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+                middleware = platformRootFile.getParentFile();
+            }
+
+            // make guess :(
+            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+                File modules = new File(middleware, "modules"); // NOI18N
+                if (modules.exists() && modules.isDirectory()) {
+                    File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return name.startsWith("javax.persistence"); // NOI18N
+                        }
+                    });
+                    if (persistenceCandidates.length > 0) {
+                        for (File candidate : persistenceCandidates) {
+                            list.add(fileToUrl(candidate));
+                        }
+                        if (persistenceCandidates.length > 1) {
+                            LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                        }
+                    }
+                }
+            }
+        }
+
         /**
          * Converts a file to the URI in system resources.
          * Copied from the plugin for Sun Appserver 8
@@ -304,9 +421,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         private String getPlatformRoot() {
-            if (platformRoot == null)
+            if (platformRoot == null) {
                 platformRoot = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-            
+            }
             return platformRoot;
         }
 
@@ -315,7 +432,52 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
-
-
     }
+
+    private static class DomainChangeListener implements ChangeListener {
+
+        private final J2eePlatformImplImpl platform;
+
+        private Set<WLServerLibrary> oldLibraries = Collections.emptySet();
+
+        public DomainChangeListener(J2eePlatformImplImpl platform) {
+            this.platform = platform;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Set<WLServerLibrary> tmpNewLibraries =
+                    new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
+            Set<WLServerLibrary> tmpOldLibraries = null;
+            synchronized (this) {
+                tmpOldLibraries = new HashSet<WLServerLibrary>(oldLibraries);
+                oldLibraries = tmpNewLibraries;
+            }
+
+            if (fireChange(tmpOldLibraries, tmpNewLibraries)) {
+                LOGGER.log(Level.FINE, "Firing server libraries change");
+                platform.firePropertyChange(J2eePlatformImpl.PROP_SERVER_LIBRARIES, null, null);
+            }
+        }
+
+        private boolean fireChange(Set<WLServerLibrary> paramOldLibraries, Set<WLServerLibrary> paramNewLibraries) {
+            if (paramOldLibraries.size() != paramNewLibraries.size()) {
+                return true;
+            }
+
+            Set<WLServerLibrary> newLibraries = new HashSet<WLServerLibrary>(paramNewLibraries);
+            for (Iterator<WLServerLibrary> it = newLibraries.iterator(); it.hasNext();) {
+                WLServerLibrary newLib = it.next();
+                for (WLServerLibrary oldLib : paramOldLibraries) {
+                    if (WLServerLibrarySupport.sameLibraries(newLib, oldLib)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+
+            return !newLibraries.isEmpty();
+        }
+    }
+
 }

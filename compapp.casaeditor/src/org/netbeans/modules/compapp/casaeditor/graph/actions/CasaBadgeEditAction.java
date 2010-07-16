@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,6 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
-
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -69,13 +71,15 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ConfigurationEditorProviderFactory;
 import org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui.ExtensibilityElementConfigurationUtils;
-import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorComponent;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
@@ -99,6 +103,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         return badgeBounds != null && badgeBounds.contains(event.getPoint());
     }
 
+    @Override
     public State mousePressed(Widget widget, WidgetMouseEvent event) {
         mEditNode = null;
 
@@ -130,7 +135,6 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         return State.REJECTED;
     }
 
-
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
     public WidgetAction.State dragExit(Widget widget, WidgetAction.WidgetMouseEvent event) {
@@ -142,6 +146,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
+    @Override
     public WidgetAction.State mouseExited(Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (mEditNode == null) {
             return State.REJECTED;
@@ -151,6 +156,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
+    @Override
     public WidgetAction.State mouseDragged(Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (mEditNode == null) {
             return State.REJECTED;
@@ -162,6 +168,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         return mEditNode != null;
     }
 
+    @Override
     public State mouseReleased(Widget widget, WidgetMouseEvent event) {
         if (mEditNode == null) {
             return State.REJECTED;
@@ -172,9 +179,9 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         mEditNode = null;
 
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        if (inBadge(event, CasaBindingBadges.Badge.IS_EDITABLE, nodeWidget)) {
+        nodeWidget.getBadges().setBadgePressed(false);
 
-            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
+        if (inBadge(event, CasaBindingBadges.Badge.IS_EDITABLE, nodeWidget)) {
 
             // bring up binding panels if editor configuration is provided
             if (editNodeRef instanceof CasaNode) {
@@ -186,16 +193,28 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
                     String direction = getDirection(casaPort);
                     if (direction != null) {
-                        
-		        String bType = model.getBindingType(casaPort);
-			LocalizedTemplateGroup bindingType = CasaWrapperModel.getBindingType(bType);
 
-			String namespace = bindingType.getNamespace();
+                        String bType = model.getBindingType(casaPort);
+                        LocalizedTemplateGroup bindingType = CasaWrapperModel.getBindingType(bType);
+
+                        String namespace = bindingType.getNamespace();
                         ExtensibilityElementConfigurationEditorProvider provider =
-                                ConfigurationEditorProviderFactory.getDefault()
-                                .getConfigurationProvider(namespace);
+                                ConfigurationEditorProviderFactory.getDefault().getConfigurationProvider(namespace);
                         if (provider != null) {
-                            ExtensibilityElementConfigurationUtils.configureBinding(provider, port, direction);
+
+                            Binding binding = port.getBinding().get();
+                            PortType porttype = binding.getType().get();
+                            if (porttype == null) {
+                                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(
+                                        CasaBadgeEditAction.class,
+                                        "MSG_NullPortTypeFound_NeedProjectBuild"), // NOI18N
+                                        NotifyDescriptor.WARNING_MESSAGE);
+                                DialogDisplayer.getDefault().notify(nd);
+                            } else {
+                                ExtensibilityElementConfigurationUtils.configureBinding(provider, port, direction);
+                            }
+
                             return State.CONSUMED;
                         }
                     }
@@ -229,8 +248,6 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
 
         } else if (inBadge(event, CasaBindingBadges.Badge.WS_POLICY, nodeWidget)) {
 
-            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.WS_POLICY, false);
-
             // select the port
             CasaPort widgetData = (CasaPort) mScene.findObject(widget);
             Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
@@ -258,8 +275,8 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         CasaWrapperModel model = (CasaWrapperModel) casaPort.getModel();
         CasaConsumes consumes = casaPort.getConsumes();
         CasaProvides provides = casaPort.getProvides();
-        boolean consumesActivelyConnected = model.getConnections(consumes, false).size() > 0;
-        boolean providesActivelyConnected = model.getConnections(provides, false).size() > 0;
+        boolean consumesActivelyConnected = model.hasConnection(consumes, false);
+        boolean providesActivelyConnected = model.hasConnection(provides, false);
         if (consumesActivelyConnected && providesActivelyConnected) {
             direction = ExtensibilityElementConfigurationEditorComponent.BI_DIRECTION;
         } else if (consumesActivelyConnected && !providesActivelyConnected) {

@@ -3,7 +3,10 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +18,9 @@ package org.netbeans.modules.bugtracking.ui.selectors;
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,10 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -73,8 +76,7 @@ public class RepositorySelector {
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
-        }
-        RepositoriesSupport.getInstance().fireRepositoriesChanged();
+        }        
         return repo;
     }
 
@@ -93,7 +95,7 @@ public class RepositorySelector {
     }
 
     private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
-        if(!JiraUpdater.isJiraInstalled()) {
+        if(!BugtrackingUtil.isJiraInstalled()) {
             BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
             ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();

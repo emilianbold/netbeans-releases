@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
@@ -68,6 +72,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         System.clearProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome");
         System.clearProperty("org.netbeans.modules.j2ee.jboss4.installRoot");
         System.clearProperty("testA");
+        System.clearProperty("testB");
     }
 
     public void testGlassfishWithoutDomain() {
@@ -97,6 +102,17 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         assertEquals("both tests", 2, t.countTestCases());
     }
 
+    public void testGlassfishV3Home() throws IOException {
+        setGlassfishHome();
+        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
+        System.setProperty("registered", "GLASSFISH_V3");
+        conf = J2eeTestCase.addServerTests(GLASSFISH_V3, conf, "testA", "testB").gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("both tests", 2, t.countTestCases());
+        assertEquals("test B was running", "BBB", System.getProperty("testB"));
+    }
+
     public void testCreateAllModulesServerSuiteWithoutFiles() throws IOException {
         setGlassfishHome();
         Test t = J2eeTestCase.createAllModulesServerSuite(ANY, TD.class);
@@ -117,6 +133,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
     private void setGlassfishHome() throws IOException{
         System.setProperty("glassfish.home", getWorkDirPath());
         new File(getWorkDir(), "domains/domain1").mkdirs();
+        new File(getWorkDir(), "glassfish/domains/domain1").mkdirs();
     }
 
 
@@ -131,6 +148,12 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         }
 
         public void testB() {
+            String prop = System.getProperty("registered");
+            if (prop != null){
+                Server registered = Server.valueOf(prop);
+                assertTrue(isRegistered(registered));
+            }
+            System.setProperty("testB", "BBB");
         }
     }
 }

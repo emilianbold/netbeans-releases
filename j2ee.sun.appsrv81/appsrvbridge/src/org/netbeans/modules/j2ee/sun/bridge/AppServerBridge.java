@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -121,7 +124,17 @@ public class AppServerBridge {
                 ObjectName aaaa = new ObjectName("com.sun.appserv:type=appclient-module,name="+mid+",category=config");
                 dirLocation =new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"location"));
             } else{
-                System.out.println("Still Some Work to do in ModuleRestartActikon is AS 8.1 plugin code");
+                if (null == earPart) {
+                    ObjectName aaaa = new ObjectName("com.sun.appserv:type=extension-module,name="+mid+",category=config");
+                    dirLocation =new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"location"));
+                } else {
+                     if (!modulePart.startsWith("/"))
+                        modulePart = "/"+modulePart;
+                    ObjectName aaaa = new ObjectName("com.sun.appserv:j2eeType=WebModule,name=//server"+
+                            modulePart+",J2EEApplication="+earPart+",J2EEServer=server");
+                    dirLocation = new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"docBase"));
+                    modulePart = null;
+                }
             }
             
         } catch(Exception e) {
@@ -161,16 +174,22 @@ public class AppServerBridge {
      */
     public static String getModuleUrl(TargetModuleID module){
         ModuleType mt = ((SunTargetModuleID)module).getModuleType();
-        String suffix = ".jar";
+        String suffix = null;
         String moduleID = module.getModuleID();
         int i = moduleID.indexOf('#');
         if (i > -1) {
             moduleID = moduleID.substring(i+1);
         }
-        if (mt.equals(ModuleType.EAR)){
+        if (ModuleType.EAR.equals(mt)){
             suffix = ".ear";
         }
-        if (mt.equals(ModuleType.WAR)){
+        if (ModuleType.RAR.equals(mt)){
+            suffix = ".rar";
+        }
+        if (ModuleType.EJB.equals(mt) || ModuleType.CAR.equals(mt)){
+            suffix = ".jar";
+        }
+        if (null == suffix){
             suffix = ".war";
             java.io.File dirLocation = null;
             String modulePart = null;
@@ -201,6 +220,17 @@ public class AppServerBridge {
                             moduleID = t.substring(0, t.length() - 4);
                             modulePart = null;
                         }
+                    } else {
+                        if (null == earPart) {
+                            ObjectName aaaa = new ObjectName("com.sun.appserv:type=extension-module,name=" + mid + ",category=config");
+                            dirLocation = new java.io.File("" + ddd.getMBeanServerConnection().getAttribute(aaaa, "location"));
+                        } else {
+                            ObjectName aaaa = new ObjectName("com.sun.appserv:j2eeType=WebModule,name=//server" + modulePart + ",J2EEApplication=" + earPart + ",J2EEServer=server");
+                            dirLocation = new java.io.File("" + ddd.getMBeanServerConnection().getAttribute(aaaa, "docBase"));
+                            String t = dirLocation.getName();
+                            moduleID = t.substring(0, t.length() - 4);
+                            modulePart = null;
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -208,9 +238,6 @@ public class AppServerBridge {
                     ise.initCause(e);
                     throw ise;
                 }
-        }
-        if (mt.equals(ModuleType.RAR)){
-            suffix = ".rar";
         }
 
         if (moduleID.endsWith(suffix) || moduleID.endsWith(suffix.toUpperCase(Locale.ENGLISH))) {

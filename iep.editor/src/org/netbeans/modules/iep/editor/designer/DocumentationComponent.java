@@ -6,9 +6,14 @@
 
 package org.netbeans.modules.iep.editor.designer;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
+import javax.swing.JScrollBar;
 
 import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -28,6 +33,8 @@ public class DocumentationComponent extends javax.swing.JPanel {
     
     private EntityNode mNode;
     
+    private boolean adjustScrollBarAtStart = false;
+    
     /** Creates new form DocumentationComponent */
     public DocumentationComponent() {
         initComponents();
@@ -43,6 +50,11 @@ public class DocumentationComponent extends javax.swing.JPanel {
         if(doc != null && doc.getTextContent() != null) {
             setDocumentation(doc.getTextContent());
         }
+        
+//        documentationTextArea.setWrapStyleWord(true);
+//        documentationTextArea.setLineWrap(true);
+        documentationTextArea.setCaretPosition(0);
+        
     }
 
     /** This method is called from within the constructor to
@@ -168,6 +180,8 @@ private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
     }
 
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JTextArea documentationTextArea;
@@ -175,4 +189,6 @@ private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
+    
+    
 }

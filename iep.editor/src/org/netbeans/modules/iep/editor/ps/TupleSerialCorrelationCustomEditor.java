@@ -20,15 +20,15 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.AttributeMetadata;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
-import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.table.MoveableRowTable;
+import org.netbeans.modules.tbls.editor.table.ReadOnlyNoExpressionDefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizer;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
@@ -36,10 +36,8 @@ import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -48,6 +46,8 @@ import java.awt.Insets;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -67,7 +66,8 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
+import javax.swing.table.TableColumnModel;
+
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -105,7 +105,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         private InputSchemaSelectionPanel mSelectionPanel;
         private DefaultMoveableRowTableModel mTableModel;
         private MoveableRowTable mTable;
-        private Vector mColTitle;
+        private Vector<String> mColTitle;
 //        private JLabel mStatusLbl;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
@@ -167,21 +167,24 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 rightPane.setPreferredSize(new Dimension(500, 300));
                 attributePane.setRightComponent(rightPane);
                 
-                mColTitle = new Vector();
+                mColTitle = new Vector<String>();
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.ATTRIBUTE_NAME"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.DATA_TYPE"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.SIZE"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.SCALE"));
-                mTableModel = new DefaultMoveableRowTableModel();
-                updateTable();
+                mTableModel = new ReadOnlyNoExpressionDefaultMoveableRowTableModel();
+                
                 mTable = new MoveableRowTable(mTableModel) {
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
+                    
                     public void dragGestureRecognized(DragGestureEvent dge) {
                         return;
                     }
                 };
+                
+                updateTable();
+                
+                
+                
                 rightPane.getViewport().add(mTable);
                 
 //                // status bar
@@ -203,6 +206,8 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             }
         }
         
+      
+        
         private void updateTable() {
             try {
                 Vector<Vector<String>> data = new Vector<Vector<String>>();
@@ -221,6 +226,16 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                     }
                 }
                 mTableModel.setDataVector(data, mColTitle);
+                
+                TableColumnModel tcm = mTable.getColumnModel();
+                SelectPanelTableCellRenderer spTCRenderer = new SelectPanelTableCellRenderer();
+//              setting up renderer
+                int mNameCol = 0;
+                tcm.getColumn(mNameCol).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 1).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 2).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 3).setCellRenderer(spTCRenderer);
+                
             } catch (Exception e) {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(TupleSerialCorrelationCustomEditor.class, "CustomEditor.FAILED_UPDATE_TABLE"),
@@ -239,7 +254,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -263,7 +278,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
@@ -303,7 +318,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // increment
-            Property incrementProp = mComponent.getProperty(INCREMENT_KEY);
+            Property incrementProp = mComponent.getProperty(PROP_INCREMENT);
             String incrementStr = NbBundle.getMessage(TupleSerialCorrelationCustomEditor.class, "CustomEditor.INCREMENT");
             mIncrementPanel = PropertyPanel.createIntNumberPanel(incrementStr, incrementProp, false);
             gbc.gridx = 3;
@@ -327,7 +342,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(mIncrementPanel.component[1], gbc);
 
             // size
-            Property sizeProp = mComponent.getProperty(SIZE_KEY);
+            Property sizeProp = mComponent.getProperty(PROP_SIZE);
             String sizeStr = NbBundle.getMessage(TupleSerialCorrelationCustomEditor.class, "CustomEditor.SIZE");
             mSizePanel = PropertyPanel.createIntNumberPanel(sizeStr, sizeProp, false);
             ((JTextField)mSizePanel.input[0]).addActionListener(new ActionListener() {
@@ -335,6 +350,18 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                     MyCustomizer.this.updateTable();
                 }
             });
+            
+            ((JTextField)mSizePanel.input[0]).addFocusListener(new FocusListener() {
+                public void focusLost(FocusEvent e) {
+                    MyCustomizer.this.updateTable();
+                }
+                
+                public void focusGained(FocusEvent e) {
+                    // TODO Auto-generated method stub
+                    
+                }
+            });
+            
             gbc.gridx = 3;
             gbc.gridy = 1;
             gbc.gridwidth = 1;
@@ -377,7 +404,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getDisplayName();
+                String name = mComponent.getString(PROP_NAME);
                 if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
@@ -388,7 +415,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 // output schema name
                 mOutputSchemaNamePanel.validateContent(evt);
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                SchemaComponent outputSchema = mComponent.getOutputSchema();
                 String schemaName = null;
                 if(outputSchema != null) {
                     schemaName = outputSchema.getName();
@@ -464,7 +491,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             try {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
                 
-                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                SchemaComponent outputSchema = mComponent.getOutputSchema();
                 String schemaName = null;
                 if(outputSchema != null) {
                     schemaName = outputSchema.getName();
@@ -524,10 +551,9 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
 //                    plan.getPropertyChangeSupport().firePropertyChange("Schema",
 //                            null, newSchema);
                 }
-                List selectedAttrNameList = mSelectionPanel.getSelectedAttributeNameList();
-                String val = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().format(selectedAttrNameList);
+                List<String> selectedAttrNameList = mSelectionPanel.getSelectedAttributeNameList();
                 mModel.startTransaction();
-                mComponent.getProperty(FROM_COLUMN_LIST_KEY).setValue(val);
+                mComponent.setStringList(PROP_FROM_COLUMN_LIST, selectedAttrNameList);
                 mModel.endTransaction();
                 
 
@@ -540,4 +566,6 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             }
         }
     }
+    
+    
 }

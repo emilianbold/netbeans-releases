@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -77,7 +81,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         if (!symfonyScript.initProject(phpModule, getPanel().getProjectParams())) {
             // can happen if symfony script was not chosen
             Logger.getLogger(SymfonyPhpModuleExtender.class.getName())
-                    .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
+                    .log(Level.INFO, "Framework Symfony not found in newly created project {0}", phpModule.getDisplayName());
             throw new ExtendingException(NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_NotExtended"));
         }
 
@@ -91,12 +95,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
-        FileObject databases = phpModule.getSourceDirectory().getFileObject("config/databases.yml"); // NOI18N
+        FileObject databases = SymfonyPhpFrameworkProvider.locate(phpModule, "config/databases.yml", true); // NOI18N
         if (databases != null) {
             // likely --orm=none
             files.add(databases);
         }
-        FileObject config = phpModule.getSourceDirectory().getFileObject("config/ProjectConfiguration.class.php"); // NOI18N
+        FileObject config = SymfonyPhpFrameworkProvider.locate(phpModule, "config/ProjectConfiguration.class.php", true); // NOI18N
         if (config != null) {
             // #176041
             files.add(config);
@@ -104,7 +108,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
         if (files.isEmpty()) {
             // open at least index.php
-            FileObject index = phpModule.getSourceDirectory().getFileObject("web/index.php"); // NOI18N
+            FileObject index = SymfonyPhpFrameworkProvider.locate(phpModule, "web/index.php", true); // NOI18N
             if (index != null) {
                 files.add(index);
             }

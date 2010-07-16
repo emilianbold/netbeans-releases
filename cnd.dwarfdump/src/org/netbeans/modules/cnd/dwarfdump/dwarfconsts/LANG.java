@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,23 +65,18 @@ public enum LANG {
     DW_LANG_C99(0x000c, "C 99"), // NOI18N
     DW_LANG_Ada95(0x000d, "Ada"), // NOI18N
     DW_LANG_Fortran95(0x000e, "Fortran 95"), // NOI18N
+    DW_LANG_PLI(0x000f, "PL/I"), // NOI18N
+    DW_LANG_ObjC(0x0010, "Objective-C"), // NOI18N
+    DW_LANG_ObjC_plus_plus(0x0011, "Objective-C++"), // NOI18N
+    DW_LANG_UPC(0x0012, "Unified Parallel C"), // NOI18N
+    DW_LANG_D(0x0013, "D"), // NOI18N
     DW_LANG_lo_user(0x8000, null), // NOI18N
     DW_LANG_SUN_Assembler(0x9001, "Assembler"), // NOI18N
     DW_LANG_hi_user(0xffff, null); // NOI18N
     
 /* What about dwarf 3.0 ?
-See http://dwarf.freestandards.org/Dwarf3Std.php
-Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.cvs/2005-12/msg00423.html
--  DW_LANG_Java = 0x000b,
--  DW_LANG_C99 = 0x000c,
--  DW_LANG_Ada95 = 0x000d,
--  DW_LANG_Fortran95 = 0x000e,
--  DW_LANG_PLI = 0x000f,
--  DW_LANG_ObjC = 0x0010,
--  DW_LANG_ObjC_plus_plus = 0x0011,
--  DW_LANG_UPC = 0x0012,
--  DW_LANG_D = 0x0013,
- */    
+    See http://dwarf.freestandards.org/Dwarf3Std.php
+*/    
     
     private final int value;
     private final String name;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,71 +51,70 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.search.api.SearchException;
 import org.netbeans.modules.xml.search.api.SearchOption;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.05
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.search.spi.SearchEngine.class)
 public final class Construct extends Engine {
 
-  @Override
-  public void search(SearchOption option) throws SearchException {
-    Diagram diagram = (Diagram) option.getProvider().getRoot();
-    diagram.clearHighlighting();
+    @Override
+    public void search(SearchOption option) throws SearchException {
+        Diagram diagram = (Diagram) option.getProvider().getRoot();
+        diagram.clearHighlighting();
 //out();
-    fireSearchStarted(option);
-    search(diagram, option.useSelection());
-    fireSearchFinished(option);
-  }
-  
-  private void search(Diagram diagram, boolean useSelection) {
-    List<Diagram.Element> elements = diagram.getElements(useSelection);
+        fireSearchStarted(option);
+        search(diagram, option.useSelection());
+        fireSearchFinished(option);
+    }
 
-    for (Diagram.Element element : elements) {
-      BpelEntity entity = element.getBpelEntity();
+    private void search(Diagram diagram, boolean useSelection) {
+        List<Diagram.Element> elements = diagram.getElements(useSelection);
 
-      if (acceptsAttribute(entity) || acceptsComponent(entity)) {
+        for (Diagram.Element element : elements) {
+            BpelEntity entity = element.getBpelEntity();
+
+            if (acceptsAttribute(entity) || acceptsComponent(entity)) {
 //out(indent + "      add.");
-        fireSearchFound(new Element(element));
-      }
+                fireSearchFound(new Element(element));
+            }
+        }
     }
-  }
-  
-  private boolean acceptsAttribute(BpelEntity entity) {
-    if ( !(entity instanceof DocumentComponent)) {
-      return false;
+
+    private boolean acceptsAttribute(BpelEntity entity) {
+        if (!(entity instanceof DocumentComponent)) {
+            return false;
+        }
+        NamedNodeMap attributes = ((DocumentComponent) entity).getPeer().getAttributes();
+
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node attribute = attributes.item(i);
+
+            if (accepts(attribute.getNodeName())) {
+                return true;
+            }
+            if (accepts(attribute.getNodeValue())) {
+                return true;
+            }
+        }
+        return false;
     }
-    NamedNodeMap attributes = ((DocumentComponent) entity).getPeer().getAttributes();
 
-    for (int i=0; i < attributes.getLength(); i++) {
-      Node attribute = attributes.item(i);
-     
-      if (accepts(attribute.getNodeName())) {
-        return true;
-      }
-      if (accepts(attribute.getNodeValue())) {
-        return true;
-      }
+    private boolean acceptsComponent(BpelEntity entity) {
+        if (!(entity instanceof DocumentComponent)) {
+            return false;
+        }
+        return accepts(((DocumentComponent) entity).getPeer().getTagName());
     }
-    return false;
-  }
 
-  private boolean acceptsComponent(BpelEntity entity) {
-    if ( !(entity instanceof DocumentComponent)) {
-      return false;
+    @Override
+    public String getDisplayName() {
+        return i18n(Engine.class, "LBL_Construct_Display_Name"); // NOI18N
     }
-    return accepts(((DocumentComponent) entity).getPeer().getTagName());
-  }
 
-  @Override
-  public String getDisplayName() {
-    return i18n(Engine.class, "LBL_Construct_Display_Name"); // NOI18N
-  }
-
-  @Override
-  public String getShortDescription() {
-    return i18n(Engine.class, "LBL_Construct_Short_Description"); // NOI18N
-  }
+    @Override
+    public String getShortDescription() {
+        return i18n(Engine.class, "LBL_Construct_Short_Description"); // NOI18N
+    }
 }

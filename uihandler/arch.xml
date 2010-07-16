@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -153,7 +156,7 @@ made subject to such option by the copyright holder.
                     the user can then interact directly with the server, thru
                     pages it serves.
                 </api>
-                <api name="org.netbeans.modules.uihandler.Submit" group="property"
+                <api name="org.netbeans.modules.uihandler.Submit" group="systemproperty"
                      category="private" type="export">
                     
                     For testing purposes one can 
@@ -1262,7 +1265,7 @@ made subject to such option by the copyright holder.
                 version 1.30 of this module.
             </api>
         </p>
-        <api type="export" group="property"  name="nb.show.statistics.ui" category="private">
+        <api type="export" group="systemproperty"  name="nb.show.statistics.ui" category="private">
             System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
             If this property is non null (for IDE) UI is shown. This property contains key of preference used
             to save status - true if usage statistics are collected and uploaded, false if not.
@@ -1271,7 +1274,7 @@ made subject to such option by the copyright holder.
         <api type="import" group="preferences"  name="org.netbeans.core.usageStatisticsEnabled" category="private">
             Key "usageStatisticsEnabled" is read and controls if metrics logging is enabled or disabled.
             Installer has also similar UI to set this and stores it into NetBeans install dir
-            <code>nb6.7/config/Preferences/org/netbeans/core.properties</code>
+            <code>nb/config/Preferences/org/netbeans/core.properties</code>
         </api>
     </answer>
     

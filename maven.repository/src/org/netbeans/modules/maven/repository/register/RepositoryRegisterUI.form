@@ -33,18 +33,18 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblValidate" alignment="0" pref="780" max="32767" attributes="0"/>
-                          <Component id="lblHeader" alignment="0" pref="780" max="32767" attributes="0"/>
+                          <Component id="lblValidate" alignment="0" pref="801" max="32767" attributes="0"/>
+                          <Component id="lblHeader" alignment="0" pref="801" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lblRepoName" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblRepoId" alignment="0" pref="298" max="32767" attributes="1"/>
+                                  <Component id="lblRepoId" alignment="0" pref="309" max="32767" attributes="1"/>
                                   <Component id="lblType" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="txtRepoId" pref="468" max="32767" attributes="1"/>
-                                  <Component id="txtRepoName" alignment="1" pref="468" max="32767" attributes="1"/>
+                                  <Component id="txtRepoId" pref="478" max="32767" attributes="1"/>
+                                  <Component id="txtRepoName" alignment="1" pref="478" max="32767" attributes="1"/>
                                   <Component id="comType" alignment="0" min="-2" pref="220" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -80,7 +80,7 @@
                           <Component id="txtIndexUrl" pref="630" max="32767" attributes="1"/>
                           <Component id="txtRepoUrl" alignment="1" pref="630" max="32767" attributes="1"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="txtRepoPath" pref="555" max="32767" attributes="1"/>
+                              <Component id="txtRepoPath" pref="566" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnBrowse" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -342,7 +342,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txtIndexUrl">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -355,7 +355,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="txtRepoUrl">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

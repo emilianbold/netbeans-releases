@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,11 +61,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author  David Konecny
  */
 public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx.Provider{
+
+    private static final String SET_AS_MAIN_PREF = "setAsMain"; // NOI18N
     
     private DocumentListener documentListener;
     private ChangeListener listener;
@@ -78,6 +84,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder,
             ChangeListener listener) {
         initComponents();
+        mainProject.setSelected(NbPreferences.forModule(BasicProjectInfoPanel.class).getBoolean(SET_AS_MAIN_PREF, true));
         this.projectLocation.setText(projectLocation);
         this.antScript.setText(antScript);
         this.projectName.setText(projectName);
@@ -122,8 +129,10 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         return getAsFile(projectFolder.getText());
     }
 
-    public Boolean getMainProject() {
-        return Boolean.valueOf(mainProject.isSelected());
+    public boolean getMainProject() {
+        boolean b = mainProject.isSelected();
+        NbPreferences.forModule(BasicProjectInfoPanel.class).putBoolean(SET_AS_MAIN_PREF, b);
+        return b;
     }
 
     public String[] getError() {
@@ -443,7 +452,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 10, 0);
         add(jSeparator1, gridBagConstraints);
 
-        mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_mainProject")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

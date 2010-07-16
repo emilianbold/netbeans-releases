@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -206,6 +209,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private String completionShortcut = null;
     
     private Lookup.Result<KeyBindingSettings> kbs;
+    private static CompletionImplProfile profile;
+    
     private final LookupListener shortcutsTracker = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             Utilities.runInEventDispatchThread(new Runnable(){
@@ -243,10 +248,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         });
         docAutoPopupTimer.setRepeats(false);
-
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String waitText = PLEASE_WAIT;
+                boolean politeWaitText = false;
                 Result localCompletionResult;
                 synchronized (this) {
                     localCompletionResult = completionResult;
@@ -257,13 +262,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
                         if (resultSet != null && resultSet.getWaitText() != null) {
                             waitText = resultSet.getWaitText();
+                            politeWaitText = true;
                             break;
                         }
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this, null, null, 0);
-                pleaseWaitDisplayed = true;                
+                pleaseWaitDisplayed = true;
+                if (!politeWaitText) {
+                    long when = System.currentTimeMillis() - PLEASE_WAIT_TIMEOUT;
+                    initializeProfiling(when);
+                }
             }
         });
         pleaseWaitTimer.setRepeats(false);
@@ -463,6 +473,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     ? new WeakReference<JTextComponent>(component)
                     : null;
             layout.setEditorComponent(getActiveComponent());
+            stopProfiling();
             installKeybindings();
             cancel = true;
         }
@@ -648,6 +659,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             if (explicitQuery)
                 layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, null, 0);
             pleaseWaitDisplayed = false;
+            stopProfiling();
         }
     }
 
@@ -747,8 +759,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             commonText = text;
                         } else {
                             // Get the largest common part
-                            int minLen = Math.min(text.length(), commonText.length());
-                            for (int commonInd = 0; commonInd < minLen; commonInd++) {
+                            if (text.length() < commonText.length())
+                                commonText = commonText.subSequence(0, text.length());
+                            for (int commonInd = 0; commonInd < commonText.length(); commonInd++) {
                                 if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
                                     if (commonInd == 0) {
                                         commonText = null;
@@ -833,6 +846,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      */
     void requestShowCompletionPane(final Result result) {
         pleaseWaitTimer.stop();
+        stopProfiling();
         
         // Compute total count of the result sets
         int size = 0;
@@ -934,6 +948,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 c.putClientProperty("completion-visible", Boolean.TRUE);
                 layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? hasAdditionalItemsText.toString() : null, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
+                stopProfiling();
 
                 // Show documentation as well if set by default
                 if (cs.documentationAutoPopup()) {
@@ -1000,6 +1015,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     private boolean hideCompletionPane(boolean completionOnly) {
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
         pleaseWaitTimer.stop();
+        stopProfiling();
         boolean hidePerformed = layout.hideCompletion();
         pleaseWaitDisplayed = false;
         JTextComponent jtc = getActiveComponent();
@@ -1718,5 +1734,24 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         rec.setResourceBundleName(CompletionImpl.class.getPackage().getName() + ".Bundle"); // NOI18N
         rec.setLoggerName(UI_LOG.getName());
         UI_LOG.log(rec);
+    }
+
+    private static void initializeProfiling(long since) {
+        boolean devel = false;
+        assert devel = true;
+        if (!devel) {
+            return;
+        }
+        synchronized (CompletionImpl.class) {
+            stopProfiling();
+            profile = new CompletionImplProfile(since);
+        }
+    }
+
+    private static synchronized void stopProfiling() {
+        if (profile != null) {
+            profile.stop();
+            profile = null;
+        }
     }
 }

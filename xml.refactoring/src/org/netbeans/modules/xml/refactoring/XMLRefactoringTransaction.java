@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -198,7 +201,7 @@ public class XMLRefactoringTransaction implements Transaction {
     public void rollback() {
         
         UndoRedoProgress progress = new UndoRedoProgress();
-	progress.start();
+    progress.start();
         try {
            //for target use the genericChangeUndoManager
             if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
@@ -227,7 +230,7 @@ public class XMLRefactoringTransaction implements Transaction {
                   
         
       }finally {
-      	   progress.stop();
+           progress.stop();
       }
       
     }
@@ -515,7 +518,6 @@ public class XMLRefactoringTransaction implements Transaction {
        }
        
        private void refreshCatalogModel( FileObject referencedFO) {
-        //   Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = SharedUtils.getModelMap(elements);
            if(modelsInRefactoring == null) 
                 modelsInRefactoring = getModels();
            boolean addedEntry = false;
@@ -688,14 +690,16 @@ public class XMLRefactoringTransaction implements Transaction {
     }
     
         
-     private Map<Model, Set<RefactoringElementImplementation>> getModels(){
+     private Map<Model, Set<RefactoringElementImplementation>> getModels() {
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
-        for(RefactoringElementImplementation element:elements){
+
+        for(RefactoringElementImplementation element : elements){
            Component comp = element.getLookup().lookup(Component.class);
            Model model = null;
            //First group the RE by Foreign Model, if no Foreign Model, then group by Model
            //This takes care of WSDL model with embedded schema imports
-           if(comp.getModel() instanceof DocumentModel) {
+
+           if (comp.getModel() instanceof DocumentModel) {
                Component c = ((DocumentModel)comp.getModel()).getRootComponent();
                if(c instanceof EmbeddableRoot) {
                      if(  ( (EmbeddableRoot)c).getForeignParent() != null )
@@ -716,9 +720,8 @@ public class XMLRefactoringTransaction implements Transaction {
                elementsInModel.add(element);
         }
         return results;
-    }
-     
-     
+     }
+
      public synchronized void redo() throws CannotRedoException {
              
             if(modelsInRefactoring == null)
@@ -928,10 +931,10 @@ public class XMLRefactoringTransaction implements Transaction {
     }
     
     protected void fireUndoEvent(UndoableEdit edit) {
-	    UndoableEditEvent ue = new UndoableEditEvent(this, edit);
-	    for (UndoableEditListener l:ues.getUndoableEditListeners()) {
+        UndoableEditEvent ue = new UndoableEditEvent(this, edit);
+        for (UndoableEditListener l:ues.getUndoableEditListeners()) {
             l.undoableEditHappened(ue);
-	    }
+        }
     }
     
      class FileRenameUndoable extends AbstractUndoableEdit {
@@ -964,7 +967,5 @@ public class XMLRefactoringTransaction implements Transaction {
             }
         }
     }
-}
-
-       
   }
+}

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,19 +50,24 @@ import org.openide.util.RequestProcessor;
  * Default implementation of tasks executor service.
  * Uses RequestProcessor but allows submit Callable tasks.
  */
-public class NativeTaskExecutorService {
+public final class NativeTaskExecutorService {
 
     private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
-    private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50); // NOI18N
+    private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50);
+
+    private NativeTaskExecutorService() {
+    }
 
     public static <T> Future<T> submit(final Callable<T> task, final String name) {
         final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
 
+            @Override
             public T call() throws Exception {
                 Thread.currentThread().setName(PREFIX + name);
                 return task.call();
             }
         });
+
 
         processor.post(ftask);
         return ftask;
@@ -68,6 +76,7 @@ public class NativeTaskExecutorService {
     public static void submit(final Runnable task, final String name) {
         processor.post(new Runnable() {
 
+            @Override
             public void run() {
                 Thread.currentThread().setName(PREFIX + name);
                 task.run();

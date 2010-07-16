@@ -35,6 +35,7 @@ public class AddWhileAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddWhileAction() {
+        super("structured/while"); // NOI18N
     }    
     
     protected String getBundleName() {

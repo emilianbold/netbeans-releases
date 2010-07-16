@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,6 +86,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return singleton;
     }
     
+    @Override
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
@@ -99,6 +103,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return false;
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("JavaEEServerModuleFactory");
+
+    @Override
     public Object createModule(Lookup instanceLookup) {
         // When creating JavaEE support, also ensure this instance is added to j2eeserver
         InstanceProperties ip = null;
@@ -115,7 +122,12 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         ip = InstanceProperties.createInstancePropertiesWithoutUI(
                                 url, username, password, displayName, props);
                     } catch (InstanceCreationException ex) {
+                        // the initialization delay of the ServerRegistry may have triggered a ignorable
+                        // exception
+                        ip = InstanceProperties.getInstanceProperties(url);
+                        if (null == ip) {
                             Logger.getLogger("glassfish-javaee").log(Level.WARNING, null, ex); // NOI18N
+                        }
                     }
 
                 if(ip == null) {
@@ -128,7 +140,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     GlassfishModule.GLASSFISH_FOLDER_ATTR);
             final String installRoot = commonModule.getInstanceProperties().get(
                     GlassfishModule.INSTALL_FOLDER_ATTR);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
@@ -369,6 +382,44 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             lib = null;
         }
 
+        if (lib != null) {
+            List<URL> libList = lib.getContent(JAVADOC_VOLUME);
+            size = libList.size();
+            for (URL libUrl : libList) {
+                String libPath = libUrl.getFile();
+                // file seems to want to return a file: protocol string... not the FILE portion of the URL
+                if (libPath.length() > 5) {
+                    libPath = libPath.substring(5);
+                }
+                if (!new File(libPath.replace("!/", "")).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
+                    try {
+                        lmgr.removeLibrary(lib);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        // Already removed somehow, ignore.
+                        }
+                    lib = null;
+                    size = 0;
+                    break;
+                }
+            }
+        }
+
+        // verify that there are not new components in the 'new' definition
+        // of the library...  If there are new components... rebuild the library.
+        if (lib != null && null != docList &&  size < docList.size()) {
+            try {
+                lmgr.removeLibrary(lib);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Already removed somehow, ignore.
+            }
+            lib = null;
+        }
+
         if (lib == null) {
             Map<String, List<URL>> contents;
             try {
@@ -419,6 +470,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             this.libType = libType;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (singleton) {
             if (null != name) {
@@ -450,8 +502,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
+                @Override
                 public void run() {
                     synchronized (singleton) {
                     if (null != lmgr) {

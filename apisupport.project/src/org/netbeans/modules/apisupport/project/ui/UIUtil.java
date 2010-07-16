@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,6 +74,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -89,21 +93,25 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.layers.SynchronousStatus;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -113,6 +121,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -521,8 +530,12 @@ public final class UIUtil {
         private static String getFileObjectName(FileObject fo) {
             String name = null;
             try {
-                name = fo.getFileSystem().getStatus().annotateName(
-                        fo.getNameExt(), Collections.singleton(fo));
+                Status status = fo.getFileSystem().getStatus();
+                if (status instanceof SynchronousStatus) {
+                    name = ((SynchronousStatus) status).annotateNameSynch(fo.getNameExt(), Collections.singleton(fo));
+                } else {
+                    name = status.annotateName(fo.getNameExt(), Collections.singleton(fo));
+                }
                 LOGGER.log(Level.FINER, "getFileObjectName for '" + fo.getPath() + "': " + name);
             } catch (FileStateInvalidException ex) {
                 name = fo.getName();
@@ -579,11 +592,11 @@ public final class UIUtil {
         Project project = chooseProject(parent);
         if (project != null) {
             NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
-            if (nmtp == null) { // not netbeans module
+            if (nmtp == null || !(project instanceof NbModuleProject)) { // not netbeans module
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
                         ProjectUtils.getInformation(project).getDisplayName())));
-            } else if (SuiteUtils.getSubProjects(suite).contains(project)) {
+            } else if (SuiteUtils.getSubProjects(suite).contains((NbModuleProject) project)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_SuiteAlreadyContainsProject",
                         ProjectUtils.getInformation(suite).getDisplayName(),
@@ -682,12 +695,12 @@ public final class UIUtil {
         return base;
     }
     
-    public static NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
+    public static @CheckForNull NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
         NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suiteProvider);
         return UIUtil.runProjectWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
     }
     
-    public static NbModuleProject runProjectWizard(
+    public static @CheckForNull NbModuleProject runProjectWizard(
             final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
         WizardDescriptor wd = new WizardDescriptor(iterator);
         wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
@@ -699,10 +712,13 @@ public final class UIUtil {
         boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             FileObject folder = iterator.getCreateProjectFolder();
+            if (folder == null) {
+                return null;
+            }
             try {
                 project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
                 OpenProjects.getDefault().open(new Project[] { project }, false);
-                if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
+                if (Templates.getDefinesMainProject(wd)) {
                     OpenProjects.getDefault().setMainProject(project);
                 }
             } catch (IOException e) {
@@ -748,19 +764,14 @@ public final class UIUtil {
         return project;
     }
     
-    private static File getSuiteDirectory(Project suiteComp) {
-        File suiteDir = SuiteUtils.getSuiteDirectory(suiteComp);
-        assert suiteDir != null : "Invalid suite provider for: "
-                + suiteComp.getProjectDirectory();
-        return suiteDir;
-    }
-    
     private static String getSuiteProjectDirectory(Project suiteComp) {
-        return getSuiteDirectory(suiteComp).getAbsolutePath();
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        return d != null ? d.getAbsolutePath() : "???"; // NOI18N
     }
     
     private static String getSuiteProjectName(Project suiteComp) {
-        FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory(suiteComp));
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        FileObject suiteDir = d != null ? FileUtil.toFileObject(d) : null;
         if (suiteDir == null) {
             // #94915
             return "???"; // NOI18N

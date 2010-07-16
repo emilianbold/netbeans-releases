@@ -45,6 +45,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
@@ -291,6 +292,10 @@ public class TMapSourceMultiViewElement extends CloneableEditor
             if (myToolBar == null) {
                 myToolBar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
             }
+            myToolBar.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(TMapSourceMultiViewElement.class, "ACSN_SourceMultiviewToolbar"));// NOI18N
+            myToolBar.getAccessibleContext().setAccessibleDescription( 
+                    NbBundle.getMessage(TMapSourceMultiViewElement.class, "ACSD_SourceMultiviewToolbar"));// NOI18N
             return myToolBar;
         }
         return null;

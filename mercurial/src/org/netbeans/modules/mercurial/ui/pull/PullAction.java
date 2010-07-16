@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ package org.netbeans.modules.mercurial.ui.pull;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,7 +58,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
-import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
@@ -66,14 +67,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -92,34 +88,52 @@ public class PullAction extends ContextAction {
     {
     }
 
-    private final VCSContext context;
-
-    public PullAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
 
-    public void performAction(ActionEvent e) {
-        final File roots[] = HgUtils.getActionRoots(context);
-        final File repository =
-                roots != null && roots.length > 0 ?
-                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
-                    null;
-        if (repository == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
-            logger.outputInRed(
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            logger.output(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW"),// NOI18N
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
-            logger.closeLog();
-            return;
-        }
-        pull(context, repository);
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PullLocal";                                //NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_PullRoot" : "CTL_MenuItem_PullLocal"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(PullAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(PullAction.class, name);
+    }
+    
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File repository = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    // run every repository fetch in its own support with its own output window
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+                    HgProgressSupport support = new HgProgressSupport() {
+                        @Override
+                        public void perform() {
+                            getDefaultAndPerformPull(context, repository, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     public static boolean confirmWithLocalChanges(File rootFile, Class bundleLocation, String title, String query, 
@@ -170,36 +184,16 @@ public class PullAction extends ContextAction {
     }
 
 
-    static void annotateChangeSets(List<String> list, Class bundleLocation, String title) {
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        OutputWriter outRed = io.getErr();
-        outRed.println(NbBundle.getMessage(bundleLocation, title));
+    static void annotateChangeSets(List<String> list, Class bundleLocation, String title, OutputLogger logger) {
+        logger.outputInRed(NbBundle.getMessage(bundleLocation, title));
         for (String s : list) {
             if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
-                outRed.println(s);
+                logger.outputInRed(s);
             } else if (!s.equals("")) {
-                out.println(s);
+                logger.output(s);
             }
         }
-        out.println("");
-        out.close();
-        outRed.close();
-    }
-
-    public static void pull(final VCSContext ctx, final File repository) {
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { 
-                getDefaultAndPerformPull(ctx, repository, this.getLogger());
-            }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
+        logger.output("");
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
@@ -232,8 +226,7 @@ public class PullAction extends ContextAction {
             fromPrjName = null;
             pullType = PullType.OTHER;
         }
-        Project proj = HgUtils.getProject(ctx);
-        final String toPrjName = HgProjectUtils.getProjectName(proj);
+        final String toPrjName = HgProjectUtils.getProjectName(root);
         performPull(pullType, ctx, root, pullSource, fromPrjName, toPrjName, logger);
     }
 
@@ -265,6 +258,16 @@ public class PullAction extends ContextAction {
                 new DialogDescriptor.Message(msg));
     }
 
+    /**
+     *
+     * @param type
+     * @param ctx
+     * @param root
+     * @param pullSource password is nulled
+     * @param fromPrjName
+     * @param toPrjName
+     * @param logger
+     */
     static void performPull(PullType type, VCSContext ctx, File root, HgURL pullSource, String fromPrjName, String toPrjName, OutputLogger logger) {
         if(root == null || pullSource == null) return;
         File bundleFile = null; 
@@ -324,7 +327,7 @@ public class PullAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL", logger); // NOI18N
                 }
 
                 logger.output(HgUtils.replaceHttpPassword(list));
@@ -346,9 +349,11 @@ public class PullAction extends ContextAction {
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
+                boolean checkHeads = false;
                 if(bMergeNeededDueToPull){
                     bConfirmMerge = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
+                    checkHeads = !bConfirmMerge;
                 } else {
                     boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                     if(bOutStandingUncommittedMerges){
@@ -360,7 +365,7 @@ public class PullAction extends ContextAction {
                     logger.output(""); // NOI18N
                     logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null, logger);
-                } else {
+                } else if (checkHeads) {
                     List<String> headRevList = HgCommand.getHeadRevisions(root);
                     if (headRevList != null && headRevList.size() > 1){
                         MergeAction.printMergeWarning(headRevList, logger);
@@ -369,10 +374,12 @@ public class PullAction extends ContextAction {
             }
 
             if (!bNoChanges) {
-                PushAction.notifyUpdatedFiles(root, list);
-                HgUtils.forceStatusRefreshProject(ctx);
+                HgUtils.notifyUpdatedFiles(root, list);
+                HgUtils.forceStatusRefresh(root);
             }
             
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -382,6 +389,7 @@ public class PullAction extends ContextAction {
             }
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            pullSource.clearPassword();
         }
     }
 

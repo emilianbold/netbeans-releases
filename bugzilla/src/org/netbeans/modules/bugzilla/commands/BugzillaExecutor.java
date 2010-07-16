@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,12 +48,14 @@ import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -62,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Executes commands against one bugzilla Repository and handles errors
- * 
+ *
  * @author Tomas Stupka
  */
 public class BugzillaExecutor {
@@ -70,6 +75,7 @@ public class BugzillaExecutor {
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
     private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
+    private static final String KENAI_LOGIN_REDIRECT         = "/people/login?original_uri=";   // NOI18N
     private static final String COULD_NOT_BE_FOUND           = "could not be found";            // NOI18N
     private static final String REPOSITORY                   = "repository";                    // NOI18N
     private static final String MIDAIR_COLLISION             = "mid-air collision occurred while submitting to"; // NOI18N
@@ -89,6 +95,10 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
+        execute(cmd, handleExceptions, checkVersion, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
         try {
             cmd.setFailed(true);
 
@@ -96,6 +106,11 @@ public class BugzillaExecutor {
                 checkAutoupdate();
             }
 
+            if(ensureCredentials) {
+                ensureCredentials();
+            }
+
+            Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd);
             cmd.execute();
 
             if(cmd instanceof PerformQueryCommand) {
@@ -104,7 +119,7 @@ public class BugzillaExecutor {
                     return;
                 }
             }
-            
+
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
 
@@ -126,7 +141,7 @@ public class BugzillaExecutor {
                 }
             }
             return;
-                
+
         } catch(MalformedURLException me) {
             cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
@@ -227,7 +242,7 @@ public class BugzillaExecutor {
                                 new Object[] { repository.getDisplayName() }
                            );
             p.setHtml(repository.getUrl(), html, label);
-            DialogDescriptor dialogDescriptor = 
+            DialogDescriptor dialogDescriptor =
                     new DialogDescriptor(
                             p,
                             NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"), // NOI18N
@@ -275,8 +290,12 @@ public class BugzillaExecutor {
     }
 
     public boolean handleIOException(IOException io) {
-        Bugzilla.LOG.log(Level.SEVERE, null, io); 
+        Bugzilla.LOG.log(Level.SEVERE, null, io);
         return true;
+    }
+
+    private void ensureCredentials() {
+        BugzillaConfig.getInstance().setupCredentials(repository);
     }
 
     private static abstract class ExceptionHandler {
@@ -295,6 +314,10 @@ public class BugzillaExecutor {
 
         static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository) {
             String errormsg = getLoginError(ce);
+            if(errormsg != null) {
+                return new LoginHandler(ce, errormsg, executor, repository);
+            }
+            errormsg = getKenaiRedirectError(ce);
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
             }
@@ -319,11 +342,29 @@ public class BugzillaExecutor {
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
                    msg.contains(INVALID_USERNAME_OR_PASSWORD))
                 {
+                    Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
                 {
+                    Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY");   // NOI18N
+                }
+            }
+            return null;
+        }
+
+        private static String getKenaiRedirectError(CoreException ce) {
+            IStatus status = ce.getStatus();
+            if(status == null) {
+                return null;
+            }
+            Throwable cause = status.getException();
+            if(cause != null && cause instanceof RedirectException) {
+                String msg = cause.getMessage();
+                if(msg.contains(KENAI_LOGIN_REDIRECT)) {
+                    Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
                 }
             }
             return null;
@@ -334,6 +375,7 @@ public class BugzillaExecutor {
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
+                    Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION");            // NOI18N
                 }
             }
@@ -344,12 +386,14 @@ public class BugzillaExecutor {
             IStatus status = ce.getStatus();
             Throwable t = status.getException();
             if(t instanceof UnknownHostException) {
+                Bugzilla.LOG.log(Level.FINER, null, t);
                 return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");                   // NOI18N
             }
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(HTTP_ERROR_NOT_FOUND.equals(msg)) {
+                    Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");               // NOI18N
                 }
             }

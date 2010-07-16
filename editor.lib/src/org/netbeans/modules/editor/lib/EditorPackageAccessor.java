@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,17 @@
 
 package org.netbeans.modules.editor.lib;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.undo.CompoundEdit;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.InvalidMarkException;
+import org.netbeans.editor.Mark;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 
 /**
- * Accessor for the package-private functionality in org.netbeans.api.editor.
+ * Accessor for the package-private functionality in org.netbeans.editor package.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -54,24 +62,31 @@ import org.netbeans.editor.BaseDocument;
 
 public abstract class EditorPackageAccessor {
 
-    private static EditorPackageAccessor INSTANCE;
+    private static EditorPackageAccessor ACCESSOR = null;
 
-    public static EditorPackageAccessor get() {
-        if (INSTANCE == null) {
-            // Cause api accessor impl to get initialized
-            try {
-                Class.forName(BaseDocument.class.getName(), true, EditorPackageAccessor.class.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                // Should never happen
-            }
+    public static synchronized void register(EditorPackageAccessor accessor) {
+        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
+        ACCESSOR = accessor;
+    }
+
+    public static synchronized EditorPackageAccessor get() {
+        // Trying to wake up BaseDocument ...
+        try {
+            Class clazz = Class.forName(BaseDocument.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
         }
-        return INSTANCE;
+
+        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
+        return ACCESSOR;
     }
 
-    public static void register(EditorPackageAccessor accessor) {
-        INSTANCE = accessor;
+    protected EditorPackageAccessor() {
     }
 
-    public abstract CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
+    public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
+    public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
 
 }

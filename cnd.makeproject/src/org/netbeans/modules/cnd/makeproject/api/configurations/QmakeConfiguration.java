@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,8 +42,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
@@ -103,16 +106,16 @@ public class QmakeConfiguration implements Cloneable {
         target = new StringConfiguration(null, ""); // NOI18N
         version = new StringConfiguration(null, "1.0.0"); // NOI18N
         buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_MODE_OPTIONS);
-        coreEnabled = new BooleanConfiguration(null, true);
-        guiEnabled = new BooleanConfiguration(null, true);
-        networkEnabled = new BooleanConfiguration(null, false);
-        openglEnabled = new BooleanConfiguration(null, false);
-        phononEnabled = new BooleanConfiguration(null, false);
-        qt3SupportEnabled = new BooleanConfiguration(null, false);
-        sqlEnabled = new BooleanConfiguration(null, false);
-        svgEnabled = new BooleanConfiguration(null, false);
-        xmlEnabled = new BooleanConfiguration(null, false);
-        webkitEnabled = new BooleanConfiguration(null, false);
+        coreEnabled = new BooleanConfiguration(true);
+        guiEnabled = new BooleanConfiguration(true);
+        networkEnabled = new BooleanConfiguration(false);
+        openglEnabled = new BooleanConfiguration(false);
+        phononEnabled = new BooleanConfiguration(false);
+        qt3SupportEnabled = new BooleanConfiguration(false);
+        sqlEnabled = new BooleanConfiguration(false);
+        svgEnabled = new BooleanConfiguration(false);
+        xmlEnabled = new BooleanConfiguration(false);
+        webkitEnabled = new BooleanConfiguration(false);
         mocDir = new StringConfiguration(null, ""); // NOI18N
         rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
@@ -198,7 +201,7 @@ public class QmakeConfiguration implements Cloneable {
     }
 
     private String getTargetDefault() {
-        return ConfigurationSupport.makeNameLegal(IpeUtils.getBaseName(makeConfiguration.getBaseDir()));
+        return ConfigurationSupport.makeNameLegal(CndPathUtilitities.getBaseName(makeConfiguration.getBaseDir()));
     }
 
     public StringConfiguration getTarget() {

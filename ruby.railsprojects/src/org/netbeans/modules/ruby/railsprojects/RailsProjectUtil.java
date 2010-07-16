@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,11 +57,11 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the Rails project module.
@@ -66,9 +69,46 @@ import org.openide.util.Parameters;
  * @author Jiri Rechtacek
  */
 public class RailsProjectUtil {
-    
+
     private RailsProjectUtil () {}
 
+    /**
+     * Gets the contents of the given file as text.
+     * 
+     * @param toRead
+     * @return the contents; an empty string if anything went wrong.
+     */
+    static String asText(File toRead) {
+
+        BufferedReader fr = null;
+        try {
+            fr = new BufferedReader(new FileReader(toRead));
+            StringBuilder sb = new StringBuilder();
+            while (true) {
+                String line = fr.readLine();
+                if (line == null) {
+                    break;
+                }
+                sb.append(line);
+                sb.append("\n"); // NOI18N
+            }
+            
+            return sb.toString();
+
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return "";
+    }
     /** Get the version string out of a ruby version.rb file */
     public static String getVersionString(File versionFile) {
         try {
@@ -113,12 +153,12 @@ public class RailsProjectUtil {
 
     /**
      * Gets the rails version the given <code>project</code> uses. Returns
-     * <code>null</code> if the version could not be determined.
+     * version <code>0</code> if the version could not be determined.
      *
      * @param project
-     * @return
+     * @return the version; <code>0</code> if unknown, never <code>null</code>.
      */
-    public static String getRailsVersion(Project project) {
+    public static RailsVersion getRailsVersion(Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
@@ -144,7 +184,10 @@ public class RailsProjectUtil {
             }
         }
 
-        return railsVersion;
+        if (railsVersion == null) {
+            return new RailsVersion(0);
+        }
+        return versionFor(railsVersion);
     }
 
     /** Return the version of Rails requested in environment.rb */
@@ -156,7 +199,7 @@ public class RailsProjectUtil {
             // in environment.rb
             br = new BufferedReader(new InputStreamReader(environment.getInputStream()));
 
-            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]((\\d+)\\.(\\d+)\\.(\\d+))['\"].*"); // NOI18N
+            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]" + GemFilesParser.VERSION_REGEX + "['\"].*"); // NOI18N
             for (int line = 0; line < 20; line++) {
                 String s = br.readLine();
                 if (s == null) {
@@ -270,6 +313,11 @@ public class RailsProjectUtil {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));
+            } else if (splitted.length == 4) {
+                return new RailsVersion(Integer.parseInt(splitted[0]),
+                        Integer.parseInt(splitted[1]),
+                        Integer.parseInt(splitted[2]),
+                        splitted[3]);
             }
         } catch (NumberFormatException ne) {
             return new RailsVersion(0);
@@ -278,10 +326,14 @@ public class RailsProjectUtil {
 
     }
 
+    /**
+     * Represents a rails version.
+     */
     public static final class RailsVersion implements Comparable<RailsVersion> {
         private final int major;
         private final int minor;
         private final int revision;
+        private final String suffix;
 
         public RailsVersion(int major) {
             this(major, 0);
@@ -291,9 +343,14 @@ public class RailsProjectUtil {
         }
 
         public RailsVersion(int major, int minor, int revision) {
+            this(major, minor, revision, "");
+        }
+
+        public RailsVersion(int major, int minor, int revision, String suffix) {
             this.major = major;
             this.minor = minor;
             this.revision = revision;
+            this.suffix = suffix;
         }
 
         public int getMajor() {
@@ -308,8 +365,24 @@ public class RailsProjectUtil {
             return revision;
         }
 
+        public String getSuffix() {
+            return suffix;
+        }
+
         public String asString() {
-            return getMajor() + "." + getMinor() + "." + getRevision();
+            String result = getMajor() + "." + getMinor() + "." + getRevision();
+            if (getSuffix().length() > 0) {
+                result += "." + getSuffix();
+            }
+            return result;
+        }
+
+        public boolean isRails3OrHigher() {
+            return compareTo(new RailsVersion(3)) >= 0;
+        }
+
+        public boolean isRails3Obeta4OrHigher() {
+            return compareTo(new RailsVersion(3,0,0,"beta4")) >= 0;
         }
 
         public int compareTo(RailsVersion o) {
@@ -324,7 +397,13 @@ public class RailsProjectUtil {
                     if (revision > o.revision) {
                         return 1;
                     }
-                    return revision == o.revision ? 0 : -1;
+                    if (revision == o.revision) {
+                        if (this.suffix == null || this.suffix.isEmpty()) {
+                            return o.suffix == null || o.suffix.isEmpty() ? 0 : 1;
+                        } else {
+                            return o.suffix == null || o.suffix.isEmpty() ? -1 : this.suffix.compareTo(o.suffix);
+                        }
+                    }
                 }
             }
             return -1;

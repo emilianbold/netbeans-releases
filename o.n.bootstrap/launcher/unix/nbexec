@@ -1,7 +1,10 @@
 #!/bin/sh
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -279,12 +282,9 @@ do_run_updater() {
 
 look_for_pre_runs() {
     base="$1"
-    newUpdaterDir="${base}/update/new_updater"
-    if [ -f "${newUpdaterDir}/updater.jar" ] ; then
-        install_new_updater "$1"
-    fi
+    install_new_updater "$1"
     dir="${base}/update/download"
-    if [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" ] ; then
+    if [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
     else
         dir="${base}/update/deactivate"
@@ -296,12 +296,9 @@ look_for_pre_runs() {
 
 look_for_post_runs() {
     base="$1"
-    newUpdaterDir="${base}/update/new_updater"
-    if [ -f "${newUpdaterDir}/updater.jar" ] ; then
-        install_new_updater "$1"
-    fi
+    install_new_updater "$1"
     dir="${base}/update/download"
-    if [ \! -f "${dir}/install_later.xml" -a "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" ] ; then
+    if [ \! -f "${dir}/install_later.xml" ] && [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
     else
         dir="${base}/update/deactivate"
@@ -336,9 +333,18 @@ delete_new_clusters_file() {
 install_new_updater() {
     base="$1"
     newUpdaterDir="${base}/update/new_updater"
-    mkdir -p "${base}/modules/ext/"
-    mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
-    rmdir "${newUpdaterDir}"
+    if [ -d "${newUpdaterDir}" ]; then
+        mkdir -p "${base}/modules/ext/"
+        if [ -f "${newUpdaterDir}/updater.jar" ]; then
+            mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
+        fi
+        ls -l "${newUpdaterDir}/"updater_*.jar
+        for i in "${newUpdaterDir}/"updater_*.jar; do
+            mkdir -p "${base}/modules/ext/locale/"
+            mv -f "$i" "${base}/modules/ext/locale/"
+        done
+        rmdir "${newUpdaterDir}"
+    fi
 }
 
 # detect system http proxy setting
@@ -383,7 +389,7 @@ detect_gnome_proxy () {
 detect_kde_proxy () {
     kioslaverc="${HOME}/.kde/share/config/kioslaverc"
     if [ -f $kioslaverc ] ; then
-        if /bin/grep -q 'ProxyType=1' "$kioslaverc" ; then
+        if /bin/grep 'ProxyType=1' "$kioslaverc" >/dev/null 2>&1; then
             http_proxy_tmp=`/bin/grep 'httpProxy=http://' "$kioslaverc"`
             if [ $? ] ; then
                 http_proxy_tmp=`echo $http_proxy_tmp | /bin/sed 's/httpProxy=http:\/\///'`
@@ -394,7 +400,7 @@ detect_kde_proxy () {
                 http_non_proxy_hosts=`echo $http_non_proxy_hosts | /bin/sed 's/NoProxyFor=//'`
             fi
         else
-            if /bin/grep -q 'ProxyType=0' "$kioslaverc" ; then
+            if /bin/grep 'ProxyType=0' "$kioslaverc" >/dev/null 2>&1; then
                 detect_system_proxy
                 if [ -z "$http_proxy_tmp" ]; then
                     http_proxy_tmp="DIRECT"
@@ -418,12 +424,12 @@ show State:/Network/Global/Proxies
 close
 EOF
 
-    if /usr/bin/grep -q "ProxyAuto.*: *1" ${scutil_out} >/dev/null ; then
+    if /usr/bin/grep "ProxyAuto.*: *1" ${scutil_out} >/dev/null 2>&1; then
         rm ${scutil_out}
         return 1
     fi
 
-    if /usr/bin/grep -q "HTTPEnable *: *1" ${scutil_out} ; then
+    if /usr/bin/grep "HTTPEnable *: *1" ${scutil_out} >/dev/null 2>&1; then
 	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk '{print $3}'`
 	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk '{print $3} '`
         http_proxy_tmp=$http_proxy_host:$http_proxy_port
@@ -472,6 +478,23 @@ if [ "no$DISPLAY" = "no" -a `uname` != Darwin ]; then
     echo "$0: WARNING: environment variable DISPLAY is not set"
 fi
 
+
+# The Startup Notification Protocol Specification [1]
+# recommends to unset the DESKTOP_STARTUP_ID environment variable 
+# to avoid possible reuse by some process started later by this
+# process, e.g. when a browser will be launched by the NetBeans [2].
+#
+# See:
+# [1] http://standards.freedesktop.org/startup-notification-spec
+# [2] http://netbeans.org/bugzilla/show_bug.cgi?id=76970
+if [ ! -z "$DESKTOP_STARTUP_ID" ] ; then
+    # Save a value for later using
+    NB_DESKTOP_STARTUP_ID="$DESKTOP_STARTUP_ID"; export NB_DESKTOP_STARTUP_ID
+
+    unset DESKTOP_STARTUP_ID
+fi
+
+
 #
 # main loop
 #
@@ -510,7 +533,7 @@ while [ "$restart" ] ; do
     delete_new_clusters_file
     rm -f "${restart_file}"
     eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
-        "$jargs" org.netbeans.Main "$args" '&'
+        "$jargs" org.netbeans.Main "$args" '<&0' '&'
     PID=$!
     trap "kill $PID" EXIT
     wait $PID

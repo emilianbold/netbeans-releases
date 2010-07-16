@@ -1,0 +1,32 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE bug182945.f
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+NAMESPACE DEFINITOIN constants [4:11/145-16:10/358] SCOPE: bug182945.f
+FUNCTION DEFINITION fall  [6:7/169-16:10/358] ProgramImpl SCOPE: $Global$ 
+    SIGNATURE 
+    UNIQUE NAME f:fall
+    DECLARATION: fall  [6:7/169-16:10/358]
+    PARAMETERS:
+    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    STATEMENT is null
+
+========== Dumping model of PROJECT DummyProject
+NAMESPACE DEFINITOIN constants [4:11/145-16:10/358] SCOPE: bug182945.f
+FUNCTION DEFINITION fall  [6:7/169-16:10/358] ProgramImpl SCOPE: $Global$ 
+    SIGNATURE 
+    UNIQUE NAME f:fall
+    DECLARATION: fall  [6:7/169-16:10/358]
+    PARAMETERS:
+    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    STATEMENT is null
+

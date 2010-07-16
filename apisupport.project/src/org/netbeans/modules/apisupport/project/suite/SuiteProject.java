@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,13 +55,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.OSGiSourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
@@ -66,6 +70,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -88,6 +93,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -112,6 +118,7 @@ public final class SuiteProject implements Project {
     private final PropertyEvaluator eval;
     private final GeneratedFilesHelper genFilesHelper;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public SuiteProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -121,10 +128,11 @@ public final class SuiteProject implements Project {
             this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
+            helper.createAuxiliaryProperties(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
-            helper.createSharabilityQuery(eval, new String[0], new String[] {"build", "${dist.dir}"}), // NOI18N
+            helper.createSharabilityQuery(eval, new String[0], new String[] {"${suite.build.dir}", "${dist.dir}"}), // NOI18N
             new SuiteSubprojectProviderImpl(helper, eval),
             new SuiteProviderImpl(),
             new SuiteActions(this),
@@ -132,8 +140,9 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
-            new TemplateAttributesProvider(helper, false),
-            new FileEncodingQueryImpl());
+            new TemplateAttributesProvider(null, helper, false),
+            new FileEncodingQueryImpl(),
+            new OSGiSourceForBinaryImpl(this));
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     
@@ -174,7 +183,7 @@ public final class SuiteProject implements Project {
      *         platform specified, or an invalid platform is specified, or even if
      *         fallback is true but even the default platform is not available
      */
-    public NbPlatform getPlatform(boolean fallback) {
+    public @CheckForNull NbPlatform getPlatform(boolean fallback) {
         NbPlatform p;
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
         String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
@@ -223,8 +232,10 @@ public final class SuiteProject implements Project {
         fixedProps.put(SuiteProperties.DISABLED_CLUSTERS_PROPERTY, "");
         fixedProps.put(SuiteProperties.DISABLED_MODULES_PROPERTY, "");
         fixedProps.put(BrandingSupport.BRANDING_DIR_PROPERTY, "branding"); // NOI18N
+        fixedProps.put("suite.build.dir", "build"); // NOI18N
+        fixedProps.put("cluster", "${suite.build.dir}/cluster"); // NOI18N
         fixedProps.put("dist.dir", "dist"); // NOI18N
-        fixedProps.put("test.user.dir", "build/testuserdir"); // NOI18N
+        fixedProps.put("test.user.dir", "${suite.build.dir}/testuserdir"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
@@ -238,8 +249,8 @@ public final class SuiteProject implements Project {
         }
         
         private String getSimpleName() {
-            Element nameEl = Util.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
-            String text = (nameEl != null) ? Util.findText(nameEl) : null;
+            Element nameEl = XMLUtil.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
+            String text = (nameEl != null) ? XMLUtil.findText(nameEl) : null;
             return (text != null) ? text : "???"; // NOI18N
         }
         
@@ -314,8 +325,12 @@ public final class SuiteProject implements Project {
     }
 
     public void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        NbPlatform platform = getPlatform(true);
+        if (platform == null) { // #169855
+            return;
+        }
         String buildImplPath =
-                getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                platform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                 || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                 ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
@@ -359,12 +374,8 @@ public final class SuiteProject implements Project {
             return getProjectDirectoryFile();
         }
 
-        private static final String CLUSTER_PROP = "${cluster}";
         public File getClusterDirectory() {
-            String clusterName = getEvaluator().evaluate(CLUSTER_PROP);
-            if (CLUSTER_PROP.equals(clusterName))
-                // not overriden, use default
-                clusterName = SuiteProperties.CLUSTER_DIR;
+            String clusterName = getEvaluator().evaluate("${cluster}");
             return getHelper().resolveFile(clusterName).getAbsoluteFile();
         }
     }

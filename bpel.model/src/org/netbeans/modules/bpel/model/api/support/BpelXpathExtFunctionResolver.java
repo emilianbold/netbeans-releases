@@ -26,8 +26,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.openide.util.NbBundle;
 
 /**
  * Provides information about BPEL extension functions for XPath. 
@@ -37,31 +35,25 @@ import org.openide.util.NbBundle;
  * 
  * @author nk160297
  */
-public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver, 
-        BpelXPathExtFunctionMetadata {
+public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver, BpelXPathExtFunctionMetadata {
 
-    private static HashMap<QName, ExtFunctionMetadata> mValidFunctions = 
-            new HashMap<QName, ExtFunctionMetadata>();
+    private static HashMap<QName, ExtFunctionMetadata> mValidFunctions = new HashMap<QName, ExtFunctionMetadata>();
 
     static {
         //
-        // Standard BPEL Extensions.
-        mValidFunctions.put(GET_VARIABLE_PROPERTY_METADATA.getName(), 
-                GET_VARIABLE_PROPERTY_METADATA);
-        mValidFunctions.put(DO_XSL_TRANSFORM_METADATA.getName(), 
-                DO_XSL_TRANSFORM_METADATA);
+        // Standard BPEL Extensions
+        mValidFunctions.put(GET_VARIABLE_PROPERTY_METADATA.getName(), GET_VARIABLE_PROPERTY_METADATA);
+        mValidFunctions.put(DO_XSL_TRANSFORM_METADATA.getName(), DO_XSL_TRANSFORM_METADATA);
         //
-        // Runtime specific extensions.
-        mValidFunctions.put(CURRENT_TIME_METADATA.getName(), 
-                CURRENT_TIME_METADATA);
-        mValidFunctions.put(CURRENT_DATE_METADATA.getName(), 
-                CURRENT_DATE_METADATA);
-        mValidFunctions.put(CURRENT_DATE_TIME_METADATA.getName(), 
-                CURRENT_DATE_TIME_METADATA);
-        mValidFunctions.put(DO_MARSHAL_METADATA.getName(), 
-                DO_MARSHAL_METADATA);
-        mValidFunctions.put(DO_UNMARSHAL_METADATA.getName(), 
-                DO_UNMARSHAL_METADATA);
+        // Runtime specific extensions
+        mValidFunctions.put(GET_VARIABLE_NM_PROPERTY_METADATA.getName(), GET_VARIABLE_NM_PROPERTY_METADATA);
+        mValidFunctions.put(CURRENT_TIME_METADATA.getName(), CURRENT_TIME_METADATA);
+        mValidFunctions.put(CURRENT_DATE_METADATA.getName(), CURRENT_DATE_METADATA);
+        mValidFunctions.put(CURRENT_DATE_TIME_METADATA.getName(), CURRENT_DATE_TIME_METADATA);
+        mValidFunctions.put(DO_MARSHAL_METADATA.getName(), DO_MARSHAL_METADATA);
+        mValidFunctions.put(DO_UNMARSHAL_METADATA.getName(), DO_UNMARSHAL_METADATA);
+        mValidFunctions.put(GET_BPID_METADATA.getName(), GET_BPID_METADATA);
+        mValidFunctions.put(GET_GUID_METADATA.getName(), GET_GUID_METADATA);
         //
         // Another runtime specific extensions
         // These functions are not going to be supported by the runtime
@@ -69,13 +61,32 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
         // mValidFunctions.put(GET_BPID_METADATA.getName(), GET_BPID_METADATA);
         // mValidFunctions.put(EXIST_METADATA.getName(), EXIST_METADATA);
         //
-    }
-    
-    public BpelXpathExtFunctionResolver() {
+        // XPath 2.0 functions
+        mValidFunctions.put(DATE_TIME_LT_METADATA.getName(), DATE_TIME_LT_METADATA);
+        mValidFunctions.put(TIME_LT_METADATA.getName(), TIME_LT_METADATA);
+        mValidFunctions.put(DATE_LT_METADATA.getName(), DATE_LT_METADATA);
     }
 
-    public ExtFunctionMetadata getFunctionMetadata(QName name) {
-        return mValidFunctions.get(name);
+    public ExtFunctionMetadata getFunctionMetadata(QName qname) {
+        ExtFunctionMetadata metadata = mValidFunctions.get(qname);
+
+        if (metadata != null) {
+            return metadata;
+        }
+        // java/pojo
+        String nsUri = qname.getNamespaceURI();
+
+        if (nsUri.startsWith(JAVA_PROTOCOL)) {
+            return new JavaMetadata(qname);
+        }
+        return null;
+    }
+
+    public boolean isImplicit(QName name) {
+//      java/pojo
+//      String nsUri = name.getNamespaceURI();
+//      return nsUri.startsWith(JAVA_PROTOCOL);
+        return false;
     }
 
     public Collection<QName> getSupportedExtFunctions() {
@@ -88,12 +99,10 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
 
     public void validateFunction(XPathExtensionFunction function, XPathValidationContext context) {
         assert context != null;
-        QName funcQName = function.getMetadata().getName();
-        if (GET_VARIABLE_PROPERTY_METADATA.getName().equals(funcQName)) {
-            String funcName = funcQName.getLocalPart();
-            context.addResultItem(ResultType.WARNING, 
-                    NbBundle.getMessage(BpelVariableResolver.class,
-                                    "RUNTIME_NOT_SUPPORT_EXT_FUNC"), funcName); // NOI18N
-        }
+//        QName funcQName = function.getMetadata().getName();
+//        if (GET_VARIABLE_PROPERTY_METADATA.getName().equals(funcQName)) {
+//            String funcName = funcQName.getLocalPart();
+//            context.addResultItem(ResultType.WARNING, NbBundle.getMessage(BpelVariableResolver.class, "RUNTIME_NOT_SUPPORT_EXT_FUNC"), funcName); // NOI18N
+//        }
     }
 }

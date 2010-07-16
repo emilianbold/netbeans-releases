@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -194,7 +197,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        reindentLater((BaseDocument) doc, caretOffset);
+        reindentLater((BaseDocument) doc, caretOffset, caretOffset);
 
         return false;
     }
@@ -228,7 +231,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //move caret
             jtc.getCaret().setDot(dot);
             //and indent the line
-            reindentLater(bdoc, dot);
+            reindentLater(bdoc, dot-1, dot+2);
 
         }
 
@@ -280,14 +283,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
         return -1;
     }
 
+    public static boolean unitTestingSupport = false;
+    
     //since the code runs under document atomic lock, we cannot lock the
     //indentation infrastructure directly. Instead of that create a new
     //AWT task and post it for later execution.
-    private void reindentLater(final BaseDocument doc, int dotPos) throws BadLocationException {
-        final Position from = doc.createPosition(Utilities.getRowStart(doc, dotPos));
-        final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
-        SwingUtilities.invokeLater(new Runnable() {
+    private void reindentLater(final BaseDocument doc, int start, int end) throws BadLocationException {
+        final Position from = doc.createPosition(Utilities.getRowStart(doc, start));
+        final Position to = doc.createPosition(Utilities.getRowEnd(doc, end));
+        Runnable rn = new Runnable() {
 
+            @Override
             public void run() {
                 final Indent indent = Indent.get(doc);
                 indent.lock();
@@ -297,7 +303,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
                         public void run() {
                             try {
                                 indent.reindent(from.getOffset(), to.getOffset());
-                                System.out.println("formatted");
                             } catch (BadLocationException ex) {
                                 //ignore
                             }
@@ -307,6 +312,11 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     indent.unlock();
                 }
             }
-        });
+        };
+        if (unitTestingSupport) {
+            rn.run();
+        } else {
+            SwingUtilities.invokeLater(rn);
+        }
     }
 }

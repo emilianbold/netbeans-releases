@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet.Set;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
@@ -61,6 +65,7 @@ import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
 import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /** Wrap wsdl node from wsdl directory in a filter, but display children from
@@ -132,7 +137,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
     
     @Override
     public String getDisplayName() {
-        return (registerNode != null) ? registerNode.getDisplayName() : super.getDisplayName();
+        return (registerNode != null) ? registerNode.getDisplayName() : NbBundle.getMessage(ServiceClientNode.class, "MSG_parsingWSDL");
     }
     
     @Override
@@ -191,20 +196,22 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
     
     @Override
     public Image getIcon(int type) {
-        // !PW FIXME me need static source for Web Service Icon
-        Image wsdlIcon = super.getIcon(type);
-        
         // show icon for registry node instead of WSDL node
-        return registerNode != null ? registerNode.getIcon(type) : wsdlIcon;
+        return registerNode != null ? registerNode.getIcon(type) : getWaitIcon();
     }
     
     @Override
     public Image getOpenedIcon(int type) {
-        // !PW FIXME me need static source for Web Service Opened Icon
-        Image wsdlOpenedIcon = super.getOpenedIcon(type);
-        
         // show opened icon for registry node instead of WSDL node
-        return registerNode != null ? registerNode.getOpenedIcon(type) : wsdlOpenedIcon;
+        return registerNode != null ? registerNode.getOpenedIcon(type) : getWaitIcon();
+    }
+
+    private static Image waitIcon;
+    private static synchronized Image getWaitIcon() {
+        if (waitIcon == null) {
+            waitIcon = ImageUtilities.loadImage("org/netbeans/modules/websvc/jaxrpc/nodes/resources/wait.gif"); //NOI18N
+        }
+        return waitIcon;
     }
     
     @Override

@@ -35,6 +35,7 @@ public class AddThrowAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddThrowAction() {
+        super("basic/throw"); // NOI18N
     }    
     
     protected String getBundleName() {

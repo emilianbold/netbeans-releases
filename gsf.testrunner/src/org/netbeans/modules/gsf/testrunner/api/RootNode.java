@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ final class RootNode extends AbstractNode {
     private final RootNodeChildren children;
     /**
      */
-    private volatile boolean filtered;
+    private volatile int filterMask;
     /** */
     private volatile String message;
     private volatile int totalTests = 0;
@@ -85,10 +88,10 @@ final class RootNode extends AbstractNode {
     /**
      * Creates a new instance of RootNode
      */
-    public RootNode(TestSession session, boolean filtered) {
-        super(new RootNodeChildren(session, filtered));
+    public RootNode(TestSession session, int filterMask) {
+        super(new RootNodeChildren(session, filterMask));
         this.session = session;
-        this.filtered = filtered;
+        this.filterMask = filterMask;
         children = (RootNodeChildren) getChildren();
         setName(NbBundle.getMessage(RootNode.class, "MSG_RunningTests"));
 
@@ -201,17 +204,17 @@ final class RootNode extends AbstractNode {
 
     /**
      */
-    void setFiltered(final boolean filtered) {
+    void setFilterMask(final int filterMask) {
         assert EventQueue.isDispatchThread();
 
-        if (filtered == this.filtered) {
+        if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filtered;
+        this.filterMask = filterMask;
 
         Children children = getChildren();
         if (children != Children.LEAF) {
-            ((RootNodeChildren) children).setFiltered(filtered);
+            ((RootNodeChildren) children).setFilterMask(filterMask);
         }
     }
 

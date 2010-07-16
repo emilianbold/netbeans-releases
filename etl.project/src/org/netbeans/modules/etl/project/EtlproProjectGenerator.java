@@ -35,8 +35,9 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.dm.virtual.db.model.DBExplorerUtil;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
+//import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -114,7 +115,7 @@ public class EtlproProjectGenerator {
         dbObj = FileUtil.createFolder(databases);
         FileObject defaultFileObj = dbObj.createFolder(DEFAULT_DB_DIR);
         //dbObj.lock();  
-        MashupTableWizardIterator.setProjectInfo(name, PRJ_LOCATION_DIR, true);
+        ETLEditorSupport.setProjectInfo(name, PRJ_LOCATION_DIR, true);
 
 
         String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
@@ -220,7 +221,7 @@ public class EtlproProjectGenerator {
         } catch (IOException ex) {
         Exceptions.printStackTrace(ex);
         }*/
-        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + DEFAULT_DB_DIR + ":" + name;
+        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + prjName+"_"+DEFAULT_DB_DIR + ":" + name;
         char[] ch = name.toCharArray();
         if (ch == null) {
             String nbBundle10 = "No Database name specified.";//mLoc.t("BUND723: No Database name specified.");

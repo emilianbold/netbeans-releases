@@ -41,7 +41,7 @@ Searchable Keys:
   method : day
   method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|;;Array;
   method : day_fraction|DOCUMENTED|
-  method : downto(min,&block)|DOCUMENTED|
+  method : downto(min,&block)|DOCUMENTED|;;Date;
   method : england|DOCUMENTED|
   method : eql?(other)|DOCUMENTED|;;TrueClass|FalseClass;
   method : gregorian_leap?(y)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
@@ -98,7 +98,7 @@ Searchable Keys:
   method : time|DOCUMENTED|PRIVATE|
   method : to_s|DOCUMENTED|;;String;
   method : today(sg)|DOCUMENTED|STATIC|
-  method : upto(max,&block)|DOCUMENTED|
+  method : upto(max,&block)|DOCUMENTED|;;Date;
   method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : valid_date?|STATIC|;;TrueClass|FalseClass;

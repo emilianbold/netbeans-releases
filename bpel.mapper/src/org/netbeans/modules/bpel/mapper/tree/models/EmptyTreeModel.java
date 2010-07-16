@@ -30,6 +30,7 @@ import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
 
 /**
  * An implementation of the MapperTreeModel whithout its own elements 
@@ -99,12 +100,12 @@ public class EmptyTreeModel implements SoaTreeModel,
     public Boolean isConnectable(TreeItem treeItem) {
         for (SoaTreeExtensionModel extModel : mExtModelList) {
             if (extModel instanceof MapperConnectabilityProvider) {
-            }
-            //
-            Boolean result = ((MapperConnectabilityProvider)extModel).
-                    isConnectable(treeItem);
-            if (result != null) {
-                return result;
+                //
+                Boolean result = ((MapperConnectabilityProvider)extModel).
+                        isConnectable(treeItem);
+                if (result != null) {
+                    return result;
+                }
             }
         }
         //

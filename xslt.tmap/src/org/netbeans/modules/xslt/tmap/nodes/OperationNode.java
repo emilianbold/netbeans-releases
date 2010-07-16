@@ -20,6 +20,8 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.Constants;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
@@ -42,6 +44,10 @@ public class OperationNode extends TMapComponentNode<DecoratedOperation> {
         super(new DecoratedOperation(ref), children, lookup);
     }
     
+    @Override
+    public NodeType getNodeType() {
+        return NodeType.OPERATION;
+    }
 
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
@@ -51,16 +57,38 @@ public class OperationNode extends TMapComponentNode<DecoratedOperation> {
         }
         //
         Sheet.Set mainPropertySet =
-                getPropertySet(sheet);
+                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
         //
         Node.Property prop;
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.OPERATION,
-                "getOperation", "setOperation"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        prop = PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Operation.OPERATION_NAME, PropertyType.OPERATION,
+                "getOperation", "setOperation", null); // NOI18N
+//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
         return sheet;
     }
     
+    @Override
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.ADD_NEWTYPES,
+            ActionType.SEPARATOR,
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES,
+            
+        };
+    }
+    
+    @Override
+    public ActionType[] getAddActionArray() {
+        return new ActionType[] {
+            ActionType.ADD_TRANSFORM,
+            ActionType.ADD_INVOKE
+        };
+    }
+
 }
 

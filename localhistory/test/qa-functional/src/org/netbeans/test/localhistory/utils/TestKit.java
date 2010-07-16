@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,39 +70,31 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
  * @author peter
  */
 public final class TestKit {
-        
-    public static File prepareProject(String category, String project, String project_name) throws Exception {
+
+    public static File prepareProject(String prj_category, String prj_type, String prj_name) throws Exception {
         //create temporary folder for test
-        if (getOsName().indexOf("Mac") > -1) {
-            new NewProjectWizardOperator().invoke().close();
-        }
         String folder = "work" + File.separator + "w" + System.currentTimeMillis();
         File file = new File("/tmp", folder); // NOI18N
         file.mkdirs();
-        file.mkdirs();
         //PseudoVersioned project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory(category);
-        npwo.selectProject(project);
+        npwo.selectCategory(prj_category);
+        npwo.selectProject(prj_type);
         npwo.next();
         NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath()); // NOI18N
-        new JTextFieldOperator(npnlso, 0).setText(project_name); // NOI18N
-        //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
+        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath());
+        new JTextFieldOperator(npnlso, 0).setText(prj_name);
         new NewProjectWizardOperator().finish();
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-        
-        // wait classpath scanning finished
-//        ProjectSupport.waitScanFinished();
-        //new QueueTool().waitEmpty(1000);
-        //ProjectSupport.waitScanFinished();
-        
+
+        ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
+
         return file;
     }
 
@@ -111,10 +106,10 @@ public final class TestKit {
         cb.setSelected(true);
         ndo.yes();
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        ndo.waitClosed(); 
+        ndo.waitClosed();
         //TestKit.deleteRecursively(file);
     }
-    
+
     public static void closeProject(String projectName) {
         long lTimeOut = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
@@ -133,11 +128,12 @@ public final class TestKit {
             }
         }
     }
-    
+
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
-        if (expected == null || actual == null)
+        if (expected == null || actual == null) {
             return -1;
+        }
         if (sorted) {
             if (expected.length != actual.length) {
                 return -1;
@@ -162,13 +158,13 @@ public final class TestKit {
                 } else {
                     return -1;
                 }
-            }    
+            }
             return result;
         }
-        return result; 
-    }  
-    
-    public static void createNewPackage(String projectName, String packageName) { 
+        return result;
+    }
+
+    public static void createNewPackage(String projectName, String packageName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
         nfwo.selectCategory("Java");
@@ -185,11 +181,10 @@ public final class TestKit {
         try {
             osName = System.getProperty("os.name");
         } catch (Throwable e) {
-
         }
         return osName;
     }
-    
+
     public static void createNewElement(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
@@ -201,23 +196,23 @@ public final class TestKit {
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
-    }    
-    
+    }
+
     public static void copyTo(String source, String destination) {
         try {
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source)); 
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination));
             boolean available = true;
             byte[] buffer = new byte[1024];
             int size;
-            try {    
+            try {
                 while (available) {
                     size = bis.read(buffer);
                     if (size != -1) {
                         bos.write(buffer, 0, size);
                     } else {
                         available = false;
-                    }                      
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -225,16 +220,15 @@ public final class TestKit {
                 bos.flush();
                 bos.close();
                 bis.close();
-            }   
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }    
+        }
     }
-    
+
     public static void printLogStream(PrintStream stream, String message) {
         if (stream != null) {
             stream.println(message);
         }
     }
-    
 }

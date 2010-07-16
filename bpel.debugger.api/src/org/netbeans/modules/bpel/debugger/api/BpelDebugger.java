@@ -140,7 +140,7 @@ public abstract class BpelDebugger {
     /**
      * Returns state of the current process instance.
      *
-     * @return state of the the current process instance or
+     * @return state of the current process instance or
      *         {@link ProcessInstance#STATE_UNKNOWN} if there's no
      *         current instance
      *

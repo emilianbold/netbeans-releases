@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,14 +128,17 @@ public final class PhpCoverageProvider implements CoverageProvider {
         CoverageManager.INSTANCE.setEnabled(project, true);
     }
 
+    @Override
     public boolean supportsHitCounts() {
         return true;
     }
 
+    @Override
     public boolean supportsAggregation() {
         return false;
     }
 
+    @Override
     public synchronized boolean isEnabled() {
         if (enabled == null) {
             enabled = CoverageProviderHelper.isEnabled(project);
@@ -140,6 +146,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean on) {
         if (enabled != null && on == enabled) {
             return;
@@ -148,24 +155,29 @@ public final class PhpCoverageProvider implements CoverageProvider {
         CoverageProviderHelper.setEnabled(project, on);
     }
 
-    public synchronized boolean isAggregating() {
+    @Override
+    public boolean isAggregating() {
         throw new IllegalStateException("Aggregating is not supported");
     }
 
-    public synchronized void setAggregating(boolean on) {
+    @Override
+    public void setAggregating(boolean on) {
         throw new IllegalStateException("Aggregating is not supported");
     }
 
+    @Override
     public Set<String> getMimeTypes() {
         return MIME_TYPES;
     }
 
+    @Override
     public void clear() {
         synchronized (lock) {
             coverage = null;
         }
     }
 
+    @Override
     public FileCoverageDetails getDetails(FileObject fo, Document doc) {
         assert fo != null;
         CoverageVO cov = getCoverage();
@@ -186,6 +198,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         return null;
     }
 
+    @Override
     public List<FileCoverageSummary> getResults() {
         CoverageVO cov = getCoverage();
         if (cov == null) {
@@ -201,6 +214,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         return result;
     }
 
+    @Override
     public String getTestAllAction() {
         return null;
     }

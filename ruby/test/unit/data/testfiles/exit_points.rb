@@ -67,4 +67,10 @@ class Dummy
     some.call
   end
 
+  def barry(p)
+    raise "huh" if p
+    "77"
+  rescue => ex
+    77
+  end
 end

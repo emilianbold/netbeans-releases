@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openide.util.Enumerations;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
     /** Factory for all filesystems that want to use TCK in this class.
@@ -385,6 +389,10 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             }
 
             public Enumeration<String> attributes(String name) {
+                if (name.equals("")) {
+                    // say that we have no attributes for the root
+                    return Enumerations.empty();
+                }
                 fail("This method shall not be called: " + name);
                 return null;
             }
@@ -525,6 +533,36 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals("No calls to other attributes of the map", 0, cnt);
         assertEquals("Same hashcode", m1.hashCode(), m2.hashCode());
         assertEquals("Still no calls to other attributes of the map", 0, cnt);
+    }
+
+    public void testMapsForDifferentXMLFSAreNotEqualWithoutCallsToAttributes() throws Exception {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        XMLFileSystem realXMLFS = new XMLFileSystem(f.toURI().toURL());
+        FileObject realfo = realXMLFS.findResource("TestModule/sample.txt");
+        assertNotNull(realfo);
+
+
+        cnt = 0;
+
+        Map m1 = (Map)realfo.getAttribute("map");
+        Map m2 = (Map)fo.getAttribute("map");
+
+        assertFalse("But they are not equal", m1.equals(m2));
+        assertEquals("No calls to other attributes of the map", 0, cnt);
     }
 
     static Map map(Map m) {

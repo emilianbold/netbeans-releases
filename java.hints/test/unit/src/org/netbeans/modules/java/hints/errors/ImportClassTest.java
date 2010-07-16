@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,12 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.junit.RandomlyFails;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.java.hints.errors.ImportClass.FixImport;
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
@@ -54,12 +61,10 @@ public class ImportClassTest extends HintsTestBase {
         super(name);
     }
 
-    @RandomlyFails
     public void testImportHint() throws Exception {
         performTest("ImportTest", "java.util.List", 22, 13);
     }
 
-    @RandomlyFails
     public void testImportHint2() throws Exception {
         performTest("ImportTest2", "java.util.List", 18, 13);
     }
@@ -80,8 +85,11 @@ public class ImportClassTest extends HintsTestBase {
         performTest("ImportTest6", "java.util.Collections", 7, 13);
     }
     
-    public void testImportHintDoNotPropose() throws Exception {
+    public void testImportHintDoNotPropose1() throws Exception {
         performTestDoNotPerform("ImportHintDoNotPropose", 10, 24);
+    }
+
+    public void testImportHintDoNotPropose2() throws Exception {
         performTestDoNotPerform("ImportHintDoNotPropose", 11, 24);
     }
 
@@ -102,5 +110,22 @@ public class ImportClassTest extends HintsTestBase {
     protected String layer() {
         return "org/netbeans/modules/java/hints/errors/only-imports-layer.xml";
     }
-    
+
+    private static final Set<String> IGNORED_IMPORTS = new HashSet<String>(Arrays.asList("com.sun.tools.javac.util.List", "com.sun.xml.internal.bind.v2.schemagen.xmlschema.List"));
+    @Override
+    protected boolean includeFix(Fix f) {
+        if (!(f instanceof FixImport)) {
+            return true;
+        }
+
+        for (String ignore : IGNORED_IMPORTS) {
+            if (f.getText().contains(ignore)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+
 }

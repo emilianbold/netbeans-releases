@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
@@ -65,7 +69,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -74,37 +78,46 @@ import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private List<IncludeDirEntry> systemIncludePaths;
     private List<IncludeDirEntry> userIncludePaths;
+    private List<IncludeDirEntry> userIncludeFilePaths;
     
     private Map<CharSequence, Integer> recurseIncludes = null;
     private static final int MAX_INCLUDE_DEEP = 5;    
     private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
+    private final APTFileSearch fileSearch;
     
     /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
-        this(startFile, new ArrayList<IncludeDirEntry>(), new ArrayList<IncludeDirEntry>());
+        this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
     }
     
     public APTIncludeHandlerImpl(StartEntry startFile,
                                     List<IncludeDirEntry> systemIncludePaths,
-                                    List<IncludeDirEntry> userIncludePaths) {
+                                    List<IncludeDirEntry> userIncludePaths,
+                                    List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
         this.startFile =startFile;
         this.systemIncludePaths = systemIncludePaths;
-        this.userIncludePaths = userIncludePaths;        
+        this.userIncludePaths = userIncludePaths;
+        this.userIncludeFilePaths = userIncludeFilePaths;
+        this.fileSearch = fileSearch;
     }
 
+    @Override
     public boolean pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
         return pushIncludeImpl(path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
     }
 
+    @Override
     public CharSequence popInclude() {
         return popIncludeImpl();
     }
     
+    @Override
     public APTIncludeResolver getResolver(CharSequence path) {
         return new APTIncludeResolverImpl(path, getCurDirIndex(),
-                systemIncludePaths, userIncludePaths);
+                systemIncludePaths, userIncludePaths, fileSearch);
     }
     
+    @Override
     public StartEntry getStartEntry() {
         return startFile;
     }
@@ -126,10 +139,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
+    @Override
     public State getState() {
         return createStateImpl();
     }
     
+    @Override
     public void setState(State state) {
         if (state instanceof StateImpl) {
 	    StateImpl stateImpl = ((StateImpl)state);
@@ -141,20 +156,31 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     protected StateImpl createStateImpl() {
         return new StateImpl(this);
     }
+
+    /*package*/List<IncludeDirEntry> getUserIncludeFilePaths() {
+        return Collections.unmodifiableList(userIncludeFilePaths);
+    }
+
+    /*package*/boolean isFirstLevel() {
+        return inclStack == null || inclStack.isEmpty();
+    }
     
     /** immutable state object of include handler */ 
     public final static class StateImpl implements State, Persistent, SelfPersistent {
         // for now just remember lists
         private final List<IncludeDirEntry> systemIncludePaths;
         private final List<IncludeDirEntry> userIncludePaths;
+        private final List<IncludeDirEntry> userIncludeFilePaths;
         private final StartEntry   startFile;
         
         private final Map<CharSequence, Integer> recurseIncludes;
         private final LinkedList<IncludeInfo> inclStack;
+        private int hashCode = 0;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
             this.userIncludePaths = handler.userIncludePaths;
+            this.userIncludeFilePaths = handler.userIncludeFilePaths;
             this.startFile = handler.startFile;
             
             if (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) {
@@ -181,10 +207,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             if (cleanState) {
                 this.systemIncludePaths = Collections.emptyList();
                 this.userIncludePaths = Collections.emptyList();
+                this.userIncludeFilePaths = Collections.emptyList();
                 this.recurseIncludes = null;
             } else {
                 this.systemIncludePaths = other.systemIncludePaths;
                 this.userIncludePaths = other.userIncludePaths;
+                this.userIncludeFilePaths = other.userIncludeFilePaths;
                 this.recurseIncludes = other.recurseIncludes;
             }
         }
@@ -195,6 +223,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         private void restoreTo(APTIncludeHandlerImpl handler) {
             handler.userIncludePaths = this.userIncludePaths;
+            handler.userIncludeFilePaths = this.userIncludeFilePaths;
             handler.systemIncludePaths = this.systemIncludePaths;
             handler.startFile = this.startFile;
             
@@ -213,9 +242,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
         @Override
         public String toString() {
-            return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
+            return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, recurseIncludes, inclStack);
         }
         
+        @Override
         public void write(DataOutput output) throws IOException {
             assert output != null;
             startFile.write(output);
@@ -236,6 +266,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 output.writeUTF(userIncludePaths.get(i).getAsString());
             }
             
+            size = userIncludeFilePaths.size();
+            output.writeInt(size);
+            
+            for (int i = 0; i < size; i++) {
+                output.writeUTF(userIncludeFilePaths.get(i).getAsString());
+            }
+
             if (recurseIncludes == null) {
                 output.writeInt(-1);
             } else {
@@ -283,20 +320,27 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             startFile = new StartEntry(input);
 
-            systemIncludePaths = new ArrayList<IncludeDirEntry>();
             int size = input.readInt();
+            systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
                 IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
                 systemIncludePaths.add(i, path);
             }
             
-            userIncludePaths = new ArrayList<IncludeDirEntry>();
             size = input.readInt();
+            userIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
                 IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
                 userIncludePaths.add(i, path);                
             }
-            
+
+            size = input.readInt();
+            userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
+            for (int i = 0; i < size; i++) {
+                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                userIncludeFilePaths.add(i, path);
+            }
+
             size = input.readInt();
             if (size == -1) {
                 recurseIncludes = null;
@@ -343,9 +387,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
-            hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+            int hash = hashCode;
+            if (hash == 0) {
+                hash = 5;
+                hash = 67 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
+                hash = 67 * hash + (this.inclStack != null ? this.inclStack.hashCode() : 0);
+                hashCode = hash;
+            }
             return hash;
         }
         
@@ -389,6 +437,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         /*package*/ List<IncludeDirEntry> getUserIncludePaths() {
             return this.userIncludePaths;
         }        
+
+        /*package*/ List<IncludeDirEntry> getUserIncludeFilePaths() {
+            return this.userIncludeFilePaths;
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -400,7 +452,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             inclStack = new LinkedList<IncludeInfo>();
             recurseIncludes = new HashMap<CharSequence, Integer>();
         }
-        assert path instanceof TinyCharSequence : "must be char sequence key " + path; // NOI18N
+        assert CharSequences.isCompact(path) : "must be char sequence key " + path; // NOI18N
         Integer counter = recurseIncludes.get(path);
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
@@ -437,14 +489,17 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             resolvedDirIndex = input.readInt();
         }
 
+        @Override
         public CharSequence getIncludedPath() {
             return path;
         }
 
+        @Override
         public int getIncludeDirectiveLine() {
             return directiveLine;
         }
 
+        @Override
         public int getIncludeDirectiveOffset() {
             return directiveOffset;
         }
@@ -478,6 +533,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return hash;
         }
 
+        @Override
         public void write(final DataOutput output) throws IOException {
             assert output != null;
             
@@ -487,6 +543,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             output.writeInt(resolvedDirIndex);
         }
 
+        @Override
         public int getIncludedDirIndex() {
             return this.resolvedDirIndex;
         }
@@ -511,15 +568,20 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     
     @Override
     public String toString() {
-        return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
+        return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, recurseIncludes, inclStack);
     }    
     
     private static String toString(CharSequence startFile,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
+                                    List<IncludeDirEntry> userIncludeFilePaths,
                                     Map<CharSequence, Integer> recurseIncludes,
                                     LinkedList<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();
+        if (!userIncludeFilePaths.isEmpty()) {
+            retValue.append("User File Includes:\n"); // NOI18N
+            retValue.append(APTUtils.includes2String(userIncludeFilePaths));
+        }
         retValue.append("User includes:\n"); // NOI18N
         retValue.append(APTUtils.includes2String(userIncludePaths));
         retValue.append("\nSys includes:\n"); // NOI18N

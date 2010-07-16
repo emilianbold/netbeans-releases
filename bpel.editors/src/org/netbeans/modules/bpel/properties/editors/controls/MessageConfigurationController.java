@@ -223,7 +223,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                 super.getListCellRendererComponent(
                         list, value, index, isSelected, cellHasFocus);
                 if (value != null && value instanceof PartnerLink) {
-                    String plName = ((PartnerLink)value).getName();
+                    String plName = ((PartnerLink) value).getName();
                     setText(plName);
                     // setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 2));
                 }
@@ -415,6 +415,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         NewMessageVarChooser chooser = new NewMessageVarChooser(
                 omElement, operation.getName(), message, direction);
         chooser.initControls();
+        chooser.setEditor(myEditor);
         //
         String title = NbBundle.getMessage(FormBundle.class,
                 isInputVar ? "DLG_NewInputVariable" : "DLG_NewOutputVariable"); // NOI18N
@@ -479,29 +480,31 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                         //
                         // Load a list of PartnerLink
                         PartnerLink[] partnerLinkArr = plContainer.getPartnerLinks();
-
                         List<PartnerLink> pList = new ArrayList<PartnerLink>();
                         for (int i = 0; i < partnerLinkArr.length; i++) {
                             PartnerLink pLink = partnerLinkArr[i];
                             if (myEditor instanceof InvokeCustomEditor &&
-                                    pLink.getPartnerRole() != null) {
-                                pList.add(pLink);
+                                    pLink.getPartnerRole() != null)
+                            {
+                                 pList.add(pLink);
                             }
 
                             if ((myEditor instanceof ReceiveCustomEditor ||
                                     myEditor instanceof OnMessageCustomEditor ||
                                     myEditor instanceof OnEventCustomEditor ||
                                     myEditor instanceof ReplyCustomEditor) &&
-                                    pLink.getMyRole() != null) {
+                                    pLink.getMyRole() != null)
+                            {
                                 pList.add(pLink);
                             }
                         }
+
                         cbxPartnerLink.setModel(
                                 new DefaultComboBoxModel(pList.toArray()));
                         //
                         // Set selection to PartnerLink combo-box
                         cbxPartnerLink.setSelectedIndex(-1);
-                        Property plProp = PropertyUtils.lookForPropertyByType(
+                        Property plProp = PropertyUtils.getInstance().lookForPropertyByType(
                                 myEditor.getEditedNode(), PropertyType.PARTNER_LINK);
                         if (plProp != null) {
                             BpelReference<PartnerLink> pLinkRef =
@@ -537,7 +540,8 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         Property prop = null;
         //
         PartnerLink pLink = (PartnerLink)cbxPartnerLink.getSelectedItem();
-        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PARTNER_LINK);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
+        prop = propUtil.lookForPropertyByType(node, PropertyType.PARTNER_LINK);
         if ( prop != null ) {
             if (pLink != null) {
                 BpelReference<PartnerLink> pLinkRef =
@@ -549,7 +553,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         }
         //
         Operation operation = (Operation)cbxOperation.getSelectedItem();
-        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OPERATION);
+        prop = propUtil.lookForPropertyByType(node, PropertyType.OPERATION);
         if ( prop != null ) {
             if (operation != null) {
                 WSDLReference<Operation> operRef =
@@ -560,7 +564,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
             }
         }
         //
-        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PORT_TYPE);
+        prop = propUtil.lookForPropertyByType(node, PropertyType.PORT_TYPE);
         if ( prop != null ) {
             if (currPortType != null){
                 WSDLReference<PortType> pTypeRef =
@@ -574,7 +578,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         //
         //
         if (declarationVisible) {
-            prop = PropertyUtils.lookForPropertyByType(
+            prop = propUtil.lookForPropertyByType(
                     node, PropertyType.EVENT_VARIABLE_NAME);
             if (prop != null) {
                 String varName = fldVariableName.getText();
@@ -587,7 +591,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         }
         //
         if (inputVisible) {
-            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.INPUT);
+            prop = propUtil.lookForPropertyByType(node, PropertyType.INPUT);
             if ( prop != null ) {
                 if (currInputVar != null) {
                     VariableDeclaration varDecl = currInputVar.createNewVariable();
@@ -602,7 +606,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         }
         //
         if (outputVisible) {
-            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OUTPUT);
+            prop = propUtil.lookForPropertyByType(node, PropertyType.OUTPUT);
             if ( prop != null ){
                 if (currOutputVar != null && isOutputVarEnabled) {
                     VariableDeclaration varDecl = currOutputVar.createNewVariable();
@@ -689,7 +693,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         try {
             //
             // Try set selection to current operation
-            Property operProp = PropertyUtils.lookForPropertyByType(
+            Property operProp = PropertyUtils.getInstance().lookForPropertyByType(
                     myEditor.getEditedNode(), PropertyType.OPERATION);
             if(operProp != null) {
                 WSDLReference<Operation> operRef =
@@ -726,9 +730,10 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
      */
     private void setCurrentVariables() {
         try {
+            PropertyUtils propUtil = PropertyUtils.getInstance();
             //
             if (declarationVisible) {
-                Property varNameProp = PropertyUtils.lookForPropertyByType(
+                Property varNameProp = propUtil.lookForPropertyByType(
                         myEditor.getEditedNode(), PropertyType.EVENT_VARIABLE_NAME);
                 if (varNameProp != null) {
                     String varName = (String)varNameProp.getValue();
@@ -751,7 +756,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                         Input input = operation.getInput();
                         boolean inputFound = false;
                         if (input != null) {
-                            Property inputProp = PropertyUtils.lookForPropertyByType(
+                            Property inputProp = propUtil.lookForPropertyByType(
                                     myEditor.getEditedNode(), PropertyType.INPUT);
                             if (inputProp != null) {
                                 BpelReference<VariableDeclaration> varRef =
@@ -781,7 +786,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                         Output output = operation.getOutput();
                         boolean outputFound = false;
                         if (output != null) {
-                            Property outputProp = PropertyUtils.lookForPropertyByType(
+                            Property outputProp = propUtil.lookForPropertyByType(
                                     myEditor.getEditedNode(), PropertyType.OUTPUT);
                             if (outputProp != null) {
                                 BpelReference<VariableDeclaration> varRef =

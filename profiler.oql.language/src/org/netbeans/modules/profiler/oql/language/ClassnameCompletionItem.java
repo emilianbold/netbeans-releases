@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,8 +63,10 @@ public class ClassnameCompletionItem implements CompletionItem {
     final private String sortPrefix;
     final private int caret;
     final private int correction;
+    final private String pkgName;
+    final private String typeName;
 
-    final private static Color fieldColor = Color.BLACK;
+    final private static Color fieldColor = Color.decode("0xa38000");
 
     public ClassnameCompletionItem(String sortPrefix, String text, int caretOffset) {
         this(sortPrefix, text, caretOffset, 0);
@@ -72,6 +77,14 @@ public class ClassnameCompletionItem implements CompletionItem {
         this.caret = caretOffset;
         this.correction = correction;
         this.sortPrefix = sortPrefix;
+        int pkgPos = text.lastIndexOf('.');
+        if (pkgPos > -1) {
+            pkgName = text.substring(0, pkgPos);
+            typeName = text.substring(pkgPos + 1);
+        } else {
+            pkgName = "";
+            typeName = text;
+        }
     }
 
     public CompletionTask createDocumentationTask() {
@@ -83,13 +96,19 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public void defaultAction(JTextComponent component) {
-        BaseDocument doc = (BaseDocument) component.getDocument();
-        try {
-            doc.remove(caret, correction);
-            doc.insertString(caret, text, null);
-        } catch (BadLocationException ex) {
-            // shouldn't happen
-        }
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        doc.runAtomicAsUser(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    doc.remove(caret, correction);
+                    doc.insertString(caret, text, null);
+                } catch (BadLocationException ex) {
+                    // shouldn't happen
+                }
+            }
+        });
         //This statement will close the code completion box:
         Completion.get().hideAll();
 
@@ -100,7 +119,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(text, null, g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(typeName + " (" + text + ")", null, g, defaultFont);
     }
 
     public int getSortPriority() {
@@ -121,7 +140,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(null, "<i>"+text+"</i>", null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
+        CompletionUtilities.renderHtml(null, "<b>"+typeName+"</b> <i>(" + text + ")</i>", null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
     }
 
 }

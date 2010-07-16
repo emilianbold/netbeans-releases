@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,7 @@ import org.openide.util.Utilities;
  */
 public class FolderObjTest extends NbTestCase {
     File testFile;
+    Logger LOG;
     
     public FolderObjTest(String testName) {
         super(testName);
@@ -89,6 +93,7 @@ public class FolderObjTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
         testFile = getWorkDir();        
     }
 
@@ -96,7 +101,8 @@ public class FolderObjTest extends NbTestCase {
     protected Level logLevel() {
         String[] testsWithEnabledLogger = new String[] {
             "testCreateFolder72617",
-            "testCreateData72617"
+            "testCreateData72617",
+            "testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
             Level.FINEST : Level.OFF;
@@ -314,9 +320,12 @@ public class FolderObjTest extends NbTestCase {
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.refresh();
         assertNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertFalse(existsChild(workDirFo, fold.getName()));        
+        assertFalse(existsChild(workDirFo, fold.getName()));
+        LOG.info("Before mkdir: " + fold);
         fold.mkdir();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));
+        LOG.info("After mkdir: " + fold);
+        assertNotNull("Just created folder shall be visible", workDirFo.getFileObject(fold.getName()));
+        LOG.info("OK, passed thru");
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
@@ -365,18 +374,6 @@ public class FolderObjTest extends NbTestCase {
         FileObj bfo = (FileObj)testRoot.createData(getName());
 
         int expectedSize = 264;
-        if(System.getProperty("java.version").startsWith("1.5")) {
-            /* java.lang.ref.ReferenceQueue has one more field (queueEmpty) on JDK1.5
-             * and that's why size is bigger of 2x8 bytes.
-             * JDK1.5:
-             * java.lang.ref.ReferenceQueue$Null: 1, 32B
-             * org.openide.util.Utilities$ActiveQueue: 1, 40B 
-             * JDK1.6:
-             * java.lang.ref.ReferenceQueue$Null: 1, 24B
-             * org.openide.util.Utilities$ActiveQueue: 1, 32B
-             */
-            expectedSize = 280;
-        }
         /* assertSize(FileObj) JDK1.6.0:
          * 
          * java.lang.ref.ReferenceQueue$Null: 1, 32B
@@ -1575,7 +1572,7 @@ public class FolderObjTest extends NbTestCase {
         assertEquals(stepsCount,createdIncrement.size());
         assertEquals(stepsCount,deletedIncrement.size());
         
-    }
+     }
     
     public void testRefreshDoesNotMultiplyFileObjects_89059 () throws Exception {
         FileObject fo = FileBasedFileSystem.getFileObject(testFile);

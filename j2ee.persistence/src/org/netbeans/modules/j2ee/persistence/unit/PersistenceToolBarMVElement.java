@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,12 +47,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
@@ -97,8 +104,10 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         factory=new PersistenceUnitPanelFactory(comp,dObj);
         setVisualEditor(comp);
         repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
+            @Override
             public void run() {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         repaintView();
                     }
@@ -108,6 +117,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         
     }
     
+    @Override
     public SectionView getSectionView() {
         return view;
     }
@@ -162,6 +172,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         return true;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
         if (PUDataObject.PERSISTENCE_UNIT_ADDED_OR_REMOVED.equals(name)){
@@ -294,10 +305,11 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             super(actionName);
         }
         
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             boolean isContainer = Util.isSupportedJavaEEVersion(project);
             final PersistenceUnitWizardPanel panel;
-            if (isContainer) {
+            if (isContainer && ProviderUtil.isValidServerInstanceOrNone(project)) {
                 panel = new PersistenceUnitWizardPanelDS(project, null, true);
             } else {
                 panel = new PersistenceUnitWizardPanelJdbc(project, null, true);
@@ -311,6 +323,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     null, null
                     );
             panel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -350,8 +363,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                             punit.setTransactionType("RESOURCE_LOCAL");
                         }
                     }
+                    Provider provider = puPanel.getSelectedProvider();
                     if (puPanel.isNonDefaultProviderEnabled()) {
                         punit.setProvider(puPanel.getNonDefaultProvider());
+                        Library lib = PersistenceLibrarySupport.getLibrary(provider);
+                        if (lib != null && !Util.isDefaultProvider(project, provider)) {
+                            Util.addLibraryToProject(project, lib);
+                            provider = null;//to avoid one more addition
+                        }
+                    }
+                    if(provider != null && provider.getAnnotationProcessor() != null){
+                        Library lib = PersistenceLibrarySupport.getLibrary(provider);
+                        if (lib != null){
+                            Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                        }
                     }
                 } else {
                     PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
@@ -361,6 +386,8 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     if (lib != null){
                         Util.addLibraryToProject(project, lib);
                     }
+                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(puJdbc.getPersistenceConnection().getDriverClass());
+                    PersistenceLibrarySupport.addDriver(project, driver[0]);
                 }
                 
                 punit.setName(panel.getPersistenceUnitName());
@@ -397,6 +424,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             super(actionName);
         }
         
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             SectionPanel sectionPanel = ((SectionPanel.HeaderButton)evt.getSource()).getSectionPanel();
             PersistenceUnit punit = (PersistenceUnit) sectionPanel.getKey();

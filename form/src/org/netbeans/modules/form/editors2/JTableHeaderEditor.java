@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,6 +78,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * 
      * @return diaplay name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "TableHeaderEditor"); // NOI18N
     }
@@ -85,6 +89,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
     }
@@ -92,6 +97,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -236,6 +242,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
         reorderingCheckBox.setSelected(reordering);
     }
     
+    @Override
     public String getSourceCode() {
         RADProperty property = (RADProperty)this.property;
         RADComponent comp = property.getRADComponent();
@@ -269,6 +276,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
     private static final String ATTR_RESIZING = "resizingAllowed"; // NOI18N
     private static final String ATTR_REORDERING = "reorderingAllowed"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         Node node = attributes.getNamedItem(ATTR_RESIZING);
@@ -284,6 +292,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
         setValue(new FormTableHeader(property, resizing, reordering));
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         org.w3c.dom.Element el = null;
@@ -321,6 +330,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
             return reorderingAllowed;
         }
         
+        @Override
         public Object getDesignValue() {
             Object value = null;
             try {

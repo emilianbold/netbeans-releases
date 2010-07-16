@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,6 +79,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         title = NbBundle.getMessage(PanelConfigureProject.class, "LAB_ConfigureProject"); // NOI18N
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField, type);
@@ -83,16 +87,18 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         return component;
     }
 
+    @Override
     public String getName() {
         return title;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             return new HelpCtx("NewAppWizard"); // NOI18N
-        } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB) {
+        } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_DYNAMIC_LIB) {
             return new HelpCtx("NewDynamicLibWizard"); // NOI18N
-        } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB) {
+        } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_STATIC_LIB) {
             return new HelpCtx("NewStaticLibWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
             return new HelpCtx("NewMakeWizardP1"); // NOI18N
@@ -101,18 +107,21 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -130,6 +139,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         if (initialized) {
             return;
@@ -146,11 +156,14 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = true;
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         WizardDescriptor d = settings;
         component.store(d);
+        initialized = false;
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }

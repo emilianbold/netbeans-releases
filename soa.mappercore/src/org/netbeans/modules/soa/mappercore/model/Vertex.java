@@ -33,7 +33,6 @@ import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
-import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
  *
@@ -344,7 +343,7 @@ public abstract class Vertex implements SourcePin, GraphItem {
                         : MapperStyle.LINK_COLOR_SELECTED_NODE;
             }
             
-            link.paintSourceDecoration(g2, new Point(x0, y0), color, step);
+            Link.paintSourceDecoration(g2, new Point(x0, y0), color, step);
         }
     }
     

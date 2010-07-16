@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.Iterator;
+import org.netbeans.swing.plaf.util.UIUtils;
 
 /**
  * Value which will look something up via reflection from the GTK theme.
@@ -177,14 +180,14 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     private static void checkFunctioning() {
         functioning = Boolean.FALSE;
         try {
-            gtkLookAndFeel = Class.forName ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //NOI18N 
-            synthLookAndFeel = Class.forName ("javax.swing.plaf.synth.SynthLookAndFeel"); //NOI18N
-            region = Class.forName ("javax.swing.plaf.synth.Region"); //NOI18N
-            synthStyle = Class.forName ("javax.swing.plaf.synth.SynthStyle"); //NOI18N
-            synthContext = Class.forName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
-            colorType = Class.forName ("javax.swing.plaf.synth.ColorType"); //NOI18N
-            gtkColorType = Class.forName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
-            synthUI = Class.forName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
+            gtkLookAndFeel = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //NOI18N
+            synthLookAndFeel = UIUtils.classForName ("javax.swing.plaf.synth.SynthLookAndFeel"); //NOI18N
+            region = UIUtils.classForName ("javax.swing.plaf.synth.Region"); //NOI18N
+            synthStyle = UIUtils.classForName ("javax.swing.plaf.synth.SynthStyle"); //NOI18N
+            synthContext = UIUtils.classForName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
+            colorType = UIUtils.classForName ("javax.swing.plaf.synth.ColorType"); //NOI18N
+            gtkColorType = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
+            synthUI = UIUtils.classForName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
 
 
             synthContextConstructor = synthContext.getDeclaredConstructor(
@@ -235,7 +238,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
 
             functioning = Boolean.TRUE;
         } catch (Exception e) {
-            System.err.println ("Cannot initialize GTK colors - using hardcoded defaults " + e.getMessage()); //NOI18N
+            System.err.println ("Cannot initialize GTK colors - using hardcoded defaults: " + e); //NOI18N
             if (log) {
                 e.printStackTrace();
             }

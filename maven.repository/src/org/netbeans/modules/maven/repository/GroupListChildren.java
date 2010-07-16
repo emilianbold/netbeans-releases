@@ -66,8 +66,10 @@ import org.openide.util.WeakListeners;
  */
 public class GroupListChildren extends Children.Keys implements ChangeListener {
 
+    private static final RequestProcessor RP = new RequestProcessor(GroupListChildren.class);
+
     public static final Object LOADING = new Object();
-   private RepositoryInfo info;
+    private RepositoryInfo info;
     public static Node createLoadingNode() {
         AbstractNode nd = new AbstractNode(Children.LEAF){
 
@@ -108,7 +110,7 @@ public class GroupListChildren extends Children.Keys implements ChangeListener {
     
     public void refreshGroups() {
         setKeys(Collections.singletonList(LOADING));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 keys = new ArrayList(RepositoryQueries.getGroups(info));
                 setKeys(keys);

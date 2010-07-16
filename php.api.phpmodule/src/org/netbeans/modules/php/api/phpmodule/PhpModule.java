@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,14 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -88,13 +93,29 @@ public abstract class PhpModule {
     public abstract PhpModuleProperties getProperties();
 
     /**
+     * Get {@link Preferences} of this PHP module.
+     * This method is suitable for storing (and reading) PHP module specific properties.
+     * For more information, see {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)}.
+     * @param clazz a class which defines the namespace of preferences
+     * @param shared whether the returned settings should be shared
+     * @return {@link Preferences} for this PHP module and the given class
+     * @since 1.26
+     * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
+     */
+    public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
+
+    /**
      * Gets PHP module for the given {@link FileObject}.
      * @param fo {@link FileObject} to get PHP module for
      * @return PHP module or <code>null</code> if not found
      * @since 1.16
      */
     public static PhpModule forFileObject(FileObject fo) {
-        return lookupPhpModule(FileOwnerQuery.getOwner(fo));
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        return lookupPhpModule(project);
     }
 
     /**
@@ -128,9 +149,12 @@ public abstract class PhpModule {
 
         // next try main project
         OpenProjects projects = OpenProjects.getDefault();
-        result = lookupPhpModule(projects.getMainProject());
-        if (result != null) {
-            return result;
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            result = lookupPhpModule(mainProject);
+            if (result != null) {
+                return result;
+            }
         }
 
         // next try other opened projects
@@ -143,14 +167,27 @@ public abstract class PhpModule {
         return null;
     }
 
-    private static PhpModule lookupPhpModule(Project project) {
-        if (project != null) {
-            return lookupPhpModule(project.getLookup());
-        }
-        return null;
+    /**
+     * Get {@link PhpModule PHP module} from the given project.
+     * @param project a PHP project where to look for a PHP module for
+     * @return PHP module or {@code null} if not found
+     * @see 1.38
+     */
+    public static PhpModule lookupPhpModule(Project project) {
+        Parameters.notNull("project", project);
+
+        return lookupPhpModule(project.getLookup());
     }
 
-    private static PhpModule lookupPhpModule(Lookup lookup) {
+    /**
+     * Get {@link PhpModule PHP module} from the given lookup.
+     * @param project a PHP project where to look for a PHP module for
+     * @return PHP module or {@code null} if not found
+     * @see 1.38
+     */
+    public static PhpModule lookupPhpModule(Lookup lookup) {
+        Parameters.notNull("lookup", lookup);
+
         // try directly
         PhpModule result = lookup.lookup(PhpModule.class);
         if (result != null) {
@@ -165,5 +202,30 @@ public abstract class PhpModule {
             }
         }
         return null;
+    }
+
+    /**
+     * This class is used to notify about changes in the direction from frameworks to PHP module.
+     * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
+     * @since 1.26
+     */
+    public enum Change {
+        /**
+         * Directory with source files changed.
+         */
+        SOURCES_CHANGE,
+        /**
+         * Directory with test files changed.
+         */
+        TESTS_CHANGE,
+        /**
+         * Directory with Selenium files changed.
+         */
+        SELENIUM_CHANGE,
+        /**
+         * Ignored files changed.
+         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
+         */
+        IGNORED_FILES_CHANGE,
     }
 }

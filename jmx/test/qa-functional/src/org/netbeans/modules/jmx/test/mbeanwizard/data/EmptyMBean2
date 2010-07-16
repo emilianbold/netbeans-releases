@@ -9,7 +9,7 @@ import javax.management.*;
 
 /**
  * Class EmptyMBean2
- * 
+ *
  * @author <author>
  */
 public class EmptyMBean2 implements EmptyMBean2MXBean {

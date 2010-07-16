@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -104,7 +107,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
-import javax.swing.table.TableCellRenderer;
 
 /**
  * <UL>Extended JTable (ETable) adds these features to JTable:
@@ -389,11 +391,6 @@ public class ETable extends JTable {
         if(editing == FULLY_NONEDITABLE) {
             return false;
         }
-        //In 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its isCellEditable(), otherwise we have to translate the row
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
-            row = convertRowIndexToModel(row);
-        }
         return super.isCellEditable(row, column);
     }
 
@@ -644,11 +641,6 @@ public class ETable extends JTable {
     @Override
     public Object getValueAt(int row, int column) {
         int modelRow = row;
-        //#144502: in 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its getValueAt, otherwise we have translate the index
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N //NOI18N
-            modelRow = convertRowIndexToModel(row);
-        }
         return super.getValueAt(modelRow, column);
     }
 
@@ -658,11 +650,6 @@ public class ETable extends JTable {
      */
     @Override
     public void setValueAt(Object aValue, int row, int column) {
-        //In 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its setValueAt(), otherwise we have to translate the row
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
-            row = convertRowIndexToModel(row);
-        }
         super.setValueAt(aValue, row, column);
     }
 
@@ -1327,7 +1314,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new EqualsQuickFilter(column, value, equals));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new EqualsQuickFilter(modelColumn, value, equals));
         return res;
     }
     
@@ -1385,7 +1373,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new CompareQuickFilter(column, value, greater, equalsCounts));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new CompareQuickFilter(modelColumn, value, greater, equalsCounts));
         return res;
     }
     

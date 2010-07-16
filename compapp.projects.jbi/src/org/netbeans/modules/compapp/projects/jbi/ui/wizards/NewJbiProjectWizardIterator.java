@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,9 @@ package org.netbeans.modules.compapp.projects.jbi.ui.wizards;
 import java.util.LinkedHashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.JbiProjectGenerator;
 
-import org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.OpenEditorAction;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.WizardDescriptor;
@@ -56,8 +57,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import java.awt.Component;
@@ -67,7 +66,6 @@ import java.io.IOException;
 
 import java.text.MessageFormat;
 
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -154,11 +152,6 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
         return resultSet;
     }    
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param wiz DOCUMENT ME!
-     */
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -182,19 +175,14 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
                 JComponent jc = (JComponent) c;
 
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param wiz DOCUMENT ME!
-     */
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
         this.wiz.putProperty(WizardProperties.NAME, null);
@@ -202,43 +190,24 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
         panels = null;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String name() {
         return MessageFormat.format(
             NbBundle.getBundle("org/netbeans/modules/compapp/projects/jbi/ui/wizards/Bundle").getString( // NOI18N
                 "LBL_WizardStepsCount" // NOI18N
-            ), 
-            new String[] {
-                (new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()
-            }
+            ),
+            "" + (index + 1), // NOI18N
+            "" + panels.length // NOI18N
         ); 
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public boolean hasNext() {
         return index < (panels.length - 1);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public boolean hasPrevious() {
         return index > 0;
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -247,9 +216,6 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
         index++;
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -258,11 +224,6 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
         index--;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
@@ -271,11 +232,6 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
     public final void addChangeListener(ChangeListener l) {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param l DOCUMENT ME!
-     */
     public final void removeChangeListener(ChangeListener l) {
     }
 }

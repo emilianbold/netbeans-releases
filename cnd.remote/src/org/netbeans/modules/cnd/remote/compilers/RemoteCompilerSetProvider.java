@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,18 +44,17 @@ package org.netbeans.modules.cnd.remote.compilers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.util.Exceptions;
 
 /**
  * @author gordonp
@@ -61,6 +63,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private final ExecutionEnvironment env;
+    private AtomicBoolean canceled = new AtomicBoolean(false);
 
     /*package-local*/ RemoteCompilerSetProvider(ExecutionEnvironment env) {
         if (env == null) {
@@ -72,9 +75,22 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     @Override
     public void init() {
         manager = new CompilerSetScriptManager(env);
-        manager.runScript();
+        if (!canceled.get()) {
+            manager.runScript();
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        canceled.set(true);
+        CompilerSetScriptManager aManager = manager;
+        if (aManager != null) {
+            return aManager.cancel();
+        }
+        return false;
     }
     
+    @Override
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
@@ -98,20 +114,20 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         }
     }
 
+    @Override
     public boolean hasMoreCompilerSets() {
+        if (canceled.get()) {
+            return false;
+        }
         return manager.hasMoreCompilerSets();
     }
 
+    @Override
     public String getNextCompilerSetData() {
         return manager.getNextCompilerSetData();
     }
 
-    public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-        return new Runnable() {
-            public void run() {}
-        };
-    }
-
+    @Override
     public String[] getCompilerSetData(String path) {
         //RemoteCommandSupport rcs = new RemoteCommandSupport(env,
         //        CompilerSetManager.getRemoteScriptFile() + " " + path); //NOI18N
@@ -124,7 +140,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
             Process process = pb.call();
-            process.getOutputStream().write(CompilerSetManager.getRemoteScript(path).getBytes());
+            process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path).getBytes());
             process.getOutputStream().close();
 
             List<String> lines = ProcessUtils.readProcessOutput(process);
@@ -133,17 +149,17 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             try {
                 status = process.waitFor();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
 
             if (status != 0) {
-               RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+               RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
                 ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
             } else {
                 return lines.toArray(new String[lines.size()]);
             }
         } catch (IOException ex) {
-            RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
+            RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
         }
         return null;
     }

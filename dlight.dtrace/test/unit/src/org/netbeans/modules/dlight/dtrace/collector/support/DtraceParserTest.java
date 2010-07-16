@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
@@ -71,6 +75,11 @@ public class DtraceParserTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     @Test
     public void testTwoColumns() throws IOException {
         DataTableMetadata metadata = new DataTableMetadata(
@@ -78,6 +87,17 @@ public class DtraceParserTest extends NbTestCase {
                 Arrays.asList(
                         new Column("timestamp", Long.class),
                         new Column("cpu", Integer.class)),
+                null);
+        doTest(getDataFile(), new DtraceParser(metadata));
+    }
+
+    @Test
+    public void testStrings() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "strings",
+                Arrays.asList(
+                        new Column("timestamp", Long.class),
+                        new Column("filename", String.class)),
                 null);
         doTest(getDataFile(), new DtraceParser(metadata));
     }
@@ -95,6 +115,28 @@ public class DtraceParserTest extends NbTestCase {
                         new Column("stackid", Long.class)),
                 null);
         doTest(getDataFile(), new DtraceDataAndStackParser(metadata, new SDSImpl()));
+    }
+
+    @Test
+    public void testMysql() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "mysql",
+                Arrays.asList(
+                        new Column("timestamp", Time.class),
+                        new Column("query", String.class),
+                        new Column("time", Long.class)),
+                null);
+
+        DtraceParser parser = new DtraceParser(metadata);
+        DataRow row = parser.process("32008075846  \"select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'\\0\"  121419");
+        assertEquals(
+                Arrays.<Object>asList(
+                        Long.valueOf(32008075846L),
+                        "select md5sum, indexdate from sphider_links where url='http://dptwiki.sfbay.sun.com/twiki/bin/view/Sunstudio/AllAccessKit1206DVDNetBeansIDE?rev=7&amp;sortcol=5;table=1;up=0'",
+                        Long.valueOf(121419)),
+                row.getData());
+
+        assertNull(parser.processClose());
     }
 
     protected File getDataFile() {

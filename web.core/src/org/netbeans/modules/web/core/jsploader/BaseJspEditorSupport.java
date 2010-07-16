@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,7 +58,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -100,6 +102,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         LineCookie, CloseCookie, PrintCookie {
 
     private static final Logger LOGGER = Logger.getLogger(BaseJspEditorSupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(BaseJspEditorSupport.class.getSimpleName(), 4);
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     private Task PARSER_RESTART_TASK;
     /** Cash of encoding of the file */
@@ -136,7 +139,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             }
         };
 
-        PARSER_RESTART_TASK = RequestProcessor.getDefault().create(new Runnable() {
+        PARSER_RESTART_TASK = RP.create(new Runnable() {
             public void run() {
                 final TagLibParseSupport sup = (TagLibParseSupport) getDataObject().getCookie(TagLibParseSupport.class);
                 if (sup != null && WebModule.getWebModule(getDataObject().getPrimaryFile()) != null) {
@@ -246,66 +249,39 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
 
     @Override
+    //runs in non-AWT thread
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        //update the encoding - will access the jsp parser, may take longer time
         ((JspDataObject) getDataObject()).updateFileEncoding(false);
-        super.loadFromStreamToKit(doc, stream, kit);
-    }
-
-    @Override
-    public void open() {
-        //the call to updateFileEncoding() method can potentially take long
-        //time if the JspParser is used to determine the page encoding.
-        //There is a FastOpenInfoParser implementation which should quickly
-        //find the encoding in most cases, but under some circumstances the
-        //heavyweight jsp parser is started and asked for the page encoding.
-        //in such case the AWT thread may be blocked for a long time, so
-        //I am moving the call to the parser to another thread and once the
-        //parser finishes the open method on the editor suppor will be called
-        //again in AWT.
-        open(true);
-    }
-
-    private void open(final boolean inBackgroundThread) {
-        Runnable task = new Runnable() {
-
-            public void run() {
-                //analyze the page, can be time consuming task
-                ((JspDataObject) getDataObject()).updateFileEncoding(false);
-
-                if (inBackgroundThread) {
-                    //ensure the document is opened in AWT
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            open(false);
-                        }
-                    });
-                }
-            }
-        };
-
-        if (inBackgroundThread) {
-            RequestProcessor.getDefault().post(task);
-            return; //do not open the document now, we need the encoding first
-        } else {
-            task.run(); //this time we will get the cached page parsing result quickly, can be done in AWT
-        }
-
-        encoding = ((JspDataObject) getDataObject()).getFileEncoding(); //use encoding from fileobject
+        
+        //get the file encoding and check if it's valid. If not show some 
+        //warning message
+        encoding = ((JspDataObject) getDataObject()).getFileEncoding();
 
         if (!isSupportedEncoding(encoding)) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
                     NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
                     new Object[]{getDataObject().getPrimaryFile().getNameExt(),
                         encoding,
                         defaulEncoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                return;
-            }
+            DialogDisplayer.getDefault().notifyLater(nd);
         }
+
+        super.loadFromStreamToKit(doc, stream, kit);
+    }
+
+
+    @Override
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+
+    @Override
+    public void open() {
+
+        
         super.open();
 
     }
@@ -342,6 +318,12 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         obj.removeSaveCookie();
     }
 
+    @Override
+    public void saveAs(FileObject folder, String fileName) throws IOException {
+        checkFileEncoding();
+        super.saveAs(folder, fileName);
+    }
+
     /** Save the document in this thread and start reparsing it.
      * @exception IOException on I/O error
      */
@@ -357,48 +339,52 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
-            ((JspDataObject) getDataObject()).updateFileEncoding(true);
-
-            encoding = ((JspDataObject) getDataObject()).getFileEncoding();
-            if (!isSupportedEncoding(encoding)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
-                        new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                            encoding,
-                            defaulEncoding}),
-                        NotifyDescriptor.YES_NO_OPTION,
-                        NotifyDescriptor.WARNING_MESSAGE);
-                nd.setValue(NotifyDescriptor.NO_OPTION);
-                DialogDisplayer.getDefault().notify(nd);
-                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                    throw new UserCancelException();
-                }
-            } else {
-                try {
-                    java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
-                    if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadCharConversion", //NOI18N
-                                new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                                    encoding}),
-                                NotifyDescriptor.YES_NO_OPTION,
-                                NotifyDescriptor.WARNING_MESSAGE);
-                        nd.setValue(NotifyDescriptor.NO_OPTION);
-                        DialogDisplayer.getDefault().notify(nd);
-                        if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                            throw new UserCancelException();
-                        }
-                    }
-                } catch (javax.swing.text.BadLocationException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
+            checkFileEncoding();
             super.saveDocument();
             if (parse) {
                 TagLibParseSupport sup = (TagLibParseSupport) getDataObject().getCookie(TagLibParseSupport.class);
                 if (sup != null) {
                     sup.prepare();
                 }
+            }
+        }
+    }
+
+    private void checkFileEncoding() throws UserCancelException {
+        ((JspDataObject) getDataObject()).updateFileEncoding(true);
+
+        encoding = ((JspDataObject) getDataObject()).getFileEncoding();
+        if (!isSupportedEncoding(encoding)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        encoding,
+                        defaulEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            nd.setValue(NotifyDescriptor.NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                throw new UserCancelException();
+            }
+        } else {
+            try {
+                java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
+                if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                            new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                                encoding}),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    nd.setValue(NotifyDescriptor.NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        throw new UserCancelException();
+                    }
+                }
+            } catch (javax.swing.text.BadLocationException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }
@@ -550,7 +536,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             if (dataObject instanceof JspDataObject &&
                     (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) {
                 //do not call palette creation in AWT, it can be quite slow
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         try {
                             PaletteController pc = JspPaletteFactory.getPalette();

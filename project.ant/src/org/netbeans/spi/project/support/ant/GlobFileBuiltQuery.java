@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -122,7 +125,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         // evaluated path prefixes & suffixes
     }
     
-    public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
+    public @Override synchronized FileBuiltQuery.Status getStatus(FileObject file) {
         Reference<StatusImpl> r = statuses.get(file);
         if (r == NONE) {
             return null;
@@ -217,6 +220,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             return null;
         }
     }
+
+    private static final RequestProcessor RP = new RequestProcessor(StatusImpl.class.getName());
     
     private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, Runnable {
         
@@ -226,34 +231,29 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         private File target;
         private FileChangeListener targetListener;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         StatusImpl(DataObject source, FileObject sourceFO, File target) {
             this.source = source;
             this.source.addPropertyChangeListener(WeakListeners.propertyChange(this, this.source));
             sourceFO.addFileChangeListener(FileUtil.weakFileChangeListener(this, sourceFO));
             this.target = target;
             targetListener = new FileChangeListener() {
-
-                public void fileFolderCreated(FileEvent fe) {
+                public @Override void fileFolderCreated(FileEvent fe) {
                     // N/A for file
                 }
-
-                public void fileDataCreated(FileEvent fe) {
+                public @Override void fileDataCreated(FileEvent fe) {
                     update();
                 }
-
-                public void fileChanged(FileEvent fe) {
+                public @Override void fileChanged(FileEvent fe) {
                     update();
                 }
-
-                public void fileDeleted(FileEvent fe) {
+                public @Override void fileDeleted(FileEvent fe) {
                     update();
                 }
-
-                public void fileRenamed(FileRenameEvent fe) {
+                public @Override void fileRenamed(FileRenameEvent fe) {
                     update();
                 }
-
-                public void fileAttributeChanged(FileAttributeEvent fe) {
+                public @Override void fileAttributeChanged(FileAttributeEvent fe) {
                     update();
                 }
             };
@@ -261,7 +261,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         // Side effect is to update its cache and maybe fire changes.
-        public boolean isBuilt() {
+        public @Override boolean isBuilt() {
             boolean doFire = false;
             boolean b;
             synchronized (GlobFileBuiltQuery.this) {
@@ -311,38 +311,39 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             }
         }
         
-        public void addChangeListener(ChangeListener l) {
+        public @Override void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);
         }
         
-        public void removeChangeListener(ChangeListener l) {
+        public @Override void removeChangeListener(ChangeListener l) {
             cs.removeChangeListener(l);
         }
         
         private void update() {
-            RequestProcessor.getDefault().post(this);
+            // XXX should this maintain a single Task and schedule() it?
+            RP.post(this);
         }
         
-        public void run() {
+        public @Override void run() {
             isBuilt();
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             assert evt.getSource() instanceof DataObject;
             if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
                 update();
             }
         }
         
-        public void fileChanged(FileEvent fe) {
+        public @Override void fileChanged(FileEvent fe) {
             update();
         }
         
-        public void fileDeleted(FileEvent fe) {
+        public @Override void fileDeleted(FileEvent fe) {
             update();
         }
         
-        public void fileRenamed(FileRenameEvent fe) {
+        public @Override void fileRenamed(FileRenameEvent fe) {
             File target2 = findTarget(source.getPrimaryFile());
             if (!Utilities.compareObjects(target, target2)) {
                 // #45694: source file moved, recalculate target.
@@ -357,15 +358,15 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             update();
         }
         
-        public void fileDataCreated(FileEvent fe) {
+        public @Override void fileDataCreated(FileEvent fe) {
             // ignore
         }
         
-        public void fileFolderCreated(FileEvent fe) {
+        public @Override void fileFolderCreated(FileEvent fe) {
             // ignore
         }
         
-        public void fileAttributeChanged(FileAttributeEvent fe) {
+        public @Override void fileAttributeChanged(FileAttributeEvent fe) {
             // ignore
         }
         

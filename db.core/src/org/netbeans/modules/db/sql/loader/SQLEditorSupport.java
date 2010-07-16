@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -133,6 +136,7 @@ public class SQLEditorSupport extends DataEditorSupport
      * data object's cookie set depending on if modification flag was set/unset. 
      */
     private final SaveCookie saveCookie = new SaveCookie() {
+        @Override
         public void save() throws IOException {
             saveDocument();
         }
@@ -159,6 +163,11 @@ public class SQLEditorSupport extends DataEditorSupport
         }
 
         return true;
+    }
+
+    @Override
+    protected boolean asynchronousOpen() {
+        return false;
     }
 
     @Override
@@ -283,15 +292,18 @@ public class SQLEditorSupport extends DataEditorSupport
         return dbconn;
     }
     
+    @Override
     public synchronized void setDatabaseConnection(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_DATABASE_CONNECTION, null, null);
     }
     
+    @Override
     public DatabaseConnection getDatabaseConnection() {
         return dbconn;
     }
 
+    @Override
     public void execute() {
         Document doc = getDocument();
         if (doc == null) {
@@ -363,6 +375,7 @@ public class SQLEditorSupport extends DataEditorSupport
     
     private void setResultsToEditors(final SQLExecutionResults results) {
        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
             public void run() {
                 List<Component> components = null;
                 
@@ -394,6 +407,7 @@ public class SQLEditorSupport extends DataEditorSupport
         setResultsToEditors(null);
         
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 if (executionResults != null) {
                     executionResults = null;
@@ -467,6 +481,7 @@ public class SQLEditorSupport extends DataEditorSupport
             this.task = task;
         }
         
+        @Override
         public void run() {
             assert task != null : "Should have called setTask()"; // NOI18N
             
@@ -478,6 +493,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 }
 
                 Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+                    @Override
                     public Void run() {
                         ConnectionManager.getDefault().showConnectionDialog(dbconn);
                         return null;
@@ -495,6 +511,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 // need to save the document, otherwise the Line.Set.getOriginal mechanism does not work
                 try {
                     Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
                         public Void run() throws Exception {
                             parent.saveDocument();
                             return null;
@@ -567,6 +584,7 @@ public class SQLEditorSupport extends DataEditorSupport
             StatusDisplayer.getDefault().setStatusText(statusText);
         }
         
+        @Override
         public boolean cancel() {
             return task.cancel();
         }
@@ -588,10 +606,12 @@ public class SQLEditorSupport extends DataEditorSupport
             super(obj);
         }
 
+        @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
 
+        @Override
         protected FileLock takeLock() throws IOException {
             MultiDataObject obj = (MultiDataObject)getDataObject();
             fileLock = obj.getPrimaryEntry().takeLock();

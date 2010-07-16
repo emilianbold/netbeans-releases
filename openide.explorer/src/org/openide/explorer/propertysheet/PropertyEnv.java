@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,9 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.explorer.propertysheet.InplaceEditor.Factory;
 
 
 /**
@@ -156,6 +162,7 @@ public class PropertyEnv {
     private boolean changeImmediate = true;
     InplaceEditor.Factory factory = null;
     boolean editable = true;
+    private static final Logger LOG = Logger.getLogger(PropertyEnv.class.getName());
 
     /** Default constructor has package access -
      * we do not want the instances to be created outside
@@ -254,7 +261,7 @@ public class PropertyEnv {
             getChange().firePropertyChange(PROP_STATE, null, newState);
         } catch (PropertyVetoException pve) {
             // and notify the user that the change cannot happen
-            pve.printStackTrace();
+            LOG.log(Level.INFO, "Cannot change property: " + pve.getPropertyChangeEvent().getPropertyName(), pve);
 
             String name = (getFeatureDescriptor() == null) ? null : getFeatureDescriptor().getDisplayName();
 
@@ -378,8 +385,9 @@ public class PropertyEnv {
         return editable;
     }
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(getClass().getName());
         sb.append("@"); //NOI18N
         sb.append(System.identityHashCode(this));
@@ -390,8 +398,9 @@ public class PropertyEnv {
         ); //NOI18N
         sb.append(", "); //NOI18N
 
-        if (factory != null) {
-            sb.append("InplaceEditorFactory=" + factory.getClass().getName()); //NOI18N
+        Factory f = factory;
+        if (f != null) {
+            sb.append("InplaceEditorFactory=").append(f.getClass().getName()); //NOI18N
             sb.append(", "); //NOI18N
         }
 
@@ -400,7 +409,12 @@ public class PropertyEnv {
         sb.append(", isChangeImmediate="); //NOI18N
         sb.append(isChangeImmediate());
         sb.append(", featureDescriptor="); //NOI18N
-        sb.append(getFeatureDescriptor().getDisplayName());
+        final FeatureDescriptor fd = getFeatureDescriptor();
+        if (fd != null) {
+            sb.append(fd.getDisplayName());
+        } else {
+            sb.append("null"); // NOI18N
+        }
 
         return sb.toString();
     }

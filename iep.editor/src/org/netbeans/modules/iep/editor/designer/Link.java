@@ -19,22 +19,21 @@
 
 package org.netbeans.modules.iep.editor.designer;
 
-import com.nwoods.jgo.*;
-import org.netbeans.modules.iep.editor.designer.GuiConstants;
+import com.nwoods.jgo.JGoCopyEnvironment;
+import com.nwoods.jgo.JGoLink;
+import com.nwoods.jgo.JGoObject;
+import com.nwoods.jgo.JGoPen;
+import com.nwoods.jgo.JGoPort;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.OperatorComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponent;
 
 import java.awt.Color;
 import java.util.Map;
-import java.util.logging.Level;
-
-// Flows are implemented as labeled links
 //
 // For this example app, the only property, Text, is
 // actually just the label's Text.
@@ -71,13 +70,13 @@ public class Link extends JGoLink implements GuiConstants, CanvasWidget {
             mComponent = component;
             EntityNode fromNode = getFromNode();
             if (fromNode != null) {
-                String fromId = (String)fromNode.getComponent().getProperty(ID_KEY).getValue();
-                component.getProperty(FROM_KEY).setValue(fromId);
+                String fromId = (String)fromNode.getComponent().getProperty(PROP_ID).getValue();
+                component.getProperty(PROP_FROM).setValue(fromId);
             }
             EntityNode toNode = getToNode();
             if (toNode != null) {
-                String toId = (String)toNode.getComponent().getProperty(ID_KEY).getValue();
-                component.getProperty(TO_KEY).setValue(toId);
+                String toId = (String)toNode.getComponent().getProperty(PROP_ID).getValue();
+                component.getProperty(PROP_TO).setValue(toId);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -198,14 +197,14 @@ public class Link extends JGoLink implements GuiConstants, CanvasWidget {
      OperatorComponent toOperator = link.getTo();
      
      if(fromOperator != null) {
-         OperatorComponent newFromOperator = oldOperatorIdToNewOperatorMap.get(fromOperator.getId());
+         OperatorComponent newFromOperator = oldOperatorIdToNewOperatorMap.get(fromOperator.getString(PROP_ID));
          if(newFromOperator != null) {
              newLink.setFrom(newFromOperator);
          }
      }
      
      if(toOperator != null) {
-         OperatorComponent newToOperator = oldOperatorIdToNewOperatorMap.get(toOperator.getId());
+         OperatorComponent newToOperator = oldOperatorIdToNewOperatorMap.get(toOperator.getString(PROP_ID));
          if(newToOperator != null) {
              newLink.setTo(newToOperator);
          }

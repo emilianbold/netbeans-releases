@@ -1,0 +1,55 @@
+{
+    String api_key = org.openide.util.NbPreferences.forModule(this.getClass()).get("flickr_api_key", null);
+    if (api_key == null) {
+        throw new NullPointerException("api_key is null");
+    }
+    String frob = null;
+    String[] queryParamNames = new String[]{"api_key", "method"};
+    String[] queryParamValues = new String[]{api_key, "flickr.auth.getFrob"};
+    String sig = signParams(queryParamNames, queryParamValues);
+
+    String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("api_sig", sig).get(String.class);
+
+    try {
+        frob = result.substring(result.indexOf("<frob>") + 6, result.indexOf("</frob>"));
+    } catch (Exception ex) {
+        throw new IOException("Failed to get frob: " + result);
+    }
+
+    String perms = "delete"; // setting read+write+delete permissions. Other possible values are write|read
+    queryParamNames = new String[]{"api_key", "frob", "perms"};
+    queryParamValues = new String[]{api_key, frob, perms};
+    sig = signParams(queryParamNames, queryParamValues);
+
+    String loginUrl = "http://www.flickr.com/services/auth/?api_key=" + api_key + "&frob=" + frob + "&perms=" + perms + "&api_sig=" + sig;
+
+
+    class DialogPanel extends javax.swing.JPanel {
+        DialogPanel(final java.net.URL url) {
+            setLayout(new java.awt.BorderLayout());
+            javax.swing.JButton button = new javax.swing.JButton();
+            button.setForeground(java.awt.Color.BLUE);
+            button.setBorderPainted(false);
+            button.setContentAreaFilled(false);
+            String urlText = url.toString();
+            String text = "<html><b><u>" + urlText.substring(0,80)+"<br/>"+urlText.substring(80) + "</u></b></html>";
+            button.setText(text);
+            button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            button.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
+                }
+            });
+            add(new javax.swing.JLabel("Click the URL link below to open the browser, and authorize the application to access your data:"), java.awt.BorderLayout.NORTH);
+            add(button, java.awt.BorderLayout.CENTER);
+            add(new javax.swing.JLabel("After you allow the application to access your data, press OK."), java.awt.BorderLayout.SOUTH);
+        }
+    }
+
+    org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(new DialogPanel(new java.net.URL(loginUrl)), "Flickr Authentication Dialog");
+    org.openide.DialogDisplayer.getDefault().notify(dd);
+
+    return frob;
+}

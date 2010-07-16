@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.wlm.model
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/wlm/model/Bundle.properties

@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.0.1
+#Signature file v4.1
+#Version 1.5
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -78,4 +78,6 @@ CLSS public abstract interface !annotation org.netbeans.api.annotations.common.S
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String[] value()
+
+CLSS abstract interface org.netbeans.api.annotations.common.package-info
 

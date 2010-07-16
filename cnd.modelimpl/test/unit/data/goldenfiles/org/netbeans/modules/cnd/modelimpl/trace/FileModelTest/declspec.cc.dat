@@ -2,9 +2,9 @@
 State of macro map:
 Own Map:
 MACROS (sorted 3):
-<U>#define '["Q_DECL_IMPORT",<205>,line=1,col=9],offset=8,file=null'='["__declspec",<205>,line=1,col=23],offset=22,file=null ["(",<138>,line=1,col=33],offset=32,file=null ["dllimport",<205>,line=1,col=34],offset=33,file=null [")",<139>,line=1,col=43],offset=42,file=null'
-<U>#define '["Q_GUI_EXPORT",<205>,line=2,col=9],offset=52,file=null'='["Q_DECL_IMPORT",<205>,line=2,col=22],offset=65,file=null'
-<U>#define '["__declspec",<205>,line=24,col=9],offset=310,file=null[["x",<205>,line=24,col=20],offset=321,file=null]'='["__attribute__",<205>,line=24,col=23],offset=324,file=null ["(",<138>,line=24,col=36],offset=337,file=null ["(",<138>,line=24,col=37],offset=338,file=null ["x",<205>,line=24,col=38],offset=339,file=null [")",<139>,line=24,col=39],offset=340,file=null [")",<139>,line=24,col=40],offset=341,file=null'
+<U>#define '["Q_DECL_IMPORT",<89>,line=1,col=9],offset=8,file=null'='["__declspec",<89>,line=1,col=23],offset=22,file=null ["(",<12>,line=1,col=33],offset=32,file=null ["dllimport",<89>,line=1,col=34],offset=33,file=null [")",<13>,line=1,col=43],offset=42,file=null'
+<U>#define '["Q_GUI_EXPORT",<89>,line=2,col=9],offset=52,file=null'='["Q_DECL_IMPORT",<89>,line=2,col=22],offset=65,file=null'
+<U>#define '["__declspec",<89>,line=24,col=9],offset=310,file=null[["x",<89>,line=24,col=20],offset=321,file=null]'='["__attribute__",<89>,line=24,col=23],offset=324,file=null ["(",<12>,line=24,col=36],offset=337,file=null ["(",<12>,line=24,col=37],offset=338,file=null ["x",<89>,line=24,col=38],offset=339,file=null [")",<13>,line=24,col=39],offset=340,file=null [")",<13>,line=24,col=40],offset=341,file=null'
 System Map:
 MACROS (sorted 0):
 

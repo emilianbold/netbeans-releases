@@ -9,11 +9,13 @@
 
 package org.netbeans.modules.iep.editor.designer.cookies;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
@@ -26,18 +28,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
+
+import javax.swing.JScrollBar;
 
 import org.netbeans.modules.iep.editor.PlanDataObject;
 import org.netbeans.modules.iep.editor.PlanDesignViewMultiViewElement;
 import org.netbeans.modules.iep.editor.designer.EntityNode;
 import org.netbeans.modules.iep.editor.designer.PlanCanvas;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgPsI18n;
-import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.tbls.editor.ps.TcgPsI18n;
 import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
-import org.netbeans.modules.iep.model.OperatorType;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.reportgenerator.api.Report;
@@ -48,21 +49,20 @@ import org.netbeans.modules.reportgenerator.api.ReportElement;
 import org.netbeans.modules.reportgenerator.api.ReportElementFactory;
 import org.netbeans.modules.reportgenerator.api.ReportException;
 import org.netbeans.modules.reportgenerator.api.ReportSection;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 import com.nwoods.jgo.JGoDocument;
 import com.nwoods.jgo.JGoListPosition;
 import com.nwoods.jgo.JGoObject;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 
 /**
  *
  * @author radval
  */
-public class PlanReportCookie implements ReportCookie {
+public class PlanReportCookie implements ReportCookie, SharedConstants {
 
     private Logger mLogger = Logger.getLogger(PlanReportCookie.class.getName());
     
@@ -197,7 +197,7 @@ public class PlanReportCookie implements ReportCookie {
         ReportElement element = elementFactory.createReportElement();
         //element.setImage(createEntityNodeImage(node, planCanvas));
         element.setImage(node.getIcon().getImage());
-        element.setName(c.getDisplayName());
+        element.setName(c.getString(PROP_NAME));
         if(c.getDocumentation() != null) {
             element.setDescription(c.getDocumentation().getTextContent());
         }
@@ -236,17 +236,43 @@ public class PlanReportCookie implements ReportCookie {
         GraphicsDevice gd = ge.getDefaultScreenDevice();
         GraphicsConfiguration gc = gd.getDefaultConfiguration();
 
-        // Create an image that supports transparent pixels
-        BufferedImage bImage = gc.createCompatibleImage(planCanvas.getViewRect().width, planCanvas.getViewRect().height, Transparency.BITMASK);
+        JScrollBar hBar = planCanvas.getHorizontalScrollBar();
+        JScrollBar vBar = planCanvas.getVerticalScrollBar();
+        
+        Dimension d = planCanvas.getDocumentSize();
+        planCanvas.convertDocToView(d);
 
+        int x = 0;
+        int y = 0;
+        int width = d.width;
+        int height = d.height;
+        
+        width = planCanvas.getWidth() > width ? planCanvas.getWidth() : width;
+        height = planCanvas.getHeight() > height ? planCanvas.getHeight() : height;
+        
+        int widthToClip = vBar.isVisible() ? width - vBar.getWidth() : width ;
+        int heightToClip = hBar.isVisible() ? height - hBar.getHeight() : height;
+        
+        // Create an image that supports transparent pixels
+        BufferedImage bImage = gc.createCompatibleImage(width, height, Transparency.BITMASK);
+        
+        
         /*
          * And now this is how we get an image of the component
          */
         Graphics2D g = bImage.createGraphics();
-
+        Dimension oldSize = new Dimension(planCanvas.getSize());
+        Point oldViewPos = new Point(planCanvas.getViewPosition());
+//        g.clipRect(x, y, widthToClip -1, heightToClip -1);
+        
+        planCanvas.setViewPosition(x, y);
+        planCanvas.setSize(width, height);
         //Then use the current component we're in and call paint on this graphics object
         planCanvas.paint( g );
 
+        //reset old bounds 
+        planCanvas.setSize(oldSize);
+        planCanvas.setViewPosition(oldViewPos);
         return bImage;
     }
     
@@ -291,17 +317,17 @@ public class PlanReportCookie implements ReportCookie {
         String value = prop.getValue();
         String modifiedPropertyValue = prop.getValue();
         
-        if(OperatorComponent.PROP_INPUTTYPE.equals(name)) {
+        if(PROP_INPUT_TYPE.equals(name)) {
             modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
-        } else if(OperatorComponent.PROP_OUTPUTTYPE.equals(name)) {
+        } else if(PROP_OUTPUT_TYPE.equals(name)) {
             modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
-        } else if(OperatorComponent.PROP_INPUT_ID_LIST.equals(name)) {
+        } else if(PROP_INPUT_ID_LIST.equals(name)) {
             StringBuffer str = new StringBuffer("");
             List<OperatorComponent> inputs =  comp.getInputOperatorList();
             Iterator<OperatorComponent> it = inputs.iterator();
             while(it.hasNext()) {
                 OperatorComponent input = it.next();
-                str.append(input.getDisplayName());
+                str.append(input.getString(PROP_NAME));
                 
                 if(it.hasNext()) {
                     str.append(",");

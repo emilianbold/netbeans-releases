@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -118,8 +121,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                     }
                     assert files != null;
                 }
-                List<File> result = new ArrayList<File>(files.size());
-                result.addAll(files);
+                List<File> result = new ArrayList<File>();
+                for (File file : files) {
+                    if (file.exists()) {
+                        result.add(file);
+                    }
+                }
                 return result;
             }
         });
@@ -143,6 +150,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 }
                 List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>(groups.size());
                 result.addAll(groups);
+                removeUnknownFiles(result, new HashSet<File>(files));
                 return result;
             }
         });
@@ -198,7 +206,10 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 list = configFileGroupsEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
                 readGroups(list, projectDir, newGroups);
             }
-            removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
+            List<File> modifiedList = removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
+            if (modifiedList.size()>0) {
+                newFiles = modifiedList;
+            }
         }
         files = newFiles;
         groups = newGroups;
@@ -226,10 +237,16 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         }
     }
 
-    private void removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+    private List<File> removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+        boolean modified = false;
+        List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < newGroups.size(); i++) {
             ConfigFileGroup group = newGroups.get(i);
             for (File file : group.getFiles()) {
+                if (!file.exists()) {
+                    knownFiles.remove(file);
+                    modified = true;
+                }
                 if (!knownFiles.contains(file)) {
                     // Found an unknown file, so we will need to remove all unknown files from this group.
                     List<File> newGroupFiles = new ArrayList<File>(group.getFiles().size());
@@ -243,6 +260,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 }
             }
         }
+        if (modified) {
+            for (File file: knownFiles) {
+                fileList.add(file);
+            }
+        }
+        return fileList;
     }
 
     private void writeConfiguration(List<File> files, List<ConfigFileGroup> groups) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,7 +80,7 @@ public class ServerResourcesAction extends NodeAction {
     
     /** Creates a new instance of ServerResourcesAction */
     public ServerResourcesAction() {
-        name = NbBundle.getBundle(this.getClass()).getString("SERVER_RES_ACTION_NAME");
+        name = NbBundle.getBundle(this.getClass()).getString("SERVER_RES_ACTION_NAME"); // NOI18N
     }
 
     protected void performAction(Node[] activatedNodes) {
@@ -98,7 +101,7 @@ public class ServerResourcesAction extends NodeAction {
             if (refProjectDir == null) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notfound", 
+                        NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notfound",  // NOI18N
                             vcpi.getProjectName(),
                             refProjectLocation),
                         NotifyDescriptor.ERROR_MESSAGE));
@@ -109,7 +112,7 @@ public class ServerResourcesAction extends NodeAction {
             if (refProject == null) {
                  DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
-                         NbBundle.getMessage(ServerResourcesAction.class, "EXC_cannot_open_proj", 
+                         NbBundle.getMessage(ServerResourcesAction.class, "EXC_cannot_open_proj",  // NOI18N
                             vcpi.getProjectName()), 
                          NotifyDescriptor.ERROR_MESSAGE));
                 return;
@@ -126,7 +129,7 @@ public class ServerResourcesAction extends NodeAction {
                 } catch (ProjectNotBuiltException pnbe) {
                     DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notbuild",
+                            NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notbuild", // NOI18N
                                 pnbe.getMessage()), 
                             NotifyDescriptor.ERROR_MESSAGE));
                     return;
@@ -140,7 +143,7 @@ public class ServerResourcesAction extends NodeAction {
             } else {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notsupported",
+                        NbBundle.getMessage(ServerResourcesAction.class, "EXC_proj_notsupported", // NOI18N
                             vcpi.getProjectName(),
                             projType),
                         NotifyDescriptor.ERROR_MESSAGE));
@@ -165,6 +168,7 @@ public class ServerResourcesAction extends NodeAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -173,7 +177,7 @@ public class ServerResourcesAction extends NodeAction {
      */
     private Dialog createResourcesDialog(JavaEETool javaEETool) {
         JDialog dlg = new JDialog(WindowManager.getDefault().getMainWindow(),
-            NbBundle.getMessage(ServerResourcesAction.class, "SERVER_RES_ACTION_NAME"));
+            NbBundle.getMessage(ServerResourcesAction.class, "SERVER_RES_ACTION_NAME")); // NOI18N
         ResourcesPanel innerPane = new ResourcesPanel(dlg, javaEETool);
         dlg.getContentPane().add(innerPane);
         dlg.setModal(true);

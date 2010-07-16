@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -60,7 +64,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
     private static final String[] METRO_LIBRARIES =
-        new String[] {"webservices", "javax.activation"}; //NOI18N
+            new String[] {"webservices(|-osgi).jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
@@ -127,36 +131,36 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
         File f = getJarName(gfRootStr, METRO_LIBRARIES[0]);
         return f!=null && f.exists();
     }
-    
-    protected static class VersionFilter implements FileFilter {
-       
-        private String nameprefix;
-        
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
+
+    private static class VersionFilter implements FileFilter {
+
+        private final Pattern pattern;
+
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
         }
-        
+
         public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
+            return pattern.matcher(file.getName()).matches();
         }
-        
+
     }
     
-    protected File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+    protected File getJarName(String glassfishInstallRoot, String jarNamePattern) {
+
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePrefix.lastIndexOf("/");
+        int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
-            String subdir = jarNamePrefix.substring(0, subindex);
-            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
             modulesDir = new File(modulesDir, subdir);
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
 
-        if(candidates != null && candidates.length > 0) {
+        if (candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
-        } else {
-            return null;
         }
-    } 
+        return null;
+    }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,7 @@
  */
 package org.netbeans.core.validation;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +55,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.core.startup.ConsistencyVerifier;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 
@@ -61,21 +65,24 @@ import org.netbeans.junit.NbTestCase;
  */
 public class ValidateUpdateCenterTest extends NbTestCase {
 
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public ValidateUpdateCenterTest(String n) {
         super(n);
     }
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
+        suite.addTest(new ValidateUpdateCenterTest("clusterVersions"));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableModules(".*").
+                clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
                 honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-        /* Too many failures to all be fixed:
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|ide)[0-9.]*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
-         */
+                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         return suite;
     }
 
@@ -105,72 +112,40 @@ public class ValidateUpdateCenterTest extends NbTestCase {
                     continue MODULE;
                 }
             }
-            auVisibilityProblems.append("\n" + cnb);
+            auVisibilityProblems.append("\n").append(cnb);
         }
         if (auVisibilityProblems.length() > 0) {
             fail("Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client=true nor AutoUpdate-Essential-Module=true (thus unreachable through Plugin Manager)" + auVisibilityProblems);
         }
     }
 
-    public void testDisabledAutoloads() throws Exception {
+    public void testConsistency() throws Exception {
         Set<Manifest> manifests = loadManifests();
-        Set<String> permittedDisabledAutoloads = new HashSet<String>();
-        // org.netbeans.lib.terminalemulator is really unused in cnd cluster, yet apparently has to be in the build anyway; contact Thomas Preisler
-        permittedDisabledAutoloads.add("org.netbeans.lib.terminalemulator");
-        // some pseudomodules used only by tests
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.cnd");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.enterprise");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ide");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.java");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.platform");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jellytools.ruby");
-        permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
-        permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
-        permittedDisabledAutoloads.add("org.netbeans.insane");
-        permittedDisabledAutoloads.add("org.netbeans.modules.swing.validation");
-        permittedDisabledAutoloads.add("org.netbeans.modules.visualweb.gravy");
-        // just has to be present, not enabled
-        permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.harness");
-        permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.tc.cobertura");
-        // really unused, yet kept in build for tutorials
-        permittedDisabledAutoloads.add("org.netbeans.modules.lexer.editorbridge");
-        // for compatibility
-        permittedDisabledAutoloads.add("org.openide.util.enumerations");
-        // for use by developers
-        permittedDisabledAutoloads.add("org.netbeans.spi.actions.support");
-        // kept in base IDE but not used in all cluster configs
-        permittedDisabledAutoloads.add("org.netbeans.libs.commons_net");
-        permittedDisabledAutoloads.add("org.netbeans.libs.httpunit");
-        permittedDisabledAutoloads.add("org.netbeans.libs.jakarta_oro");
-        permittedDisabledAutoloads.add("org.netbeans.modules.gsf.testrunner");
-        permittedDisabledAutoloads.add("org.netbeans.modules.gsf.codecoverage");
-        permittedDisabledAutoloads.add("org.netbeans.modules.extexecution");
-        permittedDisabledAutoloads.add("org.netbeans.modules.glassfish.common");
-        permittedDisabledAutoloads.add("org.netbeans.modules.server");
-        // still under development
-        permittedDisabledAutoloads.add("org.netbeans.modules.spi.actions");
-        // needed in IDE cluster because of issue #162414
-        permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
-        // schlieman is our diamond
-        permittedDisabledAutoloads.add("org.netbeans.modules.languages");
-        // os-specific binaries for embedded browser
-        permittedDisabledAutoloads.add("org.netbeans.core.browser.xulrunner.linux");
-        permittedDisabledAutoloads.add("org.netbeans.core.browser.xulrunner.macosx");
-        permittedDisabledAutoloads.add("org.netbeans.core.browser.xulrunner.solaris");
-        permittedDisabledAutoloads.add("org.netbeans.core.browser.xulrunner.win");
-        SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
+        SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, null);
         if (!problems.isEmpty()) {
             StringBuilder message = new StringBuilder("Problems found with autoloads");
             for (Map.Entry<String, SortedSet<String>> entry : problems.entrySet()) {
-                message.append("\nProblems found for module " + entry.getKey() + ": " + entry.getValue());
+                message.append("\nProblems found for module ").append(entry.getKey()).append(": ").append(entry.getValue());
             }
             fail(message.toString());
         }
     }
 
+    public void clusterVersions() throws Exception {
+        for (String clusterLocation : System.getProperty("cluster.path.final").split(File.pathSeparator)) {
+            File cluster = new File(clusterLocation);
+            if (cluster.getName().matches("ergonomics|harness|extra")) {
+                // Not used for module dependencies, so exempted.
+                continue;
+            }
+            if (cluster.isDirectory()) {
+                assertTrue("found a VERSION.txt in " + cluster, new File(cluster, "VERSION.txt").isFile());
+            }
+        }
+    }
+
     private static Set<Manifest> loadManifests() throws Exception {
-        ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
+        ModuleManager mgr = Main.getModuleSystem().getManager();
         Set<Manifest> manifests = new HashSet<Manifest>();
         for (Module m : mgr.getModules()) {
             Manifest manifest = m.getManifest();

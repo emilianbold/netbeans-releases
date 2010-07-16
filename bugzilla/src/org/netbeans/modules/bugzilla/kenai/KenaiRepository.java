@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,10 +51,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
@@ -59,9 +66,6 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -80,7 +84,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
-    private final Object kenaiProject;
+    private final KenaiProject kenaiProject;
 
     KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
         super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
@@ -90,11 +94,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        Kenai.getDefault().addPropertyChangeListener(this);
+        KenaiUtil.getKenaiAccessor().addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
-        this(kenaiProject, repoName, url, host, getKenaiUser(), getKenaiPassword(), urlParam, product);
+        this(kenaiProject, repoName, url, host, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject), urlParam, product);
     }
 
     @Override
@@ -146,7 +150,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true);
+            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true); // NOI18N
         }
         return allIssues;
     }
@@ -154,8 +158,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     synchronized Query getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
-            
-            String url = getQueryUrl();
+            String url = getMyIssuesQueryUrl();
             myIssues =
                 new KenaiQuery(
                     NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
@@ -168,10 +171,10 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return myIssues;
     }
 
-    private String getQueryUrl() {
-        StringBuffer url = new StringBuffer();
+    private String getMyIssuesQueryUrl() {
+        StringBuilder url = new StringBuilder();
         url.append(urlParam);
-        String user = getKenaiUser();
+        String user = getKenaiUser(kenaiProject);
         if (user == null) {
             user = ""; // NOI18N
         }
@@ -179,7 +182,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         // XXX what if user already mail address?
         // XXX escape @?
         String userMail = user + "@" + host; // NOI18N
-        url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+        String urlFormat = BugzillaUtil.isNbRepository(this) ? BugzillaConstants.NB_MY_ISSUES_PARAMETERS_FORMAT : BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT;
+        url.append(MessageFormat.format(urlFormat, product, userMail));
         return url.toString();
     }
 
@@ -198,12 +202,17 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null, isShortUsernamesEnabled());
+        super.setCredentials(user, password, null, null);
+    }
+
+    @Override
+    public void refreshAllQueries() {
+        super.refreshAllQueries(false);
     }
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -234,16 +243,16 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return product;
     }
 
-    private static String getKenaiUser() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiUser(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getUserName();
         }
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiPassword(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return new String(pa.getPassword());
         }
@@ -271,7 +280,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-        return KenaiUtil.getProjectMembers(product.toLowerCase());
+        return KenaiUtil.getProjectMembers(kenaiProject);
     }
 
     public String getHost() {
@@ -282,13 +291,16 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+        if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
+
             // XXX move to spi?
             // get kenai credentials
             String user;
             String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            PasswordAuthentication pa = 
+                    KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = new String(pa.getPassword());
@@ -304,7 +316,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                     if(myIssues != null) {
                         // XXX this is a mess - setting the controller and the query
                         KenaiQueryController c = (KenaiQueryController) myIssues.getController();
-                        String url = getQueryUrl();
+                        String url = getMyIssuesQueryUrl();
                         c.populate(url);
                         myIssues.setUrlParameters(url);
                     }
@@ -320,14 +332,13 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             if(ownerInfo.getOwner().equals(product)) {
                 return ownerInfo;
             } else {
-                Bugzilla.LOG.warning(
-                        " returned owner [" +               // NOI18N
-                        ownerInfo.getOwner() +
-                        "] for " +                          // NOI18N
-                        nodes[0] +
-                        " is different then product [" +    // NOI18N
-                        product +
-                        "]");                               // NOI18N
+                Bugzilla.LOG.log(
+                        Level.WARNING,
+                        " returned owner [{0}] for {1} is different then product [{2}]",
+                        new Object[]{
+                            ownerInfo.getOwner(),
+                            nodes[0],
+                            product});                               // NOI18N
                 return null;
             }
         }

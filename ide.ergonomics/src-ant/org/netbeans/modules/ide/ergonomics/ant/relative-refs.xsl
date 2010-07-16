@@ -118,9 +118,21 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        <xsl:variable name="noslash">
+            <xsl:choose>
+                <xsl:when test="starts-with($after,'/')">
+                    <xsl:value-of select="substring-after($text,'/')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$after"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+
+
         <xsl:choose>
-            <xsl:when test="$after">
-                <xsl:value-of select="translate($after,'/','-')"/>
+            <xsl:when test="$noslash">
+                <xsl:value-of select="translate($noslash,'/','-')"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="translate($text,'/','-')"/>

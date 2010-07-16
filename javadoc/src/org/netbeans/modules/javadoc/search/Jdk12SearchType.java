@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,19 +44,17 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import org.openide.filesystems.FileObject;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * @author Petr Hrebejk, Petr Suchomel
  */
 // no position since it must be the last service
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class)
-public class Jdk12SearchType extends JavadocSearchType implements Serializable{
+@ServiceProvider(service=JavadocSearchType.class)
+public class Jdk12SearchType extends JavadocSearchType {
 
     private boolean caseSensitive = true;
 
@@ -76,19 +77,14 @@ public class Jdk12SearchType extends JavadocSearchType implements Serializable{
 //        this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
-    public FileObject getDocFileObject( FileObject apidocRoot ) {
-    
-        FileObject fo = apidocRoot.getFileObject( "index-files" ); // NOI18N
-        if ( fo != null ) {
-            return fo;
+    public @Override URL getDocFileObject(URL apidocRoot) {
+        URL u = URLUtils.findOpenable(apidocRoot, "index-files/index-1.html"); // NOI18N
+        try {
+            return u != null ? new URL(apidocRoot, "index-files/") : URLUtils.findOpenable(apidocRoot, "index-all.html"); // NOI18N
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
-
-        fo = apidocRoot.getFileObject( "index-all.html" ); // NOI18N
-        if ( fo != null ) {
-            return fo;
-        }
-
-        return null;
     }    
     
     /** Returns Java doc search thread for doument
@@ -98,52 +94,14 @@ public class Jdk12SearchType extends JavadocSearchType implements Serializable{
      * @return IndexSearchThread
      * @see IndexSearchThread
      */    
-    public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
+    public @Override IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
         return new SearchThreadJdk12 ( toFind, fo, diiConsumer, isCaseSensitive() );
     }
 
 
-    public boolean accepts(FileObject apidocRoot, String encoding) {
+    public @Override boolean accepts(URL apidocRoot, String encoding) {
         //XXX returns always true, must be the last JavadocType
         return true;
     }
     
-    /**
-     * Replaces old serialized service type with a dummy instance to prevent
-     * exceptions from the Lookup
-     */
-    @Deprecated
-    protected final Object readResolve() throws ObjectStreamException {
-        // replace old serializable component with dummy instance
-        // to prevent exceptions from the Lookup
-        return new JavadocSearchType() {
-
-            @Override
-            public FileObject getDocFileObject(FileObject apidocRoot) {
-                return null;
-            }
-
-            @Override
-            public IndexSearchThread getSearchThread(String toFind,
-                    FileObject fo,
-                    IndexSearchThread.DocIndexItemConsumer diiConsumer) {
-                
-                return null;
-            }
-
-            @Override
-            public boolean accepts(FileObject apidocRoot, String encoding) {
-                return false;
-            }
-        };
-    }
-
-    /**
-     * Warns not to serialize it.
-     */
-    @Deprecated
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        throw new NotSerializableException(this.getClass().getName());
-    }
-
 }

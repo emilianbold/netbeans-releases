@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,12 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -54,55 +60,41 @@ public class KenaiConfiguration extends JiraConfiguration {
     private Project[] projects;
     private String projectName;
 
-    /**
-     * One instance for all kenai projects
-     */
-    private static ConfigurationData kenaiData;
-
     protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient, repository);
     }
 
-    void addProject(String projectName) {
+    void addProject(String projectName) throws CoreException {
         this.projectName = projectName;
+        ensureProject();
     }
 
     @Override
     public Project[] getProjects() {
-        if(projects == null) {
-            Project[] allProjects = super.getProjects();
-            for (Project p : allProjects) {
-                if(projectName.equals(p.getKey())) {
-                    projects = new Project[] {p};
-                }
-            }
-        }
         return projects;
     }
 
-    @Override
-    public JiraClientData getData() {
-        if(kenaiData == null) {
-            kenaiData = initializeCached();
-            if (kenaiData == null) {
-                kenaiData = new KenaiConfigurationData();
+    private void ensureProject() throws CoreException {
+        if(projects == null) {
+            projects = findProject();
+            if(projects == null) {
+                Jira.LOG.log(Level.FINE, "Project {0} missing in cached jira configuration. Will refresh one more time.", projectName); // NOI18N
+                Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(repository.getTaskRepository(), new NullProgressMonitor());
+                projects = findProject();
+                if(projects == null) {
+                    Jira.LOG.log(Level.WARNING, "Could not find project {0} in jira configuration.", projectName); // NOI18N
+                }
             }
-        } else {
-            // do not forget to set flags for initialized projects
-            // in JiraConfiguration this is done in initializeCached, but since kenaiData is static and probably not null,
-            // initializeCached might not be called
-            setLoadedProjects(kenaiData);
         }
-        return kenaiData;
     }
 
-    static class KenaiConfigurationData extends ConfigurationData {
-        
-    }
-
-    @Override
-    protected void clearCached() {
-        super.clearCached();
-        projects = null;
+    private Project[] findProject() {
+        Project[] allProjects = super.getProjects();
+        for (Project p : allProjects) {
+            if(projectName.equals(p.getKey())) {
+                return new Project[] {p};
+            }
+        }
+        return null;
     }
 }

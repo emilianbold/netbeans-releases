@@ -27,15 +27,16 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  */
 public enum FTPAttribute implements Attribute {
     FTP_URL_PROPERTY("url"),
+    FTP_CNTRL_CH_ENCODING_PROPERTY("controlChannelEncoding"),
     FTP_CMD_CH_TIMEOUT_PROPERTY("cmdChannelTimeout"),
     FTP_DATA_CH_TIMEOUT_PROPERTY("dataChannelTimeout"),
     FTP_ENCODINGSTYLE_PROPERTY("encodingStyle"),
     FTP_SENDER_USEPROXY_PROPERTY("senderUseProxy"),
     FTP_SENDER_PROXY_PROPERTY("senderProxy"),
-    FTP_SENDER_USEPASSIVE_PROPERTY("senderUsePassive"),
+    /* FTP_SENDER_USEPASSIVE_PROPERTY("senderUsePassive"),*/
     FTP_RECEIVER_USEPROXY_PROPERTY("receiverUseProxy"),
     FTP_RECEIVER_PROXY_PROPERTY("receiverProxy"),
-    FTP_RECEIVER_USEPASSIVE_PROPERTY("receiverUsePassive"),
+    /* FTP_RECEIVER_USEPASSIVE_PROPERTY("receiverUsePassive"), */
     FTP_USE_PROPERTY("use"),
     FTP_PART_PROPERTY("part"),
     FTP_POLLINTERVAL_PROPERTY("pollIntervalMillis"),
@@ -65,13 +66,34 @@ public enum FTPAttribute implements Attribute {
     FTP_SYMETRIC_MSG_NAME_PROPERTY("messageName"), // for symetrical wsdl
     FTP_SYMETRIC_MSG_NAME_PREFIX_IB_PROPERTY("messageNamePrefixIB"), // for symetrical wsdl
     FTP_SYMETRIC_MSG_NAME_PREFIX_OB_PROPERTY("messageNamePrefixOB"), // for symetrical wsdl
-    FTP_CONSUMER_USEPASSIVE_PROPERTY("consumerUsePassive"),
-    FTP_PROVIDER_USEPASSIVE_PROPERTY("providerUsePassive"),
+    /* FTP_CONSUMER_USEPASSIVE_PROPERTY("consumerUsePassive"),
+    FTP_PROVIDER_USEPASSIVE_PROPERTY("providerUsePassive"),*/
     FTP_PROTECT_ENABLED_PROPERTY("protect"),
     FTP_ARCHIVE_ENABLED_PROPERTY("archive"),
     FTP_STAGING_ENABLED_PROPERTY("stage"),
-    FTP_MSG_CORRELATE_PROPERTY("messageCorrelate");
-
+    FTP_MSG_CORRELATE_PROPERTY("messageCorrelate"),
+    // for FTP/TLS
+    FTP_SEC_TYPE_PROPERTY("securedFTP"),
+    FTP_ENABLE_CCC_PROPERTY("enableCCC"),
+    FTP_KSTOR_PROPERTY("keyStore"),
+    FTP_KSTOR_PASSWD_PROPERTY("keyStorePassword"),
+    FTP_KEY_ALIAS_PROPERTY("keyAlias"),
+    FTP_KEY_PASSWD_PROPERTY("keyPassword"),
+    FTP_TSTOR_PROPERTY("trustStore"),
+    FTP_TSTOR_PASSWD_PROPERTY("trustStorePassword"),
+    // user and password in URL overwrite
+    FTP_LOGIN_PROPERTY("user"),
+    FTP_LOGIN_PASSWORD_PROPERTY("password"),
+    FTP_CHAR_ENCODE_PROPERTY("characterEncoding"),
+    FTP_FILETYPE_PROPERTY("fileType"),
+    // added to make FTPBC clustering-aware by employing a
+    // file system or NFS based file locking so that 
+    // concurrent service units servicing the same endpoint - i.e. - inbound SU polling
+    // the same ftp directory for the same set of files
+    // can be effectively synchronized
+    FTP_PERSIST_BASE_LOC_PROPERTY("baseLocation"),
+    FTP_FWDATTACH_PROPERTY("forwardAsAttachment");
+    
     private String name;
     private Class type;
     private Class subtype;

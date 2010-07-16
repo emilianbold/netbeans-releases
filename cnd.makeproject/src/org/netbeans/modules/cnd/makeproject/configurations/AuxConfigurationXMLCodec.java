@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -53,7 +57,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String tag;
     private ConfigurationDescriptor configurationDescriptor;
-    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
+    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public AuxConfigurationXMLCodec(String tag,
             ConfigurationDescriptor configurationDescriptor) {
@@ -63,21 +67,25 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
         return tag;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
             String currentConfName = atts.getValue(NAME_ATTR);
@@ -86,14 +94,14 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
-                XMLDecoder decoder = decoders.elementAt(dx);
+                XMLDecoder decoder = decoders.get(dx);
                 deregisterXMLDecoder(decoder);
             }
 
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects =
                     currentConf.getAuxObjects();
-            decoders = new Vector<XMLDecoder>();
+            decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (!profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
@@ -105,6 +113,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
         if (element.equals(DEFAULT_CONF_ELEMENT)) {
             configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());

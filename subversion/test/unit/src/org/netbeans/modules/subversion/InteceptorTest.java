@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
@@ -96,6 +98,7 @@ public class InteceptorTest extends NbTestCase {
         MockServices.setServices(new Class[] {
             VersioningAnnotationProvider.class,
             SubversionVCS.class});
+        System.setProperty("data.root.dir", getDataDir().getAbsolutePath()) ;
         dataRootDir = new File(System.getProperty("data.root.dir")); 
         FileUtil.refreshFor(dataRootDir);
         wc = new File(dataRootDir, getName() + "_wc");
@@ -138,15 +141,15 @@ public class InteceptorTest extends NbTestCase {
 
         suite.addTest(getAttributeSuite());
 
-//        suite.addTest(createSuite());
-//
-//        suite.addTest(deleteSuite());
-//
-//        suite.addTest(renameViaDataObjectSuite());
-//        suite.addTest(renameViaFileObjectSuite());
-//
-//        suite.addTest(moveViaDataObjectSuite());
-//        suite.addTest(moveViaFileObjectSuite());
+        suite.addTest(createSuite());
+
+        suite.addTest(deleteSuite());
+
+        suite.addTest(renameViaDataObjectSuite());
+        suite.addTest(renameViaFileObjectSuite());
+
+        suite.addTest(moveViaDataObjectSuite());
+        suite.addTest(moveViaFileObjectSuite());
 
         return suite;
     }
@@ -422,7 +425,7 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(!wc.exists());
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(wc).getTextStatus());        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(wc));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(wc));
     }
 
     public void deleteVersionedFileTree() throws Exception {
@@ -1320,7 +1323,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileC));
 
@@ -1368,7 +1371,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileC));
 
@@ -1412,7 +1415,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileC));
 
@@ -1456,7 +1459,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
         assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileC).getTextStatus());
 
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileC));
 
@@ -1588,7 +1591,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.REPLACED, getSVNStatus(fileA).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
              
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         
         commit(wc);
@@ -2297,7 +2300,7 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.REPLACED, getSVNStatus(fileA).getTextStatus());
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileB).getTextStatus());
              
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileA));
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileB));
         
         commit(wc);
@@ -2521,7 +2524,7 @@ public class InteceptorTest extends NbTestCase {
         fileA.delete();
         Handler h = new SVNInterceptor();
         Subversion.LOG.addHandler(h);
-        RequestProcessor.Task r = RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.Task r = Subversion.getInstance().getParallelRequestProcessor().create(new Runnable() {
             public void run() {
                 FileUtil.refreshFor(fileA);
             }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.wizards;
 
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -51,7 +53,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
 
     private PanelConfigureProject panel;
-    private String j2eeLevel = JbiProjectProperties.J2EE_1_4;
+//    private String j2eeLevel = JbiProjectProperties.J2EE_1_4;
 
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
@@ -100,7 +102,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
-        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
+//        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
     }
     
     void read(WizardDescriptor d) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -159,36 +161,7 @@ class DocumentUtil {
         Field field = doc.getField(FIELD_PACKAGE_NAME);
         return field == null ? null : field.stringValue();
     }
-    
-    static String getRefereneType (final Document doc, final String className) {
-        assert doc != null;
-        assert className != null;
-        Field[] fields = doc.getFields(FIELD_REFERENCES);
-        assert fields != null;
-        for (Field field : fields) {
-            final String rawUsage = field.stringValue();            
-            final int rawUsageLen = rawUsage.length();
-            assert rawUsageLen>SIZE;
-            final int index = rawUsageLen - SIZE;
-            final String usageName = rawUsage.substring(0,index);
-            final String map = rawUsage.substring (index);
-            if (className.equals(usageName)) {
-                return map;
-            }
-        }
-        return null;
-    }
-    
-    public static List<String> getReferences (final Document doc) {
-        assert doc != null;
-        Field[] fields = doc.getFields(FIELD_REFERENCES);
-        assert fields != null;
-        List<String> result = new ArrayList<String> (fields.length);
-        for (Field field : fields) {
-            result.add (field.stringValue());
-        }
-        return result;
-    }
+        
     
     public static long getTimeStamp (final Document doc) throws java.text.ParseException {
         assert doc != null;
@@ -355,7 +328,7 @@ class DocumentUtil {
         field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
         for (String reference : references) {
-            field = new Field (FIELD_REFERENCES,reference,Field.Store.YES,Field.Index.NO_NORMS);
+            field = new Field (FIELD_REFERENCES,reference,Field.Store.NO,Field.Index.NO_NORMS);
             doc.add(field);
         }
         if (featureIdents != null) {

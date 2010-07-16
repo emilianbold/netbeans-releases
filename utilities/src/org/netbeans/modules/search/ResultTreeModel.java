@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,10 +88,12 @@ final class ResultTreeModel implements TreeModel {
         }
     }
 
+    @Override
     public Object getRoot() {
         return this;
     }
     
+    @Override
     public Object getChild(Object parent, int index) {
         assert EventQueue.isDispatchThread();
         
@@ -103,7 +108,7 @@ final class ResultTreeModel implements TreeModel {
             } else {
                 try {
                     //PENDING - threading:
-                    ret = resultModel.matchingObjects.get(index);
+                    ret = resultModel.getMatchingObjects().get(index);
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     assert false;
                     ret = null;
@@ -113,12 +118,10 @@ final class ResultTreeModel implements TreeModel {
             if (resultModel.canHaveDetails() == Boolean.FALSE) {
                 ret = null;
             } else {
-                MatchingObject matchingObject = (MatchingObject) parent;
-                Node[] detailNodes
-                        = resultModel.searchAndReplace
-                          ? resultModel.basicCriteria.getDetails(
-                                                    matchingObject.object)
-                          : resultModel.getDetails(matchingObject);
+                MatchingObject mo = (MatchingObject) parent;
+                Node[] detailNodes = resultModel.searchAndReplace ? 
+                    resultModel.basicCriteria.getDetails(mo.object) :
+                    resultModel.getDetails(mo);
                 if ((detailNodes == null) || (index >= detailNodes.length)) {
                     ret = null;
                 } else {
@@ -131,6 +134,7 @@ final class ResultTreeModel implements TreeModel {
         return ret;
     }
     
+    @Override
     public int getChildCount(Object parent) {
         assert EventQueue.isDispatchThread();
         
@@ -156,6 +160,7 @@ final class ResultTreeModel implements TreeModel {
         return ret;
     }
 
+    @Override
     public boolean isLeaf(Object node) {
         boolean ret;
         if (node == getRoot()) {
@@ -165,7 +170,8 @@ final class ResultTreeModel implements TreeModel {
             if (hasDetails != null) {
                 ret = !hasDetails.booleanValue();
             } else {
-                ret = !resultModel.hasDetails((MatchingObject) node);
+                ret = resultModel.getDetails((MatchingObject) node) == null ?
+                    true : false;
             }
         } else {        //detail node
             ret = true;
@@ -173,6 +179,7 @@ final class ResultTreeModel implements TreeModel {
         return ret;
     }
 
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
         assert EventQueue.isDispatchThread();
         
@@ -180,6 +187,7 @@ final class ResultTreeModel implements TreeModel {
         assert false;
     }
 
+    @Override
     public int getIndexOfChild(Object parent, Object child) {
         assert EventQueue.isDispatchThread();
         
@@ -190,7 +198,7 @@ final class ResultTreeModel implements TreeModel {
         int ret;
         if (parent == getRoot()) {
             ret = (child.getClass() == MatchingObject.class)
-                  ? resultModel.matchingObjects.indexOf(child)
+                  ? resultModel.getMatchingObjects().indexOf(child)
                   : -1;
         } else {
             ret = -1;
@@ -216,6 +224,7 @@ final class ResultTreeModel implements TreeModel {
         return ret;
     }
 
+    @Override
     public void addTreeModelListener(TreeModelListener l) {
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
@@ -227,6 +236,7 @@ final class ResultTreeModel implements TreeModel {
         treeModelListeners.add(l);
     }
 
+    @Override
     public void removeTreeModelListener(TreeModelListener l) {
         assert EventQueue.isDispatchThread();
         
@@ -312,6 +322,7 @@ final class ResultTreeModel implements TreeModel {
             this.foundObject = foundObject;
             this.foundObjectIndex = foundObjectIndex;
         }
+        @Override
         public void run() {
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeLater(this);
@@ -378,7 +389,8 @@ final class ResultTreeModel implements TreeModel {
     }
 
     private void updateRootNodeSelection() {
-        assert (selectedObjectsCount >= 0) && (selectedObjectsCount <= objectsCount);
+        assert (selectedObjectsCount >= 0) &&
+                (selectedObjectsCount <= objectsCount);
         if (setSelected(selectedObjectsCount != 0)) {
             fireRootNodeChanged();
         }
@@ -388,17 +400,22 @@ final class ResultTreeModel implements TreeModel {
      */
     private void fireNodeAdded(int index, MatchingObject object) {
         assert EventQueue.isDispatchThread();
+        assert object != null;
+        assert index >= 0;
         
         if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
             return;
         }
         
+//        TreeModelEvent event = new TreeModelEvent(this,
+//                                                  rootPath,
+//                                                  new int[] { index },
+//                                                  new Object[] { object });
         TreeModelEvent event = new TreeModelEvent(this,
-                                                  rootPath,
-                                                  new int[] { index },
-                                                  new Object[] { object });
+                                                  rootPath);
         for (TreeModelListener l : treeModelListeners) {
-            l.treeNodesInserted(event);
+//            l.treeNodesInserted(event);
+            l.treeStructureChanged(event);
         }
     }
     
@@ -475,7 +492,7 @@ final class ResultTreeModel implements TreeModel {
             return;
         }
 
-        final int index = resultModel.matchingObjects.indexOf(matchingObj);
+        final int index = resultModel.getMatchingObjects().indexOf(matchingObj);
         
         /* Notify that the file node itself has changed... */
         TreeModelEvent event = new TreeModelEvent(this,

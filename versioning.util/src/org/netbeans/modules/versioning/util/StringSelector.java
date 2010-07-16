@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.awt.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -51,6 +55,7 @@ import java.util.*;
 import java.awt.Dialog;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
+import java.util.prefs.Preferences;
 
 /**
  * Provides chooser from list of strings.
@@ -61,25 +66,32 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
 
     public static String select(String title, String prompt, List<String> strings) {
         StringSelector panel = new StringSelector();
-        Mnemonics.setLocalizedText(panel.promptLabel, prompt);
-        panel.listValues.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        panel.setChoices(strings);
-        
-        DialogDescriptor descriptor = new DialogDescriptor(panel, title);
+        DialogDescriptor descriptor = panel.prepare(title, prompt, strings, null);
+        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return null;
+        return (String) panel.listValues.getSelectedValue();
+    }
+
+    private List<String> choices;
+
+    private DialogDescriptor prepare (String title, String prompt, List<String> strings, JPanel options) {
+        Mnemonics.setLocalizedText(promptLabel, prompt);
+        listValues.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setChoices(strings);
+        if (options != null) {
+            optionsPanel.add(BorderLayout.WEST, options);
+        }
+
+        DialogDescriptor descriptor = new DialogDescriptor(this, title);
         descriptor.setClosingOptions(null);
         descriptor.setHelpCtx(null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StringSelector.class, "ACSD_StringSelectorDialog"));  // NOI18N
-        panel.putClientProperty(Dialog.class, dialog);
-        panel.putClientProperty(DialogDescriptor.class, descriptor);
+        putClientProperty(Dialog.class, dialog);
+        putClientProperty(DialogDescriptor.class, descriptor);
         dialog.setVisible(true);
-        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return null;
-        
-        return (String) panel.listValues.getSelectedValue();
+        return descriptor;
     }
-
-    private List<String> choices;
     
     private void setChoices(List<String> strings) {
         choices = strings;
@@ -122,17 +134,51 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
     public void mouseExited(MouseEvent e) {
     }
     
+    public static class RecentMessageSelector extends StringSelector {
+
+        private final Preferences prefs;
+        private static final String KEY = "recentmessages.autofill"; //NOI18N
+
+        public RecentMessageSelector (Preferences prefs) {
+            this.prefs = prefs;
+        }
+
+        public boolean isAutoFill () {
+            return prefs.getBoolean(KEY, true);
+        }
+
+        public void setAutoFill (boolean value) {
+            prefs.putBoolean(KEY, value);
+        }
+
+        public String getRecentMessage (String title, String prompt, List<String> strings) {
+            StringSelector panel = new StringSelector();
+            JPanel options = new JPanel(new BorderLayout());
+            JCheckBox autoFillCheckBox = new JCheckBox();
+            org.openide.awt.Mnemonics.setLocalizedText(autoFillCheckBox, NbBundle.getMessage(RecentMessageSelector.class, "RecentMessageSelector.autoFill")); //NOI18N
+            autoFillCheckBox.setSelected(isAutoFill());
+            options.add(BorderLayout.LINE_START, autoFillCheckBox);
+            DialogDescriptor descriptor = panel.prepare(title, prompt, strings, options);
+            if (descriptor.getValue() != DialogDescriptor.OK_OPTION) {
+                return null;
+            }
+            setAutoFill(autoFillCheckBox.isSelected());
+            return (String) panel.listValues.getSelectedValue();
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         promptLabel = new javax.swing.JLabel();
         jScrollPane = new javax.swing.JScrollPane();
         listValues = new javax.swing.JList();
+        optionsPanel = new javax.swing.JPanel();
 
         promptLabel.setLabelFor(listValues);
         promptLabel.setText(org.openide.util.NbBundle.getMessage(StringSelector.class, "StringSelector.promptLabel.text")); // NOI18N
@@ -146,6 +192,8 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
         listValues.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StringSelector.class, "ACSN_StringSelectorMessages")); // NOI18N
         listValues.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StringSelector.class, "ACSD_StringSelectorMessages")); // NOI18N
 
+        optionsPanel.setLayout(new java.awt.BorderLayout());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -153,12 +201,13 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
-                        .addContainerGap())
+                    .add(optionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(promptLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
-                        .add(96, 96, 96))))
+                        .add(96, 96, 96))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -166,7 +215,10 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
                 .addContainerGap()
                 .add(promptLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE))
+                .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -174,6 +226,7 @@ public class StringSelector extends javax.swing.JPanel implements MouseListener 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JList listValues;
+    private javax.swing.JPanel optionsPanel;
     private javax.swing.JLabel promptLabel;
     // End of variables declaration//GEN-END:variables
 }

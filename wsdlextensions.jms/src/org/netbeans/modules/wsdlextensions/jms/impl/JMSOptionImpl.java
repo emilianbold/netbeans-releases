@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSOption;
 
@@ -39,6 +40,10 @@ public class JMSOptionImpl extends JMSComponentImpl implements JMSOption  {
         this(model, createPrefixedElement(JMSQName.OPTION.getQName(), model));
     }
 
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }    
+    
     public String getName() {
         return getAttribute(JMSOption.ATTR_NAME);        
     }

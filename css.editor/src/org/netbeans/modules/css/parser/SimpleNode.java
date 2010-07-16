@@ -36,7 +36,25 @@ public class SimpleNode implements Node {
             System.err.println("ERROR: lastToken image is null! : " + jjtGetLastToken());
             return jjtGetLastToken().offset;
         } else {
-            return jjtGetLastToken().offset + jjtGetLastToken().image.length();
+            //#181357 - At the end of the tokens sequence there is the EOF token (kind==0) with
+            //zero lenght but WRONG start offset - it points at the previous offset (real file end - 1).
+            //so tokens of simple code may look like:
+            //Token( 0; 'h1')
+            //Token( 2; ' ')
+            //Token( 3; '{')
+            //Token( 4; ' ')
+            //Token( 5; '}')
+            //Token( 5; '') <-- here the (EOF) token should apparently have offset set to 6.
+            //
+            //sometimes there are even two EOF tokens at the end of the sequence with the same wrong offset!
+            //
+            //why this happens is a mystery to me, maybe caused by some changes to the default javacc
+            //lexing, but I am not sure so I'll workaround it here.
+            if(jjtGetLastToken().kind == CssParserConstants.EOF) {
+                return jjtGetLastToken().offset + 1;
+            } else {
+                return jjtGetLastToken().offset + jjtGetLastToken().image.length();
+            }
         }
     }
 
@@ -44,14 +62,29 @@ public class SimpleNode implements Node {
         return image(false);
     }
 
-    public String image(boolean debug) {
+    public String image(int... filteredTokenKinds) {
+        return image(false, filteredTokenKinds);
+    }
+
+    public String image(boolean debug, int... filteredTokenKinds) {
+        //optimize filtered tokens kinds search speed a bit
+        boolean[] filtered = new boolean[CssParserConstants.tokenImage.length];
+        for(int i = 0; i < filteredTokenKinds.length; i++) {
+            int kind = filteredTokenKinds[i];
+            filtered[kind] = true;
+        }
+        //now just use if(filtered[node.kind]) { //filter }
+        
         synchronized (this) {
             //do not cache or use cached if debugged
             String retVal = image;
             if (retVal == null || debug) {
+                retVal = "";
                 StringBuffer sb = new StringBuffer();
                 if (jjtGetFirstToken() == jjtGetLastToken()) {
-                    retVal = jjtGetFirstToken().image;
+                    if(!filtered[jjtGetFirstToken().kind]) {
+                        retVal = jjtGetFirstToken().image;
+                    }
                 } else {
                     Token t = jjtGetFirstToken();
                     Token last = jjtGetLastToken();
@@ -61,7 +94,14 @@ public class SimpleNode implements Node {
                             sb.append(t.offset);
                             sb.append(",");
                         }
-                        sb.append(t.image);
+                        if(!filtered[t.kind]) {
+                            sb.append(t.image);
+                        } else {
+                            if(debug) {
+                                sb.append("filtered node:");
+                                sb.append(t.image);
+                            }
+                        }
                         if(debug) {
                             sb.append(">");
                         }

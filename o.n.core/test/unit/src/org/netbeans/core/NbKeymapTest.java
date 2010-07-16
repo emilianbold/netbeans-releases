@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,8 +49,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -92,13 +93,12 @@ public class NbKeymapTest extends NbTestCase {
         return FileUtil.createFolder(FileUtil.getConfigRoot(), path);
     }
 
-    private void assertMapping(Keymap km, KeyStroke stroke, FileObject presenterDefinition, String actionName) throws Exception {
+    private void assertMapping(NbKeymap km, KeyStroke stroke, FileObject presenterDefinition, String actionName) throws Exception {
         Action a = km.getAction(stroke);
         assertNotNull("for " + stroke, a);
         assertEquals(actionName, a.getValue(Action.NAME));
-        a.putValue("definingFile", presenterDefinition);
         assertEquals("for " + stroke + " from " + presenterDefinition.getPath(),
-                Collections.singletonList(stroke), Arrays.asList(km.getKeyStrokesForAction(a)));
+                stroke, km.keyStrokeForAction(a, presenterDefinition));
     }
     
     public void testAcceleratorMapping() throws Exception {
@@ -119,7 +119,7 @@ public class NbKeymapTest extends NbTestCase {
         FileObject menuitem2 = DataShadow.create(menu, "whatever2", DataObject.find(def2)).getPrimaryFile();
         FileObject menuitem3 = DataShadow.create(menu, "whatever3", DataObject.find(def3)).getPrimaryFile();
         FileObject menuitem4 = DataShadow.create(menu, "whatever4", DataObject.find(def4)).getPrimaryFile();
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_1, 0), menuitem1, "one");
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_2, 0), menuitem2, "two");
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_3, 0), menuitem3, "DummySystemAction1");
@@ -132,7 +132,7 @@ public class NbKeymapTest extends NbTestCase {
         DataFolder shortcuts = DataFolder.findFolder(makeFolder("Shortcuts"));
         DataShadow.create(shortcuts, "C-V", DataObject.find(def));
         DataShadow.create(shortcuts, "PASTE", DataObject.find(def));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK), def, "paste");
     }
 
@@ -147,7 +147,7 @@ public class NbKeymapTest extends NbTestCase {
         DataFolder netbeans = DataFolder.findFolder(makeFolder("Keymaps/NetBeans"));
         DataShadow.create(netbeans, "C-F5", DataObject.find(def1));
         DataShadow.create(netbeans, "F5", DataObject.find(def2));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK), def1, "start");
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), def2, "continue");
     }
@@ -162,7 +162,7 @@ public class NbKeymapTest extends NbTestCase {
     }
 
     public void testAbstractModifiers() throws Exception {
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         FileObject inst1 = make("Shortcuts/D-1.instance");
         inst1.setAttribute("instanceCreate", new DummyAction("one"));
         FileObject inst2 = make("Shortcuts/O-1.instance");
@@ -175,12 +175,14 @@ public class NbKeymapTest extends NbTestCase {
         make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
         make("Keymaps/NetBeans/C-A.instance").setAttribute("instanceCreate", new DummyAction("two"));
         make("Keymaps/Eclipse/C-A.instance").setAttribute("instanceCreate", new DummyAction("three"));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
         assertEquals("two", km.getAction(controlA).getValue(Action.NAME));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        km.waitFinished();
         assertEquals("three", km.getAction(controlA).getValue(Action.NAME));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "IDEA");
+        km.waitFinished();
         assertEquals("one", km.getAction(controlA).getValue(Action.NAME));
     }
 
@@ -190,10 +192,11 @@ public class NbKeymapTest extends NbTestCase {
         def.setAttribute("instanceCreate", a);
         DataShadow.create(DataFolder.findFolder(makeFolder("Keymaps/NetBeans")), "C-A", DataObject.find(def));
         DataShadow.create(DataFolder.findFolder(makeFolder("Keymaps/Eclipse")), "C-B", DataObject.find(def));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK), def, "one");
         assertEquals(null, a.getValue(Action.ACCELERATOR_KEY));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        km.waitFinished();
         // let former EQ task finish
         EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         // Any actions ever passed to getKeyStrokesForAction should get updated when keymap changes:
@@ -248,15 +251,18 @@ public class NbKeymapTest extends NbTestCase {
     public void testChangesInShortcutRegistrations() throws Exception {
         make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
         make("Keymaps/NetBeans/C-B.instance").setAttribute("instanceCreate", new DummyAction("two"));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertEquals("one", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         assertEquals("two", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)));
         FileUtil.getConfigFile("Shortcuts/C-A.instance").delete();
+        km.waitFinished();
         assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)));
         make("Shortcuts/C-C.instance").setAttribute("instanceCreate", new DummyAction("three"));
+        km.waitFinished();
         assertEquals("three", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         make("Keymaps/NetBeans/C-C.instance").setAttribute("instanceCreate", new DummyAction("four"));
+        km.waitFinished();
         assertEquals("four", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
     }
 
@@ -264,8 +270,7 @@ public class NbKeymapTest extends NbTestCase {
         FileObject def = make("Menu/x.shadow");
         def.setAttribute("originalFile", "Action/nonexistent.instance");
         Action a = new DummyAction("x");
-        a.putValue("definingFile", def);
-        new NbKeymap().getKeyStrokesForAction(a);
+        new NbKeymap().keyStrokeForAction(a, def);
     }
 
     private static final class DummyAction extends AbstractAction {

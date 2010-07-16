@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,6 @@
 
 package org.netbeans.modules.compapp.casaeditor;
 
-
-import org.openide.actions.*;
-
 import org.openide.filesystems.FileObject;
 
 import org.openide.loaders.DataObjectExistsException;
@@ -51,47 +51,31 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 import java.io.IOException;
-
 
 /**
  *
  * @author tli
- *
  */
 public class CasaDataLoader extends UniFileLoader {
 
     static final long serialVersionUID = 8066846305969307661L;
     
     public static final String CASA_MIME = "text/x-casa+xml"; // NOI18N
-
     
     public CasaDataLoader() {
         super("org.netbeans.modules.compapp.casaeditor.CasaDataObject"); // NOI18N
     }
 
-
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(CasaDataLoader.class, "LBL_loaderName"); // NOI18N
     }
 
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    @Override
+    protected String actionsContext () {
+        return "Loaders/text/x-casa+xml/Actions"; // NOI18N
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile)
@@ -99,6 +83,7 @@ public class CasaDataLoader extends UniFileLoader {
         return new CasaDataObject(primaryFile, this);
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(CASA_MIME);

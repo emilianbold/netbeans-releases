@@ -29,24 +29,20 @@ import org.netbeans.spi.palette.PaletteFactory;
  */
 public final class SoaPaletteFactory {
 
-  private SoaPaletteFactory () {}
-
-  /**
-   * Creates a new soa palette.
-   * @return a new soa palette
-   */
-  public static PaletteController getPalette() {
-    if (ourPalette == null) {
-      try {
-        ourPalette = PaletteFactory.createPalette(SOA_PALETTE_FOLDER, new StubPaletteActions());
-      }
-      catch (IOException e) {
-        e.printStackTrace();
-      }
+    private SoaPaletteFactory() {
     }
-    return ourPalette;
-  }
-  
-  private static final String SOA_PALETTE_FOLDER = "SoaPalette"; // NOI18N
-  private static PaletteController ourPalette;
+
+    public static PaletteController getPalette() {
+        if (ourPalette == null) {
+            try {
+                ourPalette = PaletteFactory.createPalette(SOA_PALETTE_FOLDER, new StubPaletteActions());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return ourPalette;
+    }
+
+    private static PaletteController ourPalette;
+    private static final String SOA_PALETTE_FOLDER = "SoaPalette"; // NOI18N
 }

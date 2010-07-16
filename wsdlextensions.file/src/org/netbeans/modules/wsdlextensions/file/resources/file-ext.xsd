@@ -42,9 +42,17 @@
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="wsdl:tExtensibilityElement">
+                            <xs:attribute name="verb" type="file:verb" use="optional"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+        <xs:simpleType name="verb">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="poll"/>
+			<xs:enumeration value="read"/>
+                        <xs:enumeration value="write"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:element name="message" type="file:tFileMessage">
 		<xs:annotation>
 			<xs:documentation>DESC_Element_message</xs:documentation>
@@ -53,12 +61,35 @@
 	<xs:complexType name="tFileMessage">
 		<xs:complexContent>
 			<xs:extension base="wsdl:tExtensibilityElement">
-				<xs:attribute name="use" type="file:useTypes" use="required"/>
-				<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional"/>
+				<xs:attribute name="use" type="file:useTypes" use="optional" default="literal">
+				    <xs:annotation>
+						    <xs:documentation>DESC_Attribute_use</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
+				<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional">
+				       <xs:annotation>
+						    <xs:documentation>DESC_Attribute_encodingStyle_file_ext</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
+			  <xs:attribute name="charset" type="xs:anyURI" use="optional">
+				      <xs:annotation>
+						        <xs:documentation>DESC_Attribute_charset</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
 				<xs:attribute name="fileType" type="file:fileType" use="optional">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_fileType</xs:documentation>
 					</xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="forwardAsAttachment" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_ForwardAsAttachment</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="deleteFileOnRead" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_DeleteFileOnRead</xs:documentation>
+				    </xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="fileName" type="xs:string" use="required">
   				    <xs:annotation>
@@ -70,7 +101,12 @@
 					<xs:documentation>DESC_Attribute_fileNameIsPattern</xs:documentation>
 				    </xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="pollingInterval" type="xs:long" use="optional">
+				<xs:attribute name="fileNameIsRegex" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_fileNameIsRegex</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pollingInterval" type="file:numericApplicationVariableType" use="optional">
 				    <xs:annotation>
 					<xs:documentation>DESC_Attribute_pollingInterval</xs:documentation>
 				    </xs:annotation>
@@ -95,7 +131,7 @@
 					<xs:documentation>DESC_Attribute_multipleRecordsPerFile</xs:documentation>
 				    </xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="maxBytesPerRecord" type="xs:long" use="optional">
+				<xs:attribute name="maxBytesPerRecord" type="file:numericApplicationVariableType" use="optional">
 				    <xs:annotation>
 					<xs:documentation>DESC_Attribute_maxBytesPerRecord</xs:documentation>
 				    </xs:annotation>
@@ -196,12 +232,27 @@
 						<xs:documentation>DESC_Attribute_pathRelativeTo</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="recursive" type="xs:boolean" use="optional" default="false">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_pollInputDirRecursively</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recursiveExclude" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_pollRecursivelyExclude</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="persistenceBaseLoc" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_PersistenceBaseLoc</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:attribute name="lockName" type="xs:string" use="optional" default="filebc.lck">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_lockName</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="workArea" type="xs:string" use="optional" default="filebc_tmp">
+				<xs:attribute name="workArea" type="xs:string" use="optional" default="filebc-in-processing">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_workArea</xs:documentation>
 					</xs:annotation>
@@ -221,4 +272,10 @@
 			<xs:enumeration value="Default System Temp Dir"/>
 		</xs:restriction>
 	</xs:simpleType>
+       <xs:simpleType name="numericApplicationVariableType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]{1,5})|($\{([a-zA-Z0-9]+[\.-_]?)+\})"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

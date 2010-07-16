@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -163,7 +166,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         // cannot rename a constructor.. is always a class rename
@@ -171,14 +174,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerClassRefactoringElement(fqname, handle, layerFileObject,layerAttribute);
     }
     
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
@@ -187,14 +190,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement {
         
         protected FileObject layerFile;
-        protected LayerUtils.LayerHandle handle;
+        protected LayerHandle handle;
         protected String oldFileName;
         protected String oldAttrName;
         protected String oldAttrValue;
         protected String valueType;
         
         public LayerAbstractRefactoringElement(
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             this.layerFile = layerFile;
@@ -286,7 +289,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         private String method;
         
         public LayerMethodRefactoringElement(String method,
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);
@@ -322,7 +325,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         private String newFileName;
         
         public LayerClassRefactoringElement(String fqname,
-                LayerUtils.LayerHandle handle,
+                LayerHandle handle,
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);

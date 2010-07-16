@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,9 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.io.IOException;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.CutAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.RenameAction;
@@ -87,6 +90,7 @@ public class Depr_MimeLookupPopupItemsChangeTest extends NbTestCase {
     }
 
     /** Testing Base level popup items lookup and sorting */
+    @RandomlyFails // NB-Core-Build #3718
     public void testDynamicChangeInPopupFolders() throws IOException{
         final int resultChangedCount[] = new int[1];
         resultChangedCount[0] = 0;

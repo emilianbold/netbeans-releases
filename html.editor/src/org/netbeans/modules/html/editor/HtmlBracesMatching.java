@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -104,10 +108,12 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return null;
                     }
                     Token<HTMLTokenId> t = ts.token();
+                    int toffs = ts.offset();
                     if (tokenInTag(t)) {
                         //find the tag beginning
                         do {
                             Token<HTMLTokenId> t2 = ts.token();
+                            int t2offs = ts.offset();
                             if (!tokenInTag(t2)) {
                                 return null;
                             } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
@@ -115,6 +121,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                 int tagNameEnd = -1;
                                 while (ts.moveNext()) {
                                     Token<HTMLTokenId> t3 = ts.token();
+                                    int t3offs = ts.offset();
                                     if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                         return null;
                                     } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
@@ -122,8 +129,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             //do no match empty tags
                                             return null;
                                         } else {
-                                            int from = t2.offset(th);
-                                            int to = t3.offset(th) + t3.length();
+                                            int from = t2offs;
+                                            int to = t3offs + t3.length();
                                             if (tagNameEnd != -1) {
                                                 return new int[]{from, to,
                                                             from, tagNameEnd,
@@ -133,7 +140,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             }
                                         }
                                     } else if (t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
-                                        tagNameEnd = t3.offset(th) + t3.length();
+                                        tagNameEnd = t3offs + t3.length();
                                     }
                                 }
                                 break;
@@ -141,10 +148,10 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         } while (ts.movePrevious());
                     } else if (t.id() == HTMLTokenId.BLOCK_COMMENT) {
                         String tokenImage = t.text().toString();
-                        if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < (t.offset(th)) + BLOCK_COMMENT_START.length()) {
-                            return new int[]{t.offset(th), t.offset(th) + BLOCK_COMMENT_START.length()};
-                        } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= (t.offset(th)) + tokenImage.length() - BLOCK_COMMENT_END.length())) {
-                            return new int[]{t.offset(th) + t.length() - BLOCK_COMMENT_END.length(), t.offset(th) + t.length()};
+                        if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < toffs + BLOCK_COMMENT_START.length()) {
+                            return new int[]{toffs, toffs + BLOCK_COMMENT_START.length()};
+                        } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= toffs + tokenImage.length() - BLOCK_COMMENT_END.length())) {
+                            return new int[]{toffs + t.length() - BLOCK_COMMENT_END.length(), toffs + t.length()};
                         }
                     }
                 }
@@ -182,7 +189,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
                     if (!source.getMimeType().equals(HtmlKit.HTML_MIME_TYPE)) {
                         //find embedded result iterator
-                        resultIterator = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+                        resultIterator = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
                     }
 
                     if (resultIterator == null) {

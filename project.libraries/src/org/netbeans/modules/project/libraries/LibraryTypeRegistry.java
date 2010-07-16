@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,6 @@
 package org.netbeans.modules.project.libraries;
 
 import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.ChangeSupport;
@@ -55,12 +55,11 @@ import org.openide.util.lookup.Lookups;
 public final class LibraryTypeRegistry {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
-    
+
     private static LibraryTypeRegistry instance;
 
     private final Lookup.Result<LibraryTypeProvider> result;
     private final ChangeSupport changeSupport;
-    private volatile Set<? extends LibraryTypeProvider> usedLibraryTypes;
 
     private LibraryTypeRegistry () {
         this.changeSupport = new ChangeSupport(this);
@@ -76,7 +75,7 @@ public final class LibraryTypeRegistry {
 
     public LibraryTypeProvider[] getLibraryTypeProviders () {
         assert result != null;
-        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();        
+        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();
         return instances.toArray(new LibraryTypeProvider[instances.size()]);
     }
 
@@ -91,16 +90,6 @@ public final class LibraryTypeRegistry {
         return null;
     }
 
-    public boolean hasChanged() {
-        final Set<? extends  LibraryTypeProvider> oldTP = usedLibraryTypes;
-        final LibraryTypeProvider[] providers = getLibraryTypeProviders();
-        final Map<LibraryTypeProvider,LibraryTypeProvider> newTP = new IdentityHashMap<LibraryTypeProvider,LibraryTypeProvider>();
-        for (LibraryTypeProvider provider : providers) {
-            newTP.put(provider, provider);
-        }
-        usedLibraryTypes = newTP.keySet();
-        return oldTP == null || !oldTP.equals(newTP.keySet());
-    }
 
     public void addChangeListener (final ChangeListener listener) {
         assert listener != null;
@@ -111,7 +100,6 @@ public final class LibraryTypeRegistry {
         assert listener != null;
         this.changeSupport.removeChangeListener(listener);
     }
-    
 
     public static synchronized LibraryTypeRegistry getDefault () {
         if (instance == null) {

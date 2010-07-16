@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +68,7 @@ import java.io.*;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.diff.Utils;
 
 /**
  * Patch export facility.
@@ -75,20 +78,24 @@ import java.awt.event.ActionEvent;
 public class ExportPatch {
 
     private static final FileFilter unifiedFilter = new FileFilter() {
+        @Override
         public boolean accept(File f) {
             return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ExportPatch.class, "FileFilter_Unified");
         }
     };
 
     private static final FileFilter normalFilter = new FileFilter() {
+        @Override
         public boolean accept(File f) {
             return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ExportPatch.class, "FileFilter_Normal");
         }
@@ -121,6 +128,7 @@ public class ExportPatch {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
         chooser.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String state = (String)e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
@@ -148,7 +156,8 @@ public class ExportPatch {
                     DiffModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent());
 
                     final File out = destination;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Utils.postParallel(new Runnable() {
+                        @Override
                         public void run() {
                             exportDiff(base, modified, out, selectedFileFilter);
                         }

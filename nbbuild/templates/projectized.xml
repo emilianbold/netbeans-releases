@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -45,7 +48,7 @@ made subject to such option by the copyright holder.
     <import file="../default.xml"/>
     <import file="common.xml"/>
     
-    <target name="common-init" depends="default.init"/>
+    <target name="common-init" depends="default.init,-build-dir-init"/>
     <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
     <condition property="proxy.host+port">
@@ -69,24 +72,18 @@ made subject to such option by the copyright holder.
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
-    <target name="jdk-5-check" depends="-jdk-init" if="have-jdk-1.6" unless="permit.jdk6.builds">
+    <target name="jdk-6-check" depends="-jdk-init" if="have-jdk-1.7" unless="permit.jdk7.builds">
         <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
         <property name=".nbbuild.properties" location="${user.home}/.nbbuild.properties"/>
-        <fail>You are attempting to build NetBeans using JDK 6 (or higher).
-This is forbidden as it may lead to accidental usage of JDK 6+ APIs.
-Either run Ant with JDK 5, or set nbjdk.home=&lt;JDK 5 home&gt; in ${user.build.properties}
+        <fail>You are attempting to build NetBeans using JDK 7 (or higher).
+This is forbidden as it may lead to accidental usage of JDK 7+ APIs.
+Either run Ant with JDK 6, or set nbjdk.home=&lt;JDK 6 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
 You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
-If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
+If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=true</fail>
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-5-check,set-buildnumber">
-        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
-            <manifest dir=".">
-                <include name="external/binaries-list"/>
-            </manifest>
-        </downloadbinaries>
+    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber">
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
@@ -99,7 +96,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 moduleclasspathproperty="module.classpath"
                 publicpackagejardir="${public.package.jar.dir}"
                 modulerunclasspathproperty="module.run.classpath"
-                domainproperty="nbm.domain"
+                commitmailproperty="commit.mail"
                 classpathextensionsproperty="class.path.extensions">
             <testtype name="unit" 
                       folder="test.unit.folder" 
@@ -134,8 +131,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="build.package.index" value="false"/>
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
-        <property name="build.classes.dir" location="build/classes"/>
-        <property name="build.classes.dir.ml" location="build/ml/classes"/>
+        <property name="build.classes.dir" location="${build.dir}/classes"/>
+        <property name="build.classes.dir.ml" location="${build.dir}/ml/classes"/>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
         <property name="nbm.homepage" value="http://www.netbeans.org/"/>
         <property name="nbm.distribution" value="${dist.base}/${nbm}"/>
@@ -144,7 +141,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
         <property name="nbm_alias" value="nb_ide"/>
-        <condition property="nbm.target.dir" value="${basedir}/build">
+        <condition property="nbm.target.dir" value="${build.dir}">
              <not>
                  <isset property="base.nbm.target.dir"/>
              </not>
@@ -157,11 +154,11 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             </not>
         </condition>
         <property name="jnlp.dest.dir" location="${nb_all}/nbbuild/build/jnlp"/>
-        <property name="build.javahelp.dir" location="build/javahelp"/>
+        <property name="build.javahelp.dir" location="${build.dir}/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
-        <property name="netbeans.zipped.sources.dir" value="build/sources"/>
+        <property name="netbeans.zipped.sources.dir" location="${build}/sources"/>
         <property name="locales" value=""/>
         <property name="brandings" value=""/>
         <property name="locjar.locales" value="${locales}"/>
@@ -169,26 +166,29 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="locjhindexer.locales" value="${locales}"/>
         <property name="locmakenbm.locales" value="${locales}"/>
         <property name="locmakenbm.brands" value="${brandings}"/>
-        <path id="javacimpl">
-            <fileset dir="${nb_all}/apisupport.harness/external">
-                <include name="*javac*.jar"/>
-            </fileset>
-        </path>
-        <!-- Define bootcp for Mac, in order to compile retouche based tests in project which need modified javac -->
-        <pathconvert property="retouche.javac">
+        <pathconvert property="retouche.javac.api">
             <fileset dir="${nb_all}">
                 <include name="libs.javacapi/external/*javac*.jar"/>
+            </fileset>
+        </pathconvert>
+        <pathconvert property="retouche.javac.impl">
+            <fileset dir="${nb_all}">
                 <include name="libs.javacimpl/external/*javac*.jar"/>
             </fileset>
             <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
                 <include name="*.jar"/>
             </fileset>
         </pathconvert>
-        <condition property="bootclasspath.mac" value="${retouche.javac}">
+        <!-- When requires.nb.javac property is true, prepend javac-api on bootclasspath to allow override the default annotation
+             processing API located in rt.jar. On Mac, prepend also javac-impl, so that tests are built against correct version of javac. -->
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}:${retouche.javac.impl}">
             <and>
                 <os family="mac"/>
                 <istrue value="${requires.nb.javac}"/>
             </and>
+        </condition>
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
+            <istrue value="${requires.nb.javac}"/>
         </condition>
         <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
@@ -205,6 +205,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
     <target name="-release.files" depends="projectized-common.-release.files">
+        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir=".">
+                <include name="external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
         <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <releasefilesextra property="release.files.extra"/>
     </target>
@@ -220,25 +226,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m"/>
     </target>
 
-    <target name="-conditional-javadoc-init" depends="-conditional-16-init">
-        <condition property="skip.javadoc">
-            <or>
-                <isset property="skip.16"/>
-                <and>
-                    <isset property="config.javadoc.cluster"/>
-                    <not>
-                        <equals arg1="${cluster.dir}" arg2="${config.javadoc.cluster}"/>
-                    </not>
-                </and>                
-            </or>
-        </condition>
-    </target>
-    
-    <target name="-conditional-javadoc-warn" depends="-conditional-javadoc-init" if="skip.16">
-        <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.6"/>
-    </target>
-
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.javadoc">
+    <target name="javadoc" depends="build-init,-javadoc-init">
         <path id="javadoc.classpath">
             <path refid="cp"/>
             <path path="${module.run.classpath}"/><!-- XXX #157320: JDK 5 bug workaround -->
@@ -255,7 +243,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="-verify-apichanges" if="javadoc.apichanges" depends="basic-init">
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
-        <xslt in="${javadoc.apichanges}" out="build/apichanges.html" style="${nb_all}/nbbuild/javadoctools/apichanges.xsl">
+        <xslt in="${javadoc.apichanges}" out="${build.dir}/apichanges.html" style="${nb_all}/nbbuild/javadoctools/apichanges.xsl">
             <param name="javadoc-url-base" expression="."/>
         </xslt>
         <!-- XXX could perhaps validate arch.xml too, if it exists -->
@@ -281,34 +269,13 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
     
-    <target name="netbeans-javadoc" depends="netbeans,javadoc" />
-    
-    <target name="-conditional-16-init" depends="basic-init">
-        <condition property="skip.16">
-            <and>
-                <equals arg1="1.6" arg2="${javac.target}"/>
-                <not>
-                    <available classname="java.util.NavigableMap"/>
-                </not>
-            </and>
-        </condition>
-    </target>
-    
-    <target name="-conditional-nbm-warn" depends="-conditional-16-init" if="skip.16">
-        <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.6"/>
-    </target>
-    
-    <target name="conditional-nbm" unless="skip.16" depends="-conditional-nbm-warn">
-        <antcall target="nbm"/>
-    </target>
-
     <target name="-create-dest-dir-nbm" depends="init">
         <mkdir dir="${nbm.target.dir}"/> 
     </target>
 
     <target name="-create-license.file" depends="init">
-        <mkdir dir="build"/>
-        <property name="license.file.override" location="build/license"/>
+        <mkdir dir="${build.dir}"/>
+        <property name="license.file.override" location="${build.dir}/license"/>
         <property name="extra.license.files" value=""/>
         <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
@@ -586,7 +553,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     
     <target name="-sigtest-init" depends="build-init">
         <property name="sigtest.basedir" location="nbproject"/>
-        <property name="sigtest.output.dir" location="build/test/sigtest/results"/>
+        <property name="sigtest.output.dir" location="${build.dir}/test/sigtest/results"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
@@ -615,17 +582,18 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 </not>
             </or>
         </condition>
+        <property name="sigtest.check.type" value="check"/>
 
         <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
             <or>
                 <exportedapi/>
-                <not><isset property="nbm.domain"/></not>
+                <not><isset property="commit.mail"/></not>
             </or>
         </condition>
-        <property name="sigtest.mail" value="cvs@${nbm.domain}.netbeans.org"/>
+        <property name="sigtest.mail" value="${commit.mail}"/>
 
-        <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}</echo>
+        <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}; type: ${sigtest.check.type}</echo>
     </target>
 
     <target name="gen-sigtest" depends="-sigtest-init">
@@ -643,7 +611,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="check-sigtest" depends="-sigtest-init" unless="sigtest.skip.check.condition">
-        <property name="sigtest.check.type" value="check"/>
         <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"

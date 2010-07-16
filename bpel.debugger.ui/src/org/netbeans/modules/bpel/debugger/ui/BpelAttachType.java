@@ -27,17 +27,18 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
-
 /**
  * For registration of BPEL debugger attaching mechanism
  * with "Attach Debugger..." dialog.
  *
  * @author Sun Microsystems
  */
-@AttachType.Registration(displayName="#CTL_BpelConnector_name")
 public class BpelAttachType extends AttachType {
-
     private Reference<BpelConnectPanel> customizerRef = new WeakReference<BpelConnectPanel>(null);
+
+    public String getTypeDisplayName () {
+        return NbBundle.getMessage (getClass(), "CTL_Connector_name");
+    }
 
     public JComponent getCustomizer () {
         BpelConnectPanel panel = new BpelConnectPanel ();
@@ -54,5 +55,4 @@ public class BpelAttachType extends AttachType {
             return null;
         }
     }
-
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -77,6 +81,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -394,9 +399,16 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
 
     public void mouseClicked(MouseEvent e) {
+        boolean activate = false;
         HyperlinkType type = getHyperlinkType(e);
+        if ( type != null ) {
+            activate = !e.isPopupTrigger() && e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e);
+        } else if ( Utilities.isWindows() && e.getClickCount() == 1 && SwingUtilities.isMiddleMouseButton(e) ) {
+            activate = true;
+            type = HyperlinkType.GO_TO_DECLARATION;
+        }
         
-        if (type != null && !e.isPopupTrigger() && e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+        if ( activate ) {
             int position = component.viewToModel(e.getPoint());
             
             if (position < 0) {

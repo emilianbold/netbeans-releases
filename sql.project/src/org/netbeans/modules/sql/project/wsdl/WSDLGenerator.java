@@ -120,6 +120,7 @@ public class WSDLGenerator {
     private String sqlFileName;
     private List sqlFileList = null;
     private String schema;
+    private String pcatalog;
     private String wsdlFileLocation;
     private String engineFileName;
     private Document doc;
@@ -408,7 +409,7 @@ public class WSDLGenerator {
                                 currResponse = getElementByName(e, sqlFileName + "Response");
                                 if (currResponse == null) {
                                     currResponse = createElementWithComplexTypeSelect(sqlFileName + "Response");
-                                    selectRecord = createElementWithComplexTypeRecord("record");
+                                    selectRecord = createElementWithComplexTypeRecord(sqlFileName + "_Record"); //113494
                                 }
                                 generateSelectSchemaElements(currRequest, selectRecord);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(INSERT_STATEMENT)) {
@@ -984,8 +985,10 @@ public class WSDLGenerator {
             String catalog = conn.getCatalog();
             schema= dbConn.getSchema();
             String procName = getProcName();
-            if (catalog == null) {
+            if (catalog == null && pcatalog == null) {
         		catalog = "";
+        	} else {
+        		catalog = pcatalog;
         	}
 			Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
 			if(dbmeta.getErrProcMetaData()) {
@@ -994,9 +997,7 @@ public class WSDLGenerator {
                     "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
-        	if(proc.getHasReturn()) {
-        		//dbmeta.getProcResultSetColumns(catalog, schema, procName, "Procedure", proc);
-        	}
+        	
             if (requestElement != null) {
                 Element sequenceElement = getElementByName(requestElement, "xsd:sequence");
                 if (sequenceElement != null) {
@@ -1090,7 +1091,9 @@ public class WSDLGenerator {
         if (proc != null) {
             ResultSetColumns[] rss = proc.getResultSetColumnsArray();
             for(int j=0;j<rss.length;j++) {
-            ResultSetColumn rs= rss[j].get(j);
+            int numColumns= rss[j].getNumColumns();
+            for(int i = 0;i < numColumns; i++){
+            ResultSetColumn rs  =rss[j].get(i);
             if (rs != null) {
                 try {
                         colType = rs.getJavaType();
@@ -1104,6 +1107,7 @@ public class WSDLGenerator {
                     } catch (WSDLException e) {
                         logger.log(Level.SEVERE, e.getLocalizedMessage());
                         throw new WSDLException(WSDLException.INVALID_WSDL, "Check if the sql entered is valid");
+                    }
                     }
                 }
             }
@@ -1308,7 +1312,7 @@ public class WSDLGenerator {
         Element complexType = doc.createElement("xsd:complexType");
         Element sequence = doc.createElement("xsd:sequence");
         Element record = doc.createElement("xsd:element");
-        record.setAttribute("ref", "record");
+        record.setAttribute("ref", sqlFileName + "_Record"); //113494
         record.setAttribute("maxOccurs", "unbounded");
         sequence.appendChild(record);
         complexType.appendChild(sequence);
@@ -1394,7 +1398,7 @@ public class WSDLGenerator {
             	proc_name=(String)tok.nextElement();
             	if(proc_name.contains(".")){
             		final StringTokenizer tok1 = new StringTokenizer(proc_name, ".");
-            		schema=tok1.nextToken();
+            		pcatalog=tok1.nextToken();
             		proc_name=tok1.nextToken();
             	}
             	if(proc_name.contains("(")){

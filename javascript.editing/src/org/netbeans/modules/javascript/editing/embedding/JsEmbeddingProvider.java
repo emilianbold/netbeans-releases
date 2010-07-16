@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -178,7 +181,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
          * @param tokenSequence  The token sequence for the RHTML code
          */
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenHierarchy th = snapshot.getTokenHierarchy();
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             if (th == null) {
                 //the token hierarchy may be null if the language is not initialized yet
                 //for example if ergonomics is used and j2ee cluster not activated
@@ -284,7 +287,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
         public List<Embedding> translate(Snapshot snapshot) {
             List<Embedding> embeddings = new ArrayList<Embedding>();
-            TokenHierarchy th = snapshot.getTokenHierarchy();
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             if (th == null) {
                 //likely a rhtml language couldn't be found
                 LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
@@ -628,7 +631,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;
-        Token lastInlinedJavascriptToken = null;
+        Token<?> lastInlinedJavascriptToken = null;
         Embedding lastInlinedJavscriptEmbedding = null;
     }
 }

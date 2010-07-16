@@ -20,6 +20,7 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
@@ -36,5 +37,31 @@ public class TransformMapNode extends TMapComponentNode<DecoratedTransformMap> {
 
     public TransformMapNode(TransformMap ref, Children children, Lookup lookup) {
         super(new DecoratedTransformMap(ref), children, lookup);
+    }
+
+    @Override
+    public NodeType getNodeType() {
+        return NodeType.TRANSFORMMAP;
+    }
+
+    @Override
+    public ActionType[] getAddActionArray() {
+        return new ActionType[] {
+            ActionType.ADD_WSDL_IMPORT,
+            ActionType.ADD_SERVICE,
+            ActionType.ADD_OPERATION
+        };
+    }
+
+    @Override
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.ADD_NEWTYPES,
+            ActionType.SEPARATOR,
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
+//            ActionType.PROPERTIES,
+            
+        };
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -36,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
@@ -51,6 +53,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
@@ -69,12 +72,14 @@ public abstract class CommonStackDataStorageTests {
     @Before
     public void setUp() {
         db = createStorage();
-        assertNotNull(db);
+        assertNotNull("Unable to create StackDataStorage DB", db); // NOI18N
     }
 
     @After
     public void tearDown() {
-        assertTrue(shutdownStorage(db));
+        boolean shutdownResult = shutdownStorage(db);
+            assertTrue(shutdownResult);
+        
     }
 
     @Test
@@ -251,7 +256,7 @@ public abstract class CommonStackDataStorageTests {
 
     private static void assertTimeEquals(long nanos, Object obj) {
         assertTrue(obj instanceof Time);
-        assertEquals(nanos, ((Time)obj).getNanos());
+        assertEquals(nanos, ((Time) obj).getNanos());
     }
 
     private static FunctionCallWithMetric find(List<FunctionCallWithMetric> list, String name) {
@@ -264,9 +269,9 @@ public abstract class CommonStackDataStorageTests {
     }
 
     private static class FunctionCallComparator implements Comparator<FunctionCallWithMetric> {
+
         public int compare(FunctionCallWithMetric c1, FunctionCallWithMetric c2) {
             return c1.getFunction().getName().compareTo(c2.getFunction().getName());
         }
     }
-
 }

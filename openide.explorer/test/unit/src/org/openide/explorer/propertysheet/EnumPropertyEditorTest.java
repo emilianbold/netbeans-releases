@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,18 @@ public class EnumPropertyEditorTest extends NbTestCase {
         assertEquals("null", ed.getJavaInitializationString());
     }
 
+    public void testLocalizedNames() throws Exception {
+        ABProp prop = new ABProp();
+        PropertyEditor ed = PropUtils.getPropertyEditor(prop);
+        ed.setAsText("");
+        assertEquals("myA", ed.getTags()[0]);
+        assertEquals("myB", ed.getTags()[1]);
+        assertEquals(null, ed.getValue());
+        ed.setAsText("myB");
+        assertEquals("myB", ed.getAsText());
+        assertEquals(BetterToString.class.getName().replace('$', '.') + ".B", ed.getJavaInitializationString());
+    }
+
     public enum E {
         CHOCOLATE, VANILLA, STRAWBERRY
     }
@@ -103,4 +118,31 @@ public class EnumPropertyEditorTest extends NbTestCase {
 
     }
 
+    public enum BetterToString {
+        A, B;
+
+        @Override
+        public String toString() {
+            return "my" + name();
+        }
+    }
+
+    private static class ABProp extends PropertySupport.ReadWrite<BetterToString> {
+
+        private BetterToString e = BetterToString.A;
+
+        public ABProp() {
+            super("eval", BetterToString.class, "E Val", "E value");
+        }
+
+        @Override
+        public BetterToString getValue() throws IllegalAccessException, InvocationTargetException {
+            return e;
+        }
+
+        @Override
+        public void setValue(BetterToString val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            e = (BetterToString) val;
+        }
+    }
 }

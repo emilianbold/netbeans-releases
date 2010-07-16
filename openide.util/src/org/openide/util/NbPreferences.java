@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,10 @@
 package org.openide.util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.openide.util.PreferencesProvider;
 
 /**
  * Provides an implementation of the Preferences API which may be backed by
@@ -57,7 +58,7 @@ import org.netbeans.modules.openide.util.PreferencesProvider;
  * @author Radek Matous
  */
 public final class NbPreferences {
-    private static PreferencesProvider PREFS_IMPL;
+    private static Provider PREFS_IMPL;
     
     private  NbPreferences() {}
     
@@ -89,10 +90,10 @@ public final class NbPreferences {
           return PREFS_IMPL.preferencesRoot();
     }    
          
-    private static PreferencesProvider getPreferencesProvider() {
-        PreferencesProvider retval = Lookup.getDefault().lookup(PreferencesProvider.class);
+    private static Provider getPreferencesProvider() {
+        Provider retval = Lookup.getDefault().lookup(Provider.class);
         if (retval == null) {
-             retval = new PreferencesProvider() {
+             retval = new Provider() {
                   public Preferences preferencesForModule(Class cls) {
                        return Preferences.userNodeForPackage(cls);
                   }
@@ -114,4 +115,29 @@ public final class NbPreferences {
         }
         return retval;
     }    
+
+    /**
+     * Implementation of {@link NbPreferences} methods.
+     * Not intended for use outside the NetBeans Platform.
+     * @since org.openide.util 8.1
+     */
+    public interface Provider {
+        /**
+         * Returns user preference node. {@link Preferences#absolutePath} of such
+         * a node depends whether class provided as a parameter was loaded as a part of any module
+         * or not. If so, then absolute path corresponds to slashified code name base of module.
+         * If not, then absolute path corresponds to class's package.
+         *
+         * @param cls the class for which a user preference node is desired.
+         * @return the user preference node
+         */
+        Preferences preferencesForModule(Class cls);
+        /**
+         * Returns the root preference node.
+         *
+         * @return the root preference node.
+         */
+        Preferences preferencesRoot();
+    }
+
 }

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import javax.swing.Action;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Pick;
@@ -77,15 +76,16 @@ public class PickNode extends BpelNode<Pick> {
                 return null;
             }
         };
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(myInstanceRef, mainPropertySet,
+        propUtil.registerAttributeProperty(myInstanceRef, mainPropertySet,
                 CreateInstanceActivity.CREATE_INSTANCE, CREATE_INSTANCE,
                 "getCreateInstance", "setCreateInstance", null); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

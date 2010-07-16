@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,13 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -99,10 +107,13 @@ public class RestConfigurationAction extends NodeAction  {
             if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
                 oldApplicationPath="/"+oldApplicationPath;
             }
+            // needs detect if Jersey Lib is present
+            boolean isJerseyLib = isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class"); //NOI18N
             try {
                 ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                         oldConfigType,
                         oldApplicationPath,
+                        isJerseyLib,
                         restSupport.getAntProjectHelper() != null && RestUtils.isAnnotationConfigAvailable(project));
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
@@ -111,13 +122,14 @@ public class RestConfigurationAction extends NodeAction  {
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
                     String newApplicationPath = configPanel.getApplicationPath();
+                    boolean addJersey = configPanel.isJerseyLibSelected();
                     if (!oldConfigType.equals(newConfigType) || !oldApplicationPath.equals(newApplicationPath)) {
 
                         if (!oldConfigType.equals(newConfigType)) {
                             // set up rest.config.type property
                             restSupport.setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
 
-                            if (WebRestSupport.CONFIG_TYPE_IDE.equals(oldConfigType)) {
+                            if (!WebRestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
                                 //remove properties related to rest.config.type=ide
                                 restSupport.removeProjectProperties(new String[] {
                                     WebRestSupport.PROP_REST_RESOURCES_PATH,
@@ -135,7 +147,21 @@ public class RestConfigurationAction extends NodeAction  {
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
-                        } else if (!WebRestSupport.CONFIG_TYPE_USER.equals(newConfigType)) { // Deployment Descriptor
+                            if (!isOnClasspath(project,"javax/ws/rs/ApplicationPath.class")) {
+                                // add jsr311 library
+                                Library restApiLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.RESTAPI_LIBRARY);
+                                if (restApiLibrary != null) {
+                                    FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+                                    if (srcRoot != null) {
+                                        try {
+                                            ProjectClassPathModifier.addLibraries(new Library[] {restApiLibrary}, srcRoot, ClassPath.COMPILE);
+                                        } catch(UnsupportedOperationException ex) {
+                                            Logger.getLogger(getClass().getName()).info("Can not add JSR311 Library.");
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (WebRestSupport.CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
                             // add entries to dd
                             try {
                                 restSupport.addResourceConfigToWebApp(newApplicationPath);
@@ -144,7 +170,21 @@ public class RestConfigurationAction extends NodeAction  {
                             }
                         }
                     }
-                }
+                    if (addJersey && !isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
+                        // add jersey library
+                        Library swdpLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.SWDP_LIBRARY);
+                        if (swdpLibrary != null) {
+                            FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+                            if (srcRoot != null) {
+                                try {
+                                    ProjectClassPathModifier.addLibraries(new Library[] {swdpLibrary}, srcRoot, ClassPath.COMPILE);
+                                } catch(UnsupportedOperationException ex) {
+                                    Logger.getLogger(getClass().getName()).info("Can not add Jersey Library.");
+                                }
+                            }
+                        }
+                    }
+                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -161,6 +201,17 @@ public class RestConfigurationAction extends NodeAction  {
     @Override
     public boolean asynchronous() {
         return true;
+    }
+
+    private boolean isOnClasspath(Project project, String classResource) {
+        FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource(classResource) != null) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,12 @@
 
 package org.netbeans.modules.search;
 
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.LayoutStyle;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -76,10 +85,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.GroupLayout.ParallelGroup;
-import org.jdesktop.layout.GroupLayout.SequentialGroup;
-import org.jdesktop.layout.LayoutStyle;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
@@ -87,12 +92,6 @@ import org.openide.util.NbBundle;
 import org.openidex.search.SearchHistory;
 import org.openidex.search.SearchPattern;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
 
 /**
  *
@@ -233,10 +232,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lowerPanel.add(optionsPanel);
         lowerPanel.add(scopePanel);
         lowerPanelLayout.setHgap(
-                LayoutStyle.getSharedInstance()
+                LayoutStyle.getInstance()
                 .getPreferredGap(optionsPanel,  
                                  scopePanel,
-                                 UNRELATED,
+                                 ComponentPlacement.UNRELATED,
                                  SwingConstants.EAST,
                                  null));
 
@@ -246,51 +245,51 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         criteriaPanelLayout.setHorizontalGroup(
             criteriaPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(criteriaPanelLayout.createParallelGroup(LEADING)
-                    .add(criteriaPanelLayout.createSequentialGroup()
-                        .add(createParallelGroup(criteriaPanelLayout, LEADING,
+                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(criteriaPanelLayout.createSequentialGroup()
+                        .addGroup(createParallelGroup(criteriaPanelLayout, Alignment.LEADING,
                                                  lblTextToFind,
                                                  lblReplacement,
                                                  lblFileNamePattern))
-                        .addPreferredGap(RELATED)
-                        .add(createParallelGroup(criteriaPanelLayout, LEADING,
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(createParallelGroup(criteriaPanelLayout, Alignment.LEADING,
                                                  lblHintFileNamePattern,
                                                  lblHintTextToFind,
                                                  cboxTextToFind,
                                                  cboxReplacement,
                                                  cboxFileNamePattern)))
-                    .add(lowerPanel))
+                    .addComponent(lowerPanel))
                 .addContainerGap()
         );
 
         SequentialGroup seqGroup = criteriaPanelLayout.createSequentialGroup();
         seqGroup.addContainerGap()
-                .add(criteriaPanelLayout.createParallelGroup(BASELINE)
-                    .add(lblTextToFind)
-                    .add(cboxTextToFind, PREFERRED_SIZE,
-                                         DEFAULT_SIZE,
-                                         PREFERRED_SIZE))
-                .addPreferredGap(RELATED)
-                .add(lblHintTextToFind);
+                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblTextToFind)
+                    .addComponent(cboxTextToFind, GroupLayout.PREFERRED_SIZE,
+                                         GroupLayout.DEFAULT_SIZE,
+                                         GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(lblHintTextToFind);
         if (cboxReplacement != null) {
-            seqGroup.addPreferredGap(UNRELATED)
-                    .add(criteriaPanelLayout.createParallelGroup(BASELINE)
-                        .add(lblReplacement)
-                        .add(cboxReplacement, PREFERRED_SIZE,
-                                              DEFAULT_SIZE,
-                                              PREFERRED_SIZE))
-                    .addPreferredGap(RELATED);
+            seqGroup.addPreferredGap(ComponentPlacement.UNRELATED)
+                    .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblReplacement)
+                        .addComponent(cboxReplacement, GroupLayout.PREFERRED_SIZE,
+                                              GroupLayout.DEFAULT_SIZE,
+                                              GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(ComponentPlacement.RELATED);
         }
-        seqGroup.addPreferredGap(UNRELATED)
-                .add(criteriaPanelLayout.createParallelGroup(BASELINE)
-                    .add(lblFileNamePattern)
-                    .add(cboxFileNamePattern, PREFERRED_SIZE,
-                                              DEFAULT_SIZE,
-                                              PREFERRED_SIZE))
-                .addPreferredGap(RELATED)
-                .add(lblHintFileNamePattern)
-                .addPreferredGap(UNRELATED)
-                .add(lowerPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+        seqGroup.addPreferredGap(ComponentPlacement.UNRELATED)
+                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblFileNamePattern)
+                    .addComponent(cboxFileNamePattern, GroupLayout.PREFERRED_SIZE,
+                                              GroupLayout.DEFAULT_SIZE,
+                                              GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(lblHintFileNamePattern)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(lowerPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap();
         criteriaPanelLayout.setVerticalGroup(seqGroup);
         
@@ -318,17 +317,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      *                     component<i>n</i>)</code></pre></blockquote>
      * is equivalent to calling
      * <blockquote><pre><code>groupLayout.createParallelGroup(alignment)
-     *      .add(component1)
-     *      .add(component2)
-     *      .add(component3)
+     *      .addComponent(component1)
+     *      .addComponent(component2)
+     *      .addComponent(component3)
      *      ...
-     *      .add(component<i>n</i>)</code></pre></blockquote>
+     *      .addComponent(component<i>n</i>)</code></pre></blockquote>
      * except that {@code null} components are skipped and {@code JComboBox}
      * components are automatically added with size constraints
      * {@code (0, 300, Short.MAX_VALUE)}.
      */
     private static ParallelGroup createParallelGroup(GroupLayout groupLayout,
-                                                     int alignment,
+                                                     Alignment alignment,
                                                      Component... components) {
         ParallelGroup group = groupLayout.createParallelGroup(alignment);
         for (Component c : components) {
@@ -337,9 +336,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
 
             if (c.getClass() == JComboBox.class) {
-                group.add(c, 0, 300, Short.MAX_VALUE);
+                group.addComponent(c, 0, 300, Short.MAX_VALUE);
             } else {
-                group.add(c);
+                group.addComponent(c);
             }
         }
         return group;
@@ -717,7 +716,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         for (AbstractButton button : buttons) {
             if (button instanceof ButtonWithExtraInfo) {
                 /*
-                 * parallelGroup.add(button) makes the button's maximum size
+                 * parallelGroup.addComponent(button) makes the button's maximum size
                  * equal to its preferred size. We need the button to expand
                  * horizontally so we set its maximum width to MAX_VALUE.
                  * If horizontal expanding is set on a button, it causes
@@ -725,11 +724,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                  * more frequently - so we only set it on buttons which need it
                  * (i.e. on buttons with extra information available).
                  */
-                parallelGroup.add(button, GroupLayout.DEFAULT_SIZE,
+                parallelGroup.addComponent(button, GroupLayout.DEFAULT_SIZE,
                                           GroupLayout.PREFERRED_SIZE,
                                           Short.MAX_VALUE);
             } else {
-                parallelGroup.add(button);
+                parallelGroup.addComponent(button);
             }
         }
         buttonsPanelLayout.setHorizontalGroup(parallelGroup);
@@ -738,14 +737,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         boolean first = true;
         for (AbstractButton button : buttons) {
             if (!first) {
-                sequentialGroup.addPreferredGap(RELATED);
+                sequentialGroup.addPreferredGap(ComponentPlacement.RELATED);
             }
-            sequentialGroup.add(button);
+            sequentialGroup.addComponent(button);
             first = false;
         }
         buttonsPanelLayout.setVerticalGroup(sequentialGroup);
         
-        buttonsPanelLayout.linkSize(buttons, GroupLayout.VERTICAL);
+        buttonsPanelLayout.linkSize(buttons);
         
         buttonsPanel.setBorder(
                 BorderFactory.createCompoundBorder(

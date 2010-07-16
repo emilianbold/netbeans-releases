@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,10 @@
  */
 
 package org.netbeans.modules.java.source.parsing;
-import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
 import java.net.URL;
-import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.source.StopWatch;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
@@ -53,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hrebejk
  */
-public class PerfResolveTest extends TestCase {
+public class PerfResolveTest extends NbTestCase {
 
     private File workDir;
     private File rtJar;
@@ -75,16 +76,12 @@ public class PerfResolveTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        workDir = TestUtil.createWorkFolder();
+        workDir = getWorkDir();
         TestUtil.copyFiles( workDir, TestUtil.RT_JAR, "jdk/JTable.java" );
         rtJar = new File( workDir, TestUtil.RT_JAR );
         URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
         this.bootPath = ClassPathSupport.createClassPath (new URL[] {url});
         this.classPath = ClassPathSupport.createClassPath(new URL[0]);
-    }
-
-    protected void tearDown() throws Exception {
-        TestUtil.removeWorkFolder( workDir );
     }
 
     /*

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -117,5 +120,39 @@ public class YamlParserTest extends YamlTestBase {
         parser.parse(source.createSnapshot(), null, null);
 
         assertNotNull("Parser result must be nonnull", parser.getResult(null));
+    }
+
+    public void testReplacePhpFragments() {
+        assertEquals("", YamlParser.replacePhpFragments(""));
+        assertEquals("foo bar", YamlParser.replacePhpFragments("foo bar"));
+        assertEquals("?>", YamlParser.replacePhpFragments("?>"));
+        assertEquals("<?", YamlParser.replacePhpFragments("<?"));
+        assertEquals("foo ?>", YamlParser.replacePhpFragments("foo ?>"));
+        assertEquals("<? bar", YamlParser.replacePhpFragments("<? bar"));
+
+        assertEquals("    ", YamlParser.replacePhpFragments("<??>"));
+        assertEquals("foo:    ", YamlParser.replacePhpFragments("foo:<??>"));
+        assertEquals("foo:                   ", YamlParser.replacePhpFragments("foo:<? here goes php ?>"));
+        assertEquals("foo           baz", YamlParser.replacePhpFragments("foo <? bar ?> baz"));
+
+        assertEquals("        ", YamlParser.replacePhpFragments("<??><??>"));
+        assertEquals("foo:    bar:       qux", YamlParser.replacePhpFragments("foo:<??>bar:<?baz?>qux"));
+    }
+
+    public void testReplacePhpFragmentsPerformance() {
+        StringBuilder source = new StringBuilder();
+        // generate a big file with some php in it
+        for (int i = 0; i < 50000; i++) {
+            source.append("something\n");
+            if (i % 100 == 0) {
+                source.append("<? php here ?>");
+            }
+        }
+        long start = System.currentTimeMillis();
+        YamlParser.replacePhpFragments(source.toString());
+        long time = System.currentTimeMillis() - start;
+        // takes about 30 ms on my laptop, so I suppose 300 ms should
+        // be enough pretty much on any machine
+        assertTrue("Slow replacing of php fragments: " + time + " ms" , time < 300);
     }
 }

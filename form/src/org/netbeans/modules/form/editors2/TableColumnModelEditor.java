@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * 
      * @return diaplay name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "TableColumnModelEditor"); // NOI18N
     }
@@ -91,6 +95,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = (RADProperty)property;
     }
@@ -98,6 +103,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -142,6 +148,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
+    @Override
     public String getSourceCode() {
         RADComponent comp = property.getRADComponent();
         CodeVariable var = comp.getCodeExpression().getVariable();
@@ -221,6 +228,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     private static final String ATTR_RESOURCE_KEY = "resourceKey"; // NOI18N
     private static final String ATTR_NO_RESOURCE = "noResource"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         String selectionModelTxt = attributes.getNamedItem(ATTR_SELECTION_MODEL).getNodeValue();
@@ -319,6 +327,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         org.w3c.dom.Element el = null;
@@ -417,6 +426,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             return columns;
         }
 
+        @Override
         public Object getDesignValue() {
             Object value = null;
             try {
@@ -505,6 +515,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     }
 
     public static class FormTableColumn {
+        private int index; // just a suffix of names of sub-properties
         private int minWidth;
         private int prefWidth;
         private int maxWidth;
@@ -514,6 +525,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         private Property renderer;
 
         public FormTableColumn(RADProperty prop, int index) {
+            this.index = index;
             minWidth = -1;
             prefWidth = -1;
             maxWidth = -1;
@@ -521,6 +533,10 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             title = new Property(prop, "title"+index, String.class, null, null); // NOI18N
             editor = new Property(prop, "editor"+index, TableCellEditor.class, null, null); // NOI18N
             renderer = new Property(prop, "renderer"+index, TableCellRenderer.class, null, null); // NOI18N
+        }
+
+        public int getIndex() {
+            return index;
         }
 
         public int getMinWidth() {
@@ -576,10 +592,12 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             prop.getRADComponent().setPropertyListener(this);
         }
 
+        @Override
         public Object getTargetValue() throws IllegalAccessException, InvocationTargetException {
             return value;
         }
 
+        @Override
         public void setTargetValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             this.value = value;
         }

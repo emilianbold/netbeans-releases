@@ -21,10 +21,7 @@ package org.netbeans.modules.iep.editor.designer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import com.nwoods.jgo.*;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.Hashtable;
 
 

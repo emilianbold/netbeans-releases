@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,8 +55,33 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
     // CND debugger support re-creates all variables each step
     // so we can not use weakset here
-    private Set<String> expandedNodes = new HashSet<String>();
-    private Set<String> collapsedNodes = new HashSet<String>();
+    private Set<String> expandedLocalsNodes = new HashSet<String>();
+    private Set<String> collapsedLocalsNodes = new HashSet<String>();
+
+    // we recreate nodes each time
+    // so it is neccessary to store locals and watches seprately
+    private Set<String> expandedWatchNodes = new HashSet<String>();
+    private Set<String> collapsedWatchNodes = new HashSet<String>();
+
+    private Set<String> getNodeExpandCollection(AbstractVariable var) {
+        if (var instanceof GdbWatchVariable) {
+            return expandedWatchNodes;
+        }
+        if (var instanceof AbstractVariable.AbstractField) {
+            return getNodeExpandCollection(((AbstractVariable.AbstractField)var).getAncestor());
+        }
+        return expandedLocalsNodes;
+    }
+
+    private Set<String> getNodeCollapseCollection(AbstractVariable var) {
+        if (var instanceof GdbWatchVariable) {
+            return collapsedWatchNodes;
+        }
+        if (var instanceof AbstractVariable.AbstractField) {
+            return getNodeCollapseCollection(((AbstractVariable.AbstractField)var).getAncestor());
+        }
+        return collapsedLocalsNodes;
+    }
 
     /**
      * Defines default state (collapsed, expanded) of given node.
@@ -61,17 +89,18 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      * @param node a node
      * @return default state (collapsed, expanded) of given node
      */
-    public boolean isExpanded (Object node)
+    @Override
+    public boolean isExpanded(Object node)
     throws UnknownTypeException {
         if (!(node instanceof AbstractVariable)) {
-            return false;
+            throw new UnknownTypeException(node);
         }
         AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            if (expandedNodes.contains(var.getFullName(true))) {
+            if (getNodeExpandCollection(var).contains(var.getFullName(true))) {
                 return true;
             }
-            if (collapsedNodes.contains(var.getFullName(true))) {
+            if (getNodeCollapseCollection(var).contains(var.getFullName(true))) {
                 return false;
             }
         }
@@ -83,14 +112,15 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      *
      * @param node a expanded node
      */
-    public void nodeExpanded (Object node) {
+    @Override
+    public void nodeExpanded(Object node) {
         if (!(node instanceof AbstractVariable)) {
             return;
         }
         AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            expandedNodes.add(var.getFullName(true));
-            collapsedNodes.remove(var.getFullName(true));
+            getNodeExpandCollection(var).add(var.getFullName(true));
+            getNodeCollapseCollection(var).remove(var.getFullName(true));
         }
     }
 
@@ -99,14 +129,15 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      *
      * @param node a collapsed node
      */
-    public void nodeCollapsed (Object node) {
+    @Override
+    public void nodeCollapsed(Object node) {
         if (!(node instanceof AbstractVariable)) {
             return;
         }
         AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            collapsedNodes.add(var.getFullName(true));
-            expandedNodes.remove(var.getFullName(true));
+            getNodeCollapseCollection(var).add(var.getFullName(true));
+            getNodeExpandCollection(var).remove(var.getFullName(true));
         }
     }
 }

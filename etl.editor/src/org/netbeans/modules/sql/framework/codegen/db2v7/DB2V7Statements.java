@@ -37,8 +37,8 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLPredicate;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
 
 /**
  * @author Jonathan Giron

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,7 @@ public class StableSuiteTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         if (isRegistered(Server.ANY)){
             return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
@@ -75,9 +78,9 @@ public class StableSuiteTest extends J2eeTestCase {
         FileObject dataDir = FileUtil.createData(new StableSuiteTest().getDataDir());
         FileObject completionTestWebDir = dataDir.getFileObject("CompletionTestProjects/Jsp/web/");
         FileObject completionJSFTestWebDir = dataDir.getFileObject("CompletionTestProjects/JSF/web/");
+        FileObject completionJavaEE6TestWebDir = dataDir.getFileObject("CompletionTestProjects/JavaEE6/web/");
 
         public SuiteCreator() throws IOException {
-            super();
             addCompletionTest("stableDirectivesBasic.jsp");
             addCompletionTest("stableExpression.jsp");
             addCompletionTest("stableHTML.jsp");
@@ -88,8 +91,11 @@ public class StableSuiteTest extends J2eeTestCase {
             addCompletionTest("stableScriptletsJavaBasic.jsp");
             addCompletionTest("stableTaglibCompletion.jsp");
             addCompletionTest("stableXHTML.xhtml");
+            addCompletionTest("stableIDClassCC.html");
             addJSFCompletionTest("testJSFObjects.jsp");
             addJSFCompletionTest("testJSFTag.jsp");
+            addJavaEE6Test("testInjection.jsp");
+            addJavaEE6Test("testInjection.xhtml");
         }
         
         private void addCompletionTest(String fileName) throws IOException{
@@ -100,6 +106,11 @@ public class StableSuiteTest extends J2eeTestCase {
         private void addJSFCompletionTest(String fileName) throws IOException{
             String name = fileName.replace('.', '_');
             addTest(new CompletionTest(name, completionJSFTestWebDir.getFileObject(fileName)));
+        }
+
+        private void addJavaEE6Test(String fileName) throws IOException{
+            String name = fileName.replace('.', '_');
+            addTest(new CompletionTest(name, completionJavaEE6TestWebDir.getFileObject(fileName)));
         }
     }
     

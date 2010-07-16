@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -60,9 +64,21 @@ import org.openide.util.NbBundle;
 
 public final class NewKenaiProjectAction implements ActionListener {
 
+    private Kenai kenai;
+
+    public NewKenaiProjectAction(Kenai kenai) {
+        this.kenai = kenai;
+    }
+
+    public NewKenaiProjectAction() {
+        this.kenai = Utilities.getPreferredKenai();
+    }
+
+
+    @Override
     public void actionPerformed(ActionEvent e) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0]));
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0], kenai));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
@@ -81,16 +97,17 @@ public final class NewKenaiProjectAction implements ActionListener {
 
     private void showLandingPage(Set<CreatedProjectInfo> projects) {
 
-        Object options[] = new Object[3];
-        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai", Kenai.getDefault().getName()));
-        options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
-        options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
-
         CreatedProjectInfo cpi = projects.iterator().next();
         KenaiProject kenaiPrj = cpi.project;
         String localPath = cpi.localRepoPath;
 
-        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath), 
+        Object options[] = new Object[3];
+        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai", kenaiPrj.getKenai()));
+        options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
+        options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
+
+
+        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath, kenaiPrj.getKenai().getName()),
                 NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.dialogTitle"),
                 true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
@@ -113,5 +130,5 @@ public final class NewKenaiProjectAction implements ActionListener {
         }
 
     }
-    
-}
+
+    }

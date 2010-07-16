@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -36,22 +39,21 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,9 +78,9 @@ public class HostValidatorImpl implements HostValidator {
     public ToolsCacheManager getCacheManager() {
         return cacheManager;
     }
-    
+
     @Override
-    public boolean validate(ExecutionEnvironment env, char[] password, boolean rememberPassword, final PrintWriter writer) {
+    public boolean validate(ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
         boolean result = false;
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
@@ -96,11 +98,10 @@ public class HostValidatorImpl implements HostValidator {
                     env.getHost()));
         }
         try {
-            if (password == null || password.length == 0) {
-                ConnectionManager.getInstance().connectTo(env);
-            } else {
-                ConnectionManager.getInstance().connectTo(env, password, rememberPassword);
-            }
+//            if (password != null && password.length > 0) {
+//                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
+//            }
+            ConnectionManager.getInstance().connectTo(env);
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
             return false;
@@ -113,7 +114,7 @@ public class HostValidatorImpl implements HostValidator {
             record.init(null);
         }
         if (record.isOnline()) {
-            CompilerSetReporter.setWriter(new Writer() {
+            Writer reporter = new Writer() {
 
                 @Override
                 public void write(char[] cbuf, int off, int len) throws IOException {
@@ -128,10 +129,12 @@ public class HostValidatorImpl implements HostValidator {
                 @Override
                 public void close() throws IOException {
                 }
-            });
+            };
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
-            csm.initialize(false, false);
+            csm.initialize(false, false, reporter);
             runOnFinish = new Runnable() {
+
+                @Override
                 public void run() {
                     csm.finishInitialization();
                 }
@@ -141,7 +144,6 @@ public class HostValidatorImpl implements HostValidator {
             writer.write(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
                     + '\n' + record.getReason()); //NOI18N
         }
-        CompilerSetReporter.setWriter(null);
         if (alreadyOnline) {
             writer.write('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
         }

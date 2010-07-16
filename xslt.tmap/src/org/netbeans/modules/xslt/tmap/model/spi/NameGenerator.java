@@ -22,44 +22,66 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
 
 /**
  * 
  * @author Vitaly Bychkov
  */
 public abstract class NameGenerator {
-    NameGenerator() {
-    }
+    public static String DEFAULT_VARIABLE_PREFIX = "var"; // NOI18N
+    public static final String INPUT_OPERATION_VARIABLE_PREFIX = "inOpVar"; // NOI18N
+    public static final String OUTPUT_OPERATION_VARIABLE_PREFIX = "outOpVar"; // NOI18N
+    public static final String INPUT_INVOKE_VARIABLE_PREFIX = "inInvokeVar"; // NOI18N
+    public static final String OUTPUT_INVOKE_VARIABLE_PREFIX = "outInvokeVar"; // NOI18N
+        
 
-    abstract protected boolean isApplicable(TMapComponent component);
+    abstract protected boolean isApplicable(TMapComponent parent, Class childType);
 
-    abstract String getName(TMapComponent component, String namePrefix);
+    abstract protected boolean isUniqueName(TMapComponent parent, String name);
 
-    abstract String getName(TMapComponent component);
+    public abstract String getName(TMapComponent parent, String namePrefix);
+
+    public abstract String getName(TMapComponent parent);
 
     private static NameGenerator[] NAME_GENERATORS = new NameGenerator[] 
             {new ServiceNameGenerator(), 
              new InvokeNameGenerator(), 
-             new TransformNameGenerator()};
-    public static NameGenerator getDefault(TMapComponent component) {
+             new TransformNameGenerator(),
+             new ParamNameGenerator(),
+             new VariableNameGenerator()};
+//    public static NameGenerator getDefault(TMapComponent component) {
+//        for (NameGenerator nameGenerator : NAME_GENERATORS) {
+//            if (nameGenerator.isApplicable(component)) {
+//                return nameGenerator;
+//            }
+//        }
+//        return null;
+//    }
+
+    public static NameGenerator getDefault(TMapComponent parent, Class childType) {
         for (NameGenerator nameGenerator : NAME_GENERATORS) {
-            if (nameGenerator.isApplicable(component)) {
+            if (nameGenerator.isApplicable(parent, childType)) {
                 return nameGenerator;
             }
         }
         return null;
     }
 
-    public static String getUniqueName(TMapComponent component) {
-        NameGenerator generator = getDefault(component);
-        if (generator != null) {
-        }
-        return generator != null ? generator.getName(component) : null;
+    public static boolean isUniqueName(TMapComponent parent, Class childType, String name) {
+        NameGenerator generator = getDefault(parent, childType);
+        return generator != null ? generator.isUniqueName(parent, name) : null;
+    }
+    
+    public static String getUniqueName(TMapComponent parent, Class childType) {
+        NameGenerator generator = getDefault(parent, childType);
+        return generator != null ? generator.getName(parent) : null;
     }
     
     private static String getCamelCase(String namePrefix) {
@@ -82,21 +104,19 @@ public abstract class NameGenerator {
     private static class ServiceNameGenerator extends NameGenerator {
 
         @Override
-        protected boolean isApplicable(TMapComponent component) {
-            return component instanceof Service;
+        protected boolean isApplicable(TMapComponent parent, Class childType) {
+            return childType == Service.class;
         }
 
         @Override
-        String getName( TMapComponent component, String namePrefix) {
-            if (component == null || namePrefix == null || !isApplicable(component)) {
+        public String getName(TMapComponent component, String namePrefix) {
+            if (component == null || namePrefix == null || !isApplicable(component, Service.class)) {
                 return null;
             }
 
-//            namePrefix = namePrefix.toLowerCase();
             namePrefix = getCamelCase(namePrefix);
 
-            Service service = (Service) component;
-            TMapModel model = service.getModel();
+            TMapModel model = component.getModel();
             if (model == null) {
                 return null;
             }
@@ -128,32 +148,65 @@ public abstract class NameGenerator {
         }
 
         @Override
-        String getName( TMapComponent component) {
-            if (!isApplicable(component)) {
+        public String getName( TMapComponent parent) {
+            if (!isApplicable(parent, Service.class)) {
                 return null;
             }
-            return getName(component, ((Service) component).TYPE.getTagName());
+            return getName(parent, Service.TYPE.getTagName());
+        }
+
+        @Override
+        protected boolean isUniqueName(TMapComponent component, String name) {
+            if (component == null || name == null || !isApplicable(component, Service.class)) {
+                return false;
+            }
+
+            TMapModel model = component.getModel();
+            if (model == null) {
+                return false;
+            }
+
+            boolean isUnique = true;
+            TransformMap tMap = model.getTransformMap();
+            if (tMap == null) {
+                return isUnique;
+            }
+
+            List<Service> services = tMap.getServices();
+            if (services == null || services.size() == 0) {
+                return isUnique;
+            }
+
+            for (Service tmpService : services) {
+                if (tmpService == null) {
+                    continue;
+                }
+                if (name.equals(tmpService.getName())) {
+                    isUnique = false;
+                    break;
+                }
+            }
+            return isUnique;
         }
     }
 
     private static class InvokeNameGenerator extends NameGenerator {
 
         @Override
-        protected boolean isApplicable(TMapComponent component) {
-            return component instanceof Invoke;
+        protected boolean isApplicable(TMapComponent parent, Class childType) {
+            return childType == Invoke.class;
         }
 
         @Override
-        String getName( TMapComponent component, String namePrefix) {
-            if (component == null || namePrefix == null || !isApplicable(component)) {
+        public String getName( TMapComponent parent, String namePrefix) {
+            if (parent == null || namePrefix == null || !isApplicable(parent, Invoke.class)) {
                 return null;
             }
 
 //            namePrefix = namePrefix.toLowerCase();
             namePrefix = getCamelCase(namePrefix);
 
-            Invoke invoke = (Invoke) component;
-            TMapModel model = invoke.getModel();
+            TMapModel model = parent.getModel();
             if (model == null) {
                 return null;
             }
@@ -182,6 +235,7 @@ public abstract class NameGenerator {
                         continue;
                     }
                     invokes.addAll(op.getInvokes());
+                    invokes.addAll(getOpInternalInvokes(op));
                 }
             }
 
@@ -201,33 +255,104 @@ public abstract class NameGenerator {
             return uniqueName;
         }
 
+        private List<Invoke> getOpInternalInvokes(Operation op) {
+            List<Invoke> invokes = new ArrayList<Invoke>();
+            if (op == null) {
+                return invokes;
+            }
+            
+            List<Transform> trs = op.getTransforms();
+            if (trs == null) {
+                return invokes;
+            }
+            for (Transform tr : trs) {
+                if (tr == null) {
+                    continue;
+                }
+                invokes.addAll(tr.getInvokes());
+            }
+            return invokes;
+        }
+        
         @Override
-        String getName( TMapComponent component) {
-            if (!isApplicable(component)) {
+        public String getName( TMapComponent parent) {
+            if (!isApplicable(parent, Invoke.class)) {
                 return null;
             }
-            return getName(component, ((Invoke) component).TYPE.getTagName());
+            return getName(parent, Invoke.TYPE.getTagName());
         }
+
+        @Override
+        protected boolean isUniqueName(TMapComponent component, String name) {
+            if (component == null || name == null || !isApplicable(component, Invoke.class)) {
+                return false;
+            }
+
+            TMapModel model = component.getModel();
+            if (model == null) {
+                return false;
+            }
+
+            boolean isUnique = true;
+            TransformMap tMap = model.getTransformMap();
+            if (tMap == null) {
+                return isUnique;
+            }
+
+            List<Service> services = tMap.getServices();
+            if (services == null || services.size() == 0) {
+                return isUnique;
+            }
+
+            List<Invoke> invokes = new ArrayList<Invoke>();
+            for (Service tmpService : services) {
+                if (tmpService == null) {
+                    continue;
+                }
+                List<Operation> ops = tmpService.getOperations();
+                if (ops == null) {
+                    continue;
+                }
+                for (Operation op : ops) {
+                    if (op == null) {
+                        continue;
+                    }
+                    invokes.addAll(op.getInvokes());
+                }
+            }
+
+            for (Invoke tmpInvoke : invokes) {
+                if (tmpInvoke == null) {
+                    continue;
+                }
+                    
+                if (name.equals(tmpInvoke.getName())) {
+                    isUnique = false;
+                    break;
+                }
+            }
+
+            return isUnique;
+         }
     }
     
     private static class TransformNameGenerator extends NameGenerator {
 
         @Override
-        protected boolean isApplicable(TMapComponent component) {
-            return component instanceof Transform;
+        protected boolean isApplicable(TMapComponent parent, Class childType) {
+            return childType == Transform.class;
         }
 
         @Override
-        String getName( TMapComponent component, String namePrefix) {
-            if (component == null || namePrefix == null || !isApplicable(component)) {
+        public String getName( TMapComponent parent, String namePrefix) {
+            if (parent == null || namePrefix == null || !isApplicable(parent, Transform.class)) {
                 return null;
             }
 
 //            namePrefix = namePrefix.toLowerCase();
             namePrefix = getCamelCase(namePrefix);
 
-            Transform transform = (Transform) component;
-            TMapModel model = transform.getModel();
+            TMapModel model = parent.getModel();
             if (model == null) {
                 return null;
             }
@@ -261,7 +386,7 @@ public abstract class NameGenerator {
 
             String uniqueName = null;
             boolean isUnique = false;
-            int i = 0;
+            int i = 1;
             while (uniqueName == null) {
                 uniqueName = namePrefix + i;
                 for (Transform tmpTransform : transforms) {
@@ -276,13 +401,232 @@ public abstract class NameGenerator {
         }
 
         @Override
-        String getName( TMapComponent component) {
-            if (!isApplicable(component)) {
+        public String getName( TMapComponent parent) {
+            if (!isApplicable(parent, Transform.class)) {
                 return null;
             }
-            return getName(component, ((Transform) component).TYPE.getTagName());
+            return getName(parent, Transform.TYPE.getTagName());
+        }
+
+        @Override
+        protected boolean isUniqueName(TMapComponent component, String name) {
+            if (component == null || name == null || !isApplicable(component, Transform.class)) {
+                return false;
+            }
+
+            TMapModel model = component.getModel();
+            if (model == null) {
+                return false;
+            }
+
+            boolean isUnique = true;
+            TransformMap tMap = model.getTransformMap();
+            if (tMap == null) {
+                return isUnique;
+            }
+
+            List<Service> services = tMap.getServices();
+            if (services == null) {
+                return isUnique;
+            }
+
+            List<Transform> transforms = new ArrayList<Transform>();
+            for (Service tmpService : services) {
+                if (tmpService == null) {
+                    continue;
+                }
+                List<Operation> ops = tmpService.getOperations();
+                if (ops == null) {
+                    continue;
+                }
+                for (Operation op : ops) {
+                    if (op == null) {
+                        continue;
+                    }
+                    transforms.addAll(op.getTransforms());
+                }
+            }
+
+            for (Transform tmpTransform : transforms) {
+                if (tmpTransform == null) {
+                    continue;
+                }
+                
+                if (name.equals(tmpTransform.getName())) {
+                    isUnique = false;
+                    break;
+                }
+            }
+            return isUnique;
         }
     }    
+
+    private static class ParamNameGenerator extends NameGenerator {
+
+        @Override
+        protected boolean isApplicable(TMapComponent parent, Class childType) {
+            return childType == Param.class && parent instanceof Transform;
+        }
+
+        @Override
+        public String getName( TMapComponent parent, String namePrefix) {
+            if (parent == null || namePrefix == null || !isApplicable(parent, Param.class)) {
+                return null;
+            }
+
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
+
+            Transform transform = (Transform)parent;
+
+            List<Param> params = transform.getParams();
+            if (params == null) {
+                return null;
+            }
+
+            String uniqueName = null;
+            boolean isUnique = false;
+            int i = 1;
+            while (uniqueName == null) {
+                uniqueName = namePrefix + i;
+                for (Param tmpParam : params) {
+                    if (uniqueName.equalsIgnoreCase(tmpParam.getName())) {
+                        i++;
+                        uniqueName = null;
+                        break;
+                    }
+                }
+            }
+            return uniqueName;
+        }
+
+        @Override
+        public String getName( TMapComponent parent) {
+            if (!isApplicable(parent, Param.class)) {
+                return null;
+            }
+            return getName(parent, Param.EL_TYPE.getTagName());
+        }
+
+        @Override
+        protected boolean isUniqueName(TMapComponent component, String name) {
+            if (component == null || name == null || !isApplicable(component, Param.class)) {
+                return false;
+            }
+
+            Transform transform = (Transform)component;
+
+            boolean isUnique = true;
+            List<Param> params = transform.getParams();
+            if (params == null) {
+                return isUnique;
+            }
+
+            for (Param tmpParam : params) {
+                if (tmpParam == null) {
+                    continue;
+                }
+                
+                if (name.equals(tmpParam.getName())) {
+                    isUnique = false;
+                    break;
+                }
+            }
+            return isUnique;
+        }
+    }    
+    
+    private static class VariableNameGenerator extends NameGenerator {
+
+        @Override
+        protected boolean isApplicable(TMapComponent parent, Class childType) {
+            return childType == Variable.class && (parent == null || parent instanceof Operation);
+        }
+
+        @Override
+        public String getName( TMapComponent parent, String namePrefix) {
+            if (namePrefix == null || !isApplicable(parent, Variable.class)) {
+                return null;
+            }
+
+            Operation operation = (Operation)parent;
+            return getVariableName(namePrefix, getVariableNumber(operation, namePrefix, 1));
+        }
+
+        private int getVariableNumber(
+                org.netbeans.modules.xslt.tmap.model.api.Operation operation, 
+                String varNamePrefix, int startNumber) 
+        {
+            if (operation == null || varNamePrefix == null || !operation.isInDocumentModel()) {
+                return startNumber;
+            }
+
+            List<Variable> vars = operation.getVariables();
+            if (vars == null || vars.size() < 1) {
+            }
+
+            int count = startNumber;
+            List<String> varNames = new ArrayList<String>();
+
+            for (Variable var : vars) {
+                String tmpVarName = var == null ? null : var.getName();
+                if (tmpVarName != null) {
+                    varNames.add(tmpVarName);
+                }
+            }
+
+            while (true) {
+                if (!varNames.contains(varNamePrefix + count)) {
+                    break;
+                }
+                count++;
+            }
+            return count;
+        }
+
+        private String getVariableName(String varPrefix, int varNumber) {
+            varPrefix = varPrefix == null ? DEFAULT_VARIABLE_PREFIX : varPrefix;
+            return varPrefix + varNumber;
+        }
+
+        @Override
+        public String getName( TMapComponent parent) {
+            if (!isApplicable(parent, Variable.class)) {
+                return null;
+            }
+            return getName(parent, DEFAULT_VARIABLE_PREFIX);
+        }
+
+        @Override
+        protected boolean isUniqueName(TMapComponent parent, String name) {
+            if (parent == null || name == null || !isApplicable(parent, Variable.class)) {
+                return false;
+            }
+
+            Operation operation = (Operation)parent;
+
+            boolean isUnique = true;
+            List<Variable> vars = operation.getVariables();
+            if (vars == null || vars.size() < 1) {
+                return isUnique;
+            }
+
+            List<String> varNames = new ArrayList<String>();
+
+            for (Variable var : vars) {
+                if (var == null) {
+                    continue;
+                }
+                if (name.equals(var.getName())) {
+                    isUnique = false;
+                    break;
+                }
+            }
+
+            return isUnique;
+        }
+    }    
+
 //        private void calculateNewIndex( BpelEntity component,
 //            String lowerCaseName , IntWrapper wrapper  )
 //    {

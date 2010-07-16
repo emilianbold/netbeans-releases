@@ -1,6 +1,9 @@
 /*
  * {START_JAVA_COPYRIGHT_NOTICE
- * Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  * Use is subject to license terms.
  * END_COPYRIGHT_NOTICE}
  */
@@ -15,7 +18,7 @@ import org.openide.util.Lookup;
 
 /**
  * Code used to initialize and clean up complibs associated with a project.
- * 
+ *
  * @author Edwin Goei
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-web-project")

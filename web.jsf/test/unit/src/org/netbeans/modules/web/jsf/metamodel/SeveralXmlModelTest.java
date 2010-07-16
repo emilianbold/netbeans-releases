@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,14 +43,25 @@
  */
 package org.netbeans.modules.web.jsf.metamodel;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -106,7 +120,10 @@ public class SeveralXmlModelTest extends CommonTestCase {
         createJsfModel().runReadAction(new MetadataModelAction<JsfModel,Void>(){
 
             public Void run( JsfModel model ) throws Exception {
+                PropListener l = new PropListener();
+                model.addPropertyChangeListener(l);
                 srcFO.getFileObject("META-INF/two.faces-config.xml").delete();
+                l.waitForModelUpdate();
                 assertEquals( 2 ,  model.getModels().size());
                 assertEquals( 2 , model.getFacesConfigs().size());
                 
@@ -116,7 +133,7 @@ public class SeveralXmlModelTest extends CommonTestCase {
             }
         });
     }
-    
+
     public void testAddModelInSrc() throws IOException, InterruptedException{
         FileObject fileObject = srcFO.getFileObject("META-INF/one.faces-config.xml");
         if ( fileObject!= null ){
@@ -133,9 +150,13 @@ public class SeveralXmlModelTest extends CommonTestCase {
                 assertEquals( 2 ,  model.getModels().size());
                 List<Application> applications = model.getElements( Application.class);
                 assertEquals( 1 , applications.size());
-                
+
+                PropListener l = new PropListener();
+                model.addPropertyChangeListener(l);
                 TestUtilities.copyStringToFileObject(srcFO, "WEB-INF/faces-config.xml",
                         getFileContent("data/faces-config.xml"));
+                l.waitForModelUpdate();
+                
                 assertEquals( 3 ,  model.getModels().size());
                 assertEquals( 3 , model.getFacesConfigs().size());
                 
@@ -146,4 +167,29 @@ public class SeveralXmlModelTest extends CommonTestCase {
         });
     }
 
+    /**
+     * File change events (which cause reload of list of configuration files) are
+     * fired in separate thread and to synchronize on delivery of these events
+     * we wait on a property change event.
+     */
+    static class PropListener implements PropertyChangeListener {
+
+        private boolean modelUpdated = false;
+
+        @Override
+        public synchronized void propertyChange(PropertyChangeEvent evt) {
+            modelUpdated = true;
+        }
+
+        public void waitForModelUpdate() throws InterruptedException {
+            while (!isModelUpdated()) {
+                Thread.sleep(100);
+            }
+        }
+
+        public synchronized boolean isModelUpdated() {
+            return modelUpdated;
+        }
+        
+    }
 }

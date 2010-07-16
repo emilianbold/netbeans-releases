@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import javax.swing.event.*;
 
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.form.*;
 import org.openide.WizardDescriptor;
 
 /**
@@ -86,6 +88,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
         actionList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         actionList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent evt) {
                 if (!evt.getValueIsAdjusting())
                     ConnectionPanel2.this.wizardPanel.fireStateChanged();
@@ -175,6 +178,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
                 // sort the properties by name
                 Collections.sort(list, new Comparator<PropertyDescriptor>() {
+                    @Override
                     public int compare(PropertyDescriptor o1, PropertyDescriptor o2) {
                         return o1.getName().compareTo(o2.getName());
                     }
@@ -205,6 +209,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
                 // sort the methods by name
                 Collections.sort(list, new Comparator<MethodDescriptor>() {
+                    @Override
                     public int compare(MethodDescriptor o1, MethodDescriptor o2) {
                         return o1.getName().compareTo(o2.getName());
                     }
@@ -227,7 +232,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
     }
 
     private static String getMethodName(MethodDescriptor desc) {
-        StringBuffer sb = new StringBuffer(desc.getName());
+        StringBuilder sb = new StringBuilder(desc.getName());
         Class[] params = desc.getMethod().getParameterTypes();
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N

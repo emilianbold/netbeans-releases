@@ -1,7 +1,10 @@
-/*//GEN-LINE:initComponents
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.diff;
 
+import org.openide.util.Cancellable;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
@@ -56,17 +60,10 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.openide.awt.UndoRedo;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
-import org.openide.ErrorManager;
 import javax.swing.*;
 import java.io.*;
 import java.awt.*;
@@ -77,22 +74,50 @@ import java.util.List;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.versioning.diff.DiffLookup;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.diff.EditorSaveCookie;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
+import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
+import org.netbeans.modules.versioning.util.CollectionUtils;
+import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
 /**
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffSetupSource, PropertyChangeListener {
+public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
      * the user switches DIFF types.
      */
     private Setup[] setups;
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private EditorCookie[] editorCookies;
     
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
+    private final DiffLookup lookup = new DiffLookup();
 
     /**
      * Context in which to DIFF.
@@ -125,6 +150,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
 
+    /**
+     * panel that is used for displaying the diff if {@code JSplitPane}
+     * is not used
+     */
+    private final PlaceholderPanel diffViewPanel;
+    private JComponent infoPanelLoadingFromRepo;
+
     private HgProgressSupport executeStatusSupport;
     
     /**
@@ -135,8 +167,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         this.contextName = contextName;
         currentType = initialType;
         initComponents();
-        setupComponents();
+
+        diffViewPanel = null;
+        initFileTable();
+        initToolbarButtons();
+        initNextPrevActions();
         refreshComponents();
+
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         refreshStatuses();
     }
@@ -145,28 +182,44 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2) {
+    public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
         context = null;
         contextName = file.getName();
         initComponents();
-        setupComponents();
-        fileTable.getComponent().setVisible(false);
-        commitButton.setVisible(false);
+
+        diffViewPanel = new PlaceholderPanel();
+        diffViewPanel.setComponent(getInfoPanelLoading());
+        replaceVerticalSplitPane(diffViewPanel);
+        initToolbarButtons();
+        initNextPrevActions();
 
         // mimics refreshSetups()
-        setups = new Setup[] {
-            new Setup(file, rev1, rev2)
-        };
-        setDiffIndex(0, 0);
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, forceNonEditable)};
+        setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
+        setDiffIndex(0, 0, false);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = RequestProcessor.getDefault().post(dpt);
+        prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
+    }
+
+    private void replaceVerticalSplitPane(JComponent replacement) {
+        removeAll();
+        splitPane = null;
+        setLayout(new BorderLayout());
+        controlsToolBar.setPreferredSize(new Dimension(Short.MAX_VALUE, 25));
+        add(controlsToolBar, BorderLayout.NORTH);
+        add(replacement, BorderLayout.CENTER);
+    }
+
+    private void setSetups(Setup[] setups, EditorCookie[] editorCookies) {
+        this.setups = setups;
+        this.editorCookies = editorCookies;
     }
 
     private boolean fileTableSetSelectedIndexContext;
 
-    public void setSelectedIndex(int viewIndex) {
+    public void tableRowSelected(int viewIndex) {
         if (fileTableSetSelectedIndexContext) return;
-        setDiffIndex(viewIndex, 0);
+        setDiffIndex(viewIndex, 0, true);
     }
     
     UndoRedo getUndoRedo() {
@@ -182,11 +235,86 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
     }
 
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    boolean canClose() {
+        if (setups == null) {
+            return true;
+        }
+
+        SaveCookie[] saveCookies = getSaveCookies(true);
+
+        return (saveCookies.length == 0)
+               || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
+    }
+
+    public SaveCookie[] getSaveCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        return saveCookies;
+    }
+
+    public EditorCookie[] getEditorCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        int count = 0, length = editorCookiesCopy.length;
+        EditorCookie[] editorCookiesShorten = new EditorCookie[length];
+        for (int i = 0; i < length; i++) {
+            EditorCookie editorCookie = editorCookiesCopy[i];
+            if (editorCookie == null) {
+                continue;
+            }
+            editorCookiesShorten[count++] = editorCookie;
+        }
+        return CollectionUtils.shortenArray(editorCookiesShorten, count);
+    }
+
+    private EditorCookie[] getEditorCookiesIntern (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        return editorCookiesCopy;
+    }
+
+    private static SaveCookie[] getSaveCookies(Setup[] setups,
+                                               EditorCookie[] editorCookies) {
+        assert setups.length == editorCookies.length;
+
+        final int length = setups.length;
+        SaveCookie[] proResult = new SaveCookie[length];
+
+        int count = 0;
+        for (int i = 0; i < length; i++) {
+            EditorCookie editorCookie = editorCookies[i];
+            if (editorCookie == null) {
+                continue;
+            }
+
+            File baseFile = setups[i].getBaseFile();
+            if (baseFile == null) {
+                continue;
+            }
+
+            FileObject fileObj = FileUtil.toFileObject(baseFile);
+            if (fileObj == null) {
+                continue;
+            }
+
+            proResult[count++] = new EditorSaveCookie(editorCookie,
+                                                      fileObj.getNameExt());
+        }
+
+        return CollectionUtils.shortenArray(proResult, count);
+    }
+
     /**
      * Called by the enclosing TopComponent to interrupt the fetching task.
      */
     void componentClosed() {
-        setups = null;
+        setSetups((Setup[]) null, null);
         /**
          * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
          * see #159266
@@ -197,24 +325,37 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     void requestActive() {
-        if (diffView != null) {
+        if (fileTable != null) {
+            fileTable.getTable().requestFocusInWindow();
+        } else if (diffView != null) {
             diffView.requestFocusInWindow();
         }
     }
 
-    private void setupComponents() {
+    private void initFileTable() {
         fileTable = new DiffFileTable(this);
         splitPane.setTopComponent(fileTable.getComponent());
-        splitPane.setBottomComponent(new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent")));
-        commitButton.addActionListener(this);
-        
-        commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_CommitDiff_Tooltip"));
-        
+        splitPane.setBottomComponent(getInfoPanelLoading());
+    }
+
+    private void initToolbarButtons() {
+        if (context != null) {
+            commitButton.addActionListener(this);
+            commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_CommitDiff_Tooltip"));
+            commitButton.setEnabled(false);     //until the diff is loaded
+        } else {
+            commitButton.setVisible(false);
+            refreshButton.setVisible(false);
+        }
+    }
+
+    private void initNextPrevActions() {
         nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff-next.png"))) {  // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNextButton();
             }
@@ -224,6 +365,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrevButton();
             }
@@ -232,6 +374,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         prevButton.setAction(prevAction);
     }
     
+    private JComponent getInfoPanelLoading() {
+        if (infoPanelLoadingFromRepo == null) {
+            infoPanelLoadingFromRepo = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
+        }
+        return infoPanelLoadingFromRepo;
+    }
+
     private void refreshComponents() {
         DiffController view = setups != null && currentModelIndex != -1 ? setups[currentModelIndex].getView() : null;
         int currentDifferenceIndex = view != null ? view.getDifferenceIndex() : -1;
@@ -241,14 +390,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-        dividerSet = false;
-        updateSplitLocation();
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
             Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
+            HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -261,10 +410,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         Dimension dim = parent == null ? new Dimension() : parent.getSize();
         if (dim.width <=0 || dim.height <=0) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateSplitLocation();
                 }
             });
+            return;
         }
         dividerSet = true;
         JTable jt = fileTable.getTable();
@@ -278,8 +429,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         splitPane.setDividerLocation(optimalLocation);
     }
     
+    @Override
     public void removeNotify() {
         Mercurial.getInstance().getFileStatusCache().removePropertyChangeListener(this);
+        if (refreshTask != null) {
+            HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        }
         super.removeNotify();
     }
     
@@ -296,30 +451,37 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         return context == null? false: context.contains(file);
     }
     
-    private void setDiffIndex(int idx, int location) {
+    private void setDiffIndex(int idx, int location, boolean restartPrepareTask) {
         currentIndex = idx;
         DiffController view = null;
         
         if (currentIndex != -1) {
+            if (restartPrepareTask && dpt != null) {
+                dpt.cancel();
+                dpt.setTableIndex(currentIndex);
+                prepareTask.schedule(100);
+            }
             currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
             view = setups[currentModelIndex].getView();
 
             // enable Select in .. action
+            FileObject fileObj = null;
+            EditorCookie.Observable observableEditorCookie = null;
+            File baseFile = setups[currentModelIndex].getBaseFile();
+            if (baseFile != null) {
+                fileObj = FileUtil.toFileObject(baseFile);
+            }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
-                Node node = Node.EMPTY;
-                File baseFile = setups[currentModelIndex].getBaseFile();
-                if (baseFile != null) {
-                    FileObject fo = FileUtil.toFileObject(baseFile);
-                    if (fo != null) {
-                        node = new AbstractNode(Children.LEAF, Lookups.singleton(fo));
-                    }
-                }
-                tc.setActivatedNodes(new Node[] {node});
+                Node node = setups[currentModelIndex].getNode();
+                tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
+            }
+            EditorCookie editorCookie = editorCookies[currentModelIndex];
+            if (editorCookie instanceof EditorCookie.Observable) {
+                observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
             
             diffView = null;
-            boolean focus = false;
             if (view != null) {
                 if (showingFileTable()) {
                     fileTableSetSelectedIndexContext = true;
@@ -329,24 +491,24 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 diffView = view.getJComponent();
                 diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
                 diffView.getActionMap().put("jumpPrev", prevAction);  // NOI18N
-                setBottomComponent();
+                displayDiffView();
                 if (location == -1) {
                     location = view.getDifferenceCount() - 1;
                 }
                 if (location >=0 && location < view.getDifferenceCount()) {
                     view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, location);
                 }
-                Component toc = WindowManager.getDefault().getRegistry().getActivated();
-                if (SwingUtilities.isDescendingFrom(this, toc)) {
-                //                focus = true;
-                }
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
+                displayDiffView();
             }            
+            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
             currentModelIndex = -1;
+            lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
-            setBottomComponent();
+            lookup.setData(diffView.getActionMap());
+            displayDiffView();
         }
 
         delegatingUndoRedo.setDiffView(diffView);
@@ -358,15 +520,20 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     private boolean showingFileTable() {
-        return fileTable.getComponent().isVisible();
+        return fileTable != null;
     }
 
-    private void setBottomComponent() {
-        int gg = splitPane.getDividerLocation();
-        splitPane.setBottomComponent(diffView);
-        splitPane.setDividerLocation(gg);
+    private void displayDiffView() {
+        if (splitPane != null) {
+            int gg = splitPane.getDividerLocation();
+            splitPane.setBottomComponent(diffView);
+            splitPane.setDividerLocation(gg);
+        } else {
+            diffViewPanel.setComponent(diffView);
+        }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == commitButton) onCommitButton();
@@ -377,7 +544,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     private void refreshStatuses() {
-        if (context == null || context.getRootFiles().size() == 0) {
+        if (context == null || context.getRootFiles().isEmpty()) {
             return;
         }
 
@@ -389,6 +556,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
         executeStatusSupport = new HgProgressSupport() {
+            @Override
             public void perform() {                                                
                 StatusAction.executeStatus(context, this);
                 refreshSetups();
@@ -399,8 +567,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
     
     private void onCommitButton() {
-        LifecycleManager.getDefault().saveAll();
-        CommitAction.commit(contextName, context);
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+
+        if ((saveCookies.length == 0)
+                || SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
+            CommitAction.commit(contextName, context);
+        }
     }
 
     /** Next that is driven by visibility. It continues to next not yet visible difference. */
@@ -417,14 +591,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 if (++currentIndex >= setups.length) {
                     currentIndex--;
                 } else {
-                    setDiffIndex(currentIndex, 0);
+                    setDiffIndex(currentIndex, 0, true);
                 }
             } else {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (++currentIndex >= setups.length) currentIndex = 0;
-            setDiffIndex(currentIndex, 0);
+            setDiffIndex(currentIndex, 0, true);
         }
         refreshComponents();
     }
@@ -437,14 +611,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 if (--currentIndex < 0) {
                     currentIndex++;
                 } else {
-                    setDiffIndex(currentIndex, -1);
+                    setDiffIndex(currentIndex, -1, true);
                 }
             } else if (currentDifferenceIndex < view.getDifferenceCount()) {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (--currentIndex < 0) currentIndex = setups.length - 1;
-            setDiffIndex(currentIndex, -1);
+            setDiffIndex(currentIndex, -1, true);
         }
         refreshComponents();
     }
@@ -452,6 +626,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     /**
      * @return setups, takes into account Local, Remote, All switch
      */
+    @Override
     public Collection<Setup> getSetups() {
         if (setups == null) {
             return Collections.emptySet();
@@ -460,6 +635,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
     }
 
+    @Override
     public String getSetupDisplayName() {
         return contextName;
     }
@@ -487,10 +663,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         File [] files = HgUtils.getModifiedFiles(context, status, true);
         final int localDisplayStatuses = status;
         final Setup[] localSetups = computeSetups(files);
+        final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
+                dividerSet = false;
                 displayStatuses = localDisplayStatuses;
-                setups = localSetups;
+                setSetups(localSetups, cookies);
                 boolean propertyColumnVisible = false;
                 for (Setup setup : setups) {
                     if (setup.getPropertyName() != null) {
@@ -499,7 +678,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     }
                 }
                 fileTable.setColumns(propertyColumnVisible ? new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION} : new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION});
-                fileTable.setTableModel(setupToNodes(setups));
+                fileTable.setTableModel(setups, editorCookies);
                 if (setups.length == 0) {
                     String noContentLabel;
                     switch (currentType) {
@@ -515,17 +694,17 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                         default:
                             throw new IllegalStateException("Unknown DIFF type:" + currentType);
                     }
-                    setups = null;
-                    fileTable.setTableModel(new Node[0]);
+                    setSetups((Setup[]) null, null);
                     fileTable.getComponent().setEnabled(false);
                     fileTable.getComponent().setPreferredSize(null);
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     diffView = null;
                     diffView = new NoContentPanel(noContentLabel);
-                    setBottomComponent();
+                    displayDiffView();
                     nextAction.setEnabled(false);
                     prevAction.setEnabled(false);
+                    commitButton.setEnabled(false);
                     revalidate();
                     repaint();
                 } else {
@@ -533,9 +712,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     fileTable.getComponent().setPreferredSize(null);
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-                    setDiffIndex(0, 0);
+                    setDiffIndex(0, 0, false);
+                    commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
-                    prepareTask = RequestProcessor.getDefault().post(dpt);
+                    prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
                 }
             }
         };
@@ -558,7 +738,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             File file = files[i];
             if (!file.isDirectory()) {
                 Setup setup = new Setup(file, null, currentType);
-                setup.setNode(new DiffNode(setup));
+                setup.setNode(new DiffNode(setup, new HgFileNode(file)));
                 newSetups.add(setup);
             }
         }
@@ -566,14 +746,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         return newSetups.toArray(new Setup[newSetups.size()]);
     }
 
-    private Node[] setupToNodes(Setup[] setups) {
-        List<Node> nodes = new ArrayList<Node>(setups.length);
-        for (Setup setup : setups) {
-            nodes.add(setup.getNode());
-        }
-        return (Node[]) nodes.toArray(new Node[nodes.size()]);
-    }
-
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshComponents();
@@ -585,41 +758,73 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
     }
 
-    private class DiffPrepareTask implements Runnable {
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
+        }
+    }
+
+    private class DiffPrepareTask implements Runnable, Cancellable {
         
         private final Setup[] prepareSetups;
+        private int tableIndex; // index of a row in the table - viewIndex, needs to be translated to modelIndex
+        private boolean canceled;
 
         public DiffPrepareTask(Setup [] prepareSetups) {
             this.prepareSetups = prepareSetups;
+            this.tableIndex = 0;
         }
 
+        @Override
         public void run() {
+            canceled = false;
             IOException exception = null;
-            for (int i = 0; i < prepareSetups.length; i++) {
-                if (prepareSetups != setups) return;
+            int[] indexes = prepareIndexesToRefresh();
+            for (int i : indexes) {
+                if (prepareSetups != setups || Thread.interrupted()) return;
+                int modelIndex = fileTable == null ? i : fileTable.getModelIndex(i);
+                if (prepareSetups[modelIndex].getView() != null) {
+                    continue;
+                }
                 try {
-                    prepareSetups[i].initSources();  // slow network I/O
-                    final int fi = i;
+                    prepareSetups[modelIndex].initSources();  // slow network I/O
+                    final int fi = modelIndex;
+                    if (Thread.interrupted() || canceled) {
+                        return;
+                    }
                     StreamSource ss1 = prepareSetups[fi].getFirstSource();
                     StreamSource ss2 = prepareSetups[fi].getSecondSource();
-                    final DiffController view = DiffController.create(ss1, ss2);  // possibly executing slow external diff
+                    final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
+                    if (Thread.interrupted() || canceled) {
+                        return;
+                    }
+                    prepareSetups[fi].setView(view);
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
-                            prepareSetups[fi].setView(view);
                             if (prepareSetups != setups) {
                                 return;
                             }
                             if (currentModelIndex == fi) {
-                                setDiffIndex(currentIndex, 0);
+                                setDiffIndex(currentIndex, 0, false);
+                            }
+                            if (splitPane != null) {
+                                updateSplitLocation();
                             }
                         }
                     });
                 } catch (IOException e) {
-                    Mercurial.LOG.log(Level.INFO, null, e);
-                    if (exception == null) {
-                        // save only the first exception
-                        exception = e;
+                    if (HgUtils.isCanceled(e)) {
+                        Logger.getLogger(MultiDiffPanel.class.getName()).log(Level.FINE, null, e);
+                        return;
+                    } else {
+                        Mercurial.LOG.log(Level.INFO, null, e);
+                        if (exception == null) {
+                            // save only the first exception
+                            exception = e;
+                        }
                     }
                 }
             }
@@ -627,6 +832,32 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 // notify user of the failure
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exception));
             }
+        }
+
+        private int[] prepareIndexesToRefresh () {
+            int index = tableIndex;
+            int min = Math.max(0, index - 2);
+            int max = Math.min(prepareSetups.length - 1, index + 2);
+            int[] indexes = new int[max - min + 1];
+            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
+            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
+                if (i >= min) {
+                    indexes[k++] = i;
+                }
+                if (j <= max) {
+                    indexes[k++] = j;
+                }
+            }
+            return indexes;
+        }
+
+        private void setTableIndex(int index) {
+            this.tableIndex = index;
+        }
+
+        @Override
+        public boolean cancel() {
+            return this.canceled = true;
         }
     }
 
@@ -639,6 +870,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             cache = Mercurial.getInstance().getFileStatusCache();
         }
 
+        @Override
         public int compare(Setup setup1, Setup setup2) {
             int cmp = delegate.compare(cache.getStatus(setup1.getBaseFile()), cache.getStatus(setup2.getBaseFile()));
             if (cmp == 0) {
@@ -649,6 +881,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     private class RefreshViewTask implements Runnable {
+        @Override
         public void run() {
             refreshSetups();
         }
@@ -659,7 +892,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         controlsToolBar = new javax.swing.JToolBar();
@@ -804,14 +1037,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
         );
-    }// </editor-fold>                        
+    }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
         onRefreshButton();
     }                                             
     
     
-    // Variables declaration - do not modify                     
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton commitButton;
     private javax.swing.JToolBar controlsToolBar;
     private javax.swing.JPanel jPanel1;
@@ -823,7 +1056,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     private javax.swing.JButton prevButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JSplitPane splitPane;
-    // End of variables declaration                   
+    // End of variables declaration//GEN-END:variables
     
     /** Interprets property blob. */
     static final class Property {

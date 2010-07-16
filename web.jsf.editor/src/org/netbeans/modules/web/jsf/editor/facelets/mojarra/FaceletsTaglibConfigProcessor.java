@@ -4,9 +4,12 @@
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -14,7 +17,7 @@
  * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
  * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
@@ -192,6 +195,9 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
      * </p>
      */
     private static final String COMPOSITE_LIBRARY_NAME = "composite-library-name";
+
+    private static final String ATTRIBUTE_NAME = "attribute";
+
     //fake compiler, same name, different class, just not to change this class much
     public Compiler compiler = new Compiler();
     private FaceletsLibrarySupport support;
@@ -214,7 +220,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     // -------------------------------------------- Methods from ConfigProcessor
 
-    public void process(DocumentInfo[] documents) {
+    public void process(javax.servlet.ServletContext context, DocumentInfo[] documents) {
         for (int i = 0, length = documents.length; i < length; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE,
@@ -230,7 +236,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
             if (libraryClass != null && libraryClass.getLength() > 0) {
                 processTaglibraryClass(libraryClass, compiler);
             } else {
-                processTagLibrary(documentElement, namespace, compiler);
+                processTagLibrary(documents[i], documentElement, namespace, compiler);
             }
 
         }
@@ -249,7 +255,8 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processTagLibrary(Element documentElement,
+    private void processTagLibrary(DocumentInfo info,
+            Element documentElement,
             String namespace,
             Compiler compiler) {
 
@@ -270,7 +277,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 //nothing to process inside the library definition AFAIR...
                 compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace));
             } else {
-                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(support, taglibNamespace);
+                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
                 //process the library content
                 NodeList tags =
                         documentElement.getElementsByTagNameNS(namespace, TAG);
@@ -318,7 +325,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                         source = n;
                     } else if (HANDLER_CLASS.equals(n.getLocalName())) {
                         handlerClass = n;
-                    }
+                }
                 }
                 if (component != null) {
                     processComponent(component, taglibrary, tagName);

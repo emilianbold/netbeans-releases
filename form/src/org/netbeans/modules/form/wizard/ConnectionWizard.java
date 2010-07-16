@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -150,7 +153,7 @@ public class ConnectionWizard extends WizardDescriptor {
         if (!finished || actionType == ConnectionWizardPanel2.CODE_TYPE)
             return null;
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Set<Class> allExceptions = new HashSet<Class>();
 
         // params can be specified as method calls which in turn may produce exceptions
@@ -206,7 +209,7 @@ public class ConnectionWizard extends WizardDescriptor {
             } */
             buf.append(excName);
             buf.append(") {\n"); // NOI18N
-            buf.append("  "+excName); // NOI18N
+            buf.append("  ").append(excName); // NOI18N
             buf.append(".printStackTrace();\n"); // NOI18N
         }
         if (!allExceptions.isEmpty())
@@ -280,22 +283,27 @@ public class ConnectionWizard extends WizardDescriptor {
             return anyParameters() ? 3 : 2;
         }
 
+        @Override
         public WizardDescriptor.Panel current() {
             return panels[stage-1];
         }
 
+        @Override
         public boolean hasNext() {
             return stage < getPanelsCount();
         }
 
+        @Override
         public boolean hasPrevious() {
             return stage > 1;
         }
 
+        @Override
         public java.lang.String name() {
             return ""; // NOI18N
         }
 
+        @Override
         public void nextPanel() {
             if (stage < getPanelsCount()) {
                 if (stage == 1 && panel1.handlerAlreadyExists()) {
@@ -322,22 +330,26 @@ public class ConnectionWizard extends WizardDescriptor {
             }
         }
 
+        @Override
         public void previousPanel() {
             if (stage > 1)
                 stage--;
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, listener);
         }
 
+        @Override
         public void stateChanged(ChangeEvent p1) {
             if (stage == 2) {
                 panel2Changed = true;

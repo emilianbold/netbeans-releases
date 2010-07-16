@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 package org.netbeans.modules.html.editor;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,12 +69,34 @@ public class NbReaderProvider implements ReaderProvider {
         initialize();
     }
 
-    public Collection getIdentifiers() {
+    @Override
+    public Collection<String> getIdentifiers() {
         return mapping.keySet();
     }
 
+    @Override
     public Reader getReaderForIdentifier(String identifier, String filename) {
-        String fileName = (String) mapping.get(identifier);
+        FileObject file = getSystemId(identifier);
+        if(file == null) {
+            return null;
+        }
+        
+        try {
+            return new InputStreamReader(file.getInputStream());
+        } catch (FileNotFoundException exc) {
+            return null;
+        }
+        
+    }
+
+    @Override
+    public boolean isXMLContent(String identifier) {
+        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+    }
+
+    @Override
+    public FileObject getSystemId(String publicId) {
+         String fileName = (String) mapping.get(publicId);
         if (fileName == null) {
             return null;
         }
@@ -79,19 +105,7 @@ public class NbReaderProvider implements ReaderProvider {
         }
 
         FileObject file = dtdSetFolder.getFileObject(fileName);
-        if (fileName == null) {
-            return null;
-        }
-
-        try {
-            return new InputStreamReader(file.getInputStream());
-        } catch (FileNotFoundException exc) {
-            return null;
-        }
-    }
-
-    public boolean isXMLContent(String identifier) {
-        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+        return file;
     }
 
     private void initialize() {
@@ -105,7 +119,7 @@ public class NbReaderProvider implements ReaderProvider {
         }
     }
 
-    private Map parseCatalog(Reader catalogReader) {
+    private Map<String, String> parseCatalog(Reader catalogReader) {
         HashMap hashmap = new HashMap();
         LineNumberReader reader = new LineNumberReader(catalogReader);
 

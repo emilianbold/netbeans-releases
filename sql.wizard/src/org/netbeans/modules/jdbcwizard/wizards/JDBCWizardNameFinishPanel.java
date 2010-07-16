@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * 
- * Copyright 2009 Sun Microsystems, Inc.
+ * Copyright 2005 Sun Microsystems, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,13 @@ public class JDBCWizardNameFinishPanel extends JDBCWizardNamePanel implements Wi
     private static final long serialVersionUID = 1L;
 
     /**
+     * No-arg constructor for this wizard descriptor.
+     */
+    public JDBCWizardNameFinishPanel() {
+        super();
+    }
+
+    /**
      * Create the wizard finish panel descriptor, using the given owner and panel title.
      * 
      * @param myOwner JDBCWizard that owns this panel
@@ -64,4 +71,12 @@ public class JDBCWizardNameFinishPanel extends JDBCWizardNamePanel implements Wi
     public boolean isFinishPanel() {
         return true;
     }
+
+    @Override
+    public void storeSettings(Object settings) {
+        super.storeSettings(settings);
+    }
+    
+    
+    
 }

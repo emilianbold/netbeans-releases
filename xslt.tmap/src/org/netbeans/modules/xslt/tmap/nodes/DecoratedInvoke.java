@@ -20,6 +20,7 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.openide.util.NbBundle;
 
@@ -36,15 +37,11 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
 
     @Override
     public String getHtmlDisplayName() {
-        Invoke ref = getOriginal();
+        Invoke ref = getReference();
         String pltName = null;
-        String roleName = null;
         String opName = null;
         if (ref != null) {
-            // 142908
-            pltName = Util.getReferenceLocalName(ref.getPartnerLinkType());
-            roleName = Util.getReferenceLocalName(ref.getRole());
-//142908            pltName = Util.getReferenceLocalName(ref.getPortType());
+            pltName = Util.getReferenceLocalName(ref.getPortType());
             opName = Util.getReferenceLocalName(ref.getOperation());
         }
         String addon = null;
@@ -52,11 +49,6 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
             addon = TMapComponentNode.WHITE_SPACE+pltName; // NOI18N
         }
         
-        // 142908
-        if (roleName != null) {
-            addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + roleName; // NOI18N
-        }
-
         if (opName != null) {
             addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + opName; // NOI18N
         }
@@ -66,32 +58,44 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
 
     @Override
     public String getTooltip() {
-        Invoke ref = getOriginal();
+        Invoke ref = getReference();
         StringBuffer attributesTooltip = new StringBuffer();
         if (ref != null) {
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getName()
-                    , Invoke.NAME_PROPERTY));
+                    Util.getLocalizedAttribute(ref.getName(), Invoke.NAME_PROPERTY));
 
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getPartnerLinkType()
-                    , Invoke.PARTNER_LINK_TYPE));
+                    Util.getLocalizedAttribute(ref.getPortType(), Invoke.PORT_TYPE));
 
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getRole()
-                    , Invoke.ROLE_NAME));
+                    Util.getLocalizedAttribute(ref.getOperation(), Invoke.OPERATION_NAME));
 
-// 142908            
-//            attributesTooltip.append(
-//                    Util.getLocalizedAttribute(ref.getPortType()
-//                    , Invoke.PORT_TYPE));
+            Variable inputVar = ref.getInputVariable();
+            if (inputVar == null) {
+                inputVar = ref.getDefaultInputVariable();
+                if (inputVar != null) {
+                    attributesTooltip.append(
+                            Util.getLocalizedAttribute(inputVar.getName(), Invoke.DEFAULT_INPUT_VARIABLE));
+                }
+            } else {
+                attributesTooltip.append(
+                        Util.getLocalizedAttribute(inputVar.getName(), Invoke.INPUT_VARIABLE));
+            }
 
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Invoke.OPERATION_NAME));
+            Variable outputVar = ref.getOutputVariable();
+            if (outputVar == null) {
+                outputVar = ref.getDefaultOutputVariable();
+                if (outputVar != null) {
+                    attributesTooltip.append(
+                            Util.getLocalizedAttribute(outputVar.getName(), Invoke.DEFAULT_OUTPUT_VARIABLE));
+                }
+            } else {
+                attributesTooltip.append(
+                        Util.getLocalizedAttribute(outputVar.getName(), Invoke.OUTPUT_VARIABLE));
+            }
         }
-        return  NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());      
+        return NbBundle.getMessage(TMapComponentNode.class,
+                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(),
+                attributesTooltip.toString());
     }
 }

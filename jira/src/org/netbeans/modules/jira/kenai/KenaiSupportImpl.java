@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,20 +44,14 @@ package org.netbeans.modules.jira.kenai;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,60 +60,40 @@ import org.openide.util.Exceptions;
  */
 public class KenaiSupportImpl extends KenaiSupport {
 
-    private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
-
     public KenaiSupportImpl() {
     }
 
     @Override
     public Repository createRepository(KenaiProject project) {
-        if(project == null) {
+        if(project == null || project.getType() != BugtrackingType.JIRA) {
             return null;
         }
+
+        String location = project.getFeatureLocation().toString();
+        final URL loc;
         try {
-            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-            for (KenaiFeature f : features) {
-                if (!KenaiService.Names.JIRA.equals(f.getService())) {
-                    return null;
-                }
-                final URL loc;
-                try {
-                    loc = new URL(f.getLocation());
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
-
-                String host = loc.getHost();
-                String location = f.getLocation();
-                int idx = location.indexOf("/browse/");
-                if (idx <= 0) {
-                    Jira.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
-                    return null;
-                }
-                String url = location.substring(0, idx);
-                if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
-                    url = "https" + url.substring(4);                           // NOI18N
-                }
-
-                String product = location.substring(idx + "/browse/".length()); // NOI18N
-
-                KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
-                if(repo.getConfiguration() == null) {
-                    // something went wrong, can't use the repo anyway => return null
-                    Jira.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
-                            + project.getDisplayName() + "," + project.getName() + "]");                            // NOI18N
-                    return null;
-                }
-                synchronized (repositories) {
-                    repositories.add(repo);
-                }
-                return repo;
-            }
-        } catch (KenaiException kenaiException) {
-            Jira.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
+            loc = new URL(project.getWebLocation().toString());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
-        return null;
+
+        String host = loc.getHost();
+        int idx = location.indexOf("/browse/");
+        if (idx <= 0) {
+            Jira.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{project.getName(), location}); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+
+        String product = location.substring(idx + "/browse/".length()); // NOI18N
+
+        KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
+        return repo;
+        
     }
 
     @Override
@@ -146,6 +123,17 @@ public class KenaiSupportImpl extends KenaiSupport {
     @Override
     public boolean needsLogin(Query query) {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
+    }
+
+    @Override
+    public void refresh(Query query, boolean synchronously) {
+        assert query instanceof JiraQuery;
+        JiraQuery jq = (JiraQuery) query;
+        if(synchronously) {
+            jq.refresh();
+        } else {
+            jq.getController().onRefresh();
+        }
     }
 }
 

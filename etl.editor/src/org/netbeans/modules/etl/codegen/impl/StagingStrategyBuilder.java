@@ -36,9 +36,9 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.AttributeMap;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.utils.AttributeMap;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -297,7 +297,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
         context.setUsingTempTableName(srcTable, false);
         this.useUniqueNameIfRequired(srcTable, context);
         SQLPart selectSQLPart = sourceStmts.getSelectStatement(srcTable, context);
-        selectSQLPart.setConnectionPoolName(srcConnName);
+        selectSQLPart.setConnectionPoolName(getConDefnName(srcConDef));
         extractorTask.addStatement(selectSQLPart);
 
         // Create insert prepared statement.

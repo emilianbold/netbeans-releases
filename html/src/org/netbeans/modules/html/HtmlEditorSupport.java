@@ -1,7 +1,11 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +17,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -94,6 +98,8 @@ import org.openide.windows.CloneableOpenSupport;
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
+    private static final RequestProcessor SINGLE_THREAD_RP = new RequestProcessor(HtmlEditorSupport.class.getName(), 1);
+
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
     // only to be ever user from unit tests:
@@ -106,6 +112,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     private final SaveCookie saveCookie = new SaveCookie() {
 
         /** Implements <code>SaveCookie</code> interface. */
+        @Override
         public void save() throws IOException {
             try {
                 saveDocument();
@@ -121,6 +128,11 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         //set the FileObject's mimetype - text/html or text/xhtml
         setMIMEType(obj.getPrimaryFile().getMIMEType());
+    }
+
+    @Override
+    protected boolean asynchronousOpen() {
+	return true;
     }
 
     @Override
@@ -322,11 +334,13 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
 
         /** Implements abstract superclass method. */
+        @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
 
         /** Implements abstract superclass method.*/
+        @Override
         protected FileLock takeLock() throws IOException {
             return ((HtmlDataObject) getDataObject()).getPrimaryEntry().takeLock();
         }
@@ -367,7 +381,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
             setActivatedNodes(nodes);
             if (dataObject instanceof HtmlDataObject) {
-                 RequestProcessor.getDefault().post(new Runnable() {
+                //serialize the palette controller initialization requests into one thread
+                 SINGLE_THREAD_RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             PaletteController pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());

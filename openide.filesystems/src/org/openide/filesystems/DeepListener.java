@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,10 @@ package org.openide.filesystems;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
@@ -52,15 +57,17 @@ import org.openide.util.WeakSet;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class DeepListener extends WeakReference<FileChangeListener>
-implements FileChangeListener, Runnable {
+implements FileChangeListener, Runnable, Callable<Boolean> {
     private final File path;
     private FileObject watching;
     private boolean removed;
+    private final Callable<Boolean> stop;
     private static List<DeepListener> keep = new ArrayList<DeepListener>();
 
-    public DeepListener(FileChangeListener listener, File path) {
+    DeepListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
         super(listener, Utilities.activeReferenceQueue());
         this.path = path;
+        this.stop = stop;
         relisten();
         keep.add(this);
     }
@@ -182,7 +189,7 @@ implements FileChangeListener, Runnable {
         return hash;
     }
 
-    private Set<FileEvent> delivered = new WeakSet<FileEvent>();
+    private Set<FileEvent> delivered = Collections.synchronizedSet(new WeakSet<FileEvent>());
     private FileChangeListener get(FileEvent fe, boolean fromHolder) {
         if (removed) {
             return null;
@@ -198,4 +205,8 @@ implements FileChangeListener, Runnable {
         return get();
     }
 
+    @Override
+    public Boolean call() throws Exception {
+        return stop != null ? stop.call() : null;
+    }
 }

@@ -1,7 +1,10 @@
 /*+
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -58,13 +62,12 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Utilities;
@@ -85,7 +88,7 @@ public class Mercurial {
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
@@ -132,8 +135,8 @@ public class Mercurial {
      */
     private boolean gotVersion;
 
-    private Result<? extends HgHook> hooksResult;
-    private Result<? extends HyperlinkProvider> hpResult;
+    private Result<? extends VCSHyperlinkProvider> hpResult;
+    private RequestProcessor parallelRP;
 
     private Mercurial() {
         mvcs = org.openide.util.Lookup.getDefault().lookup(MercurialVCS.class);
@@ -142,7 +145,7 @@ public class Mercurial {
 
     private void init() {
         setDefaultPath();
-        fileStatusCache = "false".equals(System.getProperty("mercurial.newGenerationCache", "true")) ? new FileStatusCache() : new FileStatusCacheNewGeneration(); //NOI18N
+        fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         fileStatusCache.addPropertyChangeListener(mvcs);
@@ -180,8 +183,9 @@ public class Mercurial {
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
         Runnable init = new Runnable() {
+            @Override
             public void run() {
-                HgKenaiSupport.getInstance().registerVCSNoficationListener();
+                HgKenaiAccessor.getInstance().registerVCSNoficationListener();
                 synchronized(this) {
                     checkVersionIntern();
                 }
@@ -279,6 +283,23 @@ public class Mercurial {
      */
     public FileStatusCache getFileStatusCache() {
         return fileStatusCache;
+    }
+
+    /**
+     * Refreshes cached modification timestamp of the repository's hg folder
+     * @param repository owner of the hg folder to refresh
+     */
+    public void refreshWorkingCopyTimestamp(File repository) {
+        getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getMercurialInterceptor().getSeenRoots(repositoryRoot);
     }
 
    /**
@@ -382,6 +403,13 @@ public class Mercurial {
                      "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
                      "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
         }
+
+        synchronized void clear () {
+            order.clear();
+            files.clear();
+            cachedAccesCount = 0;
+            accesCount = 0;
+        }
     }
 
    /**
@@ -409,6 +437,7 @@ public class Mercurial {
     }
 
     public void versionedFilesChanged() {
+        rootsToFile.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -438,7 +467,7 @@ public class Mercurial {
         // but may not have happened yet.
 
         try {
-            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+            File original = VersionsCache.getInstance().getFileRevision(workingCopy, HgRevision.BASE);
             if (original == null) return;
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();
@@ -452,6 +481,17 @@ public class Mercurial {
      */
     public RequestProcessor getRequestProcessor() {
         return getRequestProcessor((HgURL) null);
+    }
+
+    /**
+     * Request processor for parallel tasks
+     * @return
+     */
+    public RequestProcessor getParallelRequestProcessor() {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Mercurial.ParallelRP", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
 
     /**
@@ -503,36 +543,19 @@ public class Mercurial {
         return mercurialInterceptor.isRefreshScheduled(file);
     }
 
-    public List<HgHook> getHooks() {
-        if (hooksResult == null) {
-            hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        }
-        if(hooksResult == null) {
-            return Collections.EMPTY_LIST;
-        }
-        List<HgHook> ret = new ArrayList<HgHook>();
-        Collection<? extends HgHook> hooks = hooksResult.allInstances();
-        if (hooks.size() > 0) {
-            for (HgHook hook : hooks) {
-                ret.add(hook);
-            }
-        }
-        return ret;
-    }
-
     /**
      *
      * @return registered hyperlink providers
      */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
         if (hpResult == null) {
-            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }

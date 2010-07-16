@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,8 +91,6 @@ public class DwarfLineInfoSection extends ElfSection {
     }
     
     private DwarfStatementList readStatementList(long offset) throws IOException {
-        long currPos = reader.getFilePointer();
-        
         reader.seek(header.getSectionOffset() + offset);
         
         DwarfStatementList stmt_list = new DwarfStatementList(offset);
@@ -122,12 +123,7 @@ public class DwarfLineInfoSection extends ElfSection {
             stmt_list.fileEntries.add(new FileEntry(fname, reader.readUnsignedLEB128(), reader.readUnsignedLEB128(), reader.readUnsignedLEB128()));
             fname = reader.readString();
         }
-
-        reader.seek(currPos);
-        
-        //TODO: add code...
         return stmt_list;
-        
     }
 
     @Override
@@ -440,10 +436,10 @@ public class DwarfLineInfoSection extends ElfSection {
     }
 
     public static final class LineNumber implements Comparable<LineNumber> {
-        public String file;
-        public int line;
-        public long startOffset;
-        public long endOffset;
+        public final String file;
+        public final int line;
+        public final long startOffset;
+        public final long endOffset;
         private LineNumber(String file, int line, long startOffset, long endOffset){
             assert file != null;
             this.file = file;
@@ -474,6 +470,7 @@ public class DwarfLineInfoSection extends ElfSection {
             return file+":"+line+"\t(0x"+Long.toHexString(startOffset)+"-0x"+Long.toHexString(endOffset)+")"; // NOI18N
         }
 
+        @Override
         public int compareTo(LineNumber o) {
             int res = file.compareTo(o.file);
             if (res == 0) {

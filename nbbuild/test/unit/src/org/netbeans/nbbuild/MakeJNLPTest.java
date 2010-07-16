@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -146,6 +149,49 @@ public class MakeJNLPTest extends NbTestCase {
             }
             fail ("File does not seem to be signed: " + jar);
         }
+    }
+
+    public void testHandlesOSGi() throws Exception {
+        Manifest m;
+
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("Bundle-SymbolicName", "org.my.module");
+        File simpleJar = generateJar (new String[0], m);
+
+        File parent = simpleJar.getParentFile ();
+        File output = new File(parent, "output");
+        File ks = generateKeystore("jnlp", "netbeans-test");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
+
+        File jnlp = new File(output, "org-my-module.jnlp");
+        String res = ModuleDependenciesTest.readFile (jnlp);
+
+        assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+
+        Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
+        assertTrue("codebase is there", match.find());
+        assertEquals("one group found", 1, match.groupCount());
+        String base = match.group(1);
+
+        assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
     }
 
     public void testGenerateJNLPAndUnSignedJarForSimpleModule() throws Exception {

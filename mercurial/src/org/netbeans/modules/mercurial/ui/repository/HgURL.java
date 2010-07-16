@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
-import org.openide.util.Exceptions;
+import java.util.Arrays;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -113,7 +116,7 @@ public final class HgURL {
     private final Scheme scheme;
     private final String host;
     private final String username;
-    private final String password;
+    private final char[] password;
     private final int    port;
     private final String rawPath;
     private final String rawQuery;
@@ -275,7 +278,14 @@ public final class HgURL {
         this(urlString, null, null);
     }
 
-    public HgURL(String urlString, String username, String password) throws URISyntaxException {
+    /**
+     *
+     * @param urlString
+     * @param username
+     * @param password value is cloned, if you want to null the field, call {@link #clearPassword()}
+     * @throws URISyntaxException
+     */
+    public HgURL(String urlString, String username, char[] password) throws URISyntaxException {
         URI originalUri;
 
         if (urlString == null) {
@@ -308,7 +318,7 @@ public final class HgURL {
 
         if (username != null) {
             this.username = username;
-            this.password = password;
+            this.password = password == null ? null : (char[])password.clone();
         } else {
             String rawUserInfo = originalUri.getRawUserInfo();
             if (rawUserInfo == null) {
@@ -321,7 +331,7 @@ public final class HgURL {
                     this.password = null;
                 } else {
                     this.username = rawUserInfo.substring(0, colonIndex);
-                    this.password = rawUserInfo.substring(colonIndex + 1);
+                    this.password = rawUserInfo.substring(colonIndex + 1).toCharArray();
                 }
             }
         }
@@ -462,8 +472,7 @@ public final class HgURL {
         return null;
     }
 
-    private static void verifyUserInfoData(Scheme scheme, String username,
-                                                          String password) {
+    private static void verifyUserInfoData(Scheme scheme, String username, char[] password) {
         boolean authenticationSupported = scheme.supportsAuthentication();
         if (!authenticationSupported && ((username != null) || (password != null))) {
             throw new IllegalArgumentException(
@@ -508,7 +517,7 @@ public final class HgURL {
     }
 
     public boolean isKenaiURL() {
-        return HgKenaiSupport.getInstance().isKenai(toUrlStringWithoutUserInfo());
+        return HgKenaiAccessor.getInstance().isKenai(toUrlStringWithoutUserInfo());
     }
 
     /**
@@ -543,12 +552,19 @@ public final class HgURL {
         return path.replace('/', '\\');
     }
 
-    String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    String getPassword() {
+    public char[] getPassword() {
         return password;
+    }
+
+    public void clearPassword () {
+        if (password != null) {
+            Arrays.fill(password, '\0');
+            this.hgCommandForm = null;
+        }
     }
 
     public String getUserInfo() {
@@ -605,7 +621,7 @@ public final class HgURL {
     @Override
     public String toString() {
         if (publicForm == null) {
-            publicForm = toUrlString(false, true);
+            publicForm = toUrlString(false, true, true);
         }
         return publicForm;
     }
@@ -627,7 +643,12 @@ public final class HgURL {
 
     public String toHgCommandStringWithMaskedPassword() {
         return isFile() ? getFilePath()
-                        : toUrlString(false, true);
+                        : toUrlString(false, true, true);
+    }
+
+    public String toHgCommandStringWithNoPassword () {
+        return isFile() ? getFilePath()
+                        : toUrlString(false, false, false);
     }
 
     public URL toURL() {
@@ -645,14 +666,14 @@ public final class HgURL {
     }
 
     public String toUrlString() {
-        return toUrlString(false, false);
+        return toUrlString(false, true, false);
     }
 
     public String toUrlStringWithoutUserInfo() {
-        return toUrlString(true, true);
+        return toUrlString(true, true, true);
     }
 
-    private String toUrlString(boolean stripUserinfo, boolean maskPassword) {
+    private String toUrlString(boolean stripUserinfo, boolean displayPasswordSection, boolean maskPassword) {
         if (this == NO_URL) {
             return "";                                                  //NOI18N
         }
@@ -662,7 +683,7 @@ public final class HgURL {
         StringBuilder buf = new StringBuilder(128);
         buf.append(scheme.name).append(':');
         if (scheme != Scheme.FILE) {
-            authorityPartSeparationPending = addAuthoritySpec(stripUserinfo, maskPassword, buf);
+            authorityPartSeparationPending = addAuthoritySpec(stripUserinfo, displayPasswordSection, maskPassword, buf);
         } else {
             authorityPartSeparationPending = false;
         }
@@ -683,7 +704,7 @@ public final class HgURL {
         return buf.toString();
     }
     
-    public boolean addAuthoritySpec(boolean stripUserInfo, boolean maskPassword, StringBuilder buf) {
+    public boolean addAuthoritySpec(boolean stripUserInfo, boolean displayPasswordSection, boolean maskPassword, StringBuilder buf) {
         if (host == null) {
             return false;
         }
@@ -691,12 +712,12 @@ public final class HgURL {
         buf.append("//");                                               //NOI18N
         if (!stripUserInfo && (username != null)) {
             buf.append(makeRawUserInfo(username));
-            if (password != null) {
+            if (password != null && displayPasswordSection) {
                 buf.append(':');
                 if (maskPassword) {
                     buf.append(PASSWORD_REPLACEMENT);
                 } else {
-                    buf.append(makeRawUserInfo(password));
+                    buf.append(makeRawUserInfo(new String(password)));
                 }
             }
             buf.append('@');

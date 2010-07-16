@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -71,7 +78,8 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -105,6 +113,8 @@ public final class CLIODataCollector
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private List<ValidationListener> validationListeners =
             Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private final DataStorageType dataStorageType;
+    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
 
     /**
      *
@@ -127,8 +137,75 @@ public final class CLIODataCollector
         if (displayedName == null) {
             //lets create own name on the base of command
             int separatorIndex = this.command.lastIndexOf(File.separator);
-            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex, command.length());
+            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex + 1);
         }
+        this.dataStorageType = accessor.getDataStorageType(configuration);
+    }
+
+ /**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    @Override
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    @Override
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final CollectorState state) {
+        DataCollectorListener[] ll;
+
+        synchronized (this) {
+            ll = listeners.toArray(new DataCollectorListener[0]);
+        }
+
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DataCollectorListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        l.collectorStateChanged(CLIODataCollector.this, state);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     public String getName() {
@@ -141,15 +218,12 @@ public final class CLIODataCollector
      * data collector can put data into
      */
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
-        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-
-        return Arrays.asList(
-                dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        return Arrays.asList(dataStorageType);
     }
 
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-        this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        this.storage = storages.get(dataStorageType);
         log.fine("Do INIT for " + storage.toString()); // NOI18N
     }
 
@@ -181,19 +255,41 @@ public final class CLIODataCollector
         } else {
             cmd += argsTemplate;
         }
-        log.fine("Starting CLIODataCollector cmd: " + cmd); // NOI18N
+        log.log(Level.FINE, "Starting CLIODataCollector cmd: {0}", cmd); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
         npb.setCommandLine(cmd);
 
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
-                new CLIOInputProcessorFactory());
+                new CLIOInputProcessorFactory()).errProcessorFactory(new CLIOInputProcessorFactory());
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
 
         collectorTask = execService.run();
+
+        DLightExecutorService.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                notifyListeners(CollectorState.RUNNING);
+                try {
+                    collectorTask.get();
+                } catch (InterruptedException ex) {
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                } catch (ExecutionException ex) {
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                }catch (CancellationException ex){
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                }
+                notifyListeners(CollectorState.STOPPED);
+
+            }
+        }, "Listen for the CLIO task");//NOI18N
     }
 
     private void targetFinished(DLightTarget target) {
@@ -201,28 +297,31 @@ public final class CLIODataCollector
             // It could be already done here, because tracked process is
             // finished and, depending on command-line utility, it may exit as
             // well... But, if not - terminate it.
-            log.fine("Stopping CLIODataCollector: " + collectorTask.toString()); // NOI18N
+            log.log(Level.FINE, "Stopping CLIODataCollector: {0}", collectorTask.toString()); // NOI18N
             collectorTask.cancel(true);
-            collectorTask = null;
         }
     }
 
     /** {@inheritDoc */
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
         return dataTablesMetadata;
     }
 
     /** {@inheritDoc */
+    @Override
     public boolean isAttachable() {
         return true;
     }
 
     /** {@inheritDoc */
+    @Override
     public String getCmd() {
         return command;
     }
 
     /** {@inheritDoc */
+    @Override
     public String[] getArgs() {
         return null;
     }
@@ -231,6 +330,7 @@ public final class CLIODataCollector
      * Registers a validation listener
      * @param listener a validation listener to add
      */
+    @Override
     public void addValidationListener(ValidationListener listener) {
         if (!validationListeners.contains(listener)) {
             validationListeners.add(listener);
@@ -241,6 +341,7 @@ public final class CLIODataCollector
      * Removes a validation listener
      * @param listener a listener to remove
      */
+    @Override
     public void removeValidationListener(ValidationListener listener) {
         validationListeners.remove(listener);
     }
@@ -262,6 +363,7 @@ public final class CLIODataCollector
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
+    @Override
     public ValidationStatus validate(final DLightTarget target) {
         if (validationStatus.isValid()) {
             return validationStatus;
@@ -276,6 +378,7 @@ public final class CLIODataCollector
         return newStatus;
     }
 
+    @Override
     public void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
     }
@@ -291,6 +394,9 @@ public final class CLIODataCollector
 
         try {
             fileExists = HostInfoUtils.fileExists(execEnv, command);
+        } catch (InterruptedException ex) {
+            error = loc("ValidationStatus.InterruptedWhileValidation"); //NOI18N
+            return ValidationStatus.invalidStatus(error);
         } catch (IOException ex) {
             error = ex.getMessage();
             connected = false;
@@ -309,6 +415,7 @@ public final class CLIODataCollector
 
             Runnable doOnConnect = new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -324,10 +431,12 @@ public final class CLIODataCollector
         return result;
     }
 
+    @Override
     public ValidationStatus getValidationStatus() {
         return validationStatus;
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -353,11 +462,13 @@ public final class CLIODataCollector
         env.putAll(envs);
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private class CLIOInputProcessorFactory implements InputProcessorFactory {
 
+        @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
 
@@ -366,9 +477,11 @@ public final class CLIODataCollector
                     CLIODataCollector.this.processLine(line);
                 }
 
+                @Override
                 public void reset() {
                 }
 
+                @Override
                 public void close() {
                 }
             });

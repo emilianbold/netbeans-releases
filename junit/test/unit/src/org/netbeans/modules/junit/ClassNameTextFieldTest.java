@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -108,15 +111,18 @@ public class ClassNameTextFieldTest extends TestCase {
      * Test of getStatus method, of class org.netbeans.modules.junit.ClassNameTextField.
      */
     public void testGetStatus() {
-        StringIntPair[] testData = new StringIntPair[] {
+          StringIntPair[] testData = new StringIntPair[] {
                 new StringIntPair("", ClassNameTextField.STATUS_EMPTY),
-                new StringIntPair("A", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("abc", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("Abc", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("abc2", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("Abc2", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("a2", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("A2", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("A", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("ATest", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("abc", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("abcTest", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("Abc", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("AbcTest", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("abc2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("Abc2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("a2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
                 new StringIntPair("abc2.", ClassNameTextField.STATUS_INVALID),
                 new StringIntPair("Abc2.", ClassNameTextField.STATUS_INVALID),
                 new StringIntPair("a2.", ClassNameTextField.STATUS_INVALID),
@@ -125,14 +131,16 @@ public class ClassNameTextFieldTest extends TestCase {
                 new StringIntPair("2A", ClassNameTextField.STATUS_INVALID),
                 new StringIntPair("2a.", ClassNameTextField.STATUS_INVALID),
                 new StringIntPair("2A.", ClassNameTextField.STATUS_INVALID),
-                new StringIntPair("A.B", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("a.B", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("A.b", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("a.b", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("A2.b", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("a2.b", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("A.b2", ClassNameTextField.STATUS_VALID),
-                new StringIntPair("a.b2", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("A.B", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A.BTest", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("a.B", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A.b", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("a.b", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A2.b", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("a2.b", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A.b2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A.b2Test", ClassNameTextField.STATUS_VALID),
+                new StringIntPair("a.b2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
         };
         assertEquals(
                 "check status if no parameter passed",

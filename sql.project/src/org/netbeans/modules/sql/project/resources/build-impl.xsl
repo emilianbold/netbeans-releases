@@ -49,14 +49,6 @@ is divided into following sections:
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             
-            <fail message="Please build using Ant 1.7.1 or higher.">
-                <condition>
-                    <not>
-                        <antversion atleast="1.7.1"/>
-                    </not>
-                </condition>
-            </fail>
-
             <target name="default">
                 <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
@@ -152,12 +144,12 @@ is divided into following sections:
             
             <target name="init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath.models">
-                    <pathelement location="${{netbeans.home}}/../platform10/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform10/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform10/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform10/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../enterprise6/modules/org-netbeans-modules-derby.jar"/>                    
-                    <pathelement location="${{netbeans.home}}/../ide11/modules/org-netbeans-modules-db.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform11/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform11/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform11/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform11/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{netbeans.home}}/../enterprise5/modules/org-netbeans-modules-derby.jar"/>                    
+                    <pathelement location="${{netbeans.home}}/../ide12/modules/org-netbeans-modules-db.jar"/>
                     <pathelement location="${{module.install.dir}}/org-netbeans-modules-sql-project.jar"/>
                     <pathelement location="${{module.install.dir}}/../ant/nblib/org-netbeans-modules-sql-project.jar"/>
                 </path>                                

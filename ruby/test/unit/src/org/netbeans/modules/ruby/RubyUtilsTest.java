@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -243,6 +246,10 @@ public class RubyUtilsTest extends TestCase {
         String activesupport222 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.2.2/something";
         String activesupport232 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.3.2/something";
         String activesupport24 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.4/something";
+
+        String activemodel300beta = "/usr/lib/ruby/gems/1.8/gems/activemodel-3.0.0.beta/something";
+        String activemodel300 = "/usr/lib/ruby/gems/1.8/gems/activemodel-3.0.0/something";
+
         String notRails = "/usr/lib/ruby/gems/1.8/gems/gemmy-2.3.2/something";
 
         assertFalse(RubyUtils.isRails23OrHigher(actionmailer210));
@@ -253,6 +260,9 @@ public class RubyUtilsTest extends TestCase {
         assertFalse(RubyUtils.isRails23OrHigher(activesupport222));
         assertTrue(RubyUtils.isRails23OrHigher(activesupport232));
         assertTrue(RubyUtils.isRails23OrHigher(activesupport24));
+
+        assertTrue(RubyUtils.isRails23OrHigher(activemodel300));
+        assertTrue(RubyUtils.isRails23OrHigher(activemodel300beta));
 
         assertFalse(RubyUtils.isRails23OrHigher(notRails));
     }
@@ -273,6 +283,32 @@ public class RubyUtilsTest extends TestCase {
 
         result = RubyUtils.getParentModules("");
         assertTrue(result.isEmpty());
+
+    }
+
+    public void testBaseName() {
+        assertEquals("Users", RubyUtils.baseName("UsersController"));
+        assertEquals("Users", RubyUtils.baseName("Users"));
+    }
+
+    public void testControllerName() {
+        assertEquals("UsersController", RubyUtils.controllerName("Users"));
+        assertEquals("UsersController", RubyUtils.controllerName("UsersController"));
+    }
+
+    public void testHelperName() {
+        assertEquals("UsersHelper", RubyUtils.helperName("UsersController"));
+        assertEquals("UsersHelper", RubyUtils.helperName("Users"));
+    }
+
+    public void testAddToArray() {
+        String[] arr = {"a", "b", "c"};
+        assertEquals(arr, RubyUtils.addToArray(arr));
+        String[] result = RubyUtils.addToArray(arr, "d", "e");
+        assertEquals(5, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("d", result[3]);
+        assertEquals("e", result[4]);
 
     }
 }

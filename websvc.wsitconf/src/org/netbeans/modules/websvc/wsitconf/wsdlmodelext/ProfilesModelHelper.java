@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -241,6 +244,9 @@ public class ProfilesModelHelper {
                     }
                     if (ComboConstants.KERBEROS.equals(tokenType)) {  // Kerberos Profile
                         return ComboConstants.PROF_KERBEROS;
+                    }
+                    if (ComboConstants.USERNAME.equals(tokenType)) {  // Username Authentication with Password Derived keys Profile
+                        return ComboConstants.PROF_USERNAME_PASSWORDDERIVED;
                     }
                     if (ComboConstants.X509.equals(tokenType)) { // profile 12, 6, 4
                         WSDLComponent tokenKind = null;
@@ -613,6 +619,20 @@ public class ProfilesModelHelper {
                 int suppTokenType = (ConfigVersion.CONFIG_1_0.equals(configVersion)) ? 
                     SecurityTokensModelHelper.SIGNED_SUPPORTING : SecurityTokensModelHelper.SIGNED_ENCRYPTED;                
                 stmh.setSupportingTokens(c, ComboConstants.USERNAME, suppTokenType);
+            } else if (ComboConstants.PROF_USERNAME_PASSWORDDERIVED.equals(profile)) {   // Profile #5
+                WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
+                WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.USERNAME);
+                stmh.setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
+                spmh.setLayout(bt, ComboConstants.STRICT);
+                spmh.enableIncludeTimestamp(bt, true);
+                spmh.enableSignEntireHeadersAndBody(bt, true);
+                asmh.setAlgorithmSuite(bt, ComboConstants.BASIC128);
+                WssElement wss = spmh.enableWss(c, true);
+                spmh.disableTrust(c);
+                spmh.enableMustSupportRefIssuerSerial(wss, true);
+                spmh.enableMustSupportRefThumbprint(wss, true);
+                spmh.enableMustSupportRefEncryptedKey(wss, true);
+                SecurityTokensModelHelper.removeSupportingTokens(c);
             } else if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {         // #5
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.X509);

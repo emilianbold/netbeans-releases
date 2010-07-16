@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,11 +49,16 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
@@ -67,6 +75,7 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -109,6 +118,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * Usualy should be set to WINDOW_OPEN or UI_RESPONSE.
      * <br><b>default</b> = UI_RESPONSE */
     public long expectedTime = UI_RESPONSE;
+
+    public int iteration=1;
 
     /**
      * Maximum number of iterations to wait for last paint on component/container.
@@ -165,17 +176,37 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     private static LoggingRepaintManager rm;
 
-    private Logger Warmup=null;
+    private static final Logger LOG = Logger.getLogger(PerformanceTestCase.class.getName());
 
     //private static LoggingEventQueue leq;
 
     static {
-        if(repeat_memory == -1) {
+        if (repeat_memory == -1) {
             tr = ActionTracker.getInstance();
             rm = new LoggingRepaintManager(tr);
             rm.setEnabled(true);
-       }
-       System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
+        }
+        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
+
+        URL u = PerformanceTestCase.class.getProtectionDomain().getCodeSource().getLocation();
+        try {
+            // disable Mercurial if running from NetBeans source tree
+            if ("jar".equals(u.getProtocol())) { // NOI18N
+                u = ((JarURLConnection)u.openConnection()).getJarFileURL();
+            }
+            File f = new File(u.toURI());
+            while (f != null) {
+                File hg = new File(f, ".hg");
+                if (hg.isDirectory()) {
+                    System.setProperty("versioning.unversionedFolders", f.getPath());
+                    LOG.log(Level.INFO, "ignoring Hg folder: {0}", f);
+                    break;
+                }
+                f = f.getParentFile();
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Problem looking up " + u, ex);
+        }
     }
 
     /** Tested component operator. */
@@ -308,6 +339,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
                 try {
+                    iteration=i;
                     testedComponentOperator = null;
                     tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
@@ -1142,7 +1174,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         public Profile(Object profiler) {
             this.profiler = profiler;
-            RequestProcessor.getDefault().post(this, (int)expectedTime);
+            if (iteration==1) RequestProcessor.getDefault().post(this, (int)expectedTime*2);
+                else RequestProcessor.getDefault().post(this, (int)expectedTime);
         }
 
         public synchronized void run() {
@@ -1165,6 +1198,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             DataOutputStream dos = new DataOutputStream(snapshot.getOutputStream());
             ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
             dos.close();
+            LOG.log(
+                Level.WARNING, "Profiling snapshot taken into {0}", snapshot.getPath()
+            );
         }
 
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,18 +44,29 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -61,15 +75,16 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
-import org.netbeans.modules.java.source.parsing.OutputFileObject;
-import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -81,11 +96,13 @@ final class MultiPassCompileWorker extends CompileWorker {
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
 
-    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    ParsingOutput compile(final ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
+        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
+                jfo2tuples.put(i.jfo, i);
             }
         }
         if (toProcess.isEmpty()) {
@@ -101,6 +118,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
         JavacTaskImpl jt = null;
         CompileTuple active = null;
+        boolean aptEnabled = false;
         int state = 0;
         boolean isBigFile = false;
 
@@ -125,7 +143,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 if (active == null) {
                     if (!toProcess.isEmpty()) {
                         active = toProcess.removeFirst();
-                        if (active == null)
+                        if (active == null || previous.finishedFiles.contains(active.indexable))
                             continue;
                         isBigFile = false;
                     } else {
@@ -138,12 +156,14 @@ final class MultiPassCompileWorker extends CompileWorker {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
-                    });
+                    }, APTUtils.get(context.getRoot()));
+                    Iterable<? extends Processor> processors = jt.getProcessors();
+                    aptEnabled = processors != null && processors.iterator().hasNext();
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
                         JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                     }
                 }
-                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active.jfo});
+                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -164,7 +184,41 @@ final class MultiPassCompileWorker extends CompileWorker {
                     System.gc();
                     continue;
                 }
-                Iterable<? extends TypeElement> types = jt.enterTrees(trees);
+                Iterable<? extends TypeElement> types;
+                types = jt.enterTrees(trees);
+                if (jfo2tuples.remove(active.jfo) != null) {
+                    final Types ts = Types.instance(jt.getContext());
+                    final Indexable activeIndexable = active.indexable;
+                    class ScanNested extends TreeScanner {
+                        Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
+                        @Override
+                        public void visitClassDef(JCClassDecl node) {
+                            if (node.sym != null) {
+                                Type st = ts.supertype(node.sym.type);
+                                if (st.tag == TypeTags.CLASS) {
+                                    ClassSymbol c = st.tsym.outermostClass();
+                                    CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                    if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
+                                        dependencies.add(u);
+                                    }
+                                }
+                            }
+                            super.visitClassDef(node);
+                        }
+                    }
+                    ScanNested scanner = new ScanNested();
+                    for (CompilationUnitTree cut : trees) {
+                        scanner.scan((JCCompilationUnit)cut);
+                    }
+                    if (!scanner.dependencies.isEmpty()) {
+                        toProcess.addFirst(active);
+                        for (CompileTuple tuple : scanner.dependencies) {
+                            toProcess.addFirst(tuple);
+                        }
+                        active = null;
+                        continue;
+                    }
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -187,6 +241,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
+                if (aptEnabled) {
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -219,14 +276,14 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
                 for (JavaFileObject generated : jt.generate(types)) {
-                    if (generated instanceof OutputFileObject) {
-                        previous.createdFiles.add(((OutputFileObject) generated).getFile());
+                    if (generated instanceof FileObjects.FileBase) {
+                        previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
                     } else {
                         // presumably should not happen
                     }
                 }
                 if (!active.virtual) {
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), diagnosticListener.getDiagnostics(active.jfo));
+                    ErrorsCache.setErrors(context.getRootURI(), active.indexable, diagnosticListener.getDiagnostics(active.jfo), JavaCustomIndexer.ERROR_CONVERTOR);
                 }
                 Log.instance(jt.getContext()).nerrors = 0;
                 previous.finishedFiles.add(active.indexable);
@@ -262,7 +319,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & ignore
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -278,7 +335,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
@@ -319,13 +376,46 @@ final class MultiPassCompileWorker extends CompileWorker {
         if ((state & MEMORY_LOW) != 0) {
             JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
         }
-        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {
         if (jti != null) {
+            final Types types = Types.instance(jti.getContext());
+            final Enter enter = Enter.instance(jti.getContext());
+            class ScanNested extends TreeScanner {
+                private Env<AttrContext> env;
+                private Set<Env<AttrContext>> dependencies = new LinkedHashSet<Env<AttrContext>>();
+                public ScanNested(Env<AttrContext> env) {
+                    this.env = env;
+                }
+                @Override
+                public void visitClassDef(JCClassDecl node) {
+                    if (node.sym != null) {
+                        Type st = types.supertype(node.sym.type);
+                        if (st.tag == TypeTags.CLASS) {
+                            ClassSymbol c = st.tsym.outermostClass();
+                            Env<AttrContext> stEnv = enter.getEnv(c);
+                            if (stEnv != null && env != stEnv) {
+                                if (dependencies.add(stEnv))
+                                    scan(stEnv.tree);
+                            }
+                        }
+                    }
+                    super.visitClassDef(node);
+                }
+            }
+            final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
             for (Env<AttrContext> env : jti.getTodo()) {
-                TreeLoader.dumpSymFile(jfm, jti, env.enclClass.sym);
+                if (processedEnvs.add(env)) {
+                    ScanNested scanner = new ScanNested(env);
+                    scanner.scan(env.tree);
+                    for (Env<AttrContext> dep: scanner.dependencies) {
+                        if (processedEnvs.add(dep))
+                            TreeLoader.dumpSymFile(jfm, jti, dep.enclClass.sym);
+                    }
+                    TreeLoader.dumpSymFile(jfm, jti, env.enclClass.sym);                    
+                }
             }
         }
     }

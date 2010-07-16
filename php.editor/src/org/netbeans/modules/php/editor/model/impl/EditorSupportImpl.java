@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,22 +45,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.editor.PhpFunction;
 import org.netbeans.modules.php.api.editor.PhpVariable;
-import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -95,7 +100,7 @@ public class EditorSupportImpl implements EditorSupport {
                             FileScope fileScope = model.getFileScope();
                             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
                             for (ClassScope classScope : allClasses) {
-                                retval.add((PhpClass) getPhpElement(classScope));
+                                retval.add((PhpClass) getPhpBaseElement(classScope));
                             }
                         }
                     }
@@ -107,28 +112,25 @@ public class EditorSupportImpl implements EditorSupport {
         return retval;
     }
 
-    public Collection<FileObject> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
+    public Collection<Pair<FileObject, Integer>> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
         if (sourceRoot.isData()) {
             throw new IllegalArgumentException("sourceRoot must be a folder");
         }
-        final List<FileObject> retval = new ArrayList<FileObject>();
-
-        PHPIndex index = PHPIndex.get(Collections.singletonList(sourceRoot));
-        NamespaceIndexFilter<IndexedClass> namespaceFilter = new NamespaceIndexFilter<IndexedClass>(phpClass.getFullyQualifiedName());
-        Collection<IndexedClass> classes = namespaceFilter.filter(
-                index.getClasses(null, namespaceFilter.getName(), QuerySupport.Kind.EXACT));
-        for (IndexedClass indexedClass : classes) {
+        final List<Pair<FileObject, Integer>> retval = new ArrayList<Pair<FileObject, Integer>>();
+        Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(sourceRoot));
+        Set<ClassElement> classes = indexQuery.getClasses(NameKind.exact(phpClass.getFullyQualifiedName()));
+        for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
             if (fo != null && fo.isValid()) {
-                retval.add(fo);
+                retval.add(Pair.of(fo, indexedClass.getOffset()));
             }
         }
         return retval;
     }
 
-    public PhpElement getElement(FileObject fo, final int offset) {
+    public PhpBaseElement getElement(FileObject fo, final int offset) {
         Source source = Source.create(fo);
-        final List<PhpElement> retval = new ArrayList<PhpElement>(1);
+        final List<PhpBaseElement> retval = new ArrayList<PhpBaseElement>(1);
         if (source != null) {
             try {
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -137,7 +139,7 @@ public class EditorSupportImpl implements EditorSupport {
                         Parser.Result pr = resultIterator.getParserResult();
                         if (pr instanceof PHPParseResult) {
                             Model model = ModelFactory.getModel((PHPParseResult) pr);
-                            retval.add(getPhpElement(model.getVariableScope(offset)));
+                            retval.add(getPhpBaseElement(model.getVariableScope(offset)));
                         }
                     }
                 });
@@ -148,13 +150,13 @@ public class EditorSupportImpl implements EditorSupport {
         return retval.isEmpty() ? null : retval.get(0);
     }
 
-    private PhpElement getPhpElement(Scope scope) {
-        PhpElement phpElement = null;
+    private PhpBaseElement getPhpBaseElement(Scope scope) {
+        PhpBaseElement PhpBaseElement = null;
         if (scope instanceof MethodScope) {
-            PhpClass phpClass = (PhpClass) getPhpElement((TypeScope) scope.getInScope());
+            PhpClass phpClass = (PhpClass) getPhpBaseElement((TypeScope) scope.getInScope());
             for (PhpClass.Method method : phpClass.getMethods()) {
                 if (method.getName().equals(scope.getName())) {
-                    phpElement = method;
+                    PhpBaseElement = method;
                     break;
                 }
             }
@@ -170,15 +172,15 @@ public class EditorSupportImpl implements EditorSupport {
             for (MethodScope methodScope : classScope.getDeclaredMethods()) {
                 phpClass.addMethod(methodScope.getName(), methodScope.getName(), methodScope.getOffset());
             }
-            phpElement = phpClass;
+            PhpBaseElement = phpClass;
         } else if (scope instanceof FunctionScope) {
-            phpElement = new PhpFunction(
+            PhpBaseElement = new PhpFunction(
                     scope.getName(),
                     scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
                     scope.getOffset());
         } else if (scope instanceof VariableScope) {
-            phpElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
+            PhpBaseElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
         }
-        return phpElement;
+        return PhpBaseElement;
     }
 }

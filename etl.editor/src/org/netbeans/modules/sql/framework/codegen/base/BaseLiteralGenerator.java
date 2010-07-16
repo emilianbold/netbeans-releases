@@ -25,7 +25,7 @@ import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.codegen.TemplateBuilder;
 import org.netbeans.modules.sql.framework.model.SQLLiteral;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * @author Ritesh Adval

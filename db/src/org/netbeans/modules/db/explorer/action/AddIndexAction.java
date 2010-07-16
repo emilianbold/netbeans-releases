@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,9 @@
 package org.netbeans.modules.db.explorer.action;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -64,6 +68,7 @@ import org.openide.util.actions.SystemAction;
 public class AddIndexAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class.getName());
 
+    @Override
     public String getName() {
         return NbBundle.getMessage (AddIndexAction.class, "AddIndex"); // NOI18N
     }
@@ -86,6 +91,7 @@ public class AddIndexAction extends BaseAction {
         final IndexListNode node = activatedNodes[0].getLookup().lookup(IndexListNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     perform(node);
                 }
@@ -115,7 +121,7 @@ public class AddIndexAction extends BaseAction {
             final DriverSpecification drvSpec = connector.getDriverSpecification(catalogName);
 
             // List columns not present in current index
-            Vector<String> cols = new Vector<String> (5);
+            List<String> cols = new ArrayList<String> (5);
 
             drvSpec.getColumns(tablename, "%");
             ResultSet rs = drvSpec.getResultSet();
@@ -127,7 +133,7 @@ public class AddIndexAction extends BaseAction {
             }
             rs.close();
 
-            if (cols.size() == 0)
+            if (cols.isEmpty())
                 throw new Exception(NbBundle.getMessage (AddIndexAction.class, "EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
@@ -135,6 +141,7 @@ public class AddIndexAction extends BaseAction {
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Node refreshNode = node.getParentNode();
                         if (refreshNode == null) {
@@ -146,7 +153,7 @@ public class AddIndexAction extends BaseAction {
                 });
             }
         } catch(Exception exc) {
-            LOGGER.log(Level.INFO, exc.getMessage(), exc);
+            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (AddIndexAction.class, "ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
     }

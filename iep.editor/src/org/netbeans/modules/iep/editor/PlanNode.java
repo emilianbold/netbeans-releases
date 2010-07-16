@@ -22,6 +22,7 @@ package org.netbeans.modules.iep.editor;
 import javax.swing.Action;
 
 import org.netbeans.modules.iep.editor.designer.actions.PlanDesignViewOpenAction;
+import org.netbeans.modules.iep.model.IEPModel;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -29,9 +30,11 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.OutputWriter;
 import org.openide.windows.IOProvider;
 
+//import org.netbeans.modules.xml.refactoring.ui.ModelProvider;
+
 
 /** A node to represent this object. */
-public class PlanNode extends DataNode {
+public class PlanNode extends DataNode /*implements ModelProvider*/ {
 
     private PlanDataObject mObj;
     
@@ -73,4 +76,10 @@ public class PlanNode extends DataNode {
         out.flush();
     }
     
+    public IEPModel getModel() {
+
+          PlanDataObject dobj = (PlanDataObject) getDataObject();
+          return dobj.getPlanEditorSupport().getModel();
+    
+  }
 }

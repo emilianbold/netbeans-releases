@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,8 +47,8 @@ package org.netbeans.modules.project.libraries;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -71,16 +74,13 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  */
 public class LibraryDeclarationParser implements ContentHandler, EntityResolver {
-    
-    private StringBuffer buffer;
-    
-    private LibraryDeclarationConvertor parslet;
-    
-    private LibraryDeclarationHandler handler;
-    
-    private Stack<Object[]> context;
 
-    
+    private StringBuffer buffer;
+    private final LibraryDeclarationConvertor parslet;
+    private final LibraryDeclarationHandler handler;
+    private Stack<Object[]> context;
+    private final AtomicBoolean used = new AtomicBoolean();
+
     /**
      * Creates a parser instance.
      * @param handler handler interface implementation (never <code>null</code>
@@ -106,6 +106,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      *
      */
     public final void startDocument() throws SAXException {
+        handler.startDocument();
     }
     
     /**
@@ -113,6 +114,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      *
      */
     public final void endDocument() throws SAXException {
+        handler.endDocument();
     }
     
     /**
@@ -225,47 +227,11 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
     public void parse(final InputSource input) throws SAXException, ParserConfigurationException, IOException {
         parse(input, this);
     }
-    
-    /**
-     * The recognizer entry method taking a URL.
-     * @param url URL source to be parsed.
-     * @throws java.io.IOException on I/O error.
-     * @throws SAXException propagated exception thrown by a DocumentHandler.
-     * @throws javax.xml.parsers.ParserConfigurationException a parser satisfining requested configuration can not be created.
-     * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
-     *
-     */
-    public void parse(final URL url) throws SAXException, ParserConfigurationException, IOException {
-        parse(new InputSource(url.toExternalForm()), this);
-    }
-    
-    /**
-     * The recognizer entry method taking an Inputsource.
-     * @param input InputSource to be parsed.
-     * @throws java.io.IOException on I/O error.
-     * @throws SAXException propagated exception thrown by a DocumentHandler.
-     * @throws javax.xml.parsers.ParserConfigurationException a parser satisfining requested configuration can not be created.
-     * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
-     *
-     */
-    public static void parse(final InputSource input, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, ParserConfigurationException, IOException {
-        parse(input, new LibraryDeclarationParser(handler, parslet));
-    }
-    
-    /**
-     * The recognizer entry method taking a URL.
-     * @param url URL source to be parsed.
-     * @throws java.io.IOException on I/O error.
-     * @throws SAXException propagated exception thrown by a DocumentHandler.
-     * @throws javax.xml.parsers.ParserConfigurationException a parser satisfining requested configuration can not be created.
-     * @throws javax.xml.parsers.FactoryConfigurationRrror if the implementation can not be instantiated.
-     *
-     */
-    public static void parse(final URL url, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, ParserConfigurationException, IOException {
-        parse(new InputSource(url.toExternalForm()), handler, parslet);
-    }
-    
-    private static void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, ParserConfigurationException, IOException {
+
+    private void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, ParserConfigurationException, IOException {
+        if (used.getAndSet(true)) {
+            throw new IllegalStateException("The LibraryDeclarationParser was already used, create a new instance");  //NOI18N
+        }
         try {
             XMLReader parser = XMLUtil.createXMLReader(false, false);
             parser.setContentHandler(recognizer);

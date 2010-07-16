@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,8 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import org.openide.modules.SpecificationVersion;
-import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -95,12 +97,6 @@ public class ServerLocationVisual extends JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
-        // test if IDE is run on correct JDK version
-        if (!runningOnCorrectJdk()) {
-            String msg = NbBundle.getMessage(ServerLocationVisual.class, "WARN_INVALID_JDK");  // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
-        }
-
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         String location = this.getInstallLocation();
@@ -112,8 +108,9 @@ public class ServerLocationVisual extends JPanel {
         }
         
         File serverRoot = new File(location);
+        Version version = WLPluginProperties.getVersion(serverRoot);
 
-        if (!WLPluginProperties.isSupportedVersion(serverRoot)) {
+        if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
@@ -121,16 +118,6 @@ public class ServerLocationVisual extends JPanel {
 
         if (!WLPluginProperties.isGoodServerLocation(serverRoot)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_ROOT");  // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
-            return false;
-        }
-
-        if (!WLPluginProperties.domainListExists(serverRoot)) {
-            String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_ROOT") +   // NOI18N
-                         " " +    // NOI18N
-                         NbBundle.getMessage(ServerLocationVisual.class, "DOMAIN_LIST_NOT_FOUND",    // NOI18N
-                            serverRoot.getPath() + File.separator + WLPluginProperties.DOMAIN_LIST
-                         );
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
         }
@@ -143,16 +130,6 @@ public class ServerLocationVisual extends JPanel {
 
         // everything seems ok
         return true;
-    }
-
-    private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
-
-    private boolean runningOnCorrectJdk() {
-        SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault()
-                .getDefaultPlatform().getSpecification().getVersion();
-        // test just JDK 1.5 for now, because WL 9.x and 10 throws marshalling
-        // exception when running on JDK 6.
-        return J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////

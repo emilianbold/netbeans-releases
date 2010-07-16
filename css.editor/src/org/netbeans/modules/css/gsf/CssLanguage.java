@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,21 +45,35 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 /**
  * Configuration for CSS
  */
+@LanguageRegistration(mimeType="text/x-css") //NOI18N
+//index all source roots only
+@PathRecognizerRegistration(mimeTypes="text/x-css", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
-    
+
+    public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+
     public CssLanguage() {
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new CssDeclarationFinder();
     }
 
     @Override
@@ -65,7 +82,7 @@ public class CssLanguage extends DefaultLanguageConfig {
         return Character.isJavaIdentifierPart(c) 
                 || (c == '-') || (c == '@') 
                 || (c == '&') || (c == '_')
-                || (c == '#');
+                || (c == '#') || (c == '.');
     }
 
     @Override
@@ -101,6 +118,11 @@ public class CssLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new CssStructureScanner();
     }
@@ -125,5 +147,14 @@ public class CssLanguage extends DefaultLanguageConfig {
         return new CssHintsProvider();
     }
 
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new CssOccurancesFinder();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
 
 }

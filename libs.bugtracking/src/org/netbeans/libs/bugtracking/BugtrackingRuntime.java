@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class BugtrackingRuntime {
+public final class BugtrackingRuntime {
 
     private static BugtrackingRuntime instance;
 
@@ -76,25 +79,10 @@ public class BugtrackingRuntime {
     private TaskDataManager         taskDataManager;
     private SynchronizationSession  synchronizationSession;
 
-    public synchronized static BugtrackingRuntime getInstance() {
-        if(instance == null) {
-            instance = new BugtrackingRuntime();
-            instance.init();
-        }
-        return instance;
-    }
-
-    private void init() {
+    private BugtrackingRuntime () {
         initCacheStore();
-        if(SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    initWebUtil();
-                }
-            });
-        } else {
-            initWebUtil();
-        }
+        initWebUtil();
+
         // XXX this is dummy
         taskRepositoryManager = new TaskRepositoryManager();
 
@@ -102,13 +90,26 @@ public class BugtrackingRuntime {
         TaskList tl = new TaskList();
         TaskActivityManager tam = new TaskActivityManager(taskRepositoryManager, tl);
         taskDataManager = new TaskDataManager(taskDataStore, taskRepositoryManager, tl, tam);
-        taskDataManager.setDataPath(BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath());
+        taskDataManager.setDataPath(getCacheStore().getAbsolutePath());
         synchronizationSession = new SynchronizationSession(taskDataManager);
 
         externalizationManager = new ExternalizationManager(cacheStore.getAbsolutePath());
 
         IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, taskRepositoryManager);
         externalizationManager.addParticipant(repositoryParticipant);
+
+        LOG.fine("Bugtracking runtime initialized");                            // NOI8N
+    }
+
+    public synchronized static BugtrackingRuntime getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingRuntime();
+        }
+        return instance;
+    }
+
+    public synchronized static void init() {
+        getInstance();
     }
 
     private void initWebUtil() {

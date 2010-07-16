@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -107,9 +111,9 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             final FileObject file = info.getFileObject();
-            boolean hasErrorBadge = TaskCache.getDefault().isInError(file, false);
+            boolean hasErrorBadge = ErrorsCache.isInError(file, false);
             if (hasErrorBadge) {
-                LOG.log(Level.FINE, "TaskCache.isInError: {0}", info.getFileObject());
+                LOG.log(Level.FINE, "Errorscache.isInError: {0}", info.getFileObject());
             }
 
             if (containsError == hasErrorBadge) {
@@ -163,7 +167,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
-                    new Object[] {FileUtil.getFileDisplayName(root), TaskCache.getDefault().getAllFilesInError(root.getURL())});
+                    new Object[] {FileUtil.getFileDisplayName(root), ErrorsCache.getAllFilesInError(root.getURL())});
 
 // XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
             IndexingManager.getDefault().refreshIndex(root.getURL(), null);

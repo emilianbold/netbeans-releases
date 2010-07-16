@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -57,7 +63,9 @@ import org.netbeans.modules.ruby.elements.CommentElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.openide.util.NbBundle;
 
 final class RubyStringCompleter extends RubyBaseCompleter {
 
@@ -155,7 +163,7 @@ final class RubyStringCompleter extends RubyBaseCompleter {
     private boolean complete() {
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
-        TokenHierarchy<?> th = request.th;
+        TokenHierarchy<Document> th = request.th;
 
         TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -315,6 +323,8 @@ final class RubyStringCompleter extends RubyBaseCompleter {
                                 }
 
                                 return true;
+                            } else if ("gem".equals(text)) {
+                                proposeGems(prefix);
                             } else {
                                 break;
                             }
@@ -346,6 +356,26 @@ final class RubyStringCompleter extends RubyBaseCompleter {
         }
 
         return false;
+    }
+
+    private void proposeGems(String prefix) {
+        Project owner = FileOwnerQuery.getOwner(request.fileObject);
+        if (owner == null) {
+            return;
+        }
+        GemManager gemManager = RubyPlatform.gemManagerFor(owner);
+        if (gemManager == null) {
+            return;
+        }
+        List<Gem> gems = gemManager.getLocalGems();
+        for (Gem gem : gems) {
+            if (gem.getName().startsWith(prefix)) {
+                String versions = NbBundle.getMessage(RubyStringCompleter.class, "InstalledVersions", gem.getInstalledVersionsAsString());
+                KeywordItem item =
+                        new KeywordItem(gem.getName(), versions, anchor, request);
+                propose(item);
+            }
+        }
     }
 
     private boolean completePercentWords() {

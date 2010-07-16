@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@
 
 #include "rfs_util.h"
 
+__attribute__ ((visibility ("hidden")))
 void report_error(const char *format, ...) {
     va_list args;
     va_start (args, format);
@@ -51,7 +55,8 @@ void report_error(const char *format, ...) {
     va_end (args);
 }
 
-#if TRACE
+__attribute__ ((visibility ("hidden")))
+bool trace_flag = 0;
 
 static const char* pattern = "%u #%s[%d]: ";
 static const char* prefix = "";
@@ -63,44 +68,83 @@ static unsigned long get_timestamp() {
     return tp.tv_sec*1000000000+tp.tv_nsec;
 }
 
-void trace(const char *format, ...) {
-    if (!trace_file) {
-        trace_file = stderr;
-    }
-    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
-    va_list args;
-    va_start (args, format);
-    vfprintf(trace_file, format, args);
-    va_end (args);
-    fflush(trace_file);
-}
-
-void trace_startup(const char* _prefix, const char* env_var, const char* binary) {
-    prefix = _prefix;
-    char *file_name = env_var ? getenv(env_var) : NULL;
-    binary = binary ? binary : "";
-    if (file_name) {
-        trace_file = fopen(file_name, "a");
-        if (trace_file) {
-            fprintf(stderr, "Redirecting trace to %s\n", file_name);
-            fprintf(trace_file, "\n\n--------------------\n");
-            fflush(trace_file);
-        } else {
-            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
+__attribute__ ((visibility ("hidden")))
+void _trace(const char *format, ...) {
+    if (trace_flag) {
+        if (!trace_file) {
             trace_file = stderr;
         }
-    } else {
-        trace_file = stderr;
-    }
-    char dir[PATH_MAX];
-    getcwd(dir, sizeof dir);
-    trace("%s started in %s\n", binary, dir);
-}
-
-void trace_shutdown() {
-    if (trace_file && trace_file != stderr) {
-        fclose(trace_file);
+        fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
+        va_list args;
+        va_start (args, format);
+        vfprintf(trace_file, format, args);
+        va_end (args);
+        fflush(trace_file);
     }
 }
 
-#endif
+__attribute__ ((visibility ("hidden")))
+void _trace_startup(const char* _prefix, const char* env_var, const char* binary) {
+    if (trace_flag) {
+        prefix = _prefix;
+        char *file_name = env_var ? getenv(env_var) : NULL;
+        binary = binary ? binary : "";
+        if (file_name) {
+            trace_file = fopen(file_name, "a");
+            if (trace_file) {
+                fprintf(stderr, "Redirecting trace to %s\n", file_name);
+                fprintf(trace_file, "\n\n--------------------\n");
+                fflush(trace_file);
+            } else {
+                fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
+                trace_file = stderr;
+            }
+        } else {
+            trace_file = stderr;
+        }
+        char dir[PATH_MAX + 1];
+        getcwd(dir, sizeof dir);
+        trace("%s started in %s\n", binary, dir);
+    }
+}
+
+__attribute__ ((visibility ("hidden")))
+void _trace_shutdown() {
+    if (trace_flag) {
+        if (trace_file && trace_file != stderr) {
+            fclose(trace_file);
+        }
+    }
+}
+
+__attribute__ ((visibility ("hidden")))
+void init_trace_flag(const char* env_var) {
+    char *env = getenv(env_var);
+    trace_flag = env && *env == '1';
+}
+
+__attribute__ ((visibility ("hidden")))
+void report_unresolved_path(const char* path) {
+    char pwd[PATH_MAX + 1];
+    getcwd(pwd, sizeof pwd);
+    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
+}
+
+
+__attribute__ ((visibility ("hidden")))
+void _trace_unresolved_path(const char* path, const char* action) {
+    if (trace_flag) {
+        char pwd[PATH_MAX + 1];
+        getcwd(pwd, sizeof pwd);
+        trace("Can not resolve path on %s: %s pwd: %s\n", action, path, pwd);
+    }
+}
+
+__attribute__ ((visibility ("hidden")))
+void _dbg_sleep(int time) {
+    if (trace_flag) {
+        trace("Sleeping %d sec...\n", time);
+        sleep(time);
+        trace("Awoke\n");
+    }
+}

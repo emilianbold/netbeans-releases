@@ -1,7 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.xml.schema.ui.basic/1
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.xml.schema.ui.basic
 OpenIDE-Module-Layer: org/netbeans/modules/xml/schema/ui/basic/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/schema/ui/basic/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.5
-AutoUpdate-Show-In-Client: false
-

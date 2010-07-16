@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
+    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class);
 
     private ProjectPropertiesSupport() {
     }
@@ -93,6 +97,18 @@ public final class ProjectPropertiesSupport {
 
     public static void addWeakIgnoredFilesListener(PhpProject project, ChangeListener listener) {
         project.addWeakIgnoredFilesListener(listener);
+    }
+
+    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        return project.addWeakPropertyChangeListener(listener);
+    }
+
+    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        project.removePropertyChangeListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -206,7 +222,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
-        return getPhpVersion((String) null);
+        return PhpLanguageOptions.PhpVersion.PHP_53;
     }
 
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
@@ -256,6 +272,20 @@ public final class ProjectPropertiesSupport {
      */
     public static String getArguments(PhpProject project) {
         return project.getEvaluator().getProperty(PhpProjectProperties.ARGS);
+    }
+
+    /**
+     * @return PHP arguments or <code>null</code>.
+     */
+    public static String getPhpArguments(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.PHP_ARGS);
+    }
+
+    /**
+     * @return working directory or <code>null</code>.
+     */
+    public static String getWorkDir(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.WORK_DIR);
     }
 
     /**
@@ -377,6 +407,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return {@code true} if bootstrap file should be used for creating new unit tests, {@code false} otherwise; the default value is {@code false}
+     */
+    public static boolean usePhpUnitBootstrapForCreateTests(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, false);
+    }
+
+    /**
      * @return file (which can be invalid!) or <code>null</code>
      */
     public static File getPhpUnitConfiguration(PhpProject project) {
@@ -445,11 +482,13 @@ public final class ProjectPropertiesSupport {
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     // store properties
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
                         public Void run() throws IOException {
                             AntProjectHelper helper = project.getHelper();
 
@@ -464,14 +503,13 @@ public final class ProjectPropertiesSupport {
                             EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             projectProperties.put(propertyName, testPath);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+
+                            ProjectManager.getDefault().saveProject(project);
                             return null;
                         }
                     });
-                    ProjectManager.getDefault().saveProject(project);
                 } catch (MutexException e) {
                     Exceptions.printStackTrace((IOException) e.getException());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         });

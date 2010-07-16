@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,7 @@ class Ordering {
             }
             final FileObject child;
             private final Number position;
+            @Override
             public int compareTo(ChildAndPosition o) {
                 int res;
                 if (position instanceof Float || position instanceof Double || o.position instanceof Float || o.position instanceof Double) {
@@ -83,7 +87,7 @@ class Ordering {
                     return res;
                 } else {
                     if (logWarnings && o != this && !position.equals(0)) {
-                        LOG.warning("Found same position " + position + " for both " + o.child.getPath() + " and " + child.getPath());
+                        LOG.log(Level.WARNING, "Found same position {0} for both {1} and {2}", new Object[]{position, o.child.getPath(), child.getPath()});
                     }
                     return child.getNameExt().compareTo(o.child.getNameExt());
                 }
@@ -100,7 +104,7 @@ class Ordering {
             if (pos instanceof Number) {
                 childrenByPosition.add(new ChildAndPosition(child, (Number) pos));
             } else if (logWarnings && pos != null) {
-                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath()  + "\nChildren: " + children);
+                LOG.log(Level.WARNING, "Encountered nonnumeric position attribute {0} of {1} for {2}\nChildren: {3}", new Object[]{pos, pos.getClass(), child.getPath(), children});
             }
             if (parent == null) {
                 parent = child.getParent();
@@ -112,17 +116,20 @@ class Ordering {
         }
         Map<FileObject,Set<FileObject>> edges = new HashMap<FileObject,Set<FileObject>>();
         for (String attr : NbCollections.iterable(parent.getAttributes())) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "  attr found {0}({1})", new Object[]{parent, attr}); // NOI18N
+            }
             int slash = attr.indexOf('/');
             if (slash == -1) {
                 continue;
             }
             Object val = parent.getAttribute(attr);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("  reading attribute " + parent + "(" + attr + ") -> " + val); // NOI18N
+                LOG.log(Level.FINE, "  reading attribute {0}({1}) -> {2}", new Object[] {parent, attr, val}); // NOI18N
             }
             if (!Boolean.TRUE.equals(val)) {
                 if (logWarnings && /* somehow this can happen, not sure how... */ val != null && !(val instanceof Boolean)) {
-                    LOG.warning("Encountered non-boolean relative ordering attribute " + val + " from " + attr + " on " + parent.getPath());
+                    LOG.log(Level.WARNING, "Encountered non-boolean relative ordering attribute {0} from {1} on {2}", new Object[]{val, attr, parent.getPath()});
                 }
                 continue;
             }
@@ -135,11 +142,20 @@ class Ordering {
                 }
                 edge.add(f2);
                 if (logWarnings) {
-                    LOG.warning("Relative ordering attribute " + attr + " on " + parent.getPath() + " is deprecated in favor of numeric position attributes");
+                    LOG.log(
+                        Level.WARNING, "Relative ordering attribute {0} on {1} is deprecated in favor of numeric position attributes",
+                        new Object[]{attr, parent.getPath()}
+                    );
                 }
             } else if (logWarnings) {
-                LOG.warning("Could not find both sides of relative ordering attribute " + attr + " on " + parent.getPath());
+                LOG.log(
+                    Level.WARNING, "Could not find both sides of relative ordering attribute {0} on {1}",
+                    new Object[]{attr, parent.getPath()}
+                );
             }
+        }
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "  no more attribs {0}", parent); // NOI18N
         }
         Iterator<ChildAndPosition> it2 = childrenByPosition.iterator();
         if (it2.hasNext()) {
@@ -168,8 +184,10 @@ class Ordering {
                 for (ChildAndPosition cap : childrenByPosition) {
                     presentNames.add(cap.child.getNameExt());
                 }
-                LOG.warning("Not all children in " + parent.getPath() + "/ marked with the position attribute: " +
-                        missingNames + ", but some are: " + presentNames);
+                LOG.log(
+                    Level.WARNING, "Not all children in {0}/ marked with the position attribute: {1}, but some are: {2}",
+                    new Object[]{parent.getPath(), missingNames, presentNames}
+                );
             }
         }
         if (edges.isEmpty()) {

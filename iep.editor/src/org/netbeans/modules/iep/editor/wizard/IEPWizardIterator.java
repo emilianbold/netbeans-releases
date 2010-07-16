@@ -5,14 +5,10 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -21,34 +17,25 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.PlanDataObject;
-import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
-import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.ModelHelper;
-import org.netbeans.modules.iep.model.OperatorComponent;
-import org.netbeans.modules.iep.model.OperatorComponentContainer;
-import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.SchemaAttribute;
-import org.netbeans.modules.iep.model.SchemaComponent;
-import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
-public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public final class IEPWizardIterator implements TemplateWizard.Iterator {
 
     private int index;
-    private WizardDescriptor wizard;
+    private TemplateWizard  wizard;
     private WizardDescriptor.Panel[] panels;
 
     private IEPWizardPanel1 panel1;
 //    private IEPWizardPanel2 panel2;
     private IEPWizardPanel2EmptyIEPFile panel2EmptyIEPFile;
-    private IEPWizardPanel3 panel3;
+    //private IEPWizardPanel3 panel3;
     
     private String[] wizardContentData;
     /**
@@ -60,9 +47,9 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         //wizard paths
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{
-                panel2EmptyIEPFile,
+                panel2EmptyIEPFile
 //                panel2,
-                panel3
+                //panel3
             };
         
             String[] steps = createSteps();
@@ -77,15 +64,15 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
                 }
             }
         }
@@ -109,22 +96,22 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
                 }
             }
         }*/
         return panels;
     }
 
-    public Set instantiate() throws IOException {
+    public Set instantiate(TemplateWizard wizard) throws IOException {
         FileObject dir = Templates.getTargetFolder( wizard );        
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );        
@@ -153,7 +140,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         return set;
     }
 
-    public void initialize(WizardDescriptor wizard) {
+    public void initialize(TemplateWizard wizard) {
         this.wizard = wizard;
         
         //when initialize the selected value for first panel
@@ -167,9 +154,9 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         Project project = FileOwnerQuery.getOwner(dir);
 //        panel2 = new IEPWizardPanel2(project);
         panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
-        panel3 = new IEPWizardPanel3(project);
+        //panel3 = new IEPWizardPanel3(project);
         
-        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
+        Object prop = wizard.getProperty("WizardPanel_contentData");
         if (prop != null && prop instanceof String[]) {
             wizardContentData = (String[]) prop;
         }
@@ -186,7 +173,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
        
     }
 
-    public void uninitialize(WizardDescriptor wizard) {
+    public void uninitialize(TemplateWizard wizard) {
         panels = null;
     }
 
@@ -260,7 +247,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
     // client code.
     private String[] createSteps() {
         String[] beforeSteps = null;
-//        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
+//        Object prop = wizard.getProperty("WizardPanel_contentData");
 //        if (prop != null && prop instanceof String[]) {
 //            beforeSteps = (String[]) prop;
 //        }
@@ -281,6 +268,8 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         }
         return res;
     }
+
+   
     
 //    private void refreshPanels() {
 //        String firstPanelSelectionValue = (String) this.wizard.getProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY);
@@ -317,15 +306,15 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
 //                if (c instanceof JComponent) { // assume Swing components
 //                    JComponent jc = (JComponent) c;
 //                    // Sets step number of a component
-//                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+//                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
 //                    // Sets steps names for a panel
-//                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+//                    jc.putClientProperty("WizardPanel_contentData", steps);
 //                    // Turn on subtitle creation on each step
-//                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+//                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
 //                    // Show steps on the left side with the image on the background
-//                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+//                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
 //                    // Turn on numbering of all steps
-//                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+//                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
 //                }
 //            }
 //    }

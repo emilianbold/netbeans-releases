@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -69,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -129,7 +131,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
                 if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    adaptorServlet.setServletClass(this.getServletAdapterClass());
+                    boolean isSpring = hasSpringSupport();
+                    if (isSpring) {
+                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                        InitParam initParam =
+                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
+                                "ParamName", //NOI18N
+                                JERSEY_PROP_PACKAGES);
+                        if (initParam == null) {
+                            try {
+                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                                initParam.setParamName(JERSEY_PROP_PACKAGES);
+                                initParam.setParamValue("."); //NOI18N
+                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                                adaptorServlet.addInitParam(initParam);
+                            } catch (ClassNotFoundException ex) {}
+                        }
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
                     webApp.write(ddFO);
                 }
             }
@@ -146,9 +166,9 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if (configType == null && getApplicationPathFromDD() == null) {
-            String resourceUrl = setApplicationConfigProperty(false);
-            if (resourceUrl != null) {
-                addResourceConfigToWebApp(resourceUrl);
+            WebRestSupport.RestConfig restConfig = setApplicationConfigProperty(false);
+            if (restConfig == WebRestSupport.RestConfig.DD) {
+                addResourceConfigToWebApp(restConfig.getResourcePath());
             }
         }
 
@@ -445,5 +465,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
             }
         }
     }
+
+    @Override
+    public int getProjectType() {
+        NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (nbMavenProject != null) {
+            String packagingType = nbMavenProject.getPackagingType();
+            if (packagingType != null)
+            if (NbMavenProject.TYPE_JAR.equals(packagingType)) {
+                return PROJECT_TYPE_DESKTOP;
+            } else if (NbMavenProject.TYPE_WAR.equals(packagingType)) {
+                return PROJECT_TYPE_WEB;
+            } else if (NbMavenProject.TYPE_NBM.equals(packagingType) ||
+                       NbMavenProject.TYPE_NBM_APPLICATION.equals(packagingType)) {
+                return PROJECT_TYPE_NB_MODULE;
+            }
+        }
+        return PROJECT_TYPE_DESKTOP;
+    }
+    
+
    
 }

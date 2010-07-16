@@ -12,7 +12,7 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 <jsp:useBean class="java.util.Date" id="date"/>
-<jsp:useBean class="java.util.Integer" id="integer"/>
+<jsp:useBean class="java.lang.Integer" id="integer"/>
 <jsp:useBean class="java.util.Calendar" id="calendar"/>
 
 <html>
@@ -31,8 +31,8 @@ ${integer
 --%>
 
 <%--CC
-${d|
-date Date
+${|
+Date date
 ${date
 --%>
 
@@ -50,7 +50,7 @@ ${pageContext
 
 <%--CC
 ${pageContext.|
-ServletRequest request
+request
 ${pageContext.request
 --%>
 
@@ -68,8 +68,8 @@ Calendar calendar
 
 <%--CC
 #{calendar.
-Date time
-#{calendar.time
+timeInMillis
+#{calendar.timeInMillis
 --%>
 
 <%--CC

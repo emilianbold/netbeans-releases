@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -110,12 +114,12 @@ public class FreeformSourcesTest extends TestBase {
         TestCL l = new TestCL();
         s.addChangeListener(l);
         Element data = extsrcroot.getPrimaryConfigurationData();
-        Element folders = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
+        Element folders = XMLUtil.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <folders>", folders);
-        List/*<Element>*/ sourceFolders = Util.findSubElements(folders);
+        List<Element> sourceFolders = XMLUtil.findSubElements(folders);
         assertEquals("have 2 <source-folder>s", 2, sourceFolders.size());
         Element sourceFolder = (Element) sourceFolders.get(1);
-        Element location = Util.findElement(sourceFolder, "location", FreeformProjectType.NS_GENERAL);
+        Element location = XMLUtil.findElement(sourceFolder, "location", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <location>", location);
         NodeList nl = location.getChildNodes();
         assertEquals("one child (text)", 1, nl.getLength());
@@ -146,7 +150,7 @@ public class FreeformSourcesTest extends TestBase {
         FileUtil.createData(new File(d, "s/ignored/file"));
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE)).
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), XMLUtil.findElement(data, "view", Util.NAMESPACE)).
                 appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode("stuff"));

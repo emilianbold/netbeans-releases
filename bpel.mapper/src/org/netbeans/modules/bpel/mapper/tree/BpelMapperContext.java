@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.tree;
 
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
@@ -26,10 +27,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
-import org.netbeans.modules.bpel.mapper.palette.Palette;
+import org.netbeans.modules.bpel.mapper.palette.BpelPalette;
 import org.netbeans.modules.soa.mappercore.DefaultMapperContext;
+import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperSwingTreeModel;
 
 /**
  * The default implementation of the MapperContext interface for the BPEL Mapper.
@@ -45,8 +48,31 @@ public class BpelMapperContext extends DefaultMapperContext {
     }
 
     @Override
+    public Font getLeftFont(MapperModel model, Object value, Font defaultFont) {
+        if (model instanceof BpelMapperModel &&
+               ((BpelMapperModel) model).isFromInVariable(value)) 
+        {
+            return defaultFont.deriveFont(Font.BOLD);
+        }
+        
+        return defaultFont.deriveFont(Font.PLAIN);
+    }
+    
+        @Override
+    public Font getRightFont(MapperModel model, Object value, Font defaultFont) {
+        if (model instanceof BpelMapperModel &&
+               ((BpelMapperModel) model).isFromOutVariable(value)) 
+        {
+            return defaultFont.deriveFont(Font.BOLD);
+        }
+        
+        return defaultFont.deriveFont(Font.PLAIN);
+    }
+    
+    @Override
     public Icon getLeftIcon(MapperModel model, Object value, Icon defaultIcon) {
-        return ((MapperSwingTreeModel) model.getLeftTreeModel()).getIcon(value);
+        Icon icon = ((MapperSwingTreeModel) model.getLeftTreeModel()).getIcon(value);
+        return icon != null ? icon : super.getLeftIcon(model, value, defaultIcon);
     }
 
     @Override
@@ -74,34 +100,49 @@ public class BpelMapperContext extends DefaultMapperContext {
     @Override
     public Icon getRightIcon(MapperModel model, Object value, Icon defaultIcon) {
         assert model instanceof BpelMapperModel;
-        return ((BpelMapperModel)model).getRightTreeModel().getIcon(value);
+        Icon icon = ((BpelMapperModel)model).getRightTreeModel().getIcon(value);
+        return icon != null ? icon : super.getRightIcon(model, value, defaultIcon);
     }
 
     @Override
     public JPopupMenu getRightPopupMenu(MapperModel model, Object value) {
-        return ((BpelMapperModel) model).getRightTreeModel().getPopupMenu(value);
+        return (model instanceof BpelMapperModel)
+                ? ((BpelMapperModel) model).getRightTreeModel().getPopupMenu(value)
+                : null;
     }
 
     @Override
-    public String getRightToolTipText(MapperModel mode, Object value) {
-        return ((BpelMapperModel) mode).getRightTreeModel().getToolTipText(value);
+    public String getRightToolTipText(MapperModel model, Object value) {
+        return (model instanceof BpelMapperModel)
+                ? ((BpelMapperModel) model).getRightTreeModel().getToolTipText(value)
+                : null;
     }
     
     //==========================================================================
     @Override
-    public JPopupMenu getCanvasPopupMenu(MapperModel mode, GraphItem item) {
-        return ((BpelMapperModel) mode).getRightTreeModel().getCanvasPopupMenu(item);
+    public JPopupMenu getCanvasPopupMenu(MapperModel mode, GraphItem item, Mapper mapper) {
+        JPopupMenu menu = super.getCanvasPopupMenu(mode, item, mapper);
+        
+        JPopupMenu bpelMenu = ((BpelMapperModel) mode).getRightTreeModel().
+                getCanvasPopupMenu(item);
+        if (bpelMenu != null && bpelMenu.getComponentCount() > 0) {
+            menu.addSeparator();
+            for (int i = 0; i < bpelMenu.getComponentCount(); i++) {
+                menu.add(bpelMenu.getComponent(i));
+            }
+        }
+        return menu;
     }
 
     @Override
-    public List<JMenu> getMenuNewEllements(MapperModel mode) {
+    protected List<JMenu> getMenuNewEllements(MapperModel mode) {
         List<JMenu> menuList = new ArrayList<JMenu>();
-        JMenuBar bar = new Palette(((BpelMapperModel) mode).getMapperTcContext().getMapper()).createMenuBar();
+        JMenuBar bar = new BpelPalette(((BpelMapperModel) mode).
+                getMapperStaticContext()).getMenuBar();
         for (int i = 0; i < bar.getMenuCount(); i++) {
             menuList.add(bar.getMenu(i));
         }
         return menuList;
-                
     }
     
 }

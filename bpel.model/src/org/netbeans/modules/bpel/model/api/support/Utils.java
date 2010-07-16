@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,22 +43,26 @@
  */
 package org.netbeans.modules.bpel.model.api.support;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.xml.namespace.QName;
 
+import org.openide.util.lookup.Lookups;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
@@ -110,98 +117,78 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
-import org.netbeans.modules.bpel.model.api.To;
-import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathNumericLiteral;
 import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
 import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
-import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
-import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.ext.editor.api.LsmProcessor.XPathCastResolverImpl;
+import org.netbeans.modules.bpel.model.ext.editor.api.LsmProcessor.XPathLsmCollector;
+import org.netbeans.modules.bpel.model.ext.editor.api.LsmProcessor.XPathLsmContainer;
+import org.netbeans.modules.bpel.model.ext.editor.api.LsmProcessor.XPathLsmConvertor;
+import org.netbeans.modules.bpel.model.ext.logging.api.AlertLevel;
+import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 public final class Utils {
 
     public static final char SEMICOLON = ';';                                       // NOI18N
-
     public static final char AMP = '&';                                             // NOI18N
-
     public static final String QUOT = AMP + "quot" + SEMICOLON;                     // NOI18N
-
     public static final String APOS = AMP + "apos" + SEMICOLON;                      // NOI18N
-
     public static final String GT = AMP + "gt" + SEMICOLON;                         // NOI18N
-
     public static final String BAD_ATTRIBUTE_VALUE = "BAD_ATTRIBUTE_VALUE";         // NOI18N
-
     public static final String BAD_ATTRIBUTE_URI_VALUE = "BAD_ATTRIBUTE_URI_VALUE"; // NOI18N
-
+    public static final String BAD_ATTRIBUTE_INTEGER_VALUE = "BAD_ATTRIBUTE_INTEGER_VALUE"; // NOI18N
+    public static final String BAD_ATTRIBUTE_INTEGER_NON_NEGATIVE_VALUE = "BAD_ATTRIBUTE_INTEGER_NON_NEGATIVE_VALUE"; // NOI18N
     public static final String BAD_VARIABLE_NAME = "BAD_VARIABLE_NAME";               // NOI18N
-
     public static final String BAD_CORRELATION_SET_NAME = "BAD_CORRELATION_SET_NAME"; // NOI18N
-
     public static final String BAD_PARTNER_LINK_NAME = "BAD_PARTNER_LINK_NAME";     // NIO18N
-
     public static final String BAD_MESSAGE_EXCHANGE_NAME = "BAD_MESSAGE_EXCHANGE_NAME"; // NOI18N
-
     public static final String BAD_LINK_NAME = "BAD_LINK_NAME";                     // NOI18N
-
     public static final String BAD_URI_VALUE = "BAD_URI_VALUE";                      // NOI18N
-
     public static final String BAD_NCNAME_VALUE = "BAD_NCNAME_VALUE";               // NOI18N
-
     public static final String BAD_VARIABLE_FOR_FOR_EACH = "BAD_VARIABLE_FOR_FOR_EACH"; // NOI18N
-
     public static final String BAD_VARIABLE_FOR_ON_EVENT = "BAD_VARIABLE_FOR_ON_EVENT"; // NOI18N
-
     public static final String BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT = "BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT"; // NOI18N
-
     public static final String SOURCES_TYPE_BPELPRO = "BIZPRO"; // NOI18N
-
+    public static final DefaultParentAccess DEFAULT_PARENT_ACCESS = new DefaultParentAccess();
     private static final String BUNDLE = "org/netbeans/modules/bpel/model/impl/Bundle"; // NOI18N
-
     private static final String XML_COMMENT_START = "<!--";                             // NOI18N
-
     private static final String XML_COMMENT_END = "-->";                                // NOI18N
 
-    public static final DefaultParentAccess DEFAULT_PARENT_ACCESS = new DefaultParentAccess();
+    private Utils() {}
 
-    private Utils() {
+    public static void checkXPathExpression(ContentElement element, XPathValidationContext context) {
+        doXPathExpression(element, context, true);
     }
 
-    public static SchemaComponent checkXPathExpression(ContentElement element) {
-        return checkXPathExpression(element, null);
+    public static SchemaComponent getXPathExpressionType(ContentElement element, XPathValidationContext context) {
+        return doXPathExpression(element, context, false);
     }
 
-    public static SchemaComponent checkXPathExpression(
-            ContentElement element, XPathValidationContext context) {
+    private static SchemaComponent doXPathExpression(ContentElement element, XPathValidationContext context, boolean showErrors) {
         String content = element.getContent();
 
         if (content == null) {
@@ -217,70 +204,31 @@ public final class Utils {
         if (element instanceof ExpressionLanguageSpec) {
             expressionLang = ((ExpressionLanguageSpec) element).getExpressionLanguage();
         }
-        return checkExpression(expressionLang, content, element, context);
+        return checkExpression(expressionLang, content, element, context, showErrors);
     }
 
-    private static SchemaComponent checkExpression(
-            String exprLang, String exprText, final ContentElement element, 
-            final XPathValidationContext context) {
-        boolean isXPathExpr = exprLang == null || 
-                BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
+    private static XPathModel constructModel(BpelEntity entity, XPathValidationContext context) {
+        boolean useTo = entity instanceof To;
+        XPathCastResolver castResolver = createXPathCastResolver(entity, !useTo);
+        return BpelXPathModelFactory.create(entity, entity, castResolver, context);
+    }
+
+    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final XPathValidationContext context, boolean showErrors) {
+        boolean isXPathExpr = exprLang == null || BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
         if (!isXPathExpr) {
             return null;
         }
-        XPathModelHelper helper = XPathModelHelper.getInstance();
-        XPathModel model = helper.newXPathModel();
-
-        if (context != null) {
-            context.setXPathModel(model);
-            model.setValidationContext(context);
+        if ( !(element instanceof BpelEntity)) {
+            return null;
         }
-        ExNamespaceContext nsContext = ((BpelEntity) element).getNamespaceContext();
-        model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
-
-        model.setVariableResolver(new BpelVariableResolver(context, (BpelEntity) element));
-        model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
-
-        model.setExternalModelResolver(new ExternalModelResolver() {
-
-            public Collection<SchemaModel> getModels(String modelNsUri) {
-                BpelModel bpelModel = ((BpelEntity) element).getBpelModel();
-                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri, true);
-            }
-
-            public Collection<SchemaModel> getVisibleModels() {
-                if (context != null) {
-                    context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
-
-                }
-                return null;
-            }
-
-            public boolean isSchemaVisible(String soughtNamspace) {
-                assert soughtNamspace != null;
-                //
-                BpelModel model = ((BpelEntity) element).getBpelModel();
-                if (model.getState() == State.VALID) {
-                    for (Import anImport : model.getProcess().getImports()) {
-                        if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
-                            if (soughtNamspace.equals(anImport.getNamespace())) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                //
-                return false;
-            }
-        });
-        model.setXPathCastResolver(createXPathCastResolver(element));
+        // TODO: It probably worth to use BpelXPathModelFactory instead
+        // for the same of universality.
+        XPathModel model = constructModel((BpelEntity) element, context);
 
         if (BpelXPathModelFactory.isSplitable(exprText)) {
-            if (context != null) {
-                context.addResultItem(exprText, Validator.ResultType.ERROR, 
-                        NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
-
+            if (context != null && showErrors) {
+                context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
             }
             String[] partsArr = BpelXPathModelFactory.split(exprText);
 
@@ -306,10 +254,21 @@ public final class Utils {
             if (xpath instanceof XPathStringLiteral) {
                 return getStringType();
             }
-            return model.getLastSchemaComponent();
+            //
+            if (xpath instanceof XPathSchemaContextHolder) {
+                XPathSchemaContext sContext =
+                        ((XPathSchemaContextHolder)xpath).getSchemaContext();
+                if (sContext != null) {
+                    SchemaComponent sComp = XPathSchemaContext.Utilities.
+                            getSchemaComp(sContext);
+                    return sComp;
+                }
+            }
+            // return model.getLastSchemaComponent();
         } catch (XPathException e) {
             return null;
         }
+        return null;
     }
 
     private static GlobalSimpleType getIntType() {
@@ -346,76 +305,30 @@ public final class Utils {
 
     }
 
-    private static XPathCastResolver createXPathCastResolver(ContentElement element) {
-//out();
-//out("CREATE CAST RESOLVER");
-        if (!(element instanceof BpelEntity)) {
-//out("     1");
-            return null;
+    private static XPathCastResolver createXPathCastResolver(
+            BpelEntity bpelEntity, boolean useFrom) {
+        //
+        assert bpelEntity != null;
+        List<Editor> editors = bpelEntity.getChildren(Editor.class);
+        //
+        if (editors != null && !editors.isEmpty()) {
+            return createXPathCastResolver(bpelEntity, editors.get(0), useFrom);
         }
-        BpelEntity entity = (BpelEntity) element;
-        BpelEntity parent = entity.getParent();
-//out("     2");
+        //
+        return null;
+    }
 
-        if (!(parent instanceof Copy)) {
-            return null;
-        }
-//out("     3");
-        List<Editor> editors = parent.getChildren(Editor.class);
-
-        if (editors == null) {
-            return null;
-        }
-//out("     4");
-        List<Cast> allCasts = new ArrayList<Cast>();
-        List<PseudoComp> allPseudoComps = new ArrayList<PseudoComp>();
-
-        boolean isFrom = element instanceof From;
-        boolean isTo = element instanceof To;
-
-//out("     5");
-        for (Editor editor : editors) {
-            Casts editorCasts = editor.getCasts();
-            //
-            if (editorCasts != null) {
-                Cast[] castArr = editorCasts.getCasts();
-                if (castArr != null) {
-                    for (Cast cast : castArr) {
-                        if (cast != null) {
-                            Source source = cast.getSource();
-                            if (isFrom && source == Source.FROM) {
-                                allCasts.add(cast);
-                            } else if (isTo && source == Source.TO) {
-                                allCasts.add(cast);
-                            }
-                        }
-                    }
-                }
-            }
-            //
-            PseudoComps pseudoComps = editor.getPseudoComps();
-            if (pseudoComps != null) {
-                PseudoComp[] pseudoCompArr = pseudoComps.getPseudoComps();
-                if (pseudoCompArr != null) {
-                    for (PseudoComp pseudoComp : pseudoCompArr) {
-                        if (pseudoComp != null) {
-                            Source source = pseudoComp.getSource();
-                            if (isFrom && source == Source.FROM) {
-                                allPseudoComps.add(pseudoComp);
-                            } else if (isTo && source == Source.TO) {
-                                allPseudoComps.add(pseudoComp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-//out("     6");
-        if (allCasts.isEmpty() && allPseudoComps.isEmpty()) {
-            return null;
-        }
-//out("     7");
-        return new XPathCastResolverImpl(allCasts, allPseudoComps);
+    private static XPathCastResolver createXPathCastResolver(
+            BpelEntity varContextEntity, Editor editor, boolean useFrom) {
+        //
+        assert editor != null;
+        //
+        XPathLsmContainer extContainer = new XPathLsmContainer();
+        XPathLsmCollector collector = new XPathLsmCollector(
+                new XPathLsmConvertor(extContainer), varContextEntity,
+                useFrom, !useFrom);
+        editor.accept(collector);
+        return new XPathCastResolverImpl(extContainer, useFrom);
     }
 
     public static QName getQName(String value, BpelEntity entity) {
@@ -446,24 +359,41 @@ public final class Utils {
         return list;
     }
 
-    public static Object parse(Class clazz, String value) {
+    public static Enum parse(Class<Enum> clazz, String value) {
         if (clazz.equals(Roles.class)) {
             return Roles.forString(value);
-        } else if (clazz.equals(Pattern.class)) {
+        }
+        if (clazz.equals(Pattern.class)) {
             return Pattern.forString(value);
-        } else if (clazz.equals(TBoolean.class)) {
+        }
+        if (clazz.equals(TBoolean.class)) {
             return TBoolean.forString(value);
-        } else if (clazz.equals(Initiate.class)) {
+        }
+        if (clazz.equals(Initiate.class)) {
             return Initiate.forString(value);
         }
-        assert false;
-        return null;
+        if (clazz.equals(Source.class)) {
+            return Source.forString(value);
+        }
+        if (clazz.equals(LogLevel.class)) {
+            return LogLevel.forString(value);
+        }
+        if (clazz.equals(AlertLevel.class)) {
+            return AlertLevel.forString(value);
+        }
+        if (clazz.equals(BinaryCopy.class)) {
+            return BinaryCopy.forString(value);
+        }
+        if (clazz.equals(AtomicTxType.class)) {
+            return AtomicTxType.forString(value);
+        }
+        return Enum.valueOf(clazz, value);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> List<T> parseList(BpelEntity entity, Class<T> clazz, String value) {
         if (clazz.equals(QName.class)) {
-            List<QName> list = new LinkedList<QName>();
+            List<QName> list = new ArrayList<QName>();
             if (value == null) {
                 return (List<T>) list;
             }
@@ -590,7 +520,7 @@ public final class Utils {
     public static boolean checkPasteCompensate(final BpelContainerImpl container,
             final Component component) {
         Collection<ExtendableActivity> collection =
-                new LinkedList<ExtendableActivity>();
+                new ArrayList<ExtendableActivity>();
         collectCompensates(component, collection);
 
         ParentAccess access = new ParentAccess() {
@@ -749,15 +679,65 @@ public final class Utils {
 
     public static SchemaModel getSchemaModel(FileObject fo) {
         SchemaModel sModel = null;
-        //
+
         try {
             ModelSource modelSource = Utilities.getModelSource(fo, true);
             sModel = SchemaModelFactory.getDefault().getModel(modelSource);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        //
         return sModel;
+    }
+
+    public static SchemaModel getSchemaModel(InputStream stream) {
+//System.out.println();
+//System.out.println("stream: " + stream);
+        if (stream == null) {
+            return null;
+        }
+        try {
+          Document document = AbstractDocumentModel.getAccessProvider().loadSwingDocument(stream);
+//System.out.println("document: " + document);
+
+          if (document == null) {
+              return null;
+          }
+          return SchemaModelFactory.getDefault().getModel(new ModelSource(Lookups.singleton(document), false));
+        }
+        catch (IOException e) {
+//System.out.println("IOException: " + e);
+            return null;
+        }
+        catch (BadLocationException e) {
+//System.out.println("BadLocationException: " + e);
+            return null;
+        }
+    }
+
+    public static WSDLModel getWsdlModel(InputStream stream) {
+//System.out.println();
+//System.out.println("stream: " + stream);
+        if (stream == null) {
+            return null;
+        }
+        try {
+          Document document = AbstractDocumentModel.getAccessProvider().loadSwingDocument(stream);
+//System.out.println("document: " + document);
+
+          if (document == null) {
+              return null;
+          }
+          return WSDLModelFactory.getDefault().getModel(new ModelSource(Lookups.singleton(document), false));
+        }
+        catch (IOException e) {
+//System.out.println("IOException: " + e);
+            return null;
+        }
+        catch (BadLocationException e) {
+//System.out.println("BadLocationException: " + e);
+            return null;
+        }
     }
 
     public static WSDLModel getWsdlModel(FileObject fo) {
@@ -766,8 +746,8 @@ public final class Utils {
         try {
             ModelSource modelSource = Utilities.getModelSource(fo, true);
             wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         //
         return wsdlModel;
@@ -839,16 +819,11 @@ public final class Utils {
 
 class ActivityCreatorHolder {
 
-    private static final Map<String, Character> PRIVATE_ENTITIES =
-            new HashMap<String, Character>();
-    private static final Map<String, ActivityBuilder> PRIVATE_BUILDERS =
-            new HashMap<String, ActivityBuilder>();
-    static final Map<String, ActivityBuilder> ACTIVITY_BUILDERS =
-            Collections.unmodifiableMap(PRIVATE_BUILDERS);
-    static final Map<String, Character> XML_ENTITIES = Collections.unmodifiableMap(
-            PRIVATE_ENTITIES);
+    private static final Map<String, Character> PRIVATE_ENTITIES = new HashMap<String, Character>();
+    private static final Map<String, ActivityBuilder> PRIVATE_BUILDERS = new HashMap<String, ActivityBuilder>();
+    static final Map<String, ActivityBuilder> ACTIVITY_BUILDERS = Collections.unmodifiableMap(PRIVATE_BUILDERS);
+    static final Map<String, Character> XML_ENTITIES = Collections.unmodifiableMap(PRIVATE_ENTITIES);
     
-
     static {
         PRIVATE_BUILDERS.put(BpelElements.EMPTY.getName(), new EmptyBuilder());
         PRIVATE_BUILDERS.put(BpelElements.INVOKE.getName(), new InvokeBuilder());
@@ -860,21 +835,16 @@ class ActivityCreatorHolder {
         PRIVATE_BUILDERS.put(BpelElements.EXIT.getName(), new ExitBuilder());
         PRIVATE_BUILDERS.put(BpelElements.FLOW.getName(), new FlowBuilder());
         PRIVATE_BUILDERS.put(BpelElements.WHILE.getName(), new WhileBuilder());
-        PRIVATE_BUILDERS.put(BpelElements.SEQUENCE.getName(),
-                new SequenceBuilder());
+        PRIVATE_BUILDERS.put(BpelElements.SEQUENCE.getName(), new SequenceBuilder());
         PRIVATE_BUILDERS.put(BpelElements.SCOPE.getName(), new ScopeBuilder());
         PRIVATE_BUILDERS.put(BpelElements.PICK.getName(), new PickBuilder());
-        PRIVATE_BUILDERS.put(BpelElements.COMPENSATE.getName(),
-                new CompensateBuilder());
+        PRIVATE_BUILDERS.put(BpelElements.COMPENSATE.getName(), new CompensateBuilder());
         PRIVATE_BUILDERS.put(BpelElements.FOR_EACH.getName(), new ForEachBuilder());
         PRIVATE_BUILDERS.put(BpelElements.IF.getName(), new IfBuilder());
-        PRIVATE_BUILDERS.put(BpelElements.REPEAT_UNTIL.getName(),
-                new RepeatUntilBuilder());
+        PRIVATE_BUILDERS.put(BpelElements.REPEAT_UNTIL.getName(), new RepeatUntilBuilder());
         PRIVATE_BUILDERS.put(BpelElements.RETHROW.getName(), new RethrowBuilder());
-        PRIVATE_BUILDERS.put(BpelElements.VALIDATE.getName(),
-                new ValidateBuilder());
-        PRIVATE_BUILDERS.put(BpelElements.COMPENSATE_SCOPE.getName(),
-                new CompensateScopeBuilder());
+        PRIVATE_BUILDERS.put(BpelElements.VALIDATE.getName(), new ValidateBuilder());
+        PRIVATE_BUILDERS.put(BpelElements.COMPENSATE_SCOPE.getName(), new CompensateScopeBuilder());
 
         PRIVATE_ENTITIES.put(Utils.GT, '>');
         PRIVATE_ENTITIES.put(Utils.APOS, '\'');

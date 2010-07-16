@@ -33,6 +33,23 @@ public interface FTPAddress extends FTPComponent {
     public static final String FTP_TRANSMODE_PROPERTY = "mode";
     public static final String FTP_CMD_CH_TIMEOUT_PROPERTY = "cmdChannelTimeout";
     public static final String FTP_DATA_CH_TIMEOUT_PROPERTY = "dataChannelTimeout";
+    public static final String FTP_CNTRL_CH_ENCODING_PROPERTY = "controlChannelEncoding";
+    // added for clustering-awareness of FTPBC SU
+    public static final String FTP_PERSIST_BASE_LOC_PROPERTY = "baseLocation";
+
+    // new attrs for FTP/TLS 
+    public static final String FTP_SEC_TYPE_PROPERTY = "securedFTP";
+    public static final String FTP_ENABLE_CCC_PROPERTY = "enableCCC";
+    public static final String FTP_KSTOR_PROPERTY = "keyStore";
+    public static final String FTP_KSTOR_PASSWD_PROPERTY = "keyStorePassword";
+    public static final String FTP_KEY_ALIAS_PROPERTY = "keyAlias";
+    public static final String FTP_KEY_PASSWD_PROPERTY = "keyPassword";
+    public static final String FTP_TSTOR_PROPERTY = "trustStore";
+    public static final String FTP_TSTOR_PASSWD_PROPERTY = "trustStorePassword";
+    
+    // for url user and password overwrite
+    public static final String FTP_LOGIN_PROPERTY = "user";
+    public static final String FTP_LOGIN_PASSWORD_PROPERTY = "password";
     
     public String getFTPURL();
     public void setFTPURL(String url);
@@ -48,11 +65,42 @@ public interface FTPAddress extends FTPComponent {
     public String getUserDefDirListHeuristics();
     public void setUserDefDirListHeuristics(String heuristicsLoc);
     //mode="BINARY"
-    public String getTrnasferMode();
+    public String getTransferMode();
     public void setTransferMode(String mode);
 
     public String getCmdChannelTimeout();
     public void setCmdChannelTimeout(String s);
     public String getDataChannelTimeout();
     public void setDataChannelTimeout(String s);
+
+    public String getControlChannelEncoding();
+    public void setControlChannelEncoding(String s);
+
+    // added for clustering support - a file system or NFS based file locking mechanism
+    // used to synchronizing clustered BC service units servicing the same endpoint
+    // e.g. same inbound directory for polling inbound messages
+    public String getPersistenceBaseDir();
+    public void setPersistenceBaseDir(String s);
+    
+    // new setters/getters for FTP/TLS
+    public String getSecureFTPType();
+    public void setSecureFTPType(String s);
+    public boolean getEnableCCC();
+    public void setEnableCCC(boolean b);
+    public String getKeyStore();
+    public void setKeyStore(String s);
+    public String getKeyStorePassword();
+    public void setKeyStorePassword(String s);
+    public String getKeyAlias();
+    public void setKeyAlias(String s);
+    public String getKeyPassword();
+    public void setKeyPassword(String s);
+    public String getTrustStore();
+    public void setTrustStore(String s);
+    public String getTrustStorePassword();
+    public void setTrustStorePassword(String s);
+    public String getFTPLogin();
+    public void setFTPLogin(String s);
+    public String getFTPLoginPassword();
+    public void setFTPLoginPassword(String s);
 }

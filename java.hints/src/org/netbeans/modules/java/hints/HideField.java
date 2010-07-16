@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -31,9 +34,13 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
@@ -63,9 +70,12 @@ import org.openide.util.NbBundle;
 public class HideField extends AbstractHint {
     transient volatile boolean stop;
     
-    /** Creates a new instance of AddOverrideAnnotation */
     public HideField() {
-        super( true, true, AbstractHint.HintSeverity.WARNING);
+        this("FieldNameHidesFieldInSuperclass");
+    }
+
+    public HideField(String... sw) {
+        super( true, true, AbstractHint.HintSeverity.WARNING, sw);
     }
     
     public Set<Kind> getTreeKinds() {
@@ -85,7 +95,7 @@ public class HideField extends AbstractHint {
         
         Element hidden = null;
         TypeElement te = (TypeElement)el.getEnclosingElement();
-        for (Element field : compilationInfo.getElements().getAllMembers(te)) {
+        for (Element field : getAllMembers(compilationInfo, te)) {
             if (stop) {
                 return null;
             }
@@ -157,7 +167,43 @@ public class HideField extends AbstractHint {
     @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
-    }    
+    }
+
+    private static Reference<CompilationInfo> allMembersCacheFrom;
+    private static Map<TypeElement, Iterable<? extends Element>> allMembersCacheTo;
+
+    protected static synchronized Iterable<? extends Element> getAllMembers(CompilationInfo info, TypeElement clazz) {
+        class CleaningWR extends WeakReference<CompilationInfo> implements Runnable {
+            public CleaningWR(CompilationInfo info) {
+                super(info);
+            }
+            @Override public void run() {
+                synchronized (HideField.class) {
+                    if (allMembersCacheFrom == null || allMembersCacheFrom.get() == null) {
+                        allMembersCacheFrom = null;
+                        allMembersCacheTo = null;
+                    }
+                }
+            }
+        }
+
+        CompilationInfo origInfo = allMembersCacheFrom != null ? allMembersCacheFrom.get() : null;
+        Map<TypeElement, Iterable<? extends Element>> map;
+
+        if (origInfo == info) {
+            map = allMembersCacheTo;
+        } else {
+            map = allMembersCacheTo = new HashMap<TypeElement, Iterable<? extends Element>>();
+        }
+
+        Iterable<? extends Element> members = map.get(clazz);
+
+        if (members == null) {
+            map.put(clazz, members = info.getElements().getAllMembers(clazz));
+        }
+
+        return members;
+    }
 
     static class FixImpl implements Fix, Runnable {
         private final int caret;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,13 +74,14 @@ import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 
 /**
  * Provides Rake running infrastructure.
  */
 public final class RakeRunner {
 
-    private final Project project;
+    private final RubyBaseProject project;
     private boolean showWarnings;
     private boolean debug;
     private FileObject rakeFile;
@@ -86,11 +90,11 @@ public final class RakeRunner {
     private String displayName;
     private final List<String> parameters = new ArrayList<String>();
 
-    public RakeRunner(final Project project) {
+    public RakeRunner(final RubyBaseProject project) {
         this.project = project;
     }
 
-    static void runTask(final Project project, final RakeTask task,
+    static void runTask(final RubyBaseProject project, final RakeTask task,
             final String taskParams, final boolean debug) {
         RakeRunner runner = new RakeRunner(project);
         runner.showWarnings(true);
@@ -292,14 +296,17 @@ public final class RakeRunner {
             }
             desc.initialArgs(resultingInitialArgs);
             List<String> additionalArgs = new ArrayList<String>();
+            String railsEnv = project.evaluator().getProperty(SharedRubyProjectProperties.RAILS_ENV);
+            if (railsEnv != null && !"".equals(railsEnv.trim())) {
+                additionalArgs.add("RAILS_ENV=" + railsEnv);//NOI18N
+            }
             String[] existingAdditionalArgs = desc.getAdditionalArgs();
             if (existingAdditionalArgs != null && existingAdditionalArgs.length > 0) {
                 additionalArgs.addAll(Arrays.asList(existingAdditionalArgs));
             }
-            additionalArgs.add(task.getTask());
-            for (String param : parameters) {
-                additionalArgs.add(param);
-            }
+//            additionalArgs.add(task.getTask());
+            addTaskParameters(task, parameters, additionalArgs);
+            //XXX: why exactly we have parameters both here and in RakeTask??
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
 
@@ -312,6 +319,30 @@ public final class RakeRunner {
         return result;
     }
 
+    private static void addTaskParameters(RakeTask task, List<String> parameters, List<String> additionalArgs) {
+        if (!task.acceptsExplicitParameters()) {
+            // old style (rake < 0.8.0) params
+            additionalArgs.add(task.getTask());
+            additionalArgs.addAll(parameters);
+        } else {
+            // the task explicitly declares the params 
+            // it accepts, >= rake 0.8.0
+            StringBuilder paramsArg = new StringBuilder();
+            paramsArg.append(task.getTask());
+            if (!parameters.isEmpty()) {
+                Iterator<String> it = parameters.iterator();
+                paramsArg.append("[");
+                paramsArg.append(it.next());
+                while (it.hasNext()) {
+                    paramsArg.append(",");
+                    paramsArg.append(it.next());
+                }
+                paramsArg.append("]");
+            }
+            additionalArgs.add(paramsArg.toString());
+        }
+    }
+    
     private void doStandardConfiguration(RubyExecutionDescriptor desc) {
 
         String charsetName = null;

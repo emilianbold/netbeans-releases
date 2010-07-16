@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,10 +54,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -70,7 +77,7 @@ import org.openide.util.NbBundle;
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
     
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
-    
+    private boolean isCDIEnabled = false;
     /**
      * Creates new form PropertiesPanelVisual
      */
@@ -102,15 +109,40 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 }
             }
         }
-        ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
-        for (int i = 0; i < scopes.length; i++){
-            scopeModel.addElement(scopes[i]);
+        Object[] scopes;
+        isCDIEnabled = JSFUtils.isCDIEnabled(wm);
+        if (isCDIEnabled) {
+            scopes = ManagedBeanIterator.NamedScope.values();
+        } else {
+            scopes = ManagedBean.Scope.values();
         }
 
-        jTextFieldName.setText("NewJSFManagedBean");
+        for (Object scope : scopes) {
+            scopeModel.addElement(scope);
+        }
+
+        jTextFieldName.setText("newJSFManagedBean");
         jTextFieldName.getDocument().addDocumentListener(this);
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
+    }
+
+    private void updateScopeModel(boolean addToConfig) {
+        if (isCDIEnabled && addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBean.Scope scope : ManagedBean.Scope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else if (isCDIEnabled && !addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBeanIterator.NamedScope scope : ManagedBeanIterator.NamedScope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else {
+            return;
+        }
+        jComboBoxScope.setModel(scopeModel);
+        repaint();
     }
     
     /** This method is called from within the constructor to
@@ -221,7 +253,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     }//GEN-LAST:event_jComboBoxConfigFileActionPerformed
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
+        boolean addToConfig = jCheckBox1.isSelected();
+        jComboBoxConfigFile.setEnabled(addToConfig);
+        updateScopeModel(addToConfig);
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -239,8 +273,19 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
+
+        Project project = Templates.getProject(wizardDescriptor);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+
+        SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sources.length == 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found"));
+            return false;
+        }
+        
         if (configFile==null) {
-            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()) {
+            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20(wm))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
                 return false;
@@ -248,8 +293,6 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             return true;
         }
         
-        Project project = Templates.getProject(wizardDescriptor);
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         FileObject dir = wm.getDocumentBase();
         FileObject fo = dir.getFileObject(configFile);
         FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();

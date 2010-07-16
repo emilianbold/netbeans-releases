@@ -20,8 +20,6 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -35,7 +33,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class ServiceImpl extends NameableImpl implements Service {
+public class ServiceImpl extends NameableTMapComponentContainerImpl implements Service {
 
     public ServiceImpl(TMapModelImpl model) {
         this(model, createNewElement(TMapComponents.SERVICE, model));
@@ -74,31 +72,9 @@ public class ServiceImpl extends NameableImpl implements Service {
         setWSDLReference( TMapAttributes.PORT_TYPE, ref);
     }
 
-//142908
-    public WSDLReference<PartnerLinkType> getPartnerLinkType() {
-        return getWSDLReference(TMapAttributes.PARTNER_LINK_TYPE, PartnerLinkType.class);
-    }
-
-    public void setPartnerLinkType(WSDLReference<PartnerLinkType> pltRef) {
-        setWSDLReference( TMapAttributes.PARTNER_LINK_TYPE, pltRef);
-    }
-
-    public WSDLReference<Role> getRole() {
-        return getWSDLReference(TMapAttributes.ROLE_NAME, Role.class);
-    }
-
-    public void setRole(WSDLReference<Role> roleRef) {
-        setWSDLReference( TMapAttributes.ROLE_NAME, roleRef);
-    }
-
     public Reference[] getReferences() {
-        return new Reference[] {getPartnerLinkType(), getRole()};
+        return new Reference[] {getPortType()};
     }
-
-//142908
-//    public Reference[] getReferences() {
-//        return new Reference[] {getPortType()};
-//    }
 
     public Class<Service> getComponentType() {
         return Service.class;

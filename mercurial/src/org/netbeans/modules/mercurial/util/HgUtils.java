@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.util;
 
+import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -54,7 +58,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -66,7 +69,6 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
@@ -99,8 +101,12 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
+import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -140,7 +146,9 @@ public class HgUtils {
     public static final String HG_CHECK_REPOSITORY_TIMEOUT_SWITCH = "mercurial.checkRepositoryTimeout"; //NOI18N
     public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
     public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
+    public static final String HG_FOLDER_NAME = ".hg";                 //NOI18N
     private static int repositoryValidityCheckRounds = 0;
+    public static String PREFIX_VERSIONING_MERCURIAL_URL = "versioning.mercurial.url."; //NOI18N
 
     /**
      * addDaysToDate - add days (+days) or subtract (-days) from the given date
@@ -323,72 +331,6 @@ public class HgUtils {
         return (str == null) || (str.trim().length() == 0);
     }
     
-    /**
-     * fixIniFilePathsOnWindows - converts '\' to '\\' in paths in IniFile on Windows
-     *
-     * @param File iniFile to process
-     * @return File processed tmpFile 
-     */
-    public static File fixPathsInIniFileOnWindows(File iniFile) {
-        if(!Utilities.isWindows()) return null;
-        
-        File tmpFile = null;
-        BufferedReader br = null;
-        PrintWriter pw = null;
-
-        try {
-            if (iniFile == null || !iniFile.isFile() || !iniFile.canWrite()) {
-                return null;
-            }
-            
-            tmpFile = File.createTempFile(HgCommand.HG_COMMAND + "-", "tmp"); //NOI18N 
-
-            if (tmpFile == null) {
-                return null;
-            }
-            br = new BufferedReader(new FileReader(iniFile));
-            pw = new PrintWriter(new FileWriter(tmpFile));
-
-            String line = null;
-            String stripLine = null;
-            while ((line = br.readLine()) != null) {
-                stripLine = line.replace("\\\\", "\\");
-                pw.println(stripLine.replace("\\", "\\\\"));
-                pw.flush();
-            }
-        } catch (IOException ex) {
-            // Ignore
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException ex) {
-                // Ignore
-            }
-        }
-        return tmpFile;
-    }
-
-    /**
-     * isLocallyAdded - checks to see if this file has been Locally Added to Hg
-     *
-     * @param file to check
-     * @return boolean true - ignore, false - not ignored
-     */
-    public static boolean isLocallyAdded(File file){
-        if (file == null) return false;
-        Mercurial hg = Mercurial.getInstance();        
-
-        if ((hg.getFileStatusCache().getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) !=0)
-            return true;
-        else
-            return false;
-    }
-    
     private static void resetIgnorePatterns(File file) {
         if (ignorePatterns == null) {
             return;
@@ -406,7 +348,7 @@ public class HgUtils {
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
         }
-        if (patterns.size() == 0) {
+        if (patterns.isEmpty()) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
@@ -503,7 +445,7 @@ public class HgUtils {
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
-            int sharability = SharabilityQuery.getSharability(file);
+            int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
                 addNotSharable(topFile, path);
                 return true;
@@ -543,7 +485,7 @@ public class HgUtils {
         }finally {
             try {
                 if(fileWriter != null) fileWriter.close();
-                hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                hg.getFileStatusCache().refresh(ignore);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});
@@ -768,15 +710,16 @@ public class HgUtils {
         String name = "^" + file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1) + "$"; //NOI18N
         // # should be escaped, otherwise works as a comment
         // . should be escaped, otherwise works as a special char in regexp
-        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\."); //NOI18N
+        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\.").replace("+", "\\+"); //NOI18N
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
         FileObject fo = FileUtil.toFileObject(hgIgnore);
 
-        if (entries.size() == 0) {
+        if (entries.isEmpty()) {
             if (fo != null) fo.delete();
+            resetIgnorePatterns(directory);
             return;
         }
 
@@ -836,40 +779,6 @@ public class HgUtils {
             entries.remove(patterntoIgnore);
         }
         writeIgnoreEntries(directory, entries);
-    }
-
-    /**
-     * Returns a Map keyed by Directory, containing a single File/FileInformation Map for each Directories file contents.
-     *
-     * @param Map of <File, FileInformation> interestingFiles to be processed and divided up into Files in Directory
-     * @param Collection of <File> files to be processed against the interestingFiles
-     * @return Map of Dirs containing Map of files and status for all files in each directory
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, Map<File, FileInformation>> getInterestingDirs(Map<File, FileInformation> interestingFiles, Collection<File> files) {
-        Map<File, Map<File, FileInformation>> interestingDirs = new HashMap<File, Map<File, FileInformation>>();
-
-        Calendar start = Calendar.getInstance();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (interestingDirs.get(file) == null) {
-                    interestingDirs.put(file, new HashMap<File, FileInformation>());
-                }
-            } else {
-                File par = file.getParentFile();
-                if (par != null) {
-                    if (interestingDirs.get(par) == null) {
-                        interestingDirs.put(par, new HashMap<File, FileInformation>());
-                    }
-                    FileInformation fi = interestingFiles.get(file);
-                    interestingDirs.get(par).put(file, fi);
-                }
-            }
-        }
-        Calendar end = Calendar.getInstance();
-        Mercurial.LOG.log(Level.FINE, "getInterestingDirs: process interesting Dirs took {0} millisecs",  // NOI18N
-                end.getTimeInMillis() - start.getTimeInMillis());
-        return interestingDirs;
     }
 
     /**
@@ -964,10 +873,20 @@ itor tabs #66700).
      */
     public static Set<File> getRepositoryRoots(VCSContext context) {
         Set<File> rootsSet = context.getRootFiles();
+        return getRepositoryRoots(rootsSet);
+    }
+
+    /**
+     * Returns repository roots for all root files from context
+     *
+     * @param roots root files
+     * @return repository roots
+     */
+    public static Set<File> getRepositoryRoots (Set<File> roots) {
         Set<File> ret = new HashSet<File>();
 
         // filter managed roots
-        for (File file : rootsSet) {
+        for (File file : roots) {
             if(Mercurial.getInstance().isManaged(file)) {
                 File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repoRoot != null) {
@@ -1049,6 +968,33 @@ itor tabs #66700).
         return files;
     }
 
+    /**
+     * Returns root files sorted per their repository roots
+     * @param ctx
+     * @param rootFiles
+     * @return
+     */
+    public static Map<File, Set<File>> sortUnderRepository (final VCSContext ctx, boolean rootFiles) {
+        Set<File> files = null;
+        if(ctx != null) {
+            files = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
+        }
+        Map<File, Set<File>> sortedRoots = null;
+        if (files != null) {
+            sortedRoots = new HashMap<File, Set<File>>();
+            for (File file : files) {
+                File r = Mercurial.getInstance().getRepositoryRoot(file);
+                Set<File> repositoryRoots = sortedRoots.get(r);
+                if (repositoryRoots == null) {
+                    repositoryRoots = new HashSet<File>();
+                    sortedRoots.put(r, repositoryRoots);
+                }
+                repositoryRoots.add(file);
+            }
+        }
+        return sortedRoots == null ? Collections.<File, Set<File>>emptyMap() : sortedRoots;
+    }
+
    /**
      * Returns File object for Project Directory
      *
@@ -1116,46 +1062,19 @@ itor tabs #66700).
 
     /**
      * Forces refresh of Status for the given directory 
-     *
+     * If a repository root is passed as the parameter, the cache will be refreshed only for already seen or open folders.
      * @param start file or dir to begin refresh from
      * @return void
      */
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
-        try {
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-
-            cache.refreshCached(file);
-            File repository = Mercurial.getInstance().getRepositoryRoot(file);
-            if (repository == null) {
-                return;
-            }
-            // XXX Why in the hell is this still here? cache.refreshCached(file) should be enough
-            if (file.isDirectory()) {
-                Map<File, FileInformation> interestingFiles;
-                interestingFiles = HgCommand.getInterestingStatus(repository, Collections.singletonList(file));
-                if (!interestingFiles.isEmpty()){
-                    Collection<File> files = interestingFiles.keySet();
-                    for (File aFile : files) {
-                        FileInformation fi = interestingFiles.get(aFile);
-                        cache.refreshFileStatus(aFile, fi, null);
-                    }
-                }
-            }
-
-        } catch (HgException ex) {
-        }
-    }
-
-    /**
-     * Forces refresh of Status for the specfied context.
-     *
-     * @param VCSContext context to be updated.
-     * @return void
-     */
-    public static void forceStatusRefresh(VCSContext context) {
-        for (File root :  context.getRootFiles()) {
-            forceStatusRefresh(root);
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+        if (file.equals(repositoryRoot)) {
+            // do not scan the whole repository, only open folders, projects etc. should be enough
+            cache.refreshAllRoots(Collections.singletonMap(repositoryRoot, Mercurial.getInstance().getSeenRoots(repositoryRoot)));
+        } else {
+            cache.refresh(file);
         }
     }
 
@@ -1356,6 +1275,25 @@ itor tabs #66700).
     }
 
     /**
+     * Returns true if hg in a given version supports '--topo' option
+     * --topo available probably since 1.5
+     * @param version
+     * @return
+     */
+    public static boolean hasTopoOption (String version) {
+        if (version != null && !version.startsWith("0.") //NOI18N
+                && !version.startsWith("1.0") //NOI18N
+                && !version.startsWith("1.1") //NOI18N
+                && !version.startsWith("1.2") //NOI18N
+                && !version.startsWith("1.3") //NOI18N
+                && !version.startsWith("1.4")) { //NOI18N
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the remote repository url for the given file.</br>
      * It will be the pull url in the first case, otherwise push url or null
      * in case there is nothig set in .hg
@@ -1366,16 +1304,17 @@ itor tabs #66700).
     public static String getRemoteRepository(File file) {
         if(file == null) return null;
         String remotePath = HgRepositoryContextCache.getInstance().getPullDefault(file);
-        if(remotePath == null || remotePath.trim().equals("")) {
-            Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
+        if (remotePath == null || remotePath.trim().isEmpty()) {
+            Mercurial.LOG.log(Level.FINE, "No default pull available for managed file : [{0}]", file);
             remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
-
-            Mercurial.LOG.log(Level.INFO, "No defalt pull or push available for managed file : [" + file + "]");
+            if (remotePath == null || remotePath.trim().isEmpty()) {
+                Mercurial.LOG.log(Level.FINE, "No default pull or push available for managed file : [{0}]", file);
+            }
         }
         if(remotePath != null) {
             remotePath = remotePath.trim();
             remotePath = HgUtils.removeHttpCredentials(remotePath);
-            if(remotePath.equals("")) {
+            if (remotePath.isEmpty()) {
                 // return null if empty
                 remotePath = null;
             }
@@ -1383,10 +1322,61 @@ itor tabs #66700).
         return remotePath;
     }
 
+    public static void openInRevision (final File originalFile, final HgRevision revision, boolean showAnnotations) throws IOException {
+        File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
+
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + originalFile.getName()); //NOI18N
+            file.deleteOnExit();
+        }
+
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        EditorCookie ec = null;
+        org.openide.cookies.OpenCookie oc = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            ec = dobj.getCookie(EditorCookie.class);
+            oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            Mercurial.LOG.log(Level.FINE, null, ex);
+        }
+        org.openide.text.CloneableEditorSupport ces = null;
+        if (ec == null && oc != null) {
+            oc.open();
+        } else {
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.getRevisionNumber());
+        }
+        if (showAnnotations) {
+            if (ces == null) {
+                return;
+            } else {
+                final org.openide.text.CloneableEditorSupport support = ces;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        javax.swing.JEditorPane[] panes = support.getOpenedPanes();
+                        if (panes != null) {
+                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision.getRevisionNumber());
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    public static boolean isCanceled (Exception e) {
+        Throwable cause = e;
+        while (cause != null && !(cause instanceof HgCommandCanceledException)) {
+            cause = cause.getCause();
+        }
+        return cause instanceof HgCommandCanceledException;
+    }
+
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
+        @Override
         public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
@@ -1430,14 +1420,6 @@ itor tabs #66700).
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-    }
-
-    protected static int getFileEnabledStatus() {
-        return ~0;
-    }
-
-    protected static int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     /**
@@ -1484,9 +1466,9 @@ itor tabs #66700).
         for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
             if(l < s.length()) l = s.length();
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(formatlabel(lbChangeset, l));
-        sb.append(log.getRevision());
+        sb.append(log.getRevisionNumber());
         sb.append(":"); // NOI18N
         sb.append(log.getCSetShortID());
         sb.append('\n'); // NOI18N
@@ -1510,7 +1492,7 @@ itor tabs #66700).
     }
 
     private static String spaces(int l) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < l + 3; i++) {
             sb.append(" ");
         }
@@ -1561,5 +1543,129 @@ itor tabs #66700).
 
     public static boolean hgExistsFor(File file) {
         return new File(file, ".hg").exists();
+    }
+
+    public static CommitOptions[] createDefaultCommitOptions (HgFileNode[] nodes, boolean excludeNew) {
+        CommitOptions[] commitOptions = new CommitOptions[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            HgFileNode node = nodes[i];
+            File file = node.getFile();
+            if (HgModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
+                commitOptions[i] = CommitOptions.EXCLUDE;
+            } else {
+                switch (node.getInformation().getStatus()) {
+                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
+                    break;
+                case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : CommitOptions.COMMIT;
+                    break;
+                default:
+                    commitOptions[i] = CommitOptions.COMMIT;
+                }
+            }
+        }
+        return commitOptions;
+    }
+
+    /**
+     * Returns the administrative hg folder for the given repository and normalizes the file
+     * @param repositoryRoot root of the repository
+     * @return administrative hg folder
+     */
+    public static File getHgFolderForRoot (File repositoryRoot) {
+        return FileUtil.normalizeFile(new File(repositoryRoot, HG_FOLDER_NAME));
+    }
+
+
+
+    /**
+     * Adds the given file into filesUnderRoot:
+     * <ul>
+     * <li>if the file was already in the set, does nothing and returns true</li>
+     * <li>if the file lies under a folder already present in the set, does nothing and returns true</li>
+     * <li>if the file and none of it's ancestors is not in the set yet, this adds the file into the set,
+     * removes all it's children from the set and returns false</li>
+     * @param repository repository root
+     * @param filesUnderRoot set of repository roots
+     * @param file file to add
+     * @return newly added root or null if the to be added file is already contained in seen roots
+     */
+    public static File prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
+        boolean added = false;
+        File addedRoot = null;
+        for (File fileUnderRoot : filesUnderRoot) {
+            // try to find a common parent for planned files
+            File childCandidate = file;
+            File ancestorCandidate = fileUnderRoot;
+            added = true;
+            if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
+                // file has already been inserted or scan is planned for the whole repository root
+                break;
+            }
+            if (childCandidate.equals(repository)) {
+                // plan the scan for the whole repository root
+                ancestorCandidate = childCandidate;
+            } else {
+                if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
+                    // ancestor's path is too short to be the child's parent
+                    ancestorCandidate = file;
+                    childCandidate = fileUnderRoot;
+                }
+                if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
+                    ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
+                }
+            }
+            if (ancestorCandidate == fileUnderRoot) {
+                // already added
+                break;
+            } else if (!FileStatusCache.FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
+                // common ancestor is the repo root and neither one of the candidates was originally the repo root
+                // do not scan the whole clone, it might be a performance killer
+                added = false;
+            } else if (ancestorCandidate != null) {
+                // file is under the repository root
+                if (ancestorCandidate.equals(repository)) {
+                    // adding the repository, there's no need to leave all other files
+                    filesUnderRoot.clear();
+                } else {
+                    filesUnderRoot.remove(fileUnderRoot);
+                }
+                filesUnderRoot.add(addedRoot = ancestorCandidate);
+                break;
+            } else {
+                added = false;
+            }
+        }
+        if (!added) {
+            // not added yet
+            filesUnderRoot.add(addedRoot = file);
+        }
+        return addedRoot;
+    }
+
+    /**
+     * Fires events for updated files. Thus diff sidebars are refreshed.
+     * @param repo
+     * @param list
+     * @return true if any file triggered the notification
+     */
+    public static boolean notifyUpdatedFiles(File repo, List<String> list){
+        boolean anyFileNotified = false;
+        // When hg -v output, or hg -v unbundle or hg -v pull is called
+        // the output contains line
+        // getting <file>
+        // for each file updated.
+        //
+        for (String line : list) {
+            if (line.startsWith("getting ") || line.startsWith("merging ")) { //NOI18N
+                String name = line.substring(8);
+                File file = new File (repo, name);
+                anyFileNotified = true;
+                Mercurial.getInstance().notifyFileChanged(file);
+            }
+        }
+        return anyFileNotified;
     }
 }

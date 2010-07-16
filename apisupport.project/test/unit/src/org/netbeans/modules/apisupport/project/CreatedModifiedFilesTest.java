@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,9 +66,10 @@ import java.util.SortedSet;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -126,7 +130,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
 
         cmf.run();
     }
-    
+
+    @RandomlyFails // NB-Core-Build #4355: display name after from bundle expected:<[Much Better Nam]e> but was:<[Testing Modul]e>
     public void testBundleKeyDefaultBundle() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         ProjectInformation pi = ProjectUtils.getInformation(project);
@@ -171,6 +176,36 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         
         EditableManifest em = Util.loadManifest(FileUtil.toFileObject(TestBase.file(getWorkDir(), "module1/manifest.mf")));
         assertEquals("loader section was added", "Loader", em.getAttribute("OpenIDE-Module-Class", "org/example/module1/MyExtLoader.class"));
+    }
+
+    public void testAddManifestToken() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        Operation op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api1");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        FileObject manifest = FileUtil.toFileObject(TestBase.file(getWorkDir(), "module/manifest.mf"));
+        assertEquals("api1", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api1");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api3");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2, api3", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2, api3", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
     }
     
     public void testAddLookupRegistration() throws Exception {
@@ -290,7 +325,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
         assertTrue("compile dependeny", antDep.hasCompileDependency());
-        assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
+        assertFalse("implementation dependeny", antDep.hasImplementationDependency());
     }
     
     public void testTheSameModuleDependencyTwice() throws Exception {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
@@ -83,34 +87,43 @@ public class ElfReader extends ByteStreamReader {
         
         sections = new ElfSection[sectionHeadersTable.length];
         
-        // Before reading all sections need to read ElfStringTable section.
-        int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-        if (!isCoffFormat && !isMachoFormat) {
+        if (!isCoffFormat) {
+            // Before reading all sections need to read ElfStringTable section.
+            int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
             stringTableSection = new StringTableSection(this, elfStringTableIdx);
+            sections[elfStringTableIdx] = stringTableSection;
         }
-        sections[elfStringTableIdx] = stringTableSection;
         
         // Initialize Name-To-Idx map
-        
         for (int i = 0; i < sections.length; i++) {
             sectionsMap.put(getSectionName(i), i);
         }
+        if (isCoffFormat) {
+            // string table already read
+            Integer idx = sectionsMap.get(SECTIONS.DEBUG_STR);
+            if (idx != null) {
+                sections[idx] = stringTableSection;
+            }
+        }
     }
     
-    public String getSectionName(int sectionIdx) {
+    public final String getSectionName(int sectionIdx) {
         if (!isCoffFormat && !isMachoFormat) {
             if (stringTableSection == null) {
                 return ".shstrtab"; // NOI18N
             }
             
             long nameOffset = sectionHeadersTable[sectionIdx].sh_name;
-            return stringTableSection.getString(nameOffset);
+            String name = stringTableSection.getString(nameOffset);
+            //sectionHeadersTable[sectionIdx].name = name;
+            //System.err.println("Section "+name+" offset "+sectionHeadersTable[sectionIdx].sh_offset + " address "+sectionHeadersTable[sectionIdx].sh_addr);
+            return name;
         } else {
             return sectionHeadersTable[sectionIdx].getSectionName();
         }
     }
     
-    public boolean readHeader(Magic magic) throws WrongFileFormatException, IOException {
+    public final boolean readHeader(Magic magic) throws WrongFileFormatException, IOException {
         elfHeader = new ElfHeader();
         seek(shiftIvArchive);
         byte[] bytes = new byte[16];
@@ -195,12 +208,6 @@ public class ElfReader extends ByteStreamReader {
         int symbolTableEntries = readInt();
         long stringTableOffset = symbolTableOffset+symbolTableEntries*18;
         int stringTableLength = (int)(shiftIvArchive + lengthIvArchive - stringTableOffset);
-        long pointer = getFilePointer();
-        seek(stringTableOffset);
-        byte[] strings = new byte[stringTableLength];
-        read(strings);
-        stringTableSection = new StringTableSection(this, strings);
-        seek(pointer);
         //
         int optionalHeaderSize = readShort();
         // flags
@@ -209,6 +216,13 @@ public class ElfReader extends ByteStreamReader {
             skipBytes(optionalHeaderSize);
         }
         elfHeader.e_shoff = getFilePointer();
+        // read string table
+        long pointer = getFilePointer();
+        seek(stringTableOffset);
+        byte[] strings = new byte[stringTableLength];
+        read(strings);
+        stringTableSection = new StringTableSection(this, strings);
+        seek(pointer);
     }
     
     private boolean readMachoHeader() throws IOException{
@@ -218,7 +232,12 @@ public class ElfReader extends ByteStreamReader {
         setDataEncoding(elfHeader.elfData);
         setFileClass(elfHeader.elfClass);
         seek(shiftIvArchive);
-        boolean is64 = readByte() == (byte)0xcf;
+        byte firstByte = readByte();
+        boolean is64 = firstByte == (byte)0xcf;
+        if (firstByte == (byte)0xfe) {
+            elfHeader.elfData = MSB;
+            setDataEncoding(elfHeader.elfData);
+        }
         seek(shiftIvArchive+16);
         int ncmds = readInt();
         /*int sizeOfCmds =*/ readInt();
@@ -275,14 +294,16 @@ public class ElfReader extends ByteStreamReader {
         if (TraceDwarf.TRACED && stringTableSection!=null ) {
             stringTableSection.dump(System.out);
         }
-        if (headers.size()==0 || stringTableSection == null){
+        if (headers.isEmpty() || stringTableSection == null){
             if (isThereAnyLinkedObjectFiles(stringTableSection)) {
                 // we got situation when Mac's linker put dwarf information not in the executable file
                 // but just put links to object files instead
                 return false;
             }
             throw new WrongFileFormatException("Dwarf section not found in Mach-O file"); // NOI18N
-        } 
+        }
+        // clear string section, another string section will be read late
+        stringTableSection = null;
         sectionHeadersTable = new SectionHeader[headers.size()];
         for(int i = 0; i < headers.size(); i++){
             sectionHeadersTable[i] = headers.get(i);
@@ -368,8 +389,47 @@ public class ElfReader extends ByteStreamReader {
         }
         return str.toString();
     }
-    
-    private void readProgramHeaderTable() {
+
+    public List<String> readPubNames() throws IOException{
+        List<String> res = new ArrayList<String>();
+        long save = getFilePointer();
+        seek(elfHeader.e_phoff);
+        for(int i = 0; i < elfHeader.e_phnum; i++) {
+            long p = getFilePointer();
+            int type = readInt();
+            if (type == 2) {
+                long addr = read3264();
+                seek(addr);
+                List<Integer> libs = new ArrayList<Integer>();
+                while(true) {
+                    int tag = readInt();
+                    if (tag == 0) {
+                        break;
+                    }
+                    int ptr = readInt();
+                    //System.err.println("tag "+tag+" "+ptr);
+                    if (tag == 1) { //DT_NEEDED
+                        libs.add(ptr);
+                    }
+                }
+                Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
+                if (idx != null) {
+                    long start = sectionHeadersTable[idx].sh_offset;
+                    for(int l : libs){
+                        seek(start+l);
+                        res.add(readString());
+                    }
+                }
+
+                break;
+            }
+            seek(p+elfHeader.e_phentsize);
+        }
+        seek(save);
+        return res;
+    }
+
+    private void readProgramHeaderTable() throws IOException {
         // TODO: Add code
     }
     
@@ -441,16 +501,6 @@ public class ElfReader extends ByteStreamReader {
         /*int mumberLineNumbers =*/ readShort();
         h.sh_flags = readInt();
         return h;
-    }
-    
-    StringTableSection readStringTableSection(String sectionName) throws IOException {
-        Integer sectionIdx = sectionsMap.get(sectionName);
-        return (sectionIdx == null) ? null : readStringTableSection(sectionIdx);
-    }
-    
-    StringTableSection readStringTableSection(int sectionIdx) throws IOException {
-        sections[sectionIdx] = new StringTableSection(this, sectionIdx);
-        return (StringTableSection)sections[sectionIdx];
     }
     
     public ElfSection getSection(String sectionName) {

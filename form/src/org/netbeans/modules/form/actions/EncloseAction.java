@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,6 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -66,19 +68,23 @@ import org.openide.util.actions.NodeAction;
  */
 public class EncloseAction extends NodeAction {
 
+    @Override
     public String getName() {
         return NbBundle.getBundle(EncloseAction.class).getString("ACT_EncloseInContainer"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = getComponents(nodes);
         return ((comps != null) && getContainer(comps) != null);
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
     }
 
@@ -158,10 +164,12 @@ public class EncloseAction extends NodeAction {
                 waitItem.setEnabled(false);
                 popup.add(waitItem);
                 // Find the containers outside EQ, see issue 123794
-                RequestProcessor.getDefault().post(new Runnable() {
+                FormUtils.getRequestProcessor().post(new Runnable() {
+                    @Override
                     public void run() {
                         final PaletteItem[] items = getAllContainers();
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 popup.removeAll();
                                 for (PaletteItem item : items) {
@@ -201,6 +209,7 @@ public class EncloseAction extends NodeAction {
                 this.paletteItem = paletteItem;
             }
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 RADVisualContainer metacont = getContainer(components);
                 if (metacont != null) {

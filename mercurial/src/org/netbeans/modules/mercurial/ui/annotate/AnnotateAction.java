@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,12 @@
  */
 package org.netbeans.modules.mercurial.ui.annotate;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
-import java.awt.event.ActionEvent;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
@@ -70,6 +73,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.text.NbDocument;
 
 /**
  * Annotate action for mercurial: 
@@ -79,19 +83,13 @@ import org.openide.NotifyDescriptor;
  */
 public class AnnotateAction extends ContextAction {
     
-    private final VCSContext context;
-    
-    public AnnotateAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-    
-    public boolean isEnabled() {
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         if(!HgUtils.isFromHgRepository(context)) {
             return false;
         }
 
-        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File file = activatedFile(nodes);
@@ -114,8 +112,13 @@ public class AnnotateAction extends ContextAction {
         } 
     } 
 
-    public void performAction(ActionEvent e) {
-        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return visible(nodes) ? "CTL_MenuItem_HideAnnotations" : "CTL_MenuItem_ShowAnnotations"; //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);
             AnnotationBarManager.hideAnnotationBar(pane);
@@ -128,47 +131,63 @@ public class AnnotateAction extends ContextAction {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes == null) {
                 ec.open();
+                panes = ec.getOpenedPanes();
             }
 
-            panes = ec.getOpenedPanes();
             if (panes == null) {
                 return;
             }
             final JEditorPane currentPane = panes[0];
-            final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  currentPane);
-            tc.requestActive();
-
-            final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
-            ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
-
-            final File repository  = HgUtils.getRootFile(context);
-            if (repository == null) return;
-
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-            HgProgressSupport support = new HgProgressSupport() {
-                public void perform() {
-                    OutputLogger logger = getLogger();
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
-                    computeAnnotations(repository, file, this, ab);
-                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_DONE")); // NOI18N
-                }
-            };
-            support.start(rp, repository, NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
+            showAnnotations(currentPane, file, null);
         }
     }
 
-    private void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab) {
+    public static void showAnnotations(JEditorPane currentPane, final File file, final String revision) {
+        if (currentPane == null || file == null) {
+            return;
+        }
+        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
+        tc.requestActive();
+
+        final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
+        ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
+
+        final File repository = Mercurial.getInstance().getRepositoryRoot(file);
+        if (repository == null) {
+            return;
+        }
+
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            @Override
+            public void perform() {
+                if (revision != null) {
+                    // showing annotations from past, the referenced file differs from the one being displayed
+                    ab.setReferencedFile(file);
+                }
+                OutputLogger logger = getLogger();
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_TITLE")); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
+                computeAnnotations(repository, file, this, ab, revision);
+                logger.output("\t" + file.getAbsolutePath()); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(AnnotateAction.class,
+                        "MSG_ANNOTATE_DONE")); // NOI18N
+            }
+        };
+        support.start(rp, repository, NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
+    }
+
+    private static void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab, String revision) {
         List<String> list = null;
         try {
-             list = HgCommand.doAnnotate(repository, file, progress.getLogger());
+             list = HgCommand.doAnnotate(repository, file, revision, progress.getLogger());
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -209,7 +228,7 @@ public class AnnotateAction extends ContextAction {
                 if (log.getRevisionAsLong() < lowestRevisionNumber) {
                     lowestRevisionNumber = log.getRevisionAsLong();
                 }
-                if (annotation.getRevision().equals(log.getRevision())) {
+                if (annotation.getRevision().equals(log.getRevisionNumber())) {
                     annotation.setDate(log.getDate());
                     annotation.setId(log.getCSetShortID());
                     annotation.setCommitMessage(log.getMessage());
@@ -236,19 +255,21 @@ public class AnnotateAction extends ContextAction {
         
         List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
         int i = 0;
-        Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
+        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
             i++;
             Matcher m = p.matcher(line);
+            AnnotateLine anLine;
             if (!m.matches()){
                 Mercurial.LOG.log(Level.WARNING, "AnnotateAction: toAnnotateLines(): Failed when matching: {0}", new Object[] {line}); //NOI18N
-                continue;
+                anLine = new FakeAnnotationLine();
+            } else {
+                anLine = new AnnotateLine();
+                anLine.setAuthor(m.group(GROUP_AUTHOR));
+                anLine.setRevision(m.group(GROUP_REVISION));
+                anLine.setFileName(m.group(GROUP_FILENAME));
+                anLine.setContent(m.group(GROUP_CONTENT));
             }
-            AnnotateLine anLine = new AnnotateLine();
-            anLine.setAuthor(m.group(GROUP_AUTHOR));
-            anLine.setRevision(m.group(GROUP_REVISION));
-            anLine.setFileName(m.group(GROUP_FILENAME));
-            anLine.setContent(m.group(GROUP_CONTENT));
             anLine.setLineNum(i);
             
             lines.add(anLine);
@@ -271,11 +292,8 @@ public class AnnotateAction extends ContextAction {
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null) {
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
+        if (ec != null && EventQueue.isDispatchThread()) {
+            return NbDocument.findRecentEditorPane(ec);
         }
         return null;
     }
@@ -301,5 +319,15 @@ public class AnnotateAction extends ContextAction {
             }
         }
         return null;
+    }
+
+    private static class FakeAnnotationLine extends AnnotateLine {
+        public FakeAnnotationLine() {
+            String fakeItem = NbBundle.getMessage(AnnotateAction.class, "MSG_AnnotateAction.lineDetail.unknown");
+            setAuthor(fakeItem);
+            setContent(fakeItem);
+            setRevision(fakeItem);
+            setFileName(fakeItem);
+        }
     }
 }

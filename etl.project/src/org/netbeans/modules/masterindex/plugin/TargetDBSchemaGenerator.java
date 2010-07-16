@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,12 +51,15 @@
  */
 package org.netbeans.modules.masterindex.plugin;
 
+import java.io.BufferedInputStream;
 import org.netbeans.modules.masterindex.plugin.datamodel.ObjectDefinitionBuilder;
 import org.netbeans.modules.masterindex.plugin.datamodel.Field;
 import org.netbeans.modules.masterindex.plugin.datamodel.Lookup;
 import org.netbeans.modules.masterindex.plugin.datamodel.ObjectDefinition;
 import org.netbeans.modules.masterindex.plugin.util.PluginDTConstants;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -63,9 +69,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import net.java.hulp.i18n.Logger;
-import org.axiondb.AxionException;
-import org.axiondb.io.AxionFileSystem;
-import org.axiondb.io.BufferedDataInputStream;
 import org.netbeans.modules.etl.project.Localizer;
 
 
@@ -303,22 +306,22 @@ public class TargetDBSchemaGenerator {
     }
      */
     private void createObjectDefModel() {
-        AxionFileSystem afs = new AxionFileSystem();
         File configfile = PluginDTConstants.EVIEW_CONFIG_FILE;
         if (configfile != null) {
             if (configfile.exists()) {
-                BufferedDataInputStream bdis = null;
+                BufferedInputStream bdis = null;
                 try {
-                    bdis = afs.openBufferedDIS(configfile);
+                    bdis = new BufferedInputStream(new FileInputStream(configfile));
                     objDef = new ObjectDefinitionBuilder().parse(bdis);
                     addExtraFieldsToParent(objDef);
                     lookup = Lookup.createLookup(objDef);
                     //validateEviewModel();
-                } catch (AxionException ex) {
+                } catch (FileNotFoundException ex) {
                     mLogger.infoNoloc(mLoc.t("PRJS018: Error Reading eview config file :{0}", ex.getMessage()));
                 } finally {
                     try {
-                        bdis.close();
+                        if(bdis!=null)
+                            bdis.close();
                     } catch (IOException ex) {
                         mLogger.infoNoloc(mLoc.t("PRJS011: Error Closing Axion BufferedDataInputStream :{0}", ex.getMessage()));
                     }

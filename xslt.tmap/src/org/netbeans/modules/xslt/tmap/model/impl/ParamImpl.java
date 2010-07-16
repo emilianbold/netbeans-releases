@@ -62,8 +62,12 @@ public class ParamImpl extends NameableImpl implements Param {
         return getAttribute(TMapAttributes.VALUE);
     }
 
-    protected void setValue(String value) {
+    public void setValue(String value) {
         setAttribute(Param.VALUE, TMapAttributes.VALUE, value);
+    }
+
+    public void removeValue() {
+        setAttribute(Param.VALUE, TMapAttributes.VALUE, null);
     }
 
     // TODO m
@@ -71,9 +75,13 @@ public class ParamImpl extends NameableImpl implements Param {
         setText(Param.CONTENT, content);
     }
 
+    public void removeContent() {
+        setText(Param.CONTENT, null);
+    }
+
     // TODO m
     public String getContent() {
-        return getText();
+        return getCorrectedText();
     }
 
     public VariableReference getVariableReference() {

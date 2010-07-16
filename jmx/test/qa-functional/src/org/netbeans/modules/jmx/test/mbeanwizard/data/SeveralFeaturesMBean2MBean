@@ -11,7 +11,7 @@ import javax.management.ObjectName;
 
 /**
  * Interface SeveralFeaturesMBean2MBean
- * 
+ *
  * @author <author>
  */
 public interface SeveralFeaturesMBean2MBean

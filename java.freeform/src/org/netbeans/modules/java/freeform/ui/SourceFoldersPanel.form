@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -418,7 +418,7 @@
     <Component class="javax.swing.JComboBox" name="encodingComboBox">
       <Properties>
         <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new EncodingRenderer()" type="code"/>
+          <Connection code="ProjectCustomizer.encodingRenderer()" type="code"/>
         </Property>
       </Properties>
       <AccessibilityProperties>

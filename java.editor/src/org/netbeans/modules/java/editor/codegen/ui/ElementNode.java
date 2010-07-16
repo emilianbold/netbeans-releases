@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.nodes.AbstractNode;
@@ -151,6 +155,17 @@ public class ElementNode extends AbstractNode {
             return new Node[] {new ElementNode(key, true)};
         }
     }
+    
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+    
+    private static String translateToHTML(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+        
+        return input;
+    }
                        
     /** Stores all interesting data about given element.
      */    
@@ -172,22 +187,23 @@ public class ElementNode extends AbstractNode {
             return new Description("<root>", null, null, subs, null, false, false); // NOI18N
         }
         
-        public static Description create(Element element, List<Description> subs, boolean isSelectable, boolean isSelected ) {
+        public static Description create(CompilationInfo info, Element element, List<Description> subs, boolean isSelectable, boolean isSelected ) {
+            boolean deprecated = info.getElements().isDeprecated(element);
             String htmlHeader = null;
             switch (element.getKind()) {
                 case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
-                    htmlHeader = createHtmlHeader((TypeElement)element);
+                    htmlHeader = createHtmlHeader(deprecated, (TypeElement)element);
                     break;
                 case ENUM_CONSTANT:
                 case FIELD:
-                    htmlHeader = createHtmlHeader((VariableElement)element);
+                    htmlHeader = createHtmlHeader(deprecated, (VariableElement)element);
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
-                    htmlHeader = createHtmlHeader((ExecutableElement)element);
+                    htmlHeader = createHtmlHeader(deprecated, (ExecutableElement)element);
                     break;                    
             }
             return new Description(element.getSimpleName().toString(), 
@@ -313,21 +329,24 @@ public class ElementNode extends AbstractNode {
         
         
         
-        private static String createHtmlHeader(ExecutableElement e) {
+        private static String createHtmlHeader(boolean deprecated, ExecutableElement e) {
             StringBuilder sb = new StringBuilder();
+            sb.append("<html>");
+            if (deprecated) sb.append("<s>");
             if (e.getKind() == ElementKind.CONSTRUCTOR) {
                 sb.append(e.getEnclosingElement().getSimpleName());
             } else {
                 sb.append(e.getSimpleName());
             }
+            if (deprecated) sb.append("</s>");
             sb.append("("); // NOI18N
             for(Iterator<? extends VariableElement> it = e.getParameters().iterator(); it.hasNext(); ) {
                 VariableElement param = it.next();
                 if (!it.hasNext() && e.isVarArgs() && param.asType().getKind() == TypeKind.ARRAY) {
-                    sb.append(print(((ArrayType) param.asType()).getComponentType()));
+                    sb.append(translateToHTML(print(((ArrayType) param.asType()).getComponentType())));
                     sb.append("...");
                 } else {
-                    sb.append(print(param.asType()));
+                    sb.append(translateToHTML(print(param.asType())));
                 }
                 sb.append(" "); // NOI18N
                 sb.append(param.getSimpleName());
@@ -340,35 +359,41 @@ public class ElementNode extends AbstractNode {
                 TypeMirror rt = e.getReturnType();
                 if ( rt.getKind() != TypeKind.VOID ) {
                     sb.append(" : "); // NOI18N
-                    sb.append(print(e.getReturnType()));
+                    sb.append(translateToHTML(print(e.getReturnType())));
                 }
             }
             return sb.toString();
         }
         
-        private static String createHtmlHeader(VariableElement e) {
+        private static String createHtmlHeader(boolean deprecated, VariableElement e) {
             StringBuilder sb = new StringBuilder();
+            sb.append("<html>");
+            if (deprecated) sb.append("<s>");
             sb.append(e.getSimpleName());
+            if (deprecated) sb.append("</s>");
             if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
                 sb.append( " : " ); // NOI18N
-                sb.append(print(e.asType()));
+                sb.append(translateToHTML(print(e.asType())));
             }
             return sb.toString();
         }
         
-        private static String createHtmlHeader(TypeElement e) {
+        private static String createHtmlHeader(boolean deprecated, TypeElement e) {
             StringBuilder sb = new StringBuilder();
+            sb.append("<html>");
+            if (deprecated) sb.append("<s>");
             sb.append(e.getSimpleName());
+            if (deprecated) sb.append("</s>");
             List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
             if (typeParams != null && !typeParams.isEmpty()) {
-                sb.append("<"); // NOI18N
+                sb.append("&lt;"); // NOI18N
                 for(Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext();) {
                     TypeParameterElement tp = it.next();
                     sb.append(tp.getSimpleName());
                     try {
                         List<? extends TypeMirror> bounds = tp.getBounds();
                         if (!bounds.isEmpty()) {
-                            sb.append(printBounds(bounds));
+                            sb.append(translateToHTML(printBounds(bounds)));
                         }
                     }
                     catch (NullPointerException npe) {
@@ -377,7 +402,7 @@ public class ElementNode extends AbstractNode {
                         sb.append(", "); // NOI18N
                     }
                 }
-                sb.append(">"); // NOI18N
+                sb.append("&gt;"); // NOI18N
             }
             return sb.toString();
         }

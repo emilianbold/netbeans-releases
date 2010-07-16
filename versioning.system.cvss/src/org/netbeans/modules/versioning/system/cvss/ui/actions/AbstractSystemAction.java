@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.util.MissingResourceException;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Base for all context-sensitive CVS actions.
@@ -90,7 +94,8 @@ public abstract class AbstractSystemAction extends NodeAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        return getContext(nodes).getRootFiles().length > 0;
+        File[] rootFiles = getCachedContext(nodes).getRootFiles();
+        return rootFiles.length > 0 && CvsVersioningSystem.isManaged(rootFiles[0]);
     }
 
     protected abstract void performCvsAction(Node[] nodes);
@@ -150,7 +155,7 @@ public abstract class AbstractSystemAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -214,7 +219,7 @@ public abstract class AbstractSystemAction extends NodeAction {
      */ 
     public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -270,7 +275,11 @@ public abstract class AbstractSystemAction extends NodeAction {
     }
 
     protected Context getContext(Node[] nodes) {
-        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus());
+        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), false);
+    }
+
+    protected Context getCachedContext(Node[] nodes) {
+        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true);
     }
     
     protected int getFileEnabledStatus() {

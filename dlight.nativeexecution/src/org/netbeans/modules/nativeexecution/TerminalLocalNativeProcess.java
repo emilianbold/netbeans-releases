@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,11 +48,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -79,8 +81,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final static File dorunScript;
     private ExternalTerminal terminal;
-    private InputStream processOutput;
-    private InputStream processError;
     private File resultFile;
     private final OSFamily osFamily;
 
@@ -102,15 +102,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final NativeProcessInfo info, final ExternalTerminal terminal) {
         super(info);
         this.terminal = terminal;
-        this.processOutput = new ByteArrayInputStream(
-                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
+        setInputStream(new ByteArrayInputStream(
+                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes())); // NOI18N
 
         osFamily = hostInfo == null ? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
 
+    @Override
     protected void create() throws Throwable {
         File pidFileFile = null;
-        File envFileFile = null;
         File shFileFile = null;
 
         try {
@@ -128,22 +128,27 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final File workingDirectory = (wDir == null) ? new File(".") : new File(wDir); // NOI18N
 
             pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()).getAbsoluteFile(); // NOI18N
-            envFileFile = new File(pidFileFile.getPath() + ".env"); // NOI18N
             shFileFile = new File(pidFileFile.getPath() + ".sh"); // NOI18N
             resultFile = new File(shFileFile.getPath() + ".res"); // NOI18N
 
             resultFile.deleteOnExit();
 
             String pidFile = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
-            String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
-            FileWriter shWriter = new FileWriter(shFileFile);
-            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
-            shWriter.write("exec " + commandLine + "\n"); // NOI18N
-            shWriter.flush();
-            shWriter.close();
+            FileOutputStream shfos = new FileOutputStream(shFileFile);
+
+            Charset scriptCharset = null;
+
+            if (info.getCharset() != null) {
+                scriptCharset = info.getCharset();
+            } else {
+                if (osFamily == OSFamily.WINDOWS) {
+                    scriptCharset = WindowsSupport.getInstance().getShellCharset();
+                } else {
+                    scriptCharset = Charset.defaultCharset();
+                }
+            }
 
             final ExternalTerminalAccessor terminalInfo =
                     ExternalTerminalAccessor.getDefault();
@@ -154,8 +159,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             List<String> terminalArgs = new ArrayList<String>();
 
+            String shellScriptPath = dorunScript.getAbsolutePath();
+            if (osFamily == OSFamily.WINDOWS) {
+                shellScriptPath = WindowsSupport.getInstance().convertToShellPath(shellScriptPath);
+            }
+
             terminalArgs.addAll(Arrays.asList(
-                    dorunScript.getAbsolutePath(),
+                    shellScriptPath,
                     "-p", terminalInfo.getPrompt(terminal), // NOI18N
                     "-x", shFile)); // NOI18N
 
@@ -173,13 +183,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             pb.directory(workingDirectory);
             pb.redirectErrorStream(true);
 
-            LOG.log(Level.FINEST, "Command: " + command); // NOI18N
+            LOG.log(Level.FINEST, "Command: %s", command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 
             // setup DISPLAY variable for MacOS...
             if (osFamily == OSFamily.MACOSX) {
-                ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
+                ProcessBuilder pb1 = new ProcessBuilder(hostInfo.getShell(), "-c", "/bin/echo $DISPLAY"); // NOI18N
                 Process p1 = pb1.start();
                 int status = p1.waitFor();
                 String display = null;
@@ -195,7 +205,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 pb.environment().put("DISPLAY", display); // NOI18N
             }
 
-            env.appendPathVariable("PATH", hostInfo.getPath()); // NOI18N
+            OutputStreamWriter shWriter = new OutputStreamWriter(shfos, scriptCharset);
+            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
 
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
@@ -203,65 +214,39 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 // Problem here is that this is done for PATH env. variable only!
 
                 if (osFamily == OSFamily.WINDOWS) {
-                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
+                    // Make sure that path in upper case
+                    // [for external terminal only]
+                    String path = env.get("PATH"); // NOI18N
+                    env.remove("PATH"); // NOI18N
+                    env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
                 }
 
-                OutputStream fos = new FileOutputStream(envFileFile);
-                EnvWriter ew = new EnvWriter(fos);
+                EnvWriter ew = new EnvWriter(shWriter);
                 ew.write(env);
-                fos.close();
-
-                /**
-                 * IZ#176361: Sometimes when external terminal is used,
-                 * execution fails because env file is not found
-                 *
-                 * TODO: ???
-                 * What is it? FS caches? How to deal with this?
-                 */
-                int attempts = 10;
-                boolean exists = false;
-
-                while (attempts > 0) {
-                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath()) &
-                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
-
-                    if (exists) {
-                        break;
-                    }
-
-                    LOG.warning("env or sh file is not available yet... waiting [" + attempts + "]"); // NOI18N
-                    Thread.sleep(50);
-                    attempts--;
-                }
-
 
                 if (LOG.isLoggable(Level.FINEST)) {
                     env.dump(System.err);
                 }
             }
 
-            processError = new ByteArrayInputStream(new byte[0]);
+            shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.close();
 
             Process terminalProcess = pb.start();
 
             creation_ts = System.nanoTime();
 
             waitPID(terminalProcess, pidFileFile);
+
             if (isInterrupted()) {
-                cancel();
                 throw new IOException(loc("TerminalLocalNativeProcess.terminalRunCancelled.text")); // NOI18N
             }
         } catch (Throwable ex) {
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-            processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
         } finally {
             if (pidFileFile != null) {
                 pidFileFile.delete();
-            }
-            if (envFileFile != null) {
-                envFileFile.delete();
             }
             if (shFileFile != null) {
                 shFileFile.delete();
@@ -278,11 +263,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
 
         return pid;
-    }
-
-    @Override
-    public synchronized void cancel() {
-        ProcessUtils.destroy(this);
     }
 
     @Override
@@ -349,26 +329,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
-        }
-
         return exitCode;
-    }
-
-    @Override
-    public OutputStream getOutputStream() {
-        return null;
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {

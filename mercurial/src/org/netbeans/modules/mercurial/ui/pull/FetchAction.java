@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,17 +54,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.openide.filesystems.FileUtil;
+import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,40 +82,69 @@ import org.openide.util.NbBundle;
  */
 public class FetchAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public FetchAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent e) {
-        final File roots[] = HgUtils.getActionRoots(context);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performFetch(root, this.getLogger()); } };
 
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_FetchLocal";                               //NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_FetchRoot" : "CTL_MenuItem_FetchLocal"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(FetchAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(FetchAction.class, name);
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File root = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                    // run every repository fetch in its own support with its own output window
+                    HgProgressSupport support = new HgProgressSupport() {
+                        @Override
+                        public void perform() {
+                            performFetch(root, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     static void performFetch(final File root, OutputLogger logger) {
+        HgURL pullSource = null;
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
             
-            logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
-                    "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
-
             final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
             // If the repository has no default pull path then inform user
-            if (pullSourceString == null) {
+            if (HgUtils.isNullOrEmpty(pullSourceString)) {
+                notifyDefaultPullUrlNotSpecified(logger);
                 return;
             }
 
-            HgURL pullSource;
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
+                    "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
@@ -126,17 +158,26 @@ public class FetchAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
                 MergeAction.handleMergeOutput(root, list, false, logger);
+                HgUtils.notifyUpdatedFiles(root, list);
+                HgUtils.forceStatusRefresh(root);
             }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            if (pullSource != null) {
+                pullSource.clearPassword();
+            }
         }
     }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
+    
+    private static void notifyDefaultPullUrlNotSpecified(OutputLogger logger) {
+        logger.output(NbBundle.getMessage(FetchAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); //NOI18N
+        logger.output(""); //NOI18N
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(FetchAction.class, "MSG_NO_DEFAULT_PULL_SET"))); //NOI18N
+    }
 }

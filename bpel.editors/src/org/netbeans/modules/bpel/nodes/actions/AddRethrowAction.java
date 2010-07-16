@@ -35,6 +35,7 @@ public class AddRethrowAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddRethrowAction() {
+        super("basic/rethrow"); // NOI18N
     }    
     
     protected String getBundleName() {

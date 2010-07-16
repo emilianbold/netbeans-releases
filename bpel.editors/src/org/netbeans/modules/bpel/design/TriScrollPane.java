@@ -185,15 +185,15 @@ public class TriScrollPane extends JScrollPane implements ActionListener,
                 : rightComponent.getPreferredSize().width;
         
         Rectangle viewportBounds = getViewport().getBounds();
-        
+
+        leftComponent.setVisible(leftVisible);
         if (leftVisible) {
-            leftComponent.setVisible(true);
             leftComponent.setBounds(viewportBounds.x, viewportBounds.y, 
                     leftWidth, viewportBounds.height);
         }
 
+        rightComponent.setVisible(rightVisible);
         if (rightVisible) {
-            rightComponent.setVisible(true);
             rightComponent.setBounds(viewportBounds.x + viewportBounds.width 
                     - rightWidth, viewportBounds.y, 
                     rightWidth, viewportBounds.height);

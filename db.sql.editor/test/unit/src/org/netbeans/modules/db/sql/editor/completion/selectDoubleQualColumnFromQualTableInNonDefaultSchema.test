@@ -11,3 +11,5 @@ select accounting.invoice.| from accounting.invoice
       customer_id
     customer
       customer_id
+    asummary[view]
+      asummary_id

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,14 @@
 package org.netbeans.modules.php.spi.editor;
 
 import java.util.List;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.openide.filesystems.FileObject;
 
 /**
  * SPI for extending PHP editor.
+ * <p>
+ * <i>All the methods are called only for the {@link FileObject}
+ * that is currently opened in the editor.</i>
  * @since 1.13
  * @author Tomas Mysik
  */
@@ -54,21 +59,9 @@ public abstract class EditorExtender {
     /**
      * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
      * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
      * Future changes to be more general are probable.
      * @param fo {@link FileObject file object} in which the code completion is invoked
      * @return list of {@link PhpElement PHP elements} to be added to the code completion.
      */
-    public abstract List<PhpElement> getElementsForCodeCompletion(FileObject fo);
-
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
+    public abstract List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo);
 }

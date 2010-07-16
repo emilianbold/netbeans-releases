@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ public class XMLCompletionProvider implements CompletionProvider {
     public XMLCompletionProvider() {
     }
     
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         SyntaxSupport support = Utilities.getDocument(component).getSyntaxSupport();
         if( (support == null) || !(support instanceof XMLSyntaxSupport))
@@ -86,6 +90,7 @@ public class XMLCompletionProvider implements CompletionProvider {
         return 0;
     }
     
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
             return new AsyncCompletionTask(new Query(), component);
@@ -103,10 +108,13 @@ public class XMLCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-                
+
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-            if (!ENABLED || support==null) {
+            SyntaxSupport syntaxSupport = Utilities.getSyntaxSupport(component); // fix for issue #185876
+            XMLSyntaxSupport support = (syntaxSupport instanceof XMLSyntaxSupport ?
+                (XMLSyntaxSupport) syntaxSupport : null);
+            if (!ENABLED || support == null) {
                 resultSet.finish();
                 return;
             }

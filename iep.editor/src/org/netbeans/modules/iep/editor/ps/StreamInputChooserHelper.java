@@ -21,7 +21,6 @@ package org.netbeans.modules.iep.editor.ps;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -31,26 +30,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.iep.editor.xsd.nodes.FileNode;
 import org.netbeans.modules.iep.editor.wizard.ChooserHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPModelFactory;
-import org.netbeans.modules.iep.model.InputOperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
+import org.netbeans.modules.iep.model.WsOperatorComponent;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -61,7 +53,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode.Children;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -327,12 +318,9 @@ public class StreamInputChooserHelper extends ChooserHelper<SchemaComponent>{
         public String getDisplayName() {
             return displayName;
         }
-
-
-
     }
 
-    class IEPFileNodeChildren extends Children.Keys<InputOperatorComponent> {
+    class IEPFileNodeChildren extends Children.Keys<WsOperatorComponent> {
 
         int level = 1;
         private IEPModel mModel;
@@ -360,7 +348,7 @@ public class StreamInputChooserHelper extends ChooserHelper<SchemaComponent>{
         }
 
         private void resetKeys() {
-            ArrayList<InputOperatorComponent> keys = new ArrayList<InputOperatorComponent>();
+            ArrayList<WsOperatorComponent> keys = new ArrayList<WsOperatorComponent>();
             
             PlanComponent planComp = mModel.getPlanComponent();
             if(planComp != null) {
@@ -370,8 +358,8 @@ public class StreamInputChooserHelper extends ChooserHelper<SchemaComponent>{
                     Iterator<OperatorComponent> it = operators.iterator();
                     while(it.hasNext()) {
                         OperatorComponent op = it.next();
-                        if(op instanceof InputOperatorComponent) {
-                            keys.add((InputOperatorComponent) op);
+                        if (op.getType().equals("/IEP/Input/StreamInput")) {
+                            keys.add((WsOperatorComponent) op);
                         }
                     }
                 }
@@ -381,7 +369,7 @@ public class StreamInputChooserHelper extends ChooserHelper<SchemaComponent>{
         }
         
         @Override
-        protected Node[] createNodes(InputOperatorComponent key) {
+        protected Node[] createNodes(WsOperatorComponent key) {
             Node[] nodes =new Node[] {new IEPStreamInputOperatorNode(key)};
             return nodes;
         }
@@ -389,12 +377,12 @@ public class StreamInputChooserHelper extends ChooserHelper<SchemaComponent>{
     }
     
     class IEPStreamInputOperatorNode extends AbstractNode {
-        private InputOperatorComponent mOperator;
+        private WsOperatorComponent mOperator;
         
-        public IEPStreamInputOperatorNode(InputOperatorComponent operator) {
+        public IEPStreamInputOperatorNode(WsOperatorComponent operator) {
             super(Children.LEAF, new ProxyLookup(Lookups.fixed(new Object[] {operator})) );
             this.mOperator = operator;
-            this.setDisplayName(this.mOperator.getDisplayName());
+            this.setDisplayName(this.mOperator.getString(PROP_NAME));
             setIconBaseWithExtension("images/icons16x16/streamInputx16.png");
             
         }

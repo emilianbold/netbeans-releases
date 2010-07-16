@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test SharedClassObject singletons: esp. initialization semantics.
@@ -201,6 +205,15 @@ public class SharedClassObjectTest extends NbTestCase {
         MockServices.setServices(Instance.class);
         Instance i2 = Lookup.getDefault().lookup(Instance.class);
         assertSame("Only one instance is created", i1, i2);
+    }
+
+    public void testSharedClassObjectBridge() throws Exception {
+        assertEquals(Object.class, SharedClassObjectBridge.newInstance(Object.class).getClass());
+        Class<? extends SharedClassObject> c = makeClazz("SimpleSCO");
+        SharedClassObject o = SharedClassObjectBridge.newInstance(c);
+        assertNotNull(o);
+        assertEquals(c, o.getClass());
+        assertTrue(o == SharedClassObject.findObject(c, true));
     }
 
     public static final class Instance extends SharedClassObject {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
@@ -88,13 +92,14 @@ public final class Startup {
 
     /** Singleton instance */
     private static Startup instance = null;
-    
+
     /** Currently used LF customizer */
     private LFCustoms curCustoms = null;
     private LFCustoms globalCustoms = null;
 
     private static URL themeURL = null;
     private static Class uiClass = null;
+    private static ResourceBundle bundle;
     
     private boolean installed = false;
 
@@ -133,48 +138,19 @@ public final class Startup {
       }
       
       if (uiClass == null) {
-          String uiClassName;
-          if (isWindows()) {
-              uiClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"; //NOI18N
-          } else if (isMac()){
-              uiClassName = "apple.laf.AquaLookAndFeel";
-          } else if (shouldUseMetal()) {
-              uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel"; //NOI18N
-          } else {
-              //Should get us metal where it doesn't get us GTK
-              uiClassName = UIManager.getSystemLookAndFeelClassName();
-              // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
-              // GTK L&F quality unacceptable for earlier versions.
-              // Also enable GTK L&F for OpenJDK
-              String javaVersion = System.getProperty("java.version");
-              if ("1.6.0_01".compareTo(javaVersion) > 0 && 
-                       System.getProperty("java.vm.name") != null &&
-                       System.getProperty("java.vm.name").indexOf("OpenJDK") < 0) {
-                  // IDE runs on 1.5 or 1.6 - useGtk can enabled Gtk
-                  if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
-                      uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-                  }
-              } else {
-                  // IDE runs on 1.6_0_01 or higher - useGtk can disabled Gtk
-                  if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
-                      uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-                  }
-              }
-              
-              // #118534 - don't allow Nimbus L&F as default system L&F,
-              // as we're not ready to support it yet
-              if (uiClassName.contains("Nimbus")) {
-                  uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-              }
+          ResourceBundle b = bundle != null ? bundle : ResourceBundle.getBundle("org.netbeans.swing.plaf.Bundle"); // NOI18N
+          String uiClassName = b.getString("LookAndFeelClassName"); // NOI18N
+          if ("default".equals(uiClassName)) { // NOI18N
+              uiClassName = defaultLaF();
           }
           try {
-              uiClass = Class.forName(uiClassName);
+              uiClass = UIUtils.classForName(uiClassName);
           } catch (ClassNotFoundException e) {
               System.err.println("Custom UI class " + uiClassName + " not on classpath."); // NOI18N
 
               //#144402 - try fallback to Metal L&F
               try {
-                uiClass = Class.forName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
+                uiClass = UIUtils.classForName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
               } catch( Exception newEx) {
                   newEx.printStackTrace();
               }
@@ -200,6 +176,44 @@ public final class Startup {
           }
       }
       return result;
+    }
+
+    /** Default NetBeans logic for finding out the right L&F.
+     * @return name of the LaF to instantiate
+     */
+    private static String defaultLaF() {
+        String uiClassName;
+        if (isWindows()) {
+            uiClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"; //NOI18N
+        } else if (isMac()) {
+            uiClassName = "apple.laf.AquaLookAndFeel";
+        } else if (shouldUseMetal()) {
+            uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel"; //NOI18N
+        } else {
+            //Should get us metal where it doesn't get us GTK
+            uiClassName = UIManager.getSystemLookAndFeelClassName();
+            // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
+            // GTK L&F quality unacceptable for earlier versions.
+            // Also enable GTK L&F for OpenJDK
+            String javaVersion = System.getProperty("java.version");
+            if ("1.6.0_01".compareTo(javaVersion) > 0 && System.getProperty("java.vm.name") != null && System.getProperty("java.vm.name").indexOf("OpenJDK") < 0) {
+                // IDE runs on 1.5 or 1.6 - useGtk can enabled Gtk
+                if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
+                    uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+                }
+            } else {
+                // IDE runs on 1.6_0_01 or higher - useGtk can disabled Gtk
+                if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
+                    uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+                }
+            }
+            // #118534 - don't allow Nimbus L&F as default system L&F,
+            // as we're not ready to support it yet
+            if (uiClassName.contains("Nimbus")) {
+                uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+            }
+        }
+        return uiClassName;
     }
 
     private void installTheme(LookAndFeel lf) {
@@ -317,13 +331,23 @@ public final class Startup {
         }
         
     }
+    
+    private static ClassLoader loader;
+    /**
+     * Set a class loader to be used in place of {@link Thread#getContextClassLoader}.
+     * @param loader a system-wide class loader
+     * @since org.netbeans.swing.plaf 1.15
+     */
+    public static void setClassLoader(ClassLoader loader) {
+        Startup.loader = loader;
+    }
 
     /** Gets the value of system class loader and returns it.
      */
     private static final class CLValue implements UIDefaults.ActiveValue {
-        public Object createValue (UIDefaults defs) {
-            return Thread.currentThread().getContextClassLoader();
-        }
+        public @Override ClassLoader createValue(UIDefaults defs) {
+            return loader != null ? loader : Thread.currentThread().getContextClassLoader();
+         }
     }
 
     /** Finds and returns instance of LF customizer which is suitable for
@@ -347,7 +371,7 @@ public final class Startup {
                 return new GtkLFCustoms();
             } else {
                 try {
-                    return (LFCustoms) Class.forName(FORCED_CUSTOMS).newInstance();
+                    return (LFCustoms) UIUtils.classForName(FORCED_CUSTOMS).newInstance();
                 } catch (Exception e) {
                     System.err.println("UI customizations class not found: " //NOI18N
                         + FORCED_CUSTOMS); //NOI18N
@@ -412,13 +436,27 @@ public final class Startup {
                             result = new XPLFCustoms();
                         }
                     } else {
-                        result = new WindowsLFCustoms();
+                        if( UIManager.getLookAndFeel() instanceof MetalLookAndFeel ) {
+                            result = new MetalLFCustoms();
+                        } else {
+                            result = new WindowsLFCustoms();
+                        }
                     }
             }
         }
         return result;
     }
     
+    /**
+     * Initialize values in UIDefaults which need to be there for NetBeans' components; apply customizations such
+     * as setting up a custom font size and loading a theme. Basically delegates to
+     * {@link #run(java.lang.Class, int, java.net.URL, java.util.ResourceBundle)} with null
+     * resource bundle.
+     */
+    public static void run (Class uiClass, int uiFontSize, URL themeURL) {
+        run(uiClass, uiFontSize, themeURL, null);
+    }
+
     /**
      * Initialize values in UIDefaults which need to be there for NetBeans' components; apply customizations such
      * as setting up a custom font size and loading a theme.
@@ -430,8 +468,12 @@ public final class Startup {
      *          than any hard limit the platform imposes on font size.
      * @param themeURL An optional URL for a theme file, or null. Theme file format documentation can be found
      *        <a href="ui.netbeans.org/project/ui/docs/ui/themes/themes.html">here</a>.
+     * @param rb resource bundle to use for branding or null. Allows NetBeans to provide enhanced version
+     *          of bundle that knows how to deal with branding. The bundle shall have the same keys as
+     *          <code>org.netbeans.swing.plaf.Bundle</code> bundle has.
+     * @since 1.16
      */
-    public static void run (Class uiClass, int uiFontSize, URL themeURL) {
+    public static void run (Class uiClass, int uiFontSize, URL themeURL, ResourceBundle rb) {
         if (instance == null) {
           // Modify default font size to the font size passed as a command-line parameter
             if(uiFontSize>0) {
@@ -440,35 +482,36 @@ public final class Startup {
             }
             Startup.uiClass = uiClass;
             Startup.themeURL = themeURL;
+            Startup.bundle = rb;
             instance = new Startup();
             instance.install();
         }
     }
 
-    private boolean isWindows() {
+    private static boolean isWindows() {
         String osName = System.getProperty ("os.name");
         return osName.startsWith("Windows");
     }
 
-    private boolean isWindowsVista() {
+    private static boolean isWindowsVista() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
     }
 
-    private boolean isWindows7() {
+    private static boolean isWindows7() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Windows 7") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
     }
 
-    private boolean isMac() {
+    private static boolean isMac() {
         String osName = System.getProperty ("os.name");
         boolean result = osName.startsWith ("Darwin") || "Mac OS X".equals(osName);
         return result;
     }
     
-    private boolean isSolaris10 () {
+    private static boolean isSolaris10 () {
         String osName = System.getProperty ("os.name");
         String osVersion = System.getProperty ("os.version");
         boolean result = osName.startsWith ("SunOS") && "5.10".equals(osVersion);
@@ -485,7 +528,7 @@ public final class Startup {
      *
      * @return If metal L&F should be used
      */
-    private boolean shouldUseMetal() {
+    private static boolean shouldUseMetal() {
         String osName = System.getProperty ("os.name");
         boolean result = !"Solaris".equals (osName) &&
             !osName.startsWith ("SunOS") &&

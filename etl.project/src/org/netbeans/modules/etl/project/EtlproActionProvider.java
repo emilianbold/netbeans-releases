@@ -58,6 +58,7 @@ class EtlproActionProvider implements ActionProvider {
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
         EtlproProject.COMMAND_BULK_LOADER,
+        EtlproProject.COMMAND_LOADER_ZIP,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -84,6 +85,7 @@ class EtlproActionProvider implements ActionProvider {
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
 
         commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
+        commands.put(EtlproProject.COMMAND_LOADER_ZIP, new String[]{"etl_loaderzip"});
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 

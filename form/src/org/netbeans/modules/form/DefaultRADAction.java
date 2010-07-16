@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ public class DefaultRADAction extends CookieAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         return "DefaultRADAction"; // NOI18N
     }
@@ -63,12 +67,14 @@ public class DefaultRADAction extends CookieAction {
     /** Get a help context for the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(DefaultRADAction.class);
     }
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
      * constants. */
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
@@ -77,6 +83,7 @@ public class DefaultRADAction extends CookieAction {
      *
      * @return list of classes the that the cookie tests
      */
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
@@ -110,6 +117,7 @@ public class DefaultRADAction extends CookieAction {
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);

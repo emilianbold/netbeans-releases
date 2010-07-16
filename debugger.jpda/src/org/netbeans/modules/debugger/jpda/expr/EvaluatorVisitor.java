@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import com.sun.jdi.CharType;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleType;
@@ -351,6 +355,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                 } else {
+                    Assert.error(arg0, "invokeInstanceMethodAsStatic", methodName);
                     type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
                 }
             }
@@ -482,6 +487,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static Method getConcreteMethod2(ReferenceType type, String methodName, List<? extends Type> typeArguments) throws UnsuitableArgumentsException {
         List<Method> methods = type.methodsByName(methodName);
         List<Method> possibleMethods = new ArrayList<Method>();
+        List<Method> methodsWithArgTypesNotLoaded = null;
         boolean constructor = "<init>".equals(methodName);
         for (Method method : methods) {
             if (!method.isAbstract() &&
@@ -494,12 +500,23 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         possibleMethods.add(method);
                     }
                 } catch (ClassNotLoadedException ex) {
-                    // Ignore
+                    if (method.argumentTypeNames().size() == typeArguments.size()) {
+                        if (methodsWithArgTypesNotLoaded == null) {
+                            methodsWithArgTypesNotLoaded = new ArrayList<Method>();
+                        }
+                        methodsWithArgTypesNotLoaded.add(method);
+                    }
                 }
             }
         }
         if (possibleMethods.size() == 0) {
-            if (methods.size() > 0) throw new UnsuitableArgumentsException();
+            if (methods.size() > 0) {
+                if (methodsWithArgTypesNotLoaded != null) {
+                    // Workaround for cases when we're not able to test method types.
+                    return methodsWithArgTypesNotLoaded.get(0);
+                }
+                throw new UnsuitableArgumentsException();
+            }
             return null;
         }
         return possibleMethods.get(0);
@@ -732,7 +749,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (left instanceof ClassType) {
             ClassType classLeft = (ClassType) left;
             if (right instanceof InterfaceType) {
-                List<InterfaceType> ifaces = classLeft.allInterfaces();
+                List<InterfaceType> ifaces;
+                try {
+                    ifaces = classLeft.allInterfaces();
+                } catch (ClassNotPreparedException cnpex) {
+                    return false;
+                }
                 for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
                     InterfaceType type = i.next();
                     if (type.equals(right)) return true;
@@ -750,7 +772,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (left instanceof InterfaceType) {
             InterfaceType intLeft = (InterfaceType) left;
             if (right instanceof InterfaceType) {
-                List<InterfaceType> ifaces = intLeft.superinterfaces();
+                List<InterfaceType> ifaces;
+                try {
+                    ifaces = intLeft.superinterfaces();
+                } catch (ClassNotPreparedException cnpex) {
+                    return false;
+                }
                 for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
                     InterfaceType type = i.next();
                     if (type.equals(right)) return true;
@@ -2221,6 +2248,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitNewClass(NewClassTree arg0, EvaluationContext evaluationContext) {
+        ClassTree ct = arg0.getClassBody();
+        if (ct != null) {
+            Assert.error(arg0, "noNewClassWithBody");
+        }
         TreePath currentPath = getCurrentPath();
         TypeMirror cType;
         if (currentPath != null) {
@@ -2404,8 +2435,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         if (currentPath == null || elm == null) {
-            Mirror expr = arg0.getExpression().accept(this, evaluationContext);
             String name = arg0.getIdentifier().toString();
+            if (name.equals("class")) { // It's a class file
+                String className = arg0.getExpression().toString();
+                VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+                if (vm == null) return null;
+                ReferenceType rt = getOrLoadClass(vm, className, evaluationContext);
+                if (rt == null) {
+                    Assert.error(arg0, "unknownType", className);
+                }
+                return rt.classObject();
+            }
+            Mirror expr = arg0.getExpression().accept(this, evaluationContext);
             // try field:
             if (expr instanceof ClassType) {
                 ClassType clazz = (ClassType) expr;
@@ -2696,7 +2737,20 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror expr = expTree.accept(this, evaluationContext);
         if (expr == null) return null;
         Tree typeTree = arg0.getType();
-        Mirror type = typeTree.accept(this, evaluationContext);
+        Mirror type;
+        if (getCurrentPath() == null) {
+            // We do not have elements, we'll not be able to parse the class name.
+            String className = typeTree.toString();
+            VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+            if (vm == null) return null;
+            ReferenceType rt = getOrLoadClass(vm, className, evaluationContext);
+            if (rt == null) {
+                Assert.error(arg0, "unknownType", className);
+            }
+            type = rt;
+        } else { // We have elements, we can resolve the type
+            type = typeTree.accept(this, evaluationContext);
+        }
         if (expr instanceof PrimitiveValue) {
             PrimitiveValue primValue = (PrimitiveValue) expr;
             if (primValue instanceof BooleanValue) {
@@ -3163,7 +3217,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             evaluationContext.methodToBeInvoked();
             Value value;
-            autoboxArguments(method.argumentTypes(), argVals, evaluationThread, evaluationContext);
+            try {
+                autoboxArguments(method.argumentTypes(), argVals, evaluationThread, evaluationContext);
+            } catch (ClassNotLoadedException cnlex) {
+                // TODO: Try to autobox/unbox arguments based on string types...
+            }
             if (Boolean.TRUE.equals(isStatic)) {
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
@@ -3858,7 +3916,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         public UnsuitableArgumentsException() {}
     }
 
-    private static abstract class ArtificialMirror implements Mirror {
+    static abstract class ArtificialMirror implements Mirror {
 
         public VirtualMachine virtualMachine() {
             return null;

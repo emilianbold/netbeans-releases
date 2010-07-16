@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -104,6 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
         
+        <change id="fix_issue_166177">
+            <api name="org.netbeans.modules.xml.xam"/>
+            <summary>Method AbstractDocumentModel.prepareChangeInfo() is replaced with a new one.</summary>
+            <version major="1.11" minor="0"/>
+            <date day="19" month="5" year="2010"/>
+            <author login="supernikita"/>
+            <compatibility binary="compatible" source="compatible" addition="yes"/>
+            <description>
+                The modufication is necessary for fixing issue #166177.
+                The old method {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List)}
+                is marked as deprecated and a new one {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)} is created.
+                The new one contains additional parameter <code>nsContextPathToRoot</code>, which
+                is necessary for correct calculation of namespace context after
+                deletion of namespace prefix. See the issue for details. 
+            </description>
+            <class package="org.netbeans.modules.xml.xam.dom" name="AbstractDocumentModel"/>
+            <issue number="166177"/>
+        </change>
+
         <change id="model-changes-notification">
             <api name="org.netbeans.modules.xml.xam"/>
             <summary>Two new methods to enhance model's performance</summary>

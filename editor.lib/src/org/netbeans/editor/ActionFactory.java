@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Element;
@@ -85,6 +89,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -1189,14 +1194,17 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
-            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
+// suspending the use of EditorActionRegistration due to #167063
+//    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
+//            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
     public static class ToggleHighlightSearchAction extends LocalBaseAction implements Presenter.Toolbar {
 
         static final long serialVersionUID =4603809175771743200L;
 
         public ToggleHighlightSearchAction() {
-            super(CLEAR_STATUS_TEXT);
+            super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_highlight.png", false)); //NOI18N
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2281,7 +2289,6 @@ public class ActionFactory {
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            DrawEngineDocView rootView = (DrawEngineDocView)Utilities.getDocumentView(target);
             AbstractDocument adoc = (AbstractDocument)target.getDocument();
 
             // Dump fold hierarchy
@@ -2298,22 +2305,25 @@ public class ActionFactory {
                 adoc.readUnlock();
             }
 
-            /*DEBUG*/System.err.println("DOCUMENT VIEW: " + System.identityHashCode(rootView) // NOI18N
-                + ", " + rootView // NOI18N
-                + "\nLINE VIEWS:\n" + rootView.childrenToString() // NOI18N
-            );
-            
-            int caretOffset = target.getCaretPosition();
-            int caretViewIndex = rootView.getViewIndex(caretOffset, Position.Bias.Forward);
-            /*DEBUG*/System.err.println("caretOffset=" + caretOffset + ", caretViewIndex=" + caretViewIndex); // NOI18N
-            if (caretViewIndex >= 0 && caretViewIndex < rootView.getViewCount()) {
-                View caretView = rootView.getView(caretViewIndex);
-                /*DEBUG*/System.err.println("caretView: " + caretView); // NOI18N
+            View rootView = null;
+            TextUI textUI = target.getUI();
+            if (textUI != null) {
+                rootView = textUI.getRootView(target);
             }
-            /*DEBUG*/System.err.println(FixLineSyntaxState.lineInfosToString(adoc));
-            
-            // Check the hierarchy correctness
-            org.netbeans.editor.view.spi.ViewUtilities.checkViewHierarchy(rootView);
+            if (rootView != null) {
+                /*DEBUG*/System.err.println("DOCUMENT VIEW: " + System.identityHashCode(rootView) + // NOI18N
+                        "\n" + rootView); // NOI18N
+                int caretOffset = target.getCaretPosition();
+                int caretViewIndex = rootView.getViewIndex(caretOffset, Position.Bias.Forward);
+                /*DEBUG*/System.err.println("caretOffset=" + caretOffset + ", caretViewIndex=" + caretViewIndex); // NOI18N
+                if (caretViewIndex >= 0 && caretViewIndex < rootView.getViewCount()) {
+                    View caretView = rootView.getView(caretViewIndex);
+                    /*DEBUG*/System.err.println("caretView: " + caretView); // NOI18N
+                }
+                /*DEBUG*/System.err.println(FixLineSyntaxState.lineInfosToString(adoc));
+                // Check the hierarchy correctness
+                //org.netbeans.editor.view.spi.ViewUtilities.checkViewHierarchy(rootView);
+            }
             
             if (adoc instanceof BaseDocument) {
                 /*DEBUG*/System.err.println("DOCUMENT:\n" + ((BaseDocument)adoc).toStringDetail()); // NOI18N

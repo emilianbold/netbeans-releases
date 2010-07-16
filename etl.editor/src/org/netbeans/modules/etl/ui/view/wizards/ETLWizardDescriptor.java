@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,19 +103,19 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
         }
 
         // Number the steps.
-        putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+        putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
 
         // Optional: set the size of the left pane explicitly:
-        putProperty(WizardDescriptor.PROP_LEFT_DIMENSION, new Dimension(184, 500)); // NOI18N
+        putProperty("WizardPanel_leftDimension", new Dimension(184, 500)); // NOI18N
 
         // Optional: show a help tab with special info about the pane:
-        // putProperty(WizardDescriptor.PROP_HELP_DISPLAYED, Boolean.TRUE); // NOI18N
+        // putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
 
         // Make the left pane appear:
-        putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
 
         // Make the left pane show list of steps etc.:
-        putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
     }
 
     // Called when user moves forward or backward etc.:
@@ -126,8 +129,8 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
             ETLWizardIterator myIterator = (ETLWizardIterator) iterator;
 
             // Make the left pane show list of steps etc.:
-            putProperty(WizardDescriptor.PROP_CONTENT_DATA, myIterator.getSteps()); // NOI18N
-            putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(myIterator.getIndex())); // NOI18N
+            putProperty("WizardPanel_contentData", myIterator.getSteps()); // NOI18N
+            putProperty("WizardPanel_contentSelectedIndex", new Integer(myIterator.getIndex())); // NOI18N
         }
 
         super.updateState();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,11 +55,11 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.ProxyInputProcessorFactory;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.DialogDisplayer;
@@ -71,6 +74,7 @@ import org.openide.windows.InputOutput;
  */
 public class SymfonyScript extends PhpProgram {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
@@ -78,7 +82,7 @@ public class SymfonyScript extends PhpProgram {
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
     public static final String CMD_INIT_APP = "generate:app"; // NOI18N
 
-    public SymfonyScript(String command) {
+    SymfonyScript(String command) {
         super(command);
     }
 
@@ -135,21 +139,7 @@ public class SymfonyScript extends PhpProgram {
 
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
-        }
-        return null;
+        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScript"));
     }
 
     public static String validate(String command) {
@@ -188,17 +178,18 @@ public class SymfonyScript extends PhpProgram {
         assert command != null;
 
         FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommand()); // NOI18N
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommands()); // NOI18N
         assert processBuilder != null;
 
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.bridge(lineProcessor);
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        }));
+        });
         runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview(), true); // NOI18N
         return lineProcessor.getHelp();
     }
@@ -226,16 +217,19 @@ public class SymfonyScript extends PhpProgram {
     }
 
     static class HelpLineProcessor implements LineProcessor {
-        private final StringBuilder buffer = new StringBuilder();
+        private final StringBuilder buffer = new StringBuilder(500);
 
+        @Override
         public void processLine(String line) {
             buffer.append(line);
             buffer.append("\n"); // NOI18N
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
         }
 

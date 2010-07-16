@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -645,6 +648,27 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ175877() throws Exception {
         // IZ#175877 : Error at processing #define func(args....)
         performTest("IZ175877.cc", 12, 6, "IZ175877.cc", 5, 3);
+    }
+
+    public void testIZ182152() throws Exception {
+        // Bug 182152 - variable names in prototypes are unresolved in ide display
+        performTest("IZ182152.cc", 3, 66, "IZ182152.cc", 3, 52);
+    }
+
+    public void testIZ154779() throws Exception {
+        // Bug 154779 - Completion fails on preprocessor statements
+        performTest("IZ154779.cc", 12, 10, "IZ154779.cc", 2, 5);
+    }
+
+    public void testIZ144535() throws Exception {
+        // Bug 144535 - wrong error highlighting for inner structure
+        performTest("IZ144535.c", 9, 31, "IZ144535.c", 3, 5);
+        performTest("IZ144535.c", 10, 10, "IZ144535.c", 4, 9);
+    }
+
+    public void testIZ155577() throws Exception {
+        // Bug 155577 - Code Assistance has problems with #include directives in class definitions
+        performTest("IZ155577.cc", 8, 12, "IZ155577.h", 2, 1);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

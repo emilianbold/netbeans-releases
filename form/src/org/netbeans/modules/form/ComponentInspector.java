@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -186,6 +189,7 @@ public class ComponentInspector extends TopComponent
     // overriding superclasses, implementing interfaces
 
     // ExplorerManager.Provider
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -271,6 +275,7 @@ public class ComponentInspector extends TopComponent
         }
         else {
             java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     focusFormImpl(form, visibility);
                 }
@@ -384,6 +389,7 @@ public class ComponentInspector extends TopComponent
             updatePasteActionInAwtThread();
         } else {
             java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updatePasteActionInAwtThread();
                 }
@@ -484,6 +490,7 @@ public class ComponentInspector extends TopComponent
             timer.setRepeats(false);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
                 return;            
@@ -533,6 +540,7 @@ public class ComponentInspector extends TopComponent
             timer.restart();
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) { // invoked by Timer
             java.awt.EventQueue.invokeLater(this); // replan to EventQueue thread
         }
@@ -542,6 +550,7 @@ public class ComponentInspector extends TopComponent
          * quickly e.g. due to the user is holding a cursor key, this
          * (relatively time expensive update) is done only at the end.
          */
+        @Override
         public void run() {
             Node[] selectedNodes = getExplorerManager().getSelectedNodes();
             setActivatedNodes(selectedNodes);
@@ -559,6 +568,7 @@ public class ComponentInspector extends TopComponent
 
     // listener on clipboard changes
     private class ClipboardChangesListener implements ClipboardListener {
+        @Override
         public void clipboardChanged(ClipboardEvent ev) {
             if (!ev.isConsumed())
                 updatePasteAction();
@@ -571,10 +581,12 @@ public class ComponentInspector extends TopComponent
     {
         private Node[] nodesToDestroy;
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             performAction(null);
         }
 
+        @Override
         public void performAction(SystemAction action) {
             Node[] selected = getSelectedRootNodes();
 
@@ -597,6 +609,7 @@ public class ComponentInspector extends TopComponent
                 Mutex.EVENT.readAccess(this);
         }
 
+        @Override
         public Object run() {
             doDelete();
             return null;
@@ -627,10 +640,12 @@ public class ComponentInspector extends TopComponent
             this.copy = copy;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             performAction(null);
         }
 
+        @Override
         public void performAction(SystemAction action) {
             Transferable trans;
             Node[] selected = getSelectedRootNodes();
@@ -679,6 +694,7 @@ public class ComponentInspector extends TopComponent
         }
 
         // performs the paste action
+        @Override
         public Transferable paste() throws java.io.IOException {
             if (java.awt.EventQueue.isDispatchThread())
                 return doPaste();
@@ -698,6 +714,7 @@ public class ComponentInspector extends TopComponent
             }
         }
 
+        @Override
         public Transferable run() throws Exception {
             return doPaste();
         }

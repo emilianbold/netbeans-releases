@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -161,6 +164,23 @@ public class JarClassLoaderTest extends NbTestCase {
         File jar = new File(getWorkDir(), "default-package-resource.jar");
         TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\nfoo: bar\n\n", "package/re source++.txt:content");
         JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        URL url = jcl.getResource("package/re source++.txt");
+        assertTrue(url.toString(), url.toString().endsWith("default-package-resource.jar!/package/re%20source++.txt"));
+        URLConnection conn = url.openConnection();
+        assertEquals(7, conn.getContentLength());
+        assertTrue(conn instanceof JarURLConnection);
+        JarURLConnection jconn = (JarURLConnection) conn;
+        assertEquals("package/re source++.txt", jconn.getEntryName());
+        assertEquals(jar.toURI().toURL(), jconn.getJarFileURL());
+        assertEquals("bar", jconn.getMainAttributes().getValue("foo"));
+        assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
+    }
+
+    public void testAddURLMethod() throws Exception {
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\nfoo: bar\n\n", "package/re source++.txt:content");
+        JarClassLoader jcl = new JarClassLoader(Collections.<File>emptyList(), new ProxyClassLoader[0]);
+        jcl.addURL(jar.toURI().toURL());
         URL url = jcl.getResource("package/re source++.txt");
         assertTrue(url.toString(), url.toString().endsWith("default-package-resource.jar!/package/re%20source++.txt"));
         URLConnection conn = url.openConnection();

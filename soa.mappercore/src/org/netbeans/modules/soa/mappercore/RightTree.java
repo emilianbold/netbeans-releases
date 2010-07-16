@@ -83,10 +83,11 @@ public class RightTree extends MapperPanel implements
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
     private ActionListener actionEscape;
-        
+    private boolean printMode = false;
+    
     RightTree(Mapper mapper) {
         super(mapper);
-
+        
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         putClientProperty("print.order", new Integer(2)); // NOI18N
@@ -107,8 +108,8 @@ public class RightTree extends MapperPanel implements
         scrollPane.getHorizontalScrollBar().setUnitIncrement(10);
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
 
-        //scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
-        scrollPaneWrapper = new Navigation(this, scrollPane,
+//        scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
+        scrollPaneWrapper = new Navigation(this, scrollPane, 
                 new ScrollPaneWrapper(scrollPane));
 
         cellRendererPane = new CellRendererPane();
@@ -179,7 +180,7 @@ public class RightTree extends MapperPanel implements
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
 
-        String actionKey = action.getActionKey();
+        Object actionKey = action.getActionKey();
         aMap.put(actionKey, action);
 
         KeyStroke[] shortcuts = action.getShortcuts();
@@ -203,8 +204,20 @@ public class RightTree extends MapperPanel implements
             return null;
         }
 
-        MapperNode node = getNodeAt(event.getY());
+        int x = event.getX();
+        int y = event.getY();
+
+        MapperNode node = getNodeAt(y);
         if (node == null) {
+            return null;
+        }
+        y = node.yToNode(y);
+        if (y > node.getContentHeight()) {
+            return null;
+        }
+        
+        int xNode = getWidth() - node.getIndent();
+        if (x < xNode - node.getLabelWidth() || x > xNode) {
             return null;
         }
 
@@ -282,10 +295,9 @@ public class RightTree extends MapperPanel implements
     
     @Override
     public void print(Graphics g) {
-        Mapper mapper = getMapper();
-        mapper.setPrintMode(true);
+        printMode = true;
         super.print(g);
-        mapper.setPrintMode(false);
+        printMode = false;
     }
 
     @Override
@@ -337,7 +349,7 @@ public class RightTree extends MapperPanel implements
         final boolean leaf = node.isLeaf();
         final boolean expanded = node.isExpanded();
 
-        if (node.isSelected() && !mapper.getPrintMode()) {
+        if (node.isSelected() && !printMode) {
             VerticalGradient gradient = (hasFocus())
                     ? Mapper.SELECTED_BACKGROUND_IN_FOCUS
                     : Mapper.SELECTED_BACKGROUND_NOT_IN_FOCUS;
@@ -503,8 +515,8 @@ public class RightTree extends MapperPanel implements
             }
         }
         Stroke oldStroke = g2.getStroke();
-
-        if (!mapper.getPrintMode()) {
+        
+        if (!printMode) {
             if (edgeIsSelected && node.isGraphExpanded()) {
                 color = MapperStyle.SELECTION_COLOR;
                 g2.setStroke(MapperStyle.SELECTION_STROKE);
@@ -516,7 +528,7 @@ public class RightTree extends MapperPanel implements
         } else {
             color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
         }
-        
+
         if (contentHeight < height) {
             if (hasEdge) {
                 int y = y0 + (contentHeight - 1) / 2;
@@ -525,7 +537,7 @@ public class RightTree extends MapperPanel implements
             }
 
             if (hasChildEdges) {
-                if (selectionModel.isSelected(treePath) && !mapper.getPrintMode()) {
+                if (selectionModel.isSelected(treePath) && !printMode) {
                     color = MapperStyle.LINK_COLOR_SELECTED_NODE;
                 } else {
                     color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
@@ -534,13 +546,12 @@ public class RightTree extends MapperPanel implements
                 int x = width - node.getIndent() - childrenLabel.getPreferredSize().width - mapper.getTotalIndent();
                 paintEdge(g2, y, x, color, step, true);
             }
-        } else {
-            if (hasEdge || hasChildEdges) {
+        } else if (hasEdge || hasChildEdges) {
                 int y = y0 + (contentHeight - 1) / 2;
                 int x = width - node.getIndent() - node.getLabelWidth() - 1;
                 paintEdge(g2, y, x, color, step, hasChildEdges && !hasEdge);
-            }
         }
+        
         g2.setStroke(oldStroke);
     }
 
@@ -559,12 +570,23 @@ public class RightTree extends MapperPanel implements
         Link.paintTargetDecoration(g2, new Point(x, y), color, step);
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         repaint();
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         repaint();
+    }
+    
+    public void parentsExpand(TreePath treePath) {
+        Mapper mapper = getMapper();
+        if (mapper.getRoot().getTreePath().equals(treePath)) return;
+
+        TreePath parrentPath = treePath.getParentPath();
+        mapper.setExpandedState(parrentPath, true);
+        parentsExpand(parrentPath);
     }
 
     private class RowHeader extends JPanel implements MouseListener {
@@ -670,6 +692,7 @@ public class RightTree extends MapperPanel implements
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             if (!RightTree.this.hasFocus()) {
                 RightTree.this.requestFocusInWindow();
@@ -750,6 +773,7 @@ public class RightTree extends MapperPanel implements
 
     private class ChildrenLabelBorder implements Border {
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y,
                 int width, int height) {
             Color oldColor = g.getColor();
@@ -758,15 +782,18 @@ public class RightTree extends MapperPanel implements
             g.setColor(oldColor);
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(1, 1, 1, 1);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
     }
 
+    @Override
     public Insets getAutoscrollInsets() {
         Rectangle rect = scrollPane.getViewport().getViewRect();
         return new Insets(rect.y + 16, rect.x + 16,
@@ -804,6 +831,7 @@ public class RightTree extends MapperPanel implements
 
     private class MoveSelectionUp extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
@@ -822,6 +850,7 @@ public class RightTree extends MapperPanel implements
 
     private class MoveSelectionDown extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
@@ -840,19 +869,20 @@ public class RightTree extends MapperPanel implements
 
     private class PressLeftExpand extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
             TreePath currentTreePath = selectionModel.getSelectedPath();
             if (currentTreePath != null) {
                 MapperNode currentNode = mapper.getNode(currentTreePath, true);
-                if (currentNode.isLeaf()) {
+                if (!currentNode.isLeaf() && currentNode.isCollapsed()) {
+                    mapper.expandNode(currentNode);
+                } else if (currentNode.getChildCount() == 0 ) {
                     if (currentNode.getNextVisibleNode() != null) {
                         mapper.setSelectedNode(currentNode.getNextVisibleNode());
                     }
-                } else if (currentNode.isCollapsed()) {
-                    mapper.expandNode(currentNode);
-                } else if (currentNode.getChildCount() > 0) {
+                } else {
                     mapper.setSelectedNode(currentNode.getChild(0));
                 }
             } else if (mapper.getRoot() != null && mapper.getRoot().getChildCount() > 0) {
@@ -863,6 +893,7 @@ public class RightTree extends MapperPanel implements
 
     private class PressRightCollapse extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
@@ -882,6 +913,7 @@ public class RightTree extends MapperPanel implements
 
     private class PressLeftExpandGraph extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             TreePath treePath = getSelectionModel().getSelectedPath();
             if (treePath == null) {
@@ -921,6 +953,7 @@ public class RightTree extends MapperPanel implements
     }
 
     private class PressRightCollapseGraph extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             TreePath treePath = getSelectionModel().getSelectedPath();
@@ -939,6 +972,7 @@ public class RightTree extends MapperPanel implements
 
     private class AutoScrollDown extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             if (scrollPane.getViewport() == null) {
                 return;
@@ -955,6 +989,7 @@ public class RightTree extends MapperPanel implements
 
     private class AutoScrollUp extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             if (scrollPane.getViewport() == null) {
                 return;
@@ -970,7 +1005,7 @@ public class RightTree extends MapperPanel implements
     }
 
     private class AutoScrollLeft extends AbstractAction {
-
+        @Override
         public void actionPerformed(ActionEvent event) {
             if (scrollPane.getViewport() == null) {
                 return;
@@ -987,6 +1022,7 @@ public class RightTree extends MapperPanel implements
 
     private class AutoScrollRight extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             if (scrollPane.getViewport() == null) {
                 return;
@@ -1053,6 +1089,7 @@ public class RightTree extends MapperPanel implements
     }
     
     private class ShowPopupMenuAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             RightTree tree = RightTree.this;
             MapperContext context = tree.getContext();
@@ -1076,30 +1113,31 @@ public class RightTree extends MapperPanel implements
         }
     }
 
+    @Override
     public TreePath getNextMatch(String prefix, int startingRow, Bias bias) {
         if (prefix == null) {
             return null;
         }
-
+        
         MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
-
+        
         if (model == null || context == null) {
             return null;
         }
-
+        
         prefix = prefix.trim();
-
+        
         if (prefix.length() == 0) {
             return null;
         }
-
+        
         prefix = prefix.toLowerCase();
 
         List<TreePath> pathList = new ArrayList<TreePath>();
-        collectVisibleTreePathes(pathList, null, null, getRoot(),
+        collectVisibleTreePathes(pathList, null, null, getRoot(), 
                 new int[] { -1 });
-
+        
         int mod = pathList.size();
         int row1 = Math.max(0, Math.min(startingRow, mod - 1));
         
@@ -1109,7 +1147,7 @@ public class RightTree extends MapperPanel implements
                 Object object = treePath.getLastPathComponent();
                 String text = context.getRightDysplayText(model, object);
                 text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N
-
+                
                 if (text.startsWith(prefix)) {
                     return treePath;
                 }
@@ -1120,114 +1158,121 @@ public class RightTree extends MapperPanel implements
                 Object object = treePath.getLastPathComponent();
                 String text = context.getRightDysplayText(model, object);
                 text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N
-
+                
                 if (text.startsWith(prefix)) {
                     return treePath;
                 }
             }
         }
-
+        
         return null;
     }
 
+    @Override
     public int[] getSelectionRows() {
         TreePath treePath = getSelectionModel().getSelectedPath();
-
+        
         if (treePath == null) {
             return null;
         }
-
+        
         int row = getRowForPath(treePath);
         if (row < 0) {
             return null;
         }
-
+        
         return new int[] { row };
     }
 
+    @Override
     public int getRowForPath(TreePath path) {
-        return collectVisibleTreePathes(null, null, path, getRoot(),
+        return collectVisibleTreePathes(null, null, path, getRoot(), 
                 new int[] { -1 });
     }
-
-
+    
+    
+    @Override
     public void scrollPathToVisible(TreePath path) {
-
+        
     }
 
+    @Override
     public void setSelectionPath(TreePath path) {
         getSelectionModel().setSelected(path);
     }
 
+    @Override
     public void clearSelection() {
         getSelectionModel().setSelected(null);
-    }
-
-    private int collectVisibleTreePathes(List<TreePath> rowsList,
-            Map<TreePath, Integer> rowsMap, TreePath stopPath,
-            MapperNode node, int[] row)
+    }    
+    
+    private int collectVisibleTreePathes(List<TreePath> rowsList, 
+            Map<TreePath, Integer> rowsMap, TreePath stopPath, 
+            MapperNode node, int[] row) 
     {
         if (node == null) {
             return -1;
         }
 
         TreePath treePath = node.getTreePath();
-
+        
         if (node.getParent() != null) {
             row[0]++;
-
+            
             if (rowsList != null) {
                 rowsList.add(treePath);
             }
-
+            
             if (rowsMap != null) {
                 rowsMap.put(treePath, row[0]);
             }
         }
-
+        
         if (stopPath != null && treePath.equals(stopPath)) {
             return row[0];
         }
-
+        
         if (!node.isLeaf() && node.isExpanded()) {
             int childCount = node.getChildCount();
             for (int i = 0; i < childCount; i++) {
-                int stopRow = collectVisibleTreePathes(rowsList,
+                int stopRow = collectVisibleTreePathes(rowsList, 
                         rowsMap, stopPath, node.getChild(i), row);
-
+                
                 if (stopRow >= 0) {
                     return stopRow;
                 }
             }
         }
-
+        
         return -1;
     }
 
+    @Override
     public JComponent getSearchableComponent() {
         return this;
     }
 
+    @Override
     public int getRowCount() {
         return calculateRowCount(getRoot(), 0);
     }
-
+    
     private int calculateRowCount(MapperNode node, int count) {
         if (node == null) {
             return count;
         }
-
+        
         if (node.getParent() != null) {
             count++;
         }
-
+        
         if (!node.isLeaf() && node.isExpanded()) {
             int childCount = node.getChildCount();
             for (int i = 0; i < childCount; i++) {
                 count = calculateRowCount(node.getChild(i), count);
             }
         }
-
+        
         return count;
     }
 }

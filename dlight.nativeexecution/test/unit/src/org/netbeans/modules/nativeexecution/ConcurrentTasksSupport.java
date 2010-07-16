@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,12 +53,14 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 
 /**
  *
  * @author ak119685
  */
-public class ConcurrentTasksSupport {
+public final class ConcurrentTasksSupport {
+
     final private static Logger log = Logger.getLogger(ConcurrentTasksSupport.class.getName());
     final int concurrentTasks;
     final ArrayList<TaskFactory> factories = new ArrayList<TaskFactory>();
@@ -68,22 +73,33 @@ public class ConcurrentTasksSupport {
         doneSignal = new CountDownLatch(concurrentTasks);
     }
 
-    void addFactory(TaskFactory taskFactory) {
+    public void addFactory(TaskFactory taskFactory) {
         factories.add(taskFactory);
     }
 
-    void init() {
+    public void init() {
         Thread[] threads = new Thread[concurrentTasks];
         final AtomicInteger counter = new AtomicInteger(0);
         final Random r = new Random();
+        final AtomicInteger idx = new AtomicInteger(0);
 
         for (int i = 0; i < concurrentTasks; i++) {
             threads[i] = new Thread(new Runnable() {
 
                 final int id = counter.incrementAndGet();
 
+                @Override
                 public void run() {
-                    TaskFactory factoryToUse = factories.get(r.nextInt(factories.size()));
+                    int fidx;
+                    synchronized (idx) {
+                        fidx = idx.getAndIncrement();
+                        if (fidx >= factories.size()) {
+                            fidx = 0;
+                            idx.set(0);
+                        }
+                    }
+                    TaskFactory factoryToUse = factories.get(fidx);
+
 
                     Runnable task = factoryToUse.newTask();
 
@@ -103,7 +119,7 @@ public class ConcurrentTasksSupport {
                     try {
                         task.run();
                     } catch (Throwable th) {
-                        log.info("Exception in task " + th.toString());
+                        log.log(Level.INFO, "Exception in task {0}", th.toString());
                     } finally {
                         doneSignal.countDown();
                     }
@@ -114,7 +130,7 @@ public class ConcurrentTasksSupport {
         }
     }
 
-    void start() {
+    public void start() {
         try {
             startSignal.await();
         } catch (InterruptedException ex) {
@@ -123,7 +139,7 @@ public class ConcurrentTasksSupport {
 
     }
 
-    void waitCompletion() {
+    public void waitCompletion() {
         try {
             doneSignal.await();
         } catch (InterruptedException ex) {
@@ -136,7 +152,8 @@ public class ConcurrentTasksSupport {
         public Runnable newTask();
     }
 
-    public static final class Counters {
+    public static class Counters {
+
         private final ConcurrentMap<String, AtomicInteger> counters =
                 new ConcurrentHashMap<String, AtomicInteger>();
 
@@ -157,6 +174,10 @@ public class ConcurrentTasksSupport {
             for (String id : map.keySet()) {
                 stream.println(id + ": " + map.get(id)); // NOI18N
             }
+        }
+
+        public void assertEquals(String descr, String id, int expected) {
+            Assert.assertEquals(descr, expected, getCounter(id).intValue()); // NOI18N
         }
     }
 }

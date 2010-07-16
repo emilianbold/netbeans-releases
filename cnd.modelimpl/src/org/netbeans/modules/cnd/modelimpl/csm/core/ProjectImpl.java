@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Project implementation
@@ -106,7 +110,7 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -114,26 +118,38 @@ public final class ProjectImpl extends ProjectBase {
         }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            impl.setBuffer(buf);
-            synchronized (editedFiles) {
-                editedFiles.add(impl);
-            }
             APTDriver.getInstance().invalidateAPT(buf);
             APTFileCacheManager.invalidate(buf);
-            schedule(buf, impl);
-            buf.addChangeListener(new ChangeListener() {
-
+            // listener will be triggered immediately, because editor based buffer
+            // will be notifies about editing event exactly after onFileEditStart
+            final ChangeListener changeListener = new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
-                    schedule(buf, impl);
+                    scheduleParseOnEditing(impl);
                 }
-            });
+            };
+            synchronized (editedFiles) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("onFileEditStart: edited file " + csmFile);
+                    }
+                    System.err.println("onFileEditStart: current file " + impl);
+                }
+                // sync set buffer as well
+                impl.setBuffer(buf);
+                if (!editedFiles.containsKey(impl)) {
+                    // register edited file
+                    editedFiles.put(impl, new EditingTask(buf, changeListener));
+                }
+                scheduleParseOnEditing(impl);
+            }
         }
     }
 
     public 
     @Override
     void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -142,31 +158,31 @@ public final class ProjectImpl extends ProjectBase {
         FileImpl file = getFile(buf.getFile(), false);
         if (file != null) {
             synchronized (editedFiles) {
-                if (!editedFiles.remove(file)) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("onFileEditEnd: edited file " + csmFile);
+                    }
+                    System.err.println("onFileEditEnd: current file " + file);
+                }
+                EditingTask task = editedFiles.remove(file);
+                if (task != null) {
+                    task.cancelTask();
+                } else {
                     // FixUp double file edit end on mounted files
                     return;
                 }
+                // sync set buffer as well
+                file.setBuffer(buf);
             }
-            file.setBuffer(buf);
 //            file.clearStateCache();
             // no need for deep parsing util call here, because it will be called as external notification change anyway
 //            DeepReparsingUtils.reparseOnEdit(file, this);
         }
     }
 
-    private void addToQueue(FileBuffer buf, FileImpl file) {
-        if (isDisposing()) {
-            return;
-        }
-        try {
-            file.scheduleParsing(true);
-        } catch (InterruptedException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
-    }
-
+    @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -175,12 +191,14 @@ public final class ProjectImpl extends ProjectBase {
         DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
 
+    @Override
     public void onFilePropertyChanged(List<NativeFileItem> items) {
         if (items.size() > 0) {
             DeepReparsingUtils.reparseOnPropertyChanged(items, this);
         }
     }
 
+    @Override
     public void onFileRemoved(FileImpl impl) {
         try {
             //Notificator.instance().startTransaction();
@@ -194,6 +212,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Override
     public void onFileImplRemoved(List<FileImpl> files) {
         for (FileImpl impl : files) {
             onFileRemovedImpl(impl);
@@ -205,7 +224,10 @@ public final class ProjectImpl extends ProjectBase {
         CndFileUtils.clearFileExistenceCache();
         if (impl != null) {
             synchronized (editedFiles) {
-                editedFiles.remove(impl);
+                EditingTask task = editedFiles.remove(impl);
+                if (task != null) {
+                    task.cancelTask();
+                }
             }
             removeNativeFileItem(impl.getUID());
             impl.dispose();
@@ -217,6 +239,7 @@ public final class ProjectImpl extends ProjectBase {
         return impl;
     }
 
+    @Override
     public void onFileRemoved(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
@@ -241,12 +264,13 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Override
     public void onFileAdded(NativeFileItem nativeFile) {
         onFileAddedImpl(nativeFile, true);
     }
 
     private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
-        if (acceptNativeItem(nativeFile)) {
+        if (Utils.acceptNativeItem(nativeFile)) {
             CndFileUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
@@ -263,6 +287,7 @@ public final class ProjectImpl extends ProjectBase {
         return null;
     }
 
+    @Override
     public void onFileAdded(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
@@ -284,7 +309,7 @@ public final class ProjectImpl extends ProjectBase {
     void ensureChangedFilesEnqueued() {
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
-            for (Iterator iter = editedFiles.iterator(); iter.hasNext();) {
+            for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
                     ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
@@ -301,7 +326,7 @@ public final class ProjectImpl extends ProjectBase {
             return false;
         }
         synchronized (editedFiles) {
-            for (Iterator iter = editedFiles.iterator(); iter.hasNext();) {
+            for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if ((skipFile != file) && !file.isParsingOrParsed()) {
                     return true;
@@ -310,7 +335,69 @@ public final class ProjectImpl extends ProjectBase {
         }
         return false;
     }
-    private final Set<CsmFile> editedFiles = new HashSet<CsmFile>();
+
+    @Override
+    protected boolean hasEditedFiles() {
+        synchronized (editedFiles) {
+            return !editedFiles.isEmpty();
+        }
+    }
+
+    private final static class EditingTask {
+        // field is synchronized by editedFiles lock
+        private RequestProcessor.Task task;
+        private final ChangeListener bufListener;
+        private final FileBuffer buf;
+        private long lastModified = -1;
+
+        public EditingTask(final FileBuffer buf, ChangeListener bufListener) {
+            assert (bufListener != null);
+            this.bufListener = bufListener;
+            assert (buf != null);
+            this.buf = buf;
+            this.buf.addChangeListener(bufListener);
+        }
+
+        public boolean updateLastModified(long lastModified) {
+            if (this.lastModified == lastModified) {
+                return false;
+            }
+            this.lastModified = lastModified;
+            return true;
+        }
+        
+        public void setTask(Task task) {
+            if (TraceFlags.TRACE_182342_BUG) {
+                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getFile());
+            }
+            this.task = task;
+        }
+
+        public void cancelTask() {
+            if (this.task != null) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    if (!task.isFinished()) {
+                        new Exception("EditingTask.cancelTask: cancelling previous EditingTask " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                    } else {
+                        new Exception("EditingTask.cancelTask: cancelTask where EditingTask was finished " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                    }
+                }
+                try {
+                    this.task.cancel();
+                } catch (Throwable ex) {
+                    System.err.println("EditingTask.cancelTask: cancelled with exception:");
+                    ex.printStackTrace(System.err);
+                }
+            }
+            this.buf.removeChangeListener(bufListener);
+        }
+
+        private Task getTask() {
+            return this.task;
+        }
+    }
+    
+    private final Map<CsmFile, EditingTask> editedFiles = new HashMap<CsmFile, EditingTask>();
 
     public 
     @Override
@@ -323,6 +410,7 @@ public final class ProjectImpl extends ProjectBase {
         return retValue;
     }
 
+    @Override
     public boolean isArtificial() {
         return false;
     }
@@ -371,40 +459,81 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private RequestProcessor.Task task = null;
+    private final static RequestProcessor RP = new RequestProcessor("ProjectImpl RP", 50); // NOI18N
+    private void scheduleParseOnEditing(final FileImpl file) {
+        RequestProcessor.Task task;
+        int delay;
+        synchronized (editedFiles) {
+            EditingTask pair = editedFiles.get(file);
+            if (pair == null) {
+                // we were removed between rescheduling and finish of edit
+                if (TraceFlags.TRACE_182342_BUG) {
+                    System.err.println("scheduleParseOnEditing: file was removed " + file);
+                }
+                return;
+            }
+            if (!pair.updateLastModified(file.getBuffer().lastModified())) {
+                // no need to schedule the second parse
+                if (TraceFlags.TRACE_182342_BUG) {
+                    System.err.println("scheduleParseOnEditing: no updates " + file + " : " + pair.lastModified);
+                }
+                return;
+            }
+            task = pair.getTask();
+            if (task == null) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("scheduleParseOnEditing: edited file " + csmFile);
+                    }
+                    System.err.println("scheduleParseOnEditing: current file " + file);
+                }
+                task = RP.create(new Runnable() {
 
-    public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
-        if (task != null) {
-            task.cancel();
-        }
-         task = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
-                try {
-                    addToQueue(buf, file);
-                } catch (AssertionError ex) {
-                    DiagnosticExceptoins.register(ex);
-                } catch (Exception ex) {
-                    DiagnosticExceptoins.register(ex);
+                    @Override
+                    public void run() {
+                        try {
+                            if (TraceFlags.TRACE_182342_BUG) {
+                                System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
+                            }
+                            if (isDisposing()) {
+                                return;
+                            }
+                            DeepReparsingUtils.reparseOnEditingFile(ProjectImpl.this, file);
+                        } catch (AssertionError ex) {
+                            DiagnosticExceptoins.register(ex);
+                        } catch (Exception ex) {
+                            DiagnosticExceptoins.register(ex);
+                        }
+                    }
+                }, true);
+                task.setPriority(Thread.MIN_PRIORITY);
+                pair.setTask(task);
+            } else {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("reschedule in scheduleParseOnEditing: edited file " + csmFile);
+                    }
+                    System.err.println("reschedule in scheduleParseOnEditing: current file " + file);
                 }
             }
-        }, true);
-        task.setPriority(Thread.MIN_PRIORITY);
-        int delay = TraceFlags.REPARSE_DELAY;
-        boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
-            public String getName() {
-                return "reparse-on-document-changed"; //NOI18N
+            delay = TraceFlags.REPARSE_DELAY;
+            boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
+                @Override
+                public String getName() {
+                    return "reparse-on-document-changed"; //NOI18N
+                }
+                @Override
+                public boolean isEnabledByDefault() {
+                    return true;
+                }
+            });
+            if (doReparse) {
+                if (file.getLastParseTime() / (delay+1) > 2) {
+                    delay = Math.max(delay, file.getLastParseTime()+2000);
+                }
+            } else {
+                delay = Integer.MAX_VALUE;
             }
-            public boolean isEnabledByDefault() {
-                return true;
-            }
-        });
-        if (doReparse) {
-            if (file.getLastParseTime() / (delay+1) > 2) {
-                delay = Math.max(delay, file.getLastParseTime()+2000);
-            }
-        } else {
-            delay = Integer.MAX_VALUE;
         }
         task.schedule(delay);
     }
@@ -412,8 +541,11 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void setDisposed() {
         super.setDisposed();
-        if (task != null) {
-            task.cancel();
+        synchronized (editedFiles) {
+            for (EditingTask task : editedFiles.values()) {
+                task.cancelTask();
+            }
+            editedFiles.clear();
         }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,7 +55,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,24 +62,24 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -86,7 +88,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.tax.TreeDocumentRoot;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeObject;
@@ -101,7 +102,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
@@ -112,8 +112,33 @@ import org.xml.sax.InputSource;
  */
 public class LayerUtils {
     private static final Collection<FileSystem> EMPTY_FS_COL = new ArrayList<FileSystem>();
+    private static final Logger LOG = Logger.getLogger(LayerUtils.class.getName());
 
     private LayerUtils() {}
+
+    /**
+     * Suffix of hidden files.
+     */
+    public static final String HIDDEN = "_hidden"; //NOI18N
+    
+    /**
+     * Find a resource path for a project.
+     * @param project a module project
+     * @return a classpath where resources can be found
+     */
+    public static ClassPath findResourceCP(Project project) {
+        Sources s = ProjectUtils.getSources(project);
+        List<FileObject> roots = new ArrayList<FileObject>();
+        for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+            for (SourceGroup group : s.getSourceGroups(type)) {
+                roots.add(group.getRootFolder());
+            }
+        }
+        if (roots.isEmpty()) {
+            LOG.log(Level.WARNING, "no resource path for {0}", project);
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
+    }
     
     /**
      * Translates nbres: into nbrescurr: for internal use.
@@ -226,21 +251,6 @@ public class LayerUtils {
         }
     }
     
-    // XXX needs to hold a strong ref only when modified, probably?
-    private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap<Project,LayerHandle>();
-    
-    /**
-     * Gets a handle for one project's XML layer.
-     */
-    public static LayerHandle layerForProject(Project project) {
-        LayerHandle handle = layerHandleCache.get(project);
-        if (handle == null) {
-            handle = new LayerHandle(project, null);
-            layerHandleCache.put(project, handle);
-        }
-        return handle;
-    }
-
     private static final Set<String> XML_LIKE_TYPES = new HashSet<String>();
     static {
         XML_LIKE_TYPES.add(".settings"); // NOI18N
@@ -288,7 +298,7 @@ public class LayerUtils {
     /**
      * Representation of in-memory TAX tree which can be saved upon request.
      */
-    interface SavableTreeEditorCookie extends TreeEditorCookie {
+    public interface SavableTreeEditorCookie extends TreeEditorCookie {
         
         /** property change fired when dirty flag changes */
         String PROP_DIRTY = "dirty"; // NOI18N
@@ -426,174 +436,8 @@ public class LayerUtils {
         }
     }
     
-    static SavableTreeEditorCookie cookieForFile(FileObject f) {
+    public static SavableTreeEditorCookie cookieForFile(FileObject f) {
         return new CookieImpl(f);
-    }
-    
-    /**
-     * Manages one project's XML layer.
-     */
-    public static final class LayerHandle {
-        
-        private final Project project;
-        private final FileObject layerXML;
-        private FileSystem fs;
-        private SavableTreeEditorCookie cookie;
-        private boolean autosave;
-        
-        LayerHandle(Project project, FileObject layerXML) {
-            //System.err.println("new LayerHandle for " + project);
-            this.project = project;
-            this.layerXML = layerXML;
-        }
-        
-        /**
-         * Get the layer as a structured filesystem.
-         * You can make whatever Filesystems API calls you like to it.
-         * Just call {@link #save} when you are done so the modified XML document is saved
-         * (or the user can save it explicitly if you don't).
-         * @param create if true, and there is no layer yet, create it now; if false, just return null
-         */
-        public FileSystem layer(boolean create) {
-            return layer(create, null);
-        }
-
-        /**
-         * Get the layer as a structured filesystem.
-         * See {@link #layer(boolean)} for details.
-         * @param create see {@link #layer(boolean)} for details
-         * @param cp optional classpath to search for resources specified with <code>nbres:</code>
-         *  or <code>nbresloc:</code> parameter; default is <code>null</code>
-         */
-        public synchronized FileSystem layer(boolean create, ClassPath cp) {
-            if (fs == null) {
-                FileObject xml = getLayerFile();
-                if (xml == null) {
-                    if (!create) {
-                        return null;
-                    }
-                    try {
-                        NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-                        FileObject manifest = module.getManifestFile();
-                        if (manifest != null) { // #121056
-                            // Check to see if the manifest entry is already specified.
-                            String layerSrcPath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLayer();
-                            if (layerSrcPath == null) {
-                                layerSrcPath = newLayerPath();
-                                EditableManifest m = Util.loadManifest(manifest);
-                                m.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerSrcPath, null);
-                                Util.storeManifest(manifest, m);
-                            }
-                        }
-                        xml = NbModuleProjectGenerator.createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        return fs = FileUtil.createMemoryFileSystem();
-                    }
-                }
-                try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), cp);
-                } catch (FileStateInvalidException e) {
-                    throw new AssertionError(e);
-                }
-                cookie.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        //System.err.println("changed in mem");
-                        if (autosave && SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
-                            //System.err.println("  will save...");
-                            try {
-                                save();
-                            } catch (IOException e) {
-                                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                            }
-                        }
-                    }
-                });
-            }
-            return fs;
-        }
-        
-        /**
-         * Save the layer, if it was in fact modified.
-         * Note that nonempty layer entries you created will already be on disk.
-         */
-        public void save() throws IOException {
-            if (cookie == null) {
-                throw new IOException("Cannot save a nonexistent layer"); // NOI18N
-            }
-            cookie.save();
-        }
-        
-        /**
-         * Find the XML layer file for this project, if it exists.
-         * @return the layer, or null
-         */
-        public FileObject getLayerFile() {
-            if (layerXML != null) {
-                return layerXML;
-            }
-            NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-            if (module == null) { // #126939: other project type
-                return null;
-            }
-            Manifest mf = Util.getManifest(module.getManifestFile());
-            if (mf == null) {
-                return null;
-            }
-            String path = ManifestManager.getInstance(mf, false).getLayer();
-            if (path == null) {
-                return null;
-            }
-            FileObject ret = Util.getResourceDirectory(project);
-            return ret == null ? null : ret.getFileObject(path);
-        }
-        
-        /**
-         * Set whether to automatically save changes to disk.
-         * @param true to save changes immediately, false to save only upon request
-         */
-        public void setAutosave(boolean autosave) {
-            this.autosave = autosave;
-            if (autosave && cookie != null) {
-                try {
-                    cookie.save();
-                } catch (IOException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-        }
-        
-        /**
-         * Check whether this handle is currently in autosave mode.
-         */
-        public boolean isAutosave() {
-            return autosave;
-        }
-        
-        /**
-         * Resource path in which to make a new XML layer.
-         */
-        private String newLayerPath() {
-            NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-            FileObject manifest = module.getManifestFile();
-            if (manifest != null) {
-                String bundlePath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLocalizingBundle();
-                if (bundlePath != null) {
-                    return bundlePath.replaceFirst("/[^/]+$", "/layer.xml"); // NOI18N
-                }
-            }
-            return module.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
-        }
-
-        public @Override String toString() {
-            FileObject layer = getLayerFile();
-            if (layer != null) {
-                return FileUtil.getFileDisplayName(layer);
-            } else {
-                return FileUtil.getFileDisplayName(project.getProjectDirectory());
-            }
-        }
-        
     }
     
     /**
@@ -629,15 +473,14 @@ public class LayerUtils {
     public static FileSystem getEffectiveSystemFilesystem(Project p) throws IOException {
         
             NbModuleProvider.NbModuleType type = Util.getModuleType(p);
-            FileSystem projectLayer = layerForProject(p).layer(false);
+            FileSystem projectLayer = LayerHandle.forProject(p).layer(false);
 
             if (type == NbModuleProvider.STANDALONE) {
                 Set<File> jars = 
                         getPlatformJarsForStandaloneProject(p);
                 NbPlatform plaf = getPlatformForProject(p);
                 Collection<FileSystem> platformLayers = getCachedLayers(plaf != null? plaf.getDestDir() : null, jars);
-                ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
-                return mergeFilesystems(projectLayer, platformLayers, cp);
+                return mergeFilesystems(projectLayer, platformLayers);
             } else if (type == NbModuleProvider.SUITE_COMPONENT) {
                 SuiteProject suite = SuiteUtils.findSuite(p);
                 if (suite == null) {
@@ -649,7 +492,7 @@ public class LayerUtils {
                     if (sister == p) {
                         continue;
                     }
-                    LayerHandle handle = layerForProject(sister);
+                    LayerHandle handle = LayerHandle.forProject(sister);
                     FileSystem roLayer = handle.layer(false);
                     if (roLayer != null) {
                         readOnlyLayers.add(roLayer);
@@ -658,8 +501,7 @@ public class LayerUtils {
                 NbPlatform plaf = suite.getPlatform(true);
                 Set<File> jars = getPlatformJarsForSuiteComponentProject(suite);
                 readOnlyLayers.addAll(getCachedLayers(plaf != null ? plaf.getDestDir() : null, jars));
-                ClassPath cp = createLayerClasspath(modules, jars);
-                return mergeFilesystems(projectLayer, readOnlyLayers, cp);
+                return mergeFilesystems(projectLayer, readOnlyLayers);
             } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 //it's safe to cast to NbModuleProject here.
                 NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
@@ -671,22 +513,25 @@ public class LayerUtils {
                         //profiler for example.
                         continue;
                     }
-                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false);
+                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false, true);
                     String layer = mm.getLayer();
-                    if (layer == null) {
-                        continue;
+                    if (layer != null) {
+                        FileObject src = p2.getSourceDirectory();
+                        if (src != null) {
+                            FileObject layerXml = src.getFileObject(layer);
+                            if (layerXml != null) {
+                                otherLayerURLs.add(layerXml.getURL());
+                            }
+                        }
                     }
-                    FileObject src = p2.getSourceDirectory();
-                    if (src == null) {
-                        continue;
+                    layer = mm.getGeneratedLayer();
+                    if (layer != null) {
+                        File layerXml = new File(nbprj.getClassesDirectory(), layer);
+                        if (layerXml.isFile()) {
+                            otherLayerURLs.add(layerXml.toURI().toURL());
+                        }
                     }
-                    FileObject layerXml = src.getFileObject(layer);
-                    if (layerXml == null) {
-                        continue;
-                    }
-                    otherLayerURLs.add(layerXml.getURL());
                     // TODO cache
-                    // XXX as above, could add generated-layer.xml
                 }
                 XMLFileSystem xfs = new XMLFileSystem();
                 try {
@@ -694,21 +539,12 @@ public class LayerUtils {
                 } catch (PropertyVetoException ex) {
                     assert false : ex;
                 }
-                ClassPath cp = createLayerClasspath(projects, Collections.<File>emptySet());
-                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs), cp);
+                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs));
             } else {
                 throw new AssertionError(type);
             }
     }
     
-    /**
-     * Get the platform JARs associated with a standalone module project.
-     */
-    public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
-        NbPlatform platform = getPlatformForProject(project);
-        return getPlatformJars(platform, null, null, null);
-    }
-
     /**
      * Returns platform for project with fallback to default platform.
      * 
@@ -727,21 +563,25 @@ public class LayerUtils {
         }
         return platform;
     }
-    // TODO C.P +cluster.path
+    
     public static Set<File> getPlatformJarsForSuiteComponentProject(SuiteProject suite) {
-        NbPlatform platform = suite.getPlatform(true);
-        PropertyEvaluator eval = suite.getEvaluator();
-        String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
-        String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-        String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
-        return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
+        try {
+            Set<File> jars = new HashSet<File>();
+            for (ModuleEntry entry : ModuleList.findOrCreateModuleListFromSuite(suite.getProjectDirectoryFile(), null).getAllEntries()) {
+                jars.add(entry.getJarLocation());
+            }
+            return jars;
+        } catch (IOException x) {
+            LOG.log(Level.INFO, null, x);
+            return Collections.emptySet();
+        }
     }
     
     public static Set<NbModuleProject> getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
         ModuleList list = project.getModuleList();
         Set<NbModuleProject> projects = new HashSet<NbModuleProject>();
         projects.add(project);
-        for (ModuleEntry other : list.getAllEntriesSoft()) {
+        for (ModuleEntry other : list.getAllEntries()) {
             if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N
                 continue;
             }
@@ -749,7 +589,13 @@ public class LayerUtils {
             assert root != null : other;
             FileObject fo = FileUtil.toFileObject(root);
             if (fo == null) continue;   // #142696, project deleted during scan
-            NbModuleProject p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+            NbModuleProject p2;
+            try {
+                p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+            } catch (IOException x) {
+                LOG.log(Level.INFO, "could not load " + fo, x);
+                continue;
+            }
             if (p2 == null) continue;
             projects.add(p2);
         }
@@ -757,22 +603,16 @@ public class LayerUtils {
     }
     
     /**
-     * Finds all the module JARs in the platform.
-     * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
+     * Get the platform JARs associated with a standalone module project.
      */
-    private static Set<File> getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
+    public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
+        NbPlatform platform = getPlatformForProject(project);
         if (platform == null) {
             return Collections.emptySet();
         }
-        Set<String> includedClustersS = (includedClusters != null) ? new HashSet<String>(Arrays.asList(includedClusters)) : Collections.<String>emptySet();
-        Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet<String>(Arrays.asList(excludedClusters)) : Collections.<String>emptySet();
-        Set<String> excludedModulesS = (excludedModules != null) ? new HashSet<String>(Arrays.asList(excludedModules)) : Collections.<String>emptySet();
         Set<ModuleEntry> entries = platform.getModules();
         Set<File> jars = new HashSet<File>(entries.size());
         for (ModuleEntry entry : entries) {
-            if (SingleModuleProperties.isExcluded(entry, excludedModulesS, includedClustersS, excludedClustersS)) {
-                continue;
-            }
             jars.add(entry.getJarLocation());
         }
         return jars;
@@ -805,47 +645,10 @@ public class LayerUtils {
     }
     
     /**
-     * Creates a classpath representing the source roots and platform binary JARs for a project/suite.
-     */
-    static ClassPath createLayerClasspath(Set<? extends Project> moduleProjects, Set<File> platformJars) throws IOException {
-        List<URL> roots = new ArrayList<URL>();
-        for (Project p : moduleProjects) {
-            NbModuleProvider mod = p.getLookup().lookup(NbModuleProvider.class);
-            FileObject src = mod.getSourceDirectory();
-            if (src != null) {
-                roots.add(src.getURL());
-            }
-        }
-        for (File jar  : platformJars) {
-            roots.add(FileUtil.getArchiveRoot(jar.toURI().toURL()));
-            File locale = new File(jar.getParentFile(), "locale"); // NOI18N
-            if (locale.isDirectory()) {
-                String n = jar.getName();
-                int x = n.lastIndexOf('.');
-                if (x == -1) {
-                    x = n.length();
-                }
-                String base = n.substring(0, x);
-                String ext = n.substring(x);
-                String[] variants = locale.list();
-                if (variants != null) {
-                    for (int i = 0; i < variants.length; i++) {
-                        if (variants[i].startsWith(base) && variants[i].endsWith(ext) && variants[i].charAt(x) == '_') {
-                            roots.add(FileUtil.getArchiveRoot(new File(locale, variants[i]).toURI().toURL()));
-                        }
-                    }
-                }
-            }
-        }
-        // XXX in principle, could add CP extensions from modules... but probably not necessary
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-    }
-
-    /**
      * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
      * You should also pass a classpath that can be used to look up resource bundles and icons.
      */
-    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers, final ClassPath cp) {
+    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers) {
         if (writableLayer == null) {
             writableLayer = new XMLFileSystem();
         }
@@ -855,7 +658,7 @@ public class LayerUtils {
         for (int i = 1; it.hasNext(); i++) {
             layers[i] = it.next();
         }
-        return new LayerFileSystem(layers, cp);
+        return new LayerFileSystem(layers);
     }
     
 }

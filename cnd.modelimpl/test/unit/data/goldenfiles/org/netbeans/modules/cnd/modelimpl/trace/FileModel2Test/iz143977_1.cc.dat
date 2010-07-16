@@ -36,13 +36,13 @@ NAMESPACE DEFINITOIN iz143977_1 [2:1/21-40:2/1332] SCOPE: iz143977_1.cc
         BASE CLASSES:
             CLASS=iz143977_1::FactoryImplBase VISIBILITY==PUBLIC virtual==false text='public FactoryImplBase'
         MEMBERS:
-    STRUCT FactoryImpl<class,class,Typelist<class,NullType>> (iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>> ) [19:5/531-25:6/781] lcurly=681 SCOPE: iz143977_1 
+    STRUCT FactoryImpl<class,class,Typelist<class,NullType> > (iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> > ) [19:5/531-25:6/781] lcurly=681 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::FactoryImplBase VISIBILITY==PUBLIC virtual==false text='public FactoryImplBase'
         MEMBERS:
             FUNCTION DEFINITION ~FactoryImpl  [23:9/691-23:34/716] DestructorDDImpl SCOPE: FactoryImpl 
                 SIGNATURE ~FactoryImpl()
-                UNIQUE NAME f:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::~FactoryImpl()
+                UNIQUE NAME f:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::~FactoryImpl()
                 DECLARATION: ~FactoryImpl  [23:9/691-23:34/716]
                 PARAMETERS:
                 RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -50,11 +50,11 @@ NAMESPACE DEFINITOIN iz143977_1 [2:1/21-40:2/1332] SCOPE: iz143977_1.cc
             FUNCTION CreateObject [24:9/725-24:59/775] MethodImpl SCOPE: FactoryImpl 
                 DEFINITION: null
                 SIGNATURE CreateObject(const Id&,Parm1)
-                UNIQUE NAME F:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::CreateObject(const Id&,Parm1)
+                UNIQUE NAME F:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::CreateObject(const Id&,Parm1)
                 PARAMETERS:
-                    id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
+                    id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
                      [24:47/763-24:52/768]  TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Parm1  [24:47/763-24:52/768]  INIT: null  SCOPE: CreateObject 
-                RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::AP TEXT=AP*  [24:17/733-24:20/736]
+                RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::AP TEXT=AP*  [24:17/733-24:20/736]
     CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class> class FactoryErrorPolicy=DefaultFactoryError> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'
@@ -93,13 +93,13 @@ NAMESPACE iz143977_1 (iz143977_1)
         BASE CLASSES:
             CLASS=iz143977_1::FactoryImplBase VISIBILITY==PUBLIC virtual==false text='public FactoryImplBase'
         MEMBERS:
-    STRUCT FactoryImpl<class,class,Typelist<class,NullType>> (iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>> ) [19:5/531-25:6/781] lcurly=681 SCOPE: iz143977_1 
+    STRUCT FactoryImpl<class,class,Typelist<class,NullType> > (iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> > ) [19:5/531-25:6/781] lcurly=681 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::FactoryImplBase VISIBILITY==PUBLIC virtual==false text='public FactoryImplBase'
         MEMBERS:
             FUNCTION DEFINITION ~FactoryImpl  [23:9/691-23:34/716] DestructorDDImpl SCOPE: FactoryImpl 
                 SIGNATURE ~FactoryImpl()
-                UNIQUE NAME f:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::~FactoryImpl()
+                UNIQUE NAME f:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::~FactoryImpl()
                 DECLARATION: ~FactoryImpl  [23:9/691-23:34/716]
                 PARAMETERS:
                 RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -107,11 +107,11 @@ NAMESPACE iz143977_1 (iz143977_1)
             FUNCTION CreateObject [24:9/725-24:59/775] MethodImpl SCOPE: FactoryImpl 
                 DEFINITION: null
                 SIGNATURE CreateObject(const Id&,Parm1)
-                UNIQUE NAME F:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::CreateObject(const Id&,Parm1)
+                UNIQUE NAME F:iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::CreateObject(const Id&,Parm1)
                 PARAMETERS:
-                    id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
+                    id [24:34/750-24:46/762]  TYPE: const &iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::Id TEXT=const Id&  [24:34/750-24:43/759]  INIT: null  SCOPE: CreateObject 
                      [24:47/763-24:52/768]  TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Parm1  [24:47/763-24:52/768]  INIT: null  SCOPE: CreateObject 
-                RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType>>::AP TEXT=AP*  [24:17/733-24:20/736]
+                RETURNS *iz143977_1::FactoryImpl<class,class,Typelist<class,NullType> >::AP TEXT=AP*  [24:17/733-24:20/736]
     CLASS Factory<class AbstractProduct,typename IdentifierType,typename CreatorParmTList=NullType,template<typename,class> class FactoryErrorPolicy=DefaultFactoryError> (iz143977_1::Factory ) [26:5/787-39:6/1329] lcurly=1082 SCOPE: iz143977_1 
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'

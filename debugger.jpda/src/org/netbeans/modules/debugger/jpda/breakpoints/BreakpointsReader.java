@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -158,7 +161,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = mb;
         }
-        if (typeID.equals (ClassLoadUnloadBreakpoint.class.getName ())) {
+        if (typeID.equals (ClassLoadUnloadBreakpoint.class.getName ()) ||
+                typeID.equals (ClassLoadUnloadBreakpoint.class.getName ()+"$ClassLoadUnloadBreakpointImpl")) {
             ClassLoadUnloadBreakpoint cb = ClassLoadUnloadBreakpoint.create (
                 properties.getInt (
                     ClassLoadUnloadBreakpoint.PROP_BREAKPOINT_TYPE, 
@@ -182,7 +186,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = cb;
         }
-        if (typeID.equals (ExceptionBreakpoint.class.getName ())) {
+        if (typeID.equals (ExceptionBreakpoint.class.getName ()) ||
+                typeID.equals (ExceptionBreakpoint.class.getName ()+"$ExceptionBreakpointImpl")) {
             ExceptionBreakpoint eb = ExceptionBreakpoint.create (
                 properties.getString (
                     ExceptionBreakpoint.PROP_EXCEPTION_CLASS_NAME, 
@@ -212,8 +217,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         if (typeID.equals (FieldBreakpoint.class.getName ()) ||
                 typeID.equals (FieldBreakpoint.class.getName ()+"$FieldBreakpointImpl")) {
             FieldBreakpoint fb = FieldBreakpoint.create (
-                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, null),
-                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, null),
+                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, ""),
+                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, ""),
                 properties.getInt (
                     FieldBreakpoint.PROP_BREAKPOINT_TYPE, 
                     FieldBreakpoint.TYPE_ACCESS
@@ -227,7 +232,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = fb;
         }
-        if (typeID.equals (ThreadBreakpoint.class.getName ())) {
+        if (typeID.equals (ThreadBreakpoint.class.getName ()) ||
+                typeID.equals (ThreadBreakpoint.class.getName ()+"ThreadBreakpoint$Impl")) {
             ThreadBreakpoint tb = ThreadBreakpoint.create (
             );
             tb.setBreakpointType (

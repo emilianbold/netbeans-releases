@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.xslt.tmap.nodes;
 
+import org.netbeans.modules.xslt.model.NamespaceSpec;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.Constants;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
@@ -32,7 +35,7 @@ import org.openide.util.Lookup;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class ImportNode extends  TMapComponentNode<DecoratedImport> {
+public class ImportNode extends TMapComponentNode<DecoratedImport> {
 
     public ImportNode(Import ref, Lookup lookup) {
         this(ref, Children.LEAF, lookup);
@@ -41,8 +44,12 @@ public class ImportNode extends  TMapComponentNode<DecoratedImport> {
     public ImportNode(Import ref, Children children, Lookup lookup) {
         super(new DecoratedImport(ref), children, lookup);
     }
-    
 
+    @Override
+    public NodeType getNodeType() {
+        return NodeType.IMPORT;
+    }
+    
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         if (getReference() == null) {
@@ -51,20 +58,31 @@ public class ImportNode extends  TMapComponentNode<DecoratedImport> {
         }
         //
         Sheet.Set mainPropertySet =
-                getPropertySet(sheet);
+                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
         //
-        Node.Property prop;
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.NAMESPACE,
-                "getNamespace", "setNamespace"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                NamespaceSpec.NAMESPACE, PropertyType.NAMESPACE,
+                "getNamespace", "setNamespace", "removeNamespace"); // NOI18N
+        
         //
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.LOCATION,
-                "getLocation", "setLocation"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Import.LOCATION, PropertyType.LOCATION,
+                "getLocation", "setLocation", "removeLocation"); // NOI18N
         //
         return sheet;
     }
-    
+
+    @Override
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.OPEN_IN_EDITOR,
+            ActionType.SEPARATOR,
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES,
+            
+        };
+    }
 }

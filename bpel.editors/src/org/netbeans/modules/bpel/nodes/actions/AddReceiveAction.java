@@ -35,6 +35,7 @@ public class AddReceiveAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddReceiveAction() {
+        super("webservice/receive"); // NOI18N
     }    
     
     protected String getBundleName() {

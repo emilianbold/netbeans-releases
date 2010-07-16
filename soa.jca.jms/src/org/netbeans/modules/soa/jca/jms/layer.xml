@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <file name="jmsjca-helpset.xml" url="jmsjca-helpset.xml">
+                <attr name="position" stringvalue="3169"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="CAPSEEPalette">
+        <folder name="JMS">
+            <file name="JmsjcaIcon.xml" url="JmsjcaIcon.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="QueueIcon.xml" url="QueueIcon.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="TopicIcon.xml" url="TopicIcon.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="RequestReplyIcon.xml" url="RequestReplyIcon.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+        </folder>
+    </folder>    
+
+    <folder name="Templates">
+        <folder name="J2EE">
+            <folder name="GlobalRars">
+                <file name="JmsjcaMDB.java" url="JmsjcaInboundMDB.template">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="ejb-templates"/>
+                    <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.jca.jms.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/soa/jca/jms/MessageNodeIcon.gif"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

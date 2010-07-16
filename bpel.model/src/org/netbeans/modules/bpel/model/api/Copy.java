@@ -27,6 +27,7 @@
 //
 package org.netbeans.modules.bpel.model.api;
 
+import org.netbeans.modules.bpel.model.api.support.BinaryCopy;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 
 /**
@@ -54,6 +55,8 @@ public interface Copy extends ExtensibleElements, AssignChild, BpelContainer, Fr
     String KEEP_SRC_ELEMENT_NAME    = "keepSrcElementName";    // NOI18N
     
     String IGNORE_MISSING_FROM_DATA = "ignoreMissingFromData"; // NOI18N
+
+    String BINARY_COPY = "sxat:binaryCopy"; // NOI18N
 
     /**
      * Gets the value of the to property.
@@ -101,4 +104,8 @@ public interface Copy extends ExtensibleElements, AssignChild, BpelContainer, Fr
      * Removes "ignoreMissingFromData" attribute.
      */
     void removeIgnoreMissingFromData();
+
+    BinaryCopy getBinaryCopy();
+    void setBinaryCopy(BinaryCopy value);
+    void removeBinaryCopy();
 }

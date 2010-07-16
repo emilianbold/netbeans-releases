@@ -33,11 +33,24 @@ import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
  */
 public interface ExtensionFunctionResolver {
 
+    String JAVA_PROTOCOL = "java://";
+
     /**
      * Returns a metadata for the specified function. 
      */ 
     ExtFunctionMetadata getFunctionMetadata(QName name);
     
+    /**
+     * Indicates if the function is implicit. Implicit function doesn't require 
+     * to be declared with personal metadata. A good example of implicit functions
+     * is java-based XPath extension functions. 
+     * @param name - QName of the function.
+     * WARNING! It is implied that the parameter is populated with full
+     * namespace URI but not only the prefix. 
+     * @return
+     */
+    boolean isImplicit(QName name);
+
     /**
      * Returns full collection of supported extension functions. 
      */ 

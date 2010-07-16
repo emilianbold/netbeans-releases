@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
-import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.beans.*;
 import java.io.IOException;
@@ -77,12 +79,10 @@ import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.*;
 import org.openide.awt.UndoRedo;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
-import org.openide.windows.*;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -207,24 +207,22 @@ public class FormEditor {
         return bindingSupport;
     }
 
+    /**
+     * To be used just before loading a form to set a persistence manager that
+     * already has the form recognized and superclass determined
+     * (i.e. potentially long java parsing already done).
+     */
+    void setPersistenceManager(PersistenceManager pm) {
+        persistenceManager = pm;
+    }
+
     boolean isFormLoaded() {
         return formLoaded;
     }
     
     /** This methods loads the form, reports errors, creates the FormDesigner */
     void loadFormDesigner() {
-        JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
-
-        // set status text "Opening Form: ..."
-        StatusDisplayer.getDefault().setStatusText(
-            FormUtils.getFormattedBundleString(
-                "FMT_OpeningForm", // NOI18N
-                new Object[] { formDataObject.getFormFile().getName() }));
-        javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
-
-        // set wait cursor [is not very reliable, but...]
-        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        mainWin.getGlassPane().setVisible(true);
+        getFormDataObject().getFormEditorSupport().showOpeningStatus("FMT_OpeningForm"); // NOI18N
 
         preCreationUpdate();
 
@@ -236,6 +234,7 @@ public class FormEditor {
             logPersistenceError(ex, 0);
             if (!formLoaded) { // loading failed - don't keep empty designer opened
                 java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         getFormDataObject().getFormEditorSupport().selectJavaEditor();
                     }
@@ -243,12 +242,7 @@ public class FormEditor {
             }
         }
 
-        // clear status text
-        StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-
-        // clear wait cursor
-        mainWin.getGlassPane().setVisible(false);
-        mainWin.getGlassPane().setCursor(null);
+        getFormDataObject().getFormEditorSupport().hideOpeningStatus();
 
         // report errors during loading
         reportErrors(LOADING);
@@ -272,6 +266,7 @@ public class FormEditor {
         else { // loading must be done in AWT event dispatch thread
             try {
                 java.awt.EventQueue.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             loadFormData();
@@ -312,7 +307,9 @@ public class FormEditor {
         resetPersistenceErrorLog(); // clear log of errors
 
         // first find PersistenceManager for loading the form
-        persistenceManager = recognizeForm(formDataObject);
+        if (persistenceManager == null) {
+            persistenceManager = recognizeForm(formDataObject);
+        }
 
         // create and register new FormModel instance
         formModel = new FormModel();
@@ -332,31 +329,30 @@ public class FormEditor {
         formModel.getSettings().getAutoSetComponentName();
 
         // load the form data (FormModel) and report errors
-        synchronized(persistenceManager) {
-            try {
-                FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
-                        persistenceManager.loadForm(formDataObject,
-                                                    formModel,
-                                                    persistenceErrors);
-                        return null;
-                    }
-                });
-            }
-            catch (PersistenceException ex) { // some fatal error occurred
-                persistenceManager = null;
-                openForms.remove(formModel);
-                formModel = null;
-                throw ex;
-            }
-            catch (Exception ex) { // should not happen, but for sure...
-                ex.printStackTrace();
-                persistenceManager = null;
-                openForms.remove(formModel);
-                formModel = null;
-                return;
-            }
-        }                                     
+        try {
+            FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
+                @Override
+                public Object run() throws Exception {
+                    persistenceManager.loadForm(formDataObject,
+                                                formModel,
+                                                persistenceErrors);
+                    return null;
+                }
+            });
+        }
+        catch (PersistenceException ex) { // some fatal error occurred
+            persistenceManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+            throw ex;
+        }
+        catch (Exception ex) { // should not happen, but for sure...
+            ex.printStackTrace();
+            persistenceManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+            return;
+        }
                                 
         // form is successfully loaded...
         formLoaded = true;
@@ -408,11 +404,7 @@ public class FormEditor {
 
             resetPersistenceErrorLog();
 
-            synchronized(persistenceManager) {
-                persistenceManager.saveForm(formDataObject,
-                                            formModel,
-                                            persistenceErrors);
-            }
+            persistenceManager.saveForm(formDataObject, formModel, persistenceErrors);
         }
     }
     
@@ -586,6 +578,7 @@ public class FormEditor {
                     FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
 
             java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     // for some reason this would be displayed before the
                     // ErrorManager if not invoked later
@@ -694,6 +687,7 @@ public class FormEditor {
             formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
             // switch to resources if needed
             FormLAF.executeWithLookAndFeel(formModel, new Runnable() {
+                @Override
                 public void run() {
                     getResourceSupport().prepareNewForm();
                 }
@@ -749,6 +743,7 @@ public class FormEditor {
             if (formDataObject.isValid()) {
                 // Avoiding deadlock (issue 51796)
                 java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         if (formDataObject.isValid()) {
                             formDataObject.getNodeDelegate().getChildren()
@@ -810,6 +805,7 @@ public class FormEditor {
         // this listener ensures necessary updates of nodes according to
         // changes in containers in form
         formListener = new FormModelListener() {
+            @Override
             public void formChanged(FormModelEvent[] events) {
                 if (events == null)
                     return;
@@ -951,6 +947,7 @@ public class FormEditor {
             if (!upgradeCheckPosted) {
                 upgradeCheckPosted = true;
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         upgradeCheckPosted = false;
                         if (formModel != null) {
@@ -995,6 +992,7 @@ public class FormEditor {
             return;
 
         dataObjectListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent ev) {
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
                     // FormDataObject's name has changed
@@ -1009,7 +1007,9 @@ public class FormEditor {
                         Node[] nodes = ComponentInspector.getInstance()
                                  .getExplorerManager().getSelectedNodes();
                         for (int i=0; i < nodes.length; i++) {
-                            ((FormNode)nodes[i]).updateCookies();
+                            if (nodes[i] instanceof FormNode) { // Issue 181709
+                                ((FormNode)nodes[i]).updateCookies();
+                            }
                         }
                     }
                 }
@@ -1031,6 +1031,7 @@ public class FormEditor {
             return;
 
         settingsListener = new PreferenceChangeListener() {
+            @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
                 Iterator iter = openForms.keySet().iterator();
                 while (iter.hasNext()) {
@@ -1076,6 +1077,7 @@ public class FormEditor {
             return;
 
         paletteListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
                     FormModel formModel = getFormModel();
@@ -1331,8 +1333,10 @@ public class FormEditor {
             final int[] positions = new int[] {-1,-1};
             try {
                 js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                    @Override
                     public void cancel() {
                     }
+                    @Override
                     public void run(WorkingCopy wcopy) throws Exception {
                         wcopy.toPhase(JavaSource.Phase.RESOLVED);
 
@@ -1352,7 +1356,7 @@ public class FormEditor {
                             if (tree.getKind() == Tree.Kind.METHOD) {
                                 MethodTree method = (MethodTree)tree;
                                 if ("initComponents".equals(method.getName().toString()) // NOI18N
-                                        && (method.getParameters().size() == 0)) {
+                                        && (method.getParameters().isEmpty())) {
                                     ModifiersTree modifiers = method.getModifiers();
                                     for (AnnotationTree annotation : modifiers.getAnnotations()) {
                                         if (annotation.getAnnotationType().toString().contains("SuppressWarnings")) { // NOI18N

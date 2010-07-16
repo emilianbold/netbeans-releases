@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,7 +103,7 @@ public final class RakeSupport {
     
     /** Standard names used for Rakefile. */
     static final String[] RAKEFILE_NAMES = new String[] {
-        "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
+        "Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb" // NOI18N
     };
 
     private final Project project;
@@ -119,11 +122,9 @@ public final class RakeSupport {
         FileObject pwd = project.getProjectDirectory();
 
         // See if we're in the right directory
-        for (String s : RakeSupport.RAKEFILE_NAMES) {
-            FileObject f = pwd.getFileObject(s);
-            if (f != null) {
-                return f;
-            }
+        FileObject result = findRakeFileIn(pwd);
+        if (result != null) {
+            return result;
         }
 
         // Try to adjust the directory to a folder which contains a rakefile
@@ -133,15 +134,35 @@ public final class RakeSupport {
         if (rubygroups != null && rubygroups.length > 0) {
             for (SourceGroup group : rubygroups) {
                 FileObject f = group.getRootFolder();
-                for (String s : RakeSupport.RAKEFILE_NAMES) {
-                    FileObject r = f.getFileObject(s);
-                    if (r != null) {
-                        return r;
-                    }
+                FileObject r = findRakeFileIn(f);
+                if (r != null) {
+                    return r;
                 }
             }
         }
 
+        return null;
+    }
+
+    private static FileObject findRakeFileIn(FileObject folder) {
+        for (String s : RakeSupport.RAKEFILE_NAMES) {
+            FileObject f = folder.getFileObject(s);
+            if (f != null) {
+                // #179305 -- need to do case sensitive comparison
+                File file = FileUtil.toFile(f);
+                try {
+                    String canonicalName = file.getCanonicalFile().getName();
+                    if (file != null && s.equals(canonicalName)) {
+                        // logging for #179305
+                        LOGGER.log(Level.FINE, "Found rakefile: {0}, searching with: {1}. Full path: {2}",
+                                new Object[]{canonicalName, s, file.getCanonicalPath()});
+                        return f;
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return null;
     }
     
@@ -210,7 +231,7 @@ public final class RakeSupport {
                 public void run() throws IOException {
                     FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
                     // clean old content
-                    if (rakeD != null && rakeD.isData()) {
+                    if (rakeD != null && rakeD.isValid() && rakeD.isData()) {
                         rakeD.delete();
                     }
                 }

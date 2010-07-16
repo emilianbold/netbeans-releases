@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.schema.model.Schema;
 
 /**
  *
@@ -167,7 +168,7 @@ public class Util {
     } //-- isNCName
     
     /**
-     * Checks the the given character to determine if it is
+     * Checks the given character to determine if it is
      * a valid NCNameChar as defined by the W3C XML
      * Namespaces recommendation
      * @param ch the char to check
@@ -242,7 +243,10 @@ public class Util {
                     .getModel(modelSource);
             if (model == null) break;
             if (model.getState() != Model.State.NOT_WELL_FORMED) {
-                return model.getSchema().getTargetNamespace();
+                Schema schema = model.getSchema();
+                if (schema != null) {
+                    return schema.getTargetNamespace();
+                }
             }
         }
         break;
@@ -475,7 +479,10 @@ public class Util {
     public static String getTargetNamespace(Model model) {
         try {
             if (model instanceof SchemaModel) {
-                return ((SchemaModel) model).getSchema().getTargetNamespace();
+                Schema schema = ((SchemaModel) model).getSchema();
+                if (schema != null) {
+                    return schema.getTargetNamespace();
+                }
             } else if (model instanceof BpelModel) {
                 return ((BpelModel) model).getProcess().getTargetNamespace();
             } else if (model instanceof WSDLModel) {
@@ -484,7 +491,8 @@ public class Util {
                 return null;
             }
         } catch (Exception ex) {
-            return null;
+            // Do nothing
         }
+        return null;
     }
 }

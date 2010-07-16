@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -324,14 +327,35 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
                 currentVersion = SunApplicationClient.VERSION_5_0_0;
+            } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+                currentVersion = SunApplicationClient.VERSION_6_0_0;
+            } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient)appClientRoot).graphManager().getXmlDocument();
+                currentVersion = SunApplicationClient.VERSION_6_0_1;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunApplicationClient.VERSION_5_0_0)){
+            if(newVersion.equals(SunApplicationClient.VERSION_6_0_1)){
                 //This will always be an upgrade
-                generate5_00Graph(document);
+                generate6_01Graph(document);
+            }
+            if(newVersion.equals(SunApplicationClient.VERSION_6_0_0)){
+                //This will always be an upgrade
+                if(currentVersion.equals(SunApplicationClient.VERSION_5_0_0) || currentVersion.equals(SunApplicationClient.VERSION_1_4_1) || currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
+                    generate6_00Graph(document);
+                else
+                    downgradeClientJarGraph(document, newVersion, currentVersion);
+            }
+            if(newVersion.equals(SunApplicationClient.VERSION_5_0_0)){
+                if(currentVersion.equals(SunApplicationClient.VERSION_1_4_1) || currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
+                    generate5_00Graph(document);
+                else
+                    downgradeClientJarGraph(document, newVersion, currentVersion);
             }
             if(newVersion.equals(SunApplicationClient.VERSION_1_4_1)){
                 if(currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
@@ -364,6 +388,20 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
             }
     }
     
+    private void generate6_01Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient appClientGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient.createGraph(document);
+        appClientGraph.changeDocType(DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID);
+        this.appClientRoot = appClientGraph;
+    }
+
+    private void generate6_00Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient appClientGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.createGraph(document);
+        appClientGraph.changeDocType(DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPCLIENT_60_DTD_SYSTEM_ID);
+        this.appClientRoot = appClientGraph;
+    }
+
     private void generate5_00Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient appClientGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.createGraph(document);
@@ -410,6 +448,12 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
         }else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient) {
             document =
                     ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+        } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+        } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient)appClientRoot).graphManager().getXmlDocument();
         }
         return document;
     }

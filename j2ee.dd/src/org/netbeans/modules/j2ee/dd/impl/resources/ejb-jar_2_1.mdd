@@ -512,6 +512,10 @@
                 public org.netbeans.modules.j2ee.dd.api.ejb.RemoveMethod newRemoveMethod() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1);
                 }
+                //EJB 3.1
+                public boolean isLocalBean() {
+                    return false;
+                }
                 </user-code>
 	</meta-element>
 	<meta-element>

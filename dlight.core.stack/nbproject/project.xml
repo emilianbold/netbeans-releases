@@ -57,7 +57,17 @@
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+		    <run-dependency>
+                       <specification-version>8.0</specification-version>
+	             </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+		    <run-dependency>
+                       <specification-version>8.0</specification-version>
+	             </run-dependency>
                 </dependency>
             </module-dependencies>
             <test-dependencies>
@@ -70,7 +80,6 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.module.dlight.threads</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
@@ -87,6 +96,7 @@
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.threads</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
+                <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.core.stack.api</package>
                 <package>org.netbeans.modules.dlight.core.stack.api.support</package>
                 <package>org.netbeans.modules.dlight.core.stack.datacollector</package>

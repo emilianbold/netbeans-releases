@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<definitions 
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Synchronous" targetNamespace="http://localhost/Synchronous/Synchronous"
+    xmlns:tns="http://localhost/Synchronous/Synchronous"
+    xmlns:ns="http://xml.netbeans.org/schema/Synchronous"
+    xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop" xmlns:ns0="http://xml.netbeans.org/examples/PurchaseOrder">
+
+    <types>
+        <xsd:schema targetNamespace="http://localhost/Synchronous/Synchronous">
+            <xsd:import namespace="http://xml.netbeans.org/schema/Synchronous" schemaLocation="Synchronous.xsd"/>
+            <xsd:import namespace="http://xml.netbeans.org/examples/PurchaseOrder" schemaLocation="PurchaseOrder.xsd"/>
+        </xsd:schema>
+    </types>
+
+    <message name="requestMessage">
+        <part name="inputType" element="ns0:purchaseOrder"/>
+    </message>
+    
+    <message name="responseMessage">
+        <part name="resultType" element="ns:typeA"/>
+    </message>
+    
+    <portType name="portType1">
+        <operation name="operation1">
+            <input name="input1" message="tns:requestMessage"/>
+            <output name="output1" message="tns:responseMessage"/>
+        </operation>
+    </portType>
+    
+    <binding name="binding1" type="tns:portType1">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="operation1">
+            <input name="input1">
+                <soap:body use="literal"/>
+            </input>
+            <output name="output1">
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    
+    <service name="service1">
+        <port name="port1" binding="tns:binding1">
+            <soap:address location="http://localhost:18181/Synchronous"/>
+        </port>
+    </service>
+
+    <plink:partnerLinkType name="partnerlinktype1">
+        <plink:role name="partnerlinktyperole1" portType="tns:portType1"/>
+    </plink:partnerLinkType>
+</definitions>

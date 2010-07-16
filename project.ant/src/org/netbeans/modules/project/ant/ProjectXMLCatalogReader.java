@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -251,7 +253,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
                         try {
                             String ns2 = ns.substring(0, slash + 1) + Integer.toString(Integer.parseInt(ns.substring(slash + 1)) + 1);
                             if (_resolveURI(ns2) != null) {
-                                Element data2 = translateXML(data, ns2);
+                                Element data2 = XMLUtil.translateXML(data, ns2);
                                 data.getParentNode().replaceChild(data2, data);
                                 try {
                                     validate(attempt);
@@ -313,28 +315,6 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
             }
         }
         return null;
-    }
-
-    private static Element translateXML(Element from, String namespace) { // XXX use #136595
-        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i = 0; i < length; i++) {
-            Node node = nl.item(i);
-            Node newNode;
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                newNode = translateXML((Element) node, namespace);
-            } else {
-                newNode = node.cloneNode(true);
-            }
-            to.appendChild(newNode);
-        }
-        NamedNodeMap m = from.getAttributes();
-        for (int i = 0; i < m.getLength(); i++) {
-            Node attr = m.item(i);
-            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
-        }
-        return to;
     }
 
 }

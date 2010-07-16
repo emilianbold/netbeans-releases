@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,6 +112,7 @@ public interface GlassfishModule {
     public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
 
     public CommandFactory getCommandFactory();
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -308,6 +312,30 @@ public interface GlassfishModule {
             String name);
     
     /**
+     * Enable the named application.
+     *
+     * @param stateListener listener to listen message describing the enable
+     *   process as it progresses.  Can be null.
+     * @param name name of application to enable.
+     *
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
+    public Future<OperationState> enable(OperationStateListener stateListener,
+            String name);
+    /**
+     * Disable the named application.
+     *
+     * @param stateListener listener to listen message describing the disable
+     *   process as it progresses.  Can be null.
+     * @param name name of application to disable.
+     *
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
+    public Future<OperationState> disable(OperationStateListener stateListener,
+            String name);
+    /**
      * Execute the specified server command.
      * 
      * @param command Object representing the server command to execute.
@@ -353,5 +381,11 @@ public interface GlassfishModule {
      * @param listener listener to remove.
      */
     public void removeChangeListener(ChangeListener listener);
-    
+
+    public static final String PASSWORD_CONVERTED_FLAG =
+            "this really long string is used to identify a password that has been stored in the Keyring";
+    /**
+     * get the password for this server
+     */
+    public String getPassword();
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,37 +43,23 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Javac;
-import org.apache.tools.ant.taskdefs.compilers.CompilerAdapter;
-import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
-import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 
 /**
- * Runs javac in-process from a local implementation, e.g. so as to ensure JSR 269 is supported.
- * Works just like using the default <code>modern</code> compiler, except loaded from the specified place.
+ * Could probably be replaced with a presetdef for javac,
+ * and a separate task for {@link #cleanUpStaleClasses}.
  */
 public class CustomJavac extends Javac {
 
     public CustomJavac() {}
-
-    private Path javacClasspath;
-    public void addJavacClasspath(Path cp) {
-        javacClasspath = cp;
-    }
 
     private Path processorPath;
     public void addProcessorPath(Path cp) {
@@ -99,42 +88,17 @@ public class CustomJavac extends Javac {
             createCompilerArg().setPath(processorPath);
         }
         createCompilerArg().setValue("-implicit:class");
-        String specifiedCompiler = getProject().getProperty("build.compiler");
-        if (specifiedCompiler != null) {
-            if (specifiedCompiler.equals("extJavac")) {
-                log("JSR 269 not found, loading from " + javacClasspath);
-                createCompilerArg().setValue("-J-Xbootclasspath/p:" + javacClasspath);
-            } else {
-                log("Warning: build.compiler=" + specifiedCompiler + " so JSR 269 annotation processing may not work", Project.MSG_WARN);
+        File generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
+        if (generatedClassesDir.isDirectory() || generatedClassesDir.mkdirs()) {
+            createCompilerArg().setValue("-s");
+            createCompilerArg().setFile(generatedClassesDir);
+            if (generatedClassesDir.isDirectory()) {
+                createSrc().setLocation(generatedClassesDir);
             }
-            super.compile();
-            return;
+        } else {
+            log("Warning: could not create " + generatedClassesDir, Project.MSG_WARN);
         }
-        try {
-            Class.forName("javax.tools.JavaCompiler");
-            // Fine, have 269 in process, proceed...
-            super.compile();
-        } catch (ClassNotFoundException x) {
-            log("JSR 269 not found, loading from " + javacClasspath);
-            if (compileList.length > 0) {
-                log("Compiling " + compileList.length + " source file" +
-                        (compileList.length == 1 ? "" : "s") +
-                        (getDestdir() != null ? " to " + getDestdir() : ""));
-                if (listFiles) {
-                    for (File f : compileList) {
-                        log(f.getAbsolutePath());
-                    }
-                }
-                CompilerAdapter adapter = new CustomAdapter();
-                adapter.setJavac(this);
-                if (adapter.execute()) {
-                    // XXX updateDirList
-                } else {
-                    // other modes not supported, see below
-                    throw new BuildException("Compile failed; see the compiler error output for details.", getLocation());
-                }
-            }
-        }
+        super.compile();
     }
 
     /**
@@ -216,36 +180,6 @@ public class CustomJavac extends Javac {
     @Override
     public void setFork(boolean f) {
         throw new UnsupportedOperationException();
-    }
-
-    private static class CustomAdapter extends DefaultCompilerAdapter {
-
-        public boolean execute() throws BuildException {
-            // adapted from Javac13
-            Commandline cmd = setupModernJavacCommand();
-            try {
-                Path cp = ((CustomJavac) getJavac()).javacClasspath;
-                AntClassLoader cl = new AntClassLoader(getJavac().getProject(), cp, false) {
-                    public @Override Enumeration<URL> getResources(String name) throws IOException {
-                        // #158934 - ACL.gR is unimplemented.
-                        if (name.equals("META-INF/services/javax.annotation.processing.Processor")) {
-                            return Collections.enumeration(Collections.<URL>emptySet());
-                        } else {
-                            return super.getResources(name);
-                        }
-                    }
-                };
-                cl.setIsolated(true); // otherwise RB.gB("c.s.t.j.r.compiler") -> tools.jar's compiler.class despite our compiler.properties
-                Class<?> c = Class.forName("com.sun.tools.javac.Main", true, cl);
-                getJavac().log("Running javac from " + c.getProtectionDomain().getCodeSource().getLocation(), Project.MSG_VERBOSE);
-                Method compile = c.getMethod("compile", String[].class);
-                int result = (Integer) compile.invoke(null, (Object) cmd.getArguments());
-                return result == 0;
-            } catch (Exception ex) {
-                throw new BuildException("Error starting compiler: " + ex, ex, location);
-            }
-        }
-
     }
 
 }

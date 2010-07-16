@@ -23,11 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.modules.soa.ui.SoaUtil;
-import org.netbeans.modules.bpel.mapper.model.ItemHandler;
-import org.netbeans.modules.bpel.mapper.model.VertexFactory;
-import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
-import org.netbeans.modules.bpel.mapper.multiview.BpelMapperMultiviewElement;
-import org.netbeans.modules.bpel.mapper.multiview.BpelMapperMultiviewElementDesc;
+import org.netbeans.modules.bpel.mapper.model.BpelVertexFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
@@ -39,11 +35,13 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
+import org.netbeans.modules.soa.xpath.mapper.palette.ItemHandler;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
@@ -54,11 +52,12 @@ import org.openide.windows.TopComponent;
  */
 public class WrapServiceRefHandler implements ItemHandler {
 
+    public static final String WRAP2SERVICEREF_XSL = "wrap2serviceref.xsl"; // NOI18N
+    public static final String XSLTRANSFORM_URN_PREFIX = "urn:stylesheets:"; // NOI18N
+    public static final String URN_WRAP2SERVICEREF_XSL = WRAP2SERVICEREF_XSL+XSLTRANSFORM_URN_PREFIX; // NOI18N
     private BpelXPathCustomFunction myItem;
-    private static String PATH_TO_WRAP2SERVICEREF = "bpelcustomfunction/wrap2serviceref.xsl"; // NOI18N
-    private static String WRAP2SERVICEREF = "wrap2serviceref"; // NOI18N
-    private static String WRAP2SERVICEREF_XSL = "wrap2serviceref.xsl"; // NOI18N
-    private static String XSLTRANSFORM_URN_PREFIX = "urn:stylesheets:"; // NOI18N
+    private static final String PATH_TO_WRAP2SERVICEREF = "bpelcustomfunction/wrap2serviceref.xsl"; // NOI18N
+    private static final String WRAP2SERVICEREF = "wrap2serviceref"; // NOI18N
     private static int xStep;
     private static int yStep;
     
@@ -82,7 +81,7 @@ public class WrapServiceRefHandler implements ItemHandler {
         
         // wrap with service ref = configured doXslTransform to perform 
         // wrapping with Service Reference
-        VertexFactory vertexFactory = VertexFactory.getInstance();
+        BpelVertexFactory vertexFactory = BpelVertexFactory.getInstance();
         newVertex = vertexFactory.createExtFunction(
                 BpelXPathExtFunctionMetadata.DO_XSL_TRANSFORM_METADATA);
         assert newVertex != null;
@@ -144,28 +143,32 @@ public class WrapServiceRefHandler implements ItemHandler {
 //////////            bpelModel = context.getBpelModel();
 //////////        }
         
+        return createWrap2ServiceRefFileObject() != null;
+    }
+    
+    public static FileObject createWrap2ServiceRefFileObject() {
         BpelModel bpelModel = getActiveModel();
-        
+
         FileObject bpelFo = SoaUtil.getFileObjectByModel(bpelModel);
         FileObject wrap2servicerefFo = null;
         if (bpelFo != null) {
-            wrap2servicerefFo = bpelFo.getParent().getFileObject(WRAP2SERVICEREF_XSL);
+            wrap2servicerefFo = bpelFo.getParent().getFileObject(WRAP2SERVICEREF_XSL); //NOI18N  
             if (wrap2servicerefFo == null) {
                 try {
-                    wrap2servicerefFo = FileUtil.copyFile(FileUtil.getConfigFile(PATH_TO_WRAP2SERVICEREF),
+                    wrap2servicerefFo = FileUtil.copyFile(Repository.getDefault().
+                            getDefaultFileSystem().findResource(PATH_TO_WRAP2SERVICEREF), //NOI18N
                             bpelFo.getParent(), WRAP2SERVICEREF); //NOI18N            
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
-                    return false;
+                    return null;
                 }
-            } 
-        }        
+            }
+        }
 
-        return wrap2servicerefFo != null;
+        return wrap2servicerefFo;
     }
-    
     // todo m
-    private BpelModel getActiveModel() {
+    private static BpelModel getActiveModel() {
         BpelModel model = null;
         Node[] aNodes = TopComponent.getRegistry().getActivatedNodes();
         Object aRefInstance = null;

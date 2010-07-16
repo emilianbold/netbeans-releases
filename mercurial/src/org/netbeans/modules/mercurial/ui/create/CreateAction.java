@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,22 +53,20 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,16 +79,10 @@ import org.openide.util.HelpCtx;
  * @author John Rice
  */
 public class CreateAction extends ContextAction {
-    
-    private final VCSContext context;
-    Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>();
 
-    public CreateAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
-    public boolean isEnabled() {
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         // If it is not a mercurial managed repository enable action
         File root = HgUtils.getRootFile(context);
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
@@ -98,7 +93,11 @@ public class CreateAction extends ContextAction {
             return true;
         else
             return false;
-    } 
+    }
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Create"; // NOI18N
+    }
 
     private File getCommonAncestor(File firstFile, File secondFile) {
         if (firstFile.equals(secondFile)) return firstFile;
@@ -132,18 +131,20 @@ public class CreateAction extends ContextAction {
         return f1;
     }
 
-    public void performAction(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
-                performCreate();
+                performCreate(context);
             }
         });
     }
 
-    private void performCreate () {
+    private void performCreate (VCSContext context) {
         final Mercurial hg = Mercurial.getInstance();
 
-        final File rootToManage = selectRootToManage();
+        final File rootToManage = selectRootToManage(context);
         if (rootToManage == null) {
             return;
         }
@@ -164,6 +165,8 @@ public class CreateAction extends ContextAction {
                     HgCommand.doCreate(rootToManage, logger);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -177,30 +180,24 @@ public class CreateAction extends ContextAction {
             public void perform() {
                 OutputLogger logger = getLogger();
                 try {
+                    File[] repositoryFiles;
                     FileStatusCache cache = hg.getFileStatusCache();
                     Calendar start = Calendar.getInstance();
-                    // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
-                    repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootToManage);
+                    cache.refreshAllRoots(Collections.singletonMap(rootToManage, Collections.singleton(rootToManage)));
                     Calendar end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                    Mercurial.LOG.log(Level.FINE, "cache refresh took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                    repositoryFiles = cache.listFiles(new File[] {rootToManage}, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
                     logger.output(
                             NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", repositoryFiles.keySet().size())); // NOI18N
-                    start = Calendar.getInstance();
-                    cache.addToCache(repositoryFiles.keySet());
-                    end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                    if (repositoryFiles.keySet().size() < OutputLogger.MAX_LINES_TO_PRINT) {
-                        for (File f : repositoryFiles.keySet()) {
+                            "MSG_CREATE_ADD", repositoryFiles.length)); // NOI18N
+                    if (repositoryFiles.length < OutputLogger.MAX_LINES_TO_PRINT) {
+                        for (File f : repositoryFiles) {
                             logger.output("\t" + f.getAbsolutePath());  //NOI18N
                         }
                     }
                     HgUtils.createIgnored(rootToManage);
                     logger.output(""); // NOI18N
                     logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
                     logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
                     logger.output(""); // NOI18N
@@ -211,8 +208,8 @@ public class CreateAction extends ContextAction {
                 org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
     }
 
-    private File selectRootToManage() {
-        File rootPath = getSuggestedRoot();
+    private File selectRootToManage (VCSContext context) {
+        File rootPath = getSuggestedRoot(context);
 
         final CreatePanel panel = new CreatePanel();
         panel.lblMessage.setVisible(false);
@@ -226,7 +223,7 @@ public class CreateAction extends ContextAction {
             public void run() {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
-                boolean valid = true;
+                boolean valid = !validatedPath.trim().isEmpty();
                 File dir = new File(validatedPath);
                 // must be an existing directory
                 if (!dir.isDirectory()) {
@@ -259,7 +256,7 @@ public class CreateAction extends ContextAction {
                 }
                 if (valid) {
                     // warning message (validation does not fail) for directories under a project
-                    FileObject fo = FileUtil.toFileObject(dir);
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
                     Project p = FileOwnerQuery.getOwner(fo);
                     if (p != null) {
                         FileObject projectDir = p.getProjectDirectory();
@@ -319,7 +316,7 @@ public class CreateAction extends ContextAction {
      * If these belong to a project, returns a common ancestor of all rootfiles and the project folder
      * @return
      */
-    private File getSuggestedRoot () {
+    private File getSuggestedRoot (VCSContext context) {
         final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return null;
 

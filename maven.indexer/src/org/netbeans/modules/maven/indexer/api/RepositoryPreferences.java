@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +76,7 @@ public final class RepositoryPreferences {
     
 
     static final String KEY_TYPE = "provider";//NOI18N
+    static final String KEY_DISPLAY_NAME = "displayName";//NOI18N
     static final String KEY_PATH = "path";//NOI18N
     static final String KEY_INDEX_URL = "repoIndexUrl";//NOI18N
     static final String KEY_REPO_URL = "repoUrl";//NOI18N
@@ -153,6 +155,22 @@ public final class RepositoryPreferences {
         return toRet;
     }
 
+    public Set<String> getKnownRepositoryUrls() {
+        Set<String> urls = new HashSet<String>();
+        for (RepositoryInfo ri : getRepositoryInfos()) {
+            if (ri.getRepositoryUrl() != null) {
+                urls.add(ri.getRepositoryUrl());
+            }
+        }
+        // these urls are essential (together with central) for correct
+        // resolution of maven pom urls in libraries
+        urls.add("http://repo1.maven.org/maven2"); //NOI18N
+        urls.add("http://download.java.net/maven/2");//NOI18N
+        urls.add("http://download.java.net/maven/1");//NOI18N
+        urls.add("http://download.java.net/maven/glassfish");//NOI18N
+        return urls;
+    }
+
     /**
      * 
      * @param info
@@ -164,8 +182,13 @@ public final class RepositoryPreferences {
                 int position = calculatePosition();
                 fo = getRepoFolder().createData(getFileObjectName(info.getId()));
                 fo.setAttribute("position", position); //NOI18N
+            } else {
+                if (infoCache.containsKey(fo)) {
+                    infoCache.put(fo, info);
+                }
             }
             fo.setAttribute(KEY_TYPE, info.getType());
+            fo.setAttribute(KEY_DISPLAY_NAME, info.getName());
             if (info.getRepositoryPath() != null) {
                 fo.setAttribute(KEY_PATH, info.getRepositoryPath());
             }
@@ -252,6 +275,7 @@ public final class RepositoryPreferences {
 
     private static class Comp implements Comparator<FileObject> {
 
+        @Override
         public int compare(FileObject o1, FileObject o2) {
             if (!o1.isValid() && !o2.isValid()) {
                 return 0;

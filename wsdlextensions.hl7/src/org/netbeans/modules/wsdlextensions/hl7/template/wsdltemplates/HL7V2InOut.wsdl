@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="dummy" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule5/hl7wsdl"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule5/hl7wsdl" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:hl7="http://schemas.sun.com/jbi/wsdl-extensions/hl7/">
+    <types/>
+    <message name="hl7wsdlOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <message name="hl7wsdlOperationResponse">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="hl7wsdlPortType">
+        <operation name="hl7wsdlOperation">
+            <input name="input1" message="tns:hl7wsdlOperationRequest"/>
+            <output name="output1" message="tns:hl7wsdlOperationResponse"/>
+        </operation>
+    </portType>
+    <binding name="hl7wsdlBinding" type="tns:hl7wsdlPortType">
+        <hl7:binding/>
+        <operation name="hl7wsdlOperation">
+            <hl7:operation messageType="all"/>
+            <input name="input1">
+                <hl7:message use="encoded" encodingStyle="hl7encoder-1.0" part="part1"/>
+            </input>
+            <output name="output1">
+                <hl7:message use="encoded" encodingStyle="hl7encoder-1.0" part="part1"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="hl7wsdlService">
+        <port name="hl7wsdlPort" binding="tns:hl7wsdlBinding">
+            <hl7:address location="hl7://localhost:4040" transportProtocolName="tcp-ip"/>
+            <hl7:protocolproperties acknowledgmentMode="original" llpType="MLLPv1" startBlockCharacter="11" endDataCharacter="28" endBlockCharacter="13" hllpChecksumEnabled="false" seqNumEnabled="false" processingID="P" versionID="2.3.1" validateMSH="false" fieldSeparator="124" encodingCharacters="^~\&amp;" sendingApplication="Sun HL7 Binding Component" sendingFacility="Sun HL7 Binding Component" enabledSFT="false" softwareVendorOrganization="Sun Microsystems, Inc" softwareCertifiedVersionOrReleaseNumber="2.0" softwareProductName="Sun HL7 Binding Component" softwareBinaryID="2.0" softwareProductInformation="It is a binding component for HL7 over TCP/IP connection" journallingEnabled="false" persistenceEnabled="false"/>
+            <hl7:communicationcontrols/>
+        </port>
+    </service>
+    <plnk:partnerLinkType name="hl7wsdl">
+        <!-- A partner link type is automatically generated when a new port type is added. Partner link types are used by BPEL processes. 
+In a BPEL process, a partner link represents the interaction between the BPEL process and a partner service. Each partner link is associated with a partner link type.
+A partner link type characterizes the conversational relationship between two services. The partner link type can have one or two roles.-->
+        <plnk:role name="hl7wsdlPortTypeRole" portType="tns:hl7wsdlPortType"/>
+    </plnk:partnerLinkType>
+</definitions>

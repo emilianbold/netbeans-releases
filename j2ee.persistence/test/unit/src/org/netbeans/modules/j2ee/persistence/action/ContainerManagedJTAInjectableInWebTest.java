@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,57 +73,55 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
     }
 
     /**
-     * TODO: need additional investigation, problem with annotation creation, commented for now
      * @throws Exception
      */
-//    public void testGenerate() throws Exception{
-//
-//        File testFile = new File(getWorkDir(), "Test.java");
-//        TestUtilities.copyStringToFile(testFile,
-//                "package org.netbeans.test;\n\n" +
-//                "import java.util.*;\n\n" +
-//                "public class Test {\n" +
-//                "}"
-//                );
-//        GenerationOptions options = new GenerationOptions();
-//        options.setMethodName("create");
-//        options.setOperation(GenerationOptions.Operation.PERSIST);
-//        options.setParameterName("object");
-//        options.setParameterType("Object");
-//        options.setQueryAttribute("");
-//        options.setReturnType("Object");
-//
-//        FileObject result = generate(FileUtil.toFileObject(testFile), options);
-//        assertFile(result);
-//    }
+    public void testGenerate() throws Exception{
+
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n\n" +
+                "public class Test {\n" +
+                "}"
+                );
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("create");
+        options.setOperation(GenerationOptions.Operation.PERSIST);
+        options.setParameterName("object");
+        options.setParameterType("Object");
+        options.setQueryAttribute("");
+        options.setReturnType("Object");
+
+        FileObject result = generate(FileUtil.toFileObject(testFile), options);
+        assertFile(result);
+    }
     
     /**
-     * TODO: need additional investigation, commented for now
      * @throws Exception
      */
-//    public void testGenerateWithExistingEM() throws Exception{
-//
-//        File testFile = new File(getWorkDir(), "Test.java");
-//        TestUtilities.copyStringToFile(testFile,
-//                "package org.netbeans.test;\n\n" +
-//                "import java.util.*;\n" +
-//                "import javax.persistence.EntityManager;\n" +
-//                "import javax.persistence.Resource;\n\n" +
-//                "public class Test {\n\n" +
-//                "    private EntityManager myEm;\n" +
-//                "}"
-//                );
-//        GenerationOptions options = new GenerationOptions();
-//        options.setMethodName("create");
-//        options.setOperation(GenerationOptions.Operation.PERSIST);
-//        options.setParameterName("object");
-//        options.setParameterType("Object");
-//        options.setQueryAttribute("");
-//        options.setReturnType("Object");
-//
-//        FileObject result = generate(FileUtil.toFileObject(testFile), options);
-//        assertFile(getGoldenFile("testGenerateWithExistingEM.pass"), FileUtil.toFile(result));
-//    }
+    public void testGenerateWithExistingEM() throws Exception{
+
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package org.netbeans.test;\n\n" +
+                "import java.util.*;\n" +
+                "import javax.persistence.EntityManager;\n" +
+                "import javax.persistence.Resource;\n\n" +
+                "public class Test {\n\n" +
+                "    private EntityManager myEm;\n" +
+                "}"
+                );
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("create");
+        options.setOperation(GenerationOptions.Operation.PERSIST);
+        options.setParameterName("object");
+        options.setParameterType("Object");
+        options.setQueryAttribute("");
+        options.setReturnType("Object");
+
+        FileObject result = generate(FileUtil.toFileObject(testFile), options);
+        assertFile(getGoldenFile("testGenerateWithExistingEM.pass"), FileUtil.toFile(result));
+    }
 
     public void testDummyTest()
     {

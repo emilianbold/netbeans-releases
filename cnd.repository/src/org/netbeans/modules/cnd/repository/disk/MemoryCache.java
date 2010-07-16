@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -79,7 +83,7 @@ public final class MemoryCache {
             DEFAULT_SLICE_CAPACITY = 128;
         }
     }
-    
+
     private static class SoftValue<T> extends SoftReference<T> {
         private final Key key;
         private SoftValue(T k, Key key, ReferenceQueue<T> q) {
@@ -155,19 +159,19 @@ public final class MemoryCache {
     public Persistent putIfAbsent(Key key, Persistent obj) {
         Persistent prevPersistent = null;
         Slice s = cache.getSilce(key);
-        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
         s.w.lock();
         try {
             // do not override existed value if any
             Object old = s.storage.get(key);
-            if (old instanceof SoftReference) {
-                prevPersistent = (Persistent) ((SoftReference) old).get();
+            if (old instanceof Reference) {
+                prevPersistent = (Persistent) ((Reference) old).get();
             } else if (old instanceof Persistent) {
                 prevPersistent = (Persistent) old;
             } else if (old != null) {
                 System.err.println("unexpected value " + old + " for key " + key);
             }
             if (prevPersistent == null) {
+                SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
                 // no previous value
                 // put new item into storage
                 s.storage.put(key, value);
@@ -192,8 +196,8 @@ public final class MemoryCache {
         if (value instanceof Persistent) {
             if (STATISTIC) {readHitCnt++;}
             return (Persistent) value;
-        } else if (value instanceof SoftReference) {
-            Persistent result = (Persistent) ((SoftReference) value).get();
+        } else if (value instanceof Reference) {
+            Persistent result = (Persistent) ((Reference) value).get();
             if( STATISTIC && result != null ) {
                 readHitCnt++;
             }
@@ -245,18 +249,21 @@ public final class MemoryCache {
                 SoftValue sv;
                 while ((sv = (SoftValue) refQueue.poll()) != null) {
                     Object value;
-                    Slice s = cache.getSilce(sv.key);
-                    s.w.lock();
-                    try{
-                        value = s.storage.get(sv.key);
-                        // check if the object has already been added by another thread
-                        // it is more efficient than blocking puts from the disk
-                        if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
-                            Object removed = s.storage.remove(sv.key);
-                            assert (value == removed);
+                    final Key key = sv.key;
+                    if (key != null) {
+                        Slice s = cache.getSilce(key);
+                        s.w.lock();
+                        try{
+                            value = s.storage.get(key);
+                            // check if the object has already been added by another thread
+                            // it is more efficient than blocking puts from the disk
+                            if ((value != null) && (value instanceof Reference) && (((Reference) value).get() == null)) {
+                                Object removed = s.storage.remove(key);
+                                assert (value == removed);
+                            }
+                        } finally {
+                            s.w.unlock();
                         }
-                    } finally {
-                        s.w.unlock();
                     }
                 }
             } finally {
@@ -310,7 +317,7 @@ public final class MemoryCache {
         Map<String, Integer> statSoft = new TreeMap<String, Integer>();
         int fullSize = 0;
         int nullSize = 0;
-        for(Slice s : cache.slices){
+        for(final Slice s : cache.slices){
             s.r.lock();
             try {
                 fullSize += s.storage.size();
@@ -318,9 +325,9 @@ public final class MemoryCache {
                     Key key = entry.getKey();
                     Object value = entry.getValue();
                     boolean isSoft = false;
-                    if ((value != null) && (value instanceof SoftReference)){
+                    if ((value != null) && (value instanceof Reference)){
                         isSoft = true;
-                        value = ((SoftReference) value).get();
+                        value = ((Reference) value).get();
                     }
                     String res = key.getClass().getName();
                     if (value == null) {

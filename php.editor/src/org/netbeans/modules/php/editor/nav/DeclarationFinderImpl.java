@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,13 +54,14 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
@@ -76,10 +80,12 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+    @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
     }
 
+    @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
         return getReferenceSpan(ts, caretOffset);
@@ -190,26 +196,30 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
         DeclarationLocation retval = DeclarationLocation.NONE;
-        if (underCaret != null && underCaret.gotoDeclarationEnabled()) {
-            ModelElement declaration = underCaret.gotoDeclaratin();
+        if (underCaret != null) {
+            Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
+            if (gotoDeclarations == null || gotoDeclarations.isEmpty()) {
+                return DeclarationLocation.NONE;
+            }
+            PhpElement declaration = gotoDeclarations.iterator().next();
             FileObject declarationFo = declaration.getFileObject();
             if (declarationFo == null) {
                 return DeclarationLocation.NONE;
             }
-            retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration.getPHPElement());
+            retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
-            Collection<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            Collection<? extends PhpElement> alternativeDeclarations = gotoDeclarations;
             if (alternativeDeclarations.size() > 1) {
                 retval = DeclarationLocation.NONE;
-                for (ModelElement elem : alternativeDeclarations) {
+                for (PhpElement elem : alternativeDeclarations) {
                     FileObject elemFo = elem.getFileObject();
                     if (elemFo == null) {
                         continue;
                     }
-                    DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem.getPHPElement());
+                    DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem);
                     AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
                     if (retval == DeclarationLocation.NONE) {
                         retval = al.getLocation();
@@ -222,31 +232,36 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return retval;
     }
 
-    private static class AlternativeLocationImpl implements AlternativeLocation {
+    public static class AlternativeLocationImpl implements AlternativeLocation {
 
-        private ModelElement modelElement;
+        private PhpElement modelElement;
         private DeclarationLocation declaration;
 
-        AlternativeLocationImpl(ModelElement modelElement, DeclarationLocation declaration) {
+        public AlternativeLocationImpl(PhpElement modelElement, DeclarationLocation declaration) {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
-
-        public ElementHandle getElement() {
-            return modelElement.getPHPElement();
+        public AlternativeLocationImpl(PhpElement modelElement) {
+            this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
         }
 
+        @Override
+        public ElementHandle getElement() {
+            return modelElement;
+        }
+
+        @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.reset();
-            ElementKind ek = modelElement.getPHPElement().getKind();
+            ElementKind ek = modelElement.getKind();
 
             if (ek != null) {
                 formatter.name(ek, true);
-                QualifiedName namespaceName = modelElement.getNamespaceName();
-                if (namespaceName.isDefaultNamespace()) {
-                    formatter.appendText(modelElement.getName());
-                } else {
+                if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
+                    QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
                     formatter.appendText(namespaceName.append(modelElement.getName()).toString());
+                } else {
+                    formatter.appendText(modelElement.getName());
                 }
                 formatter.name(ek, false);
             } else {
@@ -261,10 +276,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return formatter.getText();
         }
 
+        @Override
         public DeclarationLocation getLocation() {
             return declaration;
         }
 
+        @Override
         public int compareTo(AlternativeLocation o) {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
             return this.modelElement.getName().compareTo(i.modelElement.getName());

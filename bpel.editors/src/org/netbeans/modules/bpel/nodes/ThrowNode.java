@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.properties.Constants;
@@ -63,17 +62,18 @@ public class ThrowNode extends BpelNode<Throw> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(
+        property = propUtil.registerAttributeProperty(
                 this, mainPropertySet,
                 FaultNameReference.FAULT_NAME, FAULT_NAME,
                 "getFaultName", "setFaultName", null); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(
+        property = propUtil.registerAttributeProperty(
                 new InstanceRef() {
                     public Object getReference() {
                         return ThrowNode.this;
@@ -87,27 +87,18 @@ public class ThrowNode extends BpelNode<Throw> {
                 "getFaultVariable", "setFaultVariable", null); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
     }
-    
-    public VariableDeclaration getFaultVariable() {
+
+    // TODO correct according bean spec
+    public BpelReference<VariableDeclaration> getFaultVariable() {
         Throw throwObj = getReference();
-        if (throwObj != null) {
-            BpelReference<VariableDeclaration> varRef = throwObj.getFaultVariable();
-            if (varRef != null) {
-                VariableDeclaration varDecl = varRef.get();
-                if (varDecl != null && varDecl instanceof VariableDeclaration) {
-                    return (VariableDeclaration)varDecl;
-                }
-            }
-        }
-        //
-        return null;
+        return throwObj != null ? throwObj.getFaultVariable() : null;
     }
-    
+
     public void setFaultVariable(VariableDeclaration newValue) {
         Throw throwObj = getReference();
         if (throwObj != null) {

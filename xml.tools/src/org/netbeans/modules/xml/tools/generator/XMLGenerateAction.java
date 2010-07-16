@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,9 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-
 import org.netbeans.modules.xml.actions.CollectXMLAction;
 import org.netbeans.modules.xml.lib.GuiUtil;
 import org.openide.util.NbBundle;
@@ -53,20 +53,6 @@ import org.openide.util.NbBundle;
 public abstract class XMLGenerateAction extends CookieAction {
     /** Stream serialVersionUID as of Build1099j. */
     protected static final long serialVersionUID = -6614874187800576344L;
-
-/****************
-    public static synchronized XMLGenerateAction _getInstance() {
-        XMLGenerateAction actionInstance = null;
-        String thisClassName = XMLGenerateAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (XMLGenerateAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-**************/
     
     /* @return the mode of action. */
     protected int mode() {
@@ -116,20 +102,6 @@ public abstract class XMLGenerateAction extends CookieAction {
     public static class GenerateDTDAction extends XMLGenerateAction implements CollectXMLAction.XMLAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 8532990650127561962L;
-
-/******************
-        public static synchronized GenerateDTDAction getInstance() {
-            GenerateDTDAction actionInstance = null;
-            String thisClassName = GenerateDTDAction.class.getName();
-            try {
-                Class actionInstanceClass = Class.forName(thisClassName);
-                actionInstance = (GenerateDTDAction) actionInstanceClass.newInstance();
-            } catch(Exception e) {
-                Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-            }
-            return actionInstance;
-        }
-*****************/
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.

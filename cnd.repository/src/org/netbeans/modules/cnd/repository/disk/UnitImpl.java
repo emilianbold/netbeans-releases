@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,20 +62,20 @@ public final class UnitImpl implements Unit {
     
     private Storage    singleFileStorage;
     private Storage    multyFileStorage;
-    private final String unitName;
+    private final CharSequence unitName;
     private final MemoryCache cache;
     
-    public UnitImpl(final String unitName) throws IOException {
+    public UnitImpl(final CharSequence unitName) throws IOException {
        assert unitName != null;
        this.unitName = unitName;
        singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
-       multyFileStorage = new MultyFileStorage(this.getName());
+       multyFileStorage = new MultyFileStorage(getName());
        cache = new MemoryCache();
     }
     
     private Storage getStorage(Key key) {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         if (key.getBehavior() == Key.Behavior.Default) {
             return singleFileStorage;
         } else {
@@ -80,6 +83,7 @@ public final class UnitImpl implements Unit {
         }
     }
 
+    @Override
     public Persistent get(Key key) throws IOException {
         assert key != null;
         // I commented a next assertion because it is too expensive.
@@ -104,36 +108,42 @@ public final class UnitImpl implements Unit {
         return data;
     }
     
+    @Override
     public void putToCache(Key key, Persistent obj) {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         cache.put(key, obj);
     }
     
+    @Override
     public void hang(Key key, Persistent obj) {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         cache.hang(key, obj);
     }
     
+    @Override
     public Persistent tryGet(Key key) {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         return cache.get(key);
     }
 
+    @Override
     public void removePhysically(Key key) throws IOException {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         getStorage(key).remove(key);
     }
     
+    @Override
     public void removeFromCache(Key key) {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         cache.remove(key);
     }
 
+    @Override
     public void close() throws IOException {
         Collection<Pair<Key, Persistent>> hung = cache.clearHungObjects();
         for( Pair<Key, Persistent> pair : hung ) {
@@ -143,29 +153,35 @@ public final class UnitImpl implements Unit {
         multyFileStorage.close();
     }
 
+    @Override
     public void putPhysically(Key key, Persistent object) throws IOException {
         assert key != null;
-        assert getName().equals(key.getUnit().toString());
+        assert getName().equals(key.getUnit());
         assert object != null;
         getStorage(key).write(key, object);
     }
 
+    @Override
     public boolean maintenance(long timeout) throws IOException {
         return singleFileStorage.defragment(timeout);
     }
 
+    @Override
     public int getMaintenanceWeight() throws IOException {
         return singleFileStorage.getFragmentationPercentage();
     }
 
-    public String getName() {
+    @Override
+    public CharSequence getName() {
         return unitName;
     }
 
+    @Override
     public void debugClear() {
         cache.clearSoftRefs();
     }
 
+    @Override
     public void debugDistribution() {
         cache.printDistribution();
     }

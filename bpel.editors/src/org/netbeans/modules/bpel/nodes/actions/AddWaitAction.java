@@ -35,6 +35,7 @@ public class AddWaitAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddWaitAction() {
+        super("basic/wait"); // NOI18N
     }    
     
     protected String getBundleName() {

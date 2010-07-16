@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
@@ -84,6 +88,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.ModuleImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.ProgramImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.SubroutineImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -236,6 +243,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = ENUMERATOR_IMPL;
         } else if (object instanceof IncludeImpl) {
             aHandler = INCLUDE_IMPL;
+        } else if (object instanceof InheritanceImpl) {
+            aHandler = INHERITANCE_IMPL;
         } else if (object instanceof ParameterListImpl) {
             aHandler = PARAM_LIST_IMPL;
             if (object instanceof FunctionParameterListImpl) {
@@ -254,6 +263,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
+        } else if (object instanceof ProgramImpl) {
+            aHandler = PROGRAM_IMPL;
+        } else if (object instanceof SubroutineImpl) {
+            aHandler = SUBROUTINE_IMPL;
+        } else if (object instanceof ModuleImpl) {
+            aHandler = MODULE_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -420,6 +435,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new IncludeImpl(stream);
                 break;
 
+            case INHERITANCE_IMPL:
+                obj = new InheritanceImpl(stream);
+                break;
+
             case PARAM_LIST_IMPL:
                 obj = new ParameterListImpl(stream);
                 break;
@@ -466,6 +485,18 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case TEMPLATE_PARAMETER_IMPL:
                 obj = new TemplateParameterImpl(stream);
+                break;
+
+            case PROGRAM_IMPL:
+                obj = new ProgramImpl(stream);
+                break;
+
+            case SUBROUTINE_IMPL:
+                obj = new SubroutineImpl(stream);
+                break;
+
+            case MODULE_IMPL:
+                obj = new ModuleImpl(stream);
                 break;
 
             default:
@@ -519,7 +550,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     // functions
     private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
     private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
-    
+
     //// function definitons 
     private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL_EX + 1;
     private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
@@ -552,13 +583,21 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int ENUMERATOR_IMPL                = PARAMETER_ELLIPSIS_IMPL + 1;
 
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
-    private static final int PARAM_LIST_IMPL                = INCLUDE_IMPL + 1;
+    private static final int INHERITANCE_IMPL               = INCLUDE_IMPL + 1;
+    private static final int PARAM_LIST_IMPL                = INHERITANCE_IMPL + 1;
     private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
     private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
+
+    // fortran
+
+    private static final int PROGRAM_IMPL                  = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
+    private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
+
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;
+    public static final int LAST_INDEX = MODULE_IMPL;
 }

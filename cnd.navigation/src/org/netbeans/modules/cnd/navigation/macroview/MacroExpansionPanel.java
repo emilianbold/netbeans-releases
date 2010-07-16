@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,21 +84,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     }
 
     /**
-     * Initializes document of expanded macro pane.
-     *
-     * @param doc - document
-     */
-    public void setMacroExpansionDocument(Document doc) {
-        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
-        if (mimeTypeObj != null) {
-            mimeType = (String) mimeTypeObj;
-        }
-        jMacroExpansionEditorPane.setContentType(mimeType);
-        jMacroExpansionEditorPane.setDocument(doc);
-    }
-
-    /**
      * Initializes document of expanded context pane.
      *
      * @param doc - document
@@ -106,27 +94,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         if (mimeTypeObj != null) {
             mimeType = (String) mimeTypeObj;
         }
+        jCodeExpansionEditorPane.setCaretPosition(0);
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
-    }
-
-    /**
-     * Returns position of panes divider.
-     *
-     * @return position
-     */
-    public int getDividerLocation() {
-        return jSplitPane1.getDividerLocation();
-    }
-
-    /**
-     * Sets position of panes divider.
-     *
-     * @param dividerLocation - position
-     */
-    public void setDividerLocation(int dividerLocation) {
-        jSplitPane1.setDividerLocation(dividerLocation);
     }
 
     /**
@@ -254,9 +225,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jMacroExpansionEditorPane = new javax.swing.JEditorPane();
         jPanel1 = new javax.swing.JPanel();
         jCodeExpansionPane = new javax.swing.JScrollPane();
         jCodeExpansionEditorPane = new javax.swing.JEditorPane();
@@ -269,17 +237,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jSeparator4 = new javax.swing.JToolBar.Separator();
         prevMacro = new javax.swing.JButton();
         nextMacro = new javax.swing.JButton();
-
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(1.0);
-        jSplitPane1.setFocusable(false);
-        jSplitPane1.setOneTouchExpandable(true);
-
-        jScrollPane1.setBorder(null);
-
-        jMacroExpansionEditorPane.setBorder(null);
-        jMacroExpansionEditorPane.setEditable(false);
-        jScrollPane1.setViewportView(jMacroExpansionEditorPane);
 
         setLayout(new java.awt.BorderLayout());
 
@@ -458,6 +415,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         return jCodeExpansionPane.requestFocusInWindow();
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -467,12 +425,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JToggleButton fileContext;
     private javax.swing.JEditorPane jCodeExpansionEditorPane;
     private javax.swing.JScrollPane jCodeExpansionPane;
-    private javax.swing.JEditorPane jMacroExpansionEditorPane;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator4;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel jStatusBar;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton localContext;

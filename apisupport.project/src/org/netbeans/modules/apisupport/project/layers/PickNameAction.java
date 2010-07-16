@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,21 +69,20 @@ import org.openide.util.actions.CookieAction;
  */
 public class PickNameAction extends CookieAction {
     
-    private static FileObject findFile(Node[] activatedNodes) {
+    static FileObject findFile(Node[] activatedNodes) {
         return activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
     }
     
-    private static NbModuleProvider findProject(FileObject f) {
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        if (location == null) {
+    static NbModuleProvider findProject(FileObject f) {
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        if (location == null || location.length != 1) {
             return null;
         }
-        Project p = FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
-                
-        assert p != null : location;
-        NbModuleProvider prov = p.getLookup().lookup(NbModuleProvider.class);
-        assert prov != null : location;
-        return prov;
+        Project p = FileOwnerQuery.getOwner(URI.create(location[0].toExternalForm()));
+        if (p == null) {
+            return null;
+        }
+        return p.getLookup().lookup(NbModuleProvider.class);
     }
     
     private static String findBundlePath(NbModuleProvider p) {
@@ -94,7 +96,7 @@ public class PickNameAction extends CookieAction {
         }
     }
     
-    protected void performAction(Node[] activatedNodes) {
+    protected @Override void performAction(Node[] activatedNodes) {
         NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(PickNameAction.class, "PickNameAction_dialog_label"),
                 NbBundle.getMessage(PickNameAction.class, "PickNameAction_dialog_title"));
@@ -103,8 +105,17 @@ public class PickNameAction extends CookieAction {
         }
         String name = d.getInputText();
         FileObject f = findFile(activatedNodes);
+        if (f == null) {
+            return;
+        }
         NbModuleProvider p = findProject(f);
+        if (p == null) {
+            return;
+        }
         String bundlePath = findBundlePath(p);
+        if (bundlePath == null) {
+            return;
+        }
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
             EditableProperties ep = Util.loadProperties(properties);
@@ -136,19 +147,19 @@ public class PickNameAction extends CookieAction {
         return findBundlePath(p) != null;
     }
 
-    public String getName() {
+    public @Override String getName() {
         return NbBundle.getMessage(PickIconAction.class, "LBL_pick_name");
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] {DataObject.class};
+    protected @Override Class<?>[] cookieClasses() {
+        return new Class<?>[] {DataObject.class};
     }
     
-    protected int mode() {
+    protected @Override int mode() {
         return MODE_EXACTLY_ONE;
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return null;
     }
     

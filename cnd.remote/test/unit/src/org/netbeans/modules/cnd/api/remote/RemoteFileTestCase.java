@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,19 +50,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteFileTestCase extends CndBaseTestCase {
+public class RemoteFileTestCase extends RemoteTestBase {
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     public RemoteFileTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
         if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
@@ -67,15 +71,27 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         }
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
+    }
+
     @ForAllEnvironments(section="remote.platforms")
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testPlainFile() throws Exception {
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         final String tmpFile = getTempName();
-        cmd.run(getTestExecutionEnvironment(), "rm "+ tmpFile, null);
+        ProcessUtils.execute(getTestExecutionEnvironment(), "rm", tmpFile);
         File remoteFile = RemoteFile.create(getTestExecutionEnvironment(), tmpFile);
         assert remoteFile instanceof RemoteFile;
         assert !remoteFile.exists();
-        cmd.run(getTestExecutionEnvironment(), "echo 123 > "+ tmpFile, null);
+        ProcessUtils.execute(getTestExecutionEnvironment(), "touch", tmpFile);
         assert remoteFile.exists();
         assert remoteFile.isFile();
         assert !remoteFile.isDirectory();
@@ -84,19 +100,17 @@ public class RemoteFileTestCase extends CndBaseTestCase {
         assert ! remoteFile.exists();
     }
 
-    private static final String getTempName() {
-        //TODO: check existence?
-        return "/tmp/nb65tempdir" + Math.random() + ".bak";
+    private final String getTempName() {
+        return getRemoteTmpDir() + "/RemoteFileTest" + Math.random() + ".bak";
     }
 
     @ForAllEnvironments(section="remote.platforms")
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testDirectoryStructure() throws Exception {
         final String tempDir = getTempName();
-        CommandProvider cmdProvider = Lookup.getDefault().lookup(CommandProvider.class);
-        assert cmdProvider != null;
-        String cmd = String.format("sh -c \"rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3\"", tempDir);
+        String script = String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3", tempDir);
         final ExecutionEnvironment env = getTestExecutionEnvironment();
-        assert cmdProvider.run( env,cmd, null) == 0;
+        assertEquals("The return code of a script " + script, 0, ProcessUtils.execute(env, "sh", "-c", script).exitCode);
         File remoteFile = RemoteFile.create(env, tempDir);
         assert remoteFile instanceof RemoteFile;
         assert !remoteFile.isFile();
@@ -117,17 +131,25 @@ public class RemoteFileTestCase extends CndBaseTestCase {
     @ForAllEnvironments(section="remote.platforms")
     public void testReader() throws FileNotFoundException, IOException {
         final String tempFile = getTempName();
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        assert cmd.run(getTestExecutionEnvironment(), String.format("sh -c \"rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s\"", tempFile), null) == 0;
+        String script = String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile);
+        ProcessUtils.ExitStatus es = ProcessUtils.execute(
+                getTestExecutionEnvironment(),
+                "sh", "-c",
+                script);
+        assertEquals("The return code of a script " + script, 0, es.exitCode);
         BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getTestExecutionEnvironment(), tempFile) ));
         int i = 1;
-        while (true) {
-            String line = in.readLine();
-            if (line == null) {
-                break;
+        try {
+            while (true) {
+                String line = in.readLine();
+                if (line == null) {
+                    break;
+                }
+                assert (line.equals("" + i));
+                i++;
             }
-            assert (line.equals("" + i));
-            i++;
+        } finally {
+            in.close();
         }
         assert i == 5;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -58,24 +63,30 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
+
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
-    MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration) {
+    private final boolean isFromInterface;
+    MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
         super(methodDeclaration);
+        this.isFromInterface = isFromInterface;
         if (program != null) {
             paramDocTypes = VariousUtils.getParamTypesFromPHPDoc(program, methodDeclaration);
         }
     }
 
-    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration) {
-        return new MethodDeclarationInfo(program, methodDeclaration);
+    public static MethodDeclarationInfo create(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
+        return new MethodDeclarationInfo(program, methodDeclaration, isFromInterface);
     }
-    public static MethodDeclarationInfo create(MethodDeclaration classDeclaration) {
-        return new MethodDeclarationInfo(null, classDeclaration);
+    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration, final TypeScope typeScope) {
+        return create(program, methodDeclaration, typeScope.isInterface());
+    }
+    public static MethodDeclarationInfo create(MethodDeclaration classDeclaration, final TypeScope typeScope) {
+        return new MethodDeclarationInfo(null, classDeclaration, typeScope.isInterface());
     }
 
     @Override
     public Kind getKind() {
-        PhpModifiers modifiers = new PhpModifiers(getOriginalNode().getModifier());
+        PhpModifiers modifiers = PhpModifiers.fromBitMask(getOriginalNode().getModifier());
         return modifiers.isStatic() ? Kind.STATIC_METHOD: Kind.METHOD;
     }
 
@@ -97,8 +108,8 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends Parameter> getParameters() {
-        List<Parameter> retval = new ArrayList<Parameter>();
+    public List<ParameterElement> getParameters() {
+        List<ParameterElement> retval = new ArrayList<ParameterElement>();
         List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
             FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
@@ -108,7 +119,8 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     }
     
     public PhpModifiers getAccessModifiers() {
-        return new PhpModifiers(getOriginalNode().getModifier());
+        int realModifiers = getOriginalNode().getModifier();
+        realModifiers = (isFromInterface) ? (realModifiers | Modifier.ABSTRACT | Modifier.PUBLIC) : realModifiers;
+        return PhpModifiers.fromBitMask(realModifiers);
     }
-
 }

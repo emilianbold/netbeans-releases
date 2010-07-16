@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="InboundRequestResponseMessaging" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule2/InboundRequestResponseMessaging"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule2/InboundRequestResponseMessaging" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="InboundRequestResponseMessagingOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <message name="InboundRequestResponseMessagingOperationResponse">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="InboundRequestResponseMessagingPortType">
+        <operation name="InboundRequestResponseMessagingOperation">
+            <input name="input1" message="tns:InboundRequestResponseMessagingOperationRequest"/>
+            <output name="output1" message="tns:InboundRequestResponseMessagingOperationResponse"/>
+        </operation>
+    </portType>
+    <binding name="InboundRequestResponseMessagingBinding" type="tns:InboundRequestResponseMessagingPortType">
+        <ftp:binding/>
+        <operation name="InboundRequestResponseMessagingOperation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:message messageRepository="" messageName="" messageNamePrefixIB="" pollIntervalMillis="5000" archive="true" protect="true" stage="true" use="literal" encodingStyle="" messageCorrelate="true"/>
+            </input>
+            <output name="output1">
+                <ftp:message messageRepository="" messageName="" messageNamePrefixOB="" archive="true" protect="true" stage="true" use="literal" encodingStyle="" messageCorrelate="true"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="InboundRequestResponseMessagingService">
+        <port name="#SERVICE_NAME_InboundRequestResponseMessagingPort" binding="tns:InboundRequestResponseMessagingBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>

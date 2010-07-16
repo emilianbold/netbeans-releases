@@ -19,14 +19,15 @@
 
 package org.netbeans.modules.iep.editor.model;
 
-import java.sql.Types; 
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.model.TcgModelManager;
+import org.netbeans.modules.tbls.model.TcgModelConstants;
 
 
 // Must match library.xml
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentType;
+
+
 public interface ModelConstants extends TcgModelConstants, SharedConstants {
     // In both TcgModelConstants, and SharedConstants
     public static String NAME_KEY = "name";

@@ -7,7 +7,10 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -20,7 +23,7 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
 by Sun in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
@@ -54,10 +57,10 @@ Contributor(s):
     <property name="build.compiler.debug" value="yes"/>
 
     <property name="nbdist.path" value="../../../../nbbuild/netbeans"/>
-    <property name="platform" value="platform11"/>
-    <property name="ide" value="ide11"/>
+    <property name="platform" value="platform"/>
+    <property name="ide" value="ide"/>
     
-    <property name="cnddist.path" value="../../../../nbbuild/netbeans/cnd3"/>
+    <property name="cnddist.path" value="../../../../nbbuild/netbeans/cnd"/>
     
     <path id="cnd.modules">
         <fileset dir="${cnddist.path}/modules">

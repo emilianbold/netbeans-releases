@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
-    "http://java.sun.com/products/javahelp/map_2_0.dtd">
-
-<map version="2.0">
+    "http://java.sun.com/products/javahelp/map_2_0.dtd"><map version="2.0">
 	<mapID target="org.netbeans.modules.javacard.title" url="help/title.html"/>
 	<mapID target="org.netbeans.modules.javacard.docinfo" url="help/docinfo.html"/>
 	<mapID target="org.netbeans.modules.javacard.AboutJavaCard3Development" url="help/AboutJavaCard3Development.html"/>
@@ -47,7 +45,10 @@
 	<mapID target="org.netbeans.modules.javacard.CustomizeDevice" url="help/CustomizeDevice.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" url="help/RemoveDeviceFromPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.DebuggingApplications" url="help/DebuggingApplications.html"/>
-	<mapID target="org.netbeans.modules.javacard.DebugApplication2" url="help/DebugApplication2.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingBreakpoints" url="help/SettingBreakpoints.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingWatches" url="help/SettingWatches.html"/>
+	<mapID target="org.netbeans.modules.javacard.StartingDebugging" url="help/StartingDebugging.html"/>
+	<mapID target="org.netbeans.modules.javacard.SteppingThroughCode" url="help/SteppingThroughCode.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingClassicAppletProject" url="help/CreatingClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" url="help/CreateClassicAppletProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" url="help/CreateClassicAppletProjectFromExistingCode.html"/>
@@ -71,7 +72,7 @@
 	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" url="help/SettingClassicAppletRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletProject" url="help/RunningClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletSamples" url="help/RunningClassicAppletSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunClassicChannelsClassicApplet" url="help/RunClassicChannelsClassicApplet.html"/>
+	<mapID target="org.netbeans.modules.javacard.GetAdditionalClassicAppletSamples" url="help/GetAdditionalClassicAppletSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" url="help/CreatingExtendedAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" url="help/CreateExtendedAppletProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" url="help/CreateExtendedAppletProjectFromExistingCode.html"/>
@@ -94,8 +95,7 @@
 	<mapID target="org.netbeans.modules.javacard.SettingExtendedAppletRunProperties" url="help/SettingExtendedAppletRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletProject" url="help/RunningExtendedAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" url="help/RunningExtendedAppletSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunHelloWorldExtendedApplet" url="help/RunHelloWorldExtendedApplet.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunExtendedChannelsExtendedApplet" url="help/RunExtendedChannelsExtendedApplet.html"/>
+	<mapID target="org.netbeans.modules.javacard.GetAdditionalExtendedAppletSamples" url="help/GetAdditionalExtendedAppletSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingClassicLibProject" url="help/CreatingClassicLibProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" url="help/CreateClassicLibProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" url="help/CreateClassicLibProjectFromExistingCode.html"/>
@@ -146,39 +146,14 @@
 	<mapID target="org.netbeans.modules.javacard.SettingWebAppRunProperties" url="help/SettingWebAppRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningWebAppProject" url="help/RunningWebAppProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningWebApplicationSamples" url="help/RunningWebApplicationSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningHelloWorldSampleWebApp" url="help/RunningHelloWorldSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningContainerManagedAuthenticationSampleWebApp" url="help/RunningContainerManagedAuthenticationSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningStaticSecureWebHostingSampleWebApp" url="help/RunningStaticSecureWebHostingSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningDynamicSecureWebHostingSampleWebApp" url="help/RunningDynamicSecureWebHostingSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningGCFClientSampleWebApp" url="help/RunningGCFClientSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningDynamicallyLoadedClassesSampleWebApp" url="help/RunningDynamicallyLoadedClassesSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningPersistenceSampleWebApp" url="help/RunningPersistenceSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningRestartableTasksSampleWebApp" url="help/RunningRestartableTasksSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningTransactionsSampleWebApp" url="help/RunningTransactionsSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningSIOFacilitySampleWebApp" url="help/RunningSIOFacilitySampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningEventFacilitySampleWebApp" url="help/RunningEventFacilitySampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningCardHolderAuthorizationSampleWebApp" url="help/RunningCardHolderAuthorizationSampleWebApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunningTransitReferenceAppSample" url="help/RunningTransitReferenceAppSample.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildWalletClassicLibRefApp" url="help/BuildWalletClassicLibRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildTransitExtLibRefApp" url="help/BuildTransitExtLibRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunClassicWalletAppletRefApp" url="help/RunClassicWalletAppletRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunWalletAssistAppletRefApp" url="help/RunWalletAssistAppletRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunPOSWebRefApp" url="help/RunPOSWebRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunAdminWebRefApp" url="help/RunAdminWebRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunTurnstileAppletRefApp" url="help/RunTurnstileAppletRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunTurnstileClientRefApp" url="help/RunTurnstileClientRefApp.html"/>
-	<mapID target="org.netbeans.modules.javacard.RunTurnstileWebRefApp" url="help/RunTurnstileWebRefApp.html"/>
+	<mapID target="org.netbeans.modules.javacard.GetAdditionalWebAppSamples" url="help/GetAdditionalWebAppSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.GetRefAppSample" url="help/GetRefAppSample.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" url="help/SettingUpSecurityForWebApplication.html"/>
 	<mapID target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" url="help/AcceptingUntrustedCertificates.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" url="help/CustomizingJavaCardPlatform.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" url="help/BuildingCustomJavaCardPlatformRI.html"/>
-	<mapID target="org.netbeans.modules.javacard.ConfiguringCustomRI" url="help/ConfiguringCustomRI.html"/>
-	<mapID target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" url="help/GeneratingCustomSSLCertificatesKeys.html"/>
-	<mapID target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" url="help/UsingCustomSSLCertificatesKeys.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingRuntimeNode" url="help/CustomizingRuntimeNode.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingDeviceNode" url="help/CustomizingDeviceNode.html"/>
 	<mapID target="org.netbeans.modules.javacard.Troubleshooting" url="help/Troubleshooting.html"/>
 	<mapID target="org.netbeans.modules.javacard.UnableRunSamples" url="help/UnableRunSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.GettingUpdatedSamples" url="help/GettingUpdatedSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.UnableOpenProject" url="help/UnableOpenProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.Glossary" url="help/Glossary.html"/>
-	<mapID target="org.netbeans.modules.javacard.idx-1" url="idx-1.html"/>
+	<mapID target="idx-1" url="help/idx-1.html"/>
 </map>

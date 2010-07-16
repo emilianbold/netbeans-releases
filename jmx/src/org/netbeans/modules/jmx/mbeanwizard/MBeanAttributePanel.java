@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -106,7 +109,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         //String str = NbBundle.getMessage(MBeanAttributePanel.class,"LBL_Attribute_Panel");// NOI18N
         String str = bundle.getString("LBL_Attribute_Panel");// NOI18N
         setName(str);
-        wiz.setErrorMsg(" ");// NOI18N
+        wiz.setErrorMsg(null);
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -302,7 +305,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
             
             boolean attrValid = true;
             boolean opValid = true;
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
             
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyContained()) {
@@ -385,7 +388,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 attrModel.addRow(new MBeanAttribute(name,type,access,descr, mirror));
                 
             }
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
+            setErrorMsg(null);
         }
         
         /**

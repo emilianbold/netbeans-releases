@@ -16,22 +16,20 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.properties.props.editors;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
- * 
  * @author nk160297
  */
-public class VariablePropertyEditor extends PropertyEditorSupport
-        implements ExPropertyEditor {
+public class VariablePropertyEditor extends PropertyEditorSupport implements ExPropertyEditor {
     
     private PropertyEnv myPropertyEnv = null;
     
@@ -40,23 +38,23 @@ public class VariablePropertyEditor extends PropertyEditorSupport
     }
     
     public Component getCustomEditor() {
-        VariablePropertyCustomizer customizer =
-                PropertyUtils.propertyCustomizerPool.getObjectByClass(
-                VariablePropertyCustomizer.class);
+        VariablePropertyCustomizer customizer = PropertyUtils.propertyCustomizerPool.getObjectByClass(VariablePropertyCustomizer.class);
         customizer.init(myPropertyEnv, this);
         return customizer;
     }
     
+    @Override
     public String getAsText() {
         Object variable = getValue();
+
+        if (variable instanceof BpelReference) {
+            return ((BpelReference)variable).getRefString();
+        }
         
-        return ((variable != null) && (variable instanceof Variable))
-        ? ((Variable) variable).getVariableName() : "";
+        return (variable instanceof Variable) ? ((Variable) variable).getVariableName() : "";
     }
     
     public void attachEnv(PropertyEnv propertyEnv) {
         myPropertyEnv = propertyEnv;
     }
-    
 }
-

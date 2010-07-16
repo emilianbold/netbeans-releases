@@ -21,8 +21,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.openide.util.ActionsBridge;
-import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -30,6 +28,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.ActionInvoker;
 
 /** Lazily initialized always enabled action
  *
@@ -133,13 +132,12 @@ implements PropertyChangeListener, ContextAwareAction {
         }
 
         boolean async = Boolean.TRUE.equals(map.get("asynchronous")); // NOI18N
-        ActionRunnable ar = new ActionRunnable(e, this, async) {
-            @Override
-            protected void run() {
+        Runnable ar = new Runnable() {
+            public void run() {
                 getDelegate().actionPerformed(e);
             }
         };
-        ActionsBridge.doPerformAction(this, ar);
+        ActionInvoker.invokeAction(this, e, async, ar);
     }
 
     @Override
@@ -196,7 +194,7 @@ implements PropertyChangeListener, ContextAwareAction {
                 return ImageUtilities.image2Icon((Image)icon);
             }
             if (icon instanceof String) {
-                return ImageUtilities.loadImageIcon((String)icon, false);
+                return ImageUtilities.loadImageIcon((String)icon, true);
             }
         }
         if ("iconBase".equals(name)) { // NOI18N

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Rudimentary manager useful for non-GUI platform applications.
- * Superseded by NbTopManager.NbLifecycleManager.
+ * Superseded by NbLifecycleManager.
  * @see #158525
  */
 @ServiceProvider(service=LifecycleManager.class)
@@ -66,7 +69,7 @@ public class ModuleLifecycleManager extends LifecycleManager {
         if (exiting.getAndSet(true)) {
             return;
         }
-        // Simplified version of NbTopManager.doExit.
+        // Simplified version of NbLifecycleManager.doExit.
         if (Main.getModuleSystem().shutDown(new Runnable() {
             public void run() {
                 try {
@@ -92,11 +95,8 @@ public class ModuleLifecycleManager extends LifecycleManager {
     }
 
     public @Override void markForRestart() throws UnsupportedOperationException {
-        try {
-            Class.forName("javax.jnlp.BasicService"); // NOI18N
-            throw new UnsupportedOperationException("cannot restart in JNLP mode"); // NOI18N
-        } catch (ClassNotFoundException x) {
-            // OK, running in normal mode
+        if (!TopSecurityManager.class.getClassLoader().getClass().getName().endsWith(".Launcher$AppClassLoader")) {
+            throw new UnsupportedOperationException("not running in regular module system, cannot restart"); // NOI18N
         }
         String userdir = System.getProperty("netbeans.user"); // NOI18N
         if (userdir == null) {

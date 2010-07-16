@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,15 @@
 
 package org.netbeans.modules.css.visual.api;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.visual.ui.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SingleSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -58,6 +65,8 @@ public final class StyleBuilderPanel extends JPanel {
 
     private List<StyleEditor> styleEditorList = new ArrayList<StyleEditor>();
 
+    private Document activeDocument;
+
     public static StyleBuilderPanel createInstance() {
         return new StyleBuilderPanel();
     }
@@ -68,6 +77,18 @@ public final class StyleBuilderPanel extends JPanel {
     }
 
     private void initialize(){
+        //lazy panel initialization support
+        jTabbedPane1.getModel().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if(e.getSource() instanceof SingleSelectionModel) {
+                    SingleSelectionModel model = (SingleSelectionModel)e.getSource();
+                    StyleEditor editor = styleEditorList.get(model.getSelectedIndex());
+                    editor.initializePanel();
+                }
+            }
+        });
+
         styleEditorList.add(new FontStyleEditor());
         styleEditorList.add(new BackgroundStyleEditor());
         styleEditorList.add(new TextBlockStyleEditor());
@@ -85,9 +106,15 @@ public final class StyleBuilderPanel extends JPanel {
     }
 
     public void setContent(CssRuleContext content){
+        this.activeDocument = content.document();
+
         for(StyleEditor editor : styleEditorList) {
             editor.setContent(content);
         }
+    }
+
+    public Document getActiveDocument() {
+        return this.activeDocument;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -104,5 +131,5 @@ public final class StyleBuilderPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
-    
+
 }

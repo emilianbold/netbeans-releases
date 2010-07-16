@@ -73,6 +73,11 @@ public interface BPELElementsBuilder {
     Assign createAssign();
 
     /**
+     * @return instantiated JavaScript.
+     */
+    Assign createJavaScript();
+
+    /**
      * @return instantiated wait.
      */
     Wait createWait();
@@ -257,6 +262,11 @@ public interface BPELElementsBuilder {
      * @return instantiated copy.
      */
     Copy createCopy();
+
+    /**
+     * @return instantiated ExtensionAssignOperation.
+     */
+    ExtensionAssignOperation createExtensionAssignOperation();
 
     /**
      * @return instantiated catchAll ( activityOrCompensateContainer ).

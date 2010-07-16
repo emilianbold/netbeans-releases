@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -384,6 +387,7 @@ implements ChangeListener {
     
     /** mapping of files to registration count */
     private final Map<FileObject,Integer> registrationCounts = new WeakHashMap<FileObject,Integer>();
+
     void countRegistration(FileObject fo) {
         Integer i = registrationCounts.get(fo);
         Integer i2;
@@ -394,6 +398,7 @@ implements ChangeListener {
         }
         registrationCounts.put(fo, i2);
     }
+
     /** For use from FolderChildren. @see "#20699" */
     int registrationCount(FileObject fo) {
         Integer i = registrationCounts.get(fo);
@@ -675,22 +680,25 @@ implements ChangeListener {
                 List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
                 if (arr != null) {
                     return new ArrayList<Item>(arr);
-                } else {
-                    return Collections.emptyList();
                 }
-                /*List<Item> toNotify = new LinkedList<Item>();
+                List<Item> toNotify = new LinkedList<Item>();
                 FileObject parent = fo.getParent();
                 if (parent != null) { // the fo is not root
                     FileObject[] siblings = parent.getChildren();
                     // notify all in folder
                     for (int i = 0; i < siblings.length; i++) {
                         itm = (Item) DataObjectPool.POOL.map.get(siblings[i]);
-                        if (itm != null) {
-                            toNotify.add(itm);
+                        if (itm == null) {
+                            continue;
                         }
+                        DataObject obj = itm.getDataObjectOrNull();
+                        if (obj == null) {
+                            continue;
+                        }
+                        toNotify.add(itm);
                     }
                 }
-                return toNotify;*/
+                return toNotify;
             }
         }
     }
@@ -807,7 +815,6 @@ implements ChangeListener {
             // ops, mistake,
             // return back the original
             map.put (fo, previous);
-            countRegistration(fo);
             // Furthermore, item is probably in toNotify by mistake.
             // Observed in DataFolderTest.testMove: after vetoing the move
             // of a data folder, the bogus item for the temporary new folder
@@ -817,9 +824,6 @@ implements ChangeListener {
                 notifyAll();
             }
             return;
-        } else {
-            // make all previous FolderChildrenPairs invalid
-            countRegistration(fo);
         }
 
         // refresh of parent folder
@@ -928,8 +932,8 @@ implements ChangeListener {
             this.obj = new ItemReference (obj, this);
             
             if (obj != null && !obj.getPrimaryFile ().isValid ()) {
-                // if the primary file is already invalid =>
-                // mark the object as invalid
+                // if the primary file is already invalid => mark the object as invalid
+                DataObjectPool.getPOOL().countRegistration(obj.getPrimaryFile());
                 deregister (false);
             }
             

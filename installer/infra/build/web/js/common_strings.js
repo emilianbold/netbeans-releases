@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -34,7 +37,7 @@
  * copyright holder.
  */
 
-PLATFORM_LONG_NAMES  [0] = "Windows 2000/XP/Vista";
+PLATFORM_LONG_NAMES  [0] = "Windows";
 PLATFORM_SHORT_NAMES [0] = "Windows";
 PLATFORM_LONG_NAMES  [1] = "Linux (x86/x64)";
 PLATFORM_SHORT_NAMES [1] = "Linux";
@@ -72,12 +75,12 @@ BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "PHP";
 BUNDLE_LONG_NAMES[6] = "All";
 
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/install.html";
+var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/69/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/69/install.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
-var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
+var CDDL_GPLV2_LINK = "http://netbeans.org/cddl-gplv2.html";
 var LICENSE_3RD_PARTY_LINK = "http://www.netbeans.info/downloads/licence/netbeans-3rd-party.txt";
 
 var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. See the <a href=\"{1}\">third-party readme</a> for external components included in NetBeans and their associated licenses.";

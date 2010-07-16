@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
@@ -160,13 +164,13 @@ public class EditorModule extends ModuleInstall {
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
 
-            Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+            Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
             Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
             Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
             Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
             
             Object appContext = getAppContext.invoke(null);
-            Hashtable kitMapping = (Hashtable) get.invoke(appContext, key);
+            Hashtable<?,?> kitMapping = (Hashtable<?,?>) get.invoke(appContext, key);
             put.invoke(appContext, key, new HackMap(kitMapping));
 
 // REMOVE: we should not depend on sun.* classes
@@ -176,7 +180,7 @@ public class EditorModule extends ModuleInstall {
             if (debug) {
                 LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kits.", t);
             } else {
-                LOG.log(Level.WARNING, "Can't hack in to the JEditorPane's registry for kits.");
+                LOG.log(Level.WARNING, "Can''t hack in to the JEditorPane''s registry for kits: {0}", new Object[] {t});
             }
         }
             
@@ -278,19 +282,31 @@ public class EditorModule extends ModuleInstall {
          */
          //TEMP end
 
-         EditorApiPackageAccessor.get().setIgnoredAncestorClass(TabbedContainer.class);
+         if (GraphicsEnvironment.isHeadless()) {
+             return;
+         }
+
+         EditorApiPackageAccessor.get().setIgnoredAncestorClass(TopComponent.class);
          if (topComponentRegistryListener == null) {
              topComponentRegistryListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
                         TopComponent tc = (TopComponent)evt.getNewValue();
-                        // Limit checking to editors and multiviews only - should suffice
-                        // if not then assign: doClose = true;
-                        boolean doNotify = (tc instanceof CloneableEditorSupport.Pane);
-                        LOG.finest("CLOSE-TC: doClose=" + doNotify + ", TC=" + tc + "\n");
-                        if (doNotify) {
-                            EditorApiPackageAccessor.get().notifyClose(tc);
-                        }
+// changed due to #186730 - MacroExpansionTopComponent from CND calls removeAll() in its componentClosed(),
+//  which removes the JEditorPane from the component hierarchy. And since ancestorRemoved() is ignored in
+//  this case and later on the MECT can't be identified as an ancestor of any JEP (due to now already purged
+//  component hierarchy) the macro view JEP is never removed from EditorRegistry.
+//  The change here makes sure that ancestorRemoved events are ignored only for TopComponents, for which
+//  we call EditorRegistry.notifyClose().
+//                        // Limit checking to editors and multiviews only - should suffice
+//                        // if not then assign: doClose = true;
+//                        boolean doNotify = (tc instanceof CloneableEditorSupport.Pane);
+//                        LOG.finest("CLOSE-TC: doClose=" + doNotify + ", TC=" + tc + "\n");
+//                        if (doNotify) {
+//                            EditorApiPackageAccessor.get().notifyClose(tc);
+//                        }
+                        LOG.finest("CLOSE-TC: TC=" + tc + "\n"); //NOI18N
+                        EditorApiPackageAccessor.get().notifyClose(tc);
                     }
                 }
             };
@@ -328,14 +344,14 @@ public class EditorModule extends ModuleInstall {
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
             
-            Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+            Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
             Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
             Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
             Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
             Method remove = appContextClass.getDeclaredMethod("remove", Object.class, Object.class); //NOI18N
             
             Object appContext = getAppContext.invoke(null);
-            Hashtable kitMapping = (Hashtable) get.invoke(appContext, key);
+            Hashtable<?,?> kitMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
             if (kitMapping instanceof HackMap) {
                 if (((HackMap) kitMapping).getOriginal() != null) {
@@ -419,13 +435,13 @@ public class EditorModule extends ModuleInstall {
                     keyField.setAccessible(true);
                     Object key = keyField.get(JEditorPane.class);
                     
-                    Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                    Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
                     Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
                     Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
                     Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
 
                     Object appContext = getAppContext.invoke(null);
-                    Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+                    Hashtable<?,?> kitTypeMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
                     if (kitTypeMapping != null) {
                         put.invoke(appContext, key, new DebugHashtable(kitTypeMapping));
@@ -448,12 +464,12 @@ public class EditorModule extends ModuleInstall {
                 keyField.setAccessible(true);
                 Object key = keyField.get(JEditorPane.class);
                 
-                Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
                 Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
                 Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
 
                 Object appContext = getAppContext.invoke(null);
-                Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+                Hashtable<?,?> kitTypeMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
                 if (kitTypeMapping != null) {
                     return (String) kitTypeMapping.get(type);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractListModel;
@@ -144,7 +148,7 @@ public class LocalServer implements Comparable<LocalServer> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(150);
         sb.append(getClass().getName());
         sb.append("[virtualHost: "); // NOI18N
         sb.append(virtualHost);
@@ -162,6 +166,7 @@ public class LocalServer implements Comparable<LocalServer> {
         return sb.toString();
     }
 
+    @Override
     public int compareTo(LocalServer ls) {
         if (!editable) {
             return -1;
@@ -217,10 +222,12 @@ public class LocalServer implements Comparable<LocalServer> {
             component.getDocument().addDocumentListener(this);
         }
 
+        @Override
         public Component getEditorComponent() {
             return component;
         }
 
+        @Override
         public void setItem(Object anObject) {
             if (anObject == null) {
                 return;
@@ -230,19 +237,23 @@ public class LocalServer implements Comparable<LocalServer> {
             component.setText(activeItem.getSrcRoot());
         }
 
+        @Override
         public Object getItem() {
             return new LocalServer(activeItem);
         }
 
+        @Override
         public void selectAll() {
             component.selectAll();
             component.requestFocus();
         }
 
+        @Override
         public void addActionListener(ActionListener l) {
             component.addActionListener(l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l) {
             component.removeActionListener(l);
         }
@@ -263,14 +274,17 @@ public class LocalServer implements Comparable<LocalServer> {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }
@@ -299,6 +313,7 @@ public class LocalServer implements Comparable<LocalServer> {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
@@ -331,20 +346,21 @@ public class LocalServer implements Comparable<LocalServer> {
                 defaultLocalServers = new LocalServer[] {getEmpty()};
             }
             data = new ArrayList<LocalServer>(2 * defaultLocalServers.length);
-            for (LocalServer localServer : defaultLocalServers) {
-                data.add(localServer);
-            }
+            data.addAll(Arrays.asList(defaultLocalServers));
             selected = data.get(0);
         }
 
+        @Override
         public int getSize() {
             return data.size();
         }
 
+        @Override
         public LocalServer getElementAt(int index) {
             return data.get(index);
         }
 
+        @Override
         public void addElement(Object object) {
             assert object instanceof LocalServer;
             LocalServer localServer = (LocalServer) object;
@@ -356,6 +372,7 @@ public class LocalServer implements Comparable<LocalServer> {
             fireIntervalAdded(this, idx, idx);
         }
 
+        @Override
         public void insertElementAt(Object object, int index) {
             assert object instanceof LocalServer;
             LocalServer localServer = (LocalServer) object;
@@ -367,6 +384,7 @@ public class LocalServer implements Comparable<LocalServer> {
             return data.indexOf(configuration);
         }
 
+        @Override
         public void removeElement(Object object) {
             assert object instanceof LocalServer;
             LocalServer localServer = (LocalServer) object;
@@ -379,6 +397,7 @@ public class LocalServer implements Comparable<LocalServer> {
             fireIntervalRemoved(this, idx, idx);
         }
 
+        @Override
         public void removeElementAt(int index) {
             if (getElementAt(index) == selected) {
                 if (index == 0) {
@@ -391,6 +410,7 @@ public class LocalServer implements Comparable<LocalServer> {
             fireIntervalRemoved(this, index, index);
         }
 
+        @Override
         public void setSelectedItem(Object object) {
             if ((selected != null && !selected.equals(object))
                     || selected == null && object != null) {
@@ -404,6 +424,7 @@ public class LocalServer implements Comparable<LocalServer> {
             fireContentsChanged(this, -1, -1);
         }
 
+        @Override
         public Object getSelectedItem() {
             return selected;
         }

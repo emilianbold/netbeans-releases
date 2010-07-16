@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/javafxtmpdir"/>
 
         <property name="clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide),
+                                         ide(baseide), nb-etc(baseide), platform(baseide),
 					 javafx(javafx)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <antcall target="unzip-cluster"/>                           
@@ -184,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
+            <arg value=" ${packagemaker.path} -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
         </exec>                                         
     </target>          
     

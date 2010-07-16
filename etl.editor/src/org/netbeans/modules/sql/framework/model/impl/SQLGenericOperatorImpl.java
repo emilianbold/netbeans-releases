@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,9 +65,9 @@ import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.Attribute;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * Model for operators supported by SQLBuilder
@@ -96,7 +99,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
 
     /** Creates a new default instance of SQLGenericOperator 
      * @param src 
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      */
     public SQLGenericOperatorImpl(SQLGenericOperator src) throws BaseException {
         this();
@@ -109,7 +112,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
      * 
      * @param newName for Operator
      * @param aType for Operator
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      */
     public SQLGenericOperatorImpl(String newName, String aType) throws BaseException {
         this();
@@ -123,7 +126,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
     }
 
     /**
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#addInput
      */
     public void addInput(String argName, SQLObject newInput) throws BaseException {
@@ -403,7 +406,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
 
     /**
      * @param xmlElement 
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      * @see SQLObject#parseXML
      */
     public void parseXML(Element xmlElement) throws BaseException {
@@ -561,7 +564,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
      * factory based on the given String param.
      * 
      * @param opInfo 
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      */
     public void setOperatorXmlInfo(IOperatorXmlInfo opInfo) throws BaseException {
         this.operatorXmlInfo = opInfo;

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -36,7 +39,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bpel.model.ext;
 
 /**
@@ -45,11 +47,13 @@ package org.netbeans.modules.bpel.model.ext;
  */
 public interface Extensions {
     
-    String TRANSACTION_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Transaction"; // NOI18N
+    String SUN_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension"; // NOI18N
+    String SUN_JS_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/DataHandling"; // NOI18N
     String TRACE_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace"; // NOI18N
     String EDITOR_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"; // NOI18N
-    String ERROR_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"; // NOI18N
-
+    String EDITOR2_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"; // NOI18N
+    String ERROR_HANDLER_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"; // NOI18N
+    String NM_PROPERTY_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/NMProperty"; // NOI18N
+    String TRANSACTION_EXT_URI = "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Transaction"; // NOI18N
     String SYSTEM_FAULT_NAME = "systemFault"; // NOI18N
-    
 }

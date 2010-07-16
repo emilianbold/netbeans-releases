@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,53 +43,85 @@ package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
-    static {
-        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+    protected static class TestLogHandler extends Handler {
 
-        log.setLevel(Level.ALL);
+        protected final Logger log;
 
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
+        public TestLogHandler(Logger log) {
+            this.log = log;
+        }
+        
+        @Override
+        public void publish(LogRecord record) {
+            // Log if parent cannot log the message ONLY.
+            if (!log.getParent().isLoggable(record.getLevel())) {
+                String message;
+                Object[] params = record.getParameters();
+                if (params == null || params.length == 0) {
+                    message = record.getMessage();
+                } else {
+                    message =  MessageFormat.format(record.getMessage(), record.getParameters());
+                }
+                System.err.printf("%s: %s\n", record.getLevel(), message); // NOI18N
+                if (record.getThrown() != null) {
+                    record.getThrown().printStackTrace(System.err);
                 }
             }
+        }
 
-            @Override
-            public void flush() {
-            }
+        @Override
+        public void flush() {
+        }
 
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        @Override
+        public void close() throws SecurityException {
+        }
 
     }
+
+    static {
+        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+        log.setLevel(Level.ALL);
+        log.addHandler(new TestLogHandler(log));
+    }
+
     private final ExecutionEnvironment testExecutionEnvironment;
+    private String remoteTmpDir;
 
     public NativeExecutionBaseTestCase(String name) {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
         testExecutionEnvironment = null;
+        setupUserDir();
     }
 
     /**
@@ -100,16 +135,48 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
+        setupUserDir();
     }
 
     @Override
     protected void setUp() throws Exception {
+        setupProperties();
         super.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    private void setupUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File userDir = getUserDir();
+        userDir.mkdirs();
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+    }
+
+    protected File getUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        return userDir;
+    }
+
+    private void setupProperties() throws IOException, FormatException {
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String section = getClass().getSimpleName() + ".properties";
+        Collection<String> keys = rcFile.getKeys(section);
+        for (String key : keys) {
+            String value = rcFile.get(section, key);
+            System.setProperty(key, value);
+        }
+    }    
+
+    @Override
+    protected int timeOut() {
+        return 500000;
     }
 
     /**
@@ -148,7 +215,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = rdr.readLine()) != null) {
-            sb.append(line + "\n");
+            sb.append(line).append("\n");
         }
         rdr.close();
         return sb.toString();
@@ -204,5 +271,93 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
         tmpFile.deleteOnExit();
         return tmpFile;
+    }
+
+    protected File getNetBeansDir() throws URISyntaxException {
+        return getNetBeansPlatformDir().getParentFile();
+    }
+
+    protected File getNetBeansPlatformDir() throws URISyntaxException {
+        File result = getIdeUtilJar(). // should be ${NBDIST}/platform/lib/org-openide-util.jar
+                getParentFile().  // platform/lib
+                getParentFile();  // platform
+        return result;
+    }
+
+    protected File getIdeUtilJar() throws URISyntaxException  {
+        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    }
+
+    protected void copyFile(File srcFile, File dstFile) throws IOException  {
+        InputStream in = new FileInputStream(srcFile);
+        OutputStream out = new FileOutputStream(dstFile);
+        byte[] buf = new byte[8*1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
+
+    protected void copyDirectory(File srcDir, File dstDir) throws IOException {
+        assertTrue(srcDir.getPath() + " should exist and be a directory", srcDir.isDirectory());
+        if (!dstDir.exists()) {
+            dstDir.mkdirs();
+        }
+        assertTrue("Can't create directory " + dstDir.getAbsolutePath(), dstDir.exists());
+        for (File child : srcDir.listFiles()) {
+            File dst = new File(dstDir, child.getName());
+            if (child.isDirectory()) {
+                copyDirectory(child, dst);
+            } else {
+                copyFile(child, dst);
+            }
+        }
+    }
+
+    /** A convenience wrapper for Thread.sleep */
+    protected static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    protected String createRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();
+        assertEquals("Can not create directory " + dir, 0, rc);
+        return dir;
+    }
+
+    protected void clearRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.rmDir(getTestExecutionEnvironment(), dir, true, new PrintWriter(System.err)).get().intValue();
+        if (rc != 0) {
+            System.err.printf("Can not delete directory %s\n", dir);
+        }
+    }
+
+    private static final String POSTFIX = System.getProperty("cnd.remote.sync.root.postfix"); //NOI18N
+
+    protected synchronized  String getRemoteTmpDir() {
+        if (remoteTmpDir == null) {
+            final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+            MacroExpander expander = MacroExpanderFactory.getExpander(local);
+            String id;
+            try {
+                id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
+            } catch (ParseException ex) {
+                id = local.getHost();
+                Exceptions.printStackTrace(ex);
+            }
+            remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
+            if (POSTFIX != null) {
+                remoteTmpDir += '-' + POSTFIX;
+            }
+        }
+        return remoteTmpDir;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -58,9 +61,10 @@ HWND hwndButton = NULL;
 HWND hwndProgressTitle = NULL;
 
 HINSTANCE globalInstance = NULL;
-double totalProgressSize = 0;
-double currentProgressSize = 0;
-double steps = 1000;
+int64t * totalProgressSize = NULL;
+int64t * currentProgressSize = NULL;
+long steps = 1000;
+long lastCheckedStep = 0;
 int iCmdShowGlobal = 0;
 
 HANDLE initializationSuccess = NULL;
@@ -105,14 +109,14 @@ void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
         int h = 178;
         int x = (systemWidth - w)/2;
         int y = (systemHeight - h)/2;
-        
+
         InitCommonControls();
-        
+
         hwndMain = CreateWindow(mainClassName, mainTitle,
                 //WS_OVERLAPPED | WS_EX_TOOLWINDOW,
                 WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_BORDER | WS_DLGFRAME | WS_SYSMENU | WS_MINIMIZEBOX /* | WS_THICKFRAME | WS_MAXIMIZEBOX*/
                 ,
-                x, y, w, h, NULL, NULL, hInstance, NULL);
+                x, y, w, h, NULL, NULL, hInstance, NULL);        
     }
 }
 
@@ -199,7 +203,8 @@ void initProgressWindow(LauncherProperties * props, HINSTANCE hInstance) {
         hwndPB = CreateWindowExW(0, PROGRESS_CLASSW, NULL, WS_CHILD | WS_VISIBLE | PBS_SMOOTH,
                 rcClient.left + 10,  (rcClient.bottom - cyVScroll)/2 , rcClient.right - 20, cyVScroll,
                 hwndMain, NULL, hInstance, NULL);
-        totalProgressSize = 100;
+        totalProgressSize->Low = 100;
+        totalProgressSize->High = 0;
     }
 }
 
@@ -361,17 +366,52 @@ DWORD isTerminated(LauncherProperties * props) {
 void addProgressPosition(LauncherProperties * props, DWORD add) {
     if(isSilent(props)) return;
     if ( add > 0 ) {
-        double pos = 0;
-        currentProgressSize += (double) add;
-        pos = currentProgressSize / totalProgressSize;
-        SendMessage(hwndPB, PBM_SETPOS, (long) pos, 0);
+        int64t *mult1 = NULL;
+        int64t *mult2 = NULL;
+        int64t *currMult = NULL;
+        int comp1 = 0;
+        int comp2 = 0;
+        int goout = 0;
+
+        plus(currentProgressSize, add);
+        do {
+            multiply(mult1 = newint64_t(totalProgressSize->Low, totalProgressSize->High), lastCheckedStep);
+            multiply(mult2 = newint64_t(totalProgressSize->Low, totalProgressSize->High), lastCheckedStep + 1);
+            multiply(currMult = newint64_t(currentProgressSize->Low, currentProgressSize->High), steps);
+            comp1 = compareInt64t(currMult, mult1);
+
+            if (comp1 == 0) {
+                goout = 1;
+            } else {
+                comp2 = compareInt64t(currMult, mult2);
+                if (comp2 == 0) {
+                    lastCheckedStep++;
+                    goout = 1;
+                } else if (comp1 > 0 && comp2 < 0) {
+                    goout = 1;
+                } else {
+                    lastCheckedStep++;
+                }
+            }
+            FREE(mult1);
+            FREE(mult2);
+            FREE(currMult);
+            if(lastCheckedStep >= steps) {
+                lastCheckedStep = steps;
+                goout = 1;
+            }
+        } while (!goout);
+        SendMessage(hwndPB, PBM_SETPOS, lastCheckedStep, 0);
     }
 }
 
 void setProgressRange(LauncherProperties * props, int64t * range) {
     if(isSilent(props)) return;
-    totalProgressSize = int64ttoDouble(range) / steps;
-    currentProgressSize = 0;
+    totalProgressSize->Low = range->Low;
+    totalProgressSize->High = range->High;
+    currentProgressSize->Low = 0;
+    currentProgressSize->High = 0;
+    lastCheckedStep = 0;
     SendMessage(hwndPB, PBM_SETRANGE, 0, MAKELPARAM(0, steps));
     SendMessage(hwndPB, PBM_SETSTEP, 1, 0);
 }
@@ -471,7 +511,7 @@ void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD 
     }
 }
 
-
+/*
 void showMessageA(LauncherProperties * props, const char* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength = getLengthA(message);
     va_list ap;
@@ -499,7 +539,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
     }
     
 }
-
+*/
 /*
  * WCHAR* GetStringFromStringTable( UINT uStringID ) {
  * WCHAR   *pwchMem, *pwchCur;
@@ -567,7 +607,7 @@ void createLauncherThread(LauncherProperties *props) {
 }
 
 DWORD createGui(LauncherProperties* props, HINSTANCE hInstance, HINSTANCE hi, int nCmdShow) {
-    if (!hi && !InitApplication(props, hInstance)) {
+    if (!InitApplication(props, hInstance)) {
         SetEvent(initializationFailed);
         return 0;
     } else if (!InitInstance(props, hInstance, nCmdShow, & hwndMain)) {
@@ -608,6 +648,9 @@ DWORD createEvents() {
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, LPSTR lpCmdLine, int nCmdShow) {
     DWORD exitCode = 1;
     DWORD status = ERROR_OK;
+    
+    totalProgressSize = newint64_t(0,0);
+    currentProgressSize = newint64_t(0,0);
     globalInstance = hInstance;
     UNREFERENCED_PARAMETER(lpCmdLine);
     initWow64();
@@ -621,8 +664,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, LPSTR lpCmdLine, int nCmd
             LauncherProperties * props = createLauncherProperties();
             createLauncherThread(props);
             if(!createGui(props, hInstance, hi, nCmdShow)) {
-                status = EXIT_CODE_GUI_INITIALIZATION_ERROR;
-            } else {
+                status = EXIT_CODE_GUI_INITIALIZATION_ERROR;	        
+            } else {	        
                 messageLoop(props);
                 WaitForSingleObject(closingWindowsConfirmed, INFINITE);
             }
@@ -633,5 +676,17 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, LPSTR lpCmdLine, int nCmd
             freeLauncherProperties(&props);
         }
     }
+    FREE(currentProgressSize);
+    FREE(totalProgressSize);
     return (status==ERROR_OK) ? exitCode : status;
+}
+
+int WINAPI MyMain(void) {
+    int exitCode;
+    STARTUPINFO StartupInfo;
+    StartupInfo.dwFlags = 0;
+    GetStartupInfo( &StartupInfo );
+    exitCode = WinMain(GetModuleHandle(NULL), NULL, NULL,  StartupInfo.dwFlags & STARTF_USESHOWWINDOW  ? StartupInfo.wShowWindow : SW_SHOWDEFAULT);
+    ExitProcess(exitCode);
+    return exitCode;
 }

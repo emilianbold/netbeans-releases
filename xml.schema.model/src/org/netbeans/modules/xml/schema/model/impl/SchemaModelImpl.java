@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -119,7 +122,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
      * from a document which is not well formed will not result in any changes
      * to the schema model.
      */
-
+    @Override
     public SchemaImpl getSchema() {
         return (SchemaImpl)getRootComponent();
     }
@@ -129,10 +132,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
      *
      * @return common schema element factory valid for this instance
      */
+    @Override
     public SchemaComponentFactory getFactory() {
         return csef;
     }
-    
+
+    @Override
     public SchemaComponent createRootComponent(org.w3c.dom.Element root) {
         SchemaImpl newSchema = (SchemaImpl)csef.create(root, null);
         if (newSchema != null) {
@@ -143,10 +148,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return getSchema();
     }
 
+    @Override
     public SchemaComponent getRootComponent() {
         return mSchema;
     }
 
+    @Override
     public <T extends NamedReferenceable>
             T resolve(String namespace, String localName, Class<T> type) 
     {
@@ -229,11 +236,13 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
         return refs;
     }
-    
+
+    @Override
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
         return mGlobalIndexSupport.findByNameAndType(localName, type);
     }
 
+    @Override
     public Set<Schema> findSchemas(String namespace) {
         Set<Schema> result = new HashSet<Schema>();
         
@@ -334,6 +343,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
 	 * otherwise the component is assumed to be included or redefined and
 	 * the namespace of this schema is returned. 
      */
+    @Override
     public String getEffectiveNamespace(SchemaComponent component) {
 	SchemaModel componentModel = component.getModel();
 	Schema schema = getSchema();
@@ -374,10 +384,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
     }
 
+    @Override
     public SchemaComponent createComponent(SchemaComponent parent, org.w3c.dom.Element element) {
        return csef.create(element, parent);
     }
 
+    @Override
     protected ComponentUpdater<SchemaComponent> getComponentUpdater() {
         return new SyncUpdateVisitor();
     }
@@ -409,6 +421,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return SchemaAttributes.getQNameValuedAttributes();
     }
 
+    @Override
     public boolean isEmbedded() {
         return false;
     }

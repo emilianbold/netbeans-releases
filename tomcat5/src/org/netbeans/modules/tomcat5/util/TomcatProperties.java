@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -287,6 +290,10 @@ public class TomcatProperties {
         String prefix;
         String serverID;
         switch (tm.getTomcatVersion()) {
+            case TOMCAT_70:
+                prefix = "tomcat70"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_70;
+                break;
             case TOMCAT_60:
                 prefix = "tomcat60"; // NIO18N
                 serverID = TomcatFactory.SERVER_ID_60;
@@ -356,7 +363,7 @@ public class TomcatProperties {
         if (tm.isBundledTomcat()) {
             return new File(baseDir, "nblib"); // NOI18N
         }
-        return tm.isTomcat60() ? new File(homeDir, "lib") // NOI18N
+        return tm.isTomcat60() || tm.isTomcat70() ? new File(homeDir, "lib") // NOI18N
                                : new File(homeDir, "common/lib"); // NOI18N
     }
     
@@ -364,7 +371,8 @@ public class TomcatProperties {
      * Return the default Tomcat Java endorsed directory.
      */
     public File getJavaEndorsedDir() {
-        if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()) {
+        if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()
+                || TomcatVersion.TOMCAT_70 == tm.getTomcatVersion()) {
             return new File(getCatalinaHome(), "endorsed"); // NOI18N
         } else {
             return new File(getCatalinaHome(), "common/endorsed"); // NOI18N

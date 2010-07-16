@@ -31,12 +31,12 @@ CLASS allocator<class T> (allocator ) [7:1/72-10:2/143] lcurly=107 SCOPE: $Globa
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [8:22/134-9:6/141] SCOPE: ~allocator 
-CLASS vector<bool,allocator<bool>> (vector<bool,allocator<bool>> ) [12:1/146-17:2/252] lcurly=194 SCOPE: $Global$ 
+CLASS vector<bool,allocator<bool> > (vector<bool,allocator<bool> > ) [12:1/146-17:2/252] lcurly=194 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION ~vector  [15:5/208-16:6/250] DestructorDDImpl SCOPE: vector 
             SIGNATURE ~vector()
-            UNIQUE NAME f:vector<bool,allocator<bool>>::~vector()
+            UNIQUE NAME f:vector<bool,allocator<bool> >::~vector()
             DECLARATION: ~vector  [15:5/208-16:6/250]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -63,12 +63,12 @@ CLASS allocator<class T> (allocator ) [7:1/72-10:2/143] lcurly=107 SCOPE: $Globa
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [8:22/134-9:6/141] SCOPE: ~allocator 
-CLASS vector<bool,allocator<bool>> (vector<bool,allocator<bool>> ) [12:1/146-17:2/252] lcurly=194 SCOPE: $Global$ 
+CLASS vector<bool,allocator<bool> > (vector<bool,allocator<bool> > ) [12:1/146-17:2/252] lcurly=194 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION ~vector  [15:5/208-16:6/250] DestructorDDImpl SCOPE: vector 
             SIGNATURE ~vector()
-            UNIQUE NAME f:vector<bool,allocator<bool>>::~vector()
+            UNIQUE NAME f:vector<bool,allocator<bool> >::~vector()
             DECLARATION: ~vector  [15:5/208-16:6/250]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]

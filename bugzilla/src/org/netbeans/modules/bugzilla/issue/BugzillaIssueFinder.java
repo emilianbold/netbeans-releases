@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,11 +61,13 @@ public class BugzillaIssueFinder extends IssueFinder {
 
     private static final int[] EMPTY_INT_ARR = new int[0];
 
+    @Override
     public int[] getIssueSpans(CharSequence text) {
         int[] result = findBoundaries(text);
         return (result != null) ? result : EMPTY_INT_ARR;
     }
 
+    @Override
     public String getIssueId(String issueHyperlinkText) {
         int pos = issueHyperlinkText.length() - 1;
         while ((pos >= 0) && Impl.isDigit(issueHyperlinkText.charAt(pos))) {
@@ -208,6 +213,7 @@ public class BugzillaIssueFinder extends IssueFinder {
 
         private void handleChar(int c) {
             int newState;
+            boolean keepCountingBugwords = false;
             switch (state) {
                 case INIT:
                     if (c == '#') {
@@ -223,11 +229,13 @@ public class BugzillaIssueFinder extends IssueFinder {
                 case CHARS:
                     if (isLetter(c)) {
                         newState = CHARS;
+                        keepCountingBugwords = true;
                     } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
                         if ((bugnumPrefixPartsProcessed == 0) && isBugword()
                                 || tryHandleBugnumPrefixPart()) {
                             newState = ((c == ' ') || (c == '\t')) ? BUGWORD
                                                                    : BUGWORD_NL;
+                            keepCountingBugwords = true;
                         } else {
                             newState = getInitialState(c);
                         }
@@ -263,10 +271,13 @@ public class BugzillaIssueFinder extends IssueFinder {
                 case BUGWORD:
                 case BUGWORD_NL:
                     if ((state == BUGWORD_NL) && (c == '*')) {
+                        keepCountingBugwords = true;
                         newState = STAR;
                     } else if ((c == ' ') || (c == '\t')) {
+                        keepCountingBugwords = true;
                         newState = state;
                     } else if ((c == '\r') || (c == '\n')) {
+                        keepCountingBugwords = true;
                         newState = BUGWORD_NL;
                     } else if (c == '#') {
                         newState = HASH;
@@ -285,10 +296,10 @@ public class BugzillaIssueFinder extends IssueFinder {
                     } else if (isLetter(c)) {
                         newState = CHARS;
                         if (isPartialBugnumPrefix()) {
+                            keepCountingBugwords = true;
                             startOfWord = pos;
                         } else {
                             /* relies on precondition #2 (see top of the class) */
-                            bugnumPrefixPartsProcessed = 0;
                             rememberIsStart();
                         }
                     } else {
@@ -298,8 +309,10 @@ public class BugzillaIssueFinder extends IssueFinder {
                     break;
                 case STAR:
                     if ((c == ' ') || (c == '\t')) {
+                        keepCountingBugwords = true;
                         newState = BUGWORD;
                     } else if ((c == '\r') || (c == '\n')) {
+                        keepCountingBugwords = true;
                         newState = BUGWORD_NL;
                     } else {
                         newState = getInitialState(c);
@@ -320,6 +333,9 @@ public class BugzillaIssueFinder extends IssueFinder {
             }
             if ((newState == INIT) || (newState == GARBAGE)) {
                 start = -1;
+            }
+            if (!keepCountingBugwords) {
+                bugnumPrefixPartsProcessed = 0;
             }
             state = newState;
         }
@@ -378,7 +394,8 @@ public class BugzillaIssueFinder extends IssueFinder {
 
         private boolean tryHandleBugnumPrefixPart() {
             CharSequence word = str.subSequence(startOfWord, pos);
-            if (equalsIgnoreCase(BUGNUM_PREFIX_PARTS[bugnumPrefixPartsProcessed], word)) {
+            if ((bugnumPrefixPartsProcessed < BUGNUM_PREFIX_PARTS.length)
+                    && equalsIgnoreCase(BUGNUM_PREFIX_PARTS[bugnumPrefixPartsProcessed], word)) {
                 bugnumPrefixPartsProcessed++;
                 return true;
             } else if ((bugnumPrefixPartsProcessed != 0)

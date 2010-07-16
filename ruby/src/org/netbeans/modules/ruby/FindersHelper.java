@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SymbolNode;
@@ -74,14 +76,14 @@ final class FindersHelper {
      */
     private static final String[] STANDARD_FINDERS = {ALL, FIND}; //NOI18N
     /**
-     * The max amount of dynamic finders to compute.
-     */
-    private static final int MAX_ITEMS = 2000;
-    /**
      * The threshold for the column count after which we will compute only one
      * level of finders.
      */
-    private static final int THRESHOLD = 100;
+    private static final int THRESHOLD = 40;
+    /**
+     * The max amount of dynamic finders to compute.
+     */
+    private static final int MAX_ITEMS = (int) Math.pow(THRESHOLD, 2);
 
     private enum FinderType {
 
@@ -111,19 +113,28 @@ final class FindersHelper {
      * Common finder method prefixes.
      */
     private final Collection<FinderType> prefixes;
+    /**
+     * All columns.
+     */
     private final Collection<String> columns;
+    /**
+     * Columns already present in the prefix.
+     */
+    private final String[] existingColumns;
     /**
      * The max depth of finders to compute, i.e. the how many columns to combine.
      */
     private final int maxDepth;
 
-    private FindersHelper(Collection<FinderType> prefixes, Collection<String> columns) {
+    private FindersHelper(Collection<FinderType> prefixes, List<String> existingColumns, Collection<String> columns) {
         this.prefixes = prefixes;
         this.columns = columns;
+        this.existingColumns = existingColumns.toArray(new String[existingColumns.size()]);
         int size = columns.size();
-        // compute the depth -- needs to be limited since the number of 
-        // possible combinations grows exponentially (hence the use oflogarithm here).
-        this.maxDepth = size > THRESHOLD ? 0 : (int) (Math.log(MAX_ITEMS) / Math.log(size));
+        // the depth, needs to be limited since the number of
+        // possible combinations grows exponentially
+        // by default compute one level ahead (approriate for code completion)
+        this.maxDepth = size > THRESHOLD ? 0 : 1;
     }
 
     // package private for unit tests
@@ -133,6 +144,9 @@ final class FindersHelper {
             int prefixIdx = method.indexOf(prefix);
             if (prefixIdx != -1) {
                 String woPrefix = method.substring(prefix.length());
+                if (woPrefix.isEmpty()) {
+                    return Collections.<String>emptyList();
+                }
                 if (woPrefix.endsWith(ATTRIBUTE_SEPARATOR_BASE)) {
                     woPrefix = woPrefix.substring(0, woPrefix.length() - ATTRIBUTE_SEPARATOR_BASE.length());
                 }
@@ -154,9 +168,11 @@ final class FindersHelper {
      */
     static List<FinderMethod> getFinderSignatures(String prefix, Collection<String> columns) {
         Set<String> columnsCopy = new HashSet<String>(columns);
-        Collection<String> existingColumns = extractColumns(prefix);
-        columnsCopy.removeAll(existingColumns);
-        FindersHelper helper = new FindersHelper(matchingFinderPrefixes(prefix), columns);
+        List<String> existingColumns = extractColumns(prefix);
+        if (!existingColumns.isEmpty()) {
+            columnsCopy.removeAll(existingColumns);
+        }
+        FindersHelper helper = new FindersHelper(matchingFinderPrefixes(prefix), existingColumns, columnsCopy);
         return helper.computeSignatures();
     }
 
@@ -177,14 +193,22 @@ final class FindersHelper {
 
     private List<FinderMethod> computeSignatures() {
         Set<String> combinations = new HashSet<String>();
+        String rootPrefix = concatenate(existingColumns);
+
         for (String baseColumn : columns) {
-            combinations.add(baseColumn);
+            
+            String root = rootPrefix.isEmpty()
+                    ? baseColumn
+                    : concatenate(rootPrefix, baseColumn);
+
+            combinations.add(root);
             Set<String> copy = new HashSet<String>(columns);
             copy.remove(baseColumn);
-            addCombinations(baseColumn, copy, combinations, 0);
+            addCombinations(root, copy, combinations, 0);
         }
 
         List<FinderMethod> result = new ArrayList<FinderMethod>(combinations.size());
+
         for (FinderType prefix : prefixes) {
             for (Iterator<String> it = combinations.iterator(); it.hasNext();) {
                 result.add(new FinderMethod(prefix, it.next()));
@@ -195,11 +219,12 @@ final class FindersHelper {
     }
 
     private void addCombinations(String root, Set<String> others, Set<String> result, int depth) {
-        if (depth >= maxDepth) {
+        // give up, too many columns
+        if (depth >= maxDepth || result.size() >= MAX_ITEMS) {
             return;
         }
         for (String o : others) {
-            String base = root + ATTRIBUTE_SEPARATOR + o;
+            String base = concatenate(root, o);
             result.add(base);
             Set<String> rest = new HashSet<String>(others);
             rest.remove(o);
@@ -207,6 +232,17 @@ final class FindersHelper {
         }
     }
 
+    private String concatenate(String... columns) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < columns.length; i++) {
+            String col = columns[i];
+            result.append(col);
+            if (i + 1 < columns.length) {
+                result.append(ATTRIBUTE_SEPARATOR);
+            }
+        }
+        return result.toString();
+    }
     static int nextAttributeLocation(String finderMethodName, int fromIndex) {
         return finderMethodName.indexOf(ATTRIBUTE_SEPARATOR, fromIndex);
     }
@@ -216,14 +252,20 @@ final class FindersHelper {
     }
 
     static boolean isFinderMethod(String name) {
+        return isFinderMethod(name, true);
+    }
+
+    static boolean isFinderMethod(String name, boolean includeStandardFinders) {
         for (FinderType each : FinderType.values()) {
             if (name.startsWith(each.getPrefix())) {
                 return true;
             }
         }
-        for (String each : STANDARD_FINDERS) {
-            if (name.equals(each)) {
-                return true;
+        if (includeStandardFinders) {
+            for (String each : STANDARD_FINDERS) {
+                if (name.equals(each)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -319,5 +361,11 @@ final class FindersHelper {
         public int compareTo(FinderMethod o) {
             return getName().compareTo(o.getName());
         }
+
+        @Override
+        public String toString() {
+            return FinderMethod.class.getSimpleName() + "[name: " + getName() + "]";
+        }
+
     }
 }

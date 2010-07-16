@@ -20,12 +20,13 @@ package org.netbeans.modules.bpel.properties.props.editors;
 
 import java.beans.PropertyEditor;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.bpel.properties.choosers.VariableChooserPanel;
 import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
+import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.Lookup;
 
@@ -67,11 +68,21 @@ public class VariablePropertyCustomizer extends TreeChooserPropertyCustomizer<Va
         // Set current selection
         Object value = propertyEditor.getValue();
         try {
-            if (value == null) {
+            //to present throw faultVar value asText we have to use variableDeclaration,
+            // but general varaible chooser is not context specific
+            // have to be used until ThrowNode propertysheet corrected accordingly to the bean spec
+            if (value instanceof BpelReference) {
+                    Referenceable varDecl = ((BpelReference) value).get();
+                    if (varDecl instanceof VariableDeclaration) {
+                        value = varDecl;
+                }
+            }
+
+            if (!(value instanceof VariableDeclaration)) {
                 chooserPanel.setSelectedValue(null);
             } else {
-                assert value instanceof Variable;
-                chooserPanel.setSelectedValue((Variable)value);
+//                assert value instanceof Variable;
+                chooserPanel.setSelectedValue((VariableDeclaration)value);
             }
         } catch (Exception e) {};
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,18 +51,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -75,6 +84,8 @@ public class JSFUtils {
     public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
     public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
     public static String DEFAULT_JSF_2_0_NAME = "jsf20";    //NOI18N
+    public static String DEFAULT_JSF_1_2_RI_NAME = "jsf12ri";    //NOI18N
+    public static String DEFAULT_JSF_2_0_RI_NAME = "jsf20ri";    //NOI18N
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
     
@@ -227,5 +238,33 @@ public class JSFUtils {
 
         return (tmpPath != null ? path + tmpPath : null);
     }
-  
+
+    public static boolean isJSF20(WebModule wm) {
+        if (wm == null)
+            return false;
+        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        boolean isJSF20 = classpath.findResource(JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+        return isJSF20;
+    }
+
+    public static boolean isJavaEE5(TemplateWizard wizard) {
+        Project project = Templates.getProject(wizard);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Profile profile = wm.getJ2eeProfile();
+            return (profile == Profile.JAVA_EE_5);
+        }
+        return false;
+    }
+
+    public static boolean isCDIEnabled(WebModule wm) {
+        if (wm != null) {
+            FileObject confRoot = wm.getWebInf();
+            if (confRoot!=null && confRoot.getFileObject("beans.xml")!=null) {  //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

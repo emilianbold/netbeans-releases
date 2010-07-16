@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 package org.netbeans.modules.form.editors;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -73,6 +77,9 @@ import org.openide.util.NbBundle;
  */
 public class TableCustomizer extends JPanel implements Customizer, FormAwareEditor {
     private JTable table;
+
+    private static final int ROW_MAX = 100;
+    private static final int COLUMN_MAX = 100;
     
     /** Property editor for model from component section. */
     private RADConnectionPropertyEditor modelFromComponentEd;
@@ -123,6 +130,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnsTable.getSelectionModel().addListSelectionListener(new ColumnSelectionListener());
         rowsTable.getSelectionModel().addListSelectionListener(new RowSelectionListener());
         titleListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (lastSelectedColumn != -1) {
                     columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn); 
@@ -236,6 +244,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         placeHolder1.setVisible(false);
         placeHolder2 = new javax.swing.JLabel();
         placeHolder2.setVisible(false);
+        columnErrorLabel = new javax.swing.JLabel();
         rowsTab = new javax.swing.JPanel();
         rowsScrollPane = new javax.swing.JScrollPane();
         rowsTable = new javax.swing.JTable();
@@ -245,6 +254,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         deleteRowButton = new javax.swing.JButton();
         moveUpRowButton = new javax.swing.JButton();
         moveDownRowButton = new javax.swing.JButton();
+        rowErrorLabel = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -269,7 +279,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelBoundPanel.setLayout(modelBoundPanelLayout);
         modelBoundPanelLayout.setHorizontalGroup(
             modelBoundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 535, Short.MAX_VALUE)
+            .add(0, 408, Short.MAX_VALUE)
         );
         modelBoundPanelLayout.setVerticalGroup(
             modelBoundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -286,7 +296,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelFromComponentPanel.setLayout(modelFromComponentPanelLayout);
         modelFromComponentPanelLayout.setHorizontalGroup(
             modelFromComponentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 535, Short.MAX_VALUE)
+            .add(0, 408, Short.MAX_VALUE)
         );
         modelFromComponentPanelLayout.setVerticalGroup(
             modelFromComponentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -303,7 +313,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelCustomPanel.setLayout(modelCustomPanelLayout);
         modelCustomPanelLayout.setHorizontalGroup(
             modelCustomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 535, Short.MAX_VALUE)
+            .add(0, 408, Short.MAX_VALUE)
         );
         modelCustomPanelLayout.setVerticalGroup(
             modelCustomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -343,7 +353,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 .add(modelCustomChoice)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(modelCustomPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(55, Short.MAX_VALUE))
         );
 
         modelHardcodedChoice.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Model_Hardcoded_ACSD")); // NOI18N
@@ -396,7 +406,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnTitlePanel.setLayout(columnTitlePanelLayout);
         columnTitlePanelLayout.setHorizontalGroup(
             columnTitlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 230, Short.MAX_VALUE)
+            .add(0, 103, Short.MAX_VALUE)
         );
         columnTitlePanelLayout.setVerticalGroup(
             columnTitlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -412,7 +422,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnEditorPanel.setLayout(columnEditorPanelLayout);
         columnEditorPanelLayout.setHorizontalGroup(
             columnEditorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 230, Short.MAX_VALUE)
+            .add(0, 103, Short.MAX_VALUE)
         );
         columnEditorPanelLayout.setVerticalGroup(
             columnEditorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -425,7 +435,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnRendererPanel.setLayout(columnRendererPanelLayout);
         columnRendererPanelLayout.setHorizontalGroup(
             columnRendererPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 230, Short.MAX_VALUE)
+            .add(0, 103, Short.MAX_VALUE)
         );
         columnRendererPanelLayout.setVerticalGroup(
             columnRendererPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -469,6 +479,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         widthMaxCombo.setEditable(true);
         widthMaxCombo.setEnabled(false);
 
+        columnErrorLabel.setForeground(new java.awt.Color(204, 0, 0));
+
         org.jdesktop.layout.GroupLayout columnsTabLayout = new org.jdesktop.layout.GroupLayout(columnsTab);
         columnsTab.setLayout(columnsTabLayout);
         columnsTabLayout.setHorizontalGroup(
@@ -476,16 +488,17 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             .add(columnsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                    .add(columnErrorLabel)
+                    .add(separator)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, columnsTabLayout.createSequentialGroup()
-                        .add(columnsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                        .add(columnsScrollPane)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(insertColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, columnsTabLayout.createSequentialGroup()
                                 .add(columnCountLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(columnCountSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
+                                .add(columnCountSpinner))
                             .add(deleteColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(moveUpColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(moveDownColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -507,7 +520,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                             .add(columnTitlePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(columnRendererPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(columnEditorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(columnTypeCombo, 0, 230, Short.MAX_VALUE))
+                            .add(columnTypeCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .add(18, 18, 18)
                         .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(columnsTabLayout.createSequentialGroup()
@@ -521,7 +534,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                     .add(widthMaxLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(widthPrefCombo, 0, 79, Short.MAX_VALUE)
+                                    .add(widthPrefCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(widthMinCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(widthMaxCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                         .add(45, 45, 45)))
@@ -532,7 +545,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             .add(columnsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(columnsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 250, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(columnsScrollPane)
                     .add(columnsTabLayout.createSequentialGroup()
                         .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(columnCountLabel)
@@ -584,7 +597,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                     .add(selectionModelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(reorderingAllowedChoice)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(columnErrorLabel)
+                .addContainerGap())
         );
 
         columnCountLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Columns_Count_ACSD")); // NOI18N
@@ -640,23 +655,28 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         moveDownRowButton.setEnabled(false);
         moveDownRowButton.addActionListener(formListener);
 
+        rowErrorLabel.setForeground(new java.awt.Color(204, 0, 0));
+
         org.jdesktop.layout.GroupLayout rowsTabLayout = new org.jdesktop.layout.GroupLayout(rowsTab);
         rowsTab.setLayout(rowsTabLayout);
         rowsTabLayout.setHorizontalGroup(
             rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(rowsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(rowErrorLabel)
                     .add(rowsTabLayout.createSequentialGroup()
-                        .add(rowCountLabel)
+                        .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(rowCountSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
-                    .add(insertRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
-                    .add(deleteRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
-                    .add(moveUpRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
-                    .add(moveDownRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, Short.MAX_VALUE))
+                        .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rowsTabLayout.createSequentialGroup()
+                                .add(rowCountLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(rowCountSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
+                            .add(insertRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                            .add(deleteRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                            .add(moveUpRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                            .add(moveDownRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         rowsTabLayout.setVerticalGroup(
@@ -664,7 +684,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             .add(rowsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                    .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
                     .add(rowsTabLayout.createSequentialGroup()
                         .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(rowCountLabel)
@@ -677,6 +697,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                         .add(moveUpRowButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(moveDownRowButton)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rowErrorLabel)
                 .addContainerGap())
         );
 
@@ -693,11 +715,11 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane)
+            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane)
+            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
         );
 
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSN")); // NOI18N
@@ -796,6 +818,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index+1);
         rowsTable.getSelectionModel().setSelectionInterval(index+1, index+1);
+        ensureRowVisible(rowsTable, index+1);
     }//GEN-LAST:event_moveDownRowButtonActionPerformed
 
     private void moveUpRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpRowButtonActionPerformed
@@ -803,21 +826,26 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index-1);
         rowsTable.getSelectionModel().setSelectionInterval(index-1, index-1);
+        ensureRowVisible(rowsTable, index-1);
     }//GEN-LAST:event_moveUpRowButtonActionPerformed
 
     private void deleteRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRowButtonActionPerformed
         stopCellEditing(rowsTable);
-        int[] index = rowsTable.getSelectedRows();
-        for (int i=index.length-1; i>=0; i--) {
-            rowTableModel.removeRow(index[i]);
+        if (checkRowCount(rowTableModel.getRowCount()-rowsTable.getSelectedRowCount())) {
+            int[] index = rowsTable.getSelectedRows();
+            for (int i=index.length-1; i>=0; i--) {
+                rowTableModel.removeRow(index[i]);
+            }
+            rowCountSpinner.setValue(rowTableModel.getRowCount());
         }
-        rowCountSpinner.setValue(rowTableModel.getRowCount());
     }//GEN-LAST:event_deleteRowButtonActionPerformed
 
     private void insertRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertRowButtonActionPerformed
         stopCellEditing(rowsTable);
-        rowTableModel.addRow(rowTableModel.getRowCount());
-        rowCountSpinner.setValue(rowTableModel.getRowCount());
+        if (checkRowCount(rowTableModel.getRowCount()+1)) {
+            rowTableModel.addRow(rowTableModel.getRowCount());
+            rowCountSpinner.setValue(rowTableModel.getRowCount());
+        }
     }//GEN-LAST:event_insertRowButtonActionPerformed
 
     private void rowCountSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rowCountSpinnerStateChanged
@@ -848,6 +876,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             rowTableModel.moveColumn(index, index+1);
         }
         columnsTable.getSelectionModel().setSelectionInterval(index+1, index+1);
+        ensureRowVisible(columnsTable, index+1);
     }//GEN-LAST:event_moveDownColumnButtonActionPerformed
 
     private void moveUpColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpColumnButtonActionPerformed
@@ -860,32 +889,37 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             rowTableModel.moveColumn(index, index-1);
         }
         columnsTable.getSelectionModel().setSelectionInterval(index-1, index-1);
+        ensureRowVisible(columnsTable, index-1);
     }//GEN-LAST:event_moveUpColumnButtonActionPerformed
 
     private void deleteColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteColumnButtonActionPerformed
         stopCellEditing(columnsTable);
-        boolean hardcoded = modelHardcodedChoice.isSelected();
-        int[] index = columnsTable.getSelectedRows();
-        for (int i=index.length-1; i>=0; i--) {
-            lastSelectedColumn = -1;
-            columns.remove(index[i]);
-            if (hardcoded) {
-                rowTableModel.removeColumn(index[i]);
+        if (checkColumnCount(columns.size()-columnsTable.getSelectedRowCount())) {
+            boolean hardcoded = modelHardcodedChoice.isSelected();
+            int[] index = columnsTable.getSelectedRows();
+            for (int i=index.length-1; i>=0; i--) {
+                lastSelectedColumn = -1;
+                columns.remove(index[i]);
+                if (hardcoded) {
+                    rowTableModel.removeColumn(index[i]);
+                }
+                columnTableModel.fireTableRowsDeleted(index[i], index[i]);
             }
-            columnTableModel.fireTableRowsDeleted(index[i], index[i]);
+            columnCountSpinner.setValue(columns.size());
         }
-        columnCountSpinner.setValue(columns.size());
     }//GEN-LAST:event_deleteColumnButtonActionPerformed
 
     private void insertColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertColumnButtonActionPerformed
         stopCellEditing(columnsTable);
-        columns.add(new ColumnInfo(columnModelProperty, columns.size()));
-        if (modelHardcodedChoice.isSelected()) {
-            rowTableModel.addColumn(rowTableModel.getColumnCount());
+        if (checkColumnCount(columns.size()+1)) {
+            columns.add(new ColumnInfo(columnModelProperty, getFreeColumnIndex()));
+            if (modelHardcodedChoice.isSelected()) {
+                rowTableModel.addColumn(rowTableModel.getColumnCount());
+            }
+            int size = columns.size();
+            columnTableModel.fireTableRowsInserted(size-1, size-1);
+            columnCountSpinner.setValue(columns.size());
         }
-        int size = columns.size();
-        columnTableModel.fireTableRowsInserted(size-1, size-1);
-        columnCountSpinner.setValue(columns.size());
     }//GEN-LAST:event_insertColumnButtonActionPerformed
 
     private void modelCustomChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelCustomChoiceActionPerformed
@@ -904,11 +938,27 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         updateModelCustomizers();
     }//GEN-LAST:event_modelHardcodedChoiceActionPerformed
 
+    private void ensureRowVisible(JTable table, int row) {
+        Rectangle visRect = table.getVisibleRect();
+        Rectangle cellRect = table.getCellRect(row, 0, false);
+        table.scrollRectToVisible(new Rectangle(visRect.x, cellRect.y, visRect.width, cellRect.height));
+    }
+
     private static void stopCellEditing(JTable table) {
         TableCellEditor editor = table.getCellEditor();
         if (editor != null) {
             editor.stopCellEditing();
         }
+    }
+
+    private int getFreeColumnIndex() {
+        Set<Integer> set = new HashSet<Integer>();
+        for (ColumnInfo info : columns) {
+            set.add(info.getColumn().getIndex());
+        }
+        int index = 0;
+        while (set.contains(index)) index++;
+        return index;
     }
 
     private int lastSelectedCustomizer = -1;
@@ -928,7 +978,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         }
         if (fromComponent) {
             checkModelFromComponent();
-            if (columns.size() == 0) userCode = true; // Hide content of columns section
+            if (columns.isEmpty()) userCode = true; // Hide content of columns section
         }
         columnsScrollPane.setVisible(!userCode);
         columnCountLabel.setVisible(!userCode && !fromComponent);
@@ -1045,6 +1095,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private javax.swing.JSpinner columnCountSpinner;
     private javax.swing.JLabel columnEditorLabel;
     private org.openide.explorer.propertysheet.PropertyPanel columnEditorPanel;
+    private javax.swing.JLabel columnErrorLabel;
     private javax.swing.JLabel columnExpressionLabel;
     private javax.swing.JLabel columnRendererLabel;
     private org.openide.explorer.propertysheet.PropertyPanel columnRendererPanel;
@@ -1079,6 +1130,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private javax.swing.JCheckBox resizableColumnChoice;
     private javax.swing.JLabel rowCountLabel;
     private javax.swing.JSpinner rowCountSpinner;
+    private javax.swing.JLabel rowErrorLabel;
     private javax.swing.JScrollPane rowsScrollPane;
     private javax.swing.JPanel rowsTab;
     private javax.swing.JTable rowsTable;
@@ -1235,11 +1287,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         }
     }
     
+    @Override
     public void setObject(Object table) {
         assert (table instanceof JTable);
         this.table = (JTable)table;
     }
 
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         assert (property instanceof RADProperty);
         
@@ -1280,6 +1334,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
         expressionCombo.setEnabled(false);
         expressionCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ColumnInfo info = columns.get(lastSelectedColumn);
                 Object expression = expressionCombo.getSelectedItem();
@@ -1301,6 +1356,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         });
         modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (modelBoundChoice.isSelected()) {
                     checkBindingType();
@@ -1317,6 +1373,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
         
         modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 updateModelCustomizers();
             }
@@ -1364,6 +1421,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }
 
     // FormAwareEditor
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -1553,6 +1611,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         return type;
     }
 
+    private boolean reverting;
+
     /**
      * Ensures that there is correct number of rows in column info table 
      * and correct number of columns in row info table.
@@ -1560,35 +1620,67 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
      * @param columnCount number of columns.
      */
     private void ensureColumnCount(int columnCount) {
-        boolean hardcoded = modelHardcodedChoice.isSelected();
-        for (int i=columns.size(); i<columnCount; i++) {
-            columns.add(new ColumnInfo(columnModelProperty, columns.size()));
-            if (hardcoded) {
-                rowTableModel.addColumn(i);
+        if (checkColumnCount(columnCount)) {
+            boolean hardcoded = modelHardcodedChoice.isSelected();
+            for (int i=columns.size(); i<columnCount; i++) {
+                columns.add(new ColumnInfo(columnModelProperty, getFreeColumnIndex()));
+                if (hardcoded) {
+                    rowTableModel.addColumn(i);
+                }
             }
+            for (int i=columns.size()-1; i>=columnCount; i--) {
+                if (lastSelectedColumn == i) {
+                    lastSelectedColumn = -1;
+                }
+                columns.remove(i);
+                if (hardcoded) {
+                    rowTableModel.removeColumn(i);
+                }
+            }
+            columnTableModel.fireTableDataChanged();
+        } else {
+            reverting = true;
+            columnCountSpinner.setValue(columns.size());
+            reverting = false;
         }
-        for (int i=columns.size()-1; i>=columnCount; i--) {
-            if (lastSelectedColumn == i) {
-                lastSelectedColumn = -1;
-            }
-            columns.remove(i);
-            if (hardcoded) {
-                rowTableModel.removeColumn(i);
-            }
+    }
+
+    private boolean checkColumnCount(int columnCount) {
+        boolean ok = columnCount<=COLUMN_MAX;
+        if (ok && !reverting) {
+            columnErrorLabel.setText(""); // NOI18N
+        } else {
+            columnErrorLabel.setText(NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Column_Warning_MaxExceeded")); // NOI18N
         }
-        columnTableModel.fireTableDataChanged();
+        return ok;
     }
 
     /**
      * Ensures that there is correct number of rows in row info table.
      */
     private void ensureRowCount(int rowCount) {
-        for (int i=rowTableModel.getRowCount(); i<rowCount; i++) {
-            rowTableModel.addRow(i);
+        if (checkRowCount(rowCount)) {
+            for (int i=rowTableModel.getRowCount(); i<rowCount; i++) {
+                rowTableModel.addRow(i);
+            }
+            for (int i=rowTableModel.getRowCount()-1; i>=rowCount; i--) {
+                rowTableModel.removeRow(i);
+            }
+        } else {
+            reverting = true;
+            rowCountSpinner.setValue(rowTableModel.getRowCount());
+            reverting = false;
         }
-        for (int i=rowTableModel.getRowCount()-1; i>=rowCount; i--) {
-            rowTableModel.removeRow(i);
+    }
+
+    private boolean checkRowCount(int rowCount) {
+        boolean ok = rowCount<=ROW_MAX;
+        if (ok && !reverting) {
+            rowErrorLabel.setText(""); // NOI18N
+        } else {
+            rowErrorLabel.setText(NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Row_Warning_MaxExceeded")); // NOI18N
         }
+        return ok;
     }
 
     /**
@@ -1779,6 +1871,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
      */
     class ColumnSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -1799,6 +1892,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
      */
     class RowSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             int[] index = rowsTable.getSelectedRows();
             boolean empty = (index.length == 0);
@@ -1824,10 +1918,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         }
 
+        @Override
         public int getRowCount() {
             return (columns == null) ? 0 : columns.size();
         }
 
+        @Override
         public int getColumnCount() {
             int columnCount;
             switch (modelType) {
@@ -1866,6 +1962,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             Object value = null;
             ColumnInfo info = columns.get(rowIndex);

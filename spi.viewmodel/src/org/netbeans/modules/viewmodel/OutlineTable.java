@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,13 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +78,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
+import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineModel;
@@ -89,6 +97,7 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 
@@ -103,7 +112,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private final Logger logger = Logger.getLogger(OutlineTable.class.getName());
     
     private ExplorerManager     explorerManager;
-    private final MyTreeTable   treeTable;
+    final MyTreeTable           treeTable; // Accessed from tests
     Node.Property[]             columns; // Accessed from tests
     private TableColumn[]       tableColumns;
     private int[]               columnVisibleMap; // Column index -> visible index
@@ -123,6 +132,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            treeTable.setTreeHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
@@ -353,6 +363,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
+        treeTable.setDynamicDropActions(model);
+
         //treeTable.getTable().tableChanged(new TableModelEvent(treeTable.getOutline().getModel()));
         //getExplorerManager ().setRootContext (rootNode);
         
@@ -430,6 +444,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
+        treeTable.setAllowedDragActions(model.getAllowedDragActions());
+        treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
 
         // 5) set root node for given model
         // Moved to 4), because the new root node must be ready when setting columns
@@ -479,9 +495,11 @@ ExplorerManager.Provider, PropertyChangeListener {
         //icolumns = new IndexedColumn[k];
         columnVisibleMap = new int[k];
         isDefaultColumnAdded = false;
+        ColumnModel treeColumn = null;
         boolean addDefaultColumn = true;
         List<Node.Property> columnList = new ArrayList<Node.Property>(k);
         int d = 0;
+        boolean[] originalOrder = new boolean[k];
         for (i = 0; i < k; i++) {
             Column c = new Column(cs [i]);
             columns[i] = c;
@@ -490,12 +508,15 @@ ExplorerManager.Provider, PropertyChangeListener {
             int order = cs[i].getCurrentOrderNumber();
             if (order == -1) {
                 order = i;
+            } else {
+                originalOrder[i] = true;
             }
             order += d;
             columnVisibleMap[i] = order;
             if (cs[i].getType() != null) {
                 columnList.add(c);
             } else {
+                treeColumn = cs[i];
                 nodesColumnName[0] = Actions.cutAmpersand(cs[i].getDisplayName());
                 addDefaultColumn = false;
                 defaultColumnIndex = i;
@@ -525,8 +546,11 @@ ExplorerManager.Provider, PropertyChangeListener {
             isDefaultColumnAdded = true;
             defaultColumnIndex = 0;
         }
+        if (treeColumn != null) {
+            treeTable.setTreeSortable(treeColumn.isSortable());
+        }
         // Check visible map (order) for duplicities and gaps
-        checkOrder(columnVisibleMap);
+        checkOrder(columnVisibleMap, originalOrder);
 
         int[] columnOrder = new int[columnVisibleMap.length];
         System.arraycopy(columnVisibleMap, 0, columnOrder, 0, columnOrder.length);
@@ -554,7 +578,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     /** Squeeze gaps and split duplicities to make it a permutation. */
-    private void checkOrder(int[] orders) {
+    private void checkOrder(int[] orders, boolean[] originalOrder) {
         if (logger.isLoggable(Level.FINE)) {
             StringBuilder msg = new StringBuilder("checkOrder(");
             for (int i = 0; i < orders.length; i++) {
@@ -602,8 +626,23 @@ ExplorerManager.Provider, PropertyChangeListener {
             int d = ++duplicates[orders[i]];
             if (d > 1) {
                 int o = orders[i];
+                boolean isOriginalOrder = originalOrder[i];
+                boolean shiftedOther = false;
                 for (int j = 0; j < n; j++) {
-                    if (orders[j] > o || orders[j] == o && j >= i) {
+                    if (orders[j] > o || orders[j] == o) {
+                        if (orders[j] == o) {
+                            if (shiftedOther) {
+                                continue;
+                            }
+                            // If the current duplicity has the original order
+                            // and the other has not, shift the other.
+                            if (j < i && isOriginalOrder && !originalOrder[j]) {
+                                shiftedOther = true;
+                            } else if (j < i) {
+                                // Otherwise we will do the shift when j == i.
+                                continue;
+                            }
+                        }
                         if (j <= i) duplicates[orders[j]]--;
                         orders[j]++;
                         if (j <= i) duplicates[orders[j]]++;
@@ -625,14 +664,23 @@ ExplorerManager.Provider, PropertyChangeListener {
     private void updateTableColumns(Property[] columnsToSet) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
-        int d = (isDefaultColumnAdded) ? 0 : 1;
+        //int d = (isDefaultColumnAdded) ? 1 : 0;
         int ci = 0;
-        int tci = d;
+        int tci = 0;//d;
         TableColumn[] tableColumns = new TableColumn[columns.length];
+        if (defaultColumnIndex > 0) tci++;
         for (int i = 0; i < columns.length; i++) {
-            if (ci < columnsToSet.length && columns[i] == columnsToSet[ci]) {
+            if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
                 TableColumn tc = tcm.getColumn(tci);
                 tableColumns[i] = tc;
+                if (columns[i] instanceof Column) {
+                    tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellEditor(0, tci)));
+                    tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellRenderer(0, tci)));
+                }
                 if (columns[i].isHidden()) {
                     ecm.setColumnHidden(tc, true);
                 } else {
@@ -641,6 +689,17 @@ ExplorerManager.Provider, PropertyChangeListener {
                 ci++;
             } else {
                 tableColumns[i] = tcm.getColumn(0);
+                if (columns[i] instanceof Column) {
+                    tableColumns[i].setCellEditor(((Column)columns[i]).getTableCellEditor());
+                }
+                String name = tableColumns[i].getHeaderValue().toString();
+                tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                        name,
+                        treeTable.getTable().getCellEditor(0, 0)));
+                tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                        name,
+                        treeTable.getTable().getCellRenderer(0, 0)));
+                tci++;
             }
         }
         if (logger.isLoggable(Level.FINE)) {
@@ -854,7 +913,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
-    private static class MyTreeTable extends OutlineView {
+    static class MyTreeTable extends OutlineView {  // Accessed from tests
+
+        private Reference dndModelRef = new WeakReference(null);
+
         MyTreeTable () {
             super ();
             Outline outline = getOutline();
@@ -885,7 +947,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 ((DefaultOutlineModel) m).setNodesColumnLabel(name);
             }
         }
-        
+
         /*
         public List getExpandedPaths () {
             List result = new ArrayList ();
@@ -942,6 +1004,27 @@ ExplorerManager.Provider, PropertyChangeListener {
                 return null;
             }
         }
+
+        void setDynamicDropActions(DnDNodeModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
+        void setDynamicDropActions(HyperCompoundModel model) {
+            dndModelRef = new WeakReference(model);
+        }
+
+        @Override
+        protected int getAllowedDropActions(Transferable t) {
+            Object model = dndModelRef.get();
+            if (model instanceof DnDNodeModel) {
+                return ((DnDNodeModel) model).getAllowedDropActions(t);
+            } else if (model instanceof HyperCompoundModel) {
+                return ((HyperCompoundModel) model).getAllowedDropActions(t);
+            } else {
+                return super.getAllowedDropActions();
+            }
+        }
+
     }
     
     private static final class F8FilterComponentInputMap extends ComponentInputMap {

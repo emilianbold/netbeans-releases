@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Include;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -59,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -240,9 +248,34 @@ public class WadlSaas extends Saas {
                     Exceptions.printStackTrace(e);
                 }
             }
-            schemaFiles.add(schemaFile);
+            if (schemaFile != null) {
+                schemaFiles.add(schemaFile);
+            }
         }
         return schemaFiles;
+    }
+
+    public Metadata getOauthMetadata() throws IOException, JAXBException {
+        if (wadlModel == null) {
+            throw new IllegalStateException("Should transition state to at least RETRIEVED");
+        }
+        if (wadlModel.getGrammars() == null || wadlModel.getGrammars().getAny() == null) {
+            return null;
+        }
+        List<Object> otherGrammars = wadlModel.getGrammars().getAny();
+        for (Object g : otherGrammars) {
+            if (g instanceof Element) {
+                Element el = (Element)g;
+                if ("http://netbeans.org/ns/oauth/metadata/1".equals(el.getNamespaceURI()) && //NOI18N
+                        "metadata".equals(el.getLocalName())) { //NOI18N
+                    JAXBContext jc = JAXBContext.newInstance("org.netbeans.modules.websvc.saas.model.oauth"); //NOI18N
+                    Unmarshaller u = jc.createUnmarshaller();
+                    JAXBElement<Metadata> jaxbEl = u.unmarshal(el, Metadata.class);
+                    return jaxbEl.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

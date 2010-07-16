@@ -19,8 +19,7 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.model.AttributeMetadata;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -59,7 +58,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
     
     private IEPModel mModel;
     private OperatorComponent mComponent;
-    private List mCheckBoxList = new ArrayList();
+    private List<JCheckBox> mCheckBoxList = new ArrayList<JCheckBox>();
     private List<SchemaAttribute> mAttributeList = new ArrayList<SchemaAttribute>();
     
     /** Creates a new instance of PartitionKeySelectionPanel */
@@ -69,6 +68,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
             mComponent = component;
             String msg = NbBundle.getMessage(InputSchemaSelectionPanel.class, "PartitionKeySelectionPanel.SELECTED_PARTITION_KEY");
             setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InputSchemaSelectionPanel.class, "ACSD_PartitionKeySelectionPanel.SELECTED_PARTITION_KEY"));
             setLayout(new BorderLayout(5, 5));
             JScrollPane scrollPane = new JScrollPane();
             add(scrollPane, BorderLayout.CENTER);
@@ -95,10 +95,12 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                         "PartitionKeySelectionPanel.INPUT_IS_NOT_SPECIFIED");
                 JLabel label = new JLabel(msg);
                 checkPanel.add(label, gbc);
+                setToolTipText(NbBundle.getMessage(PartitionKeySelectionPanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_not_connected"));
                 return;
             }
+            setToolTipText(NbBundle.getMessage(PartitionKeySelectionPanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_connected"));
             OperatorComponent input = inputs.get(0);
-            SchemaComponent outputSchema = input.getOutputSchemaId();
+            SchemaComponent outputSchema = input.getOutputSchema();
             if (outputSchema == null) {
                 msg = NbBundle.getMessage(PartitionKeySelectionPanel.class,
                         "PartitionKeySelectionPanel.INPUT_DOES_NOT_HAVE_ANY_SCHEMA");
@@ -106,8 +108,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                 checkPanel.add(label, gbc);
                 return;
             }
-            String attributeListStr = component.getProperty(ATTRIBUTE_LIST_KEY).getValue();
-            List attributeList = (List) component.getProperty(ATTRIBUTE_LIST_KEY).getPropertyType().getType().parse(attributeListStr);
+            List<String> attributeList = component.getStringList(PROP_ATTRIBUTE_LIST);
             //ritList attributeList = component.getProperty(ATTRIBUTE_LIST_KEY).getListValue();
             List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             Iterator<SchemaAttribute> attrsIt = attrs.iterator();
@@ -116,6 +117,12 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                 mAttributeList.add(sa);
                 String attributeName = sa.getName();
                 JCheckBox cb = new JCheckBox(attributeName);
+                cb.setToolTipText(NbBundle.getMessage(PartitionKeySelectionPanel.class,
+                "TOOLTIP_PartitionKeySelectionPanel.PartionKey"));
+                cb.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PartitionKeySelectionPanel.class,
+                "ACSD_PartitionKeySelectionPanel.PartionKey"));
+                setMnemonics(cb);
+                
                 mCheckBoxList.add(cb);
                 if (attributeList.contains(attributeName)) {
                     cb.setSelected(true);
@@ -151,7 +158,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
     }
     
     public List<SchemaAttribute> getSelectedAttributeList() {
-        List ret = new ArrayList();
+        List<SchemaAttribute> ret = new ArrayList<SchemaAttribute>();
         for (int i = 0, I = mCheckBoxList.size(); i < I; i++) {
             if (((JCheckBox)mCheckBoxList.get(i)).isSelected()) {
                 ret.add(mAttributeList.get(i));
@@ -160,8 +167,8 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         return ret;
     }
 
-    public List getSelectedAttributeNameList() {
-        List ret = new ArrayList();
+    public List<String> getSelectedAttributeNameList() {
+        List<String> ret = new ArrayList<String>();
         try {
             for (int i = 0, I = mCheckBoxList.size(); i < I; i++) {
                 if (((JCheckBox)mCheckBoxList.get(i)).isSelected()) {
@@ -184,8 +191,8 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         return null;
     }
     
-    public List getAttributeNameList(Set types) throws Exception {
-        List attributeNameList = new ArrayList();
+    public List<String> getAttributeNameList(Set types) throws Exception {
+        List<String> attributeNameList = new ArrayList<String>();
         for (int i = 0, I = mAttributeList.size(); i < I; i++) {
             SchemaAttribute cm = (SchemaAttribute)mAttributeList.get(i);
             String name = cm.getAttributeName();
@@ -213,7 +220,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                 }
                 sb.append((String)partitionKey.get(i));
             }
-            Property prop = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
+            Property prop = mComponent.getProperty(PROP_ATTRIBUTE_LIST);
             if (!sb.toString().equals(prop.getValue())) {
                 prop.getModel().startTransaction();
                 //ritprop.setValue(partitionKey);
@@ -224,6 +231,57 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         } catch (Exception e) {
             mLog.log(Level.SEVERE, e.getMessage(), e);
         }
+        
+        
     }
 
+    private void setMnemonics(JCheckBox cb) {
+        String label = cb.getText();
+        if(label == null || label.length() == 0) {
+            return;
+        }
+        
+        int index = 0;
+        while(index < label.length()) {
+            int newCh = label.charAt(index);
+            if(!isMnemonicsTaken(newCh)) {
+                cb.setMnemonic(newCh);
+                break;
+            }
+            
+            index++;
+        }
+        
+    }
+    
+    private boolean isMnemonicsTaken(int newCh) {
+        boolean result = false;
+        
+        //these are the Mnemonics which are used else where in the
+        //dialog, if they change we should change it here too
+        //NSOr are already taken
+        String usedMnemonics = new String("NSOr");
+        for(int i =0; i < usedMnemonics.length(); i++) {
+            int ch = usedMnemonics.charAt(i);
+            if(newCh == ch) {
+                result = true;
+                return result;
+            }
+        }
+        
+        
+        
+        Iterator<JCheckBox> it = mCheckBoxList.iterator();
+        while(it.hasNext()) {
+            JCheckBox cbb = it.next();
+            int ch = cbb.getMnemonic();
+            if(newCh == ch) {
+                result = true;
+            }
+            
+        }
+        
+        
+        return result;
+    }
 }

@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 2.16.1
+#Signature file v4.1
+#Version 2.23
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -42,7 +42,7 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract org.netbeans.spi.debugger.ui.AttachType
-cons public AttachType()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract javax.swing.JComponent getCustomizer()
 meth public java.lang.String getTypeDisplayName()
@@ -51,6 +51,7 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.AttachType$Registration
+ outer org.netbeans.spi.debugger.ui.AttachType
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
@@ -58,12 +59,12 @@ meth public abstract !hasdefault int position()
 meth public abstract java.lang.String displayName()
 
 CLSS public abstract org.netbeans.spi.debugger.ui.BreakpointAnnotation
-cons public BreakpointAnnotation()
+cons public init()
 meth public abstract org.netbeans.api.debugger.Breakpoint getBreakpoint()
 supr org.openide.text.Annotation
 
 CLSS public abstract org.netbeans.spi.debugger.ui.BreakpointType
-cons public BreakpointType()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract boolean isDefault()
 meth public abstract java.lang.String getCategoryDisplayName()
@@ -74,6 +75,7 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.BreakpointType$Registration
+ outer org.netbeans.spi.debugger.ui.BreakpointType
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
@@ -129,11 +131,39 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds NO_COOKIE,NO_EDITOR,NO_FILE,context,currentEditorCookie,currentFile,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
-hcls EditorLookupListener,EventFirer
+hfds NO_COOKIE,NO_EDITOR,NO_FILE,NO_FILE_CHANGE,context,currentEditorCookie,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
+hcls EditorLookupListener,EventFirer,FileRenameListener
+
+CLSS public org.netbeans.spi.debugger.ui.MethodChooser
+cons public init(java.lang.String,org.netbeans.spi.debugger.ui.MethodChooser$Segment[],int)
+cons public init(java.lang.String,org.netbeans.spi.debugger.ui.MethodChooser$Segment[],int,java.lang.String,javax.swing.KeyStroke[],javax.swing.KeyStroke[])
+innr public abstract interface static ReleaseListener
+innr public static Segment
+meth public boolean isUIActive()
+meth public boolean showUI()
+meth public int getSelectedIndex()
+meth public static org.netbeans.spi.editor.highlighting.HighlightsLayerFactory createHighlihgtsLayerFactory()
+meth public void addReleaseListener(org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener)
+meth public void releaseUI(boolean)
+meth public void removeReleaseListener(org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener)
+supr java.lang.Object
+hfds arrowCursor,attribsAll,attribsAllUnc,attribsArea,attribsHyperlink,attribsLeft,attribsLeftUnc,attribsMethod,attribsMethodUnc,attribsMiddle,attribsMiddleUnc,attribsRight,attribsRightUnc,confirmEvents,defaultHyperlinkHighlight,doc,editorPane,endLine,handCursor,hintText,isInSelectMode,mainListener,mousedIndex,originalCursor,releaseListeners,segments,selectedIndex,startLine,stopEvents,url
+hcls CentralListener,MethodChooserHighlightsLayerFactory,TooltipResolver
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
+ outer org.netbeans.spi.debugger.ui.MethodChooser
+meth public abstract void released(boolean)
+
+CLSS public static org.netbeans.spi.debugger.ui.MethodChooser$Segment
+ outer org.netbeans.spi.debugger.ui.MethodChooser
+cons public init(int,int)
+meth public int getEndOffset()
+meth public int getStartOffset()
+supr java.lang.Object
+hfds endOffset,startOffset
 
 CLSS public abstract org.openide.text.Annotation
-cons public Annotation()
+cons public init()
 fld public final static java.lang.String PROP_ANNOTATION_TYPE = "annotationType"
 fld public final static java.lang.String PROP_MOVE_TO_FRONT = "moveToFront"
 fld public final static java.lang.String PROP_SHORT_DESCRIPTION = "shortDescription"

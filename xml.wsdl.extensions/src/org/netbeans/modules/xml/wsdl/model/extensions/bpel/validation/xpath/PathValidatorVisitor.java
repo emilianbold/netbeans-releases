@@ -40,10 +40,10 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
@@ -109,17 +109,18 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
 //System.out.println();
 //System.out.println("1: " + getBasedSimpleType(propType));
 //System.out.println("2: " + getBasedSimpleType(gType));
-                if (ValidationUtil.getBasedSimpleType(propType) != ValidationUtil.getBasedSimpleType(gType)) {
-                    myContext.addResultItem(ResultType.WARNING, "QUERY_INCONSISTENT_TYPE", ValidationUtil.getTypeName(gType), ValidationUtil.getTypeName(propType)); // NOI18N
+                if (XAMUtils.getBasedSimpleType(propType) != XAMUtils.getBasedSimpleType(gType)) {
+                    myContext.addResultItem(ResultType.WARNING, "QUERY_INCONSISTENT_TYPE", 
+                        XAMUtils.getTypeName(gType), XAMUtils.getTypeName(propType)); // NOI18N
                 }
                 else {
-                // # 83335 vlv
+                // # 83335
 //System.out.println();
 //System.out.println("TYPE IS: " + gType.getClass().getName());
-//System.out.println("TYPE IS: " + ValidationUtil.getBasedSimpleType(gType).getClass().getName());
+//System.out.println("TYPE IS: " + XAMUtils.getBasedSimpleType(gType).getClass().getName());
 //System.out.println();
                   // # 148447
-                  if ( !(ValidationUtil.getBasedSimpleType(gType) instanceof SimpleType)) {
+                  if ( !(XAMUtils.getBasedSimpleType(gType) instanceof SimpleType)) {
                     myContext.addResultItem(ResultType.ERROR, "TYPE_MUST_BE_SIMPLE"); // NOI18N
                   }
                 }
@@ -240,7 +241,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. A global type has to be specified for the last element (attribute)
                 // of the Location path.
                 String lastElementName = sCompHolder.getName();
-//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
+//                   myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else {
                 return Collections.singleton(type);
@@ -265,7 +266,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. The set of possible schema components for the tail 
                 // of location path doesn't contain any object with global type. 
                 String lastElementName = ((Named)sComp).getName();
-//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
+//                   myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else if (!allTailsAreGlobal) {
                 // Error. The set of possible schema components for the tail 
@@ -334,10 +335,8 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
         } else {
             CorrelationProperty cProp = cPropRef.get();
             if (cProp == null) {
-                // Error. Can not resolve the Correlation Property
                 if (myContext != null) {
-                    myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
-                          cProp.getName()); // NOI18N
+                    myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP"); // NOI18N
                 }
                 return null;
             }
@@ -364,8 +363,9 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             //
             if (result == null) {
                 // Error. Can not resolve the type of Correlation Property
+                String type = propTypeRef == null ? "" : propTypeRef.getRefString();
                 myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP_TYPE",
-                        cProp.getName(), propTypeRef.getRefString()); // NOI18N
+                        type, cProp.getName()); // NOI18N
             }
             return result;
         }

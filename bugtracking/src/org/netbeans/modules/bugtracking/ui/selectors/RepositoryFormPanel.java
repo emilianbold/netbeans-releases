@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
 import static org.netbeans.modules.bugtracking.spi.BugtrackingController.EVENT_COMPONENT_DATA_CHANGED;
 
@@ -79,6 +83,7 @@ public class RepositoryFormPanel extends JPanel {
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>(4);
     private final ChangeEvent changeEvent = new ChangeEvent(this);
+    private JPanel emptyPanel;
 
     public RepositoryFormPanel() {
         initComponents();
@@ -184,29 +189,45 @@ public class RepositoryFormPanel extends JPanel {
 
         stopListeningOnController();
 
-        String cardName = getCardName(repository);
-        BugtrackingController controller = repository.getController();
+        if(repository != null) {
+            String cardName = getCardName(repository);
+            BugtrackingController controller = repository.getController();
 
-        boolean firstTimeUse = registerCard(cardName);
-        if (firstTimeUse) {
-            cardsPanel.add(controller.getComponent(), cardName);
-        }
+            boolean firstTimeUse = registerCard(cardName);
+            if (firstTimeUse) {
+                cardsPanel.add(controller.getComponent(), cardName);
+            }
 
-        ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, cardName);
+            ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, cardName);
 
-        selectedFormController = controller;
-        selectedRepository = repository;
+            selectedFormController = controller;
+            selectedRepository = repository;
 
-        startListeningOnController();
+            startListeningOnController();
 
-        if ((initialErrMsg != null) && (initialErrMsg.trim().length() != 0)) {
-            updateErrorMessage(initialErrMsg);
-            setDataValid(false);
+            if ((initialErrMsg != null) && (initialErrMsg.trim().length() != 0)) {
+                updateErrorMessage(initialErrMsg);
+                setDataValid(false);
+            } else {
+                checkDataValidity();
+            }
+            return firstTimeUse;
         } else {
-            checkDataValidity();
-        }
+            String cardName = getCardName(repository);
+            if(emptyPanel == null) {
+                emptyPanel = new JPanel();
+            }
+            cardsPanel.add(emptyPanel, cardName);
+            ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, cardName);
+            
+            selectedFormController = null;
+            selectedRepository = null;
 
-        return firstTimeUse;
+            updateErrorMessage(NbBundle.getMessage(RepositoryFormPanel.class, "LBL_CouldNotCreateRepository"));
+            setDataValid(false);
+            
+            return true;
+        }
     }
 
     private void startListeningOnController() {

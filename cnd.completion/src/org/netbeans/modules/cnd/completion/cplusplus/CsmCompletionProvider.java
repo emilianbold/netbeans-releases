@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,21 +58,26 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
+import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  * this is the modified copy of JavaCompletionProvider
- * @author Vladimir Voskresensky 
+ * @author Vladimir Voskresensky
  */
 public class CsmCompletionProvider implements CompletionProvider {
 
@@ -110,7 +118,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                return null;
+                return new AsyncCompletionTask(new DocumentationQuery(), component);
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 return new AsyncCompletionTask(new ToolTipQuery(), component);
             }
@@ -219,7 +227,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
                 limit = true;
             }
-//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression()) 
+//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression())
 //                             || (items.size() > MAX_ITEMS_TO_DISPLAY);
             resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
             if (!limit) {
@@ -520,6 +528,30 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
     }
+
+    private static final class DocumentationQuery extends AsyncCompletionQuery {
+
+        @Override
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+            if (csmFile != null) {
+                CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
+                if (csmObject != null) {
+                    CompletionDocumentationProvider docProvider = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
+                    if (docProvider != null) {
+                        CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
+                        if (documentation != null) {
+                            resultSet.setDocumentation(documentation);
+                        }
+                    }
+                }
+            }
+
+            resultSet.finish();
+        }
+    }
+
     private static final CompletionItem lastItem = new LastResultItem();
 
     private final static class LastResultItem extends CsmResultItem {

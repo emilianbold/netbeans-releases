@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Icon;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.metadata.AbstractArgument;
 import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
@@ -117,6 +118,16 @@ public class XPathExtensionFunction implements XPathOperationOrFuntion<QName> {
         return ((ExpressionWriter) visitor).getString();
     }
 
+    public String getExpressionString(NamespaceContext nc) {
+        if (mModel.getNamespaceContext() == nc) {
+            // optimization
+            return getExpressionString();
+        }
+        XPathVisitor visitor = new ExpressionWriter(nc);
+        accept(visitor);
+        return ((ExpressionWriter) visitor).getString();
+    }
+
     public void accept(XPathVisitor visitor) {
         visitor.visit(this);
     }
@@ -177,5 +188,4 @@ public class XPathExtensionFunction implements XPathOperationOrFuntion<QName> {
         }
     };
 
-    
 }

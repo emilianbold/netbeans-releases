@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.etl.codegen;
 
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * This allows us to plug-in different strategy as appropriate to optimize process flow;

@@ -14,7 +14,7 @@ import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorField;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 
-import com.sun.sql.framework.jdbc.SQLUtils;
+import com.sun.etl.jdbc.SQLUtils;
 
 /**
  * Implements IOperatorXmlInfo, but will be used as model for UserFunctions w/o persisting

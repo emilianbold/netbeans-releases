@@ -24,6 +24,7 @@ package org.netbeans.modules.xslt.project;
  * @version 1.0
  */
 public interface XsltproConstants {
+    String DOT = "."; // NOI18N
     String XSLT_EXTENSION = "xsl"; // NOI18N
     String XSLT_EXTENSION2 = "xslt"; // NOI18N 
     String EMPTY_STRING = ""; // NOI18N
@@ -32,7 +33,7 @@ public interface XsltproConstants {
     String TRANSFORMMAP_XML = "transformmap.xml"; // NOI18N
     String XSLT_PROJECT_ICON = "org/netbeans/modules/xslt/project/resources/xsltProjectIcon.png"; // NOI18N
     String POPULATE_CATALOG="populate_catalog"; // NOI18N
-    String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
+//    String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
     String SOURCES_TYPE_ICANPRO = "BIZPRO";
     
     

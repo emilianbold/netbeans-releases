@@ -59,10 +59,7 @@ public class TBooleanEditor extends PropertyEditorSupport {
     }
     
     public String[] getTags() {
-        return new String[] {
-            Constants.NOT_ASSIGNED, 
-            TBoolean.YES.toString(), 
-            TBoolean.NO.toString()};
+        return new String[] { Constants.NOT_ASSIGNED, TBoolean.YES.toString(), TBoolean.NO.toString()};
     }
     
     public Object getValue() {

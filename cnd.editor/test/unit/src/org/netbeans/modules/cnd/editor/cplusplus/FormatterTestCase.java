@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -5059,5 +5062,75 @@ public class FormatterTestCase extends EditorBase {
                 "\n" +
                 "};\n"
                 );
+    }
+    
+    //  Bug 180110 - Inconsistent C/C++ switch statement formatting
+    public void testIZ180110() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch,
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "int foo(){\n"
+                + "    switch(value)\n"
+                + "    {\n"
+                + "     case MACRO(x):\n"
+                + "      {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case MACRO_2:\n"
+                + "     {\n"
+                + "        break;\n"
+                + "   }\n"
+                + "    case (MACRO_3):\n"
+                + "   {\n"
+                + "    break;\n"
+                + "  }\n"
+                + "    }\n"
+                + "}\n");
+        reformat();
+        assertDocumentText("Bug 180110 - Inconsistent C/C++ switch statement formatting",
+                "int foo() {\n"
+                + "    switch (value)\n"
+                + "    {\n"
+                + "    case MACRO(x):\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case MACRO_2:\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case (MACRO_3):\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    }\n"
+                + "}\n");
+    }
+
+    //  Bug 176820 -  Erroneous formatting of typecasting of reference
+    public void testIZ176820() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i=(int *) &a;\n"+
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i = (int *) &a;\n"+
+                "}\n"
+                    );
     }
 }

@@ -18,16 +18,17 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.23</specification-version>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javacard.kit</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.ri.platform</friend>
                 <friend>org.netbeans.modules.javacard.spi</friend>
                 <friend>org.netbeans.modules.maven</friend>
+                <friend>org.netbeans.modules.docbook.project</friend>
                 <package>org.netbeans.api.validation.adapters</package>
                 <package>org.netbeans.validation.api</package>
                 <package>org.netbeans.validation.api.builtin</package>

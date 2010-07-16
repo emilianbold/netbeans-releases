@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,9 +75,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -178,7 +184,7 @@ public abstract class J2eeModuleProvider {
         }
         return si.getStartServer().getDebugInfo(target);
     }
-    
+
     /**
      * Gets the data sources deployed on the target server instance.
      *
@@ -297,6 +303,7 @@ public abstract class J2eeModuleProvider {
      * The setters and getters work with server specific data on the server returned by
      * {@link #getServerID} method.
      */
+    // FIXME replace this with final class - this is not deigned to be implemented by anybody
     public static interface ConfigSupport {
         /**
          * Create an initial fresh configuration for the current module.  Do nothing if configuration already exists.
@@ -481,6 +488,37 @@ public abstract class J2eeModuleProvider {
          */
         public Datasource findDatasource(String jndiName) throws ConfigurationException;
 
+        /**
+         * Configure the library (dependency) the enterprise module needs in order
+         * to work properly.
+         * <p>
+         * Once library is configured it should be present in the result
+         * of the {@link #getRequiredLibraries()} call.
+         *
+         * @param library the library the enterprise module needs in order to work
+         *             properly
+         * @throws ConfigurationException if there was a problem writing
+         *             configuration
+         * @since 1.68
+         */
+        public void configureLibrary(@NonNull ServerLibraryDependency library) throws ConfigurationException;
+
+        /**
+         * Returns the server library dependencies the enterprise module needs
+         * to work properly.
+         *
+         * @return the server library dependencies
+         * @throws ConfigurationException if there was a problem reading
+         *             configuration
+         * @since 1.68
+         */
+        @NonNull
+        public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException;
+
+        void addLibraryChangeListener(@NonNull ChangeListener listener);
+
+        void removeLibraryChangeListener(@NonNull ChangeListener listener);
+        
         /**
          * Retrieves message destinations stored in the module.
          * 
@@ -819,15 +857,20 @@ public abstract class J2eeModuleProvider {
                 getConfigSupportImpl().ensureConfigurationReady();
 
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
-                    oldCtxPath = getDeploymentName().replace(' ', '_'); //NOI18N
-                    char c [] = oldCtxPath.toCharArray();
-                    for (int i = 0; i < c.length; i++) {
-                        if (!Character.UnicodeBlock.BASIC_LATIN.equals(Character.UnicodeBlock.of(c[i])) ||
-                                !Character.isLetterOrDigit(c[i])) {
-                            c[i] = '_';
+                    oldCtxPath = getDeploymentName();
+                    if (null != oldCtxPath) {
+                        char c [] = oldCtxPath.replace(' ', '_').toCharArray();
+                        for (int i = 0; i < c.length; i++) {
+                            if (!Character.UnicodeBlock.BASIC_LATIN.equals(Character.UnicodeBlock.of(c[i])) ||
+                                    !Character.isLetterOrDigit(c[i])) {
+                                c[i] = '_';
+                            }
                         }
+                        oldCtxPath = "/" + new String (c); //NOI18N
+                    } else {
+                        LOGGER.log(Level.WARNING, "null deploymentName for "+
+                                getConfigSupportImpl().toString());
                     }
-                    oldCtxPath = "/" + new String (c); //NOI18N
                 }
                 getConfigSupportImpl().setWebContextRoot(oldCtxPath);
 

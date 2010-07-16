@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,7 +72,7 @@ import org.openide.filesystems.FileUtil;
  * @author Pavel Flaska
  */
 public class CommentsTest extends GeneratorTest {
-    
+
     /** Creates a new instance of CommentsTest */
     public CommentsTest(String name) {
         super(name);
@@ -77,7 +81,7 @@ public class CommentsTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
-//        suite.addTest(new CommentsTest("testMoveMethod171345b"));
+//        suite.addTest(new CommentsTest("testMoveMethod171345"));
         return suite;
     }
 
@@ -880,6 +884,7 @@ public class CommentsTest extends GeneratorTest {
             "        //byt\n" +
             "        System.err.println();\n" +
             "        //bydlet\n" +
+            (CasualDiff.OLD_TREES_VERBATIM ? "\n" : "") +//XXX
             "        if (true) {\n" +
             "            //obyvatel\n" +
             "        }\n" +
@@ -1446,6 +1451,131 @@ public class CommentsTest extends GeneratorTest {
                 Comment comment = Comment.create(Comment.Style.JAVADOC, -1, -1, -1, commentText);
                 make.addComment(clazz, comment, true);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveComment186017() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                ClassTree newClazz = make.setLabel(clazz, clazz.getSimpleName());
+                GeneratorUtilities.get(workingCopy).copyComments(clazz, newClazz, true);
+                make.removeComment(newClazz, 0, true);
+                workingCopy.rewrite(clazz, newClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveComment186176a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    /*test2\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+//                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                MethodTree newMethod = make.setLabel(mt, mt.getName());
+                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
+                make.removeComment(newMethod, 1, true);
+                workingCopy.rewrite(mt, newMethod);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveComment186176b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test2*/\n" +
+            "    private void test() {} \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+//                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                MethodTree newMethod = make.setLabel(mt, mt.getName());
+                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
+                make.removeComment(newMethod, 0, true);
+                make.addComment(newMethod, Comment.create(Style.BLOCK, "/*test2*/"), true);
+                workingCopy.rewrite(mt, newMethod);
             }
 
         };

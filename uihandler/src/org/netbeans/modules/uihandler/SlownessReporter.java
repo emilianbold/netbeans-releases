@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -134,9 +137,9 @@ class SlownessReporter {
         return latestActionHolder[0];
     }
 
-    void notifySlowness(byte[] nps, long time) {
+    void notifySlowness(byte[] nps, long time, String slownessType) {
         String latestActionName = getLatestAction(time);
-        pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
+        pending.add(new NotifySnapshot(new SlownessData(time, nps, slownessType, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();
         }
@@ -152,8 +155,9 @@ class SlownessReporter {
             NotificationDisplayer.Priority priority = Priority.SILENT;
             // in dev builds use higher priority
             assert (priority = Priority.LOW) != null;
+            String message = NbBundle.getMessage(NotifySnapshot.class, data.getSlownessType());
             note = NotificationDisplayer.getDefault().notify(
-                    NbBundle.getMessage(NotifySnapshot.class, "TEQ_LowPerformance"),
+                    message,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/uihandler/vilik.png", true),
                     createPanel(), createPanel(),
                     priority);
@@ -179,8 +183,8 @@ class SlownessReporter {
             JPanel result = new JPanel();
             result.setOpaque(false);
             result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-            result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", data.getTime(), data.getTime() / 1000)));
-            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_Report")));
+            result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "BlockedFor" + data.getSlownessType(), data.getTime(), data.getTime() / 1000)));
+            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "Report")));
             return result;
         }
 

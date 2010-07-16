@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,11 @@
 package org.netbeans.modules.php.spi.phpmodule;
 
 import java.io.File;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -55,7 +63,7 @@ import org.openide.util.Parameters;
  * specific configuration files.</p>
  *
  * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.phpmodule.PhpFrameworks#FRAMEWORK_PATH}</code>
- * in the module layer.</p>
+ * in the module layer, see {@link Registration}.</p>
  *
  * @author Tomas Mysik
  */
@@ -101,6 +109,17 @@ public abstract class PhpFrameworkProvider {
     }
 
     /**
+     * Returns the {@link BadgeIcon badge icon} of this PHP framework.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @return the {@link BadgeIcon badge icon} for this PHP framework or {@code null}
+     * @since 1.39
+     */
+    public BadgeIcon getBadgeIcon() {
+        return null;
+    }
+
+    /**
      * Finds out if a given PHP module has already been extended with this PHP framework.
      * <p>
      * <b>This method should be as fast as possible.</b>
@@ -111,7 +130,12 @@ public abstract class PhpFrameworkProvider {
     public abstract boolean isInPhpModule(PhpModule phpModule);
 
     /**
-     * Returns the configuration files belonging to this framework.
+     * Returns the configuration files (no directories allowed!) belonging to this framework. The files
+     * do not need to exist, however only existing files are taken into account.
+     * <p>
+     * These files are displayed under <tt>Important Files</tt> node in <tt>Projects</tt> view.
+     * <p>
+     * <b>This method should be as fast as possible.</b>
      *
      * @param  phpModule the PHP module for which the configuration files are returned; never <code>null</code>.
      * @return an array containing the configuration files; can be empty but never <code>null</code>.
@@ -130,6 +154,21 @@ public abstract class PhpFrameworkProvider {
      *         passed in the <code>phpModule</code> parameter).
      */
     public abstract PhpModuleExtender createPhpModuleExtender(PhpModule phpModule);
+
+    /**
+     * Creates a {@link PhpModuleCustomizerExtender PHP module customizer extender} for this framework
+     * and the given PHP module.
+     * <p>
+     * The default implementation returns {@code null}.
+     *
+     * @param  phpModule the PHP module which properties are to be extended
+     * @return a new PHP module customizer extender; can be {@code null} if the framework doesn't need
+     *         to store/read any PHP module specific properties
+     * @since 1.26
+     */
+    public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
+        return null;
+    }
 
     /**
      * Get {@link PhpModuleProperties PHP module properties} the given PHP module. PHP framework
@@ -183,4 +222,64 @@ public abstract class PhpFrameworkProvider {
      * @since 1.13
      */
     public abstract EditorExtender getEditorExtender(PhpModule phpModule);
+
+    /**
+     * This method is called when the PHP module is opened in the IDE but only if is is extended by this framework.
+     * It is suitable to make any initialization of this framework here but usually it is not needed to override this method.
+     * @param phpModule the PHP module that is being opened in the IDE
+     * @see #isInPhpModule(PhpModule)
+     * @see #phpModuleClosed(PhpModule)
+     * @since 1.24
+     */
+    public void phpModuleOpened(PhpModule phpModule) {
+    }
+
+    /**
+     * This method is called when the PHP module is closed in the IDE but only if is is extended by this framework.
+     * It is suitable to make any clean up of this framework here but usually it is not needed to override this method.
+     * @param phpModule the PHP module that is being closed in the IDE
+     * @see #isInPhpModule(PhpModule)
+     * @see #phpModuleOpened(PhpModule)
+     * @since 1.24
+     */
+    public void phpModuleClosed(PhpModule phpModule) {
+    }
+
+    /**
+     * Declarative registration of a singleton PHP framework provider.
+     * By marking an implementation class or a factory method with this annotation,
+     * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.phpmodule.PhpFrameworks#FRAMEWORK_PATH}.
+     * The class must be public and have:
+     * <ul>
+     *  <li>a public no-argument constructor, or</li>
+     *  <li>a public static factory method.</li>
+     * </ul>
+     *
+     * <p>Example of usage:
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+     * &#64;PhpFrameworkProvider.Registration(position=100)
+     * public class MyFramework extends PhpFrameworkProvider {...}
+     * </pre>
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+     * public class MyFramework extends PhpFrameworkProvider {
+     *     &#64;PhpFrameworkProvider.Registration(position=100)
+     *     public static PhpFrameworkProvider getInstance() {...}
+     * }
+     * </pre>
+     * @since 1.36
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+        /**
+         * An optional position in which to register this framework provider relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Providers with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
+    }
 }

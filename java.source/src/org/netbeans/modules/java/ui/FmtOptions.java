@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -154,7 +157,9 @@ public class FmtOptions {
     public static final String wrapEnumConstants = "wrapEnumConstants"; //NOI18N
     public static final String wrapAnnotations = "wrapAnnotations"; //NOI18N
     public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
+    public static final String wrapAfterBinaryOps = "wrapAfterBinaryOps"; //NOI18N
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
+    public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     
     public static final String blankLinesBeforePackage = "blankLinesBeforePackage"; //NOI18N
@@ -385,7 +390,9 @@ public class FmtOptions {
             { wrapEnumConstants, WRAP_NEVER}, //NOI18N
             { wrapAnnotations, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterBinaryOps, FALSE}, //NOI18N
             { wrapTernaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER}, //NOI18N
 
             { blankLinesBeforePackage, "0"}, //NOI18N

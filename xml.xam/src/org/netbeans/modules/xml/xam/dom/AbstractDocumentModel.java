@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -93,6 +96,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     public abstract T createRootComponent(Element root);
     
+    @Override
     public boolean areSameNodes(Node n1, Node n2) {
         return getAccess().areSameNodes(n1, n2);
     }
@@ -115,6 +119,8 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 		getModelSource().getLookup().lookup(javax.swing.text.Document.class);
     if (currentDoc == null) {
         swingDocument = null;
+        setState(State.NOT_SYNCED); // The XAM model isn't synched with text, because there isn't a text at all
+        getAccess().unsetDirty();
         return false;
     }
 	if (lastDoc == null || currentDoc != lastDoc) {
@@ -159,14 +165,16 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	    
 	    return l;
 	}
-	
+
+        @Override
 	public void removeUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
 		l.removeUpdate(e);
 	    }
 	}
-	
+
+        @Override
 	public void changedUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
@@ -174,6 +182,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	    }
 	}
 	
+        @Override
 	public void insertUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
@@ -186,14 +195,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
     
     private class DocumentChangeListener implements DocumentListener {
+        @Override
 	public void removeUpdate(DocumentEvent e) {
 	    documentChanged();
 	}
 	
+        @Override
 	public void insertUpdate(DocumentEvent e) {
 	    documentChanged();
 	}
 	
+        @Override
 	public void changedUpdate(DocumentEvent e) {
 	    // ignore these events as these are not changes
 	    // to the document text but the document itself
@@ -217,7 +229,39 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return elementNames;
     }
 
+    /**
+     *
+     * @param pathToRoot
+     * @return
+     * @deprecated Use {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)} instead. It is necessary for fixing bug #166177.
+     *
+     */
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
+        return prepareChangeInfo(pathToRoot, pathToRoot);
+    }
+
+
+    /**
+     * Performs intermediate stage of synchronization XDM --> XAM.
+     * A new {@link org.netbeans.modules.xml.xam.dom.ChangeInfo} object 
+     * is generated here.
+     *
+     * @param pathToRoot a path of DOM objects from root to changed one.
+     * @param nsContextPathToRoot Usually the same path as previous param,
+     * but in case of deletion it contains the same path from old model's tree.
+     * It is required in case of prefix declaration deletion, because the deleted
+     * declaration is present only in old model's tree.
+     *
+     * Be aware that the method is designed to be called only from XDM
+     * {@link org.netbeans.modules.xml.xdm.xam.XDMListener},
+     * but it also can be redifined. An example can be found in
+     * {@link org.netbeans.modules.xml.wsdl.model.WSDLModel}.
+     *
+     * @since 1.11
+     *
+     */
+    public ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
         // we already handle change on root before enter here
         if (pathToRoot.size() < 1) {
             throw new IllegalArgumentException("pathToRoot here should be at least 1");
@@ -247,7 +291,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                 }
 
                 QName currentQName = new QName(getAccess().lookupNamespaceURI(
-                        current, pathToRoot), current.getLocalName());
+                        current, nsContextPathToRoot), current.getLocalName());
                 if (!(qnames.contains(currentQName))) {
                     changedIsDomainElement =  false;
                     break;
@@ -274,7 +318,8 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             }
         }
 
-        return new ChangeInfo(parent, current, changedIsDomainElement, rootToParent, otherNodes);
+        return new ChangeInfo(parent, current, changedIsDomainElement,
+                rootToParent, otherNodes);
     }
     
     public SyncUnit prepareSyncUnit(ChangeInfo change, SyncUnit order) {
@@ -393,7 +438,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             addChildComponent(targetComponent, c, index);
         }
     }
-    
+
     private DocumentComponent createChildComponent(DocumentComponent parent, Element e) {
         DocumentModel m = (DocumentModel) parent.getModel();
         if (m == null) {
@@ -402,6 +447,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return m.createComponent(parent, e);
     }
     
+    @Override
     public void addChildComponent(Component target, Component child, int index) {
         AbstractDocumentModel m = (AbstractDocumentModel)target.getModel();
         //assert m != null : "Cannot add child to a deleted component.";
@@ -410,6 +456,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         m.getComponentUpdater().update(target, child, index, ComponentUpdater.Operation.ADD);
     }
     
+    @Override
     public void removeChildComponent(Component child) {
         if (child.getParent() == null) return;
         AbstractDocumentModel m = (AbstractDocumentModel) child.getParent().getModel();
@@ -461,7 +508,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     public DocumentComponent findComponent(List<Element> pathFromRoot) {
         return findComponent((AbstractDocumentComponent)getRootComponent(), pathFromRoot, 0);
     }
-    
+
     public AbstractDocumentComponent findComponent(AbstractDocumentComponent base, List<Element> pathFromRoot, int current) {
         if (pathFromRoot == null || pathFromRoot.size() <= current) {
             return null;
@@ -484,6 +531,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return null;
     }
     
+    @Override
     public DocumentComponent findComponent(int position) {
         if (getState() != State.VALID) {
             return getRootComponent();
@@ -507,16 +555,19 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         }
     }
     
+    @Override
     public String getXPathExpression(DocumentComponent component) {
         Element e = (Element) component.getPeer();
         return getAccess().getXPath(getDocument(), e);
     }
 
+    @Override
     public org.w3c.dom.Document getDocument() {
         return getAccess().getDocumentRoot();
     }
 
-    public DocumentModelAccess getAccess() { 
+    @Override
+    public synchronized DocumentModelAccess getAccess() {
         if (access == null) {
             access = getEffectiveAccessProvider().createModelAccess(this);
             if (! (access instanceof ReadOnlyAccess)) {

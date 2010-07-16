@@ -26,7 +26,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.xsd.nodes.SchemaComponentIEPTypeFinderVisitor;
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
@@ -329,17 +329,17 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         this.moveUpButton.setEnabled(false);
         this.moveDownButton.setEnabled(false);
         
-        Vector mSqlType = new Vector();
+        Vector<String> mSqlType = new Vector<String>();
         mSqlType.add("");
-        for(int i = 0; i < SharedConstants.SQL_TYPE_NAMES.length; i++)
+        for(int i = 0; i < SharedConstants.SQL_TYPE_NAMES.length; i++) {
             mSqlType.add(SharedConstants.SQL_TYPE_NAMES[i]);
-        
+        }
         mTextFieldANU = new JTextField();
-        mTextFieldANU.setDocument(JTextFieldFilter.newAlphaNumericUnderscore());
+        mTextFieldANU.setDocument(JTextFieldFilter.newAlphaNumericUnderscore(mTextFieldANU));
         mCellEditorANU = new DefaultCellEditor(mTextFieldANU);
         
         mTextFieldNumeric = new JTextField();
-        mTextFieldNumeric.setDocument(JTextFieldFilter.newNumeric());
+        mTextFieldNumeric.setDocument(JTextFieldFilter.newNumeric(mTextFieldNumeric));
         mCellEditorNumeric = new DefaultCellEditor(mTextFieldNumeric);
         
         mTextFieldAny = new JTextField();

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,15 +42,20 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
 import org.openide.util.NbBundle;
@@ -56,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Sergey Grinev
  */
-public class SemanticEntitiesProvider {
+public final class SemanticEntitiesProvider {
 
     private final List<SemanticEntity> list;
 
@@ -66,9 +74,11 @@ public class SemanticEntitiesProvider {
     
     private SemanticEntity getInactiveCode(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
+            @Override
              public String getName() {
                 return "inactive"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.getInactiveCodeBlocks(csmFile);
             }
@@ -77,9 +87,11 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntity getFields(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
+            @Override
             public String getName() {
                 return "class-fields"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -90,11 +102,14 @@ public class SemanticEntitiesProvider {
         };
     }
 
+    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     private SemanticEntity getFunctions(){
-        return new AbstractSemanticEntity() {
+        return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
+            @Override
             public String getName() {
                 return "functions-names"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -102,18 +117,38 @@ public class SemanticEntitiesProvider {
             public ReferenceCollector getCollector() {
                 return new ModelUtils.FunctionReferenceCollector();
             }
+
+            @Override
+            public AttributeSet getAttributes(CsmOffsetable obj) {
+                CsmReference ref = (CsmReference) obj;
+                CsmFunction fun = (CsmFunction) ref.getReferencedObject();
+                if (fun == null) {
+                    return color;
+                }
+                // check if we are in the function declaration
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS)) {
+                    return color;
+                } else {
+                    return funUsageColors;
+                }
+            }
+
             @Override
             public void updateFontColors(FontColorProvider provider) {
-                color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
+                super.updateFontColors(provider);
+                funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
             }
+            private AttributeSet funUsageColors;
         };
     }
 
     private SemanticEntity getMacros(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.DEFINED_MACRO) {
+            @Override
             public String getName() {
                 return "macros"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.getMacroBlocks(csmFile);
             }
@@ -135,22 +170,24 @@ public class SemanticEntitiesProvider {
                         throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
                 }
             }
-            protected AttributeSet sysMacroColors;
-            protected AttributeSet userMacroColors;
+            private AttributeSet sysMacroColors;
+            private AttributeSet userMacroColors;
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
-                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO); // NOI18N
+                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO);
+                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO);
             }
         };
     }
 
     private SemanticEntity getTypedefs(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.TYPEDEF) {
+            @Override
             public String getName() {
                 return "typedefs"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -166,9 +203,11 @@ public class SemanticEntitiesProvider {
             private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
                         EditorStyleConstants.Tooltip,
                         NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
+            @Override
             public String getName() {
                 return "unused-variables"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -221,6 +260,7 @@ public class SemanticEntitiesProvider {
             this.entity = entity;
         }
 
+        @Override
         public void updateFontColors(FontColorProvider provider) {
             assert entity != null;
             color = getFontColor(provider, entity);
@@ -231,14 +271,17 @@ public class SemanticEntitiesProvider {
             return attributes;
         }
 
+        @Override
         public AttributeSet getAttributes(CsmOffsetable obj) {
             return color;
         }
 
+        @Override
         public ReferenceCollector getCollector() {
             return null;
         }
 
+        @Override
         public boolean isEnabledByDefault() {
             return true;
         }

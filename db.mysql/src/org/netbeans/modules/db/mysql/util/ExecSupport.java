@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,10 +57,12 @@ import java.util.logging.Logger;
  * 
  * @author  ludo, David Van Couvering
  */
-import org.openide.windows.IOProvider;
+
+import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;
 import org.openide.windows.InputOutput;
+
 public class ExecSupport {
-    private static Logger LOGGER = Logger.getLogger(ExecSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ExecSupport.class.getName());
 
     private OutputCopier[] copyMakers;
 
@@ -69,22 +74,18 @@ public class ExecSupport {
      * Redirect the standard output and error streams of the child
      * process to an output window.
      */
-    public InputOutput displayProcessOutputs(final Process child, String displayName)
+    public InputOutput displayProcessOutputs(final Process child)
     throws IOException, InterruptedException {
         // Get a tab on the output window.  If this client has been
         // executed before, the same tab will be returned.
-        final InputOutput io = IOProvider.getDefault().getIO(displayName, false);
-        
+        InputOutput io = MySQLDatabaseServer.getOutput();
         try {
             io.getOut().reset();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // not a critical error, continue
-            LOGGER.log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, e.getLocalizedMessage(), e);
         }
-        
-        io.select();
-        
+
         copyMakers = new OutputCopier[3];
         
         (copyMakers[0] = new OutputCopier(

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -120,26 +123,28 @@ public class PhysicalView {
             return new Node[0];
         }
 
-        if (!projectDirGroup.getRootFolder().isValid()) {
-            //#150018
+        FileObject rootFolder = projectDirGroup.getRootFolder();
+        if (/* #150018 */!rootFolder.isValid() || /* #181323 */!rootFolder.isFolder()) {
             return new Node[0];
         }
         
-                    
         // Create the nodes
         ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder()))/*, projectDirGroup)*/);
+        nodesList.add(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)));
         
-        for( int i = 0; i < groups.length; i++ ) {
-            
-            if ( groups[i] == projectDirGroup ) {
+        for (SourceGroup group : groups) {
+            if (group == projectDirGroup) {
                 continue;
             }
-            if ("sharedlibraries".equals(groups[i].getName())) { //NOI18N
+            if ("sharedlibraries".equals(group.getName())) { //NOI18N
                 //HACK - ignore shared libs group in UI, it's only useful for version control commits.
                 continue;
             }
-            nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder()))/*, groups[i])*/);
+            rootFolder = group.getRootFolder();
+            if (!rootFolder.isValid() || !rootFolder.isFolder()) {
+                continue;
+            }
+            nodesList.add(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];

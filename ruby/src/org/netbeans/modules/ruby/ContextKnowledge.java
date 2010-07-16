@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,11 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.openide.util.Parameters;
 
 public final class ContextKnowledge {
@@ -56,6 +61,7 @@ public final class ContextKnowledge {
     private final int astOffset;
     private final int lexOffset;
     private final ParserResult parserResult;
+    private List<AstMethodElement> analyzedMethods;
 
     private boolean analyzed;
 
@@ -77,9 +83,35 @@ public final class ContextKnowledge {
         this.parserResult = parserResult;
     }
 
+    void setAnalyzedMethods(List<AstMethodElement> analyzedMethods) {
+        this.analyzedMethods = analyzedMethods;
+    }
+
+    /**
+     * Checks whether the type of the given method is already known and
+     * returns it if it is. Note that this works only for methods that were 
+     * already analyzed.
+     * 
+     * @param clazz
+     * @param methodName
+     * @return
+     */
+    RubyType getTypeForMethod(String clazz, String methodName) {
+        if (analyzedMethods == null || analyzedMethods.isEmpty()) {
+            return null;
+        }
+        for (AstMethodElement each : analyzedMethods) {
+            String in = each.getIn();
+            if (in != null && in.equals(clazz) && each.getName().equals(methodName)) {
+                return each.getType();
+            }
+        }
+        return null;
+    }
+
     RubyType getType(final String symbol) {
         RubyType type = typesForSymbols.get(symbol);
-        return type == null ? RubyType.createUnknown() : type;
+        return type == null ? RubyType.unknown() : type;
     }
 
     RubyType getType(final Node node) {
@@ -121,7 +153,7 @@ public final class ContextKnowledge {
     static RubyType getTypesForSymbol(
             final Map<String, RubyType> typeForSymbol, final String name) {
         RubyType type = typeForSymbol.get(name);
-        return type == null ? RubyType.createUnknown() : type;
+        return type == null ? RubyType.unknown() : type;
     }
 
     int getAstOffset() {

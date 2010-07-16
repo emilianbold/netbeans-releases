@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.openide.filesystems.FileObject;
 
 import java.util.logging.Logger;
@@ -79,11 +82,22 @@ public abstract class ClasspathInfoAccessor {
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
-    
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
-    
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                          boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager);
+        
+    public abstract ClasspathInfo create (ClassPath bootPath,
+            ClassPath compilePath,
+            ClassPath sourcePath,
+            JavaFileFilterImplementation filter,
+            boolean backgroundCompilation,
+            boolean ignoreExcludes,
+            boolean hasMemoryFileManager,
+            boolean useModifiedFiles);
+
+    public abstract ClasspathInfo create (FileObject fo,
+            JavaFileFilterImplementation filter,
+            boolean backgroundCompilation,
+            boolean ignoreExcludes,
+            boolean hasMemoryFileManager,
+            boolean useModifiedFiles);
     
     /**
      * Registers virtual java source into the memory {@link JavacFileManager}

@@ -20,12 +20,15 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
+import java.awt.Cursor;
 import java.awt.dnd.*;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * SmartTextField.java
@@ -74,6 +77,28 @@ public class SmartTextField extends JTextField {
             int pos = viewToModel(e.getLocation());
             SmartTextField.this.setCaretPosition(pos);
             e.acceptDrag(mAcceptableActions);
+//            //if the dragging over an existing text
+//            //then we do not allow drop to happen unless previous position
+//            //is a comma or start of the text (0 position) or at then end of 
+//            //existing text
+//            //
+//            
+//            String existingText = getText();
+//            if(existingText != null) {
+//                if(pos > 0 && pos < existingText.length()) {
+//                    //get char before pos and see if it is comma
+//                    int previousCommaPos = findPreviousCommaPosition(pos);
+//                    int nextCommaPos = findNextCommaPosition(pos);
+//                    if(previousCommaPos != -1 && nextCommaPos == -1) {
+//                        e.acceptDrag(mAcceptableActions);
+//                    } else {
+//                        e.rejectDrag();
+//                        
+//                    }
+//                }
+//            } else {
+//                e.acceptDrag(mAcceptableActions);
+//            }
         }
         
         public void drop(DropTargetDropEvent e) {
@@ -97,8 +122,51 @@ public class SmartTextField extends JTextField {
                 } 
                 if(!msg.equals("")) {
                     int pos = viewToModel(e.getLocation());
-                    getDocument().insertString(pos, msg, null);
-                    SmartTextField.this.setCaretPosition(pos + msg.length());
+                    
+                    StringBuffer textToInsert = new StringBuffer();
+                    //if there is an existing string
+                    //then we append comma before inserting this text
+                    String existingText = getText();
+                    if(existingText != null && !existingText.trim().equals("")) {
+                        if(pos > 0 && pos < existingText.length()) {
+                            int previousCommaPos = findPreviousCommaPosition(pos);
+                            int nextCommaPos = findNextCommaPosition(pos);
+                            
+                            if(previousCommaPos != -1) {
+                                textToInsert.append(msg);
+                                if(nextCommaPos == -1) {
+                                    textToInsert.append(",");
+                                }
+                            }else if(nextCommaPos != -1) {
+                                
+                                if(previousCommaPos == -1) {
+                                    textToInsert.append(",");
+                                }
+                                
+                                textToInsert.append(msg);
+                            } else {
+                                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(SmartTextField.class, "SmartTextField_WrongDropLocation"), NotifyDescriptor.INFORMATION_MESSAGE);
+                                DialogDisplayer.getDefault().notify(nd);
+                                e.rejectDrop();
+                            }
+                            
+                        } else if (pos == 0){
+                            textToInsert.append(msg);
+                            textToInsert.append(",");
+                        } else {
+                            textToInsert.append(",");
+                            textToInsert.append(msg);
+                        }
+                            
+                        
+                        
+                        
+                        
+                    } else {
+                        textToInsert.append(msg);
+                    }
+                    getDocument().insertString(pos, textToInsert.toString(), null);
+                    SmartTextField.this.setCaretPosition(pos + textToInsert.toString().length());
                     e.acceptDrop(mAcceptableActions);
                     e.dropComplete(true);
                 } else {
@@ -122,6 +190,46 @@ public class SmartTextField extends JTextField {
         
         private boolean isDragAcceptable(DropTargetDragEvent e) {
             return e.isDataFlavorSupported(AttributeInfoDataFlavor.ATTRIBUTE_INFO_FLAVOR);
+        }
+        
+        private int findPreviousCommaPosition(int pos) {
+//          get char before pos (exclude white space) and see if it is comma
+            int previousCommaPos = pos -1;
+            String existingText = getText();
+            
+            while(previousCommaPos != 0) {
+                char prevChar =existingText.charAt(previousCommaPos);
+                if(prevChar == ',') {
+                    break;
+                } else if (prevChar == ' ') {
+                    previousCommaPos = previousCommaPos -1;
+                } else {
+                    previousCommaPos = -1;
+                    break;
+                }
+            }
+            
+            return previousCommaPos;
+        }
+        
+        private int findNextCommaPosition(int pos) {
+//          get char after pos (exclude white space) and see if it is comma
+            int nextCommaPos = pos;
+            String existingText = getText();
+            
+            while(nextCommaPos != 0) {
+                char prevChar =existingText.charAt(nextCommaPos);
+                if(prevChar == ',') {
+                     break;
+                } else if (prevChar == ' ') {
+                    nextCommaPos = nextCommaPos + 1;
+                } else {
+                    nextCommaPos = -1;
+                    break;
+                }
+            }
+            
+            return nextCommaPos;
         }
     }
     

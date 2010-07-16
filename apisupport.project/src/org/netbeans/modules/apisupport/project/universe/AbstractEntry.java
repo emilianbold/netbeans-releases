@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -92,9 +97,9 @@ abstract class AbstractEntry implements ModuleEntry {
         return getBundleInfo().getLongDescription();
     }
     
-    public int compareTo(Object o) {
-        int retval = getLocalizedName().compareTo(((ModuleEntry) o).getLocalizedName()); 
-        return (retval != 0) ? retval : getCodeNameBase().compareTo(((ModuleEntry) o).getCodeNameBase());
+    public int compareTo(ModuleEntry o) {
+        int retval = getLocalizedName().compareTo(o.getLocalizedName()); 
+        return (retval != 0) ? retval : getCodeNameBase().compareTo(o.getCodeNameBase());
     }
     
     public synchronized Set<String> getPublicClassNames() {
@@ -105,7 +110,8 @@ abstract class AbstractEntry implements ModuleEntry {
                 for (int i = 0; i < cpext.length; i++) {
                     File ext = new File(cpext[i]);
                     if (!ext.isFile()) {
-                        Util.err.log(ErrorManager.WARNING, "Could not find Class-Path extension " + ext + " of " + this);
+                        Logger.getLogger(AbstractEntry.class.getName()).log(Level.FINE,
+                                "Could not find Class-Path extension {0} of {1}", new Object[] {ext, this});
                         continue;
                     }
                     scanJarForPublicClassNames(publicClassNames, ext);
@@ -189,7 +195,12 @@ abstract class AbstractEntry implements ModuleEntry {
 
     /** Checks whether a .class file is marked as public or not. */
     private static boolean isPublic(JarFile jf, JarEntry entry) throws IOException {
-        InputStream is = jf.getInputStream(entry);
+        InputStream is;
+        try {
+            is = jf.getInputStream(entry);
+        } catch (SecurityException x) {
+            throw new IOException(x);
+        }
         try {
             DataInput input = new DataInputStream(is);
             skip(input, 8); // magic, minor_version, major_version

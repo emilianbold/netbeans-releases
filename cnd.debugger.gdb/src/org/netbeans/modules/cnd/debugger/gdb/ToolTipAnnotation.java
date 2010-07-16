@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,14 +45,19 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -58,7 +66,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.util.RequestProcessor;
 
 /*
  * ToolTipAnnotation.java
@@ -71,6 +78,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private Part lp;
     private EditorCookie ec;
     
+    @Override
     public String getShortDescription() {
         GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
@@ -92,15 +100,16 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         
         this.lp = lp;
         this.ec = ec;
-        RequestProcessor.getDefault ().post (this);
+        GdbUtils.getGdbRequestProcessor().post(this);
         return null;
     }
         
+    @Override
     public void run() {
         if (lp == null || ec == null) {
             return;
         }
-        StyledDocument doc;
+        final StyledDocument doc;
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
@@ -112,6 +121,29 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         final int offset = NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn();
+
+        // do not evaluate comments etc. (see 166207)
+        final AtomicBoolean skip = new AtomicBoolean(false);
+
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
+                String category = token.id().primaryCategory();
+                if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
+                        CppTokenId.COMMENT_CATEGORY.equals(category) ||
+                        CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
+                        CppTokenId.STRING_CATEGORY.equals(category) ||
+                        CppTokenId.NUMBER_CATEGORY.equals(category) ||
+                        CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                    skip.set(true);
+                }
+            }
+        });
+
+        if (skip.get()) {
+            return;
+        }
         
         String expression = getIdentifier(doc, ep, offset);
         
@@ -143,6 +175,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         firePropertyChange(PROP_SHORT_DESCRIPTION, null, res);
     }
 
+    @Override
     public String getAnnotationType () {
         return null; // Currently return null annotation type
     }

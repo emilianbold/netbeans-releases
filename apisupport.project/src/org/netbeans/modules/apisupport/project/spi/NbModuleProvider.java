@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.apisupport.project.spi;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 
@@ -76,7 +80,7 @@ public interface NbModuleProvider {
      * Returns the specification version of the module
      * @return specification version of the module
      */ 
-    String getSpecVersion();
+    @CheckForNull String getSpecVersion();
     
     /**
      * Returns the codenamebase of the module
@@ -130,10 +134,16 @@ public interface NbModuleProvider {
     /**
      * checks the declared version of the given dependency
      * @param codenamebase 
-     * @return
+     * @return a known version, or null if unknown
      * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
+
+    /**
+     * Checks whether the project currently has a (direct) dependency on the given module.
+     * @since 1.37
+     */
+    boolean hasDependency(String codeNameBase) throws IOException;
     
     /**
      * get the NetBeans platform for the module
@@ -149,4 +159,17 @@ public interface NbModuleProvider {
      * @return location of built module JAR
      */
     File getModuleJarLocation();
+
+    /**
+     * May get invoked before accessing some other methods from this interface to
+     * initialize module's context. The method must be invoked from EDT so it's safe
+     * to e.g. show modal dialogs and ask for user's input.
+     * @param featureDisplayName Display name of the feature that requires platform
+     * application context.
+     * @return True if module's context is ready, false if there was any problem
+     * setting up module's context.
+     * @throws IllegalStateException If not invoked from EDT
+     * @since 1.38
+     */
+    boolean prepareContext( String featureDisplayName ) throws IllegalStateException;
 }

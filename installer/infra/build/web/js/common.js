@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -71,7 +74,7 @@ BUNDLE_IDS [6] = "all";
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
-var OMNITURE_CODE_JS = "http://www.netbeans.org/images_www/js/s_code_remote.js";
+var OMNITURE_CODE_JS = "http://netbeans.org/images_www/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {
@@ -232,6 +235,14 @@ function other_webpage_langs_available() {
     return false;
 }
 
+function page_languages_sort_function(a, b){
+    if (a.webpagename && b.webpagename) { 
+       return a.webpagename > b.webpagename ? 1 : (a.webpagename ==  b.webpagename ? 0 : -1);
+    } else {
+       return a.suffix > b.suffix ? 1 : (a.suffix ==  b.suffix ? 0 : -1);
+    }
+}
+
 function write_page_languages() {    
     var locale_suffix = get_language_suffix();
 
@@ -254,15 +265,17 @@ function write_page_languages() {
         var regexp =  new RegExp(PAGELANG_SEP + "[a-zA-Z]+(_[a-zA-Z]+){0,2}","g");
 	get_request = get_request.replace(regexp, PAGELANG_SEP);
     }
-    for(var i=0;i<LANGUAGES.length;i++) {
-	if(LANGUAGES[i].webpagename && locale_suffix!=LANGUAGES[i].suffix) {
-            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGES[i].suffix) + '">' + LANGUAGES[i].webpagename + '</a></li>');
+    var languages_sorted = LANGUAGES.slice().sort(page_languages_sort_function);
+
+    for(var i=0;i<languages_sorted.length;i++) {
+	if(languages_sorted[i].webpagename && locale_suffix!=languages_sorted[i].suffix) {
+            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + languages_sorted[i].suffix) + '">' + languages_sorted[i].webpagename + '</a></li>');
         }
     }
 }
 
 function startList() {
-    // source: http://www.netbeans.org/branding/scripts/lang-pulldown.js
+    // source: http://netbeans.org/branding/scripts/lang-pulldown.js
     if (document.all&&document.getElementById) {
         navRoot = document.getElementById("nav");
         if (navRoot!=null) { //if the language panel is active

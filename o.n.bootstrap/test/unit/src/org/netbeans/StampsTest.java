@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,10 +51,8 @@ import java.nio.MappedByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -64,11 +65,6 @@ public class StampsTest extends NbTestCase {
     private File install;
     
     
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(StampsTest.class);
-    }
-    
     public StampsTest(String testName) {
         super(testName);
     }            
@@ -78,8 +74,8 @@ public class StampsTest extends NbTestCase {
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
-        ide = new File(install, "ide8");
+        platform = new File(install, "platform");
+        ide = new File(install, "ide");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());
@@ -107,6 +103,67 @@ public class StampsTest extends NbTestCase {
     
     public void testEmpty() {
         Stamps.getModulesJARs().waitFor(false);
+    }
+
+    public void testStampsInvalidatedWhenConfigFileDeleted() throws Exception {
+        File f = new File(new File(new File(userdir, "config"), "Modules"), "org-some.xml");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        assertTrue("File created", f.canRead());
+        File f1 = new File(new File(new File(userdir, "config"), "Modules"), "org-some-else.xml");
+        f1.getParentFile().mkdirs();
+        f1.createNewFile();
+        assertTrue("File created", f1.canRead());
+        Thread.sleep(100);
+        
+        Stamps.main("reset");
+
+        Thread.sleep(100);
+        final Stamps s = Stamps.getModulesJARs();
+
+
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        class Up implements Stamps.Updater {
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.writeInt(1);
+                os.writeInt(2);
+                os.writeShort(2);
+            }
+
+            public void cacheReady() {
+                assertNotNull("stream can be obtained", s.asStream("mycache.dat"));
+            }
+
+        }
+        Up updater = new Up();
+
+        s.scheduleSave(updater, "mycache.dat", false);
+
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        s.waitFor(false);
+
+        ByteBuffer bb;
+        InputStream is;
+        assertNotNull(bb = s.asByteBuffer("mycache.dat"));
+        assertNotNull(is = s.asStream("mycache.dat"));
+
+        assertEquals("10 bytes", 10, bb.remaining());
+        assertEquals("10 bytes stream", 10, is.available());
+        is.close();
+        bb.clear();
+
+        f.delete();
+        assertFalse("File disappered", f.exists());
+        Stamps.main("clear");
+        Stamps p = Stamps.getModulesJARs();
+
+        assertNull(p.asByteBuffer("mycache.dat"));
+        assertNull(p.asStream("mycache.dat"));
     }
 
     public void testGenerateTimeStamps() {

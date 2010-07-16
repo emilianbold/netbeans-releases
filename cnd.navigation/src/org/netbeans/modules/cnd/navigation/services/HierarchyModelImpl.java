@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,11 @@
 
 package org.netbeans.modules.cnd.navigation.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
@@ -52,11 +56,11 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 
 /**
  *
@@ -64,35 +68,73 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  */
 /*package-local*/ class HierarchyModelImpl implements HierarchyModel {
     private Map<CsmClass,Set<CsmClass>> myMap;
-    private Action[] actions;
     private Action close;
+    private final Action[] actions;
+    private final boolean subDirection;
+    private final boolean plain;
+    private final boolean recursive;
+    private final CsmClass startClass;
        
     /** Creates a new instance of HierarchyModel */
     public HierarchyModelImpl(CsmClass cls, Action[] actions, boolean subDirection, boolean plain, boolean recursive) {
         this.actions = actions;
-        if (subDirection) {
-            myMap = buildSubHierarchy(cls);
-        } else {
+        this.subDirection = subDirection;
+        this.plain = plain;
+        this.recursive = recursive;
+        startClass = cls;
+        if (!subDirection) {
             myMap = buildSuperHierarchy(cls);
-        }
-        if (!recursive) {
-            Set<CsmClass> result = myMap.get(cls);
-            if (result == null){
-                result = new HashSet<CsmClass>();
+            if (!recursive) {
+                Set<CsmClass> result = myMap.get(cls);
+                if (result == null){
+                    result = new HashSet<CsmClass>();
+                }
+                myMap = new HashMap<CsmClass,Set<CsmClass>>();
+                myMap.put(cls,result);
             }
-            myMap = new HashMap<CsmClass,Set<CsmClass>>();
-            myMap.put(cls,result);
-        }
-        if (plain) {
-            Set<CsmClass> result = new HashSet<CsmClass>();
-            gatherList(cls, result, myMap);
-            myMap = new HashMap<CsmClass,Set<CsmClass>>();
-            myMap.put(cls,result);
+            if (plain) {
+                Set<CsmClass> result = new HashSet<CsmClass>();
+                gatherList(cls, result, myMap);
+                myMap = new HashMap<CsmClass,Set<CsmClass>>();
+                myMap.put(cls,result);
+            }
         }
     }
     
-    public Map<CsmClass,Set<CsmClass>> getModel(){
-        return myMap;
+    @Override
+    public Collection<CsmClass> getHierarchy(CsmClass cls) {
+        if (subDirection) {
+            Collection<CsmReference> subRefs = Collections.<CsmReference>emptyList();
+            if (plain && recursive) {
+                if (startClass.equals(cls)) {
+                    subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
+                }
+            } else if (!plain && recursive) {
+                subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, true);
+            } else if (plain && !recursive) {
+                if (startClass.equals(cls)) {
+                    subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, true);
+                }
+            } else if (!plain && !recursive) {
+                if (startClass.equals(cls)) {
+                    subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, true);
+                }
+            }
+            if (!subRefs.isEmpty()) {
+                Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
+                for (CsmReference ref : subRefs) {
+                    CsmObject obj = ref.getReferencedObject();
+                    if (obj instanceof CsmClass) {
+                        subClasses.add((CsmClass) obj);
+                    }
+                }
+                return subClasses;
+            } else {
+                return Collections.<CsmClass>emptyList();
+            }
+        } else {
+            return myMap.get(cls);
+        }
     }
 
     private void gatherList(CsmClass cls, Set<CsmClass> result, Map<CsmClass,Set<CsmClass>> map){
@@ -144,55 +186,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         }
     }
     
-    private Map<CsmClass,Set<CsmClass>> buildSubHierarchy(CsmClass cls){
-        HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
-        CsmProject prj = cls.getContainingFile().getProject();
-        buildSubHierarchy(prj.getGlobalNamespace(), aMap);
-        return aMap;
-    }
-    
-    private void buildSubHierarchy(CsmNamespace ns, Map<CsmClass,Set<CsmClass>> map){
-        for(Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();){
-            buildSubHierarchy((CsmNamespace)it.next(), map);
-        }
-        for(Iterator it = ns.getDeclarations().iterator(); it.hasNext();){
-            CsmDeclaration decl = (CsmDeclaration)it.next();
-            if (CsmKindUtilities.isClass(decl)){
-                buildSubHierarchy(map, (CsmClass)decl);
-            }
-        }
-    }
-
-    private void buildSubHierarchy(final Map<CsmClass, Set<CsmClass>> map, final CsmClass cls) {
-        Collection<CsmInheritance> list = cls.getBaseClasses();
-        if (list != null && list.size() >0){
-            for(CsmInheritance inh : list){
-                CsmClass c = getClassDeclaration(inh);
-                if (c != null) {
-                    Set<CsmClass> back = map.get(c);
-                    if (back == null){
-                        back = new HashSet<CsmClass>();
-                        map.put(c,back);
-                    }
-                    back.add(cls);
-                }
-            }
-        }
-        for(CsmMember member : cls.getMembers()){
-            if (CsmKindUtilities.isClass(member)){
-                buildSubHierarchy(map, (CsmClass)member);
-            }
-        }
-    }
-
+    @Override
     public Action[] getDefaultActions() {
         return actions;
     }
 
+    @Override
     public Action getCloseWindowAction() {
         return close;
     }
 
+    @Override
     public void setCloseWindowAction(Action close) {
         this.close = close;
     }

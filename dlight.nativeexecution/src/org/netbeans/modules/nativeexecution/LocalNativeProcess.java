@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,50 +43,48 @@ package org.netbeans.modules.nativeexecution;
 
 import com.sun.jna.Pointer;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.SequenceInputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
-    private InputStream processOutput = null;
-    private OutputStream processInput = null;
-    private InputStream processError = null;
+    private PipedInputStream errorPipedInputStream = null;
+    private PipedOutputStream errorPipedOutputStream = null;
+    private boolean win1073741515added = false;
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
     }
 
+    @Override
     protected void create() throws Throwable {
-        boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-
-        try {
-            if (isWindows) {
-                createWin();
-            } else {
-                createNonWin();
-            }
-        } catch (Throwable ex) {
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-            processOutput = new ByteArrayInputStream(new byte[0]);
-            processError = new ByteArrayInputStream(msg.getBytes());
-            processInput = new ByteArrayOutputStream();
-            throw ex;
+        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+            createWin();
+        } else {
+            createNonWin();
         }
     }
 
@@ -93,8 +94,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         if (info.isUnbuffer()) {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
-
-        env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
@@ -115,28 +114,31 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         process = pb.start();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        OutputStream toProcessStream = process.getOutputStream();
+        InputStream fromProcessStream = process.getInputStream();
 
-        processInput.write("echo $$\n".getBytes()); // NOI18N
-        processInput.flush();
+        setErrorStream(process.getErrorStream());
+        setInputStream(fromProcessStream);
+        setOutputStream(toProcessStream);
 
-        EnvWriter ew = new EnvWriter(processInput);
+        toProcessStream.write("echo $$\n".getBytes()); // NOI18N
+        toProcessStream.flush();
+
+        EnvWriter ew = new EnvWriter(toProcessStream, false);
         ew.write(env);
 
         if (info.getInitialSuspend()) {
-            processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
-            processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
-            processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+            toProcessStream.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+            toProcessStream.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+            toProcessStream.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
-        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
-        processInput.flush();
+        toProcessStream.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        toProcessStream.flush();
 
         creation_ts = System.nanoTime();
 
-        readPID(processOutput);
+        readPID(fromProcessStream);
     }
 
     private void createWin() throws IOException, InterruptedException {
@@ -149,19 +151,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
 
         final MacroMap jointEnv = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
-        jointEnv.putAll(pb.environment());
         jointEnv.putAll(info.getEnvironment());
 
         if (isInterrupted()) {
             throw new InterruptedException();
-        }
-
-        // In case we want to run application that was compiled with cygwin
-        // and require cygwin1.dll to run - we need the path to the dll in the
-        // PATH variable..
-
-        if (hostInfo.getShell() != null) {
-            jointEnv.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
         }
 
         if (info.isUnbuffer()) {
@@ -196,9 +189,12 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        errorPipedOutputStream = new PipedOutputStream();
+        errorPipedInputStream = new PipedInputStream(errorPipedOutputStream);
+
+        setErrorStream(new SequenceInputStream(process.getErrorStream(), errorPipedInputStream));
+        setInputStream(process.getInputStream());
+        setOutputStream(process.getOutputStream());
 
         int newPid = 12345;
 
@@ -223,74 +219,96 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public OutputStream getOutputStream() {
-        return processInput;
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
-    }
-
-    @Override
     public final int waitResult() throws InterruptedException {
         if (process == null) {
             return -1;
         }
 
-        /*
-         * Why not just process.waitResult()...
-         * This is to avoid a problem with short-running tasks, when
-         * this Thread (that waits for process' termination) doesn't see
-         * that it has been interrupted....
-         * TODO: describe situation in details...
-         */
+        try {
+            int exitcode = process.waitFor();
 
-        int result = -1;
+            /*
+             * Bug 179555 - Qt application fails to run in case of default qt sdk installation
+             */
 
-//        // Get lock on process not to take it on every itteration
-//        // (in process.exitValue())
-//
-//        synchronized (process) {
-        // Why this synchronized is commented-out..
-        // This is because ProcessReaper is also synchronized on this...
-        // And it should be able to react on process' termination....
+            if (exitcode == -1073741515 && Utilities.isWindows()) {
+                // This means Initialization error. May be the reason is that no required dll found
+                // Several threads may be here.
+                // Must be sure that message is added only once.
+                synchronized (this) {
+                    if (!win1073741515added && errorPipedOutputStream != null) {
+                        StringBuilder cmd = new StringBuilder();
+                        Iterator<String> iterator = info.getCommand().iterator();
+                        String exec;
 
-        while (true) {
-            // This sleep is to avoid lost interrupted exception...
-            try {
-                Thread.sleep(200);
-                // 200 - to make this check not so often...
-                // actually, to avoid the problem, 1 is OK.
-            } catch (InterruptedException ex) {
-                throw ex;
+                        if (info.isPtyMode()) {
+                            exec = iterator.next();
+                            String ptyUtilityPath = null;
+
+                            try {
+                                ptyUtilityPath = PtyUtility.getInstance().getPath(ExecutionEnvironmentFactory.getLocal());
+                            } catch (IOException ex) {
+                            }
+
+                            if (ptyUtilityPath != null && exec.equals(ptyUtilityPath)) {
+                                exec = iterator.next(); // quoted executable
+                                exec = exec.substring(1, exec.length() - 1); // remove quotes before converting
+                                // remove quotes before converting
+                                exec = WindowsSupport.getInstance().convertToWindowsPath(exec);
+                            }
+                        } else {
+                            exec = iterator.next();
+                        }
+
+                        if (exec.contains(" ")) { // NOI18N
+                            cmd.append('"').append(exec).append('"').append(' '); // NOI18N
+                        } else {
+                            cmd.append(exec).append(' ');
+                        }
+
+                        while (iterator.hasNext()) {
+                            cmd.append(iterator.next()).append(' ');
+                        }
+
+                        String errorMsg = loc("LocalNativeProcess.windowsProcessStartFailed.1073741515.text", cmd.toString()); // NOI18N
+                        if (info.isPtyMode()) {
+                            errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
+                        }
+
+                        try {
+                            Charset charset = Charset.isSupported("UTF-8") // NOI18N
+                                    ? Charset.forName("UTF-8") // NOI18N
+                                    : Charset.defaultCharset();
+                            errorPipedOutputStream.write(errorMsg.getBytes(charset));
+                            errorPipedOutputStream.flush();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
+                        win1073741515added = true;
+                    }
+                }
             }
-
+            return exitcode;
+        } finally {
             try {
-                result = process.exitValue();
-            } catch (IllegalThreadStateException ex) {
-                continue;
+                if (errorPipedOutputStream != null) {
+                    errorPipedOutputStream.close();
+                }
+            } catch (IOException ex) {
+                // Exceptions.printStackTrace(ex);
             }
-
-            break;
         }
-//        }
-
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
-        }
-
-        return result;
     }
 
     @Override
-    protected final synchronized void cancel() {
-        ProcessUtils.destroy(this);
+    protected int destroyImpl() {
+        if (process != null) {
+            process.destroy();
+            return 1;
+        }
+
+        return 0;
     }
 
     private static String loc(String key, String... params) {

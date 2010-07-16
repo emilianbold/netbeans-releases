@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -161,11 +166,18 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             }
             DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
             DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
-            if (dhc.getValue() == oldDhc.getValue()) {
+            if (dhc.getExecutionEnvironment() == oldDhc.getExecutionEnvironment()) {
                 return; //true;
             }
             mconf.setDevelopmentHost(dhc);
-            mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+            // try to use the same compiler set
+            CompilerSet2Configuration oldCS = mconf.getCompilerSet();
+            String oldCSName = oldCS.getName();
+            CompilerSetManager csm = CompilerSetManager.get(dhc.getExecutionEnvironment());
+            CompilerSet newCS = csm.getCompilerSet(oldCSName);
+            // if not found => use default from new host
+            newCS = (newCS == null) ? csm.getDefaultCompilerSet() : newCS;
+            mconf.setCompilerSet(new CompilerSet2Configuration(dhc, newCS));
 //                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
 //                    platformConfiguration.propertyChange(new PropertyChangeEvent(
 //                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
@@ -176,7 +188,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             npp.propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
-            configurationDescriptor.setModified(true);
+            configurationDescriptor.setModified();
         }
         return; // false;
     }

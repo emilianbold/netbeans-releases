@@ -27,24 +27,17 @@
         skel="tools/skeleton.netbeans"/>
     </target>-->
     
+        
+    <target name="gen-astparser">
     <taskdef name="javacup"
         classname="java_cup.anttask.CUPTask"
         classpath="${nb_all}/libs.javacup/external/java-cup-11a.jar" />
-        
-    <target name="gen-astparser">
         <javacup srcfile="tools/ASTPHP5Parser.cup"
         destdir="src"
         parser="ASTPHP5Parser"
         symbols="ASTPHP5Symbols"
         interface="on"
        />
-    </target>
-
-    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
-        <taskdef name="csljar" classname="org.netbeans.modules.csl.CslJar" classpath="${nb_all}/csl.api/anttask/build/cslanttask.jar:${nb_all}/nbbuild/nbantext.jar"/>
-        <csljar jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}" stamp="${cluster}/.lastModified">
-            <fileset dir="${build.classes.dir}"/>
-        </csljar>
     </target>
 
 </project>

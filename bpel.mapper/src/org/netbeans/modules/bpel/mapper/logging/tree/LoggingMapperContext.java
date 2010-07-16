@@ -18,10 +18,7 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.tree;
 
-import javax.swing.Icon;
-import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.mapper.tree.BpelMapperContext;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
 /**
  *

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,11 +45,11 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -57,7 +60,9 @@ import org.netbeans.modules.ant.freeform.ui.View;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
@@ -66,6 +71,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -183,25 +189,34 @@ public final class FreeformProject implements Project {
             }
         });
     }
-    
-    private final class Info implements ProjectInformation {
+
+    //Todo: replace with api.java.common #110886
+    private final class Info implements ProjectInformation, AntProjectListener {
+
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private volatile String nameCache;
         
-        public Info() {}
+        @SuppressWarnings("LeakingThisInConstructor")
+        public Info() {
+            helper.addAntProjectListener(this);
+        }
         
         public String getName() {
             return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
+            String res = nameCache;
+            if (res != null) {
+                return res;
+            }
             return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
                 public String run() {
                     Element genldata = getPrimaryConfigurationData();
-                    Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
-                    if (nameEl == null) {
-                        // Corrupt. Cf. #48267 (cause unknown).
-                        return "???"; // NOI18N
-                    }
-                    return Util.findText(nameEl);
+                    Element nameEl = XMLUtil.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
+                    final String name = nameEl == null ? "???" : XMLUtil.findText(nameEl); //NOI18N  Corrupt. Cf. #48267 (cause unknown).
+                    nameCache = name;
+                    return name;
                 }
             });
         }
@@ -219,16 +234,22 @@ public final class FreeformProject implements Project {
         }
         
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            // XXX
+            pcs.addPropertyChangeListener(listener);
         }
         
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            // XXX
+            pcs.removePropertyChangeListener(listener);
         }
+
+
+        public @Override void configurationXmlChanged(AntProjectEvent ev) {
+            nameCache = null;
+            pcs.firePropertyChange(null, null, null);
+        }
+
+        public @Override void propertiesChanged(AntProjectEvent ev) {}
         
     }
-    
- 
     
     /**
      * Utility method to decide if the project actually uses Ant scripting.

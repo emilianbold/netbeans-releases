@@ -22,18 +22,13 @@ package org.netbeans.modules.iep.editor.designer;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.nwoods.jgo.JGoCopyEnvironment;
 import com.nwoods.jgo.JGoDocument;
-import com.nwoods.jgo.JGoDocumentChangedEdit;
 import com.nwoods.jgo.JGoDocumentEvent;
 import com.nwoods.jgo.JGoLayer;
 import com.nwoods.jgo.JGoLink;
@@ -43,16 +38,14 @@ import com.nwoods.jgo.JGoObjectSimpleCollection;
 import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoUndoManager;
 
-import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
 
 public class PdModel extends JGoDocument implements GuiConstants{
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(PdModel.class.getName());
@@ -81,8 +74,23 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
    
-    
-   
+    public EntityNode findNodeByComponent(IEPComponent component)  {
+        JGoListPosition pos = getFirstObjectPos();
+        while (pos != null) {
+            JGoObject obj = getObjectAtPos(pos);
+            // only consider top-level objects
+            pos = getNextObjectPosAtTop(pos);
+            
+            if (obj instanceof EntityNode) {
+                EntityNode node = (EntityNode)obj;
+                if (node.getModelComponent() != null && node.getModelComponent().equals(component)) {
+                    return node;
+                }
+            }
+        }
+        return null;
+    }
+     
     public EntityNode findNodeById(String id)  {
         // for larger documents, it would be more efficient to keep a
         // hash table mapping id to ActivityNode
@@ -139,6 +147,38 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
    
+    public boolean isLinkExists(JGoPort from, JGoPort to) {
+        boolean result = false;
+        
+        JGoObject fromObj = from.getParentNode();
+        JGoObject toObj = to.getParentNode();
+        if (!(fromObj instanceof EntityNode) || !(toObj instanceof EntityNode)) {
+            return result;
+        }
+        
+        EntityNode fromNode = (EntityNode)fromObj;
+        EntityNode toNode = (EntityNode)toObj;
+        
+        OperatorComponent fromComp = (OperatorComponent) fromNode.getModelComponent();
+        OperatorComponent toComp = (OperatorComponent) toNode.getModelComponent();
+        
+        if(fromComp == null || toComp == null) {
+            return result;
+        }
+        
+        PlanComponent planComp = mModel.getPlanComponent();
+        LinkComponentContainer linkContainer = planComp.getLinkComponentContainer();
+        
+        if(linkContainer != null) {
+            LinkComponent link = linkContainer.findLink(fromComp, toComp);
+            if(link != null) {
+                result = true;
+            }
+        }
+
+        return result;
+        
+    }
     
     public void newModelLink(JGoPort from, JGoPort to) {
         LinkComponent linkComp = mModel.getFactory().createLink(mModel);
@@ -330,16 +370,16 @@ public class PdModel extends JGoDocument implements GuiConstants{
         LinkComponentContainer lcContainer = mModel.getPlanComponent().getLinkComponentContainer();
         
         JGoCopyEnvironment map = createDefaultCopyEnvironment();
-        List nodeList = new ArrayList();
-        List linkList = new ArrayList();
+        List<EntityNode> nodeList = new ArrayList<EntityNode>();
+        List<Link> linkList = new ArrayList<Link>();
         JGoListPosition pos = coll.getFirstObjectPos();
         while (pos != null) {
             JGoObject obj = coll.getObjectAtPos(pos);
             obj = obj.getDraggingObject();
             if (obj instanceof EntityNode) {
-                nodeList.add(obj);
+                nodeList.add((EntityNode)obj);
             } else if (obj instanceof Link) {
-                linkList.add(obj);
+                linkList.add((Link)obj);
             }
             pos = coll.getNextObjectPosAtTop(pos);
         }
@@ -348,10 +388,10 @@ public class PdModel extends JGoDocument implements GuiConstants{
         
         // copy all EntityNodes and position them
         for (int i = 0, I = nodeList.size(); i < I; i++) {
-            EntityNode node = (EntityNode)nodeList.get(i);
+            EntityNode node = nodeList.get(i);
             OperatorComponent operator = node.getModelComponent();
             OperatorComponent newOperator = node.copyObjectAndResetContextProperties(mModel);
-            oldOperatorIdToNewOperatorMap.put(operator.getId(), newOperator);
+            oldOperatorIdToNewOperatorMap.put(operator.getString(PROP_ID), newOperator);
             opContainer.addOperatorComponent(newOperator);
             positionNewObj(newOperator, node, offset);
             //positionNewObj(newNode, node, offset);
@@ -359,7 +399,7 @@ public class PdModel extends JGoDocument implements GuiConstants{
         
         // copy all qualified Links and position them
         for (int i = 0, I = linkList.size(); i < I; i++) {
-            Link link = (Link)linkList.get(i);
+            Link link = linkList.get(i);
             if (!nodeList.contains(link.getFromNode()) || !nodeList.contains(link.getToNode())) {
                 continue;
             }
@@ -383,8 +423,8 @@ public class PdModel extends JGoDocument implements GuiConstants{
         Point location = oldObj.getLocation();
         
         Point newLocation = new Point(location.x + offset.x, + location.y + offset.y);
-        newOperator.setX(newLocation.x);
-        newOperator.setY(newLocation.y);
+        newOperator.setInt(PROP_X, newLocation.x);
+        newOperator.setInt(PROP_Y, newLocation.y);
     }
     
     private void positionNewObj(JGoObject newObj, JGoObject oldObj, Point offset) {

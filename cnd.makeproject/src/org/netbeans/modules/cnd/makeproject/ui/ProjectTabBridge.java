@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,10 +57,10 @@ public class ProjectTabBridge {
     private static ProjectTabBridge instance = null;
     private static final String className = "org.netbeans.modules.project.ui.ProjectTab"; // NOI18N
 
-    private Class refClass = null;
+    private Class<?> refClass = null;
 
     public ProjectTabBridge() throws ClassNotFoundException {
-	ClassLoader c = Lookup.getDefault ().lookup (ClassLoader.class);
+	ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
 	// Find the class
 	if (c == null) {
 	    refClass = Class.forName(className);
@@ -85,11 +88,12 @@ public class ProjectTabBridge {
 	Method method = null;
 	Object ret = null;
 
-	if (refClass == null)
+	if (refClass == null) {
 	    return null;
+        }
 
 	try {
-	    method = refClass.getMethod(methodName, new Class[] {String.class});
+	    method = refClass.getMethod(methodName, String.class);
 	    ret = method.invoke(null, new Object[] {tcID});
 	} catch(Exception e) {
 	    System.err.println("ProjectTabBridge " + methodName + e); // NOI18N
@@ -105,11 +109,12 @@ public class ProjectTabBridge {
 	Method method = null;
 	Object ret = null;
 
-	if (refClass == null)
+	if (refClass == null) {
 	    return null;
+        }
 
 	try {
-	    method = refClass.getMethod(methodName, new Class[0]);
+	    method = refClass.getMethod(methodName);
 	    ret = method.invoke(projectTab, new Object[0]);
 	} catch(Exception e) {
 	    System.err.println("ProjectTabBridge " + methodName + e); // NOI18N

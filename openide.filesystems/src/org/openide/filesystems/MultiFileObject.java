@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -60,6 +64,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Implementation of the file object for multi file system.
@@ -75,6 +82,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     /** default path separator */
     private static final char PATH_SEP = '/';
+    private static final String WEIGHT_ATTRIBUTE = "weight"; // NOI18N
     private static final FileSystem.AtomicAction markAtomicAction = new FileSystem.AtomicAction() {
             public void run() {
             }
@@ -168,9 +176,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         Set now = (delegates == null) ? Collections.EMPTY_SET : delegates;
         Set<FileObject> del = new HashSet<FileObject>(arr.length * 2);
+        Number maxWeight = 0;
         FileObject led = null;
 
         String name = getPath();
+        FileSystem writable = mfs.writableLayer(name);
 
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] != null) {
@@ -184,8 +194,15 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                         fo.addFileChangeListener(weakL);
                     }
 
-                    if ((led == null) && fo.isValid()) {
-                        led = fo;
+                    if (fo.isValid()) {
+                        Number weight = 
+                            fo.isRoot() &&
+                            !mfs.canHaveRootAttributeOnReadOnlyFS(WEIGHT_ATTRIBUTE)
+                            ? 0 : weightOf(fo, writable);
+                        if (led == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                            led = fo;
+                            maxWeight = weight;
+                        }
                     }
                 }
             }
@@ -297,6 +314,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private FileObject findLeader(FileSystem[] fs, String path) {
         MultiFileSystem mfs = getMultiFileSystem();
 
+        Number maxWeight = 0;
+        FileObject _leader = null;
+        FileSystem writable = mfs.writableLayer(path);
+        
         for (FileSystem f : fs) {
             if (f == null) {
                 continue;
@@ -304,11 +325,36 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileObject fo = mfs.findResourceOn(f, path);
 
             if (fo != null) {
-                return fo;
+                Number weight = weightOf(fo, writable);
+                if (_leader == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                    _leader = fo;
+                    maxWeight = weight;
+                }
             }
         }
 
-        return null;
+        return _leader;
+    }
+
+    private static Number weightOf(FileObject f, FileSystem writable) {
+        try {
+            if (f.getFileSystem() == writable) {
+                return Double.MAX_VALUE;
+            }
+        } catch (FileStateInvalidException x) {/* ignore */}
+        Object weight = f.getAttribute(WEIGHT_ATTRIBUTE);
+        if (weight instanceof Number) {
+            return (Number) weight;
+        } else if (weight == null) {
+            return 0;
+        } else {
+            try {
+                Logger.getLogger(MultiFileObject.class.getName()).log(
+                        Level.WARNING, "File {0} in {1} has nonnumeric weight {2} of type {3}",
+                        new Object[] {f.getPath(), f.getFileSystem(), weight, weight.getClass().getName()});
+            } catch (FileStateInvalidException x) {/* ignore */}
+            return 0;
+        }
     }
 
     /** Getter for the right file system */
@@ -726,6 +772,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         return getAttribute(attrName, getPath());
     }
 
+    /** Special attributes which should not be checked for weight. See RemoveWritablesTest. */
+    private static final Set<String> SPECIAL_ATTR_NAMES = new HashSet<String>(Arrays.asList("removeWritables", WEIGHT_ATTRIBUTE, "java.io.File")); // NOI18N
     private final Object getAttribute(String attrName, String path) {
         // Look for attribute in any file system starting at the front.
         // Additionally, look for attribute in root folder, where
@@ -747,8 +795,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 if (localFo.isRoot() && (prefixattr != null)) {
                     try {
                         FileSystem foFs = localFo.getFileSystem();
-
-                        if (!(foFs instanceof XMLFileSystem)) {
+                        if (!foFs.isReadOnly() || getMultiFileSystem().canHaveRootAttributeOnReadOnlyFS(prefixattr)) {
                             localFo = foFs.getRoot();
                             oPerf = getAttribute(localFo, prefixattr, ""); // NOI18N
 
@@ -774,6 +821,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         FileSystem[] systems = getMultiFileSystem().getDelegates();
 
+        Number maxWeight = 0;
+        Object attr = null;
+        FileSystem writable = getMultiFileSystem().writableLayer(path);
+
         //        boolean isLoaderAttr = /* DataObject.EA_ASSIGNED_LOADER */ "NetBeansAttrAssignedLoader".equals (attrName); // NOI18N                
         for (int i = 0; i < systems.length; i++) {
             if (systems[i] == null) {
@@ -793,26 +844,38 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 Object o = getAttribute(fo, attrName, fo.getPath()); // Performance tricks:                
 
                 if (o != null) {
-                    return devoidify(o);
+                    if (SPECIAL_ATTR_NAMES.contains(attrName)) {
+                        return devoidify(o);
+                    }
+                    Number weight = weightOf(fo, writable);
+                    if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                        attr = o;
+                        maxWeight = weight;
+                    }
                 }
             }
 
-            // Don't check for root override on XMLFileSystem's; the override
-            // could only have been made on a writable filesystem to begin with.
-            // Could skip all RO FSs but then multi-user installs would not work
-            // quite right.
-            if ((prefixattr != null) && !(systems[i] instanceof XMLFileSystem)) {
-                fo = systems[i].getRoot();
+            if (prefixattr != null) {
+                if (
+                    !systems[i].isReadOnly() ||
+                    getMultiFileSystem().canHaveRootAttributeOnReadOnlyFS(prefixattr)
+                ) {
+                    fo = systems[i].getRoot();
 
-                Object o = getAttribute(fo, prefixattr, ""); // NOI18N
+                    Object o = getAttribute(fo, prefixattr, ""); // NOI18N
 
-                if (o != null) {
-                    return devoidify(o);
+                    if (o != null) {
+                        Number weight = weightOf(fo, writable);
+                        if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                            attr = o;
+                            maxWeight = weight;
+                        }
+                    }
                 }
             }
         }
 
-        return null;
+        return devoidify(attr);
     }
 
     private static boolean sameFullName(FileObject f1, FileObject f2) {
@@ -979,6 +1042,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     * @return the new folder
     * @exception IOException if the folder cannot be created (e.g. already exists)
     */
+    @Override
     public FileObject createFolder(String name) throws IOException {
         MultiFileObject fo;
 
@@ -993,7 +1057,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 if (isReadOnly()) {
-                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
+                    IOException ex = new IOException("Read only: " + leader + " delegates: " + delegates); // NOI18N
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
+                    throw ex;
                 }
 
                 String fullName = getPath() + PATH_SEP + name;

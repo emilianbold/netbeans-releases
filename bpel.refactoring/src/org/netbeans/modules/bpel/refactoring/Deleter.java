@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,150 +66,142 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.09.17
  */
 final class Deleter extends Plugin {
-    
-  Deleter(SafeDeleteRefactoring refactoring) {
-    myRequest = refactoring;
-  }
-  
-  public Problem prepare(RefactoringElementsBag refactoringElements) {
+
+    Deleter(SafeDeleteRefactoring refactoring) {
+        myRequest = refactoring;
+    }
+
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
 //out();
 //out("PREPARE");
 //out();
-    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
+        Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
-    if (reference == null) {
-      return null;
-    }
-    Set<Component> roots = getRoots(reference);
-    myElements = new ArrayList<Element>();
+        if (reference == null) {
+            return null;
+        }
+        Set<Component> roots = getRoots(reference);
+        myElements = new ArrayList<Element>();
 
-    for (Component root : roots) {
-      List<Element> founds = find(reference, root);
+        for (Component root : roots) {
+            List<Element> founds = find(reference, root);
 //out();
 //out("Founds: " + founds);
 //out("  root: " + root);
 
-      if (founds != null && founds.size() > 0) {
+            if (founds != null && founds.size() > 0) {
 //out("  size: " + founds.size());
 //out("   see: " + founds.get(0).getUserObject() + " " + founds.get(0).getText());
-        myElements.addAll(founds);
-      }
-    }
-    if ( !myElements.isEmpty()) {
+                myElements.addAll(founds);
+            }
+        }
+        if (!myElements.isEmpty()) {
 //out();
-      List<Model> models = getModels(myElements);
+            List<Model> models = getModels(myElements);
 //out("models: " + models);
-      List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
+            List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 //out("errors: " + errors);
 
-      if (errors == null) {
-        errors = new ArrayList<ErrorItem>();
-      }
-      populateErrors(errors);
+            if (errors == null) {
+                errors = new ArrayList<ErrorItem>();
+            }
+            populateErrors(errors);
 //out("populate: " + errors);
 
-      if (errors.size() > 0) {
-        return processErrors(errors);
-      } 
-    } 
-    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
-    transaction.register(this, myElements);
-    refactoringElements.registerTransaction(transaction);
+            if (errors.size() > 0) {
+                return processErrors(errors);
+            }
+        }
+        XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+        transaction.register(this, myElements);
+        refactoringElements.registerTransaction(transaction);
 //out();
 //out("refactoringElements: " + refactoringElements);
 
-    for (Element element : myElements) {
-      element.setTransactionObject(transaction);
-      refactoringElements.add(myRequest, element);
+        for (Element element : myElements) {
+            element.setTransactionObject(transaction);
+            refactoringElements.add(myRequest, element);
 //out("    element: " + element);
-    }      
-    return null;
-  }
-
-  private void populateErrors(List<ErrorItem> errors) {
-    for (Element element : myElements) {
-      Object object = element.getUserObject();
-
-      if (object instanceof BPELExtensibilityComponent) {
-        continue;
-      }
-      ErrorItem error = new ErrorItem(
-        object,
-        i18n(Deleter.class, "ERR_Can_not_delete"), // NOI18N
-        ErrorItem.Level.FATAL);
-
-      errors.add(error);
-      break;
+        }
+        return null;
     }
-  }
-      
-  public Problem fastCheckParameters() {
-    return null;
-  }
 
-  public Problem checkParameters() {
-    return null;
-  }
+    private void populateErrors(List<ErrorItem> errors) {
+        for (Element element : myElements) {
+            Object object = element.getUserObject();
 
-  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+            if (object instanceof BPELExtensibilityComponent) {
+                continue;
+            }
+            errors.add(new ErrorItem(object, i18n(Deleter.class, "ERR_Can_not_delete"), ErrorItem.Level.FATAL)); // NOI18N
+            break;
+        }
+    }
+
+    public Problem fastCheckParameters() {
+        return null;
+    }
+
+    public Problem checkParameters() {
+        return null;
+    }
+
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
 //out();
 //out("DO: " + myRequest.getRefactoringSource());
-    Referenceable referenceable = myRequest.getRefactoringSource().lookup(Referenceable.class);
+        Referenceable referenceable = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
-    if ( !(referenceable instanceof Component)) {
-      return;
-    }
-    for (Element element : myElements) {
-      Object object = element.getUserObject();
+        if (!(referenceable instanceof Component)) {
+            return;
+        }
+        for (Element element : myElements) {
+            Object object = element.getUserObject();
 //out("  see: " + object);
 
-      if ( !(object instanceof PropertyAlias)) {
-        continue;
-      }
-      delete((PropertyAlias) object, (Component) referenceable);
-    }
+            if (!(object instanceof PropertyAlias)) {
+                continue;
+            }
+            delete((PropertyAlias) object, (Component) referenceable);
+        }
 //out();
-  }
-
-  private void delete(PropertyAlias alias, Component target) {
-    Model model = alias.getModel();
-    boolean doTransaction = false;
-
-    if (model != null) {
-      doTransaction = !model.isIntransaction();
     }
-    try {
-      if (doTransaction && model != null) {
-        model.startTransaction();
-      }
-      if (target instanceof Part) {
-        alias.setPart(null);
-      }
-      else if (target instanceof Message) {
-        alias.setMessageType(null);
-        alias.setPart(null);
-      }
-      else if (target instanceof CorrelationProperty) {
-        alias.setPropertyName(null);
-      }
+
+    private void delete(PropertyAlias alias, Component target) {
+        Model model = alias.getModel();
+        boolean doTransaction = false;
+
+        if (model != null) {
+            doTransaction = !model.isIntransaction();
+        }
+        try {
+            if (doTransaction && model != null) {
+                model.startTransaction();
+            }
+            if (target instanceof Part) {
+                alias.setPart(null);
+            } else if (target instanceof Message) {
+                alias.setMessageType(null);
+                alias.setPart(null);
+            } else if (target instanceof CorrelationProperty) {
+                alias.setPropertyName(null);
+            }
 //    else {
 //out("target: " + target.getClass().getName());
 //    }
+        } finally {
+            if (doTransaction && model != null && model.isIntransaction()) {
+                model.endTransaction();
+            }
+        }
     }
-    finally {
-      if (doTransaction && model != null && model.isIntransaction()) {
-        model.endTransaction();
-      }
-    }
-  }
 
-  private List<Element> myElements;
-  private SafeDeleteRefactoring myRequest;
+    private List<Element> myElements;
+    private SafeDeleteRefactoring myRequest;
 }

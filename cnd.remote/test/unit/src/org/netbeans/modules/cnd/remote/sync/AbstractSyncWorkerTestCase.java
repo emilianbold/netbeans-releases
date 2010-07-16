@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,21 +42,17 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Base test for different RemoteSyncWorker implementations
@@ -64,9 +63,37 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
             PrintWriter out, PrintWriter err, File privProjectStorageDir);
 
+    protected abstract String getTestNamePostfix();
+
     public AbstractSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
+
+    @Override
+    public String getName() {
+        String name = super.getName();
+        int pos = name.indexOf('[');
+        if (pos > 1) {
+            if (name.charAt(pos - 1) == ' ') {
+                pos--;
+            }
+            name = name.substring(0, pos) + "_" + getTestNamePostfix() + name.substring(pos);
+        }
+        return name;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
+    }
+
 
     @ForAllEnvironments
     public void testSyncWorker_simple() throws Exception {
@@ -80,8 +107,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     public void testSyncWorker_nb_platform_lib() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile();  // platform10/lib
+        File netBeansDir = new File(getNetBeansPlatformDir(), "lib");
         doTest(netBeansDir, execEnv, getDestDir(execEnv));
     }
 
@@ -89,18 +115,12 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     public void testSyncWorker_nb_platform() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
-        File netBeansDir = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile().  // platform10/lib
-                getParentFile();  // platform10
+        File netBeansDir = getNetBeansPlatformDir();
         doTest(netBeansDir, execEnv, getDestDir(execEnv));
     }
 
-    private File getIdeUtilJar() throws Exception {
-        return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-    }
-
     private String getDestDir(ExecutionEnvironment execEnv) {
-        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test/" + Math.random() + "/";
+        return  getRemoteTmpDir() + "/sync-worker-test/" + Math.random() + "/";
     }
 
     private void doTest(File src, ExecutionEnvironment execEnv, String dst) throws Exception {
@@ -109,12 +129,14 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         File privProjectStorageDir = createTempFile(src.getName() + "-nbproject-private-", "", true);
         BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
-        worker.startup(Collections.<String, String>emptyMap());
+        boolean ok = worker.startup(Collections.<String, String>emptyMap());
+        assertTrue(worker.getClass().getSimpleName() + ".startup failed", ok);
         worker.shutdown();
         CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
         removeDirectory(privProjectStorageDir);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     private File createTestDir() throws IOException {
         File src = createTempFile("test-sync-worker-dir", null, true);
         File subdir1 = new File(src, "dir1");
@@ -140,51 +162,10 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         File file3 = new File(deeper, "file3");
         writeFile(file3, "this is file3\n");
         file3.deleteOnExit();
-        return src;
-    }
-
-    private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        pb.setExecutable(command);
-
-        if (args != null) {
-            pb.setArguments(args);
-        }
-
-        NativeProcess lsProcess = pb.call();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        int count = 0;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line + '\n');
-            count++;
-        }
-        return sb;
+        return FileUtil.normalizeFile(src);
     }
 
     public static Test suite() {
         return new RemoteDevelopmentTest(AbstractSyncWorkerTestCase.class);
     }
-
-//    private CharSequence runCommand(ExecutionEnvironment execEnv, String command, String... args) throws Exception {
-//        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
-//        pb.setExecutable(command);
-//
-//        if (args != null) {
-//            pb.setArguments(args);
-//        }
-//
-//        NativeProcess lsProcess = pb.call();
-//        BufferedReader rdr = new BufferedReader(new InputStreamReader(lsProcess.getInputStream()));
-//        String line;
-//        StringBuilder sb = new StringBuilder();
-//        int count = 0;
-//        while ((line = rdr.readLine()) != null) {
-//            sb.append(line + '\n');
-//            count++;
-//        }
-//        return sb;
-//    }
-
 }

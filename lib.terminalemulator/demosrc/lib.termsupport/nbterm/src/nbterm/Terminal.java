@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,7 @@
  */
 package nbterm;
 
-import org.netbeans.lib.termsupport.LineFilter;
+import org.netbeans.lib.terminalemulator.support.LineFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -53,10 +56,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -67,18 +76,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
+import org.netbeans.lib.richexecution.program.Program;
+import org.netbeans.lib.richexecution.PtyProcess;
+
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.termsupport.TermExecutor;
-import org.netbeans.lib.termsupport.DefaultFindState;
-import org.netbeans.lib.termsupport.FindBar;
-import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.PtyProcess;
-import org.netbeans.lib.termsupport.TermOptions;
-import org.netbeans.lib.termsupport.TermOptionsPanel;
+// OLD import org.netbeans.lib.terminalemulator.support.TermExecutor;
+import org.netbeans.lib.terminalemulator.support.DefaultFindState;
+import org.netbeans.lib.terminalemulator.support.FindBar;
+import org.netbeans.lib.terminalemulator.support.FindState;
+import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 
 class Terminal extends JFrame implements Runnable {
 
@@ -127,6 +138,17 @@ class Terminal extends JFrame implements Runnable {
         term.setHistorySize(4000);
 
         applyTermOptions(true);
+
+	final Set<Action> actions = new HashSet<Action>();
+	actions.add(newAction);
+        actions.add(newAction);
+        actions.add(copyAction);
+        actions.add(pasteAction);
+        actions.add(findAction);
+        actions.add(wrapAction);
+        actions.add(clearAction);
+        actions.add(optionsAction);
+	setupKeymap(actions);
 
         if (processErrors) {
             term.setActionListener(new ActiveTermListener() {
@@ -392,6 +414,52 @@ class Terminal extends JFrame implements Runnable {
         }
     }
 
+    private void printActionMap(ActionMap actionMap) {
+	System.out.printf("-------- Original ActionMap -----------\n");
+	Object[] allkeys = actionMap.allKeys();
+	if (allkeys == null) {
+	    System.out.printf("\t<empty>\n");
+	} else {
+	    for (Object k : allkeys) {
+		Action a = actionMap.get(k);
+		System.out.printf("\t%s %s\n", k, a);
+	    }
+	}
+	System.out.printf("%s\n", actionMap);
+    }
+
+    private void setupKeymap(Set<Action> actions) {
+	JComponent comp = term.getScreen();
+
+	ActionMap actionMap = comp.getActionMap();
+	ActionMap newActionMap = new ActionMap();
+	newActionMap.setParent(actionMap);
+
+	printActionMap(actionMap);
+
+	InputMap inputMap = comp.getInputMap();
+	InputMap newInputMap = new InputMap();
+	newInputMap.setParent(inputMap);
+
+	Set<KeyStroke> passKeystrokes = new HashSet<KeyStroke>();
+
+	for (Action a : actions) {
+	    String name = (String) a.getValue(Action.NAME);
+            KeyStroke accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
+	    System.out.printf("Registering %s for %s\n", accelerator, name);
+	    if (accelerator == null)
+		continue;
+	    newInputMap.put(accelerator, name);
+	    newActionMap.put(name, a);
+	    passKeystrokes.add(accelerator);
+	}
+
+	comp.setActionMap(newActionMap);
+	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
+
+        term.setKeyStrokeSet((HashSet) passKeystrokes);
+    }
+
     private void postPopupMenu(Point p) {
         JPopupMenu menu = new JPopupMenu();
         addMenuItem(menu, newAction);
@@ -409,8 +477,6 @@ class Terminal extends JFrame implements Runnable {
 
         findAction.setEnabled(!findState.isVisible());
 
-        // just to get it echoed
-        term.setKeyStrokeSet(term.getKeyStrokeSet());
         menu.addPopupMenuListener(new PopupMenuListener() {
 
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {

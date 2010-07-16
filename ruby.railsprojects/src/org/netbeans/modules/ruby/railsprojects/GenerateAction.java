@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -58,6 +64,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -67,7 +74,11 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
@@ -76,6 +87,7 @@ import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.railsprojects.Generator.Script;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -231,19 +243,12 @@ public final class GenerateAction extends NodeAction {
 
                 final FileObject dir = project.getProjectDirectory();
                 final File pwd = FileUtil.toFile(project.getProjectDirectory());
-                final String script = "script" + File.separator + panel.getScript(); // NOI18N
+                final Script generatorScript = panel.getScript();
+                final String scriptToRun = "script" + File.separator + generatorScript.script; // NOI18N
                 List<String> argvList = new ArrayList<String>();
+                argvList.addAll(generatorScript.args);
                 argvList.add(type);
 
-                if (panel.isForce()) {
-                    argvList.add("--force"); // NOI18N
-                } else {
-                    argvList.add("--skip"); // NOI18N
-                }
-
-                if (panel.isPretend()) {
-                    argvList.add("--pretend"); // NOI18N
-                }
 
                 String[] names = Utilities.parseParameters(panel.getGeneratedName());
 
@@ -269,6 +274,15 @@ public final class GenerateAction extends NodeAction {
                     }
                 }
 
+                if (panel.isForce()) {
+                    argvList.add("--force"); // NOI18N
+                } else {
+                    argvList.add("--skip"); // NOI18N
+                }
+                if (panel.isPretend()) {
+                    argvList.add("--pretend"); // NOI18N
+                }
+
                 final String[] argv = argvList.toArray(new String[argvList.size()]);
 
                 try {
@@ -280,20 +294,33 @@ public final class GenerateAction extends NodeAction {
                             StatefulConvertor convertor = new StatefulConvertor(locator,
                                     RailsProjectGenerator.RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
                             String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
-
+			    Map<String, String> env = new HashMap<String, String>();
+			    String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+                            if (railsEnv != null) {
+                                env.put("RAILS_ENV", railsEnv);
+                            }
                             RubyExecutionDescriptor descriptor =
-                                    new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script)
+                                    new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, scriptToRun)
                                     .additionalArgs(argv)
                                     .fileLocator(locator)
                                     .addStandardRecognizers()
                                     .addOutConvertor(convertor)
                                     .addErrConvertor(convertor);
+                            descriptor.addAdditionalEnv(env);
+                            descriptor.setOutProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                                @Override
+                                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                                    return InputProcessors.ansiStripping(defaultProcessor);
+                                }
+                            });
 
                             RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName);
                             Future<Integer> execution =
                                     ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                             try {
                                 execution.get();
+                            } catch (CancellationException ex) {
+                                // do nothing, the user cancelled the generator process
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {

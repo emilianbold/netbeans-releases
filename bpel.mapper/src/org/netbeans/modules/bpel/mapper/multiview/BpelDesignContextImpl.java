@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
+import org.netbeans.modules.soa.xpath.mapper.context.XPathDesignContext;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -36,39 +37,26 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     private WeakReference<Node> mActivatedNode;
     private Lookup mLookup;
     private WeakReference<BpelEntity> mSelectedEntityRef;
-    private WeakReference<BpelEntity> mGraphEntityRef;
     private WeakReference<BpelEntity> mContextEntityRef;
     private String mMessage;
     private VisibilityScope mVisibilityScope;
     private StringBuffer validationErrMsgBuffer = new StringBuffer();
 
-    public BpelDesignContextImpl(BpelEntity contextEntity, 
-            BpelEntity graphEntity, BpelEntity selectedEntity, 
-            Node node, Lookup lookup) {
+    public BpelDesignContextImpl(BpelEntity contextEntity,
+            BpelEntity selectedEntity, Node node, Lookup lookup) {
         mActivatedNode = new WeakReference<Node>(node);
         mLookup = lookup;
         mContextEntityRef = new WeakReference<BpelEntity>(contextEntity);
-        mGraphEntityRef = new WeakReference<BpelEntity>(graphEntity);
         mSelectedEntityRef = new WeakReference<BpelEntity>(selectedEntity);
     }
 
     public BpelDesignContextImpl(String message) {
-        this(null, null, null, null, null);
+        this(null, null, null, null);
         mMessage = message;
     }
 
     public BpelEntity getContextEntity() {
         return mContextEntityRef.get();
-    }
-
-    public BpelEntity getGraphEntity() {
-        BpelEntity result = mGraphEntityRef.get();
-        if (result != null) {
-            if (result.isInDocumentModel()) {
-                return result;
-            }
-        }
-        return getContextEntity();
     }
 
     public BpelEntity getSelectedEntity() {
@@ -78,7 +66,7 @@ public class BpelDesignContextImpl implements BpelDesignContext {
                 return result;
             }
         }
-        return getGraphEntity();
+        return null;
     }
 
     public Node getActivatedNode() {
@@ -102,17 +90,25 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     @Override
     public String toString() {
         return "ContextEntity: " + mContextEntityRef + 
-                "GraphEntity: " + mGraphEntityRef + 
                 "SelectedEntity: " + mSelectedEntityRef + 
                 " Lookup: " + mLookup; // NOI18N
     }
     
+    public boolean showsTheSameMapper(XPathDesignContext otherCtxt) {
+        if (otherCtxt instanceof BpelDesignContext) {
+            BpelDesignContext otherContext = (BpelDesignContext)otherCtxt;
+            if (otherContext.getContextEntity() == getContextEntity()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object otherObj) {
         if (otherObj instanceof BpelDesignContext) {
             BpelDesignContext otherContext = (BpelDesignContext)otherObj;
             if (otherContext.getContextEntity() == getContextEntity() 
-                    && otherContext.getGraphEntity() == getGraphEntity() 
                     && otherContext.getSelectedEntity() == getSelectedEntity() 
                     && otherContext.getLookup() == getLookup()) 
             {
@@ -136,4 +132,5 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     public StringBuffer getValidationErrMsgBuffer() {
         return validationErrMsgBuffer;
     }
+
 }

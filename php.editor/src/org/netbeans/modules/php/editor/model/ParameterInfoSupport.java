@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,12 +41,13 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import java.util.Set;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -51,6 +55,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
@@ -376,10 +383,13 @@ public class ParameterInfoSupport {
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
-                        ModelElement declaration = occurence.getDeclaration();
-                        if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
-                            FunctionScope functionScope = (FunctionScope) declaration;
-                            return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                        Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
+                        if (allDeclarations.size() > 0) {
+                            PhpElement declaration = allDeclarations.iterator().next();
+                            if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
+                                FunctionScope functionScope = (FunctionScope) declaration;
+                                return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                            }
                         }
                     }
                 }
@@ -399,30 +409,10 @@ public class ParameterInfoSupport {
     @CheckForNull
     private static List<String> toParamNames(FunctionScope functionScope) {
         List<String> paramNames = new ArrayList<String>();
-        List<? extends Parameter> parameters = functionScope.getParameters();
-        for (Parameter parameter : parameters) {
-            String paramString = paramToStr(parameter);
-            paramNames.add(paramString);
+        List<? extends ParameterElement> parameters = functionScope.getParameters();
+        for (ParameterElement parameter : parameters) {
+            paramNames.add(parameter.asString(true));
         }
         return paramNames;
     }
-    private static String paramToStr(Parameter parameter) {
-        StringBuilder sb = new StringBuilder();
-        List<QualifiedName> types = parameter.getTypes();
-        if (types.size() > 1) {
-            sb.append("mixed ");
-        } else {
-            for (QualifiedName qualifiedName : types) {
-                sb.append(qualifiedName.toString()).append(" "); //NOI18N
-            }
-        }
-        sb.append(parameter.getName());
-        String defaultValue = parameter.getDefaultValue();
-        if (defaultValue != null) {
-            sb.append(" = ").append(defaultValue); //NOI18N
-        }
-        final String paramString = sb.toString();
-        return paramString;
-    }
-
 }

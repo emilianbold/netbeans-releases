@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -130,7 +133,9 @@ public final class SourceRoots {
     private void initializeRoots() {
         synchronized (this) {
             if (sourceRoots == null) {
-                if (FoldersListSettings.getDefault().getLogicalView()) {
+                if (isTest) {
+                    initializeTestRoots();
+                } else if (FoldersListSettings.getDefault().getLogicalView()) {
                     initializeRootsLogical();
                 } else {
                     initializeRootsFiles();
@@ -138,30 +143,54 @@ public final class SourceRoots {
             }
         }
     }
-    
+
+    private void initializeTestRoots() {
+        sourceRootNames = new ArrayList<String>();
+        sourceRootProperties = new ArrayList<String>();
+        if (showRSpec) {
+            sourceRootNames.add(getNodeDescription("rspec")); // NOI18N
+            sourceRootProperties.add("spec"); // NOI18N
+        }
+
+        sourceRootNames.add(getNodeDescription("test")); // NOI18N
+        sourceRootProperties.add("test"); // NOI18N
+        List<FileObject> result = new ArrayList<FileObject>();
+        for (String p : sourceRootProperties) {
+            FileObject f = helper.getRakeProjectHelper().resolveFileObject(p);
+            if (f == null) {
+                continue;
+            }
+            if (FileUtil.isArchiveFile(f)) {
+                f = FileUtil.getArchiveRoot(f);
+            }
+            result.add(f);
+        }
+        sourceRoots = Collections.unmodifiableList(result);
+    }
+
+    private void addPlainFiles(FileObject dir, String... fileNames) {
+        plainFiles = new ArrayList<FileObject>(20);
+        for (String fileName : fileNames) {
+            FileObject toAdd = dir.getFileObject(fileName);
+            if (toAdd != null) {
+                plainFiles.add(toAdd);
+            }
+        }
+    }
+
     /** Create a logical view of the project: flatten app/ and test/
      * and substitute logical names instead of the directory names
      */
     private void initializeRootsLogical() {
-        plainFiles = new ArrayList<FileObject>(20);
 
         FileObject fo = helper.getRakeProjectHelper().getProjectDirectory();
-        
-        FileObject rakefile = fo.getFileObject("Rakefile"); // NOI18N
-        if (rakefile != null) {
-            plainFiles.add(rakefile);
-        }
-        FileObject readme = fo.getFileObject("README"); // NOI18N
-        if (readme != null) {
-            plainFiles.add(readme);
-        }
-        FileObject capfile = fo.getFileObject("Capfile"); // NOI18N
-        if (capfile != null) {
-            plainFiles.add(capfile);
-        }
+        addPlainFiles(fo, "Capfile", "Gemfile", "Rakefile", "README");
 
         // show app/metal for Rack applications, but only if the folder already exists
         boolean metal = fo.getFileObject("app/metal") != null;//NOI18N
+        boolean mails = fo.getFileObject("app/mails") != null;//NOI18N
+        boolean middleware = fo.getFileObject("app/middleware") != null;//NOI18N
+        boolean reports = fo.getFileObject("app/reports") != null;//NOI18N
 
         sourceRootNames = new ArrayList<String>(20);
         sourceRootProperties = new ArrayList<String>(20);
@@ -171,12 +200,30 @@ public final class SourceRoots {
         if (metal) {
             sourceRootNames.add(getNodeDescription("app_metal")); // NOI18N
         }
+        if (mails) {
+            sourceRootNames.add(getNodeDescription("app_mails")); // NOI18N
+        }
+        if (middleware) {
+            sourceRootNames.add(getNodeDescription("app_middleware")); // NOI18N
+        }
+        if (reports) {
+            sourceRootNames.add(getNodeDescription("app_reports")); // NOI18N
+        }
         sourceRootNames.add(getNodeDescription("app_models")); // NOI18N
         sourceRootNames.add(getNodeDescription("app_views")); // NOI18N
         sourceRootProperties.add("app/controllers"); // NOI18N
         sourceRootProperties.add("app/helpers"); // NOI18N
         if (metal) {
             sourceRootProperties.add("app/metal"); // NOI18N
+        }
+        if (mails) {
+            sourceRootProperties.add("app/mails"); // NOI18N
+        }
+        if (middleware) {
+            sourceRootProperties.add("app/middleware"); // NOI18N
+        }
+        if (reports) {
+            sourceRootProperties.add("app/reports"); // NOI18N
         }
         sourceRootProperties.add("app/models"); // NOI18N
         sourceRootProperties.add("app/views"); // NOI18N
@@ -189,6 +236,9 @@ public final class SourceRoots {
             knownAppDirs.add("helpers"); // NOI18N
             knownAppDirs.add("models"); // NOI18N
             knownAppDirs.add("views"); // NOI18N
+            knownAppDirs.add("reports"); // NOI18N
+            knownAppDirs.add("metal"); // NOI18N
+            knownAppDirs.add("mails"); // NOI18N
             List<String> missing = findUnknownFolders(app, knownAppDirs);
             if (missing != null) {
                 for (String name : missing) {
@@ -491,87 +541,6 @@ public final class SourceRoots {
         this.support.removePropertyChangeListener (listener);
     }
 
-
-//    /**
-//     * Replaces the current roots by the new ones
-//     * @param roots the URLs of new roots
-//     * @param labels the names of roots
-//     */
-//    public void putRoots (final URL[] roots, final String[] labels) {
-//        ProjectManager.mutex().writeAccess(
-//                new Mutex.Action<Void>() {
-//                    public Void run() {
-//                        String[] originalProps = getRootProperties();
-//                        URL[] originalRoots = getRootURLs();
-//                        Map<URL,String> oldRoots2props = new HashMap<URL,String>();
-//                        for (int i=0; i<originalProps.length;i++) {
-//                            oldRoots2props.put (originalRoots[i],originalProps[i]);
-//                        }
-//                        Map<URL,String> newRoots2lab = new HashMap<URL,String>();
-//                        for (int i=0; i<roots.length;i++) {
-//                            newRoots2lab.put (roots[i],labels[i]);
-//                        }
-//                        Element cfgEl = helper.getPrimaryConfigurationData(true);
-//                        NodeList nl = cfgEl.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
-//                        assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-//                        Element ownerElement = (Element) nl.item(0);
-//                        //Remove all old roots
-//                        NodeList rootsNodes = ownerElement.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
-//                        while (rootsNodes.getLength()>0) {
-//                            Element root = (Element) rootsNodes.item(0);
-//                            ownerElement.removeChild(root);
-//                        }
-//                        //Remove all unused root properties
-//                        List<URL> newRoots = Arrays.asList(roots);
-//                        Map<URL,String> propsToRemove = new HashMap<URL,String>(oldRoots2props);
-//                        propsToRemove.keySet().removeAll(newRoots);
-//                        EditableProperties props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-//                        props.keySet().removeAll(propsToRemove.values());
-//                        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH,props);
-//                        //Add the new roots
-//                        Document doc = ownerElement.getOwnerDocument();
-//                        oldRoots2props.keySet().retainAll(newRoots);
-//                        for (URL newRoot : newRoots) {
-//                            String rootName = oldRoots2props.get(newRoot);
-//                            if (rootName == null) {
-//                                //Root is new generate property for it
-//                                props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-//                                String[] names = newRoot.getPath().split("/");  //NOI18N
-//                                rootName = MessageFormat.format(newRootNameTemplate, new Object[] {names[names.length - 1], ""}); // NOI18N
-//                                int rootIndex = 1;
-//                                while (props.containsKey(rootName)) {
-//                                    rootIndex++;
-//                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[] {names[names.length - 1], rootIndex});
-//                                }
-//                                File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
-//                                File projDir = FileUtil.toFile(helper.getRakeProjectHelper().getProjectDirectory());
-//                                String path = f.getAbsolutePath();
-//                                String prjPath = projDir.getAbsolutePath()+File.separatorChar;
-//                                if (path.startsWith(prjPath)) {
-//                                    path = path.substring(prjPath.length());
-//                                }
-//                                else {
-//                                    path = refHelper.createForeignFileReference(f, RailsProject.SOURCES_TYPE_RUBY);
-//                                    props = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-//                                }
-//                                props.put(rootName,path);
-//                                helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH,props);
-//                            }
-//                            Element newRootNode = doc.createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
-//                            newRootNode.setAttribute("id",rootName);    //NOI18N
-//                            String label = (String) newRoots2lab.get (newRoot);
-//                            if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
-//                                newRootNode.setAttribute("name",label); //NOI18N
-//                            }
-//                            ownerElement.appendChild (newRootNode);
-//                        }
-//                        helper.putPrimaryConfigurationData(cfgEl,true);
-//                        return null;
-//                    }
-//                }
-//        );
-//    }
-    
     /**
      * Translates root name into display name of source/test root
      * @param rootName the name of root got from {@link SourceRoots#getRootNames}

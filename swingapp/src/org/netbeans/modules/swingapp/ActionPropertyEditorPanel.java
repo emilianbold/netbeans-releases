@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,9 +50,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -92,7 +95,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     private boolean viewSource = false;
     private String newMethodName = ""; // NOI18N
     private boolean isChanging = false;
-    private Map<ProxyAction.Scope, String> scopeClasses = new HashMap<ProxyAction.Scope, String>();
+    private Map<ProxyAction.Scope, String> scopeClasses = new EnumMap<ProxyAction.Scope, String>(ProxyAction.Scope.class);
     private FileObject sourceFile;
     private String smallIconName = null;
     private String largeIconName = null;
@@ -115,7 +118,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         if(property == null) {
             globalMode = true;
         }
-        parsedActions = new HashMap<ProxyAction.Scope, List<ProxyAction>>();
+        parsedActions = new EnumMap<ProxyAction.Scope, List<ProxyAction>>(ProxyAction.Scope.class);
         
         Object[] vals = new Object[] {
             ProxyAction.BlockingType.NONE,
@@ -126,6 +129,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         blockingType.setModel(new DefaultComboBoxModel(vals));
         blockingType.setSelectedItem(ProxyAction.BlockingType.NONE);
         blockingType.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 actionPropertiesUpdated = true;
             }
@@ -137,6 +141,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         acceleratorText.getDocument().addDocumentListener(dirtyListener);
         
         this.addPropertyChangeListener("action", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getNewValue() != null) {
                     ProxyAction act = (ProxyAction)evt.getNewValue();
@@ -161,12 +166,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-                ProxyAction.Scope scope = (ProxyAction.Scope)value;
-                String className = scopeClasses.get(scope);
-                if(className != null) {
-                    ((JLabel)comp).setText(scope.toString() + ": " + className);
-                } else {
-                    ((JLabel)comp).setText(scope.toString());
+                if (value!=null) {
+                    ProxyAction.Scope scope = (ProxyAction.Scope)value;
+                    String className = scopeClasses.get(scope);
+                    if(className != null) {
+                        ((JLabel)comp).setText(scope.toString() + ": " + className);
+                    } else {
+                        ((JLabel)comp).setText(scope.toString());
+                    }
                 }
                 return comp;
             }
@@ -202,6 +209,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         updatePropertyCombos(null);
         
         ActionListener modifierListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 acceleratorListener.updateFromModifiers();
                 updateState();
@@ -213,12 +221,15 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         shiftCheckbox.addActionListener(modifierListener);
         
         acceleratorText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateState();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateState();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateState();
             }
@@ -266,7 +277,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     }
     
     
-    void setMode(Mode mode) {
+    final void setMode(Mode mode) {
         this.mode = mode;
         if(mode == Mode.Form) {
             actionToEdit.setVisible(true);
@@ -351,14 +362,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         acceleratorListener.setCurrentKeyStroke((KeyStroke) act.getValue(javax.swing.Action.ACCELERATOR_KEY));
         
         
-        StringBuffer sig = new StringBuffer();
+        StringBuilder sig = new StringBuilder();
         sig.append("@Action"); // NOI18N
         if(act.isTaskEnabled()) {
             sig.append(" Task"); // NOI18N
         } else {
             sig.append(" void"); // NOI18N
         }
-        sig.append(" " + act.getMethodName()); // NOI18N
+        sig.append(" ").append(act.getMethodName()); // NOI18N
         sig.append("()"); // NOI18N
         
         actionsField.setText(act.getId());
@@ -853,6 +864,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
 
     private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetClassButtonActionPerformed
         ClassPathFileChooser cp = new ClassPathFileChooser(sourceFile, new ClassPathFileChooser.Filter() {
+            @Override
             public boolean accept(FileObject file) {
                 return true;
             }
@@ -1237,14 +1249,17 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         
     private class DirtyDocumentListener implements DocumentListener {
         
+        @Override
         public void changedUpdate(DocumentEvent e) {
             actionPropertiesUpdated = true;
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             actionPropertiesUpdated = true;
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             actionPropertiesUpdated = true;
         }
@@ -1263,6 +1278,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
             this.iconKey = iconKey;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             ProxyAction action = getSelectedAction();
             IconEditor iconEditor = new IconEditor();
@@ -1356,6 +1372,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass().getName());
     }

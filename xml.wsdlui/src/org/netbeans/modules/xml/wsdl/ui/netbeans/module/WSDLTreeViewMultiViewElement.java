@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,8 +67,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.cookies.RefreshExtensibilityElementNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSettings.ViewMode;
@@ -425,9 +428,17 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                     mToolbar.addSeparator();
                     categoryPane.populateToolbar(mToolbar);
                 }
-                // vlv: search
                 mToolbar.addSeparator();
-                mToolbar.add(SearchManager.getDefault().getSearchAction());
+                // vlv: search
+                //Fix 166881 NPE
+                SearchManager searchManager = SearchManager.getDefault();
+                if (searchManager != null) {
+                    Action searchAction = searchManager.getSearchAction();
+                    if (searchAction != null) {
+                        mToolbar.addSeparator();
+                        mToolbar.add(searchAction);
+                    }
+                }
 
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));

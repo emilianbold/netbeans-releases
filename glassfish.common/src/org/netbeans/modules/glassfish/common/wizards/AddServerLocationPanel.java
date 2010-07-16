@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -222,6 +225,9 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 // message has already been set, do not clear it here (see above).
                 
                 // finish initializing the registration data
+                if (installDir.equals(glassfishDir)) {
+                    installDir = glassfishDir.getParentFile();
+                }
                 wizardIterator.setInstallRoot(installDir.getAbsolutePath());
                 wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
                 wizardIterator.setDomainLocation(domainDir.getAbsolutePath());
@@ -321,7 +327,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             if (null != candidates && candidates.length > 0) {
                 // try to pick a candidate
                 for (File c : candidates) {
-                    if (isRegisterableDomain(retVal)) {
+                    if (isRegisterableDomain(c)) {
                         retVal = c;
                         break;
                     }
@@ -381,7 +387,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                     try {
                         String id = attributes.getValue("name");
                         if(id != null && id.length() > 0) {
-                            int port = Integer.parseInt(attributes.getValue("port"));
+                            String portAttr = attributes.getValue("port");
+                            if (null == portAttr || portAttr.startsWith("$")) {
+                                return;
+                            }
+                            int port = Integer.parseInt(portAttr);
                             boolean secure = "true".equals(attributes.getValue("security-enabled"));
                             boolean enabled = !"false".equals(attributes.getValue("enabled"));
                             if(enabled) {

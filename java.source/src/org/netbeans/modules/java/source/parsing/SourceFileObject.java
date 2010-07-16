@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,14 +45,16 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,8 +68,10 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -78,74 +85,81 @@ import org.openide.text.NbDocument;
  *
  * @author Tomas Zezula
  */
-public class SourceFileObject implements DocumentProvider, FileObjects.InferableJavaFileObject {    
-    
-    final FileObject file;
-    final FileObject root;
+public class SourceFileObject implements DocumentProvider, InferableJavaFileObject {
+
+    final Handle handle;
     private final Kind kind;
     private URI uri;        //Cache for URI
     private volatile String text;
     private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
-    private static Logger log = Logger.getLogger(SourceFileObject.class.getName());
-    
-    public static SourceFileObject create (final FileObject file, final FileObject root) {        
+    private static final Logger log = Logger.getLogger(SourceFileObject.class.getName());
+
+    public static SourceFileObject create (final FileObject file, final FileObject root) {
         try {
             return new SourceFileObject (file, root, null, false);
         } catch (IOException ioe) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, ioe.getMessage(), ioe);
             return null;
-        }        
+        }
     }
-    
+
     public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
-        this (file, root, filter);
+        this (new Handle(file, root), filter);
         update(content);
     }
-        
-    
+
     /** Creates a new instance of SourceFileObject */
     public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
-        this (file, root, filter);
+        this (new Handle(file, root), filter);
         if (renderNow) {
             update();
         }
     }
-    
-    private SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter) {
-        assert file != null;
-        this.file = file;
-        this.root = root;
+
+    public SourceFileObject (final Handle handle, final JavaFileFilterImplementation filter) {
+        assert handle != null;
+        this.handle = handle;
         this.filter = filter;
-        String ext = this.file.getExt();        
+        String ext = this.handle.getExt();
         this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
     }
 
-    
-    public void update () throws IOException {
+    public final void update () throws IOException {
         if (this.kind != Kind.CLASS) {
             //Side effect assigns the text
             getContent(true);
         }
     }
-    
-    public void update (final CharSequence content) throws IOException {
+
+    public final void update (CharSequence content) throws IOException {
         if (content == null) {
             update();
         }
-        else {            
+        else {
+            if (filter != null) {
+                final FileObject file = handle.resolveFileObject(false);
+                if (file != null) {
+                    final Source source = Source.create(file);
+                    if (source != null && source.getDocument(false) == null) {
+                        content = filter.filterCharSequence(content);
+                    }
+                }
+            }
             this.text = toString(content);
         }
         this.tokens = null;
     }
-    
 
+
+    @Override
     public boolean isNameCompatible (String simplename, JavaFileObject.Kind kind) {
         assert simplename != null;
         return this.kind == kind && this.getNameWithoutExtension().equals(simplename);
     }
 
+    @Override
     public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
         String _text = this.text;
         if (_text == null) {
@@ -153,7 +167,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         }
         return CharBuffer.wrap(_text);
     }
-    
+
     public TokenHierarchy<?> getTokenHierarchy() throws IOException {
         if (this.tokens == null) {
             final CharBuffer charBuffer = getCharContent(true);
@@ -161,12 +175,18 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         }
         return this.tokens;
     }
-   
+
+    @Override
     public java.io.Writer openWriter() throws IOException {
+        final FileObject file = handle.resolveFileObject(true);
+        if (file == null) {
+            throw new IOException("Cannot create file: " + toString());   //NOI18N
+        }
         return new OutputStreamWriter (this.openOutputStream(), FileEncodingQuery.getEncoding(file));
     }
 
-    public Reader openReader(boolean ignoreEncodingErrors) throws IOException {        
+    @Override
+    public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
         String _text = text;
         if (_text == null) {
             _text = getContent(false);
@@ -174,34 +194,45 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         return new StringReader(_text);
     }
 
+    @Override
     public java.io.OutputStream openOutputStream() throws IOException {
+        final FileObject file = handle.resolveFileObject(true);
+        if (file == null) {
+            throw new IOException("Cannot create file: " + toString());   //NOI18N
+        }
         final StyledDocument doc = getDocument();
         if (doc == null) {
-            return new LckStream (this.file);
+            return new LckStream (file);
         }
         else {
             return new DocumentStream (doc);
         }
     }
 
+    @Override
     public InputStream openInputStream() throws IOException {
         String _text = text;
         if (_text == null) {
             _text= getContent(false);
-        }                    
+        }
         return new ByteArrayInputStream (_text.getBytes());
     }
 
+    @Override
     public boolean delete() {
         if (isModified()!=null) {
             //If the file is modified in editor do not delete it
             return false;
         }
         else {
+            final FileObject file = handle.resolveFileObject(false);
+            if (file == null) {
+                return false;
+            }
             try {
-                FileLock lock = this.file.lock();
+                FileLock lock = file.lock();
                 try {
-                    this.file.delete (lock);
+                    file.delete (lock);
                     return true;
                 }
                 finally {
@@ -214,23 +245,26 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     }
 
 
+    @Override
     public JavaFileObject.Kind getKind() {
         return this.kind;
     }
 
+    @Override
     public String getName() {
-       return this.file.getNameExt();
+       return this.handle.getName(true);
     }
 
     public String getNameWithoutExtension() {
-        return this.file.getName();
+        return this.handle.getName(false);
     }
-    
+
+    @Override
     public synchronized URI toUri () {
         if (this.uri == null) {
-            try {            
-                this.uri = URI.create(this.file.getURL().toExternalForm());
-            } catch (FileStateInvalidException e) {
+            try {
+                this.uri = URI.create(this.handle.getURL().toExternalForm());
+            } catch (IOException e) {
                 if (log.isLoggable(Level.SEVERE))
                     log.log(Level.SEVERE, e.getMessage(), e);
             }
@@ -243,62 +277,86 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
      * modified file, the mtime is not known, this method returns
      * the current time.
      */
+    @Override
     public long getLastModified() {
-        if (isModified()==null) {
-            try {
-                //Prefer class files to packed sources, the packed sources may have wrong time stamps.
-                if (this.file.getFileSystem() instanceof JarFileSystem) {
-                    return 0L;
-                }
-            } catch (FileStateInvalidException e) {
-                //Handled below
-            }
-            return this.file.lastModified().getTime();
+        EditorCookie ec;
+        if ((ec=isModified())==null) {
+            return getFileLastModified();
         }
         else {
-            return System.currentTimeMillis();
+            final Document doc = ec.getDocument();
+            return doc != null ?
+                DocumentUtilities.getDocumentTimestamp(doc) :
+                getFileLastModified();
         }
+    } //where
+
+    private long getFileLastModified() {
+        final FileObject file = handle.resolveFileObject(false);
+        try {
+            //Prefer class files to packed sources, the packed sources may have wrong time stamps.
+            if (file == null || file.getFileSystem() instanceof JarFileSystem) {
+                return 0L;
+            }
+        } catch (FileStateInvalidException e) {
+            //Handled below
+        }
+        return file.lastModified().getTime();
     }
-    
+
+    @Override
     public NestingKind getNestingKind() {
         return null;
     }
 
+    @Override
     public Modifier getAccessLevel() {
         return null;
     }
-    
+
+    @Override
     public String inferBinaryName () {
-        if (root == null) {
+        if (handle.root == null) {
             return null;
         }
-        final String relativePath = FileUtil.getRelativePath(root,file);
-        assert relativePath != null : "root=" + FileUtil.getFileDisplayName(root) + ", file=" + FileUtil.getFileDisplayName(file);
+        final String relativePath = handle.getRelativePath();
+        assert relativePath != null : "root=" + FileUtil.getFileDisplayName(handle.root) + ", file=" + toString();
         final int index = relativePath.lastIndexOf('.');
         assert index > 0;
         final String result = relativePath.substring(0,index).replace('/','.');
         return result;
     }
-    
+
     public @Override String toString () {
-        return this.file.getPath();
+        final URI uri = toUri();
+        try {
+            final File file = new File (uri);
+            return file.getAbsolutePath();
+        } catch (IllegalArgumentException iae) {
+            return uri.toString();
+        }
     }
-    
+
     public @Override boolean equals (Object other) {
         if (other instanceof SourceFileObject) {
             SourceFileObject otherSource = (SourceFileObject) other;
-            return this.file.equals (otherSource.file);
+            return this.handle.equals (otherSource.handle);
         }
         else {
             return false;
         }
     }
-    
+
     public @Override int hashCode () {
-        return this.file.hashCode();
+        return this.handle.hashCode();
     }
-    
+
+    @Override
     public StyledDocument getDocument() {
+        final FileObject file = handle.resolveFileObject(false);
+        if (file == null) {
+            return null;
+        }
         final Source src = Source.create(file);
         if (src == null) {
             return null;
@@ -306,7 +364,8 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         final Document doc = src.getDocument(false);
         return (doc instanceof StyledDocument) ?  ((StyledDocument)doc) : null;
     }
-    
+
+    @Override
     public void runAtomic(final Runnable r) {
         assert r != null;
         final StyledDocument doc = getDocument();
@@ -317,13 +376,17 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             NbDocument.runAtomic(doc,r);
         }
     }
-    
+
     @SuppressWarnings ("unchecked")     // NOI18N
     private EditorCookie isModified () {
+        final FileObject file = handle.resolveFileObject(false);
+        if (file == null) {
+            return null;
+        }
         DataObject.Registry regs = DataObject.getRegistry();
         Set<DataObject> modified = regs.getModifiedSet();
         for (DataObject dobj : modified) {
-            if (this.file.equals(dobj.getPrimaryFile())) {
+            if (file.equals(dobj.getPrimaryFile())) {
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 return ec;
             }
@@ -332,16 +395,18 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     }
 
     private String getContent(boolean assign) throws IOException {
+        final FileObject file = handle.resolveFileObject(false);
+        if (file == null) {
+            throw new FileNotFoundException("Cannot open file: " + toString());
+        }
         final Source source = Source.create(file);
         if (source == null) {
             throw new IOException("No source for: " + FileUtil.getFileDisplayName(file));   //NOI18N
         }
         CharSequence content = toString(source.createSnapshot().getText());
-        if (source.getDocument(false)!=null) {
-            //Snapshot is from Document we have to filter it
-            if (filter != null) {
-                content = filter.filterCharSequence(content);
-            }
+        if (filter != null && source.getDocument(false)==null) {
+            //Snapshot is not from Document and there is a filter => filter it
+            content = filter.filterCharSequence(content);
         }
         String result = toString(content);
         if (assign) {
@@ -358,12 +423,77 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             return c.toString();
         }
     }
-    
+
+    public static class Handle {
+
+        protected final FileObject root;
+        protected FileObject file;
+
+        protected Handle(final FileObject root) {
+            this.root = root;
+        }
+
+        public Handle(final FileObject file, final FileObject root) {
+            assert file != null;
+            this.file = file;
+            this.root = root;
+        }
+
+        protected FileObject resolveFileObject (boolean write) {
+            return file;
+        }
+
+        protected URL getURL() throws IOException {
+            return file == null ? null : file.getURL();
+        }
+
+        protected String getExt() {
+            return file == null ? null : file.getExt();
+        }
+
+        protected String getName(boolean includeExtension) {
+            return file == null ? null : includeExtension ? file.getNameExt() : file.getName();
+        }
+
+        protected String getRelativePath() {
+            if (file == null) {
+                return null;
+            }
+            final String result = FileUtil.getRelativePath(root,file);
+            assert result != null : String.format("root=%s(%b,%b) file=%s(%b)",
+                    FileUtil.getFileDisplayName(root),
+                    root.isValid(),
+                    root.isFolder(),
+                    FileUtil.getFileDisplayName(file),
+                    file.isValid()
+                    );
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return file == null ? 0 : file.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Handle other = (Handle) obj;
+            return this.file == null ? other.file == null : this.file.equals(other.file);
+        }
+    }
+
+
     private class LckStream extends OutputStream {
-        
+
         private final OutputStream delegate;
         private final FileLock lock;
-        
+
         public LckStream (final FileObject fo) throws IOException {
             assert fo != null;
             this.lock = fo.lock();
@@ -384,6 +514,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             this.delegate.write(b);
         }
 
+        @Override
         public void write(int b) throws IOException {
             this.delegate.write (b);
         }
@@ -393,26 +524,26 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                 this.delegate.close();
             } finally {
                 this.lock.releaseLock();
-                text = null;                
-            }            
-        }                
+                text = null;
+            }
+        }
     }
-    
+
     private class DocumentStream extends OutputStream {
-        
+
         private static final int BUF_SIZ=2048;
-        
+
         private final StyledDocument doc;
         private byte[] data;
         private int pos;
-            
+
         public DocumentStream (final StyledDocument doc) {
             assert doc != null;
             this.doc = doc;
             this.data = new byte[BUF_SIZ];
             this.pos = 0;
         }
-        
+
         public synchronized @Override void write(byte[] b, int off, int len) throws IOException {
             ensureSize (len);
             System.arraycopy(b,off,this.data,this.pos,len);
@@ -425,11 +556,12 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             this.pos+=b.length;
         }
 
+        @Override
         public synchronized void write(int b) throws IOException {
             ensureSize (1);
             this.data[this.pos++]=(byte)(b&0xff);
         }
-        
+
         private void ensureSize (int delta) {
             int requiredLength = this.pos + delta;
             if (this.data.length<requiredLength) {
@@ -442,29 +574,25 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                 this.data = newData;
             }
         }
-        
+
         public synchronized @Override void close() throws IOException {
             try {
                 NbDocument.runAtomic(this.doc,
                     new Runnable () {
+                        @Override
                         public void run () {
                             try {
                                 doc.remove(0,doc.getLength());
-                                //todo: use new String(data,0,pos,FileEncodingQuery.getEncoding(file)) on JDK 6.0
-                                doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(file).name()),null);
+                                doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(handle.resolveFileObject(false))),null);
                             } catch (BadLocationException e) {
                                 if (log.isLoggable(Level.SEVERE))
                                     log.log(Level.SEVERE, e.getMessage(), e);
                             }
-                            catch (UnsupportedEncodingException ee) {
-                                if (log.isLoggable(Level.SEVERE))
-                                    log.log(Level.SEVERE, ee.getMessage(), ee);
-                            }
                         }
                     });
-            } finally {                
-                text = null;                
+            } finally {
+                text = null;
             }
-        }        
+        }
     }
 }

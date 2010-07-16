@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,6 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -83,94 +84,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
 //        "nbproject/private/private.properties",       no private.properties are created when project and source roots are collocated
     };
 
-    private static final String[] createdProperties = {
-        "build.classes.dir",
-        "build.classes.excludes",
-        "build.dir",
-        "build.generated.dir",
-        "build.generated.sources.dir",
-        "build.sysclasspath",
-        "build.test.classes.dir",
-        "build.test.results.dir",
-        "debug.classpath",
-        "debug.test.classpath",
-        "dist.dir",
-        "dist.jar",
-        "dist.javadoc.dir",
-        "jar.compress",
-        "javac.classpath",
-        "javac.compilerargs",
-        "javac.deprecation",
-        "javac.source",
-        "javac.target",
-        "javac.test.classpath",
-        "javadoc.author",
-        "javadoc.encoding",
-        "javadoc.noindex",
-        "javadoc.nonavbar",
-        "javadoc.notree",
-        "javadoc.private",
-        "javadoc.splitindex",
-        "javadoc.use",
-        "javadoc.version",
-        "javadoc.windowtitle",
-        "javadoc.additionalparam",
-        "main.class",
-        "manifest.file",
-        "meta.inf.dir",
-        "platform.active",
-        "source.encoding",
-        "run.classpath",
-        "run.jvmargs",
-        "run.test.classpath",
-        "src.dir",
-        "test.src.dir",
-    };
-
-    private static final String[] createdPropertiesExtSources = {
-        "build.classes.dir",
-        "build.classes.excludes",
-        "build.dir",
-        "build.generated.dir",
-        "build.generated.sources.dir",
-        "build.sysclasspath",
-        "build.test.classes.dir",
-        "build.test.results.dir",
-        "debug.classpath",
-        "debug.test.classpath",
-        "dist.dir",
-        "dist.jar",
-        "dist.javadoc.dir",
-        "jar.compress",
-        "javac.classpath",
-        "javac.compilerargs",
-        "javac.deprecation",
-        "javac.source",
-        "javac.target",
-        "javac.test.classpath",
-        "javadoc.author",
-        "javadoc.encoding",
-        "javadoc.noindex",
-        "javadoc.nonavbar",
-        "javadoc.notree",
-        "javadoc.private",
-        "javadoc.splitindex",
-        "javadoc.use",
-        "javadoc.version",
-        "javadoc.windowtitle",
-        "javadoc.additionalparam",
-        "main.class",
-        "manifest.file",
-        "meta.inf.dir",
-        "platform.active",
-        "source.encoding",
-        "run.classpath",
-        "run.jvmargs",
-        "run.test.classpath",
-        "src.dir",
-        "test.src.dir",
-    };
-
     public void testCreateProject() throws Exception {
         MockLookup.setLayersAndInstances();
         File proj = getWorkDir();
@@ -183,13 +96,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         for (int i=0; i<createdFiles.length; i++) {
             assertNotNull(createdFiles[i]+" file/folder cannot be found", fo.getFileObject(createdFiles[i]));
         }
-        EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        List<String> l = new ArrayList<String>(props.keySet());
-        for (String p : createdProperties) {
-            assertNotNull(p + " property cannot be found in project.properties", props.getProperty(p));
-            l.remove(p);
-        }
-        assertEquals("Found unexpected property: "+l,createdProperties.length, props.keySet().size());
     } 
     
     public void testCreateProjectFromExtSources () throws Exception {
@@ -210,39 +116,16 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
             assertNotNull(createdFilesExtSources[i]+" file/folder cannot be found", fo.getFileObject(createdFilesExtSources[i]));
         } 
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        List<String> l = new ArrayList<String>(props.keySet());
-        int extFileRefCount = 0;
-        for (String propName : createdPropertiesExtSources) {
+        for (String propName : new String[] {"src.dir", "test.src.dir"}) {
             String propValue = props.getProperty(propName);
             assertNotNull(propName+" property cannot be found in project.properties", propValue);
-            l.remove(propName);
-            if ("manifest.file".equals (propName)) {
-                assertEquals("Invalid value of manifest.file property.", "manifest.mf", propValue);
-            }
-            else if ("src.dir".equals (propName)) {
-                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
-                //Remove the file.reference to the source.dir, it is implementation detail
-                //depending on the presence of the AlwaysRelativeCollocationQuery
-                assertTrue("Value of the external source dir should be file reference",propValue.startsWith("${file.reference."));
-                if (l.remove (propValue.subSequence(2,propValue.length()-1))) {
-                    extFileRefCount++;
-                }
-                File file = helper.resolveFile(eval.evaluate(propValue));
-                assertEquals("Invalid value of src.dir property.", srcRoot, file);
-            }
-            else if ("test.src.dir".equals(propName)) {
-                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
-                //Remove the file.reference to the source.dir, it is implementation detail
-                //depending on the presence of the AlwaysRelativeCollocationQuery
-                assertTrue("Value of the external test dir should be file reference",propValue.startsWith("${file.reference."));
-                if (l.remove (propValue.subSequence(2,propValue.length()-1))) {
-                    extFileRefCount++;
-                }
-                File file = helper.resolveFile(eval.evaluate(propValue));
-                assertEquals("Invalid value of test.src.dir property.", testRoot, file);
-            }
+            PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+            //Remove the file.reference to the source.dir, it is implementation detail
+            //depending on the presence of the AlwaysRelativeCollocationQuery
+            assertTrue("Value of " + propName + " should be file reference", propValue.startsWith("${file.reference."));
+            File file = helper.resolveFile(eval.evaluate(propValue));
+            assertEquals("Invalid value of " + propName + " property", propName.equals("src.dir") ? srcRoot : testRoot, file);
         }
-        assertEquals("Found unexpected property: "+l,createdPropertiesExtSources.length, props.keySet().size() - extFileRefCount);
     }
     
     //Tests issue: #147128:J2SESources does not register new external roots immediately

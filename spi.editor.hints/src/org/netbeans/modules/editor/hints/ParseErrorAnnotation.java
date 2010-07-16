@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Annotation;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -58,6 +61,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     private final Severity severity;
     private final FixData fixes;
     private final String description;
+    private final String shortDescription;
     private final Position lineStart;
     private final AnnotationHolder holder;
     
@@ -66,6 +70,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         this.severity = severity;
         this.fixes = fixes;
         this.description = description;
+        this.shortDescription = description + NbBundle.getMessage(ParseErrorAnnotation.class, "LBL_shortcut_promotion"); //NOI18N
         this.lineStart = lineStart;
         this.holder = holder;
         
@@ -105,7 +110,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     }
 
     public String getShortDescription() {
-        return description;
+        return shortDescription;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

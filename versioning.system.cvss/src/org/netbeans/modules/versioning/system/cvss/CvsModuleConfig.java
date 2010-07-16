@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,9 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import java.awt.Color;
 import java.util.regex.Pattern;
 import java.util.*;
-import java.lang.String;
 import java.util.prefs.Preferences;
 import java.io.File;
 
@@ -51,6 +54,8 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  * Stores CVS module configuration.
@@ -73,6 +78,7 @@ public class CvsModuleConfig {
     private static final String FIELD_SEPARATOR = "<~>";
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
+    public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -81,7 +87,8 @@ public class CvsModuleConfig {
     private FileCollection excludedFiles;
     
     private Map<String, RootSettings> rootsMap;
-
+    private String lastCanceledCommitMessage;
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
 
     public CvsModuleConfig() {
         excludedFiles = new FileCollection();
@@ -123,16 +130,20 @@ public class CvsModuleConfig {
      * @param file file to exclude from commit
      */
     public void addExclusion(File file) {
-        excludedFiles.add(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (!excludedFiles.contains(file)) {
+            excludedFiles.add(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
 
     /**
      * @param file file to include in commit
      */
     public void removeExclusion(File file) {
-        excludedFiles.remove(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (excludedFiles.contains(file)) {
+            excludedFiles.remove(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
     
     // clients code ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,7 +186,7 @@ public class CvsModuleConfig {
         defaults.extRememberPassword = false;
         defaults.extCommand = System.getenv("CVS_RSH"); // NOI18N
         defaults.extUseInternalSsh = true;
-        defaults.extPassword = null;
+        defaults.extPassword = new char[0];
         return defaults;
     }
 
@@ -193,6 +204,37 @@ public class CvsModuleConfig {
         storeRootsMap();
     }
     
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
+    }
+
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
+    }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
+    }
+
     private Map<String, RootSettings> getRootsMap() {
         if (rootsMap == null) {
             rootsMap = loadRootsMap();
@@ -205,32 +247,21 @@ public class CvsModuleConfig {
         Map<String, RootSettings> map = new HashMap<String, RootSettings>(smap.size());
         for (String s : smap) {
             String [] fields = s.split(FIELD_SEPARATOR);
-            if (fields.length >= 8) {
-                // TODO: old settings, remove this block after 6.0
+            if (fields.length < 8 && fields.length >= 3) {
                 RootSettings rs = new RootSettings();
                 map.put(fields[0], rs);
-                if (fields.length >= 11) {
-                    ExtSettings es = new ExtSettings();
-                    rs.extSettings = es;
-                    es.extUseInternalSsh = Boolean.valueOf(fields[8]);
-                    es.extRememberPassword = Boolean.valueOf(fields[9]);
-                    es.extCommand = fields[10];
-                    if (fields.length >= 12) {
-                        es.extPassword = fields[11];
-                    }
+                ExtSettings es = new ExtSettings();
+                rs.extSettings = es;
+                es.extUseInternalSsh = Boolean.valueOf(fields[1]);
+                es.extRememberPassword = Boolean.valueOf(fields[2]);
+                es.extCommand = fields.length >= 4 ? fields[3] : ""; //NOI18N
+                es.extPassword = KeyringSupport.read(PREFIX_KEYRING_KEY, fields[0]);
+                if (es.extPassword == null) {
+                    es.extPassword = new char[0];
                 }
-            } else {
-                if (fields.length >= 4) {
-                    RootSettings rs = new RootSettings();
-                    map.put(fields[0], rs);
-                    ExtSettings es = new ExtSettings();
-                    rs.extSettings = es;
-                    es.extUseInternalSsh = Boolean.valueOf(fields[1]);
-                    es.extRememberPassword = Boolean.valueOf(fields[2]);
-                    es.extCommand = fields[3];
-                    if (fields.length >= 5) {
-                        es.extPassword = fields[4];
-                    }
+                if (fields.length >= 5 && !"".equals(fields[4])) {
+                    es.extPassword = fields[4].toCharArray();
+                    KeyringSupport.save(PREFIX_KEYRING_KEY, fields[0], es.extPassword.clone(), null);
                 }
             }
         }
@@ -252,7 +283,7 @@ public class CvsModuleConfig {
                 es.append(settings.extSettings.extCommand);
                 if (settings.extSettings.extRememberPassword) {
                     es.append(FIELD_SEPARATOR);
-                    es.append(settings.extSettings.extPassword);
+                    KeyringSupport.save(PREFIX_KEYRING_KEY, entry.getKey(), settings.extSettings.extPassword.clone(), null);
                 }
             }
             smap.add(es.toString());
@@ -319,7 +350,7 @@ public class CvsModuleConfig {
         public boolean extRememberPassword;
 
         /** Makes sense if extUseInternalSsh == true */
-        public String extPassword;
+        public char[] extPassword;
 
         /** Makes sense if extUseInternalSsh == false */
         public String extCommand;

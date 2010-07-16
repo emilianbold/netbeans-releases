@@ -211,6 +211,8 @@ public class BpelNavigatorVisualPanel extends JPanel
                 getContextLookup());
 
         final BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
+        //allow navigator component to be printable
+        treeView.getViewport().putClientProperty("print.printable", Boolean.TRUE); // NOI18N
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 removeAll();

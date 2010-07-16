@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,10 +53,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -67,6 +70,7 @@ public class AddExternalItemAction extends AbstractAction {
 	this.project = project;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
 	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
@@ -87,8 +91,9 @@ public class AddExternalItemAction extends AbstractAction {
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
-	if (ret == FileChooser.CANCEL_OPTION)
-	    return;
+	if (ret == FileChooser.CANCEL_OPTION) {
+            return;
+        }
 
 	File[] files = fileChooser.getSelectedFiles();
 	ArrayList<Item> items = new ArrayList<Item>();
@@ -99,13 +104,14 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath;
-	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
-		itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-	    else if (PathPanel.getMode() == PathPanel.REL)
-		itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-	    else
-		itemPath = files[i].getPath();
-	    itemPath = FilePathAdaptor.normalize(itemPath);
+	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+            } else {
+                itemPath = files[i].getPath();
+            }
+	    itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
                 items.add(item);
@@ -116,7 +122,8 @@ public class AddExternalItemAction extends AbstractAction {
                 items.add(item);
             }
 	}
-        if (items.size() > 0)
+        if (items.size() > 0) {
             MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+        }
     }
 }

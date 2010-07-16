@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -134,6 +137,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Used for allowing to pass getDocument method
      * when called from loadDocument. */
     private static final ThreadLocal<Boolean> LOCAL_LOAD_TASK = new ThreadLocal<Boolean>();
+
+    /** Used to avoid calling updateTitles from notifyUnmodified when called
+     * from doCloseDocument */
+    private static final ThreadLocal<Boolean> LOCAL_CLOSE_DOCUMENT = new ThreadLocal<Boolean>();
 
     /** error manager for CloneableEditorSupport logging and error reporting */
     private static final Logger ERR = Logger.getLogger("org.openide.text.CloneableEditorSupport"); // NOI18N
@@ -867,7 +874,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             if (prepareDocumentRuntimeException != null) {
                 if (prepareDocumentRuntimeException instanceof DelegateIOExc) {
-                    Exception ex = new Exception();
+                    Exception ex = new Exception(prepareDocumentRuntimeException);
                     ERR.log(Level.INFO, "Outer callstack", ex);
                     throw (IOException) prepareDocumentRuntimeException.getCause();
                 }
@@ -1744,10 +1751,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  }
                                              }
                                          };
-
+                                         
                                          Runnable run2 = new Runnable() {
                                              public void run() {
-                                                 if (getDoc() == null) {
+                                                 StyledDocument d = getDoc();
+                                                 if (d == null) {
                                                      return;
                                                  }
                                                  // XXX do this from AWT???
@@ -1762,17 +1770,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  updateLineSet(true);
                                                  ERR.fine("task-addUndoableEditListener");
                                                  // Add undoable listener after atomic change has finished
-                                                 getDoc().addUndoableEditListener(getUndoRedo());
+                                                 d.addUndoableEditListener(getUndoRedo());
                                              }
                                          };
-
+                                         
                                          if (getDoc() != null) {
-                                             ERR.fine("Posting the AWT runnable: " +
-                                                      run2);
+                                             ERR.fine("Posting the AWT runnable: " + run2);
                                              run1.run();
                                              SwingUtilities.invokeLater(run2);
-                                             ERR.fine("Posted in " +
-                                                      Thread.currentThread());
+                                             ERR.fine("Posted in " + Thread.currentThread());
                                          }
                                      }
                                  });
@@ -1863,9 +1869,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     protected void notifyUnmodified() {
         env.unmarkModified();
-        updateTitles();
+        if (!Boolean.TRUE.equals(LOCAL_CLOSE_DOCUMENT.get())) {
+            updateTitles();
+        }
     }
-
+    
     /** Conditionally calls notifyModified
      * @return true if the modification was allowed, false if it should be prohibited
      */
@@ -2208,7 +2216,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         // notifies the support that 
         cesEnv().removePropertyChangeListener(getListener());
-        callNotifyUnmodified();
+        try {
+            LOCAL_CLOSE_DOCUMENT.set(Boolean.TRUE);
+            callNotifyUnmodified();
+        } finally {
+            LOCAL_CLOSE_DOCUMENT.set(Boolean.FALSE);
+        }
 
         StyledDocument d = getDoc();
         if (d != null) {
@@ -3218,14 +3231,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public boolean canRedo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(2, myDoc).booleanResult;
+            return new RenderUndo(2, myDoc, 0, true).booleanResult;
         }
 
         @Override
         public boolean canUndo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(3, myDoc).booleanResult;
+            return new RenderUndo(3, myDoc, 0, true).booleanResult;
         }
 
         @Override
@@ -3253,14 +3266,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public boolean canUndoOrRedo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(7, myDoc).booleanResult;
+            return new RenderUndo(7, myDoc, 0, true).booleanResult;
         }
 
         @Override
         public java.lang.String getUndoOrRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(8, myDoc).stringResult;
+                return new RenderUndo(8, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
@@ -3270,7 +3283,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public java.lang.String getRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(9, myDoc).stringResult;
+                return new RenderUndo(9, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
@@ -3280,7 +3293,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public java.lang.String getUndoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(10, myDoc).stringResult;
+                return new RenderUndo(10, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
@@ -3307,25 +3320,35 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             public boolean booleanResult;
             public int intResult;
             public String stringResult;
+            private final boolean readonly;
 
             public RenderUndo(int type, StyledDocument doc) {
                 this(type, doc, 0);
             }
 
             public RenderUndo(int type, StyledDocument doc, int intValue) {
+                this(type, doc, intValue, false);
+            }
+
+            public RenderUndo(int type, StyledDocument doc, int intValue, boolean readonly) {
                 this.type = type;
                 this.intResult = intValue;
+                this.readonly = readonly;
 
-                if (doc instanceof NbDocument.WriteLockable) {
+                if (!readonly && (doc instanceof NbDocument.WriteLockable)) {
                     ((NbDocument.WriteLockable) doc).runAtomic(this);
                 } else {
-                    // if the document is not one of "NetBeans ready"
-                    // that supports locking we do not have many 
-                    // chances to do something. Maybe check for AbstractDocument
-                    // and call writeLock using reflection, but better than
-                    // that, let's leave this simple for now and wait for
-                    // bug reports (if any appear)
-                    run();
+                    if (readonly && doc != null) {
+                        doc.render(this);
+                    } else {
+                        // if the document is not one of "NetBeans ready"
+                        // that supports locking we do not have many
+                        // chances to do something. Maybe check for AbstractDocument
+                        // and call writeLock using reflection, but better than
+                        // that, let's leave this simple for now and wait for
+                        // bug reports (if any appear)
+                        run();
+                    }
                 }
             }
 

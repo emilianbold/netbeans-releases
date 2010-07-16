@@ -5,7 +5,6 @@
 
 package org.netbeans.modules.iep.editor.xsd.nodes;
 
-import org.netbeans.modules.iep.editor.xsd.nodes.images.NodeIcons;
 import org.netbeans.modules.xml.axi.ContentModel;
 
 /**

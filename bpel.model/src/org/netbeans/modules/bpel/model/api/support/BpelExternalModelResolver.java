@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -94,8 +97,7 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
         Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
         // 
         Project project = Utils.safeGetProject(mBpelModel);
-        List<FileObject> schemaFoList = ProjectUtilities.
-                getXSDFilesRecursively(project, false);
+        List<FileObject> schemaFoList = ReferenceUtil.getXSDFilesRecursively(project, false);
         for (FileObject fo : schemaFoList) {
             SchemaModel sModel = Utils.getSchemaModel(fo);
             if (sModel != null) {
@@ -104,8 +106,7 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
         }
         //
         // Takes all schema models embedded to all visible WSDL files. 
-        List<FileObject> wsdlFoList = 
-                ProjectUtilities.getWSDLFilesRecursively(project, false);
+        List<FileObject> wsdlFoList = ReferenceUtil.getWSDLFilesRecursively(project, false);
         for (FileObject fo : wsdlFoList) {
             WSDLModel wsdlModel = Utils.getWsdlModel(fo);
             if (wsdlModel != null) {
@@ -131,9 +132,14 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
             while (itr.hasNext()) {
                 try {
                     Object pubId = itr.next();
-                    ModelSource modelSource = CatalogModelFactory.getDefault().
-                            getCatalogModel(mBpelModel.getModelSource()).
-                            getModelSource(new URI(pubId.toString()));
+                    if (pubId == null) continue;
+
+                    String sysID = mCatalogReader.getSystemID(pubId.toString());
+                    if (sysID == null) continue;
+
+                    ModelSource modelSource = CatalogModelFactory.getDefault().getCatalogModel(
+                        mBpelModel.getModelSource()).getModelSource(
+                        new URI(sysID));
                     if (modelSource != null) {
                         SchemaModel sModel = SchemaModelFactory.getDefault().
                                 getModel(modelSource);
@@ -158,12 +164,14 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
     public boolean isSchemaVisible(String schemaNamespaceUri) {
         Collection<SchemaModel> models = getVisibleModels();
         for (SchemaModel model : models) {
-            String nsCondidate = model.getSchema().getTargetNamespace();
-            if (schemaNamespaceUri.equals(nsCondidate)) {
-                return true;
+            Schema schema = model.getSchema();
+            if (schema != null) {
+                String nsCondidate = schema.getTargetNamespace();
+                if (schemaNamespaceUri.equals(nsCondidate)) {
+                    return true;
+                }
             }
         }
         return false;
     }
-
 }

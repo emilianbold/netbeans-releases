@@ -1,7 +1,10 @@
 /*****************************************************************************
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,7 +16,7 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -43,7 +46,6 @@
  *****************************************************************************/
 package org.netbeans.modules.subversion.config;
 
-import java.io.IOException;
 import org.netbeans.modules.proxy.Base64Encoder;
 
 /**
@@ -310,21 +312,6 @@ public class Scrambler {
         }
         return instance;
     }
-
-    /**
-     * Scramble text, turning it into a String of scrambled data
-     * @return a String of scrambled data
-     */
-    public String scramble(String text) {
-        StringBuffer buf = new StringBuffer("A"); //NOI18N
-
-        if (text != null) {
-            for (int i = 0; i < text.length(); ++i) {
-                buf.append(scramble(text.charAt(i)));
-            }
-        }        
-        return new String(encode(buf.toString().getBytes()));
-    }
     
     public String descramble(String scrambledText) {        
         StringBuffer buf = new StringBuffer(); 
@@ -345,9 +332,5 @@ public class Scrambler {
     
     private byte[] decode(String str) {        
             return Base64Encoder.decode(str);
-    }
-    
-    private byte[] encode(byte[] encode) {        
-        return Base64Encoder.encode(encode).getBytes();                   
     }
 }

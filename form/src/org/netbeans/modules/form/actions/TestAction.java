@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,6 +91,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(TestAction.class)
@@ -98,6 +102,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
     /** Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.testing"); // NOI18N
     }
@@ -108,6 +113,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
         return "org/netbeans/modules/form/resources/test_form.png"; // NOI18N
     }
 
+    @Override
     public void performAction() {
         if (formDesigner != null) {
             selectedLaf = null;
@@ -118,6 +124,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         RADVisualComponent topComp = formDesigner.getTopDesignComponent();
         if (topComp == null)
@@ -155,6 +162,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
             final FormLAF.PreviewInfo previewInfo = FormLAF.initPreviewLaf(selectedLaf, classLoader);
             final Frame frame = (Frame) FormDesigner.createFormView(topComp, previewInfo);
+            frame.setEnabled(true); // Issue 178457
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -213,6 +221,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             // Issue 66594 and 12084
             final boolean pack = shouldPack;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (pack) {
                         try {
@@ -338,6 +347,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             return popup;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Object o = e.getSource();
             if (o instanceof JComponent) {

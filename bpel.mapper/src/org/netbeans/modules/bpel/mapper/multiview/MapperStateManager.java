@@ -21,7 +21,6 @@ package org.netbeans.modules.bpel.mapper.multiview;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.mapper.tree.GraphExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.RightTreeExpandedState;
@@ -31,7 +30,6 @@ import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.soa.mappercore.Mapper;
-import org.netbeans.modules.soa.mappercore.RightTree;
 
 /**
  * Store mapper state for context entity which is the unique id of mapper
@@ -72,39 +70,48 @@ public class MapperStateManager {
 
     }
 
-    public void restoreOldEntityContext(BpelDesignContext context) {
+    /**
+     * Returns a flag which indicates if the state has been restored. 
+     * @param context
+     * @return
+     */
+    public boolean restoreOldEntityContext(BpelDesignContext context) {
         if (context == null) {
-            return;
+            return false;
         }
 
         BpelEntity entity = context.getContextEntity();
         UniqueId uid = entity != null ? entity.getUID() : null;
         if  ( uid == null) {
-            return;
+            return false;
         }
 
         final MapperState state = myEntitiesContext.get(uid);
-        if (state != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    TreeExpandedState leftTreeState = state.getLeftTreeExpandedState();
-                    if (leftTreeState != null) {
-                        leftTreeState.restore();
-                    }
-
-                    TreeExpandedState rightTreeState = state.getRightTreeExpandedState();
-                    if (rightTreeState != null) {
-                        rightTreeState.restore();
-                    }
-
-                    TreeExpandedState graphState = state.getGraphEXpandedState();
-                    if (graphState != null) {
-                        graphState.restore();
-                    }
-                }
-            });
-            // TODO: restore tree selection, expanded graph
+        if (state == null) {
+            return false;
         }
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+                TreeExpandedState leftTreeState = state.getLeftTreeExpandedState();
+                if (leftTreeState != null) {
+                    leftTreeState.restore();
+                }
+
+                TreeExpandedState rightTreeState = state.getRightTreeExpandedState();
+                if (rightTreeState != null) {
+                    rightTreeState.restore();
+                }
+
+                TreeExpandedState graphState = state.getGraphEXpandedState();
+                if (graphState != null) {
+                    graphState.restore();
+                }
+                //
+                // TODO: restore tree selection, expanded graph
+//            }
+//        });
+        //
+        return true;
     }
 
     private TreeExpandedState getLeftTreeExpandedState() {
@@ -112,11 +119,8 @@ public class MapperStateManager {
 
         Mapper mapper = myMapperTcContext.getMapper();
         if (mapper != null) {
-//            JTree leftTree = mapper.getLeftTree();
-//            if (leftTree != null) {
-                leftTreeState = new TreeExpandedStateImpl(mapper);
-                leftTreeState.save();
-//            }
+            leftTreeState = new TreeExpandedStateImpl(mapper);
+            leftTreeState.save();
         }
         return leftTreeState;
     }
@@ -138,11 +142,8 @@ public class MapperStateManager {
 
         Mapper mapper = myMapperTcContext.getMapper();
         if (mapper != null) {
-//            RightTree rightTree = mapper.getRightTree();
-//            if (rightTree != null) {
-                rightTreeState = new RightTreeExpandedState(mapper);
-                rightTreeState.save();
-//            }
+            rightTreeState = new RightTreeExpandedState(mapper);
+            rightTreeState.save();
         }
         return rightTreeState;
     }

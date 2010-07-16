@@ -22,6 +22,7 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.model.api.InvokeHandler;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -97,13 +98,14 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
     }
 
     public void visit(Invoke invoke) {
-        assert getParent() instanceof org.netbeans.modules.xslt.tmap.model.api.Operation;
-        org.netbeans.modules.xslt.tmap.model.api.Operation operation 
-                = (org.netbeans.modules.xslt.tmap.model.api.Operation)getParent();
+        assert getParent() instanceof InvokeHandler;
+        
+        InvokeHandler invokeHandler 
+                = (InvokeHandler)getParent();
         if (isAdd()) {
-            operation.addInvoke(invoke);
+            invokeHandler.addInvoke(invoke);
         } else if (isRemove()) {
-            operation.removeInvoke(invoke);
+            invokeHandler.removeInvoke(invoke);
         }
     }
 

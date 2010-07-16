@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -205,6 +208,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                 ss = Sheet.createPropertiesSet();
                 s.put(ss);
             }
+            ss.put(new ImageWidthProperty());
+            ss.put(new ImageHeightProperty());
             ss.put(new ThumbnailProperty(getDataObject()));
             return s;
         }
@@ -303,6 +308,50 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                 }
             } // End of class ThumbnailPropertyEditor.
         } // End of class ThumbnailProperty.
+
+       /** Property representing for image width property in the sheet. */
+       private final class ImageWidthProperty extends PropertySupport.ReadOnly {
+          /** Constructs property. */
+          public ImageWidthProperty() {
+             super("width", Integer.class, // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class, "PROP_Image_Width"), // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class, "HINT_Image_Width")); // NOI18N
+          }
+
+          /** Gets value of property. Overrides superclass method. */
+          public Object getValue() throws InvocationTargetException {
+             try {
+                final Icon icon = new ImageIcon(getDataObject().getPrimaryFile().
+                      getURL());
+                return Integer.valueOf(icon.getIconWidth());
+             } catch (FileStateInvalidException fsie) {
+                throw new InvocationTargetException(fsie);
+             }
+          }
+       } // End of class ImageWidthProperty.
+
+       /** Property representing for image height property in the sheet. */
+       private final class ImageHeightProperty extends PropertySupport.ReadOnly {
+          /** Constructs property. */
+          public ImageHeightProperty() {
+             super("height", Integer.class, // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class,
+                   "PROP_Image_Height"), // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class,
+                   "HINT_Image_Height")); // NOI18N
+          }
+
+          /** Gets value of property. Overrides superclass method. */
+          public Object getValue() throws InvocationTargetException {
+             try {
+                final Icon icon = new ImageIcon(getDataObject().getPrimaryFile().
+                      getURL());
+                return Integer.valueOf(icon.getIconHeight());
+             } catch (FileStateInvalidException fsie) {
+                throw new InvocationTargetException(fsie);
+             }
+          }
+       } // End of class ImageHeightProperty.
     } // End of class ImageNode.
 
 }

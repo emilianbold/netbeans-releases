@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -62,6 +66,9 @@ import org.openide.windows.WindowManager;
  */
 public class OpenFileAction implements ActionListener {
 
+    /** stores the last current directory of the file chooser */
+    private static File currentDirectory = null;
+
     public OpenFileAction() {
     }
 
@@ -76,8 +83,7 @@ public class OpenFileAction implements ActionListener {
      */
     protected JFileChooser prepareFileChooser() {
         JFileChooser chooser = new FileChooser();
-        File currDir = findStartingDirectory();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
+        chooser.setCurrentDirectory(getCurrentDirectory());
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
         return chooser;
@@ -111,6 +117,7 @@ public class OpenFileAction implements ActionListener {
      * {@inheritDoc} Displays a file chooser dialog
      * and opens the selected files.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (running) {
             return;
@@ -121,6 +128,7 @@ public class OpenFileAction implements ActionListener {
             File[] files;
             try {
                 files = chooseFilesToOpen(chooser);
+                currentDirectory = chooser.getCurrentDirectory();
             } catch (UserCancelException ex) {
                 return;
             }
@@ -133,26 +141,23 @@ public class OpenFileAction implements ActionListener {
     }
     
     /**
-     * Try to find a directory to open the chooser open.
-     * If there is a file among selected nodes (e.g. open editor windows),
-     * use that directory; else just stick to the user's home directory.
+     * Returns an abstract representation of the current directory pathname that
+     * is intended to be used in the file chooser.
+     *
+     * @return a directory pathname that refers to a directory last time
+     *         selected after successful opening of the file(s) via the file
+     *         chooser if such directory is defined and exists, otherwise to
+     *         the user's default directory for the file chooser (see
+     *         {@link ​JFileChooser#setCurrentDirectory(File dir)}
+     *         for more info about the user's default directory).
      */
-    private static File findStartingDirectory() {
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        for (int i = 0; i < nodes.length; i++) {
-            DataObject d = nodes[i].getCookie(DataObject.class);
-            if (d != null) {
-                File f = FileUtil.toFile(d.getPrimaryFile());
-                if (f != null) {
-                    if (f.isFile()) {
-                        f = f.getParentFile();
-                    }
-                    return f;
-                }
-            }
+    private static File getCurrentDirectory() {
+        if(currentDirectory != null && currentDirectory.exists()) {
+            return currentDirectory;
         }
-        // Backup:
-        return new File(System.getProperty("user.home"));
+        currentDirectory =
+                FileSystemView.getFileSystemView().getDefaultDirectory();
+        return currentDirectory;
     }
 
 }

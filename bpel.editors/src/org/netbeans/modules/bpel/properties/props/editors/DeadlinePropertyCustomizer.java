@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,6 @@ import java.util.GregorianCalendar;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.soa.validation.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
 import org.netbeans.modules.soa.ui.form.RangeIntegerDocument;
@@ -65,9 +67,10 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.Constants;
+import org.netbeans.modules.xml.time.TimeUtil;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
-import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
+import org.netbeans.modules.soa.ui.properties.PropertyVetoError;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
@@ -97,15 +100,14 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
                 }
             }
         });
-        //
-        fldYear.setDocument(new RangeIntegerDocument(
-                Integer.MIN_VALUE, Integer.MAX_VALUE));
+/*
+        fldYear.setDocument(new RangeIntegerDocument(Integer.MIN_VALUE, Integer.MAX_VALUE));
         fldMonth.setDocument(new RangeIntegerDocument(1, 12));
         fldDay.setDocument(new RangeIntegerDocument(1, 31));
         fldHour.setDocument(new RangeIntegerDocument(0, 23));
         fldMinute.setDocument(new RangeIntegerDocument(0, 59));
         fldSecond.setDocument(new RangeIntegerDocument(0, 59));
-        //
+*/
         ActionListener timerListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 revalidate(true);
@@ -178,7 +180,7 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        value = DurationUtil.removeQuotes(value);
+        value = TimeUtil.removeQuotes(value);
         //
         parseUntil(value);
         revalidate(true);
@@ -187,7 +189,7 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
     public void propertyChange(PropertyChangeEvent event) {
         if (PropertyEnv.PROP_STATE.equals(event.getPropertyName()) &&
                 event.getNewValue() == PropertyEnv.STATE_VALID) {
-            String currText = DurationUtil.addQuotes(getContent());
+            String currText = TimeUtil.addQuotes(getContent());
             try {
                 myPropertyEditor.setAsText(currText);
             } catch (PropertyVetoError ex) {
@@ -229,17 +231,17 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         dateFormat.setLenient(false);
         
         return dateFormat.parse(
-                value.replace(DurationUtil.T_DELIM.charAt(0), ' '));
+                value.replace(TimeUtil.T_DELIM.charAt(0), ' '));
     }
     
     private String getContent() {
-        return DurationUtil.getContent(false,
-                DurationUtil.parseInt(fldYear.getText()),
-                DurationUtil.parseInt(fldMonth.getText()),
-                DurationUtil.parseInt(fldDay.getText()),
-                DurationUtil.parseInt(fldHour.getText()),
-                DurationUtil.parseInt(fldMinute.getText()),
-                DurationUtil.parseDouble(fldSecond.getText()));
+        return TimeUtil.getUntilValue(
+                TimeUtil.parseInt(fldYear.getText()),
+                TimeUtil.parseInt(fldMonth.getText()),
+                TimeUtil.parseInt(fldDay.getText()),
+                TimeUtil.parseInt(fldHour.getText()),
+                TimeUtil.parseInt(fldMinute.getText()),
+                TimeUtil.parseDouble(fldSecond.getText()), null);
     }
     
     public Validator createValidator() {
@@ -253,20 +255,20 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         }
         
         public void doFastValidation() {
-            String param = DurationUtil.getParseUntil(
-                    fldYear.getText().trim(),
-                    fldMonth.getText().trim(),
-                    fldDay.getText().trim(),
-                    fldHour.getText().trim(),
-                    fldMinute.getText().trim(),
-                    fldSecond.getText().trim()
-                    );
-            //
+/*
+          String param = TimeUtil.getUntilValue(
+                TimeUtil.parseInt(fldYear.getText().trim()),
+                TimeUtil.parseInt(fldMonth.getText().trim()),
+                TimeUtil.parseInt(fldDay.getText().trim()),
+                TimeUtil.parseInt(fldHour.getText().trim()),
+                TimeUtil.parseInt(fldMinute.getText().trim()),
+                TimeUtil.parseDouble(fldSecond.getText().trim()), null);
             try {
                 parseDate(param);
             } catch (ParseException e) {
                 addReasonKey(Severity.ERROR, "ERR_INCORRECT_DATE_TIME", param); // NOI18N
             }
+*/
         }
     }
     

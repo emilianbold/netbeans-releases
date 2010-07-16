@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -67,6 +72,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -193,6 +200,7 @@ public final class FileUtil extends Object {
             LOG.fine("refreshAll - scheduled");  //NOI18N
         }
         taskToWaitFor.waitFinished();
+        LOG.fine("refreshAll - finished");  //NOI18N
     }
 
     /**
@@ -303,6 +311,19 @@ public final class FileUtil extends Object {
         }
     }
     /**
+     * Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.util.concurrent.Callable)
+     * addRecursiveListener(listener, path, null)}.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     *
+     * @since org.openide.filesystems 7.28
+     */
+    public static void addRecursiveListener(FileChangeListener listener, File path) {
+        addFileChangeListener(new DeepListener(listener, path, null), path);
+    }
+
+    /**
      * Adds a listener to changes under given path. It permits you to listen to a file
      * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
      * <br/>
@@ -326,14 +347,27 @@ public final class FileUtil extends Object {
      * listen to any number of paths. Note that listeners are always held weakly
      * - if the listener is collected, it is quietly removed.
      *
+     * <div class="nonnormative">
+     * As registering of the listener can take a long time, especially on deep
+     * hierarchies, it is possible provide a callback <code>stop</code>.
+     * This stop object is guaranteed to be called once per every folder on the
+     * default (when masterfs module is included) implemention. If the call
+     * to <code>stop.call()</code> returns true, then the registration of
+     * next recursive items is interrupted. The listener may or may not get
+     * some events from already registered folders.
+     * </div>
+     *
      * @param listener FileChangeListener to listen to changes in path
      * @param path File path to listen to (even not existing)
+     * @param stop an interface to interrupt the process of registering
+     *    the listener. If the <code>call</code> returns true, the process
+     *    of registering the listener is immediately interrupted
      *
      * @see FileObject#addRecursiveListener
-     * @since org.openide.filesystems 7.28
+     * @since org.openide.filesystems 7.37
      */
-    public static void addRecursiveListener(FileChangeListener listener, File path) {
-        addFileChangeListener(new DeepListener(listener, path), path);
+    public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
+        addFileChangeListener(new DeepListener(listener, path, stop), path);
     }
 
     /**
@@ -346,7 +380,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path), path);
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path, null), path);
         dl.run();
     }
 
@@ -1234,7 +1268,7 @@ public final class FileUtil extends Object {
      *
     * @param folder parent folder
     * @param name preferred base name of file
-    * @param ext extension to use
+    * @param ext extension to use (or null)
     * @return a free file name <strong>(without the extension)</strong>
      */
     public static String findFreeFileName(FileObject folder, String name, String ext) {
@@ -1470,7 +1504,7 @@ public final class FileUtil extends Object {
     public static List<String> getMIMETypeExtensions(String mimeType) {
         Parameters.notEmpty("mimeType", mimeType);  //NOI18N
         HashMap<String, String> extensionToMime = new HashMap<String, String>();
-        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
+        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers()) {
             Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
             for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
                 String mimeKey = entry.getKey();
@@ -1643,10 +1677,28 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        Map<String, String> normalizedPaths = getNormalizedFilesMap();
+        String unnormalized = file.getPath();
+        String normalized = normalizedPaths.get(unnormalized);
+        File ret;
+        if (normalized == null) {
+            ret = normalizeFileImpl(file);
+            normalizedPaths.put(unnormalized, ret.getPath());
+        } else if (normalized.equals(unnormalized)) {
+            ret = file;
+        } else {
+            ret = new File(normalized);
+        }
+        return ret;
+    }
+
+    private static File normalizeFileImpl(File file) {
         // XXX should use NIO in JDK 7; see #6358641
         Parameters.notNull("file", file);  //NOI18N
         File retFile;
+        LOG.log(Level.FINE, "FileUtil.normalizeFile for {0}", file); // NOI18N
 
+        long now = System.currentTimeMillis();
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
             retFile = normalizeFileOnWindows(file);
         } else if (Utilities.isMac()) {
@@ -1654,14 +1706,21 @@ public final class FileUtil extends Object {
         } else {
             retFile = normalizeFileOnUnixAlike(file);
         }
-
-        return (file.getPath().equals(retFile.getPath())) ? file : retFile;
+        File ret = (file.getPath().equals(retFile.getPath())) ? file : retFile;
+        long took = System.currentTimeMillis() - now;
+        if (took > 500) {
+            LOG.log(Level.WARNING, "FileUtil.normalizeFile({0}) took {1} ms. Result is {2}", new Object[]{file, took, ret});
+        }
+        return ret;
     }
 
     private static File normalizeFileOnUnixAlike(File file) {
         // On Unix, do not want to traverse symlinks.
         // URI.normalize removes ../ and ./ sequences nicely.
         file = new File(file.toURI().normalize()).getAbsoluteFile();
+        while (file.getAbsolutePath().startsWith("/../")) { // NOI18N
+            file = new File(file.getAbsolutePath().substring(3));
+        }
         if (file.getAbsolutePath().equals("/..")) { // NOI18N
             // Special treatment.
             file = new File("/"); // NOI18N
@@ -1676,7 +1735,12 @@ public final class FileUtil extends Object {
             // URI.normalize removes ../ and ./ sequences nicely.            
             File absoluteFile = new File(file.toURI().normalize());
             File canonicalFile = file.getCanonicalFile();
-            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absoluteFile.getAbsolutePath());
+            String absolutePath = absoluteFile.getAbsolutePath();
+            if (absolutePath.equals("/..")) { // NOI18N
+                // Special treatment.
+                absoluteFile = new File(absolutePath = "/"); // NOI18N
+            }
+            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absolutePath);
 
             if (isSymLink) {
                 retVal = normalizeSymLinkOnMac(absoluteFile);
@@ -1684,7 +1748,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            LOG.log(Level.INFO, "Normalization failed on file " + file, ioe);
+            LOG.log(Level.FINE, "Normalization failed on file " + file, ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1765,6 +1829,21 @@ public final class FileUtil extends Object {
         }
 
         return (retVal != null) ? retVal : file.getAbsoluteFile();
+    }
+
+    private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
+    private static Map<String, String> getNormalizedFilesMap() {
+        Map<String, String> map = normalizedRef.get();
+        if (map == null) {
+            synchronized (FileUtil.class) {
+                map = normalizedRef.get();
+                if (map == null) {
+                    map = new ConcurrentHashMap<String, String>();
+                    normalizedRef = new SoftReference<Map<String, String>>(map);
+                }
+            }
+        }
+        return map;
     }
 
     /**
@@ -1875,15 +1954,12 @@ public final class FileUtil extends Object {
         Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (!fo.isValid()) {
-            return false;
+            return isArchiveFile(fo.getPath());
         }
         // XXX Special handling of virtual file objects: try to determine it using its name, but don't cache the
         // result; when the file is checked out the more correct method can be used
         if (fo.isVirtual()) {
-            String path = fo.getPath();
-            int index = path.lastIndexOf('.');
-
-            return (index != -1) && (index > path.lastIndexOf('/') + 1);
+            return isArchiveFile(fo.getPath());
         }
 
         if (fo.isFolder()) {
@@ -1921,9 +1997,7 @@ public final class FileUtil extends Object {
             }
 
             if (b == null) {
-                String path = fo.getPath();
-                int index = path.lastIndexOf('.');
-                b = ((index != -1) && (index > path.lastIndexOf('/') + 1)) ? Boolean.TRUE : Boolean.FALSE;
+                b = isArchiveFile(fo.getPath());
             }
 
             archiveFileCache.put(fo, b);
@@ -1952,12 +2026,12 @@ public final class FileUtil extends Object {
         FileObject fo = URLMapper.findFileObject(url);
 
         if ((fo != null) && !fo.isVirtual()) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "isArchiveFile_FILE_RESOLVED", fo); //NOI18N, used by FileUtilTest.testIsArchiveFileRace
+            }
             return isArchiveFile(fo);
         } else {
-            String urlPath = url.getPath();
-            int index = urlPath.lastIndexOf('.');
-
-            return (index != -1) && (index > urlPath.lastIndexOf('/') + 1);
+            return isArchiveFile(url.getPath());
         }
     }
 
@@ -2020,15 +2094,11 @@ public final class FileUtil extends Object {
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=46459">Issue #46459</a>
      * @see <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4906607">JRE bug #4906607</a>
      * @since org.openide/1 4.42
+     * @deprecated Just use {@link JFileChooser#setCurrentDirectory}. JDK 6 does not have this bug.
      */
+    @Deprecated
     public static void preventFileChooserSymlinkTraversal(JFileChooser chooser, File currentDirectory) {
-        if (!(Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))
-                && System.getProperty("java.specification.version").startsWith("1.5")) { // NOI18N
-            chooser.setCurrentDirectory(wrapFileNoCanonicalize(currentDirectory));
-            chooser.setFileSystemView(new NonCanonicalizingFileSystemView());
-        } else {
-            chooser.setCurrentDirectory(currentDirectory);
-        }
+        chooser.setCurrentDirectory(currentDirectory);
     }
 
     /**
@@ -2308,5 +2378,15 @@ public final class FileUtil extends Object {
                 diskFileSystem = fs;
             }
         }
-    }    
+    }
+
+    /**
+     * Tests if a non existent path represents a file.
+     * @param path to be tested, separated by '/'.
+     * @return true if the file has '.' after last '/'.
+     */
+    private static boolean isArchiveFile (final String path) {
+        int index = path.lastIndexOf('.');  //NOI18N
+        return (index != -1) && (index > path.lastIndexOf('/') + 1);    //NOI18N
+    }
 }

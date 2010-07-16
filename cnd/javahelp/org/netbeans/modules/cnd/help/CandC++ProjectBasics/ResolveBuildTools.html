@@ -70,31 +70,33 @@ click Default.
 </li>
 </ul>
 </li>
-<li><b>Base Directory.</b> The base directory for compilers for 
-the current development host. To change the base directory,
+<li><b>Base Directory.</b> The base directory where the compilers are located on
+the current development host. The base directory is typically a <tt>bin</tt>
+directory. To change the base directory,
 click the browse button and select a new directory.
 These fields can be edited for the local host 
 but not for remote hosts.  For a remote development host, you must enter the
-full path to the tools as they are run when you are logged into the remote host.
+full path to the tools on the remote host.
 <p>For each tool, the default command is the first one found in the
 base directory. To select a different command from the base directory
 or another directory, click the browse button and navigate to a different
 command in the Select Tool dialog box.</p></li>
 <ul>
-<li><b>C Compiler.</b> The C compiler to use for building C projects.
+<li><b>C Compiler.</b> The C compiler command to use for building C projects.
 </li>
-<li><b>C++ Compiler.</b> The C++ compiler to use for building C++ projects.
+<li><b>C++ Compiler.</b> The C++ compiler command to use for building C++ projects.
 </li>
-<li><b>Fortran Compiler.</b> The Fortran compiler to use for building Fortran projects.
+<li><b>Fortran Compiler.</b> The Fortran compiler command to use for building Fortran projects.
 </li>
-<li><b>Assembler.</b> The assembler program to use for projects in assembly code.
+<li><b>Assembler.</b> The assembler program command to use for projects in assembly code.
 </li>
 </ul>
 <li><b>Make Command.</b> The make command to use for building projects. 
 </li>
-<li><b>Debugger Command.</b> The gdb command to use when debugging 
-projects.  
+<li><b>Debugger Command.</b> The gdb command to use when debugging projects.  
 </li>
+<li><b>QMake Command.</b> The command for generating makefiles from qmake <tt>.pro</tt> project files.</li>
+<li><b>CMake Command.</b> The command for generating makefies from <tt>CMakeLists.txt</tt> configuration files.</li>
 </ul>
 <hr>
 <small>

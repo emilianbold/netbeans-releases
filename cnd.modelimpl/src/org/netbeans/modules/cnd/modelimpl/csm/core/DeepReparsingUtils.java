@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +72,16 @@ public final class DeepReparsingUtils {
     }
 
     /**
+     * Reparse one file when fileImpl content changed.
+     */
+    static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
+        project.invalidatePreprocState(fileImpl.getFile());
+        fileImpl.markReparseNeeded(false);
+        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
+                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+    }
+
+    /**
      * Reparse including/included files at fileImpl content changed.
      */
     public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project) {
@@ -79,13 +93,13 @@ public final class DeepReparsingUtils {
      */
     public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project, boolean scheduleParsing) {
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
-        Set<CsmFile> topParents = top.getCompilationUnits();
+        Set<CsmFile> cuStartFiles = top.getCompilationUnits();
         Set<CsmFile> parents = top.getParentFiles();
-        if (topParents.size() > 0) {
+        if (cuStartFiles.size() > 0) {
             fileImpl.clearStateCache();
             Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFiles();
             for (CsmFile file : coherence) {
-                if (topParents.contains(file)) {
+                if (cuStartFiles.contains(file)) {
                     ((FileImpl)file).clearStateCache();
                 } else if (parents.contains(file)) {
                     ((FileImpl)file).clearStateCache();
@@ -96,7 +110,7 @@ public final class DeepReparsingUtils {
             }
             if (scheduleParsing) {
                 // coherence already invalidated, pass empty set
-                addToReparse(project, topParents, new HashSet<CsmFile>(0), false);
+                addToReparse(project, cuStartFiles, new HashSet<CsmFile>(0), false);
             }
         } else {
             if (scheduleParsing) {
@@ -204,7 +218,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
             for (NativeFileItem item : items) {
-                if (project.acceptNativeItem(item)) {
+                if (Utils.acceptNativeItem(item)) {
                     FileImpl file = project.getFile(item.getFile(), false);
                     if (file != null) {
                         file.clearStateCache();
@@ -368,6 +382,7 @@ public final class DeepReparsingUtils {
     }
 
     private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
+        project.invalidatePreprocState(parentImpl.getFile());
         parentImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(parentImpl, project.getPreprocHandler(parentImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -392,7 +407,7 @@ public final class DeepReparsingUtils {
         if (parent.getProject() == project) {
             FileImpl parentImpl = (FileImpl) parent;
             parentImpl.clearStateCache();
-            project.invalidatePreprocState(parentImpl.getBuffer().getFile());
+            project.invalidatePreprocState(parentImpl.getFile());
             parentImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                 System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N
@@ -406,7 +421,7 @@ public final class DeepReparsingUtils {
             if (project instanceof ProjectBase) {
                 FileImpl parentImpl = (FileImpl) parent;
                 parentImpl.clearStateCache();
-                ((ProjectBase) project).invalidatePreprocState(parentImpl.getBuffer().getFile());
+                ((ProjectBase) project).invalidatePreprocState(parentImpl.getFile());
                 parentImpl.markReparseNeeded(false);
                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                     System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N

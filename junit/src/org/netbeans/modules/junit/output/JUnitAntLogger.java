@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import javax.tools.FileObject;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -373,13 +377,22 @@ public final class JUnitAntLogger extends AntLogger {
                 if (projectDir == null){
                     projectDir = event.getProperty("basedir"); // NOI18N
                 }
-                if ((projectDir != null) && (projectDir.length() != 0)){
-                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(projectDir))); //NOI18N
+                if ((projectDir != null) && (projectDir.length() != 0)) {
+                    File pd = new File(projectDir);
+                    File f = FileUtil.normalizeFile(pd); // #182715
+                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
                 }
             }catch(Exception e){}
             Properties props = new Properties();
-            for(String propName: event.getPropertyNames()){
-                props.setProperty(propName, event.getProperty(propName));
+            //Passing only really used properties
+            //as some others may highlight build script errors
+            //(See #178798)
+            String[] propsOfInterest = {"javac.includes", "classname", "methodname", "work.dir", "classpath", "platform.java"};//NOI18N
+            for(String prop:propsOfInterest) {
+                String val = event.getProperty(prop);
+                if (val!=null) {
+                    props.setProperty(prop, val);
+                }
             }
             outputReader = new JUnitOutputReader(
                                         session,

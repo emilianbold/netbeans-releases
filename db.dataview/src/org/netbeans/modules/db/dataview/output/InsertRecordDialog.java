@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -102,13 +107,13 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
             @Override
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (rowIndex != -1 && columnIndex != -1) {
+                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) jTable1.getModel()).getRowCount() > 1) {
                     removeBtn.setEnabled(true);
                 }
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
                 if (awtEvent instanceof KeyEvent) {
                     KeyEvent keyEvt = (KeyEvent) awtEvent;
-                    if (keyEvt.getSource() != this) {
+                    if (keyEvt.getSource() != InsertRecordDialog.this) {
                         return;
                     }
                     if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
@@ -136,6 +141,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
         Action enterAction = new AbstractAction() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 executeBtnActionPerformed(null);
             }
@@ -144,6 +150,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
@@ -197,7 +204,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.title")); // NOI18N
         setBackground(java.awt.Color.white);
-        setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        setFont(new java.awt.Font("Dialog", 0, 12));
         setForeground(java.awt.Color.black);
         setLocationByPlatform(true);
         setModal(true);
@@ -250,7 +257,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
-        previewBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewBtnActionPerformed(evt);
@@ -260,8 +267,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         previewBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
 
-        addBtn.setMnemonic('A');
-        addBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
         addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.toolTipText")); // NOI18N
         addBtn.setMaximumSize(previewBtn.getMaximumSize());
         addBtn.setMinimumSize(previewBtn.getMinimumSize());
@@ -273,8 +279,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         });
         btnPanel.add(addBtn);
 
-        removeBtn.setMnemonic('R');
-        removeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
         removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.toolTipText")); // NOI18N
         removeBtn.setEnabled(false);
         removeBtn.setMaximumSize(previewBtn.getMaximumSize());
@@ -288,8 +293,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         btnPanel.add(removeBtn);
 
         executeBtn.setFont(executeBtn.getFont());
-        executeBtn.setMnemonic('O');
-        executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(executeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.setMaximumSize(previewBtn.getMaximumSize());
         executeBtn.setMinimumSize(previewBtn.getMinimumSize());
         executeBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -303,8 +307,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         executeBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
 
         cancelBtn.setFont(cancelBtn.getFont());
-        cancelBtn.setMnemonic('C');
-        cancelBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cancelBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
         cancelBtn.setMaximumSize(previewBtn.getMaximumSize());
         cancelBtn.setMinimumSize(previewBtn.getMinimumSize());
         cancelBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -340,11 +343,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     public class TableListener implements TableModelListener {
 
+        @Override
         public void tableChanged(TableModelEvent e) {
             if (SwingUtilities.isEventDispatchThread()) {
                 refreshSQL();
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         refreshSQL();
                     }
@@ -375,8 +380,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notify(nd);
+                        Logger.getLogger(InsertRecordDialog.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
                         wasException = true;
                     }
                     if (wasException) {
@@ -438,14 +443,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             List componentList = Arrays.asList(order);
 
+            @Override
             public Component getFirstComponent(Container focusCycleRoot) {
                 return order[0];
             }
 
+            @Override
             public Component getLastComponent(Container focusCycleRoot) {
                 return order[order.length - 1];
             }
 
+            @Override
             public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {              
                 if (aComponent instanceof JXTableRowHeader) {
                     int rowIndex = jTable1.getRowCount() - 1;
@@ -455,11 +463,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return jTable1;
             }
 
+            @Override
             public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
                 int index = componentList.indexOf(aComponent);
                 return order[(index - 1 + order.length) % order.length];
             }
 
+            @Override
             public Component getDefaultComponent(Container focusCycleRoot) {
                 return order[0];
             }
@@ -497,14 +507,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public TableKeyListener() {
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
             processKeyEvents(e);
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
             processKeyEvents(e);
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             processKeyEvents(e);
         }
@@ -534,7 +547,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     private void copy() {
-        StringBuffer strBuffer = new StringBuffer();
+        StringBuilder strBuffer = new StringBuilder();
         int numcols = jTable1.getSelectedColumnCount();
         int numrows = jTable1.getSelectedRowCount();
         int[] rowsselected = jTable1.getSelectedRows();

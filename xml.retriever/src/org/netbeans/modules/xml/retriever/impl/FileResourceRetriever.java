@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,16 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * FileResourceRetriever.java
- *
- * Created on January 9, 2006, 10:47 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.retriever.impl;
 
 import java.io.File;
@@ -60,14 +53,9 @@ import java.util.HashMap;
 import org.netbeans.modules.xml.retriever.*;
 
 /**
- *
  * @author girix
  */
 public class FileResourceRetriever implements ResourceRetriever{
-    
-    /** Creates a new instance of FileResourceRetriever */
-    public FileResourceRetriever() {
-    }
     
     public boolean accept(String baseAddr, String currentAddr) throws URISyntaxException {
         
@@ -83,17 +71,21 @@ public class FileResourceRetriever implements ResourceRetriever{
                     return true;
             }
         }
-        
-        
         return false;
-        
     }
     
     long streamLength = 0;
+
     public HashMap<String, InputStream> retrieveDocument(String baseAddress, String documentAddress) throws IOException,URISyntaxException{
-        URI currURI = new URI(getEffectiveAddress(baseAddress, documentAddress));
+        String address = getEffectiveAddress(baseAddress, documentAddress);
+
+        if (address == null) {
+            return new HashMap<String, InputStream>();
+        }
+        URI currURI = new URI(address);
         HashMap<String, InputStream> result = null;
         File curFile = new File(currURI);
+    
         if(curFile.isFile()){
             InputStream is = new FileInputStream(curFile);
             result = new HashMap<String, InputStream>();
@@ -111,6 +103,9 @@ public class FileResourceRetriever implements ResourceRetriever{
     }
     
     public String getEffectiveAddress(String baseAddress, String documentAddress) throws IOException, URISyntaxException {
+//System.out.println();
+//System.out.println("baseAddress: " + baseAddress);
+//System.out.println("documentAddress: " + documentAddress);
         URI currURI = new URI(documentAddress);
         if(currURI.isAbsolute()){
             //abs file URI
@@ -123,6 +118,7 @@ public class FileResourceRetriever implements ResourceRetriever{
             }else{
                 //neither the current URI nor the base URI are absoulte. So, can not resolve this
                 //path
+//System.out.println("    return null");
                 return null;
             }
         }

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.ElseIf;
@@ -57,12 +56,13 @@ public class ElseIfNode extends BpelNode<ElseIf> {
         //
         Sheet.Set mainPropertySet = 
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet, 
+        propUtil.registerElementProperty(this, null, mainPropertySet, 
                 BooleanExpr.class, PropertyType.BOOLEAN_EXPRESSION, 
                 "getCondition", "setCondition", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

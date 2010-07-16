@@ -1,14 +1,12 @@
 package org.netbeans.modules.iep.editor.designer.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 
 import org.netbeans.modules.iep.editor.designer.EntityNode;
 import org.netbeans.modules.iep.editor.designer.Link;
@@ -25,8 +23,9 @@ import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import com.nwoods.jgo.JGoListPosition;
 import com.nwoods.jgo.JGoObject;
 import com.nwoods.jgo.JGoSelection;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 
-public class DeleteAction extends AbstractAction {
+public class DeleteAction extends AbstractAction implements SharedConstants {
 
     public final static String DELETE_NAME = "delete";
     
@@ -64,8 +63,8 @@ public class DeleteAction extends AbstractAction {
                 
                 addOutputLinksOfAnOperator(oc, linkSet);
             
-                if(oc.isSchemaOwner()) {
-                    SchemaComponent schema = oc.getOutputSchemaId();
+                if(oc.getBoolean(PROP_IS_SCHEMA_OWNER)) {
+                    SchemaComponent schema = oc.getOutputSchema();
                     if(schema != null) {
                         schemaSet.add(schema);
                     }
@@ -112,8 +111,14 @@ public class DeleteAction extends AbstractAction {
         mModel.endTransaction();
     }
     
-    private void addInputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
+    private void addInputLinksOfAnOperator(OperatorComponent opComp, Set<LinkComponent> linkList) {
         List<OperatorComponent> inputOps = opComp.getInputOperatorList();
+        /* #150437 have to check to see if there are links tied to the staticInputTableList
+         * if present they have to be deleted too. */
+        List<OperatorComponent> staticInputOps = opComp.getStaticInputList();
+        if (staticInputOps != null && staticInputOps.size() > 0) {
+            inputOps.addAll(staticInputOps);
+        }
         Iterator<OperatorComponent> it = inputOps.iterator();
         
         PlanComponent planComp = opComp.getModel().getPlanComponent();
@@ -129,7 +134,7 @@ public class DeleteAction extends AbstractAction {
         
     }
     
-    private void addOutputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
+    private void addOutputLinksOfAnOperator(OperatorComponent opComp, Set<LinkComponent> linkList) {
         PlanComponent planComp = opComp.getModel().getPlanComponent();
         LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
         OperatorComponentContainer ocContainer = planComp.getOperatorComponentContainer();

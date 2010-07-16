@@ -69,15 +69,16 @@ public class CorrelationPropertyNode extends BpelWSDLNode<CorrelationProperty> {
         mainPropertySet.put(customizer);
         //
         Property prop = null;
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 NAME, "getPropertyName", "setPropertyName"); // NOI18N
         //
 //        prop = PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
 //                CORRELATON_PROPERTY_TYPE, "getType", "setType"); // NOI18N
 //        prop.setHidden(true);
         //
-        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+        propUtil.registerCalculatedProperty(this, mainPropertySet,
                 CORRELATON_PROPERTY_TYPE_NAME, "getType", null); // NOI18N
 //                CORRELATON_PROPERTY_TYPE_NAME, "getTypeQName", null); // NOI18N
         return sheet;

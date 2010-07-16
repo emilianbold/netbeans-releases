@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,11 +53,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 abstract class AbstractEntryWithSources extends AbstractEntry {
@@ -137,17 +140,17 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             return new String[0];
         }
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element moduleDependencies = XMLUtil.findElement(data,
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
-            if (Util.findElement(dep, "run-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
+            if (XMLUtil.findElement(dep, "run-dependency", // NOI18N
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
+                NbModuleProject.NAMESPACE_SHARED);
+            String cnb = XMLUtil.findText(cnbEl);
             deps.add(cnb);
         }
         return deps.toArray(new String[deps.size()]);

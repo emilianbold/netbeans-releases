@@ -1,7 +1,10 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,8 +83,8 @@ public class ProviderUtilTest extends NbTestCase {
     }
     
     public void testGetProvider1() {
-        persistenceUnit1.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
-        assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit1));
+        persistenceUnit1.setProvider(ProviderUtil.HIBERNATE_PROVIDER2_0.getProviderClass());
+        assertEquals(ProviderUtil.HIBERNATE_PROVIDER2_0, ProviderUtil.getProvider(persistenceUnit1));
     }
     
 
@@ -111,7 +114,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
     
     public void testChangeProvider1(){
-        Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
+        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit1, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit1.getProvider());
         
@@ -177,8 +180,8 @@ public class ProviderUtilTest extends NbTestCase {
     }
 
     public void testGetProvider2() {
-        persistenceUnit2.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
-        assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit2));
+        persistenceUnit2.setProvider(ProviderUtil.HIBERNATE_PROVIDER2_0.getProviderClass());
+        assertEquals(ProviderUtil.HIBERNATE_PROVIDER2_0, ProviderUtil.getProvider(persistenceUnit2));
     }
 
     public void testSetTableGeneration2(){
@@ -207,7 +210,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
 
     public void testChangeProvider2(){
-        Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
+        Provider originalProvider = ProviderUtil.TOPLINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit2, originalProvider, getConnection(), Provider.TABLE_GENERATION_CREATE);
         assertEquals(originalProvider.getProviderClass(), persistenceUnit2.getProvider());
 

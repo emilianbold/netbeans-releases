@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -105,13 +108,22 @@ public class IssueCache<T> {
     private final IssueAccessor<T> issueAccessor;
 
     /**
-     * 
+     *
      * Provides access to the particular {@link Issue} implementations
      * kept in {@link IssueCache}
      *
      * @param <T>
      */
     public interface IssueAccessor<T> {
+
+        /**
+         * Returns the id given by the issueData
+         *
+         * @param issueData
+         * @return id
+         */
+        public String getID(T issueData);
+
         /**
          * Creates a new Issue for the given taskdata
          * @param taskData
@@ -120,12 +132,18 @@ public class IssueCache<T> {
         public Issue createIssue(T issueData);
 
         /**
-         * Sets new task data in the issue. 
+         * Sets new task data in the issue.
          *
          * @param issue
          * @param taskData
          */
         public void setIssueData(Issue issue, T issueData);
+
+        /**
+         * Returns attributes for the given Issue
+         * @return
+         */
+        public Map<String, String> getAttributes(Issue issue);
 
         /**
          * Returns a description summarizing the changes made
@@ -151,19 +169,12 @@ public class IssueCache<T> {
          */
         public long getCreated(Issue issue);
 
-        /**
-         * Returns the id given by te issueData
-         *
-         * @param issueData
-         * @return id
-         */
-        public String getID(T issueData);
 
     }
 
     /**
      * Creates a new IssueCache
-     * 
+     *
      * @param nameSpace
      * @param issueAccessor
      */
@@ -171,15 +182,16 @@ public class IssueCache<T> {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
-        
+
         try {
             this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
         } catch (IOException ex) {
             referenceTime = System.currentTimeMillis(); // fallback
             LOG.log(Level.SEVERE, null, ex);
         }
-        
+
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 synchronized(CACHE_LOCK) {
                     cleanup();
@@ -236,8 +248,8 @@ public class IssueCache<T> {
     }
 
     private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {
-        assert issueData != null;                
-        
+        assert issueData != null;
+
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
 
@@ -253,14 +265,14 @@ public class IssueCache<T> {
                 } else {
                     entry.issue = issueAccessor.createIssue(issueData);
                     LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
-                    readIssue(entry);                    
+                    readIssue(entry);
                     Map<String, String> attr = entry.getSeenAttributes();
-                    if(attr == null || attr.size() == 0) {
+                    if(attr == null || attr.isEmpty()) {
                         // firsttimer
                         if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
                             setSeen(id, true);
                         } else if(referenceTime >= issueAccessor.getCreated(entry.issue)) {
-                            entry.seenAttributes = entry.issue.getAttributes();
+                            entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
                             storeIssue(entry);
                         }
                     }
@@ -274,10 +286,10 @@ public class IssueCache<T> {
                 if(entry.wasSeen()) {
                     LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
                     long lastModified = issueAccessor.getLastModified(entry.issue);
-                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) || entry.lastSeenModified < lastModified) {
+                    if(isChanged(entry.seenAttributes, issueAccessor.getAttributes(entry.issue)) || entry.lastSeenModified < lastModified) {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         if(entry.lastSeenModified >= lastModified) {
-                            LOG.warning(" issue {0} changed, yet last known modify > last modify. [" + entry.lastSeenModified + "," + lastModified +"]"); // NOI18N
+                            LOG.log(Level.WARNING, " issue '{'0'}' changed, yet last known modify > last modify. [{0},{1}]", new Object[]{entry.lastSeenModified, lastModified}); // NOI18N
                         }
                         storeIssue(entry);
                         entry.seen = false;
@@ -288,7 +300,7 @@ public class IssueCache<T> {
                     }
                 } else {
                     LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
-                    if(isChanged(entry.seenAttributes, entry.issue.getAttributes()) ||
+                    if(isChanged(entry.seenAttributes, issueAccessor.getAttributes(entry.issue)) ||
                        referenceTime < issueAccessor.getLastModified(entry.issue))
                     {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
@@ -327,7 +339,7 @@ public class IssueCache<T> {
             assert entry != null && entry.issue != null;
             if(seen) {
                 getLastSeenAttributes().put(id, entry.seenAttributes);
-                entry.seenAttributes = entry.issue.getAttributes();
+                entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
                 entry.lastSeenModified = issueAccessor.getLastModified(entry.issue);
                 entry.lastUnseenStatus = entry.status;
             } else {
@@ -335,7 +347,7 @@ public class IssueCache<T> {
                 if(entry.lastUnseenStatus != ISSUE_STATUS_UNKNOWN) {
                     entry.status = entry.lastUnseenStatus;
                     if(entry.seenAttributes == null) {
-                        entry.seenAttributes = entry.issue.getAttributes();
+                        entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
                     }
                 }
             }
@@ -367,7 +379,7 @@ public class IssueCache<T> {
 
     /**
      * Returns the last seen attributes for the issue with the given id.
-     * 
+     *
      * @param id issue id
      * @return last seen sttributes
      */
@@ -386,7 +398,7 @@ public class IssueCache<T> {
 
     /**
      * Returns a {@link Issue} with the given id
-     * 
+     *
      * @param id issue id
      * @return the {@link Issue} with the given id or null if not known yet
      */
@@ -501,7 +513,7 @@ public class IssueCache<T> {
     }
 
     /**
-     * 
+     *
      * Removes all data assotiated with a query from the storage.
      *
      * @param name query name
@@ -515,7 +527,7 @@ public class IssueCache<T> {
             }
         }
     }
-    
+
     private IssueEntry createNewEntry(String id) {
         IssueEntry entry = new IssueEntry();
         entry.id = id;
@@ -617,7 +629,7 @@ public class IssueCache<T> {
             this.lastSeenModified = lastKnownModified;
             this.lastUnseenStatus = lastUnseenStatus;
         }
-        
+
         public boolean wasSeen() {
             return seen;
         }

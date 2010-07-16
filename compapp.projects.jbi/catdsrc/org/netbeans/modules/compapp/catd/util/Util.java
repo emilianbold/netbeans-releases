@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,12 +50,22 @@
 
 package org.netbeans.modules.compapp.catd.util;
 
+import org.netbeans.modules.compapp.projects.jbi.util.EditableProperties;
 import com.sun.esb.management.api.configuration.ConfigurationService;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPConnection;
@@ -62,6 +75,7 @@ import junit.framework.TestCase;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
+import org.netbeans.modules.sun.manager.jbi.util.Utils;
 
 /**
  *
@@ -98,22 +112,19 @@ public class Util {
     }
 
     public static String getFileContentWithoutCRNL(File f) {
-        String ret = null;
-        InputStreamReader input = null;
-        StringWriter output = null;
+        StringBuffer sb = new StringBuffer();    	
+        // read lines
+        BufferedReader input = null;
         try {
-            input = new InputStreamReader(new FileInputStream(f), "UTF-8");
-            output = new StringWriter();
-            char[] buf = new char[1024];
-            int n = 0;
-            while ((n = input.read(buf)) != -1) {
-                output.write(buf, 0, n);
+            input = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            String s = null;
+            while ((s = input.readLine()) != null) {
+            	//Do not read the XML declaration tag
+            	if(!s.startsWith("<?xml")){
+                    s = s.replaceAll("\n","").replaceAll("\r","");
+                    sb.append(s);
+            	}
             }
-            output.flush();
-            ret = output.toString();
-            ret = ret.replaceAll("\n","");
-            ret = ret.replaceAll("\r","");
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -121,13 +132,64 @@ public class Util {
                 if (input != null) {
                     input.close();
                 }
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        return ret;
+        return sb.toString();
     }
 
+    public static List<Set<String>> getFileContentWithoutCRNL(File f, int linesPerElement, int[] setSizes) {
+        List<Set<String>> setList = new ArrayList<Set<String>>();
+        List<String> lineList = new ArrayList<String>();
+        List<String> elementList = new ArrayList<String>();
+        // read lines
+        BufferedReader input = null;
+        try {
+            input = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            String s = null;
+            while ((s = input.readLine()) != null) {
+            	//Do not read the XML declaration tag
+            	if(!s.startsWith("<?xml")){
+                    s = s.replaceAll("\n","").replaceAll("\r","");
+                    lineList.add(s);
+            	}
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (input != null) {
+                    input.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // calculate elements
+        int elementCount = lineList.size() / linesPerElement;
+        for (int i = 0; i < elementCount; i++) {
+            StringBuffer sb = new StringBuffer();
+            for (int j = 0; j < linesPerElement; j++) {
+               sb.append(lineList.get(i*linesPerElement + j));
+            }
+            elementList.add(sb.toString());
+        }
+
+        // calculate sets
+        for (int i = 0; i < setSizes.length; i++) {
+            HashSet<String> set = new HashSet<String>();
+            setList.add(set);
+            for (int j = 0; j < setSizes[i]; j++) {
+                if (elementList.isEmpty()) {
+                    break;
+                }
+                set.add(elementList.remove(0));
+            }
+        }
+        return setList;
+    }
 
     public static String replaceAll(String s, String match, String replacement) {
         StringBuffer sb = new StringBuffer();
@@ -167,7 +229,7 @@ public class Util {
                 File settingsFile = new File(settingsFileName);
                 if (settingsFile.exists()) {
                     ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
-                    List<ServerInstance> list = settings.getServerInstances();
+                    List<ServerInstance> list = settings.getServerInstances(true);
                     for (ServerInstance serverInstance : list) {
                         String url = serverInstance.getUrl();
                         if (j2eeServerInstanceUrl.equals(url)) {
@@ -268,96 +330,16 @@ public class Util {
             System.setErr(stdErr);
         }
 
+        // Currently only deal with http soap bc because soap binding is the
+        // only supported binding type in test driver.
+        destination = destination.replace("${HttpDefaultPort}", "" + httpDefaultPort);
+        destination = destination.replace("${HttpsDefaultPort}", "" + httpsDefaultPort);
+
         // Send the message and get a reply
         SOAPMessage reply = null;
         long start = 0;
         if (logDetails) {
             start = System.currentTimeMillis();
-        }
-
-        // Currently only deal with http soap bc because soap binding is the 
-        // only supported binding type in test driver.
-        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
-
-            String nbUserDir = System.getProperty("NetBeansUserDir");
-            
-            ServerInstance serverInstance = getServerInstance(nbUserDir);
-
-            if (serverInstance == null) {
-                throw new RuntimeException("Unknown server instance.");
-            } else {
-            // Translate ${HttpDefaultPort} first
-            String httpDefaultPort = "HttpDefaultPort";
-            if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
-                try {
-                    ConfigurationService configService =
-                            AdministrationServiceHelper.getConfigurationService(serverInstance);
-                    Map<String, Object> configMap =
-                            configService.getComponentConfigurationAsMap(
-                            "sun-http-binding", "server");
-                    Object httpDefaultPortValue = configMap.get(httpDefaultPort);
-                    System.out.println("");
-                    if (httpDefaultPortValue != null) {
-                        int httpDefaultPortIntValue =
-                                Integer.parseInt(httpDefaultPortValue.toString());
-                        if (httpDefaultPortIntValue != -1) {
-                            destination = destination.replace("${" + httpDefaultPort + "}",
-                                    "" + httpDefaultPortIntValue);
-                            System.out.println("Replace '${HttpDefaultPort}' in WSDL soap location by '" +
-                                    httpDefaultPortIntValue + "' defined in sun-http-binding.");
-                        } else {
-                            System.out.println("WARNING: 'HttpDefaultPort' is not defined in sun-http-binding.");
-                        }
-                    } else {
-                        System.out.println("WARNING: 'HttpDefaultPort' is not found in sun-http-binding's component configuration.");
-                    }
-                } catch (Exception ex) {
-                    if (stdErr != null) {
-                        System.setErr(origErr);
-                        stdErr.flush();
-                        stdErr.close();
-                        origErr.print(bufferedErr.toString());
-                    }
-                    throw ex;
-                }
-            }
-
-            // Translate ${HttpsDefaultPort} next
-            String httpsDefaultPort = "HttpsDefaultPort";
-            if (destination.indexOf("${" + httpsDefaultPort + "}") != -1) {
-                try {
-                    ConfigurationService configService =
-                            AdministrationServiceHelper.getConfigurationService(serverInstance);
-                    Map<String, Object> configMap =
-                            configService.getComponentConfigurationAsMap(
-                            "sun-http-binding", "server");
-                    Object httpsDefaultPortValue = configMap.get(httpsDefaultPort);
-                    System.out.println("");
-                    if (httpsDefaultPortValue != null) {
-                        int httpsDefaultPortIntValue =
-                                Integer.parseInt(httpsDefaultPortValue.toString());
-                        if (httpsDefaultPortIntValue != -1) {
-                            destination = destination.replace("${" + httpsDefaultPort + "}",
-                                    "" + httpsDefaultPortIntValue);
-                            System.out.println("Replace '${HttpsDefaultPort}' in WSDL soap location by '" +
-                                    httpsDefaultPortIntValue + "' defined in sun-http-binding.");
-                        } else {
-                            System.out.println("WARNING: 'HttpsDefaultPort' is not defined in sun-http-binding.");
-                        }
-                    } else {
-                        System.out.println("WARNING: 'HttpsDefaultPort' is not found in sun-http-binding's component configuration.");
-                    }
-                } catch (Exception ex) {
-                    if (stdErr != null) {
-                        System.setErr(origErr);
-                        stdErr.flush();
-                        stdErr.close();
-                        origErr.print(bufferedErr.toString());
-                    }
-                    throw ex;
-                }
-            }
-            }
         }
 
         boolean httpSuccess = true;
@@ -416,5 +398,64 @@ public class Util {
         }
 
         return reply;
-    }    
+    }
+
+    private static int httpDefaultPort = -1;
+    private static int httpsDefaultPort = -1;
+
+    public static void getHttpDefaultPorts() {
+        String nbUserDir = System.getProperty("NetBeansUserDir");
+        ServerInstance serverInstance = getServerInstance(nbUserDir);
+
+        if (serverInstance == null) {
+            throw new RuntimeException("Unknown server instance.");
+        }
+       
+        try {
+            String password = System.getProperty("ServerPassword");
+            if (password != null && !password.isEmpty()) {
+                serverInstance.setPassword(password);
+            } else {
+                serverInstance.setPassword("adminadmin");
+            }
+            ConfigurationService configService =
+                    AdministrationServiceHelper.getConfigurationService(serverInstance);
+            Map<String, Object> configMap =
+                    configService.getComponentConfigurationAsMap("sun-http-binding", "server");
+
+            Object httpDefaultPortValue = configMap.get("HttpDefaultPort");
+            if (httpDefaultPortValue == null) {
+                System.out.println("WARNING: 'HttpDefaultPort' is not found in sun-http-binding's component configuration.");
+            } else {
+                httpDefaultPort = Integer.parseInt(httpDefaultPortValue.toString());
+                if (httpDefaultPort == -1) {
+                    System.out.println("WARNING: 'HttpDefaultPort' is not defined in sun-http-binding.");
+                }
+            }
+
+            Object httpsDefaultPortValue = configMap.get("HttpsDefaultPort");
+            if (httpsDefaultPortValue == null) {
+                System.out.println("WARNING: 'HttpsDefaultPort' is not found in sun-http-binding's component configuration.");
+            } else {
+                httpsDefaultPort = Integer.parseInt(httpsDefaultPortValue.toString());
+                if (httpsDefaultPort == -1) {
+                    System.out.println("WARNING: 'HttpsDefaultPort' is not defined in sun-http-binding.");
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void displaySystemProperties() {
+        Properties props = System.getProperties();
+        List<String> propKeys = new ArrayList<String>();
+        for (Object key : props.keySet()) {
+            propKeys.add((String) key);
+        }
+        Collections.sort(propKeys);
+        for (String key : propKeys) {
+            System.out.println(key + "=" + props.getProperty(key));
+        }
+    }
 }

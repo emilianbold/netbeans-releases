@@ -22,7 +22,7 @@ import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.codegen.base.BaseCaseGenerator;
 import org.netbeans.modules.sql.framework.model.SQLCaseOperator;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * Velocity-based generator that generates SQL Case expressions with DB2-specific syntax

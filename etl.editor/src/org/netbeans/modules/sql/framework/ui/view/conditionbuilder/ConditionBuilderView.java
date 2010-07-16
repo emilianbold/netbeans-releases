@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,10 +64,10 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author Ritesh Adval
@@ -72,7 +75,8 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class ConditionBuilderView extends JPanel implements EnhancedCustomPropertyEditor {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderView.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderView.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ConditionBuilderView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class TabChangeAdapter implements ChangeListener {
@@ -110,7 +114,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 if (trySync && !ConditionBuilderView.this.synchronizeSQLCodeView()) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(
-                           nbBundle2.substring(15),
+                            nbBundle2.substring(15),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
                     rightPanel.setSelectedComponent(rightGraphPanel);
@@ -155,7 +159,9 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         try {
             condContainerObj = (SQLCondition) cond.cloneSQLObject();
         } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT514: error cloning the condition{0}", LOG_CATEGORY), ex);
+            String msg = mLoc.t("EDIT514: error cloning the condition{0}", LOG_CATEGORY);
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            logger.log(Level.SEVERE, ex.getMessage());           
             return;
         }
     }
@@ -242,7 +248,9 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 }
             } else {
                 // Ignore this safely
-                mLogger.errorNoloc(mLoc.t("EDIT515: Exception occurred while parsing condition{0}", LOG_CATEGORY), ex);
+                String msg = mLoc.t("EDIT515: Exception occurred while parsing condition{0}", LOG_CATEGORY);
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                logger.log(Level.SEVERE, ex.getMessage());            
             }
         }
 

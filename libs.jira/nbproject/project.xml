@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -73,6 +76,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.osgi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -109,7 +120,15 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.18</specification-version>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -123,23 +142,19 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.jira</friend>
-                <package>org.eclipse.mylyn.internal.jira.core</package>
-                <package>org.eclipse.mylyn.internal.jira.core.model</package>
-                <package>org.eclipse.mylyn.internal.jira.core.model.filter</package>
-                <package>org.eclipse.mylyn.internal.jira.core.service</package>
-                <package>org.eclipse.mylyn.internal.jira.core.util</package>
+                <package>com.atlassian.connector.eclipse.internal.jira.core</package>
+                <package>com.atlassian.connector.eclipse.internal.jira.core.model</package>
+                <package>com.atlassian.connector.eclipse.internal.jira.core.model.filter</package>
+                <package>com.atlassian.connector.eclipse.internal.jira.core.service</package>
+                <package>com.atlassian.connector.eclipse.internal.jira.core.util</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.jira.core-3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.jira.core-3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/com.atlassian.connector.eclipse.jira.core_2.1.0.jar</runtime-relative-path>
+                <binary-origin>external/com.atlassian.connector.eclipse.jira.core_2.1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.commons.soap-3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.soap-3.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/saaj-1.2.0.jar</runtime-relative-path>
-                <binary-origin>external/saaj-1.2.0.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.commons.soap_3.3.0.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.commons.soap_3.3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org.apache.axis-1.4.0.jar</runtime-relative-path>

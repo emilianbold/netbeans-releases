@@ -22,35 +22,83 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathSpecialStep;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathSpecialStep.SsType;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathSpecialStepImpl;
 
 /**
  * The special context for wildcard location steps - '*', '*@', 'node()'.
+ * Type of step correlates with lookForElements and lookForAttributes
+ * parameters according to the following table:
+ *
+ *    lookForElements       lookFroAttributes     wildcard
+ *        true                    true              node()
+ *        true                    false               *
+ *        false                   true                @*
  * 
  * @author nk160297
  */
 public class WildcardSchemaContext implements XPathSchemaContext {
 
-    private XPathModel mXPathModel;
+    private XPathModel mXPathModel; // Can be null!
     private XPathSchemaContext mParentContext;
-    private boolean lookForElements;
-    private boolean lookForAttributes; 
+    private boolean mLookForElements;
+    private boolean mLookForAttributes;
     private boolean lastInChain = false;
-    
+
+    private XPathSpecialStep mSStep;
+
     // TO DO replace to weak reference
     private Set<SchemaCompPair> mSchemaCompPair = null;
     private Set<SchemaCompHolder> mUsedSchemaCompSet;
-    
-    public WildcardSchemaContext(XPathSchemaContext parentContext, 
-            XPathModel xPathModel, 
-            boolean lookForElements, boolean lookForAttributes) {
+
+    /**
+     * Special constructor without XPathModel
+     * @param parentContext
+     * @param ssType
+     */
+    public WildcardSchemaContext(XPathSchemaContext parentContext, SsType ssType) {
+        this(parentContext, null, ssType);
+    }
+
+    public WildcardSchemaContext(XPathSchemaContext parentContext,
+            XPathModel xPathModel, SsType ssType) {
         mXPathModel = xPathModel;
         mParentContext = parentContext; // it can be null in case of wildcard at root level
+        mSStep = new XPathSpecialStepImpl(ssType, this);
         //
-        this.lookForElements = lookForElements;
-        this.lookForAttributes = lookForAttributes;
+        switch (ssType) {
+            case ALL_ATTRIBUTES:
+                mLookForElements = false;
+                mLookForAttributes = true;
+                break;
+            case ALL_ELEMENTS:
+                mLookForElements = true;
+                mLookForAttributes = false;
+                break;
+            case NODE:
+                mLookForElements = true;
+                mLookForAttributes = true;
+                break;
+            default:
+                // This contex isn't intended for othe objects!
+                assert false:
+                //
+                // TODO: It is set to false both now, but it is necessary to
+                // figure out with it in future.
+                mLookForElements = false;
+                mLookForAttributes = false;
+        }
+    }
+
+    public XPathSpecialStep getSpecialStep() {
+        return mSStep;
     }
 
     public XPathSchemaContext getParentContext() {
@@ -70,7 +118,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         if (mParentContext == null) {
             //
             List<SchemaComponent> rootCompList = XPathUtils.findRootComponents(
-                    mXPathModel, lookForElements, lookForAttributes, false);
+                    mXPathModel, mLookForElements, mLookForAttributes, false);
             for (SchemaComponent foundComp : rootCompList) {
                 SchemaCompPair newPair = new SchemaCompPair(
                         foundComp, (SchemaCompHolder)null);
@@ -79,7 +127,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         } else {
             List<SchemaCompPair> scHolderList = XPathUtils.findSubcomponents(
                     mXPathModel, mParentContext, 
-                    lookForElements, lookForAttributes, false);
+                    mLookForElements, mLookForAttributes, false);
             result.addAll(scHolderList);
         }
         //
@@ -108,26 +156,70 @@ public class WildcardSchemaContext implements XPathSchemaContext {
     }
 
     public String toStringWithoutParent() {
-        return "";
+        String wildcard = null;
+        switch (mSStep.getType()) {
+            case ALL_ATTRIBUTES:
+                wildcard = "*@"; // NOI18N
+                break;
+            case ALL_ELEMENTS:
+                wildcard = "*"; // NOI18N
+                break;
+            case NODE:
+                wildcard = SsType.NODE.getDisplayName(); // NOI18N
+                break;
+            default:
+                wildcard = "???"; // NOI18N
+        }
+        return wildcard;
     }
-    
+
+    public String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms) {
+        //
+        String wildcard = null;
+        switch (mSStep.getType()) {
+            case ALL_ATTRIBUTES:
+                wildcard = "*@"; // NOI18N
+                break;
+            case ALL_ELEMENTS:
+                wildcard = "*"; // NOI18N
+                break;
+            case NODE:
+                wildcard = SsType.NODE.getDisplayName(); // NOI18N
+                break;
+            default:
+                wildcard = "???"; // NOI18N
+        }
+        //
+        String result = null;
+        if (mParentContext == null) {
+            result = LocationStep.STEP_SEPARATOR + wildcard;
+        } else {
+            result = mParentContext.getExpressionString(nsContext, sms) + 
+                    LocationStep.STEP_SEPARATOR + wildcard;
+        }
+        return  result;
+    }
+
     @Override
     public boolean equals(Object obj)  {
-        if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equals(
-                    this, (XPathSchemaContext)obj);
+        if (obj instanceof WildcardSchemaContext) {
+            return WildcardSchemaContext.class.cast(obj).
+                    getSpecialStep().equals(mSStep);
         }
         //
         return false;
     }
 
-    public boolean equalsChain(XPathSchemaContext obj) {
-        if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equalsChain(
-                    this, (XPathSchemaContext)obj);
-        }
-        //
-        return false;
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + (this.mParentContext != null ? this.mParentContext.hashCode() : 0);
+        hash = 71 * hash + (this.mSStep != null ? this.mSStep.hashCode() : 0);
+        return hash;
+    }
+
+    public boolean equalsChain(XPathSchemaContext other) {
+        return XPathSchemaContext.Utilities.equalsChain(this, other);
     }
 
     public boolean isLastInChain() {

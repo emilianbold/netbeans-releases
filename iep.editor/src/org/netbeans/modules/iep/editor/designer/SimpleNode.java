@@ -33,15 +33,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
 
-import org.netbeans.modules.iep.editor.tcg.model.DefaultLibraryProvider;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
-import org.netbeans.modules.iep.model.lib.ImageUtil;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgModelConstants;
 import org.openide.util.HelpCtx;
 
 /**
@@ -103,12 +96,16 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         
         // create an input port and an output port, each instances of SimpleNodePort
         if (hasinport) {
-            mInputPort = new SimpleNodePort(true,this);
             mInvalidInputPort = new Port(true,this);
+            mInvalidInputPort.setVisible(false);
+            mInputPort = new SimpleNodePort(true,this);
+            
         }
         if (hasoutport) {
-            mOutputPort = new SimpleNodePort(false,this);
             mInvalidOutputPort = new Port(false,this);
+            mInvalidOutputPort.setVisible(false);
+            mOutputPort = new SimpleNodePort(false,this);
+            
         }
         
         setInitializing(false);
@@ -332,33 +329,39 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         }
     }
     
-    public void showInvalidPorts(boolean show) {
-        if(show) {
+    public void showInvalidPorts(boolean showInputInvalid, boolean showOutputInvalid) {
+        
             if(mInputPort != null) {
-                mInputPort.setStyle(JGoPort.StyleHidden);
-                mInvalidInputPort.setStyle(JGoPort.StyleObject);
+                if(showInputInvalid) {
+                    mInputPort.setStyle(JGoPort.StyleHidden);
+                    mInputPort.setVisible(!showInputInvalid);
+                    mInvalidInputPort.setStyle(JGoPort.StyleObject);
+                    mInvalidInputPort.setVisible(showInputInvalid);
+                } else {
+                    mInputPort.setStyle(JGoPort.StyleTriangle);
+                    mInputPort.setVisible(!showInputInvalid);
+                    mInvalidInputPort.setStyle(JGoPort.StyleHidden);
+                    mInvalidInputPort.setVisible(showInputInvalid);
+                }
             }
-            
+        
             
             if(mOutputPort != null) {
-                mOutputPort.setStyle(JGoPort.StyleHidden);
-                mInvalidOutputPort.setStyle(JGoPort.StyleObject);
+                if(showOutputInvalid) {
+                    mOutputPort.setStyle(JGoPort.StyleHidden);
+                    mOutputPort.setVisible(!showOutputInvalid);
+                    mInvalidOutputPort.setStyle(JGoPort.StyleObject);
+                    mInvalidOutputPort.setVisible(showOutputInvalid);
+                } else {
+                    mOutputPort.setStyle(JGoPort.StyleTriangle);
+                    mOutputPort.setVisible(!showOutputInvalid);
+                    mInvalidOutputPort.setStyle(JGoPort.StyleHidden);
+                    mInvalidOutputPort.setVisible(showOutputInvalid);
+                }
             }
             
             
-        } else {
-            if(mInputPort != null) {
-                mInputPort.setStyle(JGoPort.StyleTriangle);
-                mInvalidInputPort.setStyle(JGoPort.StyleHidden);
-            }
-            
-            if(mOutputPort != null) {
-                
-                mOutputPort.setStyle(JGoPort.StyleTriangle);
-                mInvalidOutputPort.setStyle(JGoPort.StyleHidden);
-            }
-            
-        }
+        
     }
     
     // State

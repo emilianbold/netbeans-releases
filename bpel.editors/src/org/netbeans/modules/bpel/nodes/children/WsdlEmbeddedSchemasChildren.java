@@ -64,7 +64,10 @@ public class WsdlEmbeddedSchemasChildren extends Children.Keys {
                     SchemaModel origSchemaModel = getOriginalSchemaModel(types, schema);
 //                    System.out.println("origSchemaModel: "+origSchemaModel);
                     if (origSchemaModel != null) {
-                        schema = origSchemaModel.getSchema();
+                        Schema origSchema = origSchemaModel.getSchema();
+                        if (origSchema != null) {
+                            schema = origSchema;
+                        }
                     }
                     
                     Node newNode = nodeFactory.createNode(

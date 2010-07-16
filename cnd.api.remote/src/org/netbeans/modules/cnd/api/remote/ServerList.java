@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,6 +61,9 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class ServerList {
+
+    public static final String PROP_DEFAULT_RECORD = "DEFAULT_RECORD"; //NOI18N
+    public static final String PROP_RECORD_LIST = "RECORD_LIST"; //NOI18N
 
     private ServerList() {
     }
@@ -122,61 +129,88 @@ public class ServerList {
         return getDefault().isValidExecutable(env, path);
     }
 
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        getDefault().addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        getDefault().removePropertyChangeListener(listener);
+    }
+
 
     private static class DummyServerRecord implements ServerRecord {
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ServerList.class, "DUMMY_HOST_NAME");
         }
 
+        @Override
         public ExecutionEnvironment getExecutionEnvironment() {
             return ExecutionEnvironmentFactory.getLocal();
         }
 
+        @Override
         public String getServerDisplayName() {
             return getDisplayName();
         }
 
+        @Override
         public String getServerName() {
             return getDisplayName();
         }
 
+        @Override
         public RemoteSyncFactory getSyncFactory() {
             return RemoteSyncFactory.getDefault();
         }
 
+        @Override
         public String getUserName() {
             return "";
         }
 
+        @Override
         public boolean isDeleted() {
             return true;
         }
 
+        @Override
         public boolean isOffline() {
             return false;
         }
 
+        @Override
         public boolean isOnline() {
             return true;
         }
 
+        @Override
         public boolean isRemote() {
             return false;
         }
 
+        @Override
         public boolean isSetUp() {
             return true;
         }
 
+        @Override
         public boolean setUp() {
             return true;
         }
 
+        @Override
         public void validate(boolean force) {
         }
 
+        @Override
         public boolean getX11Forwarding() {
+            return false;
+        }
+
+        @Override
+        public boolean isRememberPassword() {
             return false;
         }
     }
@@ -221,6 +255,14 @@ public class ServerList {
 
         public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
             return new DummyServerRecord();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
 }

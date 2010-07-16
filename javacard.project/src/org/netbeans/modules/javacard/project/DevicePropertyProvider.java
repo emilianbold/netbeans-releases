@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,11 +57,15 @@ final class DevicePropertyProvider extends PlatformPropertyProvider {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected PropertiesAdapter findAdapter() {
         PropertyProvider projectProps = antHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String deviceName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
         String platformName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         if (deviceName != null && platformName != null) {
+            //findDeviceForPlatform valid here - if it is not using standard
+            //properties files, it will simply be omitted from the project's
+            //resolver - no harm done
             DataObject dob = Utils.findDeviceForPlatform(platformName, deviceName);
             if (dob != null) {
                 PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);

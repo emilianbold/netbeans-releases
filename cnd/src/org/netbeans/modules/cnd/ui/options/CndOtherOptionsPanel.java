@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,12 +51,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
+import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -100,6 +105,7 @@ import org.openide.util.NbBundle;
         return isChanged;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         isChanged = true;
     }
@@ -143,6 +149,7 @@ import org.openide.util.NbBundle;
 
             ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_ExtensionListTitle", ext.getLocalizedDescription()));// NOI18N
             ee.button.addActionListener(new java.awt.event.ActionListener() {
+                @Override
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     editExtensionsButtonActionPerformed(ee);
                 }
@@ -150,38 +157,38 @@ import org.openide.util.NbBundle;
 
             eeList.add(ee);
         }
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        GroupLayout layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(layout);
         GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
-        horizontalGroup.add(12, 12, 12);
+        horizontalGroup.addGap(12, 12, 12);
 
-        GroupLayout.ParallelGroup labelsGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING);
+        GroupLayout.ParallelGroup labelsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         for (int i = 0; i < eeList.size(); i++) {
-            labelsGroup.add(eeList.get(i).label);
+            labelsGroup.addComponent(eeList.get(i).label);
         }
 
-        horizontalGroup.add(labelsGroup);
-        horizontalGroup.add(4, 4, 4);
+        horizontalGroup.addGroup(labelsGroup);
+        horizontalGroup.addGap(4, 4, 4);
 
-        GroupLayout.ParallelGroup textfieldsGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false);
+        GroupLayout.ParallelGroup textfieldsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING, false);
         for (int i = 0; i <  eeList.size(); i++) {
-            textfieldsGroup.add(eeList.get(i).textfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE);
+            textfieldsGroup.addComponent(eeList.get(i).textfield, GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE);
         }
-        horizontalGroup.add(textfieldsGroup);
-        horizontalGroup.add(6, 6, 6);
+        horizontalGroup.addGroup(textfieldsGroup);
+        horizontalGroup.addGap(6, 6, 6);
         
-        GroupLayout.ParallelGroup buttonsGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING);
+        GroupLayout.ParallelGroup buttonsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         for (int i = 0; i < eeList.size(); i++) {
-            buttonsGroup.add(eeList.get(i).button);
+            buttonsGroup.addComponent(eeList.get(i).button);
         }
-        horizontalGroup.add(buttonsGroup);
+        horizontalGroup.addGroup(buttonsGroup);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                    .add(horizontalGroup)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(horizontalGroup)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup()
@@ -189,12 +196,12 @@ import org.openide.util.NbBundle;
         
         for (int i = 0; i < eeList.size(); i++) {
             ExtensionsElements ee = eeList.get(i);
-            verticalGroup.add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(ee.label)
-                        .add(ee.textfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(ee.button, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE));
+            verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(ee.label)
+                        .addComponent(ee.textfield, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ee.button, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE));
             if (i !=  eeList.size() - 1) {
-                verticalGroup.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED);
+                verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             } else {
                 verticalGroup.addContainerGap(20, Short.MAX_VALUE);
             }
@@ -202,8 +209,8 @@ import org.openide.util.NbBundle;
         }
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(verticalGroup)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(verticalGroup)
         );
         
     }
@@ -221,48 +228,48 @@ import org.openide.util.NbBundle;
 
         jPanel1.setOpaque(false);
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 399, Short.MAX_VALUE)
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 399, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         jPanel2.setOpaque(false);
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 399, Short.MAX_VALUE)
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 399, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 276, Short.MAX_VALUE)
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 276, Short.MAX_VALUE)
         );
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -329,8 +336,8 @@ import org.openide.util.NbBundle;
         public final JLabel label = new JLabel();
         public final JEditorPane textfield = new JEditorPane();
         public final JButton button = new JButton();
-        public List<String> list;
-        public String defaultValue;
+        private List<String> list;
+        private String defaultValue;
         
     }
 }

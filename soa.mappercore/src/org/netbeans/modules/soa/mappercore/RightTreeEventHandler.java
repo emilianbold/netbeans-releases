@@ -121,9 +121,62 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     }
 
     public void mouseReleased(MouseEvent e) {
+// Was:
+//        reset();
+//        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
+//            showPopupMenu(e);
+//        }
+
         reset();
-        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
-            showPopupMenu(e);
+
+        Mapper mapper = getMapper();
+        RightTree rightTree = getRightTree();
+
+        if (!rightTree.hasFocus()) {
+            rightTree.requestFocusInWindow();
+        }
+
+        int y = e.getY();
+        int x = e.getX();
+
+        MapperNode node = getNodeAt(y);
+
+        if (node != null) {
+            y = node.yToNode(y);
+
+            int width = rightTree.getWidth();
+
+            int nodeIndent = node.getIndent();
+            int nodeContentHeight = node.getContentHeight();
+            int nodeHeight = node.getHeight();
+
+            int cy = node.getContentCenterY();
+            int cx = width - nodeIndent + mapper.getRightIndent();
+
+            boolean switchCollapsedExpandedState = false;
+
+            if (!node.isLeaf()) {
+                if (Math.abs(cx - x) <= 8 && Math.abs(cy - y) <= 8) {
+                    switchCollapsedExpandedState = true;
+                } else if (node.isCollapsed() && nodeContentHeight < nodeHeight) {
+                    int x2 = width - nodeIndent - mapper.getTotalIndent();
+
+                    Dimension size = rightTree.getChildrenLabel().getPreferredSize();
+
+                    int x1 = x2 - size.width;
+                    int y2 = nodeHeight - 2;
+                    int y1 = nodeContentHeight + 1;
+
+                    switchCollapsedExpandedState = x1 <= x && x < x2 && y1 <= y && y < y2;
+                }
+            }
+
+            if (!switchCollapsedExpandedState && (x < width - nodeIndent)) {
+                mapper.setSelectedNode(node);
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e);
+                }
+            }
         }
     }
 

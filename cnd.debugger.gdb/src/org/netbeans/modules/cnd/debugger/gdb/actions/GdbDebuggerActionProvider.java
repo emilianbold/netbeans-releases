@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,27 +46,35 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.WeakSet;
 
 /**
 * Representation of a debugging session.
 *
 * @author  Gordon Prieur (copied from Jan Jancura's and Marian Petras' JPDA implementation)
 */
-public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
+abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
                 implements PropertyChangeListener {
     
-    private GdbDebugger debugger;
+    private final GdbDebugger debugger;
     
+    private static Set<GdbDebuggerActionProvider> providersToDisableOnLazyActions 
+            = new WeakSet<GdbDebuggerActionProvider>();
+
     private volatile boolean disabled;
-    
+
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if (pname.equals(GdbDebugger.PROP_STATE) ||
@@ -86,6 +97,49 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     GdbDebugger getDebugger() {
         return debugger;
     }
+
+    /**
+     * Mark the provided action provider to be disabled when a lazy action is to be performed.
+     */
+    protected final void setProviderToDisableOnLazyAction(GdbDebuggerActionProvider provider) {
+        synchronized (GdbDebuggerActionProvider.class) {
+            providersToDisableOnLazyActions.add(provider);
+        }
+    }
     
-    
+    /**
+     * Do the action lazily in a RequestProcessor.
+     * @param run The action to perform.
+     */
+    protected final void doLazyAction(final Runnable run) {
+        final Set<GdbDebuggerActionProvider> disabledActions;
+        synchronized (GdbDebuggerActionProvider.class) {
+            disabledActions = new HashSet<GdbDebuggerActionProvider>(providersToDisableOnLazyActions);
+        }
+        for (Iterator<GdbDebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+            GdbDebuggerActionProvider ap = it.next();
+            Set actions = ap.getActions();
+            ap.disabled = true;
+            for (Iterator ait = actions.iterator(); ait.hasNext(); ) {
+                Object action = ait.next();
+                ap.setEnabled(action, false);
+                //System.out.println(ap+".setEnabled("+action+", "+false+")");
+            }
+        }
+        debugger.getRequestProcessor().post(new Runnable() {
+            public void run() {
+//                try {
+                    run.run();
+                    for (Iterator<GdbDebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+                        GdbDebuggerActionProvider ap = it.next();
+                        Set actions = ap.getActions();
+                        ap.disabled = false;
+                        ap.checkEnabled(debugger.getState ());
+                    }
+//                } catch (Exception e) {
+//                    // Causes kill action when something is being evaluated
+//                }
+            }
+        });
+    }
 }

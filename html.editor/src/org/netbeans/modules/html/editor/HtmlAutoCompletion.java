@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.html.editor;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -83,7 +87,7 @@ public class HtmlAutoCompletion {
             if (insertIgnore != null) {
                 if (insertIgnore.getOffset() == dotPos && insertIgnore.getChar() == ch) {
                     //move the caret to specified position if needed
-                    if(insertIgnore.getMoveCaretTo() != -1) {
+                    if (insertIgnore.getMoveCaretTo() != -1) {
                         caret.setDot(insertIgnore.moveCaretTo);
                         //also close the completion window
                         Completion.get().hideAll();
@@ -93,6 +97,14 @@ public class HtmlAutoCompletion {
             }
         } finally {
             insertIgnore = null;
+        }
+
+        //handle quotation marks
+        if (ch == '"') { //NOI18N
+            //user has pressed quotation mark
+            if (HtmlPreferences.autocompleteQuotes()) {
+                return handleQuotationMark(doc, dotPos, caret);
+            }
         }
 
         return false;
@@ -115,21 +127,21 @@ public class HtmlAutoCompletion {
      * @param ch the character that was inserted
      * @throws BadLocationException
      */
+    //TODO these handlers should operate in the beforeCharInserted hook!!!
     public static void charInserted(BaseDocument doc,
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        if (ch == '=') {
-            completeQuotes(doc, dotPos, caret);
-        } else if (ch == '"') {
-            //user has pressed quotation mark
-            handleQuotationMark(doc, dotPos, caret);
-        } else if (ch == '{') {
+        if (ch == '=') { //NOI18N
+            if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
+                completeQuotes(doc, dotPos, caret);
+            }
+        } else if (ch == '{') { //NOI18N
             //user has pressed quotation mark
             handleEL(doc, dotPos, caret);
-        } else if (ch == '/') {
+        } else if (ch == '/') { //NOI18N
             handleEmptyTagCloseSymbol(doc, dotPos, caret);
-        } else if (ch == '>') {
+        } else if (ch == '>') { //NOI18N
             handleTagClosingSymbol(doc, dotPos, ch);
         }
     }
@@ -151,14 +163,12 @@ public class HtmlAutoCompletion {
                         found = true;
                         break;
                     }
-                    if (ts.token().id() != HTMLTokenId.ARGUMENT &&
-                            ts.token().id() != HTMLTokenId.OPERATOR &&
-                            ts.token().id() != HTMLTokenId.VALUE &&
-                            ts.token().id() != HTMLTokenId.VALUE_CSS &&
-                            ts.token().id() != HTMLTokenId.VALUE_JAVASCRIPT &&
-                            ts.token().id() != HTMLTokenId.WS &&
-                            ts.token().id() != HTMLTokenId.TAG_CLOSE &&
-                            ts.token().id() != HTMLTokenId.TAG_OPEN) {
+                    if (ts.token().id() != HTMLTokenId.ARGUMENT
+                            && ts.token().id() != HTMLTokenId.OPERATOR
+                            && !isHtmlValueToken(ts.token())
+                            && ts.token().id() != HTMLTokenId.WS
+                            && ts.token().id() != HTMLTokenId.TAG_CLOSE
+                            && ts.token().id() != HTMLTokenId.TAG_OPEN) {
                         break;
                     }
                 }
@@ -182,12 +192,14 @@ public class HtmlAutoCompletion {
                 final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         final Indent indent = Indent.get(doc);
                         indent.lock();
                         try {
                             doc.runAtomic(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     try {
                                         indent.reindent(from.getOffset(), to.getOffset());
@@ -225,7 +237,7 @@ public class HtmlAutoCompletion {
         if (token.id() == HTMLTokenId.ERROR) {
             if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN ||
                     ts.token().id() == HTMLTokenId.WS ||
-                    ts.token().id() == HTMLTokenId.VALUE)) {
+                    isHtmlValueToken(ts.token()))) {
                 // slash typed just after open tag name => autocomplete the > symbol
                 doc.insertString(dotPos + 1, ">", null);
 
@@ -235,37 +247,57 @@ public class HtmlAutoCompletion {
         }
     }
 
-    private static void handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
+    //must be called before the change in the document!
+    private static boolean handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
         //test whether the user typed an ending quotation in the attribute value
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
         if (ts == null) {
-            return; //no html ts at the caret position
+            return false; //no html ts at the caret position
         }
         int diff = ts.move(dotPos);
-        if (!ts.moveNext()) {
-            return; //no token
+        if (diff == 0) {
+            if (!ts.movePrevious()) {
+                return false;
+            }
+        } else {
+            if (!ts.moveNext()) {
+                return false; //no token
+            }
         }
 
         Token<HTMLTokenId> token = ts.token();
-        if (token.id() == HTMLTokenId.VALUE) {
-            //test if the user inserted the qutation in an attribute value and before
-            //an already existing end quotation
-            //the text looks following in such a situation:
-            //
-            //  atrname="abcd|"", where offset of the | == dotPos
-            try {
-                if ("\"\"".equals(doc.getText(dotPos, 2))) {
-                    doc.remove(dotPos, 1);
+        try {
+            if(isHtmlValueToken(token)) {
+                //test if the user inserted the qutation in an attribute value and before
+                //an already existing end quotation
+                //the text looks following in such a situation:
+                //
+                //  atrname="abcd|"", where offset of the | == dotPos
+                if (token.text().charAt(diff) == '"') {
                     caret.setDot(dotPos + 1);
-                } else if (diff == 0 && token.text().charAt(0) == '"') {
-                    //user typed quation just after equal sign after tag attribute name => complete the second quote
-                    doc.insertString(dotPos, "\"", null);
-                    caret.setDot(dotPos + 1);
+                    return true;
                 }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+                
+            } else if (token.id() == HTMLTokenId.OPERATOR) {
+                //user typed quation just after equal sign after tag attribute name => complete the second quote
+                doc.insertString(dotPos, "\"\"", null);
+                caret.setDot(dotPos + 1);
+
+                return true;
             }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
+        return false;
+    }
+
+    private static boolean isHtmlValueToken(Token token) {
+        TokenId id = token.id();
+
+        return id == HTMLTokenId.VALUE ||
+                id == HTMLTokenId.VALUE_CSS ||
+                id == HTMLTokenId.VALUE_JAVASCRIPT;
     }
 
     private static void completeQuotes(final BaseDocument doc, final int dotPos, final Caret caret) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,22 +50,29 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Super class for all Style editors
- * @author  Winston Prakash
+ * @author  Winston Prakash, Marek Fukala
  * @version 1.0
  */
 abstract public class StyleEditor extends JPanel {
@@ -74,17 +84,127 @@ abstract public class StyleEditor extends JPanel {
     boolean listenerAdded = false;
 
     private CssRuleContext content;
-    
+
+    private final Object LOCK = new Object();
+    private Executor EXECUTOR = Executors.newSingleThreadExecutor();
+
+    private final AtomicBoolean IN_PROPERTY_VALUES_INITIALIZATION = new AtomicBoolean(false);
+
+    protected StyleEditor(String name, String dispName) {
+        setName(name); //NOI18N
+        setDisplayName(dispName);
+        
+        armPanel();
+    }
+
     /** Called by StyleBuilderPanel to set the UI panel property values. */
-    public void setContent(CssRuleContext content) {
+    public synchronized void setContent(final CssRuleContext content) {
         this.content = content;
-        setCssPropertyValues(content.selectedRuleContent());
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //Bug 187818 - CSS Style Editor sometimes broken after update to 6.9
+                        //
+                        //The CssEditorSupport.updateSelectedRule() method calls setContent() on the
+                        //StyleBuilderTopComponent which then triggers this code.
+                        //In the StyleEditor.setCssPropertyValues() method there might be the
+                        //aggregated events handling which then causes the CssEditorSupport to stop listening
+                        //on the UI.
+                        //It is caused by the lazy call of this Runnable. First the
+                        //CssEditorSupport.updateSelectedRule()
+                        //triggers the StyleEditor.setContent() method, then adds the listener to the
+                        //selected rule in the same thread. Then after some time this Runnable lazily runs
+                        //and possibly (for example in the MarginStyleEditor) calls
+                        //the CssEditorSupport.lastAggregatedEventFired
+                        //which detaches the property change listener.
+                        //
+                        //The workaround is not to call the CssEditorSupport.firstAggregatedEventWillFire() and
+                        //CssEditorSupport.lastAggregatedEventFired() during the panel initialization but only
+                        //upon the UI modifications
+                        //
+                        IN_PROPERTY_VALUES_INITIALIZATION.set(true);
+                        setCssPropertyValues(content.selectedRuleContent());
+                        IN_PROPERTY_VALUES_INITIALIZATION.set(false);
+                        //once the instance executor is used, we can release it and run the code directly
+                        EXECUTOR = null;
+                    }
+                    
+                });
+            }
+        };
+
+        if(EXECUTOR != null) {
+            EXECUTOR.execute(task);
+        } else {
+            task.run();
+        }
+
+    }
+
+    protected void startAggregatedEventsSession() {
+        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+        }
+    }
+
+    protected void closeAggregatedEventsSession() {
+        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+            CssEditorSupport.getDefault().lastAggregatedEventFired();
+        }
     }
     
     protected CssRuleContext content() {
         return content;
     }
+
+    protected abstract void lazyInitializePanel();
     
+    public void initializePanel() {
+        synchronized (LOCK) {
+            LOCK.notifyAll(); //AWT
+        }
+    }
+
+    private StyleEditor armPanel() {
+        EXECUTOR.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                //this blocks the execution until the editor panel is selected
+                synchronized (LOCK) {
+                    try {
+                        LOCK.wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            lazyInitializePanel();
+
+                            revalidate();
+                            repaint();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        return this;
+    }
+
     /**
      * Overriden by the subclasses
      * - Remove the property change listener
@@ -184,6 +304,7 @@ abstract public class StyleEditor extends JPanel {
             cssStyleData = styleData;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
                 cssStyleData.modifyProperty(evt.getPropertyName(), (String) evt.getNewValue());

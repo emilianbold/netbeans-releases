@@ -34,6 +34,7 @@ public class MapperDivider extends JPanel {
         setFocusable(false);
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
         Color c = getBackground();
         
@@ -83,7 +84,10 @@ public class MapperDivider extends JPanel {
     }
     
     
+    @Override
     public void doLayout() {}
+    @Override
     protected void paintChildren(Graphics g) {}
+    @Override
     protected void paintBorder(Graphics g) {}
 }

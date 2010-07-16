@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,8 +53,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.EditableManifest;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -145,7 +148,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(constructor, handle, layerFileObject);
@@ -153,7 +156,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
 
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(fqname, handle, layerFileObject, layerAttribute);
@@ -161,7 +164,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
 
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
-            LayerUtils.LayerHandle handle,
+            LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
         return new LayerSafeDeleteRefactoringElement(method, handle, layerFileObject);
@@ -252,18 +255,18 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  {
         
         private FileObject layerFO;
-        private LayerUtils.LayerHandle handle;
+        private LayerHandle handle;
 
         private String attribute;
         /**
          * Creates a new instance of LayerRenameRefactoringElement
          */
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO, String attr) {
+        public LayerSafeDeleteRefactoringElement(String name, LayerHandle handle, FileObject layerFO, String attr) {
             this(name, handle, layerFO);
             attribute = attr;
         }
         
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO) {
+        public LayerSafeDeleteRefactoringElement(String name, LayerHandle handle, FileObject layerFO) {
             this.name = name;
             this.handle = handle;
             parentFile = handle.getLayerFile();

@@ -26,7 +26,8 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.xam.spi.NotImportedModelRetriever;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
@@ -36,9 +37,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author nk160297
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.NotImportedModelRetriever.class)
 public class NotImportedModelRetrieverImpl implements NotImportedModelRetriever {
-
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever#getWSDLModels(org.netbeans.modules.bpel.model.api.BpelModel, java.lang.String)
@@ -48,13 +47,12 @@ public class NotImportedModelRetrieverImpl implements NotImportedModelRetriever 
         return Collections.EMPTY_LIST;
     }
     
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever#getSchemaModels(org.netbeans.modules.bpel.model.api.BpelModel, java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public Collection<SchemaModel> getSchemaModels(BpelModel model, String namespace) {
-        if ( namespace == null ) {
+        if (namespace == null) {
             return Collections.EMPTY_LIST;
         }
         //
@@ -63,20 +61,21 @@ public class NotImportedModelRetrieverImpl implements NotImportedModelRetriever 
         // It is necessary to add schema models from the "BPEL Global Catalog"
         // 
         Project project = Utils.safeGetProject(model);
-        List<FileObject> schemaFoList = ProjectUtilities.
-                getXSDFilesRecursively(project, false);
+        List<FileObject> schemaFoList = ReferenceUtil.getXSDFilesRecursively(project, false);
         Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
+
         for (FileObject fo : schemaFoList) {
             SchemaModel sModel = Utils.getSchemaModel(fo);
             if (sModel != null) {
-                String modelNs = sModel.getEffectiveNamespace(sModel.getSchema());
-                if (namespace.equals(modelNs)) {
-                    resultList.add(sModel);
+                Schema schema = sModel.getSchema();
+                if (schema != null) {
+                    String modelNs = sModel.getEffectiveNamespace(schema);
+                    if (namespace.equals(modelNs)) {
+                        resultList.add(sModel);
+                    }
                 }
             }
         }
-        //
         return resultList;
     }
-
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -58,8 +62,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
+import org.openide.util.Parameters;
 
 
 /**
@@ -70,9 +77,11 @@ import javax.swing.text.BadLocationException;
  *  @since   03/2002
  */
 public class PopupManager {
+
+    private static final Logger LOG = Logger.getLogger(PopupManager.class.getName());
     
     private JComponent popup = null;
-    private JTextComponent textComponent; 
+    private final JTextComponent textComponent;
 
     /** Place popup always above cursor */
     public static final Placement Above = new Placement("Above"); //NOI18N
@@ -98,9 +107,9 @@ public class PopupManager {
     /** Place popup inside the whole scrollbar */
     public static final HorizontalBounds ScrollBarBounds = new HorizontalBounds("ScrollBar"); //NOI18N
     
-    private KeyListener keyListener;
+    private final KeyListener keyListener;
     
-    private TextComponentListener componentListener;
+    private final TextComponentListener componentListener;
     
     /** Creates a new instance of PopupManager */
     public PopupManager(JTextComponent textComponent) {
@@ -133,41 +142,58 @@ public class PopupManager {
      *  @param popup popup component to be removed from
      *  root pane of the text component.
      */
-    public void uninstall(JComponent popup){
-        if (this.popup != null){
-            if (this.popup.isVisible()) this.popup.setVisible(false);
-            removeFromRootPane(this.popup);
+    public void uninstall(JComponent popup) {
+        JComponent oldPopup = this.popup;
+
+        if (oldPopup != null) {
+            if (oldPopup.isVisible()) {
+                oldPopup.setVisible(false);
+            }
+            removeFromRootPane(oldPopup);
+            this.popup = null;
         }
-        
-        if (popup!=this.popup && popup!= null){
-            if (popup.isVisible()) popup.setVisible(false);
+
+        if (popup != null && popup != oldPopup) {
+            if (popup.isVisible()) {
+                popup.setVisible(false);
+            }
             removeFromRootPane(popup);
         }
     }
 
-    public void install(JComponent popup, Rectangle cursorBounds,
-    Placement placement, HorizontalBounds horizontalBounds, int horizontalAdjustment, int verticalAdjustment){
-        /* Uninstall the old popup from root pane
-         * and install the new one. Even in case
-         * they are the same objects it's necessary
-         * to cover the workspace switches etc.
-         */
-        if (this.popup != null) {
-            // if i.e. completion is visible and tooltip is being installed, 
-            // completion popup should be closed.
-            if (this.popup.isVisible() && this.popup!=popup) this.popup.setVisible(false);
-            removeFromRootPane(this.popup);
+    public void install(
+        JComponent popup, Rectangle cursorBounds,
+        Placement placement, HorizontalBounds horizontalBounds, int horizontalAdjustment, int verticalAdjustment
+    ) {
+//        /* Uninstall the old popup from root pane
+//         * and install the new one. Even in case
+//         * they are the same objects it's necessary
+//         * to cover the workspace switches etc.
+//         */
+//        if (this.popup != null) {
+//            // if i.e. completion is visible and tooltip is being installed,
+//            // completion popup should be closed.
+//            if (this.popup.isVisible() && this.popup!=popup) this.popup.setVisible(false);
+//            removeFromRootPane(this.popup);
+//        }
+
+        if (this.popup != null && this.popup != popup) {
+            uninstall(null);
         }
 
-        this.popup = popup;
+        assert this.popup == null || this.popup == popup : "this.popup=" + this.popup + ", popup=" + popup; //NOI18N
 
-        if (this.popup != null) {
-            installToRootPane(this.popup);
+        if (popup != null) {
+            if (this.popup == null) {
+                this.popup = popup;
+                installToRootPane(this.popup);
+            } // else this.popup == popup
         
             // Update the bounds of the popup
             Rectangle bounds = computeBounds(this.popup, textComponent,
                 cursorBounds, placement, horizontalBounds);
 
+            LOG.log(Level.FINE, "computed-bounds={0}", bounds); //NOI18N
             if (bounds != null){
                 // Convert to layered pane's coordinates
 
@@ -195,6 +221,8 @@ public class PopupManager {
                 bounds.y = bounds.y + verticalAdjustment;
                 bounds.width = bounds.width - horizontalAdjustment;
                 bounds.height = bounds.height - verticalAdjustment;
+
+                LOG.log(Level.FINE, "setting bounds={0} on {1}", new Object [] { bounds, this.popup }); //NOI18N
                 this.popup.setBounds(bounds);
 
             } else { // can't fit -> hide
@@ -203,14 +231,11 @@ public class PopupManager {
         }
     }
     
-    public void install(JComponent popup, Rectangle cursorBounds,
-    Placement placement, HorizontalBounds horizontalBounds){
-        install(popup, cursorBounds, placement, ViewPortBounds, 0, 0);
+    public void install(JComponent popup, Rectangle cursorBounds, Placement placement, HorizontalBounds horizontalBounds) {
+        install(popup, cursorBounds, placement, horizontalBounds, 0, 0);
     }
     
-    
-    public void install(JComponent popup, Rectangle cursorBounds,
-    Placement placement){
+    public void install(JComponent popup, Rectangle cursorBounds, Placement placement) {
         install(popup, cursorBounds, placement, ViewPortBounds);
     }
     
@@ -330,53 +355,45 @@ public class PopupManager {
      *  @param viewHeight height of the visible view area.
      *  @param cursorBounds the bounds of the caret or mouse cursor
      *    relative to the upper-left corner of the visible view
-     *  @param placement where to place the popup panel according to
+     *  @param originalPlacement where to place the popup panel according to
      *    the cursor position
      *  @return bounds of popup panel relative to the upper-left corner
      *    of the underlying view.
      *    <CODE>null</CODE> if there is no place to display popup.
      */
-    protected static Rectangle computeBounds(JComponent popup,
-    int viewWidth, int viewHeight, Rectangle cursorBounds, Placement placement, HorizontalBounds horizontalBounds) {
-        
-        if (placement == null) {
-            throw new NullPointerException("placement cannot be null"); // NOI18N
-        }
+    protected static Rectangle computeBounds(
+        JComponent popup,
+        int viewWidth, 
+        int viewHeight, 
+        Rectangle cursorBounds, 
+        Placement originalPlacement, 
+        HorizontalBounds horizontalBounds)
+    {
+        Parameters.notNull("popup", popup); //NOI18N
+        Parameters.notNull("cursorBounds", cursorBounds); //NOI18N
+        Parameters.notNull("originalPlacement", originalPlacement); //NOI18N
         
         // Compute available height above the cursor
         int aboveCursorHeight = cursorBounds.y;
         int belowCursorY = cursorBounds.y + cursorBounds.height;
         int belowCursorHeight = viewHeight - belowCursorY;
         
-        // Resolve *Preferred placements first
-        if (placement == AbovePreferred || placement == BelowPreferred) {
-            int prefHeight = popup.getPreferredSize().height;
-            if (placement == AbovePreferred) {
-                placement = (prefHeight <= aboveCursorHeight) ? Above : Largest;
-            } else { // BelowPreferred
-                placement = (prefHeight <= belowCursorHeight) ? Below : Largest;
-            }
-        }
+        Dimension prefSize = popup.getPreferredSize();
+        final int width = Math.min(viewWidth, prefSize.width);
         
-        // Resolve Largest placement
-        if (placement == Largest) {
-            placement = (aboveCursorHeight < belowCursorHeight)
-                ? Below
-                : Above;
-        }
+        popup.setSize(width, Integer.MAX_VALUE);
+        prefSize = popup.getPreferredSize();
+        Placement placement = determinePlacement(originalPlacement, prefSize, aboveCursorHeight, belowCursorHeight);
         
         Rectangle popupBounds = null;
         
-        while (true) { // do one or two passes
+        for(;;) { // do one or two passes
             popup.putClientProperty(Placement.class, placement);
 
-            int height = (placement == Above || placement == AbovePreferred)
-                ? aboveCursorHeight
-                : belowCursorHeight;
-
-            popup.setSize(viewWidth, height);
+            int height = (placement == Above || placement == AbovePreferred) ? aboveCursorHeight : belowCursorHeight;
+            popup.setSize(width, height);
             popupBounds = popup.getBounds();
-
+            
             Placement updatedPlacement = (Placement)popup.getClientProperty(Placement.class);
 
             if (updatedPlacement != placement) { // popup does not fit with the orig placement
@@ -409,48 +426,87 @@ public class PopupManager {
         return popupBounds;
     }
 
-    protected static Rectangle computeBounds(JComponent popup,
-    int viewWidth, int viewHeight, Rectangle cursorBounds, Placement placement) {
+    protected static Rectangle computeBounds(
+        JComponent popup,
+        int viewWidth, 
+        int viewHeight, 
+        Rectangle cursorBounds, 
+        Placement placement) 
+    {
         return computeBounds(popup, viewWidth, viewHeight, cursorBounds, placement, ViewPortBounds);
     }    
 
+    private static Placement determinePlacement(Placement placement, Dimension prefSize, int aboveCursorHeight, int belowCursorHeight) {
+        // Resolve *Preferred placements first
+        if (placement == AbovePreferred) {
+            placement = (prefSize.height <= aboveCursorHeight) ? Above : Largest;
+        } else if (placement == BelowPreferred) {
+            placement = (prefSize.height <= belowCursorHeight) ? Below : Largest;
+        }
+        
+        // Resolve Largest placement
+        if (placement == Largest) {
+            placement = (aboveCursorHeight < belowCursorHeight) ? Below : Above;
+        }
+        
+        return placement;
+    }
+    
     /** Popup's key filter */
-    private class PopupKeyListener implements KeyListener{
+    private final class PopupKeyListener implements KeyListener{
         
-        public void keyTyped(KeyEvent e){}
-        public void keyReleased(KeyEvent e){}
+        public @Override void keyTyped(KeyEvent e) {
+            // no-op
+        }
+
+        public @Override void keyReleased(KeyEvent e) {
+            // no-op
+        }
         
-        public void keyPressed(KeyEvent e){
-            if (e == null) return;
-            if (popup != null  && popup.isShowing()){
+        public @Override void keyPressed(KeyEvent e){
+            if (e != null && popup != null && popup.isShowing()) {
                 
                 // get popup's registered keyboard actions
                 ActionMap am = popup.getActionMap();
                 InputMap  im = popup.getInputMap();
                 
                 // check whether popup registers keystroke
-                Object obj = im.get(KeyStroke.getKeyStrokeForEvent(e));
-                if (obj!=null){
+                KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+                Object obj = im.get(ks);
+                LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key={2}", new Object [] { e, ks, obj }); //NOI18N
+                if (obj != null && 
+                    !obj.equals("tooltip-no-action") && obj.equals("tooltip-hide-action") //NOI18N ignore ToolTipSupport installed actions
+                ) {
                     // if yes, gets the popup's action for this keystroke, perform it 
                     // and consume key event
                     Action action = am.get(obj);
+                    LOG.log(Level.FINE, "Popup component''s action: {0}, {1}", new Object [] { action, action != null ? action.getValue(Action.NAME) : null }); //NOI18N
+
                     if (action != null) {
                         action.actionPerformed(null);
                         e.consume();
+                        return;
                     }
+                }
+
+                if (e.getKeyCode() != KeyEvent.VK_CONTROL &&
+                    e.getKeyCode() != KeyEvent.VK_SHIFT &&
+                    e.getKeyCode() != KeyEvent.VK_ALT &&
+                    e.getKeyCode() != KeyEvent.VK_ALT_GRAPH &&
+                    e.getKeyCode() != KeyEvent.VK_META
+                ) {
+                    // hide tooltip if any was shown
+                    Utilities.getEditorUI(textComponent).getToolTipSupport().setToolTipVisible(false);
                 }
             }
         }
-
-    }
+    } // End of PopupKeyListener class
     
     private final class TextComponentListener extends ComponentAdapter {
-
-        public void componentHidden(ComponentEvent evt) {
+        public @Override void componentHidden(ComponentEvent evt) {
             install(null); // hide popup
         }
-
-    }
+    } // End of TextComponentListener class
     
     /** Placement of popup panel specification */
     public static final class Placement {
@@ -461,11 +517,11 @@ public class PopupManager {
             this.representation = representation;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return representation;
         }
         
-    }    
+    } // End of Placement class
     
     /** Horizontal bounds of popup panel specification */
     public static final class HorizontalBounds {
@@ -476,11 +532,11 @@ public class PopupManager {
             this.representation = representation;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return representation;
         }
         
-    }    
+    } // End of HorizontalBounds class
     
 }
 

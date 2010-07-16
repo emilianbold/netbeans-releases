@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,33 +59,41 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.IndexedNamespace;
-import org.netbeans.modules.php.editor.index.IndexedType;
-import org.netbeans.modules.php.editor.index.IndexedTypedElement;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
@@ -97,9 +109,10 @@ import org.openide.util.NbBundle;
 public abstract class PHPCompletionItem implements CompletionProposal {
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
     protected static ImageIcon keywordIcon = null;
-    protected final CompletionRequest request;
+
+    final CompletionRequest request;
     private final ElementHandle element;
-    private QualifiedNameKind generateAs;
+    protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
@@ -113,70 +126,61 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         this(element,request,null);
     }
 
+    @Override
     public int getAnchorOffset() {
         return request.anchor;
     }
 
+    @Override
     public ElementHandle getElement() {
         return element;
     }
 
+    @Override
     public String getName() {
         return element.getName();
     }
 
-    public String getInsertPrefix() {
-        return getName();
-    }
 
+    @Override
     public String getSortText() {
-        IndexedElement indexedElement = null;
-        if (getElement() instanceof IndexedElement) {
-            indexedElement = (IndexedElement) getElement();
-        } else if (getElement() instanceof IndexedClassMember) {
-            indexedElement = ((IndexedClassMember)getElement()).getMember();
-        }
-        if (indexedElement != null && indexedElement.isResolved()) {
-            return "-" + getName(); //NOI18N
-        }
         return getName();
     }
 
+    @Override
     public int getSortPrioOverride() {
         return 0;
     }
 
+    @Override
     public String getLhsHtml(HtmlFormatter formatter) {
         formatter.appendText(getName());
         return formatter.getText();
     }
 
+    @Override
     public ImageIcon getIcon() {
         return null;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         Set<Modifier> emptyModifiers = Collections.emptySet();
         ElementHandle handle = getElement();
         return (handle != null) ? handle.getModifiers() : emptyModifiers;
     }
 
+    public String getFileNameURL() {
+        ElementHandle elem = getElement();
+        return (elem instanceof PhpElement) ? ((PhpElement)elem).getFilenameUrl() : "";//NOI18N
+     }
+
+    @Override
     public boolean isSmart() {
-        // true for elements defined in the currently file
-        IndexedElement indexedElement = null;
-        if (getElement() instanceof IndexedElement) {
-            indexedElement = (IndexedElement) getElement();
-        } else if (getElement() instanceof IndexedClassMember) {
-            indexedElement = ((IndexedClassMember) getElement()).getMember();
-        }
-
-        if (indexedElement != null) {
-            String url = indexedElement.getFilenameUrl();
-            return url != null && url.equals(request.currentlyEditedFileURL);
-        }
-
-        return false;
+        String url = getFileNameURL();
+        return url != null && url.equals(request.currentlyEditedFileURL);
     }
+
 
     private static NamespaceDeclaration findEnclosingNamespace(PHPParseResult info, int offset) {
         final Program program = info.getProgram();
@@ -189,11 +193,24 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return null;
     }
 
+    @Override
     public String getCustomInsertTemplate() {
+        return null;
+    }
+
+
+    @Override
+    public String getInsertPrefix() {
         StringBuilder template = new StringBuilder();
         ElementHandle elem = getElement();
-        if (elem instanceof IndexedFullyQualified) {
-            IndexedFullyQualified ifq = (IndexedFullyQualified) elem;
+        if (elem instanceof MethodElement) {
+            final MethodElement method = (MethodElement) elem;
+            if (method.isConstructor()) {
+                elem = method.getType();
+            }
+        }
+        if (elem instanceof FullyQualifiedElement) {
+            FullyQualifiedElement ifq = (FullyQualifiedElement) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
             final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
             Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
@@ -212,8 +229,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             break;
                     }
 
-                } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
-                        ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
+                        && ifq.getNamespaceName().toString().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
                     //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
                     generateAs = QualifiedNameKind.FULLYQUALIFIED;
                 }
@@ -221,30 +238,30 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 template.append(getName());
                 return template.toString();
             }
-            switch(generateAs) {
+            switch (generateAs) {
                 case FULLYQUALIFIED:
                     template.append(ifq.getFullyQualifiedName());
                     break;
                 case QUALIFIED:
-                    final String fqn = ifq.getFullyQualifiedName();
+                    final String fqn = ifq.getFullyQualifiedName().toString();
                     int indexOf = fqn.toLowerCase().indexOf(qn.toNamespaceName().toString().toLowerCase());
                     if (indexOf != -1) {
                         template.append(fqn.substring(indexOf == 0 ? 1 : indexOf));
                         break;
                     }
                 case UNQUALIFIED:
-                    boolean fncFromDefaultNamespace = ((ifq instanceof IndexedFunction) && ifq.getIn() == null &&
-                            NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName()));
-                    if (!(elem instanceof IndexedNamespace) && !fncFromDefaultNamespace) {
+                    boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
+                            && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
+                    if (!fncFromDefaultNamespace) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
 
                         if (namespaceScope != null) {
-                            LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                            LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                             QualifiedName fqna = QualifiedName.create(false, segments);
                             if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                QualifiedName suffix = VariousUtils.getPreferredName(fqna, namespaceScope);
                                 if (suffix != null) {
                                     template.append(suffix.toString());
                                     break;
@@ -257,49 +274,524 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
 
             return template.toString();
-        } 
-        return null;
+        }
+        
+        return getName();
     }
 
+    @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        if (element instanceof IndexedClassMember) {
-            IndexedClassMember classMember = (IndexedClassMember) element;
-            IndexedType type = classMember.getType();
-            QualifiedName qualifiedName = QualifiedName.create(type.getNamespaceName());
+        if (element instanceof TypeMemberElement) {
+            TypeMemberElement classMember = (TypeMemberElement) element;
+            TypeElement type = classMember.getType();
+            QualifiedName qualifiedName = type.getNamespaceName();
             if (qualifiedName.isDefaultNamespace()) {
                 formatter.appendText(type.getName());
                 return formatter.getText();
             } else {
-                formatter.appendText(type.getFullyQualifiedName());
-                return formatter.getText();
-            }
-        } if (element.getIn() != null) {
-            formatter.appendText(element.getIn());
-            return formatter.getText();
-        } else if (element instanceof IndexedElement) {
-            IndexedElement ie = (IndexedElement) element;
-            if (ie.isPlatform()){
-                return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
-            }
-
-            String filename = ie.getFilenameUrl();
-            if (filename != null) {
-                int index = filename.lastIndexOf('/');
-                if (index != -1) {
-                    filename = filename.substring(index + 1);
-                }
-
-                formatter.appendText(filename);
+                formatter.appendText(type.getFullyQualifiedName().toString());
                 return formatter.getText();
             }
         }
+            final String in = element.getIn();
+            if (in != null && in.length() > 0) {
+                formatter.appendText(element.getIn());
+                return formatter.getText();
+            } else if (element instanceof PhpElement) {
+                PhpElement ie = (PhpElement) element;
+                if (ie.isPlatform()) {
+                    return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
+                }
+
+                String filename = ie.getFilenameUrl();
+                if (filename != null) {
+                    int index = filename.lastIndexOf('/');
+                    if (index != -1) {
+                        filename = filename.substring(index + 1);
+                    }
+
+                    formatter.appendText(filename);
+                    return formatter.getText();
+                } else if (ie.getFileObject() != null) {
+                    formatter.appendText(ie.getFileObject().getNameExt());
+                    return formatter.getText();
+                }
+            }
+        
 
         return null;
     }
 
+    static class NewClassItem extends MethodElementItem {
+        public static NewClassItem getItem(final MethodElement methodElement, CompletionRequest request) {
+            return new NewClassItem(new FunctionElementItem(methodElement, request, methodElement.getParameters()));
+        }
+
+        private NewClassItem(FunctionElementItem function) {
+            super(function);
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getElement().getIn() != null) {
+                String namespaceName = ((MethodElement)getElement()).getType().getNamespaceName().toString();
+                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
+                    formatter.appendText(namespaceName);
+                    return formatter.getText();
+                }
+            }
+            return super.getRhsHtml(formatter);
+        }
+
+
+        @Override
+        public String getName() {
+                String in = getElement().getIn();
+                return (in != null) ? in : super.getName();
+            }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTRUCTOR;
+        }
+    }
+
+    public static class MethodElementItem extends FunctionElementItem {
+        /**
+         * @return more than one instance in case if optional parameters exists
+         */
+        static List<MethodElementItem> getItems(final MethodElement methodElement, CompletionRequest request) {
+            final List<MethodElementItem> retval = new ArrayList<MethodElementItem>();
+            List<FunctionElementItem> items = FunctionElementItem.getItems(methodElement, request);
+            for (FunctionElementItem functionElementItem : items) {
+                retval.add(new MethodElementItem(functionElementItem));
+            }
+            return retval;
+        }
+
+        MethodElementItem(FunctionElementItem function) {
+            super(function.getBaseFunctionElement(), function.request, function.parameters);
+        }
+    }
+
+
+    static class FunctionElementItem extends PHPCompletionItem {
+        private List<ParameterElement> parameters;
+
+        /**
+         * @return more than one instance in case if optional parameters exists
+         */
+        static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
+            final List<FunctionElementItem> retval = new ArrayList<FunctionElementItem>();
+            final List<ParameterElement> parameters = new ArrayList<ParameterElement>();
+            for (ParameterElement param : function.getParameters()) {
+                if (!param.isMandatory()) {
+                    if (retval.isEmpty()) {
+                        retval.add(new FunctionElementItem(function, request, parameters));
+                    }
+                    parameters.add(param);
+                    retval.add(new FunctionElementItem(function, request, parameters));
+                } else {
+                    //assert retval.isEmpty():param.asString();
+                    parameters.add(param);
+                }
+            }
+            if (retval.isEmpty()) {
+                retval.add(new FunctionElementItem(function, request, parameters));
+            }
+
+            return retval;
+        }
+
+        FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters) {
+            super(function, request);
+            this.parameters = new ArrayList<ParameterElement>(parameters);
+        }
+
+        public BaseFunctionElement getBaseFunctionElement() {
+            return (BaseFunctionElement)getElement();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return getBaseFunctionElement().getPhpElementKind().getElementKind();
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+        }
+
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            String superTemplate = super.getInsertPrefix();
+            if (superTemplate != null) {
+                template.append(superTemplate);
+            } else {
+                template.append(getName());
+            }
+
+            template.append("("); //NOI18N
+
+            List<String> params = getInsertParams();
+
+            for (int i = 0; i < params.size(); i++) {
+                String param = params.get(i);
+                if (param.startsWith("&")) {//NOI18N
+                    param = param.substring(1);
+                }
+                template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
+
+                if (i < params.size() - 1){
+                    template.append(", "); //NOI18N
+                }
+            }
+
+            template.append(')');
+
+            return template.toString();
+        }
+
+        @Override public String getLhsHtml(HtmlFormatter formatter) {
+            ElementKind kind = getKind();
+
+            formatter.name(kind, true);
+
+            if (emphasisName()){
+                formatter.emphasis(true);
+                formatter.appendText(getName());
+                formatter.emphasis(false);
+            } else {
+                formatter.appendText(getName());
+            }
+
+            formatter.name(kind, false);
+
+            formatter.appendHtml("("); // NOI18N
+            formatter.parameters(true);
+            appendParamsStr(formatter);
+            formatter.parameters(false);
+            formatter.appendHtml(")"); // NOI18N
+
+            return formatter.getText();
+        }
+
+        protected boolean emphasisName() {
+            return true;//getFunction().isResolved();
+        }
+
+        public List<String> getInsertParams() {
+            List<String> insertParams = new LinkedList<String>();
+            for (ParameterElement parameter : parameters) {
+                insertParams.add(parameter.getName());
+            }
+            return insertParams;
+        }
+
+        @Override
+        public String getSortText() {
+            return getName() + parameters.size();
+        }
+
+        private void appendParamsStr(HtmlFormatter formatter){
+            List<ParameterElement> allParameters = parameters;
+            for (int i = 0; i < allParameters.size(); i++) {
+                ParameterElement parameter = allParameters.get(i);
+                String paramName = parameter.getName();
+                if (paramName.startsWith("&")) {//NOI18N
+                    paramName = paramName.substring(1);
+                }
+                if (i != 0) {
+                    formatter.appendText(", "); // NOI18N
+                }
+
+                final String paramTpl = parameter.asString(true);
+                if (!parameter.isMandatory()) {
+                    formatter.appendText(paramTpl);
+                } else {
+                    formatter.emphasis(true);
+                    formatter.appendText(paramTpl);
+                    formatter.emphasis(false);
+                }
+            }
+        }
+    }
+
+
+    static class BasicFieldItem extends PHPCompletionItem {
+        private String typeName;
+        public static BasicFieldItem getItem(PhpElement field, String type, CompletionRequest request) {
+            return new BasicFieldItem(field, type, request);
+        }
+
+        private BasicFieldItem(PhpElement field, String typeName, CompletionRequest request) {
+            super(field, request);
+            this.typeName = typeName;
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            Completion.get().showToolTip();
+            return getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            //TODO: variable just because originally VARIABLE was returned and thus all tests fail
+            //return ElementKind.FIELD;
+            return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.type(true);
+            formatter.appendText(getTypeName());
+            formatter.type(false);
+            formatter.appendText(" "); //NOI18N
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            final String name = getElement().getName();
+            return name.startsWith("$") ? name.substring(1) : name;
+        }
+
+        /**
+         * @return the typeName
+         */
+        protected String getTypeName() {
+            return typeName;
+        }
+
+
+    }
+    static class FieldItem extends BasicFieldItem {
+        public static FieldItem getItem(FieldElement field, CompletionRequest request) {
+            return new FieldItem(field, request);
+        }
+
+        private FieldItem(FieldElement field, CompletionRequest request) {
+            super(field, null, request);
+        }
+
+        FieldElement getField() {
+            return (FieldElement) getElement();
+        }
+
+        @Override
+        public String getName() {
+            final FieldElement field = getField();
+            return field.getName(field.isStatic());
+        }
+
+        protected String getTypeName() {
+            Set<TypeResolver> types = getField().getInstanceTypes();
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ?  "mixed" : "?";//NOI18N
+            if (types.size() == 1) {
+                TypeResolver typeResolver = types.iterator().next();
+                if (typeResolver.isResolved()) {
+                    QualifiedName qualifiedName = typeResolver.getTypeName(false);
+                    if (qualifiedName != null) {
+                        typeName = qualifiedName.toString();
+                    }
+                }
+            }
+            return typeName;
+        }
+    }
+
+    static class TypeConstantItem extends PHPCompletionItem {
+        public static TypeConstantItem getItem(TypeConstantElement constant, CompletionRequest request) {
+            return new TypeConstantItem(constant, request);
+        }
+
+        private TypeConstantItem(TypeConstantElement constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        TypeConstantElement getConstant() {
+            return (TypeConstantElement) getElement();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTANT;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            formatter.appendText(" "); //NOI18N
+            String value = getConstant().getValue();
+            formatter.type(true);
+            formatter.appendText(value != null ? value : "?");//NOI18N
+            formatter.type(false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            return getConstant().getName();
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            Completion.get().showToolTip();
+            return getName();
+        }
+    }
+
+    public static class MethodDeclarationItem extends MethodElementItem {
+        public static MethodDeclarationItem getDeclarationItem(final MethodElement methodElement, CompletionRequest request) {
+            return new MethodDeclarationItem(new FunctionElementItem(methodElement, request, methodElement.getParameters()));
+        }
+        public static MethodDeclarationItem forIntroduceHint(final MethodElement methodElement, CompletionRequest request) {
+            return new MethodDeclarationItem(new FunctionElementItem(methodElement, request, methodElement.getParameters())) {
+                @Override
+                protected String getFunctionBodyForTemplate() {
+                    return "\n";//NOI18N
+                }
+            };
+        }
+        public static MethodDeclarationItem forMethodName(final MethodElement methodElement, CompletionRequest request) {
+            return new MethodDeclarationItem(new FunctionElementItem(methodElement, request, methodElement.getParameters())) {
+
+                @Override
+                public String getCustomInsertTemplate() {
+                    return super.getNameAndFunctionBodyForTemplate();
+                }
+            };
+        }
+
+        private  MethodDeclarationItem(FunctionElementItem functionItem) {
+            super(functionItem);
+        }
+
+        public MethodElement getMethod() {
+            return (MethodElement) getBaseFunctionElement();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return isMagic()? false : true;
+        }
+
+        @Override
+        protected boolean emphasisName() {
+            return isMagic()? false : super.emphasisName();
+        }
+
+        public boolean isMagic() {
+            return ((MethodElement)getBaseFunctionElement()).isMagic();
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            String modifierStr = BodyDeclaration.Modifier.toString(getBaseFunctionElement().getFlags());
+            if (modifierStr.length() != 0) {
+                modifierStr = modifierStr.replace("abstract", "").trim();//NOI18N
+                template.append(modifierStr);
+            }
+            template.append(" ").append("function");//NOI18N
+            template.append(getNameAndFunctionBodyForTemplate());
+            return template.toString();
+        }
+
+        protected String getNameAndFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
+            template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration));
+            template.append(" ").append("{\n");//NOI18N
+            template.append(getFunctionBodyForTemplate());//NOI18N
+            template.append("}");//NOI18N
+            return template.toString();
+        }
+
+        /**
+         * @return body or null
+         */
+        protected String getFunctionBodyForTemplate() {
+            StringBuilder template = new StringBuilder();
+            MethodElement method = (MethodElement)getBaseFunctionElement();
+            TypeElement type = method.getType();
+            if (isMagic() || type.isInterface() || method.isAbstract()) {
+                template.append("${cursor};\n");//NOI18N
+            } else {
+                template.append("${cursor}parent::").append(getSignature().replace("&$", "$")).append(";\n");//NOI18N
+            }
+            return template.toString();
+        }
+
+        private String getSignature() {
+            StringBuilder retval = new StringBuilder();
+            retval.append(getBaseFunctionElement().getName());
+            retval.append("(");
+            StringBuilder parametersInfo = new StringBuilder();
+            List<ParameterElement> parameters = getBaseFunctionElement().getParameters();
+            for (ParameterElement parameter : parameters) {
+                if (parametersInfo.length() > 0) {
+                    parametersInfo.append(", ");//NOI18N
+                }
+                parametersInfo.append(parameter.getName());
+            }
+            retval.append(parametersInfo);
+            retval.append(")");//NOI18N
+            return retval.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(super.getLhsHtml(formatter));
+            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
+            return sb.toString();
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (isMagic()) {
+                final String message = NbBundle.getMessage(PHPCompletionItem.class, "MagicMethod");//NOI18N
+                formatter.appendText(message);
+                return formatter.getText();
+            }
+            return super.getRhsHtml(formatter);
+        }
+
+    }
+
+    static class  ClassScopeKeywordItem extends KeywordItem {
+        private final String className;
+        ClassScopeKeywordItem(final String className, final String keyword, final CompletionRequest request) {
+            super(keyword, request);
+            this.className = className;
+        }
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            if (keyword.startsWith("$")) {//NOI18N
+                if (className != null) {
+                    formatter.type(true);
+                    formatter.appendText(className);
+                    formatter.type(false);
+                }
+                formatter.appendText(" "); //NOI18N
+            }
+            return super.getLhsHtml(formatter);
+        }
+    }
     static class KeywordItem extends PHPCompletionItem {
         private String description = null;
-        private String keyword = null;
+        String keyword = null;
         private static final List<String> CLS_KEYWORDS =
                 Arrays.asList(PHPCodeCompletion.PHP_CLASS_KEYWORDS);
 
@@ -322,6 +814,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
@@ -348,6 +841,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getInsertPrefix() {
+            return getName();
+        }
+
+        @Override
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             if (CLS_KEYWORDS.contains(getName())) {                
@@ -355,12 +853,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
             if (type == null) {
-                return null;
+                return getName();
             }
             switch(type) {
                 case SIMPLE:
-                    builder.append(getName());
-                    break;
+                    return null;
                 case ENDS_WITH_SPACE:
                     builder.append(getName());
                     builder.append(" ${cursor}"); //NOI18N
@@ -413,11 +910,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public String getCustomInsertTemplate() {
+        public String getInsertPrefix() {
             //todo insert array brackets for array vars
-            return super.getCustomInsertTemplate();
+            return getName();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
@@ -440,7 +938,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     static class NamespaceItem extends PHPCompletionItem {
         Boolean isSmart;
-        NamespaceItem(IndexedNamespace namespace, CompletionRequest request, QualifiedNameKind generateAs) {
+        NamespaceItem(NamespaceElement namespace, CompletionRequest request, QualifiedNameKind generateAs) {
             super(namespace, request, generateAs);
         }
         @Override
@@ -458,22 +956,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            return getIndexedNamespace().getName();
+            return getNamespaceElement().getName();
         }
 
-        IndexedNamespace getIndexedNamespace() {
-            return (IndexedNamespace) getElement();
+        NamespaceElement getNamespaceElement() {
+            return (NamespaceElement) getElement();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.PACKAGE;
         }
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            String namespaceName = getIndexedNamespace().getNamespaceName();
-            if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
-                formatter.appendText(namespaceName);
+            QualifiedName namespaceName = getNamespaceElement().getNamespaceName();
+            if (namespaceName != null && !namespaceName.isDefaultNamespace()) {
+                formatter.appendText(namespaceName.toString());
                 return formatter.getText();
             }
 
@@ -483,17 +982,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public boolean isSmart() {
             if (isSmart == null) {
-                String namespaceName = getIndexedNamespace().getNamespaceName();
-                isSmart =  !(namespaceName == null || !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName));
+                QualifiedName namespaceName = getNamespaceElement().getNamespaceName();
+                isSmart =  !(namespaceName == null || !namespaceName.isDefaultNamespace());
                 if (!isSmart) {
                     FileScope fileScope = request.result.getModel().getFileScope();
                     NamespaceScope namespaceScope = (fileScope != null) ?
                         ModelUtils.getNamespaceScope(fileScope, request.anchor) : null;
                     if (namespaceScope != null) {
-                        IndexedNamespace ifq = getIndexedNamespace();
-                        LinkedList<String> segments = QualifiedName.create(ifq.getFullyQualifiedName()).getSegments();
+                        NamespaceElement ifq = getNamespaceElement();
+                        LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                         QualifiedName fqna = QualifiedName.create(false, segments);
-                        Collection<QualifiedName> relativeUses = QualifiedName.getRelativesToUses(namespaceScope, fqna);
+                        Collection<QualifiedName> relativeUses = VariousUtils.getRelativesToUses(namespaceScope, fqna);
                         for (QualifiedName qualifiedName : relativeUses) {
                             if (qualifiedName.getSegments().size() == 1) {
                                 isSmart = true;
@@ -501,7 +1000,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             }
                         }
                         if (!isSmart) {
-                            relativeUses = QualifiedName.getRelativesToNamespace(namespaceScope, fqna);
+                            relativeUses = VariousUtils.getRelativesToNamespace(namespaceScope, fqna);
                             for (QualifiedName qualifiedName : relativeUses) {
                                 if (qualifiedName.getSegments().size() == 1) {
                                     isSmart = true;
@@ -517,49 +1016,61 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class ConstantItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
-
-        ConstantItem(IndexedConstant constant, CompletionRequest request) {
+        ConstantItem(ConstantElement constant, CompletionRequest request) {
             super(constant, request);
-            this.constant = constant;
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
-            IndexedConstant cons = ((IndexedConstant)getElement());
+            String value = ((ConstantElement)getElement()).getValue();
             formatter.name(getKind(), true);
-
-            if (cons.isResolved()){
+            if (emphasisName()){
                 formatter.emphasis(true);
                 formatter.appendText(getName());
                 formatter.emphasis(false);
             } else {
                 formatter.appendText(getName());
             }
-
             formatter.name(getKind(), false);
+            formatter.appendText(" "); //NOI18N
+            formatter.type(true);
+            formatter.appendText(value != null ? value : "?");//NOI18N
+            formatter.type(false);
 
             return formatter.getText();
         }
 
+        protected boolean emphasisName() {
+            return true;//cons.isResolved()
+        }
+
+        @Override
         public ElementKind getKind() {
-            return ElementKind.GLOBAL;
+            return ElementKind.CONSTANT;
         }
     }
 
     static class ClassItem extends PHPCompletionItem {
         private boolean endWithDoubleColon;
-        ClassItem(IndexedClass clazz, CompletionRequest request, boolean endWithDoubleColon, QualifiedNameKind generateAs) {
+        ClassItem(ClassElement clazz, CompletionRequest request, boolean endWithDoubleColon, QualifiedNameKind generateAs) {
             super(clazz, request, generateAs);
             this.endWithDoubleColon = endWithDoubleColon;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
 
         @Override
+        public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+        }
+
+       @Override
         public String getCustomInsertTemplate() {
-            final String superTemplate = super.getCustomInsertTemplate();
+            final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
                 if (superTemplate != null) {
@@ -570,10 +1081,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 builder.append("::${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
+            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
+                scheduleShowingCompletion();
             }
             return superTemplate;
         }
     }
+
+
 
     public static ImageIcon getInterfaceIcon() {
         return InterfaceItem.icon();
@@ -584,15 +1099,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private static ImageIcon INTERFACE_ICON = null;
         private boolean endWithDoubleColon;
 
-        InterfaceItem(IndexedInterface iface, CompletionRequest request, boolean endWithDoubleColon) {
+        InterfaceItem(InterfaceElement iface, CompletionRequest request, boolean endWithDoubleColon) {
             super(iface, request);
             this.endWithDoubleColon = endWithDoubleColon;
         }
-        InterfaceItem(IndexedInterface iface, CompletionRequest request, QualifiedNameKind generateAs, boolean endWithDoubleColon) {
+        InterfaceItem(InterfaceElement iface, CompletionRequest request, QualifiedNameKind generateAs, boolean endWithDoubleColon) {
             super(iface, request, generateAs);
             this.endWithDoubleColon = endWithDoubleColon;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
@@ -610,8 +1126,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+        }
+
+        @Override
         public String getCustomInsertTemplate() {
-            final String superTemplate = super.getCustomInsertTemplate();
+            final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
                 if (superTemplate != null) {
@@ -624,33 +1147,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 return builder.toString();
             }
             return superTemplate;
-        }    
+        }
 
     }
 
     static class VariableItem extends PHPCompletionItem {
-        private boolean insertDollarPrefix = true;
 
-        VariableItem(IndexedVariable variable, CompletionRequest request) {
+        VariableItem(VariableElement variable, CompletionRequest request) {
             super(variable, request);
-            assert variable instanceof IndexedTypedElement;
-        }
-        VariableItem(IndexedClassMember<? extends IndexedElement> classMember, CompletionRequest request) {
-            super(classMember, request);
-            assert classMember.getMember() instanceof IndexedTypedElement;
-        }
-        VariableItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            assert constant instanceof IndexedTypedElement;
         }
 
-        private IndexedTypedElement getIndexedTypedElement() {
-            ElementHandle elem = getElement();
-            if (elem instanceof IndexedClassMember) {
-                elem = ((IndexedClassMember) elem).getMember();
-            } 
-            return (IndexedTypedElement) elem;
+        VariableElement getVariable() {
+            return (VariableElement) getElement();
         }
+
         @Override public String getLhsHtml(HtmlFormatter formatter) {
             formatter.type(true);
             formatter.appendText(getTypeName());
@@ -663,85 +1173,35 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
-        protected String getTypeName() {
-            String typeName = null;
-            IndexedTypedElement indexedVariable = getIndexedTypedElement();
-            if (CodeUtils.isTypeResolved(indexedVariable)) {
-                typeName = indexedVariable.getTypeName();
-            }
-            if (typeName == null) {
-                typeName = indexedVariable.isTypeResolved() ? "?" : ""; //NOI18N
-            }
-            return typeName;
-        }
+       
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
 
         @Override
-        public String getName() {
-            String name = super.getName();
-
-            if (!insertDollarPrefix && name.startsWith("$")){ //NOI18N
-                return name.substring(1);
-            }
-
-            return name;
-        }
-
-        void doNotInsertDollarPrefix(){
-            insertDollarPrefix = false;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
+        public String getInsertPrefix() {
             Completion.get().showToolTip();
-            return super.getCustomInsertTemplate();
+             return getName();
+        }
+
+
+        protected String getTypeName() {
+            Set<TypeResolver> types = getVariable().getInstanceTypes();
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ?  "mixed" : "?";//NOI18N
+            if (types.size() == 1) {
+                TypeResolver typeResolver = types.iterator().next();
+                if (typeResolver.isResolved()) {
+                    QualifiedName qualifiedName = typeResolver.getTypeName(false);
+                    if (qualifiedName != null) {
+                        typeName = qualifiedName.toString();
+                    }
+                }
+            }
+            return typeName;
         }
     }
-
-    /**
-     * It's used in the case that a top varibale is found in more files.
-     * Such variable should be rendered only one time in the cc without
-     * a file and type.
-     */
-    static class UnUniqueVaraibaleItems extends VariableItem {
-
-        public UnUniqueVaraibaleItems(IndexedVariable constant, CompletionRequest request) {
-            super(constant, request);
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.type(true);
-            formatter.appendText("?");
-            formatter.type(false);
-            formatter.appendText(" "); //NOI18N
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
-
-            return formatter.getText();
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return "";  //NOI18N
-        }
-    }
-
-    static class ClassConstantItem extends VariableItem {
-        ClassConstantItem(IndexedClassMember<IndexedConstant> classMember, CompletionRequest request) {
-            super(classMember, request);
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.CONSTANT;
-        }
-    }
-
 
     static class SpecialFunctionItem extends KeywordItem{
         public SpecialFunctionItem(String fncName, CompletionRequest request) {
@@ -768,308 +1228,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    static class MagicMethodNameItem extends MagicMethodItem {
-        public MagicMethodNameItem(IndexedFunction function, CompletionRequest request) {
-            super(function, request);
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            return super.getNameAndFunctionBodyForTemplate();
-        }        
-    }
-
-    static class MagicMethodItem extends FunctionDeclarationItem {
-        public MagicMethodItem(IndexedFunction function, CompletionRequest request) {
-            super(function, request, 0,false);
-        }
-        
-        @Override
-        public boolean isSmart() {
-            return false;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            return super.getLhsHtml(formatter);
-        }
-
-        @Override
-        protected boolean emphasisName() {
-            return false;
-        }
-
-        @Override
-        protected String getFunctionBodyForTemplate() {
-            return "${cursor}\n";//NOI18N
-        }
-    }
-
-    static class NewClassItem extends FunctionItem {
-        public NewClassItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
-            super(function, request, optionalArgCount);
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            if (getElement() instanceof IndexedFunction && getElement().getIn() != null) {
-                String namespaceName = ((IndexedFunction)getElement()).getNamespaceName();
-                if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
-                    formatter.appendText(namespaceName);
-                    return formatter.getText();
-                }
-            } 
-            return super.getRhsHtml(formatter);
-        }
 
 
-        @Override
-        public String getName() {
-            String in = getElement().getIn();
-            return (in != null) ? in : super.getName();
-        }
 
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.CONSTRUCTOR;
-        }
-    }
-    static class FunctionItem extends PHPCompletionItem {
-        private int optionalArgCount = 0;
-
-        FunctionItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
-            super(function, request);
-            this.optionalArgCount = optionalArgCount;
-        }
-        FunctionItem(IndexedClassMember<IndexedFunction> function, CompletionRequest request, int optionalArgCount) {
-            super(function, request);
-            this.optionalArgCount = optionalArgCount;
-        }
-
-        public IndexedFunction getFunction(){
-            if (getElement() instanceof IndexedClassMember) {
-                return (IndexedFunction)((IndexedClassMember)getElement()).getMember();
-            }
-            return (IndexedFunction)getElement();
-        }
-
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            String superTemplate = super.getCustomInsertTemplate();
-            if (superTemplate != null) {
-                template.append(superTemplate);
-            } else {
-                template.append(getName());
-            }
-
-            template.append("("); //NOI18N
-
-            List<String> params = getInsertParams();
-
-            for (int i = 0; i < params.size(); i++) {
-                String param = params.get(i);
-                template.append("${php-cc-"); //NOI18N
-                template.append(Integer.toString(i));
-                template.append(" default=\""); // NOI18N
-                if (param.startsWith("&")) {//NOI18N
-                    param = param.substring(1);
-                }
-                template.append(param);
-                template.append("\"}"); //NOI18N
-
-                if (i < params.size() - 1){
-                    template.append(", "); //NOI18N
-                }
-            }
-
-            template.append(')');
-
-            return template.toString();
-        }
-
-        @Override public String getLhsHtml(HtmlFormatter formatter) {
-            ElementKind kind = getKind();
-
-            formatter.name(kind, true);
-
-            if (emphasisName()){
-                formatter.emphasis(true);
-                formatter.appendText(getName());
-                formatter.emphasis(false);
-            } else {
-                formatter.appendText(getName());
-            }
-
-            formatter.name(kind, false);
-
-            formatter.appendHtml("("); // NOI18N
-            formatter.parameters(true);
-            appendParamsStr(formatter);
-            formatter.parameters(false);
-            formatter.appendHtml(")"); // NOI18N
-
-            return formatter.getText();
-        }
-
-        protected boolean emphasisName() {
-            return getFunction().isResolved();
-        }
-
-        public List<String> getInsertParams() {
-            List<String> insertParams = new LinkedList<String>();
-            Parameter parameters[] = getFunction().getParameters().toArray(new Parameter[0]);
-            boolean paramsToSkip[] = new boolean[parameters.length];
-            int optionalArgList[] = getFunction().getOptionalArgs();
-
-            for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
-                if (j <= 0){
-                    paramsToSkip[optionalArgList[i]] = true;
-                }
-            }
-
-            for (int i = 0; i < parameters.length; i++) {
-                Parameter param = parameters[i];
-
-                if (!paramsToSkip[i]){
-                    insertParams.add(param.getName());
-                }
-            }
-
-            return insertParams;
-        }
-
-        @Override
-        public String getSortText() {
-            int order = optionalArgCount;
-            return getName() + order;
-        }
-
-        private void appendParamsStr(HtmlFormatter formatter){
-            Parameter parameters[] = getFunction().getParameters().toArray(new Parameter[0]);
-            int optionalArgList[] = getFunction().getOptionalArgs();
-            boolean paramsToSkip[] = new boolean[parameters.length];
-            boolean optionalArgs[] = new boolean[parameters.length];
-
-            for (int i = 0, j = optionalArgCount; i < optionalArgList.length; i++, j --) {
-                optionalArgs[optionalArgList[i]] = true;
-
-                if (j <= 0){
-                    paramsToSkip[optionalArgList[i]] = true;
-                }
-            }
-
-            boolean firstParam = true;
-
-            for (int i = 0; i < parameters.length; i++) {
-                if (!paramsToSkip[i]) {
-                    Parameter param = parameters[i];
-                    String paramName = param.getName();
-                    if (paramName.startsWith("&")) {//NOI18N
-                        paramName = paramName.substring(1);
-                    }
-
-                    if (firstParam) {
-                        firstParam = false;
-                    } else {
-                        formatter.appendText(", "); // NOI18N
-                    }
-
-                    if (optionalArgs[i]) {
-                        formatter.appendText(paramName);
-                    } else {
-                        formatter.emphasis(true);
-                        formatter.appendText(paramName);
-                        formatter.emphasis(false);
-                    }
-                }
-            }
-        }
-    }
-
-    public static class FunctionDeclarationItem extends FunctionItem {
-        private boolean isIface;
-            public FunctionDeclarationItem(IndexedFunction function, CompletionRequest request, int optionalArgCount,boolean isIface) {
-            super(function, request, optionalArgCount);
-            this.isIface = isIface;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            String modifierStr = getFunction().getModifiersString();            
-            if (modifierStr.length() != 0) {
-                modifierStr = modifierStr.replace("abstract","").trim();//NOI18N
-                template.append(modifierStr);
-            }
-            template.append(" ").append("function");//NOI18N
-            template.append(getNameAndFunctionBodyForTemplate());
-            return template.toString();
-        }
-
-        protected String getNameAndFunctionBodyForTemplate() {
-            StringBuilder template = new StringBuilder();
-            final String functionSignature = getFunction().getFunctionSignature(true);
-            template.append(" ").append(functionSignature);//NOI18N
-            template.append(" ").append("{\n");//NOI18N
-            template.append(getFunctionBodyForTemplate());//NOI18N
-            template.append("}");//NOI18N
-            return template.toString();
-        }
-
-        /**
-         * @return body or null
-         */
-        protected String getFunctionBodyForTemplate() {
-            StringBuilder template = new StringBuilder();
-            if (isIface) {
-                template.append("${cursor};\n");//NOI18N
-            } else {
-                String functionSignature = getFunction().getFunctionSignature(false);
-                template.append("${cursor}parent::"+ functionSignature.replace("&$", "$") +";\n");//NOI18N
-            }
-            return template.toString();
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(super.getLhsHtml(formatter));
-            /* TODO: uncomment but first be sure that it really works
-            sb.append(" - ");//NOI18N
-            if (isIface || getFunction().isAbstract()) {
-                sb.append("implement"); //NOI18N
-            } else {
-                sb.append("override"); //NOI18N
-            }
-             */
-            //for now
-            sb.append(' ').append(NbBundle.getMessage(PHPCompletionItem.class, "Generate"));//NOI18N
-            return sb.toString();
-        }
-
-        @Override
-        public boolean isSmart() {
-            return true;
-        }
-    }
-
-    static class CompletionRequest {
+    public static class CompletionRequest {
         public  int anchor;
         public  PHPParseResult result;
         public  ParserResult info;
         public  String prefix;
         public  String currentlyEditedFileURL;
-        PHPIndex index;
+        public CompletionContext context;
+        ElementQuery.Index index;
     }
     private static void scheduleShowingCompletion() {
         if (OptionsUtils.autoCompletionTypes()) {
             service.schedule(new Runnable() {
 
+                @Override
                 public void run() {
                     Completion.get().showCompletion();
                 }

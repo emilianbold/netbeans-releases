@@ -59,21 +59,46 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+<<<<<<< local
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+=======
+import hidden.org.codehaus.plexus.util.DirectoryScanner;
+import hidden.org.codehaus.plexus.util.IOUtil;
+import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import java.awt.BorderLayout;
+>>>>>>> other
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+<<<<<<< local
+=======
+import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+>>>>>>> other
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -127,12 +152,14 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
     }
     
+    @Override
     public String getSpecVersion() {
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
         String specVersion = AdaptNbVersion.adaptVersion(watch.getMavenProject().getVersion(), AdaptNbVersion.TYPE_SPECIFICATION);
         return specVersion;
     }
 
+    @Override
     public String getCodeNameBase() {
         try {
             Xpp3Dom dom = getModuleDom();
@@ -150,15 +177,19 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             e.printStackTrace();
         }
         MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-        //same fallback is in nbm-maven-plugin
-        return prj.getGroupId() + "." + prj.getArtifactId(); //NOI18N
+        //same fallback is in nbm-maven-plugin, keep it synchronized with AbstractNbmMojo.createDefaultDescriptor
+        String codename = prj.getGroupId() + "." + prj.getArtifactId(); //NOI18N
+        codename = codename.replaceAll( "-", "." ); //NOI18N
+        return codename;
     }
 
+    @Override
     public String getSourceDirectoryPath() {
         //TODO
         return "src/main/java"; //NOI18N
     }
 
+    @Override
     public FileObject getSourceDirectory() {
         FileObject fo = project.getProjectDirectory().getFileObject(getSourceDirectoryPath());
         if (fo == null) {
@@ -173,6 +204,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return fo;
     }
 
+    @Override
     public FileObject getManifestFile() {
         String path = "src/main/nbm/manifest.mf";  //NOI18N
 
@@ -190,6 +222,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return project.getProjectDirectory().getFileObject(path);
     }
 
+    @Override
     public String getResourceDirectoryPath(boolean isTest) {
         if (isTest) {
             return "src/test/resources"; //NOI18N
@@ -197,23 +230,17 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return "src/main/resources"; //NOI18N
     }
 
+    @Override
     public boolean addDependency(String codeNameBase, String releaseVersion,
                                  SpecificationVersion version,
                                  boolean useInCompiler) throws IOException {
         String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set set = watch.getMavenProject().getDependencyArtifacts();
-        if (set != null) {
-            Iterator it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact)it.next();
-                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
-                    //TODO
-                    //not sure we ought to check for spec or release version.
-                    // just ignore for now, not any easy way to upgrade anyway I guess.
-                    return false;
-                }
-            }
+        if (hasDependency(codeNameBase)) {
+            //TODO
+            //not sure we ought to check for spec or release version.
+            // just ignore for now, not any easy way to upgrade anyway I guess.
+            return false;
         }
         Dependency dep = null;
         File platformFile = lookForModuleInPlatform(artifactId);
@@ -253,7 +280,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             }
         }
         if (dep.getVersion() == null) {
-            dep.setVersion("RELEASE67"); //NOI18N
+            dep.setVersion("RELEASE68"); //NOI18N
         }
         dependencyAdder.addDependency(dep);
         tsk.schedule(200);
@@ -268,8 +295,59 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * and add it as an external binary cluster.
      * @return null
      */
+    @Override
     public File getModuleJarLocation() {
         return null;
+    }
+
+    public @Override boolean hasDependency(String codeNameBase) throws IOException {
+        String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
+        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        Set<?> set = watch.getMavenProject().getDependencyArtifacts();
+        if (set != null) {
+            Iterator<?> it = set.iterator();
+            while (it.hasNext()) {
+                Artifact art = (Artifact) it.next();
+                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { // NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
+        File platformDir = findPlatformFolder();
+        if( null == platformDir ) {
+            //ask to find nb app module
+            if( SelectPlatformAppModulePanel.findAppModule( project ) ) {
+                platformDir = findPlatformFolder(); //look for platfrom app module again
+            } else {
+                return false;
+            }
+        }
+        if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
+            //platform needs to be built
+            notifyBuildNeeded( featureDisplayName );
+            return false;
+        }
+        return true;
+    }
+
+    private void notifyBuildNeeded(String featureDisplayName) {
+        if( !NbPreferences.forModule(MavenNbModuleImpl.class).getBoolean("showNextTime_BuildNeeded", true) ) //NOI18N
+            return;
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add( new JLabel(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_BuildNeeded")), BorderLayout.CENTER ); //NOI18N
+        JCheckBox checkShowNextTime = new JCheckBox(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_ShowNextTime")); //NOI18N
+        checkShowNextTime.setSelected(true);
+        panel.add(checkShowNextTime, BorderLayout.SOUTH);
+        JButton btnClose= new JButton(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_Close")); //NOI18N
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor(panel, featureDisplayName,
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[]{btnClose}, btnClose));
+        NbPreferences.forModule(MavenNbModuleImpl.class).putBoolean("showNextTime_BuildNeeded", checkShowNextTime.isSelected()); //NOI18N
     }
     
     private class DependencyAdder implements Runnable {
@@ -279,9 +357,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             toAdd.add(dep);
         }
         
+        @Override
         public void run() {
             FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     synchronized (MavenNbModuleImpl.DependencyAdder.this) {
                         for (Dependency dep : toAdd) {
@@ -301,11 +381,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
             
 
+    @Override
     public NbModuleType getModuleType() {
         return NbModuleProvider.STANDALONE;
     }
 
 
+    @Override
     public String getProjectFilePath() {
         return "pom.xml"; //NOI18N
     }
@@ -315,6 +397,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * The module isn't necessary a project dependency, more a property of the associated 
      * netbeans platform.
      */ 
+    @Override
     public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
         String artifactId = codenamebase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
@@ -343,7 +426,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         //TODO search local repository?? that's probably irrelevant here..
         
         //we're completely clueless.
-        return new SpecificationVersion("1.0"); //NOI18N
+        return null;
     }
     
     private File lookForModuleInPlatform(String artifactId) {
@@ -364,11 +447,20 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return null;
     }
 
+    @Override
     public File getActivePlatformLocation() {
-        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        File platformDir = findPlatformFolder();
+        if( null != platformDir && platformDir.exists() && platformDir.isDirectory() )
+            return platformDir;
+        Project suitProject = project;
+        NbMavenProject watch = suitProject.getLookup().lookup(NbMavenProject.class);
         String installProp = watch.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
+        if (installProp == null) {
+            installProp = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(), 
+                    "org.codehaus.mojo", "nbm-maven-plugin", "netbeansInstallation", "run-ide"); //NOI18N
+        }
         if (installProp != null) {
-            File fil = new File(installProp);
+            File fil = FileUtilities.convertStringToFile(installProp);
             if (fil.exists()) {
                 return fil;
             }
@@ -376,4 +468,44 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return null;
     }
 
+    private File findPlatformFolder() {
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String strPathToApp = props.get(Constants.PROP_PATH_NB_APPLICATION_MODULE, true); //TODO do we want the props to be shareable or not?
+        if( null == strPathToApp || strPathToApp.isEmpty() )
+            return null;
+
+        FileObject appModuleDir = FileUtilities.convertStringToFileObject(strPathToApp);
+        if( appModuleDir == null ) {
+            //try relative path
+            File dir = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), strPathToApp);
+            appModuleDir = FileUtil.toFileObject(dir);
+            if( null == appModuleDir ) {
+                Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: " + strPathToApp); //NOI18N
+                return null;
+            }
+        }
+        try {
+            Project appProject = ProjectManager.getDefault().findProject(appModuleDir);
+            if (appProject == null) {
+                //not a project directory.
+                return null;
+            }
+            NbMavenProject watch = appProject.getLookup().lookup(NbMavenProject.class);
+            if (watch == null) {
+                return null; //not a maven project.
+            }
+            String outputDir = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
+                    "org.codehaus.mojo", "nbm-maven-plugin", "outputDirectory", "cluster-app"); //NOI18N
+            if( null == outputDir ) {
+                outputDir = "target"; //NOI18N
+            }
+
+            String brandingToken = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
+                    "org.codehaus.mojo", "nbm-maven-plugin", "brandingToken", "cluster-app"); //NOI18N
+             return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
+        } catch( IOException ex ) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 }

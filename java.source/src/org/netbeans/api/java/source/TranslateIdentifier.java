@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,6 +40,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.code.Symbol;
 
+import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -46,6 +50,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -68,40 +73,41 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     private final CompilationInfo info;
     private final TreeMaker make;
     private final CompilationUnitTree unit;
-    private final boolean copyComments;
+    private final Tree commentMapTarget;
     private final boolean resolveImports;
     private final TokenSequence<JavaTokenId> seq;
     private final CommentHandlerService commentService;
     private final SourcePositions positions;
     private int tokenIndexAlreadyAdded = -1;
     private Element rootElement;
+    private boolean mapComments;
     
 
     public TranslateIdentifier(final CompilationInfo info,
-            final boolean copyComments,
+            final Tree commentMapTarget,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq) {
-        this(info, copyComments, resolveImports, seq, info.getCompilationUnit());
+        this(info, commentMapTarget, resolveImports, seq, info.getCompilationUnit());
     }
 
     public TranslateIdentifier(final CompilationInfo info,
-            final boolean copyComments,
+            final Tree commentMapTarget,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final CompilationUnitTree cut) {
-        this(info, copyComments, resolveImports, seq, cut, info.getTrees().getSourcePositions());
+        this(info, commentMapTarget, resolveImports, seq, cut, info.getTrees().getSourcePositions());
     }
 
     public TranslateIdentifier(final CompilationInfo info,
-            final boolean copyComments,
+            final Tree commentMapTarget,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final SourcePositions positions) {
-        this(info, copyComments, resolveImports, seq, info.getCompilationUnit(), positions);
+        this(info, commentMapTarget, resolveImports, seq, info.getCompilationUnit(), positions);
     }
 
     private TranslateIdentifier(final CompilationInfo info,
-            final boolean copyComments, 
+            final Tree commentMapTarget,
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final CompilationUnitTree cut,
@@ -110,7 +116,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         this.make = info instanceof WorkingCopy ? ((WorkingCopy) info).getTreeMaker() : null;
         this.unit = cut;
         this.seq = seq;
-        this.copyComments = copyComments;
+        this.commentMapTarget = commentMapTarget;
         this.resolveImports = resolveImports;
         this.commentService = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
         this.positions = positions;
@@ -637,6 +643,29 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         return node;
     }
 
+    public Tree visitAnnotatedType(AnnotatedTypeTree node, Boolean p) {
+        List<? extends AnnotationTree> annotations = translateTree(node.getAnnotations());
+        Tree type = translateTree(node.getUnderlyingType());
+
+        if (make == null) return node;
+
+        if (type != node.getUnderlyingType() ||
+            annotations != node.getAnnotations())
+        {
+            List<AnnotationTree> typeAnnotations = new LinkedList<AnnotationTree>();
+
+            for (AnnotationTree at : annotations) {
+                if (!(at instanceof JCTypeAnnotation)) {//XXX
+                    at = JavaSourceAccessor.getINSTANCE().makeTypeAnnotation(make, at);
+                }
+                typeAnnotations.add(at);
+            }
+
+            node = JavaSourceAccessor.getINSTANCE().makeAnnotatedType(make, typeAnnotations, node);
+        }
+        return node;
+    }
+
     public Tree visitArrayType(ArrayTypeTree node, Boolean p) {
         Tree type = translateTree(node.getType());
         
@@ -747,24 +776,32 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         if (tree == null) {
             return null;
         } else {
-            if (copyComments) {
-                mapComments2(tree, true);
-            }
-            TreePath path = info.getTrees().getPath(unit, tree);
-            if (path == null) {
-                if (tree instanceof JCClassDecl) {
-                    rootElement = ((JCClassDecl) tree).sym;
+            boolean oldMapComments = mapComments;
+
+            try {
+                mapComments |= tree == commentMapTarget;
+
+                if (commentMapTarget != null) {
+                    mapComments2(tree, true);
                 }
-            } else {
-                rootElement = info.getTrees().getElement(path);
-            }
-            Tree res = tree.accept(this, null);
+                TreePath path = info.getTrees().getPath(unit, tree);
+                if (path == null) {
+                    if (tree instanceof JCClassDecl) {
+                        rootElement = ((JCClassDecl) tree).sym;
+                    }
+                } else {
+                    rootElement = info.getTrees().getElement(path);
+                }
+                Tree res = tree.accept(this, null);
 
-            if (copyComments) {
-                mapComments2(tree, false);
-            }
+                if (commentMapTarget != null) {
+                    mapComments2(tree, false);
+                }
 
-            return res;
+                return res;
+            } finally {
+                mapComments = oldMapComments;
+            }
         }
     }
     
@@ -795,18 +832,24 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             return null;
         } else {
             //XXX:
-            if (copyComments && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(info.getCompilationUnit()), tree)))
-                return tree;
-            if (copyComments) {
-                mapComments2(tree, true);
+            boolean oldMapComments = mapComments;
+            try {
+                mapComments |= tree == commentMapTarget;
+                if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(info.getCompilationUnit()), tree)))
+                    return tree;
+                if (commentMapTarget != null) {
+                    mapComments2(tree, true);
+                }
+                Tree newTree = tree.accept(this, p);
+                if (commentMapTarget != null) {
+                    mapComments2(tree, false);
+                }
+                // #144209
+                commentService.copyComments(tree, newTree);
+                return newTree;
+            } finally {
+                mapComments = oldMapComments;
             }
-            Tree newTree = tree.accept(this, p);
-            if (copyComments) {
-                mapComments2(tree, false);
-            }
-            // #144209
-            commentService.copyComments(tree, newTree);
-            return newTree;
         }
     }
         
@@ -851,13 +894,13 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         seq.move((int) positions.getEndPosition(unit, tree));
         CommentsCollection result = new CommentsCollection();
         while (seq.moveNext()) {
-            if (seq.index() <= tokenIndexAlreadyAdded) continue;
             if (seq.token().id() == JavaTokenId.WHITESPACE) {
                 if (numberOfNL(seq.token()) > 0) {
                     break;
                 }
             } else if (isComment(seq.token().id())) {
-                result.add(seq.token());
+                if (seq.index() > tokenIndexAlreadyAdded)
+                    result.add(seq.token());
                 tokenIndexAlreadyAdded = seq.index();
                 if (seq.token().id() == JavaTokenId.LINE_COMMENT) {
                     break;
@@ -896,20 +939,22 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         List<TrailingCommentsDataHolder> comments = new LinkedList<TrailingCommentsDataHolder>();
         int maxLines = 0;
         int newlines = 0;
+        int lastIndex = -1;
         while (seq.moveNext()) {
-            if (seq.index() <= tokenIndexAlreadyAdded) continue;
+            if (lastIndex == (-1)) lastIndex = seq.index();
             Token<JavaTokenId> t = seq.token();
             if (t.id() == JavaTokenId.WHITESPACE) {
                 newlines += numberOfNL(t);
             } else if (isComment(t.id())) {
-                comments.add(new TrailingCommentsDataHolder(newlines, t, seq.index()));
+                if (seq.index() > tokenIndexAlreadyAdded)
+                    comments.add(new TrailingCommentsDataHolder(newlines, t, lastIndex));
                 maxLines = Math.max(maxLines, newlines);
                 if (t.id() == JavaTokenId.LINE_COMMENT) {
                     newlines = 1;
                 } else {
                     newlines = 0;
                 }
-
+                lastIndex = -1;
             } else {
                 if (t.id() == JavaTokenId.RBRACE) maxLines = Integer.MAX_VALUE;
                 break;
@@ -925,7 +970,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             if (h.newlines < maxLines) {
                 attachComments(Collections.singleton(h.comment), tree, commentService, CommentSet.RelativePosition.TRAILING);
             } else {
-                index = h.index;
+                index = h.index - 1;
                 break;
             }
         }
@@ -1019,7 +1064,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
                     return seq.offset() + seq.token().length();
             }
         }
-        return seq.offset(); 
+        return seq.offset() + (tokenIndexAlreadyAdded >= seq.index() ? seq.token().length() : 0);
     }
 
     private void consumeWS(TokenSequence<JavaTokenId> seq, boolean forward) {
@@ -1126,7 +1171,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
-        if (foundComments == null || !foundComments.iterator().hasNext()) return;
+        if (foundComments == null || !foundComments.iterator().hasNext() || !mapComments) return;
         CommentSet set = createCommentSet(ch, tree);
         for (Token<JavaTokenId> comment : foundComments) {
             attachComment(positioning, set, comment);

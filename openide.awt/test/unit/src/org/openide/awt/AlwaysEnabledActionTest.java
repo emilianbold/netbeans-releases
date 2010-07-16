@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
@@ -84,6 +88,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     
     @Override
     protected void setUp() throws Exception {
+        NbBundle.setBranding("big");
         folder = FileUtil.getConfigFile("actions/support/test");
         assertNotNull("testing layer is loaded: ", folder);
 
@@ -110,7 +115,13 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         Object name = a.getValue(a.NAME);
         Object mnem = a.getValue(a.MNEMONIC_KEY);
         Object smallIcon = a.getValue(a.SMALL_ICON);
-        //Object icon = a.getValue(a.ICON)
+        if (smallIcon instanceof Icon) {
+            Icon icon = (Icon) smallIcon;
+            assertEquals("Icon height", 32, icon.getIconHeight());
+            assertEquals("Icon widht", 32, icon.getIconWidth());
+        } else {
+            fail("Icon shall be Icon: " + smallIcon);
+        }
             
         assertEquals("Right localized name", "Icon &Name Action", name);
         assertEquals("Mnemonic is N", (int)'N', mnem);
@@ -342,6 +353,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         assertEquals("MyNamedAction", MyAction.last.getValue(Action.NAME));
     }
 
+    @RandomlyFails // NB-Core-Build #3634: Expected to be selected (#2) from testNbPreferences.instance
     public void testPreferencesAction() throws Exception {
 //        checkPreferencesAction("testSystemPreferences.instance", Preferences.systemRoot());
         checkPreferencesAction("testUserPreferences.instance", "user:", Preferences.userRoot());

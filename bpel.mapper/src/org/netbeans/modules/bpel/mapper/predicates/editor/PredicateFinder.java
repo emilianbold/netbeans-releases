@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
+import org.netbeans.modules.soa.xpath.mapper.lsm.ui.predicate.PredicateExprTreeModel;
 import org.netbeans.modules.soa.ui.tree.impl.SimpleFinder;
 
 /**

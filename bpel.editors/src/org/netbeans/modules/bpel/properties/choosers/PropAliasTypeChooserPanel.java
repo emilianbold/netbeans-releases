@@ -51,9 +51,9 @@ import org.netbeans.modules.bpel.properties.TypeContainer;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.xpath.LocationStep;
-import org.netbeans.modules.xml.xpath.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.openide.ErrorManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Children;
@@ -71,10 +71,10 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
-import org.netbeans.modules.xml.xpath.XPathException;
-import org.netbeans.modules.xml.xpath.XPathExpression;
-import org.netbeans.modules.xml.xpath.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -329,12 +329,12 @@ public class PropAliasTypeChooserPanel
      */
     private Node findNodeByQuery(final String queryContent, Node soughtNode) {
         //
-        XPathModel xpImpl = AbstractXPathModelHelper.getInstance().newXPathModel();
+        XPathModel xpImpl = XPathModelHelper.getInstance().newXPathModel();
         //
         try {
             XPathExpression xPathQuery = xpImpl.parseExpression(queryContent);
             //
-            class FindPathVisitor extends AbstractXPathVisitor {
+            class FindPathVisitor extends XPathVisitorAdapter {
                 private XPathLocationPath myLocationPath;
                 
                 public void visit(XPathLocationPath locationPath) {

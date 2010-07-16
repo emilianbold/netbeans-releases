@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * CsmFunction + CsmMember implementation
- * @param T 
+ * @param T
  * @author Vladimir Kvashin
  */
 public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
@@ -59,11 +62,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private final CsmVisibility visibility;
     private static final byte ABSTRACT = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
+    private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
 
     public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
         this(ast, cls, visibility, true, true);
     }
-    
+
     protected MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
         super(ast, cls.getContainingFile(), cls, false, global);
         this.visibility = visibility;
@@ -72,10 +76,13 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
-                    setStatic(true);                    
-                    break;                
+                    setStatic(true);
+                    break;
                 case CPPTokenTypes.LITERAL_virtual:
                     setVirtual(true);
+                    break;
+                case CPPTokenTypes.LITERAL_explicit:
+                    setExplicit(true);
                     break;
             }
         }
@@ -95,20 +102,23 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     public boolean isAbstract() {
         return hasFlags(ABSTRACT);
     }
-    
+
     public void setAbstract(boolean _abstract) {
         setFlags(ABSTRACT, _abstract);
     }
-    
+
     private void setVirtual(boolean _virtual) {
         setFlags(VIRTUAL, _virtual);
     }
-    
-    public boolean isExplicit() {
-        //TODO: implement!!
-        return false;
+
+    private void setExplicit(boolean _explicit) {
+        setFlags(EXPLICIT, _explicit);
     }
-    
+
+    public boolean isExplicit() {
+        return hasFlags(EXPLICIT);
+    }
+
     public boolean isVirtual() {
         //TODO: implement!
         // returns direct "virtual" keyword presence
@@ -119,19 +129,19 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     public boolean isConst() {
         return super.isConst();
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
     }
-    
+
     public MethodImpl(DataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
-    }      
+    }
 }
 

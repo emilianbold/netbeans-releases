@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 typedef int bool;
 
@@ -48,32 +54,26 @@ enum {
     false = 0
 };
 
+extern bool trace_flag;
+
+void init_trace_flag(const char* env_var);
+
 void report_error(const char *format, ...);
 
-static void report_unresolved_path(const char* path) {
-    char pwd[PATH_MAX];
-    getcwd(pwd, sizeof pwd);
-    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
-}
+void report_unresolved_path(const char* path);
 
-#if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var, const char* binary);
-    void trace_shutdown();
-    static void trace_unresolved_path(const char* path) {
-        char pwd[PATH_MAX];
-        getcwd(pwd, sizeof pwd);
-        trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
-    }
-    static void dbg_sleep(int time) {
-        trace("Sleeping %d sec...\n", time);
-        sleep(time);
-        trace("Awoke\n");
-    }
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
-    #define trace_unresolved_path(...)
-    #define dbg_sleep(...)
-#endif
+#define trace(...) if (trace_flag) { _trace(__VA_ARGS__); }
+void _trace(const char *format, ...);
+
+#define trace_startup(prefix, env_var, binary) if (trace_flag) { _trace_startup(prefix, env_var, binary); }
+void _trace_startup(const char* prefix, const char* env_var, const char* binary);
+
+#define trace_shutdown() if (trace_flag) { _trace_shutdown(); }
+void _trace_shutdown();
+
+#define trace_unresolved_path(path, action) if (trace_flag) { _trace_unresolved_path(path, action); }
+void _trace_unresolved_path(const char* path, const char* action);
+
+#define dbg_sleep(time) if (trace_flag) { _dbg_sleep(time); }
+void _dbg_sleep(int time);
+

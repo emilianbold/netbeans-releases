@@ -36,6 +36,7 @@ public class AddPickAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddPickAction() {
+        super("structured/pick"); // NOI18N
     }    
     
     protected String getBundleName() {

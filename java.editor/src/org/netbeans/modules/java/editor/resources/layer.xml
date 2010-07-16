@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -118,6 +121,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
                 <file name="org-netbeans-modules-java-editor-semantic-SemanticHighlighterFactory.instance" />
                 <file name="org-netbeans-modules-java-editor-semantic-MarkOccurrencesHighlighterFactory.instance" />
+                <file name="org-netbeans-modules-java-editor-overridden-ComputeAnnotations$FactoryImpl.instance" />
                 
                 <folder name="Preferences">
                     <folder name="Defaults">
@@ -300,6 +304,9 @@ made subject to such option by the copyright holder.
                         <file name="goto-super-implementation">
                             <attr name="position" intvalue="300"/>
                         </file>  
+                        <file name="goto-implementation">
+                            <attr name="position" intvalue="330"/>
+                        </file>
                     </folder>
                     
                     <file name="goto-help">
@@ -399,12 +406,18 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-editor-codegen-EqualsHashCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="300"/>
                     </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-ToStringGenerator$Factory.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
                     <file name="org-netbeans-modules-java-editor-codegen-DelegateMethodGenerator$Factory.instance">
                         <attr name="position" intvalue="400"/>
                     </file>
                     <file name="org-netbeans-modules-java-editor-codegen-ImplementOverrideMethodGenerator$Factory.instance">
                         <attr name="position" intvalue="500"/>
                     </file>
+                </folder>
+                <folder name="AnnotationProcessors">
+                    <file name="org-netbeans-modules-editor-java-SupportedAnnotationTypesCompletion.instance" />
                 </folder>
                 <folder name="text">
                     <folder name="x-java-string">
@@ -424,13 +437,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                 </folder>
             </folder>
-        </folder>
-
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-editor-java-is_overridden.xml" url="is-overridden-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-has_implementations.xml" url="has-implementations-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-overrides.xml" url="overrides-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml"/>
         </folder>
     </folder>
 

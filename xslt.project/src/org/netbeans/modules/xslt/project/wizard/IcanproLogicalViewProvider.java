@@ -77,7 +77,6 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
 
-
     public IcanproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
@@ -91,12 +90,11 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
     }
 
     public Node createLogicalView() {
-        return new IcanLogicalViewRootNode();
+        return new IcanLogicalViewRootNode(new IcanproViews.LogicalViewChildren( helper, evaluator, project));
     }
 
     /**
-     * {@inheritDoc}
-     * Fix for #83576.
+     * Fix for # 83576
      * @author ads
      */
     public Node findPath( Node root, Object target ) {
@@ -214,14 +212,22 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
         private Action brokenLinksAction;
         private boolean broken;
 
-        public IcanLogicalViewRootNode() {
-            super( new IcanproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
+        public IcanLogicalViewRootNode(Children children) {
+            super( children, createLookup( project ) );
             setIconBaseWithExtension(XSLT_PROJECT_ICON); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
+        }
+
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(IcanproLogicalViewProvider.class,
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
         }
 
         @Override

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -109,17 +112,18 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     /*package private*/ static final int LOWER_HANDLE = 4;
     
     private BaseDocument doc;
-    private JTextComponent  pane;
+    private final JTextComponent  pane;
     
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
     private static final Color STATUS_DOWN_PART_COLOR = new Color(0xCDCABB);
     
     private static final int QUIET_TIME = 100;
-    
+
+    private static final RequestProcessor WORKER = new RequestProcessor(AnnotationView.class.getName(), 1, false, false); //NOI18N
     private final RequestProcessor.Task repaintTask;
     private final RepaintTask           repaintTaskRunnable;
-    
-    private AnnotationViewData data;
+    private final Insets scrollBar;
+    private final AnnotationViewData data;
     
     private static Icon busyIcon;
     
@@ -138,8 +142,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         // is turned on for the pane in CustomizableSideBar.
         setName("errorStripe");
         
-        repaintTask = RequestProcessor.getDefault().create(repaintTaskRunnable = new RepaintTask());
-        data = new AnnotationViewDataImpl(this, pane);
+        repaintTask = WORKER.create(repaintTaskRunnable = new RepaintTask());
+        this.data = new AnnotationViewDataImpl(this, pane);
+        this.scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
         
         FoldHierarchy.get(pane).addFoldHierarchyListener(this);
         pane.addPropertyChangeListener(this);
@@ -176,7 +181,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
         
     /*package private for tests*/int[] getLinesSpan(int currentLine) {
-        double position  = modelToView(currentLine);
+        double componentHeight = getComponentHeight();
+        double usableHeight = getUsableHeight();
+
+        double position  = _modelToView(currentLine, componentHeight, usableHeight);
         
         if (position == (-1))
             return new int[] {currentLine, currentLine};
@@ -184,10 +192,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int    startLine = currentLine;
         int    endLine   = currentLine;
         
-        while (position == modelToView(startLine - 1) && startLine > 0)
+        while (position == _modelToView(startLine - 1, componentHeight, usableHeight) && startLine > 0)
             startLine--;
         
-        while ((endLine + 1) < Utilities.getRowCount(doc) && position == modelToView(endLine + 1))
+        while ((endLine + 1) < Utilities.getRowCount(doc) && position == _modelToView(endLine + 1, componentHeight, usableHeight))
             endLine++;
         
         return new int[] {startLine, endLine};
@@ -440,8 +448,6 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             scrollPaneCandidade = scrollPaneCandidade.getParent();
         }
         
-        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
-        
         if (scrollPaneCandidade == null || !(scrollPaneCandidade instanceof JScrollPane) || scrollBar == null) {
             //no help for #54080:
             return getHeight() - HEIGHT_OFFSET;
@@ -455,10 +461,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         
         return visibleHeight - topButton - bottomButton;
     }
-    
+
     int topOffset() {
-        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
-        
         if (scrollBar == null) {
             //no help for #54080:
             return HEIGHT_OFFSET;
@@ -476,6 +480,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int result;
         
         if (ui instanceof BaseTextUI) {
+            // For some reason the offset may become -1; uncomment following line to see that
+            offset = Math.max(offset, 0);
             result = ((BaseTextUI) ui).getYFromPos(offset);
         } else {
             Rectangle r = pane.modelToView(offset);
@@ -517,12 +523,16 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     /*package private*/ double modelToView(int line) {
+        return _modelToView(line, getComponentHeight(), getUsableHeight());
+    }
+
+    private double _modelToView(int line, double componentHeight, double usableHeight) {
         try {
             int r = getModelToViewImpl(line);
-            
+
             if (r == (-1))
                 return -1.0;
-            
+
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line); // NOI18N
 //                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: lineOffset=" + lineOffset); // NOI18N
@@ -530,15 +540,15 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getComponentHeight()=" + getComponentHeight()); // NOI18N
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight()); // NOI18N
             }
-            
-            if (getComponentHeight() <= getUsableHeight()) {
+
+            if (componentHeight <= usableHeight) {
                 //1:1 mapping:
                 return r + topOffset();
             } else {
-                double position = r / getComponentHeight();
-                int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
+                double position = r / componentHeight;
+                int    blocksCount = (int) (usableHeight / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 int    block = (int) (position * blocksCount);
-                
+
                 return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + topOffset();
             }
         } catch (BadLocationException e) {
@@ -750,13 +760,22 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             String description = mark.getShortDescription();
             
             if (description != null) {
-                return "<html><body>" + translate(description); // NOI18N
+                if (description != null) {
+                    // #122422 - some descriptions are intentionaly a valid HTML and don't want to be escaped
+                    if (description.startsWith(HTML_PREFIX_LOWERCASE) || description.startsWith(HTML_PREFIX_UPPERCASE)) {
+                        return description;
+                    } else {
+                        return "<html><body>" + translate(description); // NOI18N
+                    }
+                }
             }
         }
         
         return null;
     }
     
+    private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
+    private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
     private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
     private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
     

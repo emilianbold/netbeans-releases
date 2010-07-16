@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,10 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,14 +54,19 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.php.api.doc.PhpDocs;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
@@ -73,8 +84,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -92,10 +106,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         this.project = project;
     }
 
+    @Override
     public Node createLogicalView() {
         return new PhpLogicalViewRootNode(project);
     }
 
+    @Override
     public Node findPath(Node root, Object target) {
         Project p = root.getLookup().lookup(Project.class);
         if (p == null) {
@@ -191,7 +207,39 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
     }
     private static class PhpLogicalViewRootNode extends AbstractNode {
 
-        PhpProject project;
+        final PhpProject project;
+        private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            }
+        };
+
+        public PhpLogicalViewRootNode(PhpProject project) {
+            super(createChildren(project), Lookups.singleton(project));
+            this.project = project;
+            setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
+            setName(ProjectUtils.getInformation(project).getDisplayName());
+
+            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return getIcon();
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon();
+        }
+
+        private Image getIcon() {
+            return ImageUtilities.icon2Image(ProjectUtils.getInformation(project).getIcon());
+        }
 
         @Override
         public String getShortDescription() {
@@ -201,6 +249,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            final PhpModule phpModule = project.getPhpModule();
             PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
             assert provider != null;
             List<Action> actions = new ArrayList<Action>();
@@ -209,6 +258,17 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_RUN));
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
+            // phpdoc
+            boolean first = true;
+            for (PhpDocProvider docProvider : PhpDocs.getDocumentations()) {
+                if (docProvider.isInPhpModule(phpModule)) {
+                    if (first) {
+                        actions.add(null);
+                        first = false;
+                    }
+                    actions.add(new PhpDocAction(phpModule, docProvider));
+                }
+            }
             actions.add(null);
             if (PhpUnit.hasValidVersion(CommandUtils.getPhpUnit(false))) {
                 // code coverage seems to be supported in php unit 3.3.0+
@@ -229,13 +289,21 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // frameworks
-            PhpModule phpModule = project.getPhpModule();
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
+                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
                     List<? extends Action> frameworkActions = actionsExtender.getActions();
-                    if (!frameworkActions.isEmpty()) {
-                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), frameworkActions));
+                    if (runCommandAction != null || !frameworkActions.isEmpty()) {
+                        List<Action> allActions = new ArrayList<Action>(frameworkActions.size() + 2);
+                        if (runCommandAction != null) {
+                            allActions.add(runCommandAction);
+                            if (!frameworkActions.isEmpty()) {
+                                allActions.add(null);
+                            }
+                        }
+                        allActions.addAll(frameworkActions);
+                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), allActions));
                     }
                 }
             }
@@ -253,17 +321,8 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             return new HelpCtx(PhpLogicalViewProvider.class);
         }
 
-        public PhpLogicalViewRootNode(PhpProject project) {
-            super(createChildren(project), Lookups.singleton(project));
-            this.project = project;
-            setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png");
-            setName(ProjectUtils.getInformation(this.project).getDisplayName());
-        }
-
-
         private static Children createChildren(PhpProject project) {
-           return NodeFactorySupport.createCompositeChildren(project,
-                    "Projects/org-netbeans-modules-php-project/Nodes");//NOI18N
+           return NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-php-project/Nodes"); // NOI18N
         }
 
         private static class FrameworkMenu extends AbstractAction implements Presenter.Popup {
@@ -277,14 +336,17 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 assert name != null;
                 assert frameworkActions != null;
 
+                putValue(SHORT_DESCRIPTION, name);
                 this.name = name;
                 this.frameworkActions = frameworkActions;
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 assert false;
             }
 
+            @Override
             public JMenuItem getPopupPresenter() {
                 return new FrameworkSubMenu(name, frameworkActions);
             }
@@ -327,16 +389,46 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private final String category;
 
         CustomizeProjectAction(PhpProject project, String category) {
-            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize"));
-
             assert project != null;
             assert category != null;
 
             this.project = project;
             this.category = category;
+
+            String name = NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize");
+            putValue(NAME, name);
+            putValue(SHORT_DESCRIPTION, name);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+        }
+    }
+
+    private static final class PhpDocAction extends AbstractAction {
+        private static final long serialVersionUID = 178423135454L;
+        private static final RequestProcessor RP = new RequestProcessor("Generating php documentation", 2); // NOI18N
+
+        private final PhpModule phpModule;
+        private final PhpDocProvider docProvider;
+
+        public PhpDocAction(PhpModule phpModule, PhpDocProvider docProvider) {
+            this.phpModule = phpModule;
+            this.docProvider = docProvider;
+
+            String name = NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Generate", docProvider.getDisplayName());
+            putValue(NAME, name);
+            putValue(SHORT_DESCRIPTION, name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    docProvider.generateDocumentation(phpModule);
+                }
+            });
         }
     }
 }

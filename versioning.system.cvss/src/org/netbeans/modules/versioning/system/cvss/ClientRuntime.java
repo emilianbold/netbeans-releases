@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,10 +64,9 @@ import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.IOProvider;
 import org.openide.windows.OutputListener;
-
-import javax.net.SocketFactory;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  * Defines a runtime environment for one CVSRoot. Everytime a command is executed for a new CVSRoot,
@@ -350,7 +352,16 @@ public class ClientRuntime {
         String method = cvsRoot.getMethod();
         if (CVSRoot.METHOD_PSERVER.equals(method)) {
             PServerConnection con = new PServerConnection(patchedCvsRoot, factory);
-            String password = PasswordsFile.findPassword(cvsRoot.toString());                    
+            char[] passwordChars = KeyringSupport.read(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot.toString());
+            String password;
+            if (passwordChars != null) {
+                password = new String(passwordChars);
+            } else {
+                password = PasswordsFile.findPassword(cvsRoot.toString());
+                if (password != null) {
+                    KeyringSupport.save(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot.toString(), password.toCharArray(), null);
+                }
+            }
             con.setEncodedPassword(password);
             return con;
         } else if (CVSRoot.METHOD_EXT.equals(method)) {
@@ -360,7 +371,7 @@ public class ClientRuntime {
             if (extSettings.extUseInternalSsh) {
                 int port = patchedCvsRoot.getPort();
                 port = port == 0 ? 22 : port;  // default port
-                String password = extSettings.extPassword;
+                String password = new String(extSettings.extPassword);
                 if (password == null) {
                     password = "\n";  // NOI18N    user will be asked later on
                 }

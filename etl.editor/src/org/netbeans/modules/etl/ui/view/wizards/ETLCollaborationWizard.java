@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,17 +58,28 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+//import org.netbeans.modules.dm.virtual.db.tables.wizard.FileSelectionPanel;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.SpreadsheetChooserPanel;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.TableDetailsPanel;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.ParseContentPanel;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.TableDefinitionPanel;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.etl.ui.view.wizardsloader.BulkLoaderFileSelectionPanel;
+import org.netbeans.modules.etl.ui.view.wizardsloader.FileSelectionLoaderPanel;
+import org.netbeans.modules.etl.ui.view.wizardsloader.SelectLoaderTypePanel;
+import org.netbeans.modules.etl.ui.view.wizardsloader.SelectOrCreateDBPanel;
+import org.netbeans.modules.etl.ui.view.wizardsloader.SelectedTableMapperPanel;
+import org.netbeans.modules.etl.ui.view.wizardsloader.SelectSchemaGenPanel;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -96,6 +110,16 @@ public class ETLCollaborationWizard extends ETLWizard {
         private List panels;
         private ETLCollaborationWizardTransferFinishPanel sourceTableSelectionPanel;
         private ETLCollaborationWizardTransferFinishPanel targetTableSelectionPanel;
+        private FileSelectionLoaderPanel fileSelectionPanel;
+        private TableDetailsPanel tableDetailsPanel;
+        private SelectOrCreateDBPanel selectOrCreateExtSourceDB;
+        private SpreadsheetChooserPanel spreadSheetPanel;
+        private ParseContentPanel tableMetadata;
+        private TableDefinitionPanel columnProperties;
+        private SelectSchemaGenPanel createObjDef;
+        private SelectedTableMapperPanel collabTableMapper;
+        private BulkLoaderFileSelectionPanel bulkLoadFilesPanel;
+        private SelectLoaderTypePanel selectloaderType;
         private ETLCollaborationWizard mWizard;
 
         public WizardIterator(ETLCollaborationWizard wizard) {
@@ -177,10 +201,8 @@ public class ETLCollaborationWizard extends ETLWizard {
                 for (int i = 0; i < conns.length; i++) {
                     if (conns[i] == null) {
                         model.add("<NULL>");
-                    } else {
-                        if (!(conns[i].getName().contains("jdbc:axiondb"))) {
-                            model.add(conns[i]);
-                        }
+                    } else if (!model.contains(conns[i])) {
+                        model.add(conns[i]);
                     }
                 }
             } else if (model.size() == 0) {
@@ -193,19 +215,19 @@ public class ETLCollaborationWizard extends ETLWizard {
             List srcModel = new ArrayList();
             List destModel = new ArrayList();
 
-            Project project = Templates.getProject(wiz);
-            String prj_locn = FileUtil.toFile(project.getProjectDirectory()).getPath();
-            String prj_name = FileUtil.toFile(project.getProjectDirectory()).getName();
-            try {
-                prj_locn = project.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
-                ETLEditorSupport.PRJ_PATH = prj_locn;
-                ETLEditorSupport.PRJ_NAME = prj_name;
-
-            } catch (FileStateInvalidException ex) {
-                //Exceptions.printStackTrace(ex);
-            }
             List dbModels = getModelConnections();
             storeSettings(wiz, dbModels);
+
+            Project project = Templates.getProject(wiz);
+            String prj_locn = project.getProjectDirectory().getPath();
+            String prj_name = project.getProjectDirectory().getName();
+            try {
+                prj_locn = project.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
+                ETLEditorSupport.IS_PROJECT_CALL = true;
+                ETLEditorSupport.PRJ_PATH = prj_locn;
+                ETLEditorSupport.PRJ_NAME = prj_name;
+            } catch (FileStateInvalidException ex) {
+            }
             //java.util.logging.Logger.getLogger(ETLCollaborationWizard.class.getName()).info("ETLCollaborationWizard prj_locn ******* "+prj_locn);
             if (project != null) {
                 Sources sources = ProjectUtils.getSources(project);
@@ -218,21 +240,42 @@ public class ETLCollaborationWizard extends ETLWizard {
 
                 collaborationNamePanel = new SimpleTargetChooserPanel(project, groups, null, false);
             }
-            String nbBundle2 = mLoc.t("BUND054: Select Source Tables");
+            String nbBundle2 = mLoc.t("BUND554: Select JDBC Source Tables");
             sourceTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(nbBundle2.substring(15), dbModels, srcModel, true);
             String nbBundle3 = mLoc.t("BUND055: Select Source Tables to Create Join.");
             joinSelectionPanel = new ETLCollaborationWizardJoinFinishPanel(ETLCollaborationWizard.this, nbBundle3.substring(15), null);
-            String nbBundle4 = mLoc.t("BUND056: Select Target Tables");
+            String nbBundle4 = mLoc.t("BUND556: Select JDBC Target Tables");
             targetTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(nbBundle4.substring(15), dbModels, destModel, false);
 
-            panels = new ArrayList(4);
+            selectOrCreateExtSourceDB = new SelectOrCreateDBPanel();
+            fileSelectionPanel = new FileSelectionLoaderPanel();
+            tableDetailsPanel = new TableDetailsPanel();
+            spreadSheetPanel = new SpreadsheetChooserPanel();
+            tableMetadata = new ParseContentPanel();
+            columnProperties = new TableDefinitionPanel();
+            createObjDef = new SelectSchemaGenPanel();
+            selectloaderType = new SelectLoaderTypePanel();
+            bulkLoadFilesPanel = new BulkLoaderFileSelectionPanel();
+            collabTableMapper = new SelectedTableMapperPanel();
+
+            panels = new ArrayList(14);
             if (collaborationNamePanel != null) {
                 panels.add(collaborationNamePanel);
             }
 
+            panels.add(selectloaderType);
+            panels.add(selectOrCreateExtSourceDB);
+            panels.add(fileSelectionPanel);
+            panels.add(tableDetailsPanel);
+            panels.add(spreadSheetPanel);
+            panels.add(tableMetadata);
+            panels.add(columnProperties);
             panels.add(sourceTableSelectionPanel);
             panels.add(joinSelectionPanel);
+            panels.add(createObjDef);
             panels.add(targetTableSelectionPanel);
+            panels.add(bulkLoadFilesPanel);
+            panels.add(collabTableMapper);
             return Collections.unmodifiableList(panels);
         }
 
@@ -263,16 +306,38 @@ public class ETLCollaborationWizard extends ETLWizard {
                 String nbBundle7 = mLoc.t("BUND058: Select Source Tables for Join");
                 String nbBundle8 = mLoc.t("BUND056: Select Target Tables");
                 String nbBundle10 = mLoc.t("BUND059: Choose File Type");
+                String nbBundle21 = mLoc.t("BUND201: Select File Database");
+                String nbBundle22 = mLoc.t("BUND202: Select Source Data Files");
+                String nbBundle23 = mLoc.t("BUND203: Enter Table Details");
+                String nbBundle24 = mLoc.t("BUND204: Choose a Sheet");
+                String nbBundle25 = mLoc.t("BUND205: Import Table MetaData");
+                String nbBundle26 = mLoc.t("BUND206: Enter Column Properties");
+                String nbBundle27 = mLoc.t("BUND207: Generate Master Index Staging Database");
+                String nbBundle28 = mLoc.t("BUND208: Map Collaboration Tables");
+                String nbBundle29 = mLoc.t("BUND209: Select Loader Type");
+                String nbBundle30 = mLoc.t("BUND210: Select Bulk Loader Source Data Files");
                 return new String[]{
                             //TODO - need make wizard steps text match actual panel being viewed
                             nbBundle10.substring(15), //TODO - use bundle property
                             nbBundle5.substring(15),
+                            nbBundle29.substring(15),
+                            nbBundle21.substring(15),
+                            nbBundle22.substring(15),
+                            nbBundle23.substring(15),
+                            nbBundle24.substring(15),
+                            nbBundle25.substring(15),
+                            nbBundle26.substring(15),
                             nbBundle6.substring(15),
                             nbBundle7.substring(15),
+                            nbBundle27.substring(15),
                             nbBundle8.substring(15),
+                            nbBundle30.substring(15),
+                            nbBundle28.substring(15)
                         };
             } catch (MissingResourceException e) {
-                mLogger.errorNoloc(mLoc.t("EDIT029: Could not locate steps strings.{0}", LOG_CATEGORY), e);
+                String msg = mLoc.t("EDIT029: Could not locate steps strings." + LOG_CATEGORY);
+                StatusDisplayer.getDefault().setStatusText(msg.substring(15) + e.getMessage());
+                mLogger.infoNoloc(msg.substring(15) + e.getMessage());
                 return new String[]{};
             }
         }
@@ -280,8 +345,12 @@ public class ETLCollaborationWizard extends ETLWizard {
         @Override
         public Set instantiate() throws IOException {
             commit();
-
             FileObject dir = Templates.getTargetFolder(descriptor);
+
+            if (!ETLCollaborationWizard.CREATE_DEFAULT_ETL_NODE) {
+                dir = null; //Workaround to block the persistance of default etl node.
+            }
+
             if (dir != null) {
                 DataFolder df = DataFolder.findFolder(dir);
                 FileObject template = Templates.getTemplate(descriptor);
@@ -333,12 +402,32 @@ public class ETLCollaborationWizard extends ETLWizard {
     /** Key name used to reference List of source tables in wizard context. */
     public static final String SOURCE_TABLES = "source_tables";
     public static final int TARGET_PANEL_INDEX = 4;
+    /** Key name used to reference boolean to check if wizard acts as bulk loader or source loader */
+    public static final String IS_BULK_LOADER = "isBulkLoader";
+    public static final String IS_BASIC_ETL_LOADER = "isBasicEtlLoader";
+    /** Key name used to reference database connection created out of schema generator with master Index object.xml **/
+    public static final String SCHEMA_GEN_DB_CONN = "schemaGenDbConn";
+    /** Key name used to reference database tables created out of schema generator with Master Index object.xml **/
+    public static final String SCHEMA_GEN_DB_TABLES = "schemaGenDbTables";
+    /** Ket name used to referece model mapping with conn url for source tables **/
+    public static final String CONN_URL_TO_SRCMODEL_MAP = "connToSrcModelMap";
+    /** Ket name used to referece model mapping with conn url for target tables **/
+    public static final String CONN_URL_TO_TRGTMODEL_MAP = "connToTargetModelMap";
+    /** Bulk Loader source file selection list **/
+    public static final String BULK_LOADER_SRC_DATA_FILES = "bulkloadsrcfiles";
+    public static final String BULK_LOADER_SRC_DATA_FILEOBJ_LIST = "bulkloadsrcfileobj";
+    public static boolean CREATE_DEFAULT_ETL_NODE = true;
+    /** Field and Record delimiter for the Bulk Loader Files **/
+    public static final String BULK_LOADER_FIELD_DELIMITER = "bulkldrflddelimiter";
+    public static final String BULK_LOADER_RECORD_DELIMITER = "bulkldrrecdelimiter";
     /* Log4J category string */
     private static final String LOG_CATEGORY = ETLCollaborationWizard.class.getName();
     /* Defines panels to be displayed */
     private WizardDescriptor descriptor;
     /* Wizard iterator; handles display and movement among wizard panels */
     private ETLWizardIterator iterator;
+    /* Marks the call for the ETL Wizard */
+    public static boolean IS_WIZARD_CALL = true;
 
     public static WizardDescriptor.Iterator newTemplateIterator() {
         ETLCollaborationWizard wizard = new ETLCollaborationWizard();

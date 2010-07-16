@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 
 /**
  *
@@ -42,6 +41,8 @@ public class MapperLayout implements LayoutManager {
     
     private JComponent toolBar;
     
+    private JComponent findPanel;
+    
     
     public void addLayoutComponent(String name, Component comp) {
         if (LEFT_SCROLL.equals(name)) {
@@ -56,6 +57,8 @@ public class MapperLayout implements LayoutManager {
             rightDivider = (JComponent) comp;
         } else if (TOOL_BAR.equals(name)) {
             toolBar = (JComponent) comp;
+        } else if (FIND_PANEL.equals(name)) {
+            findPanel = (JComponent) comp;
         }
     }
     
@@ -100,6 +103,15 @@ public class MapperLayout implements LayoutManager {
                 
                 w = Math.max(w, toolBarSize.width);
                 h += toolBarSize.height;
+            }
+            
+            if (findPanel != null && findPanel.isVisible()) {
+                Dimension findPanelSize = (minimum) 
+                        ? findPanel.getMinimumSize()
+                        : findPanel.getPreferredSize();
+                
+                w = Math.max(w, findPanelSize.width);
+                h += findPanelSize.height;
             }
 
             w += insets.left + insets.right;
@@ -166,6 +178,17 @@ public class MapperLayout implements LayoutManager {
                 h -= toolBarHeight;
             }
             
+            int findPanelHeight = 0;       
+            if (findPanel != null && findPanel.isVisible()) {
+                findPanelHeight = findPanel.getPreferredSize().height;
+                
+                findPanel.setBounds(insets.left, y, 
+                        w - insets.right - insets.left, findPanelHeight);
+                
+         //       y += findPanelHeight;
+                h -= findPanelHeight;
+            }
+            
             // (x1 - x2) - left
             // (x3 - x4) - center
             // (x5 - x6) - right
@@ -192,6 +215,7 @@ public class MapperLayout implements LayoutManager {
             centerScroll.setBounds(x3, y, x4 - x3, h);
             rightDivider.setBounds(x4, y, x5 - x4, h);
             rightScroll.setBounds(x5, y, x6 - x5, h);
+            findPanel.setBounds(x1, y + h, x6 - x1, findPanelHeight);
             
             mapper.setDividerPositions(
                     leftDividerPosition, 
@@ -206,6 +230,7 @@ public class MapperLayout implements LayoutManager {
     public static final String CENTER_SCROLL = "CENTER_SCROLL";
     public static final String LEFT_DIVIDER = "LEFT_DIVIDER";
     public static final String RIGHT_DIVIDER = "RIGHT_DIVIDER";
+    public static final String FIND_PANEL = "FIND_PANEL";
 
     public static final int MIN_WIDTH = 64;
     public static final int DIVIDER_WIDTH = 6;

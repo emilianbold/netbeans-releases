@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import java.util.regex.Pattern;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
@@ -126,7 +130,7 @@ public class APDUSender {
 
     public String powerupContacted() throws IOException, CadTransportException {
         PortProvider prov = card.getCapability(PortProvider.class);
-        ApduSupport apdu = card.getCapability(ApduSupport.class);
+        UrlCapability apdu = card.getCapability(UrlCapability.class);
         int contactedPort = prov.getPort(PortKind.CONTACTED);
         contactedSocket = new Socket(prov.getHost(), contactedPort);
         contactedSocket.setTcpNoDelay(true);
@@ -196,11 +200,18 @@ public class APDUSender {
         if(contactedInterface == null) {
             powerup();
         }
-        Apdu apdu = new Apdu(toBytes(apduString));
-        apdu.isExtended = extended;
-        contactedInterface.exchangeApdu(apdu);
-        String response = apdu.toString();
-        return response;
+        try {
+            Apdu apdu = new Apdu(toBytes(apduString));
+            apdu.isExtended = extended;
+            contactedInterface.exchangeApdu(apdu);
+            String response = apdu.toString();
+            return response;
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
+            ShellException e = new ShellException (NbBundle.getMessage(APDUSender.class,
+                    "MSG_INSUFFICIENT_BYTES", aioobe.getMessage())); //NOI18N
+            e.initCause(aioobe);
+            throw e;
+        }
     }
 
     public String sendContactless(String apduString) throws IOException, ShellException, CadTransportException {
@@ -214,43 +225,7 @@ public class APDUSender {
         return response;
     }
 
-    private static byte[] toBytes(String str) throws ShellException {
-        StringTokenizer st = new StringTokenizer(str, ", ");
-        byte[] bytes = new byte[st.countTokens()];
-        int i = 0;
-        String token = null;
-            while (st.hasMoreTokens()) {
-                token = st.nextToken();
-                switch (token.charAt(0)) {
-                    case '\'':
-                        bytes[i] = (byte) token.charAt(1);
-                        break;
-                    case '0':
-                        if (token.charAt(1) == 'x' || token.charAt(1) == 'X') {
-                            bytes[i] = (byte) Integer.parseInt(token.substring(2), 16);
-                        } else {
-                            bytes[i] = (byte) Integer.parseInt(token.substring(1), 8);
-                        }
-                        break;
-                    case '1': //NOI18N
-                    case '2': //NOI18N
-                    case '3': //NOI18N
-                    case '4': //NOI18N
-                    case '5': //NOI18N
-                    case '6': //NOI18N
-                    case '7': //NOI18N
-                    case '8': //NOI18N
-                    case '9': //NOI18N
-                        bytes[i] = (byte) Integer.parseInt(token, 10);
-                        break;
-                    default:
-                        String msg = NbBundle.getMessage (APDUSender.class,
-                                "ERR_INVALID_TOKEN", token);
-                        throw new ShellException(msg);
-
-                }
-                i++;
-            }
-        return bytes;
+    static byte[] toBytes (String str) throws ShellException {
+        return new APDUParser(str).bytes();
     }
 }

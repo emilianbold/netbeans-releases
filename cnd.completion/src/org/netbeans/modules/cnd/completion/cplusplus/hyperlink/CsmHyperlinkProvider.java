@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,15 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -56,13 +66,23 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
+import org.netbeans.modules.cnd.modelutil.OverridesPopup;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.PopupUtil;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -78,10 +98,12 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
 
+    @Override
     protected void performAction(final Document doc, final JTextComponent target, final int offset, final HyperlinkType type) {
         goToDeclaration(doc, target, offset, type);
     }
 
+    @Override
     protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
@@ -114,20 +136,120 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
-        CsmOffsetable item = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, true);
+        CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
+        CsmOffsetable item = toJumpObject(primary, csmFile, offset);
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            if (CsmKindUtilities.isMethod(item)) {
+                CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
+                boolean inDeclaration = isInDeclaration(meth, csmFile, offset);
+                final Collection<? extends CsmMethod> baseMethods;
+                if (inDeclaration) {
+                    baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+                } else {
+                    baseMethods = Collections.<CsmMethod>emptyList();
+                }
+                Collection<? extends CsmMethod> overriddenMethods;
+                if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                    overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
+                } else {
+                    overriddenMethods = Collections.<CsmMethod>emptyList();
+                }
+                baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
+                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
+                    UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
+                    return true;
+                }
+            } else if (CsmKindUtilities.isClass(item)) {
+                Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes((CsmClass) item, false);
+                if (!subRefs.isEmpty()) {
+                    Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
+                    for (CsmReference ref : subRefs) {
+                        CsmObject obj = ref.getReferencedObject();
+                        CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
+                        if (obj instanceof CsmClass) {
+                            subClasses.add((CsmClass) obj);
+                        }
+                    }
+                    if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, false, target, offset)) {
+                        UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+    }
+
+    private boolean showOverridesPopup(CsmOffsetableDeclaration mainDeclaration,
+            Collection<? extends CsmOffsetableDeclaration> baseDeclarations,
+            Collection<? extends CsmOffsetableDeclaration> descendantDeclarations,
+            boolean gotoDefinitions,
+            JTextComponent target, int offset) {
+        if (!baseDeclarations.isEmpty() || !descendantDeclarations.isEmpty()) {
+            try {
+                final OverridesPopup popup = new OverridesPopup(null, mainDeclaration, baseDeclarations, descendantDeclarations, gotoDefinitions);
+                Rectangle rect = target.modelToView(offset);
+                final Point point = new Point((int) rect.getX(), (int)(rect.getY() + rect.getHeight()));
+                SwingUtilities.convertPointToScreen(point, target);
+                Runnable runner = new Runnable() {
+                    @Override
+                    public void run() {
+                        PopupUtil.showPopup(popup, null, point.x, point.y, true, 0);
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    runner.run();
+                } else {
+                    SwingUtilities.invokeLater(runner);
+                }
+                return true;
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return false;
     }
 
     /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
         if (csmObject != null) {
             // convert to jump object
             item = toOffsetable ? toJumpObject(csmObject, file, offset) : csmObject;
         }
         return item;
+    }
+
+    private boolean isInDeclaration(CsmFunction func, CsmFile csmFile, int offset) {
+        CsmFunctionDefinition def;
+        CsmFunction decl;
+        if (CsmKindUtilities.isFunctionDefinition(func)) {
+            def = (CsmFunctionDefinition) func;
+            decl = def.getDeclaration();
+        } else {
+            decl = func;
+            def = func.getDefinition();
+        }
+        if (def != null) {
+            if (csmFile.equals(def.getContainingFile()) &&
+                    (def.getStartOffset() <= offset &&
+                    offset <= def.getBody().getStartOffset())) {
+                return true;
+            }
+        }
+        if (decl != null) {
+            // just declaration
+            if (csmFile.equals(decl.getContainingFile()) &&
+                    (decl.getStartOffset() <= offset &&
+                    offset <= decl.getEndOffset())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private CsmOffsetable toJumpObject(CsmObject csmObject, CsmFile csmFile, int offset) {
@@ -209,11 +331,18 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
 
+    @Override
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
-        if (msg != null && CsmKindUtilities.isMacro(item)) {
-            msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+        if (msg != null) {
+            if (CsmKindUtilities.isMacro(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltMacroHyperlinkHint", msg); // NOI18N
+            } else if (CsmKindUtilities.isMethod(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
+            } else if (CsmKindUtilities.isClass(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltClassHyperlinkHint", msg); // NOI18N
+            }
         }
         return msg == null ? null : msg.toString();
     }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -105,6 +108,8 @@ made subject to such option by the copyright holder.
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/6.9/javadoc/" target="_top">6.9</a> - Javadoc as released for NetBeans IDE 6.9</li>
+            <li><a href="http://bits.netbeans.org/6.8/javadoc/" target="_top">6.8</a> - Javadoc as released for NetBeans IDE 6.8</li>
             <li><a href="http://bits.netbeans.org/6.7/javadoc/" target="_top">6.7</a> - Javadoc as released for NetBeans IDE 6.7</li>
             <li><a href="http://bits.netbeans.org/6.5/javadoc/" target="_top">6.5</a> - Javadoc as released for NetBeans IDE 6.5</li>
             <li><a href="http://bits.netbeans.org/6.1/javadoc/" target="_top">6.1</a> - Javadoc as released for NetBeans IDE 6.1</li>
@@ -125,6 +130,7 @@ made subject to such option by the copyright holder.
             <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
             <li><a href="allclasses-frame.html">Index of all NetBeans API classes</a></li>
             <li><a href="layers.html">Extracted List of Layer APIs</a></li>
+            <li><a href="properties.html">Extracted List of Property APIs</a></li>
         </ul>
 
         <h4>FAQ and Mailing List</h4>

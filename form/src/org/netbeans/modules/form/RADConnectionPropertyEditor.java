@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ package org.netbeans.modules.form;
 import java.awt.*;
 import java.beans.*;
 
-import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.*;
 
 /**
@@ -100,23 +102,27 @@ public class RADConnectionPropertyEditor
      * @param model  The FormModel representing data of opened form.
      * @param prop property.
      */
+    @Override
     public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
         property = prop;
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
     }
 
     // -----------------------------------------------------------------------------
     // PropertyEditor implementation
 
+    @Override
     public Object getValue() {
         
         return designValue != null ? designValue : realValue;
     }
 
+    @Override
     public void setValue(Object value) {
         if (value instanceof RADConnectionDesignValue) {
             designValue =(RADConnectionDesignValue)value;
@@ -136,31 +142,38 @@ public class RADConnectionPropertyEditor
         support.firePropertyChange("", null, null); // NOI18N
     }
 
+    @Override
     public void setAsText(String string) {
     }
 
+    @Override
     public String getAsText() {
         return null;
     }
 
+    @Override
     public String[] getTags() {
         return null;
     }
 
+    @Override
     public boolean isPaintable() {
         return true;
     }
 
+    @Override
     public void paintValue(Graphics g, Rectangle rectangle) {
         FontMetrics fm = g.getFontMetrics();
         g.drawString(getValueString(), rectangle.x,
                             rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return !formModel.isReadOnly();
     }
 
+    @Override
     public java.awt.Component getCustomEditor() {
         if (editorType == Type.FormConnection) {
             ConnectionCustomEditor cust = new ConnectionCustomEditor(this, formModel, propertyType);
@@ -174,6 +187,7 @@ public class RADConnectionPropertyEditor
         }
     }
 
+    @Override
     public String getJavaInitializationString() {
         if (designValue != null) {
             if (designValue.needsInit)
@@ -229,10 +243,12 @@ public class RADConnectionPropertyEditor
         return null;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         support.addPropertyChangeListener(propertyChangeListener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         support.removePropertyChangeListener(propertyChangeListener);
     }
@@ -241,6 +257,7 @@ public class RADConnectionPropertyEditor
     // NamedPropertyEditor implementation
 
     /** @return display name of the property editor */
+    @Override
     public String getDisplayName() {
         return FormUtils.getBundleString(editorType == Type.FormConnection ?
                 "CTL_FormConnection_DisplayName" : "CTL_CustomCode_DisplayName"); // NOI18N
@@ -355,6 +372,7 @@ public class RADConnectionPropertyEditor
             type = TYPE_CODE;
         }
 
+        @Override
         public FormDesignValue copy(FormProperty formProperty) {
             switch(type) {
                 case TYPE_CODE:
@@ -471,6 +489,7 @@ public class RADConnectionPropertyEditor
          *
          * @return the real property value to be used during design-time
          */
+        @Override
         public Object getDesignValue() { //RADComponent radComponent) {
             /*      if (needsInit) {
                     if (!initialize()) {
@@ -504,6 +523,7 @@ public class RADConnectionPropertyEditor
             }
         }
 
+        @Override
         public Object getDesignValue(Object target) {
             return null;
             // Return null because RADConnectionValue is not related to the
@@ -540,6 +560,7 @@ public class RADConnectionPropertyEditor
             return null;
         }
 
+        @Override
         public String getDescription() {
             return getName();
         }
@@ -607,6 +628,7 @@ public class RADConnectionPropertyEditor
      * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
      * @throws java.io.IOException thrown when the value cannot be restored from the specified XML element
      */
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_CONNECTION.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -651,6 +673,7 @@ public class RADConnectionPropertyEditor
      * value should be loaded
      */
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         if (designValue == null)
             return null;

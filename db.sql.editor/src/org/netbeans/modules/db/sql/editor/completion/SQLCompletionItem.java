@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final String CATALOG_COLOR = "<font color=#515fc5>"; // NOI18N
     private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
     private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
+    private static final String VIEW_COLOR = "<font color=#bb7800>"; // NOI18N
     private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
     private static final String KEYWORD_COLOR = "<font color=#005180>"; // NOI18N
     private static final String COLOR_END = "</font>"; // NOI18N
@@ -74,6 +78,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final ImageIcon CATALOG_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/catalog.png", false); // NOI18N
     private static final ImageIcon SCHEMA_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/schema.png", false); // NOI18N
     private static final ImageIcon TABLE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/table.png", false); // NOI18N
+    private static final ImageIcon VIEW_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/view.gif", false); // NOI18N
     private static final ImageIcon ALIAS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/alias.png", false); // NOI18N
     private static final ImageIcon COLUMN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/column.png", false); // NOI18N
     private static final ImageIcon KEYWORD_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/db/sql/editor/completion/resources/keyword.png", false); // NOI18N
@@ -94,12 +99,17 @@ public abstract class SQLCompletionItem implements CompletionItem {
         return new Table(tableName, substText, substOffset, substHandler);
     }
 
+    public static SQLCompletionItem view(String viewName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new View(viewName, substText, substOffset, substHandler);
+    }
+
     public static SQLCompletionItem alias(String alias, QualIdent tableName, String substText, int substOffset, SubstitutionHandler substHandler) {
         return new Alias(alias, tableName, substText, substOffset, substHandler);
     }
 
-    public static SQLCompletionItem column(QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
-        return new Column(tableName, columnName, substText, substOffset, substHandler);
+    // view - bit ugly but can be easily refactored
+    public static SQLCompletionItem column(boolean view, QualIdent tupleName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Column(view, tupleName, columnName, substText, substOffset, substHandler);
     }
 
     public static SQLCompletionItem keyword(String keyword, int substOffset, SubstitutionHandler substHandler) {
@@ -279,6 +289,45 @@ public abstract class SQLCompletionItem implements CompletionItem {
         }
     }
 
+    private static final class View extends SQLCompletionItem {
+
+        private final String viewName;
+        private String leftText;
+
+        public View(String viewName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
+            this.viewName = viewName;
+        }
+
+        @Override
+        protected ImageIcon getImageIcon() {
+            return VIEW_ICON;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(VIEW_COLOR);
+                sb.append(viewName);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            // XXX should have schema here.
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return MessageFormat.format("View {0}", viewName); // NOI18N
+        }
+    }
+
     private static final class Alias extends SQLCompletionItem {
 
         private final String alias;
@@ -321,13 +370,15 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
     private static class Column extends SQLCompletionItem {
 
+        private final boolean view;
         private final QualIdent tableName;
         private final String columnName;
         private String leftText;
         private String rightText;
 
-        public Column(QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        public Column(boolean view, QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
             super(substText, substOffset, substHandler);
+            this.view = view;
             this.tableName = tableName;
             this.columnName = columnName;
         }
@@ -361,14 +412,14 @@ public abstract class SQLCompletionItem implements CompletionItem {
                 sb.append(TABLE_COLOR);
                 sb.append(tableName.toString());
                 sb.append(COLOR_END);
-                rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, "MSG_Table"), sb.toString());
+                rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, view ? "MSG_View" : "MSG_Table"), sb.toString());
             }
             return rightText;
         }
 
         @Override
         public String toString() {
-            return MessageFormat.format("Column {0} in table {1}", columnName, tableName); // NOI18N
+            return MessageFormat.format("Column {0} in {1} {2}", columnName, view ? "view" : "table", tableName); // NOI18N
         }
     }
 

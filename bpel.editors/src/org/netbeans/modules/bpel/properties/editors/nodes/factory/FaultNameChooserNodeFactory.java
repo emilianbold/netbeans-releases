@@ -95,7 +95,7 @@ public class FaultNameChooserNodeFactory implements NodeFactory<NodeType> {
                         standardFaultsChildren, wsdlImportFaultsChildren);
                 //
                 QName systemFault = new QName(
-                        Extensions.ERROR_EXT_URI, Extensions.SYSTEM_FAULT_NAME);
+                        Extensions.ERROR_HANDLER_URI, Extensions.SYSTEM_FAULT_NAME);
                 Node sysFaultNode = createNode(NodeType.FAULT, systemFault, lookup);
                 //
                 children.add(new Node[] {
@@ -104,7 +104,7 @@ public class FaultNameChooserNodeFactory implements NodeFactory<NodeType> {
                     new CategoryFolderNode(NodeType.WSDL_FILES_FOLDER,
                             wsdlImportFaultsChildren, lookup),
                     new CategoryFolderNode(NodeType.BPEL_FAULTS_FOLDER,
-                            userDefFaultsChildren, lookup),
+                            userDefFaultsChildren, lookup), 
                     sysFaultNode
                 });
                 //

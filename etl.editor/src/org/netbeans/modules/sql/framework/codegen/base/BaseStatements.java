@@ -47,9 +47,9 @@ import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.utils.StringUtil;
 import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
@@ -64,7 +64,7 @@ public class BaseStatements implements Statements {
     protected static final String TARGET_COLUMN_IDENTIFIER_ALIAS_PREFIX = "d_column";
     protected static final String SRC_EXP_TO_JDBC_TYPE_MAP = "srcExpToJdbcTypeMap";
     protected AbstractDB db;
-    protected AbstractGeneratorFactory genFactory;
+    protected AbstractGeneratorFactory genFactory;    
 
     public BaseStatements(AbstractDB database) {
         this.db = database;
@@ -428,6 +428,10 @@ public class BaseStatements implements Statements {
         }
 
         vContext.put("mappings", rMappings);
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("targetTablePkName", (targetTable.getPrimaryKey() != null) ? targetTable.getPrimaryKey().getName(): "");
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
     }
 
     public SQLPart getOnePassSelectStatement(TargetTable targetTable, StatementContext context) throws BaseException {
@@ -1240,6 +1244,10 @@ public class BaseStatements implements Statements {
         }
         //END WHERE
         populateContextForGroupByAndHaving(targetTable, localContext, vContext);
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -1301,6 +1309,12 @@ public class BaseStatements implements Statements {
         //SET START
         vContext.put("mappings", rMappings);
         //SET END
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("targetTableForeignKeys", targetTable.getForeignKeys());
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());
+        vContext.put("targetTablePkName", (targetTable.getPrimaryKey() != null) ? targetTable.getPrimaryKey().getName(): "");
+        
     }
 
     /**
@@ -1376,6 +1390,9 @@ public class BaseStatements implements Statements {
         // VALUES
         List valueIdentifiers = this.createSourceIdentifierList(targetTable, context);
         vContext.put("valueIdentifiers", valueIdentifiers);
+        
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
     }
 
     /**
@@ -1407,6 +1424,10 @@ public class BaseStatements implements Statements {
             vContext.put("whereClause", TemplateBuilder.generateSql(this.db.getTemplateFileName("where"), vContext)); // NOI18N
             vContext.put("useWhere", Boolean.TRUE);
         }
+        
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());        
+        
     }
 
     /**

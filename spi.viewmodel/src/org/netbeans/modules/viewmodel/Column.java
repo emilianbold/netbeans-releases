@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,9 @@
 package org.netbeans.modules.viewmodel;
 
 import java.beans.PropertyEditor;
-import javax.swing.SwingUtilities;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.table.TableCellEditor;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
@@ -72,7 +77,7 @@ public class Column extends PropertySupport.ReadWrite {
         );
         this.columnModel = columnModel;
         setValue (
-            "ComparableColumnTTV", 
+            "SortableColumn",
             Boolean.valueOf (columnModel.isSortable ())
         );
         if (columnModel.getType () == null)
@@ -137,8 +142,9 @@ public class Column extends PropertySupport.ReadWrite {
         }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
-        if ("SortingColumnTTV".equals (propertyName)) 
-            return Boolean.valueOf (columnModel.isSorted ());
+        if ("SortableColumn".equals (propertyName)) {
+            return Boolean.valueOf (columnModel.isSortable());
+        }
         if ("DescendingOrderTTV".equals (propertyName)) 
             return Boolean.valueOf (columnModel.isSortedDescending ());
         return super.getValue (propertyName);
@@ -149,11 +155,11 @@ public class Column extends PropertySupport.ReadWrite {
             int index = ((Integer) newValue).intValue();
             columnModel.setCurrentOrderNumber(index);
         } else
-        if ("SortingColumnTTV".equals (propertyName)) 
+        /*if ("SortableColumn".equals (propertyName))
             columnModel.setSorted (
                 ((Boolean) newValue).booleanValue ()
             );
-        else
+        else*/
         if ("DescendingOrderTTV".equals (propertyName)) 
             columnModel.setSortedDescending (
                 ((Boolean) newValue).booleanValue ()
@@ -181,5 +187,23 @@ public class Column extends PropertySupport.ReadWrite {
     public PropertyEditor getPropertyEditor () {
         return propertyEditor;
     }
+
+    TableCellEditor getTableCellEditor () {
+        try {
+            // [TODO] get rid off reflection after ColumnModel API is extended by getTableCellEditor() method
+            Method method = columnModel.getClass().getMethod("getTableCellEditor");
+            if (!TableCellEditor.class.isAssignableFrom(method.getReturnType())) {
+                return null;
+            }
+            return (TableCellEditor) method.invoke(columnModel);
+        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException ex) {
+        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        }
+        return null;
+    }
+
 }
 

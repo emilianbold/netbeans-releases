@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.wsdlextensions.ftp.impl;
 
-import java.util.Collection;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.wsdlextensions.ftp.FTPTransfer;
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponent;
@@ -162,12 +159,12 @@ public class FTPTransferImpl extends FTPComponentImpl implements FTPTransfer {
     }
 
     public boolean getPostSendLocationHasPatterns() {
-        String isPattStr = getAttribute(FTPAttribute.FTP_POST_SEND_LOC_PROPERTY);
+        String isPattStr = getAttribute(FTPAttribute.FTP_POST_SEND_LOC_HAS_PATTS_PROPERTY);
         return isPattStr != null && isPattStr.equals("true"); 
     }
 
     public void setPostSendLocationHasPatterns(boolean b) {
-        setAttribute(FTP_POST_SEND_LOC_PROPERTY, FTPAttribute.FTP_POST_SEND_LOC_PROPERTY, b ? "true" : "false");
+        setAttribute(FTP_POST_SEND_LOC_PROPERTY, FTPAttribute.FTP_POST_SEND_LOC_HAS_PATTS_PROPERTY, b ? "true" : "false");
     }
 
     public String getPostReceiveCommand() {
@@ -220,57 +217,57 @@ public class FTPTransferImpl extends FTPComponentImpl implements FTPTransfer {
         setAttribute(FTP_APPEND_PROPERTY, FTPAttribute.FTP_APPEND_PROPERTY, b ? "true" : "false");
     }
 
-    public boolean getSenderUseProxy() {
-        String useProxy = getAttribute(FTPAttribute.FTP_SENDER_USEPROXY_PROPERTY);
-        return useProxy != null && useProxy.equals("true");
-    }
-
-    public void setSenderUseProxy(boolean useProxy) {
-        setAttribute(FTP_SENDER_USEPROXY_PROPERTY, FTPAttribute.FTP_SENDER_USEPROXY_PROPERTY, useProxy ? "true" : "false");
-    }
-
-    public String getSenderProxyURL() {
-        return getAttribute(FTPAttribute.FTP_SENDER_PROXY_PROPERTY);
-    }
-
-    public void setSenderProxyURL(String proxyURL) {
-        setAttribute(FTP_SENDER_PROXY_PROPERTY, FTPAttribute.FTP_SENDER_PROXY_PROPERTY, proxyURL);
-    }
+//    public boolean getSenderUseProxy() {
+//        String useProxy = getAttribute(FTPAttribute.FTP_SENDER_USEPROXY_PROPERTY);
+//        return useProxy != null && useProxy.equals("true");
+//    }
+//
+//    public void setSenderUseProxy(boolean useProxy) {
+//        setAttribute(FTP_SENDER_USEPROXY_PROPERTY, FTPAttribute.FTP_SENDER_USEPROXY_PROPERTY, useProxy ? "true" : "false");
+//    }
+//
+//    public String getSenderProxyURL() {
+//        return getAttribute(FTPAttribute.FTP_SENDER_PROXY_PROPERTY);
+//    }
+//
+//    public void setSenderProxyURL(String proxyURL) {
+//        setAttribute(FTP_SENDER_PROXY_PROPERTY, FTPAttribute.FTP_SENDER_PROXY_PROPERTY, proxyURL);
+//    }
     
-    public boolean getSenderUsePassive() {
-        String usePassive = getAttribute(FTPAttribute.FTP_SENDER_USEPASSIVE_PROPERTY);
-        return usePassive != null && usePassive.equals("true");
-    }
+//    public boolean getSenderUsePassive() {
+//        String usePassive = getAttribute(FTPAttribute.FTP_SENDER_USEPASSIVE_PROPERTY);
+//        return usePassive != null && usePassive.equals("true");
+//    }
+//
+//    public void setSenderUsePassive(boolean usePassive) {
+//        setAttribute(FTP_SENDER_USEPASSIVE_PROPERTY, FTPAttribute.FTP_SENDER_USEPASSIVE_PROPERTY, usePassive ? "true" : "false");
+//    }
 
-    public void setSenderUsePassive(boolean usePassive) {
-        setAttribute(FTP_SENDER_USEPASSIVE_PROPERTY, FTPAttribute.FTP_SENDER_USEPASSIVE_PROPERTY, usePassive ? "true" : "false");
-    }
+//    public boolean getReceiverUseProxy() {
+//        String useProxy = getAttribute(FTPAttribute.FTP_RECEIVER_USEPROXY_PROPERTY);
+//        return useProxy != null && useProxy.equals("true");
+//    }
 
-    public boolean getReceiverUseProxy() {
-        String useProxy = getAttribute(FTPAttribute.FTP_RECEIVER_USEPROXY_PROPERTY);
-        return useProxy != null && useProxy.equals("true");
-    }
+//    public void setReceiverUseProxy(boolean useProxy) {
+//        setAttribute(FTP_RECEIVER_USEPROXY_PROPERTY, FTPAttribute.FTP_RECEIVER_USEPROXY_PROPERTY, useProxy ? "true" : "false");
+//    }
 
-    public void setReceiverUseProxy(boolean useProxy) {
-        setAttribute(FTP_RECEIVER_USEPROXY_PROPERTY, FTPAttribute.FTP_RECEIVER_USEPROXY_PROPERTY, useProxy ? "true" : "false");
-    }
+//    public String getReceiverProxyURL() {
+//        return getAttribute(FTPAttribute.FTP_RECEIVER_PROXY_PROPERTY);
+//    }
 
-    public String getReceiverProxyURL() {
-        return getAttribute(FTPAttribute.FTP_RECEIVER_PROXY_PROPERTY);
-    }
-
-    public void setReceiverProxyURL(String proxyURL) {
-        setAttribute(FTP_RECEIVER_PROXY_PROPERTY, FTPAttribute.FTP_RECEIVER_PROXY_PROPERTY, proxyURL);
-    }
+//    public void setReceiverProxyURL(String proxyURL) {
+//        setAttribute(FTP_RECEIVER_PROXY_PROPERTY, FTPAttribute.FTP_RECEIVER_PROXY_PROPERTY, proxyURL);
+//    }
     
-    public boolean getReceiverUsePassive() {
-        String usePassive = getAttribute(FTPAttribute.FTP_RECEIVER_USEPASSIVE_PROPERTY);
-        return usePassive != null && usePassive.equals("true");
-    }
-
-    public void setReceiverUsePassive(boolean usePassive) {
-        setAttribute(FTP_RECEIVER_USEPASSIVE_PROPERTY, FTPAttribute.FTP_RECEIVER_USEPASSIVE_PROPERTY, usePassive ? "true" : "false");
-    }
+//    public boolean getReceiverUsePassive() {
+//        String usePassive = getAttribute(FTPAttribute.FTP_RECEIVER_USEPASSIVE_PROPERTY);
+//        return usePassive != null && usePassive.equals("true");
+//    }
+//
+//    public void setReceiverUsePassive(boolean usePassive) {
+//        setAttribute(FTP_RECEIVER_USEPASSIVE_PROPERTY, FTPAttribute.FTP_RECEIVER_USEPASSIVE_PROPERTY, usePassive ? "true" : "false");
+//    }
 
     public boolean getMessageCorrelateEnabled() {
         String s = getAttribute(FTPAttribute.FTP_MSG_CORRELATE_PROPERTY);
@@ -279,6 +276,31 @@ public class FTPTransferImpl extends FTPComponentImpl implements FTPTransfer {
 
     public void setMessageCorrelateEnabled(boolean b) {
         setAttribute(FTP_MSG_CORRELATE_PROPERTY, FTPAttribute.FTP_MSG_CORRELATE_PROPERTY, b ? "true" : "false");
+    }
+
+    public String getFileType() {
+        return getAttribute(FTPAttribute.FTP_FILETYPE_PROPERTY);
+    }
+
+    public void setFileType(String s) {
+        setAttribute(FTP_FILE_TYPE_PROPERTY, FTPAttribute.FTP_FILETYPE_PROPERTY, s);
+    }
+
+    public boolean getForwardAsAttachment() {
+        String s = getAttribute(FTPAttribute.FTP_FWDATTACH_PROPERTY);
+        return s != null && s.equals("true");
+    }
+
+    public void setForwardAsAttachment(boolean b) {
+        setAttribute(FTP_FWD_ATTACH_PROPERTY, FTPAttribute.FTP_FWDATTACH_PROPERTY, b ? "true" : "false");
+    }
+
+    public String getCharacterEncoding() {
+        return getAttribute(FTPAttribute.FTP_CHAR_ENCODE_PROPERTY);
+    }
+
+    public void setCharacterEncoding(String s) {
+        setAttribute(FTP_CHAR_ENCODE_PROPERTY, FTPAttribute.FTP_CHAR_ENCODE_PROPERTY, s);
     }
 
 }

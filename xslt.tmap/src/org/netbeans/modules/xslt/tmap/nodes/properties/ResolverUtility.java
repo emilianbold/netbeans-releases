@@ -22,8 +22,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -164,11 +167,11 @@ public final class ResolverUtility {
 //    }
 //    
     public static String encodeLocation(String location){
-        return location.replace(" ", "%20"); // NOI18N
+        return location == null ? null : location.replace(" ", "%20"); // NOI18N
     }
     
     public static String decodeLocation(String location){
-        return location.replace("%20", " "); // NOI18N
+        return location == null ? null : location.replace("%20", " "); // NOI18N
     }
 
 //    /**
@@ -256,23 +259,20 @@ public final class ResolverUtility {
         //
         return result;
     }
-//    
-//    public static ModelSource getImportedModelSource(Import importObj) {
-//        if (Import.SCHEMA_IMPORT_TYPE.equals(importObj.getImportType())) {
-//            SchemaModel schemaModel = ImportHelper.getSchemaModel(importObj, false);
-//            if (schemaModel != null) {
-//                return schemaModel.getModelSource();
-//            }
-//        } else if (Import.WSDL_IMPORT_TYPE.equals(importObj.getImportType())) {
-//            WSDLModel wsdlModel = ImportHelper.getWsdlModel(importObj, false);
-//            if (wsdlModel != null) {
-//                return wsdlModel.getModelSource();
-//            }
-//        }
-//        
-//        return null;
-//    }
-//    
+    
+    public static ModelSource getImportedModelSource(Import importObj) {
+        try {
+            WSDLModel wsdlModel = importObj.getImportModel();
+            if (wsdlModel != null) {
+                return wsdlModel.getModelSource();
+            }
+
+        } catch (CatalogModelException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
+    
 //    public static FileObject getImportedFileObject(Import importObj) {
 //        ModelSource modelSource = getImportedModelSource(importObj);
 //        

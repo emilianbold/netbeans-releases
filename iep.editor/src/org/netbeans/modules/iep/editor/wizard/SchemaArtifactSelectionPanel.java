@@ -48,6 +48,13 @@ public class SchemaArtifactSelectionPanel extends javax.swing.JPanel {
                                                                     jTree1);
         
         
+        String title = NbBundle.getMessage(SchemaArtifactSelectionDialog.class, "SchemaArtifactSelectionDialog.Title");
+        String tooltip = NbBundle.getMessage(SchemaArtifactSelectionDialog.class, "SchemaArtifactSelectionDialog.Tooltip");
+        
+        this.jTree1.setToolTipText(tooltip);
+        this.jTree1.getAccessibleContext().setAccessibleDescription(tooltip);
+        this.jTree1.getAccessibleContext().setAccessibleName(title);
+        
         this.jTree1.setModel(model);
         //this.jTree1.addMouseListener(new TreeMouseListener());
         

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -128,7 +131,7 @@ public class SoapBindingOperationSupport {
         List<ExtensibilityElement> eeList = 
                 bindingInput.getExtensibilityElements();
         SOAPBody soapBody = 
-                (SOAPBody) Util.getAssignableExtensiblityElement(eeList, SOAPBody.class);
+                Util.getAssignableExtensiblityElement(eeList, SOAPBody.class);
         
         if (soapBody != null && soapBody.getUse() == Use.ENCODED) { 
             Collection<String> encodingStyles = soapBody.getEncodingStyles();
@@ -147,7 +150,7 @@ public class SoapBindingOperationSupport {
     public boolean isRpc() {
         List eeList = mBindingOperation.getExtensibilityElements();
         SOAPOperation soapOperation = 
-                (SOAPOperation) Util.getAssignableExtensiblityElement(
+                Util.getAssignableExtensiblityElement(
                 eeList, SOAPOperation.class);
         
         if(soapOperation != null && soapOperation.getStyle() != null) {
@@ -155,7 +158,7 @@ public class SoapBindingOperationSupport {
         }
         eeList = mBinding.getExtensibilityElements();
         SOAPBinding soapBinding = 
-                (SOAPBinding) Util.getAssignableExtensiblityElement(
+                Util.getAssignableExtensiblityElement(
                 eeList, SOAPBinding.class);
         
         return soapBinding != null && soapBinding.getStyle() == Style.RPC; 
@@ -168,7 +171,7 @@ public class SoapBindingOperationSupport {
         List<ExtensibilityElement> eeList = 
                 mBindingOperation.getBindingInput().getExtensibilityElements();
         SOAPBody body = 
-                (SOAPBody) Util.getAssignableExtensiblityElement(
+                Util.getAssignableExtensiblityElement(
                 eeList, SOAPBody.class);
         
         if (body == null || body.getParts() == null) {

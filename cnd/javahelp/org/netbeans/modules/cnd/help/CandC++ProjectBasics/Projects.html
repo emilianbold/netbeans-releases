@@ -13,11 +13,20 @@ type="text/css">
 <body>
 <h2>Projects Dialog Box</h2>
 <p>The Projects dialog box lets you add project dependencies to your 
-C or C++ project from existing code. To open the dialog box, 
-click the browse button in the Required Projects panel of the Project 
-Properties dialog box.</p>
-<p>When you add a project using the Add Project button, 
-you are creating a <a href="CreatingDependencies.html">project dependency</a>
+C or C++ project from existing sources. To open the dialog box,
+right-click the project name in the Project window, and select Properties. Select the
+Required Projects node, and click the browse button next to Projects.</p>
+<p>Adding required projects creates a <a href="CreatingDependencies.html">project dependency</a>.
+<ol>
+<li>Click Add and select the required project in the Projects dialog box.
+<li>Select the project configuration you want to use for the project you are adding, and click Add.
+<li>Add any other required projects in the same way.</li>
+<li>You can use the Up and Down buttons to put the required projects in the order you want.
+    Projects will be built in the order listed in this dialog box. </li>
+<li>Click the Build checkbox for a project if the required project should be built whenever you build
+the current project.</li>
+<li>Click OK.</li>
+</ol>
 <hr>
 <small>
 <a href="../credits.html">Legal Notices</a></small>

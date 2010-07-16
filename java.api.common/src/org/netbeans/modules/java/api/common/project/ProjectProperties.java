@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,7 +56,35 @@ import org.openide.util.ImageUtilities;
  */
 public final class ProjectProperties {
 
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_ENABLED = "annotation.processing.enabled"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_ENABLED_IN_EDITOR = "annotation.processing.enabled.in.editor"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS = "annotation.processing.run.all.processors"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_PROCESSORS_LIST = "annotation.processing.processors.list"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_SOURCE_OUTPUT = "annotation.processing.source.output"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.15
+     */
+    public static final String ANNOTATION_PROCESSING_PROCESSOR_OPTIONS = "annotation.processing.processor.options"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String JAVAC_PROCESSORPATH = "javac.processorpath"; //NOI18N
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
     public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
@@ -63,6 +94,7 @@ public final class ProjectProperties {
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
+        "${" + JAVAC_PROCESSORPATH + "}", // NOI18N
         "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
         "${" + RUN_CLASSPATH + "}", // NOI18N
         "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
@@ -94,4 +126,27 @@ public final class ProjectProperties {
     public static final String INCLUDES = "includes"; // NOI18N
     public static final String EXCLUDES = "excludes"; // NOI18N
 
+    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
+    public static final String BUILD_DIR = "build.dir"; // NOI18N
+    public static final String MAIN_CLASS = "main.class"; // NOI18N
+    public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
+
+    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
+    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
+
+    public static final String PROP_PROJECT_CONFIGURATION_CONFIG = "config"; // NOI18N
+
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_DEPEND = "do.depend"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
+    public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
+    public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
+
+    //NB 6.1 tracking of files modifications
+    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
 }

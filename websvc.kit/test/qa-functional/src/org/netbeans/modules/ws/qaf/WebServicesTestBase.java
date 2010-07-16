@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,8 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -57,7 +63,9 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CleanJavaProjectAction;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -198,7 +206,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case WEB:
                 case EJB:
                 case APPCLIENT:
-                    return 0;
+                    return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -219,7 +227,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case WEB:
                 case APPCLIENT:
                 case EJB:
-                    return 1;
+                    return 2;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -371,6 +379,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     /**
+     * Get <code>FileObject</code> representing default project source root
+     *
+     * @return default project source root
+     */
+    protected FileObject getProjectSourceRoot() {
+        Sources s = getProject().getLookup().lookup(Sources.class);
+        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        return sg[0].getRootFolder();
+    }
+
+    /**
      * Java EE version set for test case, JavaEEVersion.JAVAEE5
      * is used by default
      * Override this method to use different Java EE version
@@ -430,6 +449,25 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 LOGGER.info("Using project in: " + projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
+                    // closing Tasks tab
+                    new OutputWindowViewAction().performMenu();
+                    new ActionNoBlock("Window|Tasks", null).performMenu();
+                    new ActionNoBlock("Window|Close Window", null).performMenu();
+                    //set server for maven projects
+                    if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
+                        //Properties
+                        String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
+                        new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
+                        new EventTool().waitEvent(2000);
+                        // "Project Properties"
+                        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+                        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+                        // select "Run" category
+                        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+                        new JComboBoxOperator(propertiesDialogOper).selectItem(REGISTERED_SERVER.toString());
+                        // confirm properties dialog
+                        propertiesDialogOper.ok();
+                    }
                 } else {
                     openProjects(projectRoot.getAbsolutePath());
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
@@ -652,7 +690,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 break;
             case EJB:
             case MAVEN_EJB:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                if (ServerType.GLASSFISH_V3.equals(REGISTERED_SERVER)) {
+                    appsNode = new Node(serverNode, applicationsLabel);
+                } else {
+                    appsNode = new Node(serverNode, applicationsLabel + "|" + ejbLabel);
+                }
                 break;
             case APPCLIENT:
                 appsNode = new Node(serverNode, applicationsLabel + "|" + appclientLabel);
@@ -725,13 +767,6 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     private void performProjectAction(String projectName, String actionName) throws IOException {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
-        if (!getProjectType().isAntBasedProject()) {
-            //Select deployment server
-            String title = Bundle.getStringTrimmed("org.netbeans.modules.maven.j2ee.Bundle", "TIT_Select");
-            JDialogOperator ndo = new JDialogOperator(title);
-            new JComboBoxOperator(ndo, 0).selectItem(1);
-            new JButtonOperator(ndo, "OK").push();
-        }
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.api.project.rake.RakeArtifact;
 import org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton;
 import org.netbeans.modules.ruby.modules.project.rake.UserQuestionHandler;
-import org.netbeans.modules.ruby.modules.project.rake.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -277,7 +279,7 @@ public final class RakeProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (IOException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -389,7 +391,7 @@ public final class RakeProjectHelper {
         Document doc = getConfigurationXml(shared);
         if (shared) {
             Element project = doc.getDocumentElement();
-            Element config = Util.findElement(project, "configuration", PROJECT_NS); // NOI18N
+            Element config = XMLUtil.findElement(project, "configuration", PROJECT_NS); // NOI18N
             assert config != null;
             return config;
         } else {
@@ -828,7 +830,7 @@ public final class RakeProjectHelper {
             public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         return cloneSafely(data);
                     } else {
@@ -866,7 +868,7 @@ public final class RakeProjectHelper {
             public Void run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                    Element existing = XMLUtil.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
                     // XXX first compare to existing and return if the same
                     if (existing != null) {
                         root.removeChild(existing);
@@ -908,7 +910,7 @@ public final class RakeProjectHelper {
             public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         root.removeChild(data);
                         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
@@ -956,7 +958,7 @@ public final class RakeProjectHelper {
     /**
      * Create a basic implementation of {@link RakeArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
-     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param type the type of artifact, e.g. <a href="@org-netbeans-modules-java-project@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})

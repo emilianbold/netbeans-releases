@@ -63,6 +63,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
+import org.netbeans.modules.wsdlextensions.jms.JMSJCAOptions;
 import org.netbeans.modules.wsdlextensions.jms.JMSOperation;
 import org.netbeans.modules.wsdlextensions.jms.JMSOptions;
 import org.netbeans.modules.wsdlextensions.jms.JMSOption;
@@ -75,6 +76,11 @@ import org.netbeans.modules.wsdlextensions.jms.JMSProperties;
 import org.netbeans.modules.wsdlextensions.jms.JMSProperty;
 import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnv;
 import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * JMSComponentValidator
@@ -83,7 +89,6 @@ import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
  *
  * 
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class JMSComponentValidator
         implements Validator {
     
@@ -181,7 +186,7 @@ public class JMSComponentValidator
                             while (jmsAddresses.hasNext()) {
                                 JMSAddress jmsAddr = jmsAddresses.next();
                                 validate(jmsAddr);
-                                if (jmsAddr.getConnectionURL().startsWith(JMSConstants.JMS_GENERIC_JNDI_PROTOCOL)) {
+                                if (jmsAddr.getConnectionURL() != null && jmsAddr.getConnectionURL().startsWith(JMSConstants.JMS_GENERIC_JNDI_PROTOCOL)) {
                                     Iterator<BindingOperation> bindingOps =
                                             binding.getBindingOperations().iterator();
                                     while (bindingOps.hasNext()) {
@@ -283,7 +288,7 @@ public class JMSComponentValidator
                                                                       bindingInput.getName()})));
                                 }
                             }
-                            
+                            /* We could have input with no parameter defined. Like in case of synchronous read
                             if (msgCnt == 0 ) {
                                 results.add(
                                         new Validator.ResultItem(this,
@@ -293,6 +298,7 @@ public class JMSComponentValidator
                                                   new Object [] {bindingOp.getName(),
                                                                  bindingInput.getName()})));
                             }
+                            */
                             
                             // invalidate if jms:mapmessage and/or jms:properties is found as child elment(s) of input
                             List<JMSProperties> jmsProperites =
@@ -426,6 +432,13 @@ public class JMSComponentValidator
                 mValidationResult.getValidationResult();
         
         final String URL_SEPARATORS = ",";
+        if(target.getConnectionURL() == null || target.getConnectionURL().trim().length() == 0){
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    target,
+                    mMessages.getString("JMSAddress.MISSING")));
+            return;
+        }
         StringTokenizer urls = new StringTokenizer(target.getConnectionURL(), URL_SEPARATORS);
         while (urls.hasMoreTokens()) {
             String aurl = urls.nextToken();
@@ -452,34 +465,18 @@ public class JMSComponentValidator
                                            new Object[] {aurl})));            
                     } else {
                         // now try parsing specific provider urls 
-                        if (protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ)) {
-                            try {
-                                SunOneUrlParser urlParser = new SunOneUrlParser(aurl);
-                                urlParser.validate();
-                            } catch (ValidationException ex) {
-                                results.add(new Validator.ResultItem(this,
-                                                Validator.ResultType.ERROR,
-                                                target,
-                                                getMessage("JMSAddress.INVALID_CONNECTION_URL",
-                                                new Object[] {aurl, ex})));
-                            }                        
-                        } else { // for others check if protocol is supported                    
-                            if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
-                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
-                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
-                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
-                                !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC) &&
-                                !protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)) {
-                                results.add(new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        target,
-                                        getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
-                                                   new Object[] {aurl, protocol})));
-                            }
-                        }
+                	/**
+			 * as checking provider specific URL may lead to various
+			 * possibility we will need to keep track of all
+			 * provider specific details , which may lead to hard
+			 * coding all the possibilities during validation, we
+			 * would bypass this logic, this will be anyway taken
+			 * care during deployment
+			 */
+                        //validateProviderSpecificURL(target, results, aurl, protocol);
                     }
 
-                    if (!protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)) {
+                    if (!protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI) && !protocol.equals(ConnectionUrl.PROTOCOL_LOOKUP)) {
                         if (host == null || host.length() == 0) {
                             results.add(new Validator.ResultItem(this,
                                     Validator.ResultType.ERROR,
@@ -561,6 +558,7 @@ public class JMSComponentValidator
                         }
                         
                         // warn if jndienv is used
+                        /*
                         List <JMSJNDIEnv> jndienvs = target.getExtensibilityElements(JMSJNDIEnv.class);
                         if (jndienvs.size() > 0) {
                             results.add(new Validator.ResultItem(this,
@@ -569,7 +567,24 @@ public class JMSComponentValidator
                                     getMessage("JMSAddress.JNDIENV_ELEM_IN_JMS_ADDRESS_IGNORED",
                                                new Object[] {aurl})));
                         }
-                    } else {
+                        */
+                    } else if(protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)){
+                        List <JMSJCAOptions> jmsjcaOptions = target.getExtensibilityElements(JMSJCAOptions.class);
+                        String optionsStr = null;
+                        if(jmsjcaOptions.size() > 0){
+                        	JMSJCAOptions options = jmsjcaOptions.get(0);
+                        	Element e = options.getPeer();
+                        	NodeList nl = e.getChildNodes();
+                            for(int i = 0; i < nl.getLength(); i++){
+                                Node node1 = nl.item(i);
+                                if(node1 instanceof CDATASection){
+                                	optionsStr = node1.getNodeValue();
+                                	break;
+                                }
+                            }
+                        }
+                        if(optionsStr == null || optionsStr.trim().length()== 0){
+                        	//This means that JNDI properties are not provided in the JMSJCA options element
                         // check for jndiconnectionfactory name
                         if (target.getConnectionFactoryName() == null) {
                             results.add(new Validator.ResultItem(this,
@@ -638,6 +653,7 @@ public class JMSComponentValidator
                                                new Object[] {jndienventries.size()})));        
                         }
                     }                
+                    }                
                 } catch (Throwable t) {
                     results.add(new Validator.ResultItem(this,
                             Validator.ResultType.ERROR,
@@ -647,6 +663,57 @@ public class JMSComponentValidator
                 } 
             }                    
         }
+    }
+
+    private void validateProviderSpecificURL(JMSAddress target, Collection<ResultItem> results, String aurl, String protocol) {
+	if (checkSunJavaMQ(protocol)) {
+	    try {
+	        SunOneUrlParser urlParser = new SunOneUrlParser(aurl);
+	        urlParser.validate();
+	    } catch (ValidationException ex) {
+	        results.add(new Validator.ResultItem(this,
+	                        Validator.ResultType.ERROR,
+	                        target,
+	                        getMessage("JMSAddress.INVALID_CONNECTION_URL",
+	                        new Object[] {aurl, ex})));
+	    }                        
+	} else { // for others check if protocol is supported                    
+	    if (!protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEPSHERE_MQ) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_JBOSS) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_STCMS) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WAVE) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_WEBLOGIC) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_LOOKUP) &&
+	        !protocol.equals(ConnectionUrl.PROTOCOL_GENERIC_JMS_JNDI)) {
+	        results.add(new Validator.ResultItem(this,
+	                Validator.ResultType.ERROR,
+	                target,
+	                getMessage("JMSAddress.PROVIDER_NOT_SUPPORTED",
+	                           new Object[] {aurl, protocol})));
+	    }
+	}
+    }
+
+    private boolean checkSunJavaMQ(String protocol) {
+	
+	
+	if(protocol.equals(ConnectionUrl.PROTOCOL_JMS_PROVIDER_SUN_JAVA_SYSTEM_MQ)){
+	    return true;
+	}
+	if(protocol.equals(ConnectionUrl.PROTOCOL_TCP_PROVIDER_SUN_JAVA_SYSTEM_MQ)){
+	    return true;
+	}
+	if(protocol.equals(ConnectionUrl.PROTOCOL_SSL_PROVIDER_SUN_JAVA_SYSTEM_MQ)){
+	    return true;
+	}
+	if(protocol.equals(ConnectionUrl.PROTOCOL_HTTP_PROVIDER_SUN_JAVA_SYSTEM_MQ)){
+	    return true;
+	}
+	if(protocol.equals(ConnectionUrl.PROTOCOL_HTTPS_PROVIDER_SUN_JAVA_SYSTEM_MQ)){
+	    return true;
+	}
+	
+	return false;
     }
 
     private void validate(JMSBinding target) {
@@ -671,7 +738,7 @@ public class JMSComponentValidator
         isAToken(destination, target);
         
         String destinationType = target.getDestinationType();
-        if (destination == null && destination.length() == 0) {
+        if (destination == null || destination.trim().length() == 0) {
             results.add(new Validator.ResultItem(this,
                     Validator.ResultType.ERROR,
                     target,
@@ -711,8 +778,8 @@ public class JMSComponentValidator
             isAToken(clientID, target);
         }
 
-        int maxConcurrentConsumers = target.getMaxConcurrentConsumers();
-        if (maxConcurrentConsumers > 1 && destinationType.equals(JMSConstants.TOPIC)) {
+        String maxConcurrentConsumers = target.getMaxConcurrentConsumers();
+        if (maxConcurrentConsumers != null && !maxConcurrentConsumers.equals("1") && destinationType.equals(JMSConstants.TOPIC)) {
             results.add(new Validator.ResultItem(this,
                     Validator.ResultType.WARNING,
                     target,
@@ -794,6 +861,7 @@ public class JMSComponentValidator
         
         // get JMS message type
         String jmsMsgType = target.getMessageType();
+        if(jmsMsgType != null){
         if (jmsMsgType.equals(JMSConstants.TEXT_MESSAGE)) {
             // Check textPart
             String textPart = target.getTextPart();
@@ -973,6 +1041,32 @@ public class JMSComponentValidator
                                                  opParam.getName(),
                                                  mapmessageList.size()})));
             }
+        }else if (jmsMsgType.equals(JMSConstants.BYTES_MESSAGE)){
+            // Check textPart
+            String bytesPart = target.getBytesPart();
+            if (bytesPart == null || bytesPart.length() == 0) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("JMSMessage.BYTES_MESSAGE_BYTESPART_NOT_SPECIFIED",
+                                   new Object[] {bindingOp.getName(),
+                                                 (opParam instanceof Input)? "input":"output",
+                                                 opParam.getName()})));                
+            } else {
+                // make sure textPart references a vald wsdl message part
+                if (!referencesValidMessagePart(opParam.getMessage(), bytesPart)) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("JMSMessage.TEXT_PART_REFERENCES_NON_EXISTENT_PART",
+                                       new Object[] {bindingOp.getName(),
+                                                     (opParam instanceof Input)? "input":"output",
+                                                     opParam.getName(),
+                                                     bytesPart,
+                                                     opParam.getMessage().getQName()})));                    
+                }
+            }
+        	
         } else {
             results.add(new Validator.ResultItem(this,
                     Validator.ResultType.ERROR,
@@ -982,6 +1076,7 @@ public class JMSComponentValidator
                                              (opParam instanceof Input)? "input":"output",
                                              opParam.getName(),
                                              jmsMsgType})));            
+        }
         }
         
         // check jms:properties

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,14 +66,11 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.DocumentModelAccessProvider;
 import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -87,24 +87,29 @@ public class ReadOnlyAccess extends DocumentModelAccess {
     public ReadOnlyAccess(AbstractDocumentModel model) {
         this.model = model;
     }
-    
+
+    @Override
     public AbstractDocumentModel getModel() {
         return model;
     }
-    
+
+    @Override
     public void setPrefix(Element node, String prefix) {
         throw new UnsupportedOperationException("setPrefix access not supported.");
     }
-    
+
+    @Override
     public List<Element> getPathFromRoot(Document root, Element node) {
         // mainly for merge sync, not needed
         throw new UnsupportedOperationException("getPathFromRoot access not supported.");
     }
-    
+
+    @Override
     public String getXPath(Document root, Element node) {
         throw new UnsupportedOperationException("getXPath access not supported.");
     }
-    
+
+    @Override
     public Map<QName, String> getAttributeMap(Element element) {
         Map<QName,String> qValues = new HashMap<QName,String>();
         NamedNodeMap attributes = element.getAttributes();
@@ -124,10 +129,12 @@ public class ReadOnlyAccess extends DocumentModelAccess {
                 XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getName());
     }
     
+    @Override
     public Element duplicate(Element element) {
         throw new UnsupportedOperationException("getXPath access not supported.");
     }
     
+    @Override
     public String getXmlFragment(Element element) {
         String fragment = getXmlFragmentInclusive(element);
         if (fragment.endsWith("/>")) {
@@ -143,22 +150,27 @@ public class ReadOnlyAccess extends DocumentModelAccess {
         return fragment.substring(start, end);
     }
     
+    @Override
     public void setXmlFragment(Element element, String text, DocumentModelAccess.NodeUpdater updater) throws IOException {
         throw new UnsupportedOperationException("setXmlFragment access not supported.");
     }
     
+    @Override
     public void setText(Element element, String val, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("setText access not supported.");
     }
     
+    @Override
     public void removeAttribute(Element element, String name, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("removeAttribute access not supported.");
     }
     
+    @Override
     public void setAttribute(Element element, String name, String value, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("setAttribute access not supported.");
     }
-    
+
+    @Override
     public int findPosition(Node node) {
         Element root = ((DocumentComponent) model.getRootComponent()).getPeer();
         javax.swing.text.Document doc = model.getBaseDocument();
@@ -252,20 +264,24 @@ public class ReadOnlyAccess extends DocumentModelAccess {
         }
         return -1;
     }
-    
+
+    @Override
     public int getElementIndexOf(Node parent, Element child) {
         // only needed for sync merge
         throw new UnsupportedOperationException("getElementIndexOf access not supported.");
     }
-    
+
+    @Override
     public List<Node> findNodes(Document root, String xpath) {
         throw new UnsupportedOperationException("findNodes access not supported.");
     }
-    
+
+    @Override
     public Node findNode(Document root, String xpath) {
         throw new UnsupportedOperationException("findNode access not supported.");
     }
-    
+
+    @Override
     public Element getContainingElement(int position) {
         try {
             javax.swing.text.Document swingDoc = model.getBaseDocument();
@@ -331,31 +347,38 @@ public class ReadOnlyAccess extends DocumentModelAccess {
         }
         return null;
     }
-    
+
+    @Override
     public void addUndoableEditListener(UndoableEditListener listener) {
         throw new UnsupportedOperationException("addUndoableEditListener access not supported.");
     }
-    
+
+    @Override
     public void removeUndoableEditListener(UndoableEditListener listener) {
         throw new UnsupportedOperationException("removeUndoableEditListener access not supported.");
     }
-    
+
+    @Override
     public void appendChild(Node node, Node newChild, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("appendChild access not supported.");
     }
-    
+
+    @Override
     public void insertBefore(Node node, Node newChild, Node refChild, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("insertBefore access not supported.");
     }
-    
+
+    @Override
     public void removeChild(Node node, Node child, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("removeChild access not supported.");
     }
-    
+
+    @Override
     public void replaceChild(Node node, Node child, Node newChild, DocumentModelAccess.NodeUpdater updater) {
         throw new UnsupportedOperationException("replaceChild access not supported.");
     }
     
+    @Override
     public Model.State sync() throws IOException {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -387,59 +410,72 @@ public class ReadOnlyAccess extends DocumentModelAccess {
             throw ioe;
         }
     }
-    
+
+    @Override
     public ElementIdentity getElementIdentity() {
         throw new UnsupportedOperationException("getElementIdentity access not supported.");
     }
-    
+
+    @Override
     public Document getDocumentRoot() {
         return rootDoc;
     }
-    
+
+    @Override
     public void flush() {
         //NOOP
     }
-    
+
+    @Override
     public void finishUndoRedo() {
         throw new UnsupportedOperationException("finishUndoRedo access not supported.");
     }
-    
+
+    @Override
     public boolean areSameNodes(Node n1, Node n2) {
         return n1.equals(n2);
     }
-    
+
+    @Override
     public void prepareForUndoRedo() {
         throw new UnsupportedOperationException("prepareForUndoRedo access not supported.");
     }
-    
+
+    @Override
     public void addMergeEventHandler(PropertyChangeListener l) {
         //NOT SUPPORTED
     }
-    
+
+    @Override
     public void removeMergeEventHandler(PropertyChangeListener l) {
         //NOT SUPPORTED
     }
-    
+
+    @Override
     public Node getOldEventParentNode(PropertyChangeEvent evt) {
         //NOT SUPPORTED
         return null;
     }
-    
+
+    @Override
     public Node getOldEventNode(PropertyChangeEvent evt) {
         //NOT SUPPORTED
         return null;
     }
-    
+
+    @Override
     public Node getNewEventParentNode(PropertyChangeEvent evt) {
         //NOT SUPPORTED
         return null;
     }
-    
+
+    @Override
     public Node getNewEventNode(PropertyChangeEvent evt) {
         //NOT SUPPORTED
         return null;
     }
-    
+
+    @Override
     public String normalizeUndefinedAttributeValue(String value) {
         return "".equals(value) ? null : value; //NOI18N
     }
@@ -455,11 +491,13 @@ public class ReadOnlyAccess extends DocumentModelAccess {
             }
             return instance;
         }
-        
+
+        @Override
         public DocumentModelAccess createModelAccess(AbstractDocumentModel model) {
             return new ReadOnlyAccess(model);
         }
-        
+
+        @Override
         public javax.swing.text.Document loadSwingDocument(InputStream in)
         throws IOException, BadLocationException {
             
@@ -475,7 +513,8 @@ public class ReadOnlyAccess extends DocumentModelAccess {
             }
             return sd;
         }
-        
+
+        @Override
         public Object getModelSourceKey(ModelSource source) {
             return source.getLookup().lookup(File.class);
         }

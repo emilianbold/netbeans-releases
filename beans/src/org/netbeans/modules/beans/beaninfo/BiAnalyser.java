@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -153,6 +156,7 @@ public final class BiAnalyser {
     private int defaultEventIndex = -1;
     private boolean useSuperClass = false;
     private boolean isModified = false;
+    private boolean isIconModified = false;
     private boolean isUpdateMode;
     private boolean isBeanBroken;
     
@@ -284,7 +288,7 @@ public final class BiAnalyser {
 
     public void setIconC16(String iconC16) {
         this.iconC16 = iconC16;
-        setModified();
+        setIconModified();
     }
 
     public String getIconM16() {
@@ -293,7 +297,7 @@ public final class BiAnalyser {
 
     public void setIconM16(String iconM16) {
         this.iconM16 = iconM16;
-        setModified();
+        setIconModified();
     }
 
     public String getIconC32() {
@@ -302,7 +306,7 @@ public final class BiAnalyser {
 
     public void setIconC32(String iconC32) {
         this.iconC32 = iconC32;
-        setModified();
+        setIconModified();
     }
 
     public String getIconM32() {
@@ -311,7 +315,7 @@ public final class BiAnalyser {
 
     public void setIconM32(String iconM32) {
         this.iconM32 = iconM32;
-        setModified();
+        setIconModified();
     }
 
     public int getDefaultPropertyIndex() {
@@ -460,6 +464,7 @@ public final class BiAnalyser {
                     regenerateDefaultIdx();
                     regenerateSuperclass();
                     isModified = false;
+                    isIconModified = false;
                 }
         } );
     }
@@ -848,7 +853,7 @@ public final class BiAnalyser {
     }
 
     private boolean iconBlockRequired(){
-        return (iconC16 != null | iconC32 != null | iconM16 != null | iconM32 != null);
+        return (iconC16 != null | iconC32 != null | iconM16 != null | iconM32 != null | isIconModified);
     }
     
     private static String getIconDeclaration( String name, String resource ) {
@@ -1183,8 +1188,15 @@ public final class BiAnalyser {
         sb.append(NOI18N_COMMENT);
     }
     
+    void setIconModified() {
+        if (isUpdateMode && !isIconModified) {
+            isIconModified = true;
+            setModified();
+        }
+    }
+
     void setModified() {
-        if (isUpdateMode) {
+        if (isUpdateMode && !isModified) {
             this.isModified = true;
             BIEditorSupport editor = this.bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
             editor.notifyModified();

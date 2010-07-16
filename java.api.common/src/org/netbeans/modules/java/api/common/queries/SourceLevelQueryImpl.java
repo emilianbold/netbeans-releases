@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,11 +43,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -54,7 +53,8 @@ import org.openide.filesystems.FileObject;
  * Returns source level of project Java source files.
  * @author David Konecny
  */
-class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
+@SuppressWarnings("deprecation")
+class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQueryImplementation {
 
     private final PropertyEvaluator evaluator;
 
@@ -64,16 +64,21 @@ class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         this.evaluator = evaluator;
     }
     
+    @Override
     public String getSourceLevel(FileObject javaFile) {
-        final String activePlatform = evaluator.getProperty("platform.active"); //NOI18N
+        return findSourceLevel(evaluator);
+    }
+
+    static String findSourceLevel (final PropertyEvaluator eval) {
+        final String activePlatform = eval.getProperty("platform.active"); //NOI18N
         if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = evaluator.getProperty("javac.source"); //NOI18N
+            String sl = eval.getProperty("javac.source"); //NOI18N
             if (sl != null && sl.length() > 0) {
                 return sl;
             }
             return null;
         }
-        
+
         EditableProperties props = PropertyUtils.getGlobalProperties();
         String sl = props.get("default.javac.source"); //NOI18N
         if (sl != null && sl.length() > 0) {

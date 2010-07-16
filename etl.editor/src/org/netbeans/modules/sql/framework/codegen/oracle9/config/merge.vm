@@ -1,4 +1,5 @@
 #set( $indent = "    " )
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/disableConstraints.vm")
 MERGE INTO $targetTable  
 USING (
 #set( $totalColumns = $sourceColumnIdentifiers.size())
@@ -48,3 +49,4 @@ ${indent}${indent}$vColumn.getAliasName()#if($valueCounter < $totalValueColumns)
 #set( $valueCounter = $valueCounter + 1)
 #end
 ${indent})
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/enableConstraints.vm")

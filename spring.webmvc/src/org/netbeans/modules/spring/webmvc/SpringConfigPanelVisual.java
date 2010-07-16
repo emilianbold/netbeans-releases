@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,15 @@
 
 package org.netbeans.modules.spring.webmvc;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -53,7 +63,10 @@ import org.openide.util.ChangeSupport;
  * @author Craig MacKay
  */
 public class SpringConfigPanelVisual extends javax.swing.JPanel {
-    
+
+    private boolean libsInitialized = false;
+    private List<SpringLibrary> springLibs = new ArrayList<SpringLibrary>();
+    private SpringLibrary springLibrary;
     private final SpringWebModuleExtender extender;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DocumentListener docListener = new DocumentListener() {
@@ -82,6 +95,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         // Only add the listener at the end to make sure no events are
         // fired while initializing the UI.
         changeSupport.addChangeListener(extender);
+        initLibraries();
     }
 
     @Override
@@ -90,6 +104,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameText.setEnabled(enabled);
         dispatcherMappingText.setEnabled(enabled);
         includeJstlCheckBox.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
         super.setEnabled(enabled);
     }
     
@@ -118,15 +134,67 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     private void initComponents() {
 
         tabbedPanel = new javax.swing.JTabbedPane();
+        libPanel = new javax.swing.JPanel();
+        includeJstlCheckBox = new javax.swing.JCheckBox();
+        springVersionLabel = new javax.swing.JLabel();
+        cbSpringVersion = new javax.swing.JComboBox();
         standardPanel = new javax.swing.JPanel();
         dispatcherNameText = new javax.swing.JTextField();
         dispatcherNameLabel = new javax.swing.JLabel();
         dispatcherMappingLabel = new javax.swing.JLabel();
         dispatcherMappingText = new javax.swing.JTextField();
-        libPanel = new javax.swing.JPanel();
-        includeJstlCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
+
+        libPanel.setAlignmentX(0.2F);
+        libPanel.setAlignmentY(0.2F);
+
+        org.openide.awt.Mnemonics.setLocalizedText(includeJstlCheckBox, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_IncludeJstl")); // NOI18N
+        includeJstlCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                includeJstlCheckBoxActionPerformed(evt);
+            }
+        });
+
+        springVersionLabel.setLabelFor(cbSpringVersion);
+        org.openide.awt.Mnemonics.setLocalizedText(springVersionLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.springVersionLabel.text")); // NOI18N
+
+        cbSpringVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Library found" }));
+        cbSpringVersion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbSpringVersionActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
+        libPanel.setLayout(libPanelLayout);
+        libPanelLayout.setHorizontalGroup(
+            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(libPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(libPanelLayout.createSequentialGroup()
+                        .add(springVersionLabel)
+                        .add(18, 18, 18)
+                        .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(includeJstlCheckBox))
+                .addContainerGap(330, Short.MAX_VALUE))
+        );
+        libPanelLayout.setVerticalGroup(
+            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(libPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(springVersionLabel)
+                    .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(includeJstlCheckBox)
+                .addContainerGap(301, Short.MAX_VALUE))
+        );
+
+        includeJstlCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.includeJstlCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(dispatcherNameLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
 
@@ -143,8 +211,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .add(dispatcherMappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -158,41 +226,10 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dispatcherMappingLabel)
                     .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(334, Short.MAX_VALUE))
+                .addContainerGap(308, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
-
-        libPanel.setAlignmentX(0.2F);
-        libPanel.setAlignmentY(0.2F);
-
-        org.openide.awt.Mnemonics.setLocalizedText(includeJstlCheckBox, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_IncludeJstl")); // NOI18N
-        includeJstlCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                includeJstlCheckBoxActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
-        libPanel.setLayout(libPanelLayout);
-        libPanelLayout.setHorizontalGroup(
-            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(libPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(includeJstlCheckBox)
-                .addContainerGap(506, Short.MAX_VALUE))
-        );
-        libPanelLayout.setVerticalGroup(
-            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(libPanelLayout.createSequentialGroup()
-                .add(15, 15, 15)
-                .add(includeJstlCheckBox)
-                .addContainerGap(351, Short.MAX_VALUE))
-        );
-
-        includeJstlCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.includeJstlCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-
-        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
 
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
         tabbedPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.tabbedPanel.AccessibleContext.accessibleName")); // NOI18N
@@ -202,6 +239,10 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         fireChange();
     }//GEN-LAST:event_includeJstlCheckBoxActionPerformed
 
+    private void cbSpringVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSpringVersionActionPerformed
+        springLibrary = springLibs.get(cbSpringVersion.getSelectedIndex());
+    }//GEN-LAST:event_cbSpringVersionActionPerformed
+
     public void enableComponents(boolean enabled) {
         standardPanel.setEnabled(enabled);
         dispatcherMappingLabel.setEnabled(enabled);
@@ -209,17 +250,79 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameLabel.setEnabled(enabled);
         dispatcherNameText.setEnabled(enabled);
         tabbedPanel.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cbSpringVersion;
     private javax.swing.JLabel dispatcherMappingLabel;
     private javax.swing.JTextField dispatcherMappingText;
     private javax.swing.JLabel dispatcherNameLabel;
     private javax.swing.JTextField dispatcherNameText;
     private javax.swing.JCheckBox includeJstlCheckBox;
     private javax.swing.JPanel libPanel;
+    private javax.swing.JLabel springVersionLabel;
     private javax.swing.JPanel standardPanel;
     private javax.swing.JTabbedPane tabbedPanel;
     // End of variables declaration//GEN-END:variables
-    
+
+    public Library getSpringLibrary() {
+        return springLibrary.getLibrary();
+    }
+
+    public String getSpringLibraryVersion() {
+        return springLibrary.getVersion();
+    }
+
+    /**
+     *
+     */
+    private void initLibraries() {
+        if (libsInitialized)
+            return;
+        Vector<String> items = new Vector<String>();
+        springLibs.clear();
+
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (SpringUtilities.isSpringLibrary(library)) {
+                items.add(library.getDisplayName());
+                springLibs.add(new SpringLibrary(library));
+            }
+        }
+        cbSpringVersion.setModel(new DefaultComboBoxModel(items));
+        int selectedIndex = cbSpringVersion.getSelectedIndex();
+        if (selectedIndex < springLibs.size()) {
+            springLibrary = springLibs.get(selectedIndex);
+            libsInitialized = true;
+            repaint();
+        }
+    }
+
+    private class SpringLibrary {
+
+        private Library springLibrary;
+        private String version;
+
+        public SpringLibrary(Library springLibrary) {
+            this.springLibrary = springLibrary;
+        }
+
+        public String getVersion() {
+            if (version == null) {
+                version = SpringUtilities.getSpringLibraryVersion(springLibrary);
+            }
+            return version;
+        }
+
+        public Library getLibrary() {
+            return springLibrary;
+        }
+
+        @Override
+        public String toString() {
+            return springLibrary.getDisplayName();
+        }
+
+    }
 }

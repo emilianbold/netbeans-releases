@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -343,6 +346,82 @@ made subject to such option by the copyright holder.
         </description>
         <class package="org.netbeans.api.debugger" name="Properties" />
         <issue number="158907"/>
+    </change>
+
+     <change id="WatchesReordering">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for changing the order of watches.</summary>
+        <version major="1" minor="22"/>
+        <date day="15" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             createWatch(int index, String expr) and reorderWatches(int[] permutation)
+             methods added to DebuggerManager class.<br/>
+             These methods are going to be called from WatchesTreeModel when
+             watches are reordered.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="DebuggerManager" />
+        <issue number="178301"/>
+    </change>
+
+    <change id="LazyActionRegistration">
+        <api name="DebuggerCoreAPI"/>
+        <summary>A declarative mechanism to delay creation of action provider instance until a file with specific MIME type becomes active.</summary>
+        <version major="1" minor="23"/>
+        <date day="11" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             ActionsProvider.Registration annotation is enhanced with two additional
+             methods actions() and activateForMIMETypes(). Until a file with the
+             listed MIME type is selected in the IDE, the appropriate actions provider
+             is left disabled for the given list of actions, without instantiating the
+             implementation class.
+             </p>
+        </description>
+        <class package="org.netbeans.spi.debugger" name="ActionsProvider" />
+        <issue number="177561"/>
+    </change>
+
+    <change id="AddWatchActionProvider">
+        <api name="DebuggerCoreAPI"/>
+        <summary>It's possible to override New Watch action with a session-specific provider.</summary>
+        <version major="1" minor="24"/>
+        <date day="23" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             ActionsManager.ACTION_NEW_WATCH constant was added for use by session-specific
+             provider of New Watch action. That action invokes an implementation
+             of ActionsProvider that is registered for the active debugger session
+             and contains ActionsManager.ACTION_NEW_WATCH action.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="ActionsManager" />
+        <issue number="180558"/>
+    </change>
+    
+    <change id="BreakpointsGrouping">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Breakpoints group properties.</summary>
+        <version major="1" minor="25"/>
+        <date day="28" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Add Breakpoint.getGroupProperties() method, that returns an implementation
+             of GroupProperties class with the relevant grouping information
+             used by BreakpointsWindow to create hierarchy of breakpoint groups
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Breakpoint" />
+        <issue number="179759"/>
     </change>
 
 </changes>

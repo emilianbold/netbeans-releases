@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -146,14 +150,18 @@ public class SwitcherTable extends JTable {
         boolean selected = row == getSelectedRow() &&
                 column == getSelectedColumn() && item != null;
         
-        DefaultTableCellRenderer ren = (DefaultTableCellRenderer)
-        renderer.getTableCellRendererComponent(this, item,
+        Component ren = renderer.getTableCellRendererComponent(this, item,
                 selected, selected, row, column);
+        JLabel lbl = null;
+        if( ren instanceof JLabel )
+            lbl = (JLabel) ren;
         
         if (item == null) {
             // it's a filler space, we're done
-            ren.setOpaque(false);
-            ren.setIcon(null);
+            if( null != lbl ) {
+                lbl.setOpaque(false);
+                lbl.setIcon(null);
+            }
             return ren;
         }
         
@@ -162,14 +170,17 @@ public class SwitcherTable extends JTable {
             icon = nullIcon;
         }
         boolean active = item.isActive();
-        ren.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
-        ren.setIcon(icon);
-        ren.setBorder(rendererBorder);
-        ren.setIconTextGap(26 - icon.getIconWidth());
+        if( null != lbl ) {
+            lbl.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+            lbl.setIcon(icon);
+            lbl.setBorder(rendererBorder);
+            lbl.setIconTextGap(26 - icon.getIconWidth());
+        }
         
         if (active) {
             if (TABNAMES_HTML) {
-                ren.setText(ren.getText() + " ←"); // NOI18N
+                if( null != lbl )
+                    lbl.setText(lbl.getText() + " ←"); // NOI18N
             } else if (Utilities.isWindows()) {
                 ren.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
             } else {
@@ -177,8 +188,9 @@ public class SwitcherTable extends JTable {
                 ren.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
             }
         }
-        
-        ren.setOpaque(true);
+
+        if( null != lbl )
+            lbl.setOpaque(true);
         
         return ren;
     }

@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.soa.mappercore.graphics;
 
-import org.netbeans.modules.soa.mappercore.*;
-
 /**
  *
  * @author anjeleevich

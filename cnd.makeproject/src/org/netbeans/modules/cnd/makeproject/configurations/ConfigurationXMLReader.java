@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,9 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Vector;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -72,7 +77,9 @@ import org.xml.sax.Attributes;
 public class ConfigurationXMLReader extends XMLDocReader {
 
     private static int DEPRECATED_VERSIONS = 26;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private FileObject projectDirectory;
+    private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
@@ -103,7 +110,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         }
         String path = FileUtil.toFile(projectDirectory).getPath();
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
-        Task task = RequestProcessor.getDefault().post(new NamedRunnable("Reading project configuraion") { //NOI18N
+        Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected @Override void runImpl() {
                 try {
@@ -170,7 +177,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)
         Item[] projectItems = configurationDescriptor.getProjectItems();
-        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
                     configuration.addAuxObject(new ItemConfiguration(configuration, item));
@@ -178,17 +185,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         }
 
-        // Attach listeners to all disk folders
-        boolean currentState = configurationDescriptor.getModified();
-        Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
-        for (Folder f : firstLevelFolders) {
-            if (f.isDiskFolder()) {
-                f.refreshDiskFolder();
-                f.attachListeners();
-            }
-        }
-        configurationDescriptor.setModified(currentState);
-
+        attachListeners(configurationDescriptor);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -202,6 +199,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName()); // NOI18N
             Runnable warning = new Runnable() {
 
+                @Override
                 public void run() {
                     NotifyDescriptor nd = new NotifyDescriptor(message,
                             NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
@@ -209,7 +207,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             null, NotifyDescriptor.YES_OPTION);
                     Object ret = DialogDisplayer.getDefault().notify(nd);
                     if (ret == NotifyDescriptor.YES_OPTION) {
-                        configurationDescriptor.setModified(true);
+                        configurationDescriptor.setModified();
                     }
                 }
             };
@@ -230,25 +228,62 @@ public class ConfigurationXMLReader extends XMLDocReader {
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
     }
 
+    // Attach listeners to all disk folders
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
+        Task task = REQUEST_PROCESSOR.post(new Runnable() {
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Start attach folder listeners");
+                String oldName = Thread.currentThread().getName();
+                try {
+                    //boolean currentState = configurationDescriptor.getModified();
+                    Thread.currentThread().setName("Attach listeners to all disk folders"); // NOI18N
+                    List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+                    for (Folder f : firstLevelFolders) {
+                        if (f.isDiskFolder()) {
+                            // need to set modified descriptor for store new/deleted items in the folder
+                            f.refreshDiskFolder(true);
+                            f.attachListeners();
+                        }
+                    }
+                    //configurationDescriptor.setModified(currentState);
+                    LOGGER.log(Level.FINE, "End attach folder listeners, time {0}ms.", (System.currentTimeMillis() - time));
+                } finally {
+                    // restore thread name - it might belong to the pool
+                    Thread.currentThread().setName(oldName);
+                }
+            }
+        });
+        // Refresh disk folders in background process
+        // revert changes bacause opening project time is increased.
+        //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
+    }
+
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
         return null;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String name, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String name, String currentText) {
     }
 }

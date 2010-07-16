@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,20 +52,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -70,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
@@ -104,10 +105,13 @@ public class ProjectBridge {
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
-        String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
-        workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-        project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
+        String prjName = "DiscoveryProject"; // NOI18N
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, baseFolder);// NOI18N
+        prjParams.setOpenFlag(true).setConfiguration(extConf);
+        project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -134,8 +138,8 @@ public class ProjectBridge {
     public Item getProjectItem(String path){
         Item item = makeConfigurationDescriptor.findProjectItemByPath(path);
         if (item == null){
-            if (!IpeUtils.isPathAbsolute(path)) {
-                path = IpeUtils.toAbsolutePath(baseFolder, path);
+            if (!CndPathUtilitities.isPathAbsolute(path)) {
+                path = CndPathUtilitities.toAbsolutePath(baseFolder, path);
             }
             item = findByCanonicalName(path);
         }
@@ -196,13 +200,13 @@ public class ProjectBridge {
             MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             switch(itemConfiguration.getTool()) {
-                case Tool.CCCompiler:
+                case CCCompiler:
                     itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
                     break;
-                case Tool.CCompiler:
+                case CCompiler:
                     itemConfiguration.setCCompilerConfiguration(conf.getCCompilerConfiguration());
                     break;
-                case Tool.CustomTool:
+                case CustomTool:
                     itemConfiguration.setCustomToolConfiguration(conf.getCustomToolConfiguration());
                     break;
             }
@@ -219,9 +223,9 @@ public class ProjectBridge {
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        path = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
+        path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
-        path = FilePathAdaptor.normalize(path);
+        path = CndPathUtilitities.normalize(path);
         return path;
     }
     
@@ -282,9 +286,8 @@ public class ProjectBridge {
     
     public Folder getRoot(){
         Folder folder = makeConfigurationDescriptor.getLogicalFolders();
-        Vector sources = folder.getFolders();
-        for (Object o : sources){
-            Folder sub = (Folder)o;
+        List<Folder> sources = folder.getFolders();
+        for (Folder sub : sources){
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
                     return sub;
@@ -298,60 +301,54 @@ public class ProjectBridge {
         makeConfigurationDescriptor.save();
     }
     
-    public Set getResult(){
-        if (SwingUtilities.isEventDispatchThread()) {
-            makeConfigurationDescriptor.checkForChangedItems(project, null, null);
-        } else {
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run() {
-                    makeConfigurationDescriptor.checkForChangedItems(project, null, null);
-                }
-            });
-        }
+    public Set<Project> getResult(){
+        makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         return resultSet;
     }
     
-    public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
-        Configuration c = makeConfigurationDescriptor.getActiveConfiguration();
-        if (c instanceof MakeConfiguration) {
+    public void setupProject(List<String> includes, List<String> macros, ItemProperties.LanguageKind lang){
+        MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
+        if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
                 includes.set(i, getString(includes.get(i)));
             }
             for(int i = 0; i < macros.size(); i++) {
                 macros.set(i, getString(macros.get(i)));
             }
-            MakeConfiguration extConf = (MakeConfiguration)c;
-            if (isCPP) {
+            if (lang == ItemProperties.LanguageKind.CPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
-            } else {
+            } else if (lang == ItemProperties.LanguageKind.C) {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
+            } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                // not supported includes and macros
             }
         }
         makeConfigurationDescriptor.setModified();
     }
 
-    public CCCCompilerConfiguration getFolderConfiguration(boolean isCPP, Folder folder) {
+    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
         MakeConfiguration makeConfiguration = folder.getConfigurationDescriptor().getActiveConfiguration();
         //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
         FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
         if (folderConfiguration == null) {
             return null;
         }
-        if (isCPP) {
+        if (lang == ItemProperties.LanguageKind.CPP) {
             return folderConfiguration.getCCCompilerConfiguration();
-        } else {
+        } else if (lang == ItemProperties.LanguageKind.C) {
             return folderConfiguration.getCCompilerConfiguration();
         }
+        return null;
     }
 
-    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, boolean isCPP, Folder folder) {
-        CCCCompilerConfiguration cccc = getFolderConfiguration(isCPP, folder);
+    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, ItemProperties.LanguageKind lang, Folder folder) {
+        CCCCompilerConfiguration cccc = getFolderConfiguration(lang, folder);
         if (cccc == null) {
             return;
         }
@@ -386,24 +383,28 @@ public class ProjectBridge {
         if (itemConfiguration == null) {
             return;
         }
-        if (itemConfiguration.getTool() == Tool.CCCompiler || itemConfiguration.getTool() == Tool.CCompiler) {
-            itemConfiguration.setTool(Tool.CustomTool);
+        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler || itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+            itemConfiguration.setTool(PredefinedToolKind.CustomTool);
         }
     }
 
-    public void setSourceTool(Item item, boolean isCPP){
+    public void setSourceTool(Item item, ItemProperties.LanguageKind lang){
         MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
         }
-        if (isCPP) {
-            if (itemConfiguration.getTool() != Tool.CCCompiler) {
-                itemConfiguration.setTool(Tool.CCCompiler);
+        if (lang == ItemProperties.LanguageKind.CPP) {
+            if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
             }
-        } else {
-            if (itemConfiguration.getTool() != Tool.CCompiler) {
-                itemConfiguration.setTool(Tool.CCompiler);
+        } else if (lang == ItemProperties.LanguageKind.C) {
+            if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+            }
+        } else if (lang == ItemProperties.LanguageKind.Fortran) {
+            if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
             }
         }
     }
@@ -499,7 +500,8 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
-        return CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        final ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        return CompilerSetManager.get(env).getCompilerSets().get(makeConfiguration.getCompilerSet().getValue());
     }
 
     public String getCygwinDrive(){
@@ -530,11 +532,11 @@ public class ProjectBridge {
         if (systemIncludePaths == null) {
             systemIncludePaths = new ArrayList<String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -576,11 +578,11 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;

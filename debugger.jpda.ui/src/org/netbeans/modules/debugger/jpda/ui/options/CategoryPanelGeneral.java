@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,6 +80,7 @@ class CategoryPanelGeneral extends StorablePanel {
         breakpointsSuspendComboBox = new javax.swing.JComboBox();
         stepsResumeComboBox = new javax.swing.JComboBox();
         openDebuggerConsoleCheckBox = new javax.swing.JCheckBox();
+        reuseTabsCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(stopOnExceptionsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.stopOnExceptionsCheckBox.text")); // NOI18N
 
@@ -94,6 +98,8 @@ class CategoryPanelGeneral extends StorablePanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(openDebuggerConsoleCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.openDebuggerConsoleCheckBox.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(reuseTabsCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelGeneral.class, "CategoryPanelGeneral.reuseTabsCheckBox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -101,6 +107,7 @@ class CategoryPanelGeneral extends StorablePanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(reuseTabsCheckBox)
                     .add(stopOnExceptionsCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -130,7 +137,9 @@ class CategoryPanelGeneral extends StorablePanel {
                     .add(stepsResumeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(openDebuggerConsoleCheckBox)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(reuseTabsCheckBox)
+                .addContainerGap(130, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -143,6 +152,7 @@ class CategoryPanelGeneral extends StorablePanel {
         breakpointsSuspendComboBox.setSelectedIndex(suspendIndex(p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD)));
         stepsResumeComboBox.setSelectedIndex(resumeIndex(p.getInt("StepResume", 1)));
         openDebuggerConsoleCheckBox.setSelected(p.getBoolean("OpenDebuggerConsole", true));
+        reuseTabsCheckBox.setSelected(p.getBoolean("ReuseEditorTabs", true));
     }
 
     @Override
@@ -154,6 +164,7 @@ class CategoryPanelGeneral extends StorablePanel {
         p.setInt("BreakpointSuspend", suspendProp(breakpointsSuspendComboBox.getSelectedIndex()));
         p.setInt("StepResume", resumeProp(stepsResumeComboBox.getSelectedIndex()));
         p.setBoolean("OpenDebuggerConsole", openDebuggerConsoleCheckBox.isSelected());
+        p.setBoolean("ReuseEditorTabs", reuseTabsCheckBox.isSelected());
     }
 
     private static int suspendIndex(int jpdaBreakpointSuspend) {
@@ -201,6 +212,7 @@ class CategoryPanelGeneral extends StorablePanel {
     private javax.swing.JComboBox breakpointsSuspendComboBox;
     private javax.swing.JLabel breakpointsSuspendLabel;
     private javax.swing.JCheckBox openDebuggerConsoleCheckBox;
+    private javax.swing.JCheckBox reuseTabsCheckBox;
     private javax.swing.JComboBox stepsResumeComboBox;
     private javax.swing.JLabel stepsResumeLabel;
     private javax.swing.JCheckBox stopOnExceptionsCheckBox;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,8 +61,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Utility methods for cluster-related tasks.
@@ -115,8 +116,7 @@ public final class ClusterUtils {
                 File parent = path.getParentFile();
                 if (parent != null) {
                     File[] alternate = parent.listFiles(new FilenameFilter() {
-
-                        public boolean accept(File dir, String name) {
+                        public @Override boolean accept(File dir, String name) {
                             Matcher am = pat.matcher(name);
                             return am.matches() && cm.group(1).equalsIgnoreCase(am.group(1));
                         }
@@ -134,6 +134,13 @@ public final class ClusterUtils {
         return path;
     }
 
+    /**
+     * Parse a binary cluster path into customizer-friendly segments.
+     * @param root a project basedir to resolve relative paths against
+     * @param eval a suite evaluator
+     * @param nbPlatformRoot Platform root used to replace ${nbplatform.active} references in the entry
+     * @return a set of cluster entries
+     */
     public static Set<ClusterInfo> evaluateClusterPath(File root, PropertyEvaluator eval, File nbPlatformRoot) {
         Set<ClusterInfo> clusterPath = new LinkedHashSet<ClusterInfo>();
         String cpp = eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY);
@@ -170,26 +177,16 @@ public final class ClusterUtils {
             boolean isPlaf = path.contains("${" + SuiteProperties.ACTIVE_NB_PLATFORM_DIR_PROPERTY + "}");
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
             Project prj = null;
-            if (! cd.exists()) {
-                // fallback for not-yet-built project clusters
-                String p2 = cd.getAbsolutePath();
-
-                int b = p2.length() - SuiteProperties.CLUSTER_DIR.length();
-                if (b >= 0) {
-                    if (SuiteProperties.CLUSTER_DIR.equals(p2.substring(b).replace(File.separatorChar, '/'))) {
-                        cd = new File(p2.substring(0, b));
-                    }
-                }
-            }
-            FileObject fo = FileUtil.toFileObject(cd);
-            if (fo != null) {
-                if (! NbPlatform.isPlatformDirectory(cd.getParentFile())) { // #168804, allow custom platforms
-                    prj = FileOwnerQuery.getOwner(fo);
-                    if (prj != null
-                            && prj.getLookup().lookup(NbModuleProvider.class) == null
-                            && prj.getLookup().lookup(SuiteProvider.class) == null) {
-                        // probably found nbbuild above the platform, use only regular NB module projects
-                        prj = null;
+            Project _prj = FileOwnerQuery.getOwner(cd.toURI());
+            if (_prj != null) {
+                // Must be actual cluster output of a suite or standalone module to qualify. See also: #168804, #180475
+                SuiteProvider prov = _prj.getLookup().lookup(SuiteProvider.class);
+                if (prov != null && cd.equals(prov.getClusterDirectory())) {
+                    prj = _prj;
+                } else {
+                    NbModuleProvider prov2 = _prj.getLookup().lookup(NbModuleProvider.class);
+                    if (prov2 != null && /* XXX is there a better way? */ cd.equals(prov2.getModuleJarLocation().getParentFile().getParentFile())) {
+                        prj = _prj;
                     }
                 }
             }

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -652,9 +655,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     continue;
                 }
                 items.add(JavaCompletionItem.createTypeItem(
-                        typeElement, (DeclaredType) typeElement.asType(),
+                        jdctx.javac, typeElement, (DeclaredType) typeElement.asType(),
                         substitutionOffset, typeName != qualTypeName,
-                        elements.isDeprecated(typeElement), false, true));
+                        elements.isDeprecated(typeElement), false, false, false, true));
             }
         }
 
@@ -792,13 +795,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM_CONSTANT:
                 case FIELD:
                     TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
-                    items.add(JavaCompletionItem.createVariableItem((VariableElement) e, tm, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
                     ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
 //                    items.add(JavaCompletionItem.createExecutableItem((ExecutableElement) e, et, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, /*isOfSmartType(env, et.getReturnType(), smartTypes)*/false));
-                    items.add(JavadocCompletionItem.createExecutableItem((ExecutableElement) e, et, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
+                    items.add(JavadocCompletionItem.createExecutableItem(controller, (ExecutableElement) e, et, substitutionOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e)));
                     break;
 //                case CLASS:
 //                case ENUM:
@@ -898,18 +901,18 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
-                    items.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/));
                     break;
                 case FIELD:
                     String name = e.getSimpleName().toString();
                     TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                    items.add(JavaCompletionItem.createVariableItem((VariableElement)e, tm, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
                     ExecutableType et = (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
 //                    items.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, false/*isOfSmartType(env, et.getReturnType(), smartTypes)*/));
-                    items.add(JavadocCompletionItem.createExecutableItem((ExecutableElement) e, et, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
+                    items.add(JavadocCompletionItem.createExecutableItem(controller, (ExecutableElement) e, et, substitutionOffset, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e)));
                     break;
             }
         }
@@ -942,7 +945,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 for(DeclaredType subtype : getSubtypesOf(baseType, prefix, jdctx)) {
                     TypeElement elem = (TypeElement)subtype.asElement();
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                        items.add(JavaCompletionItem.createTypeItem(elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false));
+                        items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, false));
                 }
             }
         } else {
@@ -979,7 +982,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM:
                 case INTERFACE:
                 case ANNOTATION_TYPE:
-                    items.add(JavadocCompletionItem.createTypeItem((TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)));
+                    items.add(JavadocCompletionItem.createTypeItem(env.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)));
                     break;
             }                
         }
@@ -994,7 +997,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }
         };
         for (TypeElement e : controller.getElementUtilities().getGlobalTypes(acceptor)) {
-            items.add(JavadocCompletionItem.createTypeItem(e, substitutionOffset, false, elements.isDeprecated(e)));
+            items.add(JavadocCompletionItem.createTypeItem(env.javac, e, substitutionOffset, false, elements.isDeprecated(e)));
         }
     }
 
@@ -1009,7 +1012,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if (!isAnnonInner(name)) {
-                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false));
+                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false, false));
             }
         }
     }
@@ -1025,7 +1028,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             if (e.getKind().isClass() || e.getKind().isInterface()) {
                 String name = e.getSimpleName().toString();
                     if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
-                        items.add(JavadocCompletionItem.createTypeItem((TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
+                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }
         }
@@ -1045,7 +1048,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         && trees.isAccessible(scope, (TypeElement)e)
                         && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
                         && !Utilities.isExcluded(Utilities.getElementName(e, true))) {
-                        items.add(JavadocCompletionItem.createTypeItem((TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
+                        items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }
         }

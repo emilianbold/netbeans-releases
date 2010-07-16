@@ -96,7 +96,7 @@ public class ActivatedNodesMediator
                 }
             }
             nodesHack.set(list, null);
-	    updateExplorerManager(list.toArray(new Node[list.size()]));
+            updateExplorerManager(list.toArray(new Node[list.size()]));
         } finally {
             propertyChanging = false;
         }

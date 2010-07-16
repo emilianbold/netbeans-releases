@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,10 +55,11 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,14 +137,17 @@ public class AddTableColumnDialog extends JPanel {
         add(colnamefield, con);
         DocumentListener docListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateState();
             }
@@ -152,7 +159,7 @@ public class AddTableColumnDialog extends JPanel {
         sizelesstypes = (Collection) spe.getProperties().get("SizelessTypes"); // NOI18N
 
         Map tmap = spe.getTypeMap();
-        Vector<TypeElement> ttab = new Vector<TypeElement>(tmap.size());
+        List<TypeElement> ttab = new ArrayList<TypeElement>(tmap.size());
         Iterator iter = tmap.keySet().iterator();
         while (iter.hasNext()) {
             String iterkey = (String) iter.next();
@@ -161,7 +168,7 @@ public class AddTableColumnDialog extends JPanel {
         }
 
         ColumnItem item = new ColumnItem();
-        item.setProperty(ColumnItem.TYPE, ttab.elementAt(0));
+        item.setProperty(ColumnItem.TYPE, ttab.get(0));
         dmodel.addRow(item);
 
         label = new JLabel();
@@ -187,9 +194,10 @@ public class AddTableColumnDialog extends JPanel {
         con.insets = new java.awt.Insets(12, 12, 0, 0);
         con.weightx = 1.0;
         con.weighty = 0.0;
-        coltypecombo = new JComboBox(ttab);
+        coltypecombo = new JComboBox(ttab.toArray());
         coltypecombo.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateState();
             }
@@ -309,6 +317,7 @@ public class AddTableColumnDialog extends JPanel {
 
         ItemListener checkBoxListener = new ItemListener() {
 
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 JCheckBox cbx = (JCheckBox) e.getSource();
                 // just set value. Validation is handled in model
@@ -437,6 +446,7 @@ public class AddTableColumnDialog extends JPanel {
         // update changes of model to check boxes
         item.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String pname = evt.getPropertyName();
                 Object nval = evt.getNewValue();
@@ -478,7 +488,8 @@ public class AddTableColumnDialog extends JPanel {
         assert statusLine != null : "Notification status line not available";  //NOI18N
 
         // enable/disable size/scale text field
-        String columnType = coltypecombo.getSelectedItem().toString();
+        Object selectedItem = coltypecombo.getSelectedItem();
+        String columnType = selectedItem == null ? null : selectedItem.toString();
         if (sizelesstypes.contains(columnType)) {
             if (colsizefield.isEditable()) {
                 colsizefield.setEditable(false);
@@ -556,7 +567,7 @@ public class AddTableColumnDialog extends JPanel {
     }
 
     private ColumnItem getColumnItem() {
-        return (ColumnItem)dmodel.getData().elementAt(0);
+        return (ColumnItem)dmodel.getData().get(0);
     }
 
     /** Sets UI controls according to given ColumnItem. */
@@ -625,15 +636,17 @@ public class AddTableColumnDialog extends JPanel {
 
         ActionListener listener = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent event) {
                 if (event.getSource() != DialogDescriptor.OK_OPTION) {
                     return;
                 }
-                final ColumnItem columnItem = (ColumnItem) panel.dmodel.getData().elementAt(0);
+                final ColumnItem columnItem = (ColumnItem) panel.dmodel.getData().get(0);
                 boolean wasException;
                 try {
                     wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
 
+                        @Override
                         public Boolean call() throws Exception {
                             return ddl.execute(panel.colnamefield.getText(), columnItem);
                         }
@@ -643,7 +656,7 @@ public class AddTableColumnDialog extends JPanel {
                     if (cause instanceof DDLException) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                     } else {
-                        LOGGER.log(Level.INFO, null, cause);
+                        LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                         DbUtilities.reportError(NbBundle.getMessage(AddTableColumnDialog.class, "ERR_UnableToAddColumn"), e.getMessage());
                     }
                     return;

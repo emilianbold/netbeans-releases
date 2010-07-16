@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,23 +43,21 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import java.awt.Image;
 import java.util.Collection;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,19 +66,98 @@ import org.openide.util.NbBundle;
  */
 public class ElementDescription {
     
+    private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
+
     private ClasspathInfo originalCPInfo;
     
     private ElementHandle<Element> handle;
     private ElementHandle<TypeElement> outtermostElement;
     private Collection<Modifier> modifiers;
     private String displayName;
-    
-    public ElementDescription(CompilationInfo info, Element element) {
+    private final boolean overriddenFlag;
+
+    public ElementDescription(CompilationInfo info, Element element, boolean overriddenFlag) {
         this.originalCPInfo = info.getClasspathInfo();
         this.handle = ElementHandle.create(element);
         this.outtermostElement = ElementHandle.create(SourceUtils.getOutermostEnclosingTypeElement(element));
         this.modifiers = element.getModifiers();
-        this.displayName = element.accept(new ElementNameVisitor(), true);
+        this.displayName = overriddenFlag ? computeDisplayNameIsOverridden(element) : computeDisplayNameOverrides(element);
+        this.overriddenFlag = overriddenFlag;
+    }
+
+    private static String computeDisplayNameIsOverridden(Element element) throws IllegalStateException {
+        TypeElement clazz;
+
+        if (element.getKind().isClass() || element.getKind().isInterface()) {
+            clazz = (TypeElement) element;
+        } else {
+            assert element.getKind() == ElementKind.METHOD : element.getKind();
+            
+            clazz = (TypeElement) element.getEnclosingElement();
+        }
+
+        StringBuilder displayName = new StringBuilder();
+        Element parent = clazz.getEnclosingElement();
+
+        displayName.append("<html>"); //NOI18N
+        displayName.append(computeSimpleName(clazz));
+
+        while (   isAnonymous(parent)
+               || parent.getKind() == ElementKind.CONSTRUCTOR
+               || parent.getKind() == ElementKind.INSTANCE_INIT
+               || parent.getKind() == ElementKind.METHOD
+               || parent.getKind() == ElementKind.STATIC_INIT) {
+            displayName.append(' ');
+            displayName.append(NbBundle.getMessage(ElementDescription.class, "NAME_In"));
+            displayName.append(' ');
+            displayName.append(computeSimpleName(parent));
+            parent = parent.getEnclosingElement();
+        }
+
+        displayName.append(' ');
+        displayName.append(PKG_COLOR);
+        displayName.append('(');
+        displayName.append(getQualifiedName(parent));
+        displayName.append(')');
+
+        return displayName.toString();
+    }
+
+    private static boolean isAnonymous(Element el) {
+        if (!el.getKind().isClass()) return false;
+        
+        TypeElement clazz = (TypeElement) el;
+
+        return    clazz.getQualifiedName() == null
+               || clazz.getQualifiedName().length() == 0
+               || clazz.getSimpleName() == null
+               || clazz.getSimpleName().length() == 0;
+    }
+
+    private static String computeSimpleName(Element clazz) {
+        String simpleName;
+
+        if (isAnonymous(clazz)) {
+            return NbBundle.getMessage(ElementDescription.class, "NAME_AnonynmousInner");
+        } else {
+            simpleName = clazz.getSimpleName().toString();
+        }
+
+        return simpleName;
+    }
+
+    private static CharSequence getQualifiedName(Element el) {
+        if (el.getKind() == ElementKind.PACKAGE) {
+            return ((PackageElement) el).getQualifiedName();
+        } else if (el.getKind().isClass() || el.getKind().isInterface()) {
+            return ((TypeElement) el).getQualifiedName();
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    private static String computeDisplayNameOverrides(Element element) {
+        return ((TypeElement) element.getEnclosingElement()).getQualifiedName().toString();
     }
 
     public FileObject getSourceFile() {
@@ -93,70 +173,25 @@ public class ElementDescription {
     }
 
     public Icon getIcon() {
-        return ElementIcons.getElementIcon(handle.getKind(), modifiers);
+        Image badge;
+
+        if (overriddenFlag) {
+            badge = ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/is-overridden-badge.png");
+        } else {
+            badge = ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/overrides-badge.png");
+        }
+
+        Image icon = ImageUtilities.icon2Image(ElementIcons.getElementIcon(handle.getKind(), modifiers));
+
+        return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon, badge, 16, 0));
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
     
     public Collection<Modifier> getModifiers() {
         return modifiers;
-    }
-    
-    private static class ElementNameVisitor extends SimpleElementVisitor6<String,Boolean> {
-        
-	@Override
-        public String visitPackage(PackageElement e, Boolean p) {
-            return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
-        }
-
-	@Override
-        public String visitType(TypeElement e, Boolean p) {
-            if (   e.getQualifiedName() == null
-                || e.getQualifiedName().length() == 0
-                || e.getSimpleName() == null
-                || e.getSimpleName().length() == 0) {
-                return NbBundle.getMessage(ElementDescription.class, "NAME_AnonynmousInner") + e.getEnclosingElement().accept(this, true);
-            }
-            
-            return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
-        }
-        
-        @Override
-        public String  visitExecutable(ExecutableElement e, Boolean p) {
-            StringBuffer sb = new StringBuffer();
-            
-            sb.append(e.getEnclosingElement().accept(this, p));
-            sb.append("."); //NOI18N
-            sb.append(e.getSimpleName());
-            sb.append("("); //NOI18N
-            
-            boolean addComma = false;
-            
-            for (VariableElement ve : e.getParameters()) {
-                if (addComma)
-                    sb.append(", "); //NOI18N
-                
-                addComma = true;
-                
-                sb.append(ve.accept(this, p));
-            }
-            
-            sb.append(")"); //NOI18N
-            
-            return sb.toString();
-        }
-        
-        @Override
-        public String visitVariable(VariableElement ve, Boolean p) {
-            return Utilities.getTypeName(ve.asType(), false) + " " + ve.getSimpleName(); //NOI18N
-        }
-        
-        @Override
-        public String visitTypeParameter(TypeParameterElement tpe, Boolean p) {
-            return tpe.getSimpleName().toString();
-        }
     }
 
 }

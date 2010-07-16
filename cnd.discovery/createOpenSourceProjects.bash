@@ -2,7 +2,10 @@
 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -46,28 +49,28 @@ QUITE=""
 function classpath() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans/"}
-    local cnddist=${CNDDIST-"${nbdist}/cnd3/"}
+    local cnddist=${CNDDIST-"${nbdist}/cnd/"}
 
     CP=""
 
     local ide
-    if [ -d "${nbdist}/ide7" ]; then
-	ide="${nbdist}/ide7"
+    if [ -d "${nbdist}/ide" ]; then
+	ide="${nbdist}/ide"
     else 
-	if [ -d "${nbdist}/ide8" ]; then
-	    ide="${nbdist}/ide8"
+	if [ -d "${nbdist}/ide" ]; then
+	    ide="${nbdist}/ide"
 	else 
-	    if [ -d "${nbdist}/ide9" ]; then
-		ide="${nbdist}/ide9"
+	    if [ -d "${nbdist}/ide" ]; then
+		ide="${nbdist}/ide"
             else 
-		    if [ -d "${nbdist}/ide10" ]; then
-			ide="${nbdist}/ide10"
+		    if [ -d "${nbdist}/ide" ]; then
+			ide="${nbdist}/ide"
 		    else 
-			    if [ -d "${nbdist}/ide11" ]; then
-				ide="${nbdist}/ide11"
+			    if [ -d "${nbdist}/ide" ]; then
+				ide="${nbdist}/ide"
 			    else 
-				    if [ -d "${nbdist}/ide12" ]; then
-					ide="${nbdist}/ide12"
+				    if [ -d "${nbdist}/ide" ]; then
+					ide="${nbdist}/ide"
 				    else 
 					echo "Can not find ide subdirectory in Netbeans"
 					return
@@ -79,20 +82,20 @@ function classpath() {
     fi
 
     local platform
-    if [ -d "${nbdist}/platform7" ]; then
-	platform="${nbdist}/platform7"
+    if [ -d "${nbdist}/platform" ]; then
+	platform="${nbdist}/platform"
     else 
-	if [ -d "${nbdist}/platform8" ]; then
-	    platform="${nbdist}/platform8"
+	if [ -d "${nbdist}/platform" ]; then
+	    platform="${nbdist}/platform"
 	else 
-		if [ -d "${nbdist}/platform9" ]; then
-		    platform="${nbdist}/platform9"
+		if [ -d "${nbdist}/platform" ]; then
+		    platform="${nbdist}/platform"
 		else 
-		    if [ -d "${nbdist}/platform10" ]; then
-			platform="${nbdist}/platform10"
+		    if [ -d "${nbdist}/platform" ]; then
+			platform="${nbdist}/platform"
 		    else
-			    if [ -d "${nbdist}/platform11" ]; then
-				platform="${nbdist}/platform11"
+			    if [ -d "${nbdist}/platform" ]; then
+				platform="${nbdist}/platform"
 			    else
 				echo "Can not find platform subdirectory in Netbeans"
 				return

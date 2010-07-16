@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,15 +51,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.hints.analyzer.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -80,6 +88,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView btv;
     private final List<FixDescription> fixes = new LinkedList<FixDescription>();
+    private boolean applyingFixes;
 
     private AnalyzerTopComponent() {
         initComponents();
@@ -130,15 +139,15 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
 
         btvHolder.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 0, 1, 1));
 
-        org.jdesktop.layout.GroupLayout btvHolderLayout = new org.jdesktop.layout.GroupLayout(btvHolder);
+        javax.swing.GroupLayout btvHolderLayout = new javax.swing.GroupLayout(btvHolder);
         btvHolder.setLayout(btvHolderLayout);
         btvHolderLayout.setHorizontalGroup(
-            btvHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 650, Short.MAX_VALUE)
+            btvHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 650, Short.MAX_VALUE)
         );
         btvHolderLayout.setVerticalGroup(
-            btvHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 254, Short.MAX_VALUE)
+            btvHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 254, Short.MAX_VALUE)
         );
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/refresh.png"))); // NOI18N
@@ -203,44 +212,44 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(previousError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(nextError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(2, 2, 2)
-                        .add(btvHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(4, 4, 4)
-                        .add(fixButton)
-                        .add(18, 18, 18)
-                        .add(goOverFixed)
-                        .add(18, 18, 18)
-                        .add(fixOnNext)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(previousError, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(nextError, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(2, 2, 2)
+                        .addComponent(btvHolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(fixButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(goOverFixed)
+                        .addGap(18, 18, 18)
+                        .addComponent(fixOnNext)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(1, 1, 1)
-                        .add(previousError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(1, 1, 1)
-                        .add(nextError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(btvHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(goOverFixed)
-                    .add(fixOnNext)
-                    .add(fixButton))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(previousError, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(nextError, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btvHolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(goOverFixed)
+                    .addComponent(fixOnNext)
+                    .addComponent(fixButton))
                 .addContainerGap())
         );
 
@@ -257,7 +266,7 @@ private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_refreshButtonActionPerformed
 
 private void fixButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixButtonActionPerformed
-    List<FixDescription> fixes = new LinkedList<FixDescription>();
+    final List<FixDescription> fixes = new LinkedList<FixDescription>();
 
     for (FixDescription fd : this.fixes) {
         if (fd.isSelected()) {
@@ -265,12 +274,13 @@ private void fixButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
-    for (FixDescription f : fixes) {
-        try {
-            f.implement();
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    applyingFixes = true;
+
+    try {
+        ProgressUtils.showProgressDialogAndRun(new FixWorker(fixes), NbBundle.getMessage(AnalyzerTopComponent.class, "CAP_ApplyingFixes"), false);
+    } finally {
+        applyingFixes = false;
+        stateChanged(null);
     }
 }//GEN-LAST:event_fixButtonActionPerformed
 
@@ -410,6 +420,8 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     public void stateChanged(ChangeEvent e) {
+        if (applyingFixes) return;
+        
         boolean fixEnable = false;
         boolean overFixedEnabled = false;
         for (FixDescription f : fixes) {
@@ -453,6 +465,46 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 previousError.setEnabled(prevAction.isEnabled());
                 nextError.setEnabled(nextAction.isEnabled());
             }
+        }
+        
+    }
+
+    private static final class FixWorker implements ProgressRunnable<Void>, Cancellable {
+
+        private final AtomicBoolean cancel = new AtomicBoolean();
+        private final List<FixDescription> fixes;
+
+        public FixWorker(List<FixDescription> fixes) {
+            this.fixes = fixes;
+        }
+
+        @Override
+        public Void run(ProgressHandle handle) {
+            handle.switchToDeterminate(fixes.size());
+
+            int clock = 0;
+
+            for (FixDescription f : fixes) {
+                if (cancel.get()) break;
+                
+                try {
+                    f.implement();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    handle.progress(++clock);
+                }
+            }
+
+            handle.finish();
+
+            return null;
+        }
+
+        @Override
+        public boolean cancel() {
+            cancel.set(true);
+            return true;
         }
         
     }

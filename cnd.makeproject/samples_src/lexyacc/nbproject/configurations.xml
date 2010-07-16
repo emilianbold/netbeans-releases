@@ -27,6 +27,11 @@
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <item path="token.l">
         <itemTool>3</itemTool>
         <customTool>

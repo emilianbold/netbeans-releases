@@ -85,6 +85,8 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     boolean active = false;
     private NbMavenProject mavenproject;
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+    private static final RequestProcessor COS_PROCESSOR =
+        new RequestProcessor("Maven Copy on Save", 5);
 
     /** Creates a new instance of CopyOnSaveSupport */
     CopyOnSave(Project prj, WebModuleProviderImpl prov) {
@@ -159,6 +161,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
             try {
@@ -179,7 +182,8 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     @Override
     public void fileChanged(final FileEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            COS_PROCESSOR.post(new Runnable() {
+                @Override
                 public void run() {
                     fileChanged(fe);
                 }
@@ -198,7 +202,8 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     @Override
     public void fileDataCreated(final FileEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            COS_PROCESSOR.post(new Runnable() {
+                @Override
                 public void run() {
                     fileDataCreated(fe);
                 }
@@ -217,7 +222,8 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     @Override
     public void fileRenamed(final FileRenameEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            COS_PROCESSOR.post(new Runnable() {
+                @Override
                 public void run() {
                     fileRenamed(fe);
                 }
@@ -254,7 +260,8 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     @Override
     public void fileDeleted(final FileEvent fe) {
         if (SwingUtilities.isEventDispatchThread()) { //#167740
-            RequestProcessor.getDefault().post(new Runnable() {
+            COS_PROCESSOR.post(new Runnable() {
+                @Override
                 public void run() {
                     fileDeleted(fe);
                 }
@@ -369,6 +376,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     /**
      * AdditionalDestination
      */
+    @Override
     public void copy(FileObject fo, String path) {
         try {
             FileObject webBuildBase = getJ2eeModule().getContentDirectory();
@@ -387,6 +395,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
     /**
      * AdditionalDestination
      */
+    @Override
     public void delete(FileObject fo, String path) {
         try {
             FileObject webBuildBase = getJ2eeModule().getContentDirectory();
@@ -411,6 +420,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
      * J2eeModuleProvider.DeployOnSaveSupport
      * @param listener
      */
+    @Override
     public void addArtifactListener(ArtifactListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -421,6 +431,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
      * J2eeModuleProvider.DeployOnSaveSupport
      * @param listener
      */
+    @Override
     public void removeArtifactListener(ArtifactListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
@@ -437,6 +448,7 @@ public class CopyOnSave extends FileChangeAdapter implements PropertyChangeListe
 
 
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+    @Override
     public boolean containsIdeArtifacts() {
         MavenProject mav = mavenproject.getMavenProject();
         //now figure the destination output folder

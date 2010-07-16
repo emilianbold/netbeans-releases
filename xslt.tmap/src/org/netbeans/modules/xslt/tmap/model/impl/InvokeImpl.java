@@ -18,11 +18,12 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
@@ -59,32 +60,9 @@ public class InvokeImpl extends NameableImpl implements Invoke {
         setWSDLReference( TMapAttributes.PORT_TYPE, ref);
     }
 
-// 142908
-    public WSDLReference<PartnerLinkType> getPartnerLinkType() {
-        return getWSDLReference(TMapAttributes.PARTNER_LINK_TYPE, PartnerLinkType.class);
-    }
-
-    public void setPartnerLinkType(WSDLReference<PartnerLinkType> pltRef) {
-        setWSDLReference( TMapAttributes.PARTNER_LINK_TYPE, pltRef);
-    }
-
-    public WSDLReference<Role> getRole() {
-        return getWSDLReference(TMapAttributes.ROLE_NAME, Role.class);
-    }
-
-    public void setRole(WSDLReference<Role> roleRef) {
-        setWSDLReference( TMapAttributes.ROLE_NAME, roleRef);
-    }
-
     public Reference[] getReferences() {
-        return new Reference[] {getPartnerLinkType(), getRole(), getOperation()};
+        return new Reference[] {getPortType(), getOperation()};
     }
-
-
-//142908
-//    public Reference[] getReferences() {
-//        return new Reference[] {getPortType(), getOperation()};
-//    }
 
     public Reference<Operation> getOperation() {
         return getWSDLReference(TMapAttributes.OPERATION_NAME, Operation.class);
@@ -122,6 +100,23 @@ public class InvokeImpl extends NameableImpl implements Invoke {
         return var;
     }
 
+    public Variable getDefaultInputVariable() {
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> opRef = getOperation();
+        org.netbeans.modules.xml.wsdl.model.Operation op = opRef == null ? null : opRef.get();
+        return op == null ? null : getDefaultVariable(op.getInput());
+    }
+
+    private Variable getDefaultVariable(OperationParameter opParam) {
+        NamedComponentReference<Message> messageRef = opParam == null 
+                ? null : opParam.getMessage();
+        Message message = messageRef == null ? null : messageRef.get();
+        String varName = message == null ? null : message.getName();
+        
+        Variable var = varName == null ?
+            null : new InputVariableImpl(getModel(), varName, this);
+        return var;
+    }
+    
     public void setInputVariableName(String inputVariable) {
         setAttribute(INPUT_VARIABLE, TMapAttributes.INPUT_VARIABLE, inputVariable);
     }
@@ -132,6 +127,12 @@ public class InvokeImpl extends NameableImpl implements Invoke {
         Variable var = varName == null ?
             null : new OutputVariableImpl(getModel(), varName, this);
         return var;
+    }
+
+    public Variable getDefaultOutputVariable() {
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> opRef = getOperation();
+        org.netbeans.modules.xml.wsdl.model.Operation op = opRef == null ? null : opRef.get();
+        return op == null ? null : getDefaultVariable(op.getOutput());
     }
 
     public void setOutputVariableName(String outputVariable) {

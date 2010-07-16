@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
@@ -89,11 +89,12 @@ public class InputSchemaSelectionPanel extends JPanel implements SharedConstants
                         "InputSchemaSelectionPanel.INPUT_IS_NOT_SPECIFIED");
                 JLabel label = new JLabel(msg);
                 checkPanel.add(label, gbc);
+                setToolTipText(NbBundle.getMessage(InputSchemaSelectionPanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_not_connected"));
                 return;
             }
-            
+            setToolTipText(NbBundle.getMessage(InputSchemaSelectionPanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_connected"));
             OperatorComponent input = inputs.get(0);
-            SchemaComponent outputSchema = input.getOutputSchemaId();
+            SchemaComponent outputSchema = input.getOutputSchema();
             if (outputSchema == null) {
                 msg = NbBundle.getMessage(InputSchemaSelectionPanel.class,
                         "InputSchemaSelectionPanel.INPUT_DOES_NOT_HAVE_ANY_SCHEMA");
@@ -102,9 +103,7 @@ public class InputSchemaSelectionPanel extends JPanel implements SharedConstants
                 return;
             }
             
-            String fromColumnListStr = component.getProperty(FROM_COLUMN_LIST_KEY).getValue();
-            List fromColumnList = (List) component.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().parse(fromColumnListStr);
-            
+            List<String> fromColumnList = (List) component.getStringList(PROP_FROM_COLUMN_LIST);
             List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             Iterator<SchemaAttribute> attrsIt = attrs.iterator();
             while(attrsIt.hasNext()) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,11 +67,11 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public MessagingHandle getMessaging(ProjectHandle project) {
-        KenaiConnection kc = KenaiConnection.getDefault();
-        Kenai k = Kenai.getDefault();
-        synchronized (kc) {
+        Kenai k = project.getKenaiProject().getKenai();
+        KenaiConnection kc = KenaiConnection.getDefault(k);
+        //synchronized (kc) {
             try {
-                final KenaiProject prj = k.getProject(project.getId());
+                final KenaiProject prj = project.getKenaiProject();
                 if (prj.isMyProject() && k.getStatus()==Status.ONLINE) {
                     MultiUserChat chat = kc.getChat(project.getId());
                     if (chat == null) {
@@ -81,21 +84,21 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                             }
                         }
                     } else if (!chat.isJoined()) {
-                        KenaiConnection.getDefault().tryJoinChat(chat);
+                        kc.tryJoinChat(chat);
                         if (!chat.isJoined())
                             throw new RuntimeException();
                     }
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
+                    MessagingHandleImpl m = new MessagingHandleImpl(project.getKenaiProject());
                     m.setMessageCount(0);
                     m.setOnlineCount(-3);
                     return m;
                 }
 
-            return ChatNotifications.getDefault().getMessagingHandle(project.getId());
-        }
+            return ChatNotifications.getDefault().getMessagingHandle(project.getKenaiProject());
+        //}
     }
 
 
@@ -106,7 +109,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.setActiveGroup(project.getId());
+                chatTC.setActiveGroup(project.getId() + "@muc." + project.getKenaiProject().getKenai().getUrl().getHost()); // NOI18N
                 chatTC.requestActive(false);
             }
         };
@@ -114,7 +117,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public Action getCreateChatAction(final ProjectHandle project) {
-        return new CreateChatAction(project.getId());
+        return new CreateChatAction(project.getKenaiProject());
     }
 
     @Override

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,7 +100,7 @@ public class XDMModel {
      */
     public XDMModel(ModelSource ms) {
         source = ms;
-        assert getSwingDocument() != null;
+        // assert getSwingDocument() != null; // It can be null, for example if the file is deleted. 
         ues = new UndoableEditSupport(this);
         pcs = new PropertyChangeSupport(this);
         parser = new XMLSyntaxParser();
@@ -159,12 +162,21 @@ public class XDMModel {
     }
     
     public synchronized void prepareSync() {
+        //
+        BaseDocument baseDoc = getSwingDocument();
+        if (baseDoc == null) {
+            // the document can be null, for example, if the file is deleted. 
+            IOException ioe = new IOException("Base document not accessible"); // NOI18N
+            preparation = new SyncPreparation(ioe);
+            return;
+        }
+        //
         Status oldStat = getStatus();
         try {
             setStatus(Status.PARSING);  // to access in case old broken tree            
             //must set the language for XML lexer to work.
-            getSwingDocument().putProperty(Language.class, XMLTokenId.language());
-            Document newDoc = parser.parse(getSwingDocument());
+            baseDoc.putProperty(Language.class, XMLTokenId.language());
+            Document newDoc = parser.parse(baseDoc);
             Document oldDoc = getCurrentDocument();
             if (oldDoc == null) {
                 preparation = new SyncPreparation(newDoc);
@@ -215,11 +227,13 @@ public class XDMModel {
                     return;
                 }
                 List<Difference> diffs = preparation.getDifferences();
-                mergeDiff(diffs);
-                //diffs = DiffFinder.filterWhitespace(diffs);
-                fireDiffEvents(diffs);
-                if (getCurrentDocument() != oldDoc) {
-                    fireUndoableEditEvent(getCurrentDocument(), oldDoc);
+                if (diffs != null && diffs.size() != 0) {
+                    mergeDiff(diffs);
+                    //diffs = DiffFinder.filterWhitespace(diffs);
+                    fireDiffEvents(diffs);
+                    if (getCurrentDocument() != oldDoc) {
+                        fireUndoableEditEvent(getCurrentDocument(), oldDoc);
+                    }
                 }
             }
             setStatus(Status.STABLE);
@@ -338,7 +352,8 @@ public class XDMModel {
     private List<Node> mutate(Node parent, Node oldNode, Node newNode, Updater updater) {
         return mutate(parent, oldNode, newNode, updater, null);
     }
-    
+
+    // TODO: Describe result value
     private List<Node> mutate(Node parent, Node oldNode, Node newNode, Updater updater, MutationType type) {
         checkStableOrParsingState();
         if (newNode != null) checkNodeInTree(newNode);
@@ -816,6 +831,8 @@ public class XDMModel {
     
     /**
      * This api returns the latest stable document in the model.
+     * An IllegalStateException can be thrown in case the model
+     * isn't in a STABLE or PARSING state.
      * @return The latest stable document in the model.
      */
     public synchronized Document getDocument() {
@@ -843,6 +860,7 @@ public class XDMModel {
             List<Difference> filtered = DiffFinder.filterWhitespace(diffs);
             //flushDocument(newDoc);
             setDocument(newDoc);
+            setStatus(Status.STABLE);
             if ( filtered != null && !filtered.isEmpty() ) {
                 fireDiffEvents(filtered);
             }
@@ -855,6 +873,9 @@ public class XDMModel {
         checkStableState();
 	UndoableEditListener uel = null;
 	BaseDocument d = getSwingDocument();
+        if (d == null) {
+            return; // Destination document doesn't exist. For example, because the file is deleted. 
+        }
 	final CompoundEdit ce = new CompoundEdit();
         try {
             FlushVisitor flushvisitor = new FlushVisitor();

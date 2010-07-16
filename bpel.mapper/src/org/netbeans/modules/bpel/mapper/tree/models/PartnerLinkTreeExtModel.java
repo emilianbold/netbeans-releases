@@ -39,6 +39,7 @@ import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.xpath.mapper.tree.models.MapperConnectabilityProvider;
 
 /**
  * The implementation of the MapperTreeModel for a tree of partner links.
@@ -178,31 +179,27 @@ public class PartnerLinkTreeExtModel implements SoaTreeExtensionModel,
     public String getToolTipText(TreeItem treeItem) {
         Object dataObj = treeItem.getDataObject();
 
-//        if (dataObj instanceof PartnerLinkContainer) {
-//            String type = ((PartnerLinkContainer) dataObj).getBpelModel().
-//                    getProcess().getName();
-//            String name = getDisplayName(treeItem);
-//            return SchemaTreeInfoProvider.getColorTooltip(
-//                    null, name, type, null);
-//        }
-
         if (dataObj instanceof PartnerLink) {
             PartnerLink pLink = (PartnerLink) dataObj;
             String result;
-            result = "<html> <body> Partner Link ";
+            result = "<html> <body> &nbsp;Partner Link ";
             if (pLink.getName() != null) {
-                result = result + "<b><font color =#7C0000>" + pLink.getName() + 
+                result = result + "<b><font color =#7C0000> " + pLink.getName() + 
                         "</font></b>";
             }
             if (pLink.getDocumentation() != null) {
                 result = result + "<hr><p width = 486>" + pLink.getDocumentation() + "</p>";
             }
+            
+            if (pLink.getMyRole() != null || pLink.getPartnerRole() != null) {
+                result = result + "<hr>";
+            }
             if (pLink.getMyRole() != null) {
-                result = result + "<hr><p><b><font color =#000099> myRole= </font></b>" 
+                result = result + "<p><b><font color =#000099>&nbsp;myRole= </font></b>"
                         + pLink.getMyRole().getRefString() + "</p>";
             }
             if (pLink.getPartnerRole() != null) {
-                result = result + "<b><font color =#000099> partnerRole= </font></b>" +
+                result = result + "<b><font color =#000099>&nbsp;partnerRole= </font></b>" +
                         pLink.getPartnerRole().getRefString();
             }
             result = result + " </body>";
@@ -226,7 +223,7 @@ public class PartnerLinkTreeExtModel implements SoaTreeExtensionModel,
                 }
             }
             String result;
-            result ="<html><body><b><font color =#000099>" + 
+            result ="<html><body><b><font color =#000099>&nbsp;" + 
                     ((Roles) dataObj).toString() + " = </font></b>";
             if (value != null) {
                 result = result + value;

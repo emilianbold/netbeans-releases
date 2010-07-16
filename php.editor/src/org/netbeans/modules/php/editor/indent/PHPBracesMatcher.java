@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
         this.context = context;
     }
 
+    @Override
     public int [] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -108,6 +112,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
         }
     }
 
+    @Override
     public int [] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -133,22 +138,22 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 
                 OffsetRange r;
                 if (LexUtilities.textEquals(token.text(), '(')) {
-                    r = LexUtilities.findFwd(doc, ts, '(', ')');
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '(', PHPTokenId.PHP_TOKEN, ')');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ')')) {
-                    r = LexUtilities.findBwd(doc, ts, '(', ')');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '(', PHPTokenId.PHP_TOKEN, ')');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == PHPTokenId.PHP_CURLY_OPEN) {
-                    r= LexUtilities.findFwd(doc, ts, '{', '}');
+                    r= LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN ,'{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    r = LexUtilities.findBwd(doc, ts, '{', '}');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), '[')) {
-                    r = LexUtilities.findFwd(doc, ts, '[', ']');
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
-                    r = LexUtilities.findBwd(doc, ts, '[', ']');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
                     return new int [] {r.getStart(), r.getEnd() };
                 }
             }

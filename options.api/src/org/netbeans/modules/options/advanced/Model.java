@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
@@ -95,6 +99,7 @@ public final class Model extends TabbedPanelModel {
         this.lkpListener = listener;
     }
     
+    @Override
     public List<String> getCategories () {
         init ();
         List<String> l = new ArrayList<String>(categoryToOption.keySet ());
@@ -114,6 +119,7 @@ public final class Model extends TabbedPanelModel {
         return new ArrayList<String>(idToCategory.keySet());
     }
 
+    @Override
     public String getToolTip (String category) {
         AdvancedOption option = categoryToOption.get (category);
         return option.getTooltip ();
@@ -125,6 +131,10 @@ public final class Model extends TabbedPanelModel {
      */
     public String getDisplayName(String categoryID) {
         AdvancedOption option = categoryToOption.get(idToCategory.get(categoryID));
+        if (option == null) {
+            Logger.getLogger(Model.class.getName()).info("No category found for ID: " + categoryID); // NOI18N
+            return "";
+        }
         return option.getDisplayName();
     }
 
@@ -136,6 +146,7 @@ public final class Model extends TabbedPanelModel {
         return categoryToController.get(getDisplayName(categoryID));
     }
 
+    @Override
     public JComponent getPanel (String category) {
         init ();
         JComponent panel = categoryToPanel.get (category);        
@@ -173,15 +184,15 @@ public final class Model extends TabbedPanelModel {
     }
     
     void applyChanges () {
-        Iterator it = categoryToController.values ().iterator ();
+        Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((OptionsPanelController) it.next ()).applyChanges ();
+            it.next().applyChanges ();
     }
     
     void cancel () {
-        Iterator it = categoryToController.values ().iterator ();
+        Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((OptionsPanelController) it.next ()).cancel ();
+            it.next().cancel ();
     }
     
     boolean isValid () {
@@ -195,9 +206,9 @@ public final class Model extends TabbedPanelModel {
     }
     
     boolean isChanged () {
-        Iterator it = categoryToController.values ().iterator ();
+        Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            if (((OptionsPanelController) it.next ()).isChanged ())
+            if (it.next().isChanged ())
                 return true;
         return false;
     }
@@ -232,9 +243,9 @@ public final class Model extends TabbedPanelModel {
                 panel = (JComponent) view;
             }
         }
-        Iterator it = categoryToPanel.keySet ().iterator ();
+        Iterator<String> it = categoryToPanel.keySet ().iterator ();
         while (it.hasNext ()) {
-            String category = (String) it.next ();
+            String category = it.next ();
             if (panel == null || panel == categoryToPanel.get (category)) {
                 OptionsPanelController controller = categoryToController.get (category);
                 if (controller != null) {
@@ -281,6 +292,7 @@ public final class Model extends TabbedPanelModel {
         private DelegatingController(OptionsPanelController delegate) {
             this.delegate = delegate;
         }
+        @Override
         public void update() {
             if (!isUpdated) {
                 isUpdated = true;
@@ -288,24 +300,29 @@ public final class Model extends TabbedPanelModel {
             }
         }
 
+        @Override
         public void applyChanges() {
             isUpdated = false;
             delegate.applyChanges();
         }
 
+        @Override
         public void cancel() {
             isUpdated = false;
             delegate.cancel();
         }
 
+        @Override
         public boolean isValid() {
             return delegate.isValid();
         }
 
+        @Override
         public boolean isChanged() {
             return delegate.isChanged();
         }
 
+        @Override
         public JComponent getComponent(Lookup masterLookup) {
             return delegate.getComponent(masterLookup);
         }
@@ -315,14 +332,17 @@ public final class Model extends TabbedPanelModel {
             OptionsPanelControllerAccessor.getDefault().setCurrentSubcategory(delegate, subpath);
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return delegate.getHelpCtx();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
             delegate.addPropertyChangeListener(l);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
             delegate.removePropertyChangeListener(l);
         }

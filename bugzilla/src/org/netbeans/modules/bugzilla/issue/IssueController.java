@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.util.HelpCtx;
 
 /**
@@ -52,7 +55,8 @@ import org.openide.util.HelpCtx;
  * @author Tomas Stupka, Jan Stola
  */
 public class IssueController extends BugtrackingController {
-    private JComponent issuePanel;
+    private JComponent component;
+    private IssuePanel issuePanel;
 
     public IssueController(BugzillaIssue issue) {
         IssuePanel panel = new IssuePanel();
@@ -66,13 +70,32 @@ public class IssueController extends BugtrackingController {
             scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
             scrollPane.getVerticalScrollBar().setUnitIncrement(size);
         }
-        BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-        issuePanel = scrollPane;
+        UIUtils.keepFocusedComponentVisible(scrollPane);
+        issuePanel = panel;
+        component = scrollPane;
     }
 
     @Override
     public JComponent getComponent() {
-        return issuePanel;
+        return component;
+    }
+
+    @Override
+    public void opened() {
+        BugzillaIssue issue = issuePanel.getIssue();
+        if (issue != null) {
+            // Hack - reset any previous modifications when the issue window is reopened
+            issuePanel.reloadForm(true);
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void closed() {
+        BugzillaIssue issue = issuePanel.getIssue();
+        if (issue != null) {
+            issue.closed();
+        }
     }
 
     @Override
@@ -89,8 +112,8 @@ public class IssueController extends BugtrackingController {
     public void applyChanges() {
     }
 
-    void refreshViewData() {
-        // PENDING
+    void refreshViewData(boolean force) {
+        issuePanel.reloadFormInAWT(force);
     }
 
 }

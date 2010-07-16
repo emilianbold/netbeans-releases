@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,11 +77,19 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         this(model, name, index);
         setValue(value);
     }
+
+    @Override
     public String toString() { return getName(); }
+
+    @Override
     public String getName() { return getPeer().getLocalName()+getIndex(); }
+
+    @Override
     public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
+
+    @Override
     protected void populateChildren(List<TestComponent2> children) {
         NodeList nl = getPeer().getChildNodes();
         if (nl != null){
@@ -132,14 +143,17 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         return s == null ? -1 : Integer.parseInt(s); 
     }
 
+    @Override
     public void updateReference(Element n) {
         assert (n != null);
         assert n.getLocalName().equals(getQName().getLocalPart());
         super.updateReference(n);
     }
-    
+
+    @Override
     public QName getQName() { return ROOT_QNAME; }
-    
+
+    @Override
     protected Object getAttributeValueOf(Attribute attr, String stringValue) {
         if (stringValue == null) return null;
         if (String.class.isAssignableFrom(attr.getType())) {
@@ -159,6 +173,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public A(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class Aa extends TestComponent2 {
@@ -169,6 +184,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public Aa(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class B extends TestComponent2 {
@@ -179,6 +195,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public B(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class C extends TestComponent2 {
@@ -189,6 +206,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public C(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class D extends TestComponent2 {
@@ -199,6 +217,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public D(TestModel2 model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class E extends TestComponent2 {
@@ -209,17 +229,23 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public E(TestModel2 model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
 
+        @Override
         public String getValue() {
             String retValue;
             
             retValue = super.getValue();
             return retValue;
         }
+
+        @Override
         public String getName() {
             return super.getAttribute(TestAttribute.NAME);
         }
+
         public void setName(String v) {
             setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
         }
@@ -227,19 +253,26 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
     
     public static class TestComponentReference<T extends TestComponent2> 
             extends AbstractNamedComponentReference<T> {
+        
         public TestComponentReference(Class<T> type, TestComponent2 parent, String ref) {
             super(type, parent, ref);
         }
+
         public TestComponentReference(T ref, Class<T> type, TestComponent2 parent) {
             super(ref, type, parent);
         }
+
+        @Override
         public TestComponent2 getParent() {
             return (TestComponent2) super.getParent();
         }
+
+        @Override
         public String getEffectiveNamespace() {
             return getParent().getModel().getRootComponent().getTargetNamespace();
         }
 
+        @Override
         public T get() {
             if (getReferenced() == null) {
                 String tns = getQName().getNamespaceURI();
@@ -252,7 +285,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
             return getReferenced();
         }
     }
-    
+
+    @Override
     public TestModel2 getModel() {
         return (TestModel2) super.getModel();
     }
@@ -284,11 +318,14 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         
         public ReferencedFinder() {
         }
+        
         public TestComponent2 findReferenced(TestComponent2 root, String name) {
             this.name = name;
             root.accept(this);
             return found;
         }
+
+        @Override
         public void visit(TestComponent2 component) {
             if (name.equals(component.getName())) {
                 found = component;
@@ -296,6 +333,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
                 visitChildren(component);
             }
         }
+
+        @Override
         public void visitChildren(TestComponent2 component) {
             for (TestComponent2 child : component.getChildren()) {
                 child.accept(this);

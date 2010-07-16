@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,7 @@ import org.openide.util.Mutex;
 /**
  * @author Radek Matous
  */
-public final class ChildrenSupport {
+public class ChildrenSupport {
 
     static final int NO_CHILDREN_CACHED = 0;
     static final int SOME_CHILDREN_CACHED = 1;
@@ -63,8 +66,8 @@ public final class ChildrenSupport {
     private Set<FileNaming> notExistingChildren;
     private Set<FileNaming> existingChildren;
     private int status = ChildrenSupport.NO_CHILDREN_CACHED;
-    private final Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
-    private final Mutex mutex = new Mutex(mutexPrivileged);
+    private static final Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
+    private static final Mutex mutex = new Mutex(mutexPrivileged);
 
     public ChildrenSupport() {
     }
@@ -73,13 +76,17 @@ public final class ChildrenSupport {
         return mutexPrivileged;
     }
 
+    public static boolean isLock() {
+        return mutex.isReadAccess() || mutex.isWriteAccess();
+    }
+
     public Set<FileNaming> getCachedChildren() {
         return getExisting(false);
     }
 
     public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan) {
         if (rescan || !isStatus(ChildrenSupport.ALL_CHILDREN_CACHED))  {
-            rescanChildren(folderName);
+            rescanChildren(folderName, false);
             setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         } /*else if (!isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
 
@@ -96,11 +103,11 @@ public final class ChildrenSupport {
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
-            retval = rescanChild(folderName, childName);
+            retval = rescanChild(folderName, childName, false);
         } else if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
             if (retval == null && lookupChildInCache(folderName, childName, false) == null) {
-                retval = rescanChild(folderName, childName);
+                retval = rescanChild(folderName, childName, false);
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
@@ -115,14 +122,15 @@ public final class ChildrenSupport {
 
     public synchronized void removeChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);
         getExisting().remove(childName);
-        getNotExisting().add(childName);
+        if (childName.getParent().equals(folderName)) {
+            getNotExisting().add(childName);
+        }
     }
 
     private synchronized void addChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);
+        assert childName.getParent().equals(folderName) : "childName: " + childName.getFile() + " folderName: " + folderName.getFile();
         getExisting().add(childName);
         getNotExisting().remove(childName);
     }
@@ -137,7 +145,7 @@ public final class ChildrenSupport {
         if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             Set<FileNaming> existingToCheck = new HashSet<FileNaming>(e);
             for (FileNaming fnToCheck : existingToCheck) {
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
                 if (fnRescanned == null) {
                     retVal.put(fnToCheck, ChildrenCache.REMOVED_CHILD);
                 }
@@ -146,13 +154,13 @@ public final class ChildrenSupport {
             Set<FileNaming> notExistingToCheck = new HashSet<FileNaming>(nE);
             for (FileNaming fnToCheck : notExistingToCheck) {
                 assert fnToCheck != null;
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
                 if (fnRescanned != null) {
                     retVal.put(fnToCheck, ChildrenCache.ADDED_CHILD);
                 }
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
-            retVal = rescanChildren(folderName);
+            retVal = rescanChildren(folderName, true);
         }
         return retVal;
     }
@@ -173,12 +181,12 @@ public final class ChildrenSupport {
     }
 
 
-    private FileNaming rescanChild(final FileNaming folderName, final String childName) {
+    private FileNaming rescanChild(final FileNaming folderName, final String childName, boolean ignoreCache) {
         final File folder = folderName.getFile();
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
 
-        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child) : null;
+        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child, ignoreCache) : null;
         if (retval != null) {
             addChild(folderName, retval);
         } else {
@@ -201,8 +209,8 @@ public final class ChildrenSupport {
         return retval;
     }
 
-    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName) {
-        final Map<FileNaming, Integer> retval = new HashMap<FileNaming, Integer>();
+    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, boolean ignoreCache) {
+        final Map<FileNaming, Integer> retval = new IdentityHashMap<FileNaming, Integer>();
         final Set<FileNaming> newChildren = new LinkedHashSet<FileNaming>();
 
         final File folder = folderName.getFile();
@@ -213,7 +221,7 @@ public final class ChildrenSupport {
             for (int i = 0; i < children.length; i++) {
                 final FileInfo fInfo = new FileInfo(children[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
-                    FileNaming child = NamingFactory.fromFile(folderName, children[i]);
+                    FileNaming child = NamingFactory.fromFile(folderName, children[i], ignoreCache);
                     newChildren.add(child);
                 }
             }
@@ -222,21 +230,33 @@ public final class ChildrenSupport {
             return retval;
         }
 
-        Set<FileNaming> deleted = new HashSet<FileNaming>(getExisting(false));
-        deleted.removeAll(newChildren);
+        Set<FileNaming> deleted = deepMinus(getExisting(false), newChildren);
         for (FileNaming fnRem : deleted) {
             removeChild(folderName, fnRem);
             retval.put(fnRem, ChildrenCache.REMOVED_CHILD);
         }
 
-        Set<FileNaming> added = new HashSet<FileNaming>(newChildren);
-        added.removeAll(getExisting(false));
+        Set<FileNaming> added = deepMinus(newChildren, getExisting(false));
         for (FileNaming fnAdd : added) {
             addChild(folderName, fnAdd);
             retval.put(fnAdd, ChildrenCache.ADDED_CHILD);
         }
 
         return retval;
+    }
+
+    private static Set<FileNaming> deepMinus(Set<FileNaming> base, Set<FileNaming> minus) {
+        HashMap<FileNaming, FileNaming> detract = new HashMap<FileNaming, FileNaming>(base.size() * 2);
+        for (FileNaming fn : base) {
+            detract.put(fn, fn);
+        }
+        for (FileNaming mm : minus) {
+            FileNaming orig = detract.remove(mm);
+            if (orig != null && orig.isFile() != mm.isFile()) {
+                detract.put(orig, orig);
+            }
+        }
+        return detract.keySet();
     }
 
     private FileNaming lookupChildInCache(final FileNaming folder, final String childName, boolean lookupExisting) {
@@ -263,11 +283,7 @@ public final class ChildrenSupport {
             public Integer getId() {
                 return id;
             }
-            public boolean rename(String name) {
-                // not implemented, as it will not be called
-                throw new IllegalStateException();
-            }
-            public boolean rename(String name, ProvidedExtensions.IOHandler h) {
+            public FileNaming rename(String name, ProvidedExtensions.IOHandler h) {
                 // not implemented, as it will not be called
                 throw new IllegalStateException();
             }
@@ -287,11 +303,6 @@ public final class ChildrenSupport {
             @Override
             public int hashCode() {
                 return id.intValue();
-            }
-
-            public Integer getId(boolean recompute) {
-                return id;
-
             }
 
             public boolean isFile() {

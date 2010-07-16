@@ -27,7 +27,7 @@ import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLJoinTable;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * @author Ritesh Adval

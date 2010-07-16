@@ -35,7 +35,6 @@ import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.util.Util;
-import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;

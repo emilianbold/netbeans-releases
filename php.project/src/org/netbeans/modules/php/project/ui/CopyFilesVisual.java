@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,16 +45,16 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -74,12 +77,14 @@ public class CopyFilesVisual extends JPanel {
         localServerController.setEnabled(false);
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 copyFilesCheckBoxChanged();
                 changeSupport.fireChange();
             }
         });
         localServerController.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 changeSupport.fireChange();
             }
@@ -150,8 +155,8 @@ public class CopyFilesVisual extends JPanel {
 
         setFocusTraversalPolicy(null);
 
-
         Mnemonics.setLocalizedText(copyFilesCheckBox, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
+
         localServerLabel.setLabelFor(copyFilesComboBox);
         Mnemonics.setLocalizedText(localServerLabel, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
         localServerLabel.setEnabled(false);
@@ -162,29 +167,29 @@ public class CopyFilesVisual extends JPanel {
         Mnemonics.setLocalizedText(copyFilesButton, NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
         copyFilesButton.setEnabled(false);
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(copyFilesCheckBox)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(copyFilesCheckBox)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(localServerLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(copyFilesComboBox, 0, 235, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(copyFilesButton))
+                .addComponent(localServerLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(copyFilesComboBox, 0, 235, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(copyFilesButton))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(copyFilesCheckBox)
-                .add(9, 9, 9)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(copyFilesButton)
-                    .add(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(localServerLabel)))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(copyFilesCheckBox)
+                .addGap(9, 9, 9)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(copyFilesButton)
+                    .addComponent(copyFilesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(localServerLabel)))
         );
 
         copyFilesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -209,9 +214,11 @@ public class CopyFilesVisual extends JPanel {
 
 
     private static class BrowseCopyFiles implements LocalServerController.BrowseHandler {
+        @Override
         public File getCurrentDirectory() {
             return LastUsedFolders.getCopyFiles();
         }
+        @Override
         public void locationChanged(File location) {
             LastUsedFolders.setCopyFiles(location);
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,12 +53,9 @@ import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -77,6 +77,7 @@ import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.Empty;
+import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
 import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -157,7 +158,7 @@ public class EditorUtil {
       Lookup.Provider provider = (Lookup.Provider) data;
 
       try {
-        return (BpelModel) provider.getLookup().lookup(BpelModel.class);
+        return provider.getLookup().lookup(BpelModel.class);
       }
       catch (IllegalStateException e) {
         return null;
@@ -285,9 +286,7 @@ public class EditorUtil {
         ENTITY_NODETYPE_MAP = new HashMap<Class<? extends Component>, NodeType>();
 
         ENTITY_NODETYPE_MAP.put(Assign.class, NodeType.ASSIGN);
-
         ENTITY_NODETYPE_MAP.put(BooleanExpr.class, NodeType.BOOLEAN_EXPR);
-
         ENTITY_NODETYPE_MAP.put(Catch.class, NodeType.CATCH);
         ENTITY_NODETYPE_MAP.put(CompensatableActivityHolder.class, NodeType.CATCH_ALL);
         ENTITY_NODETYPE_MAP.put(CompensationHandler.class, NodeType.COMPENSATION_HANDLER);
@@ -304,6 +303,7 @@ public class EditorUtil {
         ENTITY_NODETYPE_MAP.put(Else.class, NodeType.ELSE);
         ENTITY_NODETYPE_MAP.put(ElseIf.class, NodeType.ELSE_IF);
         ENTITY_NODETYPE_MAP.put(Empty.class, NodeType.EMPTY);
+        ENTITY_NODETYPE_MAP.put(Validate.class, NodeType.VALIDATE);
         ENTITY_NODETYPE_MAP.put(EventHandlers.class, NodeType.EVENT_HANDLERS);
         ENTITY_NODETYPE_MAP.put(Exit.class, NodeType.EXIT);
 
@@ -467,7 +467,7 @@ public class EditorUtil {
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
+                    l.show(Line.SHOW_GOTO, column);
                     openActiveSourceEditor();
                 }
             });
@@ -497,6 +497,20 @@ public class EditorUtil {
                 public void run() {
                     ec.edit();
                     openActiveLoggingEditor();
+                    if (lookup != null || bpelEntity != null) {
+                        NodeType nodeType = getBasicNodeType(bpelEntity);
+                        if (nodeType == null || NodeType.UNKNOWN_TYPE.equals(nodeType)) {
+                            return;
+                        }
+                        Node bpelNode = FactoryAccess.getPropertyNodeFactory()
+                        .createNode(nodeType,bpelEntity, lookup);
+                        //TODO m
+                        TopComponent mapperTc = WindowManager.getDefault().getRegistry().getActivated();
+                        if (mapperTc != null) {
+                            mapperTc.setActivatedNodes(new Node[0]);
+                            mapperTc.setActivatedNodes(new Node[] {bpelNode});
+                        }
+                    }
                 }
             });
         } catch (DataObjectNotFoundException ex) {
@@ -565,10 +579,10 @@ public class EditorUtil {
             final Lookup lookup = d != null ? d.getLookup() : null;
 
             final EditCookie ec = d.getCookie(EditCookie.class);
+
             if (ec == null) {
                 return;
             }
-
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ec.edit();
@@ -824,7 +838,7 @@ public class EditorUtil {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                fLine.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, fColumn);
+                fLine.show(Line.SHOW_GOTO, fColumn);
             }
         });
     }

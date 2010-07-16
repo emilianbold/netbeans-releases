@@ -1,52 +1,34 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-  <title>Running Web and Reference Application Samples - Java Card 3 Development
-  </title>
-
-</head>
-
-<body class="body">
-
-<a name="RunningWebApplicationSamples"></a><h2>Running Web and Reference Application Samples</h2>
-<p class="p">The following topics describe how to run the web and reference application samples
-provided in the Java Card 3 Development Kit. The samples demonstrate the features
-of the Java Card API, Connected Edition and include simple web applications and
-a reference application. </p><p class="p">The following list describes the simple web application samples located in the JC_CONNECTED_HOME\samples\web
-folder and presents them in an order that is based on increasing complexity
-(the simplest <tt>HelloWorld</tt> sample is listed first and the more complex <tt>CardHolderAuthorization</tt> sample listed
-last):</p>
-<hr><p class="p"><b>Note - </b><b>JC_CONNECTED_HOME</b> represents the directory in which the Java Card 3 Development Kit, Connected
-Edition was installed.</p>
+  <title>Run HelloWorld Web Application Sample - Java Card 3 Development
+   </title></head><body class="body"><a name="RunningWebApplicationSamples"></a><h2>Run <tt>HelloWorld</tt> Web Application Sample</h2>
+   p>This <tt>HelloWorld</tt> sample demonstrates the basic structure of a Java Card 3 platform
+application that developers can use to develop, deploy, create, execute, delete, and unload a
+stand-alone module. It is a minimal application utilizing the simplest source code and
+meta-files. The <tt>HelloWorld</tt> sample contains one web application that demonstrates 
+using a basic
+web form to collect and display information provided by the user.</p>
+<p>Running the <tt>HelloWorld</tt> sample consists of using the IDE to open the <tt>HelloWorld</tt>
+project, starting the HelloWorld application, entering a name in a web page, clicking the
+Say Hello button on the page, and then displaying a greeting.</p>
+<h2>Before You Begin</h2>
+<p class="p">Before performing the following procedure, either download and install the Java Card 3
+Development Kit, Connected Edition on your development system or download the sample from
+the Kenai Java Card 3 repository. See <a href="GetAdditionalWebAppSamples.html">Getting Additional Web Application Samples</a> for instructions required to download samples
+from the Kenai Java Card 3 repository.</p>
+<hr><p class="p"><b>Note - </b>Refer to the Development Kit documentation for additional details about working with the
+Development Kit.</p>
 <hr>
-
-<ul class="ul"><li class="li"><p class="p"><tt>HelloWorld</tt> - Demonstrates the basic structure of a Java Card 3 platform application that developers can use to develop, deploy, create, execute, delete, and unload a stand-alone module. It is a minimal application utilizing the simplest source code and meta-files.</p></li>
-<li class="li"><p class="p"><tt>ContainerManagedAuthentication</tt> - Demonstrates basic web container authentication with a PIN authenticator using JC-FORM with Biometric password.</p></li>
-<li class="li"><p class="p"><tt>StaticSecureWebHosting</tt> - Demonstrates secure hosting on a static port.</p></li>
-<li class="li"><p class="p"><tt>DynamicSecureWebHosting</tt> - Demonstrates secure hosting on a dynamic port.</p></li>
-<li class="li"><p class="p"><tt>GCFClient</tt> -Demonstrates the Generic Connection Framework (GCF) functionality of a http client, a socket client, and a socket server.</p></li>
-<li class="li"><p class="p"><tt>DynamicallyLoadedClasses</tt> - Demonstrates dynamic class loading using the <tt>Class.forName()</tt> method.</p></li>
-<li class="li"><p class="p"><tt>Persistence</tt> - Demonstrates the persistence of user entered information when a session on a card is resumed.</p></li>
-<li class="li"><p class="p"><tt>RestartableTasks</tt> - Demonstrates how a registered task can be automatically available after the card is reset.</p></li>
-<li class="li"><p class="p"><tt>Transactions</tt> - Demonstrates transaction types and functions.</p></li>
-<li class="li"><p class="p"><tt>SIOFacility</tt> - Demonstrates <tt>isCLientInRole()</tt> usage and usage of the transferable API.</p></li>
-<li class="li"><p class="p"><tt>EventFacility</tt> - Demonstrates a servlet that registers a listener for events and a servlet that enables users to fire custom events.</p></li>
-<li class="li"><p class="p"><tt>CardHolderAuthorization</tt> - Demonstrates a remote client unable to access a resource and a card holder authorizing a second servlet to enable access by the remote client.</p></li></ul>
-<p class="p">The reference application sample, <tt>Transit</tt>,is located in the JC_CONNECTED_HOME\ samples\reference_apps folder and is a
-blue print-like sample application that demonstrates the interactions between various applications on the
-card using advanced features such as SIO and events. The reference application illustrates the
-use of the Java Card API, scenarios of package masking, and post-manufacture installation.</p>
-<hr><p class="p"><b>Note - </b>See <i>Programming Notes, Java Card 3 Platform, Connected Edition</i> for information about writing web applications that run on the Java
-Card 3 platform.</p>
-<hr>
-
-
-
+<ol class="ol">
+<li><b>Click File &#62; Open Project in the main window.</b></li>
+<li><a name="z40000271435406"></a><b>Go to the <tt>\samples\web</tt> folder and open the <tt>HelloWorld</tt> project.</b></li>
+<li><b>Click the run button in the main window. </b><p>The IDE compiles, builds, and runs the sample. When the sample runs the
+IDE launches the default browser and displays the Hello World page.</p></li>
+<li><b>Enter a name in the Enter Name field and click the Say Hello
+button.</b><p>The browser displays a greeting.</p></li>
+<li><a name="z40000271435480"></a><b>Close the browser to stop the application.</b></li></ol>
 </body>
 </html>

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -114,6 +117,7 @@ public class JpaControllerGenerator {
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
@@ -224,6 +228,7 @@ public class JpaControllerGenerator {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] modified = new boolean[] { false };
         ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
@@ -263,9 +268,10 @@ public class JpaControllerGenerator {
             
             JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                    
+
                     ExecutableElement idGetterElement = idGetter.resolve(workingCopy);
                     idGetterName[0] = idGetterElement.getSimpleName().toString();
                     TypeMirror idType = idGetterElement.getReturnType();
@@ -405,15 +411,20 @@ public class JpaControllerGenerator {
                             
                             String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
-                            
+
+                            if(fieldName.equals(scalarRelFieldName)){
+                                scalarRelFieldName  = scalarRelFieldName + "Rel";//if entity have references to itself (i.e. tree/chain etc of entities), need to make name different from entity field name
+                            }
+
                             if (!controllerClass.startsWith(entityClass + "JpaController")) {
                                 modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
                             }
                             
                             ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(workingCopy, isFieldAccess, relClass);
-                            String refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
+                            String refOrMergeString = null;
                             
                             if (isCollection) {
+                                refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
                                 initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
                                         fieldName + ".s" + mName.substring(1) + "(new " + simpleCollectionImplementationTypeName + "<" + relTypeReference + ">());\n" +
                                         "}\n");
@@ -430,6 +441,7 @@ public class JpaControllerGenerator {
                                         );
                             }
                             else {
+                                refOrMergeString = getRefOrMergeString(relIdGetterElement, scalarRelFieldName);
                                 initRelatedInCreate.append(relTypeReference + " " + scalarRelFieldName + " = " + fieldName + "." + mName +"();\n" +
                                     "if (" + scalarRelFieldName + " != null) {\n" +
                                     scalarRelFieldName + " = " + refOrMergeString +

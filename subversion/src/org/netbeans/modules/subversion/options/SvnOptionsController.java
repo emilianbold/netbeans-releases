@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import javax.swing.filechooser.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.subversion.Annotator;
@@ -70,7 +76,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private final SvnOptionsPanel panel;
     private final Repository repository;
-    private final AnnotationSettings annotationSettings;            
+    private final AnnotationSettings annotationSettings;
+    private static final HashSet<String> allowedExecutables = new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe", "libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
         
     public SvnOptionsController() {        
         
@@ -97,6 +104,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
         annotationSettings.update();
         repository.refreshUrlHistory();
+        panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
+        panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
         
     }
     
@@ -108,7 +117,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
-        
+        SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
+        SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
+
         // {folder} variable setting
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
@@ -168,10 +179,23 @@ public final class SvnOptionsController extends OptionsPanelController implement
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(SvnOptionsController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || allowedExecutables.contains(f.getName());
+            }
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(SvnOptionsController.class, "FileChooser.SvnExecutables.desc"); //NOI18N
+            }
+        });
         fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button"));                                            // NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
+            if (f.isFile()) {
+                f = f.getParentFile();
+            }
             panel.executablePathTextField.setText(f.getAbsolutePath());
         }
     }

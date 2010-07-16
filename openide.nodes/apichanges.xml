@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -46,6 +49,22 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="IndexedNode.LookupConstr">
+        <api name="nodes"/>
+        <summary>New constructor of IndexedNode</summary>
+        <version major="7" minor="16"/>
+        <date day="16" month="4" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <p>
+            <a href="@TOP@/org/openide/nodes/IndexedNode.html">IndexedNode</a> has
+            new constructor that accepts <code>Lookup</code>.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="IndexedNode"/>
+        <issue number="163258"/>
+    </change>
     <change id="NodeOp.factory">
         <api name="nodes"/>
         <summary>Support for declarative Node registrations</summary>
@@ -56,7 +75,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
             <a href="@TOP@/org/openide/nodes/NodeOp.html">NodeOp.factory</a>
-            is new 
+            is new
             <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layer</a>
             based factory method
             to allow declarative definition of a root node into the UI.
@@ -179,7 +198,7 @@ made subject to such option by the copyright holder.
             <a href="@TOP@/org/openide/nodes/Node.Cookie.html">Cookies</a>.
             This addition change is accompanied with two additional changes:
             <a href="@TOP@/org/openide/nodes/CookieSet.html">
-            CookieSet</a> now implements <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html">
+            CookieSet</a> now implements <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Provider.html">
             Lookup.Provider</a> and thus has a method <code>getLookup</code> to 
             allow queries for of its content.
             Also there is a new method 

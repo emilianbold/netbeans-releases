@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,16 +112,25 @@ public class XmlFoldManager implements FoldManager {
         return operation;
     }
       
-    
     /**
      * Do NOT update folds here. For some reason, three fold managers get
      * instantiated by the infrastructure and three initFolds() get called.
-     * 
-     * Schedule fold updates in insertUpdate removeUpdate and changeUpdate.
-     * First fold will be created by changeUpdate.
+     *
+     * Schedule fold updates in insertUpdate removeUpdate and changedUpdate.
+     * First fold will be created by changedUpdate.
      * @param transaction
      */
+    @Override
     public void initFolds(FoldHierarchyTransaction transaction) {
+        /* fix for issue #184452 (http://netbeans.org/bugzilla/show_bug.cgi?id=184452)
+         * -------------------------------------------------------------------------
+         * In NB 6.9 (April, 2010) the default behaviour has been changed: now only
+         * 1 fold manager is instantiated by the infrastructure and the method "initFolds()"
+         * is called once (the parent interface org.netbeans.spi.editor.fold.FoldManager:
+         * "... this method is by default called at the file opening time"), but the
+         * method "changedUpdate()" is not called at the file opening time.
+         */
+        scheduleFoldUpdate();
     }
     
     private BaseDocument getDocument() {

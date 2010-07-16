@@ -27,6 +27,10 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapModelImpl;
  */
 public interface Variable extends MessageReference, TMapReferenceable {
 
+    OperationReference getParent();
+    
+    void setParent(OperationReference opRef);
+
     String getName();
 
     void setName(String name);

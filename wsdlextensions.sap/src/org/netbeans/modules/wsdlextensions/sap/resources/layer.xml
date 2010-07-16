@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+ Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ Other names may be trademarks of their respective owners.
+
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Oracle in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+
+ Contributor(s):
+
+ Portions Copyrighted 2009 Sun Microsystems, Inc.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="sap-ext.xsd" url="sap-ext.xsd">
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/sap/" />
+            <attr name="prefix" stringvalue="sap" />
+        </file>
+        
+        <folder name="Binding">
+            <file name="SAPBinding" >
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="binding"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/throw16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperation">
+            <file name="SAPBindingOperation" >
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="operation"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/onalarm16x16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperationInput">
+            <file name="SAPMessage">
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="message"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperationOutput">
+            <file name="SAPMessage">
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="message"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+        <folder name="ServicePort">
+            <file name="SAPServicePort">
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="address"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/while16x16.png"/>
+            </file>
+            <file name="SAPProtocolProperties">
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="protocolproperties"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/while16x16.png"/>
+            </file>
+            <file name="SAPCommunicationControls">
+                <attr name="xsdFileName" stringvalue="sap-ext" />
+                <attr name="element" stringvalue="communicationcontrols"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.sap.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/sap/resources/while16x16.png"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="sun-sap-binding">
+            <attr name="id" stringvalue="sun-sap-binding"/>
+            <attr name="description" stringvalue="SAP Binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="sap.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/sap/"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="bpel-nmproperties">
+        <folder name="sap-bc">
+            <attr name="display-name" stringvalue="SAP BC"/>
+                
+            <folder name="sap-request">
+                <attr name="display-name" stringvalue="Request Metadata"/>
+                <attr name="position" intvalue="10"/>
+                <file name="url">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.url"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request URL"/>
+                    <attr name="position" intvalue="10"/>
+                </file>
+                <file name="method">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.method"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Method"/>
+                    <attr name="position" intvalue="20"/>
+                </file>
+                <file name="content-type">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.content-type"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Content-Type"/>
+                    <attr name="position" intvalue="30"/>
+                </file>
+                <file name="accept-types">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.accept-types"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Accept-Types"/>
+                    <attr name="position" intvalue="40"/>
+                </file>
+                <file name="accept-languages">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.accept-languages"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Accept-Languages"/>
+                    <attr name="position" intvalue="50"/>
+                </file>
+                <file name="headers">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.headers"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Headers"/>
+                    <attr name="position" intvalue="60"/>
+                </file>
+                <file name="params">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.params"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Parameters"/>
+                    <attr name="position" intvalue="70"/>
+                </file>
+                <file name="param-style">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.param-style"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Parameter Style"/>
+                    <attr name="position" intvalue="80"/>
+                </file>
+                <file name="path-params">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.path-params"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Request Path Parameters"/>
+                    <attr name="position" intvalue="90"/>
+                </file>
+            </folder>
+				
+            <folder name="sap-response">
+                <attr name="display-name" stringvalue="Response Metadata"/>
+                <attr name="position" intvalue="20"/>
+                <file name="status">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.response.status"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Response Status"/>
+                    <attr name="position" intvalue="10"/>
+                </file>
+                <file name="url">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.response.url"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Response Location"/>
+                    <attr name="position" intvalue="20"/>
+                </file>
+                <file name="content-type">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.response.content-type"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Response Content-Type"/>
+                    <attr name="position" intvalue="30"/>
+                </file>
+                <file name="headers">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.sap.response.headers"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Response Headers"/>
+                    <attr name="position" intvalue="40"/>
+                </file>
+            </folder>
+                
+        </folder>
+    </folder>
+</filesystem>
+

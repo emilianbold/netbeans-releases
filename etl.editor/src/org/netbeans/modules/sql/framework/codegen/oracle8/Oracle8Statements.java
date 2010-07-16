@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,19 +58,26 @@ import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
+import com.sun.etl.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
 
 /**
  * @author Jonathan Giron
  * @version $Revision$
  */
 public class Oracle8Statements extends BaseStatements {
+    //Loggers
+    private static transient final Logger mLogger = Logger.getLogger(Oracle8Statements.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     public Oracle8Statements(AbstractDB database) {
         super(database);
     }
 
+    @Override
     public SQLPart getSelectStatement(SourceTable sourceTable, StatementContext context) throws BaseException {
         if (context == null) {
             context = new StatementContext();
@@ -89,7 +99,7 @@ public class Oracle8Statements extends BaseStatements {
         vContext.put("useWhere", Boolean.FALSE);
 
         List whereList = (List) context.getClientProperty(StatementContext.WHERE_CONDITION_LIST);
-        
+
         if (!"full".equalsIgnoreCase(sourceTable.getExtractionType())) { //NOI18N
             if (whereList == null) {
                 whereList = new ArrayList(3);
@@ -100,7 +110,7 @@ public class Oracle8Statements extends BaseStatements {
             sourceList.add(sourceTable);
             String condition = getSourceWhereCondition(sourceList, context);
             if (condition != null && !condition.equals("")) {
-            	whereList.add(condition);
+                whereList.add(condition);
                 vContext.put("useWhere", Boolean.TRUE);
                 vContext.put(StatementContext.WHERE_CONDITION_LIST, whereList);
             }
@@ -123,6 +133,7 @@ public class Oracle8Statements extends BaseStatements {
         return createSQLPart(result, SQLPart.STMT_SELECT); // NOI18N
     }
 
+    @Override
     public SQLPart getSelectStatement(TargetTable targetTable, StatementContext context) throws BaseException {
         if (context == null) {
             context = new StatementContext();
@@ -173,6 +184,7 @@ public class Oracle8Statements extends BaseStatements {
         return createSQLPart(result, SQLPart.STMT_SELECT); // NOI18N
     }
 
+    @Override
     protected void populateContextForInsertSelect(TargetTable targetTable, StatementContext context, VelocityContext vContext) throws BaseException {
         StatementContext localContext = new StatementContext();
         if (context != null) {
@@ -193,7 +205,7 @@ public class Oracle8Statements extends BaseStatements {
 
         String targetTableName = this.genFactory.generate(targetTable, localContext);
         vContext.put("targetTable", targetTableName);
-        
+
         // Use the Table Qualification flag to suppress column prefix
         localContext.setSuppressingTablePrefixForTargetColumn(true);
 
@@ -249,17 +261,23 @@ public class Oracle8Statements extends BaseStatements {
             vContext.put("useWhere", Boolean.TRUE);
             vContext.put("whereList", whereList);
         }
-        
-        SourceTable[] srcTables = (SourceTable[]) targetTable.
-                getSourceTableList().toArray(new SourceTable[0]);
-        for(SourceTable srcTable : srcTables) {
+
+        SourceTable[] srcTables = (SourceTable[]) targetTable.getSourceTableList().toArray(new SourceTable[0]);
+        for (SourceTable srcTable : srcTables) {
             populateContextForGroupByAndHaving(srcTable, localContext, vContext);
         }
-        
+
         populateContextForGroupByAndHaving(targetTable, localContext, vContext);
-        populateContextForGroupByAndHaving(targetTable.getJoinView(), localContext, vContext);        
+        populateContextForGroupByAndHaving(targetTable.getJoinView(), localContext, vContext);
+        
+        //Set Foreign Key Names List for Target Table
+        vContext.put("targetTableForeignKeys", targetTable.getForeignKeys());
+        vContext.put("statementSeparator", Character.toString(SQLPart.STATEMENT_SEPARATOR));
+        vContext.put("isDisableConstraint", targetTable.isDisableConstraints());
+        vContext.put("targetTablePkName", (targetTable.getPrimaryKey() != null) ? targetTable.getPrimaryKey().getName(): "");        
     }
-    
+
+    @Override
     protected void populateContextForUpdate(TargetTable targetTable, StatementContext context, VelocityContext vContext) throws BaseException {
         StatementContext localContext = new StatementContext();
         if (context != null) {
@@ -267,6 +285,7 @@ public class Oracle8Statements extends BaseStatements {
         }
         localContext.putClientProperty(StatementContext.USE_TARGET_TABLE_ALIAS_NAME, Boolean.TRUE);
         super.populateContextForUpdate(targetTable, localContext, vContext);
+                
     }
 
     private void setSelectLimit(StatementContext context, VelocityContext vContext) {

@@ -386,13 +386,13 @@ end]]>
 <![CDATA[each_with_index { |${1 unusedlocal defaults="e,el,elmt,element"}, ${2 unusedlocal defaults="i,idx,index"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="elsif" descriptionId="ct_elsif" uuid="CD1609FA-47DA-4EE4-9C5B-5C56D953F5B1">
+  <codetemplate abbreviation="elif" descriptionId="ct_elsif" uuid="CD1609FA-47DA-4EE4-9C5B-5C56D953F5B1">
     <code>
 <![CDATA[elsif ${1 default="condition"}
 	${cursor}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="end" descriptionId="ct_end" uuid="451A0596-1F72-4AFB-AF2F-45900FABB0F7">
+  <codetemplate abbreviation="ed" descriptionId="ct_end" uuid="451A0596-1F72-4AFB-AF2F-45900FABB0F7">
     <code>
 <![CDATA[__END__
 ]]>
@@ -604,7 +604,7 @@ end]]>
 <![CDATA[attr_writer :${0 default="attr_names"}]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="when" descriptionId="ct_when" uuid="48D8E498-C9A5-4B1B-9A18-71A5860276FB">
+  <codetemplate abbreviation="wh" descriptionId="ct_when" uuid="48D8E498-C9A5-4B1B-9A18-71A5860276FB">
     <code>
 <![CDATA[when ${1 default="condition"}
 	${cursor}]]>

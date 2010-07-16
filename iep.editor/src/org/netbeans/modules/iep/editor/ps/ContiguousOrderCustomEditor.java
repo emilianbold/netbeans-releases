@@ -21,18 +21,17 @@ package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizer;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -42,18 +41,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -67,7 +65,7 @@ import org.openide.util.NbBundle;
 public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(ContiguousOrderCustomEditor.class.getName());
     
-    private static Set INTEGER_TYPES = new HashSet();
+    private static Set<String> INTEGER_TYPES = new HashSet<String>();
     static {
 //        INTEGER_TYPES.add(SQL_TYPE_TINYINT);
 //        INTEGER_TYPES.add(SQL_TYPE_SMALLINT);
@@ -120,7 +118,8 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
                 // by createPropertyPanel()
                 IEPModel model = mComponent.getModel();
                 mPartitionPanel = new PartitionPanel(mComponent, model,  true);
-
+                
+                
                 // property pane
                 gbc.gridx = 0;
                 gbc.gridy = gGridy++;
@@ -145,8 +144,11 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
                 JPanel attributePane = new JPanel();
                 attributePane.setLayout(new GridBagLayout());
                 String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.ATTRIBUTES");
+                attributePane.setToolTipText(NbBundle.getMessage(ContiguousOrderCustomEditor.class, "TOOLTIP_PartitionPanel"));
                 attributePane.setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
                 getContentPane().add(attributePane, gbc);
+                
+                //accessibility
                 
                 gbc.gridx = 0;
                 gbc.gridy = 0;
@@ -189,7 +191,7 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -213,7 +215,7 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
@@ -254,7 +256,7 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // start
-            Property startProp = mComponent.getProperty(START_KEY);
+            Property startProp = mComponent.getProperty(PROP_START);
             String startStr = NbBundle.getMessage(ContiguousOrderCustomEditor.class, "CustomEditor.START");
             mStartPanel = PropertyPanel.createIntNumberPanel(startStr, startProp, false);
             gbc.gridx = 3;
@@ -278,7 +280,7 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
             pane.add(mStartPanel.component[1], gbc);
 
             // attribute
-            Property attributeProp = mComponent.getProperty(ATTRIBUTE_KEY);
+            Property attributeProp = mComponent.getProperty(PROP_ATTRIBUTE);
             String attributeStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.SORT_BY");
             List attributeList = mPartitionPanel.getAttributeList(INTEGER_TYPES);
             attributeList.add(0, "");
@@ -324,7 +326,7 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getDisplayName();
+                String name = mComponent.getString(PROP_NAME);
                 if (!newName.equals(name) && opContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
@@ -334,12 +336,31 @@ public class ContiguousOrderCustomEditor extends TcgComponentNodePropertyEditor 
                 
                 // start
                 mStartPanel.validateContent(evt);
-                
+
                 // attribute
                 mAttributePanel.validateContent(evt);
+                
+                /* #144319 validate that if the sort by value is chosen on an Integer then the 
+                 * value entered in the Start field is a valid integer.
+                 */
+                String startVal = mStartPanel.getStringValue();
+                String sortByVal = mAttributePanel.getStringValue();
+                Map<String, String> attTypeMap = mPartitionPanel.getAttributeTypeMap();
+                String sortByValType = attTypeMap.get(sortByVal);
+                if (sortByValType != null && sortByValType.equalsIgnoreCase(SharedConstants.SQL_TYPE_INTEGER)) {
+                    try {
+                        Integer.parseInt(startVal);
+                    } catch (NumberFormatException e) {
+                        String msg = NbBundle.getMessage(PropertyPanel.class,
+                                "PropertyPanel.PROPERTY_IS_NOT_A_VALID_INTEGER",
+                                mStartPanel.getLabelName());
+                        throw new PropertyVetoException(msg, evt);
+                    }
+                    
+                }
 
                 // partition key
-                mPartitionPanel.validateContent(evt);
+                mPartitionPanel.validateContent(evt, mAttributePanel.getStringValue());
             } catch (Exception e) {
                 String msg = e.getMessage();
                 mStatusLbl.setText(msg);

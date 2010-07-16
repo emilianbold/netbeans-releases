@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -156,6 +159,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         return copyComponent2(sourceComp, null, target);
                     }
@@ -234,6 +238,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         preMetaComp = createVisualComponent(compClass);
                         String typeParams = classSource.getTypeParameters();
@@ -356,6 +361,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         return createAndAddComponent2(compClass, target, constraints);
                     }
@@ -1278,6 +1284,7 @@ public class MetaComponentCreator {
             try {
                 return (Class)FormLAF.executeWithLookAndFeel(formModel,
                     new Mutex.ExceptionAction() {
+                        @Override
                         public Object run() throws Exception {
                             Class clazz = prepareClass0(classSource);
                             if (clazz != null) {
@@ -1349,8 +1356,10 @@ public class MetaComponentCreator {
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
@@ -1432,10 +1441,10 @@ public class MetaComponentCreator {
                 changes.put("text", varName); // NOI18N
             }
             if(comp instanceof JCheckBoxMenuItem) {
-                changes.put("selected", new Boolean(true)); // NOI18N
+                changes.put("selected", Boolean.TRUE); // NOI18N
             }
             if(comp instanceof JRadioButtonMenuItem) {
-                changes.put("selected", new Boolean(true)); // NOI18N
+                changes.put("selected", Boolean.TRUE); // NOI18N
             }
         } else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
             String txt = ((AbstractButton)comp).getText();
@@ -1491,7 +1500,7 @@ public class MetaComponentCreator {
             if ("".equals(((TextField)comp).getText())) { // NOI18N
                 changes.put("text", varName); // NOI18N
             }
-        } else if (comp instanceof JComboBox) {
+        } else if ("javax.swing.JComboBox".equals(comp.getClass().getName())) { // NOI18N
             ComboBoxModel model = ((JComboBox)comp).getModel();
             if ((model == null) || (model.getSize() == 0)) {
                 String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorComboBoxItem"); // NOI18N

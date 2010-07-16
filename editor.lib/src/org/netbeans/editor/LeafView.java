@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,9 @@ import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.editor.lib.drawing.DrawContext;
+import org.netbeans.modules.editor.lib.drawing.DrawEngine;
+import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 
 /**
 * Leaf view implementation. This corresponds and requires leaf element
@@ -103,17 +109,17 @@ public class LeafView extends BaseView {
     protected int mainHeight;
 
     /** Draw graphics for converting position to coords */
-    ModelToViewDG modelToViewDG = new ModelToViewDG();
+    final ModelToViewDG modelToViewDG = new ModelToViewDG();
 
     /** Draw graphics for converting coords to position */
-    ViewToModelDG viewToModelDG = new ViewToModelDG();
+    final ViewToModelDG viewToModelDG = new ViewToModelDG();
 
     /** Construct new base view */
     public LeafView(Element elem) {
         super(elem);
     }
 
-    public void setParent(View parent) {
+    public @Override void setParent(View parent) {
         super.setParent(parent);
         
         if (getParent() != null) {
@@ -173,7 +179,8 @@ public class LeafView extends BaseView {
                     int pos = getPosFromY(clipY + clipHeight - 1);
                     int endPos = Utilities.getRowEnd(doc, pos);
                     int baseY = getYFromPos(startPos);
-                    DrawEngine.getDrawEngine().draw(new DrawGraphics.GraphicsDG(g),
+                    DrawEngine.getDrawEngine().draw(
+                        new DrawGraphics.GraphicsDG(g),
                         editorUI, startPos, endPos,
                         getBaseX(baseY), baseY, Integer.MAX_VALUE
                     );
@@ -249,17 +256,17 @@ public class LeafView extends BaseView {
     }
 
     /** Returns the number of child views in this view. */
-    public final int getViewCount() {
+    public @Override final int getViewCount() {
         return 0;
     }
 
     /** Gets the n-th child view.  */
-    public final View getView(int n) {
+    public @Override final View getView(int n) {
         return null;
     }
 
     /** !!! osetrit konec view -> jump na dalsi v branchview */
-    public int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a,
+    public @Override int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a,
                                          int direction, Position.Bias[] biasRet)
     throws BadLocationException {
         if (biasRet != null) {
@@ -342,7 +349,7 @@ public class LeafView extends BaseView {
         return ret;
     }
 
-    public Shape modelToView(int p0, Position.Bias b0, int p1, Position.Bias b1,
+    public @Override Shape modelToView(int p0, Position.Bias b0, int p1, Position.Bias b1,
                              Shape a) throws BadLocationException {
         Rectangle r0 = (Rectangle)modelToView(p0, a, b0);
         Rectangle r1 = (Rectangle)modelToView(p1, a, b1);
@@ -413,7 +420,7 @@ public class LeafView extends BaseView {
     * @param a the current allocation of the view
     * @param f the factory to use to rebuild if the view has children
     */
-    public void insertUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
+    public @Override void insertUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
         try {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI editorUI = getEditorUI();
@@ -449,7 +456,7 @@ public class LeafView extends BaseView {
     * @param a the current allocation of the view
     * @param f the factory to use to rebuild if the view has children
     */
-    public void removeUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
+    public @Override void removeUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
         try {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI editorUI = getEditorUI();
@@ -482,7 +489,7 @@ public class LeafView extends BaseView {
     * @param a the current allocation of the view
     * @param f the factory to use to rebuild if the view has children
     */
-    public void changedUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
+    public @Override void changedUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
         try {
             if (getComponent().isShowing()) {
                 getEditorUI().repaintBlock(evt.getOffset(), evt.getOffset() + evt.getLength());
@@ -501,7 +508,7 @@ public class LeafView extends BaseView {
 
         Rectangle r;
 
-        public boolean targetOffsetReached(int pos, char ch, int x,
+        public @Override boolean targetOffsetReached(int pos, char ch, int x,
                                            int charWidth, DrawContext ctx) {
             r.x = x;
             r.y = getY();
@@ -533,7 +540,7 @@ public class LeafView extends BaseView {
             return offset;
         }
 
-        public boolean targetOffsetReached(int offset, char ch, int x,
+        public @Override boolean targetOffsetReached(int offset, char ch, int x,
         int charWidth, DrawContext ctx) {
             if (offset <= eolOffset) {
                 if (x + charWidth < targetX) {

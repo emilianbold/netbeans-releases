@@ -21,8 +21,7 @@ package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -41,8 +40,7 @@ import javax.swing.border.TitledBorder;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -92,7 +90,7 @@ public class TupleBasedAggregatorCustomEditor extends DefaultCustomEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -116,7 +114,7 @@ public class TupleBasedAggregatorCustomEditor extends DefaultCustomEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
@@ -160,7 +158,7 @@ public class TupleBasedAggregatorCustomEditor extends DefaultCustomEditor {
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // start
-            Property startProp = mComponent.getProperty(START_KEY);
+            Property startProp = mComponent.getProperty(PROP_START);
             String startStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.START");
             mStartPanel = PropertyPanel.createIntNumberPanel(startStr, startProp, false);
             gbc.gridx = 3;
@@ -184,7 +182,7 @@ public class TupleBasedAggregatorCustomEditor extends DefaultCustomEditor {
             pane.add(mStartPanel.component[1], gbc);
 
             // increment
-            Property incrementProp = mComponent.getProperty(INCREMENT_KEY);
+            Property incrementProp = mComponent.getProperty(PROP_INCREMENT);
             String incrementStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.INCREMENT");
             mIncrementPanel = PropertyPanel.createIntNumberPanel(incrementStr, incrementProp, false);
             gbc.gridx = 3;
@@ -208,7 +206,7 @@ public class TupleBasedAggregatorCustomEditor extends DefaultCustomEditor {
             pane.add(mIncrementPanel.component[1], gbc);
 
             // size
-            Property sizeProp = mComponent.getProperty(SIZE_KEY);
+            Property sizeProp = mComponent.getProperty(PROP_SIZE);
             String sizeStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.SIZE");
             mSizePanel = PropertyPanel.createIntNumberPanel(sizeStr, sizeProp, false);
             gbc.gridx = 3;

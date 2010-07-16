@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,15 +49,14 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * File and offset -based key
  */
 
 /*package*/
-abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable {
+abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable<OffsetableKey> {
 
     private final int startOffset;
     private final int endOffset;
@@ -80,7 +82,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 
     /*package-local*/ CharSequence getName() {
         if (name != null && 0 < name.length() && isDigit(name.charAt(0))) {
-            return CharSequenceKey.empty();
+            return CharSequences.empty();
         }
         return name;
     }
@@ -127,7 +129,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
         this.name = PersistentUtils.readUTF(aStream, NameCache.getManager());
-        assert this.name instanceof TinyCharSequence;
+        assert CharSequences.isCompact(name);
     }
 
     @Override
@@ -141,8 +143,8 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
             return false;
         }
         OffsetableKey other = (OffsetableKey) obj;
-        assert name instanceof TinyCharSequence;
-        assert other.name instanceof TinyCharSequence;
+        assert CharSequences.isCompact(name);
+        assert CharSequences.isCompact(other.name);
         return this.startOffset == other.startOffset &&
                 this.endOffset == other.endOffset &&
                 this.getKind() == other.getKind() &&
@@ -154,7 +156,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         return (hashCode >> 8) + 37 * (hashCode & 0xff);
     }
 
-    private final int _hashCode() {
+    private int _hashCode() {
         int retValue;
 
         retValue = 19 * super.hashCode() + name.hashCode();
@@ -163,11 +165,11 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         return retValue;
     }
 
-    public int compareTo(Object o) {
-        if (this == o) {
+    @Override
+    public int compareTo(OffsetableKey other) {
+        if (this == other) {
             return 0;
         }
-        OffsetableKey other = (OffsetableKey) o;
         assert (getKind() == other.getKind());
         //FUXUP assertion: unit and file tables should be deserialized before files deserialization.
         //instead compare indexes.
@@ -207,10 +209,12 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         }
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 2;
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         switch (level) {
             case 0:

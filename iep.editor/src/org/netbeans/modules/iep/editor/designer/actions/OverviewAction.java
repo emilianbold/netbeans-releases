@@ -2,14 +2,13 @@ package org.netbeans.modules.iep.editor.designer.actions;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.net.URL;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 
 import org.netbeans.modules.iep.editor.designer.PlanCanvas;
-import org.netbeans.modules.iep.editor.util.ImageUtil;
+import org.netbeans.modules.tbls.model.ImageUtil;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -50,6 +49,8 @@ public class OverviewAction extends AbstractAction {
         if (mOverview == null) {
             mOverview = new JGoOverview();
             mOverview.setObserved(this.mView);
+            mOverview.setScale(1.0d/2);
+            
             String title = NbBundle.getMessage(PlanCanvas.class,"PlanDesigner.Overview");
             try {
                 title = mModel.getIEPFileName() + " " +NbBundle.getMessage(PlanCanvas.class,"PlanDesigner.Overview");

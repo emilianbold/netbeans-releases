@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Receive;
@@ -104,8 +103,9 @@ public class ReceiveNode extends BpelNode<Receive> {
         //
         CustomEditorProperty customizer = new CustomEditorProperty(this);
         mainPropertySet.put(customizer);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
         InstanceRef myInstanceRef = new InstanceRef() {
@@ -117,7 +117,7 @@ public class ReceiveNode extends BpelNode<Receive> {
             }
         };
         //
-        PropertyUtils.registerAttributeProperty(myInstanceRef, mainPropertySet,
+        propUtil.registerAttributeProperty(myInstanceRef, mainPropertySet,
                 CreateInstanceActivity.CREATE_INSTANCE, CREATE_INSTANCE,
                 "getCreateInstance", "setCreateInstance",   // NOI18N
                 null); // NOI18N
@@ -125,35 +125,35 @@ public class ReceiveNode extends BpelNode<Receive> {
         Sheet.Set messagePropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MESSAGE_SET);
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 PartnerLinkReference.PARTNER_LINK, PARTNER_LINK,
                 "getPartnerLink", "setPartnerLink", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 PortTypeReference.PORT_TYPE, PORT_TYPE,
                 "getPortType", "setPortType", "removePortType"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 OperationReference.OPERATION, OPERATION,
                 "getOperation", "setOperation", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this,
+        property = propUtil.registerAttributeProperty(this,
                 messagePropertySet,
                 VariableReference.VARIABLE, INPUT,
                 "getVariable", "setVariable", "removeVariable"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -191,8 +191,10 @@ public class ReceiveNode extends BpelNode<Receive> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,            
             ActionType.WRAP,
+
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,

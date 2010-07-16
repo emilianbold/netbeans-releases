@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -1047,6 +1050,225 @@ public class IndentTestCase extends EditorBase {
         assertDocumentTextAndCaret("Incorrect new-line indent",
                   "namespace maths {\n" +
                   "|"
+                );
+    }
+
+    public void testNestedFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        for (int j=0; j<n; j++)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        for (int j=0; j<n; j++)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIf() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (i==0)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (i==0)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedForIf() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedForIf1() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIfFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIfFor1() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            \n"+
+            "}\n"
+            );
+    }
+
+    public void testEmptyFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++);|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of empty for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++);\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedFor2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of empty for",
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testPreprocessorIndentTyping() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "    |\n"
+                );
+        typeChar('#', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "#\n"
+                );
+    }
+
+    public void testPreprocessorIndentTyping2() throws Exception {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.sharpAtStartLine, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "  |\n"
+                );
+        typeChar('#', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "    #\n"
+                );
+    }
+
+    public void testPreprocessorIndentTyping3() throws Exception {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.sharpAtStartLine, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "  #endi|\n"
+                );
+        typeChar('f', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "#endif\n"
                 );
     }
 }

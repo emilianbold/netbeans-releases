@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,8 +41,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +49,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -71,24 +74,24 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         setBlockRange(block);
     }
 
-    ScopeImpl(Scope inScope, IndexedElement element, PhpKind kind) {
+    ScopeImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
         super(inScope, element, kind);
     }
     //old contructors
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpKind kind) {
+            OffsetRange offsetRange, PhpElementKind kind) {
         super(inScope, name, file, offsetRange, kind);
         assert isScopeKind(kind): kind.toString();
     }
 
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpKind kind,
+            OffsetRange offsetRange, PhpElementKind kind,
             PhpModifiers modifier) {
         super(inScope, name, file, offsetRange, kind, modifier);
         assert isScopeKind(kind) : kind.toString();
     }
 
-    private static boolean isScopeKind(PhpKind kind) {
+    private static boolean isScopeKind(PhpElementKind kind) {
         switch (kind) {
             case PROGRAM:
             case NAMESPACE_DECLARATION:

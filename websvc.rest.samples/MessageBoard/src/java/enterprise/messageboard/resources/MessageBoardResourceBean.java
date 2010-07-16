@@ -2,7 +2,10 @@
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -15,7 +18,7 @@
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at jersey/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
+ * as provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code.  If applicable, add the following below the License
  * Header, with the fields enclosed by brackets [] replaced by your own
  * identifying information: "Portions Copyrighted [year]
@@ -34,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package enterprise.messageboard.resources;
 
 import enterprise.messageboard.entities.Message;
@@ -44,11 +46,13 @@ import java.net.URISyntaxException;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -56,10 +60,13 @@ import javax.ws.rs.core.UriInfo;
 @Stateless
 public class MessageBoardResourceBean {
 
-    @Context private UriInfo ui;
-    @EJB MessageHolderSingletonBean singleton;
+    @Context
+    private UriInfo ui;
+    @EJB
+    MessageHolderSingletonBean singleton;
 
     @GET
+    @Produces({"application/xml", "text/html"})
     public List<Message> getMessages() {
         return singleton.getMessages();
     }
@@ -73,13 +80,25 @@ public class MessageBoardResourceBean {
         return Response.created(msgURI).build();
     }
 
+    @POST
+    @Consumes("application/xml")
+    public Response addMessage(Message msg) throws URISyntaxException {
+        Message m = singleton.addMessage(msg.getMessage());
+
+        URI msgURI = ui.getRequestUriBuilder().path(Integer.toString(m.getUniqueId())).build();
+
+        return Response.created(msgURI).build();
+    }
+
     @Path("{msgNum}")
     @GET
+    @Produces({"application/xml", "text/html"})
     public Message getMessage(@PathParam("msgNum") int msgNum) throws NotFoundException {
         Message m = singleton.getMessage(msgNum);
 
-        if(m == null)
+        if (m == null) {
             throw new NotFoundException();
+        }
 
         return m;
 
@@ -90,12 +109,8 @@ public class MessageBoardResourceBean {
     public void deleteMessage(@PathParam("msgNum") int msgNum) throws NotFoundException {
         boolean deleted = singleton.deleteMessage(msgNum);
 
-        if(!deleted)
+        if (!deleted) {
             throw new NotFoundException();
+        }
     }
 }
-
-
-
-
-

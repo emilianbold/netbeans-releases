@@ -20,8 +20,9 @@ package org.netbeans.modules.bpel.model.ext.editor.xam;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
-import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Predicate;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.xam.BpelTypes;
 
 /**
@@ -31,8 +32,9 @@ import org.netbeans.modules.bpel.model.xam.BpelTypes;
  */
 public enum EditorTypesEnum implements BpelTypes {
     EDITOR( Editor.class ),
-    CASTS (Casts.class),
     CAST( Cast.class ),
+    PREDICATE(Predicate.class),
+    PSEUDO_COMP(PseudoComp.class),
     ;
 
     EditorTypesEnum( Class<? extends BpelEntity> clazz ) {

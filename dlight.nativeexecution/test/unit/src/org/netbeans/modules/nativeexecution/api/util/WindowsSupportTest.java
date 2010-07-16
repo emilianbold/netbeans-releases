@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,12 +119,12 @@ public class WindowsSupportTest {
         if (na()) {
             return;
         }
-        
+
         String winPath = "C:\\Documents and Settings";
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToCygwinPath(winPath);
-        assertEquals(cygwinPath, result);
+        assertEquals(cygwinPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -135,11 +138,11 @@ public class WindowsSupportTest {
             return;
         }
 
-        String winPath = "c:\\Documents and Settings";
+        String winPath = "C:\\Documents and Settings";
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromCygwinPath(cygwinPath);
-        assertEquals(winPath, result);
+        assertEquals(winPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -157,7 +160,7 @@ public class WindowsSupportTest {
         String msysPath = "/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToMSysPath(winPath);
-        assertEquals(msysPath, result);
+        assertEquals(msysPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -175,7 +178,7 @@ public class WindowsSupportTest {
         String msysPath = "/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromMSysPath(msysPath);
-        assertEquals(winPath, result);
+        assertEquals(winPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -236,21 +239,5 @@ public class WindowsSupportTest {
 //        assertEquals(expResult, result);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getEnv method, of class WindowsSupport.
-     */
-    @Test
-    public void testGetEnv() {
-        System.out.println("--- getEnv ---");
-
-        if (na()) {
-            return;
-        }
-
-        WindowsSupport instance = WindowsSupport.getInstance();
-        Map result = instance.getEnv();
-        assertNotNull(result);
     }
 }

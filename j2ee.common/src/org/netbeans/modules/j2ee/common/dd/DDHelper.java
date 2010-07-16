@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -127,6 +130,44 @@ public class DDHelper {
             return action.getResult();
     }
     
+    /**
+     * Creates beans.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of beans.xml should be created
+     * @param dir Directory where beans.xml should be created
+     * @return beans.xml file as FileObject
+     * @throws java.io.IOException
+     * @since 1.49
+     */
+    public static FileObject createBeansXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        return createBeansXml(j2eeProfile, dir, "beans");
+    }
+
+    /**
+     * Creates beans.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of beans.xml should be created
+     * @param dir Directory where beans.xml should be created
+     * @param name name of configuration file to create; should be always "beans" for now
+     * @return beans.xml file as FileObject
+     * @throws java.io.IOException
+     * @since 1.49
+     */
+    public static FileObject createBeansXml(Profile j2eeProfile, FileObject dir, String name) throws IOException {
+        String template = null;
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            template = "beans-1.0.xml"; //NOI18N
+        }
+
+        if (template == null)
+            return null;
+
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, name+".xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
+    }
+
     // -------------------------------------------------------------------------
     private static class MakeFileCopy implements Runnable {
         private String fromFile;
@@ -152,6 +193,9 @@ public class DDHelper {
         public void run() {
             try {
                 // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
+                if (toDir.getFileObject(toFile) != null) {
+                    throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
+                }
                 FileObject xml = FileUtil.createData(toDir, toFile);
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(fromFile));
                 if (content != null) {

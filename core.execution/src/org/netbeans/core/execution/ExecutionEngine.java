@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,13 +52,13 @@ import java.util.*;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
+import org.netbeans.core.startup.Main;
 
 import org.openide.execution.NbClassPath;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
-import org.netbeans.core.NbTopManager;
 
 /** Execution that provides support for starting a class with main
 *
@@ -153,7 +156,7 @@ public final class
     * @param executor to start
     * @param info about class to start
     */
-    public ExecutorTask execute(String name, Runnable run, InputOutput inout) { 
+    public ExecutorTask execute(String name, Runnable run, final InputOutput inout) {
         TaskThreadGroup g = new TaskThreadGroup(base, "exec_" + name + "_" + number); // NOI18N
         g.setDaemon(true);
         ExecutorTaskImpl task = new ExecutorTaskImpl();
@@ -161,8 +164,13 @@ public final class
             try {
                 new RunClassThread(g, name, number++, inout, this, task, run);
                 task.lock.wait();
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e.getMessage());
+            } catch (InterruptedException e) { // #171795
+                inout.closeInputOutput();
+                return new ExecutorTask(null) {
+                    public @Override void stop() {}
+                    public @Override int result() {return 2;}
+                    public @Override InputOutput getInputOutput() {return inout;}
+                };
             }
         }
         return task;
@@ -175,7 +183,7 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        List<File> l = NbTopManager.getModuleJars();
+        List<File> l = Main.getModuleSystem().getModuleJars();
         return new NbClassPath (l.toArray (new File[l.size ()]));
     }
 

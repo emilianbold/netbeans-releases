@@ -83,7 +83,10 @@ public final class RepositoryInfo {
             type = RepositoryPreferences.TYPE_NEXUS;
         }
         String id = fo.getName();
-        String name = id;
+        String name = (String) fo.getAttribute(RepositoryPreferences.KEY_DISPLAY_NAME);
+        if (name == null) {
+            name = id;
+        }
         String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
         if (remoteBundleName != null) {
             try {

@@ -27,8 +27,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 
 /**
@@ -108,7 +111,17 @@ public interface XPathSchemaContext {
      * @return
      */
     String toStringWithoutParent();
-    
+
+    /**
+     * Generates correct text with XPath expression.
+     *
+     * @param nsContext - it is necessary to obtain NS prefixes
+     * @param sms - an optional argument. It can be null.
+     * It is necessary when schema with empty target namespace is used. 
+     * @return
+     */
+    String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms);
+
     /**
      * This class contans current and parent schema components. 
      * It keeps track from which parent schema component the current 
@@ -163,6 +176,14 @@ public interface XPathSchemaContext {
             return false;
         }
         
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + (this.mCompHolder != null ? this.mCompHolder.hashCode() : 0);
+            hash = 71 * hash + (this.mParentCompHolder != null ? this.mParentCompHolder.hashCode() : 0);
+            return hash;
+        }
+
 
         /**
          * Helper method for toString
@@ -217,7 +238,7 @@ public interface XPathSchemaContext {
          * @return
          */
         public static SchemaComponent getSchemaComp(XPathSchemaContext context) {
-            SchemaCompHolder sCompHolder = getSchemaCompHolder(context);
+            SchemaCompHolder sCompHolder = getSchemaCompHolder(context, false);
             if (sCompHolder != null)  {
                 return sCompHolder.getSchemaComponent();
             }
@@ -225,9 +246,34 @@ public interface XPathSchemaContext {
             return null;
         }
         
+        /**
+         *
+         * @param context
+         * @return
+         * @deprecated
+         */
         public static SchemaCompHolder getSchemaCompHolder(XPathSchemaContext context) {
+            return getSchemaCompHolder(context, false);
+        }
+
+        /**
+         * If the <code>lookForMatryoshkaCore</code> flag is set, then the
+         * specified context will be checked. It it is a {@link WrappingSchemaContext}
+         * then tne matryoshka's core will be found at first.
+         *
+         * @see Utilities#getMatryoshkaCore(WrappingSchemaContext)
+         * @param context
+         * @param lookForMatryoshkaCore
+         * @return
+         */
+        public static SchemaCompHolder getSchemaCompHolder(
+                XPathSchemaContext context, boolean lookForMatryoshkaCore) {
             if (context == null)  {
                 return null;
+            }
+            //
+            if (lookForMatryoshkaCore && context instanceof WrappingSchemaContext) {
+                context = getMatryoshkaCore(WrappingSchemaContext.class.cast(context));
             }
             //
             Set<SchemaCompPair> scPairSet = null;
@@ -235,45 +281,49 @@ public interface XPathSchemaContext {
                 scPairSet = context.getSchemaCompPairs();
             } else {
                 scPairSet = context.getUsedSchemaCompPairs();
-            }
-
+            }           
+            //
             if (scPairSet != null && scPairSet.size() > 0) {
                 SchemaCompPair scPair = scPairSet.iterator().next();
                 if (scPair != null) {
                     SchemaCompHolder sCompHolder = scPair.getCompHolder();
                     return sCompHolder;
                 }
-            } 
+            }
             //
             return null;
         }
         
         public static boolean equalsChain(
                 XPathSchemaContext cont1, XPathSchemaContext cont2) {
-            if (equals(cont1, cont2)) {
+            if (XPathUtils.equal(cont1, cont2)) {
                 //
                 // Compare parent contexts
                 XPathSchemaContext parentCont1 = cont1.getParentContext();
                 XPathSchemaContext parentCont2 = cont2.getParentContext();
-                if (parentCont1 != null && parentCont2 != null) {
-                    boolean result = equalsChain(parentCont1, parentCont2);
-                    if (!result) {
-                        return false;
-                    }
-                } else if ((parentCont1 == null && parentCont2 != null) || 
-                        (parentCont1 != null && parentCont2 == null)) {
-                    return false;
-                } 
                 //
-                return true;
+                if (parentCont1 == parentCont2) {
+                    return true;
+                }
+                if (parentCont1 == null || parentCont2 == null) {
+                    return false;
+                }
+                return parentCont1.equalsChain(parentCont2);
             }
             //
             return false;
         }
                 
-        public static boolean equals(
+        public static boolean equalCompPairs(
                 XPathSchemaContext cont1, XPathSchemaContext cont2) {
-            assert cont1 != null && cont2 != null;
+            if (cont1 == cont2) {
+                return true;
+            }
+            if (cont1 == null || cont2 == null) {
+                return false;
+            }
+            //
+            // assert cont1 != null && cont2 != null;
             //
             // Compare component pairs first
             Set<SchemaCompPair> compPairSet1 = cont1.getSchemaCompPairs();
@@ -504,6 +554,16 @@ public interface XPathSchemaContext {
                         //
                         SchemaModel sModel = contextSCompHolder.
                                 getSchemaComponent().getModel();
+                        if (sModel == null) {
+                            // Invalid Schema in the chain
+                            break;
+                        }
+                        Schema schema = sModel.getSchema();
+                        if (schema == null) {
+                            // Invalid Schema in the chain
+                            break;
+                        }
+                        //
                         unresolvedParents = new HashSet<SchemaCompHolder>();
                         //
                         if (sModel == ownerModel) {
@@ -516,7 +576,7 @@ public interface XPathSchemaContext {
                             continue;
                         }
                         //
-                        String targetNs = sModel.getSchema().getTargetNamespace();
+                        String targetNs = schema.getTargetNamespace();
                         if (targetNs == null || targetNs.length() == 0) {
                             // Skip the parent schema without a targetNamespace
                             SchemaCompHolder parentCH = scPair.getParetnCompHolder();
@@ -556,6 +616,51 @@ public interface XPathSchemaContext {
             }
             // 
             return result;
+        }
+    
+        /**
+         * Calculates the index of the step for the specified schema context.
+         * For example, if there is the following location path:
+         *   $Var1/a/b/c/@d then there is the folloing results:
+         *   
+         *   $Var         -1
+         *   a             0
+         *   b             1
+         *   c             2
+         *   d             3
+         * 
+         * @return
+         */
+        public static int getSchemaStepIndex(XPathSchemaContext sContext) {
+            int counter = -1;
+            XPathSchemaContext currContext = sContext;
+            while (currContext != null &&
+                    !(currContext instanceof VariableSchemaContext)) {
+                currContext = currContext.getParentContext();
+                counter++;
+            }
+            //
+            return counter;
+        }
+
+        /**
+         * Sometimes contexts can wrap each other.
+         * For example, the {@link PredicatedSchemaContext} implements the
+         * interface {@link WrappingSchemaContext} and it means it can wrap
+         * another context. So several wrapping contexts can found a matryoshka.
+         * The most nested context is a core one.
+         * This method looks for the core context recursively.
+         *
+         * @param ctxt
+         * @return
+         */
+        public static XPathSchemaContext getMatryoshkaCore(WrappingSchemaContext ctxt) {
+            XPathSchemaContext base = ctxt.getBaseContext();
+            if (base instanceof WrappingSchemaContext) {
+                return getMatryoshkaCore(WrappingSchemaContext.class.cast(base));
+            } else {
+                return base;
+            }
         }
     
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -158,20 +161,24 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
     }
 
     // DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e)  {
     }
 
     // DocumentListener
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
     }
 
     // DocumentListener
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
     }
 
     // PropertyChangeListener - called from ExplorerManager when node selection changes
+    @Override
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
             if (!configuring) {
@@ -186,6 +193,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
     }
 
     // ExplorerManager.Provider - for the ListView to work
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -525,6 +533,7 @@ private void libFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             list.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false));
             setDefaultProcessor(this);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             // Do nothing
         }

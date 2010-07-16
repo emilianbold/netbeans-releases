@@ -59,6 +59,11 @@ public interface Import extends TMapComponent {
     void setNamespace( String uri ) throws VetoException;
 
     /**
+     * Removes "namespace" attribute.
+     */
+    void removeNamespace();
+    
+    /**
      * Getter for "location" attribute.
      * 
      * @return "location" attribute value.
@@ -75,4 +80,8 @@ public interface Import extends TMapComponent {
      */
     void setLocation( String value ) throws VetoException;
 
+    /**
+     * Removes "location" attribute.
+     */
+    void removeLocation();
 }

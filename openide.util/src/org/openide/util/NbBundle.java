@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -1157,6 +1160,9 @@ public class NbBundle extends Object {
             /** text of currently read comment, including leading comment character */
             private StringBuffer lastComment = null;
 
+            /** text of currently read value, ignoring escapes for now */
+            private final StringBuilder currentValue = new StringBuilder();
+
             /** Create a new InputStream which will annotate resource bundles.
              * Bundles named Bundle*.properties will be treated as localizable by default,
              * and so annotated; other bundles will be treated as nonlocalizable and not annotated.
@@ -1352,7 +1358,7 @@ public class NbBundle extends Object {
 
                     default:
                         state = IN_VALUE;
-
+                        currentValue.setLength(0);
                         return next;
                     }
 
@@ -1377,7 +1383,7 @@ public class NbBundle extends Object {
                         reverseLocalizable = false;
                         state = WAITING_FOR_KEY;
 
-                        if (localizable ^ revLoc) {
+                        if (localizable ^ revLoc && isLocalizable(currentValue.toString())) {
                             // This value is intended to be localizable. Annotate it.
                             assert keyLine > 0;
                             toInsert = "(" + id + ":" + keyLine + ")"; // NOI18N
@@ -1394,6 +1400,7 @@ public class NbBundle extends Object {
                         }
 
                     default:
+                        currentValue.append((char) next);
                         return next;
                     }
 
@@ -1405,6 +1412,11 @@ public class NbBundle extends Object {
                 default:
                     throw new IOException("should never happen"); // NOI18N
                 }
+            }
+
+            /** Heuristic for some common code items placed in bundles. */
+            private boolean isLocalizable(String value) {
+                return !value.matches("0x[0-9a-fA-F]+|https?://.+");
             }
 
         }

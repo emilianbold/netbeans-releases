@@ -1,34 +1,89 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-  <title>Debug an Application - Java Card 3 Development
-  </title>
+<title>Debug an Application - Java Card 3 Development
+   </title></head><body class="body"><a name="DebugApplication2"></a><h2>Debug an Application</h2>
+<p class="p">The following topics describe the basic sequence of activities completed by a developer
+when debugging an application for the Java Card 3 platform:</p>
+<table cellspacing="1" cellpadding="1" border="1">
+<tr>
+	<td>Prepare to run the debugger</td>
+	<td>Use the IDE to:<ul>
+	    	<li><a href="#breakpoint">Set breakpoints in your code</a>:<br>
+			Debug &gt; New Breakpoint
+			</li>
+	    	<li><a href="#watch">Set watches in your code</a>:<br>
+			Debug &gt; New Watch
+			</li>
+</ul></td>
+</tr>
+<tr>
+	<td>Run the debugger</td>
+	<td><ul>
+	    	<li><a href="#debug">Start a debugger session</a>:<br>
+			Debug &gt; Debug Project<br>
+			Debug &gt; Debug File</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Monitor your code</td>
+	<td><ul>
+	<li><a href="#step">Step through your code</a>:<br>
+	Debug &gt; Step <i>option</i></li>
+	<li>View debugging information.</li>
+	<li>View application threads.</li>
+	<li>Fix any errors and continue debugging.</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Finish the debugger session</td>
+	<td><ul>
+	    	<li>Stop the debugger:<br>
+			Debug &gt; Finish Debugger Session</li>
+			</ul></td>
+</tr>
+</table>
+<a name="breakpoint"> </a>
+<h3>Set Breakpoints in Code</h3>
+<p class="p">A breakpoint is a flag in the source code that tells the debugger to stop execution of the program. When your program stops on a breakpoint, you can perform actions such as examining the values of variables and single-stepping through your program.</p>
+<p class="p">The IDE enables you to set several types of breakpoints using the New Breakpoint dialog. Breakpoints can be set using the New Breakpoint dialog for the following types of source elements:</p>
+<dl>
+	<dt>Class</dt><dd>You can break when the class is loaded into the virtual machine, unloaded from the virtual machine, or both.</dd>
+<dt>Exception</dt><dd>You can break whenever a specific exception is caught, whenever a specific exception is not handled in the source code, or whenever any exception is encountered regardless of whether the program handles the error or not.</dd>
+<dt>Field</dt><dd>You can stop execution of your program whenever a field in a specific class is accessed (for example, the method was called with the variable as an argument), modified or both.</dd>
+<dt>Method</dt><dd>Program execution stops every time the method is entered, exited or both.
+Thread. You can break program execution whenever a thread starts, stops, or both.</dd>
+</dl>
+<a name="watch"> </a>
+<h3>Set Watches in Code</h3>
+<p class="p">A watch enables you to track the changes in the value of a variable or expression during program execution. The Watches window opens at the bottom of the editor and lists all of the watches you have defined for your project. You can create a watch directly from the Source Editor or with the Debug &gt; New Watch menu selection.</p>
+<p class="p">When you create a watch, the value of the variable or expression is immediately evaluated and displayed in the Watches window. The value of the watch is based on the current context. When you change the current context, the Watches window is updated to show the value of the watch for that context.
+When a debugging session is running, you can use code completion in the New Watch dialog box.</p>
+<h4>To create a watch:</h4>
+<ol>
+<li>Select the variable or expression in the Source Editor.</li>
+<li>Either right-click on the selection and choose New Watch or select Debug &gt; New Watch in the IDE menu bar.</li>
+<li>The New Watch dialog box opens with the variable or expression entered in the text field.</li>
+<li>Click OK.</li>
+</ol>
+<p class="p">The Watches window opens at the bottom of the IDE with the new watch selected.</p>
+<a name="debug"> </a>
+<h3>Start a Debugging Session</h3>
+<p class="p">All debugging commands in the Debug menu are run on the main project. Regardless of the file or project selected in the Projects window or Source Editor, the Debug menu commands begin a debugging session in the main class of the main project.</p>
+<p class="p">To debug an individual project, right-click the project in the Projects window and choose Debug. The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p>
+<p class="p">To debug an individual file, select a runnable file in the Projects window and choose Debug &gt; Debug File. The IDE runs the file in the debugger until execution stops or a breakpoint is reached.</p>
 
-</head>
-
-<body class="body">
-
-
-
-<a name="DebugApplication2"></a><h2>Debug an Application</h2><ol class="ol">
-<li class="li"><a name="z40005251393592"></a><b>Set break points in the the application source code.</b><ol style="list-style-type: lower-alpha">
-<li class="li"><a name="z40005251393636"></a><b>Display the source code of the application in the IDE</b></li>
-<li class="li"><a name="z40005251393644"></a><b>With the source code displayed in the IDE, open any file and set
-break points where required</b></li></ol>
-<hr><p class="p"><b>Note - </b>Break points can be set at any time.</p>
-<hr>
-</li>
-<li class="li"><a name="z40005251393600"></a><b>Step through the code by executing the application from within the IDE</b></li>
-<li class="li"><a name="z40005251393609"></a><b>When a break point is hit, the IDE stops execution and highlights the
-current line.</b><p class="p">There are various options available in the IDE for stepping over or stepping
-into the code at the breakpoint.</p></li></ol>
-
-
+<a name="step"> </a>
+<h3>Stepping Through Code</h3>
+<p class="p">When execution of your program is halted, you can step through your lines of code using the following commands on the Debug menu or toolbar:</p>
+<dl>
+	<dt>Step Over</dt><dd>Executes one source line. If the source line contains a call, executes the entire routine without stepping through the individual instructions.</dd>
+	<dt>Step Over Expression</dt><dd>Executes one method call in an expression. If an expression has multiple method calls, you can use Step Over Expression to step through an expression and view the value of each method call in the expression in the Local Variables window. Each time you use the Step Over Expression command, the debugger advances to the next method call in the expression and the completed method call is underlined. Step Over Expression behaves like Step Over when there are no additional method calls.</dd>
+<dt>Step Into</dt><dd>Executes one method call in a source line. If the line has more than one method call you can choose which method call to step into by using the arrow keys or mouse in the source editor to select the method call. The selected method call to step into is indicated by a box around the method call in the source editor. The most likely method call in the line is selected by default.</dd>
+<dt>Step Into Next Method</dt><dd>Executes one source line. If the source line contains a call, the IDE stops just before executing the first statement of the routine. You can also start a debugging session with the Step Into command. Program execution stops on the first line after the main routine before any changes have been made to the state of the program.</dd>
+<dt>Step Out</dt><dd>Executes one source line. If the source line is part of a routine, executes the remaining lines of the routine and returns control to the caller of the routine. The completed method call is highlighted in the Source Editor.</dd>
+</dl>
 </body>
 </html>

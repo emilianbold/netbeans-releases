@@ -32,6 +32,7 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.openide.util.ImageUtilities;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -44,15 +45,22 @@ public enum NodeType {
     UNKNOWN_TYPE, // Special element which means that the value isn't known.
     TRANSFORMMAP(TransformMap.class),
     IMPORT(Import.class),
+    VARIABLE(Variable.class),
     SERVICE(Service.class),
     OPERATION(Operation.class),
     INVOKE(Invoke.class),
     TRANSFORM(Transform.class),
-    PARAM(Param.class);
+    PARAM(Param.class),
+    IMPORTS_CONTAINER(),
+    VARIABLES_CONTAINER(Operation.class),
+    WSDL_FILE(),
+    NON_IMPORTED_ARTIFACTS(),
+    PORT_TYPE(),
+    WSDL_OPERATION();
 
     private AtomicReference<String> myDisplayName = new AtomicReference<String>();
     private AtomicReference<Image> myDefaultImage = new AtomicReference<Image>();
-    private Class<? extends TMapComponent> myComponentType;
+    private Class myComponentType;
     private static final String IMAGE_FOLDER_PATH =
             "org/netbeans/modules/xslt/tmap/resources/images/"; // NOI18N
     public static final Image UNKNOWN_IMAGE = getImageImpl(UNKNOWN_TYPE, null);
@@ -60,7 +68,7 @@ public enum NodeType {
     private NodeType() {
     }
 
-    private NodeType(Class<? extends TMapComponent> tMapComponentType) {
+    private NodeType(Class tMapComponentType) {
         myComponentType = tMapComponentType;
     }
     
@@ -71,7 +79,7 @@ public enum NodeType {
         return getNodeType(entity.getComponentType());
     }
     
-    public static NodeType getNodeType(Class<? extends TMapComponent> tMapComponentType) {
+    public static NodeType getNodeType(Class tMapComponentType) {
         NodeType type = UNKNOWN_TYPE;
         NodeType[] types =  values();
         for (NodeType typeEl : types) {

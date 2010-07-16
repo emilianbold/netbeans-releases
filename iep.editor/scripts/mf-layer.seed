@@ -21,26 +21,115 @@
 
 <filesystem>
     <folder name="Templates">
-        <folder name="CAPS">
-            <file name="EventProcess.iep" url="empty.iep">
+        <folder name="SOA_IEP">
+            <attr name="position" intvalue="107"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+            <file name="EventProcessor.iep" url="empty.iep">
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator"
-                      methodvalue="com.sun.jbi.ui.devtool.wizard.generic.NewFileIterator.genericFileIterator" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.sun.jbi.ui.devtool.iep.nb.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/sun/jbi/ui/devtool/iep/nb/eventProcess.gif" /> 
-                <attr name="templateWizardURL" urlvalue="nbresloc:/com/sun/jbi/ui/devtool/iep/nb/template.html" /> 
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.compapp.projects.wizard.NewFileIterator.genericFileIterator"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.iep.editor.wizard.IEPWizardIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/template.html"/> 
+                <attr name="templateCategory" stringvalue="SOA_IEP"/>
             </file>
         </folder>
     </folder>
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="com.sun.jbi.ui.devtool.iep.nb.palette.IepPaletteCustomizerAction.instance" />
+                <file name="org.netbeans.modules.iep.editor.palette.IepPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="450"/>
+                </file>
             </folder>
         </folder>
     </folder>
     <folder name="IepPalette">
 <--NbPaletteCodeGen-->
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-iep+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance"/>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-iep-editor-designer-actions-PlanDesignViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-iep-editor-designer-actions-PlanSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file> 
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2300"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 </filesystem>
 

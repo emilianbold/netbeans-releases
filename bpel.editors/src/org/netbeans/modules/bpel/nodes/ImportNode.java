@@ -63,20 +63,21 @@ public class ImportNode extends BpelNode<Import> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 Import.IMPORT_TYPE, IMPORT_TYPE,
                 "getImportType", "setImportType", null); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamespaceSpec.NAMESPACE, IMPORT_NAMESPACE,
                 "getNamespace", "setNamespace", "removeNamespace"); // NOI18N
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 Import.LOCATION, IMPORT_LOCATION,
                 "getLocation", "setLocation", "removeLocation"); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

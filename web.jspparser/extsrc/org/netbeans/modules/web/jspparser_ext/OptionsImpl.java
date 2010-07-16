@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,7 @@ import org.apache.jasper.JspC;
 import org.apache.jasper.Options;
 import org.apache.jasper.compiler.JspConfig;
 import org.apache.jasper.compiler.TagPluginManager;
-import org.apache.jasper.compiler.TldLocationsCache;
+import org.apache.jasper.runtime.TldScanner;
 
 /**
  *
@@ -56,11 +59,7 @@ import org.apache.jasper.compiler.TldLocationsCache;
 public class OptionsImpl implements Options {
 
     private static final Logger LOGGER = Logger.getLogger(OptionsImpl.class.getName());
-    
-    /**
-     * Cache for the TLD locations
-     */
-    private final TldLocationsCache tldLocationsCache;
+    TldScanner scanner = null;
 
     /**
      * Jsp config information
@@ -74,8 +73,8 @@ public class OptionsImpl implements Options {
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
-        tldLocationsCache = new TldLocationsCache(context, this, true);
-        jspConfig = new JspConfig(context, this);
+        scanner = new TldScanner(context, true);
+        jspConfig = new JspConfig(context);
         tagPluginManager = new TagPluginManager(context);
     }
     
@@ -159,10 +158,6 @@ public class OptionsImpl implements Options {
         return tagPluginManager;
     }
     
-    public TldLocationsCache getTldLocationsCache() {
-        return tldLocationsCache;
-    }
-    
     public boolean isPoolingEnabled() {
         // should not be needed
         throw new UnsupportedOperationException();
@@ -237,5 +232,10 @@ public class OptionsImpl implements Options {
     
     public boolean getSaveBytecode() {
         throw new UnsupportedOperationException("Not supported yet. getSaveBytecode");
+    }
+
+    @Override
+    public TldScanner getTldScanner() {
+        return scanner;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -162,7 +165,7 @@ public class VCSHooksConfig {
         if(value == null) return null;
         String values[] = value.split(DELIMITER);
         getPreferences().remove(HG_HOOK_PUSH_ + changeset);
-        return new PushOperation(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
+        return new PushOperation(values[0], !values[1].equals("") ? values[1] : null, values[2].equals("1") ? true : false); // NOI18N
     }
 
     static Format getDefaultHgRevisionTemplate() {
@@ -201,7 +204,7 @@ public class VCSHooksConfig {
             format = defaultFormat;
         } else {
             String[] values = value.split(DELIMITER);
-            format = new Format(values[0].equals("1"), values[1]);              // NOI18N
+            format = new Format(values[0].equals("1"), values.length > 1 ? values[1] : ""); //NOI18N
         }
         return format;
     }
@@ -211,10 +214,10 @@ public class VCSHooksConfig {
         for (int i = 0; i < params.length; i = i + 2) {
             if(l < params[i].length()) l = params[i].length();
         }
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         for (int i = 0; i < params.length; i++) {
             ret.append(params[i]);
-            StringBuffer s = new StringBuffer();
+            StringBuilder s = new StringBuilder();
             for (int j = 0; j < l - params[i].length() + 1; j++) s.append(" "); // NOI18N
             ret.append(s.toString());
             ret.append(params[++i]);
@@ -242,10 +245,11 @@ public class VCSHooksConfig {
         }
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
+            String message = getMsg();
             sb.append(getIssueID());
             sb.append(DELIMITER);
-            sb.append(getMsg());
+            sb.append(message != null ? message.trim() : "");
             sb.append(DELIMITER);
             sb.append(isClose() ? "1" : "0");                                   // NOI18N
             return sb.toString();
@@ -268,7 +272,7 @@ public class VCSHooksConfig {
 
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(above ? "1" : "0");                                       // NOI18N
             sb.append(DELIMITER);
             sb.append(format);

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -51,23 +58,45 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * 
  * @author Martin Entlicher
  */
-public abstract class CachedChildrenTreeModel extends Object implements TreeModel {
+public abstract class CachedChildrenTreeModel extends Object implements TreeModel, AsynchronousModelFilter {
 
-    private Map<Object, ChildrenTree> childrenCache = new WeakHashMap<Object, ChildrenTree>();
+    private final Map<Object, ChildrenTree> childrenCache = new WeakHashMap<Object, ChildrenTree>();
+    private final Set<Object>   childrenToRefresh = new HashSet<Object>();
     
+    @Override
+    public Executor asynchronous(Executor original, CALL asynchCall, Object node) throws UnknownTypeException {
+        if (CALL.CHILDREN.equals(asynchCall)) {
+            boolean cache = cacheChildrenOf(node);
+            if (cache) {
+                synchronized (childrenCache) {
+                    if (childrenToRefresh.remove(node)) {
+                        childrenCache.remove(node);
+                        return original;
+                    }
+                    if (childrenCache.containsKey(node)) {
+                        return AsynchronousModelFilter.CURRENT_THREAD;
+                    }
+                }
+            }
+        }
+        return original;
+    }
+
+    @Override
     public final Object[] getChildren (Object o, int from, int to)
     throws UnknownTypeException {
         Object[] ch;
         boolean cache = cacheChildrenOf(o);
         if (cache) {
+            ChildrenTree cht;
             synchronized (childrenCache) {
                 //ch = (List) childrenCache.get(o);
-                ChildrenTree cht = childrenCache.get(o);
-                if (cht != null) {
-                    ch = cht.getChildren();
-                } else {
-                    ch = null;
-                }
+                cht = childrenCache.get(o);
+            }
+            if (cht != null) {
+                ch = cht.getChildren();
+            } else {
+                ch = null;
             }
         } else ch = null;
         if (ch == null) {
@@ -76,9 +105,9 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
                 throw new UnknownTypeException (o);
             } else {
                 if (cache) {
+                    ChildrenTree cht = new ChildrenTree(o);
+                    cht.setChildren(ch);
                     synchronized (childrenCache) {
-                        ChildrenTree cht = new ChildrenTree(o);
-                        cht.setChildren(ch);
                         childrenCache.put(o, cht);
                     }
                 }
@@ -103,21 +132,29 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
     protected boolean cacheChildrenOf(Object node) {
         return true;
     }
+
+    protected final void refreshCache(Object node) {
+        synchronized (childrenCache) {
+            childrenToRefresh.add(node);
+        }
+    }
     
     protected Object[] reorder(Object[] nodes) {
         return nodes;
     }
     
     protected final void recomputeChildren() throws UnknownTypeException {
-        synchronized (childrenCache) {
-            recomputeChildren(getRoot());
-        }
+        recomputeChildren(getRoot());
     }
     
-    private void recomputeChildren(Object node) throws UnknownTypeException {
-        ChildrenTree cht = childrenCache.get(node);
+    protected void recomputeChildren(Object node) throws UnknownTypeException {
+        ChildrenTree cht;
+        Set keys;
+        synchronized (childrenCache) {
+            cht = childrenCache.get(node);
+            keys = childrenCache.keySet();
+        }
         if (cht != null) {
-            Set keys = childrenCache.keySet();
             Object[] oldCh = cht.getChildren();
             Object[] newCh = computeChildren(node);
             cht.setChildren(newCh);
@@ -131,11 +168,11 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
     
     private final static class ChildrenTree {
         
-        private Object node;
+        //private Object node;
         private Object[] ch;
         
         public ChildrenTree(Object node) {
-            this.node = node;
+            //this.node = node;
         }
         
         public void setChildren(Object[] ch) {

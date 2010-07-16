@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,22 +43,22 @@
 package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
+ * Provides hyperlink functionality on issue reference in VCS artefacts as e.g. log messages in Search History
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.HyperlinkProvider.class)
-public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSHyperlinkProvider.class)
+public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
 
     @Override
     public int[] getSpans(String text) {
@@ -69,20 +72,17 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
 
     @Override
     public void onClick(final File file, final String text, int offsetStart, int offsetEnd) {
-        // XXX run async
         final String issueId = getIssueId(text, offsetStart, offsetEnd);
-        if(issueId == null) return;
-
-        class IssueDisplayer implements Runnable {
-            public void run() {
-                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                if(repo == null) return;
-
-                BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
-                Issue.open(repo, issueId);
-            }
+        if(issueId == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", text.substring(offsetStart, offsetEnd));
+            return;
         }
-        RequestProcessor.getDefault().post(new IssueDisplayer());
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                BugtrackingUtil.openIssue(file, issueId);
+            }
+        });
     }
 
     private String getIssueId(String text, int offsetStart, int offsetEnd) {        

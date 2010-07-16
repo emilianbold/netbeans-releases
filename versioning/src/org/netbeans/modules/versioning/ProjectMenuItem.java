@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,10 +74,12 @@ import org.openide.filesystems.FileUtil;
  */
 public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return new DynamicDummyItem();
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         // dummy, not used
     }
@@ -131,7 +136,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 owners.add(fileOwner);
             }
         }
-        if (owners.size() == 0 && someUnversioned) {
+        if (owners.isEmpty() && someUnversioned) {
             // all rootfiles were unversioned, return a null owner for them
             owners.add(null);
         }
@@ -161,10 +166,13 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         if (action instanceof SystemAction) {
             final SystemAction sa = (SystemAction) action;
             item = new JMenuItem(new AbstractAction(sa.getName()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     sa.actionPerformed(e);
                 }
             });
+        } else if (action instanceof Presenter.Menu) {
+            item = ((Presenter.Menu) action).getMenuPresenter();
         } else {
             item = new JMenuItem(action);
         }
@@ -177,10 +185,12 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
 
     private class DynamicDummyItem extends JMenuItem implements DynamicMenuContent {
+        @Override
         public JComponent[] getMenuPresenters() {
             return createItems();
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return createItems();
         }

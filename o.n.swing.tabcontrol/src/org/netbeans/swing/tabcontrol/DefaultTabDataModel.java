@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,6 +80,8 @@ public class DefaultTabDataModel implements TabDataModel {
     private L list = new L();
 
     private final ChangeSupport cs = new ChangeSupport(this);
+
+    private final Object LOCK = new Object();
 
     /**
      * Creates a new instance of DefaultTabDataModel
@@ -410,90 +415,106 @@ public class DefaultTabDataModel implements TabDataModel {
 
     public synchronized void addComplexListDataListener(
             ComplexListDataListener listener) {
-        if (listenerList == null) {
-            listenerList = new ArrayList<ComplexListDataListener>();
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                listenerList = new ArrayList<ComplexListDataListener>();
+            }
+            listenerList.add(listener);
         }
-        listenerList.add(listener);
     }
 
     public synchronized void removeComplexListDataListener(
             ComplexListDataListener listener) {
-        listenerList.remove(listener);
+        synchronized( LOCK ) {
+            listenerList.remove(listener);
+        }
     }
 
     private void fireIntervalAdded(ListDataEvent event) {
-        if (listenerList == null) {
-            return;
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
         }
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        for( ComplexListDataListener l : listeners ) {
             l.intervalAdded(event);
         }
         cs.fireChange();
     }
 
     private void fireIntervalRemoved(ListDataEvent event) {
-        if (listenerList == null)
-            return;
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
             l.intervalRemoved(event);
         }
         cs.fireChange();
     }
 
     private void fireContentsChanged(ListDataEvent event) {
-        if (listenerList == null)
-            return;
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
             l.contentsChanged(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesAdded(ComplexListDataEvent event) {
-        if (listenerList == null)
-            return;
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
             l.indicesAdded(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesRemoved(ComplexListDataEvent event) {
-        if (listenerList == null)
-            return;
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
             l.indicesRemoved(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesChanged(ComplexListDataEvent event) {
-        if (listenerList == null)
-            return;
-        int max = listenerList.size();
-        for (int i = 0; i < max; i++) {
-            ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                    i);
+        List<ComplexListDataListener> listeners = null;
+        synchronized( LOCK ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
             l.indicesChanged(event);
         }
         cs.fireChange();
     }
 
+    @Override
     public String toString() {
         StringBuffer out = new StringBuffer(getClass().getName());
         out.append(" size =");
@@ -520,6 +541,7 @@ public class DefaultTabDataModel implements TabDataModel {
      *
      * @param listener The listener to register.
      */
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
@@ -529,10 +551,12 @@ public class DefaultTabDataModel implements TabDataModel {
      *
      * @param listener The listener to remove.
      */
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
 
+    @Override
     public int indexOf(TabData td) {
         return list.indexOf(td);
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
@@ -76,8 +80,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -250,7 +257,7 @@ public final class GsfUtilities {
     public static boolean open(final FileObject fo, final int offset, final String search) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         doOpen(fo, offset, search);
                     }
                 });
@@ -342,7 +349,7 @@ public final class GsfUtilities {
 
         fs.runAtomicAction(
             new FileSystem.AtomicAction() {
-                public void run() throws IOException {
+                public @Override void run() throws IOException {
                     extractZipImpl(fo, is);
                 }
             }
@@ -588,12 +595,15 @@ public final class GsfUtilities {
             return ((CursorMovedSchedulerEvent) event).getCaretOffset();
         }
 
-        // Then look through all existing editor pane
+        // Then look through all existing editor panes
         Document snapshotDoc = snapshot.getSource().getDocument(false);
         if (snapshotDoc != null) {
             for(JTextComponent jtc : EditorRegistry.componentList()) {
                 if (snapshotDoc == jtc.getDocument()) {
-                    return jtc.getCaretPosition();
+                    Caret c = jtc.getCaret();
+                    if (c != null) {
+                        return c.getDot();
+                    }
                 }
             }
         } else {
@@ -601,7 +611,10 @@ public final class GsfUtilities {
             if (snapshotFile != null) {
                 for(JTextComponent jtc : EditorRegistry.componentList()) {
                     if (snapshotFile == NbEditorUtilities.getFileObject(jtc.getDocument())) {
-                        return jtc.getCaretPosition();
+                        Caret c = jtc.getCaret();
+                        if (c != null) {
+                            return c.getDot();
+                        }
                     }
                 }
             }
@@ -614,6 +627,29 @@ public final class GsfUtilities {
         }
 
         return -1;
+    }
+
+    /**
+     * Gets the CloneableEditorSupport for given FileObject
+     *
+     * @param fo A FileObject to get the CES for.
+     * @return Instance of CloneableEditorSupport
+     */
+    public static CloneableEditorSupport findCloneableEditorSupport(FileObject fo) {
+	try {
+	    DataObject dob = DataObject.find(fo);
+	    Object obj = dob.getCookie(OpenCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	    obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	} catch (DataObjectNotFoundException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+        return null;
     }
 
     // this is called from tests

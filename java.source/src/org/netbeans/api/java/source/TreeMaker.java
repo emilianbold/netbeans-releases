@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -760,6 +763,16 @@ public final class TreeMaker {
     public ParameterizedTypeTree ParameterizedType(Tree type,
                                             List<? extends Tree> typeArguments) {
         return delegate.ParameterizedType(type, typeArguments);
+    }
+
+    //XXX: AnnotationType and (maybe) TypeAnnotation should be public:
+    AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
+                                           ExpressionTree type) {
+        return delegate.AnnotatedType(annotations, type);
+    }
+
+    AnnotationTree TypeAnnotation(AnnotationTree t) {
+        return delegate.TypeAnnotation(t);
     }
     
     /**
@@ -2691,7 +2704,7 @@ public final class TreeMaker {
     
     private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments, SourcePositions positions) {
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        TranslateIdentifier ti = new TranslateIdentifier(copy, true, false, seq, positions);
+        TranslateIdentifier ti = new TranslateIdentifier(copy, block, false, seq, positions);
         ti.translate(block);
         /*List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();

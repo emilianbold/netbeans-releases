@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
+import org.netbeans.modules.glassfish.spi.RegisterDatabase;
+import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
@@ -65,7 +69,6 @@ import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.ExecSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -168,22 +171,27 @@ public class AddDomainWizardIterator implements
         return panels;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return getPanels()[index];
     }
     
+    @Override
     public String name() {
         return index + 1 + ". from " + getPanels().length;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -191,6 +199,7 @@ public class AddDomainWizardIterator implements
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -203,11 +212,13 @@ public class AddDomainWizardIterator implements
     // the following and call when needed: fireChangeEvent();
     //
     private Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
+    @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -225,6 +236,7 @@ public class AddDomainWizardIterator implements
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (null == wizard) {
             return;
@@ -285,16 +297,19 @@ public class AddDomainWizardIterator implements
         listeners = new HashSet/*<ChangeListener>*/(1);
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
     private WizardDescriptor  wizard;
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public java.util.Set instantiate() throws java.io.IOException {
         InstanceProperties ip = null;
         if (null != wizard) {
@@ -577,6 +592,7 @@ public class AddDomainWizardIterator implements
             return notFired;
         }
         
+        @Override
         synchronized public boolean cancel() {
             notFired = false;
             p.destroy();

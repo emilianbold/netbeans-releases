@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,17 +43,21 @@
  */
 package org.netbeans.modules.xslt.validation.core;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
-
-import org.netbeans.modules.soa.validation.core.Validator;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.validation.core.Validator;
+import org.netbeans.modules.xslt.tmap.TMapConstants;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.validation.ValidatorUtil;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -58,31 +65,54 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class TMapValidator extends Validator {
 
-  public abstract TMapVisitor getVisitor();
+    public abstract TMapVisitor getVisitor();
 
-  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
-    if ( !(m instanceof TMapModel)) {
-      return null;
+    public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
+        ValidationResult validationResult = checkTransformMapNamespace(model);
+
+        if ((!(model instanceof TMapModel)) || (validationResult != null)) {
+            return validationResult;
+        }
+        //out();
+        //out("TMAP VALIDATOR");
+        //out();
+        TMapModel tmapModel = (TMapModel) model;
+
+        if (tmapModel.getState() == Model.State.NOT_WELL_FORMED) {
+            return null;
+        }
+        init(validation, type);
+        TransformMap transformMap = tmapModel.getTransformMap();
+
+        if (transformMap == null) {
+            return null;
+        }
+        startTime();
+        transformMap.accept(getVisitor());
+        endTime(getDisplayName());
+
+        return createValidationResult(tmapModel);
     }
-//out();
-//out("TMAP VALIDATOR");
-//out();
-    TMapModel model = (TMapModel) m;
-    
-    if (model.getState() == Model.State.NOT_WELL_FORMED) {
-      return null;
+
+    private ValidationResult checkTransformMapNamespace(Model model) {
+        String transformmapNamespace = ValidatorUtil.getXmlTagAttributeValue(model, TMapConstants.TRANSFORMMAP_TAG_NAME, TMapConstants.TRANSFORMMAP_ATTRIBUTE_NAMESPACE_PREFIX);
+
+        if (transformmapNamespace == null) {
+            return null;
+        }
+        String errMsg = "";
+        int lineNumber = 0;
+        int columnNumber = 0;
+        Set<ResultItem> setResultItems = new HashSet<ResultItem>();
+
+        if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(transformmapNamespace)) {
+            errMsg = i18n(TMapValidator.class, "FIX_Deprecated_TMap"); // NOI18N
+            setResultItems.add(new ResultItem(this, ResultType.ERROR, errMsg, lineNumber, columnNumber, model));
+        }
+        if (!TMapComponent.TRANSFORM_MAP_NS_URI.equals(transformmapNamespace)) {
+            errMsg = i18n(TMapValidator.class, "FIX_Incorrect_Namespace", transformmapNamespace); // NOI18N
+            setResultItems.add(new ResultItem(this, ResultType.ERROR, errMsg, lineNumber, columnNumber, model));
+        }
+        return setResultItems.isEmpty() ? null : new ValidationResult(setResultItems, Collections.singleton(model));
     }
-    init(validation, type);
-
-    TransformMap transformMap = model.getTransformMap();
-
-    if (transformMap == null) {
-      return null;
-    }
-    startTime();
-    transformMap.accept(getVisitor());
-    endTime(getDisplayName());
-
-    return createValidationResult(model);
-  }
 }

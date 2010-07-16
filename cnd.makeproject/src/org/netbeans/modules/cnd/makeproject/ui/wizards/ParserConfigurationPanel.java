@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,13 +49,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,7 +67,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
     private boolean first = true;
 
-    public ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
+    /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
 
@@ -77,6 +79,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         macroEditButton.getAccessibleContext().setAccessibleDescription(getString("MACRO_EDIT_BUTTON_AD"));
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewMakeWizardP4"); // NOI18N
     }
@@ -104,11 +107,14 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                     if (dir != null) {
                         buf.append(dir.getAbsolutePath());
                         if (dir.isDirectory()) {
-                            for (File sub : dir.listFiles()){
-                                if (sub.isDirectory()) {
-                                    if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
-                                        buf.append(';');
-                                        buf.append(sub.getAbsolutePath());
+                            final File[] listFiles = dir.listFiles();
+                            if (listFiles != null) {
+                                for (File sub : listFiles){
+                                    if (sub.isDirectory()) {
+                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                            buf.append(';');
+                                            buf.append(sub.getAbsolutePath());
+                                        }
                                     }
                                 }
                             }
@@ -343,13 +349,13 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Macro Definitions"); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
+            List newList = panel.getListData();
             StringBuilder macros = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     macros.append(";"); // NOI18N
                 }
-                macros.append(newList.elementAt(i));
+                macros.append(newList.get(i));
             }
             macroTextField.setText(macros.toString());
         }
@@ -365,13 +371,13 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
+            List newList = panel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     includes.append(";"); // NOI18N
                 }
-                includes.append(newList.elementAt(i));
+                includes.append(newList.get(i));
             }
             includeTextField.setText(includes.toString());
         }
@@ -413,7 +419,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             return itemPath;
         }
 
@@ -463,8 +469,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);
@@ -539,8 +545,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

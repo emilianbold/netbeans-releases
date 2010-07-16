@@ -1,7 +1,8 @@
 <?php
-if(true) {
+
+if (true) {
   echo "test";
-}else {
+} else {
   echo "test";
 }
 ?>

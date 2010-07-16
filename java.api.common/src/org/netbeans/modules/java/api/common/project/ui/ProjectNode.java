@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,6 +103,7 @@ class ProjectNode extends AbstractNode {
         this.artifactLocation = artifactLocation;
     }
 
+    @Override
     public String getDisplayName () {        
         ProjectInformation info = getProjectInformation();        
         if (info != null) {
@@ -111,10 +115,12 @@ class ProjectNode extends AbstractNode {
         }
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public Image getIcon(int type) {
         if (cachedIcon == null) {
             ProjectInformation info = getProjectInformation();
@@ -129,14 +135,28 @@ class ProjectNode extends AbstractNode {
         return cachedIcon;
     }
 
+    @Override
+    public String getShortDescription() {
+        final Project p = this.antArtifact.getProject();
+        FileObject fo;
+        if (p != null && (fo = p.getProjectDirectory()) != null) {
+            return FileUtil.getFileDisplayName(fo);
+        } else {
+            return super.getShortDescription();
+        }
+    }
+
+    @Override
     public Image getOpenedIcon(int type) {
         return this.getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (OpenProjectAction.class),
@@ -145,6 +165,7 @@ class ProjectNode extends AbstractNode {
         };
     }
 
+    @Override
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
@@ -188,10 +209,12 @@ class ProjectNode extends AbstractNode {
         }
 
 
+        @Override
         public boolean hasJavadoc() {
             return findJavadoc().size() > 0;
         }
 
+        @Override
         public void showJavadoc() {
             Set<URL> us = findJavadoc();
             URL[] urls = us.toArray(new URL[us.size()]);
@@ -227,6 +250,7 @@ class ProjectNode extends AbstractNode {
 
     private static class OpenProjectAction extends NodeAction {
 
+        @Override
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
@@ -240,6 +264,7 @@ class ProjectNode extends AbstractNode {
             OpenProjects.getDefault().open(projects, false);
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             final Collection<Project> openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
@@ -266,14 +291,17 @@ class ProjectNode extends AbstractNode {
             return p;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage (ProjectNode.class,"CTL_OpenProject");
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx (OpenProjectAction.class);
         }
 
+        @Override
         protected boolean asynchronous() {
             return false;
         }

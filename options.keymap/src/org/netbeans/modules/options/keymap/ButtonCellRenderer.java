@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,10 +46,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
+
 /**
- * Renderer for table cells customising shortcut
+ * Renderer for table cells customizing shortcut.
+ *
  * @author Max Sauer
  */
 public class ButtonCellRenderer implements TableCellRenderer {
@@ -55,25 +61,30 @@ public class ButtonCellRenderer implements TableCellRenderer {
 
     private static ShortcutCellPanel panel;
 
-    public ButtonCellRenderer(TableCellRenderer defaultRenderer) {
+    public ButtonCellRenderer (TableCellRenderer defaultRenderer) {
         this.defaultRenderer = defaultRenderer;
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+    public Component getTableCellRendererComponent (
+        JTable table, Object value,
+        boolean isSelected, boolean hasFocus, int row, int column
+    ) {
         if (value instanceof String) {
             Rectangle cellRect = table.getCellRect(row, column, false);
             String scCell = (String) value;
             Dimension d = new Dimension((int) cellRect.getWidth(), (int) cellRect.getHeight());
-            if (panel == null) {
+            if (panel == null)
                 panel = new ShortcutCellPanel(scCell);
-            } else {
-                panel.setText(scCell);
-            }
+            panel.setText(scCell);
             panel.setSize(d);
 
             if (isSelected) {
                 panel.setBgColor(table.getSelectionBackground());
-                panel.setFgCOlor(table.getSelectionForeground());
+                if (UIManager.getLookAndFeel ().getID ().equals ("GTK"))
+                    panel.setFgCOlor(table.getForeground());
+                else
+                    panel.setFgCOlor(table.getSelectionForeground());
             } else {
                 panel.setBgColor(table.getBackground());
                 panel.setFgCOlor(table.getForeground());

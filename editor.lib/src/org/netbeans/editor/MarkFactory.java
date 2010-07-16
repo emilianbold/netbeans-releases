@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.editor;
 
-import java.lang.ref.WeakReference;
 import javax.swing.text.Position;
 
 /**
@@ -97,7 +99,7 @@ public class MarkFactory {
         }
 
         /** When removal occurs */
-        protected void removeUpdateAction(int pos, int len) {
+        protected @Override void removeUpdateAction(int pos, int len) {
             try {
                 remove();
             } catch (InvalidMarkException e) {
@@ -124,176 +126,4 @@ public class MarkFactory {
 
     }
 
-    /** Activation mark for particular layer. When layer is not active
-    * its updateContext() method is not called.
-    */
-    public static class DrawMark extends ContextMark {
-
-        /** Activation flag means either activate layer or deactivate it */
-        protected boolean activateLayer;
-
-        /** Reference to draw layer this mark belogns to */
-        String layerName;
-
-        /** Reference to extended UI if this draw mark is info-specific or
-        * null if it's document-wide.
-        */
-        WeakReference editorUIRef;
-
-        public DrawMark(String layerName, EditorUI editorUI) {
-            this(layerName, editorUI, Position.Bias.Forward);
-        }
-        
-        public DrawMark(String layerName, EditorUI editorUI, Position.Bias bias) {
-            super(bias, false);
-            this.layerName = layerName;
-            setEditorUI(editorUI);
-        }
-
-        public boolean isDocumentMark() {
-            return (editorUIRef == null);
-        }
-
-        public EditorUI getEditorUI() {
-            if (editorUIRef != null) {
-                return (EditorUI)editorUIRef.get();
-            }
-            return null;
-        }
-
-        public void setEditorUI(EditorUI editorUI) {
-            this.editorUIRef = (editorUI != null) ? new WeakReference(editorUI) : null;
-        }
-
-        public boolean isValidUI() {
-            return !(editorUIRef != null && editorUIRef.get() == null);
-        }
-
-        public void setActivateLayer(boolean activateLayer) {
-            this.activateLayer = activateLayer;
-        }
-
-        public boolean getActivateLayer() {
-            return activateLayer;
-        }
-
-        public boolean removeInvalid() {
-            if (!isValidUI() && isValid()) {
-                try {
-                    this.remove();
-                } catch (InvalidMarkException e) {
-                    throw new IllegalStateException(e.toString());
-                }
-                return true; // invalid and removed
-            }
-            return false; // valid
-        }
-
-        public String toString() {
-            try {
-                return "pos=" + getOffset() + ", line=" + getLine(); // NOI18N
-            } catch (InvalidMarkException e) {
-                return "mark not valid"; // NOI18N
-            }
-        }
-
-    }
-
-    /** Support for draw marks chained in double linked list */
-    public static class ChainDrawMark extends DrawMark {
-
-        /** Next mark in chain */
-        protected ChainDrawMark next;
-
-        /** Previous mark in chain */
-        protected ChainDrawMark prev;
-
-        public ChainDrawMark(String layerName, EditorUI editorUI) {
-            this(layerName, editorUI, Position.Bias.Forward);
-        }
-        
-        public ChainDrawMark(String layerName, EditorUI editorUI, Position.Bias bias) {
-            super(layerName, editorUI, bias);
-        }
-
-        public final ChainDrawMark getNext() {
-            return next;
-        }
-
-        public final void setNext(ChainDrawMark mark) {
-            next = mark;
-        }
-
-        /** Set next mark in chain */
-        public void setNextChain(ChainDrawMark mark) {
-            this.next = mark;
-            if (mark != null) {
-                mark.prev = this;
-            }
-        }
-
-        public final ChainDrawMark getPrev() {
-            return prev;
-        }
-
-        public final void setPrev(ChainDrawMark mark) {
-            prev = mark;
-        }
-
-        /** Set previous mark in chain */
-        public void setPrevChain(ChainDrawMark mark) {
-            this.prev = mark;
-            if (mark != null) {
-                mark.next = this;
-            }
-        }
-
-        /** Insert mark before this one in chain
-        * @return inserted mark
-        */
-        public ChainDrawMark insertChain(ChainDrawMark mark) {
-            ChainDrawMark thisPrev = this.prev;
-            mark.prev = thisPrev;
-            mark.next = this;
-            if (thisPrev != null) {
-                thisPrev.next = mark;
-            }
-            this.prev = mark;
-            return mark;
-        }
-
-        /** Remove this mark from the chain
-        * @return next chain member or null for end of chain
-        */
-        public ChainDrawMark removeChain() {
-            ChainDrawMark thisNext = this.next;
-            ChainDrawMark thisPrev = this.prev;
-            if (thisPrev != null) { // not the first
-                thisPrev.next = thisNext;
-                this.prev = null;
-            }
-            if (thisNext != null) { // not the last
-                thisNext.prev = thisPrev;
-                this.next = null;
-            }
-            try {
-                this.remove(); // remove the mark from DocMarks
-            } catch (InvalidMarkException e) {
-                // already removed
-            }
-            return thisNext;
-        }
-
-        public String toStringChain() {
-            return toString() + (next != null ? "\n" + next.toStringChain() : ""); // NOI18N
-        }
-
-        public String toString() {
-            return super.toString() + ", " // NOI18N
-                   + ((prev != null) ? ((next != null) ? "chain member" // NOI18N
-                            : "last member") : ((next != null) ? "first member" // NOI18N
-                                                            : "standalone member")); // NOI18N
-        }
-
-    }
 }

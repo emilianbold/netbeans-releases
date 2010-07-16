@@ -24,14 +24,15 @@
       switch on the command line or by entering the path to the JDK in the <tt>netbeans_jdkhome</tt> 
       property of your <tt><i>INSTALLATION_DIRECTORY</i>/etc/netbeans.conf</tt> 
       file.</li>
-  </ul>
+</ul>
 
 <p>Using the Java Platform Manager, you can: 
 <ul>
-	<li>Register a new JDK. Directories that contain JDKs
+  <li>Register a new Java platform. Directories that contain JDKs
 	are marked with an <img src="../../images/platform.gif" width="18" height="16" alt="platform directory">&nbsp;icon
-	 in the file chooser. </li>
-   <li>View registered JDK's classpaths.</li>
+	 in the file chooser. <br>
+	Select <a href="proj_add_java_platform.html">Add Platform</a> to add a new Java Platform. </li>
+    <li>View registered JDK's classpaths.</li>
    <li>Register source code for a JDK in the Sources
   	 tab.</li>
    <li>Register Javadoc documentation 
@@ -43,15 +44,18 @@
 	JDK in the Java Platform combo box. 
 <p><b>Notes:</b>
 <ul>
+<li>
+If you have the JavaFX Script plugin installed, the Java Platform Manager  enables you to register different versions of the JavaFX Software Development  Kit (SDK). For more information see, <a href="nbdocs://org.netbeans.modules.javafx.kit/org/netbeans/modules/javafx/kit/docs/project/javafx_proj_sdk.html#add_fx_platform">Registering Additional
+  JavaFX Platforms</a>.      </li>
 <li>For free-form projects, you have to set the target JDK in your Ant script.
 	 To configure the IDE to show the correct JDK's classes for code completion,
 	 Javadoc documentation, and source files, you must register the JDK in the
 	 Java Platform Manager dialog box. Then go to the project's Project Properties
-	 dialog box, click Sources, and set Source/Binary Format to the correct JDK.
+  dialog box, click Sources, and set Source/Binary Format to the correct JDK. </li>
 <li>
 For Java ME MIDP and CDC projects, you can add emulators and SDK platforms for mobile devices. You also use the Java Platform Manager to take advantage of special
 	tools and extensions of each platform you install. For more information, see <a href="nbdocs://org.netbeans.modules.mobility.javahelp/org/netbeans/modules/mobility/project/docs/emulator/emulator_adding.html">Mobility Pack: Adding
-	Emulator Platforms</a>. 
+	Emulator Platforms</a>. </li>
 </ul>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>

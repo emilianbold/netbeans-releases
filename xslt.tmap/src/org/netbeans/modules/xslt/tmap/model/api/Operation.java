@@ -27,19 +27,11 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
  * @version 1.0
  */
 public interface Operation extends TMapComponent, VariableDeclarator,
-        OperationReference, TransformerDescriptor 
+        OperationReference, TransformerDescriptor, InvokeHandler 
 {
     TMapComponents TYPE = TMapComponents.OPERATION;
     
     List<Variable> getVariables();
-    
-    List<Invoke> getInvokes();
-    
-    void removeInvoke(Invoke invoke);
-    
-    void addInvoke(Invoke invoke);
-    
-    int getSizeOfInvokes();
     
     List<Transform> getTransforms();
     

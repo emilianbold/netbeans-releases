@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,12 +43,11 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -81,18 +83,18 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return null;
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = FilePathAdaptor.naturalize(itemPath);
+        itemPath = CndPathUtilitities.naturalize(itemPath);
         String bd = baseDir;
-        bd = FilePathAdaptor.naturalize(bd);
-        itemPath = IpeUtils.toRelativePath(bd, itemPath);
+        bd = CndPathUtilitities.naturalize(bd);
+        itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
 //        if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
-//            itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
+//            itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(bd, itemPath);
 //        } else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL) {
-//            itemPath = IpeUtils.toRelativePath(bd, itemPath);
+//            itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
 //        } else {
 //            itemPath = itemPath;
 //        }
-        itemPath = FilePathAdaptor.normalize(itemPath);
+        itemPath = CndPathUtilitities.normalize(itemPath);
         return itemPath;
     }
 
@@ -152,8 +154,8 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector<String> vector = getListData();
-        Object[] arr = getListData().toArray();
+        List<String> vector = getListData();
+        Object[] arr = vector.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {
                 vector.remove(i);

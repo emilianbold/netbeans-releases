@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ import com.sun.source.tree.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.*;
@@ -69,6 +74,7 @@ public class NewClassTreeTest extends GeneratorTest {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(NewClassTreeTest.class);
 //        suite.addTest(new NewClassTreeTest("testRemoveClassBody"));
+//        suite.addTest(new NewClassTreeTest("testAddClassBody"));
 //        suite.addTest(new NewClassTreeTest("testAddArguments"));
         return suite;
     }
@@ -111,6 +117,47 @@ public class NewClassTreeTest extends GeneratorTest {
                 ExpressionStatementTree st = (ExpressionStatementTree) method.getBody().getStatements().get(0); 
                 NewClassTree nct = (NewClassTree) st.getExpression();
                 workingCopy.rewrite(nct, make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.Identifier("X"), nct.getArguments(), null));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddClassBody() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        new Object();\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        new Object() {\n" +
+            "        };\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree st = (ExpressionStatementTree) method.getBody().getStatements().get(0); 
+                NewClassTree nct = (NewClassTree) st.getExpression();
+                workingCopy.rewrite(nct, make.NewClass(null, Collections.<ExpressionTree>emptyList(), nct.getIdentifier(), nct.getArguments(), make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList())));
             }
             
         };

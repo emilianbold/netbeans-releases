@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,26 +45,50 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -70,249 +97,286 @@ import org.openide.windows.InputOutput;
 public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
 
     private ProjectActionEvent pae;
-    private volatile ExecutorTask executorTask;
-    private NativeExecutor executor;
+    //private volatile ExecutorTask executorTask;
+    private volatile Future<Integer> executorTask;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
-
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 
-    /**
-     * Will be called to get arguments for the action. Can be overridden.
-     */
-    public String getArguments() {
-        return pae.getProfile().getArgsFlat();
+    @Override
+    public void execute(final InputOutput io) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    _execute(io);
+                }
+            });
+        } else {
+            _execute(io);
+        }
     }
 
-    /**
-     * Will be called to get the environment for the action. Can be overridden.
-     */
-    public String[] getEnvironment() {
-        return pae.getProfile().getEnvironment().getenv();
-    }
+    private void _execute(final InputOutput io) {
+        final Type actionType = pae.getType();
 
-    public void execute(InputOutput io) {
-        String rcfile = null;
-        if (pae.getType() == ProjectActionEvent.Type.RUN ||
-                pae.getType() == ProjectActionEvent.Type.BUILD ||
-                pae.getType() == ProjectActionEvent.Type.CLEAN) {
-            String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-            String args = getArguments();
-            String[] env = getEnvironment();
-            boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
-            MakeConfiguration conf = pae.getConfiguration();
-            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        if (actionType != ProjectActionEvent.PredefinedType.RUN
+                && actionType != ProjectActionEvent.PredefinedType.BUILD
+                && actionType != ProjectActionEvent.PredefinedType.CLEAN
+                && actionType != ProjectActionEvent.PredefinedType.BUILD_TESTS
+                && actionType != ProjectActionEvent.PredefinedType.TEST) {
+            assert false;
+        }
 
-            String runDirectory = pae.getProfile().getRunDirectory();
+        final String runDirectory = pae.getProfile().getRunDirectory();
+        final MakeConfiguration conf = pae.getConfiguration();
+        final PlatformInfo pi = conf.getPlatformInfo();
+        final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
-            PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getExecutionEnvironment());
+        String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
+        // we don't need quoting - it's execution responsibility
+        ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
+        Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
+        boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
+        boolean unbuffer = false;
+        boolean runInInternalTerminal = false;
+        CompilerSet cs = null;
 
-            boolean unbuffer = false;
-            if (pae.getType() == ProjectActionEvent.Type.RUN) {
-                int conType = pae.getProfile().getConsoleType().getValue();
-                if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
-                    String errmsg;
-                    if (Utilities.isMac()) {
-                        errmsg = getString("Err_NoTermFoundMacOSX");
-                    } else {
-                        errmsg = getString("Err_NoTermFound");
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
-                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                }
-                if (!conf.getDevelopmentHost().isLocalhost()) {
-                    if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                        //TODO: only output window for remote for now
-                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                    }
-                }
-                if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    if (HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
-                        // we need to run the application under cmd on windows
-                        exe = "cmd.exe"; // NOI18N
-                        // exe path naturalization is needed for cmd on windows, see issue 149404
-                        args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
-                                + " " + getArguments(); // NOI18N
-                    } else if (conf.getDevelopmentHost().isLocalhost()) {
-                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
-                    }
-                    unbuffer = true;
+        int consoleType = pae.getProfile().getConsoleType().getValue();
+
+        if (actionType == ProjectActionEvent.PredefinedType.RUN) {
+            runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
+
+            if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+                String errmsg;
+                if (Utilities.isMac()) {
+                    errmsg = getString("Err_NoTermFoundMacOSX");
                 } else {
-                    showInput = false;
-                    if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                        conType = RunProfile.getDefaultConsoleType();
-                    }
-                    if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-                        try {
-                            rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                        String args2;
-                        if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
-                                /* gnome-terminal has differnt quoting rules... */
-                            StringBuilder b = new StringBuilder();
-                            for (int i = 0; i < args.length(); i++) {
-                                if (args.charAt(i) == '"') {
-                                    b.append("\\\""); // NOI18N
-                                } else {
-                                    b.append(args.charAt(i));
-                                }
-                            }
-                            args2 = b.toString();
-                        } else {
-                            args2 = "";
-                        }
-                        if (pae.getType() == ProjectActionEvent.Type.RUN &&
-                                pae.getConfiguration().isApplicationConfiguration() &&
-                                HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
-                                !exe.endsWith(".exe")) { // NOI18N
-                            exe = exe + ".exe"; // NOI18N
-                        }
-                        args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
-                        exe = pae.getProfile().getTerminalPath();
-                    }
+                    errmsg = getString("Err_NoTermFound");
                 }
-                // Append compilerset base to run path. (IZ 120836)
-                ArrayList<String> env1 = new ArrayList<String>();
-                CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-                if (cs != null) {
-                    String csdirs = cs.getDirectory();
-                    String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
-                    if (commands != null && commands.length() > 0) {
-                        // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        csdirs = csdirs + pi.pathSeparator() + commands;
-                    }
-                    boolean gotpath = false;
-                    String pathname = pi.getPathName() + '=';
-                    int i;
-                    for (i = 0; i < env.length; i++) {
-                        if (env[i].startsWith(pathname)) {
-                            env1.add(env[i] + pi.pathSeparator() + csdirs); // NOI18N
-                            gotpath = true;
-                        } else {
-                            env1.add(env[i]);
-                        }
-                    }
-                    if (!gotpath) {
-                        env1.add(pathname + pi.getPathAsString() + pi.pathSeparator() + csdirs);
-                    }
-                    env = env1.toArray(new String[env1.size()]);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            }
+
+            if (!conf.getDevelopmentHost().isLocalhost()) {
+                if (RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) {
+                    //TODO: only output window for remote for now
+                    consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 }
-            } else { // Build or Clean
-                String[] env1 = new String[env.length + 1];
-                String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
-                    if (commands != null && commands.length()>0) {
+            }
+
+            if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                    exe = CndPathUtilitities.naturalize(exe);
+                } else if (conf.getDevelopmentHost().isLocalhost()) {
+                    exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
+                }
+                unbuffer = true;
+            } else if (!runInInternalTerminal) {
+                showInput = false;
+                if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                    consoleType = RunProfile.getDefaultConsoleType();
+                }
+            }
+
+            // Append compilerset base to run path. (IZ 120836)
+            cs = conf.getCompilerSet().getCompilerSet();
+            if (cs != null) {
+                String csdirs = cs.getDirectory();
+                String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+                if (commands != null && commands.length() > 0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
                     csdirs = csdirs + pi.pathSeparator() + commands;
                 }
-                boolean gotpath = false;
-                String pathname = pi.getPathName() + '=';
-                int i;
-                for (i = 0; i < env.length; i++) {
-                    if (env[i].startsWith(pathname)) {
-                        env1[i] = pathname + csdirs + pi.pathSeparator() + env[i].substring(5); // NOI18N
-                        gotpath = true;
-                    } else {
-                        env1[i] = env[i];
-                    }
+                String path = env.get(pi.getPathName());
+                if (path == null) {
+                    path = pi.getPathAsString() + pi.pathSeparator() + csdirs;
+                } else {
+                    path += pi.pathSeparator() + csdirs;
                 }
-                if (!gotpath) {
-                    String defaultPath = conf.getPlatformInfo().getPathAsString();
-                    env1[i] = pathname + csdirs + pi.pathSeparator() + defaultPath;
-                }
-                env = env1;
-                // Pass QMAKE from compiler set to the Makefile (IZ 174731)
-                if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
-                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
-                    args += " QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath); // NOI18N
+                env.put(pi.getPathName(), path);
+            }
+        } else { // Build or Clean
+            // Build or Clean
+            cs = conf.getCompilerSet().getCompilerSet();
+            String csdirs = cs.getDirectory();
+            String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+            if (commands != null && commands.length() > 0) {
+                // Also add msys to path. Thet's where sh, mkdir, ... are.
+                csdirs = csdirs + pi.pathSeparator() + commands;
+            }
+            String path = env.get(pi.getPathName());
+            if (path == null) {
+                path = csdirs + pi.pathSeparator() + pi.getPathAsString();
+            } else {
+                path = csdirs + pi.pathSeparator() + path;
+            }
+            env.put(pi.getPathName(), path);
+            // Pass QMAKE from compiler set to the Makefile (IZ 174731)
+            if (conf.isQmakeConfiguration()) {
+                String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
+                qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
+                args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
+            }
+        }
+
+        LineConvertor converter = null;
+
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD) {
+            converter = new CompilerLineConvertor(
+                    conf.getCompilerSet().getCompilerSet(),
+                    execEnv, FileUtil.toFileObject(new File(runDirectory)));
+        }
+
+        // TODO: this is actual only for sun studio compiler
+        env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
+
+        String workingDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+
+        if (workingDirectory == null) {
+            // TODO: fix me
+            // return null;
+        }
+
+        ProcessChangeListener processChangeListener =
+                new ProcessChangeListener(this, null/*Writer outputListener*/,
+                converter, io);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(workingDirectory).
+                unbufferOutput(unbuffer).
+                setExecutable(exe).
+                setArguments(args.toArray(new String[args.size()])).
+                addNativeProcessListener(processChangeListener);
+
+        npb.getEnvironment().putAll(env);
+
+        if (actionType == PredefinedType.RUN || actionType == PredefinedType.DEBUG) {
+            if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                npb.setX11Forwarding(true);
+            }
+        }
+
+        if (actionType == ProjectActionEvent.PredefinedType.RUN && consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            String termPath = pae.getProfile().getTerminalPath();
+            CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
+            if (termPath != null) {
+                String termBaseName = CndPathUtilitities.getBaseName(termPath);
+                if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
+                    npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
             }
-            executor = new NativeExecutor(
-                    execEnv,
-                    runDirectory,
-                    exe, args, env,
-                    pae.getTabName(),
-                    pae.getActionName(),
-                    pae.getType() == ProjectActionEvent.Type.BUILD,
-                    showInput,
-                    unbuffer);
-            //if (pae.getType() == ProjectActionEvent.Type.RUN)
-            switch (pae.getType()) {
-                case DEBUG:
-                case RUN:
-                    if (ServerList.get(execEnv).getX11Forwarding() && !contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
-                        executor.setX11Forwarding(true);
-                    }
+        }
+
+        NativeExecutionDescriptor descr =
+                new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(showInput).
+                inputOutput(io).
+                outLineBased(!unbuffer).
+                showProgress(true).
+                postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
+                postExecution(processChangeListener).
+                errConvertorFactory(processChangeListener).
+                outConvertorFactory(processChangeListener);
+
+        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
+            descr.noReset(true);
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
             }
-            executor.addExecutionListener(this);
-            if (rcfile != null) {
-                executor.setExitValueOverride(rcfile);
+        }
+
+        if (actionType == PredefinedType.RUN) {
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
             }
+        }
+
+        NativeExecutionService es =
+                NativeExecutionService.newService(npb,
+                descr,
+                pae.getActionName());
+
+        executorTask = es.run();
+    }
+
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
+        if (execEnv.isRemote()) {
+            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+        }
+        return localDir;
+    }
+
+    protected static boolean checkConnection(ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
             try {
-                executorTask = executor.execute(io);
-            } catch (java.io.IOException ioe) {
-                ioe.printStackTrace();
+                ConnectionManager.getInstance().connectTo(execEnv);
+                ServerRecord record = ServerList.get(execEnv);
+                if (record.isOffline()) {
+                    record.validate(true);
+                }
+                return record.isOnline();
+            } catch (IOException ex) {
+                return false;
+            } catch (CancellationException ex) {
+                return false;
             }
         } else {
-            assert false;
+            return true;
         }
     }
 
-    private boolean contains(String[] env, String var) {
-        for (String v : env) {
-            int pos = v.indexOf('='); //NOI18N
-            if (pos > 0) {
-                if (v.substring(0, pos).equals(var)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
             public void run() {
-                ExecutorTask et = executorTask;
+                Future<Integer> et = executorTask;
                 if (et != null) {
-                    executorTask.stop();
-                }
-                NativeExecutor ne = executor;
-                if (ne != null) {
-                    ne.stop(); // "kontrolny" ;)
+                    et.cancel(true);
                 }
             }
         });
     }
 
+    @Override
     public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }
     }
 
+    @Override
     public void executionFinished(int rc) {
         for (ExecutionListener l : listeners) {
             l.executionFinished(rc);
@@ -324,4 +388,87 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
     }
 
+    protected static String getString(String key, String... a1) {
+        return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
+    }
+
+    private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        private final ExecutionListener listener;
+        private Writer outputListener;
+        private final LineConvertor lineConvertor;
+
+        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
+                InputOutput tab) {
+            this.listener = listener;
+            this.outputListener = outputListener;
+            this.lineConvertor = lineConvertor;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (!(e instanceof NativeProcessChangeEvent)) {
+                return;
+            }
+
+            final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
+
+            if (event.state == NativeProcess.State.RUNNING) {
+                if (listener != null) {
+                    listener.executionStarted(event.pid);
+                }
+            }
+        }
+
+        @Override
+        // Started by Execution as postRunnable
+        public void run() {
+            closeOutputListener();
+
+            NativeProcess process = processRef.get();
+            if (process != null && listener != null) {
+                listener.executionFinished(process.exitValue());
+            }
+        }
+
+        @Override
+        public LineConvertor newLineConvertor() {
+            return new LineConvertor() {
+
+                @Override
+                public List<ConvertedLine> convert(String line) {
+                    return ProcessChangeListener.this.convert(line);
+                }
+            };
+        }
+
+        private synchronized void closeOutputListener() {
+            if (outputListener != null) {
+                try {
+                    outputListener.flush();
+                    outputListener.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                outputListener = null;
+            }
+        }
+
+        private synchronized List<ConvertedLine> convert(String line) {
+            if (outputListener != null) {
+                try {
+                    outputListener.write(line);
+                    outputListener.write("\n"); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (lineConvertor != null) {
+                return lineConvertor.convert(line);
+            }
+            return null;
+        }
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -225,9 +228,8 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         final Object ap = getActionPerformer();
 
         if (ap != null) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
-                this,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous ()) {
+            org.openide.util.actions.ActionInvoker.invokeAction(
+                this, ev, asynchronous(), new Runnable() {
                     public void run() {
                         if (ap == getActionPerformer()) {
                             getActionPerformer().performAction(CallbackSystemAction.this);
@@ -600,14 +602,12 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             final Action a = findAction();
 
             if (a != null) {
-                org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable run;
-                run = new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(e, delegate, delegate.asynchronous()) {
-                            public void run() {
-                                a.actionPerformed(e);
-                            }
-                        };
-
-                org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(delegate, run);
+                Runnable run = new Runnable() {
+                    public void run() {
+                        a.actionPerformed(e);
+                    }
+                };
+                org.openide.util.actions.ActionInvoker.invokeAction(delegate, e, delegate.asynchronous(), run);
             } else {
                 // XXX #30303 if the action falls back to the old behaviour
                 // it may not be performed in case it is in dialog and
@@ -707,7 +707,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getMenuPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createMenuPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createMenuPresenter(this);
             }
         }
 
@@ -716,7 +716,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getPopupPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createPopupPresenter(this);
             }
         }
 
@@ -725,7 +725,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getToolbarPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createToolbarPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createToolbarPresenter(this);
             }
         }
 

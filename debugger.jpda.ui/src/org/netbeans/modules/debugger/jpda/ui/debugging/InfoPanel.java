@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,9 +54,9 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -105,7 +108,7 @@ public class InfoPanel extends javax.swing.JPanel {
 
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
-    private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
+    private Map<JPDAThread, JMenuItem> threadToMenuItem = new WeakHashMap<JPDAThread, JMenuItem>();
     private JPDAThread debuggerDeadlockThread;
     private WeakReference<JPDADebugger> stepBrkpDebuggerRef;
     private DebuggingView debuggingView;
@@ -734,8 +737,10 @@ public class InfoPanel extends javax.swing.JPanel {
         RequestProcessor rp;
         try {
             JPDADebugger debugger = (JPDADebugger) blockedThread.getClass().getMethod("getDebugger").invoke(blockedThread);
-            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
-            rp = s.lookupFirst(null, RequestProcessor.class);
+            rp = getRP(debugger);
+            if (rp == null) {
+                return ;
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
             return ;
@@ -748,15 +753,36 @@ public class InfoPanel extends javax.swing.JPanel {
         hideDebuggerDeadlockPanel();
     }//GEN-LAST:event_resumeDebuggerDeadlockButtonActionPerformed
 
+    private static RequestProcessor getRP(JPDADebugger debugger) {
+        RequestProcessor rp;
+        try {
+            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger); // NOI18N
+            rp = s.lookupFirst(null, RequestProcessor.class);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+            return null;
+        }
+        return rp;
+    }
+
     private void stepBrkpIgnoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBrkpIgnoreButtonActionPerformed
         if (stepBrkpDebuggerRef != null) {
-            JPDADebugger d = stepBrkpDebuggerRef.get();
+            final JPDADebugger d = stepBrkpDebuggerRef.get();
             if (d != null) {
-                try {
-                    d.getClass().getMethod("resume").invoke(d);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                RequestProcessor rp = getRP(d);
+                if (rp == null) {
+                    return ;
                 }
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            d.getClass().getMethod("resume").invoke(d); // NOI18N
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
         }
     }//GEN-LAST:event_stepBrkpIgnoreButtonActionPerformed

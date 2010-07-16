@@ -10,6 +10,7 @@ import sys
 import time
 from optparse import OptionParser
 import os
+import os.path
 import re
 from unittest import TestResult
 
@@ -204,7 +205,14 @@ if __name__ == '__main__':
     if options.filename or options.method:
         if len(args) > 1:
             parser.error("You can only specify one file with --file")
-        module_name = args[0]
+        #Fix for "ImportError: Import by filename is not supported." from 2.6
+        #Craig Milling <ctmilling@gmail.com> 2010-02-16
+        dir_name = os.path.dirname(args[0])
+        if not dir_name in sys.path:
+            sys.path.append(dir_name)
+        module_name = os.path.basename(args[0])
+        if module_name.endswith('.py'):
+            module_name = module_name[:-3]
         module = __import__(module_name, globals(), locals(), module_name)
         if (options.method):
             suite = unittest.TestLoader().loadTestsFromName(options.method, module)

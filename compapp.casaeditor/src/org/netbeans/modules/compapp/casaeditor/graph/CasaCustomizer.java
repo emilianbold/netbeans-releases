@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,15 +40,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-/*
- * CasaCustomizer.java
- *
- * Created on January 26, 2007, 2:56 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.netbeans.modules.compapp.casaeditor.graph;
@@ -116,14 +110,16 @@ public class CasaCustomizer {
     private static final String S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE = "BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE";     // NOI18N
     private static final String S_BOOLEAN_CLASSIC_QOS_STYLE = "BOOLEAN_CLASSIC_QOS_STYLE";                     // NOI18N
 
-    private static final String S_BOOLEAN_DISABLE_VALIDATION = "BOOLEAN_DISABLE_VALIDATION";                     // NOI18N
+    private static final String S_BOOLEAN_DISABLE_VALIDATION = "BOOLEAN_DISABLE_VALIDATION";                   // NOI18N
+//    private static final String S_BOOLEAN_DISABLE_HOVERING_HIGHLIGHT = "BOOLEAN_DISABLE_HOVERING_HIGHLIGHT";   // NOI18N
 
     public static final String PROPERTY_CHANGE = "Customizer_Property_Changed";             // NOI18N
 
     private Map<String, Color> mColorsMap = new LinkedHashMap<String, Color>();
     private Map<String, Font> mFontsMap   = new LinkedHashMap<String, Font>();
     private Map<String, Boolean> mStylesMap   = new LinkedHashMap<String, Boolean>();
-    private Map<String, GradientRectangleColorScheme> mGradientsMap = new LinkedHashMap<String, GradientRectangleColorScheme>();
+    private Map<String, GradientRectangleColorScheme> mGradientsMap =
+            new LinkedHashMap<String, GradientRectangleColorScheme>();
     
     private static String S_SEPARATOR = ",";                                                    // NOI18N
     /**
@@ -422,6 +418,10 @@ public class CasaCustomizer {
         return mStylesMap.get(S_BOOLEAN_DISABLE_VALIDATION);
     }
 
+//    public Boolean getBOOLEAN_DISABLE_HOVERING_HIGHLIGHT() {
+//        return mStylesMap.get(S_BOOLEAN_DISABLE_HOVERING_HIGHLIGHT);
+//    }
+
     
     public GradientRectangleColorScheme getGradientINT_SU_BACKGROUND() {
         return mGradientsMap.get(S_COLOR_SU_INTERNAL_BACKGROUND);
@@ -464,8 +464,8 @@ public class CasaCustomizer {
         regionWidget.setFONT_REGION_TITLE(getFONT_SU_REGION_TITLE());
 
         for(Widget widget : regionWidget.getChildren()) {
-            if(widget instanceof CasaNodeWidgetEngineInternal) {
-                change((CasaNodeWidgetEngineInternal) widget);
+            if(widget instanceof CasaNodeWidgetEngine.Internal) {
+                change((CasaNodeWidgetEngine.Internal) widget);
             }
         }
     }
@@ -478,8 +478,8 @@ public class CasaCustomizer {
         regionWidget.setFONT_REGION_TITLE(getFONT_EXT_SU_REGION_TITLE());
         
         for(Widget widget : regionWidget.getChildren()) {
-            if(widget instanceof CasaNodeWidgetEngineExternal) {
-                change((CasaNodeWidgetEngineExternal) widget);
+            if(widget instanceof CasaNodeWidgetEngine.External) {
+                change((CasaNodeWidgetEngine.External) widget);
             }
         }
     }
@@ -493,7 +493,7 @@ public class CasaCustomizer {
         }
     }
 
-    private void change(CasaNodeWidgetEngineInternal internalSUWidget) {
+    private void change(CasaNodeWidgetEngine.Internal internalSUWidget) {
         internalSUWidget.setTitleColor(getCOLOR_SU_INTERNAL_TITLE());
         internalSUWidget.setTitleFont(getFONT_SU_HEADER());
         internalSUWidget.setPinFont(getFONT_SU_PIN());
@@ -502,7 +502,7 @@ public class CasaCustomizer {
         internalSUWidget.readjustBounds();
     }
     
-    private void change(CasaNodeWidgetEngineExternal externalSUWidget){
+    private void change(CasaNodeWidgetEngine.External externalSUWidget){
         externalSUWidget.setTitleColor(getCOLOR_SU_EXTERNAL_TITLE());
         externalSUWidget.setTitleFont(this.getFONT_EXT_SU_HEADER());
         externalSUWidget.setPinFont(getFONT_EXT_SU_PIN());
@@ -605,6 +605,7 @@ public class CasaCustomizer {
                     NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(nd); 
         }
+
     }
     
     public void restoreDefaults(boolean bPropagateChange) {
@@ -790,7 +791,8 @@ public class CasaCustomizer {
         stylesMap.put(S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE, "false");          // NOI18N
         stylesMap.put(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE, "true");          // NOI18N
         stylesMap.put(S_BOOLEAN_CLASSIC_QOS_STYLE, "true");      // NOI18N
-        stylesMap.put(S_BOOLEAN_DISABLE_VALIDATION, "false");      // NOI18N
+        stylesMap.put(S_BOOLEAN_DISABLE_VALIDATION, "true");      // NOI18N
+//        stylesMap.put(S_BOOLEAN_DISABLE_HOVERING_HIGHLIGHT, "false");      // NOI18N
 
         return stylesMap;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -103,7 +106,7 @@ import org.openide.util.WeakListeners;
  * is development-time only.
  * @author Jesse Glick
  */
-final class WritableXMLFileSystem extends AbstractFileSystem
+public final class WritableXMLFileSystem extends AbstractFileSystem
         implements AbstractFileSystem.Attr,
         AbstractFileSystem.Change,
         AbstractFileSystem.Info,
@@ -581,9 +584,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             // XXX currently unused
             return classpath;
         }
-        if (attrName.equals("WritableXMLFileSystem.location")) { // NOI18N
-            // XXX used from PickIconAction; use a constant instead
-            return location;
+        if (attrName.equals("layers")) { // NOI18N
+            // Matches behavior of XMLFileSystem.
+            return new URL[] {location};
         }
         if (attrName.equals("DataFolder.Index.reorderable")) { // NOI18N
             return Boolean.TRUE;
@@ -810,6 +813,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     public void writeAttribute(String name, String attrName, Object v) throws IOException {
+        if (attrName.indexOf('\\') != -1) {
+            throw new IOException("illegal attribute name for leaf layer: " + attrName);
+        }
         //System.err.println("wA: " + name + " " + attrName + " " + v);
         if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) { // NOI18N
             // XXX is this legitimate? Definitely not pretty. But needed for testOpenideFolderOrder to pass.

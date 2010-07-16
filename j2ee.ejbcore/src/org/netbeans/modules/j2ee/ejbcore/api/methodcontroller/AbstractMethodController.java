@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
+import javax.lang.model.type.DeclaredType;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import com.sun.source.tree.ClassTree;
@@ -102,6 +106,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         BigDecimal version = null;
         try {
             version = model.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
+                @Override
                 public BigDecimal run(EjbJarMetadata metadata) throws Exception {
                     EntityAndSession model = (EntityAndSession) metadata.findByEjbClass(ejbClass);
                     if (model != null){
@@ -372,6 +377,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     private List<String> getInterfaces(final String className) throws IOException {
         FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            @Override
             public FileObject run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findResource(Utils.toResourceName(ejbClass));
             }
@@ -381,6 +387,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
             try {
                 javaSource.runUserActionTask(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = controller.getElements().getTypeElement(className);
@@ -404,6 +411,46 @@ public abstract class AbstractMethodController extends EjbMethodController {
     @Override
     public final String getBeanClass() {
         return ejbClass;
+    }
+
+    public final List<String> getBeanSuperclasses() {
+        final List<String> result = new ArrayList<String>();
+        result.add(ejbClass);
+        FileObject ejbClassFO = null;
+        try{
+            ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                @Override
+                public FileObject run(EjbJarMetadata metadata) throws Exception {
+                    return metadata.findResource(Utils.toResourceName(ejbClass));
+                }
+            });
+        }catch(IOException e){
+            Exceptions.printStackTrace(e);
+        }
+        
+        if (ejbClassFO != null) {
+            JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        Types types = controller.getTypes();
+                        TypeElement typeElement = controller.getElements().getTypeElement(ejbClass);
+                        TypeMirror superCls = typeElement.getSuperclass();
+                        TypeMirror objectCls = controller.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+                        while ((superCls != null) && (superCls instanceof DeclaredType) && !types.isSameType(superCls, objectCls)) {
+                            TypeElement superElem = (TypeElement) ((DeclaredType) superCls).asElement();
+                            result.add(superElem.getQualifiedName().toString());
+                            superCls = superElem.getSuperclass();
+                        }
+                    }
+                }, true);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return result;
     }
     
     @Override
@@ -437,6 +484,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return resultList;
     }
 
+    @Override
     public final void delete(MethodModel classMethod) {
         if (hasLocal()){
             ClassMethodPair classMethodPair_local = getInterface(classMethod, true);
@@ -607,6 +655,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }
         try {
             FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                @Override
                 public FileObject run(EjbJarMetadata metadata) throws Exception {
                     return metadata.findResource(Utils.toResourceName(ejbClass));
                 }
@@ -614,6 +663,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             final boolean[] result = new boolean[] {false};
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     result[0] = methodFindInClass(controller, clazz, methodModel) != null;
@@ -640,12 +690,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     protected void addMethodToClass(final String className, final MethodModel method) throws IOException {
         FileObject fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            @Override
             public FileObject run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findResource(Utils.toResourceName(className));
             }
         });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 Trees trees = workingCopy.getTrees();
@@ -660,12 +712,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
 
     protected void removeMethodFromClass(final String className, final MethodModel methodModel) throws IOException {
         FileObject fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            @Override
             public FileObject run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findResource(Utils.toResourceName(className));
             }
         });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodFindInClass(workingCopy, className, methodModel);

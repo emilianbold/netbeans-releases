@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,20 +42,24 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.FocusTraversalPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -88,12 +95,15 @@ public class AskForUrlPanel extends JPanel {
 
         urlComboBoxEditor = (JTextField) urlComboBox.getEditor().getEditorComponent();
         urlComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateFields();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateFields();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }
@@ -161,31 +171,61 @@ public class AskForUrlPanel extends JPanel {
         urlLabel = new JLabel();
         urlComboBox = new JComboBox();
 
-        urlLabel.setLabelFor(urlComboBox);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                return urlComboBox;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                return urlComboBox;//end getComponentBefore
+
+            }}
+        );
+
+        urlLabel.setLabelFor(urlComboBox);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
+
         urlComboBox.setEditable(true);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(urlLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(urlComboBox, 0, 337, Short.MAX_VALUE)
+                .addComponent(urlLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(urlComboBox, 0, 341, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(urlLabel)
+                    .addComponent(urlComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
+
+        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleName")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

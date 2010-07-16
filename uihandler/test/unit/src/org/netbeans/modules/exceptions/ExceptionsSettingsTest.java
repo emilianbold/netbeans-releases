@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,12 +55,16 @@ public class ExceptionsSettingsTest extends NbTestCase {
     public ExceptionsSettingsTest(String testName) {
         super(testName);
     }
-    
+
+    public void testEmpty(){
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings.getPasswd());
+    }
+
     public void testUserName() {
         String str = "Moje_Jmeno";
         String previous;
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         previous = settings.getUserName();
         settings.setUserName(str);
         assertEquals(str, settings.getUserName());
@@ -66,20 +73,14 @@ public class ExceptionsSettingsTest extends NbTestCase {
     }
 
     public void testPasswd() {
-        String str = "MY_PASSWD";
-        String previous;
+        char[] str = "MY_PASSWD".toCharArray();
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
-        previous = settings.getPasswd();
         settings.setPasswd(str);
-        assertEquals(str, settings.getPasswd());
-        settings.setPasswd(previous);
-        assertEquals(previous, settings.getPasswd());
+        assertArraysEquals("MY_PASSWD".toCharArray(), settings.getPasswd());
     }
 
     public void testIsGuest() {
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         boolean previous = settings.isGuest();
         settings.setGuest(true);
         assertTrue(settings.isGuest());
@@ -91,17 +92,25 @@ public class ExceptionsSettingsTest extends NbTestCase {
 
     public void testSaveUserData(){
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         settings.setGuest(false);
-        settings.setPasswd("HALLO");
-        settings.setRememberPasswd(false);
-        ReportPanel panel = new ReportPanel();
-        assertEquals("correctly loaded", "HALLO", panel.getPasswd());
-        assertEquals("correctly loaded", false, panel.asAGuest());
-        panel.saveUserData();
-        panel = new ReportPanel();
-        assertEquals("should not save passwd","", panel.getPasswd());
+        settings.setUserName("HALLO");
+        settings.setPasswd("HALLO".toCharArray());
+        settings.setRememberPasswd(true);
+        settings.save();
+
+        ReportPanel panel = new ReportPanel(false, new ExceptionsSettings());
+        assertArraysEquals("correctly loaded", "HALLO".toCharArray(), panel.getPasswdChars());
         assertEquals("correctly loaded", false, panel.asAGuest());
     }
 
+    public void assertArraysEquals(String message, char[] x, char[] y){
+        assertEquals(message, x.length, y.length);
+        for (int i = 0; i < y.length; i++) {
+            assertEquals(message, x[i], y[i]);
+        }
+
+    }
+    public void assertArraysEquals(char[] x, char[] y){
+        assertArraysEquals(null, x, y);
+    }
 }

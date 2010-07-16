@@ -43,10 +43,10 @@ public interface FTPTransfer extends FTPComponentEncodable {
     public static final String FTP_POST_RECEIVE_LOC_HAS_PATTS_PROPERTY = "postReceiveLocationHasPatterns";
     public static final String FTP_SENDER_USEPROXY_PROPERTY = "senderUseProxy";
     public static final String FTP_SENDER_PROXY_PROPERTY = "senderProxy";
-    public static final String FTP_SENDER_USEPASSIVE_PROPERTY = "senderUsePassive";
+//    public static final String FTP_SENDER_USEPASSIVE_PROPERTY = "senderUsePassive";
     public static final String FTP_RECEIVER_USEPROXY_PROPERTY = "receiverUseProxy";
     public static final String FTP_RECEIVER_PROXY_PROPERTY = "receiverProxy";
-    public static final String FTP_RECEIVER_USEPASSIVE_PROPERTY = "receiverUsePassive";
+//    public static final String FTP_RECEIVER_USEPASSIVE_PROPERTY = "receiverUsePassive";
     public static final String FTP_MSG_CORRELATE_PROPERTY = "messageCorrelate";
     
     public String getPollInterval();
@@ -103,17 +103,17 @@ public interface FTPTransfer extends FTPComponentEncodable {
     public boolean getPostReceiveLocationHasPatterns();
     public void setPostReceiveLocationHasPatterns(boolean b);
 
-    public boolean getSenderUsePassive();
-    public void setSenderUsePassive(boolean b);
+//    public boolean getSenderUsePassive();
+//    public void setSenderUsePassive(boolean b);
     /* proxy config moved to MBean config of the BC
     public boolean getSenderUseProxy();
     public void setSenderUseProxy(boolean b);
     public String getSenderProxyURL();
     public void setSenderProxyURL(String s);
     */
-    public boolean getReceiverUsePassive();
-    public void setReceiverUsePassive(boolean b);
-    public boolean getReceiverUseProxy();
+//    public boolean getReceiverUsePassive();
+//    public void setReceiverUsePassive(boolean b);
+//    public boolean getReceiverUseProxy();
     /* proxy config moved to MBean config of the BC
     public void setReceiverUseProxy(boolean b);
     public String getReceiverProxyURL();

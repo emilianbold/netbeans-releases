@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,56 +45,26 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 public class BooleanConfiguration {
 
-    private BooleanConfiguration master;
     private boolean def;
-    private String falseValue;
-    private String trueValue;
     private boolean value;
     private boolean modified;
     private boolean dirty = false;
 
-    public BooleanConfiguration(BooleanConfiguration master, boolean def) {
-        this.master = master;
+    public BooleanConfiguration(boolean def) {
         this.def = def;
-        falseValue = ""; // NOI18N
-        trueValue = ""; // NOI18N
         reset();
-    }
-
-    public BooleanConfiguration(BooleanConfiguration master, boolean def, String falseValue, String trueValue) {
-        this.master = master;
-        this.def = def;
-        this.falseValue = falseValue;
-        this.trueValue = trueValue;
-        reset();
-    }
-
-    protected BooleanConfiguration getMaster() {
-        return master;
-    }
-
-    public void setMaster(BooleanConfiguration master) {
-        this.master = master;
     }
 
     public void setValue(boolean b) {
         this.value = b;
-        if (master != null) {
-            setModified(true);
-        } else {
-            setModified(b != getDefault());
-        }
+        setModified(b != getDefault());
     }
 
     public boolean getValue() {
-        if (master != null && !getModified()) {
-            return master.getValue();
-        } else {
-            return value;
-        }
+        return value;
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -116,17 +89,9 @@ public class BooleanConfiguration {
         setModified(value != def);
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
-    }
-
-    public String getOption() {
-        if (getValue()) {
-            return trueValue;
-        } else {
-            return falseValue;
-        }
     }
 
     // Clone and Assign
@@ -138,7 +103,7 @@ public class BooleanConfiguration {
 
     @Override
     public BooleanConfiguration clone() {
-        BooleanConfiguration clone = new BooleanConfiguration(master, def, falseValue, trueValue);
+        BooleanConfiguration clone = new BooleanConfiguration(def);
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;

@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.editors.api;
 
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
@@ -28,7 +27,6 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author supernikita
  */
 public interface Constants {
@@ -52,12 +50,14 @@ public interface Constants {
         }
         
         public static VariableStereotype recognizeStereotype(Object type) {
+//System.out.println("recognizeStereotype: " + type);
             if (type == null) {
                 return null;
             }
             if (type instanceof Message) {
                 return VariableStereotype.MESSAGE;
-            } else if (type instanceof GlobalType) {
+            }
+            else if (type instanceof GlobalType) {
                 if (type instanceof GlobalSimpleType) {
                     if (((GlobalSimpleType)type).getModel() == 
                             SchemaModelFactory.getDefault().
@@ -79,5 +79,4 @@ public interface Constants {
             return null;
         }
     }
-    
 }

@@ -1,4 +1,4 @@
-#!/usr/sbin/dtrace -sC
+#!/usr/sbin/dtrace -Cs
 #pragma D option quiet
 #pragma D option aggrate=200ms
 
@@ -8,34 +8,37 @@ inline int64_t fops_report_interval = 200;
 /* Script start timestamp */
 uint64_t fops_start_timestamp;
 
-/* Time since script start, in milliseconds */
+/* Time since script start, in nanoseconds */
 inline int64_t fops_timestamp = (timestamp - fops_start_timestamp);
 
 /* Timestamp to use as aggregation key */
 int64_t fops_key_timestamp;
 
 /* Unique I/O session id sequence */
-uint64_t sid;
+uint64_t sid_seq;
 
-/* Maps file descriptor to session id */
-int64_t fd2sid[int];
+/* I/O session info */
+typedef struct ioinfo {
+    int64_t sid; /* session id */
+    string dest; /* session destination (file path or socket address) */
+} ioinfo_t;
 
-/* Maps file descriptor to path */
-string fd2path[int];
+/* Maps file descriptor to session info */
+ioinfo_t fd2ioinfo[int];
 
 /* Open file count */
 int64_t file_count;
-
-/* Current I/O session id */
-self int sid;
 
 BEGIN
 {
     fops_start_timestamp = timestamp;
     fops_key_timestamp = 0;
-    fd2path[0] = "<stdin>";
-    fd2path[1] = "<stdout>";
-    fd2path[2] = "<stderr>";
+    fd2ioinfo[0].sid = -1;
+    fd2ioinfo[0].dest = "<stdin>";
+    fd2ioinfo[1].sid = -2;
+    fd2ioinfo[1].dest = "<stdout>";
+    fd2ioinfo[2].sid = -3;
+    fd2ioinfo[2].dest = "<stderr>";
 }
 
 syscall::open*:entry,
@@ -49,11 +52,13 @@ syscall::open*:return,
 syscall::creat*:return
 /pid == $1 && self->pathaddr/
 {
-    this->sid = (arg0 != -1)? ++sid : 0;
-    fd2sid[arg0] = (arg0 != -1)? this->sid : 0;
-    fd2path[arg0] = (arg0 != -1 && fds[arg0].fi_pathname != "<none>" && fds[arg0].fi_pathname != "<unknown>")? fds[arg0].fi_pathname : copyinstr(self->pathaddr);
-    file_count = (arg0 != -1)? file_count + 1 : file_count;
-    printf("%d %s %d \"%s\" %d %d", fops_timestamp, "open", this->sid, fd2path[arg0], 0, file_count);
+    this->sid = (arg0 != -1)? ++sid_seq : 0;
+    this->dest = (arg0 != -1)? fds[arg0].fi_pathname : copyinstr(self->pathaddr);
+    (arg0 != -1)? ++file_count : 0;
+    (arg0 != -1)? fd2ioinfo[arg0].sid = this->sid : 0;
+    (arg0 != -1)? fd2ioinfo[arg0].dest = this->dest : 0;
+
+    printf("%d %s %d \"%s\" %d %d", fops_timestamp, "open", this->sid, this->dest, 0, file_count);
     ustack();
     printf("\n");
 
@@ -63,60 +68,50 @@ syscall::creat*:return
 syscall::*read*:entry,
 syscall::*write*:entry,
 syscall::close*:entry
-/pid == $1 && fd2path[arg0] == ""/
+/pid == $1 && !fd2ioinfo[arg0].sid && fds[arg0].fi_pathname != "<none>"/
 {
-    fd2path[arg0] = fds[arg0].fi_pathname;
+    fd2ioinfo[arg0].sid = -arg0 - 1;
+    fd2ioinfo[arg0].dest = fds[arg0].fi_fs == "sockfs"? "<socket>" : fds[arg0].fi_pathname;
 }
 
-syscall::*read*:entry
+syscall::*read*:entry,
+syscall::*write*:entry,
+syscall::close*:entry
 /pid == $1/
 {
     self->fd = arg0;
-    self->sid = fd2sid[arg0]? fd2sid[arg0] : -arg0-1;
+    self->sid = fd2ioinfo[arg0].sid;
 }
 
 syscall::*read*:return
 /pid == $1 && self->sid/
 {
-    @transfer[fops_key_timestamp, "read", self->sid, fd2path[self->fd], ustack()] = sum(arg1);
+    @transfer[fops_key_timestamp, "read", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(0 < arg0? arg0 : 0);
 
     self->fd = 0;
     self->sid = 0;
-}
-
-syscall::*write*:entry
-/pid == $1/
-{
-    self->fd = arg0;
-    self->sid = fd2sid[arg0]? fd2sid[arg0] : -arg0-1;
 }
 
 syscall::*write*:return
 /pid == $1 && self->sid/
 {
-    @transfer[fops_key_timestamp, "write", self->sid, fd2path[self->fd], ustack()] = sum(arg1);
+    @transfer[fops_key_timestamp, "write", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(0 < arg0? arg0 : 0);
 
     self->fd = 0;
     self->sid = 0;
 }
 
-syscall::close*:entry
-/pid == $1/
-{
-    self->fd = arg0;
-    self->sid = fd2sid[arg0]? fd2sid[arg0] : -arg0-1;
-}
-
 syscall::close*:return
 /pid == $1 && self->sid/
 {
-    file_count = (self->sid == -self->fd-1)? file_count : file_count - 1;
-    printf("%d %s %d \"%s\" %d %d", fops_timestamp, "close", self->sid, fd2path[self->fd], 0, file_count);
+    (0 < self->sid)? --file_count : 0;
+    printf("%d %s %d \"%s\" %d %d", fops_timestamp, "close", self->sid, fd2ioinfo[self->fd].dest, 0, file_count);
     ustack();
     printf("\n");
 
-    fd2sid[self->fd] = 0;
-    fd2path[self->fd] = "";
+    fd2ioinfo[self->fd].sid = 0;
+    fd2ioinfo[self->fd].dest = "";
+
     self->fd = 0;
     self->sid = 0;
 }

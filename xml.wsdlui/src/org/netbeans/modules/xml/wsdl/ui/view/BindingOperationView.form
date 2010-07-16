@@ -68,7 +68,7 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel" name="commonMessagePanel1">
+    <Component class="org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel" name="commonMessagePanel1">
       <Properties>
         <Property name="name" type="java.lang.String" value="commonMessagePanel1" noResource="true"/>
       </Properties>

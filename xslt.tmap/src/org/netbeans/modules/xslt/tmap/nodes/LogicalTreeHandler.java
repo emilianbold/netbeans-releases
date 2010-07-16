@@ -195,8 +195,9 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
         
         try {
 //         myBeanTreeView.expandAll();
-            Node node2sel = findTMapNode(myExplorerManager.getRootContext()
-            ,tMapNode.getComponentRef());
+            Node node2sel = findTMapNode(myExplorerManager.getRootContext(),
+                tMapNode.getNodeType(), tMapNode.getComponentRef(),
+                tMapNode.getAlternativeReference());
             if (node2sel == null) {
                 return;
             }
@@ -208,13 +209,25 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
     }
 
     private Node findTMapNode(Node parentNode, TMapComponent reference) {
+        return findTMapNode(parentNode, null, reference, null);
+    }
+    
+    private Node findTMapNode(Node parentNode, NodeType origNodeType, TMapComponent reference, Object alterReference) {
         if (parentNode == null || reference == null 
                 || !(parentNode instanceof TMapComponentNode)) 
         {
             return null;
         }
-        
-        if (reference.equals(((TMapComponentNode)parentNode).getComponentRef())) {
+
+
+        Object parentAlterRef = ((TMapComponentNode)parentNode).getAlternativeReference();
+        if (reference.equals(((TMapComponentNode)parentNode).getComponentRef()) 
+                && (
+                (alterReference != null && alterReference.equals(parentAlterRef))
+                || (alterReference == null && parentAlterRef == null))
+                && (origNodeType == null
+                  || (origNodeType.equals(((TMapComponentNode)parentNode).getNodeType()))))
+        {
             return (TMapComponentNode)parentNode;
         }
         
@@ -229,7 +242,7 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
         }
         
         for (Node node : nodes) {
-            Node tmpNode = findTMapNode(node, reference);
+            Node tmpNode = findTMapNode(node, origNodeType, reference, alterReference);
             if (tmpNode != null) {
                 return tmpNode;
             }

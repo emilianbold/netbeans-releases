@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,8 +52,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.accessibility.AccessibleContext;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
@@ -58,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.gsf.testrunner.ResultBar;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -79,7 +86,7 @@ final class ResultPanelTree extends JPanel
     /** */
     private final ResultTreeView treeView;
     /** should the results be filtered (only failures and errors displayed)? */
-    private boolean filtered = false;
+    private int filterMask = 0;
     /** */
     private ChangeListener changeListener;
     /** */
@@ -88,8 +95,9 @@ final class ResultPanelTree extends JPanel
     private final ResultDisplayHandler displayHandler;
 
     private final ResultBar resultBar = new ResultBar();
+    private StatisticsPanel statPanel;
 
-    ResultPanelTree(ResultDisplayHandler displayHandler) {
+    ResultPanelTree(ResultDisplayHandler displayHandler, StatisticsPanel statPanel) {
         super(new BorderLayout());
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
@@ -103,12 +111,14 @@ final class ResultPanelTree extends JPanel
         add(treeView, BorderLayout.CENTER);
 
         explorerManager = new ExplorerManager();
-        explorerManager.setRootContext(rootNode = new RootNode(displayHandler.getSession(), filtered));
+        explorerManager.setRootContext(rootNode = new RootNode(displayHandler.getSession(), filterMask));
         explorerManager.addPropertyChangeListener(this);
 
         initAccessibility();
 
         this.displayHandler = displayHandler;
+        this.statPanel = statPanel;
+        displayHandler.setLookup(ExplorerUtils.createLookup(explorerManager, new ActionMap()));
     }
 
     /**
@@ -153,6 +163,7 @@ final class ResultPanelTree extends JPanel
 
         rootNode.displayMessageSessionFinished(msg);
         resultBar.stop();
+        statPanel.updateButtons();
     }
 
     /**
@@ -208,6 +219,7 @@ final class ResultPanelTree extends JPanel
             }
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
     }
 
     /**
@@ -224,6 +236,7 @@ final class ResultPanelTree extends JPanel
             rootNode.displayReports(reports);
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
    }
 
     /**
@@ -243,14 +256,13 @@ final class ResultPanelTree extends JPanel
 
     /**
      */
-    void setFiltered(final boolean filtered) {
-        if (filtered == this.filtered) {
+    void setFilterMask(final int filterMask) {
+        if (filterMask == this.filterMask) {
             return;
         }
 
-        this.filtered = filtered;
-
-        rootNode.setFiltered(filtered);
+        this.filterMask = filterMask;
+        rootNode.setFilterMask(filterMask);
     }
 
     /**
@@ -303,6 +315,16 @@ final class ResultPanelTree extends JPanel
      */
     Node[] getSelectedNodes() {
         return explorerManager.getSelectedNodes();
+    }
+
+    Set<Testcase> getFailedTests(){
+        Set<Testcase> failedTests = new HashSet();
+        for(Testcase tc:displayHandler.getSession().getAllTestCases()){
+            if (Status.isFailureOrError(tc.getStatus())){
+                failedTests.add(tc);
+            }
+        }
+        return failedTests;
     }
 
     /**

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -143,7 +146,7 @@ public class SwitchToTest extends AbstractCommandTest {
         assertNotifiedFiles(new File[] {});  // XXX empty also in svnCA - why?! - no output from cli      
     }
 
-    public void testSwitchToFolderRec() throws Exception {                                        
+    public void testSwitchToFolderRec() throws Exception {
         File folder = createFolder("folder");
         File file = createFile(folder, "file");
         File folder1 = createFolder(folder, "folder1");
@@ -153,9 +156,9 @@ public class SwitchToTest extends AbstractCommandTest {
         add(folder1);
         add(file1);
         commit(folder);
-                
+
         File foldercopy = createFolder("foldercopy");
-        
+
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(folder), getFileUrl(foldercopy), "copy", SVNRevision.HEAD);
 
@@ -164,14 +167,45 @@ public class SwitchToTest extends AbstractCommandTest {
         assertInfo(file, getFileUrl(folder).appendPath(file.getName()));
         assertInfo(folder1, getFileUrl(folder).appendPath(folder1.getName()));
         assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
-        
+
         c.switchToUrl(folder, getFileUrl(foldercopy), SVNRevision.HEAD, true);
-        
+
         assertInfo(folder, getFileUrl(foldercopy));
-        assertInfo(file, getFileUrl(foldercopy).appendPath(file.getName()));        
+        assertInfo(file, getFileUrl(foldercopy).appendPath(file.getName()));
         assertInfo(folder1, getFileUrl(foldercopy).appendPath(folder1.getName()));
         assertInfo(file1, getFileUrl(foldercopy).appendPath(folder1.getName()).appendPath(file1.getName()));
-        assertNotifiedFiles(new File[] {});       // XXX empty also in svnCA - why?! - no output from cli 
+        assertNotifiedFiles(new File[] {});       // XXX empty also in svnCA - why?! - no output from cli
+    }
+
+    public void testSwitchToFolderWithAtSignRec() throws Exception {
+        File folder = createFolder("fol@der");
+        File file = createFile(folder, "file");
+        File folder1 = createFolder(folder, "folder1");
+        File file1 = createFile(folder1, "file1");
+        add(folder);
+        add(file);
+        add(folder1);
+        add(file1);
+        commit(folder);
+
+        File foldercopy = createFolder("folder@copy");
+
+        ISVNClientAdapter c = getNbClient();
+        c.copy(getFileUrl(folder), getFileUrl(foldercopy), "copy", SVNRevision.HEAD);
+
+        assertCopy(getFileUrl(foldercopy));
+        assertInfo(folder, getFileUrl(folder));
+        assertInfo(file, getFileUrl(folder).appendPath(file.getName()));
+        assertInfo(folder1, getFileUrl(folder).appendPath(folder1.getName()));
+        assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
+
+        c.switchToUrl(folder, getFileUrl(foldercopy), SVNRevision.HEAD, true);
+
+        assertInfo(folder, getFileUrl(foldercopy));
+        assertInfo(file, getFileUrl(foldercopy).appendPath(file.getName()));
+        assertInfo(folder1, getFileUrl(foldercopy).appendPath(folder1.getName()));
+        assertInfo(file1, getFileUrl(foldercopy).appendPath(folder1.getName()).appendPath(file1.getName()));
+        assertNotifiedFiles(new File[] {});       // XXX empty also in svnCA - why?! - no output from cli
     }
         
 }

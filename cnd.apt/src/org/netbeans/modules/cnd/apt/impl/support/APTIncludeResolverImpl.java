@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,11 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
@@ -60,20 +65,25 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final CharSequence baseFile;
     private final List<IncludeDirEntry> systemIncludePaths;
     private final List<IncludeDirEntry> userIncludePaths;
+    private final APTFileSearch fileSearch;
     
     public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
-                                    List<IncludeDirEntry> userIncludePaths) {
+                                    List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
+        this.fileSearch = fileSearch;
     }       
 
+
+    @Override
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
     }
 
+    @Override
     public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
     }
@@ -103,6 +113,13 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+            }
+        }
+        if (result == null && fileSearch != null) {
+            String path = fileSearch.searchInclude(includedFile, baseFile);
+            if (path != null) {
+                File file = new File(path);
+                result = APTIncludeUtils.resolveFilePath(file.getName(), path);
             }
         }
         return result;

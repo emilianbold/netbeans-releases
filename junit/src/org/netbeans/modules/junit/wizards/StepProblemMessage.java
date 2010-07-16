@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,30 +62,38 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
-public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescriptor> {
+public class StepProblemMessage 
+        implements WizardDescriptor.Panel<WizardDescriptor> {
     
     private final String msg;
     private final Project project;
     private JPanel panel;
-    
-    /** Creates a new instance of StepProblemMessage */
+
+    /**
+     * Creates a new instance of StepProblemMessage.
+     * @param project the project or {@code null}.
+     * @param message text of the message
+     */
     public StepProblemMessage(Project project, String message) {
         this.project = project;
         this.msg = message;
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         //no need for listeners - this panel is always invalid
     }
     
+    @Override
     public Component getComponent() {
         if (panel == null) {
             panel = new JPanel(new GridBagLayout());
             JLabel lblProject = new JLabel(
                     NbBundle.getMessage(StepProblemMessage.class,
                                         "LBL_Project"));                //NOI18N
-            JTextField tfProject = new JTextField(
-                    ProjectUtils.getInformation(project).getDisplayName());
+            String pojectInfo = project == null ? null :
+                    ProjectUtils.getInformation(project).getDisplayName();
+            JTextField tfProject = new JTextField(pojectInfo);
             JComponent message = GuiUtils.createMultilineLabel(msg);
 
             lblProject.setLabelFor(tfProject);
@@ -118,6 +129,7 @@ public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescript
         return panel;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(StepProblemMessage.class);
     }
@@ -125,18 +137,22 @@ public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescript
     /**
      * @return  <code>false</code> - this panel is never valid
      */
+    @Override
     public boolean isValid() {
         return false;
     }
     
+    @Override
     public void readSettings(WizardDescriptor settings) {
         //this panel has no settings
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         //no need for listeners - this panel is always invalid
     }
     
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         //this panel has no settings
     }

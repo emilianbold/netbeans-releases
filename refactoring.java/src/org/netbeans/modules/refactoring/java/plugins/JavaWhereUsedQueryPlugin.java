@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import java.net.URL;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -49,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,6 +66,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -120,7 +126,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         JavaSource source;
         if (file!=null) {
            set.add(file);
-            source = JavaSource.create(cpInfo, new FileObject[]{tph.getFileObject()});
+           final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),ClassPath.getClassPath(file, ClassPath.BOOT));
+           final ClassPath mergedCompilePath  = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE),ClassPath.getClassPath(file, ClassPath.COMPILE));
+           final ClassPath mergedSourcePath   = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),ClassPath.getClassPath(file, ClassPath.SOURCE));
+           final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
+           source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
         } else {
             source = JavaSource.create(cpInfo);
         }
@@ -267,6 +277,21 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     private boolean isSearchFromBaseClass() {
         return false;
+    }
+
+    private static ClassPath merge (final ClassPath... cps) {
+        final Set<URL> roots = new LinkedHashSet<URL>();
+        for (final ClassPath cp : cps) {
+            if (cp != null) {
+                for (final ClassPath.Entry entry : cp.entries()) {
+                    final URL root = entry.getURL();
+                    if (!roots.contains(root)) {
+                        roots.add(root);
+                    }
+                }
+            }
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
     
     private class FindTask implements CancellableTask<WorkingCopy> {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,7 +72,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -141,6 +143,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         return FileUtil.normalizeFile(new File(execPath));
     }    
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
@@ -149,6 +152,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         }
     }
 
+    @Override
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
         URL url = e.getURL();
@@ -172,7 +176,8 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     private void install(final UpdateElement updateElement) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     InstallCancellable ic = new InstallCancellable();
@@ -189,9 +194,9 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                         if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
                             oc.add(updateElement);
                         } else {
-                            Subversion.LOG.warning("MissingClient: cannot install " + updateElement.toString());
+                            Subversion.LOG.log(Level.WARNING, "MissingClient: cannot install {0}", updateElement.toString());
                             if (updateElement.getUpdateUnit().getInstalled() != null) {
-                                Subversion.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
+                                Subversion.LOG.log(Level.WARNING, "MissingClient: already installed {0}", updateElement.getUpdateUnit().getInstalled().toString());
                             }
                             notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
                                     NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
@@ -248,6 +253,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
 
     private class InstallCancellable implements Cancellable {
         private boolean cancelled;
+        @Override
         public boolean cancel() {
             cancelled = true;
             return true;

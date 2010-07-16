@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,8 +79,8 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsCategory;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings.ViewMode;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeCategory;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -298,7 +301,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
         try {
             SchemaModel sm = editor.getModel();
-            if (sm != null &&
+            if (sm != null && sm.getRootComponent() != null && 
                     sm.getState() == SchemaModel.State.VALID) {
                 return true;
             }
@@ -488,7 +491,8 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         try {
             SchemaModel model = schemaDataObject
                     .getSchemaEditorSupport().getModel();
-            if (model != null && model.getState() == SchemaModel.State.VALID) {
+            if (model != null && model.getRootComponent() != null &&
+                    model.getState() == SchemaModel.State.VALID) {
                 toolbar = new JToolBar();
                 toolbar.setFloatable(false);
                 if (categoryPane != null) {

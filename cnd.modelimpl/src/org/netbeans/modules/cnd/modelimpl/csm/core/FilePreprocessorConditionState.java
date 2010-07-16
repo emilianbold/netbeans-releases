@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -215,6 +218,7 @@ public final class FilePreprocessorConditionState {
     }
 
     public static final class Builder implements APTParseFileWalker.EvalCallback {
+
         private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
         private final CharSequence name;
         public Builder(CharSequence name) {
@@ -241,12 +245,12 @@ public final class FilePreprocessorConditionState {
          * Implements APTParseFileWalker.EvalCallback -
          * adds offset of dead branch to offsets array
          */
+        @Override
         public void onEval(APT apt, boolean result) {
             if (result) {
                 // if condition was evaluated as 'true' check if we
                 // need to mark siblings as dead blocks
                 APT start = apt.getNextSibling();
-                deadBlocks:
                 while (start != null) {
                     APT end = start.getNextSibling();
                     if (end != null) {
@@ -293,14 +297,10 @@ public final class FilePreprocessorConditionState {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
             }
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(this.name, offsets);
-            if (CndUtils.isDebugMode()) {
-                checkConsistency(pcState);
-            }
-            return pcState;
+            return build(this.name, offsets);
         }
 
-        private void checkConsistency(FilePreprocessorConditionState pcState) {
+        private static void checkConsistency(FilePreprocessorConditionState pcState) {
             // check consistency for ordering and absence of intersections
             for (int i = 0; i < pcState.offsets.length; i++) {
                 if (i + 1 < pcState.offsets.length) {
@@ -332,9 +332,25 @@ public final class FilePreprocessorConditionState {
         }
 
         private static final Comparator<int[]> COMPARATOR = new Comparator<int[]>() {
+            @Override
             public int compare(int[] segment1, int[] segment2) {
                 return segment1[0] - segment2[0];
             }
         };
+
+        static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
+            // TODO: copy offsets?
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(name, offsets);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(pcState);
+            }
+            return pcState;
+        }
+
+        static int[] getDeadBlocks(FilePreprocessorConditionState pcState) {
+            // TODO: copy offsets?
+            return pcState.offsets;
+        }
+
     }
 }

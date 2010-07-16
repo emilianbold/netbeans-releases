@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 import java.awt.*;
 
@@ -57,13 +59,13 @@ import java.awt.*;
 public class CMapSceneTest3 extends VMDGraphScene {
 
     /*
-    private static final Image IMAGE_LIST = Utilities.loadImage ("test/resources/list_32.png"); // NOI18N
-    private static final Image IMAGE_CANVAS = Utilities.loadImage ("test/resources/custom_displayable_32.png"); // NOI18N
-    private static final Image IMAGE_COMMAND = Utilities.loadImage ("test/resources/command_16.png"); // NOI18N
-    private static final Image IMAGE_ITEM = Utilities.loadImage ("test/resources/item_16.png"); // NOI18N
-    private static final Image GLYPH_PRE_CODE = Utilities.loadImage ("test/resources/preCodeGlyph.png"); // NOI18N
-    private static final Image GLYPH_POST_CODE = Utilities.loadImage ("test/resources/postCodeGlyph.png"); // NOI18N
-    private static final Image GLYPH_CANCEL = Utilities.loadImage ("test/resources/cancelGlyph.png"); // NOI18N
+    private static final Image IMAGE_LIST = ImageUtilities.loadImage ("test/resources/list_32.png"); // NOI18N
+    private static final Image IMAGE_CANVAS = ImageUtilities.loadImage ("test/resources/custom_displayable_32.png"); // NOI18N
+    private static final Image IMAGE_COMMAND = ImageUtilities.loadImage ("test/resources/command_16.png"); // NOI18N
+    private static final Image IMAGE_ITEM = ImageUtilities.loadImage ("test/resources/item_16.png"); // NOI18N
+    private static final Image GLYPH_PRE_CODE = ImageUtilities.loadImage ("test/resources/preCodeGlyph.png"); // NOI18N
+    private static final Image GLYPH_POST_CODE = ImageUtilities.loadImage ("test/resources/postCodeGlyph.png"); // NOI18N
+    private static final Image GLYPH_CANCEL = ImageUtilities.loadImage ("test/resources/cancelGlyph.png"); // NOI18N
     */
     
 

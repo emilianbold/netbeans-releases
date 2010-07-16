@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.core.completion;
 
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
@@ -40,7 +41,11 @@ class CompletionModelImpl extends CompletionModel {
     }
     
     public String getTargetNamespace() {
-        return myModel.getSchema().getTargetNamespace();
+        Schema schema = myModel.getSchema();
+        if (schema != null) {
+            return schema.getTargetNamespace();
+        }
+        return null;
     }
     
     private SchemaModel myModel;

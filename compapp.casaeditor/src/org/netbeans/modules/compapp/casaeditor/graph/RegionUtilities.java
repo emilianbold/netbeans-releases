@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,6 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -108,8 +110,7 @@ public class RegionUtilities {
     
     public enum Directions {
         LEFT, TOP, RIGHT, BOTTOM
-    }
-    
+    }    
     
     public static CasaRegionWidget getRegionWidget(CasaModelGraphScene scene, CasaRegion.Name regionID) {
         CasaRegion region = scene.getModel().getCasaRegion(regionID);
@@ -118,9 +119,12 @@ public class RegionUtilities {
         }
         return null;
     }
-    
-    
+        
     public static void stretchScene(CasaModelGraphScene scene) {
+        if (scene == null) {
+            return;
+        }
+
         boolean isAdjusting = scene.isAdjusting();
         try {
             scene.setIsAdjusting(true);
@@ -159,8 +163,6 @@ public class RegionUtilities {
             scene.setIsAdjusting(isAdjusting);
         }
     }
-
-    
     
     private static void doStretchSceneHeight(CasaModelGraphScene scene) {
         if (scene.getBounds() != null && scene.getView() != null) {
@@ -191,8 +193,7 @@ public class RegionUtilities {
             adjustHeights(maxYSpan, leftResizer, leftRegion, middleResizer, middleRegion, rightRegion);
         }
     }
-    
-    
+        
     private static void doStretchSceneWidth(CasaModelGraphScene scene) {
         if (scene.getBounds() != null && scene.getView() != null) {
             JScrollPane scroller = (JScrollPane) SwingUtilities.getAncestorOfClass(
@@ -234,8 +235,7 @@ public class RegionUtilities {
                 rightRegion.getPreferredLocation().x - RegionUtilities.RESIZER_HALF_WIDTH, 
                 0));
         }
-    }
-    
+    }    
     
     private static int adjustWidth(int width, CasaRegionWidget region) {
         if (width < CasaRegionWidget.MINIMUM_WIDTH) {
@@ -247,7 +247,6 @@ public class RegionUtilities {
                 bounds.height));
         return width;
     }
-
     
     private static void adjustHeights(int height, Widget ... widgets) {
         for (Widget widget : widgets) {
@@ -256,8 +255,7 @@ public class RegionUtilities {
                     bounds.width,
                     height));
         }
-    }
-    
+    }    
     
     private static int findMaximumWidgetYSpan(CasaRegionWidget ... regionWidgets) {
         int maxHeight = 0;
@@ -297,13 +295,11 @@ public class RegionUtilities {
             }
         }
         return maxWidth;
-    }
-    
+    }    
     
     public static MoveStrategy createPinsRestrictedMoveStrategy() {
         return new PinsRestrictedMoveStrategy();
-    }
-    
+    }    
     
     /**
      * Creates a directional anchor with computes a point as the one in the middle of the boundary side of specified widget.
@@ -315,8 +311,7 @@ public class RegionUtilities {
      */
     public static Anchor createFixedDirectionalAnchor(Widget widget, Directions kind, int gap) {
         return widget != null && kind != null ? new FixedDirectionalAnchor(widget, kind, gap) : null;
-    }
-    
+    }    
     
     /**
      * Creates a horizontal box layout with default style where widgets are placed horizontally one to the right from another.
@@ -325,8 +320,7 @@ public class RegionUtilities {
      */
     public static Layout createHorizontalFlowLayoutWithJustifications() {
         return createHorizontalFlowLayoutWithJustifications(null, 0);
-    }
-    
+    }    
     
     /**
      * Creates a horizontal box layout with a specific style where widgets are placed horizontally one to the right from another.
@@ -337,8 +331,7 @@ public class RegionUtilities {
      */
     public static Layout createHorizontalFlowLayoutWithJustifications(SerialAlignment alignment, int gap) {
         return new SerialLayoutWithJustifications(false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
-    }
-    
+    }    
     
     public static LayerWidget getRegionForScenePoint(CasaModelGraphScene scene, Point scenePoint) {
         LayerWidget region = null;
@@ -355,9 +348,7 @@ public class RegionUtilities {
             return region;
         }
         return null;
-    }
-    
-    
+    }   
     
     private static class PinsRestrictedMoveStrategy implements MoveStrategy {
         public PinsRestrictedMoveStrategy() {

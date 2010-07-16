@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ package org.netbeans.modules.javawebstart.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,9 +62,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
@@ -85,24 +90,28 @@ import org.xml.sax.SAXException;
 /**
  *
  * @author Milan Kubec
+ * @author Tomas Zezula
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="Application", position=200)
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
+
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N
-    
+
     private static JWSProjectProperties jwsProps = null;
-    
+
     private static final String MASTER_NAME_APPLICATION = "master-application.jnlp"; // NOI18N
     private static final String MASTER_NAME_APPLET = "master-applet.jnlp"; // NOI18N
     private static final String MASTER_NAME_COMPONENT = "master-component.jnlp"; // NOI18N
-    
+
     private static final String PREVIEW_NAME_APPLICATION = "preview-application.html"; // NOI18N
     private static final String PREVIEW_NAME_APPLET = "preview-applet.html"; // NOI18N
-    
-    private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
 
-    private static final String PREVIOUS_JNLP_IMPL_CRC32 = "3528ef9f"; // NOI18N
+    private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
+    private static final String BUILD_TEMPLATE = "Templates/JWS/jnlp-impl.xml"; //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(JWSCompositeCategoryProvider.class.getName());
+
+    private static volatile String currentJnlpImplCRCCache;
 
     public JWSCompositeCategoryProvider() {}
     
@@ -192,8 +201,8 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 writer.println("        <description>${APPLICATION.DESC}</description>");
                 writer.println("        <description kind=\"short\">${APPLICATION.DESC.SHORT}</description>");
                 writer.println("<!--${JNLP.ICONS}-->");
-                writer.println("<!--${JNLP.OFFLINE.ALLOWED}-->");
                 writer.println("    </information>");
+                writer.println("<!--${JNLP.UPDATE}-->");
                 writer.println("<!--${JNLP.SECURITY}-->");
                 writer.println("    <resources>");
                 writer.println("<!--${JNLP.RESOURCES.RUNTIME}-->");
@@ -246,37 +255,34 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 writer.println("    <body>");
                 if (JWSProjectProperties.DescType.applet.equals(descType)) {
                     writer.println("        <h3>Test page for launching the applet via JNLP</h3>");
-                    writer.println("        <applet width=\"${JNLP.APPLET.WIDTH}\" height=\"${JNLP.APPLET.HEIGHT}\">");
-                    writer.println("            <param name=\"jnlp_href\" value=\"${JNLP.FILE}\"/>");
-                    writer.println("        </applet>");
-                    writer.println("        <!-- Or use the following script element to launch with the Deployment Toolkit -->");
-                    writer.println("        <!-- Open the deployJava.js script to view its documentation -->");
-                    writer.println("        <!--");
                     writer.println("        <script src=\"http://java.com/js/deployJava.js\"></script>");
                     writer.println("        <script>");
                     writer.println("            var attributes = {");
-                    writer.println("                codebase:   [applet codebase],");
-                    writer.println("                code:       [class to launch],");
-                    writer.println("                archive:    [JAR file with the applet],");
-                    writer.println("                width:      [applet width],");
-                    writer.println("                height:     [applet height]");
+                    writer.println("                code:       \"${JNLP.APPLET.CLASS}\",");
+                    writer.println("                archive:    \"${JNLP.RESOURCES.MAIN.JAR}\",");
+                    writer.println("                width:      ${JNLP.APPLET.WIDTH},");
+                    writer.println("                height:     ${JNLP.APPLET.HEIGHT}");
                     writer.println("            };");
-                    writer.println("            var parameters = { [applet parameters] };");
-                    writer.println("            var version = [JDK version];");
+                    writer.println("            var parameters = {${JNLP.APPLET.PARAMS}}; <!-- Applet Parameters -->");
+                    writer.println("            var version = \"${JNLP_VM_VERSION}\"; <!-- Required Java Version -->");
                     writer.println("            deployJava.runApplet(attributes, parameters, version);");
                     writer.println("        </script>");
+                    writer.println("        <!-- Or use the following applet element to launch the applet using jnlp_href -->");
+                    writer.println("        <!--");
+                    writer.println("        <applet width=\"${JNLP.APPLET.WIDTH}\" height=\"${JNLP.APPLET.HEIGHT}\">");
+                    writer.println("            <param name=\"jnlp_href\" value=\"${JNLP.FILE}\"/>");
+                    writer.println("        </applet>");
                     writer.println("        -->");
+
                 } else if (JWSProjectProperties.DescType.application.equals(descType)) {
                     writer.println("        <h3>Test page for launching the application via JNLP</h3>");
-                    writer.println("        <a href=\"${JNLP.FILE}\">Launch the application</a>");
-                    writer.println("        <!-- Or use the following script element to launch with the Deployment Toolkit -->");
-                    writer.println("        <!-- Open the deployJava.js script to view its documentation -->");
-                    writer.println("        <!--");
                     writer.println("        <script src=\"http://java.com/js/deployJava.js\"></script>");
                     writer.println("        <script>");
-                    writer.println("            var url=\"http://[fill in your URL]/${JNLP.FILE}\"");
-                    writer.println("            deployJava.createWebStartLaunchButton(url, \"1.6\")");
+                    writer.println("            deployJava.createWebStartLaunchButton(\"${JNLP.FILE}\")");
                     writer.println("        </script>");
+                    writer.println("        <!-- Or use the following link element to launch with the application -->");
+                    writer.println("        <!--");
+                    writer.println("        <a href=\"${JNLP.FILE}\">Launch the application</a>");
                     writer.println("        -->");
                 }
                 writer.println("    </body>");
@@ -292,7 +298,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
     }
     
     private static class SavePropsListener implements ActionListener {
-        
+
         private JWSProjectProperties jwsProps;
         private Project j2seProject;
         
@@ -340,24 +346,29 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
             }
         }
-        
+
         private void copyTemplate(Project proj) throws IOException {
             FileObject projDir = proj.getProjectDirectory();
             FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
-            
-            if (jnlpBuildFile != null && isJnlpImplPreviousVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
+
+            if (jnlpBuildFile != null && !isJnlpImplCurrentVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
                 // try to close the file just in case the file is already opened in editor
                 DataObject dobj = DataObject.find(jnlpBuildFile);
                 CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
                 if (closeCookie != null) {
                     closeCookie.close();
                 }
-                FileUtil.moveFile(jnlpBuildFile, projDir.getFileObject("nbproject"), "jnlp-impl_backup");
+                final FileObject nbproject = projDir.getFileObject("nbproject");                    //NOI18N
+                final FileObject backupFile = nbproject.getFileObject("jnlp-impl_backup", "xml");   //NOI18N
+                if (backupFile != null) {
+                    backupFile.delete();
+                }
+                FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
                 jnlpBuildFile = null;
             }
-            
+
             if (jnlpBuildFile == null) {
-                FileObject templateFO = FileUtil.getConfigFile("Templates/JWS/jnlp-impl.xml"); // NOI18N
+                FileObject templateFO = FileUtil.getConfigFile(BUILD_TEMPLATE);
                 if (templateFO != null) {
                     FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jnlp-impl"); // NOI18N
                 }
@@ -366,11 +377,14 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         
         private void modifyBuildXml(Project proj) throws IOException {
             FileObject projDir = proj.getProjectDirectory();
-            final FileObject buildXmlFO = projDir.getFileObject("build.xml"); // NOI18N
-            File buildXmlFile = FileUtil.toFile(buildXmlFO);
+            final FileObject buildXmlFO = getBuildXml(proj);
+            if (buildXmlFO == null) {
+                LOG.warning("The project build script does not exist, the project cannot be extended by JWS.");     //NOI18N
+                return;
+            }
             Document xmlDoc = null;
             try {
-                xmlDoc = XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
+                xmlDoc = XMLUtil.parse(new InputSource(buildXmlFO.getURL().toExternalForm()), false, true, null, null);
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -384,7 +398,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
                 ProjectManager.getDefault().saveProject(proj);
             } else {
-                Logger.getLogger(JWSCompositeCategoryProvider.class.getName()).log(Level.INFO, 
+                LOG.log(Level.INFO,
                         "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
             }
             
@@ -451,7 +465,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
             }
         }
-        
+
         private void copyJWSAntTasksLibrary(Project proj) throws IOException {
             AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
@@ -460,7 +474,18 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 ProjectManager.getDefault().saveProject(proj);
             }
         }
-        
+
+        private static FileObject getBuildXml(final Project prj) {
+            final J2SEPropertyEvaluator j2sepe = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+            assert j2sepe != null;
+            final PropertyEvaluator eval = j2sepe.evaluator();
+            String buildScriptPath = eval.getProperty(JWSProjectProperties.BUILD_SCRIPT);
+            if (buildScriptPath == null) {
+                buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+            }
+            return prj.getProjectDirectory().getFileObject (buildScriptPath);
+        }
+
     }
 
     static String computeCrc32(InputStream is) throws IOException {
@@ -487,8 +512,18 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         return hex;
     }
 
-    static boolean isJnlpImplPreviousVer(String crc) {
-        return PREVIOUS_JNLP_IMPL_CRC32.equals(crc);
+    static boolean isJnlpImplCurrentVer(String crc) throws IOException {
+        String _currentJnlpImplCRC = currentJnlpImplCRCCache;
+        if (_currentJnlpImplCRC == null) {
+            final FileObject template = FileUtil.getConfigFile(BUILD_TEMPLATE);
+            final InputStream in = template.getInputStream();
+            try {
+                currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(in);
+            } finally {
+                in.close();
+            }
+        }
+        return _currentJnlpImplCRC.equals(crc);
     }
-    
+
 }

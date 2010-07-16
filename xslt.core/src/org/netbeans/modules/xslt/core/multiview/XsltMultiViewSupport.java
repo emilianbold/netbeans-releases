@@ -57,7 +57,7 @@ public class XsltMultiViewSupport {
     {
         MultiViewDescription views[] =  {
             new XSLTSourceMultiViewElementDesc( dataObject ),
-            new MapperMultiViewElementDesc( dataObject)
+//139025            new MapperMultiViewElementDesc( dataObject)
         };
 
         CloneableTopComponent multiview =

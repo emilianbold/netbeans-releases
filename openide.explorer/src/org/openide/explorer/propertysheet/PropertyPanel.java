@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -276,10 +280,12 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         initializing = false;
         setOpaque(true);
 
-        //for debugging, allow CTRL-. to dump the state to stderr 
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "dump"
-        );
+        if (!GraphicsEnvironment.isHeadless()) {
+            //for debugging, allow CTRL-. to dump the state to stderr
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "dump"
+            );
+        }
         getActionMap().put(
             "dump",
             new AbstractAction() { //NOI18N
@@ -438,6 +444,23 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         }
 
         return displayer;
+    }
+
+    /**
+     * Writes the edited value to the property.
+     * @return <code>true</code> when the value was successfully written, <code>false</code> otherwise.
+     */
+    public boolean commit() {
+        if (displayer instanceof PropertyDisplayer_Editable) {
+            try {
+                return ((PropertyDisplayer_Editable) displayer).commit();
+            } catch (IllegalArgumentException iae) {
+                PropertyDialogManager.notify(iae);
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /** Installs the component we will embed to display the property */
@@ -974,11 +997,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             }
 
             if (!changeImmediate) {
-                try {
-                    ((PropertyDisplayer_Editable) displayer).commit();
-                } catch (IllegalArgumentException iae) {
-                    PropertyDialogManager.notify(iae);
-                }
+                commit();
             }
         }
     }
@@ -1029,6 +1048,19 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         }
 
         return result;
+    }
+
+    /**
+     * Provide the current in-place editor, or <code>null</code>.
+     * @return in-place editor or or <code>null</code>.
+     */
+    public InplaceEditor getInplaceEditor() {
+        PropertyDisplayer pd = getPropertyDisplayer();
+        if (pd instanceof InplaceEditor.Factory) {
+            return ((InplaceEditor.Factory) pd).getInplaceEditor();
+        } else {
+            return null;
+        }
     }
 
     /** Sets whether or not this component is enabled.

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -62,10 +65,13 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
@@ -78,6 +84,8 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -543,10 +551,11 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             return null;
         }
         
-        private void addProductCheckBox(List<Product> products, String location) {
+        private void addProductCheckBox(List<Product> products, List<String> locations) {
             for (final Product product : products) {
-                if (product.getStatus() == Status.INSTALLED &&
-                        (location == null || new File(location).equals(product.getInstallationLocation()))) {
+                if (product.getStatus() == Status.INSTALLED) {
+                  for(String location: locations) {
+                    if(new File(location).equals(product.getInstallationLocation())) {
                     final NbiCheckBox checkbox = new NbiCheckBox();
                     final Pair<Product, NbiCheckBox> pair = new Pair(product, checkbox);
                     productCheckboxList.add(pair);
@@ -573,8 +582,69 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                             0, 0));                           // padx, pady - ???
                     break;
                 }
+                  }
+                }
             }
         }
+        private List<String> getRegisteredGlassFishV3Locations(File nbLocation) throws IOException{
+            //temporary solution
+            File f = new File(nbLocation, "nb/config/GlassFishEE6/Instances/.nbattrs");
+            List<String> result = new ArrayList<String>();
+            if (f.exists()) {
+                try {
+                    List<String> list = FileUtils.readStringList(f, "utf-8");
+                    for(String s : list) {
+                        String prefix = "<attr name=\"installfolder\" stringvalue=\"";
+                        if(s.indexOf(prefix)!=-1) {
+                            String url = s.substring(s.indexOf(prefix) + prefix.length());
+                            url = url.substring(0, url.indexOf("\""));
+                            LogManager.log("Adding URL : " + url);
+                            result.add(url);
+                        }
+                    }
+                } catch (IOException e) {
+                    LogManager.log("Cannot read file " + f, e);
+                }
+            }
+            return result;
+        }
+        
+        private List<String> getRegisteredTomcatLocations(File nbLocation) throws IOException {
+            //temporary solution
+            File f = new File(nbLocation, "nb/config/J2EE/InstalledServers/.nbattrs");
+            List<String> result = new ArrayList<String>();
+            if (f.exists()) {
+                try {
+                    List<String> list = FileUtils.readStringList(f, "utf-8");
+                    for (String s : list) {
+                        String prefix = "<attr name=\"url\" stringvalue=\"";
+                        if (s.indexOf(prefix) != -1) {
+                            String path = s.substring(s.indexOf(prefix) + prefix.length());
+                            String url = path.substring(0, path.indexOf("\""));
+                            String prefix2 = "tomcat60:home=";
+                            if (url.startsWith(prefix2)) {
+                                url = url.substring(prefix2.length());
+                                url = url.substring(0, url.indexOf(":base="));
+                                LogManager.log("Adding URL : " + url);
+                                result.add(url);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    LogManager.log("Cannot read file " + f, e);
+                }
+            }
+            return result;
+        }
+        private List<String> getRegisteredGlassFishV2Locations(File nbLocation) throws IOException{
+            String s = NetBeansUtils.getJvmOption(nbLocation, GLASSFISH_JVM_OPTION_NAME);
+            List<String> result = new ArrayList<String>();
+            if (s!=null) {
+                result.add(s);
+            }
+            return result;
+        }
+
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             gridy = 0 ;
@@ -640,20 +710,18 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     try {
                         File installLocation = product.getInstallationLocation();
 
-                        String gfLocation = NetBeansUtils.getJvmOption(
-                                installLocation, GLASSFISH_JVM_OPTION_NAME);
-                        if (gfLocation != null) {
+                        List<String> gfLocations = getRegisteredGlassFishV2Locations(installLocation);
+                        if (!gfLocations.isEmpty()) {
                             List<Product> glassfishesAppservers = Registry.getInstance().queryProducts(
                                     new OrFilter(
                                     new ProductFilter("glassfish",
                                     SystemUtils.getCurrentPlatform()),
                                     new ProductFilter("sjsas",
                                     SystemUtils.getCurrentPlatform())));
-                            addProductCheckBox(glassfishesAppservers, gfLocation);
+                            addProductCheckBox(glassfishesAppservers, gfLocations);
                         }
-                        String gfModLocation = NetBeansUtils.getJvmOption(
-                                installLocation, GLASSFISH_MOD_JVM_OPTION_NAME);
-                        if (gfModLocation != null) {
+                        List<String> gfModLocations = getRegisteredGlassFishV3Locations(installLocation);
+                        if (!gfModLocations.isEmpty()) {
                             List<Product> glassfishV3servers = Registry.getInstance().queryProducts(
                                     new OrFilter(
                                     new ProductFilter("glassfish-mod",
@@ -661,14 +729,13 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     new ProductFilter("glassfish-mod-sun",
                                     SystemUtils.getCurrentPlatform())));
 
-                            addProductCheckBox(glassfishV3servers, gfModLocation);
+                            addProductCheckBox(glassfishV3servers, gfModLocations);
                         }
 
 
-                        String tomcatLocation = NetBeansUtils.getJvmOption(
-                                installLocation, TOMCAT_JVM_OPTION_NAME_HOME);
-                        if (tomcatLocation != null) {
-                            addProductCheckBox(Registry.getInstance().getProducts("tomcat"), tomcatLocation);
+                        List<String> tomcatLocations = getRegisteredTomcatLocations(installLocation);
+                        if (!tomcatLocations.isEmpty()) {
+                            addProductCheckBox(Registry.getInstance().getProducts("tomcat"), tomcatLocations);
                         }                        
                         addProductCheckBox(Registry.getInstance().getProducts("mysql"), null);
 
@@ -911,9 +978,5 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
     public static final String GLASSFISH_JVM_OPTION_NAME =
-            "-Dcom.sun.aas.installRoot"; // NOI18N
-    public static final String GLASSFISH_MOD_JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3ee6.installRoot"; //NOI18N
-    public static final String TOMCAT_JVM_OPTION_NAME_HOME =
-            "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
+            "-Dcom.sun.aas.installRoot"; // NOI18N    
 }

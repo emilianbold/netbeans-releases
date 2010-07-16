@@ -1,7 +1,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -19,7 +19,7 @@ class UseElementImpl extends ModelElementImpl implements UseElement {
 
     private UseElementImpl(ScopeImpl inScope, String name,
             Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpKind.USE_STATEMENT);
+        super(inScope, name, file, offsetRange, PhpElementKind.USE_STATEMENT);
     }
 
     public String getAliasName() {

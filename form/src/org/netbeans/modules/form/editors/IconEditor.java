@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -231,6 +234,7 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor implementation
+    @Override
     public void setContext(FormModel model, FormProperty prop) {
         if (model != null) { // might be null when loaded as constraints property of JTabbedPane's tab
             this.sourceFile = FormEditor.getFormDataObject(model).getPrimaryFile();
@@ -243,6 +247,7 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -402,9 +407,14 @@ public class IconEditor extends PropertyEditorSupport
         }
         if (fo != null) {
             try {
-                Image image = ImageIO.read(fo.getURL());
-                if (image != null) { // issue 157546
-                    return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(image));
+                try {
+                    Image image = ImageIO.read(fo.getURL());
+                    if (image != null) { // issue 157546
+                        return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(image));
+                    }
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(fo.getURL()));
                 }
             } catch (IOException ex) { // should not happen
                 Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
@@ -440,9 +450,14 @@ public class IconEditor extends PropertyEditorSupport
             if (url != null) { // treat as url
                 Icon icon = null;
                 try {
-                    Image image = ImageIO.read(url);
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(url);
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                        }
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(url);
                     }
                 } catch (IOException ex) {}
                 // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
@@ -458,9 +473,14 @@ public class IconEditor extends PropertyEditorSupport
         File file = new File(fileName);
         if (file.exists()) {
             try {
-                Image image = ImageIO.read(file);
-                if (image != null) {
-                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                try {
+                    Image image = ImageIO.read(file);
+                    if (image != null) {
+                        return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                    }
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(fileName));
                 }
             } catch (IOException ex) {
                 Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, ex);
@@ -502,6 +522,7 @@ public class IconEditor extends PropertyEditorSupport
         }
 
         // FormDesignValue implementation
+        @Override
         public Object getDesignValue() {
             return icon;
         }
@@ -538,6 +559,7 @@ public class IconEditor extends PropertyEditorSupport
     /** Attribute holding icon name. */
     public static final String ATTR_NAME = "name"; // NOI18N
 
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_IMAGE.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -575,6 +597,7 @@ public class IconEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_IMAGE);
         Object value = getValue();

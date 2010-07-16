@@ -81,6 +81,7 @@
 			<xs:extension base="wsdl:tExtensibilityElement">
 				<xs:sequence>
 					<xs:element ref="jms:jndienv" minOccurs="0"/>
+					<xs:element ref="jms:jmsjcaOptions" minOccurs="0"/>
 				</xs:sequence>                            
 				<xs:attribute name="connectionURL" type="xs:string" use="required">
 					<xs:annotation>
@@ -135,13 +136,16 @@
                     <prop:PropertyGroup name="Common" groupOrder="1" />
                     <prop:PropertyGroup name="Consumer" groupOrder="2" />
                     <prop:PropertyGroup name="Provider" groupOrder="3" />                    
-                    <prop:Property attributeName="destination" groupName="Common" propertyOrder="1">
+                    <prop:Property attributeName="verb" groupName="Common" propertyOrder="1">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="destinationType" groupName="Common" propertyOrder="2">
+                    <prop:Property attributeName="destination" groupName="Common" propertyOrder="2">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="transaction" groupName="Common" propertyOrder="3">
+                    <prop:Property attributeName="destinationType" groupName="Common" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="transaction" groupName="Common" propertyOrder="4">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                     <prop:Property attributeName="deliveryMode" groupName="Provider" propertyOrder="1">
@@ -200,6 +204,11 @@
 				<xs:sequence>
 					<xs:element ref="jms:options" minOccurs="0"/>
 				</xs:sequence>
+				<xs:attribute name="verb" type="jms:verbType" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Verb</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:attribute name="destination" type="xs:string" use="required">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_destination</xs:documentation>
@@ -267,7 +276,7 @@
 						<xs:documentation>DESC_Attribute_subscriptionName</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="maxConcurrentConsumers" type="xs:positiveInteger" use="optional">
+				<xs:attribute name="maxConcurrentConsumers" type="xs:string" use="optional">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_maxConcurrentConsumers</xs:documentation>
 					</xs:annotation>
@@ -314,6 +323,14 @@
                         <prop:BuiltInCustomizer>
                             <prop:SimpleCustomizer name="PartChooser"/>
                         </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="bytesPart" groupName="Message" propertyOrder="3" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="forwardAsAttachment" groupName="Message" propertyOrder="4" >
+                    	<prop:SchemaCustomizer/>                   
                     </prop:Property>
                     
                     <prop:Property attributeName="correlationIdPart" groupName="ReadWriteMessageHeaders" propertyOrder="1" >
@@ -371,7 +388,7 @@
 					<xs:element ref="jms:properties"  minOccurs="0"/>
 					<xs:element ref="jms:mapmessage"  minOccurs="0"/>
 				</xs:sequence>
-				<xs:attribute name="messageType" type="jms:messageTypes" use="required">
+				<xs:attribute name="messageType" type="jms:messageTypes" use="optional">
 					<xs:annotation>
 						<xs:documentation>DESC_Attribute_messageType</xs:documentation>
 					</xs:annotation>
@@ -381,7 +398,16 @@
 						<xs:documentation>DESC_Attribute_textPart</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>                                
-
+				<xs:attribute name="bytesPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_bytesPart</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
+				<xs:attribute name="forwardAsAttachment" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_forwardAsAttachment</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
                                 <!-- reserved for later use with encoder library -->
 
 				<xs:attribute name="use" type="jms:useTypes" use="optional">
@@ -599,6 +625,11 @@
 			<xs:documentation>DESC_Element_jndienventry</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="jmsjcaOptions" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>DESC_JMS_Options</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:complexType name="tJNDIEnvEntry">
 		<xs:complexContent>
 			<xs:extension base="wsdl:tExtensibilityElement">
@@ -625,6 +656,13 @@
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="NoTransaction"/>
 			<xs:enumeration value="XATransaction"/>
+		</xs:restriction>
+	</xs:simpleType>	
+
+    <!-- Added verb for synchronous read-->
+	<xs:simpleType name="verbType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="read"/>
 		</xs:restriction>
 	</xs:simpleType>	
 
@@ -669,9 +707,9 @@
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="TextMessage"/>
 			<xs:enumeration value="MapMessage"/>
+			<xs:enumeration value="BytesMessage"/>
 			<!-- ToDo
 			<xs:enumeration value="StreamMessage"/>
-			<xs:enumeration value="BytesMessage"/>
 			-->	
 		</xs:restriction>
 	</xs:simpleType>

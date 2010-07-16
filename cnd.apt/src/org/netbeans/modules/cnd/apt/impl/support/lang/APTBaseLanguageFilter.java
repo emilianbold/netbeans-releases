@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,18 +48,23 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
-    private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();
+    private final Map<CharSequence,Integer/*ttype*/> filter;
+    private final Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
 
     // uncomment to use reduced memory
 //    private static final int BUFFERED_COUNT = 256;
@@ -71,9 +79,15 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    protected APTBaseLanguageFilter() {
+    protected APTBaseLanguageFilter(boolean caseInsensitive) {
+        if (caseInsensitive) {
+            filter = new TreeMap<CharSequence,Integer>(CharSequenceUtils.ComparatorIgnoreCase);
+        } else {
+            filter = new HashMap<CharSequence,Integer>();
+        }
     }
 
+    @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
         return new FilterStream(origStream);
     }
@@ -89,7 +103,6 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      * if original token has the filtered textKey value
      */
     protected void filter(String text, int ttype) {
-        Object textKey = APTUtils.getTextKey(text);
         // uncomment to use reduced memory
 //        if (ttype < BUFFERED_COUNT) {
 //            if (int2Int[ttype] == null) {
@@ -99,14 +112,22 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
 //        assert(val != null);
 //        filter.put(textKey, val);
-        filter.put(textKey, Integer.valueOf(ttype));
+        filter.put(CharSequences.create(text), Integer.valueOf(ttype));
+        keywords.add(Integer.valueOf(ttype));
     }
 
-    private Token onID(Token token) {
-        Integer newType = filter.get(token.getText());
+    protected Token onID(Token token) {
+        Integer newType = filter.get(((APTToken)token).getTextID());
         if (newType != null) {
             int ttype = newType.intValue();
             token = new FilterToken((APTToken)token, ttype);
+        }
+        return token;
+    }
+
+    protected Token onToken(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            token = onID(token);
         }
         return token;
     }
@@ -117,15 +138,27 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             this.orig = orig;
         }
 
+        @Override
         public Token nextToken() throws TokenStreamException {
             Token token = orig.nextToken();
-            if (token.getType() == APTTokenTypes.ID) {
-                token = onID(token);
-            }
+            token = onToken(token);
             return token;
         }
     }
 
+    public boolean isKeyword(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            Integer newType = filter.get(((APTToken)token).getTextID());
+            if (newType != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isKeyword(int ttype) {
+        return keywords.contains(Integer.valueOf(ttype));
+    }
     /**
      * A wrapper token that changes original token type
      * and delegates the rest of the methods to original token.
@@ -144,82 +177,102 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             return origToken;
         }
 
+        @Override
         public int getOffset() {
             return origToken.getOffset();
         }
 
+        @Override
         public void setOffset(int o) {
             origToken.setOffset(o);
         }
 
+        @Override
         public int getEndColumn() {
             return origToken.getEndColumn();
         }
 
+        @Override
         public void setEndColumn(int c) {
             origToken.setEndColumn(c);
         }
 
+        @Override
         public int getEndLine() {
             return origToken.getEndLine();
         }
 
+        @Override
         public void setEndLine(int l) {
             origToken.setEndLine(l);
         }
 
+        @Override
         public int getEndOffset() {
             return origToken.getEndOffset();
         }
 
+        @Override
         public void setEndOffset(int o) {
             origToken.setEndOffset(o);
         }
 
+        @Override
         public CharSequence getTextID() {
             return origToken.getTextID();
         }
 
+        @Override
         public void setTextID(CharSequence id) {
             origToken.setTextID(id);
         }
 
+        @Override
         public int getColumn() {
             return origToken.getColumn();
         }
 
+        @Override
         public void setColumn(int c) {
             origToken.setColumn(c);
         }
 
+        @Override
         public int getLine() {
             return origToken.getLine();
         }
 
+        @Override
         public void setLine(int l) {
             origToken.setLine(l);
         }
 
+        @Override
         public String getFilename() {
             return origToken.getFilename();
         }
 
+        @Override
         public void setFilename(String name) {
             origToken.setFilename(name);
         }
 
+        @Override
         public String getText() {
             return origToken.getText();
         }
 
+        @Override
         public void setText(String t) {
             origToken.setText(t);
         }
 
+        @Override
         public int getType() {
             return type;
         }
 
+        @Override
         public void setType(int t) {
             this.type = t;
         }

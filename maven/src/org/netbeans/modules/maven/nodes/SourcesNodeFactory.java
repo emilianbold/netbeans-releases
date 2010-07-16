@@ -84,6 +84,7 @@ public class SourcesNodeFactory implements NodeFactory {
     }
     
     private static class NList extends AbstractMavenNodeList<SourceGroup> implements ChangeListener {
+        private static final RequestProcessor RP = new RequestProcessor(SourcesNodeFactory.NList.class);
         private NbMavenProjectImpl project;
         private NList(NbMavenProjectImpl prj) {
             project = prj;
@@ -141,7 +142,7 @@ public class SourcesNodeFactory implements NodeFactory {
 
         public void stateChanged(ChangeEvent arg0) {
             //#167372 break the stack trace chain to prevent deadlocks.
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     fireChange();
                 }

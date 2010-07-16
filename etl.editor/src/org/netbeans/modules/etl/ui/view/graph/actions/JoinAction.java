@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,7 @@ import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -124,7 +127,7 @@ public class JoinAction extends GraphAction {
                     }
                 } catch (BaseException ex) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
-                    mLogger.errorNoloc(mLoc.t("EDIT025: error adding join view{0}", LOG_CATEGORY), ex);
+                    mLogger.fine(mLoc.t("EDIT025: error adding join view{0}")+ex);
                 }
             }
         }

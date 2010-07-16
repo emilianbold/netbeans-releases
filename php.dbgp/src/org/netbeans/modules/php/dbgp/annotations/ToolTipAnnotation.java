@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,8 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -51,6 +56,7 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
@@ -58,9 +64,10 @@ import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
 import org.netbeans.modules.php.dbgp.packets.Property;
+import org.netbeans.modules.php.dbgp.packets.PropertyGetCommand;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
@@ -73,15 +80,9 @@ import org.openide.util.RequestProcessor;
  * @author ads
  *
  */
-public class ToolTipAnnotation extends Annotation 
+public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
-
-    private static final String RIGHT_BRACKET   = " ]";     // NOI18N
-    
-    private static final String COMMA           = ", ";     // NOI18N
-    
-    private static final String LEFT_BRACKET    = "[ ";     // NOI18N
 
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()
@@ -113,50 +114,36 @@ public class ToolTipAnnotation extends Annotation
                 SwingUtilities.invokeLater( runnable );
             }
         }
-        
+
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange( PropertyChangeEvent event ) {
-        if ( event.getSource() instanceof EvalCommand ){
-            Property value = (Property)event.getNewValue();
-            firePropertyChange(PROP_SHORT_DESCRIPTION, null, 
-                    getStringValue( value ) );
-        }
+        if ((event.getSource() instanceof EvalCommand) ||
+                (event.getSource() instanceof PropertyGetCommand)) {
+            Object newValue = event.getNewValue();
+            if (newValue instanceof Property) {
+                Property value = (Property) event.getNewValue();
+                firePropertyChange(PROP_SHORT_DESCRIPTION, null,
+                        getFormattedValue(value));
+            } 
+        } 
     }
 
-    private String getStringValue( Property value ) {
+    private String getFormattedValue( Property value ) {
+        return getFormattedValue(value, 0);
+    }
+
+    private String getFormattedValue( Property value, int spaces ) {
         if ( value == null ){
             return null;
         }
-        String result = null;
-        try {
-            result = value.getStringValue();
-        }
-        catch (UnsufficientValueException e) {
-            /*
-             *  Result of eval command should contain all data because we are
-             *  not able to retrieve value via property_value command.
-             *  So this should never happened. Otherwise this is a bug in XDebug.   
-             */
-            return null;
-        }
-        if ( result != null ){
-            return (result.trim().length()==0) ? null : result;
-        }
-        boolean notFirst = false;
-        StringBuilder builder = new StringBuilder(LEFT_BRACKET);
-        for( Property property : value.getChildren() ){
-            if ( notFirst ){
-                builder.append(COMMA);
-            }
-            builder.append( getStringValue( property) );
-            notFirst = true;
-        }
-        builder.append(RIGHT_BRACKET);
+        StringBuilder builder = new StringBuilder(600);
+        CommonTooltip.build(value, builder);
         return builder.toString();
     }
 
@@ -166,7 +153,6 @@ public class ToolTipAnnotation extends Annotation
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
-        final FileObject fileObject = dataObject.getPrimaryFile();
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
@@ -174,19 +160,22 @@ public class ToolTipAnnotation extends Annotation
             getCookie(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
         if (document == null) {return;}
-        final int offset = NbDocument.findLineOffset(document, 
+        final int offset = NbDocument.findLineOffset(document,
                 part.getLine().getLineNumber()) + part.getColumn();
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         String selectedText = getSelectedText( ep, offset);
         if ( selectedText != null ){
-            sendEvalCommand( selectedText );
+            if (isPHPIdentifier(selectedText)) {
+                sendPropertyGetCommand(selectedText);
+            } else if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+                sendEvalCommand( selectedText );
+            }
         } else {
-            final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;            
-            if (identifier != null && isDollarMark(identifier.charAt(0))) {
+            final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;
+            if (identifier != null) {
                 Runnable runnable = new Runnable(){
                     public void run() {
-                        //TODO: should have been changed to PropertCommand
-                        sendEvalCommand(identifier);
+                        sendPropertyGetCommand(identifier);
                     }
                 };
                 RequestProcessor.getDefault().post(runnable);
@@ -233,22 +222,31 @@ public class ToolTipAnnotation extends Annotation
         }
         return text.substring(identStart, identEnd);
     }
-    
+
     static boolean isPHPIdentifier(char ch) {
         return isDollarMark(ch) || Character.isJavaIdentifierPart(ch);
     }
 
+    static boolean isPHPIdentifier(String text) {        
+        for (int i = 0; i < text.length(); i++) {
+            if (!isPHPIdentifier(text.charAt(i))) {
+                return false;
+            }            
+        }
+        return text.length() > 0;
+    }
+
     private static boolean isDollarMark(char ch) {
         return ch == '$';//NOI18N
-    }        
-    
+    }
+
     private boolean isPhpDataObject( DataObject dataObject ) {
         return Utils.isPhpFile( dataObject.getPrimaryFile() );
     }
 
     //TODO: review, replace the code depending on lexer.model - part II (methods computeVariable, getExpression)
     /*private void computeVariable( FileObject fObject, int offset ){
-        PhpModel model = ModelAccess.getAccess().getModel( 
+        PhpModel model = ModelAccess.getAccess().getModel(
                 ModelAccess.getModelOrigin( fObject ));
         if ( model == null ){
             return;
@@ -262,7 +260,7 @@ public class ToolTipAnnotation extends Annotation
             sendEvalCommand( expression );
         }
     }
-    
+
     private String getExpression( SourceElement element ) {
         if ( element == null ){
             return null;
@@ -285,16 +283,26 @@ public class ToolTipAnnotation extends Annotation
         command.addPropertyChangeListener( this );
         session.sendCommandLater(command);
     }
-    
+    private void sendPropertyGetCommand( String str ){
+        DebugSession session = getSession();
+        if ( session == null ){
+            return;
+        }
+        PropertyGetCommand command = new PropertyGetCommand( session.getTransactionId() );
+        command.setName( str );
+        command.addPropertyChangeListener( this );
+        session.sendCommandLater(command);
+    }
+
     private String getSelectedText( JEditorPane pane , int offset ){
-        if ((pane != null && pane.getSelectionStart() <= offset) && 
+        if ((pane != null && pane.getSelectionStart() <= offset) &&
                 (offset <= pane.getSelectionEnd()))
         {
             return pane.getSelectedText();
         }
         return null;
     }
-    
+
     private DebugSession getSession() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager()
                 .getCurrentEngine();
@@ -307,8 +315,215 @@ public class ToolTipAnnotation extends Annotation
             return null;
         }
         DebugSession session = SessionManager.getInstance()
-                .getCurrentSession(id);
-        return session; 
+                .getSession(id);
+        return session;
     }
 
+
+    private static class CommonTooltip {
+        protected static final String NEW_LINE = "\n"; // NOI18N
+
+        protected final Property property;
+        protected final String type;
+        protected final String result;
+        protected final int spaces;
+
+        protected CommonTooltip(Property property, String type, String result, int spaces) {
+            this.property = property;
+            this.type = type;
+            this.result = result;
+            this.spaces = spaces;
+        }
+
+        public static void build(Property property, StringBuilder builder) {
+            build(property, builder, 0);
+        }
+
+        public static void build(Property property, StringBuilder builder, int spaces) {
+            String result = null;
+            String type = null;
+            try {
+                type = property.getType();
+                result = property.getStringValue();
+            } catch (UnsufficientValueException e) {
+                /*
+                 *  Result of eval command should contain all data because we are
+                 *  not able to retrieve value via property_value command.
+                 *  So this should never happened. Otherwise this is a bug in XDebug.
+                 */
+                Logger.getLogger(ToolTipAnnotation.class.getName()).log(Level.INFO, null, e);
+            }
+            if ("object".equalsIgnoreCase(type)) { // NOI18N
+                new ObjectTooltip(property, type, result, spaces).build(builder);
+            } else if ("array".equalsIgnoreCase(type)) { // NOI18N
+                new ArrayTooltip(property, type, result, spaces).build(builder);
+            } else if ("null".equalsIgnoreCase(type)) { // NOI18N
+                new NullTooltip(property, type, result, spaces).build(builder);
+            } else if ("bool".equalsIgnoreCase(type)) { // NOI18N
+                new BooleanTooltip(property, type, result, spaces).build(builder);
+            } else {
+                new CommonTooltip(property, type, result, spaces).build(builder);
+            }
+        }
+
+        public final void build(StringBuilder builder) {
+            buildType(builder);
+            buildResult(builder);
+            buildChildren(builder);
+        }
+
+        protected void buildType(StringBuilder builder) {
+            builder.append("("); // NOI18N
+            builder.append(type);
+            builder.append(")"); // NOI18N
+        }
+
+        protected void buildResult(StringBuilder builder) {
+            if (StringUtils.hasText(result)) {
+                if (builder.length() > 0) {
+                    appendSpaces(1, builder);
+                }
+                builder.append(result);
+            }
+        }
+
+        protected void buildChildren(StringBuilder builder) {
+            if (property.hasChildren()) {
+                builder.append(getChildrenLeft());
+                for (Property child : property.getChildren()) {
+                    builder.append(NEW_LINE);
+                    appendSpaces(spaces + 2, builder);
+                    builder.append(getChildLeft());
+                    builder.append(child.getName());
+                    builder.append(getChildRight());
+                    builder.append(" => "); // NOI18N
+                    CommonTooltip.build(child, builder, spaces + 2);
+                }
+                builder.append(NEW_LINE);
+                appendSpaces(spaces, builder);
+                builder.append(getChildrenRight());
+            }
+        }
+
+        public String getChildrenLeft() {
+            return getEmptyString();
+        }
+
+        public String getChildrenRight() {
+            return getEmptyString();
+        }
+
+        public String getChildLeft() {
+            return getEmptyString();
+        }
+
+        public String getChildRight() {
+            return getEmptyString();
+        }
+
+        private String getEmptyString() {
+            assert false : "Unknown type: " + type;
+            return ""; // NOI18N
+        }
+
+        protected void appendSpaces(int count, StringBuilder builder) {
+            for (int i = 0; i < count; i++) {
+                builder.append(" "); //NOI18N
+            }
+        }
+    }
+
+    private static final class NullTooltip extends CommonTooltip {
+        public NullTooltip(Property property, String type, String result, int spaces) {
+            super(property, type, result, spaces);
+        }
+
+        @Override
+        protected void buildType(StringBuilder builder) {
+            builder.append(type);
+        }
+    }
+
+    private static final class BooleanTooltip extends CommonTooltip {
+        public BooleanTooltip(Property property, String type, String result, int spaces) {
+            super(property, type, result, spaces);
+        }
+
+        @Override
+        protected void buildResult(StringBuilder builder) {
+            appendSpaces(1, builder);
+            if ("1".equals(result)) { // NOI18N
+                builder.append("true"); // NOI18N
+            } else {
+                builder.append("false"); // NOI18N
+            }
+        }
+    }
+
+    private static final class ObjectTooltip extends CommonTooltip {
+        public ObjectTooltip(Property property, String type, String result, int spaces) {
+            super(property, type, result, spaces);
+        }
+
+        @Override
+         protected void buildType(StringBuilder builder) {
+            builder.append(property.getClassName());
+            builder.append(" "); // NOI18N
+            builder.append(type);
+        }
+
+        @Override
+        public String getChildrenLeft() {
+            return " {"; // NOI18N
+        }
+
+        @Override
+        public String getChildrenRight() {
+            return "}"; // NOI18N
+        }
+
+        @Override
+        public String getChildLeft() {
+            return ""; // NOI18N
+        }
+
+        @Override
+        public String getChildRight() {
+            return ""; // NOI18N
+        }
+    }
+
+    private static final class ArrayTooltip extends CommonTooltip {
+        public ArrayTooltip(Property property, String type, String result, int spaces) {
+            super(property, type, result, spaces);
+        }
+
+        @Override
+        protected void buildType(StringBuilder builder) {
+            builder.append(type); // NOI18N
+            builder.append("("); // NOI18N
+            builder.append(property.getChildrenSize());
+            builder.append(")"); // NOI18N
+        }
+
+        @Override
+        public String getChildrenLeft() {
+            return " ("; // NOI18N
+        }
+
+        @Override
+        public String getChildrenRight() {
+            return ")"; // NOI18N
+        }
+
+        @Override
+        public String getChildLeft() {
+            return "["; // NOI18N
+        }
+
+        @Override
+        public String getChildRight() {
+            return "]"; // NOI18N
+        }
+    }
 }

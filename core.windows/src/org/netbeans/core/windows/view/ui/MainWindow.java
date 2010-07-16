@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,11 +45,9 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -54,13 +55,9 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -347,49 +344,11 @@ public final class MainWindow extends JFrame {
     private static final String ICON_16 = "org/netbeans/core/startup/frame.gif"; // NOI18N
     private static final String ICON_32 = "org/netbeans/core/startup/frame32.gif"; // NOI18N
     private static final String ICON_48 = "org/netbeans/core/startup/frame48.gif"; // NOI18N
-    
-    private static Image createIDEImage() {
-        return ImageUtilities.loadImage(ICON_16, true);
-    }
-    
-    private static List<Image> createIDEImages() {
-        List<Image> l = new ArrayList<Image>();
-        l.add(ImageUtilities.loadImage(ICON_16, true));
-        l.add(ImageUtilities.loadImage(ICON_32, true));
-        l.add(ImageUtilities.loadImage(ICON_48, true));
-        return l;
-    }
-    
-    static void initFrameIcons (Frame f) {
-        Class<?> clazz = null;
-        try {
-            clazz = Class.forName("java.awt.Window");
-        } catch (ClassNotFoundException ex) {
-            //This cannot happen because without AWT classes we would not get here.
-        }
-        Method m = null;
-        try {
-            m = clazz.getMethod("setIconImages", new Class [] {List.class});
-        } catch (NoSuchMethodException ex) {
-            //Method not available so we are on JDK 5. Use setIconImage.
-        }
-        if (m != null) {
-            List<Image> l;
-            l = createIDEImages();
-            try {
-                m.invoke(f, new Object [] {l});
-            } catch (IllegalAccessException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log
-                (Level.INFO, "Cannot invoke setIconImages", ex); //NOI18N
-                f.setIconImage(createIDEImage());
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log
-                (Level.INFO, "Cannot invoke setIconImages", ex); //NOI18N
-                f.setIconImage(createIDEImage());
-            }
-        } else {
-            f.setIconImage(createIDEImage());
-        }
+    static void initFrameIcons(Frame f) {
+        f.setIconImages(Arrays.asList(
+                ImageUtilities.loadImage(ICON_16, true),
+                ImageUtilities.loadImage(ICON_32, true),
+                ImageUtilities.loadImage(ICON_48, true)));
     }
     
     private void initListeners() {
@@ -553,10 +512,6 @@ public final class MainWindow extends JFrame {
         } 
         invalidate();
         validate();
-        // use #24291 hack only on Win OS
-        if( isOlderJDK && !System.getProperty("os.name").startsWith("Windows") ) {
-            releaseWaitingForPaintDummyGraphic();
-        }
 
         repaint();
     }
@@ -596,72 +551,14 @@ public final class MainWindow extends JFrame {
         return bounds;
     }
 
-    // [dafe] Start of #24291 hacky fix, to prevent from main window flicking on
-    // JDK 1.5.x and older. Can be freely deleted when we will drop JDK 1.5.x
-    // support in future
-
-    private Image waitingForPaintDummyImage;
-    private Graphics waitingForPaintDummyGraphic;
-    boolean isOlderJDK = System.getProperty("java.version").startsWith("1.5");
-
-    @Override
-    public void setVisible (boolean flag) {
-        // The setVisible will cause a PaintEvent to be queued up, as a LOW_PRIORITY one
-        // As the painting of my child components occurs, they cause painting of their own
-        // When the PaintEvent queued from the setVisible is finally processed, it assumes
-        // nothing has been displayed and redraws the whole window.
-        // So we make it such that, UNTIL there is the repaint is dispatched, return a graphics
-        // which goes nowhere.
-        if (flag && isOlderJDK) {
-            waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-            waitingForPaintDummyGraphic = waitingForPaintDummyImage.getGraphics();
-        }
-        super.setVisible(flag);
-    }
-
     @Override
     public void paint(Graphics g) {
-        // As a safeguard, always release the dummy graphic when we get a paint
-        if (waitingForPaintDummyGraphic != null) {
-            releaseWaitingForPaintDummyGraphic();
-            // Since the release did not occur before the getGraphics() call,
-            // I need to get the actual graphics now that I've released
-            g = getGraphics();
-        }
         super.paint(g);
         Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, 
                 "Paint method of main window invoked normally."); //NOI18N
-
+        // XXX is this only needed by obsolete #24291 hack, or now needed independently?
         WindowManagerImpl.getInstance().mainWindowPainted();
     }
-
-    /** Overrides parent version to return fake dummy graphic in certain time
-     * during startup
-     */
-    @Override
-    public Graphics getGraphics () {
-        // Return the dummy graphics that paint nowhere, until we receive a paint() 
-        if (waitingForPaintDummyGraphic != null) {
-            // If we are the PaintEvent we are waiting for is being dispatched
-            // we better return the correct graphics.
-            AWTEvent event = EventQueue.getCurrentEvent();
-            if (event == null || (event.getID() != PaintEvent.PAINT && event.getSource() != this)) {
-                return waitingForPaintDummyGraphic;
-	        }
-	        releaseWaitingForPaintDummyGraphic();
-        }
-        return super.getGraphics();
-    }
-
-    private void releaseWaitingForPaintDummyGraphic () {
-        if (waitingForPaintDummyGraphic != null) {
-            waitingForPaintDummyGraphic.dispose();
-            waitingForPaintDummyGraphic = null;
-            waitingForPaintDummyImage = null;
-        }
-    }
-
-    // end of #24291 hacky fix
 
     // Full Screen Mode
     private boolean isFullScreenMode = false;

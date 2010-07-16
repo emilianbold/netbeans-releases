@@ -33,17 +33,18 @@ import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.ScopeHolder;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.openide.ErrorManager;
+import org.netbeans.modules.bpel.palette.SoaPaletteMenu;
+import javax.swing.ImageIcon;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public abstract  class AddPaletteActivityAction extends BpelNodeAction {
     private static final long serialVersionUID = 1L;
 
-    public AddPaletteActivityAction() {
+    public AddPaletteActivityAction(String icon) {
+        setIcon(new ImageIcon(SoaPaletteMenu.class.getResource("resources/" + icon + "16.png"))); // NOI18N
     }    
     
     protected abstract String getBundleName();

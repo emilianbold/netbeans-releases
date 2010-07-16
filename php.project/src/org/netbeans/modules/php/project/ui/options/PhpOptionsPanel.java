@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,13 +43,15 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -55,18 +60,20 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -75,9 +82,10 @@ import org.openide.util.NbBundle;
  * @author  Tomas Mysik
  */
 public class PhpOptionsPanel extends JPanel {
-    private static final long serialVersionUID = 109856412432078L;
+    private static final long serialVersionUID = 10985641247986428L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final WatchesAndEvalListener watchesAndEvalListener = new WatchesAndEvalListener();
 
     public PhpOptionsPanel() {
         initComponents();
@@ -90,15 +98,18 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     private void initPhpGlobalIncludePath() {
         DefaultListModel listModel = PathUiSupport.createListModel(
                 GlobalIncludePathSupport.getInstance().itemsIterator());
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            @Override
             public File getCurrentDirectory() {
                 return LastUsedFolders.getIncludePath();
             }
+            @Override
             public void setCurrentDirectory(File currentDirectory) {
                 LastUsedFolders.setIncludePath(currentDirectory);
             }
@@ -176,10 +187,20 @@ public class PhpOptionsPanel extends JPanel {
         stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
     }
 
+    public boolean isDebuggerWatchesAndEval() {
+        return watchesAndEvalCheckBox.isSelected();
+    }
+
+    public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
+        watchesAndEvalCheckBox.removeItemListener(watchesAndEvalListener);
+        watchesAndEvalCheckBox.setSelected(debuggerWatchesAndEval);
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
+    }
+
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
                 PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
-        StringBuilder path = new StringBuilder();
+        StringBuilder path = new StringBuilder(200);
         for (String s : paths) {
             path.append(s);
         }
@@ -236,6 +257,7 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdLabel = new JLabel();
         debuggerSessionIdTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
+        watchesAndEvalCheckBox = new JCheckBox();
         globalIncludePathSeparator = new JSeparator();
         globalIncludePathLabel = new JLabel();
         useTheFollowingPathByDefaultLabel = new JLabel();
@@ -283,8 +305,10 @@ public class PhpOptionsPanel extends JPanel {
 
         debuggerSessionIdLabel.setLabelFor(debuggerSessionIdTextField);
 
+
         Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(stopAtTheFirstLineCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_StopAtTheFirstLine"));
+        Mnemonics.setLocalizedText(watchesAndEvalCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.text"));
 
         globalIncludePathLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
@@ -311,118 +335,123 @@ public class PhpOptionsPanel extends JPanel {
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(phpInterpreterLabel)
-                    .add(openResultInLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(phpInterpreterBrowseButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(phpInterpreterSearchButton))
-                    .add(layout.createSequentialGroup()
-                        .add(outputWindowCheckBox)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(webBrowserCheckBox)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(editorCheckBox))))
-            .add(layout.createSequentialGroup()
-                .add(commandLineLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(debuggingLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(phpInterpreterLabel)
+                    .addComponent(openResultInLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(phpInterpreterBrowseButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(phpInterpreterSearchButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(outputWindowCheckBox)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(webBrowserCheckBox)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(editorCheckBox))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(commandLineLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(debuggingLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(stopAtTheFirstLineCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(debuggerPortLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(debuggerSessionIdLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))))
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(addFolderButton)
-                            .add(removeButton)
-                            .add(moveUpButton)
-                            .add(moveDownButton)))
-                    .add(useTheFollowingPathByDefaultLabel)))
-            .add(errorLabel)
-            .add(layout.createSequentialGroup()
-                .add(globalIncludePathLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(stopAtTheFirstLineCheckBox)
+                        .addPreferredGap(ComponentPlacement.UNRELATED)
+                        .addComponent(watchesAndEvalCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(debuggerPortLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(debuggerSessionIdLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(addFolderButton)
+                            .addComponent(removeButton)
+                            .addComponent(moveUpButton)
+                            .addComponent(moveDownButton)))
+                    .addComponent(useTheFollowingPathByDefaultLabel)))
+            .addComponent(errorLabel)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(globalIncludePathLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
 
-        layout.linkSize(new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(commandLineLabel)
-                    .add(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(phpInterpreterBrowseButton)
-                    .add(phpInterpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(phpInterpreterSearchButton)
-                    .add(phpInterpreterLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(outputWindowCheckBox)
-                    .add(webBrowserCheckBox)
-                    .add(editorCheckBox)
-                    .add(openResultInLabel))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(debuggingLabel)
-                    .add(debuggingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(debuggerPortLabel)
-                    .add(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(debuggerSessionIdLabel)
-                    .add(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(stopAtTheFirstLineCheckBox)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(globalIncludePathLabel)
-                    .add(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(useTheFollowingPathByDefaultLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(addFolderButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removeButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(moveUpButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(moveDownButton)))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(errorLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(commandLineLabel)
+                    .addComponent(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpInterpreterBrowseButton)
+                    .addComponent(phpInterpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpInterpreterSearchButton)
+                    .addComponent(phpInterpreterLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(outputWindowCheckBox)
+                    .addComponent(webBrowserCheckBox)
+                    .addComponent(editorCheckBox)
+                    .addComponent(openResultInLabel))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(debuggingLabel)
+                    .addComponent(debuggingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(debuggerPortLabel)
+                    .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(debuggerSessionIdLabel)
+                    .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(stopAtTheFirstLineCheckBox)
+                    .addComponent(watchesAndEvalCheckBox))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(globalIncludePathLabel)
+                    .addComponent(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(useTheFollowingPathByDefaultLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addFolderButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removeButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(moveUpButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(moveDownButton)))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(errorLabel))
         );
 
         commandLineSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.commandLineSeparator.AccessibleContext.accessibleName_1")); // NOI18N
@@ -459,6 +488,8 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleName_1")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleDescription_1")); // NOI18N
         globalIncludePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -487,22 +518,27 @@ public class PhpOptionsPanel extends JPanel {
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed
         String phpInterpreter = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+            @Override
             public List<String> detect() {
                 return PhpEnvironment.get().getAllPhpInterpreters();
             }
 
+            @Override
             public String getWindowTitle() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersTitle");
             }
 
+            @Override
             public String getListTitle() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreters");
             }
 
+            @Override
             public String getPleaseWaitPart() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersPleaseWaitPart");
             }
 
+            @Override
             public String getNoItemsFound() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpInterpretersFound");
             }
@@ -540,25 +576,46 @@ public class PhpOptionsPanel extends JPanel {
     private JButton removeButton;
     private JCheckBox stopAtTheFirstLineCheckBox;
     private JLabel useTheFollowingPathByDefaultLabel;
+    private JCheckBox watchesAndEvalCheckBox;
     private JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultDocumentListener implements DocumentListener {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }
 
         private void processUpdate() {
             fireChange();
+        }
+    }
+
+    private static final class WatchesAndEvalListener implements ItemListener {
+        private static boolean warningShown = false;
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (warningShown) {
+                return;
+            }
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(PhpOptionsPanel.class, "MSG_WatchesAndEval"),
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(descriptor);
+                warningShown = true;
+            }
         }
     }
 }

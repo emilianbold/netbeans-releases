@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.util.Utilities;
@@ -94,7 +97,14 @@ public class APTIncludeUtils {
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
             if (dirPrefix.isExistingDirectory()) {
-                String absolutePath = CharSequenceKey.toString(dirPrefix.getAsString(), File.separatorChar, includedFile);
+                String prefix = dirPrefix.getAsString();
+                int len = prefix.length();
+                String absolutePath;
+                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) {
+                    absolutePath = prefix + includedFile;
+                } else {
+                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile);
+                }
                 if (isExistingFile(absolutePath)) {
                     return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
                 } else {

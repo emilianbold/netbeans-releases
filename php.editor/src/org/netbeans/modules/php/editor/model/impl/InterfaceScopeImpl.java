@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,18 +41,20 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
 import java.util.HashSet;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+
 
 /**
  *
@@ -60,7 +65,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         super(inScope, nodeInfo);
     }
 
-    InterfaceScopeImpl(IndexScope inScope, IndexedInterface indexedIface) {
+    InterfaceScopeImpl(IndexScope inScope, InterfaceElement indexedIface) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedIface);
     }
@@ -69,7 +74,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaces();
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
         if (implementedInterfaces.size() > 0) {
             sb.append(" implements ");
             for (InterfaceScope interfaceScope : implementedInterfaces) {
@@ -78,20 +83,69 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return sb.toString();
     }
+
+    @Override
+    public String asString(PrintAs as) {
+        StringBuilder retval = new StringBuilder();
+        switch (as) {
+            case NameAndSuperTypes:
+                retval.append(getName()); //NOI18N
+            case SuperTypes:
+                Set<QualifiedName> superIfaces = getSuperInterfaces();
+                if (!superIfaces.isEmpty()) {
+                    retval.append(" extends ");//NOI18N
+                }
+                StringBuilder ifacesBuffer = new StringBuilder();
+                for (QualifiedName qualifiedName : superIfaces) {
+                    if (ifacesBuffer.length() > 0) {
+                        ifacesBuffer.append(", ");//NOI18N
+                    }
+                    ifacesBuffer.append(qualifiedName.getName());
+                }
+                retval.append(ifacesBuffer);
+                break;
+        }
+        return retval.toString();
+    }
+
+    @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
         Set<MethodScope> allMethods = new HashSet<MethodScope>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScope.getIndex();
+        ElementQuery.Index index = indexScope.getIndex();
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
-        interfaceScopes.addAll(getSuperInterfaces());
+        interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
-            Collection<IndexedClassMember<IndexedFunction>> indexedFunctions = index.getAllMethods(null, iface.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-            for (IndexedClassMember<IndexedFunction> classMember : indexedFunctions) {
-                IndexedFunction indexedFunction = classMember.getMember();
-                allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction));
+            Set<MethodElement> indexedFunctions =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(iface));
+            for (MethodElement classMember : indexedFunctions) {
+                MethodElement indexedFunction = classMember;
+                TypeElement type = indexedFunction.getType();
+                if (type.isInterface()) {
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                } else {
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                }
             }
         }
         return allMethods;
+    }
+
+    @Override
+    public final Collection<? extends ClassConstantElement> getInheritedConstants() {
+        Set<ClassConstantElement> allConstants = new HashSet<ClassConstantElement>();
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        ElementQuery.Index index = indexScope.getIndex();
+        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        interfaceScopes.addAll(getSuperInterfaceScopes());
+        for (InterfaceScope iface : interfaceScopes) {
+            Collection<TypeConstantElement> indexedConstants = index.getInheritedTypeConstants(iface);
+            for (TypeConstantElement classMember : indexedConstants) {
+                TypeConstantElement indexedFunction = classMember;
+                allConstants.add(new ClassConstantElementImpl(iface, indexedFunction));
+            }
+        }
+        return allConstants;
     }
 
     public final Collection<? extends MethodScope> getMethods() {
@@ -124,9 +178,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
 
     @Override
     public QualifiedName getNamespaceName() {
-        if (indexedElement instanceof IndexedInterface) {
-            IndexedInterface indexedInterface = (IndexedInterface)indexedElement;
-            return QualifiedName.create(indexedInterface.getNamespaceName());
+        if (indexedElement instanceof InterfaceElement) {
+            InterfaceElement indexedInterface = (InterfaceElement)indexedElement;
+            return indexedInterface.getNamespaceName();
         }
         return super.getNamespaceName();
     }

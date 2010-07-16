@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,18 +46,14 @@ package org.netbeans.util;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Frame;
+import java.awt.Dialog;
 import java.awt.Image;
-import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JDialog;
@@ -105,55 +104,22 @@ public class Util {
             ex.printStackTrace();
         }
     }
-    
-    /** On JDK 1.6 it creates dialog without owner and modality type APPLICATION_MODAL.
-     * On JDK 1.5 creates standard modal dialog.
-     * When JDK5 is obsolete, use just new JDialog(null, title, Dialog.ModalityType.APPLICATION_MODAL).
-     */
-    public static JDialog createModalDialog(String title) {
-        try {
-            Class clazz = Class.forName("java.awt.Dialog$ModalityType");  //NOI18N
-            Method methodValues = clazz.getMethod("valueOf", new Class[]{String.class});  //NOI18N
-            Object modalityType = methodValues.invoke(null, new Object[]{"APPLICATION_MODAL"});  //NOI18N
-            Constructor c = JDialog.class.getConstructor(new Class[]{Window.class, String.class, modalityType.getClass()});
-            return (JDialog) c.newInstance(new Object[]{(Window) null, title, modalityType});
-        } catch (Exception e) {
-            // fallback on JDK5
-            return new JDialog((Frame) null, title, true);
-        }
-    }
 
-    /** #154031 - set NetBeans icons for license dialog. It works only with JDK1.6.
-     * When JDK5 is obsolete, use just dialog.setIconImages(images).
+    /** #154031 - set NetBeans icons for license dialog.
      */
     public static void initIcons(JDialog dialog) {
-        Method m = null;
-        try {
-            m = dialog.getClass().getMethod("setIconImages", new Class[]{List.class});  //NOI18N
-        } catch (NoSuchMethodException ex) {
-            //Method not available so we are on JDK 5 => give up
-            return;
-        }
-        if (m != null) {
             List<Image> images = new ArrayList<Image>();
             images.add(ImageUtilities.loadImage("org/netbeans/core/startup/frame.gif", true));  //NOI18N
             images.add(ImageUtilities.loadImage("org/netbeans/core/startup/frame32.gif", true));  //NOI18N
             images.add(ImageUtilities.loadImage("org/netbeans/core/startup/frame48.gif", true));  //NOI18N
-            try {
-                m.invoke(dialog, new Object[]{images});
-            } catch (IllegalAccessException ex) {
-                // ignore
-            } catch (InvocationTargetException ex) {
-                // ignore
-            }
-        }
+            dialog.setIconImages(images);
     }
 
     /** #154030 - Creates JDialog around JOptionPane. The body is copied from JOptionPane.createDialog
      * because we need APPLICATION_MODAL type of dialog on JDK6.
      */
     public static JDialog createJOptionDialog(final JOptionPane pane, String title) {
-        final JDialog dialog = Util.createModalDialog(title);
+        final JDialog dialog = new JDialog(null, title, Dialog.ModalityType.APPLICATION_MODAL);
         Util.initIcons(dialog);
         Container contentPane = dialog.getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -191,6 +157,7 @@ public class Util {
         });
         pane.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 // Let the defaultCloseOperation handle the closing
                 // if the user closed the window without selecting a button

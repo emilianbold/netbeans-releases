@@ -1,7 +1,7 @@
 .t.e.s.t. html comment - issue #149018
-BLOCK_COMMENT   "<!-- comment --->", st=0
-TEXT            "\n", la=1, st=0
-BLOCK_COMMENT   "<!-- unfinished -- >", la=1, st=21000
+BLOCK_COMMENT   "<!-- comment --->", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+BLOCK_COMMENT   "<!-- unfinished -- >", la=1, st=State(hash=6013512,s=21,ss=0,es=0,tag=null,attr=null)
 ----- EOF -----
 
 <Unnamed test>

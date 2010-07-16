@@ -27,9 +27,9 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/etlpro.html"/>
 
-                <!-- Add template for the J2SE project -->
+                <!-- Add template for the ETL project -->
                 <file name="emptyEtlpro.xml">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="800"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.etl.project.ui.wizards.NewEtlproProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.project.ui.wizards.Bundle"/>
@@ -37,9 +37,10 @@
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/emptyProject.html"/>
                 </file>
             </folder>
-        <folder name="CAPS">
+            <!--folder name="CAPS">
+                <attr name="position" intvalue="999"/>
                 <folder name="MDM">
-                    <attr name="position" intvalue="3000"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="emptyEtlpro.xml">
                         <attr name="position" intvalue="400"/>
                         <attr name="template" boolvalue="true"/>
@@ -49,7 +50,7 @@
                         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/emptyProject.html"/>
                     </file>
                 </folder>
-         </folder>
+           </folder-->
         </folder>
     </folder>
     <folder name="org-netbeans-modules-etl-project">

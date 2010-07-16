@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  *
@@ -95,7 +99,7 @@ public class HgProxySettings {
         } else if(isManualSetProxy()) {
             useAuth             = prefs.getBoolean ( USE_PROXY_AUTHENTICATION,       false );                               // NOI18N            
             username            = prefs.get        ( PROXY_AUTHENTICATION_USERNAME,  ""    );                               // NOI18N
-            password            = prefs.get        ( PROXY_AUTHENTICATION_PASSWORD,  ""    );                               // NOI18N                
+            password            = getProxyPassword(prefs);
 
             notProxyHosts       = prefs.get        ( NOT_PROXY_HOSTS,                ""    ).replace("|", " ,");            // NOI18N                
             httpHost            = prefs.get        ( PROXY_HTTP_HOST,                ""    );                               // NOI18N                
@@ -210,6 +214,13 @@ public class HgProxySettings {
     public int hashCode() {
         return toString().hashCode();
     }
-    
-    
+
+    private String getProxyPassword (Preferences prefs) {
+        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (retval == null) {
+            char[] pwd = KeyringSupport.read(PROXY_AUTHENTICATION_PASSWORD, null);
+            retval = pwd == null ? "" : new String(pwd); //NOI18N
+        }
+        return retval;
+    }
 }

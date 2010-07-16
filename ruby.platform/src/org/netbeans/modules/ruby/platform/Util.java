@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,13 +45,17 @@ package org.netbeans.modules.ruby.platform;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -62,7 +69,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 public final class Util {
@@ -71,7 +77,7 @@ public final class Util {
      * Regexp for matching version number in gem packages:  name-x.y.z (we need
      * to pull out x,y,z such that we can do numeric comparisons on them)
      */
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+)(-\\S+)?)?"); // NOI18N
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+)\\.?(\\w+)?(-\\S+)?)?"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
@@ -83,6 +89,8 @@ public final class Util {
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
     private static final String FETCH_GEM_DESCRIPTIONS = "gem-manager-fetch-descriptions"; // NOI18N
+
+    private static final String RVM_RUBIES_PATH = ".rvm" + File.separator + "rubies"; //NOI18N
 
     public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
         public int compare(String v1, String v2) {
@@ -187,10 +195,10 @@ public final class Util {
      * duplicates and elements which are not valid, existing directories are
      * skipped.
      *
-     * @return an {@link Iterable} which will traverse all valid elements on the
+     * @return a {@link Collection} of all valid elements on the
      * <em>PATH</em> environment variables.
      */
-    public static Iterable<String> dirsOnPath() {
+    public static Collection<String> dirsOnPath() {
         String rawPath = System.getenv("PATH"); // NOI18N
         if (rawPath == null) {
             rawPath = System.getenv("Path"); // NOI18N
@@ -206,7 +214,38 @@ public final class Util {
                 it.remove();
             }
         }
-        return NbCollections.iterable(candidates.iterator());
+        return candidates;
+    }
+
+    /**
+     * Gets the {@code bin} dirs for dirs in {@code ~/.rvm/rubies}, which typically
+     * contains ruby platforms.
+     *
+     * @return a collections of absolute directory paths; never {@code null}.
+     */
+    public static Collection<String> rvmRubies() {
+        String homeDir = System.getProperty("user.home");
+        if (homeDir == null) { // can this happen??
+            return Collections.emptyList();
+        }
+        File rvmRubies = new File(homeDir, RVM_RUBIES_PATH);
+        if (!rvmRubies.exists()) {
+            return Collections.emptyList();
+        }
+        File[] dirs = rvmRubies.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        });
+        List<String> result = new ArrayList<String>(dirs.length);
+        for (File dir : dirs) {
+            File bin = new File(dir, "bin");
+            if (bin.exists() && bin.isDirectory()) {
+                result.add(bin.getAbsolutePath());
+            }
+        }
+        return result;
     }
 
     public static String findOnPath(final String toFind) {
@@ -259,7 +298,7 @@ public final class Util {
     }
 
     /**
-     * Return &gt; 0 if <code>version1</code> is greater than
+     * Return &gt; 1 if <code>version1</code> is greater than
      * <code>version2</code>, 0 if equal and -1 otherwise.
      */
     public static int compareVersions(String version1, String version2) {
@@ -273,6 +312,8 @@ public final class Util {
             int major1 = Integer.parseInt(matcher1.group(1));
             int minor1 = Integer.parseInt(matcher1.group(2));
             int micro1 = matcher1.group(4) == null ? 0 : Integer.parseInt(matcher1.group(4));
+            // e.g. beta, as in rails-3.0.0.beta
+            String suffix1 = matcher1.group(5);
 
             Matcher matcher2 = VERSION_PATTERN.matcher(version2);
 
@@ -280,6 +321,8 @@ public final class Util {
                 int major2 = Integer.parseInt(matcher2.group(1));
                 int minor2 = Integer.parseInt(matcher2.group(2));
                 int micro2 = matcher2.group(4) == null ? 0 : Integer.parseInt(matcher2.group(4));
+                String suffix2 = matcher2.group(5);
+
 
                 if (major1 != major2) {
                     return major1 - major2;
@@ -292,6 +335,15 @@ public final class Util {
                 if (micro1 != micro2) {
                     return micro1 - micro2;
                 }
+                if (suffix1 == null) {
+                    return 1;
+                }
+                if (suffix2 == null) {
+                    return -1;
+                }
+                //  do just alphabetical comparison on suffix, stupid but
+                // covers the most common cases, e.g. alpha < beta
+                return suffix1.compareTo(suffix2);
             } else {
                 // TODO uh oh
                 //assert false : "no version match on " + version2;

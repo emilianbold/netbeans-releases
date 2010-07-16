@@ -23,7 +23,7 @@ package org.netbeans.modules.iep.project.anttasks;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.netbeans.modules.iep.model.lib.ArrayUtil;
+import org.netbeans.modules.tbls.model.ArrayUtil;
 
 
 /**

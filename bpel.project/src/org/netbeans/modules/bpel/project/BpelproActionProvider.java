@@ -79,8 +79,6 @@ class BpelproActionProvider implements ActionProvider {
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist_se"}); // NOI18N
         commands.put(ProjectConstants.POPULATE_CATALOG, new String[] {"populate"});
-        //commands.put(ProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
-        //commands.put(ProjectConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -128,33 +126,6 @@ class BpelproActionProvider implements ActionProvider {
         }
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
-        //EXECUTION PART    
-////        if (command.equals (ProjectConstants.COMMAND_DEPLOY) || command.equals (ProjectConstants.COMMAND_REDEPLOY)) {
-////            if (!isSelectedServer ()) {
-////                return;
-////            }
-////            if (isDebugged()) {
-////                NotifyDescriptor nd;
-////                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
-////                String text = pi.getDisplayName();
-////                nd = new NotifyDescriptor.Confirmation(
-////                            NbBundle.getMessage(BpelproActionProvider.class, "MSG_SessionRunning", text),
-////                            NotifyDescriptor.OK_CANCEL_OPTION);
-////                Object o = DialogDisplayer.getDefault().notify(nd);
-////                if (o.equals(NotifyDescriptor.OK_OPTION)) {
-////                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-////                } else {
-////                    return;
-////                }
-////            }
-////        } else {
-////            p = null;
-////            if (targetNames == null) {
-////                throw new IllegalArgumentException(command);
-////            }
-////        }
-
-//          if build command then build any depedent project
             if(command.equals(COMMAND_BUILD)) {
                 try {
                     buildDependentProjectsAndRunTask(targetNames, p);

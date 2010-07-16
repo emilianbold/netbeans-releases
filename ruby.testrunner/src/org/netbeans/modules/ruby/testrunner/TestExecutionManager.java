@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.ruby.testrunner;
 
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -49,7 +53,9 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.testrunner.ui.TestHandlerFactory;
@@ -179,8 +185,8 @@ public final class TestExecutionManager implements RerunHandler {
      * @return true if the current execution has finished, 
      * false otherwise.
      */
-    public synchronized boolean enabled() {
-        return finished || (result != null && result.isDone());
+    public synchronized boolean enabled(RerunType type) {
+        return RerunType.ALL.equals(type) && (finished || (result != null && result.isDone()));
     }
     
     private void setFinished(boolean finished) {
@@ -191,7 +197,7 @@ public final class TestExecutionManager implements RerunHandler {
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
-        assert enabled();
+        assert enabled(RerunType.ALL);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Re-running: " + execution);
         }
@@ -199,6 +205,11 @@ public final class TestExecutionManager implements RerunHandler {
         setFinished(false);
         LifecycleManager.getDefault().saveAll();
         runExecution();
+    }
+
+    @Override
+    public void rerun(Set<Testcase> tests) {
+        //not implemented yet
     }
 
     public void addChangeListener(ChangeListener listener) {

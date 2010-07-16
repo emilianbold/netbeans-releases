@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,16 +49,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeListener;
 import javax.xml.xpath.XPathFactory;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.GroupLayout.ParallelGroup;
-import org.jdesktop.layout.GroupLayout.SequentialGroup;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.ant.AntBasedJobCreator.ArchivePattern;
@@ -236,15 +240,15 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
         }
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
-        ParallelGroup parallelGroup = layout.createParallelGroup(GroupLayout.LEADING);
+        ParallelGroup parallelGroup = layout.createParallelGroup(Alignment.LEADING);
         for (JCheckBox box : boxen.values()) {
-            parallelGroup.add(box);
+            parallelGroup.addComponent(box);
         }
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(parallelGroup)
+                .addGroup(parallelGroup)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         SequentialGroup sequentialGroup = layout.createSequentialGroup();
@@ -254,13 +258,13 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
                 first = false;
                 sequentialGroup.addContainerGap();
             } else {
-                sequentialGroup.addPreferredGap(LayoutStyle.RELATED);
+                sequentialGroup.addPreferredGap(ComponentPlacement.RELATED);
             }
-            sequentialGroup.add(box);
+            sequentialGroup.addComponent(box);
         }
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(sequentialGroup
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(sequentialGroup
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         return boxen;

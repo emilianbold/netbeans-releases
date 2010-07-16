@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.compapp.test.ui;
 
 import java.beans.PropertyChangeEvent;
@@ -53,11 +55,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
-
-
 
 /**
  * DOCUMENT ME!
@@ -79,9 +78,7 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         mTestcaseDir = testcaseDir;
     }
     
-    /**
-     * DOCUMENT ME!
-     */
+    @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
@@ -89,31 +86,18 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         // and listen to changes in the model too:
         //model.addPropertyChangeListener(this);
     }
+
+    @Override
+    protected void removeNotify() {
+        //epp.removePropertyChangeListener(this);
+        setKeys(Collections.EMPTY_SET);
+        super.removeNotify();
+    }
     
     private void updateKeys() {
         List keys = new ArrayList();
         
         // Input and Output
-//        FileObject[] fileObjects = mTestcaseDir.getChildren();
-//        for (int i = 0; i < fileObjects.length; i++) {
-//            String name = fileObjects[i].getNameExt();
-//            if (name.equals("Input.xml") || name.equals("Output.xml")) {
-//                keys.add(fileObjects[i]);
-//            }
-//        }
-//
-//        Collections.sort(keys, new Comparator() {
-//            public int compare(Object obj1, Object obj2) {
-//                if ((obj1 instanceof FileObject) && (obj2 instanceof FileObject)) {
-//                    FileObject fo1 = (FileObject) obj1;
-//                    FileObject fo2 = (FileObject) obj2;
-//
-//                    return fo1.getName().compareTo(fo2.getName());
-//                } else {
-//                    return 0;
-//                }
-//            }
-//        });
         FileObject inputFO = mTestcaseDir.getFileObject("Input.xml");   // NOI18N
         if (inputFO != null) {
             keys.add(inputFO);
@@ -123,8 +107,7 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         if (outputFO != null) {
             keys.add(outputFO);
         }
-        
-        
+                
         // Actual results
         FileObject realTestCaseResultsDir = getRealTestCaseResultsFolder();
 //        if (realTestCaseResultsDir != null) {
@@ -150,7 +133,7 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
                         FileObject fo1 = (FileObject) obj1;
                         FileObject fo2 = (FileObject) obj2;
                         
-                        return fo2.getName().compareTo(fo1.getName());
+                        return fo2.getNameExt().compareTo(fo1.getNameExt());
                     } else {
                         return 0;
                     }
@@ -170,17 +153,16 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         }
         String name = fo.getNameExt();
         
-        // e.x., Actual_20060803211027.xml, Actual_20060803211027_F.xml, Actual_20060803211027_S.xml
-//        // Could use regular expression, but that might be too slow.
+        // e.x., Actual_20060803211027.xml, Actual_20060803211027_F.xml,
+        // Actual_20060803211027_S.xml
         
         return name.matches(TestcaseNode.ACTUAL_OUTPUT_REGEX);
-//        return name.startsWith("Actual_") && name.endsWith(".xml") && (name.length() == 25);
     }
     
     private FileObject getRealTestCaseResultsFolder() {
         FileObject dir = null;
         
-        String testcaseName = mTestcaseDir.getName();
+        String testcaseName = mTestcaseDir.getNameExt();
         FileObject testDir = mProject.getTestDirectory();
         if (testDir != null) {
             FileObject testResultsDir = testDir.getFileObject("results"); // TMP  // NOI18N
@@ -192,23 +174,6 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         return dir;
     }
     
-    
-    /**
-     * DOCUMENT ME!
-     */
-    protected void removeNotify() {
-        //epp.removePropertyChangeListener(this);
-        setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param key DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     protected Node[] createNodes(Object key) {
         // interpret your key here...usually one node generated, but could be zero or more
         FileObject fo = (FileObject) key;       
@@ -216,14 +181,13 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         try {
             DataObject dataObject = DataFolder.find(fo);
             
-            String name = fo.getName();
+            String name = fo.getNameExt();
             
-            if (name.equals("Input")) { // NOI18N
+            if (name.equals("Input.xml")) { // NOI18N
                 return new Node[] {new TestCaseInputNode(mProject, dataObject)};
-            } else if (name.equals("Output")) { // NOI18N
+            } else if (name.equals("Output.xml")) { // NOI18N
                 return new Node[] {new TestCaseOutputNode(mProject, dataObject)};
             } else {
-//                return new Node[] {new TestCaseResultsNode(mProject, fo)};                
                 return new Node[] {new TestCaseResultNode(mProject, dataObject)};
             }
         } catch(DataObjectNotFoundException e) {
@@ -233,21 +197,11 @@ public class TestcaseChildren extends Children.Keys implements PropertyChangeLis
         return new Node[0];
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param ev DOCUMENT ME!
-     */
     public void modelChanged(Object ev) {
         // your data model changed, so update the children to match:
         updateKeys();
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param pce DOCUMENT ME!
-     */
     public void propertyChange(PropertyChangeEvent pce) {
         updateKeys();
     }

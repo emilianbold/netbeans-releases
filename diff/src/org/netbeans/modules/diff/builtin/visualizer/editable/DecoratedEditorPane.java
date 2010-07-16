@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.diff.Utils;
 
 /**
  * Editor pane with added decorations (diff lines).
@@ -65,12 +69,13 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     private DiffContentPanel    master;
     
     private final RequestProcessor.Task repaintTask;
+    private static final RequestProcessor FONT_RP = new RequestProcessor("DiffFontLoadingRP", 1); //NOI18N
 
-    private int                 fontHeight;
+    private int                 fontHeight = -1;
     private int                 charWidth;
 
     public DecoratedEditorPane(DiffContentPanel master) {
-        repaintTask = RequestProcessor.getDefault().create(new RepaintPaneTask());
+        repaintTask = Utils.createParallelTask(new RepaintPaneTask());
         setBorder(null);
         this.master = master;
         master.getMaster().addPropertyChangeListener(this);
@@ -89,18 +94,28 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         repaint();
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         setFontHeightWidth(getFont());
     }
     
-    private void setFontHeightWidth(Font font) {
-        FontMetrics metrics = getFontMetrics(font);
-        fontHeight = metrics.getHeight();
-        charWidth = metrics.charWidth('m');
+    private void setFontHeightWidth(final Font font) {
+        FONT_RP.post(new Runnable() {
+            @Override
+            public void run() {
+                FontMetrics metrics = getFontMetrics(font);
+                charWidth = metrics.charWidth('m');
+                fontHeight = metrics.getHeight();
+            }
+        });
     }
     
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        if (fontHeight == -1) {
+            return super.getScrollableUnitIncrement(visibleRect, orientation, direction);
+        }
         switch (orientation) {
         case SwingConstants.VERTICAL:
             return fontHeight;
@@ -111,6 +126,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         }
     }
 
+    @Override
     protected void paintComponent(Graphics gr) {
         super.paintComponent(gr);
         if (currentDiff == null) return;
@@ -156,59 +172,37 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
                     int curDif = master.getMaster().getCurrentDifference();
                     
                     g.setColor(master.getMaster().getColorLines());
-                    if (master.isFirst()) {
-                        for (int i = startViewIndex; i < rootViewCount; i++){
-                            view = rootView.getView(i);
-                            line = rootElem.getElementIndex(view.getStartOffset());
-                            line++; // make it 1-based
-                            Difference ad = EditableDiffView.getFirstDifference(currentDiff, line);
-                            if (ad != null) {
-                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
-                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                            
-                                int yy = y + editorUI.getLineHeight();
-                                if (ad.getType() == Difference.ADD) {
-                                    g.drawLine(0, yy, getWidth(), yy);
-                                    ad = null;
-                                } else {
-                                    if (ad.getFirstStart() == line) {
-                                        g.drawLine(0, y, getWidth(), y);
-                                    }
-                                    if (ad.getFirstEnd() == line) {
-                                        g.drawLine(0, yy, getWidth(), yy);
-                                    }
+                    for (int i = startViewIndex; i < rootViewCount; i++) {
+                        view = rootView.getView(i);
+                        line = rootElem.getElementIndex(view.getStartOffset());
+                        line++; // make it 1-based
+                        Difference ad = master.isFirst() ? EditableDiffView.getFirstDifference(currentDiff, line) : EditableDiffView.getSecondDifference(currentDiff, line);
+                        Rectangle rec1 = component.modelToView(view.getStartOffset());
+                        Rectangle rec2 = component.modelToView(view.getEndOffset() - 1);
+                        if (rec1 == null || rec2 == null) {
+                            break;
+                        }
+                        y = (int)rec1.getY();
+                        int height = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
+                        if (ad != null) {
+                            // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
+                            g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);
+                            int yy = y + height;
+                            if (ad.getType() == (master.isFirst() ? Difference.ADD : Difference.DELETE)) {
+                                g.drawLine(0, yy, getWidth(), yy);
+                                ad = null;
+                            } else {
+                                if ((master.isFirst() ? ad.getFirstStart() : ad.getSecondStart()) == line) {
+                                    g.drawLine(0, y, getWidth(), y);
                                 }
-                            }
-                            y += editorUI.getLineHeight();
-                            if (y >= clipEndY) {
-                                break;
+                                if ((master.isFirst() ? ad.getFirstEnd() : ad.getSecondEnd()) == line) {
+                                    g.drawLine(0, yy, getWidth(), yy);
+                                }
                             }
                         }
-                    } else {
-                        for (int i = startViewIndex; i < rootViewCount; i++){
-                            view = rootView.getView(i);
-                            line = rootElem.getElementIndex(view.getStartOffset());
-                            line++; // make it 1-based
-                            Difference ad = EditableDiffView.getSecondDifference(currentDiff, line);
-                            if (ad != null) {
-                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
-                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                          
-                                int yy = y + editorUI.getLineHeight();
-                                if (ad.getType() == Difference.DELETE) {
-                                    g.drawLine(0, yy, getWidth(), yy);
-                                    ad = null;
-                                } else {
-                                    if (ad.getSecondStart() == line) {
-                                        g.drawLine(0, y, getWidth(), y);
-                                    }
-                                    if (ad.getSecondEnd() == line) {
-                                        g.drawLine(0, yy, getWidth(), yy);
-                                    }
-                                }
-                            }
-                            y += editorUI.getLineHeight();
-                            if (y >= clipEndY) {
-                                break;
-                            }
+                        y += height;
+                        if (y >= clipEndY) {
+                            break;
                         }
                     }
                 }
@@ -222,13 +216,16 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         repaintTask.schedule(150);
     }
     
     private class RepaintPaneTask implements Runnable {
+        @Override
         public void run() {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     repaint();
                 }

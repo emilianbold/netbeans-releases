@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,7 +81,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -333,7 +335,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (MonitorSupport.getMonitorFlag(tm)) {
                         // tomcat has been started with monitor enabled
                         MonitorSupport.setMonitorFlag(tm, false);
-                        fireCmdExecProgressEvent(tm.isTomcat60() ? "MSG_enableMonitorSupportErr60" : "MSG_enableMonitorSupportErr", StateType.FAILED);
+                        fireCmdExecProgressEvent(tm.isTomcat60() || tm.isTomcat70() ? "MSG_enableMonitorSupportErr60" : "MSG_enableMonitorSupportErr", StateType.FAILED);
                     } else {
                         // tomcat has been started with monitor disabled
                         fireCmdExecProgressEvent("MSG_disableMonitorSupportErr", StateType.FAILED);
@@ -390,8 +392,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (javaOpts.indexOf(prop) == -1) {
                         String value = System.getProperty(prop);
                         if (value != null) {
-                            if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
+                            if ((isWindows || tm.isTomcat70()) && "http.nonProxyHosts".equals(prop)) { // NOI18N
                                 // enclose in double quotes to escape the pipes separating the hosts on windows
+                                // or on unix - tomcat 7 use eval instead of exec
                                 value = "\"" + value + "\""; // NOI18N
                             }
                             sb.append(" -D").append(prop).append("=").append(value); // NOI18N
@@ -783,15 +786,6 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         TomcatProperties tp = tm.getTomcatProperties();
         if (tp.getCustomScript()) {
             return new File(tp.getScriptPath());
-        }
-        // use catalina50.sh/bat for Tomcat 5.0 on jdk1.5
-        if (tm.getTomcatVersion() == TomcatVersion.TOMCAT_50 
-             && "1.5".equals(getJavaPlatform().getSpecification().getVersion().toString())) {  // NOI18N
-            String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
-            File scriptFile = new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
-            if (scriptFile.exists()) {
-                return scriptFile;
-            }
         }
         String startupScript = Utilities.isWindows() ? CATALINA_BAT : CATALINA_SH;
         return new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N

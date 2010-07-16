@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,8 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
@@ -636,7 +641,7 @@ public class RADComponent {
         return NO_NEW_TYPES;
     }
 
-    public Node.PropertySet[] getProperties() {
+    public synchronized Node.PropertySet[] getProperties() {
         if (propertySets == null) {
             List<Node.PropertySet> propSets = new ArrayList<Node.PropertySet>(5);
             createPropertySets(propSets);
@@ -646,7 +651,7 @@ public class RADComponent {
         return propertySets;
     }
 
-    public RADProperty[] getAllBeanProperties() {
+    public synchronized RADProperty[] getAllBeanProperties() {
         if (knownBeanProperties == null) {
             createBeanProperties();
         }
@@ -654,7 +659,7 @@ public class RADComponent {
         return knownBeanProperties;
     }
 
-    public RADProperty[] getKnownBeanProperties() {
+    public synchronized RADProperty[] getKnownBeanProperties() {
         return knownBeanProperties != null ? knownBeanProperties : NO_PROPERTIES;
     }
 
@@ -675,7 +680,7 @@ public class RADComponent {
         return prop;
     }
     
-    public BindingProperty[][] getBindingProperties() {
+    public synchronized BindingProperty[][] getBindingProperties() {
         if (bindingProperties == null) {
             createBindingProperties();
         }
@@ -690,11 +695,11 @@ public class RADComponent {
         return null;
     }
 
-    BindingProperty[] getKnownBindingProperties() {
+    synchronized BindingProperty[] getKnownBindingProperties() {
         return bindingProperties != null ? getAllBindingProperties() : NO_BINDINGS;
     }
 
-    boolean hasBindings() {
+    synchronized boolean hasBindings() {
         if (bindingProperties != null) {
             for (BindingProperty p : getAllBindingProperties()) {
                 if (p.getValue() != null)
@@ -714,38 +719,38 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Access to component Properties
 
-    Node.Property[] getSyntheticProperties() {
+    synchronized Node.Property[] getSyntheticProperties() {
         if (syntheticProperties == null)
             syntheticProperties = createSyntheticProperties();
         return syntheticProperties;
     }
 
-    RADProperty[] getBeanProperties1() {
+    synchronized RADProperty[] getBeanProperties1() {
         if (beanProperties1 == null)
             createBeanProperties();
         return beanProperties1;
     }
 
-    RADProperty[] getBeanProperties2() {
+    synchronized RADProperty[] getBeanProperties2() {
         if (beanProperties2 == null)
             createBeanProperties();
         return beanProperties2;
     }
 
-    EventProperty[] getEventProperties() {
+    synchronized EventProperty[] getEventProperties() {
         if (eventProperties == null)
             createEventProperties();
         return eventProperties;
     }
     
-    List getActionProperties() {
+    synchronized List getActionProperties() {
         if (actionProperties == null) {
             createBeanProperties();
         }
         return actionProperties;
     }
 
-    protected <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
+    protected synchronized <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
         Node.Property prop = nameToProperty.get(name);
         if (prop == null && fromAll) {
             if (beanProperties1 == null && !name.startsWith("$")) // NOI18N
@@ -803,7 +808,7 @@ public class RADComponent {
      * @return array of properties corresponding to the names; may contain
      *         null if there is no property of given name
      */
-    public RADProperty[] getBeanProperties(String[] propNames) {
+    public synchronized RADProperty[] getBeanProperties(String[] propNames) {
         RADProperty[] properties = new RADProperty[propNames.length];        
         PropertyDescriptor[] descriptors = null;
         
@@ -896,7 +901,7 @@ public class RADComponent {
         return properties;
     }
 
-    public Event getEvent(String name) {
+    public synchronized Event getEvent(String name) {
         Object prop = nameToProperty.get(name);
         if (prop == null && eventProperties == null) {
             createEventProperties();
@@ -906,7 +911,7 @@ public class RADComponent {
                ((EventProperty)prop).getEvent() : null;
     }
 
-    public Event[] getEvents(String[] eventNames) {
+    public synchronized Event[] getEvents(String[] eventNames) {
         Event[] events = new Event[eventNames.length];
         EventSetDescriptor[] eventSets = null;
 
@@ -1017,7 +1022,7 @@ public class RADComponent {
 
     /** @return all events of the component grouped by EventSetDescriptor
      */
-    public Event[] getAllEvents() {
+    public synchronized Event[] getAllEvents() {
         if (knownEvents == null || eventProperties == null) {
             if (eventProperties == null)
                 createEventProperties();
@@ -1032,7 +1037,7 @@ public class RADComponent {
     }
 
     // Note: events must be grouped by EventSetDescriptor
-    public Event[] getKnownEvents() {
+    public synchronized Event[] getKnownEvents() {
         return knownEvents != null ? knownEvents : FormEvents.NO_EVENTS;
     }
 
@@ -1065,7 +1070,7 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Properties
 
-    protected void clearProperties() {
+    protected synchronized void clearProperties() {
         if (nameToProperty != null)
             nameToProperty.clear();
         else nameToProperty = new HashMap<String,Node.Property>();
@@ -1082,9 +1087,9 @@ public class RADComponent {
     }
 
     static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
-            "nb.form.suppressTabs");
+            "nb.form.suppressTabs"); // NOI18N
 
-    protected void createPropertySets(List<Node.PropertySet> propSets) {
+    protected synchronized void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
 
@@ -1096,6 +1101,7 @@ public class RADComponent {
                 bundle.getString("CTL_PropertiesTab"), // NOI18N
                 bundle.getString("CTL_PropertiesTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getBeanProperties1();
             }
@@ -1111,6 +1117,7 @@ public class RADComponent {
                 Map.Entry entry = (Map.Entry)entries.next();
                 final String category = (String)entry.getKey();
                 ps = new Node.PropertySet(category, category, category) {        
+                    @Override
                     public Node.Property[] getProperties() {
                         if (otherProperties == null) {
                             createBeanProperties();
@@ -1128,6 +1135,7 @@ public class RADComponent {
                         bundle.getString("CTL_Properties2Tab"), // NOI18N
                         bundle.getString("CTL_Properties2TabHint")) // NOI18N
                 {
+                    @Override
                     public Node.Property[] getProperties() {
                         return getBeanProperties2();
                     }
@@ -1143,6 +1151,7 @@ public class RADComponent {
                             bundle.getString("CTL_BindingTab" + i), // NOI18N
                             bundle.getString("CTL_BindingTabHint" + i)) // NOI18N
                     {
+                        @Override
                         public Node.Property[] getProperties() {
                             return getBindingProperties()[index];
                         }
@@ -1157,6 +1166,7 @@ public class RADComponent {
                     bundle.getString("CTL_EventsTab"), // NOI18N
                     bundle.getString("CTL_EventsTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     return getEventProperties();
                 }
@@ -1172,6 +1182,7 @@ public class RADComponent {
                 bundle.getString("CTL_SyntheticTab"), // NOI18N
                 bundle.getString("CTL_SyntheticTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getSyntheticProperties();
             }
@@ -1189,6 +1200,7 @@ public class RADComponent {
                 FormUtils.getBundleString("CTL_AccessibilityTab"), // NOI18N
                 FormUtils.getBundleString("CTL_AccessibilityTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     return getAccessibilityProperties();
                 }
@@ -1201,7 +1213,7 @@ public class RADComponent {
         return codeGen != null ? codeGen.getSyntheticProperties(this) : new Node.Property[0];
     }
 
-    private void createBeanProperties() {
+    private synchronized void createBeanProperties() {
         List<RADProperty> prefProps = new ArrayList<RADProperty>();
         List<RADProperty> normalProps = new ArrayList<RADProperty>();
         List<RADProperty> expertProps = new ArrayList<RADProperty>();
@@ -1210,12 +1222,15 @@ public class RADComponent {
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, getBeanInfo().getBeanDescriptor());
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        if (propsCats != null && Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (propsCats != null && Utilities.isMac() && beanClass.getClassLoader() == null) {
             try {
                 Object[] newPropsCats = new Object[propsCats.length+2*props.length];
+                Map<String,PropertyDescriptor> oldProps = new HashMap<String,PropertyDescriptor>();
                 for (int i=0; i<props.length; i++) {
                     PropertyDescriptor pd = props[i];
-                    newPropsCats[2*i] = pd.getName();
+                    String name = pd.getName();
+                    oldProps.put(name, pd);
+                    newPropsCats[2*i] = name;
                     Object cat = FormUtils.PROP_NORMAL;
                     if (pd.isPreferred()) {
                         cat = FormUtils.PROP_PREFERRED;
@@ -1231,8 +1246,18 @@ public class RADComponent {
                 System.arraycopy(propsCats, 0, newPropsCats, 2*props.length, propsCats.length);
                 propsCats = newPropsCats;
                 props = FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors();
+                for (PropertyDescriptor pd : props) {
+                    PropertyDescriptor oldPD = oldProps.get(pd.getName());
+                    if (oldPD != null) {
+                        Enumeration<String> enumeration = oldPD.attributeNames();
+                        while (enumeration.hasMoreElements()) {
+                            String attr = enumeration.nextElement();
+                            pd.setValue(attr, oldPD.getValue(attr));
+                        }
+                    }
+                }
             } catch (IntrospectionException iex) {
-                iex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iex.getMessage(), iex);
             }
         }
 
@@ -1344,7 +1369,7 @@ public class RADComponent {
         actionProperties = actionProps;
     }
 
-    private void createBindingProperties() {
+    private synchronized void createBindingProperties() {
         Collection<BindingDescriptor>[] props = FormEditor.getBindingSupport(formModel).getBindingDescriptors(this);
         bindingProperties = new BindingProperty[props.length][];
         for (int i=0; i<props.length; i++) {
@@ -1356,7 +1381,7 @@ public class RADComponent {
         }       
     }
 
-    private void createEventProperties() {
+    private synchronized void createEventProperties() {
         EventSetDescriptor[] eventSets = getBeanInfo().getEventSetDescriptors();
 
         List<EventProperty> eventPropList = new ArrayList<EventProperty>(eventSets.length * 5);
@@ -1386,21 +1411,20 @@ public class RADComponent {
         eventProperties = eventProps;
     }
 
-    public FormProperty[] getAccessibilityProperties() {
+    public synchronized FormProperty[] getAccessibilityProperties() {
         if (accessibilityProperties == null)
             createAccessibilityProperties();
         return accessibilityProperties;
     }
 
-    FormProperty[] getKnownAccessibilityProperties() {
+    synchronized FormProperty[] getKnownAccessibilityProperties() {
         return accessibilityProperties != null ? accessibilityProperties : NO_PROPERTIES;
     }
 
-    private void createAccessibilityProperties() {
-        Object comp = getBeanInstance();
+    private synchronized void createAccessibilityProperties() {
+        final Object comp = getBeanInstance();
         if (comp instanceof Accessible
-            && ((Accessible)comp).getAccessibleContext() != null)
-        {
+            && (!EventQueue.isDispatchThread() || ((Accessible)comp).getAccessibleContext() != null)) {
             if (accessibilityData == null)
                 accessibilityData = new MetaAccessibleContext();
             accessibilityProperties = accessibilityData.getProperties();
@@ -1410,6 +1434,33 @@ public class RADComponent {
                 setPropertyListener(prop);
                 prop.setPropertyContext(new FormPropertyContext.Component(this));
                 nameToProperty.put(prop.getName(), prop);
+            }
+
+            if (!EventQueue.isDispatchThread()) { // Issue 187131
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (((Accessible)comp).getAccessibleContext() == null) {
+                            // Remove accessible properties
+                            for (int i = 0; i < accessibilityProperties.length; i++) {
+                                FormProperty prop = accessibilityProperties[i];
+                                nameToProperty.remove(prop.getName());
+                            }
+                            Node.PropertySet[] newPS = new Node.PropertySet[propertySets.length-1];
+                            int idx = 0;
+                            for (Node.PropertySet ps : propertySets) {
+                                if (!"accessibility".equals(ps.getName())) { // NOI18N
+                                    newPS[idx++] = ps;
+                                }
+                            }
+                            Node.PropertySet[] oldPS = propertySets;
+                            propertySets = newPS;
+                            accessibilityData = null;
+                            accessibilityProperties = NO_PROPERTIES;
+                            getNodeReference().firePropertyChangeHelper(Node.PROP_PROPERTY_SETS, oldPS, newPS);
+                        }
+                    }
+                });
             }
         }
         else {
@@ -1430,7 +1481,7 @@ public class RADComponent {
             try {
                 prop = new FakeRADProperty(this, (FakePropertyDescriptor) desc);   
             } catch (IntrospectionException ex) { // should not happen
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
 		return null;
             }             
         } else {
@@ -1458,6 +1509,7 @@ public class RADComponent {
                 || JComboBox.class.isAssignableFrom(beanClass))) {
             prop.addPropertyChangeListener(new PropertyChangeListener() {
 
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
                         // Another event will come later, now it is too soon
@@ -1494,7 +1546,7 @@ public class RADComponent {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             });
@@ -1533,7 +1585,7 @@ public class RADComponent {
                 nameToProperty.put("cursor", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
          // hack for buttons - add fake property for ButtonGroup
@@ -1561,7 +1613,7 @@ public class RADComponent {
                 nameToProperty.put("rowHeight", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         
@@ -1608,6 +1660,7 @@ public class RADComponent {
     /** Listener class for listening to changes in component's properties.
      */
     private class PropertyListenerConvertor implements PropertyChangeListener, FormProperty.ValueConvertor {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof FormProperty))
@@ -1647,6 +1700,7 @@ public class RADComponent {
             }
         }
 
+        @Override
         public Object convert(Object value, FormProperty property) {
             return resourcePropertyConvert(value, property);
         }
@@ -1696,12 +1750,14 @@ public class RADComponent {
             this.filter = filter;
         }
 
+        @Override
         public boolean hasNext() {
             if (next == null)
                 next = getNextProperty();
             return next != null;
         }
 
+        @Override
         public T next() {
             if (next == null)
                 next = getNextProperty();
@@ -1713,6 +1769,7 @@ public class RADComponent {
             throw new NoSuchElementException();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -1822,6 +1879,7 @@ public class RADComponent {
                     // ide is loading form right now, try later ...
                     EventQueue.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             synchronizeButtonGroupInAWT(button,
                                     (FormDesignValue) originalComponent,
@@ -1931,7 +1989,7 @@ public class RADComponent {
             try {
                 propertyDescriptors.add(new FakePropertyDescriptor(propertyName, propertyClass));
             } catch (IntrospectionException ex) {
-                ex.printStackTrace(); // should not happen
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
             }
         }
                 
@@ -1960,10 +2018,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleName"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleName")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accName != BeanSupport.NO_VALUE ?
                                        accName : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accName = (String) value;
                         }
@@ -1996,10 +2056,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleDescription"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleDescription")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accDescription != BeanSupport.NO_VALUE ?
                                        accDescription : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accDescription = (String) value;
                         }
@@ -2044,10 +2106,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleParent"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleParent")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accParent != BeanSupport.NO_VALUE ?
                                        accParent : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accParent = value;
                         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,10 +46,10 @@ package org.netbeans.modules.bpel.project.anttasks.util;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import org.apache.xml.resolver.NbCatalogManager;
+import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -66,31 +69,33 @@ public class CatalogReader {
     private File rootCatalog;
     private File currentCatalog;
     
-    private List<String> systemIds = new LinkedList<String>();
-    private List<String> locations = new LinkedList<String>();
+    private List<String> systemIds = new ArrayList<String>();
+    private List<String> locations = new ArrayList<String>();
     
-    /**
-     * Constructor
-     * @param catalogXML Location of Catalog XML
-     * @throws Excepetion Exception during parsing the Catalog.xml file.
-     */
     public CatalogReader(String catalogXML) throws SAXException, IOException {
-        final NbCatalogManager manager = new NbCatalogManager(null);
+//System.out.println("        1");
+        CatalogManager manager = new CatalogManager("#171444/");
+//System.out.println("        1.1");
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
+        manager.setIgnoreMissingProperties(true);
+//System.out.println("        2: " + catalogXML);
         
-        final ResolvingXMLReader saxParser = new ResolvingXMLReader(manager);
+        ResolvingXMLReader saxParser = new ResolvingXMLReader(manager);
         saxParser.setContentHandler(mContentHandler);
-        
+///System.out.println("        3");
         rootCatalog = new File(catalogXML);
         nextCatalogs.push(rootCatalog);
-        
+//System.out.println("        4");
         do {
             currentCatalog = nextCatalogs.pop();
+
             if (currentCatalog.exists() && (currentCatalog.length() > 0)) {
                 saxParser.parse(new InputSource(new FileReader(currentCatalog)));
             }
-        } while (nextCatalogs.size() > 0);
+        }
+        while (nextCatalogs.size() > 0);
+//System.out.println("        5");
     }
     
     public List<String> getSystemIds() {
@@ -102,7 +107,6 @@ public class CatalogReader {
     }
     
     private class MyContentHandler extends DefaultHandler {
-
         private static final String SYSTEM_CONST = "system";
         private static final String SYSTEM_ID_CONST = "systemId";
         private static final String URI_CONST = "uri";

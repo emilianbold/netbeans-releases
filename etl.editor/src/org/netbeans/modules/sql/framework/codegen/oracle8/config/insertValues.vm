@@ -2,6 +2,7 @@
 #set( $columnCounter = 1)
 #set( $totalValueColumns = $valueIdentifiers.size())
 #set( $valueCounter = 1)
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/disableConstraints.vm")
 INSERT INTO $targetTable (
 #foreach( $tColumn in $targetColumnIdentifiers )
     $tColumn.getSql()#if($columnCounter < $totalTargetColumns), #end
@@ -16,3 +17,4 @@ VALUES (
 #set( $valueCounter = $valueCounter + 1)
 #end
 )
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/enableConstraints.vm")

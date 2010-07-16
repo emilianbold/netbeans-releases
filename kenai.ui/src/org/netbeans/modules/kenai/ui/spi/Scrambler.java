@@ -1,7 +1,10 @@
 /*****************************************************************************
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,7 +16,7 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -45,16 +48,8 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.io.ByteArrayOutputStream;
 
-/**
- * Scrambles text (the password) using the standard scheme described in the
- * CVS protocol version 1.10. This encoding is trivial and should not be
- * used for security, but rather as a mechanism for avoiding inadvertant
- * compromise.
- * @author  Robert Greig, Tomas Stupka
- */
+@Deprecated
 class Scrambler {
-
-    private static final char [] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray(); // NOI18N
 
     /**
      * The mapping array
@@ -313,21 +308,6 @@ class Scrambler {
         return instance;
     }
 
-    /**
-     * Scramble text, turning it into a String of scrambled data
-     * @return a String of scrambled data
-     */
-    public String scramble(String text) {
-        StringBuffer buf = new StringBuffer("A"); //NOI18N
-
-        if (text != null) {
-            for (int i = 0; i < text.length(); ++i) {
-                buf.append(scramble(text.charAt(i)));
-            }
-        }        
-        return new String(encode(buf.toString().getBytes()));
-    }
-    
     public String descramble(String scrambledText) {        
         StringBuffer buf = new StringBuffer(); 
         if (scrambledText != null) {            
@@ -347,51 +327,6 @@ class Scrambler {
     
     private byte[] decode(String str) {        
         return decode64(str);
-    }
-    
-    private byte[] encode(byte[] encode) {        
-        return encode64(encode).getBytes();
-    }
-
-    private static String encode64(byte [] data) {
-        return encode64(data, false);
-    }
-
-    private static String encode64(byte [] data, boolean useNewlines) {
-        int length = data.length;
-        StringBuffer sb = new StringBuffer(data.length * 3 / 2);
-
-        int end = length - 3;
-        int i = 0;
-        int lineCount = 0;
-
-        while (i <= end) {
-            int d = ((((int) data[i]) & 0xFF) << 16) | ((((int) data[i + 1]) & 0xFF) << 8) | (((int) data[i + 2]) & 0xFF);
-            sb.append(characters[(d >> 18) & 0x3F]);
-            sb.append(characters[(d >> 12) & 0x3F]);
-            sb.append(characters[(d >> 6) & 0x3F]);
-            sb.append(characters[d & 0x3F]);
-            i += 3;
-
-            if (useNewlines && lineCount++ >= 14) {
-                lineCount = 0;
-                sb.append(System.getProperty("line.separator"));
-            }
-        }
-
-        if (i == length - 2) {
-            int d = ((((int) data[i]) & 0xFF) << 16) | ((((int) data[i + 1]) & 0xFF) << 8);
-            sb.append(characters[(d >> 18) & 0x3F]);
-            sb.append(characters[(d >> 12) & 0x3F]);
-            sb.append(characters[(d >> 6) & 0x3F]);
-            sb.append("="); // NOI18N
-        } else if (i == length - 1) {
-            int d = (((int) data[i]) & 0xFF) << 16;
-            sb.append(characters[(d >> 18) & 0x3F]);
-            sb.append(characters[(d >> 12) & 0x3F]);
-            sb.append("=="); // NOI18N
-        }
-        return sb.toString();
     }
 
     private static byte [] decode64(String s) {

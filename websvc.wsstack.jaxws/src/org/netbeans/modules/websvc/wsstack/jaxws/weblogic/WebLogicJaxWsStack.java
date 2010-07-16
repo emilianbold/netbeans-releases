@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,8 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxWs.Feature.TESTER_PAGE) {
             return true;
+        } else if (feature == JaxWs.Feature.JSR109) {
+            return true;
         } else {
             return false;
         }
@@ -88,15 +93,20 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
         return new JaxWs.UriDescriptor() {
 
             public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
+                if (isEjb) {
+                    return portName+"/"+serviceName;
+                } else {
+                    return (applicationRoot.length() >0 ? applicationRoot+"/":"")+serviceName;
+                }
             }
 
             public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
             
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
+            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                String prefix = "http://"+host+":"+port+"/wls_utc/begin.do?wsdlUrl="; //NOI18N
+                return prefix+"http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl";
             }
             
         };

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 public abstract class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
@@ -119,7 +123,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
         FileObject projectDir = parentDir.createFolder(projectName);
 
         String bluePrintSourcePath = "org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName() + "/" + project.getName();
-        FileObject bluePrint = FileUtil.getConfigFile(bluePrintSourcePath);
+        FileObject bluePrint = Repository.getDefault().getDefaultFileSystem().findResource(bluePrintSourcePath);      
         Util.unZipFile(bluePrint.getInputStream(), projectDir);
         String type = (String) project.getAttribute("type");  // NOI18N
         Util.setProjectName(projectDir, type, projectName, project.getName());
@@ -131,7 +135,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     public Set<FileObject> instantiate() throws IOException {
         final Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
 
-        FileUtil.runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
+        Repository.getDefault().getDefaultFileSystem().runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
 
             public void run() throws IOException {
                 File parentFile = FileUtil.normalizeFile((File) wiz.getProperty(PARENT_DIR));
@@ -140,9 +144,18 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
                 String prefix = (String) wiz.getProperty(NAME);
                 
                 FileObject bluePrintRoot = 
-                    FileUtil.getConfigFile("org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName()); // NOI18N
+                    Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-iep-samples-resources-zip/" + getBluePrintName()); // NOI18N
                 
                 FileObject[] project = bluePrintRoot.getChildren();
+                List<FileObject> projList = new LinkedList<FileObject>();
+                for (int i = 0; i < project.length; i++) {
+                    FileObject p = project[i];
+                    if (p.getName().equals("templateIEP")) {
+                        projList.add(0, p);
+                    } else {
+                        projList.add(p);
+                    }
+                }
                 FileObject jbi = null;
                 List<FileObject> seList = new LinkedList<FileObject>();
         
@@ -153,11 +166,12 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
                     prop.setProperty("iep.j2ee.server", appServerRoot);
                 }    
                 
-                for (int i = 0; i < project.length; i++) {
-                    FileObject p = createProject(parentDir, project[i], prop);
+                for (int i = 0; i < projList.size(); i++) {
+                    FileObject proj = projList.get(i);
+                    FileObject p = createProject(parentDir, proj, prop);
                     resultSet.add(p);
-                    String type = (String) project[i].getAttribute("type");  // NOI18N
-                    boolean serviceEngine = (Boolean)project[i].getAttribute("serviceEngine");  // NOI18N
+                    String type = (String) proj.getAttribute("type");  // NOI18N
+                    boolean serviceEngine = (Boolean)proj.getAttribute("serviceEngine");  // NOI18N
                     if (PROJECT_TYPE_JBI.equals(type)) {
                         jbi = p;
                     } else if (serviceEngine) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,7 +64,7 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
     }
 
     public void testParseLog() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(getCoverageLog()));
+        Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage.xml")));
         CoverageVO coverage = new CoverageVO();
 
         PhpUnitCoverageLogParser.parse(reader, coverage);
@@ -86,10 +89,6 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals(2, classMetrics.coveredStatements);
         assertEquals(7, classMetrics.elements);
         assertEquals(6, classMetrics.coveredElements);
-
-        clazz = file.getClasses().get(0);
-        assertEquals("Calculator2", clazz.getName());
-        assertEquals("global", clazz.getNamespace());
 
         assertEquals(4, file.getLines().size());
         LineVO line = file.getLines().get(0);
@@ -137,8 +136,55 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals(1234, coverageMetrics.coveredElements);
     }
 
-    private File getCoverageLog() throws Exception {
-        File coverageLog = new File(getDataDir(), "phpunit-coverage.xml");
+    public void testParseLogIssue180254() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage-issue180254.xml")));
+        CoverageVO coverage = new CoverageVO();
+
+        PhpUnitCoverageLogParser.parse(reader, coverage);
+
+        assertEquals(1265274750, coverage.getGenerated());
+        assertEquals("3.4.6", coverage.getPhpUnitVersion());
+        assertEquals(20, coverage.getFiles().size());
+
+        FileVO file = coverage.getFiles().get(0);
+        assertEquals("/usr/local/zend/apache2/htdocs/mysgc/plugins/mcJobqueuePlugin/lib/jobhandler/McJobqueueTestjobHandler.php", file.getPath());
+        assertEquals(1, file.getClasses().size());
+
+        ClassVO clazz = file.getClasses().get(0);
+        assertEquals("McJobqueueTestjobHandler", clazz.getName());
+        assertEquals("global", clazz.getNamespace());
+
+        ClassMetricsVO classMetrics = clazz.getMetrics();
+        assertNotNull(classMetrics);
+        assertEquals(1, classMetrics.methods);
+        assertEquals(1, classMetrics.coveredMethods);
+        assertEquals(2, classMetrics.statements);
+        assertEquals(2, classMetrics.coveredStatements);
+        assertEquals(3, classMetrics.elements);
+        assertEquals(3, classMetrics.coveredElements);
+
+        assertEquals(5, file.getLines().size());
+        LineVO line = file.getLines().get(0);
+        assertEquals(10, line.num);
+        assertEquals("stmt", line.type);
+        assertEquals(1, line.count);
+
+        FileMetricsVO fileMetrics = file.getMetrics();
+        assertNotNull(fileMetrics);
+        assertEquals(13, fileMetrics.loc);
+        assertEquals(7, fileMetrics.ncloc);
+        assertEquals(1, fileMetrics.classes);
+        assertEquals(1, fileMetrics.methods);
+        assertEquals(1, fileMetrics.coveredMethods);
+        assertEquals(4, fileMetrics.statements);
+        assertEquals(4, fileMetrics.coveredStatements);
+        assertEquals(5, fileMetrics.elements);
+        assertEquals(5, fileMetrics.coveredElements);
+    }
+
+
+    private File getCoverageLog(String filename) throws Exception {
+        File coverageLog = new File(getDataDir(), filename);
         assertTrue(coverageLog.isFile());
         return coverageLog;
     }

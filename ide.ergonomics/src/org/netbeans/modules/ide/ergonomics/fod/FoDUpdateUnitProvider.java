@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -29,13 +32,13 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -56,23 +59,28 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     public FoDUpdateUnitProvider() {
     }
 
+    @Override
     public String getName () {
         return "fod-provider";
     }
 
+    @Override
     public String getDisplayName () {
         return null;
     }
 
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public CATEGORY getCategory() {
         return CATEGORY.STANDARD;
     }
 
+    @Override
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         Collection<? extends ModuleInfo> all = Lookup.getDefault().lookupAll(ModuleInfo.class);
@@ -118,6 +126,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         return res;
     }
     
+    @Override
     public boolean refresh (boolean force) throws IOException {
         return true;
     }
@@ -131,7 +140,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         justKits.addAll(codeNames);
         String name = "fod." + prefCnb; // NOI18N
         ModuleInfo preferred = null;
-        StringBuffer description = new StringBuffer();
+        StringBuilder description = new StringBuilder();
         for (ModuleInfo mi : allModules) {
             if (prefCnb != null && prefCnb.equals(mi.getCodeNameBase())) {
                 preferred = mi;
@@ -155,7 +164,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         description.append(sb);
                     }
                     for (Dependency d : mi.getDependencies()) {
-                        if (d.getType() != d.TYPE_MODULE) {
+                        if (d.getType() != Dependency.TYPE_MODULE) {
                             continue;
                         }
                         FeatureInfo fi = FeatureManager.findInfo(d.getName());
@@ -188,33 +197,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     }
 
     private boolean isIDECluster(ModuleInfo mi) {
-        return isModuleFrom(mi, "ide"); // NOI18N
+        return FeatureManager.isModuleFrom(mi, "ide"); // NOI18N
     }
     private boolean isPlatformCluster(ModuleInfo mi) {
         if ("org.netbeans.modules.ide.branding.kit".equals(mi.getCodeName())) { // NOI18N
             return true;
         }
-        return isModuleFrom(mi, "platform"); // NOI18N
-    }
-
-    private static Method m;
-    private static boolean isModuleFrom(ModuleInfo mi, String prefix) {
-        File f;
-        try {
-            if (m == null) {
-                Method tmp = mi.getClass().getMethod("getJarFile"); // NOI18N
-                tmp.setAccessible(true);
-                m = tmp;
-            }
-            f = (File)m.invoke(mi);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-        if (f.getParentFile().getName().equals("modules")) { // NOI18N
-            if (f.getParentFile().getParentFile().getName().startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
+        return FeatureManager.isModuleFrom(mi, "platform"); // NOI18N
     }
 }

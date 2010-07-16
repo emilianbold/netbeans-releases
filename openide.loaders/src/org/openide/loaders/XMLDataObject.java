@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -189,8 +192,6 @@ public class XMLDataObject extends MultiDataObject {
     throws DataObjectExistsException {
         super (fo, loader);
         
-        fo.addFileChangeListener (FileUtil.weakFileChangeListener (getIP (), fo));
-
         status = STATUS_NOT;
 
         if (registerEditor) {
@@ -342,8 +343,11 @@ public class XMLDataObject extends MultiDataObject {
         if (ERR.isLoggable(Level.FINE)) {
             ERR.fine("getCookie returns " + cake + " for " + this); // NOI18N
         }
-        
-        return cls.cast(cake);
+        if (cake instanceof Node.Cookie) {
+            assert cake == null || cls.isInstance(cake) : "Cannot return " + cake + " for " + cls + " from " + this;
+            return cls.cast(cake);
+        }
+        return null;
     }
 
     @Override
@@ -498,6 +502,12 @@ public class XMLDataObject extends MultiDataObject {
         firePropertyChange (PROP_DOCUMENT, null, null);
     }
 
+    @Override
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        getIP().fileChanged(fe);
+    }
+
     /** 
      * @return one of STATUS_XXX constants representing PROP_DOCUMENT state. 
      */
@@ -604,12 +614,7 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Document parse (URL url, ErrorHandler eh, boolean validate) throws IOException, SAXException {
         
-        DocumentBuilder builder = XMLDataObjectImpl.makeBuilder(validate);
-        builder.setErrorHandler(eh);
-        builder.setEntityResolver(getChainingEntityResolver());
-        
-        return builder.parse (new InputSource(url.toExternalForm()));
-
+        return XMLUtil.parse (new InputSource(url.toExternalForm()),validate, false, eh, getChainingEntityResolver());
     }
 
     /** Creates SAX parse that can be used to parse XML files.

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.awt.event.ComponentEvent;
 import javax.swing.*;
 
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
@@ -80,15 +84,23 @@ public class CasaDesignView {
         mScroller = new JScrollPane();
         mScroller.getVerticalScrollBar().setUnitIncrement(30);
         mScroller.getHorizontalScrollBar().setUnitIncrement(20);
+
+        // #138971
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        String lafID = laf.getID();
+        if (lafID.equals("GTK")  // NOI18N
+//                || lafID.equals("Nimbus")
+                || "true".equalsIgnoreCase(System.getProperty("casa.scrollbars.always"))) { // NOI18N
+            mScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            mScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        }
         
         final CasaWrapperModel model = mDataObject.getEditorSupport().getModel(); 
         if (model != null) {
             // validate after casa view is shown
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {      
-                    new CasaValidateAction(model).actionPerformed(null);
-                }
-            });
+            if (!CasaFactory.getCasaCustomizer().getBOOLEAN_DISABLE_VALIDATION()) {
+                new CasaValidateAction(model).actionPerformed(null);
+            }
         }
       
         JComponent view = null;

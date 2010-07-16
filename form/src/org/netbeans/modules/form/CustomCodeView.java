@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -569,6 +572,7 @@ class CustomCodeView extends javax.swing.JPanel {
         }
 
         class EditSwitchL implements ActionListener {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (ignoreComboAction)
                     return; // not invoked by user, ignore
@@ -635,16 +639,19 @@ class CustomCodeView extends javax.swing.JPanel {
     private class DocumentL implements DocumentListener {
         boolean active = true;
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             if (active)
                 contentChange(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             if (active)
                 contentChange(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
         }
 
@@ -848,6 +855,7 @@ class CustomCodeView extends javax.swing.JPanel {
             blockIndex = index;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (ignoreComboAction)
                 return; // not invoked by user, ignore
@@ -944,10 +952,12 @@ class CustomCodeView extends javax.swing.JPanel {
             this.positions = positionMap;
         }
 
+        @Override
         public void addLayoutComponent(Component comp, Object constraints) {
             positions.put(comp, (Position)constraints);
         }
 
+        @Override
         public void layoutContainer(Container parent) {
             StyledDocument doc = (StyledDocument)editor.getDocument();
             for (Component comp : parent.getComponents()) {
@@ -963,10 +973,12 @@ class CustomCodeView extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void removeLayoutComponent(Component comp) {
             positions.remove(comp);
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             int prefWidth = 0;
             for (Component comp : positions.keySet()) {
@@ -978,25 +990,31 @@ class CustomCodeView extends javax.swing.JPanel {
                                  editor.getPreferredSize().height);
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return preferredLayoutSize(parent);
         }
 
+        @Override
         public Dimension maximumLayoutSize(Container parent) {
             return preferredLayoutSize(parent);
         }
 
+        @Override
         public float getLayoutAlignmentX(Container target) {
             return .5f;
         }
 
+        @Override
         public float getLayoutAlignmentY(Container target) {
             return .5f;
         }
 
+        @Override
         public void invalidateLayout(Container target) {
         }
 
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 

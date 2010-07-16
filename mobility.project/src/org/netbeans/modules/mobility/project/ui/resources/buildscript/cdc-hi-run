@@ -16,4 +16,3 @@
     <target name="-post-cdc-hi-run" if="cdc-hi-platform.trigger"/>
 
     <target name="cdc-hi-run" if="cdc-hi-platform.trigger" depends="-pre-cdc-hi-run, -cdc-hi-run, -post-cdc-hi-run"/>
-	

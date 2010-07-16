@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.updater;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.*;
 
@@ -85,6 +87,9 @@ public final class ModuleUpdater extends Thread {
     /** Extension of the distribution files */
     public static final String NBM_EXTENSION = "nbm"; // NOI18N
 
+    /** Extension of the OSGi distribution files */
+    public static final String JAR_EXTENSION = "jar"; // NOI18N
+
     /** The name of the log file */
     public static final String LOG_FILE_NAME = "update.log"; // NOI18N
 
@@ -98,8 +103,9 @@ public final class ModuleUpdater extends Thread {
     
     public static final String UPDATER_JAR = "updater.jar"; // NOI18N
     public static final String AUTOUPDATE_UPDATER_JAR_PATH = "netbeans/modules/ext/" + UPDATER_JAR; // NOI18N
+    public static final String AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN = "netbeans/modules/ext/locale/updater(_[a-zA-Z0-9]+)+"; // NOI18N
 
-    public static final String EXECUTABLE_FILES_ENTRY = "Info/executable.list";
+    public static final String EXECUTABLE_FILES_ENTRY = "Info/executables.list";
     
     /** files that are supposed to be installed (when running inside the ide) */
     private Collection<File> forInstall;
@@ -263,6 +269,10 @@ public final class ModuleUpdater extends Thread {
             JarFile jarFile = null;
 
             try {
+                if(f.getName().endsWith(".jar")) {
+                    //OSGi bundle
+                    totalLength += f.length();
+                } else {
                 jarFile = new JarFile (f);
                 Enumeration<JarEntry> entries = jarFile.entries ();
                 while (entries.hasMoreElements ()) {
@@ -273,6 +283,7 @@ public final class ModuleUpdater extends Thread {
                     if ((entry.getName ().startsWith (UPDATE_NETBEANS_DIR) || entry.getName ().startsWith (ModuleUpdater.UPDATE_JAVA_EXT_DIR) || entry.getName ().startsWith (UPDATE_MAIN_DIR)) && ! entry.isDirectory ()) {
                         totalLength += entry.getSize ();
                     }
+                }
                 }
                 UpdaterFrame.setProgressValue (i ++);
             } catch (java.io.IOException e) {
@@ -289,6 +300,7 @@ public final class ModuleUpdater extends Thread {
             }
         }
     }
+
 
 
     /** Unpack the distribution files into update directory */
@@ -356,25 +368,48 @@ public final class ModuleUpdater extends Thread {
 
                 try {
                     jarFile = new JarFile (nbm);
-                    Enumeration entries = jarFile.entries();
+                    Enumeration<JarEntry> entries = jarFile.entries();
+
+                    if (jarFile.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                        //OSGi bundle
+                        File osgiJar = nbm;
+                        
+                        File destFile = new File(cluster, "modules/" + osgiJar.getName());
+                        if (destFile.exists()) {
+                            File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
+                            bckFile.getParentFile().mkdirs();
+                            // System.out.println("Backing up" ); // NOI18N
+                            copyStreams(new FileInputStream(destFile), new FileOutputStream(bckFile), -1);
+                            if (!destFile.delete() && isWindows()) {
+                                trickyDeleteOnWindows(destFile);
+                            }
+                        } else {
+                            destFile.getParentFile().mkdirs();
+                        }
+
+                        bytesRead = copyStreams(new FileInputStream(osgiJar), new FileOutputStream(destFile), bytesRead);
+                        long crc = UpdateTracking.getFileCRC(destFile);
+                        version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
+                        //create config/Modules/cnb.xml
+
+                        UpdaterFrame.setProgressValue(bytesRead);
+                        modtrack.setOSGi(true);
+                    } else {
+                        //NBM
                     List <String> executableFiles = readExecutableFilesList(jarFile);
                     List <File> filesToChmod = new ArrayList <File> ();
                     while( entries.hasMoreElements() ) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
+                        JarEntry entry = entries.nextElement();
                         checkStop();
                         if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
                             if (! entry.isDirectory ()) {
-                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ())) {
+                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ()) ||
+                                        entry.toString().matches(AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
                                     // skip updater.jar
                                     continue;
                                 }
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                 // path without netbeans prefix
-                                if ( mu.isL10n() )
-                                    version.addL10NFileWithCrc( pathTo, Long.toString( entry.getCrc() ), mu.getSpecification_version());
-                                else
-                                    version.addFileWithCrc( pathTo, Long.toString( entry.getCrc() ) );
-
                                 File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
                                 if ( destFile.exists() ) {
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
@@ -387,10 +422,27 @@ public final class ModuleUpdater extends Thread {
                                 } else {
                                     destFile.getParentFile ().mkdirs ();
                                 }
+                                
                                 bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
+                                long crc = entry.getCrc();
+                                if(pathTo.endsWith(".jar.pack.gz") &&
+                                        jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
+                                     //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
+                                    File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
+                                    unpack200(destFile, unpacked);
+                                    destFile.delete();
+                                    pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
+                                    crc = UpdateTracking.getFileCRC(unpacked);
+                                }
+                                if ( mu.isL10n() ) {
+                                    version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
+                                } else {
+                                    version.addFileWithCrc( pathTo, Long.toString(crc));
+                                }
+                                
                                 UpdaterFrame.setProgressValue( bytesRead );
                             }
                         } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
@@ -419,6 +471,7 @@ public final class ModuleUpdater extends Thread {
 
                             deleteDir( getMainDirectory (cluster) );
                         }
+                    }
                     }
                 }
                 catch ( java.io.IOException e ) {
@@ -467,6 +520,28 @@ public final class ModuleUpdater extends Thread {
             t.deleteUnusedFiles ();            
         }
     }
+    
+    private boolean unpack200(File src, File dest) {
+        String unpack200Executable = new File(System.getProperty("java.home"),
+                "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
+        ProcessBuilder pb = new ProcessBuilder(unpack200Executable, src.getAbsolutePath(), dest.getAbsolutePath());
+        pb.directory(src.getParentFile());
+        int result = 1;
+        try {
+            //maybe reuse start() method here?
+            Process process = pb.start();
+            //TODO: Need to think of unpack200/lvprcsrv.exe issues
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=117334
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=119861
+            result = process.waitFor();
+            process.destroy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result == 0;
+    }
 
     private List<String> readExecutableFilesList(JarFile jarFile) {
         List<String> list = new ArrayList<String>();
@@ -498,51 +573,12 @@ public final class ModuleUpdater extends Thread {
         if (isWindows() || executableFiles.isEmpty()) {
             return;
         }
-        // Determine if java.io.File.setExecutable method is supported
-        Method setExecutableMethod = null;
-        try {
-            setExecutableMethod = File.class.getMethod("setExecutable", Boolean.TYPE, Boolean.TYPE);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
 
-        if (setExecutableMethod != null) {
-            for (File executableFile : executableFiles) {
-                try {
-                    setExecutableMethod.invoke(executableFile, true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            // Find chmod
-            File chmod = new File("/bin/chmod"); // NOI18N
-            if (!chmod.isFile()) {
-                chmod = new File("/usr/bin/chmod"); // NOI18N
-            }
-            if (chmod.isFile()) {
-                Process process = null;
-                try {
-                    List<String> command = new ArrayList<String>();
-                    command.add(chmod.getAbsolutePath());
-                    command.add("a+x");
-                    for (File executableFile : executableFiles) {
-                        command.add(executableFile.getAbsolutePath());
-                    }
-                    process = new ProcessBuilder(command).start();
-                    process.waitFor();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (process != null) {
-                        process.destroy();
-                    }
-                }
-
-            }
-        }
+        for (File executableFile : executableFiles) {
+            executableFile.setExecutable(true, false);
+         }
     }
-
+        
     public static boolean trickyDeleteOnWindows(File destFile) {
         assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());

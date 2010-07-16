@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,8 @@ import org.openide.util.NbBundle;
 public class NewProjectIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 4589834546983L;
-    
+
+    private static final String IS_LIBRARY = "is_library";//NOI18N
     boolean platformInstall;
     int currentIndex;
     PlatformInstallPanel.WizardPanel platformPanel;
@@ -140,6 +144,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, null);
         templateWizard.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
         templateWizard.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
+        templateWizard.putProperty(IS_LIBRARY, !create);
         final DataObject dao = templateWizard.getTemplate();
         templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
@@ -167,7 +172,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         final Boolean createMIDlet = (Boolean) templateWizard.getProperty(ProjectPanel.PROJECT_CREATE_MIDLET);
         HashSet<DataObject> result = createMIDlet != null && createMIDlet.booleanValue() ? new HashSet<DataObject>() : null;
         
-        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES), (Boolean)templateWizard.getProperty(IS_LIBRARY));
         if (result == null) result = new HashSet<DataObject>();
         result.add(DataObject.find(helper.getProjectDirectory()));
         return result;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,17 +43,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public abstract class BasicCompilerConfiguration {
+public abstract class BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase {
 
     private String baseDir;
     private BasicCompilerConfiguration master;
@@ -90,7 +93,7 @@ public abstract class BasicCompilerConfiguration {
         getString("BITS_32"),
         getString("BITS_64"),};
     private IntConfiguration sixtyfourBits;
-    private BooleanConfiguration strip;
+    private InheritedBooleanConfiguration strip;
     public static final int MT_LEVEL_NONE = 0;
     public static final int MT_LEVEL_SAFE = 1;
     public static final int MT_LEVEL_AUTOMATIC = 2;
@@ -113,7 +116,7 @@ public abstract class BasicCompilerConfiguration {
         developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
         warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
         sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
-        strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", ""); // NOI18N
+        strip = new InheritedBooleanConfiguration(master != null ? master.getStrip() : null, false);
         mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
         additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
         tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
@@ -129,6 +132,7 @@ public abstract class BasicCompilerConfiguration {
         getTool().setMaster(compilerConfiguration.getTool());
     }
 
+    @Override
     public boolean getModified() {
         return developmentMode.getModified() ||
                 mpLevel.getModified() ||
@@ -150,7 +154,7 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // To be overridden
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         return "OVERRIDE"; // NOI18N
     }
 
@@ -206,11 +210,11 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // Strip
-    public void setStrip(BooleanConfiguration strip) {
+    public void setStrip(InheritedBooleanConfiguration strip) {
         this.strip = strip;
     }
 
-    public BooleanConfiguration getStrip() {
+    public InheritedBooleanConfiguration getStrip() {
         return strip;
     }
 
@@ -249,7 +253,7 @@ public abstract class BasicCompilerConfiguration {
             suffix = ".pch"; // NOI18N
             ItemConfiguration itemConf = item.getItemConfiguration(conf);
             if (conf.getCompilerSet().getCompilerSet() != null) {
-                BasicCompiler compiler = (BasicCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
+                AbstractCompiler compiler = (AbstractCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
                 if (compiler != null) {
                     suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
                     append = compiler.getDescriptor().getPrecompiledHeaderSuffixAppend();
@@ -270,31 +274,20 @@ public abstract class BasicCompilerConfiguration {
             dirName = MakeConfiguration.OBJECTDIR_MACRO;
         }
 
-        if (IpeUtils.isPathAbsolute(fileName)) {
-            String absPath = fileName;
-            if (absPath.charAt(0) != '/') {
-                absPath = '/' + absPath;
-            }
-            absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
-            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
+        if (CndPathUtilitities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
+            String ofileName = CndPathUtilitities.getBaseName(fileName);
+            String odirName = CndPathUtilitities.getDirName(fileName);
+            String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Math.abs(odirName.hashCode()) + '/' + ofileName; // UNIX path
+            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
             return absPath;
-        } else if (filePath.startsWith("..")) { // NOI18N
-//            String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
-//            absPath = FilePathAdaptor.normalize(absPath);
-//            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
-//            if (absPath.charAt(0) != '/') {
-//                absPath = '/' + absPath;
-//            }
-            String ofilePath = fileName.replace("..", "_DOTDOT"); // NOI18N
-            ofilePath = IpeUtils.replaceOddCharacters(ofilePath, '_');
-            return dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + ofilePath; // UNIX path
         } else {
+            fileName = CndPathUtilitities.escapeOddCharacters(fileName);
             return dirName + '/' + fileName; // UNIX path
         }
     }
 
     // Assigning & Cloning
-    public void assign(BasicCompilerConfiguration conf) {
+    protected void assign(BasicCompilerConfiguration conf) {
         setBaseDir(conf.getBaseDir());
         getDevelopmentMode().assign(conf.getDevelopmentMode());
         getWarningLevel().assign(conf.getWarningLevel());
@@ -306,19 +299,8 @@ public abstract class BasicCompilerConfiguration {
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
     }
 
-//    public Object clone() {
-//	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
-//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-//	clone.setStrip((BooleanConfiguration)getStrip().clone());
-//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-//	clone.setTool((StringConfiguration)getTool().clone());
-//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-//	return clone;
-//    }
     // Sheets
-    public Sheet.Set getBasicSet() {
+    protected Sheet.Set getBasicSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("BasicOptions"); // NOI18N
         set.setDisplayName(getString("BasicOptionsTxt"));
@@ -330,7 +312,7 @@ public abstract class BasicCompilerConfiguration {
         return set;
     }
 
-    public Sheet.Set getInputSet() {
+    protected Sheet.Set getInputSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("Input"); // NOI18N
         set.setDisplayName(getString("InputTxt"));

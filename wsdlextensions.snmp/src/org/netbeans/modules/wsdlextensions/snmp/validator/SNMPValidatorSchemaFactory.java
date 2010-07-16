@@ -25,7 +25,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class SNMPValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String snmpXSDUrl = "/org/netbeans/modules/wsdlextensions/snmp/resources/snmp-ext.xsd";
     

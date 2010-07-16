@@ -33,9 +33,9 @@ import java.util.List;
 import javax.swing.text.Document;
 
 import org.apache.xml.resolver.Catalog;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
 
-import org.apache.xml.resolver.NbCatalogManager;
-import org.apache.xml.resolver.tools.NbCatalogResolver;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -250,14 +250,14 @@ public class CommandlineTransformmapCatalogModel  implements CatalogModel {
         return model;
     }    
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
-        NbCatalogResolver catalogResolver;
+        CatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;    
 
         
-        NbCatalogManager manager = new NbCatalogManager(null);
+        CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new NbCatalogResolver(manager);
+        catalogResolver = new CatalogResolver(manager);
         //catalogResolver = new CatalogResolver(true);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.diff.Difference;
 import org.openide.util.NbBundle;
 
@@ -69,6 +73,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.View;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
@@ -399,18 +404,34 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         
         g.setFont(getLinesFont()); 
         g.setColor(linesColor);
-        int lineNumber = clip.y / lineHeight;
-        int yOffset = lineNumber * lineHeight;
-        yOffset -= lineHeight / 4; // baseline correction
-        int linesDrawn = clip.height / lineHeight + 3;  // draw past clipping rectangle to avoid partially drawn numbers
-        int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
-        if (lineNumber + linesDrawn - 1 > docLines) {
-            linesDrawn = docLines - lineNumber + 1;
-        }
-        for (int i = 0; i < linesDrawn; i++) {
-            g.drawString(formatLineNumber(lineNumber), linesXOffset, yOffset);
-            lineNumber++;
-            yOffset += lineHeight;
+        try {
+            View rootView = Utilities.getDocumentView(master.getEditorPane());
+            int lineNumber = Utilities.getLineOffset((BaseDocument) master.getEditorPane().getDocument(), master.getEditorPane().viewToModel(new Point(clip.x, clip.y)));
+            if (lineNumber > 0) --lineNumber;
+            View view = rootView.getView(lineNumber);
+            Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
+            if (rec == null) {
+                return;
+            }
+            int yOffset;
+            int linesDrawn = clip.height / lineHeight + 4;  // draw past clipping rectangle to avoid partially drawn numbers
+            int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
+            if (lineNumber + linesDrawn > docLines) {
+                linesDrawn = docLines - lineNumber;
+            }
+            for (int i = 0; i < linesDrawn; i++) {
+                view = rootView.getView(lineNumber);
+                Rectangle rec1 = master.getEditorPane().modelToView(view.getStartOffset());
+                Rectangle rec2 = master.getEditorPane().modelToView(view.getEndOffset() - 1);
+                if (rec1 == null || rec2 == null) {
+                    break;
+                }
+                yOffset = rec1.y + rec1.height - lineHeight / 4;
+                lineHeight = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
+                g.drawString(formatLineNumber(++lineNumber), linesXOffset, yOffset);
+            }
+        } catch (BadLocationException ex) {
+            //
         }
     }
 

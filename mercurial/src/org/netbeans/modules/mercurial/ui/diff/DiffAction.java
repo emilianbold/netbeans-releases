@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Set;
 
@@ -52,6 +54,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -63,14 +66,23 @@ import org.openide.util.NbBundle;
  */
 public class DiffAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public DiffAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
+            return false;
+        return true;
     }
-    
-    public void performAction(ActionEvent e) {
+
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Diff"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         String contextName = Utils.getContextDisplayName(context);
                 
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
@@ -93,14 +105,6 @@ public class DiffAction extends ContextAction {
 
         diff(context, Setup.DIFFTYPE_LOCAL, contextName);
     }
-    
-    @Override
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
-            return false;
-        return true;
-    } 
 
     public static void diff(VCSContext ctx, int type, String contextName) {
 
@@ -111,8 +115,8 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file, String rev1, String rev2) {
-        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns background DiffPrepareTask
+    public static void diff(File file, HgRevision rev1, HgRevision rev2) {
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();

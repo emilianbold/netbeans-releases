@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,6 +90,7 @@ import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -96,7 +100,11 @@ import org.w3c.dom.Element;
  * 2. Is reset upon project.xml changes.
  * @author Jesse Glick, Martin Krauskopf
  */
-final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
+public final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
+    
+    public static final String CP = "cp";
+    public static final String NBJDK_BOOTCLASSPATH = "nbjdk.bootclasspath";
+    public static final String RUN_CP = "run.cp";
     
     private final NbModuleProject project;
     private final NbModuleProvider typeProvider;
@@ -131,8 +139,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             return runtime + ':' + testRuntime;
         }
         
-        private static TestClasspath getOrEmpty(Map testsCPs, String testtype) {
-            TestClasspath tcp = (TestClasspath) testsCPs.get(testtype);
+        private static TestClasspath getOrEmpty(Map<String,TestClasspath> testsCPs, String testtype) {
+            TestClasspath tcp = testsCPs.get(testtype);
             if (tcp == null ) {
                 // create with empty classpaths
                 tcp = new TestClasspath("", "", "", ""); // NOI18N
@@ -141,7 +149,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
         this.project = project;
         this.typeProvider = typeProvider;
         delegate = createEvaluator(null);
@@ -149,7 +158,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         project.getHelper().addAntProjectListener(this);
     }
     
-    public String getProperty(String prop) {
+    public @Override String getProperty(String prop) {
         PropertyEvaluator eval = delegatingEvaluator(false);
         assert eval != this;
         String v = eval.getProperty(prop);
@@ -160,7 +169,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public String evaluate(String text) {
+    public @Override String evaluate(String text) {
         String v = delegatingEvaluator(false).evaluate(text);
         if (isModuleListDependentValue(v)) {
             return delegatingEvaluator(true).evaluate(text);
@@ -169,13 +178,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public Map<String,String> getProperties() {
+    public @Override Map<String,String> getProperties() {
         return delegatingEvaluator(true).getProperties();
     }
 
     private boolean isModuleListDependentProperty(String p) {
         return p.equals("module.classpath") || // NOI18N
-                p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra"); // NOI18N
+                p.equals(CP) || p.endsWith(".cp") || p.endsWith(".cp.extra"); // NOI18N
     }
     
     private static final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
@@ -192,21 +201,21 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return false;
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
     
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
     
     private PropertyEvaluator delegatingEvaluator(final boolean reset) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyEvaluator>() {
-            public PropertyEvaluator run() {
+            public @Override PropertyEvaluator run() {
                 if (reset && !loadedModuleList) {
                     reset();
                     if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
+                        Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty(CP));
                     }
                 }
                 synchronized (Evaluator.this) {
@@ -218,7 +227,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     private void reset() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 ModuleList moduleList;
                 try {
                     moduleList = project.getModuleList();
@@ -240,7 +249,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         });
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         if ("netbeans.dest.dir".equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
             // Module list may have changed.
             reset();
@@ -250,16 +259,17 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public void configurationXmlChanged(AntProjectEvent ev) {
+    public @Override void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            if (runInAtomicAction)
+            if (runInAtomicAction) {
                 pendingReset = true;
-            else
+            } else {
                 reset();
+            }
         }
     }
     
-    public void propertiesChanged(AntProjectEvent ev) {
+    public @Override void propertiesChanged(AntProjectEvent ev) {
         /* TODO: Not needed now? Put here at least some comment. */
     }
     
@@ -305,9 +315,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
             stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
-            Map<String,String> clusterProperties = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.propertiesFilePropertyProvider(
-                    new File(nbroot, "nbbuild/cluster.properties"))).getProperties(); // NOI18N
-            if (clusterProperties != null) {
+            try {
+                Map<String,String> clusterProperties = ModuleList.getClusterProperties(nbroot);
                 StringBuilder allValsB = new StringBuilder();
                 for (PropertyProvider pp : new PropertyProvider[] {privateProperties, projectProperties}) {
                     for (String val : pp.getProperties().values()) {
@@ -332,6 +341,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         } // #172203: otherwise don't waste space on it
                     }
                 }
+            } catch (IOException x) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, x);
             }
         } else {
             nbroot = null;
@@ -347,19 +358,10 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
 
         // 'cluster' prop. evaluation without scanned ModuleList
         String codeNameBase = project.getCodeNameBase();
-        String clusterDir = null;
         PropertyEvaluator suiteEval = null;
-        try {
-            clusterDir = ModuleList.findClusterLocation(dir, nbroot, type);
-        } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
-        }
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             suiteEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
-            clusterDir = FileUtil.normalizeFile(new File(suiteEval.evaluate(clusterDir))).getAbsolutePath();
         }
-        if (clusterDir != null)
-            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", clusterDir)));
 
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             String suiteDirS = suiteEval.getProperty("suite.dir"); // NOI18N
@@ -380,7 +382,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 public DestDirProvider(PropertyEvaluator eval) {
                     super(eval);
                 }
-                protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
+                protected @Override Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
                     String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
                     if (platformS != null) {
                         return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
@@ -388,7 +390,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         return Collections.emptyMap();
                     }
                 }
-                protected Set<String> inputProperties() {
+                protected @Override Set<String> inputProperties() {
                     return Collections.singleton("nbplatform.active"); // NOI18N
                 }
             }
@@ -414,30 +416,37 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         defaults.put("manifest.mf", "manifest.mf"); // NOI18N
         defaults.put("src.dir", "src"); // NOI18N
-        defaults.put("build.classes.dir", "build/classes"); // NOI18N
+        defaults.put("build.dir", "build"); // NOI18N
+        defaults.put("build.classes.dir", "${build.dir}/classes"); // NOI18N
         defaults.put(SingleModuleProperties.JAVAC_SOURCE, "1.4"); // NOI18N
         if (type == NbModuleProvider.NETBEANS_ORG) {
             defaults.put("test.user.dir", "${nb_all}/nbbuild/testuserdir"); // NOI18N
         } else if (type == NbModuleProvider.STANDALONE) {
-            defaults.put("test.user.dir", "build/testuserdir"); // NOI18N
+            defaults.put("test.user.dir", "${build.dir}/testuserdir"); // NOI18N
         } else {
-            defaults.put("test.user.dir", "${suite.dir}/build/testuserdir"); // NOI18N
+            defaults.put("suite.build.dir", "${suite.dir}/build"); // NOI18N
+            defaults.put("test.user.dir", "${suite.build.dir}/testuserdir"); // NOI18N
         }
         Set<String> testTypes = new HashSet<String>(Arrays.asList(NbModuleProject.COMMON_TEST_TYPES));
         // XXX would be good to add in any other types defined in project.xml
         for (String testType : testTypes) {
             defaults.put("test." + testType + ".src.dir", "test/" + testType + "/src"); // NOI18N
             defaults.put("test." + testType + ".data.dir", "test/" + testType + "/data"); // NOI18N
-            defaults.put("build.test." + testType + ".classes.dir", "build/test/" + testType + "/classes"); // NOI18N
+            defaults.put("build.test." + testType + ".classes.dir", "${build.dir}/test/" + testType + "/classes"); // NOI18N
         }
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
+        try {
+            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", ModuleList.findClusterLocation(dir, nbroot, type)))); // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
+        }
         if (ml != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.run.classpath", computeRuntimeModuleClasspath(ml)))); // NOI18N
             Map<String,String> buildDefaults = new HashMap<String,String>();
             buildDefaults.put("cp.extra", ""); // NOI18N
-            buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
-            buildDefaults.put("run.cp", "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
+            buildDefaults.put(CP, "${module.classpath}:${cp.extra}"); // NOI18N
+            buildDefaults.put(RUN_CP, "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
             
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
 
@@ -460,8 +469,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
+    private static final RequestProcessor RP = new RequestProcessor(Evaluator.class.getName());
     private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
-        
+
         private final PropertyEvaluator eval;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final PropertyChangeListener weakListener = WeakListeners.propertyChange(this, null);
@@ -472,7 +482,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             JavaPlatformManager.getDefault().addPropertyChangeListener(weakListener);
         }
         
-        public final Map<String,String> getProperties() {
+        public @Override final Map<String,String> getProperties() {
             Map<String,String> props = new HashMap<String,String>();
             String home = eval.getProperty("nbjdk.home"); // NOI18N
             if (home == null) {
@@ -516,15 +526,16 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         File jHome;
                         if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
                             String[] jars = jHome.list(new FilenameFilter() {
-                                public boolean accept(File dir, String name) {
+                                public @Override boolean accept(File dir, String name) {
                                     String n = name.toLowerCase(Locale.US);
                                     return n.endsWith(".jar"); // NOI18N
                                 }
                             });
                             StringBuilder sb = new StringBuilder();
                             for (String jar : jars) {
-                                if (sb.length() > 0)
+                                if (sb.length() > 0) {
                                     sb.append(File.pathSeparator);
+                                }
                                 sb.append("${nbjdk.home}/jre/lib/").append(jar);
                             }
                             bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
@@ -538,7 +549,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 // Real fallback...
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
-            props.put("nbjdk.bootclasspath", bootcp); // NOI18N
+            props.put(NBJDK_BOOTCLASSPATH, bootcp); // NOI18N
             if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }
@@ -557,15 +568,15 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             return props;
         }
         
-        public final void addChangeListener(ChangeListener l) {
+        public @Override final void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
         
-        public final void removeChangeListener(ChangeListener l) {
+        public @Override final void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
         
-        public final void propertyChange(PropertyChangeEvent evt) {
+        public @Override final void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p != null && !p.startsWith("nbjdk.") && !p.startsWith("platforms.") && // NOI18N
                     !p.equals(ClassPath.PROP_ENTRIES) && !p.equals(JavaPlatformManager.PROP_INSTALLED_PLATFORMS)) {
@@ -575,7 +586,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 return;
             }
             final Mutex.Action<Void> action = new Mutex.Action<Void>() {
-                public Void run() {
+                public @Override Void run() {
                     changeSupport.fireChange();
                     return null;
                 }
@@ -586,8 +597,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             } else if (ProjectManager.mutex().isReadAccess()) {
                 action.run();
             } else {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
+                RP.post(new Runnable() {
+                    public @Override void run() {
                         ProjectManager.mutex().readAccess(action);
                     }
                 });
@@ -601,18 +612,18 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      */
     private String computeModuleClasspath(ModuleList ml) {
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element moduleDependencies = XMLUtil.findElement(data,
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        StringBuffer cp = new StringBuffer();
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
-            if (Util.findElement(dep, "compile-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+        StringBuilder cp = new StringBuilder();
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
+            if (XMLUtil.findElement(dep, "compile-dependency", // NOI18N
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
+                NbModuleProject.NAMESPACE_SHARED);
+            String cnb = XMLUtil.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
@@ -625,12 +636,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             cp.append(moduleJar.getAbsolutePath());
             cp.append(module.getClassPathExtensions());
         }
-        ModuleEntry myself = ml.getEntry(project.getCodeNameBase());
-        if (myself == null) {
-            // ???
-            return "";
-        }
-        cp.append(myself.getClassPathExtensions());
+        appendMyOwnClassPathExtensions(cp);
         return cp.toString();
     }
     
@@ -642,7 +648,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Set<String> unprocessed = new HashSet<String>();
         unprocessed.add(project.getCodeNameBase());
         Set<String> processed = new HashSet<String>();
-        StringBuffer cp = new StringBuffer();
+        StringBuilder cp = new StringBuilder();
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();
             String cnb = it.next();
@@ -664,12 +670,25 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 unprocessed.addAll(Arrays.asList(newDeps));
             }
         }
-        ModuleEntry myself = ml.getEntry(project.getCodeNameBase());
-        if (myself != null) {
-            // #76341: must include <class-path-extension>s in ${run.cp} too.
-            cp.append(myself.getClassPathExtensions());
-        }
+        appendMyOwnClassPathExtensions(cp); // #76341: must include <class-path-extension>s in ${run.cp} too.
         return cp.toString();
+    }
+
+    private void appendMyOwnClassPathExtensions(StringBuilder cp) {
+        // XXX #179578: using ModuleEntry.getClassPathExtensions would be more convenient, but the data is stale;
+        // should ModuleList recreate ModuleEntry's when project.xml (or project.properties, ...) changes?
+        Map<String,String> cpext = new ProjectXMLManager(project).getClassPathExtensions();
+        for (Map.Entry<String,String> entry : cpext.entrySet()) {
+            if (cp.length() > 0) {
+                cp.append(File.pathSeparatorChar);
+            }
+            String binaryOrigin = entry.getValue();
+            if (binaryOrigin != null) {
+                cp.append(project.getHelper().resolveFile(binaryOrigin));
+            } else {
+                cp.append(PropertyUtils.resolveFile(project.getModuleJarLocation().getParentFile(), entry.getKey()));
+            }
+        }
     }
 
     /**
@@ -690,14 +709,14 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 String nball = evaluator.getProperty("nb_all"); // NOI18N
                 testDistDir = nball + File.separatorChar + "nbbuild" + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
             } else if ( type == NbModuleProvider.SUITE_COMPONENT) {
-                // test.dist.dir = ${suite.dir}/build/testdist
-                String suiteDir = evaluator.getProperty("suite.dir"); // NOI18N
-                testDistDir = suiteDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+                // test.dist.dir = ${suite.build.dir}/testdist
+                String suiteDir = evaluator.getProperty("suite.build.dir"); // NOI18N
+                testDistDir = suiteDir + File.separatorChar + "testdist"; // NOI18N
             } else {
                 // standalone module
-                // test.dist.dir = ${module.dir}/build/testdist
-                String moduleDir = evaluator.getProperty("module.dir"); // NOI18N
-                testDistDir = moduleDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+                // test.dist.dir = ${build.dir}/testdist
+                String moduleDir = evaluator.getProperty("build.dir"); // NOI18N
+                testDistDir = moduleDir + File.separatorChar + "testdist"; // NOI18N
             }
         }
         for (Map.Entry<String,Set<TestModuleDependency>> entry : testDependencies.entrySet()) {
@@ -725,7 +744,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         // #139339: optimization using processedRecursive set was too bold, removed
         for (TestModuleDependency td : ttModules) {
             String cnb = td.getModule().getCodeNameBase();
-            logger.fine("computeTestType: processing '" + cnb + "'");
+            logger.log(Level.FINE, "computeTestType: processing ''{0}''", cnb);
             if (td.isRecursive()) {
                 // scan cp recursively
                 Set<String> unprocessed = new HashSet<String>();
@@ -740,10 +759,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     // if we've put recursiveCNB module only to runtime CP and now should be also added to compile CP, process once more
                     Boolean alreadyInCompileCP = processedRecursive.get(recursiveCNB);
                     if (Boolean.TRUE.equals(alreadyInCompileCP)
-                            || (Boolean.FALSE.FALSE.equals(alreadyInCompileCP) && ! td.isCompile()))
+                            || (Boolean.FALSE.equals(alreadyInCompileCP) && ! td.isCompile())) {
                         continue;
+                    }
 
-                    logger.fine("computeTestType: processing '" + recursiveCNB + "'");
+                    logger.log(Level.FINE, "computeTestType: processing ''{0}''", recursiveCNB);
                     ModuleEntry module = ml.getEntry(recursiveCNB);
                     if (module == null) {
                         Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + recursiveCNB + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
@@ -817,12 +837,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
 
    private static final Set<String> warnedModules = Collections.synchronizedSet(new HashSet<String>());
     private String mergePaths(Set<String> cnbs, boolean test,String testtype,File testDistDir,ModuleList ml) {
-        StringBuffer cps = new StringBuffer();
+        StringBuilder cps = new StringBuilder();
         for (String cnb : cnbs) {
                 ModuleEntry module = ml.getEntry(cnb);
                 if (module == null) {
                     if (warnedModules.add(cnb)) {
-                        Logger.getLogger(Evaluator.class.getName()).warning("Cannot find test module dependency: " + cnb);
+                        Logger.getLogger(Evaluator.class.getName()).log(Level.WARNING, "Cannot find test module dependency: {0}", cnb);
                     }
                     continue;
                 }

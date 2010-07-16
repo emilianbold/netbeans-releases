@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.api.completion;
 
+import java.util.Arrays;
 import org.netbeans.modules.html.editor.completion.*;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -55,6 +59,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -391,13 +396,12 @@ public class HtmlCompletionItem implements CompletionItem {
             if (orderIndex == -1) {
                 return super.getSortText();
             } else {
-                int zeros = orderIndex > 100 ? 0 : orderIndex > 10 ? 1 : 2;
-                StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < zeros; i++) {
-                    sb.append('0'); //NOI18N
-                }
-                sb.append("" + orderIndex);
-                return sb;
+                char[] result = new char[Integer.toString(Integer.MAX_VALUE).length()];
+                char[] orderIndexChars = Integer.toString(orderIndex).toCharArray();
+                Arrays.fill(result,'0'); //NOI18N
+                System.arraycopy(orderIndexChars, 0, result, result.length - orderIndexChars.length, orderIndexChars.length);
+
+                return new String(result);
             }
         }
 
@@ -494,22 +498,24 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class Attribute extends HtmlCompletionItem {
 
         private boolean required;
+        private boolean autocompleteQuotes;
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
         public Attribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
             this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
 
         @Override
         protected String getSubstituteText() {
-            return getItemText() + "=\"\""; //NOI18N
+            return getItemText() + (autocompleteQuotes ? "=\"\"" : ""); //NOI18N
         }
 
         @Override
         protected int getMoveBackLength() {
-            return 1; //last quotation
+            return autocompleteQuotes ? 1 : 0; //last quotation
         }
 
         @Override

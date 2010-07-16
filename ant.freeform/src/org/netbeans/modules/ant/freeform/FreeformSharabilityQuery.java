@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,9 +57,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *
@@ -117,9 +118,9 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation,
                     final NodeList exports = root.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "export"); //NOI18N
                     for (int i=0; i< exports.getLength(); i++) {
                         final Element export = (Element) exports.item(i);
-                        final Element location = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL);   //NOI18N
+                        final Element location = XMLUtil.findElement(export, "location", FreeformProjectType.NS_GENERAL);   //NOI18N
                         if (location != null) {
-                            final String path = Util.findText(location);
+                            final String path = XMLUtil.findText(location);
                             if (path != null) {
                                 final File exportedFile = Util.resolveFile(project.evaluator(), FileUtil.toFile(project.getProjectDirectory()), path);
                                 if (exportedFile != null) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
@@ -339,10 +343,20 @@ public class WorkingCopy extends CompilationController {
         boolean fillImports = true;
         
         Map<Integer, String> userInfo = new HashMap<Integer, String>();
+        final Set<Tree> oldTrees = new HashSet<Tree>();
+
+        if (CasualDiff.OLD_TREES_VERBATIM) {
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void scan(Tree node, Void p) {
+                    oldTrees.add(node);
+                    return super.scan(node, p);
+                }
+            }.scan(getCompilationUnit(), null);
+        }
         
         if (!REWRITE_WHOLE_FILE) {
             new TreePathScanner<Void, Void>() {
-
                 private TreePath currentParent;
                 private Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
 
@@ -441,14 +455,14 @@ public class WorkingCopy extends CompilationController {
                 fillImports = false;
             }
 
-            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span));
+            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span, oldTrees));
         }
 
         if (fillImports) {
             List<? extends ImportTree> nueImports = ia.getImports();
 
             if (nueImports != null) { //may happen if no changes, etc.
-                diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span));
+                diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo, tree2Tag, tag2Span, oldTrees));
             }
         }
         
@@ -482,7 +496,7 @@ public class WorkingCopy extends CompilationController {
             
             CompilationUnitTree nue = (CompilationUnitTree) translator.translate(t, changes);
             
-            VeryPretty printer = new VeryPretty(getContext(), VeryPretty.getCodeStyle(this));
+            VeryPretty printer = new VeryPretty(this, VeryPretty.getCodeStyle(this));
             printer.print((JCTree.JCCompilationUnit) nue);
             result.add(new CreateChange(nue.getSourceFile(), printer.toString()));
         }

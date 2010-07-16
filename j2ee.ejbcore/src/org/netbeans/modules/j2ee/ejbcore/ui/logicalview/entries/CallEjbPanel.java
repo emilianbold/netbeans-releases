@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -74,10 +78,13 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -443,8 +450,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
         String name = "";
 
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(selectedNode);
-        FileObject nodeFO = selectedNode.getLookup().lookup(FileObject.class);
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(nodeFO);
+        assert elementHandle != null : "ElementHandle not found for the node: " + selectedNode;
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = ejbReference.getEjbModule();
         if (ejbModule != null) {
             Map<String, String> names = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
                 public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
@@ -524,7 +531,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
 //                return false;
 //            }
             // node cannot act as EJB reference
-            if (nodes[0].getLookup().lookup(EjbReference.class) == null) {
+            EjbReference ejbRef = nodes[0].getLookup().lookup(EjbReference.class);
+            if (ejbRef == null) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
                 return false;
             }
@@ -545,31 +553,39 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             boolean isRemoteInterfaceSelected = getSelectedInterface() == EjbReference.EjbRefIType.REMOTE;
             Project nodeProject = FileOwnerQuery.getOwner(fileObject);
-            if (!isRemoteInterfaceSelected &&
-                    !nodeProject.equals(project) &&
-                    !Utils.areInSameJ2EEApp(project, nodeProject)) {
-                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
-                return false;
-            }
-            
-            //AC cannot contain references to local beans
-            if (!isRemoteInterfaceSelected &&
-                    Utils.isAppClient(project)) {
-                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
-                return false;
-            }
 
-            //Unit tests or classes in a JSE project cannot contain references to local beans
-            try {
-                if (!isRemoteInterfaceSelected && Utils.isTargetJavaSE(srcFile, className)) {
-                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
+            if (isRemoteInterfaceSelected){
+                try {
+                    if (nodeProject.equals(Utils.getProject(ejbRef, EjbReference.EjbRefIType.REMOTE))){
+                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_RemoteNotInSeparateJar")); //NOI18N
+                        return false;
+                    }
+                } catch (IOException ex) {
+                }
+            } else {
+                if (!nodeProject.equals(project) &&
+                        !Utils.areInSameJ2EEApp(project, nodeProject)) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
                     return false;
                 }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return false;
+
+                //AC cannot contain references to local beans
+                if (Utils.isAppClient(project)) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
+                    return false;
+                }
+
+                //Unit tests or classes in a JSE project cannot contain references to local beans
+                try {
+                    if (Utils.isTargetJavaSE(srcFile, className)) {
+                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
+                        return false;
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    return false;
+                }
             }
-            
             // see #75876
             if (!Util.isJavaEE5orHigher(project) && Util.isJavaEE5orHigher(nodeProject)){
                 statusLine.setWarningMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_JEESpecificationLevelsDiffer")); //NOI18N
@@ -584,7 +600,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 return false;
             }
             
-            boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
+            boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported() &&
+                                              isNoInterfaceViewExposed(ejbReference);
             boolean shouldEnableLocal = (ejbReference.getLocal() != null);
             boolean shouldEnableRemote = (ejbReference.getRemote() != null);
             noInterfaceRadioButton.setEnabled(shouldEnableNoInterface);
@@ -606,7 +623,33 @@ public class CallEjbPanel extends javax.swing.JPanel {
             statusLine.clearMessages();
             return true;
         }
-        
+
+        private boolean isNoInterfaceViewExposed(final EjbReference ejbRef){
+            if (ejbRef.getLocal() == null && ejbRef.getRemote() == null){
+                return true;
+            }
+
+            Boolean result = Boolean.FALSE;
+            try {
+                result = ejbRef.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    @Override
+                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                        Ejb ejb = metadata.findByEjbClass(ejbRef.getEjbClass());
+                        if (ejb instanceof Session){
+                            return ((Session)ejb).isLocalBean();
+                        }
+                        return Boolean.FALSE;
+                    }
+                });
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            return result.booleanValue();
+        }
+
         private boolean hasJarArtifact() {
             Project nodeProject = FileOwnerQuery.getOwner(srcFile);
             if (nodeProject.equals(project)) {

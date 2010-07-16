@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,19 +47,37 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -193,7 +214,7 @@ public class Mercurial {
 
         HgURL hgUrl, pullPath, pushPath;
         try {
-            hgUrl = new HgURL(repositoryUrl, username, password);
+            hgUrl = new HgURL(repositoryUrl, username, password != null ? password.toCharArray() : null);
         } catch (URISyntaxException ex) {
             throw new MalformedURLException(ex.getMessage());
         }
@@ -226,7 +247,93 @@ public class Mercurial {
             Logger.getLogger(Mercurial.class.getName()).log(Level.FINE, "Cannot store mercurial workdir preferences", e);
         }
 
-        HgKenaiSupport.getInstance().setFirmAssociations(new File[]{cloneFile}, repositoryUrl);
+        VCSBugtrackingAccessor bugtrackingSupport = Lookup.getDefault().lookup(VCSBugtrackingAccessor.class);
+        if(bugtrackingSupport != null) {
+            bugtrackingSupport.setFirmAssociations(new File[]{cloneFile}, repositoryUrl);
+        }
+    }
+
+    /**
+     * Commits all local changes under the given roots
+     *
+     * @param roots
+     * @param message
+     * @throws IOException when an error occurrs
+     */
+    public static void commit(final File[] roots, final String message) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+
+        if(!isClientAvailable(true)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return;
+        }
+        Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(roots)));
+        org.netbeans.modules.mercurial.Mercurial hg = org.netbeans.modules.mercurial.Mercurial.getInstance();
+        if (repositories.size() == 0) {
+            // this is necessary because kenai seems to copy metadata from a temp folder and the project would be treated as unversioned
+            hg.versionedFilesChanged();
+            repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(roots)));
+        }
+        if (repositories.size() != 1) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Committing for {0} repositories", repositories.size());
+            return;
+        }
+        final File repository = repositories.iterator().next();
+        final Set<File> rootFiles = new HashSet<File>(Arrays.asList(roots));
+
+        FileStatusCache cache = hg.getFileStatusCache();
+        cache.refreshAllRoots(Collections.singletonMap(repository, rootFiles));
+        File[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
+
+        if (files.length == 0) {
+            return;
+        }
+
+        HgFileNode[] nodes = new HgFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nodes[i] = new HgFileNode(files[i]);
+        }
+        CommitOptions[] commitOptions = HgUtils.createDefaultCommitOptions(nodes, HgModuleConfig.getDefault().getExludeNewFiles());
+        final HashMap<HgFileNode, CommitOptions> commitFiles = new HashMap<HgFileNode, CommitOptions>(nodes.length);
+        for (int i = 0; i < nodes.length; i++) {
+            commitFiles.put(nodes[i], commitOptions[i]);
+        }
+
+        RequestProcessor rp = hg.getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() {
+                OutputLogger logger = getLogger();
+                CommitAction.performCommit(message, commitFiles, Collections.singletonMap(repository, rootFiles), this, logger, Collections.<HgHook>emptyList());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")).waitFinished(); // NOI18N
+    }
+
+    /**
+     * Pushes outgoing changes to default push repository
+     *
+     * @param repository
+     * @throws IOException when an error occurrs
+     */
+    public static void pushToDefault (final File repository) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!"; //NOI18N
+
+        if(!isClientAvailable(true)) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable"); //NOI18N
+            return;
+        }
+
+        if (repository == null) {
+            throw new IllegalArgumentException("repository is null");   //NOI18N
+        }
+
+        RequestProcessor rp = org.netbeans.modules.mercurial.Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() {
+                PushAction.getDefaultAndPerformPush(repository, this.getLogger());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N
     }
 
     /**
@@ -258,46 +365,7 @@ public class Mercurial {
     private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
         Preferences prf = NbPreferences.forModule(Mercurial.class);
         prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
-    }
-
-    /**
-     * Opens search history panel with a specific DiffResultsView, which does not moves accross differences but initially fixes on the given line.
-     * Right panel shows current local changes if the file, left panel shows revisions in the file's repository.
-     * Do not run in AWT, IllegalStateException is thrown.
-     * Validity of the arguments is checked and result is returned as a return value
-     * @param path requested file absolute path. Must be a versioned file (not a folder), otherwise false is returned and the panel would not open
-     * @param lineNumber requested line number to fix on
-     * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
-     */
-    public static boolean showFileHistory (final File file, final int lineNumber) {
-        assert !EventQueue.isDispatchThread();
-
-        if (!file.exists()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!file.isFile()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!org.netbeans.modules.mercurial.Mercurial.getInstance().isManaged(file)) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if(!isClientAvailable(true)) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
-            return false;
-        }
-        /**
-         * Open in AWT
-         */
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                LogAction.openSearch(file, lineNumber);
-            }
-        });
-        return true;
-    }
+    }    
 
     /**
      * Adds a remote url for the combos used in Clone wizard
@@ -369,7 +437,7 @@ public class Mercurial {
         return isClientAvailable(false);
     }
 
-    private static boolean isClientAvailable (boolean notifyUI) {
+    public static boolean isClientAvailable (boolean notifyUI) {
         return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, notifyUI);
     }
 }

@@ -74,4 +74,14 @@ public interface ReferenceCollection {
      */
     <T extends ReferenceableWSDLComponent> WSDLReference<T> createWSDLReference(
             T target, Class<T> type );
+    
+    /**
+     * Creates reference
+     * @param <T> Referencable OM class.
+     * @param target Object for which needs to create reference.
+     * @param type Type of referenceable object.
+     * @return Reference to <code>target</code> object.
+     */
+    <T extends ReferenceableWSDLComponent> WSDLReference<T> 
+            createWSDLReference(String refString, Class<T> type);    
 }

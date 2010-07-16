@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.bpel.model.api.support.EnumValue;
 import org.netbeans.modules.bpel.model.ext.logging.api.AlertLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;

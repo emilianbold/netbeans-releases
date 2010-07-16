@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,10 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -81,19 +84,19 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
 
-public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction, PropertyChangeListener {
+public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction {
 
     private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
 
     private static KenaiPopupMenu inst = null;
 
     private KenaiPopupMenu() {
+        putValue(NAME, NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"));
     }
 
     public static synchronized KenaiPopupMenu getDefault() {
         if (inst == null) {
             inst = new KenaiPopupMenu();
-            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, inst);
         }
         return inst;
     }
@@ -107,11 +110,42 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         assert false;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
-            repoForProjCache.clear();
-        }
+    private KenaiProject getActualKenaiProject (Project p, String kenaiProjectName) throws KenaiException {
+        KenaiProject defaultKenaiProject = KenaiProject.forRepository(repoForProjCache.get(p));
+        Kenai kenai = defaultKenaiProject != null ? defaultKenaiProject.getKenai(): Utilities.getPreferredKenai(); //NOI18N
+        KenaiProject kp = kenai == null ? null : kenai.getProject(kenaiProjectName);
+        return kp;
     }
+
+    private String getKenaiProjectName(Project proj) {
+        /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
+        // if isKenaiProject==true, there must be cached result + it is different from ""
+        String kpName = null;
+        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(proj);
+        if (ownerInfo != null) {
+            try {
+                // ensure project. If none with the given owner name available,
+                // fallback on repoForProjCache
+                KenaiProject kp = getActualKenaiProject(proj, ownerInfo.getOwner());
+                if (kp != null) {
+                    kpName = kp.getName();
+                }
+            } catch (KenaiException ex) {
+                String err = ex.getLocalizedMessage();
+                if (err == null) {
+                    err = ex.getCause().getLocalizedMessage();
+                }
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
+            }
+        }
+        if (kpName == null) {
+            String projRepo = repoForProjCache.get(proj);
+            kpName = KenaiProject.getNameForRepository(projRepo);
+        }
+        return kpName;
+    }
+
+
 
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
 
@@ -123,7 +157,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
         public JMenuItem getPopupPresenter() {
             JMenu kenaiPopup = new JMenu(); //NOI18N
-            Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            final Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
             kenaiPopup.setVisible(false);
             if (proj == null || !isKenaiProject(proj) || nodes.length > 1) { // hide for non-Kenai projects
                 if (repoForProjCache.get(proj) == null && nodes.length == 1) { // start caching request, show dummy item...
@@ -139,7 +173,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 dummy.setVisible(false);
                             } else {
                                 repoForProjCache.put(proj, s);
-                                final JMenu tmp = constructKenaiMenu();
+                                final JMenu tmp = constructKenaiMenu(nodes);
                                 final Component[] c = tmp.getMenuComponents();
                                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -160,52 +194,30 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                     return dummy;
                 }
             } else { // show for Kenai projects
-                kenaiPopup = constructKenaiMenu();
+                kenaiPopup = constructKenaiMenu(nodes);
             }
             return kenaiPopup;
         }
 
-        private JMenu constructKenaiMenu() {
+        private JMenu constructKenaiMenu(Node[] nodes) {
             // show for Kenai projects
             final JMenu kenaiPopup = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
             kenaiPopup.setVisible(true);
-            /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
-            // if isKenaiProject==true, there must be cached result + it is different from ""
-            String kpName = null;
-
-            OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(proj);
-            if(ownerInfo != null) {
-                try {
-                    // ensure project. If none with the given owner name available,
-                    // fallback on repoForProjCache
-                    KenaiProject kp = Kenai.getDefault().getProject(ownerInfo.getOwner());
-                    if(kp != null) {
-                        kpName = kp.getName();
-                    }
-                } catch (KenaiException ex) {
-                    String err = ex.getLocalizedMessage();
-                    if (err == null) {
-                        err = ex.getCause().getLocalizedMessage();
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
-                }
-            }
-
-            if(kpName == null) {
-                String projRepo = repoForProjCache.get(proj);
-                kpName = KenaiProject.getNameForRepository(projRepo);
-            }
             
-            kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
+            kenaiPopup.add(new LazyOpenKenaiProjectAction(proj));
             kenaiPopup.addSeparator();
+            String projRepo = repoForProjCache.get(proj);
+            String kpName = KenaiProject.getNameForRepository(projRepo);
             if (kpName != null) {
-                kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
-                kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
+                kenaiPopup.add(new LazyFindIssuesAction(proj));
+                kenaiPopup.add(new LazyNewIssuesAction(proj));
                 kenaiPopup.addSeparator();
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
+                if (owner == null)
+                    Logger.getLogger(KenaiPopupMenu.class.getName()).log(Level.INFO, "VersioningSupport.getOwner(" + proj.getProjectDirectory() + ") returned null");
                 JMenu versioning = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "MSG_VERSIONING")); //NOI18N
-                JComponent[] items = createVersioningSystemItems(owner, WindowManager.getDefault().getRegistry().getActivatedNodes());
+                JComponent[] items = createVersioningSystemItems(owner, nodes);
                 for (int i = 0; i < items.length; i++) {
                     JComponent item = items[i];
                     if (item != null) {
@@ -220,8 +232,11 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         }
 
         private JComponent[] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
+            if  (owner==null) {
+                return new JComponent[0];
+            }
             VCSAnnotator an = owner.getVCSAnnotator();
-            if (an == null) return null;
+            if (an == null) return new JComponent[0];
             VCSContext ctx = VCSContext.forNodes(nodes);
             Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             JComponent [] items = new JComponent[actions.length];
@@ -252,6 +267,8 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                         sa.actionPerformed(e);
                     }
                 });
+            } else if (action instanceof Presenter.Menu) {
+                item = ((Presenter.Menu) action).getMenuPresenter();
             } else {
                 item = new JMenuItem(action);
             }
@@ -278,7 +295,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyFindIssuesAction extends JMenuItem {
 
-        public LazyFindIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
+        public LazyFindIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "FIND_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -289,11 +306,16 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));  //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -319,7 +341,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyNewIssuesAction extends JMenuItem {
 
-        public LazyNewIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
+        public LazyNewIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "NEW_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -330,11 +352,16 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -360,7 +387,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyOpenKenaiProjectAction extends JMenuItem {
 
-        public LazyOpenKenaiProjectAction(final String kenaiProjectUniqueName) {
+        public LazyOpenKenaiProjectAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "OPEN_CORRESPONDING_KENAI_PROJ")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -379,10 +406,15 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             try {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
                                 handle.start();
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                 }
                             } catch (KenaiException e) {
                                 String err = e.getLocalizedMessage();

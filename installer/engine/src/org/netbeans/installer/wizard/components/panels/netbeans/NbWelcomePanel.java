@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -737,20 +740,32 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             final String bottomLeftImage = SystemUtils.resolveString(
                     System.getProperty(
                     WELCOME_PAGE_LEFT_BOTTOM_IMAGE_PROPERTY));
+            final String backgroundImage = SystemUtils.resolveString(
+                    System.getProperty(
+                    WELCOME_PAGE_BACKGROUND_IMAGE_PROPERTY));
 
+            /* For Sun's JDK branding
             int bottomAnchor = NbiPanel.ANCHOR_BOTTOM_LEFT;
             if(type.isJDKBundle() || type.equals(BundleType.JAVA_TOOLS)) {
                 bottomAnchor = NbiPanel.ANCHOR_FULL;
+            }*/
+
+            if(backgroundImage!=null) {
+                leftImagePanel.setBackgroundImage(backgroundImage, NbiPanel.ANCHOR_FULL);               
             }
             if(topLeftImage!=null) {
-                leftImagePanel.setBackgroundImage(topLeftImage,ANCHOR_TOP_LEFT);
+                leftImagePanel.setBackgroundImage(topLeftImage,NbiPanel.ANCHOR_TOP_LEFT);
                 width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
                 height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight();
             }
             if(bottomLeftImage!=null) {
-                leftImagePanel.setBackgroundImage(bottomLeftImage, bottomAnchor);
-                width   = leftImagePanel.getBackgroundImage(bottomAnchor).getIconWidth();
-                height += leftImagePanel.getBackgroundImage(bottomAnchor).getIconHeight();
+                leftImagePanel.setBackgroundImage(bottomLeftImage, NbiPanel.ANCHOR_BOTTOM_LEFT);
+                width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
+                height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
+            }
+            if(backgroundImage != null) {
+                width  = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_FULL).getIconWidth();
+                height = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_FULL).getIconHeight();
             }
              
             leftImagePanel.setPreferredSize(new Dimension(width,height));
@@ -1185,6 +1200,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "nbi.wizard.ui.swing.welcome.left.top.image";//NOI18N
     public static final String WELCOME_PAGE_LEFT_BOTTOM_IMAGE_PROPERTY =
             "nbi.wizard.ui.swing.welcome.left.bottom.image";//NOI18N
+    public static final String WELCOME_PAGE_BACKGROUND_IMAGE_PROPERTY =
+            "nbi.wizard.ui.swing.welcome.background.image";//NOI18N
     public static final String DEFAULT_CUSTOMIZE_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.customize.title"); // NOI18N

@@ -1,34 +1,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US">
-
-<head>
-<!-- GenHTML revision 22989-->
-
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
   <title>Setting Up Security for Your Project - Java Card 3 Development
-  </title>
-
-</head>
-
-<body class="body">
-
-<a name="SettingUpSecurityForWebApplication"></a><h2>Setting Up Security for Your Project</h2>
+   </title></head><body class="body"><a name="SettingUpSecurityForWebApplication"></a><h2>Setting Up Security for Your Project</h2>
 <p class="p">The Java Card 3 platform uses Secure Socket Layer (SSL) to provide security
 for applications by encrypting and decrypting data. An SSL implementation needs four algorithms,
 digital signature, key establishment, bulk encryption, and message digest. </p><p class="p">The Java Card 3 platform implements the SSL key establishment algorithm through the
 use of a set of certificates and keys as <b>key</b>=<b>value</b> pairs specified in
 the <tt>config.properties</tt> file.</p><p class="p">You do not have to set up security when running samples provided with
-the plugin. The plugins provide a default <tt>config.properties</tt> file that is used when
-running the sample projects. However, custom implementations that use SSL require that you
-generate corresponding custom certificates and keys and add them to the implementation&#8217;s <tt>config.properties</tt>
-file. If you are creating and deploying a custom Java Card 3 client-server implementation,
-<a href="GeneratingCustomSSLCertificatesKeys.html">Generating Custom SSL Certificates and Keys</a> describes how to generate and use custom SSL certificates and key.</p><p class="p">Unless your custom SSL certificates and keys are issued by a valid certificate
-authority they will be treated by the client application as untrusted certificates. To
-successfully run your client-server application with your custom SSL certificates and keys, you must
-add your certificate to the browser&#8217;s list of accepted certificates.</p>
-
-
+the plugin or the Java Card 3 Kenai project site. The plugins provide a default <tt>config.properties</tt> file that is used when
+running the sample projects.</p>
+<p>See the appropriate Java Card 3 platform documentation on the Java Card 3 Kenai project site for detailed information about setting up security for a project.</p>
 </body>
 </html>

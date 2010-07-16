@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,8 +62,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.EvaluatorTest;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -68,15 +70,18 @@ import org.netbeans.modules.apisupport.project.TestAntLogger;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.test.TestFileUtils;
 
 // XXX test GPR usage
 
@@ -85,7 +90,7 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class ClassPathProviderImplTest extends TestBase {
-    
+
     public ClassPathProviderImplTest(String name) {
         super(name);
     }
@@ -147,20 +152,22 @@ public class ClassPathProviderImplTest extends TestBase {
             T t1 = null, t2 = null;
             if (it1.hasNext()) {
                 t1 = it1.next();
-                sb1.append("\t" + t1.toString() + "\n");
+                sb1.append("\t").append(t1.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (it2.hasNext()) {
                 t2 = it2.next();
-                sb2.append("\t" + t2.toString() + "\n");
+                sb2.append("\t").append(t2.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (!dif && !t1.equals(t2)) {
                 dif = true;
             }
-            if (! dif) i++;
+            if (!dif) {
+                i++;
+            }
             cnt++;
         }
         if (!dif) {
@@ -235,7 +242,6 @@ public class ClassPathProviderImplTest extends TestBase {
 //        cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
 //        assertNotNull("have a SOURCE classpath", cp);
 //        assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-//        // XXX test BOOT
 //    }
 
     /**
@@ -271,24 +277,24 @@ public class ClassPathProviderImplTest extends TestBase {
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.example.bar");
         mani.getMainAttributes().putValue("OpenIDE-Module-Module-Dependencies", "foo/1 > 1.0");
         barJar = new File(new File(new File(install, "somecluster"), "modules"), "bar.jar");
-        TestBase.createJar(barJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(barJar, Collections.<String,String>emptyMap(), mani);
         // add testlibs to platform, so that test CP isn't full of obsolete backward-compatibility entries
         mani = new Manifest();
         File junitJar = new File(install, "platform/modules/ext/junit-4.5.jar");
-        TestBase.createJar(junitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(junitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.libs.junit4");
         mani.getMainAttributes().putValue(ManifestManager.CLASS_PATH, "ext/junit-4.5.jar");
         libsJunitJar = new File(install, "platform/modules/org-netbeans-libs-junit4.jar");
-        TestBase.createJar(libsJunitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(libsJunitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.modules.nbjunit");
         File nbjunitJar = new File(install, "harness/modules/org-netbeans-modules-nbjunit.jar");
-        TestBase.createJar(nbjunitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(nbjunitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.insane");
         File insaneJar = new File(install, "harness/modules/org-netbeans-insane.jar");
-        TestBase.createJar(insaneJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(insaneJar, Collections.<String,String>emptyMap(), mani);
         NbPlatform.addPlatform("custom", install, "custom");
     }
 
@@ -341,7 +347,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertTrue(ext.mkdirs());
         Manifest mani = new Manifest();
         File foolibJar = new File(ext, "/foolib.jar");
-        TestBase.createJar(foolibJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(foolibJar, Collections.<String,String>emptyMap(), mani);
 
         NbModuleProject prjBar = generateTestingSuiteComponent(suite,"bar",
                 "<dependency>\n" +
@@ -467,7 +473,6 @@ public class ClassPathProviderImplTest extends TestBase {
         cp = ClassPath.getClassPath(srcbridge, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(srcbridge), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-        // XXX test BOOT
     }
      */
 
@@ -611,7 +616,7 @@ public class ClassPathProviderImplTest extends TestBase {
 
     @Override
     protected int timeOut() {
-        return 30000;   // testCyclicDependenciesDetected may loop endlessly
+        return 300000;   // testCyclicDependenciesDetected may loop endlessly
     }
 
 
@@ -655,8 +660,9 @@ public class ClassPathProviderImplTest extends TestBase {
         public int c;
         @Override
         public void publish(LogRecord record) {
-            if (record.getMessage().startsWith("computeTestType: processing "))
+            if (record.getMessage().startsWith("computeTestType: processing ")) {
                 c++;
+            }
         }
         @Override
         public void flush() {
@@ -666,8 +672,7 @@ public class ClassPathProviderImplTest extends TestBase {
         }
     }
 
-    @RandomlyFails
-    // not randomly failing, but fails without NB sources
+    // XXX fails without NB sources
     public void testRecursiveScanOptimization() throws Exception {
         FileObject src = nbRoot().getFileObject("apisupport.project/test/unit/src");
         assertNotNull("apisupport.project/test/unit/src", src);
@@ -913,7 +918,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("right COMPILE classpath after changing project.xml again", expectedRoots, urlsOfCp(cp));
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    /* XXX cannot be run in binary dist, requires sources, and depends on module dep details; should test against fake platform
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();
@@ -930,6 +935,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
     }
+     */
 
     public void testExecuteCPOnClassesDir() throws Exception {
         InstalledFileLocatorImpl.registerDestDir(destDirF);
@@ -1071,4 +1077,50 @@ public class ClassPathProviderImplTest extends TestBase {
 //            expectedRoots, urlsOfCp(cp));
 //    }
     
+    public void testClassPathExtensionChanges() throws Exception { // #179578
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath cp = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.COMPILE);
+        assertEquals("", cp.toString());
+        FileObject xJar = TestFileUtils.writeZipFile(p.getProjectDirectory(), "release/modules/ext/x.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        ProjectXMLManager pxm = new ProjectXMLManager(p);
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/x.jar", "release/modules/ext/x.jar"));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(FileUtil.toFile(xJar).getAbsolutePath(), cp.toString());
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/y.jar", (String) null));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(p.getHelper().resolveFile("build/cluster/modules/ext/y.jar").getAbsolutePath(), cp.toString());
+    }
+
+    public void testBootClasspath() throws Exception {
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath boot = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.BOOT);
+        // XXX test that it is sane... although by default, ${nbjdk.home} will be undefined
+        FileObject xtra = TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "xtra.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(ClassPathProviderImpl.BOOTCLASSPATH_PREPEND, FileUtil.toFile(xtra).getAbsolutePath());
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertTrue(boot.toString(), Arrays.asList(boot.getRoots()).contains(FileUtil.getArchiveRoot(xtra)));
+    }
+
+    public void testSourcePathForWrappedJarSource() throws Exception { // #176983
+        NbModuleProject p = generateStandaloneModule("prj");
+        String relpath = "release/sources/x.zip";
+        FileObject srcZip = TestFileUtils.writeZipFile(p.getProjectDirectory(), relpath, "pkg/C.java:package pkg; public class C {}");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(NbModuleProject.SOURCE_START + "x.jar", relpath);
+        // could also create a <class-path-extension> named release/modules/ext/x.jar, but don't have to
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        FileObject srcZipRoot = FileUtil.getArchiveRoot(srcZip);
+        ClassPath cp = ClassPath.getClassPath(srcZipRoot, ClassPath.SOURCE);
+        assertNotNull(cp);
+        assertEquals(Collections.singletonList(srcZipRoot), Arrays.asList(cp.getRoots()));
+        /* Currently fails; maybe not worth implementing:
+        assertEquals(cp, ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE));
+         */
+        assertEquals(Collections.singletonList(srcZipRoot),
+                Arrays.asList(ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE).getRoots()));
+    }
+
 }

@@ -50,18 +50,18 @@ def build_impl_xml = """\
 """
 def platform_properties = """\
 disabled.clusters=\
-    apisupport1,\
-    enterprise6,\
-    groovy2,\
-    gsf1,\
+    apisupport,\
+    enterprise,\
+    groovy,\
+    gsf,\
     harness,\
-    ide12,\
-    java3,\
-    profiler3,\
-    visualweb2,\
-    webcommon1,\
-    websvccommon1,\
-    xml2
+    ide,\
+    java,\
+    profiler,\
+    visualweb,\
+    webcommon,\
+    websvccommon,\
+    xml
 disabled.modules=\
     org.netbeans.api.visual,\
     org.netbeans.core.execution,\
@@ -85,8 +85,8 @@ disabled.modules=\
     org.openide.options,\
     org.openide.util.enumerations
 enabled.clusters=\
-    nb6.8,\
-    platform11
+    nb,\
+    platform
 nbplatform.active=default
 
 """

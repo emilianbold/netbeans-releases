@@ -8,6 +8,7 @@ package org.netbeans.modules.iep.editor.wizard.database;
 import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JTree;
 
 import org.openide.util.NbBundle;
 
@@ -36,6 +37,10 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
         
     }
 
+    public JTree getTableColumnsTree() {
+        return this.mDBTableColumnSelectionPanel.getTableColumnsTree();
+    }
+    
     public void setSelectedTables(List<TableInfo> tables) {
         mDBTableColumnSelectionPanel.setSelectedTables(tables);
     }
@@ -52,6 +57,9 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
     	return mDBTableColumnSelectionPanel.getSelectedColumns();
     }
     
+    public PollingTableDatabaseTableColumnSelectionPanel getPollingTableDatabaseTableColumnSelectionPanel() {
+        return mDBTableColumnSelectionPanel;
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

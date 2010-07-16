@@ -1,9 +1,12 @@
 #!/bin/sh
-# 
+#
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-# 
-# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-# 
+#
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
+#
 # The contents of this file are subject to the terms of either the GNU General Public
 # License Version 2 only ("GPL") or the Common Development and Distribution
 # License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -11,9 +14,9 @@
 # http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
 # License for the specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header Notice in
-# each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+# each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
 # designates this particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that accompanied this code.
+# by Oracle in the GPL Version 2 section of the License file that accompanied this code.
 # If applicable, add the following below the License Header, with the fields enclosed
 # by brackets [] replaced by your own identifying information:
 # "Portions Copyrighted [year] [name of copyright owner]"
@@ -1238,11 +1241,11 @@ verifyJavaHome() {
 		comp=0
 
 		if [ -n "$javaVersion" ] && [ -n "$javaVmVersion" ] && [ -n "$vendor" ] && [ -n "$osname" ] && [ -n "$osarch" ] ; then
-		    debug "... seems to be java indeded"
-		    subs=`echo "$javaVmVersion" | sed "s/${javaVersion}//;s/${javaVmVersion}//"`
-		    if [ -n "$subs" ] ; then
-		        javaVersion=`echo "$javaVmVersion" | sed "s/.*${javaVersion}/${javaVersion}/"`
-		    fi
+		    debug "... seems to be java indeed"
+		    javaVersionEsc=`escapeBackslash "$javaVersion"`
+                    javaVmVersionEsc=`escapeBackslash "$javaVmVersion"`
+                    javaVersion=`awk 'END { idx = index(b,a); if(idx!=0) { print substr(b,idx,length(b)) } else { print a } }' a="$javaVersionEsc" b="$javaVmVersionEsc" < /dev/null`
+
 		    #remove build number
 		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//;s/\ .*//'`
 		    verifyResult=$VERIFY_UNCOMPATIBLE
@@ -1624,7 +1627,7 @@ executeMainClass() {
 }
 
 escapeString() {
-	echo "$1" | sed "s/\\\/\\\\\\\/g;s/\ /\\\\ /g;s/\"/\\\\\"/g" # escape spaces & commas
+	echo "$1" | sed "s/\\\/\\\\\\\/g;s/\ /\\\\ /g;s/\"/\\\\\"/g;s/(/\\\\\(/g;s/)/\\\\\)/g;" # escape spaces, commas and parentheses
 }
 
 getMessage() {

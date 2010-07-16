@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,7 +76,7 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -110,6 +113,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Musil
  */
 final class UnitTestLibrariesNode extends AbstractNode {
+
+    private static final Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
 
     private final String testType;
     private final NbModuleProject project;
@@ -246,7 +251,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     }
                 });
             } catch (MutexException e) {
-                assert false : e.getException();
+                LOG.log(Level.INFO, null, e);
             }
         }
         
@@ -466,7 +471,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 return; // cancelled
             }
             try {
-                ModuleProjectClassPathExtender.resolveJUnitDependencies(project, testType, addNBJUnit);
+                resolveJUnitDependencies(project, testType, addNBJUnit);
             } catch (IOException ex) {
                 String msg = Exceptions.findLocalizedMessage(ex);
                 if (msg == null) {
@@ -479,6 +484,24 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 ProjectManager.getDefault().saveProject(project);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+        private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
+        private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
+        private static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
+            ModuleList moduleList = project.getModuleList();
+            ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
+            ModuleEntry nbjunit = moduleList.getEntry(NBJUNIT_MODULE);
+            if (junit4 == null || (addNBJUnit && nbjunit == null)) {
+                String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
+                IOException e = new IOException("no module " + m); // NOI18N
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", m));
+                throw e;
+            }
+            ProjectXMLManager pxm = new ProjectXMLManager(project);
+            pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
+            if (addNBJUnit) {
+                pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
             }
         }
     }

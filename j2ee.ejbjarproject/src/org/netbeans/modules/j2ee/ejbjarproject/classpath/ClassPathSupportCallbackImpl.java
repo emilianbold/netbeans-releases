@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.Util;
@@ -55,9 +56,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -95,7 +96,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
             // ejbjar is different from other j2ee projects - it stores reference without ${ and }
-            String ref = "${"+findText( item )+"}";
+            String ref = "${"+XMLUtil.findText( item )+"}";
             libraries.add(ref); // NOI18N
             String dirs = item.getAttribute(ATTR_DIRS);
             if (Util.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
@@ -125,7 +126,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         Document doc = data.getOwnerDocument();
         for (ClassPathSupport.Item item : classpath) {
             if("true".equals(item.getAdditionalProperty(INCLUDE_IN_DEPLOYMENT))) { // NOI18N
-                appendChildElement(data, 
+                XMLUtil.appendChildElement(data,
                     createLibraryElement(antProjectHelper, doc, item, includedLibrariesElement), 
                     ejbjarElemOrder);
             }
@@ -134,62 +135,6 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    private static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // skip
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
-            }
-        }
-        return elements;
-    }
-    
-    /**
-     * Append child element to the correct position according to given
-     * order.
-     * @param parent parent to which the child will be added
-     * @param el element to be added
-     * @param order order of the elements which must be followed
-     */
-    private static void appendChildElement(Element parent, Element el, String[] order) {
-        Element insertBefore = null;
-        List l = Arrays.asList(order);
-        int index = l.indexOf(el.getLocalName());
-        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
-        Iterator it = findSubElements(parent).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            int index2 = l.indexOf(e.getLocalName());
-            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
-            if (index2 > index) {
-                insertBefore = e;
-                break;
-            }
-        }
-        parent.insertBefore(el, insertBefore);
-    }
-        
     private static Element createLibraryElement(AntProjectHelper antProjectHelper, Document doc, Item item, String includedLibrariesElement) {
         Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         // ejbjar is different from other j2ee projects - it stores reference without ${ and }
@@ -198,24 +143,6 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         return libraryElement;
     }
        
-    /**
-     * Extracts <b>the first</b> nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    private static String findText( Element parent ) {
-        NodeList l = parent.getChildNodes();
-        for ( int i = 0; i < l.getLength(); i++ ) {
-            if ( l.item(i).getNodeType() == Node.TEXT_NODE ) {
-                Text text = (Text)l.item( i );
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-        
-
     public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
         Map<String, String> destination = new HashMap<String, String>();
         List<String> l = getIncludedLibraries(helper, projectXMLElement, destination);

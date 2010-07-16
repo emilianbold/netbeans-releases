@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,16 +54,20 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider;
+import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyConfigurationProvider;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.TemplateAttributesProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
-import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
+import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -114,7 +121,9 @@ public class RailsProject extends RubyBaseProject {
             spp,
             new RailsActionProvider( this, this.updateHelper ),
             new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
-            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            RequiredGems.create(this),
+            RequiredGems.createForTests(this),
+            new ClassPathProviderImpl(this, this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             sources,
@@ -133,7 +142,15 @@ public class RailsProject extends RubyBaseProject {
             new RailsServerManager(this),
             new RailsFileLocator(null, this),
             new RubyCoverageProvider(this),
-            new RubyPlatformProvider(evaluator())
+            new RubyPlatformProvider(evaluator()),
+            new PropertiesProvider() {
+
+                @Override
+                public SharedRubyProjectProperties getProperties() {
+                    return new RailsProjectProperties(RailsProject.this, updateHelper, evaluator(), refHelper, genFilesHelper);
+                }
+            },
+            new ProjectWebRootProviderImpl()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
     }
@@ -239,5 +256,13 @@ public class RailsProject extends RubyBaseProject {
             return PRIVILEGED_NAMES;
         }
         
+    }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            return getProjectDirectory().getFileObject("public"); // NOI18N
+        }
     }
 }

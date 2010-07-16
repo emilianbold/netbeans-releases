@@ -97,7 +97,8 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
     private InplaceEditor inplaceEditor;
     private GraphSubset bufferCopyPaste;
-            
+    private boolean printMode = false;
+        
     public Canvas(Mapper mapper) {
         super(mapper);
 
@@ -161,6 +162,9 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         if (graphItem instanceof VertexItem) {
             String str = ((VertexItem) graphItem).getText();
             if (str != null && str.length() > 0) {
+                if (textRenderer.getFontMetrics(textRenderer.getFont()).stringWidth(str) > 380 ) {
+                    return  "<html> <p width=380>" + str + "</p></html>";
+                }
                 return str;
             }
         }
@@ -175,7 +179,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
         
-        String actionKey = action.getActionKey();
+        Object actionKey = action.getActionKey();
         aMap.put(actionKey, action);
                 
         KeyStroke[] shortcuts = action.getShortcuts();
@@ -231,11 +235,13 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     
     @Override
     public void print(Graphics g) {
-        Mapper mapper = getMapper();
-        
-        mapper.setPrintMode(true);
+        LeftTree leftTree = getLeftTree();
+
+        leftTree.setPrintMode(true);
+        printMode = true;
         super.print(g);
-        mapper.setPrintMode(false);
+        printMode = false;
+        leftTree.setPrintMode(false);
     }
     @Override
     protected void printComponent(Graphics g) {
@@ -247,9 +253,6 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         MapperNode root = getRoot();
 
         if (root != null) {
-            int step = getStep();
-            int graphX0 = toGraph(0);
-
             Graphics2D g2 = (Graphics2D) g.create();
             
             CanvasRendererContext rendererContext = new DefaultCanvasRendererPrintContext(mapper);
@@ -463,7 +466,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             g2.translate(graphX, 0);
             grid.paintGrid(this, g2, -graphX, nodeY + topInset + 1, getWidth(),
                     contentHeight - size - 2, step,
-                    !node.isSelected() && !getMapper().getPrintMode());
+                    !node.isSelected() && !printMode);
             g2.translate(-graphX, 0);
         }
     }
@@ -885,7 +888,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
    @Override
     public int getY() {
-        if (getMapper().getPrintMode()) {
+        if (printMode) {
             return 0; 
         }
         

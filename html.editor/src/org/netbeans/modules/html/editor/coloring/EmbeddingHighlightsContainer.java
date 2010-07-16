@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -111,6 +114,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             ATTR_EXTENDS_EOL, Boolean.TRUE);
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
             if (javascriptBackground != null || cssBackground != null) {
@@ -134,6 +138,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
 
+    @Override
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (this) {
             version++;
@@ -212,13 +217,11 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                         }
                         String embeddedMimeType = eTokenSequence.language().mimeType();
                         if (CSS_MIME_TYPE.equals(embeddedMimeType) || (CSS_INLINED_MIME_TYPE).equals(embeddedMimeType) || (JAVASCRIPT_MIME_TYPE).equals(embeddedMimeType)) {
-                            //NOI18N
                             try {
                                 startOffset = eTokenSequence.offset();
-                                endOffset = startOffset;
-                                while (eTokenSequence.moveNext()) {
+                                do {
                                     endOffset = eTokenSequence.offset() + eTokenSequence.token().length();
-                                }
+                                } while (eTokenSequence.moveNext());
 
                                 realEndOffset = endOffset > realEndOffset ? endOffset : realEndOffset + 1;
                                 int startLO = Utilities.getLineOffset((BaseDocument) document, startOffset);
@@ -250,6 +253,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             return false;
         }
         
+        @Override
         public boolean moveNext() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (checkVersion()) {
@@ -263,6 +267,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             return false;
         }
 
+        @Override
         public int getStartOffset() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {
@@ -274,6 +279,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {
@@ -285,6 +291,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {

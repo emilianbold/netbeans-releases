@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 1.1.1
+#Signature file v4.1
+#Version 1.6
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)

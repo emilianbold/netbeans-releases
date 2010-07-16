@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.w3c.dom.Document;
@@ -133,8 +137,33 @@ public class ServiceUnitDescriptorEnhancer {
                         continue;
                     }
 
-                    Node clonedNode = CasaBuilder.deepCloneCasaNode(
+                    Element clonedNode = (Element) CasaBuilder.deepCloneCasaNode(
                                     casaEndpointChild, jbiDocument);
+
+                    // Clear project-path and jar-paths attributes in
+                    // JAX-WS/JAX-RS handler extension
+                    String elementName = clonedNode.getNodeName();
+                    String namespace = clonedNode.getAttribute("xmlns");
+                    if (elementName.equals(CasaHelper.JAXWS_HANDLER_CHAIN_ELEMENT_NAME) &&
+                            namespace.equals(CasaHelper.JAXWS_HANDLER_NAMESPACE)) {
+                        NodeList handlers = clonedNode.getElementsByTagName(
+                                CasaHelper.JAXWS_HANDLER_ELEMENT_NAME);
+                        for (int i = 0; i < handlers.getLength(); i++) {
+                            Element handler = (Element) handlers.item(i);
+                            handler.removeAttribute(CasaHelper.JAXWS_HANDLER_PROJECT_PATH_ATTR_NAME);
+                            handler.removeAttribute(CasaHelper.JAXWS_HANDLER_JAR_PATHS_ATTR_NAME);
+                        }
+                    } else if (elementName.equals(CasaHelper.JAXRS_HANDLER_CHAIN_ELEMENT_NAME) &&
+                            namespace.equals(CasaHelper.JAXRS_HANDLER_NAMESPACE)) {
+                        NodeList handlers = clonedNode.getElementsByTagName(
+                                CasaHelper.JAXRS_HANDLER_ELEMENT_NAME);
+                        for (int i = 0; i < handlers.getLength(); i++) {
+                            Element handler = (Element) handlers.item(i);
+                            handler.removeAttribute(CasaHelper.JAXRS_HANDLER_PROJECT_PATH_ATTR_NAME);
+                            handler.removeAttribute(CasaHelper.JAXRS_HANDLER_JAR_PATHS_ATTR_NAME);
+                        }
+                    }
+
                     jbiEndpointElement.appendChild(clonedNode);                    
                 }
             }

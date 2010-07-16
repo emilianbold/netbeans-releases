@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,9 +54,12 @@ import java.net.URL;
 public abstract class SourceIndexerFactory {
 
     /**
-     * Called by the indexing infrastructure to notify indexer about start of indexing
-     * @param context describes indexed root
-     * @return when false is returned all files should be rescanned, no up to date check is done
+     * Notifies the indexer that a source root is going to be scanned.
+     *
+     * @param context The indexed source root.
+     *
+     * @return <code>false</code> means that the whole root should be rescanned
+     *   (eg. no up to date check is done, etc)
      * @since 1.20
      */
     public boolean scanStarted (final Context context) {
@@ -61,8 +67,10 @@ public abstract class SourceIndexerFactory {
     }
 
     /**
-     * Called by the indexing infrastructure to notify indexer about end of indexing
-     * @param context describes indexed root
+     * Notifies the indexer that scanning of a source root just finished.
+     *
+     * @param context The indexed source root.
+     *
      * @since 1.20
      */
     public void scanFinished (final Context context) {

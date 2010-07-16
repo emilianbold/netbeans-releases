@@ -57,7 +57,6 @@ import org.netbeans.modules.wsdlextensions.snmp.SNMPBinding;
 import org.netbeans.modules.wsdlextensions.snmp.SNMPAddress;
 
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class SNMPComponentValidator
         implements Validator {
     

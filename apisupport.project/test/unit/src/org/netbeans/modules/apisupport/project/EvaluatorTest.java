@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManagerTest;
@@ -80,7 +82,7 @@ public class EvaluatorTest extends TestBase {
     private NbModuleProject loadersProject;
     private File userPropertiesFile;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
@@ -115,14 +117,14 @@ public class EvaluatorTest extends TestBase {
     public void testClusterProperty() throws Exception {
         NbModuleProject p1 = generateStandaloneModule("module1");
         PropertyEvaluator eval = p1.evaluator();
-        String cluster = eval.getProperty("cluster");
-        assertEquals("Correct absolute path to module's cluster", file(getWorkDir(), "module1/build/cluster"), new File(cluster));
+        assertEquals("${build.dir}", file(getWorkDir(), "module1/build"), p1.getHelper().resolveFile(eval.getProperty("build.dir")));
+        assertEquals("standalone ${cluster}", file(getWorkDir(), "module1/build/cluster"), p1.getHelper().resolveFile(eval.getProperty("cluster")));
         SuiteProject s1 = generateSuite("suite1");
         NbModuleProject p2 = generateSuiteComponent(s1, "module2");
         eval = p2.evaluator();
-        // todo
-        cluster = eval.getProperty("cluster");
-        assertEquals("Correct absolute path to suite's cluster", file(getWorkDir(), "suite1/build/cluster"), new File(cluster));
+        assertEquals("${suite.dir}", file(getWorkDir(), "suite1"), p2.getHelper().resolveFile(eval.getProperty("suite.dir")));
+        assertEquals("${suite.build.dir}", file(getWorkDir(), "suite1/build"), p2.getHelper().resolveFile(eval.getProperty("suite.build.dir")));
+        assertEquals("suite component ${cluster}", file(getWorkDir(), "suite1/build/cluster"), p2.getHelper().resolveFile(eval.getProperty("cluster")));
     }
 
     /** @see "#63541" */
@@ -135,22 +137,22 @@ public class EvaluatorTest extends TestBase {
         PropertyEvaluator eval = p.evaluator();
         TestBase.TestPCL l = new TestBase.TestPCL();
         eval.addPropertyChangeListener(l);
-        String bootcp = eval.getProperty("nbjdk.bootclasspath");
+        String bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         String origbootcp = bootcp;
         assertNotNull(bootcp); // who knows what actual value will be inside a unit test - probably empty
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "testjdk");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals("correct bootcp", new File(testjdk, "jre/lib/rt.jar".replace('/', File.separatorChar)).getAbsolutePath(), bootcp);
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "default");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals(origbootcp, bootcp);
     }
 
@@ -160,15 +162,12 @@ public class EvaluatorTest extends TestBase {
     }
 
     private class ModuleListLogHandler extends Handler {
-        private boolean cacheUsed = true;
         private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
         String error;
 
         @Override
         public synchronized void publish(LogRecord record) {
             String msg = record.getMessage();
-            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
-                cacheUsed = false;
             assertFalse("Duplicate scan of project tree detected: " + msg,
                     msg.startsWith("Warning: two modules found with the same code name base"));
             if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
@@ -187,7 +186,6 @@ public class EvaluatorTest extends TestBase {
 
         @Override
         public void close() throws SecurityException {
-            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
         }
 
     }
@@ -205,7 +203,7 @@ public class EvaluatorTest extends TestBase {
             PropertyEvaluator eval = javaProjectProject.evaluator();
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             String js = eval.getProperty("javac.source");      // does not scan ML
-            assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
+            assertTrue("Valid javac.source value", js != null && !js.isEmpty() && !js.equals("javac.source"));
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             /* No longer calculated due to #172203 optimization:
             String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
@@ -240,6 +238,7 @@ public class EvaluatorTest extends TestBase {
         return 30000;
     }
 
+    /* Who knows what this used to test. #173109 changes control flow.
     public void testModuleScanNotBlockingEvaluator169040() throws Exception {
         ModuleList.refresh();   // disable cache
         final Logger mlLogger = Logger.getLogger(ModuleList.class.getName());
@@ -335,6 +334,7 @@ public class EvaluatorTest extends TestBase {
             mlLogger.setLevel(origLevel);
         }
     }
+     */
 
     public void testGetPlatformInPMWriteAccessDeadlock173345() throws Exception {
         final Logger LOG = Logger.getLogger(this.getClass().getName());
@@ -354,7 +354,7 @@ public class EvaluatorTest extends TestBase {
             public void run() {
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        public Void run() throws Exception {
+                        public @Override Void run() throws Exception {
                             LOG.log(Level.FINE, "got PM write access");
                             NbPlatform.getPlatforms();
                             LOG.log(Level.FINE, "after NbPlatform.getPlatforms");

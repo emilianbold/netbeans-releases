@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,7 @@ import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Misc. static methods used for tracing of code model objects
@@ -624,7 +627,7 @@ public final class CsmTracer {
     }
 
     private Iterator<CsmNamespace> getSortedNestedNamespaces(CsmNamespace nsp) {
-        SortedMap<CharSequence, CsmNamespace> map = new TreeMap<CharSequence, CsmNamespace>(CharSequenceKey.Comparator);
+        SortedMap<CharSequence, CsmNamespace> map = new TreeMap<CharSequence, CsmNamespace>(CharSequences.comparator());
         for (CsmNamespace decl : nsp.getNestedNamespaces()) {
             map.put(decl.getQualifiedName(), decl);
         }
@@ -682,9 +685,28 @@ public final class CsmTracer {
             print("<no macros>"); // NOI18N
             unindent();
         }
-        Collection/*CsmDeclaration*/ objects = file.getDeclarations();
-        for (Iterator iter = objects.iterator(); iter.hasNext();) {
-            dumpModel((CsmDeclaration) iter.next());
+        TreeMap<SortedKey,CsmOffsetableDeclaration> sorted = new TreeMap<SortedKey,CsmOffsetableDeclaration>();
+        for(CsmOffsetableDeclaration decl : file.getDeclarations()){
+            sorted.put(new SortedKey(decl), decl);
+        }
+        for(CsmOffsetableDeclaration decl :sorted.values()) {
+            dumpModel(decl);
+        }
+    }
+
+    private static final class SortedKey implements Comparable<SortedKey>{
+        private final CsmOffsetableDeclaration decl;
+        private SortedKey(CsmOffsetableDeclaration decl){
+            this.decl = decl;
+        }
+
+        @Override
+        public int compareTo(SortedKey o) {
+            int i = decl.getStartOffset() - o.decl.getStartOffset();
+            if (i == 0) {
+                i = decl.getName().toString().compareTo(o.decl.getName().toString());
+            }
+            return i;
         }
     }
 

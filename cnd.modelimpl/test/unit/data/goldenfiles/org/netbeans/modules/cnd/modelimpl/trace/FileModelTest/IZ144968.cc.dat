@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 2):
-<U>#define '["BOOST_REGEX_CHAR_T",<205>,line=7,col=9],offset=74,file=null'='["char",<205>,line=7,col=28],offset=93,file=null'
-<U>#define '["BOOST_REGEX_DECL",<205>,line=1,col=9],offset=8,file=null'=''
+<U>#define '["BOOST_REGEX_CHAR_T",<89>,line=7,col=9],offset=74,file=null'='["char",<89>,line=7,col=28],offset=93,file=null'
+<U>#define '["BOOST_REGEX_DECL",<89>,line=1,col=9],offset=8,file=null'=''
 System Map:
 MACROS (sorted 0):
 

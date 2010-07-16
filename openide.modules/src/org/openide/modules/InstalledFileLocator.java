@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,9 @@ package org.openide.modules;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -51,13 +57,18 @@ import org.openide.util.LookupListener;
  * Service providing the ability to locate a module-installed file in
  * the NetBeans application's installation.
  * Zero or more instances may be registered to lookup.
+ * <p>For use in declarative formats, or from APIs which require URLs,
+ * there is a matching URL protocol {@code nbinst}. The host field (optional but
+ * recommended) should be the code name base of the module owning the file; the
+ * path is then relative to that module's cluster. For example,
+ * {@code nbinst://my.module/docs/README} should refer to the file found by
+ * {@code InstalledFileLocator.getDefault().locate("docs/README", "my.module", false)}.</p>
  * @author Jesse Glick
  * @since 3.21
- * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28683">Issue #28683</a>
  */
 public abstract class InstalledFileLocator {
     private static final InstalledFileLocator DEFAULT = new InstalledFileLocator() {
-        public File locate(String rp, String cnb, boolean l) {
+        public @Override File locate(String rp, String cnb, boolean l) {
             InstalledFileLocator[] ifls = getInstances();
             
             for (int i = 0; i < ifls.length; i++) {
@@ -70,6 +81,22 @@ public abstract class InstalledFileLocator {
             
             return null;
         }
+        public @Override Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+            Set<File> result = null;
+            for (InstalledFileLocator ifl : getInstances()) {
+                Set<File> added = ifl.locateAll(relativePath, codeNameBase, localized);
+                // avoid allocating extra lists, under the assumption there is only one result:
+                if (!added.isEmpty()) {
+                    if (result == null) {
+                        result = added;
+                    } else {
+                        result = new LinkedHashSet<File>(result);
+                        result.addAll(added);
+                    }
+                }
+            }
+            return result != null ? result : Collections.<File>emptySet();
+        }
     };
     
     private static InstalledFileLocator[] instances = null;
@@ -79,6 +106,7 @@ public abstract class InstalledFileLocator {
      * Should not call foreign code while holding this.
      * Cf. comments in #64710.
      */
+    @SuppressWarnings("RedundantStringConstructorCall")
     private static final Object LOCK = new String(InstalledFileLocator.class.getName());
     
     /**
@@ -108,9 +136,7 @@ public abstract class InstalledFileLocator {
      * useful where a directory can contain many items that may be merged between e.g.
      * the installation and user directories. For example, the <samp>docs</samp> folder
      * (used e.g. for Javadoc) might contain several ZIP files in both the installation and
-     * user areas. There is currently no supported way to enumerate all such files. Therefore
-     * searching for a directory should be attempted only when there is just one module which
-     * is expected to provide that directory and all of its contents. The module may assume
+     * user areas. Use {@link #locateAll} if you need all results. The module may assume
      * that all contained files are in the same relative structure in the directory as in
      * the normal NBM-based installation; unusual locator implementations may need to create
      * temporary directories with matching structures to return from this method, in case the
@@ -182,6 +208,20 @@ public abstract class InstalledFileLocator {
      * @return the requested <code>File</code>, if it can be found, else <code>null</code>
      */
     public abstract File locate(String relativePath, String codeNameBase, boolean localized);
+
+    /**
+     * Similar to {@link #locate} but can return multiple results.
+     * The default implementation returns a list with zero or one elements according to {@link #locate}.
+     * @param relativePath a path from install root
+     * @param codeNameBase name of the supplying module or null
+     * @param localized true to perform a localized/branded search
+     * @return a (possibly empty) set of files
+     * @since org.openide.modules 7.15
+     */
+    public Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+        File f = locate(relativePath, codeNameBase, localized);
+        return f != null ? Collections.singleton(f) : Collections.<File>emptySet();
+    }
     
     /**
      * Get a master locator.
@@ -210,7 +250,7 @@ public abstract class InstalledFileLocator {
         if (_result == null) {
             _result = Lookup.getDefault().lookupResult(InstalledFileLocator.class);
             _result.addLookupListener(new LookupListener() {
-                public void resultChanged(LookupEvent e) {
+                public @Override void resultChanged(LookupEvent e) {
                     synchronized (LOCK) {
                         instances = null;
                     }

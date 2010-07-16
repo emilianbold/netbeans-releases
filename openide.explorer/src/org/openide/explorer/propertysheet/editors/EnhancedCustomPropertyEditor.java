@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,12 +54,10 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 * @author  Ian Formanek
 * @deprecated Use {@link PropertyEnv} instead. An example of what needs to be
 *    done can be found in the rewrite of
-*    <a href="http://www.netbeans.org/source/browse/core/src/org/netbeans/beaninfo/editors/RectangleCustomEditor.java?r1=1.25&r2=1.26">RectangleCustomEditor</a>.
+*    <a href="http://hg.netbeans.org/main/diff/375290349033/o.n.core/src/org/netbeans/beaninfo/editors/RectangleCustomEditor.java">RectangleCustomEditor</a>.
 *  Another example showing the changes in property editor as well as in its
 *  custom component can be found in
-*  <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorEditor.java?r1=1.3&r2=1.4">NbProcessDescriptorEditor</a>
-*  and
-*   <a href="http://core.netbeans.org/source/browse/core/execution/src/org/netbeans/core/execution/beaninfo/editors/NbProcessDescriptorCustomEditor.java?r1=1.3&r2=1.5">NbProcessDescriptorCustomEditor</a>.
+*  <a href="http://hg.netbeans.org/main/rev/6ec9ed2b2062">NbProcessDescriptor{,Custom}Editor</a>.
 */
 public @Deprecated interface EnhancedCustomPropertyEditor {
     /** Get the customized property value.

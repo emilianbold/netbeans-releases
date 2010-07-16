@@ -53,7 +53,8 @@ package org.netbeans.modules.bpel.model.api;
  * </pre>
  */
 public interface To extends ExtensibleElements, PartnerLinkReference,
-        VariableReference, PartReference, PropertyReference, Expression
+        VariableReference, PartReference, PropertyReference, NMPropertyHolder, 
+        Expression
 {
 
     /**

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -86,18 +89,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.windows.WindowManager;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoLink;
-import com.sun.sql.framework.exception.BaseException;
-import net.java.hulp.i18n.Logger;
+import com.sun.etl.exception.BaseException;
+import java.util.logging.Level;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.ETLDataObject;
-import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
-import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
-import org.openide.util.Exceptions;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author Ritesh Adval
@@ -113,7 +112,6 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     protected static URL selectColumnsUrl = JoinViewGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/ColumnSelection.png");
     private static URL removeUrl = JoinViewGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/remove.png");
     private static URL showJoinDataUrl = JoinViewGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png");
-    private static URL unjoinTablesUrl = JoinViewGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/ungroup_table.png");
     //private static final Color DEFAULT_TITLE_COLOR = new Color(221, 235, 246);
     private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
     private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249);
@@ -123,11 +121,11 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     private JMenuItem showDataItem;
     private JMenuItem selectColumnsItem;
     protected JMenuItem removeItem;
-    protected JMenuItem unjoinTables;
     private JoinViewActionListener aListener;
     private ArrayList<SQLJoinTableArea> tableAreas = new ArrayList<SQLJoinTableArea>();
     private static final int PREFERRED_JOIN_VIEW_WIDTH = 140;
-    private static transient final Logger mLogger = Logger.getLogger(JoinViewGraphNode.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(JoinViewGraphNode.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of JoinViewGraphNode */
@@ -214,12 +212,6 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
-
-        String nbBundle6 = mLoc.t("BUND852: Unjoin Tables");
-        String lblUnjoinTables = nbBundle6.substring(15);
-        unjoinTables = new JMenuItem(lblUnjoinTables, new ImageIcon(unjoinTablesUrl));
-        unjoinTables.addActionListener(aListener);
-        popUpMenu.add(unjoinTables);
     }
 
     @Override
@@ -382,8 +374,6 @@ public class JoinViewGraphNode extends BasicCanvasArea {
                 Remove_ActionPerformed(e);
             } else if (source == showDataItem) {
                 showJoinData_ActionPerformed(e);
-            } else if (source == unjoinTables) {
-                UnjoinTables_ActionPerformed(e);
             }
         }
     }
@@ -673,7 +663,6 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     //            }
     //        }
     //    }
-
     public void addTable(SourceTable sTable) {
         SQLJoinTableArea tableArea = new SQLJoinTableArea(sTable);
         tableArea.setDataObject(sTable);
@@ -768,7 +757,9 @@ public class JoinViewGraphNode extends BasicCanvasArea {
             //so that join view can refresh
             this.layoutChildren();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()), ex);
+            String msg = mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName());
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            logger.log(Level.SEVERE, mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()) + ex);
             throw ex;
         }
     }
@@ -848,7 +839,9 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
             this.removeTable(jTable.getSourceTable());
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()), ex);
+            String msg = mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName());
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            logger.log(Level.SEVERE, mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()) + ex);
         }
     }
 
@@ -867,34 +860,5 @@ public class JoinViewGraphNode extends BasicCanvasArea {
             tableArea.setExpandedState(sExpanded);
         }
         super.setExpanded(sExpanded);
-    }
-
-    private void UnjoinTables_ActionPerformed(ActionEvent e) {
-        ETLDataObject dObj = DataObjectProvider.getProvider().getActiveDataObject();
-        JPanel panel = new JPanel();
-        String nbBundle7 = mLoc.t("BUND862: Unjoin Tables will remove the join conditions that you have created. Do you want to continue?");
-        String dlgTitle = nbBundle7.substring(15);
-        panel.add(new JLabel(dlgTitle));
-        int response = JOptionPane.showConfirmDialog(
-                WindowManager.getDefault().getMainWindow(), panel, "Unjoin Tables?",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (JOptionPane.OK_OPTION == response) {
-            try {
-                SQLJoinView joinView = (SQLJoinView) JoinViewGraphNode.this.getDataObject();
-                SQLDefinition sqlDefn = TagParserUtility.getAncestralSQLDefinition(joinView);
-                List<DBTable> srcTables = joinView.getSourceTables();
-                for (DBTable table : srcTables) {
-                    if (table instanceof SourceTable) {
-                        SourceTable srcTable = (SourceTable) table;
-                        srcTable.setUsedInJoin(false);
-                    }
-                }
-                sqlDefn.removeJoinViewOnly(joinView);
-                dObj.getETLEditorSupport().synchDocument();
-                dObj.getETLEditorTopPanel().reload();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 }

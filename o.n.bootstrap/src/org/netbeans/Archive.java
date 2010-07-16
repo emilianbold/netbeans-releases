@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.JarClassLoader.JarSource;
 
 /**
  * A shared startup-needed resource archive.
@@ -92,7 +94,7 @@ class Archive implements Stamps.Updater {
     // these two collections are guarded either by the gatheringLock
     // or by the "gathering" volatile flag transitions
     private Map<String,Boolean> requests = new LinkedHashMap<String, Boolean>();
-    private Map<String,JarSource> knownSources = new HashMap<String,JarSource>();
+    private Map<String,ArchiveResources> knownSources = new HashMap<String,ArchiveResources>();
 
     private volatile boolean active;
     // These two collections are guarded by the "active" volatile flag transition.
@@ -171,18 +173,19 @@ class Archive implements Stamps.Updater {
         dos.write(data);
     }
     
-    public byte[] getData(JarSource source, String name) throws IOException {
+    @SuppressWarnings("element-type-mismatch")
+    public byte[] getData(ArchiveResources source, String name) throws IOException {
         Entry e = null;
+        String srcId = source.getIdentifier();
         Map<Entry, Entry> ents = entries;
         if (active) {
-            Integer src = sources.get(source.getIdentifier());
+            Integer src = sources.get(srcId);
             if (src == null) {
                 e = null;
             } else {
                 e = ents.get(new Template(src, name)); // or null
             }
             if (e == null && gathering) {
-                String srcId = source.getIdentifier();
                 StringBuilder sb = new StringBuilder(srcId.length() + name.length());
                 String key = sb.append(srcId).append(name).toString();
 
@@ -221,6 +224,7 @@ class Archive implements Stamps.Updater {
         cache.scheduleSave(this, "all-resources.dat", prepopulated);
     }
 
+    @Override
     public void flushCaches(DataOutputStream dos) throws IOException {
         stopGathering();
         stopServing();
@@ -237,7 +241,7 @@ class Archive implements Stamps.Updater {
         // is already cleared
         for (String s:requests.keySet()) {
             String[] parts = s.split("(?<=!/)");
-            JarSource src = knownSources.get(parts[0]);
+            ArchiveResources src = knownSources.get(parts[0]);
             assert src != null : "Could not find " + s + " in " + knownSources;
             byte[] data = src.resource(parts[1]);
             Integer srcId = sources.get(parts[0]);
@@ -245,7 +249,7 @@ class Archive implements Stamps.Updater {
                 srcId = sources.size();
                 sources.put(parts[0], srcId);
                 dos.write(1);
-                writeString(dos, src.getIdentifier());
+                writeString(dos, parts[0]);
             }
             
             dos.write(2);
@@ -268,6 +272,7 @@ class Archive implements Stamps.Updater {
         sources = null;
     }
 
+    @Override
     public void cacheReady() {
         // nothing needs to be done
     }
@@ -372,6 +377,4 @@ class Archive implements Stamps.Updater {
             return code;
         }
     }
-
 }
-

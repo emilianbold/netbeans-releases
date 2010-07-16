@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,12 +59,12 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xslt.core.XSLTDataLoader;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
 /**
  * @author Alex Petrov (05.05.2008)
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class XSLTCompletionModelProvider extends CompletionModelProvider implements 
     XSLTCompletionConstants {
     private static Map<String, String>
@@ -155,6 +158,8 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider impleme
     }
     
     private boolean isXsltFile(CompletionContext context) {
+        if (context == null) return false;
+        
         List<QName> list = context.getPathFromRoot();
         if ((list != null) && (! list.isEmpty())) {
             QName qName = list.get(0);
@@ -165,7 +170,10 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider impleme
                 return true;
             }
         }
-        String fileExt = context.getPrimaryFile().getExt();
+        FileObject primaryFile = context.getPrimaryFile();
+        if ((primaryFile == null) || (primaryFile.getExt() == null)) return false;
+        
+        String fileExt = primaryFile.getExt();
         return (XSLTDataLoader.PRIMARY_EXTENSION.equals(fileExt)) || 
                (XSLTDataLoader.PRIMARY_EXTENSION2.equals(fileExt));
     }

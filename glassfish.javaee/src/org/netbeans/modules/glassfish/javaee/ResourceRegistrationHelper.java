@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,7 +103,15 @@ public class ResourceRegistrationHelper {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         SourceFileMap sourceFileMap = SourceFileMap.findSourceMap(fo);
         if (sourceFileMap != null) {
-            retVal.addAll(Arrays.asList(sourceFileMap.getEnterpriseResourceDirs()));
+            File[] erds = sourceFileMap.getEnterpriseResourceDirs();
+
+            if (null != erds) {
+                for (File f : erds) {
+                    if (null != f && f.getPath() != null) {
+                        retVal.add(f);
+                    }
+                }
+            }
         }
         return retVal;
     }
@@ -170,7 +180,7 @@ public class ResourceRegistrationHelper {
         List<String> resources = resourceFinder.getResourceNames();
         for (int i = 0; i < resources.size(); i++) {
             String jndiName = resources.get(i);
-            Map localData = resourceFinder.getResourceData().get(jndiName);
+            Map<String, String> localData = resourceFinder.getResourceData().get(jndiName);
             String remoteKey = prefix + jndiName + "."; // NOI18N
             Map<String, String> remoteData = new HashMap<String, String>();
             Iterator itr = allRemoteData.keySet().iterator();
@@ -302,8 +312,10 @@ public class ResourceRegistrationHelper {
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            String propName = qname + "." + attributes.getValue("name");
-            properties.put(propName, attributes.getValue("value"));  //NOI18N
+            if (null != properties && null != attributes) {
+                String propName = qname + "." + attributes.getValue("name"); // NO18N
+                properties.put(propName, attributes.getValue("value"));  //NOI18N
+            }
         }
 
         @Override

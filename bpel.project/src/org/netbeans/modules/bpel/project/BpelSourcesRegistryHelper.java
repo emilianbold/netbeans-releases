@@ -20,7 +20,7 @@
 package org.netbeans.modules.bpel.project;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -37,7 +37,7 @@ import org.openide.util.Lookup;
 public class BpelSourcesRegistryHelper {
     private final BpelproProject myProject;
     private final List<String> myRegisteredSources =
-            new LinkedList<String>();
+            new ArrayList<String>();
     private final BpelSourcesRegistry mySourcesRegistry;
     
     /** Creates a new instance of BpelSourcesRegistryHelper */

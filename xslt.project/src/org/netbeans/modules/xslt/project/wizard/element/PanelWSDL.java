@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,18 +51,19 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.openide.WizardDescriptor;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.01.30
  */
-final class PanelWSDL<T> extends Panel<T> {
+final class PanelWSDL extends Panel {
     
-  PanelWSDL(Project project, Panel<T> parent) {
+  PanelWSDL(Project project, Panel parent) {
     super(project, parent);
-    myWebService = new PanelWebService<T>(project, parent);
+    myWebService = new PanelXsltWebService(project, this);
   }
 
   @Override
@@ -69,9 +73,9 @@ final class PanelWSDL<T> extends Panel<T> {
   }
 
   @Override
-  protected Panel<T> getNext()
+  protected Panel getNext()
   {
-    return new PanelService<T>(getProject(), this, myModel);
+    return new PanelService(getProject(), this, myOperation);
   }
 
   @Override
@@ -82,8 +86,13 @@ final class PanelWSDL<T> extends Panel<T> {
     if (error != null) {
       return error;
     }
-    myModel = (WSDLModel) myWebService.getResult();
+    myOperation = (Operation) myWebService.getResult();
     return null;
+  }
+
+  @Override
+  public boolean isValid() {
+      return !isInitializedUI || getError() == null;
   }
 
   @Override
@@ -103,14 +112,29 @@ final class PanelWSDL<T> extends Panel<T> {
 
     mainPanel.add(panel, cc);
     mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewRRService2"));
+    
+    isInitializedUI = true;
   }
 
+  @Override
+  public void readSettings(WizardDescriptor object) {
+    super.readSettings(object);
+    myWebService.readSettings(object);
+  }
+
+  @Override
+  public void storeSettings(WizardDescriptor object) {
+    super.storeSettings(object);
+    myWebService.storeSettings(object);
+  }
+  
   @Override
   protected void setEnabled(boolean enabled)
   {
     myWebService.setEnabled(enabled);
   }
 
-  private WSDLModel myModel;
-  private PanelWebService<T> myWebService;
+  private Operation myOperation;
+  private WizardSettingsPanel myWebService;
+  private boolean isInitializedUI = false;
 }

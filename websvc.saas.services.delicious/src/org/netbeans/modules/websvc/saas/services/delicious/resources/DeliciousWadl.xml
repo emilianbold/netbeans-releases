@@ -2,9 +2,12 @@
 
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- 
- Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- 
+
+ Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+ Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ Other names may be trademarks of their respective owners.
+
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common
  Development and Distribution License("CDDL") (collectively, the
@@ -15,9 +18,9 @@
  specific language governing permissions and limitations under the
  License.  When distributing the software, include this License Header
  Notice in each file and include the License file at
- nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  particular file as subject to the "Classpath" exception as provided
- by Sun in the GPL Version 2 section of the License file that
+ by Oracle in the GPL Version 2 section of the License file that
  accompanied this code. If applicable, add the following below the
  License Header, with the fields enclosed by brackets [] replaced by
  your own identifying information:
@@ -57,12 +60,23 @@ Open issues:
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xmlns:del="urn:delicious:deliciousresponse"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    https://wadl.dev.java.net/wadl20061109.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd
+                    http://netbeans.org/ns/oauth/metadata/1
+                    http://netbeans.org/ns/oauth/metadata/1.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars>
         <include href="DeliciousResponse.xsd"/>
+        <oauth:metadata xmlns:oauth="http://netbeans.org/ns/oauth/metadata/1" base-url="https://api.login.yahoo.com/oauth/v2" signature-method="HMAC_SHA1">
+            <oauth:flow>
+                <oauth:request-token method-name="get_request_token" request-style="PATH" response-style="FORM" signature-method="PLAINTEXT" callback="true"/>
+                <oauth:authorization>
+                    <oauth:dynamic-url auth-param-name="xoauth_request_auth_url"/>
+                </oauth:authorization>
+                <oauth:access-token method-name="get_token" request-style="PATH" response-style="FORM" signature-method="PLAINTEXT" verifier="true"/>
+            </oauth:flow>
+        </oauth:metadata>
     </grammars>
-    <resources base="https://api.del.icio.us/v1">
+    <resources base="http://api.del.icio.us/v2">
         <resource path="posts">
             <resource path="get">
                 <method name="GET" id="getPosts">

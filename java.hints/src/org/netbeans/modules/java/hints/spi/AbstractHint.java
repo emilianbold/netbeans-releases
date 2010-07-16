@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,13 +43,12 @@
  */
 package org.netbeans.modules.java.hints.spi;
 
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.util.NbPreferences;
 
 /** Class to be extended by all the Java hints.
  *
@@ -71,7 +73,6 @@ public abstract class AbstractHint implements TreeRule {
     }
     
     
-    //XXX: make final
     /** Gets preferences node, which stores the options for given hint. It is not
      * necessary to override this method unless you want to create some special
      * behavior. The default implementation will create the the preferences node
@@ -80,18 +81,7 @@ public abstract class AbstractHint implements TreeRule {
      * @return Preferences node for given hint.
      */
     public Preferences getPreferences( String profile ) {
-        Map<String, Preferences> override = HintsSettings.getPreferencesOverride();
-        
-        if (override != null) {
-            Preferences p = override.get(getId());
-            
-            if (p != null) {
-                return p;
-            }
-        }
-        
-        profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
-        return NbPreferences.forModule(this.getClass()).node(profile).node(getId());
+        return RulesManager.getPreferences(getId(), profile);
     }
         
     /** Gets the UI description for this rule. It is fine to return null
@@ -113,14 +103,14 @@ public abstract class AbstractHint implements TreeRule {
      * @return true if enabled false otherwise.
      */
     public final boolean isEnabled() {
-        return HintsSettings.isEnabled( this, getPreferences(HintsSettings.getCurrentProfileId()));        
+        return HintsSettings.isEnabled( this, getPreferences(HintsSettings.getCurrentProfileId()));
     }
     
     /** Gets current severiry of the hint.
      * @return Hints severity in current profile.
      */
     public final HintSeverity getSeverity() {
-        return HintsSettings.getSeverity( this, getPreferences(HintsSettings.getCurrentProfileId()));        
+        return HintsSettings.getSeverity( this, getPreferences(HintsSettings.getCurrentProfileId()));
     }
     
     /** Severity of hint

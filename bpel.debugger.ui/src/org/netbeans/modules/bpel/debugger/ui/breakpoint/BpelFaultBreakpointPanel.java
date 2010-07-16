@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;

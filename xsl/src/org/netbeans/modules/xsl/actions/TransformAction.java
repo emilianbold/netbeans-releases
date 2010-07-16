@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,15 +43,11 @@
  */
 package org.netbeans.modules.xsl.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-
 import org.netbeans.api.xml.cookies.TransformableCookie;
 import org.netbeans.modules.xml.actions.CollectXMLAction;
-
 import org.netbeans.modules.xsl.XSLDataObject;
 import org.netbeans.modules.xsl.transform.TransformPerformer;
 import org.openide.util.NbBundle;
@@ -65,20 +64,6 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     private static final long serialVersionUID = -640535981015250507L;
 
     private static TransformPerformer recentPerfomer;
-
-/*************
-    public static synchronized TransformAction getInstance() {
-        TransformAction actionInstance = null;
-        String thisClassName = TransformAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (TransformAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-***************/
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
@@ -103,17 +88,20 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     }
 
     /** */
+    @Override
     protected Class[] cookieClasses () {
         return new Class[] { TransformableCookie.class, XSLDataObject.class };
     }
 
     /** All selected nodes must be XML one to allow this action. */
+    @Override
     protected int mode () {
         return MODE_ALL;
     }
 
 
     /** Human presentable name. */
+    @Override
     public String getName() {
         return NbBundle.getMessage(TransformAction.class, "NAME_transform_action");
     }
@@ -125,12 +113,14 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     }
 
     /** Provide accurate help. */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (TransformAction.class);
     }
 
 
     /** Check all selected nodes. */
+    @Override
     protected void performAction (Node[] nodes) {
         recentPerfomer = new TransformPerformer (nodes);
         recentPerfomer.perform();
@@ -140,5 +130,4 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     protected boolean asynchronous() {
         return false;
     }
-
 }

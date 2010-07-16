@@ -1,10 +1,12 @@
 package org.netbeans.modules.iep.editor.designer.cookies;
 
 import org.netbeans.modules.iep.editor.PlanDataObject;
-import org.netbeans.modules.xml.validation.ValidateXMLCookieImpl;
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.xml.validation.ui.Output;
 import org.netbeans.modules.xml.xam.Model;
 
-public class IEPValidateXMLCookie extends ValidateXMLCookieImpl {
+public class IEPValidateXMLCookie implements ValidateXMLCookie {
     private PlanDataObject dataObject;
 
     /**
@@ -14,7 +16,11 @@ public class IEPValidateXMLCookie extends ValidateXMLCookieImpl {
         dataObject = dobj;
     }
 
-    @Override
+    public boolean validateXML(CookieObserver cookieObserver) {
+        new Output().validate(getModel());
+        return true;
+    }
+
     protected Model getModel() {
         return dataObject.getPlanEditorSupport().getModel();
     }

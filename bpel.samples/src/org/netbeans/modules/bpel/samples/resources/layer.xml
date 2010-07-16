@@ -2,7 +2,10 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
   specific language governing permissions and limitations under the
   License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
   particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that
+  by Oracle in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
   License Header, with the fields enclosed by brackets [] replaced by
   your own identifying information:
@@ -45,26 +48,22 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="SOA">
-                    <attr name="position" intvalue="680"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/category.html"/>
-
-                    <!-- Asynchronous Sample -->
-                    <file name="AsynchronousSample" url="zip/AsynchronousSample.zip">
+                    <!-- Asynchronous -->
+                    <file name="Asynchronous" url="zip/Asynchronous.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.AsynchronousSampleWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/AsynchronousSample.html"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createAsynchronous"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/Asynchronous.html"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="template" boolvalue="true"/>
                     </file>                    
 
-                    <!-- Synchronous Sample -->
-                    <file name="SynchronousSample" url="zip/SynchronousSample.zip">
+                    <!-- Synchronous -->
+                    <file name="Synchronous" url="zip/Synchronous.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.SynchronousSampleWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/SynchronousSample.html"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createSynchronous"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/Synchronous.html"/>
                         <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
@@ -73,53 +72,53 @@
                     <file name="TravelReservationService" url="zip/TravelReservationService.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.TravelReservationServiceWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createTravelReservationService"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/TravelReservationService.html"/>
                         <attr name="position" intvalue="300"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
 
                     <!-- BluePrints -->
-                    <file name="BPELBluePrint1" url="zip/BluePrint1.zip">
+                    <file name="BluePrint1" url="zip/BluePrint1.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.BluePrint1SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createBluePrint1"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/BluePrint1.html"/>
                         <attr name="position" intvalue="400"/>
                         <attr name="template" boolvalue="true"/>
                     </file>            
 
-                    <file name="BPELBluePrint2" url="zip/BluePrint2.zip">
+                    <file name="BluePrint2" url="zip/BluePrint2.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.BluePrint2SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createBluePrint2"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/BluePrint2.html"/>
                         <attr name="position" intvalue="500"/>
                         <attr name="template" boolvalue="true"/>
                     </file>  
                     
-                    <file name="BPELBluePrint3" url="zip/BluePrint3.zip">
+                    <file name="BluePrint3" url="zip/BluePrint3.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.BluePrint3SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createBluePrint3"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/BluePrint3.html"/>
                         <attr name="position" intvalue="600"/>
                         <attr name="template" boolvalue="true"/>
                     </file>  
                     
-                    <file name="BPELBluePrint4" url="zip/BluePrint4.zip">
+                    <file name="BluePrint4" url="zip/BluePrint4.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.BluePrint4SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createBluePrint4"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/BluePrint4.html"/>
                         <attr name="position" intvalue="700"/>
                         <attr name="template" boolvalue="true"/>
                     </file>  
                     
-                    <file name="BPELBluePrint5" url="zip/BluePrint5.zip">
+                    <file name="BluePrint5" url="zip/BluePrint5.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/project.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.BluePrint5SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.bpel.samples.Iterator.createBluePrint5"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/BluePrint5.html"/>
                         <attr name="position" intvalue="800"/>
                         <attr name="template" boolvalue="true"/>
@@ -132,8 +131,8 @@
     <folder name="org-netbeans-modules-bpel-samples-resources-zip">
         <file name="ReservationPartnerServices.zip" url="zip/ReservationPartnerServices.zip"/>
         <file name="TravelReservationServiceApplication.zip" url="zip/TravelReservationServiceApplication.zip"/>
-        <file name="SynchronousSampleApplication.zip" url="zip/SynchronousSampleApplication.zip"/>
-        <file name="AsynchronousSampleApplication.zip" url="zip/AsynchronousSampleApplication.zip"/>
+        <file name="SynchronousApplication.zip" url="zip/SynchronousApplication.zip"/>
+        <file name="AsynchronousApplication.zip" url="zip/AsynchronousApplication.zip"/>
         <file name="BluePrint1Application.zip" url="zip/BluePrint1Application.zip"/>
         <file name="BluePrint2Application.zip" url="zip/BluePrint2Application.zip"/>
         <file name="BluePrint3Application.zip" url="zip/BluePrint3Application.zip"/>

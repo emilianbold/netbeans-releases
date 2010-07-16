@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,10 +48,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.test.TestFileUtils;
 /**
  * Test functionality of InstalledFileLocatorImpl.
  * @author Jesse Glick
@@ -63,9 +71,13 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         super(name);
     }
     
+    protected @Override Level logLevel() {
+        return Level.ALL;
+    }
+    
     private File scratch, nbhome, nbuser, nbdir1, nbdir2;
     private InstalledFileLocator ifl;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         scratch = getWorkDir();
@@ -148,6 +160,37 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals("[no cache] nbdirs can override location of a branded resource", file(nbdir2, "loc/y_foo.html"), ifl.locate("loc/y.html", null, true));
         assertEquals("[no cache] but look in all dirs for most specific resource first", file(nbhome, "h_ja"), ifl.locate("h", null, true));
         assertEquals("[no cache] localized lookup a no-op for nonlocalized files", file(nbuser, "a/b"), ifl.locate("a/b", null, true));
+    }
+
+    public void testLocateAll() throws Exception {
+        InstalledFileLocatorImpl.prepareCache();
+        doTestLocateAll();
+        InstalledFileLocatorImpl.discardCache();
+        doTestLocateAll();
+    }
+    private void doTestLocateAll() {
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbuser, "a/b"), file(nbhome, "a/b"))), ifl.locateAll("a/b", null, false));
+        assertEquals(Collections.emptySet(), ifl.locateAll("nonexistent", null, false));
+        assertEquals(Collections.emptySet(), ifl.locateAll("nonexistent", null, true));
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbhome, "loc/y.html"), file(nbdir2, "loc/y_foo.html"))), ifl.locateAll("loc/y.html", null, true));
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbdir1, "e/f"), file(nbhome, "e/f"))), ifl.locateAll("e/f", null, false));
+    }
+    
+    public void testLocateParallel() throws Exception {
+        File x1 = new File(nbdir1, "x");
+        touch(x1);
+        File x2 = new File(nbdir2, "x");
+        touch(x2);
+        TestFileUtils.writeFile(new File(nbdir1, "update_tracking/mod-a.xml"), "<module codename=\"mod.a\">\n<file name=\"x\"/>\n</module>\n");
+        TestFileUtils.writeFile(new File(nbdir2, "update_tracking/mod-b.xml"), "<module codename=\"mod.b\">\n<file name=\"x\"/>\n</module>\n");
+        InstalledFileLocatorImpl.prepareCache();
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
+        InstalledFileLocatorImpl.discardCache();
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
     }
     
 }

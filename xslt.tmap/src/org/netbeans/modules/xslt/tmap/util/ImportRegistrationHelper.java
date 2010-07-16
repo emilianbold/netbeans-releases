@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,19 +47,17 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.netbeans.modules.soa.ui.util.ModelUtil;
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
-import org.netbeans.modules.xslt.tmap.model.impl.InvalidNamespaceException;
 import org.netbeans.modules.xslt.tmap.nodes.properties.ResolverUtility;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -115,7 +116,7 @@ public class ImportRegistrationHelper {
       }
     }
     
-    public void addImport(Import new_imp){
+    private void addImport(Import new_imp){
 //System.out.println();
 //System.out.println("add import: " + new_imp);
         if (new_imp == null) {
@@ -133,25 +134,19 @@ public class ImportRegistrationHelper {
         }
     }
     
-    public Import createImport(WSDLModel model){
-        FileObject modelFo = SoaUtil.getFileObjectByModel(model);
-        if (modelFo != null) {
-            return createImport(modelFo);
-        }
-        // may be this model is known by global catalog
-        // TODO a
-        return null;
-    }
-
-    public Import createImport(FileObject fo){
-        if (fo != null) {
-            return createImport(Util.getNewModelNamespace(fo),
-                    Util.getNewModelLocation(myModel, fo));
+    private Import createImport(WSDLModel impModel){
+        FileObject impModelFo = SoaUtil.getFileObjectByModel(impModel);
+        if (impModelFo != null) {
+            FileObject tMapFo = SoaUtil.getFileObjectByModel(getModel());
+            return createImport(Util.getNewModelNamespace(impModelFo),
+                    ReferenceUtil.isSameProject(tMapFo, impModelFo) 
+                    ? ModelUtil.getRelativePath(tMapFo.getParent(), impModelFo)
+                    : ReferenceUtil.getLocation(tMapFo , impModelFo));
         } 
         return null;
     }
     
-    public Import createImport(String namespace, String location){
+    private Import createImport(String namespace, String location){
         TransformMap tMap = myModel.getTransformMap();
         if (tMap != null) {
             try {
@@ -170,7 +165,7 @@ public class ImportRegistrationHelper {
                 LOGGER.log(Level.INFO, null, ex);
             }
         }
-        
+
         if (location != null) {
             try {
                 //Fix for IZ84824

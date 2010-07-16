@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -92,19 +96,12 @@ public final class Utils {
      * @return A DataObject which may have the requested card in its lookup (this
      * method does matching by file name and does not check if there is really
      * an instance of Card present)
+     * @deprecated Not all cards are DataObjects anymore
      */
+    @Deprecated
     public static DataObject findDeviceForPlatform(String platform, String card) {
         FileObject deviceFolder = sfsFolderForDeviceConfigsForPlatformNamed(platform, false);
         if (deviceFolder != null) {
-            //XXX don't use file extension, check for presence of card
-//            FileObject child = deviceFolder.getFileObject(card, JCConstants.JAVACARD_DEVICE_FILE_EXTENSION);
-//            if (child != null) {
-//                try {
-//                    return DataObject.find(child);
-//                } catch (DataObjectNotFoundException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
             for (FileObject child : deviceFolder.getChildren()) {
                 if (card.equals(child.getName())) {
                     try {
@@ -117,31 +114,6 @@ public final class Utils {
         }
         return null;
     }
-
-    /**
-     * Creates a fake folder in a memory file system, which can be used for showing explorer views
-     * of non-existent devices/cards
-     * @param platformName The platform name
-     * @param invalidDeviceName The device name
-     * @return
-     */
-    /*
-    public static FileObject folderForInvalidDeviceConfigsForPlatformNamed(String platformName, String invalidDeviceName) {
-        FileSystem fs = FileUtil.createMemoryFileSystem();
-        try {
-            FileSystem sfs = FileUtil.getConfigRoot().getFileSystem();
-            MultiFileSystem mfs = new MultiFileSystem(new FileSystem[]{sfs, fs});
-            String rootPath = CommonSystemFilesystemPaths.SFS_DEVICE_CONFIGS_ROOT;
-            FileObject fld = FileUtil.createFolder(fs.getRoot(), rootPath);
-            fld = FileUtil.createFolder(fld, platformName);
-            FileUtil.createData(fld, invalidDeviceName +
-                    '.' + JCConstants.JAVACARD_DEVICE_FILE_EXTENSION);
-            return mfs.getRoot().getFileObject(fld.getPath());
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-     */
 
     /**
      * Get the system filesystem folder for files that define Card objects,
@@ -323,39 +295,7 @@ public final class Utils {
             Exceptions.printStackTrace(e);
         }
     }
-
-    public static boolean saveWebResource(String address, String localFileName) throws Exception {
-        OutputStream out = null;
-        URLConnection conn = null;
-        InputStream in = null;
-        boolean done = false;
-        try {
-            URL url = new URL(address);
-            out = new BufferedOutputStream(
-                    new FileOutputStream(localFileName));
-            conn = url.openConnection();
-            in = conn.getInputStream();
-            byte[] buffer = new byte[10240]; // 10K buffer
-
-            int numRead;
-            while ((numRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, numRead);
-            }
-            done = true;
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ioe) {
-                //
-            }
-        }
-        return done;
-    }
+    
     private static final int FIXED_RID_LENGTH = 10;
     private static final int MAX_PIX_LENGTH = 22;
     public static final String AID_AUTHORITY = "//aid/"; //NOI18N
@@ -589,6 +529,11 @@ public final class Utils {
         return AID.generateInstanceAid(RID, packageName, clazz);
     }
 
+    public static AID generateRandomAppletAid(String clazz) {
+        byte[] RID = getDefaultRID();
+        return AID.generateApplicationAid(RID, generateRandomPackageName(), clazz);
+    }
+
     public static String generateRandomPackageName() {
         StringBuilder sb = new StringBuilder();
         Random r = new Random (System.currentTimeMillis());
@@ -630,7 +575,7 @@ public final class Utils {
             "^(.*?)\\s(.*)$"); //NOI18N
     private static final Pattern EXE_PREFIX_SPLIT = Pattern.compile("(\\S*" + //NOI18N
             Pattern.quote(File.separator) + ".*)$"); //NOI18N
-    public static final Pattern ARG_VALUE_SPLIT = Pattern.compile(
+    static final Pattern ARG_VALUE_SPLIT = Pattern.compile(
             "^\\s*(\\-\\S*)\\s*?((?!\\-)\\S.*?)?(?:\\s\\-|$)"); //NOI18N
 
     /**
@@ -639,7 +584,51 @@ public final class Utils {
      * someExecutable -lineswitch aaaa -lineswitch -lineswitch bbb...
      * </pre>
      * into an array of strings suitable as individual arguments to pass into
-     * Runtime.exec() or similar.
+     * Runtime.exec() or similar.  This method is used to resolve the actual
+     * array of command line arguments used to create a process, based on
+     * input in properties files for Java Card RI card definitions - after
+     * using Ant-style substitution to replace templated values with actual
+     * values, paths to executables, etc.
+     * <p>
+     * Any utility method which attempts to do such splitting without resorting
+     * to shell quoting is necessarily imperfect.
+     * A caveat with this one is that it is not possible to
+     * have consecutive arguments that do not begin with a - character; they
+     * will be treated as a single argument.  And the final trailing word
+     * following an argument prefixed with -, if separated by a space, will
+     * be treated as a separate argument.
+     *
+     * This is an issue for file paths containing spaces - for
+     * example, if you have
+     * <pre>
+     * -Dfoo=C:\Program Files\NetBeans\NetBeans 6.8\Path\To\Something
+     * </pre>
+     * you will end up with two command-line arguments,
+     * <code>-Dfoo=C:\Program Files\NetBeans\NetBeans</code> and
+     * <code>6.8\Path\To\Something</code>.
+     * <p>
+     * To solve this issue, surround any content that must always be
+     * treated as a single atomic argument should be surrounded by <code>{{{</code>
+     * and <code>}}}</code>.  For example, the following command-line:
+     * <blockquote><code>
+     * javacard.device.debugger.cmdline=${java.home}/bin/java
+     * -classpath ${javacard.debug.proxy.classpath}
+     * {{{-Djc.home=${javacard.ri.home}}}} com.sun.javacard.debugproxy.Main {{{debug}}}
+     * --listen ${javacard.device.proxy2idePort}
+     * --remote ${javacard.device.host}:${javacard.device.proxy2cjcrePort}
+     * --classpath ${class.path}
+     * </code></blockquote>
+     * has two escaped elements.  The first is a single line-switch(from the
+     * perspective that anything that starts with a - character is a line
+     * switch) which ends in a file path.  To guarantee that the text following
+     * the final space character is not lopped off and treated as an argument
+     * to this line-switch, we wrap it in <code>{{{</code>
+     * and <code>}}}</code>.  The same is true for <code>{{{debug}}}</code> &mdash;
+     * this follows something which is not a line switch (no - character), and
+     * would otherwise be treated as part of the argument beginning
+     * &quot;com.sun.javacard&quot;.  To guarantee that it is not lumped together
+     * with the class name, we escape it as well.
+     *
      * @param s A command line
      * @return The command line split into tokens, taking into account
      * things like spaces in file paths, dash characters in file paths, etc.
@@ -654,7 +643,7 @@ public final class Utils {
             if (exePart.trim().length() == 0) {
                 exePart = null;
             }
-            argsPart = "-" + m.group(2).trim();
+            argsPart = "-" + m.group(2).trim(); //NOI18N
         } else {
             m = EXE_NOARGS_SPLIT.matcher(s);
             if (m.find()) {
@@ -673,9 +662,7 @@ public final class Utils {
             String exePrefix = null;
             if (m.find()) {
                 exePrefix = exePart.substring(0, m.start(1));
-                for (String s1 : exePrefix.split("\\s+")) { //NOI18N
-                    result.add(s1);
-                }
+                result.addAll(Arrays.asList(exePrefix.split("\\s+"))); //NOI18N
                 result.add(m.group(1));
             } else {
                 result.add(exePart.trim());
@@ -684,12 +671,28 @@ public final class Utils {
         if (!splitArgs(argsPart, result)) {
             result.add(argsPart);
         }
+        result = restoreAtomicArguments (s, result);
+        List<String> fixedUp = new ArrayList<String>();
         for (Iterator<String> i=result.iterator(); i.hasNext();) {
-            if (i.next().trim().length() == 0) {
-                i.remove();
+            //XXX figure out where these are coming from - not AtomicElementRepairer
+            String str = i.next();
+            if ("".equals(str) || str == null) { //NOI18N
+                continue;
             }
+            fixedUp.add (str.trim());
         }
-        return result.toArray(new String[result.size()]);
+        return fixedUp.toArray(new String[fixedUp.size()]);
+    }
+
+    private static List<String> restoreAtomicArguments (String s, List<String> l) {
+        if (l.size() == 0) {
+            return l;
+        }
+        int startIx = s.indexOf(AtomicElementRepairer.START_DELIMITER); //NOI18N
+        if (!(startIx > 0 && s.indexOf(AtomicElementRepairer.END_DELIMITER) > startIx)) { //NOI18N
+            return l;
+        }
+        return new AtomicElementRepairer(l).restoreAtomicItems();
     }
 
     /**
@@ -698,7 +701,7 @@ public final class Utils {
      * @param result
      * @return
      */
-    public static boolean splitArgs(String argsPart, List<String> result) {
+    static boolean splitArgs(String argsPart, List<String> result) {
         Matcher m = ARG_VALUE_SPLIT.matcher(argsPart);
         int end = -1;
         boolean res = false;

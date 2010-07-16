@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.openide.util.Utilities;
 
 /**
@@ -69,6 +74,10 @@ public final class NativeProcessInfo {
     private boolean x11forwarding;
     private boolean suspend;
     private Collection<ChangeListener> listeners = null;
+    private Pty pty = null;
+    private boolean runInPty;
+    private boolean expandMacros = true;
+    private Charset charset;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -97,8 +106,31 @@ public final class NativeProcessInfo {
         this.executable = executable;
     }
 
+    @Deprecated
     public void setCommandLine(String commandLine) {
-        this.commandLine = commandLine;
+        if (isWindows) {
+            // Until we use java ProcessBuilder on Windows,
+            // we cannot pass a single line to it [IZ#170748]
+            String[] cmdAndArgs = Utilities.parseParameters(commandLine);
+            if (cmdAndArgs.length == 0) {
+                return;
+            }
+
+            String execFile = cmdAndArgs[0];
+            setExecutable(execFile);
+            if (cmdAndArgs.length == 1) {
+                return;
+            }
+
+            List<String> args = new ArrayList<String>(cmdAndArgs.length - 1);
+            for (int i = 1; i < cmdAndArgs.length; i++) {
+                args.add(cmdAndArgs[i]);
+            }
+
+            setArguments(args.toArray(new String[0]));
+        } else {
+            this.commandLine = commandLine;
+        }
     }
 
     public void setWorkingDirectory(String workingDirectory) {
@@ -136,9 +168,19 @@ public final class NativeProcessInfo {
 
         this.arguments.clear();
 
-        for (String arg : arguments) {
-            this.arguments.add(arg.trim());
+        if (arguments != null) {
+            for (String arg : arguments) {
+                this.arguments.add(arg.trim());
+            }
         }
+    }
+
+    public List<String> getArguments() {
+        return arguments;
+    }
+
+    public String getExecutable() {
+        return executable;
     }
 
     public List<String> getCommand() {
@@ -152,7 +194,11 @@ public final class NativeProcessInfo {
 
         if (commandLine != null) {
             try {
-                cmd = macroExpander.expandPredefinedMacros(commandLine);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(commandLine);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -160,7 +206,11 @@ public final class NativeProcessInfo {
             result.add(cmd);
         } else {
             try {
-                cmd = macroExpander.expandPredefinedMacros(executable);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(executable);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -168,12 +218,16 @@ public final class NativeProcessInfo {
             result.add(cmd);
 
             for (String arg : arguments) {
-                arg = Utilities.escapeParameters(new String[]{arg});
-                if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
-                        (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
-                    arg = arg.substring(1, arg.length() - 1);
+                if (isExpandMacros()) {
+                    arg = Utilities.escapeParameters(new String[]{arg});
+                    if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
+                            (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
+                        arg = arg.substring(1, arg.length() - 1);
+                    }
+                    result.add('"' + arg + '"'); // NOI18N
+                } else {
+                    result.add(arg);
                 }
-                result.add('"' + arg + '"'); // NOI18N
             }
         }
 
@@ -182,7 +236,7 @@ public final class NativeProcessInfo {
 
     private String quoteSpecialChars(String orig) {
         StringBuilder sb = new StringBuilder();
-        String escapeChars = (isWindows) ? " \"'()" : " \"'()!"; // NOI18N
+        String escapeChars = (isWindows) ? " &\"'()" : " &\"'()!"; // NOI18N
 
         for (char c : orig.toCharArray()) {
             if (escapeChars.indexOf(c) >= 0) { // NOI18N
@@ -198,14 +252,13 @@ public final class NativeProcessInfo {
         if (commandLine == null && executable == null) {
             return null;
         }
-        
+
         /**
          * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
          *
          * The magic below is all about making run/debug act identically in case
          * of ExternalTerminal
          */
-
         if (commandLine != null) {
             return commandLine;
         }
@@ -289,5 +342,47 @@ public final class NativeProcessInfo {
 
     public MacroMap getEnvironment() {
         return environment;
+    }
+
+    public void setPty(Pty pty) {
+        this.pty = pty;
+        runInPty = (pty != null);
+    }
+
+    public Pty getPty() {
+        return pty;
+    }
+
+    public void setPtyMode(boolean ptyMode) {
+        this.runInPty = ptyMode;
+        if (!ptyMode) {
+            pty = null;
+        }
+    }
+
+    public boolean isPtyMode() {
+        return runInPty || getPty() != null;
+    }
+
+    /**
+     * @return the expandMacros
+     */
+    public boolean isExpandMacros() {
+        return expandMacros;
+    }
+
+    /**
+     * @param expandMacros the expandMacros to set
+     */
+    public void setExpandMacros(boolean expandMacros) {
+        this.expandMacros = expandMacros;
+    }
+
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 }

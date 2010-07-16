@@ -3,7 +3,6 @@
  *
  * Created on May 16, 2008, 6:14 PM
  */
-
 package org.netbeans.modules.iep.editor.ps;
 
 import java.awt.Dialog;
@@ -14,11 +13,10 @@ import java.util.List;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseMetaDataHelper;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
-import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
 import org.netbeans.modules.iep.editor.wizard.database.tableInput.ExternalTableWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.SchemaAttribute;
-import org.netbeans.modules.iep.model.TableInputOperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponent;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
@@ -28,12 +26,11 @@ import org.openide.WizardDescriptor;
  */
 public class TableInputExternalTableConfigurationPanel extends javax.swing.JPanel {
 
-    private TableInputOperatorComponent mComponent;
-    
+    private OperatorComponent mComponent;
     private SelectPanel mSelectPanel;
-    
+
     /** Creates new form TableInputExternalTableConfigurationPanel */
-    public TableInputExternalTableConfigurationPanel(TableInputOperatorComponent op, SelectPanel selectPanel) {
+    public TableInputExternalTableConfigurationPanel(OperatorComponent op, SelectPanel selectPanel) {
         this.mComponent = op;
         this.mSelectPanel = selectPanel;
         initComponents();
@@ -138,33 +135,32 @@ public class TableInputExternalTableConfigurationPanel extends javax.swing.JPane
 
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     IEPModel model = mComponent.getModel();
-    
+
     ExternalTableWizardHelper helper = new ExternalTableWizardHelper();
     WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
-    
+
     Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
     dialog.setVisible(true);
     dialog.toFront();
     boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
     if (!cancelled) {
-    
-        //List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
-        List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+
+        List<ColumnInfo> columns = (List<ColumnInfo>) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
         String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
-        
+
         List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
         //go through user selected columns
         Iterator<ColumnInfo> it = columns.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             ColumnInfo column = it.next();
             String columnName = column.getColumnName();
             SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, columnName, model);
             attrs.add(sa);
         }
-        
+
         mSelectPanel.clearTable();
         mSelectPanel.setAttributes(attrs);
-        
+
         jndiNameTextField.setText(databaseJNDIName);
     }
 

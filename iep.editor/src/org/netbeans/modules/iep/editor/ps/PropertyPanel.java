@@ -21,7 +21,7 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -33,9 +33,8 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
-import org.netbeans.modules.iep.model.lib.TcgType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgType;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,6 +100,10 @@ public class PropertyPanel {
         return;
     }
     
+    public String getLabelName() {
+	return mLabel;
+    }
+    
     public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
         TcgPropertyType pt = mProperty.getPropertyType();
         String value =  getStringValue();
@@ -137,7 +140,7 @@ public class PropertyPanel {
                 throw new PropertyVetoException(msg, evt);
             }
         }
-        if (pt.getType() == TcgType.INTEGER) {
+        if (pt.getType() == TcgType.DOUBLE) {
             try {
                 Double.parseDouble(value);
             } catch (NumberFormatException e) {
@@ -249,7 +252,7 @@ public class PropertyPanel {
 //        return panel;
 //    }
     
-    public static PropertyPanel createSingleLineTextPanel(String label, Property prop, Document tff, boolean createPanel) {
+    private static PropertyPanel createSingleLineTextPanel(String label, Property prop, JTextField tf, boolean createPanel) {
         PropertyPanel panel = new PropertyPanel(label, prop) {
             public String getStringValue() {
                 return ((JTextField)input[0]).getText();
@@ -273,11 +276,23 @@ public class PropertyPanel {
                 }
             }
         };
-        JLabel nameLbl = new JLabel(label);
-        JTextField tf = new JTextField();
+        JLabel nameLbl = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(nameLbl, label);
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = nameLbl.getText();
+        
+        
+        nameLbl.setLabelFor(tf);
+        //default tooltip is label, tooltip is used for accesible description
+        //by default so thats why we add a tool tip here
+        tf.setToolTipText(panel.mLabel);
+        tf.getAccessibleContext().setAccessibleDescription(label);
+        
         tf.setPreferredSize(new Dimension(140, 20));
         tf.setMinimumSize(new Dimension(50, 20));
-        tf.setDocument(tff);
+        
         tf.setText(prop.getValue());
         if (createPanel) {
             panel.panel = new JPanel();
@@ -345,11 +360,13 @@ public class PropertyPanel {
 //    }
     
     public static PropertyPanel createSingleLineTextPanel(String label, Property prop, boolean createPanel) {
-        return createSingleLineTextPanel(label, prop, JTextFieldFilter.newAlphaNumericUnderscore(), createPanel);
+        JTextField textField = new JTextField();
+        textField.setDocument(JTextFieldFilter.newAlphaNumericUnderscore(textField));
+        return createSingleLineTextPanel(label, prop, textField, createPanel);
     }
     
     public static PropertyPanel createSingleLineTextPanelWithoutFilter(String label, Property prop, boolean createPanel ) {
-        return createSingleLineTextPanel(label, prop, new PlainDocument(), createPanel);
+        return createSingleLineTextPanel(label, prop, new JTextField(), createPanel);
     }
     
 //    public static PropertyPanel createFloatNumberPanel(String label, TcgProperty prop, boolean createPanel) {
@@ -357,7 +374,9 @@ public class PropertyPanel {
 //    }
     
     public static PropertyPanel createFloatNumberPanel(String label, Property prop, boolean createPanel) {
-        return createSingleLineTextPanel(label, prop, JTextFieldFilter.newFloat(), createPanel);
+        JTextField textField = new JTextField();
+        textField.setDocument(JTextFieldFilter.newFloat(textField));
+        return createSingleLineTextPanel(label, prop, textField, createPanel);
     }
     
 //    public static PropertyPanel createIntNumberPanel(String label, TcgProperty prop, boolean createPanel) {
@@ -365,7 +384,9 @@ public class PropertyPanel {
 //    }
     
     public static PropertyPanel createIntNumberPanel(String label, Property prop, boolean createPanel) {
-        return createSingleLineTextPanel(label, prop, JTextFieldFilter.newNumeric(), createPanel);
+        JTextField textField = new JTextField();
+        textField.setDocument(JTextFieldFilter.newNumeric(textField));
+        return createSingleLineTextPanel(label, prop, textField, createPanel);
     }
     
 //    public static PropertyPanel createSmartSingleLineTextPanel(String label, TcgProperty prop, boolean truncateColumn, boolean createPanel) {
@@ -460,7 +481,14 @@ public class PropertyPanel {
                 }
             }
         };
-        JLabel nameLbl = new JLabel(label);
+        JLabel nameLbl = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(nameLbl, label);
+        
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = nameLbl.getText();
+        
         SmartTextField tf = new SmartTextField(truncateColumn);
         tf.setPreferredSize(new Dimension(200, 20));
         String value = prop.getValue();
@@ -468,6 +496,13 @@ public class PropertyPanel {
             value = value.replace('\\', ',');
         }
         tf.setText(value);
+        
+        nameLbl.setLabelFor(tf);
+        //default tooltip is label, tooltip is used for accesible description
+        //by default so thats why we add a tool tip here
+        tf.setToolTipText(panel.mLabel);
+        tf.getAccessibleContext().setAccessibleDescription(label);
+        
         if (createPanel) {
             panel.panel = new JPanel();
             panel.panel.setLayout(new GridBagLayout());
@@ -617,8 +652,18 @@ public class PropertyPanel {
         gbc.weightx = 0.0D;
         gbc.weighty = 0.0D;
         gbc.fill = GridBagConstraints.NONE;
-        JLabel nameLbl = new JLabel(label);
+        JLabel nameLbl = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(nameLbl, label);
         panel.panel.add(nameLbl, gbc);
+        
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = nameLbl.getText();
+        
+        
+        
+        
         
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -633,6 +678,13 @@ public class PropertyPanel {
         SmartTextArea ta = new SmartTextArea(5, 40);
         ta.setBorder(new EtchedBorder());
         ta.setMargin(new Insets(3, 3, 3, 3));
+        
+        nameLbl.setLabelFor(ta);
+        //default tooltip is label, tooltip is used for accesible description
+        //by default so thats why we add a tool tip here
+        ta.setToolTipText(panel.mLabel);
+        ta.getAccessibleContext().setAccessibleDescription(label);
+        
         if (prop.getPropertyType().isMultiple()) {
             // Note that prop.getStringValue() returns
             // a "\" separated single line text. But we want
@@ -743,6 +795,13 @@ public class PropertyPanel {
         gbc.weighty = 0.0D;
         gbc.fill = GridBagConstraints.NONE;
         JCheckBox cb = new JCheckBox(label, Boolean.valueOf(prop.getValue()).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(cb, label);
+        
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = cb.getText();
+        
         panel.panel.add(cb, gbc);
         
         gbc.gridx = 1;
@@ -937,8 +996,20 @@ public class PropertyPanel {
                 }
             }
         };
-        JLabel nameLabel = new JLabel(label);
+        JLabel nameLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, label);
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = nameLabel.getText();
+        
         JTextField tf = new JTextField();
+        nameLabel.setLabelFor(tf);
+        //default tooltip is label, tooltip is used for accesible description
+        //by default so thats why we add a tool tip here
+        tf.setToolTipText(panel.mLabel);
+        tf.getAccessibleContext().setAccessibleDescription(label);
+        
         String value = prop.getValue();
         panel.mTemp = value.substring(value.length()-5);
         tf.setText(value.substring(0, value.length()-5));
@@ -1127,12 +1198,26 @@ public class PropertyPanel {
                 }
             }
         };
-        JLabel nameLabel = new JLabel(label);
+        JLabel nameLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, label);
+        
         JTextField tf = new JTextField();
         tf.setPreferredSize(new Dimension(140, 20));
         tf.setMinimumSize(new Dimension(50, 20));
         //tf.setDocument(JTextFieldFilter.newFloat());
-        tf.setDocument(JTextFieldFilter.newFloatExp());
+        tf.setDocument(JTextFieldFilter.newFloatExp(tf));
+        
+        //since we are setting label with mnemonics &
+        //we should strip it from the label stored
+        //in property panel which also used in error reporting
+        panel.mLabel = nameLabel.getText();
+        
+        nameLabel.setLabelFor(tf);
+        //default tooltip is label, tooltip is used for accesible description
+        //by default so thats why we add a tool tip here
+        tf.setToolTipText(panel.mLabel);
+        tf.getAccessibleContext().setAccessibleDescription(label);
+       
         
         tf.setText(size.getValue());
         String[] values = new String[] {
@@ -1143,6 +1228,8 @@ public class PropertyPanel {
             SharedConstants.TIME_UNIT_WEEK,
         };
         JComboBox cbb = new JComboBox(values);
+        
+        
         // PreferredSize must be set o.w. failed validation will resize this field.
         cbb.setPreferredSize(new Dimension(80, 20));
         cbb.setMinimumSize(new Dimension(30, 20));
@@ -1229,8 +1316,20 @@ public class PropertyPanel {
             }
             
             private void init() {
-                JLabel nameLabel = new JLabel(mLabel);
+                JLabel nameLabel = new JLabel();
+                org.openide.awt.Mnemonics.setLocalizedText(nameLabel, mLabel);
+//              since we are setting label with mnemonics &
+                //we should strip it from the label stored
+                //in property panel which also used in error reporting
+                this.mLabel = nameLabel.getText();
+                
                 mComboBox = new JComboBox(mDisplayNames);
+                nameLabel.setLabelFor(mComboBox);
+                //default tooltip is label, tooltip is used for accesible description
+                //by default so thats why we add a tool tip here
+                mComboBox.setToolTipText(mLabel);
+                mComboBox.getAccessibleContext().setAccessibleDescription(mLabel);
+                
                 // PreferredSize must be set o.w. failed validation will resize this field.
                 mComboBox.setPreferredSize(new Dimension(140, 20));
                 mComboBox.setMinimumSize(new Dimension(50, 20));

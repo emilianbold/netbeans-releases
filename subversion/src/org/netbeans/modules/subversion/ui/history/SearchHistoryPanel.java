@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.ui.history.RepositoryRevision.EventDetails;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -92,6 +99,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     private AbstractAction nextAction;
     private AbstractAction prevAction;
+    private EventDetails eventsFilter;
+    private boolean alreadyHasDetails;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -156,6 +165,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 search();
             }
@@ -176,6 +186,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Next_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onNextButton();
             }
@@ -185,6 +196,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Prev_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onPrevButton();
             }
@@ -198,31 +210,42 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
 
-        if(roots.length == 1) {
-            File file = roots[0];
-            if(!file.isFile()) fileInfoCheckBox.setEnabled(false);
+        if (!(roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
+            fileInfoCheckBox.setEnabled(false);
         }
         if(fileInfoCheckBox.isEnabled()) {
             fileInfoCheckBox.setSelected(SvnModuleConfig.getDefault().getShowFileAllInfo());
         } else {
             fileInfoCheckBox.setSelected(true);
         }
+        eventsFilter = new EventDetails(roots[0]) {
+            @Override
+            protected boolean showDetails() {
+                return fileInfoCheckBox.isSelected();
+            }
+        };
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getID() == Divider.DIVIDER_CLICKED) {
             criteriaVisible = !criteriaVisible;
             refreshComponents(false);
         } else if (e.getSource() == fileInfoCheckBox && fileInfoCheckBox.isEnabled()) {
             SvnModuleConfig.getDefault().setShowFileAllInfo(fileInfoCheckBox.isSelected());
-            diffView = null;
-            summaryView = null;
-            refreshComponents(true);
+            if(!alreadyHasDetails) {
+                search();
+            } else {
+                diffView = null;
+                summaryView = null;
+                refreshComponents(true);
+            }
         }
     }
 
     private ExplorerManager             explorerManager;
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -231,16 +254,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         explorerManager.addPropertyChangeListener(this);
     }
 
+    @Override
     public void removeNotify() {
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         return explorerManager;
     }
@@ -261,14 +287,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             // set filter for revision events
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventFullNameComparator());
-                                rev.setFilter(null);
-                            } else {
-                                // no need to sort now, since events for only one file are shown
-                                rev.setFilter(roots[0]);
                             }
+                            rev.setEventDetails(eventsFilter);
                         }
                         summaryView = new SummaryView(this, results);
-                    }
+                    } 
                     resultsPanel.add(summaryView.getComponent());
                 } else {
                     if (diffView == null) {
@@ -276,11 +299,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             // set filter for revision events
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventBaseNameComparator());
-                                rev.setFilter(null);
-                            } else {
-                                // no need to sort now, since events for only one file are shown
-                                rev.setFilter(roots[0]);
                             }
+                            rev.setEventDetails(eventsFilter);
                         }
                         diffView = diffViewFactory.createDiffResultsView(this, results);
                     }
@@ -333,24 +353,47 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (currentSearchTask != null) {
             currentSearchTask.cancel();
         }
+        if(!alreadyHasDetails) {
+            alreadyHasDetails = fileInfoCheckBox.isSelected();
+        }
         setResults(null, true);
-        currentSearchTask = RequestProcessor.getDefault().post(new SearchExecutor(this));
+        Subversion.getInstance().getParallelRequestProcessor().post(new SearchExecutor(this));
     }
     
     void executeSearch() {
         search();
     }
 
-    void showDiff(RepositoryRevision.Event revision) {
-        tbDiff.setSelected(true);
-        refreshComponents(true);
-        diffView.select(revision);
+    void showDiff(final RepositoryRevision.Event revision) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                tbDiff.setSelected(true);
+                refreshComponents(true);
+                diffView.select(revision);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
     }
 
-    public void showDiff(RepositoryRevision container) {
-        tbDiff.setSelected(true);
-        refreshComponents(true);
-        diffView.select(container);
+    public void showDiff(final RepositoryRevision container) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                tbDiff.setSelected(true);
+                refreshComponents(true);
+                diffView.select(container);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
     }
 
     /**
@@ -358,6 +401,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * It return empty collection on non-atomic
      * revision ranges. XXX move this logic to clients?
      */
+    @Override
     public Collection getSetups() {
         if (results == null) {
             return Collections.EMPTY_SET;
@@ -398,12 +442,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         List<Setup> setups = new ArrayList<Setup>();
         for (File file : filesToDiff) {
-            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision));
+            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision), false);
             setups.add(setup);
         }
         return setups;
     }
     
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -541,14 +586,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();        
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();        
     }

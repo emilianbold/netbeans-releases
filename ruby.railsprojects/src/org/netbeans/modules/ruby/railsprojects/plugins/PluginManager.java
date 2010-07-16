@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -76,7 +80,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Class which handles plugin interactions - executing plugin, installing, uninstalling, etc.
@@ -345,11 +348,24 @@ public class PluginManager {
         }
     }
     
+    private List<String> getPluginCmd() {
+        // XXX: basically just placeholder code as the plugin manager 
+        // is disabled for Rails 3 projects as in Rails 3 it is not 
+        // possible to list installed/available plugins, rendering 
+        // the plugin manager basically useless
+        List<String> pluginCmd = new ArrayList<String>(2);
+        if (RailsProjectUtil.getRailsVersion(project).isRails3OrHigher()) {
+            pluginCmd.add("script" + File.separator + "rails");//NOI18N
+            pluginCmd.add("plugin"); //NOI18N
+        } else {
+            pluginCmd.add("script" + File.separator + "plugin"); // NOI18N
+        }
+        return pluginCmd;
+    }
+
     private boolean pluginRunner(String command, PluginProgressPanel progressPanel,
             Process[] processHolder, List<String> lines, String... commandArgs) {
-        // Install the given plugin
-        String pluginCmd = "script" + File.separator + "plugin"; // NOI18N
-        
+
         List<String> argList = new ArrayList<String>();
         
         RubyPlatform platform = RubyPlatform.platformFor(project);
@@ -362,7 +378,7 @@ public class PluginManager {
         argList.addAll(ExecutionUtils.getRubyArgs(platform));
         // see #142698
         argList.add("-r" + getPluginCustomizer().getAbsolutePath()); //NOI18N
-        argList.add(pluginCmd);
+        argList.addAll(getPluginCmd());
         argList.add(command);
         
         for (String arg : commandArgs) {

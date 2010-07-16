@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,9 +69,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionStat
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -77,10 +82,12 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
+    @Override
     public List<String> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);
     }
 
+    @Override
     public List<String> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
@@ -88,7 +95,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     private List<String> getIncludePaths(CsmFile file, boolean system) {
         List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
-            NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl) file);
+            NativeFileItem item = Utils.getCompiledFileItem((FileImpl) file);
             if (item != null) {
                 if (item.getLanguage() == NativeFileItem.Language.C_HEADER) {
                     // It's an orphan (otherwise the getCompiledFileItem would return C or C++ item, not header).
@@ -115,6 +122,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return out;
     }
 
+    @Override
     public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
         List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
         if (file instanceof FileImpl) {
@@ -225,6 +233,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     }
     
+    @Override
     public List<CsmReference> getMacroUsages(CsmFile file) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
@@ -240,7 +249,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                     try {
                         long lastParsedTime = fileImpl.getLastParsedTime();
-                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
                         if (apt != null) {
                             Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
                             if (handlers.isEmpty()) {
@@ -285,11 +294,12 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return out;
     }
     
+    @Override
     public CsmOffsetable getGuardOffset(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
             try {
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
 
                 GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();
@@ -340,7 +350,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-                ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+                ProjectBase startProject = Utils.getStartProject(startEntry);
                 if (startProject != null) {
                     CharSequence path = startEntry.getStartFile();
                     CsmFile startFile = startProject.getFile(new File(path.toString()), false);
@@ -362,13 +372,16 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public List<CsmInclude> getIncludeStack(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            APTPreprocHandler.State state = ((ProjectBase)impl.getProject()).getPreprocState(impl);
-            if (state == null) {
+            Collection<State> preprocStates = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            if (preprocStates.isEmpty()) {
                 return Collections.<CsmInclude>emptyList();
             }
+            // use stack from one of states (i.e. first)
+            APTPreprocHandler.State state = preprocStates.iterator().next();
+            CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
             List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-            ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+            ProjectBase startProject = Utils.getStartProject(startEntry);
             if (startProject != null) {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
                 if (startFile != null) {
@@ -418,6 +431,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+        @Override
         public int compare(CsmOffsetable o1, CsmOffsetable o2) {
             int diff = o1.getStartOffset() - o2.getStartOffset();
             if (diff == 0) {

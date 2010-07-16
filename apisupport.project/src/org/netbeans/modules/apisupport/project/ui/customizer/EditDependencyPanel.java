@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
@@ -99,16 +103,16 @@ public final class EditDependencyPanel extends JPanel {
         UIUtil.setText(codeNameBaseValue, me.getCodeNameBase());
         UIUtil.setText(jarLocationValue, me.getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
-        UIUtil.setText(specVerValue, origDep.hasImplementationDepedendency() ?
+        UIUtil.setText(specVerValue, origDep.hasImplementationDependency() ?
             me.getSpecificationVersion() :
             origDep.getSpecificationVersion());
-        implVer.setSelected(origDep.hasImplementationDepedendency());
+        implVer.setSelected(origDep.hasImplementationDependency());
         availablePkg.setEnabled(hasAvailablePackages());
         includeInCP.setSelected(origDep.hasCompileDependency());
         refreshAvailablePackages();
         refresh();
         ActionListener versionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            public @Override void actionPerformed(ActionEvent arg0) {
                 refreshAvailablePackages();
             }
         };
@@ -138,12 +142,16 @@ public final class EditDependencyPanel extends JPanel {
     }
     
     public ModuleDependency getEditedDependency() {
-        ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
-                releaseVersionValue.getText().trim(),
-                specVerValue.getText().trim(),
-                includeInCP.isSelected(),
-                implVer.isSelected());
-        return dep;
+        try {
+            return new ModuleDependency(origDep.getModuleEntry(),
+                    releaseVersionValue.getText().trim(),
+                    specVerValue.getText().trim(),
+                    includeInCP.isSelected(),
+                    implVer.isSelected());
+        } catch (NumberFormatException x) {
+            // XXX would be better to notify the user somehow
+            return origDep;
+        }
     }
     
     /** This method is called from within the constructor to

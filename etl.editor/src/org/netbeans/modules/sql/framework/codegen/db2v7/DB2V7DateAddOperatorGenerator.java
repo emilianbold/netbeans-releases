@@ -30,8 +30,8 @@ import org.netbeans.modules.sql.framework.model.SQLLiteral;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
 import org.netbeans.modules.sql.framework.model.SQLOperatorDefinition;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * @author Rupesh Ramachandran

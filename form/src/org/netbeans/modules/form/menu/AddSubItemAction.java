@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,18 +74,22 @@ import org.openide.util.actions.NodeAction;
 public class AddSubItemAction extends NodeAction {
     
     //fix this
+    @Override
     protected boolean enable(Node[] nodes) {
         return true; 
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -103,13 +110,16 @@ public class AddSubItemAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, AlignAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createInsertSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -123,6 +133,7 @@ public class AddSubItemAction extends NodeAction {
             this.pItem = pItem;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Node[] nds = getNodes();
             for(Node nd : nds) {
@@ -141,6 +152,7 @@ public class AddSubItemAction extends NodeAction {
         if (!(menu.getMenuComponentCount() > 0)) {
             Set<Class> classes = new HashSet<Class>();
             SortedSet<PaletteItem> items = new TreeSet<PaletteItem>(new Comparator<PaletteItem>() {
+                @Override
                 public int compare(PaletteItem item1, PaletteItem item2) {
                     String name1 = item1.getNode().getDisplayName();
                     String name2 = item2.getNode().getDisplayName();

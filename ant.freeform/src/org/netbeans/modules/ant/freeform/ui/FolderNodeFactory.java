@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,7 +67,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -91,6 +93,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -99,7 +102,9 @@ import org.w3c.dom.Element;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-ant-freeform")
 public class FolderNodeFactory implements NodeFactory {
-    
+
+    private static final RequestProcessor RP = new RequestProcessor(FolderNodeFactory.class.getName(), 1);
+
     /** Creates a new instance of FolderNodeFactory */
     public FolderNodeFactory() {
     }
@@ -136,16 +141,16 @@ public class FolderNodeFactory implements NodeFactory {
         
         private void updateKeys(boolean fromListener) {
             Element genldata = p.getPrimaryConfigurationData();
-            Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element viewEl = XMLUtil.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
             if (viewEl != null) {
-                Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
-                keys = Util.findSubElements(itemsEl);
+                Element itemsEl = XMLUtil.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
+                keys = XMLUtil.findSubElements(itemsEl);
             } else {
                 keys = Collections.<Element>emptyList();
             }
             if (fromListener && !synchronous) {
                 // #50328, #58491 - post setKeys to different thread to prevent deadlocks
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         cs.fireChange();
                     }
@@ -182,8 +187,8 @@ public class FolderNodeFactory implements NodeFactory {
         
         public Node node(Element itemEl) {
             
-            Element locationEl = Util.findElement(itemEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
-            String location = Util.findText(locationEl);
+            Element locationEl = XMLUtil.findElement(itemEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
+            String location = XMLUtil.findText(locationEl);
             String locationEval = p.evaluator().evaluate(location);
             if (locationEval == null) {
                 return null;
@@ -194,9 +199,9 @@ public class FolderNodeFactory implements NodeFactory {
                 return null;
             }
             String label;
-            Element labelEl = Util.findElement(itemEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element labelEl = XMLUtil.findElement(itemEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
             if (labelEl != null) {
-                label = Util.findText(labelEl);
+                label = XMLUtil.findText(labelEl);
             } else {
                 label = null;
             }
@@ -206,18 +211,18 @@ public class FolderNodeFactory implements NodeFactory {
                     return null;
                 }
                 String includes = null;
-                Element includesEl = Util.findElement(itemEl, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element includesEl = XMLUtil.findElement(itemEl, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (includesEl != null) {
-                    includes = p.evaluator().evaluate(Util.findText(includesEl));
+                    includes = p.evaluator().evaluate(XMLUtil.findText(includesEl));
                     if (includes.matches("\\$\\{[^}]+\\}")) { // NOI18N
                         // Clearly intended to mean "include everything".
                         includes = null;
                     }
                 }
                 String excludes = null;
-                Element excludesEl = Util.findElement(itemEl, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element excludesEl = XMLUtil.findElement(itemEl, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (excludesEl != null) {
-                    excludes = p.evaluator().evaluate(Util.findText(excludesEl));
+                    excludes = p.evaluator().evaluate(XMLUtil.findText(excludesEl));
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
                 for (ProjectNature nature : Lookup.getDefault().lookupAll(ProjectNature.class)) {

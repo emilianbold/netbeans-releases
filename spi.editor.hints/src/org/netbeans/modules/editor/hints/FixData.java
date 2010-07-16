@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,29 +77,25 @@ public class FixData extends CompoundLazyFixList {
     }
 
     private List<Fix> sortFixes(Collection<Fix> fixes) {
-        List<EnhancedFix> sortableFixes = new ArrayList<EnhancedFix>();
-        List<Fix> other = new LinkedList<Fix>();
+        List<Fix> result = new ArrayList<Fix>(fixes);
 
-        for (Fix f : fixes) {
-            if (f instanceof EnhancedFix) {
-                sortableFixes.add((EnhancedFix) f);
-            } else {
-                other.add(f);
-            }
-        }
-
-        Collections.sort(sortableFixes, new FixComparator());
-
-        List<Fix> result = new ArrayList<Fix>();
-
-        result.addAll(sortableFixes);
-        result.addAll(other);
+        Collections.sort(result, new FixComparator());
 
         return result;
     }
-    private static final class FixComparator implements Comparator<EnhancedFix> {
-        public int compare(EnhancedFix o1, EnhancedFix o2) {
-            return compareText(o1.getSortText(), o2.getSortText());
+
+    private static final String DEFAULT_SORT_TEXT = "\uFFFF";
+
+    private static CharSequence getSortText(Fix f) {
+        if (f instanceof EnhancedFix) {
+            return ((EnhancedFix) f).getSortText();
+        } else {
+            return DEFAULT_SORT_TEXT;
+        }
+    }
+    private static final class FixComparator implements Comparator<Fix> {
+        public int compare(Fix o1, Fix o2) {
+            return compareText(getSortText(o1), getSortText(o2));
         }
     }
 

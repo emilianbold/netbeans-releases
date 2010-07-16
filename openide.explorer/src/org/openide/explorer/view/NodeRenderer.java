@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
+import org.openide.util.NbBundle;
 
 
 /** Default renderer for nodes. Can paint either Nodes directly or
@@ -113,6 +117,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
      * or a <code>VisualizerNode</code>.
      * @return component to draw the value
      */
+    @Override
     public Component getTreeCellRendererComponent(
         JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus
     ) {
@@ -146,6 +151,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     /** This is the only method defined by <code>ListCellRenderer</code>.  We just
      * reconfigure the <code>Jlabel</code> each time we're called.
      */
+    @Override
     public Component getListCellRendererComponent(
         JList list, Object value, int index, boolean sel, boolean cellHasFocus
     ) {
@@ -156,8 +162,13 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         }
 
         String text = vis.getHtmlDisplayName();
+        if (list.getModel() instanceof NodeListModel) {
+            int depth = NodeListModel.findVisualizerDepth(list.getModel(), vis);
+            if (depth == -1) {
+                text = NbBundle.getMessage(NodeRenderer.class, "LBL_UP");
+            }
+        }
         boolean isHtml = text != null;
-
         if (!isHtml) {
             text = vis.getDisplayName();
         }
@@ -174,9 +185,9 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         //do some hacks to make it look focused for TreeTableView
         int iconWidth = configureFrom(renderer, list, false, sel, vis);
 
-        boolean bigIcons = this.bigIcons || list instanceof ListPane;
+        boolean bi = this.bigIcons || list instanceof ListPane;
 
-        if (bigIcons) {
+        if (bi) {
             renderer.setCentered(true);
         } else {
             //Indent elements in a ListView/ChoiceView relative to their position
@@ -228,15 +239,16 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
 
     /** Utility method to find a visualizer node for the object passed to
      * any of the cell renderer methods as the value */
-    private static final VisualizerNode findVisualizerNode(Object value) {
-        VisualizerNode vis = (value instanceof Node) ? VisualizerNode.getVisualizer(null, (Node) value)
-                                                     : (VisualizerNode) value;
-
-        if (vis == null) {
-            vis = VisualizerNode.EMPTY;
+    private static VisualizerNode findVisualizerNode(Object value) {
+        if (value instanceof Node) {
+            return VisualizerNode.getVisualizer(null, (Node)value);
+        } else if (value instanceof VisualizerNode) {
+            return (VisualizerNode)value;
+        } else if (value == null || " ".equals(value) || "".equals(value)) {
+            return VisualizerNode.EMPTY;
+        } else {
+            throw new ClassCastException("Unexpected value: " + value);
         }
-
-        return vis;
     }
 
     /** DnD operation enters. Update look and feel to the 'drag under' state.

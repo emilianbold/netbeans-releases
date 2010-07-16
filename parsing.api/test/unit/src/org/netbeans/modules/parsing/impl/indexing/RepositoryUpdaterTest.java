@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -827,6 +830,72 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, eindexerFactory.scanFinishedFor);
     }
 
+    public void testBinaryScanStartFinishedCalled() throws Exception {
+        binIndexerFactory.scanStartedFor.clear();
+        binIndexerFactory.scanFinishedFor.clear();
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL());
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(bootRoot2);
+        ClassPath cp = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(PLATFORM,new ClassPath[] {cp});
+        assertTrue (handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(bootRoot2.getURL(), handler.getBinaries().iterator().next());
+        assertTrue(binIndexerFactory.indexer.await());
+        assertEquals(1, binIndexerFactory.scanStartedFor.size());
+        assertEquals(bootRoot2.getURL(), binIndexerFactory.scanStartedFor.get(0));
+        assertEquals(1, binIndexerFactory.scanFinishedFor.size());
+        assertEquals(bootRoot2.getURL(), binIndexerFactory.scanFinishedFor.get(0));
+
+        binIndexerFactory.scanStartedFor.clear();
+        binIndexerFactory.scanFinishedFor.clear();
+        handler.reset();
+        binIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
+        mcpi1.addResource(bootRoot3);
+        assertTrue (handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(bootRoot3.getURL(), handler.getBinaries().iterator().next());
+        assertTrue(binIndexerFactory.indexer.await());
+        assertEquals(1, binIndexerFactory.scanStartedFor.size());
+        assertEquals(bootRoot3.getURL(), binIndexerFactory.scanStartedFor.get(0));
+        assertEquals(1, binIndexerFactory.scanFinishedFor.size());
+        assertEquals(bootRoot3.getURL(), binIndexerFactory.scanFinishedFor.get(0));
+
+        binIndexerFactory.scanStartedFor.clear();
+        binIndexerFactory.scanFinishedFor.clear();
+        handler.reset();
+        binIndexerFactory.indexer.setExpectedRoots(new URL[0]);
+        globalPathRegistry_unregister(PLATFORM,new ClassPath[]{cp});
+        //Give RU a time for refresh - nothing to wait for
+        Thread.sleep(2000);
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(0, binIndexerFactory.indexer.getCount());
+        assertEquals(0, binIndexerFactory.scanStartedFor.size());
+        assertEquals(0, binIndexerFactory.scanFinishedFor.size());
+
+        binIndexerFactory.scanStartedFor.clear();
+        binIndexerFactory.scanFinishedFor.clear();
+        handler.reset();
+        binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL(), bootRoot3.getURL());
+        globalPathRegistry_register(PLATFORM,new ClassPath[]{cp});
+        assertTrue (handler.await());
+        assertEquals(2, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertTrue(binIndexerFactory.indexer.await());
+        assertEquals(2, binIndexerFactory.scanStartedFor.size());
+        assertEquals(new URL[] {bootRoot2.getURL(), bootRoot3.getURL()}, binIndexerFactory.scanStartedFor);
+        assertEquals(2, binIndexerFactory.scanFinishedFor.size());
+        assertEquals(new URL[] {bootRoot2.getURL(), bootRoot3.getURL()}, binIndexerFactory.scanFinishedFor);
+    }
+
     //where
     private void assertEquals(final URL[] expected, final Collection<URL> data) throws AssertionError {
         assertEquals(expected.length, data.size());
@@ -1476,6 +1545,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private static class BinIndexerFactory extends BinaryIndexerFactory {
 
         private final BinIndexer indexer = new BinIndexer();
+        final List<URL> scanStartedFor = new LinkedList<URL>();
+        final List<URL> scanFinishedFor = new LinkedList<URL>();
 
         @Override
         public BinaryIndexer createIndexer() {
@@ -1497,6 +1568,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return 1;
         }
 
+        @Override
+        public boolean scanStarted(final Context ctx) {
+            scanStartedFor.add(ctx.getRootURI());
+            return true;
+        }
+
+        @Override
+        public void scanFinished(final Context ctx) {
+            scanFinishedFor.add(ctx.getRootURI());
+        }
     }
 
     private static class BinIndexer extends BinaryIndexer {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,8 +72,11 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
     private boolean isFolder;
+    private boolean freeFileExtension;
     
-    SimpleTargetChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    SimpleTargetChooserPanel(Project project, SourceGroup[] folders,
+            WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.folders = folders;
         if (folders != null && folders.length == 0) {
             throw new IllegalArgumentException("Attempting to create panel with an empty folders list"); // #161478
@@ -81,18 +87,19 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             bottomPanel.addChangeListener( this );
         }
         this.isFolder = isFolder;
+        this.freeFileExtension = freeFileExtension;
         this.gui = null;
     }
 
-    public Component getComponent() {
+    public @Override Component getComponent() {
         if (gui == null) {
-            gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder );
+            gui = new SimpleTargetChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder, freeFileExtension);
             gui.addChangeListener(this);
         }
         return gui;
     }
 
-    public HelpCtx getHelp() {
+    public @Override HelpCtx getHelp() {
         if ( bottomPanel != null ) {
             HelpCtx bottomHelp = bottomPanel.getHelp();
             if ( bottomHelp != null ) {
@@ -105,7 +112,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         
     }
 
-    public boolean isValid() {
+    public @Override boolean isValid() {
         boolean ok = ( gui != null && gui.getTargetName() != null && gui.getTargetGroup() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
@@ -116,21 +123,22 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
-        String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt (), isFolder);
+        String errorMessage = ProjectUtilities.canUseFileName(gui.getTargetGroup().getRootFolder(),
+                gui.getTargetFolder(), gui.getTargetName(), template.getExt(), isFolder, freeFileExtension);
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 
         return errorMessage == null;
     }
 
-    public void addChangeListener(ChangeListener l) {
+    public @Override void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
-    public void removeChangeListener(ChangeListener l) {
+    public @Override void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
-    public void readSettings(WizardDescriptor settings) {
+    public @Override void readSettings(WizardDescriptor settings) {
                 
         wizard = settings;
                 
@@ -164,7 +172,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         }
     }
     
-    public void storeSettings(WizardDescriptor settings) { 
+    public @Override void storeSettings(WizardDescriptor settings) {
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
@@ -172,8 +180,6 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            
-            FileObject template = Templates.getTemplate( wizard );
             
             String name = gui.getTargetName ();
             if (name.indexOf ('/') > 0) { // NOI18N
@@ -186,7 +192,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
 
-    public void stateChanged(ChangeEvent e) {        
+    public @Override void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
     

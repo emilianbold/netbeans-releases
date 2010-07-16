@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -82,6 +86,7 @@ public class XSLTDataLoader extends UniFileLoader {
 
     /** Does initialization. Initializes display name,
      * extension list and the actions. */
+    @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(MIME_TYPE);
@@ -110,6 +115,7 @@ public class XSLTDataLoader extends UniFileLoader {
         return new XSLTDataObject(primaryFile, this);
     }
     
+    @Override
     protected FileObject findPrimaryFile( FileObject fo ) {
         FileObject primaryFo = null;
         String extension = fo.getExt();
@@ -130,7 +136,7 @@ public class XSLTDataLoader extends UniFileLoader {
                 if (extension.equals(PRIMARY_EXTENSION)
                     || extension.equals(PRIMARY_EXTENSION2)) 
                 {
-                    FileObject projectSource = Util.getProjectSource(Util.getProject(fo));
+                    FileObject projectSource = Util.getProjectSource(SoaUtil.getProject(fo));
                     isContext = projectSource != null 
                             && projectSource.getFileObject(TRANSFORM_MAP_FILE) != null;
                 }
@@ -160,6 +166,7 @@ public class XSLTDataLoader extends UniFileLoader {
         return xsltFo.getParent().getFileObject(TRANSFORM_MAP_FILE);
     }
     
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, 
             FileObject primaryFile) 
     {
@@ -171,6 +178,7 @@ public class XSLTDataLoader extends UniFileLoader {
          * other modules can decorate with Special Actions
          * to see the default actions look in the layer.xml
          */
+    @Override
         protected String actionsContext() {
                 return ACTION_CONTEXT;
         }

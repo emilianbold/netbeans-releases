@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,6 +83,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicListUI;
+import javax.swing.text.Position;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Utils;
@@ -309,6 +313,7 @@ public class CategoryList extends JList implements Autoscroll {
             }
         }
 
+        @Override
         public Component getListCellRendererComponent (JList list,
                 Object value,
                 int index,
@@ -352,6 +357,7 @@ public class CategoryList extends JList implements Autoscroll {
     }
     
     /** notify the Component to autoscroll */
+    @Override
     public void autoscroll( Point cursorLoc ) {
         if( null != getParent() && null != getParent().getParent() ) {
             Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
@@ -363,6 +369,7 @@ public class CategoryList extends JList implements Autoscroll {
      * region or border relative to the geometry of the
      * implementing Component.
      */
+    @Override
     public Insets getAutoscrollInsets() {
         return getSupport().getAutoscrollInsets();
     }
@@ -393,7 +400,11 @@ public class CategoryList extends JList implements Autoscroll {
             ensureIndexIsVisible( indexToSelect );
         }
     }
-
+    
+    @Override
+    public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
+        return -1;
+    }
     
     // ---------
     // list UI
@@ -520,6 +531,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.list = list;
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             Item item = list.getItemAt( list.getSelectedIndex() );
             item.invokePreferredAction( e );
@@ -533,6 +545,7 @@ public class CategoryList extends JList implements Autoscroll {
     
     private class PopupAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int posX = 0;
             int posY = 0;
@@ -563,6 +576,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.focusNext = focusNext;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int selIndexBefore = getSelectedIndex();
             defaultAction.actionPerformed( e );
@@ -570,7 +584,7 @@ public class CategoryList extends JList implements Autoscroll {
             if( selIndexBefore != selIndexCurrent )
                 return;
             
-            if( focusNext && 0 == selIndexCurrent )
+            if( focusNext && 0 == selIndexCurrent && getModel().getSize() > 1 )
                 return;
             
             KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
@@ -596,6 +610,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.selectNext = selectNext;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int selIndexBefore = getSelectedIndex();
             defaultAction.actionPerformed( e );
@@ -627,6 +642,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.doCopy = doCopy;
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             Item item = getItemAt( getSelectedIndex() );
             if( null == item )

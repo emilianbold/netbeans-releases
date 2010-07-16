@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,13 +61,13 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -92,12 +95,13 @@ public class ErrorHintsProviderTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+
+        clearWorkDir();
         
         if (cache == null) {
-            cache = TestUtil.createWorkFolder();
-            cacheFO = FileUtil.toFileObject(cache);
+            cache = new File(getWorkDir(), "cache");
+            cacheFO = FileUtil.createFolder(cache);
             IndexUtil.setCacheFolder(cache);
-            cache.deleteOnExit();
         }
 
         RepositoryUpdater.getDefault().start(true);
@@ -108,7 +112,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
         
@@ -165,10 +169,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
         
         doc.putProperty(Language.class, JavaTokenId.language());
         
-        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc))
+        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE))
             ref(ed.toString().replaceAll("\\p{Space}*:\\p{Space}*", ":"));
 
-        if (!Utilities.isMac() && specialMacTreatment) {
+        if (!org.openide.util.Utilities.isMac() && specialMacTreatment) {
             compareReferenceFiles(this.getName()+".ref",this.getName()+"-nonmac.pass",this.getName()+".diff");
         } else {
             compareReferenceFiles();

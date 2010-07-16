@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,24 +112,22 @@ public final class EjbViewController {
     }
     
     public String getDisplayName() {
-        if (displayName == null) {
-            try {
-                displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
-                    public String run(EjbJarMetadata metadata) throws IOException {
-                        Ejb ejb = metadata.findByEjbClass(ejbClass);
-                        if (ejb == null){
-                            return null;
-                        }
-                        String name = ejb.getDefaultDisplayName();
-                        if (name == null) {
-                            name = ejb.getEjbName();
-                        }
-                        return name;
+        try {
+            displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb == null){
+                        return null;
                     }
-                });
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+                    String name = ejb.getDefaultDisplayName();
+                    if (name == null) {
+                        name = ejb.getEjbName();
+                    }
+                    return name;
+                }
+            });
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
         return displayName;
     }
@@ -219,6 +220,10 @@ public final class EjbViewController {
     public DataObject getBeanDo() {
         return getDataObject(ejbClass);
     }
+
+    public FileObject getBeanFo() {
+        return findFileObject(ejbClass);
+    }
     
     public DataObject getDataObject(String className) {
         FileObject src = findFileObject(className);
@@ -244,7 +249,7 @@ public final class EjbViewController {
                 public void run(CompilationController compilationController) throws IOException {
                     compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = compilationController.getElements().getTypeElement(ejbClass);
-                    result.add(ElementHandle.create(typeElement));
+                    result.add(typeElement != null ? ElementHandle.create(typeElement) : null);
                 }
             }, true);
             return result.get(0);
@@ -374,19 +379,20 @@ public final class EjbViewController {
     
     private FileObject findFileObject(final String className) {
         final FileObject[] result = new FileObject[1];
-        try {
-            JavaSource javaSource = JavaSource.create(cpInfo);
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(className);
-                    if (typeElement != null) {
-                        result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+        if (cpInfo != null){
+            try {
+                JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        TypeElement typeElement = controller.getElements().getTypeElement(className);
+                        if (typeElement != null) {
+                            result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                        }
                     }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
         return result[0];
     }

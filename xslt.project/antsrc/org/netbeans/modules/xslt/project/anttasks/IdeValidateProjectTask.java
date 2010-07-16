@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,11 +65,21 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.misc.Xml;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 
 public class IdeValidateProjectTask extends Task {
-
+ 
+    static {
+        myCatalogModels = new IDECatalogModel[] {
+            IDETMapCatalogModel.getDefault(),
+            IdeXslCatalogModel.getDefault(),
+            // # 162653
+            IdeWsdlCatalogModel.getDefault()
+        };
+    }
+    
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
@@ -90,7 +103,8 @@ public class IdeValidateProjectTask extends Task {
         }
     }
 
-    public void setClasspathRef(Reference ref) {}
+    public void setClasspathRef(Reference ref) {
+    }
 
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
@@ -117,14 +131,14 @@ public class IdeValidateProjectTask extends Task {
         if (this.mBuildDependentProjectFilesDirectory == null) {
             throw new BuildException("No dependentProjectFiles directory is set.");
         }
-        
+
         try {
             this.mSourceDir = new File(this.mSourceDirectory);
             CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
         } catch (Exception ex) {
             throw new BuildException("Failed to get File object for project source directory " + this.mSourceDirectory, ex);
         }
-        
+
         try {
             this.mBuildDir = new File(this.mBuildDirectory);
         } catch (Exception ex) {
@@ -135,7 +149,7 @@ public class IdeValidateProjectTask extends Task {
     }
 
     private void processFilesFolderInBuildDir(File folder) {
-        File files[] = folder.listFiles(new Util.XsltFileFilter());
+        File files[] = folder.listFiles(new Util.XsltProjectFileFilter());
 
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -173,7 +187,7 @@ public class IdeValidateProjectTask extends Task {
     }
 
     private void processFolder(File fileDir) {
-        File[] files = fileDir.listFiles(new Util.XsltFileFilter());
+        File[] files = fileDir.listFiles(new Util.XsltProjectFileFilter());
         processFiles(files);
     }
 
@@ -194,9 +208,8 @@ public class IdeValidateProjectTask extends Task {
         if (isFileModified(file)) {
             try {
                 validateFile(file);
-            }
-            catch (Throwable ex) {
-                if ( !myAllowBuildWithError) {
+            } catch (Throwable ex) {
+                if (!myAllowBuildWithError) {
                     throw new BuildException(ex);
                 }
             }
@@ -218,35 +231,30 @@ public class IdeValidateProjectTask extends Task {
 
     private void validateFile(File file) throws BuildException {
 //System.out.println();
-//System.out.println("validate: " + file);
-//System.out.println();
-      Model model = null;
-      
-      try {
-        model = IDETMapCatalogModel.getDefault().getTMapModel(file);
-      }
-      catch (Exception e) {
-        model = null;
-      }
-      validateModel(file, model);
+//System.out.println("VALIDATE: " + file);
+        assert myCatalogModels != null;
+        Model model = null;
 
-      try {
-        model = IdeXslCatalogModel.getDefault().getXslModel(file);
-      }
-      catch (Exception e) {
-        model = null;
-      }
-      validateModel(file, model);
+        for (IDECatalogModel catalogModel : myCatalogModels) {
+            if (catalogModel.isAccepted(file)) {
+                try {
+                    model = catalogModel.getModel(file);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error while trying to get Model", e);
+                }
+                validateModel(file, model);
+            }
+        }
     }
 
     private void validateModel(File file, Model model) throws BuildException {
-//System.out.println("   model: " + file);
-      if (model == null) {
-        return;
-      }
-      if (new Controller(model).ideValidate(file)) {
-        throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
-      }
+//System.out.println("   model: " + model + "; file: " + file);
+        if (model == null) {
+            return;
+        }
+        if (new Controller(model).ideValidate(file, ValidationType.COMPLETE)) {
+            throw new BuildException(Xml.FOUND_VALIDATION_ERRORS);
+        }
     }
 
     private String mSourceDirectory;
@@ -258,4 +266,5 @@ public class IdeValidateProjectTask extends Task {
     private Map myFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
     private boolean myAllowBuildWithError = false;
+    private static final IDECatalogModel[] myCatalogModels; 
 }

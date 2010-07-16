@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,49 +49,68 @@ import java.util.Arrays;
 import java.util.jar.JarFile;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
-import static javax.tools.JavaFileObject.Kind.*;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import junit.extensions.TestSetup;
-import junit.framework.*;
 import java.io.File;
 import java.util.zip.ZipFile;
 import javax.tools.StandardLocation;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 
 /** Base class for testing file managers. This class basically tests itself.
  *
  * @author Petr Hrebejk
  */
-public class FileManagerTest extends TestCase {
+public class FileManagerTest extends NbTestCase {
     
-    protected static Setup setup;
-    private CachingArchiveProvider archiveProvider;
-        
     public FileManagerTest(String testName) {
         super(testName);
     }
 
+    private File workDir;
+    private File rtFile, srcFile;
+    private File rtFolder, srcFolder;
+    private CachingArchiveProvider archiveProvider;
+    private Archive rtJarArchive;
+    private Archive rtFolderArchive;
+    private Archive srcZipArchive;
+    private Archive srcFolderArchive;
+
     protected void setUp() throws Exception {
-        archiveProvider = new CachingArchiveProvider();
+        clearWorkDir();
+        workDir = getWorkDir();
+        System.out.println("Workdir " + workDir);
+        TestUtil.copyFiles(TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR);
+        TestUtil.copyFiles(TestUtil.getJdkDir(), workDir, TestUtil.SRC_ZIP);
+
+        rtFile = new File(workDir, TestUtil.RT_JAR);
+        JarFile rtJar = new JarFile(rtFile);
+        srcFile = new File(workDir, TestUtil.SRC_ZIP);
+        ZipFile srcZip = new ZipFile(srcFile);
+
+        rtFolder = new File(workDir, "rtFolder");
+        TestUtil.unzip(rtJar, rtFolder);
+
+        srcFolder = new File(workDir, "src");
+        TestUtil.unzip(srcZip, srcFolder);
+
+        // Create archive provider
+        archiveProvider = CachingArchiveProvider.getDefault();
+
+        rtJarArchive = archiveProvider.getArchive(rtFile.toURI().toURL(), true);
+        rtFolderArchive = archiveProvider.getArchive(rtFolder.toURI().toURL(), true);
+        srcZipArchive = archiveProvider.getArchive(srcFile.toURI().toURL(), true);
+        srcFolderArchive = archiveProvider.getArchive(srcFolder.toURI().toURL(), true);
     }
 
-    protected void tearDown() throws Exception {                
-    }
-
-    public static Test suite() {
-        setup = new Setup( new TestSuite( FileManagerTest.class ) );
-        return setup;
-    }
-    
     protected JavaFileManagerDescripton[] getDescriptions() throws IOException {
 	
-	JavaFileManager tfm = createGoldenJFM( new File[] { setup.rtFolder }, 
-					       new File[] { setup.srcFolder} );		    
-	JavaFileManager gfm = createGoldenJFM( new File[] { setup.rtFile }, 
-					       new File[] { setup.srcFile } );	
+	JavaFileManager tfm = createGoldenJFM( new File[] { rtFolder }, 
+					       new File[] { srcFolder} );		    
+	JavaFileManager gfm = createGoldenJFM( new File[] { rtFile }, 
+					       new File[] { srcFile } );	
 	return new JavaFileManagerDescripton[] {
-	    new JavaFileManagerDescripton( tfm, gfm, setup.srcZipArchive ),
+	    new JavaFileManagerDescripton( tfm, gfm, srcZipArchive ),
 	};
     }
     
@@ -201,58 +223,4 @@ public class FileManagerTest extends TestCase {
 		
     }
     
-            
-    // Innerclasses ------------------------------------------------------------
-       
-     private static class Setup extends TestSetup {
-        
-        public File workDir;
-	public File rtFile, srcFile;
-        public File rtFolder, srcFolder;
-        public CachingArchiveProvider archiveProvider;
-		
-	public Archive rtJarArchive;
-	public Archive rtFolderArchive;
-	public Archive srcZipArchive;
-	public Archive srcFolderArchive;
-	
-        public Setup( Test test ) {
-            super( test );
-        }
-        
-        protected void tearDown() throws Exception {
-	    TestUtil.removeWorkFolder( workDir );
-            super.tearDown();
-        }
-        
-        protected void setUp() throws Exception {
-            super.setUp();
-	    
-            workDir = TestUtil.createWorkFolder();
-	    System.out.println("Workdir " + workDir );
-            TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
-            TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.SRC_ZIP );	    
-	    
-	    rtFile = new File( workDir, TestUtil.RT_JAR );
-            JarFile rtJar = new JarFile( rtFile );
-            srcFile = new File( workDir, TestUtil.SRC_ZIP );
-            ZipFile srcZip = new ZipFile( srcFile );
-            	    	    
-            rtFolder = new File( workDir, "rtFolder" );
-            TestUtil.unzip( rtJar, rtFolder );
-            
-            srcFolder = new File( workDir, "src" );
-            TestUtil.unzip( srcZip, srcFolder );
-            
-	    // Create archive provider
-            archiveProvider = CachingArchiveProvider.getDefault();
-	    
-	    rtJarArchive = archiveProvider.getArchive( rtFile.toURI().toURL(), true );
-	    rtFolderArchive = archiveProvider.getArchive( rtFolder.toURI().toURL(), true );
-	    srcZipArchive = archiveProvider.getArchive( srcFile.toURI().toURL(), true );
-	    srcFolderArchive = archiveProvider.getArchive( srcFolder.toURI().toURL(), true );
-	    	    	    
-        }
-     }
-           
 }

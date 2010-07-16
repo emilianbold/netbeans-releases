@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.jmx.test.managerwizard;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
@@ -68,6 +72,7 @@ public class ManagerWizard extends JMXTestCase {
     private static final String MANAGER_NAME_4 = "Test4Manager";
     private static final String MANAGER_NAME_5 = "Test5Manager";
     private static final String MANAGER_NAME_6 = "Test6Manager";
+    private static boolean initialized;
     
     /**
      * Creates a new instance of ConstructAgent
@@ -75,26 +80,25 @@ public class ManagerWizard extends JMXTestCase {
     public ManagerWizard(String name) {
         super(name);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ManagerWizard("init"));
-        suite.addTest(new ManagerWizard("constructTest1Manager"));
-        suite.addTest(new ManagerWizard("constructTest2Manager"));
-        suite.addTest(new ManagerWizard("constructTest3Manager"));
-        return suite;
+
+    @Override
+    protected void tearDown() throws Exception {
+        waitNoEvent(2000);
+        super.tearDown();
     }
     
     //========================= Init ==================================//
     
-    public void init() {
+    public void init() throws IOException {
         
         System.out.println("====================  init  ====================");
         
@@ -121,9 +125,9 @@ public class ManagerWizard extends JMXTestCase {
      * Create default JMX Manager.
      * Check wizard components and values.
      */
-    public void constructTest1Manager() {
+    public void test1ConstructManager() {
         
-        System.out.println("============ constructTest1Manager ============");
+        System.out.println("============ test1ConstructManager ============");
         
         Manager manager = new Manager();
         
@@ -177,15 +181,15 @@ public class ManagerWizard extends JMXTestCase {
         System.out.println("Check created files");
         checkCreatedFiles(managerCreatedClassFile, manager);
     }
-    
+
     /**
      * Create JMX Manager.
      * Update some values.
      * Check wizard components and values.
      */
-    public void constructTest2Manager() {
+    public void test2constructManager() {
         
-        System.out.println("============ constructTest2Manager ============");
+        System.out.println("============ test2constructManager ============");
         
         Manager manager = new Manager();
         
@@ -264,9 +268,9 @@ public class ManagerWizard extends JMXTestCase {
      * Update some values.
      * Check wizard components and values.
      */
-    public void constructTest3Manager() {
+    public void test3constructManager() {
         
-        System.out.println("============ constructTest3Manager ============");
+        System.out.println("============ test3constructManager ============");
         
         Manager manager = new Manager();
         

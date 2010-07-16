@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -26,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -73,6 +76,68 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="source-level-changes">
+            <api name="queries"/>
+            <summary>Added notifications about source level changes into SourceLevelQuery</summary>
+            <version major="1" minor="30"/>
+            <date day="8" month="7" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    The SourceLevelQuery did not allow listening on the source level changes. Such a
+                    notifications are required by the annotation processor support and indexing.
+                    This API change adds a SourceLevelQuery.getSourceLevel2 which returns a Result object
+                    which allows listening like other queries.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="SourceLevelQuery" />
+            <class package="org.netbeans.spi.java.queries" name="SourceLevelQueryImplementation2" />
+            <issue number="185031"/>
+        </change>
+        <change id="ap-query-triggers">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery.Result.Trigger</summary>
+            <version major="1" minor="28"/>
+            <date day="15" month="4" year="2010"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Modifying AnnotationProcessingQuery.Result.annotationProcessingEnabled() to return a set of triggers on which the annotation processors should be run.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <issue number="183793"/>
+        </change>
+        <change id="ap-query-processoroptions">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery.Result.processorOptions</summary>
+            <version major="1" minor="26"/>
+            <date day="4" month="3" year="2010"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Adding AnnotationProcessingQuery.Result.processorOptions() to return options passed to annotation processors (-Akey=value).
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <issue number="181421"/>
+        </change>
+        <change id="ap-query">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery</summary>
+            <version major="1" minor="25"/>
+            <date day="27" month="1" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Adding AnnotationProcessingQuery return annotation processing options for a given file/folder.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <class package="org.netbeans.spi.java.queries" name="AnnotationProcessingQueryImplementation" />
+            <issue number="179749"/>
+        </change>
         <change id="java-classpath-processorpath">
             <api name="classpath"/>
             <summary>Introducing JavaClassPathConstants.PROCESSOR_PATH</summary>

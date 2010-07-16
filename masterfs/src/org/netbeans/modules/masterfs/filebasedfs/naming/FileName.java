@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,51 +49,47 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.CharSequences;
 
 /**
  * @author Radek Matous
  */
 public class FileName implements FileNaming {
-    private String name;
+    private final CharSequence name;
     private final FileNaming parent;
-    private Integer id;
+    private final Integer id;
+    private CharSequence currentName;
 
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
-        this.name = parseName(parent, file);
+        this.name = CharSequences.create(parseName(parent, file));
         id = NamingFactory.createID(file);
+        this.currentName = name;
     }
 
     private static String parseName(final FileNaming parent, final File file) {
         return parent == null ? file.getPath() : file.getName();
     }
 
-    public boolean rename(String name, ProvidedExtensions.IOHandler handler) throws IOException {
-        boolean retVal = false;
+    @Override
+    public FileNaming rename(String name, ProvidedExtensions.IOHandler handler) throws IOException {
+        boolean success = false;
         final File f = getFile();
 
         if (FileChangedManager.getInstance().exists(f)) {
             File newFile = new File(f.getParentFile(), name);
             if (handler != null) {
                 handler.handle();
-                retVal = true;
+                success = true;
             } else {
-                retVal = f.renameTo(newFile);
+                success = f.renameTo(newFile);
             }
-            if (retVal) {
-                this.name = name;
-                Integer iid = NamingFactory.createID(newFile);                               
-                if (!iid.equals(id)) {
-                    id = iid;                  
-                }
+            if (success) {
+                FolderName.freeCaches();
+                return NamingFactory.fromFile(getParent(), newFile, true);
             }
         }
-        FolderName.freeCaches();
-        return retVal;
-    }
-
-    public final boolean rename(final String name) throws IOException {
-        return rename(name, null);
+        return this;
     }
 
     public final boolean isRoot() {
@@ -105,7 +104,7 @@ public class FileName implements FileNaming {
 
 
     public final String getName() {
-        return name;
+        return currentName.toString();
     }
 
     public FileNaming getParent() {
@@ -113,19 +112,22 @@ public class FileName implements FileNaming {
     }
 
     public final Integer getId() {
-        return getId(false);
-    }
-
-    public Integer getId(boolean recompute) {
-        if (recompute) {
-            id = NamingFactory.createID(getFile());
-        }
         return id;
     }
 
     public final boolean equals(final Object obj) {
         if (obj instanceof FileName ) {
-            return (obj.hashCode() == hashCode()) && name.equals(((FileName)obj).name);
+            FileName fn = (FileName)obj;
+            if (obj.hashCode() != hashCode()) {
+                return false;
+            }
+            if (!name.equals(fn.name)) {
+                return false;
+            }
+            if (parent == null || fn.parent == null) {
+                return parent == null && fn.parent == null;
+            }
+            return parent.equals(fn.parent);
         }
         return (obj instanceof FileNaming && obj.hashCode() == hashCode());
     }
@@ -145,5 +147,10 @@ public class FileName implements FileNaming {
 
     public boolean isDirectory() {
         return !isFile();
+    }
+
+    void updateCase(String name) {
+        assert String.CASE_INSENSITIVE_ORDER.compare(name, this.name.toString()) == 0: "Only case can be changed. Was: " + this.name + " name: " + name;
+        this.currentName = CharSequences.create(name);
     }
 }

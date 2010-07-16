@@ -35,6 +35,7 @@ public class AddIfAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddIfAction() {
+        super("structured/if"); // NOI18N
     }    
     
     protected String getBundleName() {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -65,10 +68,11 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -392,7 +396,7 @@ public class VariousUtils {
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
-                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, varScope, PHPIndex.ANY_ATTR);
+                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
                                 newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
@@ -437,7 +441,7 @@ public class VariousUtils {
                                     cls = ModelUtils.getFirst(cls.getSuperClasses());
                                     if (cls == null) continue;
                                 }
-                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], varScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
                                    newRecentTypes.addAll(meth.getReturnTypes(true));
                                 }
@@ -474,8 +478,11 @@ public class VariousUtils {
                             if (varScope instanceof MethodScope) {//NOI18N
                                 MethodScope mScope = (MethodScope) varScope;
                                 if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
-                                    String clsName = ((ClassScope) mScope.getInScope()).getName();
-                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    final Scope inScope = mScope.getInScope();
+                                    if (inScope instanceof ClassScope) {
+                                        String clsName = ((ClassScope) inScope).getName();
+                                        newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    }
                                 }
                             }
                         }
@@ -492,7 +499,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
@@ -548,21 +555,22 @@ public class VariousUtils {
                 if (frag.trim().length() == 0) {
                     continue;
                 }
-                if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.VAR_TYPE_PREFIX;
-                } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
-                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
@@ -578,7 +586,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS));
                         if (meth == null) {
                             return emptyStack;
                         } else {
@@ -612,7 +620,7 @@ public class VariousUtils {
                             semiTypeName = null;
                             break;
                         } else {
-                            MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, "__construct",topScope, PHPIndex.ANY_ATTR));//NOI18N
+                            MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, "__construct",topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                             if (meth != null) {
                                 retval.push(meth);
                             } else {
@@ -632,7 +640,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PhpModifiers.ALL_FLAGS));
                                 //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
                         if (meth == null) {
                             return emptyStack;
@@ -695,7 +703,7 @@ public class VariousUtils {
                             return emptyStack;
                         }
                         FieldElement fieldElement = ModelUtils.getFirst(CachingSupport.getInheritedFields(cls, 
-                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PHPIndex.ANY_ATTR));//NOI18N
+                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                         if (fieldElement == null) {
                             return emptyStack;
                         } else {
@@ -893,6 +901,7 @@ public class VariousUtils {
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token)) {
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
@@ -1014,13 +1023,18 @@ public class VariousUtils {
     }
 
     private static String translateSpecialClassName(Scope scp, String clsName) {
-        if (scp instanceof MethodScope) {
+        ClassScope classScope = null;
+        if (scp instanceof ClassScope) {
+            classScope = (ClassScope)scp;
+        } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
-            ClassScope csi = (ClassScope) msi.getInScope();
+            classScope = (ClassScope) msi.getInScope();
+        }
+        if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
-                clsName = csi.getName();
+                clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
-                ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
+                ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
                 if (clzScope != null) {
                     clsName = clzScope.getName();
                 }
@@ -1101,6 +1115,77 @@ public class VariousUtils {
             }
         }
         return CachingSupport.getTypes(staticTypeName, inScope);
+    }
+
+    public static QualifiedName getPreferredName(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Collection<QualifiedName> allNames = getAllNames(fullName, contextNamespace);
+        int segmentCount = Integer.MAX_VALUE;
+        QualifiedName retval = null;
+        for (QualifiedName qualifiedName : allNames) {
+            int size = qualifiedName.getSegments().size();
+            if (size < segmentCount) {
+                retval = qualifiedName;
+                segmentCount = size;
+            }
+        }
+        return retval;
+    }
+    public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelatives(contextNamespace, fullName));
+        namesProposals.add(fullName.toFullyQualified());
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseElement useElement : declaredUses) {
+            QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+        }
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelativesToNamespace( NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
+        if (proposedName != null) {
+            namesProposals.add(proposedName);
+        }
+        return namesProposals;
+    }
+    public static Collection<QualifiedName> getRelatives( NamespaceScope contextNamespace, QualifiedName fullName) {
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
+        namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
+        return namesProposals;
+    }
+
+    public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
+        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        if (!name.getKind().isFullyQualified()) {
+            QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
+            if (proposedName != null) {
+                namesProposals.add(proposedName);
+            }
+            for (UseElement useElement : declaredUses) {
+                final QualifiedName useQName = QualifiedName.create(useElement.getName());
+                proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
+                if (proposedName != null) {
+                    namesProposals.add(proposedName);
+                }
+                if (!useQName.getName().equalsIgnoreCase(name.getName())) {
+                    proposedName = useQName.append(name).toFullyQualified();
+                    if (proposedName != null) {
+                        namesProposals.add(proposedName);
+                    }
+                }
+            }
+        }
+        namesProposals.add(name);
+        return namesProposals;
     }
 
 }

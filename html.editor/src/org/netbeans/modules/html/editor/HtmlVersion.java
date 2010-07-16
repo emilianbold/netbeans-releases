@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,21 +51,25 @@ import java.util.Collection;
  */
 public enum HtmlVersion {
 
-    UNKNOWN(new String[]{}, -1),
+    //unknown version fallbacks to 4.01 transitional
+    UNKNOWN(new String[]{}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
 
-    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, 0), //NOI18N
+    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, "-//W3C//DTD HTML 3.2 Final//EN"), //NOI18N
 
     HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN", //NOI18N
                         "-//W3C//DTD HTML 4.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, 1), //NOI18N
+                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, "-//W3C//DTD HTML 4.0 Transitional//EN"), //NOI18N
 
     HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN", //NOI18N
                         "-//W3C//DTD HTML 4.01 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, 1), //NOI18N
+                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
 
     XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN", //NOI18N
                         "-//W3C//DTD XHTML 1.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, 1, "http://www.w3.org/1999/xhtml", true); //NOI18N
+                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/1999/xhtml", true), //NOI18N
+
+    //XHTML 1.1 version fallbacks to XHTML 1.1 strict
+    XHTML11(new String[]{"-//W3C//DTD XHTML 1.1//EN"}, "-//W3C//DTD XHTML 1.0 Strict//EN", "http://www.w3.org/1999/xhtml", true); //NOI18N
 
     //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
 
@@ -78,17 +85,17 @@ public enum HtmlVersion {
     private final String[] publicIDs;
     private final String defaultNamespace;
     private boolean isXhtml;
-    private int fallbackPublicIdIndex;
+    private String fallbackPublicId;
 
-    private HtmlVersion(String[] publicIDs, int index) {
-        this(publicIDs, index, null, false);
+    private HtmlVersion(String[] publicIDs, String fallbackPublicId) {
+        this(publicIDs, fallbackPublicId, null, false);
     }
 
-    private HtmlVersion(String[] publicIDs, int index, String defaultNamespace, boolean isXhtml) {
+    private HtmlVersion(String[] publicIDs, String fallbackPublicId, String defaultNamespace, boolean isXhtml) {
         this.publicIDs = publicIDs;
         this.defaultNamespace = defaultNamespace;
         this.isXhtml = isXhtml;
-        this.fallbackPublicIdIndex = index;
+        this.fallbackPublicId = fallbackPublicId;
     }
 
     public Collection<String> getPublicIDs() {
@@ -104,7 +111,7 @@ public enum HtmlVersion {
     }
 
     public String getFallbackPublicId() {
-        return publicIDs[fallbackPublicIdIndex];
+        return fallbackPublicId;
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
@@ -75,7 +79,6 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnTreePanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -89,7 +92,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinMainPanel extends JPanel {
 
     private static final String LOG_CATEGORY = JoinMainPanel.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(JoinMainPanel.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(JoinMainPanel.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
     private static transient final Localizer mLoc = Localizer.get();
     private ListTransferPanel listPanel;
     private JTabbedPane bottomTabPane;
@@ -164,7 +168,7 @@ public class JoinMainPanel extends JPanel {
         if (showInstruction) {
             JPanel labelPnl = new JPanel();
             labelPnl.setLayout(new BorderLayout());
-            
+
             String nbBundle1 = mLoc.t("BUND468: Select which tables you would like to join.");
             JLabel joinLabel = new JLabel(nbBundle1.substring(15));
             joinLabel.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
@@ -610,7 +614,8 @@ public class JoinMainPanel extends JPanel {
             refreshPreview = true;
 
         } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT159: cannot clone existing SQLJoinView{0}", LOG_CATEGORY), ex);
+            String msg = mLoc.t("EDIT159: cannot clone existing SQLJoinView{0}", LOG_CATEGORY);
+            logger.log(Level.SEVERE, msg.substring(15) + ex);
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 
@@ -640,11 +645,10 @@ public class JoinMainPanel extends JPanel {
             // to be refreshed
             this.listPanel.addToDestination(sTable);
 
-        } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT180: Join View model is corrupted.{0}{1}", ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE), ex);
+        } catch (CloneNotSupportedException ex) {            
+            logger.log(Level.SEVERE, "Join View model is corrupted"+ex);            
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-
             return;
         }
     }

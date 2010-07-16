@@ -1,0 +1,46 @@
+<html:html xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:po="http://wlmse.sample/po" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<html:head>
+<xforms:model id="model_0">
+<xforms:instance id="instance_0">
+<po:orderReply xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+</xforms:instance>
+<xforms:bind id="bind_0" nodeset="/po:orderReply">
+<xforms:bind id="bind_1" nodeset="po:orderId" xforms:required="true()" xforms:type="string"/>
+<xforms:bind id="bind_2" nodeset="po:approveResult" xforms:required="true()" xforms:type="string"/>
+<xforms:bind id="bind_3" nodeset="po:approveDate" xforms:required="true()" xforms:type="date"/>
+<xforms:bind id="bind_4" nodeset="po:description" xforms:required="true()" xforms:type="string"/>
+</xforms:bind>
+<xforms:submission action="" id="submission_0" method="post"/>
+</xforms:model>
+</html:head>
+<html:body>
+<xforms:group id="group_0">
+<xforms:label id="label_0">Order Reply</xforms:label>
+<xforms:select1 id="select1_0" incremental="true" model="outputModel" ref="po:approveResult" xforms:appearance="full">
+<xforms:label id="label_1">Approve Result</xforms:label>
+<xforms:choices id="choices_0">
+<xforms:item id="item_0">
+<xforms:label id="label_2">Approved</xforms:label>
+<xforms:value id="value_0">Approved</xforms:value>
+</xforms:item>
+<xforms:item id="item_1">
+<xforms:label id="label_3">Rejected</xforms:label>
+<xforms:value id="value_1">Rejected</xforms:value>
+</xforms:item>
+</xforms:choices>
+<xforms:alert id="alert_0">Please provide a valid value for 'Approve Result'. 'Approve Result' is a required 'String' value.</xforms:alert>
+</xforms:select1>
+<xforms:textarea incremental="true" model="outputModel" ref="po:description">
+<xforms:label id="label_4">Description</xforms:label>
+<xforms:alert id="alert_1">Please provide a valid value for 'Description'. 'Description' is a required 'String' value.</xforms:alert>
+</xforms:textarea>
+</xforms:group>
+<xforms:submit id="submit_0" submission="default-submission">
+<xforms:label id="label_5">Submit</xforms:label>
+<xforms:action ev:event="DOMActivate">
+<xforms:setvalue model="outputMode" ref="instance('output')/po:approveDate" value="local-date()"/>
+<xforms:setvalue model="outputMode" ref="instance('output')/po:orderId" value="instance('input')/po:orderId"/>
+</xforms:action>
+</xforms:submit>
+</html:body>
+</html:html>

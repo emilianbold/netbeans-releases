@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,32 +44,44 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BrandingEditor;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -88,7 +103,7 @@ public final class SuiteActions implements ActionProvider {
         actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         actions.add(null);
         NbPlatform platform = project.getPlatform(true); //true -> #96095
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V61) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_test"), null));
             actions.add(null);
         }
@@ -98,14 +113,22 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_55u1) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0
+                /* #181143 (too slow): && platform.getModule("org.netbeans.core.osgi") != null*/) {
+            actions.add(new OSGiSubMenuAction());
+            actions.add(null);
+        }
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
         }
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1) { // #71631
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0) { // #71631
             actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
             actions.add(null);
         }
+        // XXX temporary measure for BuildInstallersAction to be added; better would be to load whole context menu declaratively
+        actions.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-apisupport-project-suite/Actions")); // NOI18N
+        actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
@@ -119,8 +142,31 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("branding", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_branding"), null));
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
+    }
+    private static class OSGiSubMenuAction extends AbstractAction implements Presenter.Popup {
+        public @Override void actionPerformed(ActionEvent e) {assert false;}
+        public @Override JMenuItem getPopupPresenter() {
+            class Menu extends JMenu implements DynamicMenuContent {
+                Menu() {super(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_osgi_menu"));}
+                public @Override JComponent[] getMenuPresenters() {return new JComponent[] {this};}
+                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {return getMenuPresenters();}
+            }
+            JMenu m = new Menu();
+            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi-obr",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("run-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("debug-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("profile-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_profile_osgi"), null));
+            return m;
+        }
     }
     
     private final SuiteProject project;
@@ -140,22 +186,36 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "build-osgi", // NOI18N
+            "build-osgi-obr", // NOI18N
+            "run-osgi", // NOI18N
+            "debug-osgi", // NOI18N
+            "profile-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
+            "branding", // NOI18N
             ActionProvider.COMMAND_RENAME,
             ActionProvider.COMMAND_MOVE,
             ActionProvider.COMMAND_DELETE
         ));
         NbPlatform platform = project.getPlatform(true); //true -> #96095
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V61) >= 0) {
             actions.add(ActionProvider.COMMAND_TEST);
         }
         return actions.toArray(new String[actions.size()]);
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (ActionProvider.COMMAND_DELETE.equals(command) ||
+        if( "branding".equals(command) ) { //NOI18N
+            boolean enabled = false;
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if( null != properties ) {
+                String brandingToken = properties.get(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
+                enabled = null != brandingToken;
+            }
+            return enabled;
+        } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
                 ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command)) {
             return true;
@@ -179,23 +239,40 @@ public final class SuiteActions implements ActionProvider {
             if (SuiteOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultMoveOperation(project);
             }
+        } else if ("branding".equals(command)) {//NOI18N
+            BrandingEditor.open( project );
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
-                int v = plaf.getHarnessVersion();
-                if (v != NbPlatform.HARNESS_VERSION_UNKNOWN) {
+                HarnessVersion v = plaf.getHarnessVersion();
+                if (v != HarnessVersion.UNKNOWN) {
                     for (Project p : project.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
-                        if (v < ((NbModuleProject) p).getMinimumHarnessVersion()) {
+                        if (v.compareTo(((NbModuleProject) p).getMinimumHarnessVersion()) < 0) {
                             ModuleActions.promptForNewerHarness();
                             return;
                         }
                     }
                 }
             }
+            ExecutorTask task = null;
+            ActionEvent ev;
             try {
-                invokeActionImpl(command, context);
+                task = invokeActionImpl(command, context);
             } catch (IOException e) {
                 Util.err.notify(e);
+            }
+            if (
+                task != null &&
+                (ev = context.lookup(ActionEvent.class)) != null &&
+                "waitFinished".equals(ev.getActionCommand()) // NOI18N
+            ) {
+                task.waitFinished();
+                if (ev.getSource() instanceof ExecutorTask[]) {
+                    ExecutorTask[] arr = (ExecutorTask[])ev.getSource();
+                    if (arr.length > 0) {
+                        arr[0] = task;
+                    }
+                }
             }
         }
     }
@@ -249,14 +326,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.equals("build-mac")) { // NOI18N
-            targetNames = new String[] {"build-mac"}; // NOI18N
-        } else if (command.equals("nbms")) { // NOI18N
-            targetNames = new String[] {"nbms"}; // NOI18N
-        } else if (command.equals("profile")) { // NOI18N
-            targetNames = new String[] {"profile"}; // NOI18N
         } else {
-            throw new IllegalArgumentException(command);
+            targetNames = new String[] {command};
         }
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);

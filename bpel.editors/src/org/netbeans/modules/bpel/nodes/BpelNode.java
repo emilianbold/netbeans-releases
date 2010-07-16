@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.editors.api.nodes.*;
-import org.netbeans.modules.bpel.nodes.*;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.bpel.design.model.DelegatingChangeEventListener;
+import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.CompositeActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
 import org.netbeans.modules.bpel.nodes.actions.AddElseAction;
@@ -39,6 +38,7 @@ import org.netbeans.modules.bpel.nodes.actions.GoToTypeSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveDownBpelEntityAction;
 import org.netbeans.modules.bpel.nodes.actions.MoveUpBpelEntityAction;
 import org.netbeans.modules.bpel.nodes.actions.WrapAction;
+import org.netbeans.modules.bpel.nodes.actions.OpenJavaScriptEditorAction;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BaseScope;
@@ -55,7 +55,6 @@ import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.CompensatableActivityHolder;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
@@ -105,6 +104,8 @@ import org.netbeans.modules.bpel.nodes.actions.DeleteAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToCorrelationSetContainerSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToVariableContainerSourceAction;
 import org.netbeans.modules.bpel.nodes.actions.OpenInEditorAction;
+import org.netbeans.modules.bpel.nodes.actions.UpdateWebService;
+import org.netbeans.modules.bpel.nodes.actions.OpenWebServiceModule;
 import org.netbeans.modules.bpel.nodes.actions.OpenPartnerLinkInEditor;
 import org.netbeans.modules.bpel.nodes.actions.ShowPropertyEditorAction;
 import org.netbeans.modules.bpel.nodes.dnd.BpelEntityPasteType;
@@ -133,9 +134,8 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -227,6 +227,10 @@ public abstract class BpelNode<T>
                 , SystemAction.get(OpenInEditorAction.class));
         ACTION_TYPE_MAP.put(ActionType.OPEN_PL_IN_EDITOR
                 , SystemAction.get(OpenPartnerLinkInEditor.class));
+        ACTION_TYPE_MAP.put(ActionType.UPDATE_WEB_SERVICE
+                , SystemAction.get(UpdateWebService.class));
+        ACTION_TYPE_MAP.put(ActionType.OPEN_WEB_SERVICE_MODULE
+                , SystemAction.get(OpenWebServiceModule.class));
         ACTION_TYPE_MAP.put(ActionType.GO_TO
                 , SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToAction.class));
         ACTION_TYPE_MAP.put(ActionType.GO_TO_SOURCE
@@ -241,6 +245,8 @@ public abstract class BpelNode<T>
                 , SystemAction.get(GoToMessageExchangeContainerSourceAction.class));
         ACTION_TYPE_MAP.put(ActionType.GO_TO_TYPE_SOURCE
                 , SystemAction.get(GoToTypeSourceAction.class));
+        ACTION_TYPE_MAP.put(ActionType.GO_TO_REFERENCE
+                , SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToReferenceAction.class));
         ACTION_TYPE_MAP.put(ActionType.ADD_MESSAGE_EXCHANGE
                 , SystemAction.get(AddMessageExchangeAction.class));
         ACTION_TYPE_MAP.put(ActionType.ADD_NEWTYPES
@@ -295,8 +301,6 @@ public abstract class BpelNode<T>
     private ChangeValidationListener validationListener;
     private boolean isErrorBadged;
     private boolean isWarningBadged;
-//    private boolean isDebuggerBadged;
-//    private AnnotationType debuggerBadgeType;
     
     public BpelNode(T ref, Lookup lookup) {
         this(ref, Children.LEAF, lookup);
@@ -344,13 +348,13 @@ public abstract class BpelNode<T>
     }
 
     protected boolean isValidationAnnotatedEntity(Component component) {
-        Object reference = BpelNode.this instanceof ContainerBpelNode
+        Object ref = BpelNode.this instanceof ContainerBpelNode
                 ? ((ContainerBpelNode)BpelNode.this).getContainerReference()
                 : getReference();
-        if (reference == null) {
+        if (ref == null) {
             return false;
         }
-        return reference.equals(component);
+        return ref.equals(component);
     }
     
     protected Validator.ResultType getValidationStatus(
@@ -689,9 +693,14 @@ public abstract class BpelNode<T>
         
         return nodeImage;
     }
-    
+
+    protected Image getRawIcon(int type) {
+        return getNodeType().getImage();
+    }
+
+    @Override
     public Image getIcon(int type) {
-        Image vrgnImage = getNodeType().getImage();
+        Image vrgnImage = getRawIcon(type);
         AnnotationType annotationDebugType = getDebuggerAnnotationType();
 //        System.out.println("getted Debug annotationType: "+annotationDebugType);
         if (annotationDebugType != null) {
@@ -716,6 +725,7 @@ public abstract class BpelNode<T>
         return vrgnImage;//getNodeType().getImage();
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
@@ -741,6 +751,7 @@ public abstract class BpelNode<T>
         return (name != null) ? name : "";
     }
     
+    @Override
     public String getName() {
         /**
          * HACK to avoid deadlocks in navigator which uses separate thread to
@@ -763,6 +774,7 @@ public abstract class BpelNode<T>
         }
     }
     
+    @Override
     public String getDisplayName() {
         String instanceName = getName();
         return ((instanceName == null || instanceName.length() == 0)
@@ -770,6 +782,7 @@ public abstract class BpelNode<T>
                 "[" + getNodeType().getDisplayName() + "]"; // NOI18N
     }
     
+    @Override
     public String getHtmlDisplayName() {
         synchronized (NAME_LOCK) {
             if (cachedHtmlDisplayName == null) {
@@ -794,6 +807,7 @@ public abstract class BpelNode<T>
                 : decorationProvider.getTooltip(getNodeType(),getReference());
     }
     
+    @Override
     public String getShortDescription() {
         synchronized (NAME_LOCK) {
             if (cachedShortDescription == null) {
@@ -802,7 +816,17 @@ public abstract class BpelNode<T>
         }
         return cachedShortDescription;
     }
-    
+
+    protected void updateComplexIcons(ChangeEvent event) {
+        //do nothing
+        // override in case required to update icon
+    }
+
+    protected final void updateIcon() {
+        fireIconChange();
+        fireOpenedIconChange();
+    }
+
     public void updateName(){
         //name will be reloaded from model during next getName call
         synchronized(NAME_LOCK){
@@ -825,7 +849,7 @@ public abstract class BpelNode<T>
     }
     
     protected void updateProperty(String propertyName) {
-        Property prop = PropertyUtils.lookForPropertyByName(this, propertyName);
+        Property prop = PropertyUtils.getInstance().lookForPropertyByName(this, propertyName);
         Object newValue = null;
         try {
             newValue = prop.getValue();
@@ -877,7 +901,7 @@ public abstract class BpelNode<T>
     }
     
     public void updateAttributeProperty(String attributeName) {
-        Property prop = PropertyUtils.lookForPropertyByBoundedAttribute(
+        Property prop = PropertyUtils.getInstance().lookForPropertyByBoundedAttribute(
                 this, attributeName);
         if (prop != null) {
             String propName = prop.getName();
@@ -892,7 +916,7 @@ public abstract class BpelNode<T>
     }
     
     public void updateElementProperty(Class elementClass) {
-        Property prop = PropertyUtils.lookForPropertyByBoundedElement(
+        Property prop = PropertyUtils.getInstance().lookForPropertyByBoundedElement(
                 this, elementClass);
         if (prop != null) {
             String propName = prop.getName();
@@ -915,11 +939,13 @@ public abstract class BpelNode<T>
         return !XAMUtils.isWritable(model);
     }
     
+    @Override
     public boolean canDestroy() {
         DeleteAction action = getActualDeleteAction()/*SystemAction.get(DeleteAction.class)*/;
         return action != null && action.enable(new Node[] {this});
     }
     
+    @Override
     public void destroy() throws IOException {
         
         T ref = getReference();
@@ -943,6 +969,7 @@ public abstract class BpelNode<T>
     
     private DeleteAction getActualDeleteAction() {
         Action[] actions = getActions(true);
+
         for (Action elem : actions) {
             if (elem instanceof DeleteAction) {
                 return (DeleteAction)elem;
@@ -983,6 +1010,7 @@ public abstract class BpelNode<T>
         return isChildrenAllowed;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (super.equals(obj)) {
             return true;
@@ -997,6 +1025,7 @@ public abstract class BpelNode<T>
         return false;
     }
     
+    @Override
     public Action getPreferredAction() {
         Action preferedAction = getDefaultPreferedAction();
         return preferedAction != null ? preferedAction : super.getPreferredAction();
@@ -1007,24 +1036,34 @@ public abstract class BpelNode<T>
      * invokes this method.
      */
     protected Action getDefaultPreferedAction() {
+//System.out.println();
+//System.out.println("getDefaultPreferedAction");
+        Object ref = getReference();
+
+        if (ref instanceof Assign && ((Assign) ref).isJavaScript()) {
+//System.out.println("      well");
+            return new OpenJavaScriptEditorAction((Assign) ref);
+        }
         Action[] actions = getActions(true);
+
         if (actions == null || actions.length < 1) {
             return null;
         }
-        
+//System.out.println("actions: " + actions.length);
+ 
         for (Action elem : actions) {
+//System.out.println("  see: " + elem);
             if (elem instanceof org.netbeans.modules.bpel.nodes.actions.GoToAction) {
                 ShowBpelMapperAction goToMapper = SystemAction.get(ShowBpelMapperAction.class);
+
                 if (goToMapper != null && goToMapper.enable(new Node[] {this})) {
                     return goToMapper;
                 }
             }
-            
             if (elem instanceof ShowPropertyEditorAction) {
                 return elem;
             }
         }
-        
         return null;
     }
     
@@ -1045,6 +1084,7 @@ public abstract class BpelNode<T>
             }
         }
         
+        @Override
         public void notifyEntityRemoved(EntityRemoveEvent event) {
 //System.out.println("notifyEntityRemoved");
             BpelEntity entity = event.getOutOfModelEntity();
@@ -1070,8 +1110,10 @@ public abstract class BpelNode<T>
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
+            updateComplexIcons(event);
         }
         
+        @Override
         public void notifyPropertyRemoved(PropertyRemoveEvent event) {
 //System.out.println("notifyPropertyRemoved");
             BpelEntity entity = event.getParent();
@@ -1092,8 +1134,10 @@ public abstract class BpelNode<T>
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
+            updateComplexIcons(event);
         }
         
+        @Override
         public void notifyPropertyUpdated(PropertyUpdateEvent event) {
 //System.out.println("notifyPropertyUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
@@ -1131,6 +1175,7 @@ public abstract class BpelNode<T>
             updateComplexProperties(event);
         }
         
+        @Override
         public void notifyArrayUpdated(ArrayUpdateEvent event) {
 //System.out.println("notifyArrayUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
@@ -1139,8 +1184,10 @@ public abstract class BpelNode<T>
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
+            updateComplexIcons(event);
         }
         
+        @Override
         public void notifyEntityUpdated(EntityUpdateEvent event) {
 //System.out.println("notifyEntityUpdated");
             if (BpelNode.this.isEventRequreUpdate(event)) {
@@ -1158,8 +1205,10 @@ public abstract class BpelNode<T>
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
+            updateComplexIcons(event);
         }
         
+        @Override
         public void notifyEntityInserted(EntityInsertEvent event) {
 //System.out.println("notifyEntityInserted");
             if (BpelNode.this.isEventRequreUpdate(event)) {
@@ -1181,6 +1230,7 @@ public abstract class BpelNode<T>
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
             updateComplexNames(event);
+            updateComplexIcons(event);
         }
 
         private ChangeEventListener listener;
@@ -1286,28 +1336,6 @@ public abstract class BpelNode<T>
         }
     }
     
-//    private class BpelSafeReference<T> {
-//
-//        private UniqueId myId;
-//        private BpelModel model;
-//
-//        public BpelSafeReference(T bpelEntity) {
-//
-//            myId = ((BpelEntity)bpelEntity).getUID();
-//            model = ((BpelEntity)bpelEntity).getBpelModel();
-//        }
-//
-//        public UniqueId getId() {
-//            return myId;
-//        }
-//
-//        public T getBpelObject() {
-//            BpelEntity bpelEntity = model.getEntity(myId);
-//            return (T)bpelEntity;
-//        }
-//    }
-    
-    
     /**
      * Looks for the Properties Set by the Group enum.
      * If the group isn't
@@ -1324,9 +1352,7 @@ public abstract class BpelNode<T>
         return propSet;
     }
     
-//    protected Node.Property createProperty(PropertyType propType, ) {
-//    }
-    
+    @Override
     public Action[] getActions(boolean b) {
         Action[] actions = null;
         Object ref = getReference();
@@ -1408,16 +1434,19 @@ public abstract class BpelNode<T>
     }
     
     
+    @Override
     public boolean canCopy() {
         return true;
     }
     
     
+    @Override
     public boolean canCut() {
         return true;
     }
     
    
+    @Override
     public Transferable clipboardCopy() throws IOException {
         try {
             return new BpelNodeTransferable(this);
@@ -1428,6 +1457,7 @@ public abstract class BpelNode<T>
     }
     
     
+    @Override
     public Transferable clipboardCut() throws IOException {
         try {
             return new BpelNodeTransferable(this);
@@ -1437,6 +1467,7 @@ public abstract class BpelNode<T>
         }
     }
     
+    @Override
     protected void createPasteTypes(Transferable t, List/*<PasteType>*/ list) {
         List<BpelEntityPasteType> supportedPTs = getBpelPasteTypes(t);
         if (supportedPTs != null && supportedPTs.size() > 0) {
@@ -1525,6 +1556,7 @@ public abstract class BpelNode<T>
    * @param i0 index between children the drop occured at or -1 if not specified
    *
    */
+    @Override
     public PasteType getDropType(Transferable transferable, int action, int i0) {
         List<BpelEntityPasteType> pasteTypes = getBpelPasteTypes(transferable);
         if (pasteTypes == null || pasteTypes.size() == 0) {
@@ -1544,6 +1576,7 @@ public abstract class BpelNode<T>
     /**
      * @return the new types that can be created in this node
      */
+    @Override
     public NewType[] getNewTypes() {
         List<BpelNodeAction> actions = getAddActions();
         if (actions == null || actions.size() < 1) {
@@ -1580,10 +1613,12 @@ public abstract class BpelNode<T>
         return null;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return getHelpId() == null ? null : new HelpCtx(getHelpId());
     }
     
+    @Override
     public java.awt.Component getCustomizer() {
         return getCustomizer(CustomNodeEditor.EditingMode.EDIT_INSTANCE);
     }

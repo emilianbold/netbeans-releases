@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,9 +57,16 @@ import java.util.Map;
 import java.util.Set;
 import javax.faces.context.ExternalContext;
 //import javax.portlet.PortletContext;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import org.openide.util.Enumerations;
 
 /**
@@ -425,6 +436,54 @@ public class RaveExternalContext extends ExternalContext {
         }
 
         public void setCharacterEncoding(String str) throws java.io.UnsupportedEncodingException {
+        }
+        @Override
+        public boolean authenticate(HttpServletResponse hsr) throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public void login(String string, String string1) throws ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public void logout() throws ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Collection<Part> getParts() throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Part getPart(String string) throws IOException, ServletException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public ServletContext getServletContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext startAsync() throws IllegalStateException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext startAsync(ServletRequest sr, ServletResponse sr1) throws IllegalStateException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public boolean isAsyncStarted() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public boolean isAsyncSupported() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public AsyncContext getAsyncContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public DispatcherType getDispatcherType() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
     

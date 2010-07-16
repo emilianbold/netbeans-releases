@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -119,6 +122,7 @@ public class ParametersPicker extends javax.swing.JPanel {
             }
 
             beanCombo.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent evt) {
                     int index = beanCombo.getSelectedIndex();
                     if (index == 0) {
@@ -294,7 +298,7 @@ public class ParametersPicker extends javax.swing.JPanel {
                 return(selectedComponent.getName());
             }
         } else if (propertyButton.isSelected()) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
@@ -307,7 +311,7 @@ public class ParametersPicker extends javax.swing.JPanel {
             }
             return  sb.toString();
         } else if (methodButton.isSelected()) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
@@ -569,6 +573,7 @@ public class ParametersPicker extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(picker, title);
         dd.setValid(picker.isPickerValid());
         picker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
@@ -616,6 +621,7 @@ public class ParametersPicker extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(propertyPicker, title);
         dd.setValid(propertyPicker.isPickerValid());
         propertyPicker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
@@ -717,6 +723,7 @@ public class ParametersPicker extends javax.swing.JPanel {
     // -------
 
     static class ComponentComparator implements Comparator<RADComponent> {
+        @Override
         public int compare(RADComponent comp1, RADComponent comp2) {
             if (comp1 == comp2)
                 return 0;

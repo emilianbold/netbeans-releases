@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.welcome.content;
 import java.awt.BasicStroke;
 import java.awt.Font;
 import java.awt.Stroke;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
@@ -53,33 +57,31 @@ import javax.swing.border.Border;
  */
 public interface Constants {
 
-    static final String COLOR_SCREEN_BACKGROUND = "ScreenBackgroundColor"; //NOI18N
-    
     static final String COLOR_TAB_SEL_FOREGROUND = "TabSelForegroundColor"; //NOI18N
     static final String COLOR_TAB_UNSEL_FOREGROUND = "TabUnselForegroundColor"; //NOI18N
     static final String COLOR_SECTION_HEADER = "SectionHeaderColor"; //NOI18N
+    static final String COLOR_SECTION_SEPARATOR = "SectionSeparatorColor"; //NOI18N
 
     static final String COLOR_RSS_DATE = "RssDateTimeColor"; //NOI18N
     static final String COLOR_RSS_DETAILS = "RssDetailsColor"; //NOI18N
-    static final String COLOR_HEADER1 = "HeaderForegroundColor1"; //NOI18N
-    static final String COLOR_HEADER2 = "HeaderForegroundColor2"; //NOI18N
+    static final String COLOR_HEADER = "HeaderForegroundColor"; //NOI18N
     
     static final int FONT_SIZE = Utils.getDefaultFontSize();
     static final Font BUTTON_FONT = new Font( null, Font.BOLD, FONT_SIZE );
     static final Font RSS_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE-1 );
     static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
-    static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+12 ); //NOI18N
-    static final Font GET_STARTED_FONT = new Font( null, Font.BOLD, (int)(FONT_SIZE*1.4) ); //NOI18N
+    static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
+    static final Font GET_STARTED_FONT = SECTION_HEADER_FONT;
 
-    static final String BULLET_IMAGE = "org/netbeans/modules/welcome/resources/bullet.png"; // NOI18N
-    static final String SUN_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/sun_logo.png"; // NOI18N
+    static final String ORACLE_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/oracle_logo.png"; // NOI18N
     static final String JAVA_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/java_logo.png"; // NOI18N
 
     static final String IMAGE_TOPBAR_CENTER = "org/netbeans/modules/welcome/resources/topbar_center.png"; // NOI18N
     static final String IMAGE_TOPBAR_LEFT = "org/netbeans/modules/welcome/resources/topbar_left.png"; // NOI18N
     static final String IMAGE_TOPBAR_RIGHT = "org/netbeans/modules/welcome/resources/topbar_right.png"; // NOI18N
-    
+    static final String IMAGE_TOPBAR_LOGO = "org/netbeans/modules/welcome/resources/nb_logo.png"; // NOI18N
+
     static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
     static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N
 
@@ -99,4 +101,6 @@ public interface Constants {
     static final Border HEADER_TEXT_BORDER = BorderFactory.createEmptyBorder( 1, TEXT_INSETS_LEFT, 1, TEXT_INSETS_RIGHT );
     
     static final int START_PAGE_MIN_WIDTH = 600;
+
+    static final Logger USAGE_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.projects"); //NOI18N
 }

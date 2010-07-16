@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,10 +91,12 @@ import org.jrubyparser.ast.DotNode;
 import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.LiteralNode;
 import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.NotNode;
 import org.jrubyparser.ast.OrNode;
+import org.jrubyparser.ast.RescueNode;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.UntilNode;
 import org.jrubyparser.ast.WhenNode;
@@ -140,8 +145,9 @@ public class AstUtilities {
     /** ActiveSupport extensions */
     private static final String[] CATTR_ACCESSORS = {"cattr_reader", "cattr_accessor", "cattr_writer"};
 
-    private static final String[] NAMED_SCOPE = {"named_scope"};
-
+    /** The names of AR scope methods - named_scope in rails 2.x, rails 3.x deprecates it
+     in favor of 'scope' */
+    private static final String[] NAMED_SCOPE = {"named_scope", "scope"};
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
      * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
@@ -707,6 +713,13 @@ public class AstUtilities {
                 node.getNodeType() == NodeType.CALLNODE;
     }
 
+    static boolean isRaiseCall(Node node) {
+        if (isCall(node)) {
+            return "raise".equals(getName(node)); //NOI18N
+        }
+        return false;
+    }
+
     static boolean isAssignmentNode(Node node) {
         return node.getNodeType() == NodeType.INSTASGNNODE ||
                 node.getNodeType() == NodeType.LOCALASGNNODE ||
@@ -978,7 +991,7 @@ public class AstUtilities {
         String name = getNextSigComponent(signature, lookingForMethod);
         signature = signature.substring(name.length());
 
-        Node node = findBySignature(root, signature, name, lookingForMethod);
+        Node node = findBySignature(root, root, signature, name, lookingForMethod);
         
         // Handle top level methods
         if (node == null && originalSig.startsWith("Object#")) {
@@ -988,7 +1001,7 @@ public class AstUtilities {
             signature = originalSig.substring(name.length());
             lookingForMethod[0] = true;
             
-            node = findBySignature(root, signature, name, lookingForMethod);
+            node = findBySignature(root, root, signature, name, lookingForMethod);
         }
 
         return node;
@@ -1030,7 +1043,7 @@ public class AstUtilities {
         return sb.toString();
     }
 
-    private static Node findBySignature(Node node, String signature, String name, boolean[] lookingForMethod) {
+    private static Node findBySignature(Node root, Node node, String signature, String name, boolean[] lookingForMethod) {
         switch (node.getNodeType()) {
         case INSTASGNNODE:
             if (name.charAt(0) == '@') {
@@ -1098,13 +1111,25 @@ public class AstUtilities {
 
         case FCALLNODE:
             if (isAttr(node) || isNamedScope(node)
-                    || isActiveRecordAssociation(node) || isNodeNameIn(node, "alias_method")) { //NOI18N
+                    || isActiveRecordAssociation(node) || isNodeNameIn(node, RubyStructureAnalyzer.DYNAMIC_METHODS)) { //NOI18N
                 List<Node> values = getChildValues(node);
                 for (Node each : values) {
                     if (name.equals(getNameOrValue(each))) {
                         return each;
                     }
                 }
+            } else if (TestNameResolver.isShouldaMethod(getName(node))) {
+                String shoulda = TestNameResolver.getTestName(new AstPath(root, node));
+                if (name.equals(shoulda)) {
+                    return node;
+                }
+                }
+
+            break;
+        case ALIASNODE:
+            AliasNode aliasNode = (AliasNode) node;
+            if (name.equals(getNameOrValue(aliasNode.getNewName())) || name.equals(getNameOrValue(aliasNode.getOldName()))) {
+                return aliasNode;
             }
             break;
         case CONSTDECLNODE:
@@ -1181,7 +1206,7 @@ public class AstUtilities {
             if (child.isInvisible()) {
                 continue;
             }
-            Node match = findBySignature(child, signature, name, lookingForMethod);
+            Node match = findBySignature(root, child, signature, name, lookingForMethod);
 
             if (match != null) {
                 return match;
@@ -1413,7 +1438,9 @@ public class AstUtilities {
 
         int newStart = pos.getStartOffset() + 6; // 6: "alias ".length()
 
-        return new OffsetRange(newStart, newStart + node.getNewName().length());
+        String name = getNameOrValue(node.getNewName());
+        int length = name != null ? name.length() : 0;
+        return new OffsetRange(newStart, newStart + length);
     }
 
     /**
@@ -1429,9 +1456,15 @@ public class AstUtilities {
         // spaces are - between alias and the first word or between old and new. XXX.
         SourcePosition pos = node.getPosition();
 
-        int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
+        String newName = getNameOrValue(node.getNewName());
+        int newLength = newName != null ? newName.length() : 0;
 
-        return new OffsetRange(oldStart, oldStart + node.getOldName().length());
+        String oldName = getNameOrValue(node.getOldName());
+        int oldLength = oldName != null ? oldName.length() : 0;
+
+        int oldStart = pos.getStartOffset() + 6 + newLength + 1; // 6: "alias ".length; 1: " ".length
+
+        return new OffsetRange(oldStart, oldStart + oldLength);
     }
 
     public static String getClassOrModuleName(IScopingNode node) {
@@ -1611,6 +1644,30 @@ public class AstUtilities {
     }
 
     /**
+     * Returns the names or values of the nodes in the given {@code listNode}; 
+     * not including null and not empty values.
+     *
+     * @param listNode
+     * @return the names/values; the result does not contain {@code null}s or empty strings.
+     */
+    static List<String> getNamesOrValues(ListNode listNode) {
+        List<String> result = new ArrayList<String>(listNode.size());
+        for (int i = 0, max = listNode.size(); i < max; i++) {
+            Node n = listNode.get(i);
+
+            // For dynamically computed strings, we have n instanceof DStrNode
+            // but I can't handle these anyway
+            if (n instanceof StrNode || n instanceof SymbolNode || n instanceof ConstNode) {
+                String name = getNameOrValue(n);
+                if (name != null && !name.isEmpty()) {
+                    result.add(name);
+                }
+            } 
+        }
+        return result;
+
+    }
+    /**
      * Gets the name or the value of given node, depending on its type.
      * 
      * @param node the node whose value to get.
@@ -1631,6 +1688,9 @@ public class AstUtilities {
                 Node child = node.childNodes().get(0);
                 return getNameOrValue(child);
             }
+        }
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
         }
         return null;
     }
@@ -1973,64 +2033,9 @@ public class AstUtilities {
                             return;
                         }
                         AstPath path = new AstPath(root, astOffset);
-                        Iterator<Node> it = path.leafToRoot();
-                        /*
-                         * method names for shoulda tests need to be constructed from
-                         * should and context nodes, e.g.
-                         * context "An Instance" ...
-                         *  should "respond to :something" ... (the method name here is "An Instance should respond to :something"
-                         *    context "with a single element" ..
-                         *        should "return that" ... (the name here is "An Instance with a single element should return that")
-                         *
-                         * the name for a should node without context uses the name of the tested class, e.g.
-                         * class QueueTest
-                         *  should "be empty" do ..
-                         *  end
-                         * end
-                         * => the method name is "Queue should be empty"
-                         */
-                        List<String> shouldaMethodName = new ArrayList<String>();
-                        // for shoulda tests without a context, the class name
-                        // needs to be appended - see #151652 for details
-                        boolean appendClassName = true;
-                        while (it.hasNext()) {
-                            Node node = it.next();
-                            if (node.getNodeType() == NodeType.FCALLNODE) {
-                                FCallNode fc = (FCallNode)node;
-                                // Possibly a test node
-                                // See http://github.com/rails/rails/commit/f74ba37f4e4175d5a1b31da59d161b0020b58e94
-                                // test_name = "test_#{name.gsub(/[\s]/,'_')}".to_sym
-                                if ("test".equals(fc.getName())) { // NOI18N
-                                    String desc = getNodeDesc(fc);
-                                    if (desc != null) {
-                                        testName[0] = "test_" + desc.replace(' ', '_'); // NOI18N
-                                    }
-                                    return;
-                                // possibly a shoulda test
-                                } else if ("should".equals(fc.getName())) { //NOI18N
-                                    buildShouldaMethod(" should " + getNodeDesc(fc), shouldaMethodName, false);
-                                } else if ("context".equals(fc.getName())) { //NOI18N
-                                    String desc = getNodeDesc(fc);
-                                    if (desc != null) {
-                                        appendClassName = false;
-                                    }
-                                    buildShouldaMethod(desc, shouldaMethodName, true);
-                                }
-                            } else if (node.getNodeType() == NodeType.CLASSNODE && appendClassName) {
-                                String className = getClassNameForShoulda((IScopingNode) node);
-                                buildShouldaMethod(className, shouldaMethodName, false);
-                            } else if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
-                                testName[0] = getName(node);
-                                return;
-                            }
-                        }
-                        if (!shouldaMethodName.isEmpty()) {
-                            StringBuilder sb = new StringBuilder();
-                            for (String each : shouldaMethodName) {
-                                sb.append(each);
-                            }
-                            testName[0] = removeLeadingWhiteSpace(sb.toString());
-                        }
+                        
+                        testName[0] = TestNameResolver.getTestName(path);
+                        
                     } catch (BadLocationException ex) {
                         // do nothing - see #154991
                     }
@@ -2041,69 +2046,6 @@ public class AstUtilities {
         }
 
         return testName[0];
-    }
-
-    private static String removeLeadingWhiteSpace(String str) {
-        if (str.startsWith(" ")) { //NOI18N
-            return str.substring(1);
-        }
-        return str;
-    }
-
-    private static String getClassNameForShoulda(IScopingNode classNode) {
-        String testClassName = getClassOrModuleName(classNode);
-        if (testClassName != null && testClassName.indexOf("Test") != -1) { //NOI18N
-            return testClassName.substring(0, testClassName.indexOf("Test")); //NOI18N
-        }
-        return null;
-    }
-
-    private static void buildShouldaMethod(String desc, List<String> shouldaMethodName, boolean trim) {
-        if (desc == null) {
-            return;
-        }
-        // shoulda removes leading and trailing whitespaces for context nodes, but not
-        // for should nodes
-        if (trim) {
-            desc = desc.trim();
-        }
-        if (shouldaMethodName.isEmpty()) {
-            shouldaMethodName.add(desc);
-        } else {
-            shouldaMethodName.add(0, " " + desc); //NOI18N
-        }
-    }
-    private static String getNodeDesc(FCallNode fc) {
-        if (fc.getIterNode() == null) { // "it" without do/end: pending
-            return null;
-        }
-
-        Node argsNode = fc.getArgsNode();
-
-        if (argsNode instanceof ListNode) {
-            ListNode args = (ListNode) argsNode;
-
-            //  describe  ThingsController, "GET #index" do
-            // e.g. where the desc string is not first
-            for (int i = 0, max = args.size(); i < max; i++) {
-                Node n = args.get(i);
-
-                // For dynamically computed strings, we have n instanceof DStrNode
-                // but I can't handle these anyway
-                if (n instanceof StrNode) {
-                    String descBl = ((StrNode) n).getValue();
-
-                    if ((descBl != null) && (descBl.length() > 0)) {
-                        // No truncation? See 138259
-                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
-                        return descBl.toString();
-                    }
-                    break;
-                }
-            }
-        }
-        return null;
-
     }
 
     public static int findOffset(FileObject fo, final String methodName) {
@@ -2303,13 +2245,31 @@ public class AstUtilities {
 
     /**
      * Throws {@link ClassCastException} if the given node is not instance of
-     * {@link INameNode}.
+     * {@link INameNode} or {@link LiteralNode}.
      *
-     * @param node instance of {@link INameNode}.
+     * @param node instance of {@link INameNode} or {@link LiteralNode}.
      * @return node's name
      */
     public static String getName(final Node node) {
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
+        }
         return ((INameNode) node).getName();
+    }
+
+    /**
+     * Like {@link #getName(org.jrubyparser.ast.Node) }, but instead of throwing
+     * a CCE returns <code>null</code> if the given <code>node</code> wasn't an
+     * instance of {@ INameNode}.
+     *
+     * @param node
+     * @return the name or <code>null</code>.
+     */
+    static String safeGetName(final Node node) {
+        if (node instanceof INameNode || node instanceof LiteralNode) {
+            return getName(node);
+        }
+        return null;
     }
 
     /**
@@ -2321,9 +2281,34 @@ public class AstUtilities {
     public static void findExitPoints(final MethodDefNode defNode, final Collection<? super Node> exits) {
         Node body = defNode.getBodyNode();
         if (body != null) { // method with empty body
-            findNonLastExitPoints(body, exits);
-            findLastNodes(body, exits);
+            findExitPoints(body, exits);
         }
+    }
+
+    static void findExitPoints(final Node body, final Collection<? super Node> exits) {
+        findNonLastExitPoints(body, exits);
+        findLastNodes(body, exits);
+    }
+
+    /**
+     * Gets the values of the given {@code args}, as fully qualified 
+     * names in case of {@link Colon2Node}s.
+     * @param args
+     * @return
+     */
+    static List<String> getValuesAsFqn(ListNode args) {
+        if (args.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<String>(args.size());
+        for (Node n : args.childNodes()) {
+            if (n instanceof Colon2Node) {
+                result.add(getFqn((Colon2Node) n));
+            } else if (n instanceof INameNode) {
+                result.add(getName(n));
+            }
+        }
+        return result;
     }
 
     private static void findLastNodes(final Node node, Collection<? super Node> result) {
@@ -2376,6 +2361,9 @@ public class AstUtilities {
                 || node instanceof UntilNode
                 || node instanceof DefinedNode) {
             return Collections.emptyList();
+        }
+        if (node instanceof RescueNode) {
+            return node.childNodes();
         }
         List<Node> children = node.childNodes();
         if (!children.isEmpty()) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.DetailsViewEmptyContentProvider;
 import java.awt.BorderLayout;
@@ -53,8 +57,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
+import org.netbeans.modules.dlight.api.impl.DLightSessionConfigurationAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionHandlerAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolkitManager;
@@ -62,13 +68,19 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.management.api.impl.DLightSessionsStorage;
+import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
+import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
@@ -90,6 +102,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     private final List<DLightSession> sessions = new ArrayList<DLightSession>();
     private DLightSession activeSession;
     private final DLightManagerSessionStateListener sessionStateListener = new DLightManagerSessionStateListener();
+    //we should manage somehow sessions with the same shared storage
 
     /**
      *
@@ -105,43 +118,66 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return (DLightManager) Lookup.getDefault().lookup(DLightToolkitManager.class);
     }
 
-    public DLightSession createNewSession(DLightTarget target, String configurationName) {
+    private DLightSession createNewSession(DLightTarget target, String configurationName) {
         return createNewSession(target, configurationName, null);
     }
 
-    public DLightSession createNewSession(DLightTarget target, String configurationName, String sessionName) {
+    private DLightSession createNewSession(DLightTarget target, String configurationName, String sessionName) {
         return createNewSession(target, DLightConfigurationManager.getInstance().getConfigurationByName(configurationName), sessionName);
     }
 
-    public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration) {
+    private DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration) {
         return createNewSession(target, configuration, null);
     }
 
-    public DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+    private DLightSession createNewSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
         // TODO: For now just create new session every time we set a target...
-        DLightSession session = newSession(target, configuration, sessionName);
+        DLightSession session = newSession(null, target, configuration, sessionName);
         setActiveSession(session);
+        if (session != null) {
+            session.addSessionStateListener(sessionStateListener);//we should not remove it later, it will be removed automatically when session will be closed
+        }
+        return session;
+   }
+
+    public DLightSession createNewSession(DLightSessionConfiguration sessionConfiguration){
+        //in case session need to be opened in read/only mode we should set its state to the Analyze
+        DLightSessionConfigurationAccessor accessor = DLightSessionConfigurationAccessor.getDefault();
+        DLightConfiguration configuration = accessor.getDLightConfiguration(sessionConfiguration);
+        if (configuration == null){
+            configuration = DLightConfigurationManager.getInstance().getConfigurationByName(accessor.getDLightConfigurationName(sessionConfiguration));
+        }
+        DLightSession session = 
+                newSession(accessor.getSharedStorageUniqueKey(sessionConfiguration), accessor.getDLightTarget(sessionConfiguration), configuration, accessor.getSessionName(sessionConfiguration));
+        setActiveSession(session);
+        if (accessor.getSessionMode(sessionConfiguration) == DLightSessionConfiguration.Mode.ANALYZE){
+            session.setState(SessionState.ANALYZE);
+        }
         if (session != null) {
             session.addSessionStateListener(sessionStateListener);//we should not remove it later, it will be removed automatically when session will be closed
         }
         return session;
     }
 
-    public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
-        return createSession(target, configurationName, null);
+    public DLightSessionHandler createSession(DLightSessionConfiguration sessionConfiguration){
+        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(sessionConfiguration));
     }
 
-    public DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName, sessionName));
-    }
-
-    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration) {
-        return createSession(target, configuration, null);
-    }
-
-    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
-        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration, sessionName));
-    }
+//    public DLightSessionHandler createSession(DLightTarget target, String configurationName) {
+//        return createSession(target, configurationName, null);
+//    }
+//
+//    public DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName) {
+//        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configurationName, sessionName));
+//    }
+//
+//    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration) {
+//        return createSession(target, configuration, null);
+//    }
+//
+//    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
+//        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration, sessionName));
+//    }
 
     public void closeSessionOnExit(DLightSession session) {
         SessionState currentSessionState = session.getState();
@@ -204,6 +240,63 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return sessions;
     }
 
+    public Collection<DataStorage> getStorageByKey(String storageUniqueKey){
+        return DataStorageManager.getInstance().getStorages(storageUniqueKey);        
+
+    }
+
+    public DataProvider createDataProvider(String storageUniqueKey, DataModelScheme dataModelScheme, DataTableMetadata dataMetadata) {
+        // Get a list of all provider factories that can create providers
+        // for required dataModelScheme.
+        Collection<DataProviderFactory> providerFactories = DataProvidersManager.getInstance().getDataProviderFactories(dataModelScheme);
+
+        // If not found - just return null
+        if (providerFactories.isEmpty()) {
+            return null;
+        }
+
+        // Now, when we found all providerFactories that can create provider
+        // to serve requested dataModel, search for
+        // suitable storage to attach provider to...
+        //
+        // Will return the first one on success.
+        //
+        // TODO: should priorities be setuped in case when several providerFactories/storages pairs found?
+        //
+
+        final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getStorages(storageUniqueKey);
+        for (DataProviderFactory providerFactory : providerFactories) {
+            for (DataStorage storage : availableStorages) {
+                // Check that in case this dataProvider requires some Tables to be
+                // provided by storage, the storage has this data
+
+                if (!providerFactory.validate(storage)) {
+                    continue;
+                }
+
+                // Now check that this storage has required table ...
+
+                if (dataMetadata != null && !storage.hasData(dataMetadata)) {
+                    continue;
+                }
+
+                // Now when we know that this providerFactory creates provider
+                // that can be attached to this storage, do attachment and return it
+
+                DataProvider provider = DataProvidersManager.getInstance().createProvider(providerFactory);
+                provider.attachTo(storage);
+                ServiceInfoDataStorage serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(storageUniqueKey);
+                provider.attachTo(serviceInfoDataStorage);
+                //what to to withe the filters???
+//                provider.dataFiltersChanged(this.dataFiltersSupport.getFilters(), false);
+//                addDataFilterListener(provider);
+                return provider;
+            }
+        }
+
+        return null;
+    }
+
     public DLightSession setActiveSession(DLightSession newActiveSession) {
         DLightSession oldActiveSession = activeSession;
         if (newActiveSession != oldActiveSession) {
@@ -260,8 +353,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         sessionListeners.remove(listener);
     }
 
-    private DLightSession newSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
-        DLightSession session = new DLightSession(sessionName);
+    private DLightSession newSession(String sharedStorageKey, DLightTarget target, DLightConfiguration configuration, String sessionName) {
+        DLightSession session = new DLightSession(sharedStorageKey, sessionName);
         session.setExecutionContext(new ExecutionContext(target, configuration));
         sessions.add(session);
         List<Indicator<?>> indicators = session.getIndicators();
@@ -360,7 +453,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
 
         if (visualizer == null) {
-            log.fine("Unable to find factory to create Visualizer with ID == " + visualizerConfiguration.getID()); // NOI18N
+            log.log(Level.FINE, "Unable to find factory to create Visualizer with ID == {0}", visualizerConfiguration.getID()); // NOI18N
             return null;
         }
 
@@ -506,6 +599,24 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    public final DataProvider getDataProviderFor(String storageUniqueKey, VisualizerConfiguration visualizerConfiguration){
+        DataProvider dataProvider = null;
+
+        DataModelScheme visualizerDataScheme = visualizerConfiguration.getSupportedDataScheme();
+
+        if (visualizerConfiguration instanceof TableBasedVisualizerConfiguration) {
+            TableBasedVisualizerConfiguration vc = (TableBasedVisualizerConfiguration) visualizerConfiguration;
+            DataTableMetadata tableMetadata = vc.getMetadata();
+
+            dataProvider = createDataProvider(storageUniqueKey, visualizerDataScheme, tableMetadata);
+        } else {
+            dataProvider = createDataProvider(storageUniqueKey, visualizerDataScheme, null);
+        }
+
+        return dataProvider;
+    }
+
+
     public final void openVisualizer(DLightSession session, String toolID, VisualizerConfiguration vc) {
         setActiveSession(session);
         boolean found = openVisualizer(toolID, vc, session) != null;
@@ -532,6 +643,30 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (!found) {
             openEmptyVisualizer(null, IndicatorAccessor.getDefault().getToolID(source), session);
         }
+    }
+
+    /**
+     * Opens session using the ID
+     * @param sessionID
+     * @return
+     */
+    public DLightSessionHandler open(String filePath) {
+        return DLightSessionHandlerAccessor.getDefault().create(DLightSessionsStorage.getInstance().openSession(filePath));
+    }
+
+
+   
+    @Override
+    public void save(String sourceDir, String sessionName, DLightSessionHandler handler) {
+        DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
+        if (!(reference instanceof DLightSession)) {
+            throw new IllegalArgumentException("Illegal Argument, reference you are trying to use " + // NOI18N
+                    "to save DLight session is invalid");//NOI18N
+        }
+        DLightSession session = (DLightSession) reference;
+        //storage, ExecutionContext
+        //save it
+
     }
 
     private class DLightManagerSessionStateListener implements SessionStateListener {

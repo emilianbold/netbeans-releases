@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,10 +73,11 @@ import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnNode;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLGraphView;
-import com.sun.sql.framework.exception.BaseException;
-import net.java.hulp.i18n.Logger;
+import com.sun.etl.exception.BaseException;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author radval
@@ -81,7 +85,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinUtility {
 
     private static final String LOG_CATEGORY = JoinUtility.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(JoinUtility.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
+    //private static transient final Logger mLogger = Logger.getLogger(JoinUtility.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of JoinUtility */
@@ -155,8 +160,9 @@ public class JoinUtility {
                                 jGraphView.removeColumn(column);
                             }
                         } catch (BaseException ex) {
-
-                            mLogger.errorNoloc(mLoc.t("EDIT186: cannot remove column {0}from joinview table.", column.getName()), ex);
+                            String msg = mLoc.t("EDIT186: cannot remove column {0}from joinview table.", column.getName());
+                            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                            logger.log(Level.SEVERE, msg.substring(15) + ex);                            
                             throw ex;
                         }
                     //user selected a column to become visible on canvas
@@ -201,8 +207,9 @@ public class JoinUtility {
 
             jGraphView.setSize(jGraphView.getMaximumWidth(), jGraphView.getMaximumHeight());
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT187: can not adjust column visibility for joinview.{0}", LOG_CATEGORY), ex);
-
+            String msg = mLoc.t("EDIT187: can not adjust column visibility for joinview.{0}", LOG_CATEGORY);
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            logger.log(Level.SEVERE, msg + ex);
             throw ex;
         }
     }

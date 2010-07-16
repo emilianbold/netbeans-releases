@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,12 +70,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -81,6 +86,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 
 public final class ClassicAppletWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -103,9 +109,41 @@ public final class ClassicAppletWizardIterator implements WizardDescriptor.Insta
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             return Templates.createSimpleTargetChooser(project, groups);
         } else {
-            return JavaTemplates.createPackageChooser(project, groups);
+            FakePanel pnl = new FakePanel();
+            WizardDescriptor.Panel<WizardDescriptor> p = JavaTemplates.createPackageChooser(project, groups, pnl, true);
+            return p;
+        }
+    }
+
+    private static final class FakePanel implements WizardDescriptor.Panel<WizardDescriptor> {
+        //Useless class required by JavaTemplates.createPackageChooser
+        public Component getComponent() {
+            return new JLabel("");
         }
 
+        public HelpCtx getHelp() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        public void readSettings(WizardDescriptor settings) {
+            //do nothing
+        }
+
+        public void storeSettings(WizardDescriptor settings) {
+            //do nothing
+        }
+
+        public boolean isValid() {
+            return true;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            //do nothing
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            //do nothing
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -158,12 +196,32 @@ public final class ClassicAppletWizardIterator implements WizardDescriptor.Insta
         FileObject template = Templates.getTemplate(wizard);
 
         FileObject createdFile = null;
+        Project p = Templates.getProject(wizard);
+        JCProject jcProject = p == null ? null : p.getLookup().lookup(JCProject.class);
+        if (jcProject != null && dir != null) {
+            boolean found = false;
+            for (FileObject fo : jcProject.getSourceClassPath().getRoots()) {
+                if (fo != null) { //???
+                    if (fo.equals(dir)) {
+                        throw new IOException (NbBundle.getMessage(ClassicAppletWizardIterator.class,
+                                "ERR_NO_DEFAULT_PACKAGE")); //NOI18N
+                    }
+                    found |= FileUtil.isParentOf(fo, dir);
+                }
+            }
+            if (jcProject.getProjectDirectory().equals(dir)) {
+                throw new IOException (NbBundle.getMessage(ClassicAppletWizardIterator.class,
+                        "ERR_NO_DEFAULT_PACKAGE")); //NOI18N
+            }
+            if (!found) {
+                throw new IOException (NbBundle.getMessage(ClassicAppletWizardIterator.class,
+                        "ERR_NOT_ON_CLASSPATH", dir.getName())); //NOI18N
+            }
+        }
 
         DataObject dTemplate = DataObject.find(template);
         DataObject dobj = dTemplate.createFromTemplate(df, targetName);
         createdFile = dobj.getPrimaryFile();
-        Project p = Templates.getProject(wizard);
-        JCProject jcProject = p.getLookup().lookup(JCProject.class);
         if (jcProject != null) {
             addInfoToWebDescriptor(createdFile, jcProject);
             createScriptFile(createdFile, jcProject);

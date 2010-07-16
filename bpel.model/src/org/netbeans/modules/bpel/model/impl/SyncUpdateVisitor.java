@@ -50,6 +50,7 @@ import org.netbeans.modules.bpel.model.api.ExtensibleAssign;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.Extension;
 import org.netbeans.modules.bpel.model.api.ExtensionActivity;
+import org.netbeans.modules.bpel.model.api.ExtensionAssignOperation;
 import org.netbeans.modules.bpel.model.api.ExtensionContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -673,6 +674,11 @@ public class SyncUpdateVisitor implements ComponentUpdater<BpelEntity>,
      */
     public void visit( ExtensibleAssign assign ) {
         visitAssignChild( assign );
+    }
+
+    /** {@inheritDoc} */
+    public void visit( ExtensionAssignOperation extAssignOp ) {
+        visitAssignChild( extAssignOp );
     }
 
     /* (non-Javadoc)

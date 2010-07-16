@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -210,10 +213,11 @@ WCHAR * toWCHAR(char * charBuffer, DWORD size) {
     }
     
     buffer = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR) * (size/2+1));
+    ZERO(buffer, sizeof(WCHAR) * (size/2+1));
     for(i=0;i<size/2;i++) {
         realStringPtr[2*i] = (realStringPtr[2*i]) & 0xFF;
         realStringPtr[2*i+1] = (realStringPtr[2*i+1])& 0xFF;
-        buffer [i] = realStringPtr[2*i] + ((realStringPtr[2*i+1])& 0xFF);
+        buffer [i] = ((unsigned char)realStringPtr[2*i]) + (((unsigned char)realStringPtr[2*i+1]) << 8);
     }
     
     return buffer;
@@ -254,12 +258,14 @@ void getLines(WCHAR *str, WCHAR *** list, DWORD * number) {
                 ptr2 = search(ptr, LINE_SEPARATOR) + sepLength;
                 length = lstrlenW(ptr) - lstrlenW(ptr2) - sepLength;
                 (*list) [counter ] = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR*)*(length+1));
+                ZERO((*list) [counter ], sizeof(WCHAR*)*(length+1));
                 for(i=0;i<length;i++) {
                     (*list) [counter ][i]=ptr[i];
                 }
                 ptr = ptr2;
             } else if((length = lstrlenW(ptr)) > 0) {
                 (*list)[counter ] = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR*)*(length+1));
+                ZERO((*list) [counter ], sizeof(WCHAR*)*(length+1));
                 for(i=0;i<length;i++) {
                     (*list) [counter ][i]=ptr[i];
                 }
@@ -275,10 +281,11 @@ void getLines(WCHAR *str, WCHAR *** list, DWORD * number) {
 void readStringList(HANDLE fileHandle, WCHAR *** list, DWORD *number) {
     DWORD size = GetFileSize(fileHandle, NULL); // hope it much less than 2GB
     DWORD read = 0;
-    char * charBuffer = (char*) LocalAlloc(LPTR, sizeof(char) * (size + 1));
+    char * charBuffer = (char*) LocalAlloc(LPTR, sizeof(char) * (size + 2));
+    ZERO(charBuffer, sizeof(char) * (size + 2));
     
     if(ReadFile(fileHandle, charBuffer, size, &read, 0) && read >=2) {
-        WCHAR * buffer = toWCHAR(charBuffer, size);
+        WCHAR * buffer = toWCHAR(charBuffer, size + 2);
         getLines(buffer, list, number);
         LocalFree(buffer);
     }
@@ -299,7 +306,7 @@ void deleteFile(WCHAR * filePath) {
     for(i=0;i<filePathLength;i++) {
         file[i+prefixLength] = filePath[i];
     }
-    
+
     if(GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) {
         if(attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             while((!RemoveDirectoryW(file) || GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) &&

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,13 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * JavaEEModuleNode.java
- *
- * Created on October 12, 2006, 3:20 PM
- */
-
 package org.netbeans.modules.compapp.projects.jbi.jeese.ui;
 
 import java.awt.Image;
@@ -56,7 +52,6 @@ import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.AppVerifierAction;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.DeleteJavaEEModuleAction;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.JavaEEModulePropertiesAction;
-import org.netbeans.modules.compapp.projects.jbi.jeese.actions.ServerResourcesAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
@@ -66,96 +61,93 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author root
  */
 public class JavaEEModuleNode extends AbstractNode {
+
     private JbiProject jbiProject;
     private VisualClassPathItem vcpi;
-    private Lookup lookup;
-        
-    public JavaEEModuleNode( VisualClassPathItem vcpi,
-            JbiProject project) {
-        super( Children.LEAF, buildLookup( vcpi, project ) );
+
+    public JavaEEModuleNode(VisualClassPathItem vcpi,
+            JbiProject jbiProject) {
+        super(Children.LEAF, buildLookup(vcpi, jbiProject));
         this.vcpi = vcpi;
-        this.jbiProject = project;
+        this.jbiProject = jbiProject;
     }
-    
-    private static Lookup buildLookup(
-            VisualClassPathItem vcpi, JbiProject project) {
-        return Lookups.fixed( new Object[] {
-            vcpi,
-            project,
-        }
-        );
+
+    private static Lookup buildLookup(VisualClassPathItem vcpi,
+            JbiProject project) {
+        return Lookups.fixed(new Object[]{
+                    vcpi,
+                    project,});
     }
-    
+
+    @Override
     public String getName() {
         return vcpi.toString();
     }
-    
+
+    @Override
     public String getDisplayName() {
         return vcpi.toString();
     }
-    
+
     public VisualClassPathItem getRefernece() {
         return vcpi;
     }
-    
+
+    @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(DeleteAction.class),            
-            null,
-            SystemAction.get( JavaEEModulePropertiesAction.class),
-            null,
-            SystemAction.get(AppVerifierAction.class),
-            //SystemAction.get(ServerResourcesAction.class)
-        };
+        return new Action[]{
+                    SystemAction.get(DeleteAction.class),
+                    null,
+                    SystemAction.get(JavaEEModulePropertiesAction.class),
+                    null,
+                    SystemAction.get(AppVerifierAction.class), //SystemAction.get(ServerResourcesAction.class)
+                };
     }
-    
+
+    @Override
     public boolean canDestroy() {
         return true;
     }
-    
+
+    @Override
     public void destroy() throws IOException {
         super.destroy();
-        
+
         DeleteJavaEEModuleAction deleteModuleAction =
                 SystemAction.get(DeleteJavaEEModuleAction.class);
-        deleteModuleAction.performAction(new Node[] {this});
+        deleteModuleAction.performAction(new Node[]{this});
     }
 
-    private Image getProjIcon(){
-        Icon ic = null;
+    private Image getProjIcon() {
         Image ret = null;
-        if (this.vcpi != null){
-            ic = vcpi.getProjectIcon();
-            if (ic instanceof ImageIcon){
-                ret = ((ImageIcon)ic).getImage();
+        if (this.vcpi != null) {
+            Icon ic = vcpi.getProjectIcon();
+            if (ic instanceof ImageIcon) {
+                ret = ((ImageIcon) ic).getImage();
             }
         }
-        
+
         return ret;
     }
-        
+
+    @Override
     public Image getIcon(int type) {
         Image ret = getProjIcon();
-        if (ret == null){
+        if (ret == null) {
             ret = ImageUtilities.loadImage(
-                "org/netbeans/modules/compapp/projects/jbi/ui/resources/j2seProject.gif"); // NOI18N;
+                    "org/netbeans/modules/compapp/projects/jbi/ui/resources/j2seProject.gif"); // NOI18N;
         }
         return ret;
     }
-    
+
+    @Override
     public Image getOpenedIcon(int type) {
-        Image ret = getProjIcon();
-        if (ret == null){
-            ret = ImageUtilities.loadImage(
-                "org/netbeans/modules/compapp/projects/jbi/ui/resources/j2seProject.gif"); // NOI18N;            
-        }
-        return ret;        
-    }    
+        return getIcon(type);
+    }
 }

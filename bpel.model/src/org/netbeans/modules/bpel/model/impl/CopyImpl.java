@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.support.BinaryCopy;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.xam.AfterSources;
@@ -117,15 +118,33 @@ public class CopyImpl extends FromHolderImpl implements Copy, AfterSources {
     public void setIgnoreMissingFromData( TBoolean value ) {
         setBpelAttribute( BpelAttributes.IGNORE_MISSING_FROM_DATA, value);
     }
+    
+    public BinaryCopy getBinaryCopy() {
+        readLock();
 
+        try {
+            return BinaryCopy.forString(getAttribute(BpelAttributes.BINARY_COPY));
+        }
+        finally {
+            readUnlock();
+        }
+    }
+
+    public void setBinaryCopy(BinaryCopy value) {
+        setBpelAttribute(BpelAttributes.BINARY_COPY, value);
+    }
+
+    public void removeBinaryCopy() {
+        removeAttribute(BpelAttributes.BINARY_COPY);
+    }
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.netbeans.modules.soa.model.bpel20.xdm.impl.BpelContainerImpl#create(org.w3c.dom.Element)
      */
     @Override
-    protected BpelEntity create( Element element )
-    {
+    protected BpelEntity create(Element element) {
         if ( BpelElements.TO.getName().equals(element.getLocalName())) {
             return new ToImpl(getModel(), element);
         }
@@ -159,8 +178,5 @@ public class CopyImpl extends FromHolderImpl implements Copy, AfterSources {
         return super.getMultiplicity(entity);
     }
     
-    private static AtomicReference<Attribute[]> myAttributes = 
-        new AtomicReference<Attribute[]>();
-
-
+    private static AtomicReference<Attribute[]> myAttributes = new AtomicReference<Attribute[]>();
 }

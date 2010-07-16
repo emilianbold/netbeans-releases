@@ -34,10 +34,11 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
  */
 public enum EditorElements {
     EDITOR( "editor" ),
-    CASTS( "casts" ),
     CAST( "cast" ),
-    PSEUDO_COMPS( "pseudoComps" ),
     PSEUDO_COMP( "pseudoComp" ),
+    PREDICATE( "predicate" ),
+    NM_PROPERTIES( "nmProperties" ),
+    NM_PROPERTY( "nmProperty" ),
     ;
 
     EditorElements( String name ) {

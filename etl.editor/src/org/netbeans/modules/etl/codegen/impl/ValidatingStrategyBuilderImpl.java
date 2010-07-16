@@ -32,8 +32,8 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**

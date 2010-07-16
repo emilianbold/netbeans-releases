@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -106,6 +109,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         current = new Cursor(Cursor.DEFAULT_CURSOR);
     }
 
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
@@ -215,6 +219,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CursorCustomEditor"));
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                     && evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -243,6 +248,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
      * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
      * @exception IOException thrown when the value cannot be restored from the specified XML element
      */
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_CURSOR.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -261,6 +267,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
      * @param doc The XML document to store the XML in - should be used for creating nodes only
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_CURSOR);
         el.setAttribute(ATTR_ID, getAsText());
@@ -272,6 +279,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
     // NamedPropertyEditor implementation
 
     /** @return display name of the property editor */
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getBundle(CursorEditor.class).getString("CTL_CursorEditor_DisplayName");
     }

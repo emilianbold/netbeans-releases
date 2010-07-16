@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,55 +92,12 @@ public class RestUtils {
     
     /**
      *  Makes sure project is ready for REST development.
-     *  @param source source file or directory as part of REST application project.
-     */
-    public static void ensureRestDevelopmentReady(FileObject source) throws IOException {
-        Project p = FileOwnerQuery.getOwner(source);
-        if (p != null) {
-            ensureRestDevelopmentReady(p);
-        }
-    }
-    
-    /**
-     *  Makes sure project is ready for REST development.
      *  @param project project to make REST development ready
      */
     public static void ensureRestDevelopmentReady(Project project) throws IOException {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
             restSupport.ensureRestDevelopmentReady();
-        }
-    }
-    
-    /**
-     *  Makes sure project is ready for REST development.
-     *  @param project project to make REST development ready
-     */
-    public static void removeRestDevelopmentReadiness(Project project) throws IOException {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null && restSupport.isRestSupportOn()) {
-            restSupport.removeRestDevelopmentReadiness();
-        }
-    }
-    
-    /**
-     *  Returns true if the project supports REST framework.
-     *  @param project project to make REST development ready
-     */
-    public static boolean supportsRestDevelopment(Project project) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        return restSupport != null;
-    }
-    
-    public static boolean isRestEnabled(Project project) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        return restSupport != null && restSupport.isRestSupportOn();
-    }
-    
-    public static void setRestEnabled(Project project, Boolean v) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            restSupport.setRestSupport(v);
         }
     }
     

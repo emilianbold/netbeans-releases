@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-public abstract class ExpressionImpl extends BpelEntityImpl implements Expression {
+public abstract class ExpressionImpl extends ExtensibleElementsImpl implements Expression {
 
 
     ExpressionImpl( BpelModelImpl model, Element e ) {
@@ -85,6 +85,7 @@ public abstract class ExpressionImpl extends BpelEntityImpl implements Expressio
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.impl.BpelEntityImpl#getDomainAttributes()
      */
+    @Override
     protected Attribute[] getDomainAttributes() {
         if ( myAttributes.get() == null ){
             Attribute[] ret= new Attribute[]{ BpelAttributes.CONTENT , 

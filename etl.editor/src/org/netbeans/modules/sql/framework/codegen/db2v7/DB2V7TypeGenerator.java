@@ -25,7 +25,7 @@ import java.util.Map;
 import org.netbeans.modules.sql.framework.codegen.AbstractTypeGenerator;
 import org.netbeans.modules.sql.framework.codegen.DataType;
 
-import com.sun.sql.framework.jdbc.SQLUtils;
+import com.sun.etl.jdbc.SQLUtils;
 
 /**
  * @author Ritesh Adval

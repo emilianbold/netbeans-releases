@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,19 +66,19 @@ public abstract class RemoteConnectionSupport {
         this.executionEnvironment = env;
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
-        RemoteUtil.LOGGER.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
+        RemoteUtil.LOGGER.log(Level.FINEST, "RCS<Init>: Starting {0} on {1}", new Object[]{getClass().getName(), executionEnvironment});
 
         if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
             try {
                 ConnectionManager.getInstance().connectTo(executionEnvironment);
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
+                RemoteUtil.LOGGER.log(Level.WARNING, "RCS<Init>: Got {0} [{1}]", new Object[]{ex.getClass().getSimpleName(), ex.getMessage()});
                 RemoteUtil.LOGGER.log(Level.FINE, "Caused by:", ex);
             } catch (CancellationException ex) {
                 cancelled = true;
             }
             if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-                RemoteUtil.LOGGER.fine("RCS<Init>: Connection failed on " + executionEnvironment);
+                RemoteUtil.LOGGER.log(Level.FINE, "RCS<Init>: Connection failed on {0}", executionEnvironment);
             }
         }
     }

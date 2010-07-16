@@ -18,11 +18,14 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes.properties;
 
+import java.util.MissingResourceException;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropEditor;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
@@ -33,9 +36,9 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
  * 
  * @version 1.0
  */
-public enum PropertyType {
+public enum PropertyType implements org.netbeans.modules.soa.ui.properties.PropertyType {
     NAME(String.class, StringPropEditor.class),
-    FILE(String.class, StringPropEditor.class),
+    XSL_FILE(String.class),
     DOCUMENTATION(String.class, StringPropEditor.class), 
     VERSION(String.class, StringPropEditor.class), 
     AUTHOR(String.class, StringPropEditor.class), 
@@ -46,17 +49,21 @@ public enum PropertyType {
     // ABSTRACT_PROCESS(TBoolean.class, TBooleanEditor.class), 
     FAULT_NAME_RO(QName.class, QNamePropEditor.class), // Read-only variant
 //    PARTNER_LINK(BpelReference.class, ModelReferenceEditor.class), 
-    PORT_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
-    OPERATION(WSDLReference.class, ModelReferenceEditor.class), 
+//    PORT_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
+    PORT_TYPE(WSDLReference.class, PortTypePropEditor.class), 
+    OPERATION(WSDLReference.class, OperationPropEditor.class), 
+//    SOURCE(String.class, SourcePropEditor.class), 
     SOURCE(String.class, StringPropEditor.class), 
     RESULT(String.class, StringPropEditor.class),
     NAMESPACE(String.class, StringPropEditor.class), 
     LOCATION(String.class, StringPropEditor.class), 
+    PARAM_TYPE(ParamType.class, ParamTypeEditor.class),
+    PARAM_VALUE(String.class, StringPropEditor.class),
+    PARAM_CONTENT(String.class, StringPropEditor.class),
     
 //    PARTNER_LINK_TYPE(String.class, StringPropEditor.class),
 //    ROLE(String.class, StringPropEditor.class),
-    // 142908
-    ROLE(WSDLReference.class, ModelReferenceEditor.class),
+//    ROLE(WSDLReference.class, ModelReferenceEditor.class),
     
 //    OPERATION(String.class, StringPropEditor.class),
     
@@ -69,8 +76,7 @@ public enum PropertyType {
 //    WHILE_CONDITION(BooleanExpr.class), 
 //    TIME_EXPRESSION(String.class, StringPropEditor.class), 
 //    WSDL_FILE(String.class, StringPropEditor.class), 
-    // 142908
-    PARTNER_LINK_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
+//    PARTNER_LINK_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
 //    MY_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
 //    PARTNER_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
     // SUPPRESS_JOIN_FAILURE(TBoolean.class, TBooleanEditor.class), 
@@ -87,8 +93,10 @@ public enum PropertyType {
     MESSAGE_TYPE_NAME(QName.class, QNamePropEditor.class), 
     PART(String.class, StringPropEditor.class); 
     
+    private static final String DESCR = "_DESCR"; // NOI18N
     private Class<?> myClass;
     private String myDisplayName;
+    private String myShortDescription;
     private Class myPropertyEditorClass;
 
     PropertyType(Class aClass) {
@@ -116,6 +124,20 @@ public enum PropertyType {
         return myDisplayName;
     }
     
+    public String getShortDescription() {
+        if (myShortDescription == null) {
+            try {
+                myShortDescription = NbBundle.getMessage(PropertyType.class, 
+                        this.toString()+DESCR);
+            } catch (MissingResourceException ex) {
+                myShortDescription = ""; // NOI18N
+            } catch (Exception ex) {
+                myShortDescription = ""; // NOI18N
+            }
+        }
+        return myShortDescription;
+    }
+
     public Class getPropertyEditorClass() {
         return myPropertyEditorClass;
     }

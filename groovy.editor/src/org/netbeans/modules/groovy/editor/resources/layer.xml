@@ -110,23 +110,7 @@
             </folder>
         </folder>
     </folder>
-    
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-groovy">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.api.StructureAnalyzer"/>
-                </file>
-                <file name="hints.instance">
-                   <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    
+
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-groovy">

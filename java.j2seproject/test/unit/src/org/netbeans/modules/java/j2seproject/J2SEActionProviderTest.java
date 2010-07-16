@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,14 +64,15 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
-import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
+import org.netbeans.modules.java.api.common.applet.AppletSupport;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -124,7 +128,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf",null); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079       
+        ep.put(ProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079       
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
@@ -560,7 +564,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         //First test actions when COS disabled
         EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.COMPILE_ON_SAVE, cos ? "true" : "false");
+        ep.put(ProjectProperties.COMPILE_ON_SAVE, cos ? "true" : "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         context = Lookups.fixed(someSource1);
@@ -734,7 +738,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
     public void testBuildWithDirtyList() throws Exception { // #104508
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.TRACK_FILE_CHANGES, "true");
+        ep.put(ProjectProperties.TRACK_FILE_CHANGES, "true");
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         Properties p = new Properties();
         assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
@@ -743,11 +747,11 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_JAR, "false");
+        ep.put(ProjectProperties.DO_JAR, "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
-        ep.put(J2SEProjectProperties.DO_DEPEND, "false");
+        ep.put(ProjectProperties.DO_DEPEND, "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
@@ -780,12 +784,12 @@ public class J2SEActionProviderTest extends NbTestCase {
     public void testBuildWithDirtyListFirstTime() throws Exception { // #119777
         J2SEProject prj = (J2SEProject) pp;
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.TRACK_FILE_CHANGES, "true");
+        ep.put(ProjectProperties.TRACK_FILE_CHANGES, "true");
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         // Use a new instance, since the old one will already have a dirty list from setUp():
         actionProvider = new J2SEActionProvider(prj, prj.getUpdateHelper());
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_DEPEND, "false");
+        ep.put(ProjectProperties.DO_DEPEND, "false");
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         Properties p = new Properties();
         MainClassChooser.unitTestingSupport_hasMainMethodResult = true;

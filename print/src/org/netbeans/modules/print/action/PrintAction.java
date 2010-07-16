@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,8 @@ package org.netbeans.modules.print.action;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -57,10 +62,11 @@ import org.openide.windows.TopComponent;
 import org.netbeans.api.print.PrintManager;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.provider.ComponentProvider;
+import org.netbeans.modules.print.provider.EditorProvider;
 import org.netbeans.modules.print.provider.TextProvider;
 import org.netbeans.modules.print.ui.Preview;
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -110,30 +116,30 @@ public final class PrintAction extends IconAction {
 
     private PrintProvider[] getPrintProviders() {
 //out();
-//out("get print providers");
-        PrintProvider[] providers = getTopProviders(getActiveTopComponent());
-//out("TOP PROVIDER: " + provider);
+//out("GET PRINT PROVIDERS");
+        TopComponent top = getActiveTopComponent();
+//out("Top: " + top);
+
+        PrintProvider[] providers = getComponentProviders(top);
+//out("Component providers: " + providers);
 
         if (providers != null) {
             return providers;
         }
-        return getEditorProviders(getSelectedNodes());
-    }
+        providers = getLookupProviders(top);
+//out("Lookup providers: " + providers);
 
-    private PrintProvider[] getTopProviders(TopComponent top) {
-        PrintProvider provider = getLookupProvider(top);
-
-        if (provider != null) {
-            return getProviders(provider);
+        if (providers != null) {
+            return providers;
         }
-        return getComponentProviders(top);
+        return getCookieProviders(getSelectedNodes());
     }
 
-    private PrintProvider getLookupProvider(TopComponent top) {
+    private PrintProvider[] getLookupProviders(TopComponent top) {
         if (top == null) {
             return null;
         }
-        return (PrintProvider) top.getLookup().lookup(PrintProvider.class);
+        return getProviders((PrintProvider) top.getLookup().lookup(PrintProvider.class));
     }
 
     private PrintProvider[] getComponentProviders(JComponent top) {
@@ -149,22 +155,72 @@ public final class PrintAction extends IconAction {
         return getProviders(new ComponentProvider(printable, getName(printable, top), getDate(top)));
     }
 
-    private PrintProvider[] getProviders(PrintProvider provider) {
-        return new PrintProvider[] { provider };
+    private PrintProvider[] getCookieProviders(Node[] nodes) {
+//out();
+//out("get cookie provider");
+        if (nodes == null) {
+//out("NODES NULL");
+            return null;
+        }
+        List<PrintProvider> providers = new ArrayList<PrintProvider>();
+
+        for (Node node : nodes) {
+//out("  see: " + node);
+            PrintProvider provider = getCookieProvider(node);
+
+            if (provider != null) {
+                providers.add(provider);
+            }
+        }
+        if (providers.size() == 0) {
+//out("result null");
+            return null;
+        }
+//out("result: " + providers);
+        return providers.toArray(new PrintProvider[providers.size()]);
+    }
+
+    private PrintProvider getCookieProvider(Node node) {
+//out();
+//out("GET input stream provider: " + node);
+        String text = getText(node.getLookup().lookup(InputStream.class));
+
+        if (text != null) {
+//out("text: " + text);
+            return new TextProvider(text);
+        }
+//out("get editor provider");
+        EditorCookie editor = node.getLookup().lookup(EditorCookie.class);
+
+        if (editor == null) {
+//out("get editor provider.2");
+            return null;
+        }
+        if (editor.getDocument() == null) {
+//out("get editor provider.3");
+            return null;
+        }
+        return new EditorProvider(editor, getDate(getDataObject(node)));
     }
 
     private void findPrintable(Container container, List<JComponent> printable) {
         if (container.isShowing() && isPrintable(container)) {
-//out("see: " + container.getClass().getName());
             printable.add((JComponent) container);
         }
-        Component[] components = container.getComponents();
+        Component[] children = container.getComponents();
 
-        for (Component component : components) {
-            if (component instanceof Container) {
-                findPrintable((Container) component, printable);
+        for (Component child : children) {
+            if (child instanceof Container) {
+                findPrintable((Container) child, printable);
             }
         }
+    }
+
+    private PrintProvider[] getProviders(PrintProvider provider) {
+        if (provider == null) {
+            return null;
+        }
+        return new PrintProvider[] { provider };
     }
 
     private boolean isPrintable(Container container) {
@@ -207,44 +263,21 @@ public final class PrintAction extends IconAction {
         return (DataObject) ((TopComponent) top).getLookup().lookup(DataObject.class);
     }
 
-    private PrintProvider[] getEditorProviders(Node[] nodes) {
-//out();
-//out("get editor provider");
-        if (nodes == null) {
-//out("NODES NULL");
+    private String getText(InputStream input) {
+        if (input == null) {
             return null;
         }
-        List<PrintProvider> providers = new ArrayList<PrintProvider>();
-
-        for (Node node : nodes) {
-//out("  see: " + node);
-            PrintProvider provider = getEditorProvider(node);
-
-            if (provider != null) {
-                providers.add(provider);
-            }
+        try {
+            input.reset();
+            int length = input.available();
+            byte[] bytes = new byte[length];
+            input.read(bytes);
+            input.close();
+            return new String(bytes);
         }
-        if (providers.size() == 0) {
-//out("result null");
+        catch (IOException e) {
             return null;
         }
-//out("result: " + providers);
-        return providers.toArray(new PrintProvider[providers.size()]);
-    }
-
-    private PrintProvider getEditorProvider(Node node) {
-//out("get editor provider");
-        EditorCookie editor = node.getLookup().lookup(EditorCookie.class);
-
-        if (editor == null) {
-//out("get editor provider.2");
-            return null;
-        }
-        if (editor.getDocument() == null) {
-//out("get editor provider.3");
-            return null;
-        }
-        return new TextProvider(editor, getDate(getDataObject(node)));
     }
 
     private PrintCookie getPrintCookie() {

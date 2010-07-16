@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -787,7 +791,8 @@ public final class ModuleManager {
         ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
 
         ev.log(Events.START_ENABLE_MODULES, toEnable);
-        {
+        NetigsoFramework.willEnable(toEnable);
+        for (;;) {
             // Actually turn on the listed modules.
             // List of modules that need to be "rolled back".
             LinkedList<Module> fallback = new LinkedList<Module>();
@@ -800,6 +805,9 @@ public final class ModuleManager {
             try {
                 ev.log(Events.PERF_START, "module preparation" ); // NOI18N
                 for (Module m: toEnable) {
+                    if (m.isEnabled()) {
+                        continue;
+                    }
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
                     ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeName() ); // NOI18N
@@ -853,7 +861,6 @@ public final class ModuleManager {
                     ev.log(Events.PERF_END, "ModuleInstaller.prepare " + m.getCodeName() ); // NOI18N
                 }
                 ev.log(Events.PERF_END, "module preparation" ); // NOI18N
-
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
@@ -924,8 +931,19 @@ public final class ModuleManager {
             } else {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
+            Util.err.fine("enable: fixing classloader");
+            installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
+            Set<Module> enableMore = NetigsoFramework.turnOn(classLoader, this.modules);
+            if (!enableMore.isEmpty()) {
+                Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
+                List<Module> toEnableMore = simulateEnable(enableMore, false);
+                toEnable.addAll(toEnableMore);
+                Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
+                continue;
+            }
             installer.load(toEnable);
+            break;
         }
         {
             // Take care of notifying various changes.
@@ -1029,6 +1047,9 @@ public final class ModuleManager {
      * creating the module classloader fails unexpectedly.
      */
     public List<Module> simulateEnable(Set<Module> modules) throws IllegalArgumentException {
+        return simulateEnable(modules, true);
+    }
+    final List<Module> simulateEnable(Set<Module> modules, boolean honorAutoloadEager) throws IllegalArgumentException {
         /* Not quite, eager modules may change this:
         if (modules.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -1037,8 +1058,10 @@ public final class ModuleManager {
         // XXX also optimize for modules.size == 1
         Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1);
         for (Module m: modules) {
-            if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
-            if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
+            if (honorAutoloadEager) {
+                if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
+                if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
+            }
             if (m.isEnabled()) throw new IllegalArgumentException("Already enabled: " + m); // NOI18N
             if (!m.isValid()) throw new IllegalArgumentException("Not managed by me: " + m + " in " + m); // NOI18N
             maybeAddToEnableList(willEnable, modules, m, true);
@@ -1581,7 +1604,7 @@ public final class ModuleManager {
             Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
             return true;
         }
-        if (! installer.closing(sortedModules)) {
+        if (!TopSecurityManager.officialExit && !installer.closing(sortedModules)) {
             return false;
         }
         if (midHook != null) {
@@ -1593,7 +1616,18 @@ public final class ModuleManager {
                 Util.err.log(Level.WARNING, null, e);
             }
         }
+        NetigsoFramework.shutdownFramework();
         installer.close(sortedModules);
         return true;
+    }
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
+            public @Override void run() {
+                if (System.getSecurityManager() instanceof TopSecurityManager) {
+                    TopSecurityManager.officialExit = true;
+                    LifecycleManager.getDefault().exit();
+                }
+            }
+        });
     }
 }

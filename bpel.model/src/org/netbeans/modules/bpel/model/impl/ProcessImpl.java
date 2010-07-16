@@ -27,9 +27,15 @@ import org.netbeans.modules.bpel.model.api.ExtensionContainer;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.support.AtomicTxType;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.AtomicTxTypeAttribute;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.IgnoreMissingFromDataAttribute;
 import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.IsAtomicAttribute;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.PersistenceOptOutAttribute;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.WaitingRequestLifeSpanAttribute;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypesEnum;
@@ -121,7 +127,6 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
     public void removeExpressionLanguage() {
         removeAttribute(BpelAttributes.EXPRESSION_LANGUAGE);
     }
-    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.Process#getExtensionContainer()
@@ -134,8 +139,7 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
      * @see org.netbeans.modules.soa.model.bpel20.api.Process#setExtensionContainer(org.netbeans.modules.soa.model.bpel20.api.ExtensionContainer)
      */
     public void setExtensionContainer( ExtensionContainer value ) {
-        setChild( value , ExtensionContainer.class , 
-                BpelTypesEnum.AFTER_EXTENSIONS );
+        setChild( value , ExtensionContainer.class , BpelTypesEnum.AFTER_EXTENSIONS );
     }
 
     /* (non-Javadoc)
@@ -162,16 +166,20 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.Process#addImport(org.netbeans.modules.soa.model.bpel20.api.Import)
      */
-    public void addImport( Import imp ) {
-        addChildBefore( imp , Import.class , BpelTypesEnum.AFTER_IMPORTS );
+    public void addImport(Import imp) {
+//System.out.println();
+//System.out.println();
+//System.out.println("ADD IMPORT: " + imp.getLocation());
+//System.out.println();
+//System.out.println();
+        addChildBefore(imp, Import.class, BpelTypesEnum.AFTER_IMPORTS);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.Process#setImport(org.netbeans.modules.soa.model.bpel20.api.Import, int)
      */
-    public void setImport( Import imp, int i ) {
-        setChildAtIndex( imp , Import.class , i );
-        
+    public void setImport(Import imp, int i) {
+        setChildAtIndex(imp , Import.class, i);
     }
 
     /* (non-Javadoc)
@@ -179,7 +187,6 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
      */
     public void insertImport( Import imp, int i ) {
         insertAtIndex( imp , Import.class , i , BpelTypesEnum.AFTER_IMPORTS );
-        
     }
 
     /* (non-Javadoc)
@@ -208,6 +215,7 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
      */
     public int sizeOfImports() {
         readLock();
+
         try {
             return getChildren( Import.class ).size();
         }
@@ -216,7 +224,6 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
         }
     }
 
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.BpelEntity#getElementType()
      */
@@ -255,36 +262,92 @@ public class ProcessImpl extends BaseScopeImpl implements Process {
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.impl.BpelEntityImpl#getDomainAttributes()
      */
+    @Override
     protected Attribute[] getDomainAttributes() {
         if ( myAttributes.get() == null ){
             Attribute[] attr = super.getDomainAttributes();
-            Attribute[] ret = new Attribute[ attr.length + 3];
+            Attribute[] ret = new Attribute[ attr.length + 7];
             System.arraycopy( attr , 0 , ret , 3 , attr.length );
             ret[ 0 ] = BpelAttributes.EXPRESSION_LANGUAGE;
             ret[ 1 ] = BpelAttributes.QUERY_LANGUAGE;
             ret[ 2 ] = BpelAttributes.TARGET_NAMESPACE;
+            ret[ 3 ] = new IsAtomicAttribute(this);
+            ret[ 4 ] = new AtomicTxTypeAttribute(this);
+            ret[ 5 ] = new PersistenceOptOutAttribute(this);
+            ret[ 6 ] = new WaitingRequestLifeSpanAttribute(this);
+            ret[ 7 ] = new IgnoreMissingFromDataAttribute(this);
             myAttributes.compareAndSet( null, ret);
         }
         return myAttributes.get();
     }
     
-    private static AtomicReference<Attribute[]> myAttributes = 
-        new AtomicReference<Attribute[]>();
+    private static AtomicReference<Attribute[]> myAttributes = new AtomicReference<Attribute[]>();
 
     public TBoolean isAtomic() {
-        return getBooleanAttribute(new IsAtomicAttribute());
+        return getBooleanAttribute(new IsAtomicAttribute(this));
     }
 
     public void setAtomic(TBoolean value) {
-        writeLock();
-        try {
-            IsAtomicAttribute newAttr = new IsAtomicAttribute();
-            newAttr.setOwner(this);
-            newAttr.registerNsPrefix();
-            setBpelAttribute(newAttr, value);
-        } finally {
-            writeUnlock();
+        setBpelAttribute(new IsAtomicAttribute(this), value);
+
+        if (value != TBoolean.YES) {
+            removeAtomicTxType();
         }
     }
-    
+
+    public AtomicTxType getAtomicTxType() {
+        readLock();
+
+        try {
+            return AtomicTxType.forString(getAttribute(new AtomicTxTypeAttribute(this)));
+        }
+        finally {
+            readUnlock();
+        }
+    }
+
+    public void setAtomicTxType(AtomicTxType value) {
+        setAtomic(TBoolean.YES);
+        setBpelAttribute(new AtomicTxTypeAttribute(this), value);
+    }
+
+    public void removeAtomicTxType() {
+        removeAttribute(new AtomicTxTypeAttribute(this));
+    }
+
+    public TBoolean getIgnoreMissingFromData() {
+        return getBooleanAttribute(new IgnoreMissingFromDataAttribute(this));
+    }
+
+    public void setIgnoreMissingFromData(TBoolean value) {
+        setBpelAttribute(new IgnoreMissingFromDataAttribute(this), value);
+    }
+
+    public void removeIgnoreMissingFromData() {
+        removeAttribute( new IgnoreMissingFromDataAttribute(this));
+    }
+
+    public TBoolean isPersistenceOptOut() {
+        return getBooleanAttribute(new PersistenceOptOutAttribute(this));
+    }
+
+    public void setPersistenceOptOut(TBoolean value) {
+        setBpelAttribute(new PersistenceOptOutAttribute(this), value);
+    }
+
+    public void removePersistenceOptOut() {
+        removeAttribute(new PersistenceOptOutAttribute(this));
+    }
+
+    public void setWaitingRequestLifeSpan(Integer value) throws VetoException {
+        setBpelAttribute(new WaitingRequestLifeSpanAttribute(this), value.toString());
+    }
+
+    public Integer getWaitingRequestLifeSpan() {
+        return getIntegerAttribute(new WaitingRequestLifeSpanAttribute(this));
+    }
+
+    public void removeWaitingRequestLifeSpan() {
+        removeAttribute(new WaitingRequestLifeSpanAttribute(this));
+    }
 }

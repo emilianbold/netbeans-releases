@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,15 +45,11 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
-import org.netbeans.modules.cnd.execution41.org.openide.cookies.ExecCookie;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileLock;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
 /** Superclass for Elf objects in the Repository.
  *
@@ -66,34 +65,13 @@ public class CoreElfObject extends ExeObject {
     }
 
     @Override
-    protected void init() {
-        CookieSet cookies = getCookieSet();
-
-        // Actually, we don't want Execute, we only want Start!
-        // See below; we override getCookie to disable execution.
-        cookies.add(new BinaryExecSupport(getPrimaryEntry()));
+    protected boolean needBinarySupport() {
+        return true;
     }
 
     @Override
     protected Node createNodeDelegate() {
         return new CoreElfNode(this);
-    }
-
-    /** Implement parent's getCookie, except disable execution.
-    <p>
-    ExecSupport includes both execution and debugging. We don't want
-    that.  From http://www.netbeans.org/www-nbdev/msg07823.html: A
-    workaround would be to override getCookie on your DataObject to
-    check for DebuggerCookie.class, return null if so, else return
-    super.getCookie.
-     */
-    @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> c) {
-        if (c.isAssignableFrom(ExecCookie.class)) {
-            return null;
-        } else {
-            return super.getCookie(c);
-        }
     }
 
     /*

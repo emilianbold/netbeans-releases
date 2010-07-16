@@ -19,8 +19,7 @@ enterprise*/modules/ext/struts/oro-2.0.8.jar ide*/modules/ext/jakarta-oro-2.0.8.
 enterprise*/modules/ext/struts/bsf-2.3.0.jar ruby*/jruby-1.2.0/lib/bsf.jar
 
 # More maintainable to have Cobertura libs separately than to modify its Ant scripts
-harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar enterprise*/modules/ext/struts/oro-2.0.8.jar
-harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar ide*/modules/ext/jakarta-oro-2.0.8.jar
+harness/testcoverage/cobertura/lib/* **
 
 # impractical to modify jruby dist build to use the same yydebug as libs.jrubyparser
 # XXX paths should be within build, not sources!
@@ -32,4 +31,8 @@ extra/ */
 # Bundles its own stuff.
 python*/jython-*/javalib/ */
 
-
+# Libraries from the bundled Java Card SDK which are also used by the IDE
+javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar ide/modules/ext/apache-commons-codec-1.3.jar
+javacard/JCDK3.0.2_ConnectedEdition/lib/commons-logging-1.1.jar ide/modules/ext/commons-logging-1.1.jar
+javacard/JCDK3.0.2_ConnectedEdition/lib/ant-contrib-1.0b3.jar mobility/modules/ext/ant-contrib-1.0b3.jar
+javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar mobility/modules/ext/commons-httpclient-3.0.jar

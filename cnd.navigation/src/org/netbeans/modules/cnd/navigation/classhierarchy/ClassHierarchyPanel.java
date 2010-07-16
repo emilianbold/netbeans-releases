@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -372,6 +375,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                         HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
@@ -383,6 +387,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                         } catch (PropertyVetoException ex) {
                         }
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
                             }
@@ -394,6 +399,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                     }
@@ -402,6 +408,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         }
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -429,10 +436,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             refreshButtonActionPerformed(e);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
@@ -447,10 +456,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(true);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(subDirection);
             return menuItem;
@@ -466,10 +477,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(false);
         }
 
+
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!subDirection);
             return menuItem;
@@ -485,10 +499,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setRecursive(!recursive);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!recursive);
             return menuItem;
@@ -504,10 +520,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setPlain(!plain);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!plain);
             return menuItem;
@@ -517,6 +535,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private class DialogClose extends AbstractAction {
         public DialogClose() {
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             Component p = ClassHierarchyPanel.this;
             while (p != null){
@@ -595,6 +614,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         return org.openide.util.NbBundle.getMessage(getClass(), path);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("TypeView"); // NOI18N
     }

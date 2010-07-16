@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.swing.plaf.winxp;
 
-import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
@@ -52,9 +54,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.ResourceBundle;
 
 
 /** Default system-provided customizer for Windows XP LF 
@@ -98,13 +97,6 @@ public final class XPLFCustoms extends LFCustoms {
                 EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(17, 0, 17, 0),
             };
             
-        tahomaWarning();    
-            
-        String version = System.getProperty("java.version");
-        if( version.startsWith("1.5") ) {
-            //#112473 - wrong password text field height
-            UIManager.put("PasswordField.font", UIManager.get("TextField.font") );
-        }
         return result;
     }
 
@@ -192,18 +184,6 @@ public final class XPLFCustoms extends LFCustoms {
         return result;
     }   
 
-    /** Prints warning of JDK bug if jdk 1.5.0 or 1.5.0_01 is used - 
-     * fonts aren't set to Tahoma, which looks bad.
-     */
-    private void tahomaWarning () {
-        String version = System.getProperty("java.version");
-        if ("1.5.0".equals(version) || version.startsWith("1.5.0_01")) {
-            Logger.getLogger(XPLFCustoms.class.getName()).log(Level.WARNING,
-                    ResourceBundle.getBundle("org.netbeans.swing.plaf.winxp.Bundle").getString("MSG_TahomaWarning"));
-        }
-    }
-    
-    
     private class XPEditorColorings extends UIBootstrapValue.Lazy {
         public XPEditorColorings (String name) {
             super (name);

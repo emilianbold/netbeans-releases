@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,7 +90,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -206,7 +209,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             }
             return Collections.<CsmReference>emptyList();
         }
-        name = CharSequenceKey.create(name);
+        name = CharSequences.create(name);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
@@ -347,8 +350,12 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (file.isValid()) {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer != null){
-                    reader = buffer.getReader();
-                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+                    if (buffer.isFileBased()) {
+                        reader = buffer.getReader();
+                        ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, file.getFileLanguage());
+                    } else {
+                        ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage());
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -366,7 +373,12 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (ts == null || !file.isValid()) {
             return null;
         }
-        APTPreprocHandler.State ppState = file.getProjectImpl(false).getPreprocState(file);
+        APTPreprocHandler.State ppState = null;
+        Collection<APTPreprocHandler.State> preprocStates = file.getProjectImpl(false).getPreprocStates(file);
+        if (!preprocStates.isEmpty()) {
+            // use start file from one of states (i.e. first)
+            ppState = preprocStates.iterator().next();
+        }
         return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 

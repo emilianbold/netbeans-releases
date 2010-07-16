@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * Class EmptyMBean5
- * 
+ *
  * @author <author>
  */
 public class EmptyMBean5 extends StandardMBean implements EmptyMBean5MBean {
@@ -50,7 +50,6 @@ public class EmptyMBean5 extends StandardMBean implements EmptyMBean5MBean {
     @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
-
         return description;
     }
 
@@ -79,7 +78,6 @@ public class EmptyMBean5 extends StandardMBean implements EmptyMBean5MBean {
     @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
-
         return description;
     }
 }

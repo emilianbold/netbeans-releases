@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,13 +50,14 @@ import org.junit.Test;
 
 import java.io.IOException;
 import org.junit.After;
-import org.netbeans.modules.bpel.model.TestCatalogModel;
-import org.netbeans.modules.bpel.model.TestUtils;
+import org.netbeans.modules.bpel.model.BpelTestUtils;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.soa.ui.TestCatalogModel;
+import org.netbeans.modules.soa.ui.TestUtils;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -118,8 +122,8 @@ public class BpelRefCacheTest {
     public void init() {
         try {
             // mBpelModel = TestUtils.loadXamModel(TEST_BPEL, BpelModelImpl.class);
-            mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-                    TEST_BPEL, BpelModelImpl.class);
+            mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class, 
+                    TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         } catch (Exception ex) {
             assertTrue("Exception while loading BPEL", false);
         }
@@ -139,7 +143,7 @@ public class BpelRefCacheTest {
         BpelModelImpl bmImpl = BpelModelImpl.class.cast(bModel);
         RefCacheSupport cache = bmImpl.getRefCacheSupport();
         //
-        TestUtils.checkImports(bModel);
+        BpelTestUtils.checkImports(bModel);
         //
         return cache;
     }
@@ -152,13 +156,13 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testReferencingInvalid() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         assertEquals(2, cache.getCachedModelsSize());
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_BAD_BPEL);
         try {
             mBpelModel.sync();
@@ -177,8 +181,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testDeleteWsdlImport() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -192,7 +196,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_WSDL_IMPORT_DELETED);
         try {
             mBpelModel.sync();
@@ -211,8 +215,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testDeleteSchemaImport() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -226,7 +230,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_SCHEMA_IMPORT_DELETED);
         try {
             mBpelModel.sync();
@@ -245,8 +249,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testSchemaImportAttrDelete() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -260,7 +264,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_SCHEMA_IMPORT_ATTR_DELETED);
         try {
             mBpelModel.sync();
@@ -279,8 +283,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testSchemaImportAttrChanged() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -294,7 +298,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_SCHEMA_IMPORT_ATTR_CHANGED);
         try {
             mBpelModel.sync();
@@ -313,8 +317,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testWsdlImportAttrDelete() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -328,7 +332,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_WSDL_IMPORT_ATTR_DELETED);
         try {
             mBpelModel.sync();
@@ -347,8 +351,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testWsdlImportAttrChanged() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -362,7 +366,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(mBpelModel,
+        TestUtils.setDocumentContentTo(mBpelModel, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_WSDL_IMPORT_ATTR_CHANGED);
         try {
             mBpelModel.sync();
@@ -383,8 +387,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedWsdlInvalid() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -398,7 +402,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(importedWsdl,
+        TestUtils.setDocumentContentTo(importedWsdl, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_WSDL_INVALID);
         try {
             importedWsdl.sync();
@@ -419,8 +423,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedSchemaInvalid() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -434,7 +438,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(importedSchema,
+        TestUtils.setDocumentContentTo(importedSchema, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_SCHEMA_INVALID);
         try {
             importedSchema.sync();
@@ -455,8 +459,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedWsdlTargetNsChanged() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -470,7 +474,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(importedWsdl,
+        TestUtils.setDocumentContentTo(importedWsdl, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_WSDL_TNS_CHANGED);
         importedWsdl.sync();
         //
@@ -486,8 +490,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedSchemaTargetNsChanged() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -501,7 +505,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(importedSchema,
+        TestUtils.setDocumentContentTo(importedSchema, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_SCHEMA_TNS_CHANGED);
         importedSchema.sync();
         //
@@ -517,8 +521,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedWsdlTargetNsDeleted() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -532,7 +536,7 @@ public class BpelRefCacheTest {
         WSDLModel importedWsdl = cache.optimizedWsdlResolve(imp);
         assertNotNull(importedWsdl);
         //
-        TestUtils.setDocumentContentTo(importedWsdl,
+        TestUtils.setDocumentContentTo(importedWsdl, BpelTestUtils.class,
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_WSDL_TNS_DELETED);
         importedWsdl.sync();
         //
@@ -548,8 +552,8 @@ public class BpelRefCacheTest {
      */
     @Test
     public void testImportedSchemaTargetNsDeleted() throws Exception {
-//        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP,
-//                TEST_BPEL, BpelModelImpl.class);
+//        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class,
+//                TEST_BPEL_PROJECT_ZIP, TEST_BPEL, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         Process process = mBpelModel.getProcess();
@@ -563,7 +567,7 @@ public class BpelRefCacheTest {
         SchemaModel importedSchema = cache.optimizedSchemaResolve(imp);
         assertNotNull(importedSchema);
         //
-        TestUtils.setDocumentContentTo(importedSchema,
+        TestUtils.setDocumentContentTo(importedSchema, BpelTestUtils.class, 
                 TEST_BPEL_PROJECT_ZIP, TEST_IMPORTED_SCHEMA_TNS_DELETED);
         importedSchema.sync();
         //
@@ -581,8 +585,8 @@ public class BpelRefCacheTest {
         String TEST_BPEL_PROJECT_ZIP_2 = "resources/BpelRefCacheProject2.zip"; // NOI18N
         String TEST_BPEL_2 = "BpelRefCacheProject2/src/Referencing.bpel"; // NOI18N
         //
-        mBpelModel = TestUtils.loadXamModel(TEST_BPEL_PROJECT_ZIP_2,
-                TEST_BPEL_2, BpelModelImpl.class);
+        mBpelModel = TestUtils.loadXamModel(BpelTestUtils.class, 
+                TEST_BPEL_PROJECT_ZIP_2, TEST_BPEL_2, BpelModelImpl.class);
         RefCacheSupport cache = loadReferencedModels(mBpelModel);
         //
         // Cache has to contain 2 items

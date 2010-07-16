@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -75,7 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
@@ -87,7 +91,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private final TreeMap<CharSequence, Object> declarations;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
-    private final Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
+    private final Map<CharSequence, Set<CsmUID<CsmFriend>>> friends;
     // empty stub
     private static final DeclarationContainer EMPTY = new DeclarationContainer() {
 
@@ -102,27 +106,33 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
-        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
+        super(new DeclarationContainerKey(project.getUniqueName()), false);
+        declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(CsmNamespace ns) {
         super(new NamespaceDeclarationContainerKey(ns), false);
-        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
+        declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
         put();
     }
 
     public DeclarationContainer(DataInput input) throws IOException {
         super(input);
         declarations = UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(input, UniqueNameCache.getManager());
+        int colSize = input.readInt();
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>(colSize);
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMapSet(friends, input, UniqueNameCache.getManager(), colSize);
     }
 
     // only for EMPTY static field
     private DeclarationContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
-        declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
+        declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
     }
 
     public static DeclarationContainer empty() {
@@ -130,14 +140,14 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     }
 
     public void removeDeclaration(CsmOffsetableDeclaration decl) {
-        CharSequence uniqueName = CharSequenceKey.create(decl.getUniqueName());
+        CharSequence uniqueName = CharSequences.create(decl.getUniqueName());
         CsmUID<CsmOffsetableDeclaration> anUid = UIDCsmConverter.declarationToUID(decl);
         Object o = null;
         try {
             declarationsLock.writeLock().lock();
             o = declarations.get(uniqueName);
 
-            if (o instanceof CsmUID[]) {
+            if (o instanceof CsmUID<?>[]) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
                 int size = uids.length;
@@ -169,7 +179,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                     }
                     declarations.put(uniqueName, newUids);
                 }
-            } else if (o instanceof CsmUID) {
+            } else if (o instanceof CsmUID<?>) {
                 declarations.remove(uniqueName);
             }
         } finally {
@@ -181,22 +191,22 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private void removeFriend(CsmOffsetableDeclaration decl) {
         if (CsmKindUtilities.isFriendClass(decl)) {
-            CsmFriendClass cls = (CsmFriendClass) decl;
-            CharSequence name = CharSequenceKey.create(cls.getName());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend cls = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(cls.getName());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(cls));
-                if (set.size() == 0) {
+                if (set.isEmpty()) {
                     friends.remove(name);
                 }
             }
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
-            CsmFriendFunction fun = (CsmFriendFunction) decl;
-            CharSequence name = CharSequenceKey.create(fun.getSignature());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend fun = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(((CsmFriendFunction)fun).getSignature());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(fun));
-                if (set.size() == 0) {
+                if (set.isEmpty()) {
                     friends.remove(name);
                 }
             }
@@ -216,7 +226,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             declarationsLock.writeLock().lock();
 
             Object o = declarations.get(name);
-            if (o instanceof CsmUID[]) {
+            if (o instanceof CsmUID<?>[]) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[]) o;
                 boolean find = false;
@@ -231,18 +241,16 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                     @SuppressWarnings("unchecked")
                     CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length + 1];
                     res[0] = uid;
-                    for (int i = 0; i < uids.length; i++) {
-                        res[i + 1] = uids[i];
-                    }
+                    System.arraycopy(uids, 0, res, 1, uids.length);
                     declarations.put(name, res);
                 }
-            } else if (o instanceof CsmUID) {
+            } else if (o instanceof CsmUID<?>) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>) o;
                 if (UIDUtilities.isSameFile(oldUid, uid)) {
                     declarations.put(name, uid);
                 } else {
-                    CsmUID[] uids = new CsmUID[]{uid, oldUid};
+                    CsmUID<?>[] uids = new CsmUID<?>[]{uid, oldUid};
                     declarations.put(name, uids);
                 }
             } else {
@@ -257,20 +265,20 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     private void putFriend(CsmDeclaration decl) {
         if (CsmKindUtilities.isFriendClass(decl)) {
-            CsmFriendClass cls = (CsmFriendClass) decl;
-            CharSequence name = CharSequenceKey.create(cls.getName());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend cls = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(cls.getName());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set == null) {
-                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                set = new HashSet<CsmUID<CsmFriend>>();
                 friends.put(name, set);
             }
             set.add(UIDs.get(cls));
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
-            CsmFriendFunction fun = (CsmFriendFunction) decl;
-            CharSequence name = CharSequenceKey.create(fun.getSignature());
-            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            CsmFriend fun = (CsmFriend) decl;
+            CharSequence name = CharSequences.create(((CsmFriendFunction)fun).getSignature());
+            Set<CsmUID<CsmFriend>> set = friends.get(name);
             if (set == null) {
-                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                set = new HashSet<CsmUID<CsmFriend>>();
                 friends.put(name, set);
             }
             set.add(UIDs.get(fun));
@@ -279,8 +287,8 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {
         Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        from = CharSequenceKey.create(from);
-        to = CharSequenceKey.create(to);
+        from = CharSequences.create(from);
+        to = CharSequences.create(to);
         try {
             declarationsLock.readLock().lock();
             for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()) {
@@ -297,8 +305,8 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         char maxChar = 255; //Character.MAX_VALUE;
         for(Kind kind : kinds) {
             String prefix = Utils.getCsmDeclarationKindkey(kind) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + fqn;
-            CharSequence from  = CharSequenceKey.create(prefix);
-            CharSequence to  = CharSequenceKey.create(prefix+maxChar);
+            CharSequence from  = CharSequences.create(prefix);
+            CharSequence to  = CharSequences.create(prefix+maxChar);
             try {
                 declarationsLock.readLock().lock();
                 for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()) {
@@ -321,8 +329,8 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         }
     }
 
-    SortedMap<CharSequence, Set<CsmUID<? extends CsmFriend>>> testFriends(){
-        return new TreeMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>(friends);
+    SortedMap<CharSequence, Set<CsmUID<CsmFriend>>> testFriends(){
+        return new TreeMap<CharSequence, Set<CsmUID<CsmFriend>>>(friends);
     }
 
     /**
@@ -335,9 +343,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             // we know the template type to be CsmOffsetableDeclaration
             @SuppressWarnings("unchecked") // checked
             final CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
-            for (CsmUID<CsmOffsetableDeclaration> uid : uids) {
-                list.add(uid);
-            }
+            list.addAll(Arrays.asList(uids));
         } else if (o instanceof CsmUID<?>) {
             // we know the template type to be CsmOffsetableDeclaration
             @SuppressWarnings("unchecked") // checked
@@ -378,11 +384,11 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             name = fun.getSignature();
         }
         if (name != null) {
-            name = CharSequenceKey.create(name);
+            name = CharSequences.create(name);
             List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
             try {
                 declarationsLock.readLock().lock();
-                Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+                Set<CsmUID<CsmFriend>> set = friends.get(name);
                 if (set != null) {
                     list.addAll(set);
                 }
@@ -413,7 +419,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        uniqueName = CharSequenceKey.create(uniqueName);
+        uniqueName = CharSequences.create(uniqueName);
         try {
             declarationsLock.readLock().lock();
             addAll(list, declarations.get(uniqueName));
@@ -426,7 +432,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     public CsmDeclaration getDeclaration(CharSequence uniqueName) {
         CsmDeclaration result;
         CsmUID<CsmDeclaration> uid = null;
-        uniqueName = CharSequenceKey.create(uniqueName);
+        uniqueName = CharSequences.create(uniqueName);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -467,6 +473,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         try {
             declarationsLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMapSet(friends, aStream);
         } finally {
             declarationsLock.readLock().unlock();
         }

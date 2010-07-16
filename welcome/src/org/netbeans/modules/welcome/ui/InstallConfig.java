@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,12 +54,9 @@ import org.openide.util.Lookup;
  */
 class InstallConfig {
     private boolean ergonomics = false;
-    private boolean javaFX = false;
     private boolean somePacksDisabled = false;
     private Set<String> enabledPackNames = new HashSet<String>(10);
     private Set<String> availablePackNames = new HashSet<String>(10);
-
-    private static final String javaFxPackName = "org.netbeans.modules.javafx.kit"; //NOI18N
 
     private static final String javaSEPackName = "org.netbeans.modules.java.kit"; //NOI18N
 
@@ -82,7 +82,6 @@ class InstallConfig {
 
     private InstallConfig() {
         for( ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class) ) {
-            javaFX = javaFX || isJavaFxPack(mi);
 
             ergonomics = ergonomics || isErgonomicsPack(mi);
 
@@ -106,21 +105,8 @@ class InstallConfig {
         return theInstance;
     }
 
-    private static final String[] preferredPackNames = { "java", "ruby", "cnd", "php", "groovy" };
-    public String getPreferredPackName() {
-        for( String prefName : preferredPackNames ) {
-            if( isPackEnabled( prefName ) )
-                return prefName;
-        }
-        return preferredPackNames[0];
-    }
-
     public boolean isErgonomicsEnabled() {
         return ergonomics;
-    }
-
-    public boolean isJavaFXInstalled() {
-        return javaFX && availablePackNames.contains(javaSEPackName) && availablePackNames.size() == 1;
     }
 
     public boolean somePacksDisabled() {
@@ -139,11 +125,6 @@ class InstallConfig {
                 return true;
         }
         return false;
-    }
-
-    private boolean isJavaFxPack( ModuleInfo mi ) {
-        String moduleName = mi.getCodeNameBase();
-        return moduleName.startsWith(javaFxPackName);
     }
 
     private boolean isErgonomicsPack( ModuleInfo mi ) {

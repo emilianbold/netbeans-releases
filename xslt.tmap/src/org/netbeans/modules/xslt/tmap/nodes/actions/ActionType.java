@@ -30,6 +30,16 @@ public enum ActionType {
     CUT,
     PASTE,
     PROPERTIES,
-    ADD_NEWTYPES;
+    ADD_NEWTYPES,
+    ADD_SERVICE,
+    ADD_OPERATION,
+    ADD_TRANSFORM,
+    ADD_INVOKE,
+    ADD_PARAM,
+    ADD_WSDL_IMPORT,
+    GO_TO,
+    GO_TO_SOURCE,
+    GO_TO_TREE,
+    OPEN_IN_EDITOR;
 
 }

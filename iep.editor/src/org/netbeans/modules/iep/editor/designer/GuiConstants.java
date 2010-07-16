@@ -18,17 +18,14 @@
  */
 
 package org.netbeans.modules.iep.editor.designer;
+
 import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
 import org.netbeans.modules.iep.editor.model.ModelConstants;
-import org.netbeans.modules.iep.model.lib.ImageUtil;
+import org.netbeans.modules.tbls.model.ImageUtil;
 
 /**
  *  DOCUMENT ME!

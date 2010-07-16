@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,14 +16,14 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -79,7 +82,7 @@ import org.openide.util.Utilities;
  */
 public class LogReader {
     private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
-    
+
     private String workingDir;
     private String guessWorkingDir;
     private String baseWorkingDir;
@@ -88,7 +91,7 @@ public class LogReader {
     private List<SourceFileProperties> result;
     private final PathMap pathMapper;
     private final ProjectProxy project;
-    
+
     public LogReader(String fileName, String root, ProjectProxy project) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
@@ -98,7 +101,7 @@ public class LogReader {
         this.fileName = fileName;
         this.project = project;
         this.pathMapper = getPathMapper(project);
-       
+
         // XXX
         setWorkingDir(root);
     }
@@ -139,7 +142,7 @@ public class LogReader {
         }
         return null;
     }
-    
+
     private void run(Progress progress, AtomicBoolean isStoped) {
         if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
@@ -188,7 +191,7 @@ public class LogReader {
                     if (read*100/length > done && done < 100){
                         done++;
                         if (progress != null) {
-                            progress.increment();
+                            progress.increment(null);
                         }
                     }
                 }
@@ -205,16 +208,81 @@ public class LogReader {
             }
         }
     }
-    
+
     public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
         if (result == null) {
             run(progress, isStoped);
         }
         return result;
     }
-    
+
+    private final ArrayList<List<String>> makeStack = new ArrayList<List<String>>();
+
+    private int getMakeLevel(String line){
+        int i1 = line.indexOf('[');
+        if (i1 > 0){
+            int i2 = line.indexOf(']');
+            if (i2 > i1) {
+                String s = line.substring(i1+1, i2);
+                try {
+                    int res = Integer.parseInt(s);
+                    return res;
+                } catch (NumberFormatException ex) {
+
+                }
+            }
+        }
+        return -1;
+    }
+
+    private void enterMakeStack(String dir, int level){
+        if (level < 0) {
+            return;
+        }
+        for(int i = makeStack.size(); i <= level; i++) {
+            makeStack.add(new ArrayList<String>());
+        }
+        List<String> list = makeStack.get(level);
+        list.add(dir);
+    }
+
+    private boolean leaveMakeStack(String dir, int level) {
+        if (level < 0) {
+            return false;
+        }
+        if (makeStack.size() <= level) {
+            return false;
+        }
+        List<String> list = makeStack.get(level);
+        for(String s : list) {
+            if (s.equals(dir)) {
+                list.remove(s);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getMakeTop(int level){
+        ArrayList<String> res = new ArrayList<String>();
+        for(int i = Math.min(makeStack.size(), level-1); i >=0; i--){
+            List<String> list = makeStack.get(i);
+            if (list.size() > 0) {
+                if (res.isEmpty()) {
+                    res.addAll(list);
+                } else {
+                    if (list.size() > 1) {
+                        res.addAll(list);
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
+    private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
 
     private boolean checkDirectoryChange(String line) {
         String workDir = null, message = null;
@@ -227,6 +295,25 @@ public class LogReader {
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
             baseWorkingDir = workDir;
+            enterMakeStack(workDir, getMakeLevel(line));
+        } else if (line.indexOf(LEAVING_DIRECTORY) >= 0) {
+            String dirMessage = line.substring(line.indexOf(LEAVING_DIRECTORY) + LEAVING_DIRECTORY.length() + 1).trim();
+            workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
+            if (TRACE) {message = "**>> by [" + LEAVING_DIRECTORY + "] ";} //NOI18N
+            int level = getMakeLevel(line);
+            if (leaveMakeStack(workDir, level)){
+                List<String> paths = getMakeTop(level);
+                if (paths.size()== 1) {
+                    baseWorkingDir = paths.get(0);
+                } else {
+                    // TODO: make is performed in several threads
+                    // algorithm should have guessing to select needed top of stack
+                    //System.err.println("");
+                }
+            } else {
+                // This is root or error
+                //System.err.println("");
+            }
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = convertPath((end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim());
@@ -239,7 +326,7 @@ public class LogReader {
             if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
-        if (workDir == null) {
+        if (workDir == null || workDir.length() == 0) {
             return false;
         }
 
@@ -247,108 +334,159 @@ public class LogReader {
             workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
         }
 
-        if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
+        if (workDir.charAt(0) == '/' || workDir.charAt(0) == '\\' || (workDir.length() > 1 && workDir.charAt(1) == ':')) {
+            if ((new File(workDir).exists())) {
+                if (TRACE) {System.err.print(message);}
+                setWorkingDir(workDir);
+                return true;
+            }
+        }
+        String dir = workingDir + File.separator + workDir;
+        if (new File(dir).exists()) {
             if (TRACE) {System.err.print(message);}
-            setWorkingDir(workDir);
+            setWorkingDir(dir);
             return true;
-        } else {
-            String dir = workingDir + File.separator + workDir;
+        }
+        if (Utilities.isWindows() && workDir.length()>3 &&
+            workDir.charAt(0)=='/' &&
+            workDir.charAt(2)=='/'){
+            String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
+            if (new File(d).exists()) {
+                if (TRACE) {System.err.print(message);}
+                setWorkingDir(d);
+                return true;
+            }
+        }
+        if (baseWorkingDir != null) {
+            dir = baseWorkingDir + File.separator + workDir;
             if (new File(dir).exists()) {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
             }
-            if (Utilities.isWindows() && workDir.length()>3 &&
-                workDir.charAt(0)=='/' &&
-                workDir.charAt(2)=='/'){
-                String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
-                if (new File(d).exists()) {
-                    if (TRACE) {System.err.print(message);}
-                    setWorkingDir(d);
-                    return true;
-                }
-            }
-            if (baseWorkingDir != null) {
-                dir = baseWorkingDir + File.separator + workDir;
-                if (new File(dir).exists()) {
-                    if (TRACE) {System.err.print(message);}
-                    setWorkingDir(dir);
-                    return true;
-                }
-            }
         }
         return false;
     }
-    
+
     /*package-local*/ enum CompilerType {
-        CPP, C, UNKNOWN;
+        CPP, C, FORTRAN, UNKNOWN;
     };
-    
+
     /*package-local*/ static class LineInfo {
         public String compileLine;
+        public String compiler;
         public CompilerType compilerType = CompilerType.UNKNOWN;
-        
+
         LineInfo(String line) {
             compileLine = line;
         }
     }
-    
-    private static final String LABEL_CD = "cd "; //NOI18N
-    private static final String INVOKE_SUN_C = "cc "; //NOI18N
-    private static final String INVOKE_SUN_CC = "CC "; //NOI18N
-    private static final String INVOKE_GNU_C = "gcc "; //NOI18N
+
+    private static final String LABEL_CD        = "cd "; //NOI18N
+    private static final String INVOKE_GNU_C    = "gcc "; //NOI18N
+    private static final String INVOKE_GNU_C2   = "gcc.exe "; //NOI18N
+    private static final String INVOKE_SUN_C    = "cc "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
-    private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
-    private static final String INVOKE_MSVC = "cl "; //NOI18N
-    private static final String MAKE_DELIMITER = ";"; //NOI18N
-    
+    private static final String INVOKE_GNU_Cpp  = "g++ "; //NOI18N
+    private static final String INVOKE_GNU_Cpp2 = "g++.exe "; //NOI18N
+    private static final String INVOKE_GNU_Cpp3 = "c++ "; //NOI18N
+    private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
+    private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
+    private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
+
+// Gnu: gfortran,g95,g90,g77
+    private static final String INVOKE_GNU_Fortran1 = "gfortran "; //NOI18N
+    private static final String INVOKE_GNU_Fortran2 = "gfortran.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran3 = "g95.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran4 = "g90.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran5 = "g77.exe "; //NOI18N
+// common for gnu and sun
+    private static final String INVOKE_GNU_Fortran6 = "g95 "; //NOI18N
+    private static final String INVOKE_GNU_Fortran7 = "g90 "; //NOI18N
+    private static final String INVOKE_GNU_Fortran8 = "g77 "; //NOI18N
+// Sun: ffortran,f95,f90,f77
+    private static final String INVOKE_SUN_Fortran = "ffortran "; //NOI18N
+    private static final String MAKE_DELIMITER  = ";"; //NOI18N
+
+    private static int[] foundCompiler(String line, String ... patterns){
+        for(String pattern : patterns)    {
+            int start = line.indexOf(pattern);
+            if (start>=0) {
+                int end = start + pattern.length();
+                return new int[]{start,end};
+            }
+        }
+        return null;
+    }
+
     /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
-//        if (li.compilerType == CompilerType.UNKNOWN) {
-//            start = line.indexOf(INVOKE_GNU_XC);
-//            if (start>=0) {
-//                li.compilerType = CompilerType.C;
-//                end = start + INVOKE_GNU_XC.length();
-//            }
-//        } 
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_GNU_C);
             //TODO: can fail on gcc calls with -shared-libgcc
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_GNU_C, INVOKE_GNU_C2 /*, INVOKE_GNU_XC*/);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.C;
-                end = start + INVOKE_GNU_C.length();
-            }
-        } 
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_GNU_CC);
-            if (start>=0) {
-                li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_GNU_CC.length();
-            }
-        } 
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_SUN_C);
-            if (start>=0) {
-                li.compilerType = CompilerType.C;
-                end = start + INVOKE_SUN_C.length();
-            }
-        } 
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_SUN_CC);
-            if (start>=0) {
-                li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_SUN_CC.length();
+                li.compiler = "gcc"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_MSVC);
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_GNU_Cpp,INVOKE_GNU_Cpp2,INVOKE_GNU_Cpp3,INVOKE_GNU_Cpp4);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_MSVC.length();
+                li.compiler = "g++"; // NOI18N
             }
         }
-       
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_SUN_C);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.C;
+                li.compiler = "cc"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_SUN_Cpp);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.CPP;
+                li.compiler = "CC"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.FORTRAN;
+                li.compiler = "gfortran"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.FORTRAN;
+                li.compiler = "ffortran"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.CPP;
+                li.compiler = "cl"; // NOI18N
+            }
+        }
+
         if (li.compilerType != CompilerType.UNKNOWN) {
             li.compileLine = line.substring(start);
             while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
@@ -376,7 +514,7 @@ public class LogReader {
         }
         return li;
     }
-    
+
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
         this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
@@ -386,25 +524,29 @@ public class LogReader {
         if (TRACE) {System.err.println("**>> alternative guess working dir: " + workingDir);}
         this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
-    
+
     private boolean parseLine(String line){
        if (checkDirectoryChange(line)) {
            return false;
        }
-//       if (line.startsWith(CURRENT_DIRECTORY)) {
-//           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
-//           return false;
-//       }
        if (workingDir == null) {
            return false;
        }
        if (!workingDir.startsWith(root)){
            return false;
        }
-       
+
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
+           ItemProperties.LanguageKind lang = ItemProperties.LanguageKind.Unknown;
+           if (li.compilerType == CompilerType.CPP) {
+               lang = ItemProperties.LanguageKind.CPP;
+           } else if (li.compilerType == CompilerType.C) {
+               lang = ItemProperties.LanguageKind.C;
+           } else if (li.compilerType == CompilerType.FORTRAN) {
+               lang = ItemProperties.LanguageKind.C;
+           }
+           gatherLine(li.compileLine, line.startsWith("+"), lang, li.compiler); // NOI18N
            return true;
        }
        return false;
@@ -451,10 +593,10 @@ public class LogReader {
                     PackageConfiguration pc = pkgConfig.getPkgConfig(findPkg);
                     if (pc != null) {
                         for(String p : pc.getIncludePaths()){
-                            out.append(" -I"+p); //NOI18N
+                            out.append(" -I").append(p); //NOI18N
                         }
                         for(String p : pc.getMacros()){
-                            out.append(" -D"+p); //NOI18N
+                            out.append(" -D").append(p); //NOI18N
                         }
                         out.append(" "); //NOI18N
                     }
@@ -495,17 +637,16 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
-        // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
-        // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
-        // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
-        // -D_ELF64 -DTEXT_DOMAIN="SUNW_OST_OSCMD" -D_TS_ERRNO -I/export/opensolaris/testws77/proto/root_i386/usr/include
-        // -I/export/opensolaris/testws77/usr/src/uts/common/inet/ipf -I/export/opensolaris/testws77/usr/src/uts/common/inet/pfil
-        // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
+    private boolean gatherLine(String line, boolean isScriptOutput, ItemProperties.LanguageKind lang, String compiler) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros,null);
+        String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
         if (what == null){
+            return false;
+        }
+        if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
+            // It seems assembler file was compiled by C compiler.
+            // Exclude assembler files from C/C++ code model.
             return false;
         }
         String file = null;
@@ -529,19 +670,19 @@ public class LogReader {
         File f = new File(file);
         if (f.exists() && f.isFile()) {
             if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
+            result.add(new CommandLineSource(lang, compiler, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
         if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(isCPP, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(lang, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
                 return true;
             }
         }
         if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
-        if (!what.startsWith("/")){  //NOI18N
+        if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
             try {
                 String[] out = new String[1];
                 boolean areThereOnlyOne = findFiles(new File(root), what, out);
@@ -549,7 +690,7 @@ public class LogReader {
                     if (TRACE) {System.err.println("** And there is no such file under root");}
                 } else {
                     if (areThereOnlyOne) {
-                        result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
+                        result.add(new CommandLineSource(lang, compiler, out[0], what, userIncludes, userMacros));
                         if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
                         // kinda adventure but it works
                         setGuessWorkingDir(out[0]);
@@ -572,6 +713,7 @@ public class LogReader {
         private String compilePath;
         private String sourceName;
         private String fullName;
+        private String compiler;
         private ItemProperties.LanguageKind language;
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
@@ -579,13 +721,10 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath, 
+        private CommandLineSource(ItemProperties.LanguageKind lang, String compiler, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
-            if (isCPP) {
-                language = ItemProperties.LanguageKind.CPP;
-            } else {
-                language = ItemProperties.LanguageKind.C;
-            }
+            language = lang;
+            this.compiler = compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N
@@ -601,22 +740,27 @@ public class LogReader {
             this.userMacros = userMacros;
         }
 
+        @Override
         public String getCompilePath() {
             return compilePath;
         }
 
+        @Override
         public String getItemPath() {
             return fullName;
         }
 
+        @Override
         public String getItemName() {
             return sourceName;
         }
 
+        @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
         }
 
+        @Override
         public List<String> getSystemInludePaths() {
             return systemIncludes;
         }
@@ -625,20 +769,28 @@ public class LogReader {
             return includedFiles;
         }
 
+        @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
         }
 
+        @Override
         public Map<String, String> getSystemMacros() {
             return systemMacros;
         }
 
+        @Override
         public ItemProperties.LanguageKind getLanguageKind() {
             return language;
         }
+
+        @Override
+        public String getCompilerName() {
+            return compiler;
+        }
     }
 
-    // java -cp main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform8/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform8/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
+    // java -cp main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Not enough parameters. Format: bla-bla-bla filename root");
@@ -659,7 +811,7 @@ public class LogReader {
         }
         System.err.println();
     }
-    
+
     private static boolean findFiles(File file, String relativePath, String[] out) throws IOException {
         File f = new File(file.getAbsolutePath() + File.separator + relativePath);
         //System.err.println("# " + file.getAbsolutePath());
@@ -669,18 +821,22 @@ public class LogReader {
             }
             out[0] = file.getAbsolutePath();
         }
-        for (File subs : file.listFiles(dirFilter)) {
-            if (!findFiles(subs, relativePath, out)) {
-                return false;
+        File[] ff = file.listFiles(dirFilter);
+        if (ff != null) {
+            for (File subs : ff) {
+                if (!findFiles(subs, relativePath, out)) {
+                    return false;
+                }
             }
         }
         return true;
     }
-    
+
     private final static FileFilter dirFilter = new FileFilter() {
 
+        @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory();
+                return pathname.isDirectory() && !DiscoveryUtils.ignoreFolder(pathname);
             }
         };
 }

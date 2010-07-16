@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,10 +43,12 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -176,7 +181,43 @@ public class LexUtilities {
 //        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
 //        return getJsTokenSequence(th, offset);
 //    }
-//    
+//
+
+    /**
+     * 
+     *
+     * @param doc
+     * @param offset
+     * @param runUnderLock Runs under it's own document readlock if true
+     * @return Most embedded TokenSequence on the given offset. If there is no
+     * embedding, returns the top level sequence. The TokenSequence is not positioned!
+     */
+    public static TokenSequence<? extends TokenId> getMostEmbeddedTokenSequence(final Document doc, final int offset, boolean runUnderLock) {
+        final AtomicReference<TokenSequence<? extends TokenId>> ref = new AtomicReference<TokenSequence<? extends TokenId>>();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(offset, false);
+                if(sequences.isEmpty()) {
+                    //no embedding, return top level sequence;
+                    ref.set(th.tokenSequence());
+                } else {
+                    ref.set(sequences.get(sequences.size() - 1)); //return the most embedded one
+                }
+            }
+        };
+
+        if(runUnderLock) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
+        
+        return ref.get();
+    }
+
+
     @SuppressWarnings("unchecked")
     @CheckForNull
     public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
@@ -307,15 +348,15 @@ public class LexUtilities {
 //    }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = ts.token();
             
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -328,20 +369,20 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
 
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 balance--;
             }
         }
@@ -711,6 +752,24 @@ public class LexUtilities {
         if (!lookfor.contains(ts.token().id())) {
             while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
         }
+        return ts.token();
+    }
+
+    /**
+     * The method returns the last token on the line.
+     * @param ts
+     * @return
+     */
+    public static Token<?extends PHPTokenId> findEndOfLine(TokenSequence<?extends PHPTokenId> ts) {
+        do {
+            Token<?extends PHPTokenId> token = findNextToken(ts,
+                    Arrays.asList(PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT));
+            for(int i = token.text().length() - 1; i > -1; i--) {
+                if (token.text().charAt(i) == '\n') {
+                    return token;
+                }
+            }
+        } while (ts.moveNext());
         return ts.token();
     }
 }

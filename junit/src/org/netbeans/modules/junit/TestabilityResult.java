@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,15 +100,19 @@ final class TestabilityResult {
     public static TestabilityResult combine(TestabilityResult lhs, TestabilityResult rhs) {
         return new TestabilityResult(lhs.reason | rhs.reason);
     }
+
    /**
-    * Remove reasons from result according filter bit mask
+    * Removes reasons from result according to the specified {@code mask}
+    * (bit mask). If a bit in the {@code mask} is 1 then the corresponding
+    * bit in the returned {@code TestabilityResult} will be set to 0.
     * 
-    * @param lhs the TestabilityResult which reasons should be filtered
-    * @param filterMask the filter bit mask
-    * @return
+    * @param tr the {@code TestabilityResult} which reasons should be filtered.
+    * @param mask the filter bit mask.
+    * @return New {@code TestabilityResult} where some bits are set according to
+    *         the {@code mask}.
     */
-    public static TestabilityResult filter(TestabilityResult lhs, long filterMask) {
-        return new TestabilityResult(lhs.reason & filterMask);
+    public static TestabilityResult filter(TestabilityResult tr, long mask) {
+        return new TestabilityResult(tr.reason & ~mask);
     }
 
     /**
@@ -140,6 +147,7 @@ final class TestabilityResult {
      * Returns {@link #getReason()}.
      * @return String
      */
+    @Override
     public String toString() { 
         return getReason(", ", ", ");                                   //NOI18N
     }

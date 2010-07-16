@@ -18,16 +18,13 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.nodes.images.FolderIcon;
-import static org.netbeans.modules.bpel.properties.PropertyType.*;
+import org.netbeans.modules.soa.ui.images.FolderIcon;
 import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * This node is intended to present variouse simple folder at a tree view.
@@ -46,7 +43,8 @@ public class CategoryFolderNode extends BpelNode<NodeType> {
     public NodeType getNodeType() {
         return NodeType.FOLDER;
     }
-    
+
+    @Override
     public synchronized Image getIcon(int type) {
         if (myIconRef.get() == null) {
             Image resultImage = null;
@@ -85,6 +83,7 @@ public class CategoryFolderNode extends BpelNode<NodeType> {
         return myIconRef.get();
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         if (myOpenedIconRef.get() == null) {
             Image resultImage = null;
@@ -123,6 +122,7 @@ public class CategoryFolderNode extends BpelNode<NodeType> {
         return myOpenedIconRef.get();
     }
     
+    @Override
     protected String getNameImpl() {
         String name = null;
         //

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,7 +79,7 @@ public final class RemoteConnections {
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
     private final ConfigManager configManager;
-    private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
+    private final DefaultConfigProvider configProvider = new DefaultConfigProvider();
     RemoteConnectionsPanel panel = null;
 
     public static RemoteConnections get() {
@@ -88,10 +91,9 @@ public final class RemoteConnections {
     }
 
     private void initPanel() {
-        if (panel != null) {
-            return;
+        if (panel == null) {
+            panel = new RemoteConnectionsPanel(this, configManager);
         }
-        panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
     }
 
@@ -116,11 +118,17 @@ public final class RemoteConnections {
      */
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
         initPanel();
-        assert panel != null;
+        // original remote configurations
+        List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
+
         boolean changed = panel.open(remoteConfiguration);
         if (changed) {
-            saveRemoteConnections();
+            saveRemoteConnections(remoteConfigurations);
         }
+        // reset & reread config provider & manager (configs are kept in memory)
+        configProvider.resetConfigs();
+        configManager.reset();
+
         return changed;
     }
 
@@ -248,27 +256,45 @@ public final class RemoteConnections {
         return configs;
     }
 
-    private void saveRemoteConnections() {
+    private void saveRemoteConnections(List<RemoteConfiguration> originalRemoteConfigurations) {
         Preferences remoteConnections = getPreferences();
-        for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
-            String config = entry.getKey();
-            if (config == null) {
-                // no default config
+        for (String name : configManager.configurationNames()) {
+            if (name == null) {
+                // default config
                 continue;
             }
-            Map<String, String> cfg = entry.getValue();
-            if (cfg == null) {
-                // config was deleted
+            if (!configManager.exists(name)) {
+                // deleted
                 try {
-                    remoteConnections.node(config).removeNode();
+                    remoteConnections.node(name).removeNode();
+                    // remove password from keyring
+                    for (RemoteConfiguration remoteConfiguration : originalRemoteConfigurations) {
+                        if (remoteConfiguration.getName().equals(name)) {
+                            remoteConfiguration.notifyDeleted();
+                            break;
+                        }
+                    }
                 } catch (BackingStoreException bse) {
-                    LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + config, bse);
+                    LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + name, bse);
                 }
             } else {
                 // add/update
-                Preferences node = remoteConnections.node(config);
-                for (Map.Entry<String, String> cfgEntry : cfg.entrySet()) {
-                    node.put(cfgEntry.getKey(), cfgEntry.getValue());
+                Configuration configuration = configManager.configurationFor(name);
+                RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
+                assert remoteConfiguration != null : configuration.getName();
+
+                Preferences node = remoteConnections.node(name);
+                for (String propertyName : configuration.getPropertyNames()) {
+                    String value = configuration.getValue(propertyName);
+                    if (value == null) {
+                        // e.g. display name
+                        continue;
+                    }
+                    if (remoteConfiguration.saveProperty(propertyName, value)) {
+                        node.remove(propertyName);
+                    } else {
+                        node.put(propertyName, value);
+                    }
                 }
             }
         }
@@ -282,6 +308,7 @@ public final class RemoteConnections {
             readConfigs();
         }
 
+        @Override
         public String[] getConfigProperties() {
             Set<String> properties = new HashSet<String>();
             for (RemoteConnectionProvider provider : getConnectionProviders()) {
@@ -290,15 +317,16 @@ public final class RemoteConnections {
             return properties.toArray(new String[properties.size()]);
         }
 
+        // changes a map in config manager as well! it holds just a reference, not a copy
+        public void resetConfigs() {
+            configs.clear();
+            configs.putAll(ConfigManager.createEmptyConfigs());
+            readConfigs();
+        }
+
+        @Override
         public Map<String, Map<String, String>> getConfigs() {
             return configs;
-        }
-
-        public String getActiveConfig() {
-            return null;
-        }
-
-        public void setActiveConfig(String configName) {
         }
 
         private void readConfigs() {

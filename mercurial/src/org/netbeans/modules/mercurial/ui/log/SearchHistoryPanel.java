@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,8 +63,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 
 /**
  * Contains all components of the Search History panel.
@@ -176,6 +181,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 search();
             }
@@ -196,6 +202,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Next_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onNextButton();
             }
@@ -205,6 +212,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Prev_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onPrevButton();
             }
@@ -231,6 +239,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         showMergesChkBox.setOpaque(false);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getID() == Divider.DIVIDER_CLICKED) {
             criteriaVisible = !criteriaVisible;
@@ -240,6 +249,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     private ExplorerManager             explorerManager;
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -248,16 +258,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         explorerManager.addPropertyChangeListener(this);
     }
 
+    @Override
     public void removeNotify() {
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         return explorerManager;
     }
@@ -323,7 +336,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
         setResults(null, true);
         currentSearch = new SearchExecutor(this);
-        currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
+        currentSearchTask = Mercurial.getInstance().getParallelRequestProcessor().create(currentSearch);
         currentSearchTask.schedule(0);
     }
     
@@ -348,6 +361,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * It return empty collection on non-atomic
      * revision ranges. XXX move this logic to clients?
      */
+    @Override
     public Collection getSetups() {
         if (results == null) {
             return Collections.EMPTY_SET;
@@ -362,12 +376,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     Collection getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
         long fromRevision = Long.MAX_VALUE;
         long toRevision = Long.MIN_VALUE;
+        HgLogMessage from = null;
+        HgLogMessage to = null;
         Set<File> filesToDiff = new HashSet<File>();
         
         for (RepositoryRevision revision : revisions) {
-            long rev = Long.parseLong(revision.getLog().getRevision());
-            if (rev > toRevision) toRevision = rev;
-            if (rev < fromRevision) fromRevision = rev;
+            long rev = Long.parseLong(revision.getLog().getRevisionNumber());
+            if (rev > toRevision) {
+                toRevision = rev;
+                to = revision.getLog();
+            }
+            if (rev < fromRevision) {
+                fromRevision = rev;
+                from = revision.getLog();
+            }
             List<RepositoryRevision.Event> evs = revision.getEvents();
             for (RepositoryRevision.Event event : evs) {
                 File file = event.getFile();
@@ -378,9 +400,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
 
         for (RepositoryRevision.Event event : events) {
-            long rev = Long.parseLong(event.getLogInfoHeader().getLog().getRevision());
-            if (rev > toRevision) toRevision = rev;
-            if (rev < fromRevision) fromRevision = rev;
+            long rev = Long.parseLong(event.getLogInfoHeader().getLog().getRevisionNumber());
+            if (rev > toRevision) {
+                toRevision = rev;
+                to = event.getLogInfoHeader().getLog();
+            }
+            if (rev < fromRevision) {
+                fromRevision = rev;
+                from = event.getLogInfoHeader().getLog();
+            }
             if (event.getFile() != null) {
                 filesToDiff.add(event.getFile());
             }
@@ -388,12 +416,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         List<Setup> setups = new ArrayList<Setup>();
         for (File file : filesToDiff) {
-            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision));
+            HgRevision fromHgRevision = from.getHgRevision();
+            if (from.getRevisionNumber().equals(to.getRevisionNumber())) {
+                fromHgRevision = from.getAncestor(file);
+            }
+            Setup setup = new Setup(file, fromHgRevision, to.getHgRevision(), false);
             setups.add(setup);
         }
         return setups;
     }
     
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -557,14 +590,17 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected() && fileInfoCheckBox.isEnabled());
 }//GEN-LAST:event_fileInfoCheckBoxActionPerformed
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();        
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();        
     }

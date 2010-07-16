@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,9 +58,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,147 +84,7 @@ public class Commands {
     public static final ServerCommand STOP = new ServerCommand("stop-domain") { // NOI18N
     };
 
-    /**
-     * Command to list applications current deployed on the server.
-     */
-    public static final class ListAppsCommand extends ServerCommand {
-
-        private final String container;
-        private Manifest list;
-        private Map<String, List<AppDesc>> appMap;
-
-        public ListAppsCommand() {
-            this(null);
-        }
-
-        public ListAppsCommand(final String container) {
-            super("list-applications"); // NOI18N
-            this.container = container;
-        }
-
-        public String[] getContainers() {
-            String[] result = null;
-            if(appMap != null && appMap.size() > 0) {
-                Set<String> containers = appMap.keySet();
-                result = containers.toArray(new String[containers.size()]);
-            }
-            return result != null ? result : new String[0];
-        }
-
-        public Map<String, List<AppDesc>> getApplicationMap() {
-            // !PW Can still modify sublist... is there a better structure?
-            if(appMap != null) {
-                return Collections.unmodifiableMap(appMap);
-            } else {
-                return Collections.emptyMap();
-            }
-        }
-
-        @Override
-        public void readManifest(Manifest manifest) throws IOException {
-            list = manifest;
-        }
-
-        @Override
-        public boolean processResponse() {
-            if(list == null) {
-                return false;
-            }
-
-            String appsList = list.getMainAttributes().getValue("children"); // NOI18N
-            if(appsList == null || appsList.length() == 0) {
-                // no applications deployed...
-                return true;
-            }
-
-            String[] apps = appsList.split(";"); // NOI18N
-            for(String appKey : apps) {
-                if("null".equals(appKey)) { // NOI18N
-                    Logger.getLogger("glassfish").log(Level.WARNING, "list-applications contains an invalid result.  " + "Check server log for possible exceptions."); // NOI18N
-                    continue;
-                }
-
-                Attributes appAttrs = list.getAttributes(appKey);
-                if(appAttrs == null) {
-                    continue;
-                }
-
-                String engine = getPreferredEngine(appAttrs.getValue("nb-engine_value")); // NOI18N
-
-                String name = appAttrs.getValue("nb-name_value");  // NOI18N
-                if(name == null || name.length() == 0) {
-                    Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // NOI18N  FIXME better log message.
-                    continue;
-                }
-
-                String path = appAttrs.getValue("nb-location_value");  // NOI18N
-                if(path.startsWith("file:")) {  // NOI18N
-                    path = path.substring(5);
-                }
-
-                String contextRoot = appAttrs.getValue("nb-context-root_value"); // NOI18N
-                if(contextRoot == null) {
-                    contextRoot = name;
-                }
-                if(contextRoot.startsWith("/")) {  // NOI18N
-                    contextRoot = contextRoot.substring(1);
-                }
-
-                // Add app to proper list in result map
-                if(appMap == null) {
-                    appMap = new HashMap<String, List<AppDesc>>();
-                }
-                List<AppDesc> appList = appMap.get(engine);
-                if(appList == null) {
-                    appList = new ArrayList<AppDesc>();
-                    appMap.put(engine, appList);
-                }
-
-                appList.add(new AppDesc(name, path, contextRoot));
-            }
-
-            return true;
-        }
-        // XXX temporary patch to handle engine descriptions like <web, ejb>
-        // until we have better display semantics for such things.
-        // XXX bias order of list for JavaONE demos.
-        private static final List<String> engineBias =
-                Arrays.asList(new String[]{"jruby", "web", "ejb"}); // NOI18N
-
-        private String getPreferredEngine(String engineList) {
-            String[] engines = engineList.split(",");  // NOI18N
-            String engine = null;
-            int bias = -1;
-            for(int i = 0; i < engines.length; i++) {
-                if(!skipContainer(engines[i])) {
-                    engines[i] = engines[i].trim();
-                    int newBias = engineBias.indexOf(engines[i]);
-                    if(newBias >= 0 && (bias == -1 || newBias < bias)) {
-                        bias = newBias;
-                    }
-                    if(engine == null) {
-                        engine = engines[i];
-                    }
-                }
-            }
-            if(bias != -1) {
-                engine = engineBias.get(bias);
-            } else if(engine == null) {
-                engine = "unknown"; // NOI18N
-            }
-            return engine;
-        }
-
-        /**
-         * For skipping containers we don't care about.
-         * 
-         * @param container
-         * @return
-         */
-        private boolean skipContainer(String currentContainer) {
-            return container != null ? !container.equals(currentContainer) :
-                    "security_ContractProvider".equals(currentContainer); // NOI18N
-        }
+    public static final ServerCommand RESTART = new ServerCommand("restart-domain") { // NOI18N
     };
 
     /**
@@ -412,7 +275,7 @@ public class Commands {
                         resList.add(new ResourceDesc(name, cmdSuffix));
                     }
                 } else {
-                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for {0}", r); // NOI18N
                 }
             }
 
@@ -439,17 +302,17 @@ public class Commands {
             this.path = path;
             
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("path="); // NOI18N
+            cmd.append("DEFAULT="); // NOI18N
             cmd.append(path.getAbsolutePath());
             if(name != null && name.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
-                cmd.append(name);
+                cmd.append(PARAM_SEPARATOR).append("name="); // NOI18N
+                cmd.append(Utils.sanitizeName(name));
             }
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
+            cmd.append(PARAM_SEPARATOR).append("force=true"); // NOI18N
             addProperties(cmd,properties);
             query = cmd.toString();
         }
@@ -466,10 +329,15 @@ public class Commands {
 
         @Override
         public InputStream getInputStream() {
-            try {
-                return isDirDeploy ? null : new FileInputStream(path);
-            } catch(FileNotFoundException ex) {
-                return null;
+                if (isDirDeploy) {
+                    return null;
+                } else {
+                    try {
+                        return new FileInputStream(path);
+                    } catch (FileNotFoundException fnfe) {
+                        Logger.getLogger("glassfish").log(Level.INFO, path.getPath(), fnfe); // NOI18N
+                        return null;
+                    }
             }
         }
 
@@ -490,7 +358,7 @@ public class Commands {
 
         private void addProperties(StringBuilder cmd, Map<String,String> properties) {
             if (null != properties && properties.size() > 0) {
-                cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+                cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
                 int i = 0;
                 for (Entry<String,String> e : properties.entrySet()) {
                     String k = e.getKey();
@@ -498,7 +366,7 @@ public class Commands {
                     if (i > 0) {
                         cmd.append(":"); // NOI18N
                     }
-                    cmd.append(k+"="+v);
+                    cmd.append(k).append("=").append(v);
                 }
             }
         }
@@ -514,9 +382,9 @@ public class Commands {
 
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("name="); // NOI18N
-            cmd.append(name);
+            cmd.append(Utils.sanitizeName(name));
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
             addKeepSessions(cmd, preserveSessions);
@@ -526,7 +394,7 @@ public class Commands {
 
     private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
         if(Boolean.TRUE.equals(preserveSessions)) {
-            cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+            cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
             cmd.append("keepSessions=true");  // NOI18N
         }
     }
@@ -538,10 +406,31 @@ public class Commands {
 
         public UndeployCommand(final String name) {
             super("undeploy"); // NOI18N
-            query = "name=" + name; // NOI18N
+            query = "name=" + Utils.sanitizeName(name); // NOI18N
         }
     }
 
+    /**
+     * Command to enable a deployed application.
+     */
+    public static final class EnableCommand extends ServerCommand {
+
+        public EnableCommand(final String name) {
+            super("enable"); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+        }
+    }
+
+    /**
+     * Command to disable a deployed application.
+     */
+    public static final class DisableCommand extends ServerCommand {
+
+        public DisableCommand(final String name) {
+            super("disable"); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+        }
+    }
     /**
      * Command to unregister a resource.
      */
@@ -626,5 +515,5 @@ public class Commands {
             return true;
         }
     }
-}
+        }
 

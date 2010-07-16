@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.10.1
+#Signature file v4.1
+#Version 7.15
 
 CLSS public abstract interface java.io.Serializable
 
@@ -9,15 +9,15 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -31,10 +31,10 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -77,12 +77,12 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public org.openide.DialogDescriptor
-cons public DialogDescriptor(java.lang.Object,java.lang.String)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
-cons public DialogDescriptor(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
+cons public init(java.lang.Object,java.lang.String)
+cons public init(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
+cons public init(java.lang.Object,java.lang.String,boolean,java.lang.Object[],java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener,boolean)
 fld public final static int BOTTOM_ALIGN = 0
 fld public final static int DEFAULT_ALIGN = 0
 fld public final static int RIGHT_ALIGN = 1
@@ -109,7 +109,7 @@ supr org.openide.NotifyDescriptor
 hfds DEFAULT_CLOSING_OPTIONS,buttonListener,closingOptions,helpCtx,leaf,modal,optionsAlign
 
 CLSS public abstract org.openide.DialogDisplayer
-cons protected DialogDisplayer()
+cons protected init()
 meth public abstract java.awt.Dialog createDialog(org.openide.DialogDescriptor)
 meth public abstract java.lang.Object notify(org.openide.NotifyDescriptor)
 meth public static org.openide.DialogDisplayer getDefault()
@@ -118,7 +118,7 @@ supr java.lang.Object
 hcls Trivial
 
 CLSS public abstract org.openide.ErrorManager
-cons public ErrorManager()
+cons public init()
 fld public final static int ERROR = 65536
 fld public final static int EXCEPTION = 4096
 fld public final static int INFORMATIONAL = 1
@@ -146,6 +146,7 @@ hfds current
 hcls AnnException,DelegatingErrorManager,OwnLevel
 
 CLSS public abstract interface static org.openide.ErrorManager$Annotation
+ outer org.openide.ErrorManager
 meth public abstract int getSeverity()
 meth public abstract java.lang.String getLocalizedMessage()
 meth public abstract java.lang.String getMessage()
@@ -153,10 +154,11 @@ meth public abstract java.lang.Throwable getStackTrace()
 meth public abstract java.util.Date getDate()
 
 CLSS public abstract org.openide.LifecycleManager
-cons protected LifecycleManager()
+cons protected init()
 meth public abstract void exit()
 meth public abstract void saveAll()
 meth public static org.openide.LifecycleManager getDefault()
+meth public void markForRestart()
 supr java.lang.Object
 hcls Trivial
 
@@ -172,7 +174,7 @@ supr java.lang.Object
 hfds nd
 
 CLSS public org.openide.NotifyDescriptor
-cons public NotifyDescriptor(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
+cons public init(java.lang.Object,java.lang.String,int,int,java.lang.Object[],java.lang.Object)
 fld public final static int DEFAULT_OPTION = -1
 fld public final static int ERROR_MESSAGE = 0
 fld public final static int INFORMATION_MESSAGE = 1
@@ -230,23 +232,27 @@ supr java.lang.Object
 hfds MAXIMUM_TEXT_WIDTH,SIZE_PREFERRED_HEIGHT,SIZE_PREFERRED_WIDTH,adOptions,changeSupport,defaultValue,errMsg,infoMsg,message,messageType,notificationLineSupport,optionType,options,title,valid,value,warnMsg
 
 CLSS public static org.openide.NotifyDescriptor$Confirmation
-cons public Confirmation(java.lang.Object)
-cons public Confirmation(java.lang.Object,int)
-cons public Confirmation(java.lang.Object,int,int)
-cons public Confirmation(java.lang.Object,java.lang.String)
-cons public Confirmation(java.lang.Object,java.lang.String,int)
-cons public Confirmation(java.lang.Object,java.lang.String,int,int)
+ outer org.openide.NotifyDescriptor
+cons public init(java.lang.Object)
+cons public init(java.lang.Object,int)
+cons public init(java.lang.Object,int,int)
+cons public init(java.lang.Object,java.lang.String)
+cons public init(java.lang.Object,java.lang.String,int)
+cons public init(java.lang.Object,java.lang.String,int,int)
 supr org.openide.NotifyDescriptor
 
 CLSS public final static org.openide.NotifyDescriptor$Exception
-cons public Exception(java.lang.Throwable)
-cons public Exception(java.lang.Throwable,java.lang.Object)
+ outer org.openide.NotifyDescriptor
+ anno 0 java.lang.Deprecated()
+cons public init(java.lang.Throwable)
+cons public init(java.lang.Throwable,java.lang.Object)
 supr org.openide.NotifyDescriptor$Confirmation
 hfds serialVersionUID
 
 CLSS public static org.openide.NotifyDescriptor$InputLine
-cons public InputLine(java.lang.String,java.lang.String)
-cons public InputLine(java.lang.String,java.lang.String,int,int)
+ outer org.openide.NotifyDescriptor
+cons public init(java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,int,int)
 fld protected javax.swing.JTextField textField
 meth protected java.awt.Component createDesign(java.lang.String)
 meth public java.lang.String getInputText()
@@ -254,13 +260,14 @@ meth public void setInputText(java.lang.String)
 supr org.openide.NotifyDescriptor
 
 CLSS public static org.openide.NotifyDescriptor$Message
-cons public Message(java.lang.Object)
-cons public Message(java.lang.Object,int)
+ outer org.openide.NotifyDescriptor
+cons public init(java.lang.Object)
+cons public init(java.lang.Object,int)
 supr org.openide.NotifyDescriptor
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public ServiceType()
+cons public init()
 fld public final static java.lang.String PROP_NAME = "name"
 innr public abstract static Registry
 innr public final static Handle
@@ -281,8 +288,9 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public final static org.openide.ServiceType$Handle
+ outer org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public Handle(org.openide.ServiceType)
+cons public init(org.openide.ServiceType)
 intf java.io.Serializable
 meth public java.lang.String toString()
 meth public org.openide.ServiceType getServiceType()
@@ -290,8 +298,9 @@ supr java.lang.Object
 hfds className,name,serialVersionUID,serviceType
 
 CLSS public abstract static org.openide.ServiceType$Registry
+ outer org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public Registry()
+cons public init()
 intf java.io.Serializable
 meth public <%0 extends org.openide.ServiceType> java.util.Enumeration<{%%0}> services(java.lang.Class<{%%0}>)
 meth public abstract java.util.Enumeration<org.openide.ServiceType> services()
@@ -305,11 +314,11 @@ supr java.lang.Object
 hfds serialVersionUID
 
 CLSS public org.openide.WizardDescriptor
-cons protected WizardDescriptor()
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
-cons public <%0 extends java.lang.Object> WizardDescriptor(org.openide.WizardDescriptor$Panel<{%%0}>[],{%%0})
-cons public WizardDescriptor(org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>)
-cons public WizardDescriptor(org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>[])
+cons protected init()
+cons public <%0 extends java.lang.Object> init(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
+cons public <%0 extends java.lang.Object> init(org.openide.WizardDescriptor$Panel<{%%0}>[],{%%0})
+cons public init(org.openide.WizardDescriptor$Iterator<org.openide.WizardDescriptor>)
+cons public init(org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>[])
 fld public final static java.lang.Object FINISH_OPTION
 fld public final static java.lang.Object NEXT_OPTION
 fld public final static java.lang.Object PREVIOUS_OPTION
@@ -360,9 +369,10 @@ hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardSt
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public static org.openide.WizardDescriptor$ArrayIterator<%0 extends java.lang.Object>
-cons public ArrayIterator()
-cons public ArrayIterator(java.util.List<org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>>)
-cons public ArrayIterator(org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>[])
+ outer org.openide.WizardDescriptor
+cons public init()
+cons public init(java.util.List<org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>>)
+cons public init(org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>[])
 intf org.openide.WizardDescriptor$Iterator<{org.openide.WizardDescriptor$ArrayIterator%0}>
 meth protected org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ArrayIterator%0}>[] initializePanels()
 meth protected void reset()
@@ -378,29 +388,35 @@ supr java.lang.Object
 hfds index,panels
 
 CLSS public abstract interface static org.openide.WizardDescriptor$AsynchronousInstantiatingIterator<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$InstantiatingIterator<{org.openide.WizardDescriptor$AsynchronousInstantiatingIterator%0}>
 meth public abstract java.util.Set instantiate() throws java.io.IOException
 
 CLSS public abstract interface static org.openide.WizardDescriptor$AsynchronousValidatingPanel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$ValidatingPanel<{org.openide.WizardDescriptor$AsynchronousValidatingPanel%0}>
 meth public abstract void prepareValidation()
 meth public abstract void validate() throws org.openide.WizardValidationException
 
 CLSS public abstract interface static org.openide.WizardDescriptor$FinishPanel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
  anno 0 java.lang.Deprecated()
 intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$FinishPanel%0}>
 
 CLSS public abstract interface static org.openide.WizardDescriptor$FinishablePanel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$FinishablePanel%0}>
 meth public abstract boolean isFinishPanel()
 
 CLSS public abstract interface static org.openide.WizardDescriptor$InstantiatingIterator<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$Iterator<{org.openide.WizardDescriptor$InstantiatingIterator%0}>
 meth public abstract java.util.Set instantiate() throws java.io.IOException
 meth public abstract void initialize(org.openide.WizardDescriptor)
 meth public abstract void uninitialize(org.openide.WizardDescriptor)
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Iterator<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 meth public abstract boolean hasNext()
 meth public abstract boolean hasPrevious()
 meth public abstract java.lang.String name()
@@ -411,6 +427,7 @@ meth public abstract void previousPanel()
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Panel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 meth public abstract boolean isValid()
 meth public abstract java.awt.Component getComponent()
 meth public abstract org.openide.util.HelpCtx getHelp()
@@ -420,24 +437,26 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void storeSettings({org.openide.WizardDescriptor$Panel%0})
 
 CLSS public abstract interface static org.openide.WizardDescriptor$ProgressInstantiatingIterator<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator<{org.openide.WizardDescriptor$ProgressInstantiatingIterator%0}>
 meth public abstract java.util.Set instantiate(org.netbeans.api.progress.ProgressHandle) throws java.io.IOException
 
 CLSS public abstract interface static org.openide.WizardDescriptor$ValidatingPanel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$Panel<{org.openide.WizardDescriptor$ValidatingPanel%0}>
 meth public abstract void validate() throws org.openide.WizardValidationException
 
 CLSS public final org.openide.WizardValidationException
-cons public WizardValidationException(javax.swing.JComponent,java.lang.String,java.lang.String)
+cons public init(javax.swing.JComponent,java.lang.String,java.lang.String)
 meth public java.lang.String getLocalizedMessage()
 meth public javax.swing.JComponent getSource()
 supr java.lang.Exception
 hfds localizedMessage,source
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -453,5 +472,6 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 

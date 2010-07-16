@@ -30,10 +30,7 @@ import org.openide.DialogDisplayer;
 import java.net.URISyntaxException;
 import java.awt.BorderLayout;
 
-import java.net.URL;
-
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -42,15 +39,12 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
 import java.util.*;
 
-import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
 
-import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
@@ -84,23 +78,17 @@ import org.w3c.dom.*;
  * @author Sreenivasan Genipudi
  */
 public class BpelProjectRetriever {
- //   private File mProjectDirectory = null;
-  //  private String mProjectDirectoryPath = null;
-  //  private File mRetrieveToDirectory = null;
-  //  private HashSet mVisitedXMLResources = new HashSet();
     ProgressHandle pg = null;
     private RetrieverWrapper retrieveWrap = new RetrieverWrapper();
 
     /**
      * Logger instance
      */
-    private Logger logger =
-        Logger.getLogger(BpelProjectRetriever.class.getName());
-
+    private Logger logger = Logger.getLogger(BpelProjectRetriever.class.getName());
     private volatile String mStatus = null;
-
     private RetrieverUpdater mRetUpd = null;
     Dialog mDialog = null;
+
     /**
      * Construtor - takes in Project Location (File Object) as paramter 
      * and tries to populate the catalog
@@ -108,7 +96,6 @@ public class BpelProjectRetriever {
      */
     public BpelProjectRetriever(FileObject projectDirectory) {
         retrieveWrap.mProjectDirectoryPath = FileUtil.toFile(projectDirectory).getAbsolutePath();
-        //mProjectDirectoryPath = projectDirectory.getPath();
     }
 
     private void init() {
@@ -122,8 +109,6 @@ public class BpelProjectRetriever {
                 }
                 return true;
             }});
-    //  pg.setInitialDelay(2000);
-      //  pg.setDisplayName(initMsg);
 
        mRetUpd = new RetrieverUpdater(pg);
        DialogDescriptor dd = new DialogDescriptor (mRetUpd,
@@ -137,31 +122,17 @@ public class BpelProjectRetriever {
                                                     true);
         mDialog = DialogDisplayer.getDefault ().createDialog (dd);
         pg.start ();
-
-
     }
 
     public void execute() {
+//System.out.println();
+//System.out.println("POPULATE: " + Retriever.getDefault());
+//System.out.println();
         try {
             init();
             Thread t = new Thread(retrieveWrap);
             t.start();
             mDialog.setVisible (true);
-    /*        String projectDirPath = this.mProjectDirectoryPath;
-String sourceDirectoryPath = projectDirPath + File.separator + "src";
-CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(sourceDirectoryPath);
-            
-mProjectDirectory = new File(projectDirPath);
-File sourceDirectory =
-    new File(sourceDirectoryPath);
-mRetrieveToDirectory =
-        new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath());
-if (!mRetrieveToDirectory.exists()) {
-    mRetrieveToDirectory.mkdirs();
-}
-processSourceDir(sourceDirectory);
-mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Complete" )); */
-
         }catch(Exception ex) {
             mRetUpd.setProgressMessage(NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Error" ));
         }
@@ -185,14 +156,12 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
         }
     }
 
-
-   class RetrieverWrapper implements Runnable {
+    class RetrieverWrapper implements Runnable {
        private File mProjectDirectory = null;
        private String mProjectDirectoryPath = null;
        private String mProjectSourcePath= null;
        private File mRetrieveToDirectory = null;
        private HashSet mVisitedXMLResources = new HashSet();
-
 
         public void run() {
             try {
@@ -202,15 +171,13 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                 CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(sourceDirectoryPath);
 
                 mProjectDirectory = new File(projectDirPath);
-                File sourceDirectory =
-                    new File(sourceDirectoryPath);
-                mRetrieveToDirectory =
-                        new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath());
+                File sourceDirectory = new File(sourceDirectoryPath);
+                mRetrieveToDirectory = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath());
+
                 if (!mRetrieveToDirectory.exists()) {
                     mRetrieveToDirectory.mkdirs();
                 }
                 processSourceDir(sourceDirectory);
-                //moveCachedDirs();
                 displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Complete" ));
 
             }catch(Exception ex) {
@@ -218,6 +185,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
             }
             finally {
                 File localCatalogFile = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri());
+
                 if (localCatalogFile.exists() && localCatalogFile.length() == 0) {
                     localCatalogFile.delete();
                 }
@@ -226,11 +194,6 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
 
         }
 
-       /**
-        * Replace the retrieved dirs with long name to simpler ones...
-        *
-        * @throws Exception
-        */
        private void moveCachedDirs() throws Exception {
            File catFile = new File(mRetrieveToDirectory.getParent(), "catalog.xml"); // NOI18N
            if (catFile.exists()) {
@@ -271,7 +234,6 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                            // update catalog.xml uirs...  furi -> mpcf
                            Attr atr = sys.getAttributeNode("uri");   // NOI18N
                            atr.setNodeValue("src/" + mpcf.getName() + "/"+cf.getName());
-                           // System.out.println("newURI: "+sys.getAttribute("uri"));
                        }
                    }
 
@@ -286,7 +248,6 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                        src.delete();
                    }
-
                    // update catalog.xml
                    DOMSource src = new DOMSource(catlogDoc);
                    FileOutputStream fos = new FileOutputStream(catFile);
@@ -385,47 +346,15 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        wsdlModel = getWsdlModel(imprt);
                        if (wsdlModel != null) {
                            processWSDLImport(wsdlModel, imprt);
-                           /*
-                           Types types = wsdlModel.getDefinitions().getTypes();
-                               if (types != null) {
-                               Collection<org.netbeans.modules.xml.schema.model.Schema> schemas=  types.getSchemas();
-                               for (Schema schema:schemas ){
-                                   
-                                  Collection<org.netbeans.modules.xml.schema.model.Import> colImports = schema.getImports();
-                                  
-                                  processSchemaImport(schema.getModel(), colImports);
-                               }
-                           }
-                           
-                      
-                           Collection<org.netbeans.modules.xml.wsdl.model.Import> colImports = 
-                               wsdlModel.getDefinitions().getImports();
-
-                           if (colImports != null) {
-                               processWSDLImport(wsdlModel, colImports);
-                           }*/
                        } else {
-
                           SchemaModel scMdl =  getSchemaModel(imprt);
+
                           if (scMdl != null) {
                                processSchemaImport(scMdl, imprt);
-/*                               String targetNameSpace = scMdl.getSchema().getTargetNamespace();
-                               String versionInfo =scMdl.getSchema().getVersion();
-                               if (versionInfo == null) {
-                                   versionInfo = "";
-                               }
-                               if (!mVisitedXMLResources.contains(targetNameSpace+versionInfo)) {
-                                   mVisitedXMLResources.add(targetNameSpace+versionInfo);
-                                  Collection<org.netbeans.modules.xml.schema.model.Import> colImports = scMdl.getSchema().getImports();
-                                  processSchemaImport(scMdl, colImports);
-                               } */
                           }
                        }
-
                    }
-
                }
-
            }
 
            void processSchemaImport(SchemaModel scm, org.netbeans.modules.bpel.model.api.Import imports ) {
@@ -443,40 +372,34 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                        URI resourceURI = externalResource(resourceName, importLocationLowerCase);
                        if (resourceURI != null) {
-                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
-                                                               resourceURI.toString())) {
+                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(), resourceURI.toString())) {
                                try {
                                    FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
                                    displayStatus(importLocationLowerCase);
-
-
-                                    Retriever.getDefault().retrieveResource(catalogFO,
-                                                                   //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
-                                            null,
-                                                                            resourceURI);
-
+                                   Retriever.getDefault().retrieveResource(catalogFO, new URI("retrieved/catalog.xml"), resourceURI);
+//System.out.println();
+//System.out.println("1: " + catalogFO + " " + resourceURI);
+//System.out.println();
                                } catch (Exception ex) {
-                                   logger.log(Level.SEVERE,
-                                              "Error encountered while retreiving file - " +
-                                              importLocation);
+                                   logger.log(Level.SEVERE, "Error encountered while retreiving file - " + importLocation);
                                }
                            }
                        } else {
                            SchemaModel scMdl =  getSchemaModel(imports);
                            if (scMdl != null) {
-                              Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
-                              processSchemaImport(scMdl, subImports);
-                              
-                              Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
-                              processSchemaInclude(scMdl, subIncludes);
+                               Schema schema = scMdl.getSchema();
+                               if (schema != null) {
+                                  Collection<org.netbeans.modules.xml.schema.model.Import> subImports = schema.getImports();
+                                  processSchemaImport(scMdl, subImports);
+                                  Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                  processSchemaInclude(scMdl, subIncludes);
+                               }
                            }
                        }
-                   } else {
-//                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                    }
                }
-
            }
+
            void processSchemaImport(SchemaModel scm, Collection<org.netbeans.modules.xml.schema.model.Import> colImports ) {
                for (org.netbeans.modules.xml.schema.model.Import imports: colImports) {
                    String importLocation = imports.getSchemaLocation();
@@ -496,54 +419,31 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                                    resourceURI.toString())) {
                                    try {
-                 /*                      Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()), 
-                                                                               new URI(importLocation));
-                 */
                                        FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
                                        displayStatus(importLocationLowerCase);
-
-
-                                        Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
-                                                null,
-                                                                                resourceURI);
-
+                                       Retriever.getDefault().retrieveResource(catalogFO, new URI("retrieved/catalog.xml"), resourceURI);
+//System.out.println();
+//System.out.println("2: " + catalogFO + " " + resourceURI);
+//System.out.println();
                                    } catch (Exception ex) {
-                                       logger.log(Level.SEVERE,
-                                                  "Error encountered while retreiving file - " +
-                                                  importLocation);
-                                       //throw new RuntimeException(ex);
+                                       logger.log(Level.SEVERE, "Error encountered while retreiving file - " + importLocation);
                                    }
                                }
                            } else {
                                SchemaModel scMdl =  getSchemaModel(imports);
                                if (scMdl != null) {
-                          /*         String targetNameSpace = scMdl.getSchema().getTargetNamespace();
-                      String versionInfo =scMdl.getSchema().getVersion();
-                      if (versionInfo == null) {
-                          versionInfo = "";
-                      }
-                      String xsdId = scMdl.getSchema().getId();
-                      if (xsdId == null) {
-                          xsdId = "";
-                      }
-                      String xsdKey = targetNameSpace+versionInfo+xsdId;
-                      if (!mVisitedXMLResources.contains(xsdKey)) {
-                          mVisitedXMLResources.add(xsdKey);*/
-                                      Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
-                                      processSchemaImport(scMdl, subImports);
-                              
-                              Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
-                              processSchemaInclude(scMdl, subIncludes);
-                                   //}    
+                                   Schema schema = scMdl.getSchema();
+                                   if (schema != null) {
+                                       Collection<org.netbeans.modules.xml.schema.model.Import> subImports = schema.getImports();
+                                       processSchemaImport(scMdl, subImports);
+                                       Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                       processSchemaInclude(scMdl, subIncludes);
+                                   }
                                }
                            }
-                       } else {
-//                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                        }
                    }
                }
-
            }
 
         void processSchemaInclude(SchemaModel scm, Collection<org.netbeans.modules.xml.schema.model.Include> colIncludes ) {
@@ -559,25 +459,26 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                 try {
                                     FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
                                     displayStatus(importLocation);
-                                    Retriever.getDefault().retrieveResource(
-                                            catalogFO,
-                                            null,
-                                            resourceURI);
+                                    Retriever.getDefault().retrieveResource(catalogFO, new URI("retrieved/catalog.xml"), resourceURI);
+//System.out.println();
+//System.out.println("3: " + catalogFO + " " + resourceURI);
+//System.out.println();
                                 } catch (Exception ex) {
-                                    logger.log(
-                                            Level.SEVERE,
-                                            "Error encountered while retreiving file - " + importLocation);
+                                    logger.log(Level.SEVERE, "Error encountered while retreiving file - " + importLocation);
                                 }
                             }
                         } else {
                             SchemaModel scMdl = getSchemaModel(include);
                             
                             if (scMdl != null) {
-                                Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
-                                processSchemaImport(scMdl, subImports);
-                              
-                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
-                                processSchemaInclude(scMdl, subIncludes);
+                                Schema schema = scMdl.getSchema();
+                                if (schema != null) {
+                                    Collection<org.netbeans.modules.xml.schema.model.Import> subImports = schema.getImports();
+                                    processSchemaImport(scMdl, subImports);
+
+                                    Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                    processSchemaInclude(scMdl, subIncludes);
+                                }
                             }
                         }
                     }
@@ -589,37 +490,31 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                String importLocation = imports.getLocation();
                String importLocationLowerCase = importLocation;
                String wsdlKey = importLocationLowerCase;
+
                if (!mVisitedXMLResources.contains(wsdlKey)) {
                    mVisitedXMLResources.add(wsdlKey);
                    String resourceName = null;
                    Document doc = wsdlModel.getDocument();
+                   
                    if (doc != null) {
                        resourceName= doc.getLocalName();
                    } else {
                        resourceName = "";
                    }
                    URI resourceURI = externalResource(wsdlModel.getDocument().getLocalName(), importLocationLowerCase);
+
                    if (resourceURI != null) {
                        if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
                                                            resourceURI.toString())) {
                            try {
-                               /*                        Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()),
-                                                                        new URI(importLocation));
-                                                                       */
-                               FileObject catalogFO =
-                                   FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
+                               FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
                                displayStatus(importLocationLowerCase);
-
-                               Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
-                                                                       null,
-                                                                       resourceURI);
-
+                               Retriever.getDefault().retrieveResource(catalogFO, new URI("retrieved/catalog.xml"), resourceURI);
+//System.out.println();
+//System.out.println("4: " + catalogFO + " " + resourceURI);
+//System.out.println();
                            } catch (Exception ex) {
-                               logger.log(Level.SEVERE,
-                                          "Error encountered while retreiving file - " +
-                                          importLocation);
-                               //throw new RuntimeException(ex);
+                               logger.log(Level.SEVERE, "Error encountered while retreiving file - " + importLocation);
                            }
                        }
                    } else {
@@ -645,11 +540,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                            }
                        }
                    }
-               }    else {
-//                       System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
-                   }
+               }
            }
-
 
            void processWSDLImport(WSDLModel wsdlModel, Collection<org.netbeans.modules.xml.wsdl.model.Import> colImports) {
                for (org.netbeans.modules.xml.wsdl.model.Import imports: colImports) {
@@ -667,42 +559,21 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                        }
                        URI resourceURI = externalResource(wsdlModel.getDocument().getLocalName(), importLocationLowerCase);
                        if (resourceURI != null) {
-                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(),
-                                                               resourceURI.toString())) {
+                           if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(), resourceURI.toString())) {
                                try {
-                                   /*                        Retriever.getDefault().retrieveResource(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath()),
-                                                                            new URI(importLocation));
-                                                                           */
-                                   FileObject catalogFO =
-                                       FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
+                                   FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
                                    displayStatus(importLocationLowerCase);
-
-                                   Retriever.getDefault().retrieveResource(catalogFO,
-                                                                           //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
-                                                                            null,
-                                                                           resourceURI);
-
+                                   Retriever.getDefault().retrieveResource(catalogFO, new URI("retrieved/catalog.xml"), resourceURI);
+//System.out.println();
+//System.out.println("5: " + catalogFO + " " + resourceURI);
+//System.out.println();
                                } catch (Exception ex) {
-                                   logger.log(Level.SEVERE,
-                                              "Error encountered while retreiving file - " +
-                                              importLocation);
-                                   //throw new RuntimeException(ex);
+                                   logger.log(Level.SEVERE, "Error encountered while retreiving file - " + importLocation);
                                }
                            }
                        } else {
                            WSDLModel wm = getWsdlModel(imports);
                            if (wm != null) {
-           /*                    String targetNameSpace = 
-                                   wm.getDefinitions().getTargetNamespace();
-                               String wsdlName = wm.getDefinitions().getName();
-                               if (wsdlName == null) {
-                                   wsdlName = "";
-                               }
-                               String wsdlKey = targetNameSpace + wsdlName;
-                               if (!mVisitedXMLResources.contains(wsdlKey)) {
-                                   mVisitedXMLResources.add(wsdlKey);*/
-
-
                                    Collection<org.netbeans.modules.xml.wsdl.model.Import> subImports =
                                        wm.getDefinitions().getImports();
                                    if (subImports != null && subImports.size() > 0) {
@@ -714,45 +585,22 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                            types.getSchemas();
 
                                        for (Schema schema: schemas) {
-                                    /*       String targetNameSpace1 = 
-                                               schema.getTargetNamespace();
-                                           String versionInfo1 = schema.getVersion();
-                                           if (versionInfo1 == null) {
-                                               versionInfo1 = "";
-                                           }
-                                           String xsdId1 = schema.getId();
-                                           if (xsdId1 == null) {
-                                               xsdId1 = "";
-                                           }
-                                           String xsdKey1 = 
-                                               targetNameSpace1 + versionInfo1 + xsdId1;
-                                           if (!mVisitedXMLResources.contains(xsdKey1)) {
-                                               mVisitedXMLResources.add(xsdKey1);
-                                               */
-                                               Collection<org.netbeans.modules.xml.schema.model.Import> colImports1 =
-                                                   schema.getImports();
+                                               Collection<org.netbeans.modules.xml.schema.model.Import> colImports1 = schema.getImports();
                                                processSchemaImport(schema.getModel(), colImports1);
                               
-                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
-                                processSchemaInclude(schema.getModel(), subIncludes);
-                                          // }
+                                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                                processSchemaInclude(schema.getModel(), subIncludes);
                                        }
                                    }
                                }
                            }
-                   }    else {
-//                           System.out.println(" ALREADY DOWNLOADED!!"+importLocationLowerCase);
                        }
-
                }
-
            }
 
            public void displayStatus(String stats ){
-               //pg.progress(stats);  
                 mRetUpd.setProgressMessage( NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Retrieving", new Object[] {stats} ));
            }
-
 
            public  WSDLModel getWsdlModel( Import imp ) {
               if (!Import.WSDL_IMPORT_TYPE.equals(imp.getImportType())) {
@@ -929,63 +777,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                }
                return null;
            }
+    }
 
-   }
-    /*
-   class ProgressDisplay implements Runnable {
-        String compltedFlag = NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Complete" );
-       ProgressHandle pg = null;
-        boolean bContinueLooping = true;
-        Thread t = null;
-        public ProgressDisplay() {
-            String initMsg = NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog" );
-            pg = ProgressHandleFactory.createHandle(initMsg,  new org.openide.util.Cancellable() {
-                public boolean cancel() {
-                    try {
-                        pg.finish();
-                    }catch (Exception ex) {
-                        
-                    }
-                    return true;
-                }});
-           // ProgressHandleFactory.createProgressComponent(pg).setVisible(true);
-         //   sd.setStatusText(initMsg); 
-            pg.setDisplayName(initMsg);
-            pg.start();     
-        }
-        
-        public void run() {
-            while(true){
-                synchronized(this) {
-                    while (bContinueLooping) 
-                        try {
-                            wait();
-                        }catch (InterruptedException ie) {
-                            break;
-                        }
-                    }
-                        break;
-                }
-
-                
-            }
-        
-        public void displayStatus(String stats ){
-            pg.progress(stats);  
-        }
-        
-        public synchronized void endProgress() {
-            bContinueLooping = false;
-            pg.finish();
-            notify();
-        }
-   }*/
-
-
-
-    /**
-     *
-     */
     class RetrieverUpdater extends javax.swing.JPanel {
 
         private JComponent progress;

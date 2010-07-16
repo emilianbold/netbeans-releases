@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@ package org.netbeans.modules.cnd.spi.utils;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 
@@ -65,9 +70,9 @@ public abstract class FileSystemsProvider {
         }
     }
 
-    private static final FileSystemsProvider DEFAULT = new DefaultProvider();
+    private static final DefaultProvider DEFAULT = new DefaultProvider();
 
-    private static FileSystemsProvider getDefault() {
+    private static DefaultProvider getDefault() {
         return DEFAULT;
     }
 
@@ -75,10 +80,16 @@ public abstract class FileSystemsProvider {
         return getDefault().getCaseInsensitivePathImpl(path);
     }
 
+    public static CharSequence lowerPathCaseIfNeeded(CharSequence path) {
+        return getDefault().lowerPathCaseIfNeededImpl(path);
+    }
+
+    /** It can return null */
     public static Data get(File file) {
         return getDefault().getImpl(file);
     }
-    
+
+    /** It can return null */
     public static Data get(CharSequence path) {
         return getDefault().getImpl(path);
     }
@@ -86,6 +97,7 @@ public abstract class FileSystemsProvider {
     protected abstract Data getImpl(File file);
     protected abstract Data getImpl(CharSequence path);
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
+    protected abstract boolean isMine(CharSequence path);
 
     private static class DefaultProvider extends FileSystemsProvider {
 
@@ -125,6 +137,29 @@ public abstract class FileSystemsProvider {
                 }
             }
             return path.toString();
+        }
+
+        protected CharSequence lowerPathCaseIfNeededImpl(CharSequence path) {
+            if (CndFileUtils.isSystemCaseSensitive()) {
+                return path;
+            } else {
+                for (FileSystemsProvider provider : cache) {
+                    if (provider.isMine(path)) {
+                        return path;
+                    }
+                }
+                return path.toString().toLowerCase();
+            }
+        }
+
+        @Override
+        protected boolean isMine(CharSequence path) {
+            for (FileSystemsProvider provider : cache) {
+                if (provider.isMine(path)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

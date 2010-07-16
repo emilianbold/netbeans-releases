@@ -22,7 +22,6 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 /**
  *

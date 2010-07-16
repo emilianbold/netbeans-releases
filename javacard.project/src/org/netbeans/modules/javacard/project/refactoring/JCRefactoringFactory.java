@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -58,6 +62,9 @@ public class JCRefactoringFactory implements RefactoringPluginFactory {
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring r = (RenameRefactoring) refactoring;
             ClasspathInfo info = r.getContext().lookup(ClasspathInfo.class);
+            if (info == null) {
+                return null;
+            }
             ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
             FileObject[] roots = cp.getRoots();
             if (roots != null && roots.length > 0) {
@@ -66,6 +73,22 @@ public class JCRefactoringFactory implements RefactoringPluginFactory {
                     return new JCRenameRefactoringPlugin(r);
                 }
             }
+        }
+        if (refactoring instanceof MoveRefactoring) {
+            MoveRefactoring m = (MoveRefactoring) refactoring;
+            ClasspathInfo info = m.getContext().lookup(ClasspathInfo.class);
+            if (info == null) {
+                return null;
+            }
+            ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
+            FileObject[] roots = cp.getRoots();
+            if (roots != null && roots.length > 0) {
+                Project p = FileOwnerQuery.getOwner(roots[0]);
+                if (p != null && p.getLookup().lookup(JCProject.class) != null) {
+                    return new JCRenameRefactoringPlugin(m);
+                }
+            }
+
         }
         return null;
     }

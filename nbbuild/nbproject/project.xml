@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -81,12 +84,12 @@ made subject to such option by the copyright holder.
                     <target>localtest</target>
                 </action>
                 <action name="test.single">
-                    <target>localtest</target>
+                    <target>localtest-single</target>
                     <context>
-                        <property>includes</property>
+                        <property>test.class</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>relative-path-noext</format>
+                        <format>java-name</format>
                         <arity>
                             <one-file-only/>
                         </arity>
@@ -95,10 +98,34 @@ made subject to such option by the copyright holder.
                 <action name="debug.test.single">
                     <target>localtest-single-nb-debug</target>
                     <context>
-                        <property>includes</property>
+                        <property>test.class</property>
                         <folder>test/unit/src</folder>
                         <pattern>\.java$</pattern>
-                        <format>relative-path-noext</format>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="run.single.method">
+                    <target>localtest-single</target>
+                    <context>
+                        <property>test.class</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="debug.single.method">
+                    <target>localtest-single-nb-debug</target>
+                    <context>
+                        <property>test.class</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
                         <arity>
                             <one-file-only/>
                         </arity>
@@ -168,18 +195,6 @@ made subject to such option by the copyright holder.
                     <action>
                         <label>Run Commit Validation</label>
                         <target>commit-validation</target>
-                    </action>
-                    <separator/>
-                    <action>
-                        <script>javadoctools/build.xml</script>
-                        <label>Build All API Javadoc</label>
-                        <target>build-javadoc</target>
-                    </action>
-                    <action>
-                        <label>Build Daily Alpha NBMs</label>
-                        <target>merge</target>
-                        <target>build-nbms</target>
-                        <property name="moduleconfig">daily-alpha-nbms</property>
                     </action>
                 </context-menu>
             </view>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,9 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.util.Collection;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /** Interface to environment that the Module system needs around itself.
  *
@@ -80,10 +84,6 @@ public abstract class CoreBridge {
     /** Abstracts away from definition of property editors. 
      * @since 1.7 */
     public abstract void registerPropertyEditors();
-    /** Abstracts away from loading of IDESettings.
-     * @since 1.7 
-     */
-    protected abstract void loadSettings();
 
     public abstract Lookup lookupCacheLoad ();
     
@@ -92,8 +92,6 @@ public abstract class CoreBridge {
     public abstract void setStatusText (String status);
     
     public abstract void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL);
-
-    public abstract void cliUsage(PrintWriter printWriter);
 
     public abstract int cli(
         String[] string, 
@@ -151,17 +149,39 @@ public abstract class CoreBridge {
         public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
         }
 
-        public void cliUsage(PrintWriter printWriter) {
-        }
-
         public void registerPropertyEditors() {
-        }
-
-        protected void loadSettings() {
         }
 
         public int cli(String[] string, InputStream inputStream, OutputStream outputStream, OutputStream errorStream, File file) {
             return 0;
+        }
+    }
+
+    /**
+     * Define {@code org.openide.modules.os.*} tokens according to the current platform.
+     * @param provides a collection that may be added to
+     */
+    public static void defineOsTokens(Collection<? super String> provides) {
+        if (Utilities.isUnix()) {
+            provides.add("org.openide.modules.os.Unix"); // NOI18N
+            if (!Utilities.isMac()) {
+                provides.add("org.openide.modules.os.PlainUnix"); // NOI18N
+            }
+        }
+        if (Utilities.isWindows()) {
+            provides.add("org.openide.modules.os.Windows"); // NOI18N
+        }
+        if (Utilities.isMac()) {
+            provides.add("org.openide.modules.os.MacOSX"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
+            provides.add("org.openide.modules.os.OS2"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
+            provides.add("org.openide.modules.os.Linux"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
+            provides.add("org.openide.modules.os.Solaris"); // NOI18N
         }
     }
     

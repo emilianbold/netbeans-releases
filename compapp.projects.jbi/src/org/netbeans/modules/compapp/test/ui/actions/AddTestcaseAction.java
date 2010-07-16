@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,7 @@ import java.io.FileOutputStream;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.openide.NotifyDescriptor;
 
 import org.openide.nodes.Node;
@@ -70,6 +74,8 @@ import org.openide.filesystems.FileObject;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.compapp.test.wsdl.Soap12BindingSupport;
+import org.netbeans.modules.compapp.test.wsdl.SoapBindingSupport;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -81,7 +87,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.windows.TopComponent;
 
 /**
- * DOCUMENT ME!
+ * Action to add a new test case.
  *
  * @author Bing Lu
  * @author Jun Qian
@@ -89,15 +95,8 @@ import org.openide.windows.TopComponent;
 public class AddTestcaseAction extends NodeAction implements NewTestcaseConstants {
 
     private static final java.util.logging.Logger mLog =
-            java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.actions.AddTestcaseAction"); // NOI18N
+            Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.actions.AddTestcaseAction"); // NOI18N
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param activatedNodes DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1 || activatedNodes[0].getCookie(TestCookie.class) == null) {
             return false;
@@ -105,21 +104,11 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
         return true;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     @Override
     protected boolean asynchronous() {
         return false;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param activatedNodes DOCUMENT ME!
-     */
     protected void performAction(Node[] activatedNodes) {
         TestCookie tc = ((TestCookie) activatedNodes[0].getCookie(TestCookie.class));
         if (tc == null) {
@@ -140,37 +129,35 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
         if (wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION) {
             return;
         }
-        mLog.info("User finished the wizard"); // NOI18N
-        final String name = (String) wizardDescriptor.getProperty(TESTCASE_NAME);
-        mLog.info("Got name in NewSchemaAction: " + name); // NOI18N
+        final String testCaseName = (String) wizardDescriptor.getProperty(TESTCASE_NAME);
         BindingSupport bindingSupport = (BindingSupport) wizardDescriptor.getProperty(BINDING_SUPPORT);
         BindingOperation bindingOp = (BindingOperation) wizardDescriptor.getProperty(BINDING_OPERATION);
         Map param = new HashMap();
         param.put(BindingSupport.BUILD_OPTIONAL, Boolean.TRUE);
 
         try {
+            // create test case directory
+            FileObject testcaseDirFO = FileUtil.createFolder(testDir, testCaseName);
+            File testcaseDir = FileUtil.toFile(testcaseDirFO);
+
+            // Create input file
+            File inputFile = new File(testcaseDir, "Input.xml"); // NOI18N
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(inputFile));
             String inputStr = bindingSupport.buildRequest(bindingOp, param);
+            bos.write(inputStr.getBytes("UTF-8")); // NOI18N
+            bos.close();
+            FileUtil.createData(inputFile);
 
-            FileObject testcaseDir = FileUtil.createFolder(testDir, name);
-            String fileName = FileUtil.toFile(testcaseDir).getPath() + "/Input.xml"; // NOI18N
-            BufferedOutputStream fw = new BufferedOutputStream(new FileOutputStream(fileName));
-            fw.write(inputStr.getBytes("UTF-8")); // NOI18N
-            fw.close();
+            // Create empty output file
+            FileUtil.createData(testcaseDirFO, "Output.xml");  // NOI18N
 
-            FileUtil.createData(testcaseDir, "Output.xml");  // NOI18N
-
-            // Create the results directory and results/<testcasename> directory now.
-            // This is to avoid a threading issue durint first run result checking.
-            String resultsDirName = "results";  // NOI18N  // FIXME
-            FileObject resultsFO = testDir.getFileObject(resultsDirName);
-            if (resultsFO == null) {
-                resultsFO = FileUtil.createFolder(testDir, resultsDirName);
-            }
-            FileUtil.createFolder(resultsFO, name);
+            // Create the test case result directory.
+            // This is to avoid a threading issue during the first run result checking.
+            FileUtil.createFolder(testDir, "results/" + testCaseName); // NOI18N
 
             // Populate properties
             EditableProperties properties = new EditableProperties(true);
-            properties.setProperty(PropertySpec.DESCRIPTION.getName(), "testcase " + name); // NOI18N
+            properties.setProperty(PropertySpec.DESCRIPTION.getName(), "Test Case " + testCaseName); // NOI18N
 
             String[] endPoints = bindingSupport.getEndpoints();
             if (endPoints == null || endPoints.length == 0) {
@@ -202,6 +189,12 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
                 }
             }
 
+            if (bindingSupport instanceof Soap12BindingSupport) {
+                properties.setProperty(PropertySpec.BINDING_TYPE.getName(), "SOAP 1.2");  // NOI18N
+            } else if (bindingSupport instanceof SoapBindingSupport) {
+                properties.setProperty(PropertySpec.BINDING_TYPE.getName(), "SOAP 1.1");  // NOI18N
+            }
+
             properties.setProperty(PropertySpec.SOAP_ACTION.getName(), soapActionURI);
             properties.setProperty(PropertySpec.INPUT_FILE.getName(), "Input.xml");  // NOI18N
             properties.setProperty(PropertySpec.OUTPUT_FILE.getName(), "Output.xml");  // NOI18N
@@ -225,17 +218,17 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
                     new String[]{"#" + PropertySpec.FEATURE_STATUS.getName() + "'s possible values: progress|done"}, false);  // NOI18N
 
             //Write properties to disk            
-            FileObject propFileObject = FileUtil.createData(testcaseDir, "Concurrent.properties");  // NOI18N
-            File propFile = FileUtil.toFile(propFileObject);
-            FileOutputStream outStream = new FileOutputStream(propFile);
-            properties.store(outStream);
-            outStream.close();
+            File propFile = new File(testcaseDir, "Concurrent.properties"); // NOI18N
+            FileOutputStream fos = new FileOutputStream(propFile);
+            properties.store(fos);
+            fos.close();
+            FileUtil.createData(propFile);
 
             // Since testcaseDir is created before *.properties,
             // FileChangeListener may be notified before *.properties,
             // hence FileChangeListener may fail to find that the new folder contains *.properties,
             // hence this second notificatioin is necessary.
-            testNode.getFileChangeListener().fileFolderCreated(new FileEvent(testcaseDir));
+            testNode.getFileChangeListener().fileFolderCreated(new FileEvent(testcaseDirFO));
             
             final Node activatedNode = activatedNodes[0];
 
@@ -255,7 +248,7 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
                             treeView.expandNode(activatedNode);
                         }
 
-                        Node testChildNode = activatedNode.getChildren().findChild(name);
+                        Node testChildNode = activatedNode.getChildren().findChild(testCaseName);
 
                         if (testChildNode != null) {
                             // Expand the test case node
@@ -266,14 +259,13 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
 
                             if (testCaseChildNode != null) {
                                 //Select the input node and open it
-                                EditCookie openCookie = (EditCookie) testCaseChildNode.getCookie(EditCookie.class);
+                                EditCookie openCookie = testCaseChildNode.getCookie(EditCookie.class);
                                 if (openCookie != null) {
                                     openCookie.edit();
                                 }
                             }
                         }
                     }
-
                 }
             });
 
@@ -286,25 +278,12 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
         }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getName() {
         return NbBundle.getMessage(AddTestcaseAction.class, "LBL_AddTestcaseAction_Name");  // NOI18N
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-
-    // If you will provide context help then use:
-    // return new HelpCtx(AddTestcaseAction.class);
     }
 
     /**
@@ -327,15 +306,15 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                 // Sets steps names for a panel
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
                 // Turn on subtitle creation on each step
-                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
                 // Turn on numbering of all steps
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
             }
         }
         return panels;

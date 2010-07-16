@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,8 +51,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Various miscelaneous static methods.
@@ -98,7 +103,7 @@ public class GdbUtils {
     
     /** Test if the type of a type is a keyword type */
     private static boolean isSimpleTypeKeyword(String type) {
-        return type != null && type.equals("char") // NOI18N
+        return type != null && (type.equals("char") // NOI18N
             || type.equals("void") // NOI18N
             || type.equals("short") // NOI18N
             || type.equals("int") // NOI18N
@@ -108,7 +113,7 @@ public class GdbUtils {
             || type.equals("const") // NOI18N
             || type.equals("volatile") // NOI18N
             || type.equals("unsigned") // NOI18N
-            || type.equals("signed"); // NOI18N
+            || type.equals("signed")); // NOI18N
     }
     
 //    /** Test if the type of a type is a keyword type */
@@ -229,7 +234,7 @@ public class GdbUtils {
     //  args=[{name="argc",value="1"},{name="argv",value="0x6f19a8"}],
     //  file="quote.cc",fullname="g:/tmp/nik/Quote1/quote.cc",
     //  line="131"},gdb-result-var="$1",return-value="-1"
-    private static void processString(String info, PairProcessor processor) {
+    private static void processString(String info, PairProcessor processor, final String encoding) {
         int len = info.length();
         int i = 0;
         
@@ -269,7 +274,7 @@ public class GdbUtils {
             // put the value in the map and prepare for the next property
             String value = info.substring(i, tend);
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
-                value = gdbToUserEncoding(value); // possibly convert multi-byte fields
+                value = gdbToUserEncoding(value, encoding); // possibly convert multi-byte fields
             }
             processor.onPair(key, value);
             i = tend + 2;
@@ -283,18 +288,18 @@ public class GdbUtils {
      *  @param info A string of key/value pairs
      *  @return A HashMap containing each key/value
      */
-    public static Map<String, String> createMapFromString(String info) {
+    public static Map<String, String> createMapFromString(String info, final String encoding) {
         final HashMap<String, String> map = new HashMap<String, String>();
         processString(info, new PairProcessor() {
             @Override
             public void onPair(String key, String value) {
                 map.put(key, value);
             }
-        });
+        }, encoding);
         return map;
     }
     
-    public static String gdbToUserEncoding(String string) {
+    private static String gdbToUserEncoding(String string, final String encoding) {
         // The first part transforms string to byte array
         char[] chars = string.toCharArray();
         char last = 0, next;
@@ -316,7 +321,7 @@ public class GdbUtils {
 
         // The second part performs encoding to current coding system
         try {
-            string = new String(bytes, System.getProperty("sun.jnu.encoding"));
+            string = new String(bytes, encoding);
         } catch (UnsupportedEncodingException e) {
         }
         return string;
@@ -356,14 +361,14 @@ public class GdbUtils {
      *  @param info A string of key/value pairs
      *  @return An ArrayList with each entry as a value (keys are thrown away, use createMapFromString if you need them)
      */
-    public static List<String> createListFromString(String info) {
+    public static List<String> createListFromString(String info, String encoding) {
         final List<String> list = new ArrayList<String>();
         processString(info, new PairProcessor() {
             @Override
             public void onPair(String key, String value) {
                 list.add(value);
             }
-        });
+        }, encoding);
         return list;
     }
 
@@ -870,5 +875,14 @@ public class GdbUtils {
             last++;
         }
         return Double.parseDouble(msg.substring(first+1, last));
+    }
+
+    public static RequestProcessor getGdbRequestProcessor() {
+        // if gdb debugger is available - return it's RP
+        GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
+        if (gdbDebugger != null) {
+            return gdbDebugger.getRequestProcessor();
+        }
+        return RequestProcessor.getDefault();
     }
 }

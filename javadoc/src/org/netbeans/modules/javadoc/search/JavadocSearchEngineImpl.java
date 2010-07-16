@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,25 +42,17 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * JavadocSearchEngineImpl.java
- *
- * Created on 18. ?erven 2001, 14:55
- */
-
 package org.netbeans.modules.javadoc.search;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.openide.ErrorManager;
 
-import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author  Petr Suchomel
- * @version 0.1
  */
 final class JavadocSearchEngineImpl extends JavadocSearchEngine {
 
@@ -70,18 +65,15 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
      * @param items to search for
      * @throws NoJavadocException if no javadoc directory is mounted, nothing can be searched
      */
-    public void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
+    public @Override void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
         diiConsumer = new IndexSearchThread.DocIndexItemConsumer() {
-                          public void addDocIndexItem( final DocIndexItem dii ) {
+                          public @Override void addDocIndexItem(DocIndexItem dii) {
                               callback.addItem(dii);
                           }
-
-                          public void indexSearchThreadFinished( IndexSearchThread t ) {
+                          public @Override void indexSearchThreadFinished(IndexSearchThread t) {
                               boolean isEmpty;
                               synchronized(JavadocSearchEngineImpl.this) {
-                                  if (IndexSearch.LOG.isLoggable(Level.FINE)) {
-                                      IndexSearch.LOG.fine("JavadocSearchEngineImpl.indexSearchThreadFinished: tasks: " + tasks.size());
-                                  }
+                                  IndexSearch.LOG.log(Level.FINE, "JavadocSearchEngineImpl.indexSearchThreadFinished: tasks: {0}", tasks.size());
                                   tasks.remove( t );
                                   isEmpty = tasks.isEmpty();
                               }
@@ -91,7 +83,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
                           }
                       };
                       
-        FileObject[] docRoots = JavadocRegistry.getDefault().getDocRoots();
+        URL[] docRoots = JavadocRegistry.getDefault().getDocRoots();
         synchronized(this) {
             if (isStopped) {
                 return;
@@ -111,7 +103,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
                 ErrorManager.getDefault().log ("NO Search type for " + docRoots[i]);
                 continue;
             }
-            FileObject indexFo = st.getDocFileObject( docRoots[i] );
+            URL indexFo = st.getDocFileObject( docRoots[i] );
             if (indexFo == null) {
                 ErrorManager.getDefault().log ("NO Index files fot " + docRoots[i] );
                 continue;
@@ -143,7 +135,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
     
     /** Stops execution of Javadoc search thread
      */
-    public void stop() {
+    public @Override void stop() {
         IndexSearchThread[] tasksArray = null;
         boolean noTask;
         synchronized(this) {

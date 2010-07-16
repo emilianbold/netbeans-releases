@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -257,6 +260,20 @@ public class PatternsTest extends RestTestBase {
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
+
+        if (!getProjectType().isAntBasedProject() && Pattern.CcContainerItem.equals(pattern)) {
+            //set resource class name
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemResource_1"); //NOI18N
+            //set container resource class name
+            jtfo = new JTextFieldOperator(wo, new CClsName());
+            jtfo.clickMouse();
+            jtfo.clearText();
+            jtfo.typeText("ItemsResource_1"); //NOI18N
+        }
+
         if (name != null) {
             //we're not using Defs when name != null !!!
             //set resource class name
@@ -359,7 +376,7 @@ public class PatternsTest extends RestTestBase {
     }
 
     private File getFileFromProject(String fileName) {
-        FileObject fo = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
+        FileObject fo = getProjectSourceRoot();
         String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
         FileObject file = fo.getFileObject(location);
         assertNotNull(fileName + " not found at " + FileUtil.toFile(fo).getAbsolutePath() + File.separator + location, file); //NOI18N
@@ -377,7 +394,7 @@ public class PatternsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(PatternsTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N

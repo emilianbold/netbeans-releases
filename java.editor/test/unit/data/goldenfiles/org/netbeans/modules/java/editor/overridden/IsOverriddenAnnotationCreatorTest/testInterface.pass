@@ -1,2 +1,2 @@
-IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[org.netbeans.modules.editor.java.TestInterfaceImpl, org.netbeans.modules.editor.java.TestInterfaceImplOverride]
-IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[org.netbeans.modules.editor.java.TestInterfaceImpl.test(), org.netbeans.modules.editor.java.TestInterfaceImplOverride.test()]
+IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[<html>TestInterfaceImpl <font color=#808080>(org.netbeans.modules.editor.java), <html>TestInterfaceImplOverride <font color=#808080>(org.netbeans.modules.editor.java)]
+IsOverriddenAnnotation: type=HAS_IMPLEMENTATION, elements:[<html>TestInterfaceImpl <font color=#808080>(org.netbeans.modules.editor.java), <html>TestInterfaceImplOverride <font color=#808080>(org.netbeans.modules.editor.java)]

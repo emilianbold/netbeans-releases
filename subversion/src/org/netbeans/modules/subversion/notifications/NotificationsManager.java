@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
@@ -90,7 +93,7 @@ public class NotificationsManager {
     private final RequestProcessor rp;
     private final RequestProcessor.Task notificationTask;
     private final FileStatusCache cache;
-    private final SvnKenaiSupport supp;
+    private final SvnKenaiAccessor kenaiAccessor;
     private Boolean enabled;
 
     private Map<File, Long> notifiedFiles = Collections.synchronizedMap(new HashMap<File, Long>());
@@ -100,7 +103,7 @@ public class NotificationsManager {
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
         notificationTask = rp.create(new NotificationTask());
         cache = Subversion.getInstance().getStatusCache();
-        supp = SvnKenaiSupport.getInstance();
+        kenaiAccessor = SvnKenaiAccessor.getInstance();
     }
 
     /**
@@ -121,9 +124,9 @@ public class NotificationsManager {
      * @param file file to scan
      */
     public void scheduleFor(File file) {
-        if (!isEnabled() || isSeen(file) || !isUpToDate(file)) {
+        if (isSeen(file) || !isEnabled() || !isUpToDate(file)) {
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("File " + file.getAbsolutePath() + " is " + (isUpToDate(file) ? "" : "not ") + " up to date, notifications enabled: " + isEnabled()); //NOI18N
+                LOG.log(Level.FINER, "File {0} is {1} up to date, notifications enabled: {2}", new Object[]{file.getAbsolutePath(), isUpToDate(file) ? "" : "not ", isEnabled()}); //NOI18N
             }
             return;
         }
@@ -152,11 +155,12 @@ public class NotificationsManager {
         pane.setText(msg);
 
         pane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                     if(CMD_DIFF.equals(e.getDescription())) {
                         Context ctx = new Context(files);
-                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()), false); //NOI18N
                     } else if (revision != null) {
                         try {
                             SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
@@ -176,9 +180,9 @@ public class NotificationsManager {
     private boolean isEnabled() {
         if (enabled == null) {
             // let's leave a possibility to disable the notifications
-            enabled = new Boolean(!"false".equals(System.getProperty("subversion.notificationsEnabled", "true"))); //NOI18N
+            enabled = !"false".equals(System.getProperty("subversion.notificationsEnabled", "true")); //NOI18N
         }
-        return enabled.booleanValue() && supp.isLogged();
+        return enabled.booleanValue() && kenaiAccessor.isLogged(null);
     }
 
     private boolean isUpToDate(File file) {
@@ -196,6 +200,7 @@ public class NotificationsManager {
 
     private class NotificationTask extends VCSNotificationDisplayer implements Runnable {
 
+        @Override
         public void run() {
             HashSet<File> filesToScan;
             synchronized (files) {
@@ -204,11 +209,12 @@ public class NotificationsManager {
             }
             removeDirectories(filesToScan);
             removeSeenFiles(filesToScan);
-            if (filesToScan.size() != 0) {
+            if (!filesToScan.isEmpty()) {
                 scanFiles(filesToScan);
             }
         }
 
+        @Override
         protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {
             NotificationsManager.this.setupPane(pane, files, getFileNames(files), projectDir, url, revision);
         }
@@ -353,7 +359,7 @@ public class NotificationsManager {
         private SVNUrl getRepositoryRoot (File file) {
             SVNUrl repositoryUrl = null;
             SVNUrl url = getRepositoryUrl(file);
-            if (url != null && supp.isKenai(url.toString())) {
+            if (url != null && kenaiAccessor.isKenai(url.toString()) && kenaiAccessor.isLogged(url.toString())) {
                 repositoryUrl = url;
             }
             return repositoryUrl;

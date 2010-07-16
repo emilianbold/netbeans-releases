@@ -357,7 +357,7 @@ Several.
         </question>
 -->
 <answer id="exec-property">
-    <api type="import" group="property" name="user.dir" category="private">
+    <api type="import" group="systemproperty" name="user.dir" category="private">
         Used as a default directory in the file chooser, that is used by the patch action.
     </api>
 </answer>

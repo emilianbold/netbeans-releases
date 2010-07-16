@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,9 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
@@ -62,6 +68,9 @@ public final class TransferFile {
     public static final String SEPARATOR = "/"; // NOI18N
     public static final String CWD = "."; // NOI18N
 
+    private final TransferFile parent;
+    private final List<TransferFile> children = new LinkedList<TransferFile>();
+
     private final String name;
     private final String relativePath;
     private final String parentRelativePath;
@@ -70,16 +79,17 @@ public final class TransferFile {
     private final boolean file;
     private long timestamp; // in seconds, default -1
 
-    private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
-        this(name, relativePath, parentRelativePath, size, directory, file, -1);
+    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
+        this(parent, name, relativePath, parentRelativePath, size, directory, file, -1);
     }
 
-    private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, long timestamp) {
+    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, long timestamp) {
         assert size >= 0L : "Size cannot be smaller than 0";
         if (directory && size != 0L) {
             throw new IllegalArgumentException("Size of a directory has to be 0 bytes");
         }
 
+        this.parent = parent;
         this.name = name;
         this.relativePath = relativePath;
         this.parentRelativePath = parentRelativePath;
@@ -87,9 +97,13 @@ public final class TransferFile {
         this.file = file;
         this.size = size;
         this.timestamp = timestamp;
+
+        if (parent != null) {
+            parent.addChild(this);
+        }
     }
 
-    public static TransferFile fromFile(File file, String baseDirectory, boolean isDirectory) {
+    public static TransferFile fromFile(TransferFile parent, File file, String baseDirectory, boolean isDirectory) {
         assert file != null;
         assert baseDirectory != null;
 
@@ -104,28 +118,28 @@ public final class TransferFile {
         boolean f = !isDirectory;
         long size = directory ? 0L : file.length();
 
-        return new TransferFile(name, relativePath, parentRelativePath, size, directory, f, TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
+        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, f, TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
     }
     /**
      * Implementation for {@link File}.
      */
-    public static TransferFile fromFile(File file, String baseDirectory) {
-        return fromFile(file, baseDirectory, file.isDirectory());
+    public static TransferFile fromFile(TransferFile parent, File file, String baseDirectory) {
+        return fromFile(parent, file, baseDirectory, file.isDirectory());
     }
 
     /**
      * Implementation for {@link FileObject}.
      */
-    public static TransferFile fromFileObject(FileObject fo, String baseDirectory) {
+    public static TransferFile fromFileObject(TransferFile parent, FileObject fo, String baseDirectory) {
         assert fo != null;
 
-        return fromFile(FileUtil.toFile(fo), baseDirectory, fo.isFolder());
+        return fromFile(parent, FileUtil.toFile(fo), baseDirectory, fo.isFolder());
     }
 
     /**
      * Implementation for {@link RemoteFile}.
      */
-    public static TransferFile fromRemoteFile(RemoteFile remoteFile, String baseDirectory, String parentDirectory) {
+    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, String baseDirectory, String parentDirectory) {
         assert remoteFile != null;
         assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
         assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
@@ -139,16 +153,40 @@ public final class TransferFile {
         boolean file = remoteFile.isFile();
         long size = directory ? 0L : remoteFile.getSize();
 
-        return new TransferFile(name, relativePath, parentRelativePath, size, directory, file);
+        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, file, remoteFile.getTimestamp());
     }
 
     /**
      * Dummy implementation for file path.
      */
-    public static TransferFile fromPath(String path) {
+    public static TransferFile fromPath(TransferFile parent, String path) {
         assert path != null;
 
-        return new TransferFile(path, path, path, 0L, false, false);
+        return new TransferFile(parent, path, path, path, 0L, false, false);
+    }
+
+    private void addChild(TransferFile child) {
+        children.add(child);
+    }
+
+    public boolean hasChildren() {
+        return !children.isEmpty();
+    }
+
+    public List<TransferFile> getChildren() {
+        return new ArrayList<TransferFile>(children);
+    }
+
+    public TransferFile getParent() {
+        return parent;
+    }
+
+    public boolean isRoot() {
+        return parent == null;
+    }
+
+    public boolean isProjectRoot() {
+        return CWD.equals(relativePath);
     }
 
     private static String getRelativePath(String absolutePath, String baseDirectory) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,9 +58,11 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 
 import com.nwoods.jgo.JGoObject;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 /*import com.sun.jbi.ui.devtool.sql.framework.ui.graph.actions.RedoAction;
 import com.sun.jbi.ui.devtool.sql.framework.ui.graph.actions.UndoAction;*/
+import java.util.logging.Level;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
@@ -87,9 +92,8 @@ import org.openide.actions.UndoAction;
 import org.openide.actions.RedoAction;
 import org.openide.actions.PrintAction;
 import org.openide.util.actions.SystemAction;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author Ritesh Adval
@@ -99,6 +103,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
 
     private static ClipBoard clipBoard = new ClipBoard();
     private static final String LOG_CATEGORY = SQLGraphView.class.getName();
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
     private static transient final Logger mLogger = Logger.getLogger(SQLGraphView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     Color pColor;
@@ -505,7 +510,9 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                     }
                     nodeMap.put(node, clonedObj);
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT107: Exception{0}", ex.getMessage()), ex);
+                    String msg = mLoc.t("EDIT107: Exception{0}", ex.getMessage());
+                    StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                    logger.log(Level.SEVERE, msg.substring(15) + ex);
                 }
             }
         }
@@ -537,7 +544,9 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                             SQLConnectableObject exprObj = (SQLConnectableObject) clonedDestObj;
                             sqlModel.createLink((SQLCanvasObject) clonedSrcObj, srcFieldName, exprObj, destFieldName);
                         } catch (Exception ex) {
-                            mLogger.errorNoloc(mLoc.t("EDIT107: Exception{0}", ex.getMessage()), ex);
+                            String msg = mLoc.t("EDIT107: Exception{0}", ex.getMessage());
+                            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                            logger.log(Level.SEVERE, msg.substring(15) + ex);
                         }
                     }
                 }

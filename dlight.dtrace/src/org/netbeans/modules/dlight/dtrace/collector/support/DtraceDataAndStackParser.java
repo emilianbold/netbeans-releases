@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,6 @@ import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -103,7 +105,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
         IN_STACK        // we are waiting for subsequent row of ustack
     }
     private State state;
-    private List<String> currData;
+    private List<Object> currData;
     private long currSampleDuration;
     private List<CharSequence> currStack = new ArrayList<CharSequence>(32);
     private List<String> colNames;
@@ -122,10 +124,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
         super(metadata);
         this.sds = sds;
         state = State.WAITING_DATA;
-        colNames = new ArrayList<String>(metadata.getColumnsCount());
-        for (Column c : metadata.getColumns()) {
-            colNames.add(c.getColumnName());
-        }
+        colNames = metadata.getColumnNames();
         colCount = metadata.getColumnsCount();
         isProfiler = metadata.getName().equals("CallStack"); // NOI18N
     }
@@ -135,7 +134,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
     }
 
     /** override of you need more smart data processing  */
-    protected List<String> processDataLine(String line) {
+    protected List<Object> processDataLine(String line) {
         return super.parse(line, colCount - 1);
     }
 
@@ -161,7 +160,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
                 currData = processDataLine(line);
                 if (isProfiler) {
                     try {
-                        currSampleDuration = Long.parseLong(currData.get(colCount - 2));
+                        currSampleDuration = DataUtil.toLong(currData.get(colCount - 2));
                     } catch (NumberFormatException ex) {
                         DLightLogger.instance.log(Level.WARNING,
                                 "error parsing line " + line, ex); // NOI18N
@@ -181,9 +180,8 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     Collections.reverse(currStack);
                     long stackId = sds == null? -1 : sds.putSample(currStack, DataUtil.toLong(currData.get(0)), currSampleDuration);
                     currStack.clear();
-                    //colNames.get(colNames.size()-1);
                     state = State.WAITING_DATA;
-                    currData.add(Long.toString(stackId));
+                    currData.add(Long.valueOf(stackId));
                     return new DataRow(colNames, currData);
                 }
         }

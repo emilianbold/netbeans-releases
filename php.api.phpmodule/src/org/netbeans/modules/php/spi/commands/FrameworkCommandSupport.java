@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,11 @@ package org.netbeans.modules.php.spi.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -57,6 +60,7 @@ import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -64,6 +68,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -72,9 +77,10 @@ import org.openide.util.Utilities;
 public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(COMMANDS_CACHE)
-    private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
+    //                      php module     fw name            commands
+    private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
 
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
 
     protected final PhpModule phpModule;
 
@@ -163,11 +169,14 @@ public abstract class FrameworkCommandSupport {
      * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
     public List<FrameworkCommand> getFrameworkCommands() {
-        List<FrameworkCommand> commands;
+        List<FrameworkCommand> frameworkCommands = null;
         synchronized (COMMANDS_CACHE) {
-            commands = COMMANDS_CACHE.get(phpModule);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands != null) {
+                frameworkCommands = moduleCommands.get(getFrameworkName());
+            }
         }
-        return commands;
+        return frameworkCommands;
     }
 
     /**
@@ -215,7 +224,12 @@ public abstract class FrameworkCommandSupport {
             }
         }
         synchronized (COMMANDS_CACHE) {
-            COMMANDS_CACHE.put(phpModule, freshCommands);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands == null) {
+                moduleCommands = new HashMap<String, List<FrameworkCommand>>();
+            }
+            moduleCommands.put(getFrameworkName(), freshCommands);
+            COMMANDS_CACHE.put(phpModule, moduleCommands);
         }
     }
 
@@ -224,7 +238,8 @@ public abstract class FrameworkCommandSupport {
      * @param post {@link Runnable} that is run afterwards, can be <code>null</code>.
      */
     public final void refreshFrameworkCommandsLater(final Runnable post) {
-        EXECUTOR.submit(new Runnable() {
+        RP.execute(new Runnable() {
+            @Override
             public void run() {
                 refreshFrameworkCommands();
                 if (post != null) {
@@ -237,25 +252,55 @@ public abstract class FrameworkCommandSupport {
     /**
      * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
      * Warning should be shown if any error occurs.
+     * This method is useful for commands like "create-project" etc.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createSilentCommand(String, String[])
      */
     public ExternalProcessBuilder createCommand(final String command, final String... arguments) {
-        return createCommandInternal(command, arguments, true);
+        return createCommand(new String[] {command}, arguments);
+    }
+
+    /**
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * Warning should be shown if any error occurs.
+     * This method is useful for commands like "create project" etc.
+     * @param commands command to create.
+     * @param arguments command's arguments.
+     * @return command or <code>null</code> if any error occurs.
+     * @see #createSilentCommand(String, String[])
+     * @since 1.24
+     */
+    public ExternalProcessBuilder createCommand(final String[] commands, final String... arguments) {
+        return createCommandInternal(commands, arguments, true);
     }
 
     /**
      * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
      * No error dialog is displayed if e.g. framework script is invalid.
+     * This method is useful for commands like "create-project" etc.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createCommand(String, String[])
      */
     public ExternalProcessBuilder createSilentCommand(final String command, final String... arguments) {
-        return createCommandInternal(command, arguments, false);
+        return createSilentCommand(new String[] {command}, arguments);
+    }
+
+    /**
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * No error dialog is displayed if e.g. framework script is invalid.
+     * This method is useful for commands like "create project" etc.
+     * @param commands command to create.
+     * @param arguments command's arguments.
+     * @return command or <code>null</code> if any error occurs.
+     * @see #createCommand(String, String[])
+     * @since 1.24
+     */
+    public ExternalProcessBuilder createSilentCommand(final String[] commands, final String... arguments) {
+        return createCommandInternal(commands, arguments, false);
     }
 
     /**
@@ -264,7 +309,8 @@ public abstract class FrameworkCommandSupport {
      * @return title for the given command descriptor.
      */
     public String getOutputTitle(CommandDescriptor commandDescriptor) {
-        return getOutputTitle(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        String command = StringUtils.implode(Arrays.asList(commandDescriptor.getFrameworkCommand().getCommands()), " ");
+        return getOutputTitle(command, commandDescriptor.getCommandParams()); // NOI18N
     }
 
     /**
@@ -295,12 +341,14 @@ public abstract class FrameworkCommandSupport {
         FrameworkCommandChooser.open(this);
     }
 
-    private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
+    private ExternalProcessBuilder createCommandInternal(final String[] commands, final String[] arguments, boolean warnUser) {
         ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser);
         if (processBuilder == null) {
             return null;
         }
-        processBuilder = processBuilder.addArgument(command);
+        for (String command : commands) {
+            processBuilder = processBuilder.addArgument(command);
+        }
         for (String arg : arguments) {
             processBuilder = processBuilder.addArgument(arg);
         }
@@ -324,6 +372,7 @@ public abstract class FrameworkCommandSupport {
             }
         }
 
+        @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             InputProcessor[] processors = new InputProcessor[factories.size()];
             for (int i = 0; i < processors.length; i++) {
@@ -335,25 +384,31 @@ public abstract class FrameworkCommandSupport {
 
     private class PluginListener implements FileChangeListener {
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             changed();
         }

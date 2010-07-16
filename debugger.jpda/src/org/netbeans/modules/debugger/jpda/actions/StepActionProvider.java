@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -69,7 +71,6 @@ import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
-import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -79,6 +80,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -98,9 +100,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -177,38 +177,41 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        runAction(action, true);
+        runAction(action, true, null);
     }
 
-    private void runAction(final Object action, boolean doResume) {
+    private void runAction(final Object action, boolean doResume, Lock lock) {
         //S ystem.out.println("\nStepAction.doAction");
         int suspendPolicy = getDebuggerImpl().getSuspend();
         JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-        Lock lock;
-        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            lock = resumeThread.accessLock.writeLock();
-        } else {
-            lock = getDebuggerImpl().accessLock.writeLock();
-        }
-        lock.lock();
+        boolean locked = lock == null;
         try {
-            // 1) init info about current state & remove old
-            //    requests in the current thread
-            // We have to assure that the thread is suspended so that we
-            // do not randomly resume threads
-            while (!resumeThread.isSuspended()) {
-                // The thread is not suspended, release the lock so that others
-                // can process what they want with the resumed thread...
-                lock.unlock();
-                Thread.yield();
-                try {
-                    Thread.sleep(100); // Wait for a moment
-                } catch (InterruptedException iex) {}
-                lock.lock(); // Take the lock again to repeat the test
-                if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
-                    // Explicitely suspend the thread if it's not in a step
-                    // or in a method invocation:
-                    resumeThread.suspend();
+            if (lock == null) {
+                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    lock = resumeThread.accessLock.writeLock();
+                } else {
+                    lock = getDebuggerImpl().accessLock.writeLock();
+                }
+                lock.lock();
+
+                // 1) init info about current state & remove old
+                //    requests in the current thread
+                // We have to assure that the thread is suspended so that we
+                // do not randomly resume threads
+                while (!resumeThread.isSuspended()) {
+                    // The thread is not suspended, release the lock so that others
+                    // can process what they want with the resumed thread...
+                    lock.unlock();
+                    Thread.yield();
+                    try {
+                        Thread.sleep(100); // Wait for a moment
+                    } catch (InterruptedException iex) {}
+                    lock.lock(); // Take the lock again to repeat the test
+                    if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
+                        // Explicitely suspend the thread if it's not in a step
+                        // or in a method invocation:
+                        resumeThread.suspend();
+                    }
                 }
             }
             resumeThread.waitUntilMethodInvokeDone();
@@ -247,6 +250,10 @@ implements Executor {
                 // Thread was collected...
                 getDebuggerImpl ().getOperator ().unregister(stepRequest);
                 return ;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
+                getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                return ;
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
@@ -275,13 +282,15 @@ implements Executor {
         } catch (ObjectCollectedExceptionWrapper e) {
             // Thread was collected - ignore the step
         } finally {
-            lock.unlock();
+            if (locked && lock != null) {
+                lock.unlock();
+            }
         }
         //S ystem.out.println("/nStepAction.doAction end");
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
-        if (!MethodBreakpointImpl.canGetMethodReturnValues(MirrorWrapper.virtualMachine(tr))) {
+        if (!MirrorWrapper.virtualMachine(tr).canGetMethodReturnValues()) {
             return ;
         }
         Location loc;
@@ -291,6 +300,9 @@ implements Executor {
             logger.fine("Incompatible Thread State: "+ex.getLocalizedMessage());
             return ;
         } catch (IllegalThreadStateExceptionWrapper ex) {
+            return ;
+        } catch (IndexOutOfBoundsException ex) {
+            // No frames on the thread => nowhere to exit to.
             return ;
         }
         String classType = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
@@ -383,6 +395,10 @@ implements Executor {
                         // the thread named in the request has died.
                         getDebuggerImpl ().getOperator ().unregister(stepRequest);
                         stepRequest = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
+                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        stepRequest = null;
                     }
                     return true;
                 }
@@ -419,17 +435,17 @@ implements Executor {
             boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
             if (!stepThrough || smartSteppingStepOut) {
                 // Assure that the action does not resume anything. Resume is done by Operator.
-                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false);
+                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
             } else {
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 int origDepth = StepRequestWrapper.depth(sr);
                 if (origDepth == StepRequest.STEP_OVER) {
-                    runAction(ActionsManager.ACTION_STEP_OVER, false);
+                    runAction(ActionsManager.ACTION_STEP_OVER, false, lock);
                     //getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
                 } else if (origDepth == StepRequest.STEP_OUT) {
-                    runAction(ActionsManager.ACTION_STEP_OUT, false);
+                    runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
                 } else { // if (origDepth == StepRequest.STEP_INTO) {
-                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
+                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false, lock);
                 }
             }
             //S ystem.out.println("/nStepAction.exec end - resume");

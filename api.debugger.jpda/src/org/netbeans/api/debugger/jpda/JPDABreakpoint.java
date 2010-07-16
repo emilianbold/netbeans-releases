@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,16 +45,35 @@
 package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
+import java.net.URL;
+import java.util.ArrayList;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import java.util.prefs.Preferences;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbPreferences;
 
 /**
@@ -62,6 +84,8 @@ import org.openide.util.NbPreferences;
 public class JPDABreakpoint extends Breakpoint {
 
     // static ..................................................................
+
+    static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
 
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
@@ -87,6 +111,7 @@ public class JPDABreakpoint extends Breakpoint {
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
     private JPDADebugger                session;
+    private List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
     
    
     JPDABreakpoint () {
@@ -200,6 +225,7 @@ public class JPDABreakpoint extends Breakpoint {
 
     /**
      * Set the specific session where this breakpoint belongs to.
+     * This will make the breakpoint session-specific
      *
      * @param session the specific session
      */
@@ -253,4 +279,67 @@ public class JPDABreakpoint extends Breakpoint {
         while (i.hasNext ())
             i.next().breakpointReached (event);
     }
+
+    void enginePropertyChange(PropertyChangeEvent evt) {
+        if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
+            DebuggerEngine oldEngine = (DebuggerEngine) evt.getOldValue();
+            DebuggerEngine newEngine = (DebuggerEngine) evt.getNewValue();
+            if (oldEngine != null) {
+                engines.remove(oldEngine);
+            }
+            if (newEngine != null) {
+                engines.add(newEngine);
+            }
+            firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
+        }
+    }
+
+    DebuggerEngine[] getEngines() {
+        if (engines.size() == 0) {
+            return null;
+        } else {
+            return engines.toArray(new DebuggerEngine[0]);
+        }
+    }
+
+    static void fillFilesForClass(String className, List<FileObject> files) {
+        int simpleNameIndex = className.lastIndexOf('.');
+        int innerClassIndex = className.indexOf('$');
+        if (innerClassIndex > 0) {
+            className = className.substring(0, innerClassIndex);
+        }
+        String simpleClassName = className;
+        if (simpleNameIndex > 0) {
+            //packageName = className.substring(0, simpleNameIndex);
+            simpleClassName = className.substring(simpleNameIndex + 1);
+        }
+        Collection<FileObject> srcRoots = QuerySupport.findRoots(
+                (Project) null,
+                Collections.singleton(ClassPath.SOURCE),
+                Collections.<String>emptySet(),
+                Collections.<String>emptySet());
+        for (FileObject root : srcRoots) {
+            URL rootUrl;
+            try {
+                rootUrl = root.getURL();
+            } catch (FileStateInvalidException fsie) {
+                continue;
+            }
+            ClassPath cp = ClassPathSupport.createClassPath(rootUrl);
+            ClasspathInfo ci = ClasspathInfo.create (EMPTY_CLASSPATH,
+                                                     EMPTY_CLASSPATH,
+                                                     cp);
+            final Set<ElementHandle<TypeElement>> names = ci.getClassIndex().getDeclaredTypes(
+                    simpleClassName, ClassIndex.NameKind.SIMPLE_NAME, EnumSet.of(ClassIndex.SearchScope.SOURCE)
+            );
+            for (ElementHandle<TypeElement> eh : names) {
+                if (!className.equals(eh.getQualifiedName())) {
+                    continue;
+                }
+                FileObject f = SourceUtils.getFile(eh, ci);
+                files.add(f);
+            }
+        }
+    }
+
 }

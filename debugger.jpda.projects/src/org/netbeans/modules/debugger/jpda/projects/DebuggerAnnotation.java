@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -66,26 +70,38 @@ import org.openide.util.lookup.Lookups;
  */
 public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
-    private Line        line;
-    private String      type;
-    private JPDAThread  thread;
+    private final Line        line;
+    private final String      type;
+    private final JPDAThread  thread;
 
 
     DebuggerAnnotation (String type, Line line, JPDAThread thread) {
         this.type = type;
         this.line = line;
         this.thread = thread;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (line);
     }
     
     DebuggerAnnotation (String type, Line.Part linePart) {
         this.type = type;
         this.line = linePart.getLine();
+        this.thread = null;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (linePart);
     }
     
     DebuggerAnnotation (String type, AttributeSet attrs, int start, int end, FileObject fo) {
         this.type = type;
+        this.line = null;
+        this.thread = null;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (new HighlightAnnotatable(attrs, start, end, fo));
     }
     

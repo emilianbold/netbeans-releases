@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ import org.openide.util.Exceptions;
 public class JBrowseModule extends ModuleInstall {
     
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
-    private static Logger log = Logger.getLogger(JBrowseModule.class.getName());
+    private static final Logger log = Logger.getLogger(JBrowseModule.class.getName());
     
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
@@ -76,7 +79,6 @@ public class JBrowseModule extends ModuleInstall {
 
     public @Override void restored() {
         super.restored();
-        JavaSourceTaskFactoryManager.register();
         if (ENABLE_MBEANS) {
             registerMBeans();
         }
@@ -86,14 +88,14 @@ public class JBrowseModule extends ModuleInstall {
         //when "internal" execution of javac is used
         //the property below disables the caches
         //java.project might be a better place (currently does not have a ModuleInstall)
-        System.setProperty("useJavaUtilZip", "true");
+        System.setProperty("useJavaUtilZip", "true"); //NOI18N
     }   
     
     public @Override void close () {
         super.close();
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                 public Void run() throws IOException {
+                 public @Override Void run() throws IOException {
                      ClassIndexManager.getDefault().close();
                      return null;
                  }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,9 +73,18 @@ import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.impl.SQLDefinitionImpl;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
-import com.sun.sql.framework.utils.StringUtil;
-import com.sun.sql.framework.utils.XmlUtil;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.utils.StringUtil;
+import com.sun.etl.utils.XmlUtil;
+import com.sun.etl.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.ValidationInfo;
+
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
+
+import org.apache.tools.ant.BuildException;
 
 /**
  *
@@ -100,6 +112,9 @@ public class EngineFileGenerator {
     private String collabName;
     Map dbCatalogOverrideMapMap = new HashMap();
     Map dbSchemaOverrideMapMap = new HashMap();
+    private static String fs = File.separator;
+    //ETL CLI Artifacts Generator
+    GenerateEltCLI genoverrides = new GenerateEltCLI(true);
 
     public EngineFileGenerator() {
         try {
@@ -123,13 +138,42 @@ public class EngineFileGenerator {
         collabName = def.getDisplayName();
 
         SQLDefinition sqlDefinition = def.getSQLDefinition();
-        SQLDefinition defn = checkForDeploymentProperties(etlFile, etlFileName);
-        if (defn != null) {
-            System.out.print("Synchronizing the configuration with Design time.");
-            defn = compareAndSync(sqlDefinition, defn, true);
-            sqlDefinition = compareAndSync(sqlDefinition, defn, false);
-            System.out.println("Synchronization completed successfully");
+        List<ValidationInfo> valInfo = sqlDefinition.validateModel();
+        boolean bError = false;
+        InputOutput io = IOProvider.getDefault().getIO("Data Integrator", true);
+        io.select();
+        OutputWriter wout = io.getOut();
+        OutputWriter werr = io.getErr();
+        OutputListener listener = new OutputListener() {
+            public void outputLineAction(OutputEvent ev) {
+                
+            }
+
+            public void outputLineSelected(OutputEvent ev) {
+                // Let's not do anything special.
+            }
+
+            public void outputLineCleared(OutputEvent ev) {
+                // Leave it blank, no state to remove.
+            }
+        };
+
+        if(!valInfo.isEmpty()) {
+            for(ValidationInfo valobj: valInfo) {
+                if(valobj.getValidationType() == ValidationInfo.VALIDATION_ERROR ) {
+                    werr.println("ERROR: " + valobj.getDescription(), listener, true);
+                    bError = true;
+                }
+                else if(valobj.getValidationType() == ValidationInfo.VALIDATION_WARNING ) {
+                    wout.println("WARNING: " + valobj.getDescription());
+                }
+            }
         }
+        if(bError) {
+            werr.println("Collaboration " + collabName + " is Invalid: (Engine file will not be generated) \n");
+            throw new BuildException("Collaboration " + collabName + " is Invalid: (Engine file will not be generated) \n");
+        }
+
         populateConnectionDefinitions(sqlDefinition);
         sqlDefinition.overrideCatalogNamesForDb(dbCatalogOverrideMapMap);
         sqlDefinition.overrideSchemaNamesForDb(dbSchemaOverrideMapMap);
@@ -159,22 +203,9 @@ public class EngineFileGenerator {
         FileUtil.copy(engineContent.getBytes("UTF-8"), fos);
         fos.flush();
         fos.close();
-    }
-
-    private SQLDefinition checkForDeploymentProperties(File etlFile, String etlFileName) {
-        SQLDefinition sqlDefn = null;
-        String confPath = etlFile.getAbsolutePath() + "\\..\\..\\nbproject\\config\\";
-        confPath = confPath + etlFileName + ".conf";
-        System.out.println("Checking for configuration file for " + etlFileName + ".etl");
-        File confFile = new File(confPath);
-        if (confFile.exists()) {
-            System.out.println("Found configuration file for " + etlFileName + ".etl");
-            sqlDefn = getConfigData(confFile);
-            System.out.println("Parsing the content of the configuration file for " + etlFileName + ".etl");
-        } else {
-            System.out.println("Configuration file not found. Using Design time configurations.");
-        }
-        return sqlDefn;
+        
+        //Generate ETL Command Line Artifacts
+        genoverrides.processETLDef(def.getDisplayName(), buildDir, sqlDefinition);
     }
 
     public SQLDefinition compareAndSync(SQLDefinition srcDefn, SQLDefinition tgtDefn, boolean isSource) {
@@ -275,9 +306,6 @@ public class EngineFileGenerator {
             initMetaData(iterator);
         }
 
-        //System.out.println(connDefs);
-        //System.out.println(dbNamePoolNameMap);
-        //System.out.println(internalDBConfigParams);
         connDefs.size();
         dbNamePoolNameMap.size();
     }
@@ -381,5 +409,9 @@ public class EngineFileGenerator {
             e.printStackTrace();
         }
         return ret;
+    }
+    
+    public void cleanupEtlCliGenerator(){
+        genoverrides.cleanup();
     }
 }

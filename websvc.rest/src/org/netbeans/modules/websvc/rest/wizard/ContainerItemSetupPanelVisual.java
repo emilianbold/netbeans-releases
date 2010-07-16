@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,8 +104,51 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                 fireChange();
             }
         });
+        classTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+        });
+        containerTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+        });
+
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
+
+        private void compareClassNames() {
+            String className = classTextField.getText().trim();
+            String containerClassName = containerTextField.getText().trim();
+            if (className.equals(containerClassName)) {
+                fireChange();
+            }
+        }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -444,7 +490,6 @@ private void containerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
 private void containerClassNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerClassNameChanged
     containerClassNameOveridden = true;
     fireChange();
-    
 }//GEN-LAST:event_containerClassNameChanged
 
 private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_representationClassChanged
@@ -547,7 +592,10 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         } else if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
-        } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
+        } else if (className.equals(containerName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_ClassNameEqualsContainerClassName");
+            return false;
+        }  else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
         } else if (containerName.length() == 0 || ! Utilities.isJavaIdentifier(containerName)) {

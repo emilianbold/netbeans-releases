@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Action;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
@@ -77,6 +81,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -117,6 +122,7 @@ public final class DatasourceUIHelper {
             this.items = items;
         }
 
+        @Override
         public void setSelectedItem(Object anItem) {            
             if (selectedItem == null || !selectedItem.equals(anItem)) {
                 previousItem = selectedItem;
@@ -125,14 +131,17 @@ public final class DatasourceUIHelper {
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return selectedItem;
         }
         
+        @Override
         public Object getElementAt(int index) {
             return items.get(index);
         }
         
+        @Override
         public int getSize() {
             return items.size();
         }
@@ -145,24 +154,96 @@ public final class DatasourceUIHelper {
             return datasources;
         }
         
+        @Override
         public void addElement(Object elem) {
            items.add(elem);
         }
 
+        @Override
         public void removeElement(Object elem) {
             items.remove(elem);
         }
 
+        @Override
         public void insertElementAt(Object elem, int index) {
             items.set(index, elem);
         }
 
+        @Override
         public void removeElementAt(int index) {
             items.remove(index);
         }
         
     }
     
+    private static class DatasourcePUComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
+
+        private List<Object> items;
+        private Object selectedItem;
+        private List<Datasource> datasources;
+        private Object previousItem;
+        private final List<PersistenceUnit> pUnits;
+
+        private DatasourcePUComboBoxModel(List<Datasource> datasources, List<PersistenceUnit> pUnits, List<Object> items) {
+            this.datasources = datasources;
+            this.pUnits = pUnits;
+            this.items = items;
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            if (selectedItem == null || !selectedItem.equals(anItem)) {
+                previousItem = selectedItem;
+                selectedItem = anItem;
+                fireContentsChanged(this, 0, -1);
+            }
+        }
+
+        @Override
+        public Object getSelectedItem() {
+            return selectedItem;
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return items.get(index);
+        }
+
+        @Override
+        public int getSize() {
+            return items.size();
+        }
+
+        Object getPreviousItem() {
+            return previousItem;
+        }
+
+        List<Datasource> getDatasources() {
+            return datasources;
+        }
+
+        @Override
+        public void addElement(Object elem) {
+           items.add(elem);
+        }
+
+        @Override
+        public void removeElement(Object elem) {
+            items.remove(elem);
+        }
+
+        @Override
+        public void insertElementAt(Object elem, int index) {
+            items.set(index, elem);
+        }
+
+        @Override
+        public void removeElementAt(int index) {
+            items.remove(index);
+        }
+
+    }
+
     /**
      * Get data source list cell renderer.
      * @return data source list cell renderer instance.
@@ -173,6 +254,7 @@ public final class DatasourceUIHelper {
     }
     
     private static class DatasourceListCellRenderer extends DefaultListCellRenderer {
+
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -215,6 +297,7 @@ public final class DatasourceUIHelper {
     
     private static class DatasourceComparator implements Comparator<Datasource> {
         
+        @Override
         public int compare(Datasource ds1, Datasource ds2) {
             
             if (ds1 == null) {
@@ -247,10 +330,12 @@ public final class DatasourceUIHelper {
             this.delegate = delegate;
         }
 
+        @Override
         public Component getEditorComponent() {
             return delegate.getEditorComponent();
         }
 
+        @Override
         public void setItem(Object anObject) {
             JTextComponent editor = getEditor();
             if (anObject != null)  {
@@ -264,6 +349,7 @@ public final class DatasourceUIHelper {
         }
 
         // this method is taken from javax.swing.plaf.basic.BasicComboBoxEditor
+        @Override
         public Object getItem() {
             
             JTextComponent editor = getEditor();
@@ -290,14 +376,17 @@ public final class DatasourceUIHelper {
             return newValue;
         }
 
+        @Override
         public void selectAll() {
             delegate.selectAll();
         }
 
+        @Override
         public void addActionListener(ActionListener l) {
             delegate.addActionListener(l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l) {
             delegate.removeActionListener(l);
         }
@@ -323,10 +412,22 @@ public final class DatasourceUIHelper {
      * @param combo combobox to manage.
      */
     public static void connect(J2eeModuleProvider provider, JComboBox combo) {
-        connect(provider, combo, null);
+        connect(null, provider, combo, null);
+    }
+
+    /**
+     * Entry point for the combobox initialization. It connects combobox with its content and
+     * add items for the combobox content management. Fill list with datasources with persistence unit combination if match
+     *
+     * @param project is used to determine existing persistence units and combine with datasources
+     * @param provider Java EE module provider.
+     * @param combo combobox to manage.
+     */
+    public static void connect(Project project, J2eeModuleProvider provider, JComboBox combo) {
+        connect(project, provider, combo, null);
     }
     
-    private static final void connect(final J2eeModuleProvider provider, final JComboBox combo, final Datasource selectedDatasource) {
+    private static final void connect(final Project project, final J2eeModuleProvider provider, final JComboBox combo, final Datasource selectedDatasource) {
         
         assert(provider != null);
         
@@ -339,6 +440,7 @@ public final class DatasourceUIHelper {
         final List<Datasource> datasources = new ArrayList<Datasource>();
         actions.add(new ProgressSupport.BackgroundAction() {
 
+            @Override
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.progress(msg);
@@ -374,6 +476,7 @@ public final class DatasourceUIHelper {
             Object previousItem;
             int previousIndex = combo.getSelectedIndex();
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 Object selectedItem = combo.getSelectedItem();
@@ -415,6 +518,7 @@ public final class DatasourceUIHelper {
             final String username = dsc.getUsername();
             final String driverClassName = dsc.getDriverClassName();
             actions.add(new ProgressSupport.BackgroundAction() {
+                @Override
                 public void run(Context actionContext) {
                     String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_creatingDS");
                     actionContext.progress(msg);
@@ -442,6 +546,7 @@ public final class DatasourceUIHelper {
         // fetch datasources asynchronously
         final List<Datasource> datasources = new ArrayList<Datasource>();
         actions.add(new ProgressSupport.BackgroundAction() {
+            @Override
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
                 actionContext.progress(msg);
@@ -462,6 +567,7 @@ public final class DatasourceUIHelper {
         combo.setPopupVisible(false);
         if (ds[0] == null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setSelectedItem(combo, model.getPreviousItem());
                 }
@@ -489,6 +595,56 @@ public final class DatasourceUIHelper {
         Collections.sort(sortedDatasources, new DatasourceComparator());
         return sortedDatasources;
     }
+
+//    private static List<PersistenceUnit> getPU(final Project project){
+//        String persistenceUnit = null;
+//        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
+//        if (persistenceScopes.length > 0) {
+//            FileObject persXml = persistenceScopes[0].getPersistenceXml();
+//            if (persXml != null) {
+//                Persistence persistence = PersistenceMetadata.getDefault().getRoot(persXml);
+//                PersistenceUnit units[] = persistence.getPersistenceUnit();
+//                if (units.length > 0) {
+//                    persistenceUnit = units[0].getName();
+//                    if(units.length>1) {//find best
+//                        String forAll=null;
+//                        String forOne=null;
+//                        for(int i=0;i<units.length && forOne==null;i++) {
+//                            PersistenceUnit tmp=units[i];
+//                            if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp.getName();//first match sutable for all entities in the project
+//                            if(tmp.isExcludeUnlistedClasses()) {
+//                                String []classes = tmp.getClass2();
+//                                for(String clas:classes){
+//                                    if(entity.equals(clas)) {
+//                                        forOne = tmp.getName();
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        //try again with less restrictions (i.e. for j2se even without exclude-unlisted-classes node, it's by default true)
+//                        if(forOne==null && forAll!=null){//there is exist pu without exclude-unlisted-classes
+//                            for(int i=0;i<units.length && forOne==null;i++) {
+//                                PersistenceUnit tmp=units[i];
+//                                if(!tmp.isExcludeUnlistedClasses()) {//verify only pu without exclude-unlisted-classes as all other was examined in previos try
+//                                    String []classes = tmp.getClass2();
+//                                    for(String clas:classes){
+//                                        if(entity.equals(clas)) {
+//                                            forOne = tmp.getName();
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                        persistenceUnit = forOne != null ? forOne : (forAll != null ? forAll : persistenceUnit);
+//                    }
+//                }
+//            }
+//        }
+//        return persistenceUnit;
+//    }
     
     private static List populate(List<Datasource> datasources, boolean creationSupported, final JComboBox combo, final Datasource selectedDatasource, boolean selectItemLater) {    
 
@@ -516,6 +672,7 @@ public final class DatasourceUIHelper {
             setSelectedItem(combo, selectedDatasource); 
             if (selectItemLater) {
                 SwingUtilities.invokeLater(new Runnable() { // postpone item selection to enable event firing from JCombobox.setSelectedItem()
+                    @Override
                     public void run() {
                         setSelectedItem(combo, selectedDatasource);
                     }
@@ -531,6 +688,47 @@ public final class DatasourceUIHelper {
         if (combo.isEditable() && combo.getEditor() != null) {
             // item must be set in the editor in case of editable combobox
             combo.configureEditor(combo.getEditor(), combo.getSelectedItem()); 
+        }
+    }
+
+    private class DatasourcePuPair implements Comparable<DatasourcePuPair> {
+
+        private Datasource datasource;
+        private PersistenceUnit pu;
+
+        public DatasourcePuPair(Datasource datasource, PersistenceUnit pu) {
+            this.datasource= datasource;
+            this.pu = pu;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj instanceof DatasourcePuPair) {
+                DatasourcePuPair pa=(DatasourcePuPair) obj;
+                return datasource.equals(pa.datasource) && ((pu==null && pa.pu==null) || (pu!=null && pu.equals(pa.pu)));
+            }
+            else return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.datasource != null ? this.datasource.hashCode() : 0);
+            hash = 17 * hash + (this.pu != null ? this.pu.hashCode() : 0);
+            return hash;
+        }
+
+
+        @Override
+        public int compareTo(DatasourcePuPair o) {
+            String s1 = datasource.getDisplayName() + "( "+pu.getName()+" )";
+            String s2 = o.datasource.getDisplayName() + "( "+o.pu.getName()+" )";
+            return s1.compareTo(s2);
+        }
+
+        @Override
+        public String toString() {
+            return datasource.getDisplayName() + "( "+pu.getName()+" )";
         }
     }
     

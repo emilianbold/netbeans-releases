@@ -7,14 +7,13 @@ import javax.swing.ImageIcon;
 
 import org.netbeans.modules.iep.editor.designer.PdModel;
 import org.netbeans.modules.iep.editor.designer.PlanCanvas;
-import org.netbeans.modules.iep.editor.util.ImageUtil;
+import org.netbeans.modules.tbls.model.ImageUtil;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoListPosition;
 import com.nwoods.jgo.JGoObject;
-import com.nwoods.jgo.JGoView;
 import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
 
 public class AutoLayoutAction extends AbstractAction {
@@ -54,6 +53,8 @@ public class AutoLayoutAction extends AbstractAction {
             JGoLayeredDigraphAutoLayout.LD_INITIALIZE_DFSOUT, 4,
             JGoLayeredDigraphAutoLayout.LD_AGGRESSIVE_FALSE);
         l.performLayout();
+        // update the underlying document with the new positions
+        mView.updateOnAutoLayout(doc);
         if (doc.isOrthogonalFlows()) {
             // now update all links
             JGoListPosition pos = doc.getFirstObjectPos();

@@ -24,10 +24,15 @@ import org.netbeans.modules.iep.model.OperatorComponent;
 
 import java.awt.Component;
 import java.awt.dnd.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.*;
 import org.openide.util.NbBundle;
 
@@ -69,6 +74,17 @@ public class InputSchemaTree extends JTree {
         setShowsRootHandles(true);
         getSelectionModel().setSelectionMode(1);
         setCellRenderer(new MyTreeCellRenderer());
+        
+        //accessibility
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(InputSchemaTree.class,
+                "ACSN_InputSchemaTree"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InputSchemaTree.class,
+                "ACSD_InputSchemaTree"));
+        
+    }
+    
+    public boolean isEmpty() {
+	return ((InputSchemaTreeModel)getModel()).isEmpty();
     }
     
     class MyTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -122,25 +138,28 @@ public class InputSchemaTree extends JTree {
     }
     
     class MyDragGestureListener implements DragGestureListener {
-        
-        public void dragGestureRecognized(DragGestureEvent e) {
-            if(e.getDragAction() > 0) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode)getLastSelectedPathComponent();
-                Object o = node.getUserObject();
-                if(!(o instanceof AttributeInfo) && !(o instanceof String)) {
-                    return;
-                }
-                java.awt.datatransfer.Transferable transferable = new AttributeInfoTransferable(new Object[] {
-                    o
-                });
-                try {
-                    e.startDrag(DragSource.DefaultCopyNoDrop, transferable, new MyDragSourceListener());
-                } catch(InvalidDnDOperationException idoe) {
-                    InputSchemaTree.mLog.log(Level.SEVERE, idoe.getMessage(), idoe);
-                }
-            }
-        }
-        
+
+	public void dragGestureRecognized(DragGestureEvent e) {
+	    if (e.getDragAction() > 0) {
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) getLastSelectedPathComponent();
+		if (node != null) {
+		    Object o = node.getUserObject();
+		    if (!(o instanceof AttributeInfo) && !(o instanceof String)) {
+			return;
+		    }
+		    java.awt.datatransfer.Transferable transferable = new AttributeInfoTransferable(
+			    new Object[] { o });
+		    try {
+			e.startDrag(DragSource.DefaultCopyNoDrop, transferable,
+				new MyDragSourceListener());
+		    } catch (InvalidDnDOperationException idoe) {
+			InputSchemaTree.mLog.log(Level.SEVERE, idoe
+				.getMessage(), idoe);
+		    }
+		}
+	    }
+	}
+
     }
     
 }

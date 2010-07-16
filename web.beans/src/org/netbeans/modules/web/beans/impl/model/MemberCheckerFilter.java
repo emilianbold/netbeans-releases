@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,8 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 
 
 /**
@@ -110,28 +115,34 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
     static Element getSpecialized( Element productionElement,
             WebBeansModelImplementation model , String annotationName )
     {
+        return getSpecialized(productionElement, model.getHelper(), annotationName);
+    }
+    
+    static Element getSpecialized( Element productionElement,
+            AnnotationModelHelper helper  , String annotationName )
+    {
         if ( !( productionElement instanceof ExecutableElement )){
             return null;
         }
         ExecutableElement current = (ExecutableElement)productionElement;
         while ( true ){
-            ExecutableElement overridenElement = model.getHelper().getCompilationController().
+            ExecutableElement overridenElement = helper.getCompilationController().
                 getElementUtilities().getOverriddenMethod( current);
             if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
-                    current, model.getHelper()))
+                    current, helper))
             {
-                if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.
+                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
                         equals( annotationName))
                 {
-                    if ( AnnotationObjectProvider.checkSpecializedCurrent(
-                            overridenElement, model.getHelper()))
+                    if ( AnnotationObjectProvider.checkSpecializedDefault(
+                            overridenElement, helper))
                     {
                         return overridenElement;
                     }
                 }
                 else if ( AnnotationObjectProvider.
                         hasAnnotation( overridenElement, annotationName, 
-                                model.getHelper()))
+                                helper))
                 {
                     return overridenElement;
                 }
@@ -199,9 +210,8 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         AnnotationValue valueForType = elementValues.get(exec);
         if (!equals(value, valueForType)) {
             iterator.remove();
-            return true;
         }
-        return false;
+        return true;
     }
     
     private boolean equals( AnnotationValue value1 , AnnotationValue value2 ){

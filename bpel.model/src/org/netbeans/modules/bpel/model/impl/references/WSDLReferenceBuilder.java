@@ -19,7 +19,7 @@
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.namespace.QName;
 
@@ -71,11 +71,10 @@ import org.openide.util.Lookup.Result;
 public final class WSDLReferenceBuilder {
     
     private WSDLReferenceBuilder() {
-        Result result = Lookup.getDefault().lookup(
-                new Lookup.Template(ExternalModelRetriever.class));
+        Result result = Lookup.getDefault().lookup(new Lookup.Template(ExternalModelRetriever.class));
         myRetrievers = result.allInstances();
         
-        myCollection = new LinkedList<WSDLReferenceFactory>();
+        myCollection = new ArrayList<WSDLReferenceFactory>();
         myCollection.add( new PartResolver() );
         myCollection.add( new MessageResolver() );
         myCollection.add( new PartnerLinkTypeResolver() );
@@ -153,35 +152,35 @@ public final class WSDLReferenceBuilder {
         }
     }
     
-    static Collection<WSDLModel> getWSDLModels( AbstractDocumentComponent entity, 
-            String prefix ) 
-    {
+    static Collection<WSDLModel> getWSDLModels(AbstractDocumentComponent entity, String prefix) {
         assert entity instanceof BpelEntity;
+//System.out.println();
+//System.out.println();
+//System.out.println("===== GET WSDL models: " + prefix +" " + entity);
         ExNamespaceContext context = ((BpelEntity)entity).getNamespaceContext();
-        Collection<WSDLModel> models = getWSDLModels( 
-                ((BpelEntity)entity).getBpelModel(), 
-                context.getNamespaceURI( prefix ) );
-        return models;
+//System.out.println("              context: " + context);
+        return getWSDLModels(((BpelEntity)entity).getBpelModel(), context.getNamespaceURI( prefix ) );
     }
     
-    static Collection<WSDLModel> getWSDLModels( BpelModel model , 
-            String namespace )
-    {
+    static Collection<WSDLModel> getWSDLModels(BpelModel model, String namespace) {
         return getInstance().getModels(model, namespace);
     }
 
-    private Collection<WSDLModel> getModels( BpelModel model, String namespace )
-    {
-        Collection<WSDLModel> ret = new LinkedList<WSDLModel>();
-        if ( myRetrievers.size() == 1) {
-            return ((ExternalModelRetriever)myRetrievers.iterator().next()).
-                getWSDLModels(model, namespace);
+    private Collection<WSDLModel> getModels(BpelModel model, String namespace) {
+//System.out.println();
+//System.out.println("===== get wsdl models: " + namespace +" " + model);
+        Collection<WSDLModel> ret = new ArrayList<WSDLModel>();
+
+        if (myRetrievers.size() == 1) {
+//System.out.println("===== 11");
+            return ((ExternalModelRetriever)myRetrievers.iterator().next()).getWSDLModels(model, namespace);
         }
-        for ( Object obj : myRetrievers ) {
-            ExternalModelRetriever retriever = (ExternalModelRetriever)obj;
-            Collection<WSDLModel> collection = 
-                retriever.getWSDLModels(model, namespace);
-            ret.addAll( collection );
+        for (Object obj : myRetrievers) {
+//System.out.println("=====   see: " + obj);
+            ExternalModelRetriever retriever = (ExternalModelRetriever) obj;
+            Collection<WSDLModel> collection = retriever.getWSDLModels(model, namespace);
+//System.out.println("=====        size: " + collection.size());
+            ret.addAll(collection);
         }
         return ret;
     }
@@ -549,18 +548,15 @@ class MessageResolver extends AbstractGlobalReferenceFactory {
     {
         String refString = reference.getRefString();
         Class<T> clazz = reference.getType();
-        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-                .getParent();
+        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference.getParent();
         
-        if (entity instanceof FromPart && entity.getParent() instanceof OnEvent)
-        {
+        if (entity instanceof FromPart && entity.getParent() instanceof OnEvent) {
             OnEvent onEvent = (OnEvent) entity.getParent();
             return clazz.cast(resolve(onEvent));
         }
         String[] splited = new String[2];
         Utils.splitQName( refString , splited );
-        Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, 
-                splited[0] );
+        Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, splited[0] );
         for (WSDLModel model : models) {
             Collection<Message> collection = model.getDefinitions().getMessages();
             for (Message message : collection) {
@@ -648,29 +644,38 @@ class PortTypeResolver extends AbstractGlobalReferenceFactory {
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
      */
-    public <T extends ReferenceableWSDLComponent> T resolve( 
-            AbstractNamedComponentReference<T> reference )
-    {
+    public <T extends ReferenceableWSDLComponent> T resolve(AbstractNamedComponentReference<T> reference) {
+//System.out.println();
+//System.out.println();
+//System.out.println();
+//System.out.println("@@@@@@@ RESOLVE PORT TYPE: " + reference + " " + reference.getClass().getName());
         String refString = reference.getRefString();
+//System.out.println("    ++ refString: " + refString);
         Class<T> clazz = reference.getType();
-        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-                .getParent(); 
-        
+//System.out.println("    ++ clazz: " + clazz);
+        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference.getParent(); 
+//System.out.println("    ++ entity: " + entity);
         String[] splited = new String[2];
-        Utils.splitQName( refString , splited );
-        Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, 
-                splited[0] );
+        Utils.splitQName(refString, splited);
+//System.out.println("    ++ splited: " + splited[0] + " " + splited[1]);
+        Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, splited[0]);
+//System.out.println("    ++ 1: " + models.size());
+
         for (WSDLModel model : models) {
+//System.out.println("    ++ see model: " + model);
             Collection<PortType> collection = model.getDefinitions().getPortTypes();
+
             for (PortType portType : collection) {
-                if ( splited[1].equals( portType.getName()) ){
+//System.out.println("    ++ see portType: " + portType);
+                if (splited[1].equals(portType.getName())) {
+//System.out.println("    ++: " + clazz.cast(portType));
                     return clazz.cast(portType);
                 }
             }
         }
+//System.out.println("    ++.");
         return null;
     }
-
 }
 
 class CorrelationPropertyResolver extends AbstractGlobalReferenceFactory {
@@ -727,31 +732,40 @@ class RoleResolver extends AbstractNamedReferenceFactory {
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
      */
-    public <T extends ReferenceableWSDLComponent> T resolve( 
-            AbstractNamedComponentReference<T> reference )
-    {
+    public <T extends ReferenceableWSDLComponent> T resolve(AbstractNamedComponentReference<T> reference) {
+//System.out.println();
+//System.out.println();
+//System.out.println();
+//System.out.println("@@@@@@@ RESOLVE ROLE: " + reference);
         String refString = reference.getRefString();
         Class<T> clazz = reference.getType();
-        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-                .getParent();
+        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference.getParent();
         assert entity instanceof PartnerLink;
-        WSDLReference<PartnerLinkType> ref = 
-            ((PartnerLink) entity).getPartnerLinkType();
+        WSDLReference<PartnerLinkType> ref = ((PartnerLink) entity).getPartnerLinkType();
+//System.out.println("   1");
+
         if (ref == null) {
             return null;
         }
+//System.out.println("   2");
         PartnerLinkType partnerLinkType = ref.get();
+        
         if (partnerLinkType == null) {
             return null;
         }
+//System.out.println("   3");
         Role role = partnerLinkType.getRole1();
+        
         if ( role!=null && refString.equals( role.getName()) ){
             return clazz.cast(role);
         }
+//System.out.println("   4");
         role = partnerLinkType.getRole2();
+        
         if ( role!= null && refString.equals( role.getName()) ){
             return clazz.cast(role);
         }
+//System.out.println("   5");
         return null;
     }
     
@@ -771,26 +785,31 @@ class OperationResolver extends AbstractNamedReferenceFactory {
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
      */
-    public <T extends ReferenceableWSDLComponent> T resolve( 
-            AbstractNamedComponentReference<T> reference )
-    {
+    public <T extends ReferenceableWSDLComponent> T resolve(AbstractNamedComponentReference<T> reference) {
+//System.out.println();
+//System.out.println();
+//System.out.println();
+//System.out.println("@@@@@@@ RESOLVE OPERATION: " + reference + " " + reference.getClass().getName());
         String refString = reference.getRefString();
         Class<T> clazz = reference.getType();
-        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-                .getParent();
-        
+        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference.getParent();
         Collection<Operation> collection = null;
+
+//System.out.println("   entity " + entity + " " + entity.getClass().getName());
         if (entity instanceof PortTypeReference) {
             collection = resolveByPortType(entity);
+//System.out.println("   1: " + collection);
         }
-
-        if ( collection == null || collection.size()==0 ) {
+//System.out.println("   2");
+        if (collection == null || collection.size()==0 ) {
             collection = resolveByPartnerLink(entity);
+//System.out.println("   2: " + collection);
         }
-        
-        if ( collection == null ){
+//System.out.println("   3");
+        if (collection == null) {
             return null;
         }
+//System.out.println("   4");
         for (Operation operation : collection) {
             if ( refString.equals( operation.getName()) ){
                 return clazz.cast(operation);
@@ -799,43 +818,51 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         return null;
     }
 
-    private Collection<Operation> resolveByPartnerLink( 
-            AbstractDocumentComponent entity ) 
-    {
+    private Collection<Operation> resolveByPartnerLink(AbstractDocumentComponent entity) {
+//System.out.println();
+//System.out.println("   << ResolveByPartnerLink: " + entity + " " + entity.getClass().getName());
+
         if ( ! (entity instanceof PartnerLinkReference) ){
             return null;
         }
+//System.out.println("    << 1");
         Collection<Operation> collection;
-        BpelReference<PartnerLink> ref = (( PartnerLinkReference )entity ).
-            getPartnerLink();
-        
-        NamedComponentReference<PortType> portTypeRef = 
-            Utils.getPortTypeRef( ref , entity );
-        if ( portTypeRef == null ){
+        BpelReference<PartnerLink> ref = ((PartnerLinkReference) entity).getPartnerLink();
+        NamedComponentReference<PortType> portTypeRef = Utils.getPortTypeRef(ref, entity);
+//System.out.println("    << 2");
+
+        if (portTypeRef == null ){
             return null;
         }
+//System.out.println("    << 3");
         PortType wsdlPortType = portTypeRef.get();
+
         if ( wsdlPortType == null ){
             return null;
         }
-        collection = wsdlPortType.getOperations();
-        return collection;
+//System.out.println("    << 4");
+        return wsdlPortType.getOperations();
     }
 
-    private Collection<Operation> resolveByPortType( 
-            AbstractDocumentComponent entity ) 
-    {
-        Collection<Operation> collection;
-        WSDLReference<PortType> ref = ((PortTypeReference) entity)
-                .getPortType();
+    private Collection<Operation> resolveByPortType(AbstractDocumentComponent entity) {
+//System.out.println();
+//System.out.println("   << ResolveByPortType: " + entity + " " + entity.getClass().getName());
+        WSDLReference<PortType> ref = ((PortTypeReference) entity).getPortType();
+
+//System.out.println("    << 1: " + ref.getClass().getName());
+
         if (ref == null) {
+//System.out.println("    << 1");
             return null;
         }
         PortType portType = ref.get();
+//System.out.println("    << 2: " + portType);
+
         if (portType == null) {
+//System.out.println("    << 2");
             return null;
         }
-        collection = portType.getOperations();
-        return collection;
+//System.out.println("    << 3: " + portType.getOperations());
+        return portType.getOperations();
     }
 }

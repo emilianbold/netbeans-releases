@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,11 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
+import java.io.File;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +54,11 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -61,7 +70,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public UserOptionsProviderImpl(){
     }
 
-    public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+    @Override
+    public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(includes);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
@@ -74,7 +84,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
 
-    public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+    @Override
+    public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(macros);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
@@ -100,7 +111,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             int i = s.indexOf("`pkg-config "); // NOI18N
             if (i >= 0) {
                 String pkg = s.substring(i+12);
-                int j = pkg.indexOf("`"); // NOI18N
+                int j = pkg.indexOf('`'); // NOI18N
                 if (j > 0) {
                     pkg = pkg.substring(0,j).trim();
                     s = s.substring(i+12+j+1);
@@ -120,7 +131,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                         findPkg = aPkg;
                     }
                     if (readFlags && findPkg != null) {
-                        PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(conf);
+                        PkgConfig configs = UserOptionsProviderImpl.getPkgConfig(conf);
                         PackageConfiguration config = configs.getPkgConfig(findPkg);
                         if (config != null){
                             res.add(config);
@@ -131,5 +142,33 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             }
             return res;
         }
+    }
+
+    private static PkgConfig pkgConfig;
+    private static PkgConfig getPkgConfig(MakeConfiguration conf){
+        PkgConfig pkg = pkgConfig;
+        if (pkg == null) {
+            pkg = PkgConfigManager.getDefault().getPkgConfig(conf);
+            pkgConfig = pkg;
+        }
+        return pkg;
+    }
+
+    @Override
+    public NativeFileSearch getPackageFileSearch() {
+        final PkgConfig pkg = getPkgConfig(null);
+        return new NativeFileSearch() {
+            @Override
+            public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
+                ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                if (resolvedPath != null) {
+                    for(ResolvedPath path : resolvedPath) {
+                        res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+                    }
+                }
+                return res;
+            }
+        };
     }
 }

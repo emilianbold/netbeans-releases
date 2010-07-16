@@ -22,15 +22,16 @@ import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathModelConstructor;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 
 /**
  * @author nk160297
  */
-public final class BpelXPathModelFactory {
+public final class BpelXPathModelFactory implements XPathModelConstructor {
 
     /**
      * This delimiter is used to separate multiple XPath expressions. 
@@ -57,37 +58,60 @@ public final class BpelXPathModelFactory {
      * @return the new XPath model.
      */
     public static XPathModel create(final BpelEntity contextEntity) {
-        return create(contextEntity, null, null);
+        return create(contextEntity, contextEntity, null, null);
     }
     
     /**
      * Create a model which knows about type casts and pseudo components.
      * @param contextEntity
-     * @param casts
-     * @param pseudoComps
+     * @param castResolver
      * @return
      */
     public static XPathModel create(final BpelEntity contextEntity, 
-            List<Cast> casts, List<PseudoComp> pseudoComps) {
+            XPathCastResolver castResolver) {
+        //
+        return create(contextEntity, contextEntity, castResolver, null);
+    }
+
+    public static XPathModel create(BpelEntity contextEntity,
+            BpelEntity varContextEntity,
+            XPathCastResolver castResolver) {
+        return create(contextEntity, varContextEntity, castResolver, null);
+    }
+
+    /**
+     * Create a model which knows about type casts and pseudo components.
+     * @param contextEntity
+     * @param varContextEntity points to a BPEL entity, which is used
+     * to calculate a set of visible variables. 
+     * @param castResolver
+     * @return
+     */
+    public static XPathModel create(final BpelEntity contextEntity,
+            final BpelEntity varContextEntity,
+            XPathCastResolver castResolver,
+            XPathValidationContext context) {
         //
         assert contextEntity != null : 
             "Trying to create a new BPEL XPath model without a context entity"; // NOI18N
         XPathModelHelper helper= XPathModelHelper.getInstance();
         XPathModel model = helper.newXPathModel();
         //
+        if (context != null) {
+            context.setXPathModel(model);
+            model.setValidationContext(context);
+        }
+        //
         ExNamespaceContext nsContext = contextEntity.getNamespaceContext();
         model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
         //
-        model.setVariableResolver(new BpelVariableResolver(null, contextEntity));
+        model.setVariableResolver(new BpelVariableResolver(context, varContextEntity));
         model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
         //
         model.setExternalModelResolver(
                 new BpelExternalModelResolver(contextEntity.getBpelModel()));
         //
-        if ((casts != null && !casts.isEmpty()) ||
-                (pseudoComps != null && !pseudoComps.isEmpty())) {
-            XPathCastResolverImpl castResolver = 
-                    new XPathCastResolverImpl(casts, pseudoComps);
+        if (castResolver != null) {
             model.setXPathCastResolver(castResolver);
         }
         //
@@ -172,4 +196,28 @@ public final class BpelXPathModelFactory {
     }
     
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
+    //------------------------------------------------------------------
+    
+    private BpelEntity mContextEntity;
+    private XPathCastResolver mCastResolver;
+    private XPathModel mXPathModel;
+    
+    public BpelXPathModelFactory(BpelEntity contextEntity, 
+            XPathCastResolver castResolver) {
+        mContextEntity = contextEntity;
+        mCastResolver = castResolver;
+    }
+
+    public XPathModel constructNewModel() {
+        return create(mContextEntity, mCastResolver);
+    }
+    
+    public XPathModel getModel() {
+        if (mXPathModel == null) {
+            mXPathModel = constructNewModel();
+        }
+        return mXPathModel;
+    }
+    
 }

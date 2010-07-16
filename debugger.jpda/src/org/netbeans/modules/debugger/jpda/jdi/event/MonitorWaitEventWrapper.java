@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,7 @@ package org.netbeans.modules.debugger.jpda.jdi.event;
 // perform the desired modifications there and re-generate by "ant generate".
 
 /**
- * Wrapper for MonitorWaitEvent JDI class from JDK 1.6.
+ * Wrapper for MonitorWaitEvent JDI class.
  * Use methods of this class instead of direct calls on JDI objects.
  * These methods assure that exceptions thrown from JDI calls are handled appropriately.
  *
@@ -57,98 +60,116 @@ public final class MonitorWaitEventWrapper {
     private MonitorWaitEventWrapper() {}
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitor from JDK 1.6. */
-    public static com.sun.jdi.ObjectReference monitor(Object/*com.sun.jdi.event.MonitorWaitEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitEventClass;
-        try {
-            monitorWaitEventClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.event.MonitorWaitEvent");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
+    public static com.sun.jdi.ObjectReference monitor(com.sun.jdi.event.MonitorWaitEvent a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.MonitorWaitEvent",
+                    "monitor",
+                    "JDI CALL: com.sun.jdi.event.MonitorWaitEvent({0}).monitor()",
+                    new Object[] {a});
         }
+        Object retValue = null;
         try {
-            return (com.sun.jdi.ObjectReference) monitorWaitEventClass.getMethod("monitor").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.ObjectReference ret;
+            ret = a.monitor();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.MonitorWaitEvent",
+                        "monitor",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
-        }
-    }
-
-    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method thread from JDK 1.6. */
-    public static com.sun.jdi.ThreadReference thread(Object/*com.sun.jdi.event.MonitorWaitEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitEventClass;
-        try {
-            monitorWaitEventClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.event.MonitorWaitEvent");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            return (com.sun.jdi.ThreadReference) monitorWaitEventClass.getMethod("thread").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method timeout from JDK 1.6. */
-    public static long timeout(Object/*com.sun.jdi.event.MonitorWaitEvent*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitEventClass;
-        try {
-            monitorWaitEventClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.event.MonitorWaitEvent");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
+    public static com.sun.jdi.ThreadReference thread(com.sun.jdi.event.MonitorWaitEvent a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.MonitorWaitEvent",
+                    "thread",
+                    "JDI CALL: com.sun.jdi.event.MonitorWaitEvent({0}).thread()",
+                    new Object[] {a});
         }
+        Object retValue = null;
         try {
-            return (Long) monitorWaitEventClass.getMethod("timeout").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.ThreadReference ret;
+            ret = a.thread();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.MonitorWaitEvent",
+                        "thread",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    public static long timeout(com.sun.jdi.event.MonitorWaitEvent a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.MonitorWaitEvent",
+                    "timeout",
+                    "JDI CALL: com.sun.jdi.event.MonitorWaitEvent({0}).timeout()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
+        try {
+            long ret;
+            ret = a.timeout();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.MonitorWaitEvent",
+                        "timeout",
+                        retValue);
             }
-            throw new IllegalStateException(t);
         }
     }
 

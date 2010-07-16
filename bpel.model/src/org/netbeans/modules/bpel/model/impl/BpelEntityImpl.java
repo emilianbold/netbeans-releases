@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.bpel.model.api.support.Utils;
@@ -53,9 +55,11 @@ import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -181,6 +185,8 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
 
             return entity;
         } finally {
+            BpelChildEntitiesBuilder childBuilder = getBpelModel().getChildBuilder();
+            childBuilder.setEffectiveParent(null);
             writeUnlock();
         }
     }
@@ -290,6 +296,18 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
             readUnlock();
         }
     }
+    
+    public <T extends ReferenceableWSDLComponent> WSDLReference<T> 
+            createWSDLReference(String refString, Class<T> type) 
+    {
+        readLock();
+        try {
+            return WSDLReferenceBuilder.getInstance().build(type, this, 
+                    refString);
+        } finally {
+            readUnlock();
+        }
+    }
 
     @Override
     public String getAttribute(Attribute attr) {
@@ -336,6 +354,10 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         }
     }
 
+    protected Integer getIntegerAttribute(Attribute attr) {
+        return getAttributeAccess().getIntegerAttribute(attr);
+    }
+
     protected TBoolean getBooleanAttribute(Attribute attr) {
         return getAttributeAccess().getBooleanAttribute(attr);
     }
@@ -364,6 +386,20 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         getAttributeAccess().setWSDLReferenceList(attr, type, list);
     }
 
+    protected void setBpelAttribute(ExtBpelAttribute attr, String value)
+            throws VetoException {
+        getAttributeAccess().setBpelAttribute(attr, value);
+    }
+
+    protected void setBpelAttribute(ExtBpelAttribute attr, Enum value) {
+        getAttributeAccess().setBpelAttribute(attr, value);
+    }
+
+    protected void setBpelAttribute(ExtBpelAttribute attr, QName qName)
+            throws VetoException {
+        getAttributeAccess().setBpelAttribute(attr, qName);
+    }
+
     protected void setBpelAttribute(Attribute attr, String value)
             throws VetoException {
         getAttributeAccess().setBpelAttribute(attr, value);
@@ -390,15 +426,18 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
             ArrayList<Node> toRemove = new ArrayList<Node>();
             NodeList nodeList = getPeer().getChildNodes();
 
-            Element ref = null;
+//            Element ref = null;
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
-                if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
-                    ref = (Element) node;
+                if (node == null) {
+                    continue;
                 }
-                if (node instanceof Text &&
+//                if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
+//                    ref = (Element) node;
+//                }
+                toRemove.add(node);
+                if (oldValue == null && node instanceof Text &&
                         node.getNodeType() != Node.COMMENT_NODE) {
-                    toRemove.add(node);
                     oldValue.append(node.getNodeValue());
                 }
             }
@@ -406,16 +445,124 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
             getModel().getAccess().removeChildren(getPeer(), toRemove, this);
             if (text != null) {
                 Text newNode = getModel().getDocument().createTextNode(text);
-                if (ref != null) {
-                    getModel().getAccess().insertBefore(getPeer(), newNode, ref,
-                            this);
-                } else {
+//                if (ref != null) {
+//                    getModel().getAccess().insertBefore(getPeer(), newNode, ref,
+//                            this);
+//                } else {
                     getModel().getAccess().appendChild(getPeer(), newNode, this);
-                }
+//                }
             }
 
             firePropertyChange(propName,
                     oldValue == null ? null : oldValue.toString(), text);
+            fireValueChanged();
+        } finally {
+            writeUnlock();
+        }
+    }
+
+    /**
+     * This method is return corrected Xml content without XML
+     * comments. See the problem appeared in getText() method.
+     * 
+     */
+    protected String getCorrectedCDataContent() {
+        String result = null;
+        readLock();
+        try {
+            NodeList nodeList = getPeer().getChildNodes();
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
+                    assert node instanceof CDATASection;
+                    result = ((CDATASection)node).getNodeValue();
+                    break;
+                }
+            }
+            
+        } finally {
+            readUnlock();
+        }
+        return result;
+    }
+
+    protected void setCDataContent(String propName, String content) 
+            throws VetoException, IOException 
+    {
+        writeLock();
+        try {
+            List<Node> toRemove = new ArrayList<Node>();
+            Node oldValue = null;
+            NodeList nodeList = getPeer().getChildNodes();
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node == null) {
+                    continue;
+                }
+                toRemove.add(node);
+                if (oldValue == null && node.getNodeType() == Node.CDATA_SECTION_NODE) {
+                    oldValue = node;
+                }
+            }
+
+            if (toRemove.size()>0) {
+                for (Node rmNode : toRemove) {
+                    getModel().getAccess().removeChild(getPeer(), rmNode, this);   
+                }
+            }
+            CDATASection cdataContent = getModel().getDocument().createCDATASection(content);
+            
+            getModel().getAccess().appendChild(getPeer(), cdataContent, this);
+            
+            firePropertyChange(propName,
+                    oldValue == null ? null : oldValue.toString(), content);
+            fireValueChanged();
+        } finally {
+            writeUnlock();
+        }
+    }
+
+    /**
+     * This method is return corrected Xml content without XML
+     * comments. See the problem appeared in getText() method.
+     * 
+     */
+    protected String getCorrectedXmlContent() {
+        readLock();
+        try {
+            return getXmlFragment();
+        } finally {
+            readUnlock();
+        }
+    }
+
+    protected void setXmlContent(String propName, String xmlContent) 
+            throws VetoException, IOException 
+    {
+        writeLock();
+        try {
+            List<Node> toRemove = new ArrayList<Node>();
+            Node oldValue = null;
+            NodeList nodeList = getPeer().getChildNodes();
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node == null) {
+                    continue;
+                }
+                toRemove.add(node);
+                if (oldValue == null && node.getNodeType() == Node.ELEMENT_NODE) {
+                    oldValue = node;
+                }
+            }
+
+            getModel().getAccess().removeChildren(getPeer(), toRemove, this);
+            getModel().getAccess().setXmlFragment(this.getPeer(), xmlContent, this);
+            
+            firePropertyChange(propName,
+                    oldValue == null ? null : oldValue.toString(), xmlContent);
             fireValueChanged();
         } finally {
             writeUnlock();
@@ -672,6 +819,8 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
     }
 
     private <T extends BpelEntity> CutEvent<T> preCut(T entity) {
+        BpelChildEntitiesBuilder childBuilder = getBpelModel().getChildBuilder();
+        childBuilder.setEffectiveParent(getParent());
         CutEvent<T> event = new CutEvent<T>(entity);
         try {
             getModel().preInnerEventNotify(event);
@@ -681,7 +830,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         return event;
     }
 
-    final AttributeAccess getAttributeAccess() {
+    protected final AttributeAccess getAttributeAccess() {
         return myAccess;
     }
 
@@ -695,7 +844,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         return event;
     }
 
-    private <T extends BpelEntity> BuildEvent<T> preCreated(T entity) {
+    protected <T extends BpelEntity> BuildEvent<T> preCreated(T entity) {
         BuildEvent<T> event = new BuildEvent<T>(entity, getEntityName());
         try {
             getModel().preInnerEventNotify(event);
@@ -705,7 +854,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         return event;
     }
 
-    private <T extends BpelEntity> void postEvent(ChangeEvent event) {
+    protected <T extends BpelEntity> void postEvent(ChangeEvent event) {
         getBpelModel().postInnerEventNotify(event);
     }
 
@@ -724,6 +873,17 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
                     elem.getNamespace(), elem.getName());
         }
     }
+
+    @Override
+    public String toString() {
+        if (this instanceof Named) {
+            return Named.class.cast(this).getName();
+        } else {
+            return super.toString();
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(BpelEntityImpl.class.getName());
     private static final byte INIT_COOKIE_CAPACITY = 8; // we don't need big capaicty. This is degree of 2.  
     private Map<Object, Object> myCookies =
             Collections.synchronizedMap(new WeakHashMap<Object, Object>(INIT_COOKIE_CAPACITY));

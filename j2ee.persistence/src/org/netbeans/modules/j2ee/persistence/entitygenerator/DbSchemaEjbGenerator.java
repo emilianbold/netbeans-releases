@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -76,6 +80,7 @@ public class DbSchemaEjbGenerator {
     private Set<String> tablesReferecedByOtherTables;
     private final CollectionType colectionType;
     private final static Logger LOGGER = Logger.getLogger(DbSchemaEjbGenerator.class.getName());
+    private boolean useColumNamesInRelations = false;
     //private ArrayList<String> warningMessages;
    
     /**
@@ -85,7 +90,7 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      */
     public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement) {
-        this(genTables, schemaElement, CollectionType.COLLECTION);
+        this(genTables, schemaElement, CollectionType.COLLECTION, false);
     }
 
     /**
@@ -95,10 +100,11 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      * @param collectionType collection type is used in some names generation
      */
-    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType) {
+    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType, boolean useColumnNamesInRelationships) {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
         this.colectionType = collectionType;
+        this.useColumNamesInRelations = useColumnNamesInRelationships;
         //warningMessages = new ArrayList<String>();
 
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
@@ -203,6 +209,7 @@ public class DbSchemaEjbGenerator {
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
                 genTables.getClassName(tableName),
+                genTables.getUpdateType(tableName),
                 genTables.getUniqueConstraints(tableName) );
         beans.put(tableName, bean);
         
@@ -477,7 +484,10 @@ public class DbSchemaEjbGenerator {
            named cmp-fieldname1. Therefore, we do not change the cmr-field
            name and instead use the name of the other ejb (default).
          */
-        if (!containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
+//        #185253 I don't see a good reason to have one case when it's possible to use column name and anothe case when it's not possible
+//        comment code below for now, may need review or deletion in next release if there will be any negative feedback
+//        #188550 add backward compartible option to have column names instead of tables names
+        if (useColumNamesInRelations && !containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
             roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
         }
         
@@ -517,6 +527,10 @@ public class DbSchemaEjbGenerator {
             ColumnElement[] cols = table.getColumns();
             UniqueKeyElement pk = getPrimaryOrCandidateKey(table);
             ForeignKeyElement[] fkeys = table.getForeignKeys();
+            //sometimes database may contain duplicating foreign keys (or it may be an issue in db schema generation)
+            //TODO: uncomment to fix issue 177341
+            fkeys = removeDuplicateFK(fkeys);
+
             for (int col = 0; col < cols.length; col++) {
                 if (pk != null &&
                         pk.getColumn(cols[col].getName()) != null) {
@@ -578,5 +592,77 @@ public class DbSchemaEjbGenerator {
         }
         names.add(newName);
         return newName;
+    }
+
+    /*
+     * may be used for issue 177341 fix later
+     */
+    private ForeignKeyElement[] removeDuplicateFK(ForeignKeyElement[] fkeys) {
+        if(fkeys==null || fkeys.length==0) return fkeys;
+        HashMap<ComparableFK, ForeignKeyElement> ret = new HashMap<ComparableFK, ForeignKeyElement>();
+        for(int i=0;i<fkeys.length;i++)
+        {
+            ForeignKeyElement key=fkeys[i];
+            ComparableFK fkc=new ComparableFK(key);
+            if(ret.get(fkc)!=null){//we already have the same key
+                LOGGER.log(Level.INFO,key.getName().getFullName()+" key in "+key.getDeclaringTable().getName().getFullName() + " is considered as a duplicate, you may need to verify your schema or database structure.");//NOI18N
+                continue;
+            } else {
+                ret.put(fkc, key);
+            }
+        }
+        return (ForeignKeyElement[]) ret.values().toArray(new ForeignKeyElement[]{});
+    }
+
+    /**
+     * consider equal if refernced from/to the same tables with the same set of columns, fk name do not matter
+     */
+    private class ComparableFK
+    {
+        private ForeignKeyElement key;
+        private String tableName;
+        private String refName;
+        private ColumnElement[] lc;
+        private ColumnElement[] rc;
+        ComparableFK(ForeignKeyElement fk)
+        {
+            key=fk;
+            tableName = key.getDeclaringTable().getName().getName();
+            refName = key.getReferencedTable().getName().getName();
+            lc = key.getLocalColumns();
+            rc = key.getReferencedColumns();
+            Arrays.sort(lc);
+            Arrays.sort(rc);
+        }
+
+        @Override
+        public int hashCode() {
+            return tableName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ComparableFK other = (ComparableFK) obj;
+            if ((this.tableName == null) ? (other.tableName != null) : !this.tableName.equals(other.tableName)) {
+                return false;
+            }
+            if ((this.refName == null) ? (other.refName != null) : !this.refName.equals(other.refName)) {
+                return false;
+            }
+
+            if (!Arrays.deepEquals(this.lc, other.lc)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.rc, other.rc)) {
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -46,47 +48,57 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 public class FolderEntry implements SourceFolderInfo {
-    private File file;
-    private String folderName;
-    private boolean addSubfolders;
-    private FileFilter fileFilter;
+
+    private final File file;
+    private final String folderName;
+    private final boolean addSubfolders;
+    private final FileFilter fileFilter;
 
     public FolderEntry(File file, String folderName) {
         this.file = file;
         this.folderName = folderName;
         addSubfolders = true;
+        fileFilter = null;
     }
 
+    @Override
     public String getFolderName() {
         return folderName;
     }
 
-    public void setFolderName(String file) {
-        this.folderName = file;
-    }
-    
+//    public void setFolderName(String file) {
+//        this.folderName = file;
+//    }
+
+    @Override
     public boolean isAddSubfoldersSelected() {
         return addSubfolders;
     }
-    
-    public void setAddSubfoldersSelected(boolean selected) {
-        this.addSubfolders = selected;
-    }
-    
+
+//    public void setAddSubfoldersSelected(boolean selected) {
+//        this.addSubfolders = selected;
+//    }
+
+    @Override
     public File getFile() {
         return file;
     }
-    
-    public void setFile(File file) {
-        this.file = file;
-    }
-    
+
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
+
+    @Override
     public FileFilter getFileFilter() {
         return fileFilter;
     }
-    
-    public void setFileFilter(FileFilter ff) {
-        fileFilter = ff;
-    }
 
+//    public void setFileFilter(FileFilter ff) {
+//        fileFilter = ff;
+//    }
+
+    @Override
+    public String toString() {
+        return folderName;
+    }
 }

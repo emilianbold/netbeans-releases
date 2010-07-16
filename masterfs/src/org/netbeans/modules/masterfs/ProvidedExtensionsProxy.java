@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,10 @@ package org.netbeans.modules.masterfs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -268,6 +273,118 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         }
         return null;
     }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ? provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ProvidedExtensions pe = (ProvidedExtensions)iListener;
+                int prev = children.size();
+                long ret = pe.refreshRecursively(dir, lastTimeStamp, children);
+                assert ret != -1 || prev == children.size() : "When returning -1 from refreshRecursively, you cannot modify children: " + pe;
+                if (ret != -1) {
+                    return ret;
+                }
+            }
+        }
+        final File[] arr = dir.listFiles();
+        if (arr != null) {
+            children.addAll(Arrays.asList(arr));
+        }
+        return 0;
+    }
+    
+    @Override
+    public void createdExternally(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).createdExternally(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void deletedExternally(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).deletedExternally(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void fileChanged(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).fileChanged(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void beforeMove(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).beforeMove(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void moveSuccess(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).moveSuccess(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void moveFailure(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).moveFailure(from, to);
+                    }
+                });
+            }
+        }
+   }
     
     public static void checkReentrancy() {
         if (reentrantCheck.get() != null) {            

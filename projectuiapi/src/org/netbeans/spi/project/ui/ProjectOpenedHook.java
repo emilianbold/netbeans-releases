@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -99,9 +102,9 @@ public abstract class ProjectOpenedHook {
      * <ul>
      * <li><p>
      * Update build scripts using
-     * <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/GeneratedFilesHelper.html#refreshBuildScript"><code>GeneratedFilesHelper.refreshBuildScript(...)</code></a>.
+     * <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/GeneratedFilesHelper.html#refreshBuildScript"><code>GeneratedFilesHelper.refreshBuildScript(...)</code></a>.
      * </p></li>
-     * <li><p>Call <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#register"><code>GlobalPathRegistry.register(...)</code></a>
+     * <li><p>Call <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#register"><code>GlobalPathRegistry.register(...)</code></a>
      * with source, compile, and boot paths known to the project.</p></li>
      * <li><p>Write property <code>user.properties.file</code> to <code>private.properties</code>
      * with absolute file path of the <code>build.properties</code> from 
@@ -125,7 +128,7 @@ public abstract class ProjectOpenedHook {
      * way (e.g. using
      * {@link org.netbeans.spi.project.AuxiliaryConfiguration}).
      * </p></li>
-     * <li><p>Call <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#unregister"><code>GlobalPathRegistry.unregister(...)</code></a>
+     * <li><p>Call <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#unregister"><code>GlobalPathRegistry.unregister(...)</code></a>
      * with the same paths are were previously registered.</p></li>
      * </ul>
      * </div>

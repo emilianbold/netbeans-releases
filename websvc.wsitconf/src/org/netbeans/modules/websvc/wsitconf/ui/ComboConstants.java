@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ public interface ComboConstants {
     String PROF_MSGAUTHSSL = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MsgAuthSSL");    //NOI18N
     String PROF_SAMLSSL = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_SAMLSSL");    //NOI18N
     String PROF_USERNAME = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Username");    //NOI18N
+    String PROF_USERNAME_PASSWORDDERIVED = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Username_PasswordDerived");    //NOI18N
     String PROF_MUTUALCERT = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MutualCert");    //NOI18N
     String PROF_ENDORSCERT = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_EndorsCert");    //NOI18N
     String PROF_SAMLSENDER = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_SamlSender");    //NOI18N
@@ -78,6 +82,7 @@ public interface ComboConstants {
     String PROF_MSGAUTHSSL_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MsgAuthSSL_Info");    //NOI18N
     String PROF_SAMLSSL_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_SAMLSSL_Info");    //NOI18N
     String PROF_USERNAME_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Username_Info");    //NOI18N
+    String PROF_USERNAME_PASSWORDDERIVED_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_Username_PasswordDerived_Info");    //NOI18N
     String PROF_MUTUALCERT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_MutualCert_Info");    //NOI18N
     String PROF_ENDORSCERT_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_EndorsCert_Info");    //NOI18N
     String PROF_SAMLSENDER_INFO = NbBundle.getMessage(ComboConstants.class, "COMBO_Profile_SamlSender_Info");    //NOI18N

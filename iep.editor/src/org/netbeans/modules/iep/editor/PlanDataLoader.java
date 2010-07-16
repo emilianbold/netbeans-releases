@@ -21,10 +21,7 @@ package org.netbeans.modules.iep.editor;
 
 import java.io.IOException;
 
-import org.netbeans.modules.iep.editor.PlanEditorSupport.WSDLEditorEnv;
 import org.netbeans.modules.iep.editor.designer.actions.PlanDesignViewOpenAction;
-import org.openide.ErrorManager;
-import org.openide.actions.OpenAction;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
@@ -33,7 +30,6 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.RenameAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
@@ -54,73 +50,52 @@ public class PlanDataLoader extends UniFileLoader {
 
     public static final String MIME_TYPE = "text/x-iep+xml";                 // NOI18N
 
-    public static final String PRIMARY_EXTENSION = "iep";          // NOI18N
-    
     private static final long serialVersionUID = -4579746482156152493L;
 
     public PlanDataLoader() {
         super("org.netbeans.modules.iep.editor.PlanDataObject");
     }
 
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(PlanDataLoader.MIME_TYPE);
-    }
-
-    
     protected String defaultDisplayName() {
         return NbBundle.getMessage(PlanDataLoader.class, "LBL_loaderName");
     }
 
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(PlanDesignViewOpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            null,
-            // GenWsdlAction.getInstance(),
-            SystemAction.get(PropertiesAction.class),
-        };
-    }
+//    protected SystemAction[] defaultActions() {
+//        return new SystemAction[] {
+//            SystemAction.get(PlanDesignViewOpenAction.class),
+//            SystemAction.get(FileSystemAction.class),
+//            null,
+//            SystemAction.get(CutAction.class),
+//            SystemAction.get(CopyAction.class),
+//            SystemAction.get(PasteAction.class),
+//            null,
+//            SystemAction.get(DeleteAction.class),
+//            SystemAction.get(RenameAction.class),
+//            null,
+//            // GenWsdlAction.getInstance(),
+//            SystemAction.get(PropertiesAction.class),
+//        };
+//    }
 
+    protected String actionsContext() {
+        // Load actions from layer to avoid direct dependencies on
+        // modules with non-public API.
+        return "Loaders/" + MIME_TYPE + "/Actions/";
+    }
+    
     protected MultiDataObject createMultiObject(FileObject primaryFile)
         throws DataObjectExistsException, IOException {
         return new PlanDataObject(primaryFile, this);
     }
-    
-    protected FileObject findPrimaryFile( FileObject fo ) {
-        FileObject result = null;
-        try {
-            if (!fo.getFileSystem().isDefault()) {
-                String extension = fo.getExt();
-                if (extension.equals(PRIMARY_EXTENSION)) {
-                    result = fo;
-                }
-                
-            }
-        }
-        catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault().notify(fsie);
-        }
 
-        return result;
+    /** @return The list of extensions this loader recognizes. */
+    public ExtensionList getExtensions() {
+        ExtensionList extensions = (ExtensionList) getProperty(PROP_EXTENSIONS);
+        if (extensions == null) {
+            extensions = new ExtensionList();
+            extensions.addExtension(PLAN_EXTENSION);
+            putProperty(PROP_EXTENSIONS, extensions, false);
+        }
+        return extensions;
     }
-
-//    /** @return The list of extensions this loader recognizes. */
-//    public ExtensionList getExtensions() {
-//        ExtensionList extensions = (ExtensionList) getProperty(PROP_EXTENSIONS);
-//        if (extensions == null) {
-//            extensions = new ExtensionList();
-//            extensions.addExtension(PLAN_EXTENSION);
-//            putProperty(PROP_EXTENSIONS, extensions, false);
-//        }
-//        return extensions;
-//    }
 }

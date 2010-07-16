@@ -46,6 +46,8 @@ import org.netbeans.modules.bpel.model.api.events.VetoException;
  *       &lt;xsd:anyAttribute namespace="##other" processContents="lax"/>
  *   &lt;/xsd:complexType>
  * </pre>
+ *
+ * TODO: rename to ExtensibleElement
  */
 public interface ExtensibleElements extends BpelContainer {
 

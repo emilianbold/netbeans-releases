@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,8 +83,8 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import com.sun.sql.framework.exception.BaseException;
-import net.java.hulp.i18n.Logger;
+import com.sun.etl.exception.BaseException;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -134,7 +137,8 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     private ListTransferModel listModel;
     private JoinMainPanel jmPanel;
     private ArrayList<SourceTable> newTables = new ArrayList<SourceTable>();
-    private static transient final Logger mLogger = Logger.getLogger(ListTransferPanel.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(ListTransferPanel.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
     private static transient final Localizer mLoc = Localizer.get();
 
     public ListTransferPanel(JoinMainPanel jMainPanel, String sLabelStr, String dLabelStr, Collection sCollection, Collection dCollection) {
@@ -579,7 +583,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            mLogger.errorNoloc(mLoc.t("EDIT190: Error Occured while removing the table{0}which user has added using more table dialog", tableName), ex);
+            logger.log(Level.SEVERE, mLoc.t("EDIT190: Error Occured while removing the table{0}which user has added using more table dialog", tableName) + ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
@@ -673,7 +677,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            mLogger.errorNoloc(mLoc.t("EDIT191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
+            logger.log(Level.SEVERE, mLoc.t("EDIT191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName) + ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
@@ -1214,7 +1218,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 }
             } catch (BaseException ex) {
                 String tableName = sTable != null ? sTable.getName() : "";
-                mLogger.errorNoloc(mLoc.t("EDIT192: Error Occured while removing the table {0}which user has added using more table dialog", tableName), ex);
+                logger.log(Level.SEVERE, mLoc.t("EDIT192: Error Occured while removing the table {0}which user has added using more table dialog", tableName) + ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }

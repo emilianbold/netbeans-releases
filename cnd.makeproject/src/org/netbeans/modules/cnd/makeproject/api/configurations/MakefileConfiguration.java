@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,18 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
@@ -140,7 +135,7 @@ public class MakefileConfiguration {
     }
     
     public String getAbsBuildCommandWorkingDir() {
-        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) {
+        if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
         } else {
             return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
@@ -154,7 +149,7 @@ public class MakefileConfiguration {
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0) {
             return ""; // NOI18N
-        } else if (IpeUtils.isPathAbsolute(getOutput().getValue())) {
+        } else if (CndPathUtilitities.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
         } else {
             return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
@@ -204,8 +199,8 @@ public class MakefileConfiguration {
         
         @Override
         public void setValue(String v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = FilePathAdaptor.normalize(path);
+            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilitities.normalize(path);
             super.setValue(path);
         }
         
@@ -222,8 +217,8 @@ public class MakefileConfiguration {
         
         @Override
         public void setValue(String v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = FilePathAdaptor.normalize(path);
+            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilitities.normalize(path);
             super.setValue(path);
         }
         
@@ -275,13 +270,14 @@ public class MakefileConfiguration {
             return new DirPanel(seed, this, propenv);
         }
         
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }
     }
     
-    class DirPanel extends FileChooser implements PropertyChangeListener {
-        PropertyEditorSupport editor;
+    private final class DirPanel extends FileChooser implements PropertyChangeListener {
+        private PropertyEditorSupport editor;
         
         public DirPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
@@ -300,16 +296,17 @@ public class MakefileConfiguration {
             propenv.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = FilePathAdaptor.normalize(path);
+                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
+                path = CndPathUtilitities.normalize(path);
                 editor.setValue(path);
             }
         }
     }
     
-    private class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
+    private final class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
         private String seed;
         
@@ -347,13 +344,14 @@ public class MakefileConfiguration {
             return new ElfPanel(seed, this, propenv);
         }
         
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }
     }
     
-    class ElfPanel extends FileChooser implements PropertyChangeListener {
-        PropertyEditorSupport editor;
+    private final class ElfPanel extends FileChooser implements PropertyChangeListener {
+        private PropertyEditorSupport editor;
         
         public ElfPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
@@ -368,17 +366,17 @@ public class MakefileConfiguration {
             setControlButtonsAreShown(false);
             
             if (Utilities.isWindows()) {
-                addChoosableFileFilter(PeExecutableFileFilter.getInstance());
-                addChoosableFileFilter(PeStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(PeDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getPeDynamicLibraryFileFilter());
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                addChoosableFileFilter(MacOSXExecutableFileFilter.getInstance());
-                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(MacOSXDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getMacOSXExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
             } else {
-                addChoosableFileFilter(ElfExecutableFileFilter.getInstance());
-                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(ElfDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfDynamicLibraryFileFilter());
             }
             setFileFilter(getAcceptAllFileFilter());
             
@@ -388,10 +386,11 @@ public class MakefileConfiguration {
             propenv.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
-                String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = FilePathAdaptor.normalize(path);
+                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
+                path = CndPathUtilitities.normalize(path);
                 editor.setValue(path);
             }
         }

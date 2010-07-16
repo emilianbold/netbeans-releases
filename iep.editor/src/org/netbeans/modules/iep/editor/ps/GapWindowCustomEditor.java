@@ -20,15 +20,15 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.AttributeMetadata;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
-import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.table.MoveableRowTable;
+import org.netbeans.modules.tbls.editor.table.ReadOnlyNoExpressionDefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizer;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
@@ -36,10 +36,8 @@ import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -62,15 +60,14 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
+import javax.swing.table.TableColumnModel;
+
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -84,14 +81,15 @@ import org.openide.util.NbBundle;
 public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(GapWindowCustomEditor.class.getName());
     
-    private static Set INTEGER_TYPES = new HashSet();
+    private static Set<String> INTEGER_TYPES = new HashSet<String>();
     static {
 //        INTEGER_TYPES.add(SQL_TYPE_TINYINT);
 //        INTEGER_TYPES.add(SQL_TYPE_SMALLINT);
         INTEGER_TYPES.add(SQL_TYPE_INTEGER);
         INTEGER_TYPES.add(SQL_TYPE_BIGINT);
     }
-
+    
+    
     /** Creates a new instance of GapWindowCustomEditor */
     public GapWindowCustomEditor() {
     }
@@ -116,7 +114,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         private PartitionKeySelectionPanel mPartitionKeyPanel;
         private DefaultMoveableRowTableModel mTableModel;
         private MoveableRowTable mTable;
-        private Vector mColTitle;
+        private Vector<String> mColTitle;
 //        private JLabel mStatusLbl;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
@@ -186,21 +184,21 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 rightPane.setPreferredSize(new Dimension(500, 300));
                 attributePane.setRightComponent(rightPane);
                 
-                mColTitle = new Vector();
+                mColTitle = new Vector<String>();
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.ATTRIBUTE_NAME"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.DATA_TYPE"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.SIZE"));
                 mColTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.SCALE"));
-                mTableModel = new DefaultMoveableRowTableModel();
-                updateTable();
+                mTableModel = new ReadOnlyNoExpressionDefaultMoveableRowTableModel();
                 mTable = new MoveableRowTable(mTableModel) {
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
                     public void dragGestureRecognized(DragGestureEvent dge) {
                         return;
                     }
                 };
+                
+                updateTable();
+                
+                
                 rightPane.getViewport().add(mTable);
                 
 //                // status bar
@@ -248,6 +246,16 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                     data.add(r);
                 }
                 mTableModel.setDataVector(data, mColTitle);
+                
+                TableColumnModel tcm = mTable.getColumnModel();
+                SelectPanelTableCellRenderer spTCRenderer = new SelectPanelTableCellRenderer();
+//              setting up renderer
+                int mNameCol = 0;
+                tcm.getColumn(mNameCol).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 1).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 2).setCellRenderer(spTCRenderer);
+                tcm.getColumn(mNameCol + 3).setCellRenderer(spTCRenderer);
+                
             } catch (Exception e) {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(GapWindowCustomEditor.class, "CustomEditor.FAILED_UPDATE_TABLE"),
@@ -266,7 +274,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -290,7 +298,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
@@ -330,7 +338,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // start
-            Property startProp = mComponent.getProperty(START_KEY);
+            Property startProp = mComponent.getProperty(PROP_START);
             String startStr = NbBundle.getMessage(GapWindowCustomEditor.class, "CustomEditor.START");
             mStartPanel = PropertyPanel.createIntNumberPanel(startStr, startProp, false);
             gbc.gridx = 3;
@@ -354,9 +362,9 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(mStartPanel.component[1], gbc);
 
             // attribute
-            Property attributeProp = mComponent.getProperty(ATTRIBUTE_KEY);
+            Property attributeProp = mComponent.getProperty(PROP_ATTRIBUTE);
             String attributeStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.SORT_BY");
-            List attributeList = mPartitionKeyPanel.getAttributeNameList(INTEGER_TYPES);
+            List<String> attributeList = mPartitionKeyPanel.getAttributeNameList(INTEGER_TYPES);
             attributeList.add(0, "");
             mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
             gbc.gridx = 3;
@@ -406,7 +414,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getProperty(NAME_KEY).getValue();
+                String name = mComponent.getString(PROP_NAME);
                 if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
@@ -419,7 +427,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 // output schema name
                 mOutputSchemaNamePanel.validateContent(evt);
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                SchemaComponent outputSchema = mComponent.getOutputSchema();
                 String schemaName = null;
                 if(outputSchema != null) {
                     schemaName = outputSchema.getName();
@@ -497,7 +505,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             mPartitionKeyPanel.store();
             try {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                SchemaComponent outputSchema = mComponent.getOutputSchema();
                 String schemaName = null;
                 
                 if(outputSchema != null) {
@@ -569,4 +577,6 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             }
         }
     }
+    
+   
 }

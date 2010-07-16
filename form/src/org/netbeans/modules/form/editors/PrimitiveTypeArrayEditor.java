@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -122,7 +125,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         char[] source = (char[]) array;
         result = new String[source.length];
         for (int i = 0; i < source.length; i++) {
-            result[i] = new String(convertChar2String(source[i]));
+            result[i] = convertChar2String(source[i]);
         } 
         return result;
     }    
@@ -309,11 +312,13 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
     /**
      * Sets edited form property and value type
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.valueType = property.getValueType();
         this.formProperty = property;
     }
 
+    @Override
     public void updateFormVersionLevel() {
         formProperty.getPropertyContext().getFormModel()
         .raiseVersionLevel(FormModel.FormVersion.NB65,FormModel.FormVersion.NB65);
@@ -334,6 +339,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
     
     // XMLPropertyEditor implementation    
     
+    @Override
     public void readFromXML(Node element) throws IOException {
         if (!XML_PROP_NAME.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -347,6 +353,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_PROP_NAME);
         el.setAttribute(XML_ATT_NAME, getAsText());

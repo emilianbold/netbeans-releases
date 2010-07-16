@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyPredefinedVariable;
 import org.netbeans.modules.ruby.RubyType;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Class which represents a Call in the source
@@ -73,9 +75,9 @@ public class Call {
      */
     private static final Pattern CALL_TO_NEW_IN_CHAIN = Pattern.compile(".+(\\.new(\\z|\\(.*\\)\\.?\\w*|\\.\\w?.*))"); //NOI18N
 
-    public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
-    public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
-    public static final Call UNKNOWN = new Call(RubyType.createUnknown(), null, false, false);
+    public static final Call LOCAL = new Call(RubyType.unknown(), null, false, false);
+    public static final Call NONE = new Call(RubyType.unknown(), null, false, false);
+    public static final Call UNKNOWN = new Call(RubyType.unknown(), null, false, false);
 
     private final RubyType type;
     private final String lhs;
@@ -214,7 +216,7 @@ public class Call {
      */
     @SuppressWarnings("unchecked")
     @NonNull
-    public static Call getCallType(BaseDocument doc, TokenHierarchy<?> th, int offset) {
+    public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, offset);
 
         if (ts == null) {
@@ -418,14 +420,16 @@ public class Call {
                         RubyType type = RubyPredefinedVariable.getType(lhs);
                          // predefined vars are instances
                         // also if it was a call to a constructor, the call is not static
-                        boolean isStatic = (type == null && !containsCallToNew(lhs)) || constantExpected;
+                        boolean isStatic = 
+                                (type == null && !containsCallToNew(lhs) && !isChainedCall(lhs))
+                                || constantExpected;
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
                             type = RubyType.create(lhs);
                         }
 
-                        RubyType rubyType = type == null ? RubyType.createUnknown() : type;
+                        RubyType rubyType = type == null ? RubyType.unknown() : type;
                         Call call = new Call(rubyType, lhs, isStatic, methodExpected, constantExpected);
                         call.setLHSConstant(isLHSConstant);
 
@@ -434,7 +438,7 @@ public class Call {
                         // try __FILE__ or __LINE__
                         RubyType typeS = RubyPredefinedVariable.getType(lhs);
 
-                        RubyType type = typeS == null ? RubyType.createUnknown() : typeS;
+                        RubyType type = typeS == null ? RubyType.unknown() : typeS;
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {
@@ -465,6 +469,10 @@ public class Call {
 
     private static boolean containsCallToNew(String lhs) {
         return CALL_TO_NEW_IN_CHAIN.matcher(lhs).matches();
+    }
+
+    private static boolean isChainedCall(String lhs) {
+        return lhs.indexOf('.') > 0; //NOI18N
     }
 
     private static Call tryLiteral(final TokenId id, final boolean methodExpected, final String tokenText) {

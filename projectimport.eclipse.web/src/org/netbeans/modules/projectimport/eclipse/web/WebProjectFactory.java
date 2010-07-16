@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,7 +128,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         }
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
-        if (webData == null) {
+        if (webData == null || /* #178018 */webData.webRoot == null/* || webData.contextRoot == null*/) {
             importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N
             return null;
         }
@@ -235,7 +238,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         if (f.exists()) {
             Document webContent;
             try {
-                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             } catch (SAXException e) {
                 IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
                 throw ioe;
@@ -245,9 +248,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
                 return null;
             }
             WebContentData data = new WebContentData();
-            Element moduleEl = Util.findElement(modulesEl, "wb-module", null); //NOI18N
+            Element moduleEl = XMLUtil.findElement(modulesEl, "wb-module", null); //NOI18N
             if (moduleEl != null) { // #175364
-            for (Element el : Util.findSubElements(moduleEl)) {
+            for (Element el : XMLUtil.findSubElements(moduleEl)) {
                 if ("wb-resource".equals(el.getNodeName())) { //NOI18N
                     if ("/".equals(el.getAttribute("deploy-path"))) { //NOI18N
                         data.webRoot = el.getAttribute("source-path"); //NOI18N
@@ -266,7 +269,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         if (f.exists()) {
             Document webContent;
             try {
-                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             } catch (SAXException e) {
                 IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
                 throw ioe;
@@ -281,9 +284,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
             if ("5.0".equals(specVer)) {
                 specVer = "1.5"; // NOI18N
             }
-            Element attrsEl = Util.findElement(modulesEl, "attributes", null); //NOI18N
+            Element attrsEl = XMLUtil.findElement(modulesEl, "attributes", null); //NOI18N
             if (attrsEl != null) {
-                for (Element el : Util.findSubElements(attrsEl)) {
+                for (Element el : XMLUtil.findSubElements(attrsEl)) {
                     if ("attribute".equals(el.getNodeName())) { //NOI18N
                         if ("webrootdir".equals(el.getAttribute("name"))) { //NOI18N
                             data.webRoot = el.getAttribute("value"); //NOI18N

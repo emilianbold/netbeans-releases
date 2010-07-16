@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,10 +61,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.python.antlr.BaseParser;
-import org.python.antlr.GrammarActions;
 import org.python.antlr.ListErrorHandler;
 import org.python.antlr.ParseException;
 import org.python.antlr.PythonLexer;
@@ -365,7 +366,7 @@ public class PythonParser implements Parser {
                     }
                     Context context = new Context(file, listener, source, caretOffset, job.translatedSource, job);
 
-                    result = parse(context, Sanitize.EDITED_DOT);
+                    result = parse(context, Sanitize.NONE);
                     result.setSource(source);
                 }
             } catch (Exception ioe) {
@@ -393,14 +394,14 @@ public class PythonParser implements Parser {
         case NEVER:
             return createParseResult(null, context.file, false);
 
+        case NONE:
+            if (context.caretOffset != -1) {
+                return parse(context, Sanitize.EDITED_DOT);
+            }
+
         case EDITED_DOT:
             // We've tried removing whitespace around the edit location
-            // Fall through to try parsing with no sanitization
-            return parse(context, Sanitize.NONE);
-
-        case NONE:
-            // We've tried both plain parsing and removal of the dot location -
-            // now try editing the error location
+            // Fall through to try parsing with removing stuff around error location
             // (Don't bother doing this if errorOffset==caretOffset since that would try the same
             // source as EDITED_DOT which has no better chance of succeeding...)
             if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {

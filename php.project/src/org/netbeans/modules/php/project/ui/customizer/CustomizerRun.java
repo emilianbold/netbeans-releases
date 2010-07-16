@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.CardLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
@@ -49,16 +50,16 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -78,7 +79,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private final RunAsPanel.InsidePanel[] insidePanels;
 
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
-        manager = new ConfigManager(properties);
+        manager = properties.getConfigManager();
         insidePanels = new RunAsPanel.InsidePanel[] {
             new RunAsLocalWeb(properties, manager, category),
             new RunAsRemoteWeb(properties, manager, category),
@@ -120,6 +121,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             return new Comparator<String>() {
                 Collator coll = Collator.getInstance();
 
+                @Override
                 public int compare(String s1, String s2) {
                     String lbl1 = configurationFor(s1).getDisplayName();
                     String lbl2 = configurationFor(s2).getDisplayName();
@@ -136,6 +138,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
@@ -206,37 +209,37 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         runPanel.setLayout(new CardLayout());
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, runPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(GroupLayout.LEADING, separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(configLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configCombo, 0, 142, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configNew)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configDel)))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(runPanel, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addComponent(separator, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(configLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configCombo, 0, 142, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configNew)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configDel)))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(configLabel)
-                    .add(configCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(configNew)
-                    .add(configDel))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(runPanel, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(configLabel)
+                    .addComponent(configCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configNew)
+                    .addComponent(configDel))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(runPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -307,6 +310,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private JSeparator separator;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }

@@ -25,16 +25,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
-import org.netbeans.modules.xslt.mapper.model.MapperContext;
-import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListener;
-import org.netbeans.modules.xslt.mapper.model.MapperContextChangeSupport;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeHandler;
 import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeListener;
@@ -572,7 +568,7 @@ public class MapperContextImpl implements MapperContext {
             public void run() {
 //                setActivatedNodes(curEditorPane.getCaret().getDot());
                 MapperContextFactory.getInstance().reinitMapperContext(
-                        MapperContextImpl.this, myXslFo, Util.getProject(myTMapFo),
+                        MapperContextImpl.this, myXslFo, SoaUtil.getProject(myTMapFo),
                         evt);
             }
         }, CONTEXT_CHANGE_TASK_DELAY);
@@ -692,7 +688,7 @@ public class MapperContextImpl implements MapperContext {
 
         public void fileDataCreated(FileEvent fe) {
             FileObject fo = fe.getFile();
-            if (fo != null && myTMapFo == null && fo.equals(org.netbeans.modules.xslt.tmap.util.Util.getTMapFo(Util.getProject(fo)))) {
+            if (fo != null && myTMapFo == null && fo.equals(org.netbeans.modules.xslt.tmap.util.Util.getTMapFo(SoaUtil.getProject(fo)))) {
                 reinitContext();
                 myTMapFo.addFileChangeListener(myFileChangeListener);
                 if (myTMapModel != null) {
@@ -750,7 +746,7 @@ public class MapperContextImpl implements MapperContext {
         TransformmapValidator validator = TransformmapValidatorImpl.getInstance();
 
         if (myXslFo != null) {
-            result = validator.validate(Util.getTransformationDescriptor(Util.getProject(myXslFo)));
+            result = validator.validate(Util.getTransformationDescriptor(SoaUtil.getProject(myXslFo)));
 
             if (result == null) {
                 result = validator.validate(myTMapModel, myXslFo);

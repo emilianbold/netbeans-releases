@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -41,15 +44,15 @@ var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in 
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
-var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
+var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/widget/jdk_netbeans.jsp";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
-var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 or JDK 5 is required for installing and running the Java SE, JavaFX, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
+var JDK_NOTE_ALL      = "Java 6 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 is required for installing and running the Java SE, JavaFX, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
 //var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 var JDK_NOTE_MACOSX   = "";
 
-var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
+var FREE_SIZE_MESSAGE  = "Free, {0}&nbsp;MB";
 var NOT_AVAILABLE_SIZE = "--";
 
 var NOTE_PREFIX    = "Note: ";
@@ -64,14 +67,15 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 var ZIP_FILES_LIST_NAME             = "Zip Files";
 var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
-var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux.";
-var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_SOLARIS = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
+var NOTE_MACOSX  = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
+var NOTE_ALL     = "Note: Greyed out technologies are not supported for this platform.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";
 var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
-var SUN_SUPPORTED_SEP            = " -- Sun Supported -- " ;
+var SUN_SUPPORTED_SEP            = " -- Oracle Supported -- " ;
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
@@ -92,6 +96,8 @@ var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE'
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a id=\"zip_link\" href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
+var PLATFORM_DEV_LABEL       = "You can start developing applications based on the NetBeans Platform using the NetBeans IDE for Java SE. Learn more about the <a href=\"{0}\">NetBeans Platform</a>.";
+var PLATFORM_INFO_LINK       = "http://platform.netbeans.org/platform-get.html";
 
 var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
 var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";

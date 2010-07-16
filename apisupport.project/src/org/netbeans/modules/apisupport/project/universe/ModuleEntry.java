@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
  * May or may not have an associated source dir <i>(new in NB 6.7)</i>.
  * </ol>
  */
-public interface ModuleEntry extends Comparable {
+public interface ModuleEntry extends Comparable<ModuleEntry> {
 
     /**
      * Get a relative source path inside netbeans.org sources.
@@ -82,14 +85,14 @@ public interface ModuleEntry extends Comparable {
     String getCodeNameBase();
     
     /**
-     * Get the directory to which the mogdule is built.
-     * @return e.g. .../nbbuild/netbeans/ide6
+     * Get the directory to which the module is built.
+     * @return e.g. .../nbbuild/netbeans/ide
      */
     File getClusterDirectory();
     
     /**
      * Get the module JAR file.
-     * @return e.g. .../nbbuild/netbeans/ide6/modules/org-netbeans-modules-java-project.jar
+     * @return e.g. .../nbbuild/netbeans/ide/modules/org-netbeans-modules-java-project.jar
      */
     File getJarLocation();
     

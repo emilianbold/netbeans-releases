@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.17.1
+#Signature file v4.1
+#Version 1.26
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -11,7 +11,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -28,7 +28,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -75,6 +75,7 @@ fld public final static java.lang.Object ACTION_FIX
 fld public final static java.lang.Object ACTION_KILL
 fld public final static java.lang.Object ACTION_MAKE_CALLEE_CURRENT
 fld public final static java.lang.Object ACTION_MAKE_CALLER_CURRENT
+fld public final static java.lang.Object ACTION_NEW_WATCH
 fld public final static java.lang.Object ACTION_PAUSE
 fld public final static java.lang.Object ACTION_POP_TOPMOST_CALL
 fld public final static java.lang.Object ACTION_RESTART
@@ -99,7 +100,7 @@ hfds actionListener,actionProviders,actionProvidersLock,aps,destroy,doiingDo,laz
 hcls AsynchActionTask,MyActionListener
 
 CLSS public org.netbeans.api.debugger.ActionsManagerAdapter
-cons public ActionsManagerAdapter()
+cons public init()
 intf org.netbeans.api.debugger.ActionsManagerListener
 meth public void actionPerformed(java.lang.Object)
 meth public void actionStateChanged(java.lang.Object,boolean)
@@ -113,12 +114,14 @@ meth public abstract void actionPerformed(java.lang.Object)
 meth public abstract void actionStateChanged(java.lang.Object,boolean)
 
 CLSS public abstract org.netbeans.api.debugger.Breakpoint
-cons public Breakpoint()
+cons public init()
 fld public final static java.lang.String PROP_DISPOSED = "disposed"
 fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_GROUP_NAME = "groupName"
+fld public final static java.lang.String PROP_GROUP_PROPERTIES = "groupProperties"
 fld public final static java.lang.String PROP_HIT_COUNT_FILTER = "hitCountFilter"
 fld public final static java.lang.String PROP_VALIDITY = "validity"
+innr public abstract static GroupProperties
 innr public final static !enum HIT_COUNT_FILTERING_STYLE
 innr public final static !enum VALIDITY
 meth protected final void setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
@@ -133,6 +136,7 @@ meth public final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
 meth public final org.netbeans.api.debugger.Breakpoint$VALIDITY getValidity()
 meth public final void setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public java.lang.String getGroupName()
+meth public org.netbeans.api.debugger.Breakpoint$GroupProperties getGroupProperties()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
@@ -141,7 +145,19 @@ meth public void setGroupName(java.lang.String)
 supr java.lang.Object
 hfds groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
 
+CLSS public abstract static org.netbeans.api.debugger.Breakpoint$GroupProperties
+ outer org.netbeans.api.debugger.Breakpoint
+cons public init()
+meth public abstract boolean isHidden()
+meth public abstract java.lang.String getLanguage()
+meth public abstract java.lang.String getType()
+meth public abstract org.netbeans.api.debugger.DebuggerEngine[] getEngines()
+meth public abstract org.netbeans.api.project.Project[] getProjects()
+meth public abstract org.openide.filesystems.FileObject[] getFiles()
+supr java.lang.Object
+
 CLSS public final static !enum org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+ outer org.netbeans.api.debugger.Breakpoint
 fld public final static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE EQUAL
 fld public final static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE GREATER
 fld public final static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE MULTIPLE
@@ -150,6 +166,7 @@ meth public static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYL
 supr java.lang.Enum<org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE>
 
 CLSS public final static !enum org.netbeans.api.debugger.Breakpoint$VALIDITY
+ outer org.netbeans.api.debugger.Breakpoint
 fld public final static org.netbeans.api.debugger.Breakpoint$VALIDITY INVALID
 fld public final static org.netbeans.api.debugger.Breakpoint$VALIDITY UNKNOWN
 fld public final static org.netbeans.api.debugger.Breakpoint$VALIDITY VALID
@@ -164,10 +181,11 @@ meth public <%0 extends java.lang.Object> java.util.List<? extends {%%0}> lookup
 meth public <%0 extends java.lang.Object> {%%0} lookupFirst(java.lang.String,java.lang.Class<{%%0}>)
 meth public org.netbeans.api.debugger.ActionsManager getActionsManager()
 supr java.lang.Object
-hfds actionsManager,lookup,privateLookup
+hfds actionsManager,lookup,privateLookup,s
 
 CLSS public org.netbeans.api.debugger.DebuggerEngine$Destructor
-cons public Destructor(org.netbeans.api.debugger.DebuggerEngine)
+ outer org.netbeans.api.debugger.DebuggerEngine
+cons public init(org.netbeans.api.debugger.DebuggerEngine)
 meth public void killEngine()
 meth public void killLanguage(org.netbeans.api.debugger.Session,java.lang.String)
 supr java.lang.Object
@@ -199,6 +217,7 @@ meth public org.netbeans.api.debugger.DebuggerEngine[] getDebuggerEngines()
 meth public org.netbeans.api.debugger.DebuggerEngine[] startDebugging(org.netbeans.api.debugger.DebuggerInfo)
 meth public org.netbeans.api.debugger.Session getCurrentSession()
 meth public org.netbeans.api.debugger.Session[] getSessions()
+meth public org.netbeans.api.debugger.Watch createWatch(int,java.lang.String)
 meth public org.netbeans.api.debugger.Watch createWatch(java.lang.String)
 meth public org.netbeans.api.debugger.Watch[] getWatches()
 meth public static org.netbeans.api.debugger.DebuggerManager getDebuggerManager()
@@ -211,13 +230,14 @@ meth public void removeAllWatches()
 meth public void removeBreakpoint(org.netbeans.api.debugger.Breakpoint)
 meth public void removeDebuggerListener(java.lang.String,org.netbeans.api.debugger.DebuggerManagerListener)
 meth public void removeDebuggerListener(org.netbeans.api.debugger.DebuggerManagerListener)
+meth public void reorderWatches(int[])
 meth public void setCurrentSession(org.netbeans.api.debugger.Session)
 supr java.lang.Object
-hfds actionsManager,breakpoints,breakpointsByClassLoaders,breakpointsInitialized,breakpointsInitializing,createdBreakpoints,currentEngine,currentSession,debuggerManager,engines,listeners,listenersLookupList,listenersMap,loadedListeners,lookup,sessionListener,sessions,watches,watchesInitialized
+hfds actionsManager,breakpoints,breakpointsByClassLoaders,breakpointsInitialized,breakpointsInitializing,createdBreakpoints,currentEngine,currentSession,debuggerManager,engines,listeners,listenersLookupList,listenersMap,loadedListeners,lookup,sessionListener,sessions,watches,watchesInitialized,watchesInitializing
 hcls SessionListener
 
 CLSS public org.netbeans.api.debugger.DebuggerManagerAdapter
-cons public DebuggerManagerAdapter()
+cons public init()
 intf org.netbeans.api.debugger.LazyDebuggerManagerListener
 meth public java.lang.String[] getProperties()
 meth public org.netbeans.api.debugger.Breakpoint[] initBreakpoints()
@@ -247,7 +267,7 @@ meth public abstract void watchAdded(org.netbeans.api.debugger.Watch)
 meth public abstract void watchRemoved(org.netbeans.api.debugger.Watch)
 
 CLSS public abstract org.netbeans.api.debugger.LazyActionsManagerListener
-cons public LazyActionsManagerListener()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth protected abstract void destroy()
 meth public abstract java.lang.String[] getProperties()
@@ -255,6 +275,7 @@ supr org.netbeans.api.debugger.ActionsManagerAdapter
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.api.debugger.LazyActionsManagerListener$Registration
+ outer org.netbeans.api.debugger.LazyActionsManagerListener
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
@@ -265,7 +286,7 @@ intf org.netbeans.api.debugger.DebuggerManagerListener
 meth public abstract java.lang.String[] getProperties()
 
 CLSS public abstract org.netbeans.api.debugger.Properties
-cons public Properties()
+cons public init()
 innr public abstract interface static Initializer
 innr public abstract interface static Reader
 meth public abstract boolean getBoolean(java.lang.String,boolean)
@@ -303,10 +324,12 @@ hfds defaultProperties
 hcls DelegatingProperties,PrimitiveRegister,PropertiesImpl
 
 CLSS public abstract interface static org.netbeans.api.debugger.Properties$Initializer
+ outer org.netbeans.api.debugger.Properties
 meth public abstract java.lang.Object getDefaultPropertyValue(java.lang.String)
 meth public abstract java.lang.String[] getSupportedPropertyNames()
 
 CLSS public abstract interface static org.netbeans.api.debugger.Properties$Reader
+ outer org.netbeans.api.debugger.Properties
 meth public abstract java.lang.Object read(java.lang.String,org.netbeans.api.debugger.Properties)
 meth public abstract java.lang.String[] getSupportedClassNames()
 meth public abstract void write(java.lang.Object,org.netbeans.api.debugger.Properties)
@@ -345,7 +368,7 @@ supr java.lang.Object
 hfds expression,pcs
 
 CLSS public abstract org.netbeans.spi.debugger.ActionsProvider
-cons public ActionsProvider()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract boolean isEnabled(java.lang.Object)
 meth public abstract java.util.Set getActions()
@@ -357,17 +380,20 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ActionsProvider$Registration
+ outer org.netbeans.spi.debugger.ActionsProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
+meth public abstract !hasdefault java.lang.String[] actions()
+meth public abstract !hasdefault java.lang.String[] activateForMIMETypes()
 
 CLSS public abstract interface org.netbeans.spi.debugger.ActionsProviderListener
 intf java.util.EventListener
 meth public abstract void actionStateChange(java.lang.Object,boolean)
 
 CLSS public abstract org.netbeans.spi.debugger.ActionsProviderSupport
-cons public ActionsProviderSupport()
+cons public init()
 meth protected final void setEnabled(java.lang.Object,boolean)
 meth protected void fireActionStateChanged(java.lang.Object,boolean)
 meth public abstract void doAction(java.lang.Object)
@@ -389,7 +415,7 @@ meth public abstract <%0 extends java.lang.Object> java.util.List<? extends {%%0
 meth public abstract <%0 extends java.lang.Object> {%%0} lookupFirst(java.lang.String,java.lang.Class<{%%0}>)
 
 CLSS public abstract org.netbeans.spi.debugger.DebuggerEngineProvider
-cons public DebuggerEngineProvider()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract java.lang.Object[] getServices()
 meth public abstract java.lang.String getEngineTypeID()
@@ -399,6 +425,7 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.DebuggerEngineProvider$Registration
+ outer org.netbeans.spi.debugger.DebuggerEngineProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
@@ -412,19 +439,19 @@ meth public abstract !hasdefault java.lang.String path()
 meth public abstract java.lang.Class[] types()
 
 CLSS public abstract org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider
-cons public DelegatingDebuggerEngineProvider()
+cons public init()
 meth public abstract java.lang.String[] getLanguages()
 meth public abstract org.netbeans.api.debugger.DebuggerEngine getEngine()
 meth public abstract void setDestructor(org.netbeans.api.debugger.DebuggerEngine$Destructor)
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.debugger.DelegatingSessionProvider
-cons public DelegatingSessionProvider()
+cons public init()
 meth public abstract org.netbeans.api.debugger.Session getSession(org.netbeans.api.debugger.DebuggerInfo)
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.debugger.SessionProvider
-cons public SessionProvider()
+cons public init()
 innr public abstract interface static !annotation Registration
 meth public abstract java.lang.Object[] getServices()
 meth public abstract java.lang.String getLocationName()
@@ -434,6 +461,7 @@ supr java.lang.Object
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.SessionProvider$Registration
+ outer org.netbeans.spi.debugger.SessionProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation

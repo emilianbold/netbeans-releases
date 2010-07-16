@@ -48,7 +48,8 @@ public class ETLBLUtils {
         }
     }
 
-    public static void copyFile(String srcFileAbsPath, String trgtDir) {        
+    public static void copyFile(String srcFileAbsPath, String trgtDir) {
+        System.out.println("Copy file [ " + srcFileAbsPath + " ] to Dir [ " + trgtDir + " ]");
         FileInputStream fis = null;
         FileOutputStream fos = null;
         try {

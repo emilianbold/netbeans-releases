@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -53,9 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.html.HTML;
+import org.netbeans.lib.uihandler.NBBugzillaAccessor;
 import org.netbeans.modules.uihandler.Installer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -67,6 +74,7 @@ import org.openide.windows.WindowManager;
 public final class ReporterResultTopComponent extends TopComponent implements HyperlinkListener {
 
     private static ReporterResultTopComponent instance;
+    private static final RequestProcessor RP = new RequestProcessor("ReporterResultTopComponentLoader", 3);
     private static final Logger LOG = Logger.getLogger(ReporterResultTopComponent.class.getName());
     private static boolean showUpload = false;
     /** path to the icon used by the component and its open action */
@@ -116,18 +124,18 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jButton1)
-                .addContainerGap(208, Short.MAX_VALUE))
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jButton1)
+                .addContainerGap(173, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -135,7 +143,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        showMyIssues(true);
+        RP.post(new URLDisplayer(true));
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane dataDisplayer;
@@ -185,7 +193,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         if (showUpload) {
             return;
         }
-        showMyIssues(false);
+        RP.post(new URLDisplayer(false));
     }
 
     @Override
@@ -232,35 +240,44 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         loadPage(url, true);
     }
 
-    private void showMyIssues(boolean show) {
-        String urlStr = null;
-        String userName = new ExceptionsSettings().getUserName();
-        if (userName != null && !"".equals(userName)) {             //NOI18N
-            urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
-        } else {
-            String userId = Installer.findIdentity();
-            if (userId != null) {
-                urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+    private class URLDisplayer implements Runnable {
+        private String urlStr = null;
+        private final boolean show;
+
+        public URLDisplayer(boolean show) {
+            this.show = show;
+        }
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()){
+                try {
+                    loadPage(new URL(urlStr), show);
+                } catch (MalformedURLException ex) {
+                    handleIOException(urlStr, ex);
+                }
+            }else{
+                String userName = new ExceptionsSettings().getUserName();
+                if (userName != null && !"".equals(userName)) {             //NOI18N
+                    urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
+                } else {
+                    String userId = Installer.findIdentity();
+                    if (userId != null) {
+                        urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+                    }
+                }
+                if (urlStr == null) {
+                    return; // XXX prompt to log in?
+                }
+                EventQueue.invokeLater(this);
             }
-        }
-        if (urlStr == null) {
-            return; // XXX prompt to log in?
-        }
-        try {
-            loadPage(new URL(urlStr), show);
-        } catch (MalformedURLException ex) {
-            handleIOException(urlStr, ex);
         }
     }
 
     private void loadPage(URL url, boolean show) {
         assert (EventQueue.isDispatchThread());
-        try {
-            dataDisplayer.setPage(getLoadingPageURL(url));
-        } catch (IOException ex) {
-            handleIOException(url, ex);
-        }
-        RequestProcessor.getDefault().post(new PageUploader(url, show));
+        dataDisplayer.setText(getLoadingPage(url));
+        RP.post(new PageUploader(url, show));
     }
 
     private class PageUploader implements Runnable{
@@ -274,22 +291,25 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             this.show = show;
         }
 
-            public void run() {
-                try {
-                    if (EventQueue.isDispatchThread()) {
-                        if (show) {
-                            ReporterResultTopComponent.this.requestVisible();
-                        }
-                        dataDisplayer.setPage(localData);
-                    } else {
-                        LOG.fine("Loading: " + url);        //NOI18N
-                        localData = uploadURL(url);
-                        EventQueue.invokeLater(this);
+        public void run() {
+            try {
+                if (EventQueue.isDispatchThread()) {
+                    if (show) {
+                        ReporterResultTopComponent topComponent =
+                                ReporterResultTopComponent.this;
+                        topComponent.requestVisible();
+                        topComponent.requestActive();
                     }
-                } catch (IOException ex) {
-                    handleIOException(url, ex);
+                    dataDisplayer.setPage(localData);
+                } else {
+                    LOG.log(Level.FINE, "Loading: {0}", url);        //NOI18N
+                    localData = uploadURL(url);
+                    EventQueue.invokeLater(this);
                 }
+            } catch (IOException ex) {
+                handleIOException(url, ex);
             }
+        }
         
     }
 
@@ -336,25 +356,49 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         });
     }
 
-    private static URL getLoadingPageURL(URL url) throws IOException {
-        File tmpFile = File.createTempFile("loading", ".html");        //NOI18N
-        tmpFile.deleteOnExit();
-        FileWriter fw = new FileWriter(tmpFile);
-        try{
-            fw.write("<html><head><title></title></head><body>");
-            fw.write(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
-            fw.write("<a href=\"" + url.toString() + "\">" + url + "</a>");
-            fw.write("</body></html>");
-        }finally{
-            fw.close();
-        }
-        return tmpFile.toURI().toURL();
+    private static String getLoadingPage(URL url) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title></title></head><body>");
+        sb.append(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
+        sb.append("<a href=\"").append(url.toString()).append("\">").append(url).append("</a>");
+        sb.append("</body></html>");
+        return sb.toString();
     }
 
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-        if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+    @Override
+    public void hyperlinkUpdate(final HyperlinkEvent e) {
+        if (!HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+            return;
         }
+        NBBugzillaAccessor accessor = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        if (accessor != null){
+            AttributeSet ats = e.getSourceElement().getAttributes();
+            Object attribute = ats.getAttribute(HTML.getTag("a"));
+            if (attribute instanceof SimpleAttributeSet) {
+                SimpleAttributeSet attributeSet = (SimpleAttributeSet) attribute;
+                Object bugId = attributeSet.getAttribute(HTML.getAttributeKey("id"));
+                if (bugId != null){
+                    try{
+                        Integer.parseInt(bugId.toString());
+                        LOG.log(Level.FINE, "Open issue {0}", bugId);
+                        accessor.openIssue(bugId.toString());
+                        return;
+                    }catch(NumberFormatException nfe){
+                        LOG.log(Level.INFO, "Invalid id attribute", nfe);
+                    }
+                }
+            }
+        } else {
+            LOG.log(Level.INFO, "Bugzilla Accessor not found");
+        }
+        RP.post(new Runnable(){
+
+            @Override
+            public void run() {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+            }
+
+        });
     }
 
     final static class ResolvableHelper implements Serializable {

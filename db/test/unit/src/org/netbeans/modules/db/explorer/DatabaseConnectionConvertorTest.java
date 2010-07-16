@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,20 +49,19 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.CharacterCodingException;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
-import org.netbeans.modules.db.explorer.node.RootNode;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
-import org.netbeans.modules.db.util.Base64;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -78,6 +80,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         Util.clearConnections();
@@ -86,7 +89,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     public void testReadXml() throws Exception {
         FileObject fo = createConnectionFile("connection.xml", Util.getConnectionsFolder());
         DataObject dobj = DataObject.find(fo);
-        InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+        InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
         
         DatabaseConnection conn = (DatabaseConnection)ic.instanceCreate();
@@ -148,6 +151,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
             
             private final CountDownLatch latch = new CountDownLatch(1);
             
+            @Override
             public void fileChanged(FileEvent fe) {
                 latch.countDown();
             }
@@ -193,14 +197,15 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     public void testLookup() throws Exception {
         FileObject parent = Util.getConnectionsFolder();
         createConnectionFile("connection.xml", parent);
-        FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
-        Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(DatabaseConnection.class));
-        Collection instances = result.allInstances();
+        Lookup lookup = Lookups.forPath(parent.getPath());
+        Lookup.Result<DatabaseConnection> result = lookup.lookup(new Lookup.Template<DatabaseConnection>(DatabaseConnection.class));
+        Collection<? extends DatabaseConnection> instances = result.allInstances();
         assertEquals(1, instances.size()); 
     }
     
     public void testDecodePassword() throws Exception {
-        assertNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
+        assertNotNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
+        assertTrue(DatabaseConnectionConvertor.decodePassword(new byte[0]).isEmpty());
         assertEquals("password", DatabaseConnectionConvertor.decodePassword("password".getBytes("UTF-8")));
         try {
             DatabaseConnectionConvertor.decodePassword(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff });
@@ -222,9 +227,11 @@ public class DatabaseConnectionConvertorTest extends TestBase {
                 writer.write("<database-url value='jdbc:foo:localhost'/>");
                 writer.write("<schema value='schema'/>");
                 writer.write("<user value='user'/>");
-                // This is the Base64 encoded value for the string 'password'
-                writer.write("<password value='" + 
-                        Base64.byteArrayToBase64("password".getBytes("UTF-8")) + "'/>");
+                char[] password = "password".toCharArray();
+
+                // use Keyring API instead Base64.byteArrayToBase64
+                assert name != null : "The parameter name cannot be null.";
+                Keyring.save(name, password, NbBundle.getMessage(DatabaseConnectionConvertor.class, "DatabaseConnectionConvertor.password_description", name)); //NOI18N
                 writer.write("</connection>");
             } finally {
                 writer.close();
@@ -239,13 +246,16 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         
         public boolean error = false;
         
+        @Override
         public void warning(SAXParseException exception) throws SAXException {
         }
 
+        @Override
         public void fatalError(SAXParseException exception) throws SAXException {
             error = true;
         }
 
+        @Override
         public void error(SAXParseException exception) throws SAXException {
             error = true;
         }

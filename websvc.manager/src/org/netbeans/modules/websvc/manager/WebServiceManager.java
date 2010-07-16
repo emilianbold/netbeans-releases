@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -212,37 +216,56 @@ public final class WebServiceManager {
 
         WsdlModelProvider wsdlModelProvider = null;
         Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        boolean notAccepted = false;
         if (providers != null) {
             for (WsdlModelProvider provider : providers) {
                 if (provider.canAccept(wsdlUrl)) {
                     wsdlModelProvider = provider;
                     break;
+                } else {
+                    notAccepted = true;
                 }
             }
         }
         WsdlModel wsdlModel = null;
+        Throwable exc = null;
+
         if (wsdlModelProvider != null) {
             String packageName = wsData.getPackageName();
             if(packageName == null || packageName.trim().length() == 0)
                 packageName = wsdlModelProvider.getEffectivePackageName();
             File catalogFile = new File(wsData.getCatalog());
             URL catalogUrl = catalogFile.toURI().toURL();
-            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+
+            try {
+                wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+            } catch (Exception ex) {
+                Throwable e = ex.getCause();
+                exc = (e == null ? ex : e);
+            }
         }
        
         if (wsdlModel == null) {
             wsData.setResolved(false);
             removeWebService(wsData, true, false);
-
-            Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
-            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
-            if (exc != null) {
-                String cause = exc.getLocalizedMessage();
-                String excString = exc.getClass().getName() + " - " + cause;
-                message += "\n\n" + excString; // NOI18N
-
-                Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            if (wsdlModelProvider == null && notAccepted) {
+                DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor.Message(NbBundle.getMessage(WebServiceManager.class, "JAX_RPC_MODELER_ERROR")));
+            } else if (wsdlModelProvider != null) {
+                Throwable ex = wsdlModelProvider.getCreationException();
+                if (ex != null) {
+                    DialogDisplayer.getDefault().notify(
+                        new DialogDescriptor.Message(NbBundle.getMessage(WebServiceManager.class, "JAX_WS_MODEL_CREATION_ERROR", ex.getLocalizedMessage())));
+                } else if (exc != null) {
+                    Logger.getLogger(WebServiceManager.class.getName()).log(Level.WARNING,
+                        NbBundle.getMessage(WebServiceManager.class, "JAX_WS_MODELER_ERROR"), exc);
+                } else {
+                    String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
+                    exc = new IllegalStateException(message);
+                    Exceptions.printStackTrace(exc);
+                }
             } else {
+                String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
                 exc = new IllegalStateException(message);
                 Exceptions.printStackTrace(exc);
             }

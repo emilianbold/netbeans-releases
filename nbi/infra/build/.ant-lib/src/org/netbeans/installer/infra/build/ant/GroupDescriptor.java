@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -40,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.Utils;
 
@@ -111,16 +113,18 @@ public class GroupDescriptor extends Task {
                 get("group.display.name.default"); // NOI18N
         
         xml.append("            <display-name>\n"); // NOI18N
-        xml.append("                <default><![CDATA[" + displayName + // NOI18N
+        xml.append("                <default><![CDATA[" + Utils.toAscii(displayName) + // NOI18N
                 "]]></default>\n"); // NOI18N
         
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 displayName = get(
                         "group.display.name." + locale); // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        displayName + "]]></localized>\n"); // NOI18N
+                if (displayName != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            Utils.toAscii(displayName) + "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </display-name>\n"); // NOI18N
@@ -130,16 +134,18 @@ public class GroupDescriptor extends Task {
                 get("group.description.default"); // NOI18N
         
         xml.append("            <description>\n"); // NOI18N
-        xml.append("                <default><![CDATA[" + description + // NOI18N
+        xml.append("                <default><![CDATA[" + Utils.toAscii(description) + // NOI18N
                 "]]></default>\n"); // NOI18N
         
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 description = get(
                         "group.description." + locale); // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        description + "]]></localized>\n"); // NOI18N
+                if (description != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            Utils.toAscii(description) + "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </description>\n"); // NOI18N

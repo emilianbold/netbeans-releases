@@ -20,7 +20,7 @@ package org.netbeans.modules.bpel.mapper.logging.tree.model;
 
 import javax.swing.Icon;
 import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
-import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
+import org.netbeans.modules.bpel.mapper.tree.models.BpelSimpleTreeInfoProvider;
 import org.netbeans.modules.soa.ui.tree.TreeItem;
 
 /**
@@ -28,7 +28,7 @@ import org.netbeans.modules.soa.ui.tree.TreeItem;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class LoggingAlertingTreeInfoProvider extends SimpleTreeInfoProvider {
+public class LoggingAlertingTreeInfoProvider extends BpelSimpleTreeInfoProvider {
 
     private static LoggingAlertingTreeInfoProvider INSTANCE 
             = new LoggingAlertingTreeInfoProvider();

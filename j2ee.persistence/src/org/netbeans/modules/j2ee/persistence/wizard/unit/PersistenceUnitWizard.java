@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -82,22 +88,27 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         return new PersistenceUnitWizard();
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(PersistenceUnitWizard.class, "LBL_WizardTitle");
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
+    @Override
     public void previousPanel() {
         if (! hasPrevious()) {
             throw new NoSuchElementException();
@@ -105,21 +116,26 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         index--;
     }
     
+    @Override
     public void nextPanel() {
         if (! hasNext()) {
             throw new NoSuchElementException();
         }
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         project = Templates.getProject(wizard);
         descriptor = new PersistenceUnitWizardDescriptor(project);
@@ -129,11 +145,13 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         Wizards.mergeSteps(wizard, panels, null);
     }
     
+    @Override
     public Set instantiate() throws java.io.IOException {
         assert true : "should never be called, instantiate(ProgressHandle) should be called instead";
         return null;
     }
 
+    @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         try {
             handle.start();
@@ -150,12 +168,19 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         //first add libraries if necessary
         Library lib = null;
         if (descriptor.isContainerManaged()) {
+            Provider selectedProvider=descriptor.getSelectedProvider();
             if (descriptor.isNonDefaultProviderEnabled()) {
-                Provider selectedProvider=descriptor.getSelectedProvider();
                 lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
                     handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                     Util.addLibraryToProject(project, lib);
+                    selectedProvider = null;//to avoid one more library addition
+                }
+            }
+            if(selectedProvider != null && selectedProvider.getAnnotationProcessor() != null){
+                if(lib == null)lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+                if (lib != null){
+                    Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
                 }
             }
         } else {
@@ -164,6 +189,8 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
                 handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                 Util.addLibraryToProject(project, lib);
             }
+            JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(descriptor.getPersistenceConnection().getDriverClass());
+            PersistenceLibrarySupport.addDriver(project, driver[0]);
         }
         handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_CreatePU"));
         String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -68,21 +72,22 @@ public class DeleteCreateTest extends NbTestCase {
     protected void setUp() throws Exception {    
         dataRootDir = getWorkDir();
         dataRootDir.mkdirs();
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
-        // ping
-        File file = new File("dil");
-        file = FileUtil.normalizeFile(file);                
-        final FileObject fo = FileUtil.toFileObject(file);                
+        File userdir = new File(dataRootDir + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        MockServices.setServices(DeleteCreateTestAnnotationProvider.class);
         // interceptor init
-        TestAnnotationProvider.instance.init();
+        DeleteCreateTestAnnotationProvider.instance.init();
     }
 
     @Override
     protected void tearDown() throws Exception {        
-        TestAnnotationProvider.instance.reset();        
+        DeleteCreateTestAnnotationProvider.instance.reset();
     }
 
-    public void testDeleteCreate() throws IOException {        
+    public void testDeleteCreateFile() throws IOException {
         
         // non atomic delete and create
         File file1 = new File(dataRootDir, "file1");
@@ -94,8 +99,8 @@ public class DeleteCreateTest extends NbTestCase {
         fo1.getParent().createData(fo1.getName());             
         
         // get intercepted events 
-        String[] nonAtomic = TestAnnotationProvider.instance.events.toArray(new String[TestAnnotationProvider.instance.events.size()]);        
-        TestAnnotationProvider.instance.events.clear();
+        String[] nonAtomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
+        DeleteCreateTestAnnotationProvider.instance.events.clear();
         
         // atomic delete and create
         File file2 = new File(dataRootDir, "file2");
@@ -111,12 +116,12 @@ public class DeleteCreateTest extends NbTestCase {
         };
         fo2.getFileSystem().runAtomicAction(a);        
         // get intercepted events 
-        String[] atomic = TestAnnotationProvider.instance.events.toArray(new String[TestAnnotationProvider.instance.events.size()]);        
+        String[] atomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
         
         Logger l = Logger.getLogger(DeleteCreateTest.class.getName());
-        l.info("-------------------------------");
+        l.info("- atomic events ----------------------------------");
         for (String s : atomic) l.info(s);        
-        l.info("-------------------------------");
+        l.info("- non atomic events ------------------------------");
         for (String s : nonAtomic) l.info(s);
         l.info("-------------------------------");
         
@@ -126,5 +131,50 @@ public class DeleteCreateTest extends NbTestCase {
             assertEquals(atomic[i], nonAtomic[i]);            
         }        
     }  
-      
+
+    public void testDeleteCreateFolder() throws IOException {
+
+        // non atomic delete and create
+        File file1 = new File(dataRootDir, "folder1");
+        file1 = FileUtil.normalizeFile(file1);
+        file1.mkdirs();
+
+        final FileObject fo1 = FileUtil.toFileObject(file1);
+        fo1.delete();
+        fo1.getParent().createFolder(fo1.getName());
+
+        // get intercepted events
+        String[] nonAtomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
+        DeleteCreateTestAnnotationProvider.instance.events.clear();
+
+        // atomic delete and create
+        File file2 = new File(dataRootDir, "folder2");
+        file2 = FileUtil.normalizeFile(file2);
+        file2.mkdirs();
+
+        final FileObject fo2 = FileUtil.toFileObject(file2);
+        AtomicAction a = new AtomicAction() {
+            public void run() throws IOException {
+                fo2.delete();
+                fo2.getParent().createFolder(fo2.getName());
+            }
+        };
+        fo2.getFileSystem().runAtomicAction(a);
+        // get intercepted events
+        String[] atomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
+
+        Logger l = Logger.getLogger(DeleteCreateTest.class.getName());
+        l.info("- atomic events ----------------------------------");
+        for (String s : atomic) l.info(s);
+        l.info("- non atomic events ------------------------------");
+        for (String s : nonAtomic) l.info(s);
+        l.info("-------------------------------");
+
+        // test
+        assertEquals(atomic.length, nonAtomic.length);
+        for (int i = 0; i < atomic.length; i++) {
+            assertEquals(atomic[i], nonAtomic[i]);
+        }
+    }
+
 }

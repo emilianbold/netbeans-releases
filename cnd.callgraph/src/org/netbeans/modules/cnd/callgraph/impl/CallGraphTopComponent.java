@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,7 +64,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
 
 /**
  *
@@ -251,7 +253,9 @@ public final class CallGraphTopComponent extends TopComponent {
             JTabbedPane pane = (JTabbedPane) comp;
             Component[] c =  pane.getComponents();
             for (int i = 0; i< c.length; i++) {
-                removePanel((CallGraphPanel) c[i]);
+                if (c[i] instanceof CallGraphPanel) {
+                    removePanel((CallGraphPanel) c[i]);
+                }
             }
         } else if (comp instanceof CallGraphPanel) {
             removePanel((CallGraphPanel) comp);
@@ -304,13 +308,15 @@ public final class CallGraphTopComponent extends TopComponent {
             Component[] c =  tabs.getComponents();
             for (int i = 0; i< c.length; i++) {
                 if (c[i]!=current) {
-                    removePanel((CallGraphPanel) c[i]);
+                    if (c[i] instanceof CallGraphPanel) {
+                       removePanel((CallGraphPanel) c[i]);
+                    }
                 }
             }
         }
     }
 
-    final static class ResolvableHelper implements Serializable {
+    private static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
             return CallGraphTopComponent.getDefault();
@@ -318,6 +324,7 @@ public final class CallGraphTopComponent extends TopComponent {
     }
 
     private class CloseListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                 removePanel((JPanel) evt.getNewValue());
@@ -326,6 +333,7 @@ public final class CallGraphTopComponent extends TopComponent {
     }
 
     private class PopupListener extends MouseUtils.PopupMouseAdapter {        
+        @Override
         protected void showPopup (MouseEvent e) {
             pop.show(CallGraphTopComponent.this, e.getX(), e.getY());
         }
@@ -335,6 +343,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public Close() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseWindow"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             removePanel(null);
         }
@@ -344,6 +353,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public CloseAll() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseAll"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             close();
         }
@@ -353,6 +363,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public CloseAllButCurrent() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseAllButCurrent"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             closeAllButCurrent();
         }

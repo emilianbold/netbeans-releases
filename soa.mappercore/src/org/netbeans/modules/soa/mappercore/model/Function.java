@@ -33,7 +33,6 @@ import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
 import org.netbeans.modules.soa.mappercore.graphics.Triangle;
-import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
  *
@@ -54,6 +53,7 @@ public class Function extends Vertex {
     }
 
 
+    @Override
     public int getPinY() { return getHeight() - 1; }
     
     
@@ -202,6 +202,7 @@ public class Function extends Vertex {
     }
     
     
+    @Override
     public void layout() {
         int y = 2;
         

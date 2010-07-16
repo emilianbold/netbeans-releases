@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,11 +60,13 @@ public class FormPaletteActions extends PaletteActions {
     public FormPaletteActions() {
     }
 
+    @Override
     public Action[] getImportActions() {
 
         Action[] res = new Action[3];
 
         res[0] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.JarEntry.class);
                     }
@@ -70,6 +75,7 @@ public class FormPaletteActions extends PaletteActions {
                  PaletteUtils.getBundleString("ACSD_AddJAR_Button") ); // NOI18N
         
         res[1] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.LibraryEntry.class);
                     }
@@ -78,6 +84,7 @@ public class FormPaletteActions extends PaletteActions {
                  PaletteUtils.getBundleString("ACSD_AddLibrary_Button") ); // NOI18N
         
         res[2] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.ProjectEntry.class);
                     }
@@ -88,18 +95,22 @@ public class FormPaletteActions extends PaletteActions {
         return res;
     }
 
+    @Override
     public Action[] getCustomCategoryActions(org.openide.util.Lookup category) {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action[] getCustomItemActions(org.openide.util.Lookup item) {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action[] getCustomPaletteActions() {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action getPreferredAction(org.openide.util.Lookup item) {
         return null; //TODO implement this
     }

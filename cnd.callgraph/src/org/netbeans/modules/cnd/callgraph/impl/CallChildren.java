@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,10 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
-import org.netbeans.modules.cnd.callgraph.api.*;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.callgraph.api.Call;
+import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -57,17 +61,21 @@ public class CallChildren extends Children.Keys<Call> {
     private Node parent;
     private boolean isInited = false;
     private boolean isCalls;
+    private boolean showOverriding;
+    private static final RequestProcessor RP = new RequestProcessor(CallChildren.class.getName(), 1);
 
-    public CallChildren(Call call, CallGraphState model, boolean isCalls) {
+    public CallChildren(Call call, CallGraphState model, boolean isCalls, boolean showOverriding) {
         this.call = call;
         this.model = model;
         this.isCalls = isCalls;
+        this.showOverriding = showOverriding;
     }
 
-    public CallChildren(Function function, CallGraphState model, boolean isCalls) {
+    public CallChildren(Function function, CallGraphState model, boolean isCalls, boolean showOverriding) {
         this.function = function;
         this.model = model;
         this.isCalls = isCalls;
+        this.showOverriding = showOverriding;
     }
  
     public void dispose(){
@@ -85,15 +93,15 @@ public class CallChildren extends Children.Keys<Call> {
         List<Call> set;
         if (isCalls) {
             if (call != null) {
-                set = model.getModel().getCallees(call.getCallee());
+                set = model.getModel().getCallees(call.getCallee(), showOverriding);
             } else {
-                set = model.getModel().getCallees(function);
+                set = model.getModel().getCallees(function, showOverriding);
             }
         } else {
             if (call != null) {
-                set = model.getModel().getCallers(call.getCaller());
+                set = model.getModel().getCallers(call.getCaller(), showOverriding);
             } else {
-                set = model.getModel().getCallers(function);
+                set = model.getModel().getCallers(function, showOverriding);
             }
         }
         if (set != null && set.size() > 0) {
@@ -104,11 +112,12 @@ public class CallChildren extends Children.Keys<Call> {
         setKeys(new Call[0]);
     }
     
+    @Override
     protected Node[] createNodes(Call call) {
         if (call instanceof LoadingNode) {
             return new Node[]{(Node)call};
         }
-        Node node = new CallNode(call, model, isCalls);
+        Node node = new CallNode(call, model, isCalls, showOverriding);
         return new Node[]{node};
     }
 
@@ -154,7 +163,8 @@ public class CallChildren extends Children.Keys<Call> {
             setKeys(new Call[0]);
         } else {
             setKeys(new Call[]{new LoadingNode()});
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     resetKeys();
                 }

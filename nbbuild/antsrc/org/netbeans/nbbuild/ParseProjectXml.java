@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,6 +55,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,6 +75,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.xml.XMLConstants;
@@ -78,6 +85,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -101,10 +109,6 @@ public final class ParseProjectXml extends Task {
     static final String PROJECT_NS = "http://www.netbeans.org/ns/project/1";
     static final String NBM_NS2 = "http://www.netbeans.org/ns/nb-module-project/2";
     static final String NBM_NS3 = "http://www.netbeans.org/ns/nb-module-project/3";
-    
-    static final int TYPE_NB_ORG = 0;
-    static final int TYPE_SUITE = 1;
-    static final int TYPE_STANDALONE = 2;
 
     private File moduleProject;
     /**
@@ -165,6 +169,14 @@ public final class ParseProjectXml extends Task {
         moduleDependenciesProperty = s;
     }
 
+    private String codeNameBaseProperty;
+    /**
+     * Set the property to set the module code name base (separated by
+     * dashes not dots) to.
+     */
+    public void setCodeNameBaseProperty(String s) {
+        codeNameBaseProperty = s;
+    }
     private String codeNameBaseDashesProperty;
     /**
      * Set the property to set the module code name base (separated by
@@ -183,13 +195,13 @@ public final class ParseProjectXml extends Task {
         codeNameBaseSlashesProperty = s;
     }
 
-    private String domainProperty;
+    private String commitMailProperty;
     /**
-     * Set the property to set the module's netbeans.org domain to.
-     * Only applicable to modules in netbeans.org (i.e. no <path>).
+     * Set the property to set the module's commit mail address(es) to.
+     * Only applicable to modules in netbeans.org (i.e. no {@code <path>}).
      */
-    public void setDomainProperty(String s) {
-        domainProperty = s;
+    public void setCommitMailProperty(String s) {
+        commitMailProperty = s;
     }
 
     private String moduleClassPathProperty;
@@ -322,7 +334,7 @@ public final class ParseProjectXml extends Task {
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
-            VALIDATE: if (getModuleType(pDoc) == TYPE_NB_ORG) {
+            VALIDATE: if (getModuleType(pDoc) == ModuleType.NB_ORG) {
                 // Ensure project.xml is valid according to schema.
                 File nball = new File(getProject().getProperty("nb_all"));
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -421,7 +433,9 @@ public final class ParseProjectXml extends Task {
                 }
             }
             ModuleListParser modules = null;
-            Dep[] deps = null;
+            Dep[] rawDeps = null;
+            Dep[] translatedDeps = null;
+            String cnb = getCodeNameBase(pDoc);
             if (moduleDependenciesProperty != null || 
                     moduleClassPathProperty != null || 
                     moduleRunClassPathProperty != null ||
@@ -430,69 +444,85 @@ public final class ParseProjectXml extends Task {
                 Hashtable<String,String> properties = getProject().getProperties();
                 properties.put("project", moduleProject.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
-                ModuleListParser.Entry myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
+                ModuleListParser.Entry myself = modules.findByCodeNameBase(cnb);
                 if (myself == null) { // #71130
                     ModuleListParser.resetCaches();
                     modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
-                    String cnb = getCodeNameBase(pDoc);
                     myself = modules.findByCodeNameBase(cnb);
                     assert myself != null : "Cannot find myself as " + cnb;
                 }
-                deps = getDeps(pDoc, modules);
+                Dep[][] deps = getDeps(cnb, pDoc, modules);
+                rawDeps = deps[0];
+                translatedDeps = deps[1];
             }
             if (moduleDependenciesProperty != null) {
-                if (moduleDependenciesProperty != null) {
-                    StringBuffer b = new StringBuffer();
-                    for (Dep d : deps) {
-                        if (!d.run) {
-                            continue;
-                        }
-                        if (b.length() > 0) {
-                            b.append(", ");
-                        }
-                        b.append(d);
+                StringBuffer b = new StringBuffer();
+                for (Dep d : rawDeps) {
+                    if (!d.run) {
+                        continue;
                     }
                     if (b.length() > 0) {
-                        define(moduleDependenciesProperty, b.toString());
+                        b.append(", ");
                     }
+                    b.append(d);
+                }
+                if (b.length() > 0) {
+                    define(moduleDependenciesProperty, b.toString());
                 }
             }
+            if (codeNameBaseProperty != null) {
+                define(codeNameBaseProperty, cnb);
+            }
             if (codeNameBaseDashesProperty != null) {
-                String cnb = getCodeNameBase(pDoc);
                 define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
             }
             if (codeNameBaseSlashesProperty != null) {
-                String cnb = getCodeNameBase(pDoc);
                 define(codeNameBaseSlashesProperty, cnb.replace('.', '/'));
             }
             if (moduleClassPathProperty != null) {
-                String cp = computeClasspath(pDoc, modules, deps, false);
+                String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, false);
                 define(moduleClassPathProperty, cp);
             }
             if (moduleRunClassPathProperty != null) {
-                String cp = computeClasspath(pDoc, modules, deps, true);
+                String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, true);
                 define(moduleRunClassPathProperty, cp);
             }
-            if (domainProperty != null) {
-                if (getModuleType(pDoc) != TYPE_NB_ORG) {
-                    throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
+            if (commitMailProperty != null) {
+                if (getModuleType(pDoc) != ModuleType.NB_ORG) {
+                    throw new BuildException("Cannot set " + commitMailProperty + " for a non-netbeans.org module", getLocation());
                 }
-                File nball = new File(getProject().getProperty("nb_all"));
-                File basedir = getProject().getBaseDir();
-                Pattern p = Pattern.compile("([^/]+)(/([^/]+))*//([^/]+)/" + Pattern.quote(basedir.getName()));
-                Reader r = new FileReader(new File(nball, "nbbuild/translations"));
-                try {
-                    BufferedReader br = new BufferedReader(r);
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        Matcher m = p.matcher(line);
-                        if (m.matches()) {
-                            define(domainProperty, m.group(1));
-                            break;
+                String name = getProject().getBaseDir().getName() + "/";
+                StringBuilder aliases = null;
+                File hgmail = new File(getProject().getProperty("nb_all"), ".hgmail");
+                if (hgmail.canRead()) {
+                    Reader r = new FileReader(hgmail);
+                    try {
+                        BufferedReader br = new BufferedReader(r);
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            int equals = line.indexOf('=');
+                            if (equals == -1) {
+                                continue;
+                            }
+                            for (String piece: line.substring(equals + 1).split(",")) {
+                                if (name.matches(piece.replace(".", "[.]").replace("*", ".*"))) {
+                                    if (aliases == null) {
+                                        aliases = new StringBuilder();
+                                    } else {
+                                        aliases.append(' ');
+                                    }
+                                    aliases.append(line.substring(0, equals));
+                                }
+                            }
                         }
+                    } finally {
+                        r.close();
                     }
-                } finally {
-                    r.close();
+                } else {
+                    log("Cannot find " + hgmail + " to read addresses from", Project.MSG_VERBOSE);
+                }
+                if (aliases != null) {
+                    define(commitMailProperty, aliases.toString());
                 }
             }
             if (classPathExtensionsProperty != null) {
@@ -511,7 +541,7 @@ public final class ParseProjectXml extends Task {
                }
                ParseProjectXml.cachedTestDistLocation = testDistLocation;
     
-               for (TestDeps td : getTestDeps(pDoc, modules, getCodeNameBase(pDoc))) {
+               for (TestDeps td : getTestDeps(pDoc, modules, cnb)) {
                    // unit tests
                    TestType testType = getTestType(td.testtype);
                    if (testType!= null ) {
@@ -639,6 +669,18 @@ public final class ParseProjectXml extends Task {
         public Dep(ModuleListParser modules) {
             this.modules = modules;
         }
+
+        public Dep(String parse, ModuleListParser modules) {
+            this(modules);
+            Matcher m = Pattern.compile("([^=>/ ]+)(?:/([\\d-]+))?(?: > (.+)| = (.+))?").matcher(parse);
+            if (!m.matches()) {
+                throw new BuildException("Malformed dep: " + parse);
+            }
+            codenamebase = m.group(1);
+            release = m.group(2);
+            spec = m.group(3);
+            impl = m.group(4) != null;
+        }
         
         public @Override String toString() throws BuildException {
             StringBuffer b = new StringBuffer(codenamebase);
@@ -680,7 +722,8 @@ public final class ParseProjectXml extends Task {
         }
 
         private boolean matches(Attributes attr) {
-            String givenCodeName = attr.getValue("OpenIDE-Module");
+            boolean[] osgi = new boolean[1];
+            String givenCodeName = JarWithModuleAttributes.extractCodeName(attr, osgi);
             int slash = givenCodeName.indexOf('/');
             int givenRelease = -1;
             if (slash != -1) {
@@ -704,13 +747,17 @@ public final class ParseProjectXml extends Task {
                 return false;
             }
             if (spec != null) {
-                String givenSpec = attr.getValue("OpenIDE-Module-Specification-Version");
+                String givenSpec = attr.getValue(
+                    osgi[0] ?
+                        "Bundle-Version" :
+                        "OpenIDE-Module-Specification-Version"
+                );
                 if (givenSpec == null) {
                     return false;
                 }
                 // XXX cannot use org.openide.modules.SpecificationVersion from here
-                int[] specVals = digitize(spec);
-                int[] givenSpecVals = digitize(givenSpec);
+                int[] specVals = digitize(spec, osgi[0]);
+                int[] givenSpecVals = digitize(givenSpec, osgi[0]);
                 int len1 = specVals.length;
                 int len2 = givenSpecVals.length;
                 int max = Math.max(len1, len2);
@@ -731,9 +778,12 @@ public final class ParseProjectXml extends Task {
             }
             return true;
         }
-        private int[] digitize(String spec) throws NumberFormatException {
+        private int[] digitize(String spec, boolean osgi) throws NumberFormatException {
             StringTokenizer tok = new StringTokenizer(spec, ".");
             int len = tok.countTokens();
+            if (osgi && len > 3) {
+                len = 3;
+            }
             int[] digits = new int[len];
             for (int i = 0; i < len; i++) {
                 digits[i] = Integer.parseInt(tok.nextToken());
@@ -743,15 +793,15 @@ public final class ParseProjectXml extends Task {
         
     }
 
-    private Dep[] getDeps(Document pDoc, ModuleListParser modules) throws BuildException {
+    private Dep[][] getDeps(String myCNB, Document pDoc, ModuleListParser modules) throws Exception {
         Element cfg = getConfig(pDoc);
         Element md = findNBMElement(cfg, "module-dependencies");
         if (md == null) {
             throw new BuildException("No <module-dependencies>", getLocation());
         }
         List<Dep> deps = new ArrayList<Dep>();
+        List<URL> moduleAutoDeps = new ArrayList<URL>();
         for (Element dep : XMLUtil.findSubElements(md)) {
-            Dep d = new Dep(modules);
             Element cnb = findNBMElement(dep, "code-name-base");
             if (cnb == null) {
                 throw new BuildException("No <code-name-base>", getLocation());
@@ -760,6 +810,14 @@ public final class ParseProjectXml extends Task {
             if (t == null) {
                 throw new BuildException("No text in <code-name-base>", getLocation());
             }
+            ModuleListParser.Entry other = modules.findByCodeNameBase(t);
+            if (other != null) {
+                File autodeps = other.getModuleAutoDeps();
+                if (autodeps.exists()) {
+                    moduleAutoDeps.add(autodeps.toURI().toURL());
+                }
+            }
+            Dep d = new Dep(modules);
             d.codenamebase = t;
             Element rd = findNBMElement(dep, "run-dependency");
             if (rd != null) {
@@ -788,7 +846,81 @@ public final class ParseProjectXml extends Task {
             d.compile = findNBMElement(dep, "compile-dependency") != null;
             deps.add(d);
         }
-        return deps.toArray(new Dep[deps.size()]);
+        Dep[] rawDeps = deps.toArray(new Dep[deps.size()]);
+        translateModuleAutoDeps(myCNB, deps, moduleAutoDeps, modules);
+        Dep[] translatedDeps = deps.toArray(new Dep[deps.size()]);
+        return new Dep[][] {rawDeps, translatedDeps};
+    }
+
+    private void translateModuleAutoDeps(String myCNB, List<Dep> deps, List<URL> moduleAutoDeps, ModuleListParser modules) throws Exception { // #178260
+        if (moduleAutoDeps.isEmpty()) {
+            return;
+        }
+        Set<String> depsS = new HashSet<String>();
+        String result;
+        AntClassLoader loader = new AntClassLoader();
+        try {
+        for (String coreModule : new String[] {"org.openide.util", "org.openide.modules", "org.netbeans.bootstrap", "org.netbeans.core.startup"}) {
+            ModuleListParser.Entry entry = modules.findByCodeNameBase(coreModule);
+            if (entry == null) {
+                log("Cannot translate according to " + moduleAutoDeps + " because could not find " + coreModule, Project.MSG_WARN);
+                return;
+            }
+            File jar = entry.getJar();
+            if (!jar.isFile()) {
+                log("Cannot translate according to " + moduleAutoDeps + " because could not find " + jar, Project.MSG_WARN);
+                return;
+            }
+            loader.addPathComponent(jar);
+        }
+        Class<?> automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
+        Method refineDependenciesSimple;
+        try {
+            refineDependenciesSimple = automaticDependenciesClazz.getMethod("refineDependenciesSimple", String.class, Set.class);
+        } catch (NoSuchMethodException x) {
+            log("Cannot translate according to " + moduleAutoDeps + " because AutomaticDependencies is too old", Project.MSG_WARN);
+            return;
+        }
+        for (Dep d : deps) {
+            if (d.run) {
+                depsS.add(d.toString());
+            }
+        }
+        Object automaticDependencies = automaticDependenciesClazz.getMethod("parse", URL[].class).invoke(
+                null, (Object) moduleAutoDeps.toArray(new URL[moduleAutoDeps.size()]));
+        try {
+            result = (String) refineDependenciesSimple.invoke(automaticDependencies, myCNB, depsS);
+        } catch (InvocationTargetException x) {
+            // Can occur when core modules are being recompiled in the same Ant run.
+            log("Cannot translate according to " + moduleAutoDeps + " due to " + x.getCause(), Project.MSG_WARN);
+            return;
+        }
+        } finally {
+            loader.cleanup(); // #180970
+        }
+        if (result == null) {
+            return;
+        }
+        log("warning: " + result, Project.MSG_WARN);
+        Set<String> noCompileDeps = new HashSet<String>();
+        Iterator<Dep> it = deps.iterator();
+        while (it.hasNext()) {
+            Dep d = it.next();
+            if (d.run) {
+                it.remove();
+                if (!d.compile) {
+                    noCompileDeps.add(d.codenamebase);
+                }
+            }
+        }
+        for (String dS : depsS) {
+            Dep d = new Dep(dS, modules);
+            d.run = true;
+            if (!noCompileDeps.contains(d.codenamebase)) {
+                d.compile = true;
+            }
+            deps.add(d);
+        }
     }
 
     private String getCodeNameBase(Document d) throws BuildException {
@@ -804,19 +936,19 @@ public final class ParseProjectXml extends Task {
         return t;
     }
 
-    private int getModuleType(Document d) throws BuildException {
+    private ModuleType getModuleType(Document d) throws BuildException {
         Element data = getConfig(d);
         if (findNBMElement(data, "suite-component") != null) {
-            return TYPE_SUITE;
+            return ModuleType.SUITE;
         } else if (findNBMElement(data, "standalone") != null) {
-            return TYPE_STANDALONE;
+            return ModuleType.STANDALONE;
         } else {
-            return TYPE_NB_ORG;
+            return ModuleType.NB_ORG;
         }
     }
 
-    private String computeClasspath(Document pDoc, ModuleListParser modules, Dep[] deps, boolean runtime) throws BuildException, IOException, SAXException {
-        String myCnb = getCodeNameBase(pDoc);
+    private String computeClasspath(String myCNB, Document pDoc, ModuleListParser modules, Dep[] deps, boolean runtime)
+            throws BuildException, IOException, SAXException {
         StringBuffer cp = new StringBuffer();
         Path clusterPathS = (Path) getProject().getReference("cluster.path.id");
         Set<File> clusterPath = null;
@@ -853,11 +985,15 @@ public final class ParseProjectXml extends Task {
             
             if (depJar.isFile()) { // might be false for m.run.cp if DO_NOT_RECURSE and have a runtime-only dep
                 Attributes attr;
-                JarFile jarFile = new JarFile(depJar, false);
                 try {
-                    attr = jarFile.getManifest().getMainAttributes();
-                } finally {
-                    jarFile.close();
+                    JarFile jarFile = new JarFile(depJar, false);
+                    try {
+                        attr = jarFile.getManifest().getMainAttributes();
+                    } finally {
+                        jarFile.close();
+                    }
+                } catch (ZipException x) {
+                    throw new BuildException("Could not open " + depJar + ": " + x, x, getLocation());
                 }
 
                 if (!dep.matches(attr)) { // #68631
@@ -870,8 +1006,8 @@ public final class ParseProjectXml extends Task {
 
                 if (!dep.impl && /* #71807 */ dep.run && !runtime) {
                     String friends = attr.getValue("OpenIDE-Module-Friends");
-                    if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
-                        throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
+                    if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCNB)) {
+                        throw new BuildException("The module " + myCNB + " is not a friend of " + depJar, getLocation());
                     }
                     String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
                     if ("-".equals(pubpkgs)) {
@@ -892,9 +1028,9 @@ public final class ParseProjectXml extends Task {
             }
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
-        ModuleListParser.Entry entry = modules.findByCodeNameBase(myCnb);
+        ModuleListParser.Entry entry = modules.findByCodeNameBase(myCNB);
         if (entry == null) {
-            throw new IllegalStateException("Cannot find myself as " + myCnb);
+            throw new IllegalStateException("Cannot find myself as " + myCNB);
         }
         for (File f : entry.getClassPathExtensions()) {
             cp.append(':');
@@ -908,9 +1044,9 @@ public final class ParseProjectXml extends Task {
         if (!skipCnb.add(cnb)) {
             return;
         }
-        log("Processing for recursive deps: " + cnb, Project.MSG_VERBOSE); // NO18N
+        log("Processing for recursive deps: " + cnb, Project.MSG_DEBUG);
         for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
-            log("  Added dep: " + nextModule, Project.MSG_VERBOSE); // NO18N
+            log("  Added dep: " + nextModule, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
 
             if (!additions.contains(depJar)) {
@@ -940,21 +1076,23 @@ public final class ParseProjectXml extends Task {
         File jar = module.getJar();
         if (jar == null) return null;
 
-        if (module.getClusterName() != null && clusterPath != null) {
-            File clusterF = jar.getParentFile().getParentFile();
-            if (!clusterPath.contains(clusterF)) {
-                String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
-                        " against because it is part of the cluster " +
-                        clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
-                        "Cluster.path is: " + clusterPath;
-                throw new BuildException(msg, getLocation());
+        OK: if (module.getClusterName() != null && clusterPath != null) {
+            File clusterF = jar.getParentFile();
+            while (clusterF != null) {
+                if (clusterPath.contains(clusterF)) {
+                    break OK;
+                }
+                clusterF = clusterF.getParentFile();
             }
+            String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
+                    " against because it is part of the cluster " +
+                    clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
+                    "Cluster.path is: " + clusterPath;
+            throw new BuildException(msg, getLocation());
         }
-        /* XXX consider readding:
         if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
             throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
         }
-         */
         if (!jar.isFile()) {
             File srcdir = module.getSourceLocation();
             if (Project.toBoolean(getProject().getProperty(DO_NOT_RECURSE))) {
@@ -1413,7 +1551,7 @@ public final class ParseProjectXml extends Task {
             File testSrcDir = new File(moduleProject, "test/" + testDeps.testtype + "/src");
             if (!testSrcDir.isDirectory()) {
                 String error = "No such dir " + testSrcDir + "; should not define test deps";
-                if (getModuleType(pDoc) == TYPE_NB_ORG) {
+                if (getModuleType(pDoc) == ModuleType.NB_ORG) {
                     throw new BuildException(error, getLocation());
                 } else {
                     // For compatibility reasons probably cannot make this fatal.

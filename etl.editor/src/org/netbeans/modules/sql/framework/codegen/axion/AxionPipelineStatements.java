@@ -30,8 +30,8 @@ import org.netbeans.modules.sql.framework.codegen.TemplateBuilder;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
 
 /**
  * @author Ritesh Adval

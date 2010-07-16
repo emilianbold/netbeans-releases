@@ -16,15 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * PanelOptionsVisual1.java
- *
- * Created on January 26, 2006, 5:24 PM
- */
-
 package org.netbeans.modules.bpel.core.wizard;
-
 
 import java.text.MessageFormat;
 import javax.swing.JTextField;
@@ -37,22 +29,15 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 
 /**
- *
  * @author  Praveen
  */
 public class BpelOptionsPanel extends javax.swing.JPanel {
     
     private static final long serialVersionUID = 1L;
     
-    private static final String DEFAULT_SERVICE_NAME =
-            NbBundle.getMessage(BpelOptionsPanel.class,
-            "TXT_defaultServiceName");                                      //NOI18N
-    private static final String DEFAULT_PROJECT_NAME =
-            NbBundle.getMessage(BpelOptionsPanel.class,
-            "TXT_defaultProjectName");                                      //NOI18N
-    private static final String TARGET_URL_PREFIX =
-            NbBundle.getMessage(BpelOptionsPanel.class,"TXT_defaultTNS");   //NOI18N
-    
+    private static final String DEFAULT_SERVICE_NAME = NbBundle.getMessage(BpelOptionsPanel.class, "TXT_defaultServiceName"); // NOI18N
+    private static final String DEFAULT_PROJECT_NAME = NbBundle.getMessage(BpelOptionsPanel.class, "TXT_defaultProjectName"); // NOI18N
+
     /** Creates new form PanelOptionsVisual1 */
     public BpelOptionsPanel(NewBpelFilePanel newBpelFilePanel) {
         initComponents();
@@ -152,8 +137,10 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     private String generateNamespace() {
         String projectName = null;
         Project proj = newBpelFilePanel.getProject();
+
         if (proj != null) {
             ProjectInformation projInfo = ProjectUtils.getInformation(proj);
+        
             if (projInfo != null) {
                 projectName = projInfo.getName();
             }
@@ -161,18 +148,19 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
         if (projectName == null || projectName.length() == 0) {
             projectName = DEFAULT_PROJECT_NAME;
         }
-        //
         String serviceName = null;
+
         if (fileNameTF != null) {
             serviceName = fileNameTF.getText();
         }
         if (serviceName == null || serviceName.length() == 0) {
             serviceName = DEFAULT_SERVICE_NAME;
         }
-        //
-        String result = MessageFormat.format(
-                TARGET_URL_PREFIX, projectName, serviceName);
-        return result;
+        return generateNamespace(projectName, serviceName);
+    }
+
+    protected static String generateNamespace(String projectName, String serviceName) {
+        return "http://enterprise.netbeans.org/bpel/" + projectName + "/" + serviceName; // NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

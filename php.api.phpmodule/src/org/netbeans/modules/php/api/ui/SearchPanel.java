@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,15 +48,15 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.UiUtils.SearchWindow.SearchWindowSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,7 +70,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Mysik
  */
 public final class SearchPanel extends JPanel {
-    private static final long serialVersionUID = 26389843114771322L;
+    private static final long serialVersionUID = 26389784456741L;
 
     private final RequestProcessor rp;
     private final SearchWindowSupport support;
@@ -95,6 +98,7 @@ public final class SearchPanel extends JPanel {
 
     public boolean open() {
         descriptor = new DialogDescriptor(this, support.getWindowTitle(), true, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
             }
@@ -105,6 +109,7 @@ public final class SearchPanel extends JPanel {
             foundItemsList.setEnabled(true);
             progressBar.setIndeterminate(true);
             detectTask = rp.create(new Runnable() {
+                @Override
                 public void run() {
                     // just to be sure that the progress bar is displayed at least for a while
                     try {
@@ -115,6 +120,7 @@ public final class SearchPanel extends JPanel {
                     final List<String> allItems = support.detect();
                     assert allItems != null;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateFoundItems(allItems);
                         }
@@ -154,7 +160,7 @@ public final class SearchPanel extends JPanel {
         foundItemsList.setListData(foundItems.toArray(new String[foundItems.size()]));
         // In an attempt to hide the progress bar and label, but force the occupy the same space.
         String message = null;
-        if (foundItems.size() == 0) {
+        if (foundItems.isEmpty()) {
             message = support.getNoItemsFound();
         } else {
             message = " "; // NOI18N
@@ -186,46 +192,46 @@ public final class SearchPanel extends JPanel {
         setFocusTraversalPolicy(null);
 
         detectedFilesLabel.setLabelFor(foundItemsList);
-        org.openide.awt.Mnemonics.setLocalizedText(detectedFilesLabel, "title"); // NOI18N
 
+        Mnemonics.setLocalizedText(detectedFilesLabel, "title");
         foundItemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         foundItemsList.setEnabled(false);
         foundItemsScrollPane.setViewportView(foundItemsList);
-
         foundItemsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
         foundItemsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
+
         messageLabel.setLabelFor(progressBar);
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, "please wait..."); // NOI18N
+        Mnemonics.setLocalizedText(messageLabel, "please wait..."); // NOI18N
 
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, foundItemsScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                    .add(GroupLayout.LEADING, progressBar, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                    .add(GroupLayout.LEADING, detectedFilesLabel)
-                    .add(GroupLayout.LEADING, messageLabel))
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(foundItemsScrollPane, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(progressBar, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(detectedFilesLabel, Alignment.LEADING)
+                    .addComponent(messageLabel, Alignment.LEADING))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(detectedFilesLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(foundItemsScrollPane, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(messageLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0))
+                .addComponent(detectedFilesLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(foundItemsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(messageLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
         );
 
         detectedFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleName")); // NOI18N

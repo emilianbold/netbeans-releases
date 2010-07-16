@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -55,8 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -70,7 +71,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 
 /**
@@ -92,31 +92,7 @@ public class ModuleListTest extends TestBase {
         standaloneSuite3 = resolveEEPFile("suite3");
     }
 
-    // #150856: CME on system props does happen...
-    @RandomlyFails  // not guarantied that ConcurrentModificationException will always happen
-    public void testConcurrentModificationOfSystemProperties1() {
-        try {
-            Thread t = new Thread(new Runnable() {
-
-                public void run() {
-                    for (int i = 0; i < 20000; i++) {
-                        System.setProperty("whatever", "anything" + i);
-                    }
-                }
-            });
-            t.start();
-            for (int i = 0; i < 2000; i++) {
-                Map<String, String> props = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
-            }
-            t.join();
-        } catch (ConcurrentModificationException e) {
-            return;
-        } catch (Exception e2) {
-        }
-        fail("Expected to throw ConcurrentModificationException, but caught none");
-    }
-
-    // #150856: ... but not when cloned first ...
+    // #150856: CME on system props does happen ... but not when cloned first ...
     public void testConcurrentModificationOfSystemProperties2() throws InterruptedException {
         Thread t = new Thread(new Runnable() {
 
@@ -153,7 +129,7 @@ public class ModuleListTest extends TestBase {
         t.join();
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
         PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), NbModuleType.NETBEANS_ORG, "org.netbeans.modules.ant.browsetask");
@@ -189,15 +165,12 @@ public class ModuleListTest extends TestBase {
     }
 
     private class ModuleListLogHandler extends Handler {
-        private boolean cacheUsed = true;
         private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
         String error;
 
         @Override
         public void publish(LogRecord record) {
             String msg = record.getMessage();
-            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
-                cacheUsed = false;
             assertFalse("Duplicate scan of project tree detected: " + msg,
                     msg.startsWith("Warning: two modules found with the same code name base"));
             if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
@@ -216,47 +189,8 @@ public class ModuleListTest extends TestBase {
 
         @Override
         public void close() throws SecurityException {
-            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
         }
 
-    }
-
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
-    public void testConcurrentScanningNBOrg() throws Exception {
-        ModuleList.refresh();   // disable cache
-        final ModuleList mlref[] = new ModuleList[1];
-        Logger logger = Logger.getLogger(ModuleList.class.getName());
-        Level origLevel = logger.getLevel();
-        ModuleListLogHandler handler = new ModuleListLogHandler();
-        try {
-            logger.setLevel(Level.ALL);
-            logger.addHandler(handler);
-
-            Thread t = new Thread() {
-
-                @Override
-                public void run() {
-                    try {
-                        mlref[0] = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            };
-            long start = System.currentTimeMillis();
-            t.start();
-            ModuleList ml = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
-            t.join();
-            System.out.println("Concurrent scans took " + (System.currentTimeMillis() - start) + "msec.");
-            assertNull(handler.error, handler.error);   // error is non-null when duplicate scan detected
-            assertNotNull("Module list for root " + nbRootFile() + " returned null", ml);
-            assertNotNull("Module list for root " + nbRootFile() + " returned null", mlref[0]);
-            assertTrue("No projects scanned.", handler.scannedDirs.size() > 0);
-            System.out.println("Total " + handler.scannedDirs.size() + " project folders scanned.");
-        } finally {
-            logger.removeHandler(handler);
-            logger.setLevel(origLevel);
-        }
     }
 
     public void testConcurrentScanningBinary() throws Exception {
@@ -380,7 +314,7 @@ public class ModuleListTest extends TestBase {
 //        // XXX test that getAllEntries() also includes nonstandard modules, and so does getKnownEntries() if necessary
 //    }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testExternalEntries() throws Exception {
         // Start with suite1 - should find also nb_all.
         long start = System.currentTimeMillis();

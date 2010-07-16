@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,11 +119,13 @@ public class DoubleFileStorage extends FileStorage {
         }
     }
     
+    @Override
     public void close() throws IOException{
        cache_0_dataFile.close();
        cache_1_dataFile.close();
     }
     
+    @Override
     public Persistent read(final Key key) throws IOException {
         if( Stats.hardFickle && key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             return fickleMap.get(key);
@@ -135,8 +140,11 @@ public class DoubleFileStorage extends FileStorage {
         
     }
     
+    @Override
     public void write(final Key key, final Persistent object) throws IOException {
-        WriteStatistics.instance().update(1);
+        if (Stats.writeStatistics) {
+            WriteStatistics.instance().update(1);
+        }
         if( Stats.hardFickle &&  key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             fickleMap.put(key, object);
             return;
@@ -147,6 +155,7 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
+    @Override
     public void remove(final Key key) throws IOException {
         if( Stats.hardFickle &&  key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             fickleMap.remove(key);
@@ -158,11 +167,14 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
+    @Override
     public boolean defragment(final long timeout) throws IOException {
         
         boolean needMoreTime = false;
         
-        WriteStatistics.instance().update(0);
+        if (Stats.writeStatistics) {
+            WriteStatistics.instance().update(0);
+        }
         
         if( Stats.traceDefragmentation ) {
             System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
@@ -237,6 +249,7 @@ public class DoubleFileStorage extends FileStorage {
         return needMoreTime;
     }
     
+    @Override
     public void dump(PrintStream ps) throws IOException {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
@@ -249,6 +262,7 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\n"); // NOI18N
     }
     
+    @Override
     public void dumpSummary(PrintStream ps) throws IOException {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
@@ -261,6 +275,7 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\n"); // NOI18N
     }
     
+    @Override
     public int getFragmentationPercentage() throws IOException {
         final long fileSize;
         final float delta;
@@ -272,11 +287,13 @@ public class DoubleFileStorage extends FileStorage {
         return Math.round(percentage);
     }
     
+    @Override
     public long getSize() throws IOException {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getSize() + getFileByFlag(!activeFlag).getSize();
     }
     
+    @Override
     public int getObjectsCount() {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();

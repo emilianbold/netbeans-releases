@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -62,10 +65,20 @@ import org.openide.util.Exceptions;
     private List<String> compilerSets;
     private int nextSet;
     private String platform;
+    private Process process;
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
         compilerSets = new ArrayList<String>();
+    }
+
+    public boolean cancel() {
+        Process aProcess = process;
+        if (aProcess != null) {
+            aProcess.destroy();
+            return true;
+        }
+        return false;
     }
 
     public void runScript() {
@@ -76,8 +89,8 @@ import org.openide.util.Exceptions;
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
                 HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
-                Process process = pb.call();
-                process.getOutputStream().write(CompilerSetManager.getRemoteScript(null).getBytes());
+                process = pb.call();
+                process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null).getBytes());
                 process.getOutputStream().close();
 
                 List<String> lines = ProcessUtils.readProcessOutput(process);
@@ -90,25 +103,27 @@ import org.openide.util.Exceptions;
                 }
 
                 if (status != 0) {
-                    RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+                    RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
                     ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
                 } else {
                     int i = 0;
                     for (String s: lines) {
-                        RemoteUtil.LOGGER.fine("CSSM.runScript line: " + s); // NOI18N
+                        RemoteUtil.LOGGER.log(Level.FINE, "CSSM.runScript line: {0}", s); // NOI18N
                         if (i == 0) {
                             platform = s;
-                            RemoteUtil.LOGGER.fine("    platform [" + platform + "]"); // NOI18N
+                            RemoteUtil.LOGGER.log(Level.FINE, "    platform [{0}]", platform); // NOI18N
                         } else {
-                            RemoteUtil.LOGGER.fine("    line [" + s + "]"); // NOI18N
+                            RemoteUtil.LOGGER.log(Level.FINE, "    line [{0}]", s); // NOI18N
                             compilerSets.add(s);
                         }
                         i++;
                     }
                 }
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
+                RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
                 setFailed(ex.getMessage());
+            } finally {
+                process = null;
             }
         }
     }
@@ -133,4 +148,5 @@ import org.openide.util.Exceptions;
         }
         return buf.toString();
     }
+
 }

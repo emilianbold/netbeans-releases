@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,34 +44,20 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.util.TreeSet;
 import java.util.jar.JarFile;
-import javax.tools.JavaFileObject;
-import junit.extensions.TestSetup;
-import junit.framework.*;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 
 /**
  *
  * @author Petr Hrebejk
  */
-public class CachingFolderArchiveTest extends TestCase {
+public class CachingFolderArchiveTest extends NbTestCase {
     
-    protected static Setup setup;
+    private File workDir;
+    protected File rtFile;
+    private File rtFolder;
     private CachingArchiveProvider archiveProvider;
         
     public CachingFolderArchiveTest(String testName) {
@@ -77,18 +66,19 @@ public class CachingFolderArchiveTest extends TestCase {
 
     protected void setUp() throws Exception {
         archiveProvider = new CachingArchiveProvider();
+        workDir = getWorkDir();
+        TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
+        rtFile = new File( workDir, TestUtil.RT_JAR );
+        JarFile rtJar = new JarFile( rtFile );
+
+        rtFolder = new File( workDir, "rtFolder" );
+        TestUtil.unzip( rtJar, rtFolder );
+
+        archiveProvider = new CachingArchiveProvider();
     }
 
-    protected void tearDown() throws Exception {                
-    }
-
-    public static Test suite() {
-        setup = new Setup( new TestSuite( CachingFolderArchiveTest.class ) );
-        return setup;
-    }
-     
     protected Archive createArchive() {
-        return new FolderArchive( setup.rtFolder );
+        return new FolderArchive(rtFolder);
     }
     
     // Test methods ------------------------------------------------------------
@@ -128,37 +118,4 @@ public class CachingFolderArchiveTest extends TestCase {
 //                
 //    }
     
-    // Innerclasses ------------------------------------------------------------
-        
-    static class Setup extends TestSetup {
-        
-        public File workDir;
-        public File rtFile;
-        public File rtFolder;
-        public CachingArchiveProvider archiveProvider;
-        
-        public Setup( Test test ) {
-            super( test );
-        }
-        
-        protected void tearDown() throws Exception {
-            TestUtil.removeWorkFolder( workDir );
-            super.tearDown();
-        }
-
-        protected void setUp() throws Exception {
-            super.setUp();
-            workDir = TestUtil.createWorkFolder();
-            TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
-            rtFile = new File( workDir, TestUtil.RT_JAR );
-            JarFile rtJar = new JarFile( rtFile );
-
-            rtFolder = new File( workDir, "rtFolder" );
-            TestUtil.unzip( rtJar, rtFolder );
-            
-            archiveProvider = new CachingArchiveProvider();
-        }
-        
-    }
-           
 }

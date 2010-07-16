@@ -23,10 +23,9 @@ import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 /**
  *
@@ -55,7 +54,11 @@ public abstract class AbstractVariable implements Variable {
         myName = name;
     }
 
-    public void setOperationReference(OperationReference operation) {
+    public OperationReference getParent() {
+        return myOperationReference;
+    }
+
+    public void setParent(OperationReference operation) {
         myOperationReference = operation;
     }
 
@@ -72,6 +75,49 @@ public abstract class AbstractVariable implements Variable {
         Reference<Message> messageRef = operationParam.getMessage();
         
         return messageRef;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (super.equals(obj)) {
+            return true;
+        }
+
+        if (!(obj instanceof AbstractVariable)) {
+            return false;
+        }
+
+        AbstractVariable objVar = (AbstractVariable)obj;
+        TMapModel objModel = objVar.getModel();
+        Reference<Message> objMessage = objVar.getMessage();
+        String objName = objVar.getName();
+
+        TMapModel curModel = this.getModel();
+        Reference<Message> curMessage = this.getMessage();
+        String curName = this.getName();
+
+        if ( ( (curModel != null && curModel.equals(objModel))
+                || (objModel == null && curModel == null))
+                && ( (curMessage != null && curMessage.equals(objMessage))
+                  || (objMessage == null && curMessage == null))
+                && ( (curName != null && curName.equals(objName))
+                  || (objName == null && curName == null))
+                )
+        {
+            return true;
+        }
+
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        TMapModel curModel = this.getModel();
+        Reference<Message> curMessage = this.getMessage();
+        String curName = this.getName();
+        return curModel == null ? 0 : curModel.hashCode()
+                + (curMessage == null ? 0 : curMessage.hashCode())*10
+                + (curName == null ? 0 : curName.hashCode())*100;
     }
 
 }

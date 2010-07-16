@@ -36,7 +36,7 @@ public class DecoratedTransformMap extends DecoratedTMapComponentAbstract<Transf
 
     @Override
     public String getTooltip() {
-        TransformMap ref = getOriginal();
+        TransformMap ref = getReference();
         StringBuffer attributesTooltip = new StringBuffer();
         if (ref != null) {
             attributesTooltip.append(

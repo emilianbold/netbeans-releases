@@ -56,7 +56,8 @@ import org.netbeans.modules.bpel.model.api.support.Roles;
  * </pre>
  */
 public interface From extends PartnerLinkReference, VariableReference,
-        PartReference, Expression, PropertyReference, ExtensibleElements
+        PartReference, Expression, PropertyReference, NMPropertyHolder, 
+        ExtensibleElements
 {
 
     /**

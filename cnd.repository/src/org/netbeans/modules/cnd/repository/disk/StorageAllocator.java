@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -75,7 +78,7 @@ public class StorageAllocator {
         return instance;
     }
     
-    private Map<String, String> unit2path = new ConcurrentHashMap<String, String>();
+    private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
     
     public String getCachePath() {
         return diskRepositoryPath;
@@ -90,12 +93,12 @@ public class StorageAllocator {
         return name;
     }
 
-    public String getUnitStorageName(String unit) {
+    public String getUnitStorageName(CharSequence unit) {
         String path = unit2path.get(unit);
         if (path == null) {
-            String prefix = unit;
+            String prefix = unit.toString();
             try {
-                prefix = URLEncoder.encode(unit, Stats.ENCODING);
+                prefix = URLEncoder.encode(prefix, Stats.ENCODING);
             } catch (UnsupportedEncodingException ex) {
                 ex.printStackTrace();
             } 
@@ -115,11 +118,11 @@ public class StorageAllocator {
         return path;
     }
     
-    public void closeUnit(String unitName) {
+    public void closeUnit(CharSequence unitName) {
         unit2path.remove(unitName);
     }
     
-    public void deleteUnitFiles (String unitName, boolean removeUnitFolder) {
+    public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
@@ -133,12 +136,16 @@ public class StorageAllocator {
                 if(files[i].isDirectory()) {
                     deleteDirectory(files[i], true);
                 } else {
-                    files[i].delete();
+                    if (!files[i].delete()) {
+                        System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                    }
                 }
             }
-        }
-        if (deleteDir) {
-            path.delete() ;
+            if (deleteDir) {
+                if (!path.delete()) {
+                    System.err.println("Cannot delete repository folder "+path.getAbsolutePath());
+                }
+            }
         }
     }
     public void cleanRepositoryCaches() {

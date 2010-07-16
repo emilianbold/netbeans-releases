@@ -23,6 +23,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.xam.Reference;
 
@@ -107,13 +108,13 @@ public class TypeContainer {
             String localPart = ((Message)myType).getName();
             return new QName(targetNamespace, localPart);
         } else if (myType instanceof GlobalElement) {
-            String targetNamespace = ((GlobalElement)myType).getModel().
-                    getSchema().getTargetNamespace();
+            Schema schema = ((GlobalElement)myType).getModel().getSchema();
+            String targetNamespace = schema == null ? null : schema.getTargetNamespace();
             String localPart = ((GlobalElement)myType).getName();
             return new QName(targetNamespace, localPart);
         } else if (myType instanceof GlobalType) {
-            String targetNamespace = ((GlobalType)myType).getModel().
-                    getSchema().getTargetNamespace();
+            Schema schema = ((GlobalElement)myType).getModel().getSchema();
+            String targetNamespace = schema == null ? null : schema.getTargetNamespace();
             String localPart = ((GlobalType)myType).getName();
             return new QName(targetNamespace, localPart);
         } else {

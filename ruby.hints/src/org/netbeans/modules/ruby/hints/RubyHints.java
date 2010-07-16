@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,9 @@
 package org.netbeans.modules.ruby.hints;
 
 import org.jrubyparser.ast.Node;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  * Utility methods for hints.
@@ -47,6 +53,8 @@ import org.jrubyparser.ast.Node;
  * @author Erno Mononen
  */
 public abstract class RubyHints {
+
+    private static final String RAILS_PROJECT = "RailsProject"; //NOI18N
 
     private RubyHints() {
     }
@@ -60,6 +68,28 @@ public abstract class RubyHints {
      */
     static boolean isNullOrInvisible(Node node) {
         return node == null || node.isInvisible();
+    }
+
+    static boolean isInRailsProject(FileObject file) {
+        return isRailsProject(FileOwnerQuery.getOwner(file));
+    }
+
+    static boolean isInRails3Project(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        // assumes that the presence of script/rails means it is a rails 3 project
+        if (!isRailsProject(project)){
+            return false;
+        }
+        FileObject railsScript = project.getProjectDirectory().getFileObject("script/rails");
+        return railsScript != null && railsScript.isValid();
+    }
+
+    private static boolean isRailsProject(Project project) {
+        // Ugly!!
+        if (project == null || project.getClass().getName().indexOf(RAILS_PROJECT) == -1) { // NOI18N
+            return false;
+        }
+        return true;
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,8 +47,8 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +59,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     private static final String PHP = "php.exe"; // NOI18N
     private static final String XAMPP = "xampp"; // NOI18N
     private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir, String name) {
             return name.toLowerCase().startsWith(XAMPP);
         }
@@ -73,9 +77,9 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         }
         File htDocs = null;
         for (File root : fsRoots) {
-            LOGGER.fine("FS root: " + root);
+            LOGGER.log(Level.FINE, "FS root: {0}", root);
             if (isFloppy(root)) {
-                LOGGER.fine("Skipping floppy: " + root);
+                LOGGER.log(Level.FINE, "Skipping floppy: {0}", root);
                 continue;
             }
             // standard apache installation
@@ -102,7 +106,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
             String documentRoot = getFolderName(htDocs, projectName);
             String url = getDefaultUrl(projectName);
             String hint = NbBundle.getMessage(WindowsPhpEnvironment.class, "TXT_HtDocs");
-            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, Utils.isFolderWritable(htDocs)));
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, FileUtils.isDirectoryWritable(htDocs)));
         }
         return Collections.<DocumentRoot>emptyList();
     }
@@ -119,7 +123,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
 
     private static boolean isFloppy(File root) {
         String absolutePath = root.getAbsolutePath();
-        LOGGER.fine("Testing floppy on " + absolutePath);
+        LOGGER.log(Level.FINE, "Testing floppy on {0}", absolutePath);
         return absolutePath.toLowerCase().startsWith("a:") // NOI18N
                 || absolutePath.toLowerCase().startsWith("b:"); // NOI18N
     }

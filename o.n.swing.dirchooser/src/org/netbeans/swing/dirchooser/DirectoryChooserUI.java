@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,7 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,6 +95,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -104,6 +109,7 @@ import org.openide.util.Utilities;
  * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
 public class DirectoryChooserUI extends BasicFileChooserUI {
+    private static final String DIALOG_IS_CLOSING = "JFileChooserDialogIsClosingProperty";
 
     private static final Dimension horizontalStrut1 = new Dimension(25, 1);
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
@@ -115,6 +121,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static final int ACCESSORY_WIDTH = 250;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor("DirChooser Update Worker"); // NOI18N
 
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
@@ -186,7 +194,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private FileCompletionPopup completionPopup;
     
-    private RequestProcessor.Task updateWorker;
+    private final static UpdateWorker updateWorker = new UpdateWorker();
     
     private boolean useShellFolder = false;
     
@@ -235,6 +243,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         createPopup();
+
+        initUpdateWorker();
     }
 
     @Override
@@ -730,12 +740,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
 
         };
-        // #105642: start with right content in tree 
-        File curDir = fileChooser.getCurrentDirectory();
-        if (curDir == null) {
-            curDir = fileChooser.getFileSystemView().getRoots()[0];
-        }
-        updateTree(curDir);
         
         tree.setFocusable(true);
         tree.setOpaque(true);
@@ -1089,44 +1093,21 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static ResourceBundle getBundle() {
         return NbBundle.getBundle(DirectoryChooserUI.class);
     }
-    
-    private void updateTree(final File file) {
-        // fixed bug #97522
-        if(updateWorker != null) {
-            // try to cancel previous update if possible
-            if (!updateWorker.isFinished()) {
-                updateWorker.cancel();
-            }
-            // #105642 - wait for previous update, to keep time order
-            updateWorker.waitFinished();
-        }
-        
-        updateWorker = RequestProcessor.getDefault().post(new Runnable() {
-            DirectoryNode node;
-            long startTime;
-            public void run() {
-                if (!EventQueue.isDispatchThread()) {
-                    // first pass, out of EQ thread
-                    markStartTime();
-                    setCursor(fileChooser, Cursor.WAIT_CURSOR);
-                    node = new DirectoryNode(file);
-                    node.loadChildren(fileChooser, true);
-                    // send to second pass
-                    EventQueue.invokeLater(this);
-                } else {
-                    // second pass, in EQ thread
-                    model = new DirectoryTreeModel(node);
-                    tree.setModel(model);
-                    tree.repaint();
-                    setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
-                    checkUpdate();
-                }
-            }
 
-        });
-        
+    @Override
+    public void rescanCurrentDirectory(JFileChooser fc) {
+        super.rescanCurrentDirectory(fc);
+        File curDir = fc.getCurrentDirectory();
+        if (curDir == null) {
+            curDir = fc.getFileSystemView().getRoots()[0];
+        }
+        updateWorker.updateTree(curDir);
     }
 
+    private void initUpdateWorker () {
+        updateWorker.attachFileChooser(this);
+    }
+    
     private void markStartTime () {
         if (fileChooser.getClientProperty(DelegatingChooserUI.START_TIME) == null) {
             fileChooser.putClientProperty(DelegatingChooserUI.START_TIME,
@@ -1357,7 +1338,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             directoryComboBoxModel.addItem(currentDirectory);
             newFolderAction.setEnabled(currentDirectory.canWrite());
             getChangeToParentDirectoryAction().setEnabled(!fsv.isRoot(currentDirectory));
-            updateTree(currentDirectory);
+            updateWorker.updateTree(currentDirectory);
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
                 if (fsv.isFileSystem(currentDirectory)) {
                     setFileName(getStringOfFileName(currentDirectory));
@@ -1808,7 +1789,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             
             // create File instances of each directory leading up to the top
-            File sf = getShellFolderForFile(canonical);
+            File sf = useShellFolder? getShellFolderForFile(canonical) : canonical;
             File f = sf;
             Vector<File> path = new Vector<File>(10);
 
@@ -2451,7 +2432,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private class DirectoryTreeModel extends DefaultTreeModel {
+    private static class DirectoryTreeModel extends DefaultTreeModel {
         
         public DirectoryTreeModel(TreeNode root) {
             super(root);
@@ -2480,4 +2461,56 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
     }
+
+    private static class UpdateWorker implements Runnable {
+        private volatile String lastUpdatePathName = null;
+        private DirectoryChooserUI ui;
+        private volatile File work;
+
+        public void updateTree(final File file) {
+            work = file;
+            RP.post(this);
+        }
+
+        public void attachFileChooser(final DirectoryChooserUI ui) {
+            this.ui = ui;
+            this.lastUpdatePathName = null;
+        }
+
+        @Override
+        public void run() {
+            assert !EventQueue.isDispatchThread();
+            File file = work;
+            if (file == null) {
+                return;
+            }
+            if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
+                restoreCursor();
+                return;
+            }
+            lastUpdatePathName = file.getPath();
+            ui.markStartTime();
+            ui.setCursor(fileChooser, Cursor.WAIT_CURSOR);
+            final DirectoryNode node = new DirectoryNode(file);
+            node.loadChildren(fileChooser, true);
+
+            // update UI in EQ thread
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ui.model = new DirectoryTreeModel(node);
+                    tree.setModel(ui.model);
+                    tree.repaint();
+                    ui.checkUpdate();
+                    restoreCursor();
+                }
+            });
+        }
+
+        private void restoreCursor () {
+            ui.setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+        }
+
+    } // end of UpdateWorker
+
 }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -49,6 +52,13 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-core-ui-warmup-DnDWarmUpTask.instance"/>
         <file name="org-netbeans-core-ui-warmup-DiagnosticTask.instance"/>
     </folder>
+
+    <folder name="Shortcuts">
+        <file name="AS-Y.shadow">
+            <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"/>
+        </file>
+    </folder>
+
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
 
@@ -84,13 +94,30 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-openide-actions-GotoAction.instance"/>
             <file name="org-openide-actions-PasteAction.instance"/>
-            <file name="org-openide-actions-RedoAction.instance"/>
+            <file name="org-openide-actions-RedoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
+                <attr name="undo" boolvalue="true"/>
+            </file>
             <file name="org-openide-actions-ReplaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
                 <attr name="key" stringvalue="org.openide.actions.ReplaceAction"/>
                 <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Replace"/>
             </file>
-            <file name="org-openide-actions-UndoAction.instance"/>
+            <file name="org-openide-actions-UndoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
+                <attr name="redo" boolvalue="true"/>
+            </file>
+        </folder>
+
+        <folder name="Profile">
+            <file name="org-netbeans-modules-profiler-actions-SelfSamplerAction.instance">
+                <attr name="displayName" bundlevalue="org.netbeans.core.ui.sampler.Bundle#SelfSamplerAction_ActionNameStart"/>
+                <attr name="ShortDescription" bundlevalue="org.netbeans.core.ui.sampler.Bundle#SelfSamplerAction_ActionDescription"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/ui/sampler/selfSampler.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="delegate" methodvalue="org.netbeans.core.ui.sampler.SelfSamplerAction.getInstance"/>
+            </file>
         </folder>
 
         <folder name="System">
@@ -417,6 +444,10 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-GarbageCollectAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
+            <file name="org-netbeans-modules-profiler-actions-SelfSamplerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"/>
+                <attr name="position" intvalue="2000"/>
+            </file>
         </folder>
 
         <!-- specify toolbar configuration for platform ui. -->
@@ -466,7 +497,7 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="SwingBrowser.settings" url="SwingBrowser.xml">
-                <attr name="SystemFileSystem.icon" stringvalue="nbres:/org/openide/resources/html/htmlView.gif"/>
+                <attr name="iconBase" stringvalue="org/openide/resources/html/htmlView.gif"/>
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="internal" boolvalue="true"/>
                 <attr name="position" intvalue="700"/>

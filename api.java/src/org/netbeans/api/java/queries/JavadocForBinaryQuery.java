@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,9 @@ package org.netbeans.api.java.queries;
 import java.net.URL;
 import java.util.Arrays;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -75,10 +78,7 @@ public class JavadocForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findJavadoc(URL binary) {
-        if (FileUtil.isArchiveFile(binary)) {
-            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
-                "JAR is not valid classpath entry. Use jar: URL. Was: "+binary); // NOI18N
-        }
+        ClassPathSupport.createResource(binary); // just to check for IAE; XXX might be unnecessary since CP ctor now check this too
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (log) ERR.log("JFBQ.findJavadoc: " + binary);
         for  (JavadocForBinaryQueryImplementation impl : implementations.allInstances()) {

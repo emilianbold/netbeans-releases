@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,21 +46,19 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
  * @author gorrus
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
-    private final static String[] constText = new String[APTTokenTypes.LAST_LEXER_FAKE_RULE];
-    private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_LEXER_FAKE_RULE];
-    
-    protected int type = INVALID_TYPE;
-    protected int offset;
-    //protected int endOffset;
-    protected int line;
-    protected int column;
+    final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    private int type = INVALID_TYPE;
+    private int column;
+    private int offset;
+    private int line;
     /**
      * Creates a new instance of APTConstTextToken
      */
@@ -134,8 +135,17 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
         for (int i = 0; i < constText.length; i++) {
             String str = constText[i];
-            constTextID[i] = CharSequenceKey.create(str);
+            constTextID[i] = CharSequences.create(str);
+            if (str != null) {
+                if (i > LAST_CONST_TEXT_TOKEN) {
+                    System.err.printf("APTConstTextToken: token %s [%d] is higher than LAST_CONST_TEXT_TOKEN [%d]\n", str, i, LAST_CONST_TEXT_TOKEN);
+                }
+            } else {
+               // System.err.printf("APTConstTextToken: index [%d] does not have text \n", i);
+            }
         }
+//        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
+//        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
     }
     
     @Override

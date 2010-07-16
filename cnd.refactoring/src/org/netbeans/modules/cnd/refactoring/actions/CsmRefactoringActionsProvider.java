@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldUI;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -64,6 +68,8 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider.class, position=100)
 public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvider {
+    private static final String CHANGE_PARAMETERS_TRACKING = "CHANGE_PARAMETERS"; // NOI18N
+    private static final String ENCAPSULATE_FIELDS_TRACKING = "ENCAPSULATE_FIELDS"; // NOI18N
     
     public CsmRefactoringActionsProvider() {
     }
@@ -93,7 +99,9 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         Runnable task;
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
+                @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return ChangeParametersUI.create(selectedElement, editorContext);
                 }
             };
@@ -102,6 +110,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING);
                     return ChangeParametersUI.create(selectedElement, null);
                 }
             };
@@ -136,6 +145,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, editorContext);
                 }
             };
@@ -143,6 +153,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, null);
                 }
             };

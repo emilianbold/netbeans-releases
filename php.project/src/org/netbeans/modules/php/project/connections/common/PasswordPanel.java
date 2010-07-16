@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,13 @@
 
 package org.netbeans.modules.php.project.connections.common;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,13 +133,13 @@ public final class PasswordPanel extends JPanel {
         setFocusTraversalPolicy(null);
 
         usernameLabel.setLabelFor(usernameField);
-
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.text")); // NOI18N
+
         usernameField.setEditable(false);
 
         certificateLabel.setLabelFor(passwordField);
-
         certificateLabel.setText(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.certificateLabel.text")); // NOI18N
+
         passwordLabel.setLabelFor(passwordField);
 
         Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.text"));
@@ -143,40 +147,42 @@ public final class PasswordPanel extends JPanel {
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(usernameLabel)
-                            .add(passwordLabel))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(passwordField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
-                            .add(usernameField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)))
-                    .add(certificateLabel))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(usernameLabel)
+                            .addComponent(passwordLabel))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(passwordField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                            .addComponent(usernameField, GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)))
+                    .addComponent(certificateLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(usernameLabel)
-                    .add(usernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(certificateLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(passwordLabel)
-                    .add(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(usernameLabel)
+                    .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(certificateLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(passwordLabel)
+                    .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
 
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         usernameField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameField.AccessibleContext.accessibleName")); // NOI18N
         usernameField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameField.AccessibleContext.accessibleDescription")); // NOI18N
+        certificateLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.certificateLabel.AccessibleContext.accessibleName")); // NOI18N
+        certificateLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.certificateLabel.AccessibleContext.accessibleDescription")); // NOI18N
         passwordLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.AccessibleContext.accessibleName")); // NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.AccessibleContext.accessibleDescription")); // NOI18N
         passwordField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordField.AccessibleContext.accessibleName")); // NOI18N

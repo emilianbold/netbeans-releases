@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,7 @@ package org.netbeans.modules.xml.wsdl.ui.api.property;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -143,58 +146,43 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent> {
         }
     }
 
-    class WSDLProjectFolderChildren extends Children.Keys<FileObject> {
+    class WSDLProjectFolderChildren extends Children.Array {
 
         private final FileObject projectDir;
         private final Node original;
         private final List<Class<? extends WSDLComponent>> filters;
-        private Set<FileObject> emptySet = Collections.emptySet();
+        private final Project project;
 
         public WSDLProjectFolderChildren(Node original, Project project, List<Class<? extends WSDLComponent>> filters) {
             this.original = original;
             this.filters = filters;
             this.projectDir = project.getProjectDirectory();
+            this.project = project;
         }
 
         @Override
-        public Node[] createNodes(FileObject fo) {
-            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
-            WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
-            NodesFactory factory = NodesFactory.getInstance();
-            return new Node[]{new FileNode(
-                        factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters),
-                        FileUtil.getRelativePath(projectDir, fo), 2)};
+        protected Collection<Node> initCollection() {
+            ArrayList<Node> keys = new ArrayList<Node>();
+            Set<File> alreadyAddedFiles = new HashSet<File>();
 
-        }
-
-        @Override
-        protected void addNotify() {
-            resetKeys();
-        }
-
-        @Override
-        protected void removeNotify() {
-            this.setKeys(emptySet);
-
-        }
-
-        private void resetKeys() {
-            ArrayList<FileObject> keys = new ArrayList<FileObject>();
-
-            Set<FileObject> validFolders = new HashSet<FileObject>();
-            populateValidFolders(original, validFolders);
-            
-            for (FileObject rootFolder : validFolders) {
-                List<File> files = recursiveListFiles(FileUtil.toFile(rootFolder), new WSDLFileFilter());
-                for (File file : files) {
-                    FileObject fo = FileUtil.toFileObject(file);
-                    keys.add(fo);
+            List<File> files = recursiveListFiles(project, new WSDLFileFilter());
+            for (File file : files) {
+                if (alreadyAddedFiles.contains(file)) {
+                    continue;
                 }
+                FileObject fo = FileUtil.toFileObject(file);
+                alreadyAddedFiles.add(file);
+                ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
+                WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
+                NodesFactory factory = NodesFactory.getInstance();
+                keys.add(new FileNode(
+                        factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters),
+                        FileUtil.getRelativePath(projectDir, fo), 2));
             }
-
-            this.setKeys(keys);
+            return keys;
         }
     }
+
     public static final String WSDL_FILE_EXTENSION = "wsdl";
 
     static class WSDLFileFilter implements FileFilter {

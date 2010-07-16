@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,8 +52,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
@@ -61,6 +63,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainProxy;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -95,17 +101,6 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 
     public GdbTestCase(String name) {
         super(name);
-        System.setProperty("gdb.testsuite", "true");
-        tlog.setLevel(Level.FINE);
-        // TODO: need to get test apps dir from the environment
-        String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
-        if (workdir != null && workdir.endsWith("/build/test/unit/work")) { // NOI18N
-            testapp_dir = workdir.substring(0, workdir.length() - 21) + "/build/testapps"; // NOI18N
-            File dir = new File(testapp_dir);
-            if (!dir.exists()) {
-                assert false : "Missing testapps directory";
-            }
-        }
     }
 
     protected void tlog(String msg) {
@@ -117,8 +112,9 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         this.executable = testapp_dir + '/' + executable;
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
-        pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
-        CompilerSetManager.getDefault().getCompilerSet(0).getTool(Tool.DebuggerTool).setPath("/opt/csw/bin/gdb");
+        pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, conf, null, false);
+        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(PredefinedToolKind.DebuggerTool);
+        ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
             new Object[]{pae}));
         debugger = GdbDebugger.getGdbDebugger();
@@ -127,38 +123,49 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         waitForState(State.STOPPED);
     }
 
-    protected void startDebuggerOld(String testproj, String executable, String args) {
-        this.testproj = testproj;
-        this.executable = testapp_dir + '/' + executable;
-        debugger = new GdbDebugger(this);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, stateListener);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, stackListener);
-        String[] denv = new String[] { "GDBUnitTest=True" };
-        try {
-            // TODO: need to get gdb command from the toolchain or environment
-            gdb = new GdbProxy(debugger, "/opt/csw/bin/gdb", denv, testapp_dir, null, "");
-        } catch (Exception ex) {
-            gdb = null;
-        }
-        assert gdb != null;
-
-        try {
-            debugger.testSuiteInit(gdb);
-            gdb.gdb_show("language"); // NOI18N
-            gdb.gdb_set("print repeat", "10"); // NOI18N
-            gdb.file_exec_and_symbols(executable);
-            gdb.break_insert_temporary("main"); // NOI18N
-            debugger.setRunning();
-            gdb.exec_run(args);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        waitForState(State.STOPPED);
-    }
+//    protected void startDebuggerOld(String testproj, String executable, String args) {
+//        this.testproj = testproj;
+//        this.executable = testapp_dir + '/' + executable;
+//        debugger = new GdbDebugger(this);
+//        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, stateListener);
+//        debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, stackListener);
+//        String[] denv = new String[] { "GDBUnitTest=True" };
+//        try {
+//            // TODO: need to get gdb command from the toolchain or environment
+//            gdb = new GdbProxy(debugger, "/opt/csw/bin/gdb", denv, testapp_dir, null, "");
+//        } catch (Exception ex) {
+//            gdb = null;
+//        }
+//        assert gdb != null;
+//
+//        try {
+//            debugger.testSuiteInit(gdb);
+//            gdb.gdb_show("language"); // NOI18N
+//            gdb.gdb_set("print repeat", "10"); // NOI18N
+//            gdb.file_exec_and_symbols(executable);
+//            gdb.break_insert_temporary("main"); // NOI18N
+//            debugger.setRunning();
+//            gdb.exec_run(args);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        waitForState(State.STOPPED);
+//    }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("gdb.testsuite", "true");
+        tlog.setLevel(Level.FINE);
+        // TODO: need to get test apps dir from the environment
+        String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
+        if (workdir != null && workdir.endsWith("/build/test/unit/work")) { // NOI18N
+            testapp_dir = workdir.substring(0, workdir.length() - 21) + "/build/testapps"; // NOI18N
+            File dir = new File(testapp_dir);
+            if (!dir.exists()) {
+                fail("Missing testapps directory");
+            }
+        }
         this.testapp = getName();
         System.out.println("\n" + testapp); // NOI18N
     }
@@ -284,16 +291,18 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 	}
     }
 
+    @Override
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return dm.lookup(folder, service);
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T lookupFirst(String folder, Class<T> service) {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration("");
-                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, null, null, false);
             }
             return (T) pae;
         } else {
@@ -301,7 +310,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         }
     }
 
-    class TestConfiguration extends MakeConfiguration {
+    private class TestConfiguration extends MakeConfiguration {
         public TestConfiguration(String args) {
             super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, HostInfoUtils.LOCALHOST);
             RunProfile profile = getProfile();
@@ -317,6 +326,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
             this.lock = lock;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (lock) {
                 lock.notifyAll();
@@ -325,6 +335,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
     }
 
     private class StackListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (BP_WAIT_LOCK) {
                 BP_WAIT_LOCK.notifyAll();

@@ -1,31 +1,47 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
 <head>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<title>Using the Stream Output Operator Property Editor </title>
+<title>Using the Stream Output Operator</title>
 </head>
 <body>
-<h2>Using the Stream Output Operator Property Editor </h2>
+
+<h2>Using the Stream Output Operator</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Stream Output operator passes  individual records into the stream and does not act as a filter or convert  stream data that it receives as input. The operator sends notification through a message to a normalized message router for another binding component or service engine. </p>
-<p>The IEP uses stream output and  WSDL generation to define a web service that another application can implement to receive events from by an event processor. The stream output&rsquo;s schema is used to generate the XSD of the web service&rsquo;s input message.</p>
-<p><strong>To create a Stream Output operator: </strong></p>
+
+<p>The Stream Output operator enables you to convert a stream of events into outgoing messages that can be sent to the Normalized Message Router 
+and received by any JBI component.</p>
+
+<p>When the WSDL document for the event processor is automatically generated, IEP uses the Stream Output operator to define various WSDL elements. 
+For example, if the Stream Output operator is called <tt>SuspiciousTransactions</tt>, 
+then the WSDL document contains an operation called <tt>SuspiciousTransactions</tt> and a message called <tt>SuspiciousTransactions_Msg</tt>.</p>
+
+<p><strong>To use the Stream Output operator:</strong></p>
+
 <ol>
-  <li>Drag a Stream Output operator to the Design view.</li>
-  <li>Click the Stream Output operator icon. The property editor opens. </li>
-  <li>Click the Include Timestamp checkbox if you want to include a timestamp on the output from the Stream Output.</li>
-  <li>Click Ok.</li>
+
+  <li>Drag a Stream Output operator from the Palette to the Design view.</li>
+  <li>Connect the input of the Stream Output operator to an operator that has stream output.</li>
+  <li>Double-click the Stream Output operator. The property editor opens. Notice that the component has inherited the schema of its input stream.</li>
+
+  <li>If you want to change the default name, then change the value in the Name field.</li>
+  <li>If you want to include a timestamp on the output, then select the Include Timestamp check box.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
 </ol>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd>&nbsp;</dd>
-<dd><a href="tableout_propedit.html">Using the Table Output Operator Property Editor </a></dd>
-<dd>&nbsp;</dd>
-<dd><a href="relationout_propedit.html">Using the Relation Output Operator Property Editor </a></dd>
+<dd><a href="wsdlcreate.html">Understanding WSDL Creation</a></dd>
+<dd><a href="batchedstrout_propedit.html">Using the Batched Stream Output Operator</a></dd>
+<dd><a href="streaminput_prop.html">Using the Stream Input Operator</a></dd>
 <dd>&nbsp;</dd>
 </dl>
 <hr>

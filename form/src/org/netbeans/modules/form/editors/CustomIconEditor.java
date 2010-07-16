@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -272,9 +275,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private FileObject findSourceRootOf(FileObject[] roots, String resName) {
         for (FileObject root : roots) {
             ClassPath resCP = ClassPath.getClassPath(root, ClassPath.SOURCE);
-            FileObject res = resCP.findResource(resName);
-            if (res != null) {
-                return res;
+            if (resCP != null) {
+                FileObject res = resCP.findResource(resName);
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;
@@ -376,11 +381,17 @@ public class CustomIconEditor extends javax.swing.JPanel {
             if (selectedCPFile != null) {
                 name = FileUtil.getRelativePath(packageRoot, selectedCPFile);
                 try {
-                    Image image = ImageIO.read(selectedCPFile.getURL());
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(selectedCPFile.getURL());
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                            type = IconEditor.TYPE_CLASSPATH;
+                        } // no NbImageIcon will be created for invalid file
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(selectedCPFile.getURL());
                         type = IconEditor.TYPE_CLASSPATH;
-                    } // no NbImageIcon will be created for invalid file
+                    }
                 } catch (IOException ex) { // should not happen
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -390,11 +401,17 @@ public class CustomIconEditor extends javax.swing.JPanel {
             if (selectedExternalFile != null) {
                 name = selectedExternalFile.getAbsolutePath();
                 try {
-                    Image image = ImageIO.read(new File(name));
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(new File(name));
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                            type = IconEditor.TYPE_FILE;
+                        } // no NbImageIcon will be created for invalid file
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(name);
                         type = IconEditor.TYPE_FILE;
-                    } // no NbImageIcon will be created for invalid file
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -403,9 +420,14 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 type = IconEditor.TYPE_URL;
                 name = selectedURL;
                 try {
-                    Image image = ImageIO.read(new URL(selectedURL));
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(new URL(selectedURL));
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                        }
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(new URL(selectedURL));
                     }
                     // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
                 } catch (IOException ex) {
@@ -512,8 +534,13 @@ public class CustomIconEditor extends javax.swing.JPanel {
         IconFileItem(FileObject file) {
             this.file = file;
             try {
-                Image image = (file.getSize() < SIZE_LIMIT) ? ImageIO.read(file.getURL()) : null;
-                icon = (image != null) ? new ImageIcon(image) : null;
+                try {
+                    Image image = (file.getSize() < SIZE_LIMIT) ? ImageIO.read(file.getURL()) : null;
+                    icon = (image != null) ? new ImageIcon(image) : null;
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    icon = new ImageIcon(file.getURL());
+                }
             } catch (IOException ex) {
                 Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
             }
@@ -524,10 +551,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
             return file.getNameExt();
         }
 
+        @Override
         public int compareTo(Object obj) {
             return toString().compareTo(obj.toString());
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             if (icon == null) {
                 return;
@@ -546,10 +575,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
             icon.paintIcon(c, g, x + ((maxW - w) / 2), y + ((maxH - h) / 2));
         }
 
+        @Override
         public int getIconWidth() {
             return maxW;
         }
 
+        @Override
         public int getIconHeight() {
             return maxH;
         }
@@ -662,6 +693,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
         ClassPathFileChooser chooser = new ClassPathFileChooser(
                     propertyEditor.getSourceFile(),
                     new ClassPathFileChooser.Filter() {
+                        @Override
                         public boolean accept(FileObject fo) {
                             return fo.isFolder() || IconEditor.isImageFileName(fo.getNameExt());
                         }
@@ -700,9 +732,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
         fileChooser.setControlButtonsAreShown(true);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory() || IconEditor.isImageFileName(f.getName());
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(CustomIconEditor.class, "CTL_ImagesExtensionName"); // NOI18N
             }

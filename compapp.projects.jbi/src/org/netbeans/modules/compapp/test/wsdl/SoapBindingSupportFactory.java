@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,26 +53,23 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 /**
  * SoapBindingSupportFactory.java
  *
- * Created on February 2, 2006, 3:24 PM
- *
  * @author Bing Lu
+ * @author Jun Qian
  */
 public class SoapBindingSupportFactory implements BindingSupportFactory {
 
-    private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory"); // NOI18N
-    private static final String SOAP_TRANSPORT_URI =
-            "http://schemas.xmlsoap.org/soap/http"; // NOI18N
+    private static final Logger mLog = Logger.getLogger(
+            "org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory"); // NOI18N
 
-    /** Creates a new instance of SoapBindingSupportFactory */
-    public SoapBindingSupportFactory() {
-    }
+    private static final String SOAP11_TRANSPORT_URI =
+            "http://schemas.xmlsoap.org/soap/http"; // NOI18N
 
     public boolean supports(Binding binding) {
         List eeList = binding.getExtensibilityElements();
-        SOAPBinding soapBinding = (SOAPBinding) 
+        SOAPBinding soapBinding =
                 Util.getAssignableExtensiblityElement(eeList, SOAPBinding.class);
-        return soapBinding == null ? false : 
-            soapBinding.getTransportURI().startsWith(SOAP_TRANSPORT_URI);
+        return soapBinding == null ? false :
+            soapBinding.getTransportURI().startsWith(SOAP11_TRANSPORT_URI);
     }
 
     public BindingSupport createBindingSupport(

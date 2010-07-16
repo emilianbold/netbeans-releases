@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
+        suite.addTest(new AstNodeUtilsTest("testIssue169206"));
         return suite;
     }
 
@@ -81,7 +84,7 @@ public class AstNodeUtilsTest extends TestBase {
 
         assertDescendant(root, 0, "p", NodeType.OPEN_TAG, 0, 18);
         assertDescendant(root, 4, "a", NodeType.OPEN_TAG, 3, 14);
-        assertDescendant(root, 8, null, NodeType.TEXT, 6, 10);
+//        assertDescendant(root, 8, null, NodeType.TEXT, 6, 10);
         AstNode node = assertDescendant(root, 12, "a", NodeType.OPEN_TAG, 3, 14);
         AstNode adjusted = AstNodeUtils.getTagNode(node, 12);
 
@@ -172,7 +175,7 @@ public class AstNodeUtilsTest extends TestBase {
         assertPossibleElements(root, 1, arr(), Match.EMPTY);
 
         //just after html tag
-        assertPossibleElements(root, 6, arr("head"), Match.EXACT);
+        assertPossibleElements(root, 6, arr("head"), Match.CONTAINS);
 
         //at the beginning of head tag
         assertPossibleElements(root, 12, arr("title", "meta"), Match.CONTAINS);
@@ -188,6 +191,35 @@ public class AstNodeUtilsTest extends TestBase {
         //p can contain another p - will close the previous one with opt. end
         assertPossibleElements(root, 47, arr("p"), Match.CONTAINS);
 
+
+    }
+
+    public void testIssue169206() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><table> </table></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
+
+
+    }
+
+    public void testIssue185837() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><b><del>xxx</del></b></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        //root node allows all dtd elements
+        assertPossibleElements(root, 40, arr("del", "ins"), Match.CONTAINS);
+        assertPossibleElements(root, 43, arr("del", "ins"), Match.CONTAINS);
 
     }
 

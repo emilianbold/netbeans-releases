@@ -24,8 +24,8 @@ import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.codegen.TemplateBuilder;
 import org.netbeans.modules.sql.framework.codegen.db2v7.DB2V7Statements;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.SQLPart;
 
 /**
  * @author Jonathan Giron

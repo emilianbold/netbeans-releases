@@ -30,7 +30,7 @@ import org.netbeans.modules.bpel.design.model.DiagramModel;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -38,111 +38,108 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Diagram {
 
-  public Diagram(DesignView view) {
-    myView = view;
-  }
-
-  public JComponent getComponent() {
-    return myView;
-  }
-
-  public List<Element> getElements(boolean inSelectionOnly) {
-    DiagramModel model = myView.getModel();
-    List<Element> elements = new ArrayList<Element>();
-
-    travel(getRoot(model, inSelectionOnly), elements, ""); // NOI18N
-
-    return elements;
-  }
-
-  private void travel(Pattern pattern, List<Element> elements, String indent) {
-    if (pattern == null) {
-      return;
+    public Diagram(DesignView view) {
+        myView = view;
     }
-    travel(pattern.getElements(), elements, indent);
 
-    if (pattern instanceof CompositePattern) {
-      CompositePattern composite = (CompositePattern) pattern;
-      travel(composite.getBorder(), elements, indent);
-      Collection<Pattern> patterns = composite.getNestedPatterns();
-
-      for (Pattern patern : patterns) {
-        travel(patern, elements, indent + "  "); // NOI18N
-      }
+    public JComponent getComponent() {
+        return myView;
     }
-  }
 
-  private void travel(Collection<VisualElement> visual, List<Element> elements, String indent) {
-    for (VisualElement element : visual) {
-      travel(element, elements, indent);
+    public List<Element> getElements(boolean inSelectionOnly) {
+        DiagramModel model = myView.getModel();
+        List<Element> elements = new ArrayList<Element>();
+        travel(getRoot(model, inSelectionOnly), elements, ""); // NOI18N
+        return elements;
     }
-  }
 
-  private void travel(VisualElement element, List<Element> elements, String indent) {
-    if (element != null) {
+    private void travel(Pattern pattern, List<Element> elements, String indent) {
+        if (pattern == null) {
+            return;
+        }
+        travel(pattern.getElements(), elements, indent);
+
+        if (pattern instanceof CompositePattern) {
+            CompositePattern composite = (CompositePattern) pattern;
+            travel(composite.getBorder(), elements, indent);
+            Collection<Pattern> patterns = composite.getNestedPatterns();
+
+            for (Pattern patern : patterns) {
+                travel(patern, elements, indent + "  "); // NOI18N
+            }
+        }
+    }
+
+    private void travel(Collection<VisualElement> visual, List<Element> elements, String indent) {
+        for (VisualElement element : visual) {
+            travel(element, elements, indent);
+        }
+    }
+
+    private void travel(VisualElement element, List<Element> elements, String indent) {
+        if (element != null) {
 //out(indent + " see: " + element);
-      elements.add(new Element(element));
-    }
-  }
-
-  private Pattern getRoot(DiagramModel model, boolean inSelectionOnly) {
-    if (inSelectionOnly) {
-      return model.getView().getSelectionModel().getSelectedPattern();
-    }
-    return model.getRootPattern();
-  }
-
-  public void clearHighlighting() {
-    Decorator.getDecorator(myView).clearHighlighting();
-  }
-
-  // --------------------------
-  public static class Element {
-
-    Element(VisualElement element) {
-      myElement = element;
+            elements.add(new Element(element));
+        }
     }
 
-    public String getName() {
-      return myElement.getText();
+    private Pattern getRoot(DiagramModel model, boolean inSelectionOnly) {
+        if (inSelectionOnly) {
+            return model.getView().getSelectionModel().getSelectedPattern();
+        }
+        return model.getRootPattern();
     }
 
-    public void gotoSource() {
-      EditorUtil.goToSource(getBpelEntity());
+    public void clearHighlighting() {
+        Decorator.getDecorator(myView).clearHighlighting();
     }
 
-    public void gotoDesign() {
-      Pattern pattern = myElement.getPattern();
-      DesignView view = pattern.getModel().getView();
+    // --------------------------
+    public static class Element {
 
-      // select
-      view.getSelectionModel().setSelectedPattern(pattern);
+        Element(VisualElement element) {
+            myElement = element;
+        }
 
-      // glow
-      getDecorator().select(getBpelEntity());
+        public String getName() {
+            return myElement.getText();
+        }
 
-      // scroll
-      // myElement.scrollTo();
+        public void gotoSource() {
+            EditorUtil.goToSource(getBpelEntity());
+        }
+
+        public void gotoDesign() {
+            Pattern pattern = myElement.getPattern();
+            DesignView view = pattern.getModel().getView();
+
+            // select
+            view.getSelectionModel().setSelectedPattern(pattern);
+
+            //
+            getDecorator().select(getBpelEntity(), myElement);
+
+            // scroll
+            myElement.scrollTo();
+        }
+
+        public void highlight() {
+            getDecorator().doHighlight(getBpelEntity(), true);
+        }
+
+        public void unhighlight() {
+            getDecorator().doHighlight(getBpelEntity(), false);
+        }
+
+        private Decorator getDecorator() {
+            return Decorator.getDecorator(myElement.getPattern().getModel().getView());
+        }
+
+        public BpelEntity getBpelEntity() {
+            return myElement.getPattern().getOMReference();
+        }
+        private VisualElement myElement;
     }
 
-    public void highlight() {
-      getDecorator().doHighlight(getBpelEntity(), true);
-    }
-
-    public void unhighlight() {
-      getDecorator().doHighlight(getBpelEntity(), false);
-    }
-
-    private Decorator getDecorator() {
-      return Decorator.getDecorator(myElement.getPattern().getModel().getView());
-    }
-
-    public BpelEntity getBpelEntity() {
-      return myElement.getPattern().getOMReference();
-    }
-
-    private VisualElement myElement;
-  }
-
-  private DesignView myView;
+    private DesignView myView;
 }

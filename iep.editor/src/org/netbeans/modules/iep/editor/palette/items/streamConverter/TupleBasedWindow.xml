@@ -22,10 +22,8 @@
 <editor_palette_item version="1.0">
     <class name="org.netbeans.modules.iep.editor.palette.items.streamConverter.TupleBasedWindow"/>
     
-    <!--<icon16 urlvalue="images/tupleBasedWindowx16.png" />
-    <icon32 urlvalue="images/tupleBasedWindowx32.png" />-->
-    <icon16 urlvalue="images/new/icons32x32/tupleBasedWindowx32.png" />
-    <icon32 urlvalue="images/new/icons32x32/tupleBasedWindowx32.png" />
+    <icon16 urlvalue="images/icons16x16/tupleBasedWindowx16.png" />
+    <icon32 urlvalue="images/icons32x32/tupleBasedWindowx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.streamConverter.Bundle"
                display-name-key="NAME_html-TupleBasedWindow"
                tooltip-key="HINT_html-TupleBasedWindow" />

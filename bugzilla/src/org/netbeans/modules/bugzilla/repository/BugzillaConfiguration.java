@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,16 +42,13 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetConfigurationCommand;
 
 /**
  *
@@ -65,23 +65,9 @@ public class BugzillaConfiguration {
     }
 
     protected RepositoryConfiguration getRepositoryConfiguration(final BugzillaRepository repository, final boolean forceRefresh) {
-        final RepositoryConfiguration[] conf = new RepositoryConfiguration[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                boolean refresh = forceRefresh;
-                String b = System.getProperty("org.netbeans.modules.bugzilla.persistentRepositoryConfiguration", "false"); // NOI18N
-                if("true".equals(b)) {
-                    refresh = true;
-                }
-                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
-            }
-        };
+        GetConfigurationCommand cmd = new GetConfigurationCommand(forceRefresh, repository);
         repository.getExecutor().execute(cmd, true, false);
-        if(!cmd.hasFailed()) {
-            return conf[0];
-        }
-        return null;
+        return cmd.getConf();
     }
 
     public boolean isValid() {
@@ -296,4 +282,59 @@ public class BugzillaConfiguration {
         return rc.getInstallVersion();
     }
 
+    private List<IssueField> issueFields;
+    public List<IssueField> getFields() {
+        if (issueFields == null) {
+            List<IssueField> fields = new ArrayList<IssueField>(40);
+            fields.add(IssueField.SUMMARY);
+            fields.add(IssueField.WHITEBOARD);
+            fields.add(IssueField.STATUS);
+            fields.add(IssueField.PRIORITY);
+            fields.add(IssueField.RESOLUTION);
+            fields.add(IssueField.PRODUCT);
+            fields.add(IssueField.COMPONENT);
+            fields.add(IssueField.VERSION);
+            fields.add(IssueField.PLATFORM);
+            fields.add(IssueField.OS);
+            fields.add(IssueField.MILESTONE);
+            fields.add(IssueField.REPORTER);
+            fields.add(IssueField.REPORTER_NAME);
+            fields.add(IssueField.ASSIGNED_TO);
+            fields.add(IssueField.ASSIGNED_TO_NAME);
+            fields.add(IssueField.QA_CONTACT);
+            fields.add(IssueField.QA_CONTACT_NAME);
+            fields.add(IssueField.DEPENDS_ON);
+            fields.add(IssueField.BLOCKS);
+            fields.add(IssueField.URL);
+            fields.add(IssueField.KEYWORDS);
+            fields.add(IssueField.SEVERITY);
+            fields.add(IssueField.ISSUE_TYPE);
+            fields.add(IssueField.DESCRIPTION);
+            fields.add(IssueField.CREATION);
+            fields.add(IssueField.CC);
+            fields.add(IssueField.MODIFICATION);
+            fields.add(IssueField.NEWCC);
+            fields.add(IssueField.REMOVECC);
+            fields.add(IssueField.COMMENT_COUNT);
+            fields.add(IssueField.ATTACHEMENT_COUNT);
+            
+            if(rc != null) {
+                // Custom fields
+                for (BugzillaCustomField field : rc.getCustomFields()) {
+                    fields.add(new CustomIssueField(field));
+                }
+            }
+            issueFields = fields;
+        }
+        return issueFields;
+    }
+
+    public IssueField getField(String key) {
+        for (IssueField issueField : getFields()) {
+            if(issueField.getKey().equals(key)) {
+                return issueField;
+            }
+        }
+        return null;
+    }
 }

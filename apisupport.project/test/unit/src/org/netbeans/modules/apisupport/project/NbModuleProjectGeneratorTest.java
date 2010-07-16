@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,10 +56,13 @@ import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -99,7 +105,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -134,7 +140,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                suiteDir); // platform id
+                suiteDir, false); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject moduleProjectRel = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -159,7 +165,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                suiteDir); // platform id
+                suiteDir, false); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject moduleProjectAbs = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -206,5 +212,26 @@ public class NbModuleProjectGeneratorTest extends TestBase {
 //                "org/example/testModule/resources/Bundle.properties",
 //                "org/example/testModule/resources/layer.xml");
 //    }
+
+    public void testCreateOSGiBundle() throws Exception { // #179752
+        File targetPrjDir = new File(getWorkDir(), "testModule");
+        NbModuleProjectGenerator.createStandAloneModule(
+                targetPrjDir,
+                "org.example.testModule", // cnb
+                "Testing Module", // display name
+                "org/example/testModule/resources/Bundle.properties",
+                "org/example/testModule/resources/layer.xml",
+                NbPlatform.PLATFORM_ID_DEFAULT, true);
+        FileObject fo = FileUtil.toFileObject(targetPrjDir);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+        assertNotNull(p);
+        assertEquals("Testing Module", ProjectUtils.getInformation(p).getDisplayName());
+        EditableManifest mf = Util.loadManifest(p.getProjectDirectory().getFileObject("manifest.mf"));
+        assertNull(mf.getAttribute("OpenIDE-Module-Localizing-Bundle", null));
+        assertEquals("org/example/testModule/resources/Bundle", mf.getAttribute("Bundle-Localization", null));
+        assertEquals("%OpenIDE-Module-Name", mf.getAttribute("Bundle-Name", null));
+        EditableProperties props = Util.loadProperties(p.getProjectDirectory().getFileObject("src/org/example/testModule/resources/Bundle.properties"));
+        assertEquals("Testing Module", props.get("OpenIDE-Module-Name"));
+    }
     
 }

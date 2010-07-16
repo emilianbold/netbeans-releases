@@ -20,7 +20,7 @@ import org.netbeans.modules.sql.framework.model.SQLOperator;
 import org.netbeans.modules.sql.framework.model.VisibleSQLPredicate;
 import org.netbeans.modules.sql.framework.model.utils.SQLParserUtil;
 
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /** 
  * JavaCC generated SQL parser. 

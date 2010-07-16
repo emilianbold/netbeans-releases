@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,13 +51,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.config.gen.LibraryRefType;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -62,13 +74,19 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -77,20 +95,34 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sherold
  */
-public class WarDeploymentConfiguration implements ModuleConfiguration, 
+public class WarDeploymentConfiguration extends WLDeploymentConfiguration
+        implements ServerLibraryConfiguration, ModuleConfiguration,
         ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
-    
+
+
+    private final ChangeSupport serverLibraryChangeSupport = new ChangeSupport(this);
+
     private final File file;
+
     private final J2eeModule j2eeModule;
+
     private final DataObject dataObject;
+
+    private final FileChangeListener weblogicXmlListener = new WeblogicXmlListener();
+
     private WeblogicWebApp webLogicWebApp;
+
+    private Set<ServerLibraryDependency> originalDeps;
     
     /**
      * Creates a new instance of WarDeploymentConfiguration 
      */
     public WarDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
         this.j2eeModule = j2eeModule;
         file = j2eeModule.getDeploymentConfigurationFile("WEB-INF/weblogic.xml"); // NOI18N
+        FileUtil.addFileChangeListener(weblogicXmlListener, file);
+
         getWeblogicWebApp();
         DataObject dataObject = null;
         try {
@@ -102,7 +134,6 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
         this.dataObject = dataObject;
     }
     
-
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
@@ -137,7 +168,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
      *
      * @return WeblogicWebApp graph or null if the weblogic.xml file is not parseable.
      */
-    public synchronized WeblogicWebApp getWeblogicWebApp() {
+    public final synchronized WeblogicWebApp getWeblogicWebApp() {
         if (webLogicWebApp == null) {
             try {
                 if (file.exists()) {
@@ -324,10 +355,168 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
             }
         });
     }
-    
-    
+
+    @Override
+    public void configureLibrary(@NonNull final ServerLibraryDependency library) throws ConfigurationException {
+        assert library != null;
+
+        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
+            public void modify(WeblogicWebApp webLogicWebApp) {
+                for (LibraryRefType libRef : webLogicWebApp.getLibraryRef()) {
+                    ServerLibraryDependency lib = getServerLibraryRange(libRef);
+                    if (library.equals(lib)) {
+                        return;
+                    }
+                }
+
+                setServerLibraryRange(webLogicWebApp, library);
+            }
+        });
+    }
+
+    @Override
+    public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException {
+        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
+        if (webLogicWebApp == null) { // graph not parseable
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadServerLibraries", file.getPath());
+            throw new ConfigurationException(msg);
+        }
+
+        Set<ServerLibraryDependency> ranges = new HashSet<ServerLibraryDependency>();
+        for (LibraryRefType libRef : webLogicWebApp.getLibraryRef()) {
+            ranges.add(getServerLibraryRange(libRef));
+        }
+
+        return ranges;
+    }
+
+    @Override
+    public void addLibraryChangeListener(@NonNull ChangeListener listener) {
+        Parameters.notNull("listener", listener);
+
+        boolean load = false;
+        synchronized (this) {
+            load = originalDeps == null;
+        }
+        if (load) {
+            Set<ServerLibraryDependency> deps = null;
+            try {
+                deps = getLibraries();
+            } catch(ConfigurationException ex) {
+                deps = Collections.emptySet();
+            }
+            synchronized (this) {
+                if (originalDeps == null) {
+                    originalDeps = deps;
+                }
+            }
+        }
+
+        serverLibraryChangeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeLibraryChangeListener(@NonNull ChangeListener listener) {
+        Parameters.notNull("listener", listener);
+        serverLibraryChangeSupport.removeChangeListener(listener);
+    }
+
+    private void fireChange() {
+        Set<ServerLibraryDependency> oldDeps = null;
+        synchronized (this) {
+            if (originalDeps == null) {
+                // nobody is listening
+                return;
+            }
+            oldDeps = new HashSet<ServerLibraryDependency>(originalDeps);
+        }
+
+        Set<ServerLibraryDependency> deps = new HashSet<ServerLibraryDependency>();
+        try {
+            deps.addAll(getLibraries());
+        } catch (ConfigurationException ex) {
+            // noop - empty set
+        }
+        boolean fire = false;
+        for (ServerLibraryDependency old : oldDeps) {
+            if (!deps.remove(old)) {
+                fire = true;
+                break;
+            }
+        }
+        if (!deps.isEmpty()) {
+            fire = true;
+        }
+        if (fire) {
+            serverLibraryChangeSupport.fireChange();
+        }
+    }
+
+    private ServerLibraryDependency getServerLibraryRange(LibraryRefType libRef) {
+        String name = libRef.getLibraryName();
+        String specVersionString = libRef.getSpecificationVersion();
+        String implVersionString = libRef.getImplementationVersion();
+        boolean exactMatch = libRef.isExactMatch();
+
+        Version spec = specVersionString == null ? null : Version.fromJsr277NotationWithFallback(specVersionString);
+        Version impl = implVersionString == null ? null : Version.fromJsr277NotationWithFallback(implVersionString);
+        if (exactMatch) {
+            return ServerLibraryDependency.exactVersion(name, spec, impl);
+        } else {
+            return ServerLibraryDependency.minimalVersion(name, spec, impl);
+        }
+    }
+
+    private void setServerLibraryRange(WeblogicWebApp webApp, ServerLibraryDependency library) {
+        LibraryRefType libRef = new LibraryRefType();
+        libRef.setLibraryName(library.getName());
+        if (library.isExactMatch()) {
+            libRef.setExactMatch(true);
+        }
+        if (library.getSpecificationVersion() != null) {
+            libRef.setSpecificationVersion(library.getSpecificationVersion().toString());
+        }
+        if (library.getImplementationVersion() != null) {
+            libRef.setImplementationVersion(library.getImplementationVersion().toString());
+        }
+        webApp.setLibraryRef(new LibraryRefType[] {libRef});
+    }
+
     // private helper interface -----------------------------------------------
-     
+
+    private class WeblogicXmlListener implements FileChangeListener {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            fireChange();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+    }
+
     private interface WeblogicWebAppModifier {
         void modify(WeblogicWebApp context);
     }

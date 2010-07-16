@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,21 +47,31 @@ package org.netbeans.modules.form.project;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.form.FormUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -159,8 +172,29 @@ public final class ClassSource {
             }
             return lib != null ? new LibraryEntry(lib) : null;
         } else if (type.equals(TYPE_PROJECT)) {
-            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(new File(name));
-            return aa != null ? new ProjectEntry(aa) : null;
+            File file = new File(name);
+            file = FileUtil.normalizeFile(file);
+            if (file.isDirectory()) {
+                FileObject fob = FileUtil.toFileObject(file);
+                if (fob != null) {
+                    try {
+                        Project project = ProjectManager.getDefault().findProject(fob);
+                        if (project != null) {
+                            return new ProjectEntry(project);
+                        }
+                    } catch (IOException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                        return null;
+                    }
+                }
+            }
+            // Backward compatibility - we used ant-artifact
+            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
+            Project project = aa.getProject();
+            if (project != null) {
+                return new ProjectEntry(project);
+            }
+            return null;
         } else {
             return null;
         }
@@ -212,6 +246,7 @@ public final class ClassSource {
         public File getJar() {
             return jar;
         }
+        @Override
         public List<URL> getClasspath() {
             try {
                 return Collections.singletonList(translateURL(jar.toURI().toURL()));
@@ -220,6 +255,7 @@ public final class ClassSource {
                 return Collections.emptyList();
             }
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             URL u = jar.toURI().toURL();
             FileObject jarFile = FileUtil.toFileObject(jar);
@@ -231,12 +267,15 @@ public final class ClassSource {
             }
             return Boolean.valueOf(ProjectClassPathModifier.addRoots(new URL[] {u}, projectArtifact, classPathType));
         }
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ClassSource.class, "FMT_JarSource", jar.getAbsolutePath());
         }
+        @Override
         public String getPicklingType() {
             return TYPE_JAR;
         }
+        @Override
         public String getPicklingName() {
             return jar.getAbsolutePath();
         }
@@ -252,19 +291,24 @@ public final class ClassSource {
         public Library getLibrary() {
             return lib;
         }
+        @Override
         public List<URL> getClasspath() {
             // No need to translate to jar protocol; Library.getContent should have done this already.
             return lib.getContent("classpath"); // NOI18N
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             return  Boolean.valueOf(ProjectClassPathModifier.addLibraries(new Library[] {lib}, projectArtifact, classPathType));
         }
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ClassSource.class, "FMT_LibrarySource", lib.getDisplayName());
         }
+        @Override
         public String getPicklingType() {
             return TYPE_LIBRARY;
         }
+        @Override
         public String getPicklingName() {
             // For backward compatibility with old *.palette_item files, treat bare names as global libraries.
             // Project libraries are given as e.g. "file:/some/where/libs/index.properties#mylib"
@@ -277,47 +321,56 @@ public final class ClassSource {
         }
     }
 
-    /** Entry based on a (sub-)project build artifact. */
     public static final class ProjectEntry extends Entry {
-        private final AntArtifact artifact;
-        public ProjectEntry(AntArtifact artifact) {
-            assert artifact != null;
-            this.artifact = artifact;
+        private final Project project;
+
+        public ProjectEntry(Project project) {
+            assert project != null;
+            this.project = project;
         }
-        public AntArtifact getArtifact() {
-            return artifact;
-        }
+
+        @Override
         public List<URL> getClasspath() {
-            List<URL> cp = new ArrayList<URL>();
-            for (URI loc : artifact.getArtifactLocations()) {
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] sgs = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            List<URL> list = new ArrayList<URL>();
+            for (SourceGroup sg : sgs) {
                 try {
-                    cp.add(translateURL(artifact.getScriptLocation().toURI().resolve(loc).normalize().toURL()));
-                } catch (MalformedURLException x) {
-                    assert false : x;
+                    ClassPath cp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
+                    if (cp != null) {
+                        for (FileObject fob : cp.getRoots()) {
+                            URL[] urls = UnitTestForSourceQuery.findSources(fob);
+                            if (urls.length == 0) {
+                                BinaryForSourceQuery.Result result = BinaryForSourceQuery.findBinaryRoots(fob.getURL());
+                                list.addAll(Arrays.asList(result.getRoots()));
+                            }
+                        }
+                    }
+                } catch (FileStateInvalidException fsiex) {
+                    FormUtils.LOGGER.log(Level.INFO, fsiex.getMessage(), fsiex);
                 }
             }
-            return cp;
+            return list;
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
-            if (artifact.getProject() != FileOwnerQuery.getOwner(projectArtifact)) {
-                return Boolean.valueOf(ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {artifact}, artifact.getArtifactLocations(), projectArtifact, classPathType));
+            if (project != FileOwnerQuery.getOwner(projectArtifact)) {
+                return Boolean.valueOf(ProjectClassPathModifier.addProjects(new Project[] {project}, projectArtifact, classPathType));
             }
             return Boolean.FALSE;
         }
+        @Override
         public String getDisplayName() {
-            Project p = artifact.getProject();
-            return NbBundle.getMessage(ClassSource.class, "FMT_ProjectSource",
-                    p != null ? FileUtil.getFileDisplayName(p.getProjectDirectory()) : artifact.getScriptLocation().getAbsolutePath());
+            return NbBundle.getMessage(ClassSource.class, "FMT_ProjectSource", // NOI18N
+                    FileUtil.getFileDisplayName(project.getProjectDirectory()));
         }
+        @Override
         public String getPicklingType() {
             return TYPE_PROJECT;
         }
+        @Override
         public String getPicklingName() {
-            if (artifact.getArtifactLocations().length > 0) {
-                return new File(artifact.getScriptLocation().toURI().resolve(artifact.getArtifactLocations()[0]).normalize()).getAbsolutePath();
-            } else {
-                return "";
-            }
+            return FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
         }
     }
 

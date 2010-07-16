@@ -8,6 +8,7 @@ package org.netbeans.modules.kenai.ui.spi;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.util.Lookup;
 
 /**
@@ -32,7 +33,7 @@ public abstract class ProjectAccessor {
      * @return list of member projects or null, if member projects
      * are not accessible
      */
-    public abstract List<ProjectHandle> getMemberProjects( LoginHandle login, boolean forceRefresh );
+    public abstract List<ProjectHandle> getMemberProjects(Kenai kenai, LoginHandle login, boolean forceRefresh );
 
     /**
      * Load details for given project.
@@ -40,7 +41,7 @@ public abstract class ProjectAccessor {
      * @param forceRefresh force reload from server
      * @return projectHandle or null, if project handle not accessible
      */
-    public abstract ProjectHandle getNonMemberProject(String projectId, boolean forceRefresh);
+    public abstract ProjectHandle getNonMemberProject(Kenai kenai, String projectId, boolean forceRefresh);
 
     /**
      * @return Adds a Kenai project into given Dashboard window.

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.mercurial;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -61,7 +65,8 @@ public class StatusTest extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();        
+        System.setProperty("netbeans.user", "/tmp/" + System.currentTimeMillis());
+        super.setUp();
         
         // create
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -75,26 +80,23 @@ public class StatusTest extends AbstractHgTest {
         File file3 = createFile(folder, "file3");
         
         commit(folder);
-        getCache().refreshAll(folder); // force refresh
+        getCache().refresh(folder); // force refresh
         
         // assert status given from cli
         assertStatus(folder, FileInformation.STATUS_VERSIONED_UPTODATE);
-        Map<File, FileInformation> m = HgCommand.getAllStatus(getWorkDir(), folder);
-        assertEquals(3, m.keySet().size());
-        for (File file : m.keySet()) {
-            assertStatus(file, FileInformation.STATUS_VERSIONED_UPTODATE);    
-        }                        
+        Map<File, FileInformation> m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folder));
+        assertEquals(0, m.keySet().size());
                 
         // hg move the folder
         File folderenamed = new File(getWorkDir(), "folderenamed");
         HgCommand.doRename(getWorkDir(), folder, folderenamed, null);
 
-        m = HgCommand.getAllStatus(getWorkDir(), folder);
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folder));
         assertEquals(3, m.keySet().size());
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);    
         }        
-        m = HgCommand.getAllStatus(getWorkDir(), folderenamed);
+        m = HgCommand.getStatus(getWorkDir(), Collections.singletonList(folderenamed));
         assertEquals(3, m.keySet().size());        
         for (File file : m.keySet()) {
             assertStatus(file, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);    

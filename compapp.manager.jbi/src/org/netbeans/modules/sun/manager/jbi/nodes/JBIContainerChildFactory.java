@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import com.sun.esb.management.common.ManagementRemoteException;
 import com.sun.jbi.ui.common.JBIComponentInfo;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import com.sun.jbi.ui.common.ServiceUnitInfo;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
@@ -54,7 +58,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- *
+ * @author jqian
  */
 public class JBIContainerChildFactory {
 
@@ -206,25 +210,29 @@ public class JBIContainerChildFactory {
     }
 
     /**
-     * 
-     * @param node
-     * @return
+     * Gets the children nodes of a given service assembly node.
+     *
+     * @param node  a service assembly node
+     *
+     * @return a list of service unit nodes
      */
     private Node[] createServiceAssemblyChildren(JBIServiceAssemblyNode node) {
 
+        List<Node> suNodes = new ArrayList<Node>();
+
         ServiceAssemblyInfo saInfo = node.getAssemblyInfo();
-        List<ServiceUnitInfo> unitList = saInfo.getServiceUnitInfoList();
-
-        Node[] nodes = new Node[unitList.size()];
-
-        int index = 0;
-        for (ServiceUnitInfo unit : unitList) {
-            String unitName = unit.getName();
-            String unitDescription = unit.getDescription();
-            nodes[index++] = new JBIServiceUnitNode(
-                    controller, unitName, unitName, unitDescription);
+        if (saInfo != null) {
+            List<ServiceUnitInfo> unitList = saInfo.getServiceUnitInfoList();
+            if (unitList != null) {
+                for (ServiceUnitInfo unit : unitList) {
+                    String unitName = unit.getName();
+                    String unitDescription = unit.getDescription();
+                    suNodes.add(new JBIServiceUnitNode(
+                            controller, unitName, unitName, unitDescription));
+                }
+            }
         }
 
-        return nodes;
+        return suNodes.toArray(new Node[0]);
     }
 }

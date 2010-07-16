@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,36 +41,31 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import java.util.Collections;
-import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-
+import org.netbeans.modules.web.core.syntax.parser.JspSyntaxParser;
 
 /**
- * just fake class, we need the parser and the StructureScanner to enable 
- * navigator of embedded languages
+ * A very simple JSP parser.
  *
  * @author marek
  */
 public class JspGSFParser extends Parser {
 
-    private Result fakeResult;
+    private Result result;
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        fakeResult = new JspFakeParserResult(snapshot);
+        result = new JspParserResult(snapshot, JspSyntaxParser.parse(snapshot));
     }
 
     @Override
     public Result getResult(Task task) throws ParseException {
-        return fakeResult;
+        return result;
     }
 
     @Override
@@ -84,23 +82,5 @@ public class JspGSFParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //do nothing
     }
-
-    private static class JspFakeParserResult extends ParserResult {
-
-        public JspFakeParserResult(Snapshot s) {
-            super(s);
-        }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.EMPTY_LIST;
-        }
-
-        @Override
-        protected void invalidate() {
-            //do nothing
-        }
-
-    }
-
+    
 }

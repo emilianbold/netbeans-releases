@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -105,7 +108,11 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (Object[] nodes) {
-                customize ((Watch) nodes [0]);
+                if (nodes[0] instanceof WatchesTreeModel.EmptyWatch) {
+                    customize ((WatchesTreeModel.EmptyWatch) nodes[0]);
+                } else {
+                    customize ((Watch) nodes[0]);
+                }
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -127,6 +134,11 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 null,
                 CUSTOMIZE_ACTION
             };
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            return new Action [] {
+                CUSTOMIZE_ACTION
+            };
+        }
         throw new UnknownTypeException (node);
     }
     
@@ -135,6 +147,10 @@ public class WatchesActionsProvider implements NodeActionsProvider {
             return;
         if (node instanceof Watch) {
             customize ((Watch) node);
+            return;
+        }
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            customize ((WatchesTreeModel.EmptyWatch) node);
             return;
         }
         throw new UnknownTypeException (node);
@@ -164,4 +180,23 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
         w.setExpression(wp.getExpression());
     }
+
+    private static void customize (WatchesTreeModel.EmptyWatch w) {
+
+        WatchPanel wp = new WatchPanel("");
+        JComponent panel = wp.getPanel();
+
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+            panel,
+            NbBundle.getMessage(WatchesActionsProvider.class, "CTL_WatchDialog_Title", "")
+        );
+        dd.setHelpCtx(new HelpCtx("debug.add.watch"));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        dialog.dispose();
+
+        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
+        w.setExpression(wp.getExpression());
+    }
+
 }

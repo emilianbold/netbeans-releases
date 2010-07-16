@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,24 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.api.common.queries;
 
+import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.java.api.common.Roots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
+import org.w3c.dom.Element;
 
 /**
  * Support class for creating different types of queries implementations.
@@ -183,11 +199,24 @@ public final class QuerySupport {
      * Create a new query to find out specification source level of Java source files.
      * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
      * @return a {@link SourceLevelQueryImplementation} to find out specification source level of Java source files.
+     * @deprecated Use {@link QuerySupport#createSourceLevelQuery(org.netbeans.spi.project.support.ant.PropertyEvaluator)}
      */
-    public static SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
+    @Deprecated
+    public static org.netbeans.spi.java.queries.SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
         Parameters.notNull("evaluator", evaluator); // NOI18N
 
         return new SourceLevelQueryImpl(evaluator);
+    }
+
+    /**
+     * Create a new query to find out source level of Java source files (SourceLevelQueryImplementation2).
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
+     * @return a {@link SourceLevelQueryImplementation2} to find out source level of Java source files.
+     * @since 1.22
+     */
+    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(@NonNull PropertyEvaluator evaluator) {
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        return new SourceLevelQueryImpl2(evaluator);
     }
 
     /**
@@ -281,5 +310,90 @@ public final class QuerySupport {
                 "build.classes.dir", "build.test.classes.dir"); // NOI18N
     }
     
+    /**Create a new query to provide annotation processing configuration data.
+     * 
+     * @param helper project's AntProjectHelper
+     * @param evaluator project's evaluator
+     * @param annotationProcessingEnabledProperty property whose value says whether the annotation processing is enabled for the given project at all
+     *                                                    (will be returned from {@link Result#annotationProcessingEnabled()})
+     * @param annotationProcessingEnabledInEditorProperty property whose value says whether the annotation processing should be enabled
+     *                                                    in the editor (will be returned from {@link Result#annotationProcessingEnabled())}
+     * @param runAllAnnotationProcessorsProperty when true, {@link Result#annotationProcessorsToRun()} will return null
+     * @param annotationProcessorsProperty should contain comma separated list of annotation processors to run (will be returned from  {@link Result#annotationProcessorsToRun()})
+     * @param sourceOutputProperty directory to which the annotation processors generate source files (will be returned from  {@link Result#sourceOutputProperty()})
+     * @param processorOptionsProperty options passed to the annotation processors (-Akey=value)
+     * @return a {@link AnnotationProcessingQueryImplementation} to provide annotation processing configuration data for this project.
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static AnnotationProcessingQueryImplementation createAnnotationProcessingQuery(AntProjectHelper helper, PropertyEvaluator evaluator,
+            String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty, String processorOptionsProperty) {
+        return new AnnotationProcessingQueryImpl(helper, evaluator, annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty, processorOptionsProperty);
+    }
+
+    public static ProjectInformation createProjectInformation(AntProjectHelper projectHelper, Project project, Icon icon) {
+        return new QuerySupport.AntHelper(projectHelper, project, icon, ProjectInfoImpl.DEFAULT_ELEMENT_NAME);
+    }
+
+    public static ProjectInformation createProjectInformation(UpdateHelper updateHelper, Project project, Icon icon) {
+        return new QuerySupport.AntUpdateHelper(updateHelper, project, icon, ProjectInfoImpl.DEFAULT_ELEMENT_NAME);
+    }
+
+    /**
+     * Returns {@link Sources} implementation designed for projects that supports adding
+     * or removing of the source roots. The returned instance also implements {@link SourceGroupModifierImplementation}
+     * @param project the {@link Project} for which the {@link Sources} should be created
+     * @param helper the {@link AntProjectHelper} of the project, used only to resolve files
+     * @param evaluator the {@link PropertyEvaluator} to evaluate the properties
+     * @param roots the array of {@link Roots} providing the roots of given type
+     * @return the {@link Sources} instance implementing also the {@link SourceGroupModifierImplementation} interface
+     * @since 1.21
+     */
+    public static Sources createSources(@NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Roots... roots) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("evaluator", evaluator); //NOI18N
+        Parameters.notNull("roots", roots); //NOI18N
+        return new SourcesImpl(project, helper, evaluator, roots);
+    }
     
+    private static class AntHelper extends ProjectInfoImpl {
+
+        private final AntProjectHelper projectHelper;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AntHelper(AntProjectHelper projectHelper, Project project, Icon icon, String elementName) {
+            super(project, icon, elementName);
+            this.projectHelper = projectHelper;
+
+            projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, projectHelper));
+        }
+
+
+        @Override
+        protected Element getPrimaryConfigurationData() {
+            return projectHelper.getPrimaryConfigurationData(true);
+        }
+    }
+
+    private static class AntUpdateHelper extends ProjectInfoImpl {
+
+        private final UpdateHelper updateHelper;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AntUpdateHelper(UpdateHelper updateHelper, Project project, Icon icon, String elementName) {
+            super(project, icon, elementName);
+            this.updateHelper = updateHelper;
+
+            AntProjectHelper projectHelper = updateHelper.getAntProjectHelper();
+            projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, projectHelper));
+        }
+
+        @Override
+        protected Element getPrimaryConfigurationData() {
+            return updateHelper.getPrimaryConfigurationData(true);
+        }
+    }
 }

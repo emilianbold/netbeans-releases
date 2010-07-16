@@ -26,6 +26,11 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-h">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-cnd-navigation-overrides-OverrideAnnotationAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="cpp-switch-header-source">
@@ -72,6 +77,11 @@
                 </folder>
             </folder>
             <folder name="x-c++">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-cnd-navigation-overrides-OverrideAnnotationAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="cpp-switch-header-source">

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Invoke;
@@ -88,8 +87,9 @@ public class InvokeNode extends BpelNode<Invoke> {
         //
         CustomEditorProperty customizer = new CustomEditorProperty(this);
         mainPropertySet.put(customizer);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
+        propUtil.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
         Sheet.Set messagePropertySet = 
@@ -97,35 +97,35 @@ public class InvokeNode extends BpelNode<Invoke> {
         //
         Node.Property property;
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PartnerLinkReference.PARTNER_LINK, PARTNER_LINK, 
                 "getPartnerLink", "setPartnerLink", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 PortTypeReference.PORT_TYPE, PORT_TYPE, 
                 "getPortType", "setPortType", "removePortType"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 OperationReference.OPERATION, OPERATION, 
                 "getOperation", "setOperation", null); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 Invoke.INPUT_VARIABLE, INPUT, 
                 "getInputVariable", "setInputVariable", "removeInputVariable"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        property = PropertyUtils.registerAttributeProperty(this, 
+        property = propUtil.registerAttributeProperty(this, 
                 messagePropertySet,
                 Invoke.OUTPUT_VARIABLE, OUTPUT, 
                 "getOutputVariable", "setOutputVariable", "removeOutputVariable"); // NOI18N
@@ -133,7 +133,7 @@ public class InvokeNode extends BpelNode<Invoke> {
         //
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
@@ -219,6 +219,7 @@ public class InvokeNode extends BpelNode<Invoke> {
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.GO_TO_REFERENCE,
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,

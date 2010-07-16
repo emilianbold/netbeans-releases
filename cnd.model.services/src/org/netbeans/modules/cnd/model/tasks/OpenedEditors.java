@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,15 +75,16 @@ public final class OpenedEditors {
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    private static OpenedEditors DEFAULT = new OpenedEditors();
     private final PropertyChangeListener componentListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             OpenedEditors.this.propertyChange(evt);
         }
     };
-
     static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
     private static final boolean TRACE_FILES = Boolean.getBoolean("cnd.model.tasks.files");
+    private final static List<String> mimeTypesList = Arrays.asList(new String[]
+                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE});
+    private static OpenedEditors DEFAULT = new OpenedEditors();
 
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -89,6 +93,7 @@ public final class OpenedEditors {
                 stateChanged(evt);
             }
         });
+        stateChanged(null);
     }
 
     public void fireStateChanged() {
@@ -157,8 +162,11 @@ public final class OpenedEditors {
         }
 
         for (JTextComponent c : visibleEditors) {
-            c.addPropertyChangeListener(componentListener);
-            visibleEditors2Files.put(c, getFileObject(c));
+            FileObject fo = getFileObject(c);
+            if (fo != null && fo.isValid()) {
+                c.addPropertyChangeListener(componentListener);
+                visibleEditors2Files.put(c, fo);
+            }
         }
 
         fireChangeEvent();
@@ -190,7 +198,12 @@ public final class OpenedEditors {
 
         if (originalFile != newFile) {
             if (SHOW_TIME) { System.err.println("OpenedEditord: new files found: " + newFile.getNameExt()); }
-            visibleEditors2Files.put(c, newFile);
+            if (newFile != null) {
+                visibleEditors2Files.put(c, newFile);
+            } else {
+                visibleEditors2Files.remove(c);
+                c.removePropertyChangeListener(componentListener);
+            }
             fireChangeEvent();
         }
     }
@@ -211,8 +224,6 @@ public final class OpenedEditors {
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
-    private final static List<String> mimeTypesList = Arrays.asList(new String[]
-                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE}); 
 
     /**
      * Filter unsupported files from the <code>files</code> parameter.

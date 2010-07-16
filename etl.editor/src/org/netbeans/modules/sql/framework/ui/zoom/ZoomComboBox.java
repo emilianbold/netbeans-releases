@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,10 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
     private double lastValue;
     private static final Dimension COMBO_BOX_SIZE = new Dimension(60, 20);
     private static final Dimension ZOOM_PANEL_SIZE = new Dimension(70, 25);
+    
+    private static final Dimension COMBO_BOX_SIZE_MAC = new Dimension(100, 20);
+    private static final Dimension ZOOM_PANEL_SIZE_MAC = new Dimension(110, 25);
+    
 
     /** Creates a new instance of ZoomComboBox */
     public ZoomComboBox() {
@@ -75,10 +82,19 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
 
         zoomBox.addItemListener(new ZoomFactorItemListener());
 
-        zoomBox.setPreferredSize(COMBO_BOX_SIZE);
-        zoomBox.setSize(COMBO_BOX_SIZE);
+
+        Dimension dim = COMBO_BOX_SIZE;
+        Dimension dim2 = ZOOM_PANEL_SIZE;
+        if(!System.getProperty("os.name").contains("Win")) {
+            dim = COMBO_BOX_SIZE_MAC;
+            dim2 = ZOOM_PANEL_SIZE_MAC;
+        }
+        
+        zoomBox.setPreferredSize(dim);
+        zoomBox.setSize(dim);
+        
         this.add(zoomBox);
-        this.setMaximumSize(ZOOM_PANEL_SIZE);
+        this.setMaximumSize(dim2);
 
         TopComponent.getRegistry().addPropertyChangeListener(this);
     }

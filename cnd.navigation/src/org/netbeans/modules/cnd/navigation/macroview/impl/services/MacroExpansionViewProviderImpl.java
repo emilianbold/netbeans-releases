@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,7 +91,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         if (mainDoc == null) {
             return;
         }
-        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
             return;
         }
@@ -113,30 +116,16 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
         MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 
-        // Init expanded macro field
-        final Document expandedMacroDoc = MacroExpansionViewUtils.createExpandedMacroDocument(mainDoc, csmFile);
-        if (expandedMacroDoc == null) {
-            return;
-        }
-        CsmDeclaration decl = ContextUtils.findInnerFileDeclaration(csmFile, offset);
-        if (decl != null) {
-            try {
-                expandedMacroDoc.insertString(0, decl.getName().toString(), null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
-
         // Open view
         Runnable openView = new Runnable() {
 
+            @Override
             public void run() {
                 MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
                 if (!view.isOpened()) {
                     view.open();
                 }
-                view.setDocuments(expandedContextDoc, expandedMacroDoc);
+                view.setDocuments(expandedContextDoc);
                 view.requestActive();
                 view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", CsmUtilities.getFile(mainDoc).getName())); // NOI18N
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N

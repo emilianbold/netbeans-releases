@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN" "http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd">
+<resources>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBCDB" object-type="user" pool-name="DB2-UDB_WEBCDB">
+    <description>CSI Portal Central Index DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBLSCT" object-type="user" pool-name="SQLServer_LSCT">
+    <description>CSI Portal LSCT Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBTDT" object-type="user" pool-name="SQLServer_TDT">
+    <description>CSI Portal TDT Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBCICT" object-type="user" pool-name="SQLServer_CICT">
+    <description>CSI Portal CICT Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBTCR" object-type="user" pool-name="SQLServer_TCR">
+    <description>CSI Portal TCR Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBEGATE" object-type="user" pool-name="SQLServer_EGT">
+    <description>CSI Portal EGT Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/WEBDBMCT" object-type="user" pool-name="SQLServer_MCT">
+    <description>CSI Portal MCT Remote DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/MCTSTAPDB" object-type="user" pool-name="SQLServer_Stap_MCT">
+    <description>MCT Stap DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/MCTSrvAcc" object-type="user" pool-name="SQLServer_AccServ_MCT">
+    <description>MCT Accessorial Services DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/MCT_LASHING" object-type="user" pool-name="SQLServer_Lashing_MCT">
+    <description>MCT Lashing DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/AS400_LSCT" object-type="user" pool-name="DB2-AS400_LSCT">
+    <description>LSCT AS400 DB</description>
+  </jdbc-resource>
+  <jdbc-resource enabled="true" jndi-name="jdbc/AS400_MCT" object-type="user" pool-name="DB2-AS400_MCT">
+    <description>MCT AS400 DB</description>
+  </jdbc-resource>
+  <mail-resource debug="false" enabled="true" from="CSIPortal@contshipitalia.com" host="w2kspeexc2.contship.net" jndi-name="mail/mailer" object-type="user" store-protocol="imap" store-protocol-class="com.sun.mail.imap.IMAPStore" transport-protocol="smtp" transport-protocol-class="com.sun.mail.smtp.SMTPTransport" user="CSIPortal">
+    <description/>
+    <property name="mail.password" value="SuPerpippox.68"/>
+  </mail-resource>
+  <jdbc-connection-pool allow-non-component-callers="true" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.ibm.db2.jcc.DB2ConnectionPoolDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="30" max-wait-time-in-millis="60000" name="DB2-UDB_WEBCDB" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="5" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBCDB - DB2 8.2 Universal JDBC Driver Provider</description>
+    <property name="serverName" value="10.5.1.77"/>
+    <property name="portNumber" value="50004"/>
+    <property name="databaseName" value="WEBCDB"/>
+    <property name="driverType" value="4"/>
+    <property name="User" value="addb2"/>
+    <property name="Password" value="addb2"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.ibm.as400.access.AS400JDBCConnectionPoolDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="15" max-wait-time-in-millis="60000" name="DB2-AS400_LSCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="2" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>LSCT - AS400 Toolbox JDBC Driver</description>
+    <property name="User" value="EDI"/>
+    <property name="Password" value="vermentino"/>
+    <property name="serverName" value="10.5.1.21"/>
+    <property name="databaseName" value="S650514C"/>
+    <property name="dateFormat" value="ISO"/>
+    <property name="driver" value="toolbox"/>
+    <property name="access" value="all"/>
+    <property name="blockSize" value="32"/>
+    <property name="blockCriteria" value="2"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.ibm.as400.access.AS400JDBCConnectionPoolDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="15" max-wait-time-in-millis="60000" name="DB2-AS400_MCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="2" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>MCT - AS400 Toolbox JDBC Driver</description>
+    <property name="User" value="LSCT_WEB"/>
+    <property name="Password" value="WEB_LSCT"/>
+    <property name="serverName" value="10.20.1.5"/>
+    <property name="databaseName" value="TESTDB"/>
+    <property name="dateFormat" value="ISO"/>
+    <property name="driver" value="toolbox"/>
+    <property name="access" value="all"/>
+    <property name="blockSize" value="32"/>
+    <property name="blockCriteria" value="2"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="35" max-wait-time-in-millis="60000" name="SQLServer_LSCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="5" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB LSCT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="w2kspesql01"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB_LSCT"/>
+    <property name="User" value="nodo"/>
+    <property name="Password" value="nodo"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="20" max-wait-time-in-millis="60000" name="SQLServer_MCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="5" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB MCT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.20.1.38"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB"/>
+    <property name="User" value="lsct"/>
+    <property name="Password" value="lsct"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="15" max-wait-time-in-millis="60000" name="SQLServer_CICT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="3" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB CICT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="w2kspesql01"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB_CICT"/>
+    <property name="User" value="nodo"/>
+    <property name="Password" value="nodo"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="25" max-wait-time-in-millis="60000" name="SQLServer_TDT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="5" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB TDT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="w2kspesql01"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB_TDT"/>
+    <property name="User" value="nodo"/>
+    <property name="Password" value="nodo"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="15" max-wait-time-in-millis="60000" name="SQLServer_TCR" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="3" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB TCR - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.0.2.46"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB_TCR"/>
+    <property name="User" value="nodo"/>
+    <property name="Password" value="nodo"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="15" max-wait-time-in-millis="60000" name="SQLServer_EGT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="3" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>WEBDB EGT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.60.1.33"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="WEBDB_EGT"/>
+    <property name="User" value="nodo"/>
+    <property name="Password" value="nodo"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="10" max-wait-time-in-millis="60000" name="SQLServer_Lashing_MCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="3" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>LASHING MCT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.20.1.36"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="TerminalMonitor"/>
+    <property name="User" value="lsct"/>
+    <property name="Password" value="lashing"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="10" max-wait-time-in-millis="60000" name="SQLServer_Stap_MCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="2" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>STAP MCT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.20.1.37"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="STAP"/>
+    <property name="User" value="webstap"/>
+    <property name="Password" value="lsct"/>
+  </jdbc-connection-pool>
+  <jdbc-connection-pool allow-non-component-callers="false" associate-with-thread="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" connection-leak-reclaim="false" connection-leak-timeout-in-seconds="0" connection-validation-method="auto-commit" datasource-classname="com.inet.tds.PDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" lazy-connection-association="false" lazy-connection-enlistment="false" match-connections="false" max-connection-usage-count="0" max-pool-size="10" max-wait-time-in-millis="60000" name="SQLServer_AccServ_MCT" non-transactional-connections="false" pool-resize-quantity="2" res-type="javax.sql.ConnectionPoolDataSource" statement-timeout-in-seconds="-1" steady-pool-size="2" validate-atmost-once-period-in-seconds="0" wrap-jdbc-objects="false">
+    <description>Accessorial Services MCT - Merlia I-NET JDBC Driver for MS SQLServer</description>
+    <property name="serverName" value="10.20.1.14"/>
+    <property name="portNumber" value="1433"/>
+    <property name="databaseName" value="ServiziAccessori"/>
+    <property name="User" value="lsct2"/>
+    <property name="Password" value="lsct2"/>
+  </jdbc-connection-pool>
+</resources>

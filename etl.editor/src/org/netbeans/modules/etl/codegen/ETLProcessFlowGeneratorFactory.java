@@ -24,7 +24,7 @@ import org.netbeans.modules.etl.codegen.impl.PipelinedStrategyBuilderImpl;
 import org.netbeans.modules.etl.codegen.impl.ValidatingStrategyBuilderImpl;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 

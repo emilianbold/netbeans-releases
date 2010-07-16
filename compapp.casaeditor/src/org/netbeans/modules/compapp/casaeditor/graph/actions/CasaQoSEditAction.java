@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,17 +55,15 @@ import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
-import org.netbeans.modules.compapp.casaeditor.nodes.ConnectionNode;
-import org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
+ * Action to edit QoS settings of a connection.
  *
  * @author jqian
  */
@@ -84,7 +85,7 @@ public class CasaQoSEditAction extends WidgetAction.Adapter {
         ((ImageWidget) widget).setPaintAsDisabled(true); 
         
         // make sure the underlying connection gets selected
-        event.setPoint(new Point(8, 5));
+        event.setPoint(new Point(0, 5)); // #172722
         return State.REJECTED;
     }
 
@@ -103,41 +104,43 @@ public class CasaQoSEditAction extends WidgetAction.Adapter {
                 selectedNodes[0] instanceof CasaNode) {
             final CasaNode connectionNode = (CasaNode) selectedNodes[0];
 
-            CasaConnection connection = (CasaConnection) connectionNode.getData();
-            String cEndpointName = connection.getConsumer().get().getEndpointName();
-            String pEndpointName = connection.getProvider().get().getEndpointName();
-            
-            final PropertySheetView propertySheetView = new PropertySheetView();
+            if (connectionNode.getData() instanceof CasaConnection) { // #167012
+                CasaConnection connection = (CasaConnection) connectionNode.getData();
+                String cEndpointName = connection.getConsumer().get().getDisplayName();
+                String pEndpointName = connection.getProvider().get().getDisplayName();
 
-            Object[] options = new Object[]{Constants.CLOSE};
-            DialogDescriptor descriptor = new DialogDescriptor(
-                    propertySheetView,
-                    NbBundle.getMessage(getClass(), "STR_PROPERTIES", 
-                    cEndpointName + "<->" + pEndpointName),
-                    true,
-                    options,
-                    null,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);
-            descriptor.setClosingOptions(options);
+                final PropertySheetView propertySheetView = new PropertySheetView();
 
-            final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+                Object[] options = new Object[]{Constants.CLOSE};
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        propertySheetView,
+                        NbBundle.getMessage(getClass(), "STR_PROPERTIES", // NOI18N
+                        cEndpointName + " -> " + pEndpointName), // NOI18N
+                        true,
+                        options,
+                        null,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null);
+                descriptor.setClosingOptions(options);
 
-            // set nodes after PropertySheetView.addNotify() getting called
-            propertySheetView.setNodes(new Node[]{selectedNodes[0]}); 
+                final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
 
-            // The dialog is modal, allow the action chain to continue while
-            // we open the dialog later.
-            SwingUtilities.invokeLater(new Runnable() {
+                // set nodes after PropertySheetView.addNotify() getting called
+                propertySheetView.setNodes(new Node[]{selectedNodes[0]});
 
-                public void run() {
-                    dlg.setVisible(true);                
+                // The dialog is modal, allow the action chain to continue while
+                // we open the dialog later.
+                SwingUtilities.invokeLater(new Runnable() {
 
-                    // refresh to update the main property sheet
-                    connectionNode.refresh(); 
-                }
-            });
+                    public void run() {
+                        dlg.setVisible(true);
+
+                        // refresh to update the main property sheet
+                        connectionNode.refresh();
+                    }
+                });
+            }
         }
 
         return State.CONSUMED;

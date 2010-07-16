@@ -9,15 +9,12 @@
     <type>j2se</type>
     <localizing-bundle>${BUNDLE}</localizing-bundle>
     <volume>
-        <type>classpath</type>
-        ${CLASSPATH}
+        <type>classpath</type>${CLASSPATH}
     </volume>
     <volume>
-        <type>src</type>
-        ${SRC}
+        <type>src</type>${SRC}
     </volume>
     <volume>
-        <type>javadoc</type>
-        ${JAVADOC}
+        <type>javadoc</type>${JAVADOC}
     </volume>
 </library>

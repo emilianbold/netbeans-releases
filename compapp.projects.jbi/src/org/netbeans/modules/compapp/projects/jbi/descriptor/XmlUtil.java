@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,16 +47,6 @@ package org.netbeans.modules.compapp.projects.jbi.descriptor;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-
-import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -62,14 +55,25 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 /**
  * XML helper methods
@@ -151,6 +155,8 @@ public class XmlUtil {
         
         // Use a Transformer for output
         TransformerFactory tFactory = TransformerFactory.newInstance();
+        tFactory.setAttribute("indent-number", new Integer(4));
+
         Transformer transformer = tFactory.newTransformer();
         DOMSource source = new DOMSource(document);
         
@@ -165,12 +171,12 @@ public class XmlUtil {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");  // NOI18N
         } catch (IllegalArgumentException e) {
             // the JAXP implementation doesn't support indentation, no big deal
+            //e.printStackTrace();
         }
         
         transformer.transform(source, result);
     }
     
-
     /**
      * DOCUMENT ME!
      *
@@ -185,6 +191,8 @@ public class XmlUtil {
         byte[] ret = null;
         
         TransformerFactory tFactory = TransformerFactory.newInstance();
+        tFactory.setAttribute("indent-number", new Integer(4));
+
         Transformer transformer = tFactory.newTransformer();
         DOMSource source = new DOMSource(document);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -200,6 +208,7 @@ public class XmlUtil {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");   // NOI18N
         } catch (IllegalArgumentException e) {
             // the JAXP implementation doesn't support indentation, no big deal
+            //e.printStackTrace();
         }
         
         try {
@@ -250,7 +259,7 @@ public class XmlUtil {
      * @exception Exception   Description of the Exception
      */
     public static Document createDocument(boolean namespaceAware,
-                                           File file)
+                                          File file)
              throws Exception {
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,7 +76,7 @@ final class ButtonsParser {
     private String url;
 
     public ButtonsParser(InputStream is) {
-        this.is = is;
+        this.is = new CuttingInputStream(is);
     }
 
     void parse() throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
@@ -218,4 +221,29 @@ final class ButtonsParser {
         return false;
     }
 
+
+    private static class CuttingInputStream extends InputStream {
+
+        private static int[] TERMINAL_PATTERN = new int[]{'<', '/', 'h', 't', 'm', 'l', '>'};
+        private final InputStream br;
+        private int processed = 0;
+
+        public CuttingInputStream(InputStream originalIS) {
+            br = originalIS;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (processed >= TERMINAL_PATTERN.length){
+                return -1;
+            }
+            int next = br.read();
+            if (next == TERMINAL_PATTERN[processed]) {
+                ++processed;
+            } else {
+                processed = 0;
+            }
+            return next;
+        }
+    }
 }

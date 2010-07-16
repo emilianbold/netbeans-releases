@@ -29,7 +29,6 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -40,20 +39,32 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.iep.editor.designer.EntityNode;
+import org.netbeans.modules.iep.editor.designer.GraphView;
+import org.netbeans.modules.iep.editor.designer.PlanCanvas;
 import org.netbeans.modules.iep.model.IEPComponent;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.LineCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.text.CloneableEditor;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -129,18 +140,49 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
 
 //      create and associate lookup
         Node delegate = mObj.getNodeDelegate();
-        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
-            Lookups.fixed(new Object[] {
-                // Need ActionMap in lookup so editor actions work.
-                getActionMap(),
-                // Need the data object registered in the lookup so that the
-                // projectui code will close our open editor windows when the
-                // project is closed.
-                mObj,
-                // The Show Cookie in lookup to show schema component
-                showCookie,
-            }),
-        },delegate);
+//        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
+//            Lookups.fixed(new Object[] {
+//                // Need ActionMap in lookup so editor actions work.
+//                getActionMap(),
+//                // Need the data object registered in the lookup so that the
+//                // projectui code will close our open editor windows when the
+//                // project is closed.
+//                mObj,
+//                // The Show Cookie in lookup to show schema component
+//                showCookie,
+//            }),
+//        },delegate);
+        
+        //proxy lookup see issue 139156 and 141071
+//        ProxyLookup lookup = new ProxyLookup(
+//        Lookups.fixed(new Object[] {
+//              // Need ActionMap in lookup so editor actions work.
+//              getActionMap(),
+//              // Need the data object registered in the lookup so that the
+//              // projectui code will close our open editor windows when the
+//              // project is closed.
+//              mObj,
+//              // The Show Cookie in lookup to show schema component
+//              showCookie,
+//              mObj.getNodeDelegate()
+//          })
+//        );
+        
+          //This change for 141071 caused a regression of 139156.
+        //After reverting this and not using lookup at all both this and 139156 works and even key combination works
+        PlanSourceCookieProxyLookup lookup = new PlanSourceCookieProxyLookup(new Lookup[] {
+                Lookups.fixed(new Object[] {
+                    // Need ActionMap in lookup so editor actions work.
+                    getActionMap(),
+                    // Need the data object registered in the lookup so that the
+                    // projectui code will close our open editor windows when the
+                    // project is closed.
+                    mObj,
+                    // The Show Cookie in lookup to show schema component
+                    showCookie,
+                }),
+            },delegate);
+        
         associateLookup(lookup);
         addPropertyChangeListener("activatedNodes", lookup);
         
@@ -155,7 +197,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
                 if (!isActiveTC() || getEditorPane() == null) {
                     return;
                 }
-                //selectElementsAtOffset();
+                selectElementsAtOffset();
             }
         });
         timerSelNodes.setRepeats(false);
@@ -256,6 +298,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
         }
         super.componentActivated();            
         PlanEditorSupport editor = mObj.getPlanEditorSupport();
+        editor.syncModel();
         editor.addUndoManagerToDocument();
     }
     @Override
@@ -354,11 +397,88 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     private CaretListener caretListener;
     /* task */
     private transient RequestProcessor.Task selectionTask = null;
+    
     /** Selects element at the caret position. */
-    
+    void selectElementsAtOffset() {
+        if(selectionTask!=null) {
+            selectionTask.cancel();
+            selectionTask = null;
+        }
+        RequestProcessor rp = new RequestProcessor("WSDL Source view processor "+hashCode());
+        selectionTask = rp.create(new Runnable() {
+            public void run() {
+                if (!isActiveTC() || mObj == null ||
+                        !mObj.isValid() || mObj.isTemplate()) {
+                    return;
+                }
+                Node n = findNode(getEditorPane().getCaret().getDot());
+                // default to node delegate if node not found
+                if(n==null) {
+                    setActivatedNodes(new Node[] { 
+                            mObj.getNodeDelegate() });
+                } else {
+                    if(selectedNode!=n) {
+                        if(nl==null) {
+                            nl = new NodeAdapter() {
+                                @Override
+                                public void nodeDestroyed(NodeEvent ev) {
+                                    if(ev.getNode()==selectedNode) {
+                                        EventQueue.invokeLater(new Runnable() {
+                                        
+                                            public void run() {
+                                                selectElementsAtOffset();
+                                            }
+                                        
+                                        });
+                                    }
+                                }
+                            };
+                        } else if(selectedNode!=null) {
+                            selectedNode.removeNodeListener(nl);
+                        }
+                        selectedNode = n;
+                        selectedNode.addNodeListener(nl);
+                        setActivatedNodes(new Node[] { selectedNode });
+                    }
+                }
+            }
+        });
+        if(EventQueue.isDispatchThread()) {
+            selectionTask.run();
+        } else {
+            EventQueue.invokeLater(selectionTask);
+        }
+    }
 
-    
+    private Node findNode(int offset) {
+        PlanEditorSupport support = mObj.getPlanEditorSupport();
+        if (support == null) return null;
 
+        IEPModel model = support.getModel();
+        if (model == null || model.getState()!= IEPModel.State.VALID) return null;
+
+        Component sc = support.getModel().
+        findComponent(offset);
+
+        if (sc == null) return null;
+        
+        if(sc instanceof Property) {
+            sc = sc.getParent();
+        }
+        
+        if (IEPComponent.class.isInstance(sc) && support.getPlanDesignMultiviewElement() != null) {
+            GraphView gv = support.getPlanDesignMultiviewElement().getGraphView();
+            if(gv != null && gv.getPlanCanvas() != null) {
+                PlanCanvas pc = gv.getPlanCanvas();
+                EntityNode node = pc.getDoc().findNodeByComponent((IEPComponent) sc);
+                if(node != null) {
+                    return node.getPropertyNode();
+                }
+            }
+        }
+        
+        return null;
+    }
     protected boolean isActiveTC() {
         if (multiViewObserver != null)
             return getRegistry().getActivated() == multiViewObserver.getTopComponent();

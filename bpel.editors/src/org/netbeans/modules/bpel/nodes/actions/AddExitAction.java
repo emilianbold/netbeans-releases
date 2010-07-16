@@ -35,6 +35,7 @@ public class AddExitAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddExitAction() {
+        super("basic/exit"); // NOI18N
     }    
     
     protected String getBundleName() {

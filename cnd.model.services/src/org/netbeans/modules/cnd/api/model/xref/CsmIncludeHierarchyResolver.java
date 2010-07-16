@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ package org.netbeans.modules.cnd.api.model.xref;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.spi.model.services.CsmInlcudeHierachyViewProvider;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -54,6 +59,7 @@ public abstract class CsmIncludeHierarchyResolver {
     /** A dummy resolver that never returns any results.
      */
     private static final CsmIncludeHierarchyResolver EMPTY = new Empty();
+    private static final CsmInlcudeHierachyViewProvider V_EMPTY = new VEmpty();
     
     /** default instance */
     private static CsmIncludeHierarchyResolver defaultResolver;
@@ -72,7 +78,16 @@ public abstract class CsmIncludeHierarchyResolver {
         defaultResolver = Lookup.getDefault().lookup(CsmIncludeHierarchyResolver.class);
         return defaultResolver == null ? EMPTY : defaultResolver;
     }
-    
+
+    public static void showIncludeHierachyView(CsmFile file) {
+        UIGesturesSupport.submit("USG_CND_SHOW_INCLUDE_HIERARCHY"); //NOI18N
+        getInlcudeHierachyViewProvider().showIncludeHierachyView(file);
+    }
+
+    private static CsmInlcudeHierachyViewProvider getInlcudeHierachyViewProvider() {
+        CsmInlcudeHierachyViewProvider instance = Lookup.getDefault().lookup(CsmInlcudeHierachyViewProvider.class);
+        return instance == null ? V_EMPTY : instance;
+    }
     /**
      * Search for usage of referenced file in include directives.
      * Return collection of files that direct include referenced file.
@@ -92,12 +107,25 @@ public abstract class CsmIncludeHierarchyResolver {
         Empty() {
         }
 
+        @Override
         public Collection<CsmFile> getFiles(CsmFile referencedFile) {
             return Collections.<CsmFile>emptyList();
         }
 
+        @Override
         public Collection<CsmReference> getIncludes(CsmFile referencedFile) {
             return Collections.<CsmReference>emptyList();
         }
-    }    
+    }
+    private static final class VEmpty implements CsmInlcudeHierachyViewProvider {
+
+        VEmpty() {
+        }
+
+        @Override
+        public void showIncludeHierachyView(CsmFile file) {
+            // do nothing
+        }
+    }
+
 }

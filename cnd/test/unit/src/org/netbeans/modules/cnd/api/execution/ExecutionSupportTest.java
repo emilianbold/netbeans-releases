@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,11 @@ public class ExecutionSupportTest extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testExecutionSupport1() throws Exception {
         String source = "CXX=CC CFLAGS=\"-g -xinstrument=datarace\" CXXFLAGS=\"-g -xinstrument=datarace\"";
         List<String> res = ImportUtils.parseEnvironment(source);
@@ -95,10 +103,26 @@ public class ExecutionSupportTest extends NbTestCase {
                 assert "CXXFLAGS=\"-g -xinstrument=datarace\"".equals(p);
             }
         }
+
+        res = ImportUtils.parseArgs(source);
+        assert res.size() == 3;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CXX=CC".equals(p);
+            } else if (i == 1) {
+                assert "CFLAGS=-g -xinstrument=datarace".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=-g -xinstrument=datarace".equals(p);
+            }
+        }
     }
 
     public void testExecutionSupport() throws Exception {
-        String source = "configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\"";
+        String source = "./configure -DM=\"CPU = 6\" CPPFLAGS=-g3 CFLAGS=\'-g3 -gdwarf-2\' -DH --help -DM=\"'6\" CXXFLAGS=\"-g3 -gdwarf-2\" -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug";
         List<String> res = ImportUtils.parseEnvironment(source);
         assert res.size() == 3;
         for(int i = 0; i < res.size(); i++){
@@ -128,23 +152,37 @@ public class ExecutionSupportTest extends NbTestCase {
                 assert "CXXFLAGS=\"-g3 -gdwarf-2\"".equals(p);
             }
         }
-        // org.openide.util.Utilities do not work
-//        int i = 0;
-//        for(String p: Utilities.parseParameters(source)){
-//            if (!p.startsWith("-") && p.indexOf("=") > 0) {
-//                if (TRACE) {
-//                    System.err.println(p);
-//                }
-//                if (i == 0) {
-//                    assert "CPPFLAGS=-g3".equals(p);
-//                } else if (i == 1) {
-//                    assert "CFLAGS=-g3 -gdwarf-2".equals(p);
-//                } else if (i == 2) {
-//                    assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
-//                }
-//                i++;
-//            }
-//        }
+        res = ImportUtils.parseArgs(source);
+        assert res.size() == 11;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i==0){
+                assert "./configure".equals(p);
+            } else if (i==1) {
+                assert "-DM=\"CPU = 6\"".equals(p);
+            } else if (i == 2) {
+                assert "CPPFLAGS=-g3".equals(p);
+            } else if (i == 3) {
+                assert "CFLAGS=-g3 -gdwarf-2".equals(p);
+            } else if (i==4){
+                assert "-DH".equals(p);
+            } else if (i==5){
+                assert "--help".equals(p);
+            } else if (i==6){
+                assert "-DM=\"'6\"".equals(p);
+            } else if (i == 7) {
+                assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            } else if (i == 8) {
+                assert "-G".equals(p);
+            } else if (i == 9) {
+                assert "Unix Makefiles".equals(p);
+            } else if (i == 10) {
+                assert "-DCMAKE_BUILD_TYPE=Debug".equals(p);
+            }
+        }
     }
 
 }

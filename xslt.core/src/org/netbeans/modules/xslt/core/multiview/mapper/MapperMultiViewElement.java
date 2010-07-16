@@ -33,7 +33,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.core.XSLTDataObject;
-import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.openide.windows.TopComponent;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -44,9 +43,9 @@ import javax.swing.ActionMap;
 import javax.swing.JButton;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
@@ -55,8 +54,7 @@ import org.netbeans.core.api.multiview.MultiViews;
 
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
-import org.netbeans.modules.xslt.mapper.palette.XsltPaletteFactory;
-import org.netbeans.modules.xslt.mapper.view.XsltMapper;
+import org.netbeans.modules.xslt.core.context.MapperContext;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
@@ -81,7 +79,9 @@ public class MapperMultiViewElement extends TopComponent
 {
     private static final long serialVersionUID = 1L;
     private transient MultiViewElementCallback myMultiViewObserver;
-    private transient XsltMapper myMapperView;
+
+    //todo set correct mapper component
+    private transient JComponent myMapperView;
 
     private transient InstanceContent nodesHack;
     private XSLTDataObject myDataObject;
@@ -381,8 +381,9 @@ public class MapperMultiViewElement extends TopComponent
         return true;
     }
     
-    private XsltMapper createMapperView() {
-        return new XsltMapper(getLookup()); // got TC's lookup or no Palette
+    private JComponent createMapperView() {
+//        return new XsltMapper(getLookup()); // got TC's lookup or no Palette
+        return new JPanel(); // got TC's lookup or no Palette
         
     }
     
@@ -498,8 +499,10 @@ public class MapperMultiViewElement extends TopComponent
                 getDataObject().getLookup(),
                 getDataObject().getNodeDelegate(),
                 actionMap,
-                new AbstractLookup(nodesHack),
-                XsltPaletteFactory.getPalette()})
+                new AbstractLookup(nodesHack)
+//                ,
+//                XsltPaletteFactory.getPalette()
+            })
         });
     }
 

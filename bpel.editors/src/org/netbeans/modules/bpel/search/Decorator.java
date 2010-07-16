@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.search;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,88 +28,96 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
-import org.netbeans.modules.bpel.design.decoration.GlowDescriptor;
+import org.netbeans.modules.bpel.design.decoration.LabelStyleDescriptor;
+import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.06
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory.class)
 public final class Decorator extends DecorationProvider implements DecorationProviderFactory {
 
-  public Decorator() {}
-
-  public DecorationProvider createInstance(DesignView view) {
-    return new Decorator(view);
-  }
-
-  private Decorator(DesignView view) {
-    super(view);
-    myHighlightedEntities = new ArrayList<BpelEntity>();
-  }
-
-  @Override
-  public Decoration getDecoration(BpelEntity entity) {
-    if ( !myIsClearSelection && mySelectedEntity == entity) {
-      return GREEN_DECORATION; // glow
+    public Decorator() {
     }
-    if ( !myIsClearHighlighting && myHighlightedEntities.contains(entity)) {
-      return YELLOW_DECORATION; // highlight
+
+    public DecorationProvider createInstance(DesignView view) {
+        return new Decorator(view);
     }
-    return null;
-  }
 
-  @Override
-  public void release() {
-    mySelectedEntity = null;
-    myHighlightedEntities = null;
-  }
-
-  void select(BpelEntity entity) {
-    if (mySelectedEntity != null) {
-      myIsClearSelection = true;
+    private Decorator(DesignView view) {
+        super(view);
+        myHighlightedEntities = new ArrayList<BpelEntity>();
     }
-    myIsClearSelection = false;
-    mySelectedEntity = entity;
-    fireDecorationChanged();
-  }
 
-  void clearHighlighting() {
-    myIsClearHighlighting = true;
-    myIsClearSelection = true;
-
-    fireDecorationChanged();
-    
-    myHighlightedEntities = new ArrayList<BpelEntity>();
-    myIsClearHighlighting = false;
-    myIsClearSelection = false;
-  }
-
-  void doHighlight(BpelEntity entity, boolean highlighted) {
-    if (highlighted) {
-      myHighlightedEntities.add(entity);
+    @Override
+    public Decoration getDecoration(BpelEntity entity) {
+//      if ( !myIsClearSelection && mySelectedEntity == entity) {
+//          return GREEN_DECORATION; // glow
+//      }
+//      if ( !myIsClearHighlighting && myHighlightedEntities.contains(entity)) {
+//          return YELLOW_DECORATION; // highlight
+//      }
+        if (!myIsClearSelection && mySelectedEntity == entity) {
+            return new Decoration(new LabelStyleDescriptor(new Color(0x339900), 
+                    new Color(0x339900), element, Font.BOLD));
+        }
+        return null;
     }
-    else {
-      myHighlightedEntities.remove(entity);
+
+    @Override
+    public void release() {
+        mySelectedEntity = null;
+        myHighlightedEntities = null;
     }
-    myIsClearSelection = !highlighted;
-    fireDecorationChanged();
+
+    void select(BpelEntity entity, VisualElement findedElement) {
+        if (mySelectedEntity != null) {
+            myIsClearSelection = true;
+        }
+        myIsClearSelection = false;
+        mySelectedEntity = entity;
+        element = findedElement;
+        fireDecorationChanged();
+    }
+
+    void clearHighlighting() {
+        myIsClearHighlighting = true;
+        myIsClearSelection = true;
+
+        fireDecorationChanged();
+
+        myHighlightedEntities = new ArrayList<BpelEntity>();
+        myIsClearHighlighting = false;
+        myIsClearSelection = false;
+    }
+
+    void doHighlight(BpelEntity entity, boolean highlighted) {
+        if (highlighted) {
+            myHighlightedEntities.add(entity);
+        } else {
+            myHighlightedEntities.remove(entity);
+        }
+        myIsClearSelection = !highlighted;
+        fireDecorationChanged();
+    }
+
+    static Decorator getDecorator(DesignView view) {
+        List<DecorationProvider> providers = view.getDecorationManager().getProviders();
+
+        for (DecorationProvider provider : providers) {
+            if (provider instanceof Decorator) {
+                return (Decorator) provider;
+            }
+        }
+        return null;
   }
 
-  static Decorator getDecorator(DesignView view) {
-    List<DecorationProvider> providers = view.getDecorationManager().getProviders();
 
-    for (DecorationProvider provider : providers) {
-      if (provider instanceof Decorator) {
-        return (Decorator) provider;
-      }
-    }
-    return null;
-  }
-  private boolean myIsClearSelection;
-  private boolean myIsClearHighlighting;
-  private BpelEntity mySelectedEntity;
-  private List<BpelEntity> myHighlightedEntities;
-  private static final Decoration GREEN_DECORATION = new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
-  private static final Decoration YELLOW_DECORATION = new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
+    private boolean myIsClearSelection;
+    private boolean myIsClearHighlighting;
+    private VisualElement element;
+    private BpelEntity mySelectedEntity;
+    private List<BpelEntity> myHighlightedEntities;
+//  private static final Decoration GREEN_DECORATION = new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
+//  private static final Decoration YELLOW_DECORATION = new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.List;
 
+import java.util.logging.Level;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
@@ -65,7 +69,6 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateGraphAction;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
-import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
 
@@ -75,8 +78,9 @@ import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
  */
 public class ConditionBuilderRightPanel extends JPanel implements IConditionGraphViewContainer {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderRightPanel.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderRightPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ConditionBuilderRightPanel.class.getName());
 
     private class ValidationThread extends SwingWorker {
 
@@ -178,8 +182,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         } catch (Exception ex) {
             String nbBundle4 = mLoc.t("BUND386: Error occurred during validation: {0}", ex.getMessage());
             String msg = nbBundle4.substring(15);
-
-            mLogger.errorNoloc(mLoc.t("EDIT154: error doing condition validation{0}", LOG_CATEGORY), ex);
+            logger.log(Level.SEVERE, mLoc.t("EDIT154: error doing condition validation{0}", LOG_CATEGORY)+ex.getMessage());
             validationView.appendToView(msg);
         }
     }
@@ -233,7 +236,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             SwingUtilities.invokeLater(layout);
         } catch (Exception ex) {
             // Safely ignore this exception
-            mLogger.errorNoloc(mLoc.t("EDIT513: Can't refresh condition graph view{0}", LOG_CATEGORY), ex);
+            logger.log(Level.SEVERE, mLoc.t("EDIT513: Can't refresh condition graph view{0}", LOG_CATEGORY)+ex.getMessage());            
         }
     }
 

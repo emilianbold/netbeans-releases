@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
+import org.openide.explorer.propertysheet.ProxyNode.DifferentValuesException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -91,6 +95,65 @@ public class ProxyNodeTest extends NbTestCase {
     
     public void testProxyPropertyCreated() {
         assertNotNull("Proxied properties each have one property, but couldn't find matching ProxyProperty", findProxyProperty());
+    }
+
+    public void testEquals_2arg() {
+        assertTrue (ProxyNode.ProxyProperty.equals(null, null));
+        assertTrue (ProxyNode.ProxyProperty.equals("x", "x"));
+        String x = "x";
+        String y = "x";
+        assertTrue (ProxyNode.ProxyProperty.equals(x, x));
+        assertTrue (ProxyNode.ProxyProperty.equals(x, y));
+        assertEquals (new StringBuffer(x).toString(), new StringBuffer(y).toString());
+        assertTrue (ProxyNode.ProxyProperty.equals(new StringBuilder(x).toString(), new StringBuilder(y).toString()));
+        assertFalse (ProxyNode.ProxyProperty.equals(x, null));
+        assertFalse (ProxyNode.ProxyProperty.equals(null, x));
+    }
+
+    public void testNullValuesResultInDifferentValuesException() throws Exception {
+        TProperty a = new TProperty();
+        TProperty b = new TProperty();
+        a.setValue(null);
+        b.setValue("notNull");
+        try {
+            Object val = new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue();
+            fail ("Different Values Exception should have been thrown for values " + a + "," + b);
+
+        } catch (DifferentValuesException e) {}
+        a.setValue ("notNull");
+        assertEquals ("notNull", new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue());
+        b.setValue (null);
+        try {
+            Object val = new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue();
+            fail ("Different Values Exception should have been thrown");
+        } catch (DifferentValuesException e) {}
+    }
+
+    public void testOrderingDoesNotEffectValueInProxyProperty() throws Exception {
+        TProperty a = new TProperty();
+        TProperty b = new TProperty();
+        b.setValue(null);
+        a.setValue("notNull");
+        try {
+            new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue();
+            fail ("Different Values Exception should have been thrown");
+        } catch (DifferentValuesException e) {}
+    }
+
+    public void testProxyPropertySamenessVersusEquality() throws Exception {
+        TProperty a = new TProperty();
+        TProperty b = new TProperty();
+        a.setValue (new Object());
+        b.setValue (new Object());
+        try {
+            new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue();
+            fail ("Different Values Exception should have been thrown");
+        } catch (DifferentValuesException e) {}
+        a.setValue(b.getValue());
+        new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue();
+        a.setValue (new StringBuilder("Hello").toString());
+        b.setValue (new StringBuilder("Hello").toString());
+        assertEquals(new StringBuilder("Hello").toString(), new ProxyNode.ProxyProperty(new Node.Property[] { a, b }).getValue());
     }
     
     public void testProxyPropertyReflectsValueChanges() throws Exception {

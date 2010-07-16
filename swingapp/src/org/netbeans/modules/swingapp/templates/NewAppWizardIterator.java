@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -129,7 +132,9 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
 
     private void initSteps() {
         String[] thisSteps = new String[] {
-            NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name") }; // NOI18N
+            NbBundle.getMessage(DisclaimerPanel.class, "DisclaimerPanel.name"), // NOI18N
+            NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name") // NOI18N
+        };
         if (appShellIterator != null) {
             Object data = ((JComponent)appShellIterator.current().getComponent())
                     .getClientProperty(WIZARD_PANEL_CONTENT_DATA);
@@ -150,22 +155,26 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         steps = thisSteps;
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         wizard = wiz;
         panelIndex = 0;
-        panels = new WizardDescriptor.Panel[] { new ConfigureProjectPanel(this) };
+        panels = new WizardDescriptor.Panel[] { new DisclaimerPanel(), new ConfigureProjectPanel(this) };
         initSteps();
         updateSteps();
     }
 
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
          return panelIndex < panels.length ? panels[panelIndex] : appShellIterator.current();
     }
 
+    @Override
     public boolean hasNext() {
         if (panelIndex+1 < panels.length)
             return true;
@@ -177,10 +186,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return panelIndex > 0;
     }
 
+    @Override
     public void nextPanel() {
         panelIndex++;
         if (panelIndex > panels.length) {
@@ -190,6 +201,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         updateSteps();
     }
 
+    @Override
     public void previousPanel() {
         panelIndex--;
         if (panelIndex >= panels.length) {
@@ -199,12 +211,14 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         updateSteps();
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listenerList == null)
             listenerList = new EventListenerList();
         listenerList.add(ChangeListener.class, listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         if (listenerList != null)
             listenerList.remove(ChangeListener.class, listener);
@@ -226,10 +240,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     // called from appShellIterator - refire
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireStateChanged();
     }
     
+    @Override
     public Set instantiate(/*TemplateWizard wiz*/) throws IOException {
         File tempProjectDirectory = (File) wizard.getProperty("projdir"); // NOI18N
         if (tempProjectDirectory == null) // || projectName == null)
@@ -305,6 +321,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
                 // postpone shareablelib setting stuff until the project is opened
                 OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
 
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
                             File dir = FileUtil.toFile(p.getProjectDirectory());
@@ -414,6 +431,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
     }
 

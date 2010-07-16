@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["_resolver_class_string_H",<205>,line=9,col=9],offset=142,file=null'=''
+<U>#define '["_resolver_class_string_H",<89>,line=9,col=9],offset=142,file=null'=''
 System Map:
 MACROS (sorted 0):
 
@@ -36,13 +36,13 @@ NAMESPACE DEFINITOIN resolver_class_string [10:1/136-16:2/238] SCOPE: resolver_c
             STATEMENT DECLARATION  [12:9/198-12:20/209] SCOPE: Stmt  [11:19/188-14:6/235]
                 VARIABLE str [12:9/198-12:20/209]  TYPE: std_1::string TEXT=string  [12:9/198-12:15/204]  INIT: null  SCOPE: Stmt  [11:19/188-14:6/235]
             STATEMENT RETURN  [13:9/218-13:20/229] SCOPE: Stmt  [11:19/188-14:6/235] text: 'return str;'
-USING DECL. std_1::wstring1  [18:1/240-18:22/261]; REF DECL: null  SCOPE: $Global$ 
+USING DECL. std_1::wstring1  [18:1/240-18:22/261]; REF DECL: std_1::wstring1  [29:5/542-31:6/607] SCOPE: $Global$ 
 FUNCTION DEFINITION read  [20:1/264-23:2/331] FunctionDefinitionImpl SCOPE: resolver_class_string.cc
     SIGNATURE read() const
     UNIQUE NAME f:resolver_class_string::ClassA::read() const
     DECLARATION: read  [44:5/780-44:27/802]
     PARAMETERS:
-    RETURNS $unresolved$::wstring1 TEXT=wstring1  [20:1/264-20:9/272]
+    RETURNS std_1::wstring1 TEXT=wstring1  [20:1/264-20:9/272]
     STATEMENT COMPOUND  [20:31/294-23:2/331] SCOPE: read 
         STATEMENT DECLARATION  [21:5/300-21:18/313] SCOPE: Stmt  [20:31/294-23:2/331]
             VARIABLE str [21:5/300-21:18/313]  TYPE: std_1::wstring1 TEXT=wstring1  [21:5/300-21:13/308]  INIT: null  SCOPE: Stmt  [20:31/294-23:2/331]
@@ -62,7 +62,7 @@ FUNCTION DEFINITION wrt_1  [3:1/36-8:2/134] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [6:5/103-6:18/116] SCOPE: Stmt  [4:1/70-8:2/134]
             VARIABLE out [6:5/103-6:18/116]  TYPE: std_1::wstring1 TEXT=wstring1  [6:5/103-6:13/111]  INIT: null  SCOPE: Stmt  [4:1/70-8:2/134]
         STATEMENT RETURN  [7:5/121-7:16/132] SCOPE: Stmt  [4:1/70-8:2/134] text: 'return out;'
-USING DECL. std_1::wstring1  [18:1/240-18:22/261]; REF DECL: null  SCOPE: $Global$ 
+USING DECL. std_1::wstring1  [18:1/240-18:22/261]; REF DECL: std_1::wstring1  [29:5/542-31:6/607] SCOPE: $Global$ 
 USING DECL. std_1::string  [34:1/612-34:20/631]; REF DECL: std_1::string  [23:5/451-25:6/515] SCOPE: $Global$ 
 FUNCTION wrt_1 [36:1/634-36:37/670] FunctionImpl SCOPE: $Global$ 
     DEFINITION: wrt_1  [3:1/36-8:2/134]

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,35 +42,65 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.security.Permission;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service=java.lang.SecurityManager.class)
+@ServiceProviders({
+    @ServiceProvider(service=SecurityManager.class),
+    @ServiceProvider(service=FileChangedManager.class)
+})
 public class FileChangedManager extends SecurityManager {
+    private static final Logger LOG = Logger.getLogger(FileChangedManager.class.getName());
     private static  FileChangedManager INSTANCE;
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
     private static final int AMBIGOUS_HINT = 3;
-    
-    
+
     private final ConcurrentHashMap<Integer,Integer> hints = new ConcurrentHashMap<Integer,Integer>();
     private long shrinkTime = System.currentTimeMillis();
+    private static volatile long ioTime = -1;
+    private static volatile int ioLoad;
+    private static final AtomicInteger priorityIO = new AtomicInteger();
+    private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Runnable> IDLE_CALL = new ThreadLocal<Runnable>();
+    private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
-        INSTANCE = this;
     }
     
-    public static FileChangedManager getInstance() {
+    public static synchronized FileChangedManager getInstance() {
         if (INSTANCE == null) {
-            Lookup.getDefault().lookup(SecurityManager.class);
-            assert INSTANCE != null;
+            INSTANCE = Lookup.getDefault().lookup(FileChangedManager.class);
+            if (INSTANCE == null) {
+                // for test purposes
+                INSTANCE = new FileChangedManager();
+            }
         }
         return INSTANCE;
+    }
+
+    static void assertNoLock() {
+        assert !Thread.holdsLock(IDLE_CALL);
+        assert !Thread.holdsLock(IDLE_IO);
+        assert !Thread.holdsLock(IDLE_ON);
+    }
+
+    @Override
+    public void checkPermission(Permission perm) {
     }
     
     @Override
@@ -78,6 +111,16 @@ public class FileChangedManager extends SecurityManager {
     @Override
     public void checkWrite(String file) {
         put(file, true);
+    }
+
+    @Override
+    public void checkRead(String file) {
+        pingIO(1);
+    }
+
+    @Override
+    public void checkRead(String file, Object context) {
+        pingIO(1);
     }
         
     public boolean impeachExistence(File f, boolean expectedExixts) {
@@ -94,14 +137,123 @@ public class FileChangedManager extends SecurityManager {
     }    
 
     public boolean exists(File file) {
+        long time = 0;
+        assert (time = System.currentTimeMillis()) >= Long.MIN_VALUE;
         boolean retval = file.exists();
+        if (time > 0) {
+            time = System.currentTimeMillis() - time;
+            if (time > 500) {
+                Level l;
+                String msg;
+                if (isIdleIO()) {
+                    l = Level.FINE;
+                    msg = "{0} new File(\"{1}\").exists() in I/O mode";
+                } else {
+                    l = Level.WARNING;
+                    msg = "{0} ms in new File(\"{1}\").exists()";
+                }
+                LOG.log(l, msg, new Object[]{time, file});
+            }
+        }
         Integer id = getKey(file);
         remove(id);
         put(id, retval);
         return retval;
     }
+
+    public static <T> T priorityIO(Callable<T> callable) throws Exception {
+        try {
+            priorityIO.incrementAndGet();
+            return callable.call();
+        } finally {
+            priorityIO.decrementAndGet();
+        }
+    }
+
+    static boolean isIdleIO() {
+        return IDLE_IO.get() != null;
+    }
+
+    public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep, AtomicBoolean goOn) {
+        Integer prev = IDLE_IO.get();
+        Runnable pGoing = IDLE_CALL.get();
+        AtomicBoolean pGoOn = IDLE_ON.get();
+        int prevMax = prev == null ? 0 : prev;
+        try {
+            IDLE_IO.set(Math.max(maximumLoad, prevMax));
+            IDLE_CALL.set(goingToSleep);
+            IDLE_ON.set(goOn);
+            r.run();
+        } finally {
+            IDLE_IO.set(prev);
+            IDLE_CALL.set(pGoing);
+            IDLE_ON.set(pGoOn);
+        }
+    }
+
+    public static void waitIOLoadLowerThan(int load) throws InterruptedException {
+        for (;;) {
+            AtomicBoolean goOn = IDLE_ON.get();
+            if (goOn != null && !goOn.get()) {
+                final String msg = "Interrupting manually"; // NOI18N
+                LOG.fine(msg);
+                throw new InterruptedException(msg);
+            }
+            int l = pingIO(0);
+            if (l < load && priorityIO.get() == 0) {
+                return;
+            }
+            if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
+                return;
+            }
+            Runnable goingToSleep = IDLE_CALL.get();
+            if (goingToSleep != null) {
+                goingToSleep.run();
+            }
+            synchronized (IDLE_IO) {
+                IDLE_IO.wait(100);
+            }
+        }
+    }
+
+    private static int pingIO(int inc) {
+        long ms = System.currentTimeMillis();
+        boolean change = false;
+        while (ioTime < ms) {
+            ioTime += 100;
+            ioLoad /= 2;
+            change = true;
+            if (ioLoad == 0) {
+                ioTime = ms + 100;
+                break;
+            }
+        }
+        if (change) {
+            synchronized (IDLE_IO) {
+                IDLE_IO.notifyAll();
+            }
+        }
+        if (inc == 0) {
+            return ioLoad;
+        }
+
+        Integer maxLoad = IDLE_IO.get();
+        if (maxLoad != null) {
+            try {
+                waitIOLoadLowerThan(maxLoad);
+            } catch (InterruptedException ex) {
+                LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
+            }
+        } else {
+            ioLoad += inc;
+            LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+        }
+        return ioLoad;
+    }
+
     
     private Integer put(int id, boolean state) {
+        pingIO(2);
         shrinkTime = System.currentTimeMillis();
         int val = toValue(state);
         Integer retval = hints.putIfAbsent(id,val);

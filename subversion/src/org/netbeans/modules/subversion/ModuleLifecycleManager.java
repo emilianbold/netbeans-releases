@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -80,12 +82,14 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         "org.netbeans.modules.vcs.profiles.teamware" // NOI18N
     };
     
+    @Override
     public void restored() {
         disableOldModules();
     }
 
     private void disableOldModules() {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 boolean notified = false;
                 outter: for (int i = 0; i < vcsGenericModules.length; i++) {
@@ -133,7 +137,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                 }
             }
         };
-        RequestProcessor.getDefault().post(runnable);
+        org.netbeans.modules.versioning.util.Utils.post(runnable);
     }
 
     private Document readModuleDocument(FileObject fo) throws ParserConfigurationException, SAXException, IOException {
@@ -148,22 +152,27 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         return document;
     }
 
+    @Override
     public void uninstalled() {
         Subversion.getInstance().shutdown();
     }
 
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) {
         return new InputSource(new ByteArrayInputStream(new byte[0]));
     }
     
+    @Override
     public void error(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
+    @Override
     public void fatalError(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
+    @Override
     public void warning(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }

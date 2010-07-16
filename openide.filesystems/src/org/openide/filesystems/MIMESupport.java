@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.openide.filesystems;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -86,15 +90,25 @@ final class MIMESupport extends Object {
      * to be as effective as any other more complex caching due to typical
      * access pattern from DataSystems.
      */
-    private static final Reference<FileObject> EMPTY = new WeakReference<FileObject>(null);
-    private static Reference<FileObject> lastFo = EMPTY;
-    private static Reference<FileObject> lastCfo = EMPTY;
+    private static final Reference<CachedFileObject> EMPTY = new WeakReference<CachedFileObject>(null);
+    private static final Reference<CachedFileObject> CLEARED= new WeakReference<CachedFileObject>(null);
+    private static Reference<CachedFileObject> lastCfo = EMPTY;
     private static final Object lock = new Object();
     
     /** for logging and test interaction */
     private static Logger ERR = Logger.getLogger(MIMESupport.class.getName());
 
     private MIMESupport() {
+    }
+
+    static void freeCaches() {
+        synchronized (lock) {
+            CachedFileObject cfo = lastCfo.get();
+            if (cfo != null) {
+                cfo.clear();
+            }
+            lastCfo = CLEARED;
+        }
     }
 
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
@@ -107,24 +121,30 @@ final class MIMESupport extends Object {
         }
 
         CachedFileObject cfo = null;
+        CachedFileObject lcfo = null;
 
         try {
             synchronized (lock) {
-                CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
-                if (lcfo == null || fo != lastFo.get()) {
+                lcfo = lastCfo.get();
+                if (lcfo == null || fo != lcfo.fileObj) {
                     cfo = new CachedFileObject(fo);
                 } else {
                     cfo = lcfo;
                 }
-
                 lastCfo = EMPTY;
             }
 
             return cfo.getMIMEType(withinMIMETypes);
         } finally {
             synchronized (lock) {
-                lastFo = new WeakReference<FileObject>(fo);
-                lastCfo = new WeakReference<FileObject>(cfo);
+                if (lastCfo != CLEARED) {
+                    lastCfo = new WeakReference<CachedFileObject>(cfo);
+                } else if (cfo != lastCfo.get()) {
+                    cfo.clear();
+                }
+                if (cfo != lcfo && lcfo != null) {
+                    lcfo.clear();
+                }
             }
         }
     }
@@ -151,11 +171,15 @@ final class MIMESupport extends Object {
 
         /*All calls delegated to this object.
          Except few methods, that returns cached values*/
-        FileObject fileObj;
+        final FileObject fileObj;
 
         CachedFileObject(FileObject fo) {
             fileObj = fo;
-            fileObj.addFileChangeListener(FileUtil.weakFileChangeListener(this, fileObj));
+            fileObj.addFileChangeListener(this);
+        }
+
+        final void clear() {
+            fileObj.removeFileChangeListener(this);
         }
 
         private static MIMEResolver[] getResolvers() {
@@ -225,8 +249,13 @@ final class MIMESupport extends Object {
                 previousResolvers = prev.first();
             }
             resolvers = null;
-            lastFo = EMPTY;
-            lastCfo = EMPTY;
+            synchronized (lock) {
+                CachedFileObject cfo = lastCfo.get();
+                if (cfo != null) {
+                    cfo.clear();
+                }
+                lastCfo = EMPTY;
+            }
         }
 
         private static final FileChangeListener declarativeFolderListener = new FileChangeAdapter() {
@@ -677,17 +706,27 @@ final class MIMESupport extends Object {
         }
 
        private boolean ensureBufferLength(int newLen) throws IOException {
+           int retries = 0;
            if (!eof && newLen > len) {
                 byte[] tmpBuffer = new byte[newLen];
                 if (len > 0) {
                     System.arraycopy(buffer, 0, tmpBuffer, 0, len);
                 }
-                int readLen = inputStream.read(tmpBuffer, len, newLen - len);
-                if ((readLen > 0)) {
-                    buffer = tmpBuffer;
-                    len += readLen;
-                } else {
-                    eof = true;
+                for (;;) try {
+                    int readLen = inputStream.read(tmpBuffer, len, newLen - len);
+                    if ((readLen > 0)) {
+                        buffer = tmpBuffer;
+                        len += readLen;
+                    } else {
+                        eof = true;
+                    }
+                    break;
+                } catch (InterruptedIOException ex) {
+                    ERR.log(Level.INFO, "Ignoring Interrupted I/O exception #{0}", ++retries); // NOI18N
+                    if (retries > 3) {
+                        throw ex;
+                    }
+                    continue;
                 }
            }
            return len >= newLen;

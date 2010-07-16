@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -168,6 +171,11 @@ public class FileStatusCache {
      * @return File [] array of interesting files
      */
     public File [] listFiles(Context context, int includeStatus) {
+        if (context.getRootFiles().length == 0) {
+            // do not load call cacheProvider.getAllModifiedValues() unless really necessary
+            // an empty context means also an empty return array, see the loginc bellow
+            return new File[0];
+        }
         Set<File> set = new HashSet<File>();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
@@ -183,7 +191,7 @@ public class FileStatusCache {
                         break;
                     }
                 } else {
-                    if (Utils.isParentOrEqual(root, file)) {
+                    if (org.netbeans.modules.versioning.util.Utils.isAncestorOrEqual(root, file)) {
                         set.add(file);
                         break;
                     }
@@ -195,7 +203,7 @@ public class FileStatusCache {
                 File excluded = (File) i.next();
                 for (Iterator j = set.iterator(); j.hasNext();) {
                     File file = (File) j.next();
-                    if (Utils.isParentOrEqual(excluded, file)) {
+                    if (org.netbeans.modules.versioning.util.Utils.isAncestorOrEqual(excluded, file)) {
                         j.remove();
                     }
                 }
@@ -723,9 +731,9 @@ public class FileStatusCache {
     }
 
     public FileInformation getCachedStatus(File file) {
-        file = file.getParentFile();
-        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        File parent = file.getParentFile();
+        if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
 

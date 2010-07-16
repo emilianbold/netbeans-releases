@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,13 +77,13 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.bpel.core.multiview.BPELSourceMultiViewElementDesc;
 import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.misc.Xml;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -99,8 +102,6 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -115,6 +116,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * @author ads
@@ -561,19 +565,19 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
      * Implement ShowCookie.
      */
     public void show(final ResultItem resultItem) {
-        if (!(resultItem.getModel() instanceof BpelModel))
+        if ( !(resultItem.getModel() instanceof BpelModel)) {
             return;
-
+        }
         final BpelEntity bpelEntity = (BpelEntity) resultItem.getComponents();
 
         // Get the edit and line cookies.
         DataObject d = getDataObject();
         final LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
         final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+
         if (lc == null || ec == null) {
             return;
         }
-
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -581,14 +585,12 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 // and makes it the activated topcomponent.
                 ec.edit();
 
-                TopComponent tc = WindowManager.getDefault().getRegistry()
-                        .getActivated();
+                TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
                 MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
 
                 if (mvh == null) {
                     return;
                 }
-
                 /* If model is broken
                  * OR if the resultItem.getComponents() is null which
                  * means the resultItem was generated when the model was broken.
@@ -596,27 +598,34 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                  */ 
                 if (resultItem.getModel().getState().equals(State.NOT_WELL_FORMED) || resultItem.getComponents() == null) {
                     for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++) {
-                        if (mvh.getPerspectives()[index1].preferredID().equals(
-                                BPELSourceMultiViewElementDesc.PREFERED_ID))
+                        if (mvh.getPerspectives()[index1].preferredID().equals(BPELSourceMultiViewElementDesc.PREFERED_ID))
                             mvh.requestActive(mvh.getPerspectives()[index1]);
                     }
                 }
-
                 // Set annotation or select element in the multiview.
                 MultiViewPerspective mvp = mvh.getSelectedPerspective();
-                if (mvp.preferredID().equals("orch-designer")) {
+
+                // # 159351
+                if (bpelEntity instanceof Import || bpelEntity instanceof Variable) {
+                    Line line = Xml.getLine(resultItem);
+
+                    if (line != null) {
+                        line.show(Line.SHOW_GOTO);
+                    }
+                    SoaUtil.openActiveMVEditor("bpelsource"); // NOI18N
+                    return;
+                }
+                if (mvp.preferredID().equals("orch-designer")) { // NOI18N
                     List<TopComponent> list = getAssociatedTopComponents();
+
                     for (TopComponent topComponent : list) {
-                        // Make sure this is a multiview window, and not just
-                        // some
+                        // Make sure this is a multiview window, and not just some
                         // window that has our DataObject (e.g. Projects,Files).
-                        MultiViewHandler handler = MultiViews
-                                .findMultiViewHandler(topComponent);
+                        MultiViewHandler handler = MultiViews.findMultiViewHandler(topComponent);
+
                         if (handler != null && topComponent != null) {
-                            SelectBpelElement selectElement = 
-                                (SelectBpelElement) topComponent
-                                    .getLookup()
-                                    .lookup(SelectBpelElement.class);
+                            SelectBpelElement selectElement = (SelectBpelElement) topComponent.getLookup().lookup(SelectBpelElement.class);
+
                             if (selectElement == null)
                                 return;
                             selectElement.select(bpelEntity);
@@ -624,10 +633,10 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                     }
                 }
                 else if (mvp.preferredID().equals(BPELSourceMultiViewElementDesc.PREFERED_ID)) {
-                    Line line = LineUtil.getLine(resultItem);
+                    Line line = Xml.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                        line.show(Line.SHOW_GOTO);
                     }
                 }
             }
@@ -738,7 +747,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
 
     private List<TopComponent> getAssociatedTopComponents() {
         // Create a list of TopComponents associated with the
-        // editor's schema data object, starting with the the
+        // editor's schema data object, starting with the
         // active TopComponent. Add all open TopComponents in
         // any mode that are associated with the DataObject.
         // [Note that EDITOR_MODE does not contain editors in

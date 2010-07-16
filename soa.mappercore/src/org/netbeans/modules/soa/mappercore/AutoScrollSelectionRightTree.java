@@ -12,7 +12,7 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
- * @author AlexanderPermyacov
+ * @author AlexanderPermyakov
  */
 public class AutoScrollSelectionRightTree implements MapperSelectionListener {
     private RightTree rightTree;

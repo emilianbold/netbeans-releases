@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,12 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Set;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import java.util.Collection;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
@@ -49,6 +57,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 
 /**
  *
@@ -63,15 +72,20 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         return retval;
     }
 
-    ConstantElementImpl createElement(ASTNodeInfo<Scalar> node) {
-        ConstantElementImpl retval = new ConstantElementImpl(this, node);
+    public VariableNameImpl createElement( VariableElement variable) {
+        VariableNameImpl retval = new VariableNameImpl(this, variable);
+        Set<TypeResolver> instanceTypes = variable.getInstanceTypes();
         return retval;
+    }
+
+    ScalarConstantElementImpl createConstantElement(final ASTNodeInfo<Scalar> node, final String value) {
+        return new ScalarConstantElementImpl(this, node, value);
     }
     ConstantElementImpl createElement(ConstantDeclarationInfo node) {
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
-    UseElementImpl createElement(ASTNodeInfo<UseStatementPart> node) {
+    UseElementImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
         UseElementImpl retval = new UseElementImpl(this, node);
         return retval;
     }
@@ -83,12 +97,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope, NamespaceDeclarationInfo info) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         isDefault = false;
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope) {
-        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
+        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpElementKind.NAMESPACE_DECLARATION);
         isDefault = true;
     }
 
@@ -100,7 +114,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
         return filter(getElements(), new ElementFilter<ClassScopeImpl>() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CLASS);
+                return element.getPhpElementKind().equals(PhpElementKind.CLASS);
             }
         });
     }
@@ -108,7 +122,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends InterfaceScope> getDeclaredInterfaces() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.IFACE);
+                return element.getPhpElementKind().equals(PhpElementKind.IFACE);
             }
         });
     }
@@ -116,7 +130,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends ConstantElement> getDeclaredConstants() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CONSTANT);
+                return element.getPhpElementKind().equals(PhpElementKind.CONSTANT);
             }
         });
     }
@@ -125,7 +139,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.FUNCTION);
+                return element.getPhpElementKind().equals(PhpElementKind.FUNCTION);
             }
         });
     }
@@ -133,7 +147,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends UseElement> getDeclaredUses() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.USE_STATEMENT);
+                return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);
             }
         });
     }
@@ -149,7 +163,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE);
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }

@@ -7,6 +7,8 @@
 rollback() {
   EXIT="$?"
   if [ -n "$BASETIP" ]; then
+    echo "Script failed for these heads"
+    hg heads
     echo "Script failed with exitcode $EXIT rolling back to $BASETIP"
     hg update -C
     hg --config extensions.mq= strip -n "$BASETIP"
@@ -19,9 +21,10 @@ rollback() {
 BASETIP=`hg log -r . --template '{node}'`
 trap rollback EXIT
 
-hg pull -u http://hg.netbeans.org/"$push_repo"
+hg pull -r default -u http://hg.netbeans.org/"$push_repo"
 
-HEADS=`hg heads --template "{node}\n" | wc -l`
+hg heads
+HEADS=`hg heads --template "{branches}\n" | grep "^$" | wc -l`
 if [ $HEADS = 2 ]; then
     echo "2 heads, Need to merge"
     hg --config ui.merge=internal:merge --config ui.interactive=1 merge < /dev/null || exit 8
@@ -35,6 +38,13 @@ fi
 
 TIP=`hg log -r . --template '{node}'`
 
-hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
+if hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo"; then
+    echo Push OK.
+else
+    hg heads
+    hg incoming -r default http://hg.netbeans.org/"$push_repo"
+    echo Too many heads in default branch or there are some incoming changesets
+    exit 9
+fi
 unset BASETIP
 exit 0

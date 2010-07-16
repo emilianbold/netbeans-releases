@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import java.util.Map.Entry;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
@@ -61,10 +65,11 @@ import com.sun.source.util.Trees;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +86,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
@@ -170,13 +176,13 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
             if (!ERROR.contentEquals(variableElement.getSimpleName()) && !variableElement.getModifiers().contains(Modifier.STATIC))
-                descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
+                descriptions.add(ElementNode.Description.create(cc, variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
         }
         if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
             return null;
         return new EqualsHashCodeGenerator(
             component,
-            ElementNode.Description.create(typeElement, descriptions, false, false),
+            ElementNode.Description.create(cc, typeElement, descriptions, false, false),
             equalsHashCode[0] == null,
             equalsHashCode[1] == null
         );
@@ -321,6 +327,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     public void invoke() {
+        final int caretOffset = component.getCaretPosition();
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description, generateEquals, generateHashCode);
         String title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode"); //NOI18N
         if( !generateEquals )
@@ -334,7 +341,6 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
-                    final int caretOffset = component.getCaretPosition();
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -404,7 +410,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     private static MethodTree createEqualsMethod(WorkingCopy wc, Iterable<? extends VariableElement> equalsFields, DeclaredType type, Scope scope) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", make.Type(wc.getElements().getTypeElement("java.lang.Object").asType()), null)); //NOI18N
+        TypeElement objElement = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", objElement != null ? make.Type(objElement.asType()) : make.Identifier("Object"), null)); //NOI18N
         
         List<StatementTree> statements = new ArrayList<StatementTree>();
         //if (obj == null) return false;
@@ -437,36 +444,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         //int hash = <startNumber>;
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N        
         for (VariableElement ve : hashCodeFields) {
-            ExpressionTree variableRead;
             TypeMirror tm = ve.asType();
-            switch (tm.getKind()) {
-                case BYTE:
-                case CHAR:
-                case SHORT:
-                case INT:
-                    variableRead = make.MemberSelect(make.Identifier("this"), ve.getSimpleName()); //NOI18N
-                    break;
-                case LONG:
-                    variableRead = make.TypeCast(make.PrimitiveType(TypeKind.INT), make.Parenthesized(make.Binary(Tree.Kind.XOR,
-                            make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Parenthesized(make.Binary(Tree.Kind.UNSIGNED_RIGHT_SHIFT, //NOI18N
-                            make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(32)))))); //NOI18N
-                    break;
-                case FLOAT:
-                    variableRead = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("Float"), "floatToIntBits"), //NOI18N
-                            Collections.singletonList(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()))); //NOI18N
-                    break;
-                case DOUBLE:
-                    ExpressionTree et = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("Double"), "doubleToLongBits"), //NOI18N
-                            Collections.singletonList(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()))); //NOI18N
-                    variableRead = make.TypeCast(make.PrimitiveType(TypeKind.INT), make.Parenthesized(make.Binary(Tree.Kind.XOR,
-                            et, make.Parenthesized(make.Binary(Tree.Kind.UNSIGNED_RIGHT_SHIFT, et, make.Literal(32)))))); //NOI18N
-                    break;
-                case BOOLEAN:
-                    variableRead = make.Parenthesized(make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0))); //NOI18N
-                    break;
-                default:
-                    variableRead = prepareExpression(wc, HASH_CODE_PATTERNS, tm, ve, scope);
-            }
+            ExpressionTree variableRead = prepareExpression(wc, HASH_CODE_PATTERNS, tm, ve, scope);
             statements.add(make.ExpressionStatement(make.Assignment(make.Identifier("hash"), make.Binary(Tree.Kind.PLUS, make.Binary(Tree.Kind.MULTIPLY, make.Literal(multiplyNumber), make.Identifier("hash")), variableRead)))); //NOI18N
         }
         statements.add(make.Return(make.Identifier("hash"))); //NOI18N        
@@ -525,23 +504,43 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
     private static KindOfType detectKind(CompilationInfo info, TypeMirror tm) {
         if (tm.getKind().isPrimitive()) {
-            return KindOfType.PRIMITIVE;
+            return KindOfType.valueOf(tm.getKind().name());
         }
 
         if (tm.getKind() == TypeKind.ARRAY) {
             return ((ArrayType) tm).getComponentType().getKind().isPrimitive() ? KindOfType.ARRAY_PRIMITIVE : KindOfType.ARRAY;
         }
 
-        if (tm.getKind().equals(TypeKind.DECLARED) && ((DeclaredType)tm).asElement().getKind().isClass() && ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) {
-            return KindOfType.STRING;
+        if (tm.getKind() == TypeKind.DECLARED) {
+            Types t = info.getTypes();
+            TypeElement en = info.getElements().getTypeElement("java.lang.Enum");
+
+            if (en != null) {
+                if (t.isSubtype(tm, t.erasure(en.asType()))) {
+                    return KindOfType.ENUM;
+                }
+            }
+
+            if (((DeclaredType)tm).asElement().getKind().isClass() && ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) {
+                return KindOfType.STRING;
+            }
         }
 
         return KindOfType.OTHER;
     }
+
+    private static String choosePattern(CompilationInfo info, TypeMirror tm, Map<Acceptor, String> patterns) {
+        for (Entry<Acceptor, String> e : patterns.entrySet()) {
+            if (e.getKey().accept(info, tm)) {
+                return e.getValue();
+            }
+        }
+
+        throw new IllegalStateException();
+    }
     
-    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<KindOfType, String> patterns, TypeMirror tm, VariableElement ve, Scope scope) {
-        KindOfType kind = detectKind(wc, tm);
-        String pattern = patterns.get(kind);
+    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<Acceptor, String> patterns, TypeMirror tm, VariableElement ve, Scope scope) {
+        String pattern = choosePattern(wc, tm, patterns);
 
         assert pattern != null;
         
@@ -555,32 +554,99 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     private enum KindOfType {
-        PRIMITIVE, //also enum
+        BOOLEAN,
+        BYTE,
+        SHORT,
+        INT,
+        LONG,
+        CHAR,
+        FLOAT,
+        DOUBLE,
+        ENUM,
         ARRAY_PRIMITIVE,
         ARRAY,
         STRING,
         OTHER;
     }
 
-    private static final Map<KindOfType, String> EQUALS_PATTERNS;
-    private static final Map<KindOfType, String> HASH_CODE_PATTERNS;
+    private static final Map<Acceptor, String> EQUALS_PATTERNS;
+    private static final Map<Acceptor, String> HASH_CODE_PATTERNS;
 
     static {
-        EQUALS_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+        EQUALS_PATTERNS = new LinkedHashMap<Acceptor, String>();
 
-        EQUALS_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR} != other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY, "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.STRING, "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
-        EQUALS_PATTERNS.put(KindOfType.OTHER, "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN, KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.LONG, KindOfType.CHAR), "this.{VAR} != other.{VAR}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR}) != java.lang.Float.floatToIntBits(other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "java.lang.Double.doubleToLongBits(this.{VAR}) != java.lang.Double.doubleToLongBits(other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "this.{VAR} != other.{VAR}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals"), "! java.util.Objects.equals(this.{VAR}, other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 
-        HASH_CODE_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+        HASH_CODE_PATTERNS = new LinkedHashMap<Acceptor, String>();
 
-        HASH_CODE_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR}.hashCode()");
-        HASH_CODE_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.hashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepHashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(KindOfType.STRING, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
-        HASH_CODE_PATTERNS.put(KindOfType.OTHER, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.CHAR), "this.{VAR}");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.LONG), "(int) (this.{VAR} ^ (this.{VAR} >>> 32))");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR})");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.DOUBLE), "(int) (Double.doubleToLongBits(this.{VAR}) ^ (Double.doubleToLongBits(this.{VAR}) >>> 32))");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN), "(this.{VAR} ? 1 : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "java.util.Arrays.hashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "java.util.Arrays.deepHashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode"), "java.util.Objects.hashCode(this.{VAR})");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+    }
+
+    private static interface Acceptor {
+        public boolean accept(CompilationInfo info, TypeMirror tm);
+    }
+
+    private static final class SimpleAcceptor implements Acceptor {
+        private final Set<KindOfType> kinds;
+
+        public SimpleAcceptor(KindOfType kind) {
+            kinds = EnumSet.of(kind);
+        }
+
+        public SimpleAcceptor(KindOfType kind, KindOfType... moreKinds) {
+            this.kinds = EnumSet.of(kind);
+            this.kinds.addAll(Arrays.asList(moreKinds));
+        }
+
+        public boolean accept(CompilationInfo info, TypeMirror tm) {
+            return kinds.contains(detectKind(info, tm));
+        }
+
+    }
+
+    private static final class MethodExistsAcceptor implements Acceptor {
+        private final String fqn;
+        private final String methodName;
+
+        public MethodExistsAcceptor(String fqn, String methodName) {
+            this.fqn = fqn;
+            this.methodName = methodName;
+        }
+
+        public boolean accept(CompilationInfo info, TypeMirror tm) {
+            TypeElement clazz = info.getElements().getTypeElement(fqn);
+
+            if (clazz == null) {
+                return false;
+            }
+
+            for (ExecutableElement m : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+                if (m.getSimpleName().contentEquals(methodName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,13 +52,10 @@ package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.visual.model.CssProperties;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
-import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyWithUnitData;
 import org.netbeans.modules.css.visual.model.TextBlockData;
 import org.netbeans.modules.css.visual.model.TextBlockModel;
 import org.netbeans.modules.css.visual.model.PropertyData;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -81,8 +81,11 @@ public class TextBlockStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public TextBlockStyleEditor() {
-        setName("textBlockStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(TextBlockStyleEditor.class, "TEXTBLOCK_EDITOR_DISPNAME"));
+        super("textBlockStyleEditor", NbBundle.getMessage(TextBlockStyleEditor.class, "TEXTBLOCK_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
         initialize();
 
@@ -132,9 +135,8 @@ public class TextBlockStyleEditor extends StyleEditor {
                     }
                 });
             }
-        });  
+        });
     }
-    
     
     private void initialize(){
         
@@ -210,69 +212,71 @@ public class TextBlockStyleEditor extends StyleEditor {
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssRuleContent cssStyleData){
+    @Override
+    protected void setCssPropertyValues(final CssRuleContent cssStyleData) {
         removeCssPropertyChangeListener();
-        
-        String  horizontalAlign = cssStyleData.getProperty(CssProperties.TEXT_ALIGN);
-        if(horizontalAlign != null){
+
+        String horizontalAlign = cssStyleData.getProperty(CssProperties.TEXT_ALIGN);
+        if (horizontalAlign != null) {
             horizontalAlignCombo.setSelectedItem(horizontalAlign);
-        }else{
+        } else {
             horizontalAlignCombo.setSelectedIndex(0);
         }
-        
-        String  verticalAlign = cssStyleData.getProperty(CssProperties.VERTICAL_ALIGN);
-        if(verticalAlign != null){
+
+        String verticalAlign = cssStyleData.getProperty(CssProperties.VERTICAL_ALIGN);
+        if (verticalAlign != null) {
             textBlockData.setVerticalAlign(verticalAlign);
             verticalAlignCombo.setSelectedItem(textBlockData.getVerticalAlignValue());
-        }else{
+        } else {
             verticalAlignCombo.setSelectedIndex(0);
         }
-        
-        String  indentation = cssStyleData.getProperty(CssProperties.TEXT_INDENT);
-        if(indentation != null){
+
+        String indentation = cssStyleData.getProperty(CssProperties.TEXT_INDENT);
+        if (indentation != null) {
             textBlockData.setIndentation(indentation);
             textIndentCombo.setSelectedItem(textBlockData.getIndentationValue());
             textIndentUnitCombo.setSelectedItem(textBlockData.getIndentationUnit());
-        }else{
+        } else {
             textIndentCombo.setSelectedIndex(0);
             textIndentUnitCombo.setSelectedItem("px");
         }
-        String  textDirection = cssStyleData.getProperty(CssProperties.DIRECTION);
-        if(textDirection != null){
+        String textDirection = cssStyleData.getProperty(CssProperties.DIRECTION);
+        if (textDirection != null) {
             directionCombo.setSelectedItem(textDirection);
-        }else{
+        } else {
             directionCombo.setSelectedIndex(0);
         }
-        
+
         wordSpacingUnitCombo.setModel(textBlockModel.getTextBlockUnitList());
-        String  wordSpacing = cssStyleData.getProperty(CssProperties.WORD_SPACING);
-        if(wordSpacing != null){
+        String wordSpacing = cssStyleData.getProperty(CssProperties.WORD_SPACING);
+        if (wordSpacing != null) {
             textBlockData.setWordSpacing(wordSpacing);
             wordSpacingCombo.setSelectedItem(textBlockData.getWordSpacingValue());
             wordSpacingUnitCombo.setSelectedItem(textBlockData.getWordSpacingUnit());
-        }else{
+        } else {
             wordSpacingCombo.setSelectedIndex(0);
             wordSpacingUnitCombo.setSelectedItem("px");
         }
-        String  letterSpacing = cssStyleData.getProperty(CssProperties.LETTER_SPACING);
-        if(letterSpacing != null){
+        String letterSpacing = cssStyleData.getProperty(CssProperties.LETTER_SPACING);
+        if (letterSpacing != null) {
             textBlockData.setLetterSpacing(letterSpacing);
             letterSpacingCombo.setSelectedItem(textBlockData.getLetterSpacingValue());
             letterSpacingUnitCombo.setSelectedItem(textBlockData.getLetterSpacingUnit());
-        }else{
+        } else {
             letterSpacingCombo.setSelectedIndex(0);
             letterSpacingUnitCombo.setSelectedItem("px");
         }
-        String  lineHeight = cssStyleData.getProperty(CssProperties.LINE_HEIGHT);
-        if(lineHeight != null){
+        String lineHeight = cssStyleData.getProperty(CssProperties.LINE_HEIGHT);
+        if (lineHeight != null) {
             textBlockData.setLineHeight(lineHeight);
             lineHeightCombo.setSelectedItem(textBlockData.getLineHeightValue());
             lineHeightUnitCombo.setSelectedItem(textBlockData.getLineHeightUnit());
-        }else{
+        } else {
             lineHeightCombo.setSelectedIndex(0);
             lineHeightUnitCombo.setSelectedItem("px");
         }
         setCssPropertyChangeListener(cssStyleData);
+
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents

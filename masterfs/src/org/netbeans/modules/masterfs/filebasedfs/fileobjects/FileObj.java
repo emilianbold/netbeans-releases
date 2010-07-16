@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +77,7 @@ public class FileObj extends BaseFileObj {
 
     FileObj(final File file, final FileNaming name) {
         super(file, name);
-        setLastModified(System.currentTimeMillis());        
+        setLastModified(System.currentTimeMillis(), null);
     }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
@@ -111,8 +113,9 @@ public class FileObj extends BaseFileObj {
                 public void close() throws IOException {
                     if (!closable.isClosed()) {
                         super.close();
+                        LOGGER.log(Level.FINEST, "getOutputStream-close");
+                        setLastModified(f.lastModified(), f);
                         closable.close();
-                        setLastModified(f.lastModified());
                         fireFileChangedEvent(false);
                     }
                 }
@@ -141,9 +144,11 @@ public class FileObj extends BaseFileObj {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
         }
-
+        LOGGER.log(Level.FINEST,"FileObj.getInputStream_after_is_valid");   //NOI18N - Used by unit test
         final File f = getFileName().getFile();
-                        
+        if (!f.exists()) {
+            throw new FileNotFoundException();
+        }
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
         
@@ -210,13 +215,14 @@ public class FileObj extends BaseFileObj {
         return super.canWrite();
     }
         
-    final void setLastModified(long lastModified) {
+    final void setLastModified(long lastModified, File forFile) {
         if (this.lastModified != 0) { // #130998 - don't set when already invalidated
             if (this.lastModified != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+            if (LOGGER.isLoggable(Level.FINER)) {
+                Exception trace = LOGGER.isLoggable(Level.FINEST) ? new Exception("StackTrace") : null; // NOI18N
+                LOGGER.log(Level.FINER, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ") on " + forFile, trace);  //NOI18N
             }
             this.lastModified = lastModified;
         }
@@ -264,13 +270,26 @@ public class FileObj extends BaseFileObj {
         return false;
     }
 
+    @Override
     public void refreshImpl(final boolean expected, boolean fire) {
         final long oldLastModified = lastModified;
         boolean isReal = realLastModifiedCached;
-        setLastModified(getFileName().getFile().lastModified());
+        final File file = getFileName().getFile();
+        setLastModified(file.lastModified(), file);
         boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(
+                Level.FINER,
+                "refreshImpl for {0} isReal: {1} isModified: {2} oldLastModified: {3} lastModified: {4}",
+                new Object[]{
+                    this, isReal, isModified, oldLastModified, lastModified
+                 }
+            );
+        }
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
-            fireFileChangedEvent(expected);
+            if (!MutualExclusionSupport.getDefault().isBeingWritten(this)) {
+                fireFileChangedEvent(expected);
+            }
         }
         if (fire && lastModified != 0) {
             // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
@@ -302,8 +321,12 @@ public class FileObj extends BaseFileObj {
     }
 
 
+    @Override
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
+        if (!getProvidedExtensions().canWrite(me)) {
+            FSException.io("EXC_CannotLock", me);
+        }
         try {            
             final FileLock result = LockForFile.tryLock(me);
             getProvidedExtensions().fileLocked(this);
@@ -334,6 +357,7 @@ public class FileObj extends BaseFileObj {
     @Override
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
-        setLastModified(getFileName().getFile().lastModified());
+        final File rename = getFileName().getFile();
+        setLastModified(rename.lastModified(), rename);
     }    
 }

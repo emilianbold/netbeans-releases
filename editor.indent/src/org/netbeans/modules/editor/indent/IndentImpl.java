@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,6 +87,10 @@ public final class IndentImpl {
     private TaskHandler reformatHandler;
     
     private Formatter defaultFormatter;
+
+    private Thread lockThread;
+
+    private int lockExtraDepth;
     
     public IndentImpl(Document doc) {
         this.doc = doc;
@@ -125,8 +132,19 @@ public final class IndentImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("indentLock() on " + this);
         }
-        if (indentHandler != null)
-            throw new IllegalStateException("Already locked");
+        Thread currentThread = Thread.currentThread();
+        while (lockThread != null) {
+            if (currentThread == lockThread) {
+                lockExtraDepth++; // Extra inner lock
+                return;
+            }
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new Error("Interrupted at acquiring indent-lock");
+            }
+        }
+        lockThread = currentThread;
         TaskHandler handler = new TaskHandler(true, doc);
         if (handler.collectTasks()) {
             handler.lock();
@@ -138,10 +156,19 @@ public final class IndentImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("indentUnlock() on " + this);
         }
-        if (indentHandler == null)
-            throw new IllegalStateException("Already unlocked");
-        indentHandler.unlock();
-        indentHandler = null;
+        Thread currentThread = Thread.currentThread();
+        if (currentThread != lockThread) {
+            throw new IllegalStateException("Invalid indentUnlock(): current-thread=" + // NOI18N
+                    currentThread + ", lockThread=" + lockThread + ", lockExtraDepth=" + lockExtraDepth); // NOI18N
+        }
+        if (lockExtraDepth == 0) {
+            indentHandler.unlock();
+            indentHandler = null;
+            lockThread = null;
+            notifyAll();
+        } else {
+            lockExtraDepth--;
+        }
     }
     
     public TaskHandler indentHandler() {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,9 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
@@ -150,6 +156,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @param wizard descriptor of this wizard.
      */
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         if (delegateIterator != null) {
@@ -177,6 +184,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @return current panel of the wizard.
      */
+    @Override
     public WizardDescriptor.Panel current() {
         String title = NbBundle.getMessage(MasterDetailWizard.class, "TITLE_MasterDetail");  // NOI18N
         wizard.putProperty("NewFileWizard_Title", title); // NOI18N
@@ -242,6 +250,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @return name of the current panel.
      */
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
@@ -252,6 +261,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      * @return <code>true</code> if there is a next panel,
      * returns <code>false</code> otherwise.
      */
+    @Override
     public boolean hasNext() {
         if ((panelIndex+1 < beforeStepsNo) && !delegateIterator.hasNext()) {
             // Delegate iterator doesn't manage all previous steps
@@ -266,6 +276,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      * @return <code>true</code> if there is a previous panel,
      * returns <code>false</code> otherwise.
      */
+    @Override
     public boolean hasPrevious() {
         return panelIndex > 0;
     }
@@ -273,6 +284,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     /**
      * Moves to the next panel.
      */
+    @Override
     public void nextPanel() {
         panelIndex++;
         if (panelIndex < beforeStepsNo)
@@ -282,6 +294,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     /**
      * Moves to the previous panel.
      */
+    @Override
     public void previousPanel() {
         panelIndex--;
         if (panelIndex < beforeStepsNo - 1)
@@ -294,7 +307,30 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      * @return set of instantiated objects.
      * @throws IOException when the objects cannot be instantiated.
      */
+    @Override
     public Set instantiate() throws IOException {
+        final IOException[] ex = new IOException[1];
+        String msgKey = (delegateIterator==null) ? "MSG_DBAppCreate" : "MSG_MasterDetailCreate"; // NOI18N
+        String msg = NbBundle.getMessage(MasterDetailWizard.class, msgKey);
+        Set set = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Set>() {
+            @Override
+            public Set run(ProgressHandle handle) {
+                Set innerSet = null;
+                try {
+                    innerSet = instantiate0();
+                } catch (IOException ioex) {
+                    ex[0] = ioex;
+                }
+                return innerSet;
+            }
+        }, msg, false);
+        if (ex[0] != null) {
+            throw ex[0];
+        }
+        return set;
+    }
+
+    public Set instantiate0() throws IOException {
         needClassPathInit = (delegateIterator == null);
         Set resultSet = null;
         try {
@@ -340,11 +376,13 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
             if (entity[0] == null) {
-                System.err.println("WARNING: Cannot find entity: " + masterTableName); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", masterTableName); // NOI18N
                 entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
             if ((detailFKTable != null) && (entity[1] == null)) {
-                System.err.println("WARNING: Cannot find entity: " + detailFKTable); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", detailFKTable); // NOI18N
                 entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
 
@@ -498,6 +536,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         if (needClassPathInit) {
             try {
                 ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
+                    @Override
                     public ClasspathInfo run(EntityMappingsMetadata metadata) {
                         return metadata.createJavaSource().getClasspathInfo();
                     }
@@ -526,6 +565,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         if (needClassPathInit && mappings != null) {
             try {
                 ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
+                    @Override
                     public ClasspathInfo run(EntityMappingsMetadata metadata) {
                         return metadata.createJavaSource().getClasspathInfo();
                     }
@@ -555,6 +595,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @param wizard descriptor of the wizard.
      */
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         if (delegateIterator != null)
             delegateIterator.uninitialize(wizard);
@@ -565,6 +606,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @param listener change listener to add.
      */
+    @Override
     public void addChangeListener(ChangeListener listener) {
         // Not used
     }
@@ -574,6 +616,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      *
      * @param listener change listener to remove.
      */
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         // Not used
     }
@@ -583,6 +626,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         String[] properties = null;
         try {
             properties = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
+                @Override
                 public String[] run(EntityMappingsMetadata metadata) {
                     Entity[] entities = metadata.getRoot().getEntity();
                     Entity masterEntity = null;
@@ -653,6 +697,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             try {
                 source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
+                    @Override
                     public void run(WorkingCopy wc) throws Exception {
                         wc.toPhase(JavaSource.Phase.RESOLVED);
                         CompilationUnitTree cu = wc.getCompilationUnit();
@@ -779,6 +824,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                         modifiedClass = make.addClassMember(modifiedClass, setMethod);
                         wc.rewrite(clazz, modifiedClass);
                     }
+                    @Override
                     public void cancel() {
                     }
 
@@ -795,6 +841,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         try {
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = wc.getCompilationUnit();
@@ -897,6 +944,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     modifiedClass = make.addClassMember(modifiedClass, setMethod);
                     wc.rewrite(clazz, modifiedClass);
                 }
+                @Override
                 public void cancel() {
                 }
 

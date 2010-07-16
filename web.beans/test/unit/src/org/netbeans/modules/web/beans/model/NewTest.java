@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,10 +55,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -67,7 +72,7 @@ public class NewTest extends CommonTestCase {
     public NewTest( String testName ) {
         super(testName);
     }
-
+    
     public void testNew() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
                 "package foo; " +
@@ -87,7 +92,8 @@ public class NewTest extends CommonTestCase {
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "import javax.inject.*; "+
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding1  {}");
@@ -95,9 +101,10 @@ public class NewTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
                 "public class TestClass  {" +
-                " @New One myField1; "+
-                " @New(Two.class) SuperClass myField2; "+
+                " @Inject @New One myField1; "+
+                " @Inject @New(Two.class) SuperClass myField2; "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
@@ -106,7 +113,11 @@ public class NewTest extends CommonTestCase {
                 "@Binding1 "+
                 "public class Two extends SuperClass {}" );
         
-        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
@@ -123,10 +134,12 @@ public class NewTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        check1( element , model);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.One");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        check2( element , model);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Two");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                 }
                 assert names.contains("myField1");
@@ -137,41 +150,4 @@ public class NewTest extends CommonTestCase {
         
     }
 
-    protected void check1( VariableElement element, WebBeansModel model ) {
-        inform("test myField1");
-        try {
-            Element injactable = model.getInjectable( element );
-            
-            assertNotNull( injactable );
-            assertTrue( "Expect class definition , but found : " +
-                    injactable.getKind()
-                    , injactable instanceof TypeElement );
-            
-            assertEquals( "foo.One",  
-                    ((TypeElement)injactable).getQualifiedName().toString());
-        }
-        catch (WebBeansModelException e) {
-            e.printStackTrace();
-            assert false;
-        }
-    }
-    
-    protected void check2( VariableElement element, WebBeansModel model ) {
-        inform("test myField2");
-        try {
-            Element injactable = model.getInjectable( element );
-            
-            assertNotNull( injactable );
-            assertTrue( "Expect class definition , but found : " +
-                    injactable.getKind()
-                    , injactable instanceof TypeElement );
-            
-            assertEquals( "foo.Two",  
-                    ((TypeElement)injactable).getQualifiedName().toString());
-        }
-        catch (WebBeansModelException e) {
-            e.printStackTrace();
-            assert false;
-        }
-    }
 }

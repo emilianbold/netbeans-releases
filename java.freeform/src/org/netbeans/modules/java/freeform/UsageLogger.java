@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.java.freeform;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -60,6 +63,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -68,12 +72,13 @@ import org.w3c.dom.Element;
 class UsageLogger {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.freeform"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(UsageLogger.class.getName(), 1, false, false);
 
     private UsageLogger() {}
 
     public static void log(final Project p) {
         if (LOG.isLoggable(Level.INFO)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     Object[] data;
                     try {
@@ -105,23 +110,20 @@ class UsageLogger {
         int compilationUnitsMissingBuiltTo = 0;
         int compilationUnitsMultipleRoots = 0;
         Set<String> classpathEntries = new HashSet<String>();
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        if (java == null) {
-            java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-        }
+        Element java = JavaProjectGenerator.getJavaCompilationUnits(aux);
         if (java != null) {
-            for (Element compilationUnitEl : Util.findSubElements(java)) {
+            for (Element compilationUnitEl : XMLUtil.findSubElements(java)) {
                 compilationUnits++;
                 int builtTos = 0;
                 int roots = 0;
-                for (Element other : Util.findSubElements(compilationUnitEl)) {
+                for (Element other : XMLUtil.findSubElements(compilationUnitEl)) {
                     String name = other.getLocalName();
                     if (name.equals("package-root")) { // NOI18N
                         roots++;
                     } else if (name.equals("built-to")) { // NOI18N
                         builtTos++;
                     } else if (name.equals("classpath")) { // NOI18N
-                        String text = Util.findText(other);
+                        String text = XMLUtil.findText(other);
                         if (text != null) {
                             String textEval = eval.evaluate(text);
                             if (textEval != null) {
@@ -152,7 +154,11 @@ class UsageLogger {
             if (antScript != null) {
                 AntProjectCookie apc = DataObject.find(antScript).getLookup().lookup(AntProjectCookie.class);
                 if (apc != null) {
-                    targets = TargetLister.getTargets(apc).size();
+                    try {
+                        targets = TargetLister.getTargets(apc).size();
+                    } catch (IOException ioe) {
+                        //pass - Broken build.xml which may happen for freeform, targets = 0 and log usage
+                    }
                 }
             }
         }

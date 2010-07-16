@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -59,7 +61,6 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
@@ -82,8 +83,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -123,6 +125,9 @@ public class PersistentUtils {
                     handler = FUN_KR_PARAM_LIST_IMPL;
                 }
             }
+            if (params instanceof DummyParametersListImpl) {
+                handler = DUMMY_PARAMS_LIST_IMPL;
+            }
             output.writeInt(handler);
             ((ParameterListImpl<?, ?>)params).write(output);
         }
@@ -143,6 +148,9 @@ public class PersistentUtils {
                 break;
             case FUN_KR_PARAM_LIST_IMPL:
                 paramList = new FunctionParameterListImpl.FunctionKnRParameterListImpl(input);
+                break;
+            case DUMMY_PARAMS_LIST_IMPL:
+                paramList = new DummyParametersListImpl(input);
                 break;
             default:
                 assert false : "unexpected param list implementation " + handler;
@@ -232,7 +240,7 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            assert st instanceof TinyCharSequence;
+            assert CharSequences.isCompact(st);
             aStream.writeUTF(st.toString());
         }
     }
@@ -243,42 +251,8 @@ public class PersistentUtils {
             return null;
         }
         CharSequence res = manager.getString(s);
-        assert res instanceof TinyCharSequence;
+        assert CharSequences.isCompact(res);
         return res;
-    }
-
-    public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {
-        if (st != null) {
-            // write extent count
-            // NB: for an empty string, 0 is written
-            aStream.writeShort(st.length() / UTF_LIMIT + ((st.length() % UTF_LIMIT == 0) ? 0 : 1));
-            // write extents
-            // NB: for an empty string, nothing is written
-            for (int start = 0; start < st.length(); start += UTF_LIMIT) {
-                CharSequence extent = st.subSequence(start, Math.min(start + UTF_LIMIT, st.length()));
-                aStream.writeUTF(extent.toString());
-            }
-        } else {
-            aStream.writeShort(-1);
-        }
-    }
-
-    public static String readLongUTF(DataInput aStream) throws IOException {
-        short cnt = aStream.readShort();
-        switch (cnt) {
-            case -1:
-                return null;
-            case 0:
-                return ""; // NOI18N
-            case 1:
-                return aStream.readUTF();
-            default:
-                StringBuilder sb = new StringBuilder(cnt * UTF_LIMIT);
-                for (int i = 0; i < cnt; i++) {
-                    sb.append(aStream.readUTF());
-                }
-                return sb.toString();
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -434,43 +408,6 @@ public class PersistentUtils {
         for (CsmType elem : types) {
             assert elem != null;
             writeType(elem, output);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // support inheritance
-    private static void writeInheritance(CsmInheritance inheritance, DataOutput output) throws IOException {
-        assert inheritance != null;
-        if (inheritance instanceof InheritanceImpl) {
-            ((InheritanceImpl) inheritance).write(output);
-        } else {
-            throw new IllegalArgumentException("instance of unknown CsmInheritance " + inheritance);  //NOI18N
-        }
-    }
-
-    private static CsmInheritance readInheritance(DataInput input) throws IOException {
-        CsmInheritance inheritance = new InheritanceImpl(input);
-        return inheritance;
-    }
-
-    public static <T extends Collection<CsmInheritance>> void readInheritances(T collection, DataInput input) throws IOException {
-        int collSize = input.readInt();
-        assert collSize >= 0;
-        for (int i = 0; i < collSize; ++i) {
-            CsmInheritance inheritance = readInheritance(input);
-            assert inheritance != null;
-            collection.add(inheritance);
-        }
-    }
-
-    public static void writeInheritances(Collection<? extends CsmInheritance> inhs, DataOutput output) throws IOException {
-        assert inhs != null;
-        int collSize = inhs.size();
-        output.writeInt(collSize);
-
-        for (CsmInheritance elem : inhs) {
-            assert elem != null;
-            writeInheritance(elem, output);
         }
     }
 
@@ -721,9 +658,10 @@ public class PersistentUtils {
     private static final int PARAM_LIST_IMPL = COMPOUND_STATEMENT_IMPL + 1;
     private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
     private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
+    private static final int DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
 
     // tempalte descriptor
-    private static final int TEMPLATE_DESCRIPTOR_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+    private static final int TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
     // specialization descriptor
     private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
     // specialization parameters

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -175,14 +178,41 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar)ejbJarRoot).graphManager().getXmlDocument();
                 currentVersion = SunEjbJar.VERSION_3_0_1;
+            } else if (ejbJarRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar)ejbJarRoot).graphManager().getXmlDocument();
+                currentVersion = SunEjbJar.VERSION_3_1_0;
+            } else if (ejbJarRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar)ejbJarRoot).graphManager().getXmlDocument();
+                currentVersion = SunEjbJar.VERSION_3_1_1;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunEjbJar.VERSION_3_0_1)){
+            if(newVersion.equals(SunEjbJar.VERSION_3_1_1)){
                 //This will always be an upgrade
-                generate3_01Graph(document);
+                generate3_11Graph(document);
+            } else if(newVersion.equals(SunEjbJar.VERSION_3_1_0)){
+                //This will always be an upgrade
+                if(currentVersion.equals(SunEjbJar.VERSION_3_0_1) ||
+                        currentVersion.equals(SunEjbJar.VERSION_3_0_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_1) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_0_0))
+                    generate3_10Graph(document);
+                else
+                    downgradeEjbJarGraph(document, newVersion, currentVersion);
+            } else if(newVersion.equals(SunEjbJar.VERSION_3_0_1)){
+                //This will always be an upgrade
+                if(currentVersion.equals(SunEjbJar.VERSION_3_0_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_1) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_0_0))
+                    generate3_01Graph(document);
+                else
+                    downgradeEjbJarGraph(document, newVersion, currentVersion);
             } else if(newVersion.equals(SunEjbJar.VERSION_3_0_0)){
                 //This will always be an upgrade
                 if(currentVersion.equals(SunEjbJar.VERSION_2_1_1) || 
@@ -236,6 +266,20 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
             }
     }
     
+    private void generate3_11Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar ejbGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1.GlassFishEjbJar.createGraph(document);
+        ejbGraph.changeDocType(DTDRegistry.GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_EJBJAR_311_DTD_SYSTEM_ID);
+        this.ejbJarRoot = ejbGraph;
+    }
+
+    private void generate3_10Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar ejbGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.createGraph(document);
+        ejbGraph.changeDocType(DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID);
+        this.ejbJarRoot = ejbGraph;
+    }
+
     private void generate3_01Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar ejbGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar.createGraph(document);

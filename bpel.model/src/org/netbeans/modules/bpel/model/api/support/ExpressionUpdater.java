@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,6 +49,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
+import org.netbeans.modules.xml.validation.core.Expression;
 
 /**
  * @author ads
@@ -141,13 +141,13 @@ public final class ExpressionUpdater {
      * @param component Component that will be trying to find.
      * @return true if component is found in expression.
      */
-    public boolean isPresent( String expression, Named component ) {
-        if ( expression == null || expression.length() == 0 ){
+    public boolean isPresent(String expression, Named component) {
+        if (expression == null || expression.length() == 0) {
             return false;
         }
-        for( RefactoringReferenceFactory factory : myFactories){
-            if ( factory.isApplicable( component )){
-                return factory.isPresent( expression , component );
+        for (RefactoringReferenceFactory factory : myFactories) {
+            if (factory.isApplicable(component)) {
+                return factory.isPresent(expression, component);
             }
         }
         return false;
@@ -161,55 +161,27 @@ public final class ExpressionUpdater {
      * @param newName New name of component.
      * @return Updated expression or null if it was not updated.
      */
-    public String update( String expression, Named component, String newName ) {
-        if ( expression == null || expression.length() == 0 ){
+    public String update(String expression, Named component, String newName) {
+        if (expression == null || expression.length() == 0) {
             return null;
         }
-        for( RefactoringReferenceFactory factory : myFactories){
-            if ( factory.isApplicable( component )){
-                return factory.update( expression , component , newName );
+        for (RefactoringReferenceFactory factory : myFactories) {
+            if (factory.isApplicable( component)) {
+                return factory.update(expression, component, newName);
             }
         }
         return null;
     }
-    /**
-     * @param expression Subject expression.
-     * @return collection names of found variables.
-     */
-    @SuppressWarnings("unchecked")
-    public Collection<String> getUsedVariables( String expression ) {
-        if ( expression == null || expression.length() == 0 ){
-            return Collections.EMPTY_LIST;
-        }
-        else {
-            try {
-                XPathModel model = XPathModelHelper.getInstance().newXPathModel();
-                XPathExpression exp = model.parseExpression( expression );
-                FindVaribleVisitor visitor = new FindVaribleVisitor();
-                exp.accept( visitor );
-                return visitor.getVariables();
-            }
-            catch (XPathException e) {
-                return Collections.EMPTY_LIST;
-            }
-        }
-    }
-    
-    private static ExpressionUpdater INSTANCE = new ExpressionUpdater(); 
-    
-    private Set<RefactoringReferenceFactory> myFactories = 
-        new HashSet<RefactoringReferenceFactory>();
 
+    private static ExpressionUpdater INSTANCE = new ExpressionUpdater(); 
+    private Set<RefactoringReferenceFactory> myFactories = new HashSet<RefactoringReferenceFactory>();
 }
 
 interface RefactoringReferenceFactory {
     
     boolean isApplicable( Named component );
-    
     boolean isPresent(String expression, Named component);
-    
     String update( String expression, Named component, String newName );
-
 }
 
 class VariableReferenceFactory implements RefactoringReferenceFactory {
@@ -218,7 +190,7 @@ class VariableReferenceFactory implements RefactoringReferenceFactory {
      * @see org.netbeans.modules.bpel.model.impl.RefactoringReferenceFactory#isApplicable(org.netbeans.modules.xml.xam.Named)
      */
     public boolean isApplicable( Named component ) {
-        return component instanceof Variable || component instanceof Named;//todo
+        return component instanceof Variable || component instanceof Named;
     }
 
     /* (non-Javadoc)
@@ -226,17 +198,14 @@ class VariableReferenceFactory implements RefactoringReferenceFactory {
      */
     public boolean isPresent( String expression, Named component ) {
         XPathModel model = XPathModelHelper.getInstance().newXPathModel();
-        if ( expression == null || component.getName() == null ){
+
+        if (expression == null || component.getName() == null) {
             return false;
         }
         try {
-            XPathExpression exp = model.parseExpression( expression );
-
-            FindVaribleVisitor visitor = 
-                new FindVaribleVisitor( component.getName() ); 
-            
-            exp.accept( visitor );
-            
+            XPathExpression exp = model.parseExpression(expression);
+            Expression.FindVaribleVisitor visitor = new Expression.FindVaribleVisitor(component.getName()); 
+            exp.accept(visitor);
             return visitor.isFound(); 
         }
         catch (XPathException e) {
@@ -250,15 +219,15 @@ class VariableReferenceFactory implements RefactoringReferenceFactory {
      */
     public String update( String expression, Named component, String newName ) {
         XPathModel model = XPathModelHelper.getInstance().newXPathModel();
-        if ( expression == null || component.getName() == null ){
+
+        if (expression == null || component.getName() == null) {
             return null;
         }
         try {
             XPathExpression exp = model.parseExpression( expression );
-            UpdateVaribleVisitor visitor = 
-                new UpdateVaribleVisitor( component.getName() , newName , exp ); 
-            exp.accept( visitor );
-            // FIX for #IZ80076
+            UpdateVaribleVisitor visitor = new UpdateVaribleVisitor( component.getName() , newName , exp ); 
+            exp.accept(visitor);
+            // FIX for # 80076
             String ret = visitor.getExpressionString();
             if ( expression.trim().equals( ret ) ){
                 // we don't want to update not changed expression.
@@ -271,95 +240,6 @@ class VariableReferenceFactory implements RefactoringReferenceFactory {
             return null;
         }
     }
-    
-}
-
-/**
- * It determine presence for either just variable or variable and part in expression. 
- * 
- * @author ads
- *
- */
-class FindVaribleVisitor extends XPathModelTracerVisitor {
-    
-    /**
-     * Visitor for finding all alvailible variables. 
-     */
-    FindVaribleVisitor( ){
-        myFoundVars = new LinkedList<String>();
-    }
-    
-    /**
-     * Visitor for finding just variable with specified name.
-     */
-    FindVaribleVisitor( String name ){
-        this();
-        myName = name;
-    }
-    
-    /**
-     * Visitor for finding variable and part . 
-     */
-    FindVaribleVisitor( String varName , String partName) {
-        this( varName );
-        assert partName!= null;
-        myPartName = partName;
-    }
-        
-    @Override
-    public void visit(XPathVariableReference variableRef ) {
-        QName qName = variableRef.getVariableName();
-        if ( qName != null   
-                //&& BpelEntity.BUSINESS_PROCESS_NS_URI.equals( qName.getNamespaceURI()) TODO !
-                )
-        {
-            String local = qName.getLocalPart();
-
-            if ( local == null ){
-                return;
-            }
-            int index = local.indexOf("."); 
-            /*
-             * trying to devide variable in two part : bpel variable name and part.
-             * ( the part could be absent )
-             */ 
-
-            if ( index <0 ){
-                myFoundVars.add( local );           // FIX for IZ79861
-                isFound = local.equals( myName );
-                if ( isFound && myPartName != null) {
-                    isFound = false; // string doesn't contain "." so there is no part
-                }
-            }
-            else {
-                String varName = local.substring( 0, index );
-                myFoundVars.add( varName );         // FIX for IZ79861
-                String part =(index<(local.length()-1)) ? 
-                        local.substring( index+1 ):null;
-                isFound = varName.equals( myName );
-                
-                if ( isFound && myPartName != null) {
-                    isFound = myPartName.equals(part); 
-                }
-            }
-        }
-    }
-    
-    public Collection<String> getVariables() {
-        return myFoundVars;
-    }
-    
-    boolean isFound(){
-        return isFound;
-    }
-    
-    private String myName;
-    
-    private String myPartName;
-    
-    private boolean isFound; 
-    
-    private Collection<String> myFoundVars;
 }
 
 /**
@@ -504,17 +384,11 @@ class UpdateVaribleVisitor extends XPathModelTracerVisitor {
     }
     
     private String myName;
-    
     private String myPartName;
-    
     private String myNewName;
-    
     private ExpressionUpdaterVisitor myUpdater;
-    
     private Map<XPathExpression,XPathExpression> myMap;
-    
     private XPathExpression myExpression;
-
 }
 
 /**
@@ -705,5 +579,4 @@ class ExpressionUpdaterVisitor implements XPathVisitor {
     
     // this need when expression itself needs to be changed.
     private XPathExpression myExpression;
-
 }

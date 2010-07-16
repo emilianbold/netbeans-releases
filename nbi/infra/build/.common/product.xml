@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-  
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-  
+
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
+
   The contents of this file are subject to the terms of either the GNU General Public
   License Version 2 only ("GPL") or the Common Development and Distribution
   License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -11,9 +14,9 @@
   http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
   License for the specific language governing permissions and limitations under the
   License.  When distributing the software, include this License Header Notice in
-  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
   designates this particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that accompanied this code.
+  by Oracle in the GPL Version 2 section of the License file that accompanied this code.
   If applicable, add the following below the License Header, with the fields enclosed
   by brackets [] replaced by your own identifying information:
   "Portions Copyrighted [year] [name of copyright owner]"
@@ -193,6 +196,7 @@
         <exec executable="${ant.executable}" 
               dir="${engine.dir}" 
               failonerror="false">
+            <env key="JAVA_HOME" value="${java.home}"/>
             <arg value="clean"/>
             
             <arg value="-Dwork.dir=${engine.work.dir}"/>
@@ -308,17 +312,34 @@
                   to="${product.logic.length}" 
                   property="i">
             <!-- set the properties relevant to the current file -->
-            <set 
-                property="current.uri" 
-                source="product.logic.${i}.uri"/>
+            
             <set 
                 property="current.file" 
                 value="${product.logic.dir}/${product.logic.file.name}"/>
+
+            <condition property="product.logic.${i}.is.local" value="true" else="false">
+                <isset property="product.logic.${i}.path"/>
+            </condition>
             
-            <get 
-                src="${current.uri}" 
-                dest="${current.file}" 
-                usetimestamp="true"/>
+            <if property="product.logic.${i}.is.local" value="false">
+                <set 
+                    property="current.uri" 
+                    source="product.logic.${i}.uri"/>
+                <get 
+                    src="${current.uri}" 
+                    dest="${current.file}" 
+                    usetimestamp="true"/>
+            </if>
+
+            <if property="product.logic.${i}.is.local" value="true">
+                <set 
+                    property="current.path" 
+                    source="product.logic.${i}.path"/>
+                <copy
+                    file="${current.path}" 
+                    tofile="${current.file}" 
+                    preservelastmodified="true"/>
+            </if>
             
             <!-- sign the current jar file -->
 	    <if property="jarsigner.enabled" value="true">
@@ -350,12 +371,6 @@
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
             <set 
-                property="current.uri" 
-                source="product.data.${i}.uri"/>
-            <uri-to-path 
-                property="current.downloaded.path" 
-                uri="${current.uri}"/>
-            <set 
                 property="current.zip" 
                 value="${product.data.${i}.zip}"/>
 
@@ -377,9 +392,6 @@
             <set 
                 property="current.file" 
                 value="${product.data.dir}/${product.data.file.name}"/>
-            <set 
-                property="current.download" 
-                value="${downloads.cache.dir}/${current.downloaded.path}"/>
             <set 
                 property="current.temp.dir" 
                 value="${work.dir}/temp"/>
@@ -426,19 +438,41 @@
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data.${i}" value="true">
-                <dirname 
-                    property="current.download.${i}.dir" 
-                    file="${current.download}"/>
-                <set 
-                    property="current.download.dir"
-                    source="current.download.${i}.dir"/>
-                <mkdir 
-                    dir="${current.download.dir}"/>
-                
-                <get 
-                    src="${current.uri}" 
-                    dest="${current.download}"
-                    usetimestamp="true"/>
+
+                <condition property="product.data.${i}.is.local" value="true" else="false">
+                    <isset property="product.data.${i}.path"/>
+                </condition>
+
+                <if property="product.data.${i}.is.local" value="false">               
+                    <set 
+                        property="current.uri" 
+                        source="product.data.${i}.uri"/>
+                    <uri-to-path 
+                        property="current.downloaded.path" 
+                        uri="${current.uri}"/>
+                    <set 
+                        property="current.download" 
+                        value="${downloads.cache.dir}/${current.downloaded.path}"/>
+               
+                    <dirname 
+                        property="current.download.${i}.dir" 
+                        file="${current.download}"/>
+                    <set 
+                        property="current.download.dir"
+                        source="current.download.${i}.dir"/>
+                    <mkdir 
+                        dir="${current.download.dir}"/>
+                    
+                    <get 
+                        src="${current.uri}" 
+                        dest="${current.download}"
+                        usetimestamp="true"/>
+                </if>
+
+                <if property="product.data.${i}.is.local" value="true">
+                    <set property="current.download"
+                         source="product.data.${i}.path"/>
+                </if>
                 
                 <!-- extract the zip file to a temporary directory, if it's a 
                      zip file, or simply move it there if it is the data we 

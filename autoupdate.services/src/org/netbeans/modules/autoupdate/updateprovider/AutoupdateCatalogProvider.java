@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -57,7 +61,7 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
  */
 public class AutoupdateCatalogProvider implements UpdateProvider {
     private URL updateCenter;
-    private String codeName;
+    private final String codeName;
     private String displayName;
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
@@ -73,6 +77,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
      * Creates a new instance of AutoupdateCatalog
      */
     public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, CATEGORY category) {
+        Parameters.notNull("name", name);
         this.codeName = name;
         this.displayName = displayName;
         this.updateCenter = updateCenter;
@@ -80,7 +85,6 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     }
     
     public String getName () {
-        assert codeName != null : "UpdatesProvider must have a name.";
         return codeName;
     }
     
@@ -106,7 +110,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
             URL toParse = cache.getCatalogURL(codeName);
             if (toParse == null) {
-                log.log (Level.INFO, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
+                log.log (Level.FINE, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
                 return Collections.emptyMap ();
             }
 

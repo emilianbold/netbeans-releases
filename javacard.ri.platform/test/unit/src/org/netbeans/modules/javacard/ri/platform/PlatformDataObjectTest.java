@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,6 +88,7 @@ public class PlatformDataObjectTest  {
     static File tmp;
     @BeforeClass
     public static void setUpClass() throws Exception {
+        System.setProperty ("PlatformDataObjectTest", "true");
         tmp = new File (System.getProperty("java.io.tmpdir"));
         userdir = new File (tmp, "ud" + System.currentTimeMillis());
         System.setProperty ("netbeans.user", userdir.getAbsolutePath());
@@ -97,7 +101,6 @@ public class PlatformDataObjectTest  {
         assertNotNull (wrapperPlatformFo);
         assertEquals (JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION, wrapperPlatformFo.getExt());
         FileObject cardsInstance = FileUtil.createData(FileUtil.getConfigRoot(), getFakeCardsInstanceFileName("WrapperTest"));
-        System.err.println("Cards Instance File " + cardsInstance.getPath());
         riPlatformDo = DataObject.find (riPlatformFo);
         assertNotNull (riPlatformDo);
         wrapperPlatformDo = DataObject.find (wrapperPlatformFo);
@@ -154,8 +157,6 @@ public class PlatformDataObjectTest  {
         File connectedApiJarF = FileUtil.toFile(connectedApiJar);
         File additionalConnectedJarF = FileUtil.toFile(additionalConnectedJar);
         File additionalClassicJarF = FileUtil.toFile(additionalClassicJar);
-
-        System.err.println("EEPROM FOLDER: " + p.getProperty(JavacardPlatformKeyNames.PLATFORM_EEPROM_FOLDER));
 
         String expectedClassicBootClasspath = additionalClassicJarF.getAbsolutePath() + File.pathSeparator +
                 classicApiJarF.getAbsolutePath();
@@ -233,7 +234,6 @@ public class PlatformDataObjectTest  {
         StringBuilder sb = new StringBuilder(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + kind + "/" +
                 FakeCardsFactory.class.getName().replace('.', '-'));
         sb.append(".instance");
-        System.err.println("Instance file name " + sb);
         return sb.toString();
     }
     

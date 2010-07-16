@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -40,7 +40,7 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 class MapperNode implements GraphListener {
 
     private Mapper mapper;
-    
+
     private boolean collapsed;
     private boolean leaf;
 
@@ -58,41 +58,41 @@ class MapperNode implements GraphListener {
 
     private String text;
     private Icon icon;
-    
+
     private boolean valid = false;
 
     private Graph graph;
     private boolean graphCollapsed = false;
     private Set<Graph> childGraphs;
-    
+
     private TreePath treePath;
-    
+
     public MapperNode(Mapper mapper, MapperNode parent, Object value) {
         this.value = value;
         this.mapper = mapper;
         this.parent = parent;
         this.collapsed = (parent != null);
-        
+
         if (parent == null) {
             treePath = new TreePath(value);
         } else {
             treePath = new MapperTreePath(parent.getTreePath(), value);
         }
-        
+
         updateNode();
         updateChildGraphs();
     }
 
-    
+
     private Mapper getMapper() { return mapper; }
     private RightTree getRightTree() { return mapper.getRightTree(); }
 
     private MapperModel getModel() { return mapper.getFilteredModel(); }
 
     MapperNode getParent() { return parent; }
-    
+
     Object getValue() { return value; }
-    
+
     boolean isDnDSelected() { return Utils.equal(mapper.getSelectedDndPath(), treePath); }
     boolean isSelected() { return Utils.equal(mapper.getSelected(), treePath); }
     boolean isLeaf() { return leaf; }
@@ -101,7 +101,7 @@ class MapperNode implements GraphListener {
 
     boolean isGraphCollapsed() { return graphCollapsed; }
     boolean isGraphExpanded() { return !graphCollapsed; }
-    
+
     int getY() { return y; }
     int getHeight() { return height; }
     int getIndent() { return indent; }
@@ -110,31 +110,31 @@ class MapperNode implements GraphListener {
 
     boolean isValid() { return valid; }
     boolean isLoaded() { return leaf || children != null; }
-    
+
     int getLabelWidth() { return labelWidth; }
     int getLabelHeight() { return labelHeight; }
 
     Graph getGraph() { return graph; }
-    
-    Set<Graph> getChildGraphs() { 
-        return getChildGraphs(null); 
+
+    Set<Graph> getChildGraphs() {
+        return getChildGraphs(null);
     }
-    
+
     Set<Graph> getChildGraphs(Set<Graph> result) {
         if (result == null) {
             result = new HashSet<Graph>();
         }
-        
+
         if (childGraphs != null) {
             result.addAll(childGraphs);
         }
-        
+
         return result;
     }
-    
+
     MapperNode getNode(int y) {
         if (y < 0 || y >= height) return null;
-        
+
         if (isLeaf()) {
             return this;
         } else {
@@ -148,57 +148,57 @@ class MapperNode implements GraphListener {
                 }
             }
         }
-        
+
         return this;
     }
-    
-    
+
+
 //    public int getGraphY() {
 //        int y = ;
 //        for (MapperNode n = this; n != null; n = n.getParent()) {
 //            y += n.getY();
 //        }
 //    }
-    
-    
+
+
     TreePath getTreePath() {
         return treePath;
     }
-    
-    
+
+
     int yToNode(int viewY) {
         for (MapperNode n = this; n != null; n = n.getParent()) {
             viewY -= n.getY();
         }
         return viewY;
     }
-    
-    
+
+
     int yToView(int nodeY) {
         for (MapperNode n = this; n != null; n = n.getParent()) {
             nodeY += n.getY();
         }
         return nodeY;
     }
-    
+
 
     void setCollapsed(boolean collapsed) {
         if (this.collapsed != collapsed) {
             this.collapsed = collapsed;
             updateChildGraphs();
             invalidate();
-            //repaint();
+//          repaint();
             // If link go from LeftTree to RightTree It can change color
             getMapper().repaint();
         }
     }
-    
-    
+
+
     void setExpanded(boolean expanded) {
         setCollapsed(!expanded);
     }
-    
-    
+
+
     void setGraphCollapsed(boolean graphCollapsed) {
         if (this.graphCollapsed != graphCollapsed) {
             this.graphCollapsed = graphCollapsed;
@@ -208,13 +208,13 @@ class MapperNode implements GraphListener {
             getMapper().repaint();
         }
     }
-    
-    
+
+
     void setGraphExpanded(boolean graphExpanded) {
         setGraphCollapsed(!graphExpanded);
     }
-    
-    
+
+
     int getChildCount() {
         loadChildren();
         return (leaf) ? 0 : children.size();
@@ -225,8 +225,8 @@ class MapperNode implements GraphListener {
         loadChildren();
         return children.get(i);
     }
-    
-    
+
+
     int getChildIndex(MapperNode child) {
         if (!isLoaded()) return -1;
         return children.indexOf(child);
@@ -237,43 +237,43 @@ class MapperNode implements GraphListener {
         if (isLoaded()) return;
         updateChildren();
     }
-    
-    
+
+
     void updateNode() {
         MapperModel model = getModel();
-        
+
         boolean oldLeaf = leaf;
         leaf = model.isLeaf(value);
-        
+
         if (oldLeaf != leaf) {
             removeAllChildren();
         }
-        
+
         Graph oldGraph = graph;
         graph = model.getGraph(getTreePath());
-        
+
         if (oldGraph != graph) {
             if (oldGraph != null) oldGraph.removeGraphListener(this);
             if (graph != null) graph.addGraphListener(this);
         }
     }
-    
-    
+
+
     void updateChildGraphs() {
         MapperModel model = getModel();
-        
+
         Set<Graph> oldChildGraphs = new HashSet<Graph>();
         Set<Graph> newChildGraphs = new HashSet<Graph>();
 
         if (childGraphs != null) {
             oldChildGraphs.addAll(childGraphs);
         }
-        
+
         if ((!leaf && collapsed) || (parent == null && !leaf)) {
-            newChildGraphs = Utils.findGraphs(model, getTreePath(), 
+            newChildGraphs = Utils.findGraphs(model, getTreePath(),
                     newChildGraphs);
-        } 
-        
+        }
+
         if (newChildGraphs != null && !newChildGraphs.isEmpty()) {
             if (childGraphs != null) {
                 childGraphs.clear();
@@ -284,27 +284,27 @@ class MapperNode implements GraphListener {
         } else {
             childGraphs = null;
         }
-        
+
         Set<Graph> common = new HashSet<Graph>(oldChildGraphs);
         common.retainAll(newChildGraphs);
-        
+
         oldChildGraphs.removeAll(common);
         newChildGraphs.removeAll(common);
-        
+
         for (Graph childGraph : oldChildGraphs) {
             childGraph.removeGraphListener(this);
         }
-        
+
         for (Graph childGraph : newChildGraphs) {
             childGraph.addGraphListener(this);
         }
-        
+
         if (!oldChildGraphs.isEmpty() || !newChildGraphs.isEmpty()) {
             invalidate();
             repaint();
         }
     }
-    
+
 
     private void removeAllChildren() {
         if (children != null) {
@@ -313,14 +313,14 @@ class MapperNode implements GraphListener {
             }
         }
     }
-    
-    
+
+
     private void removeNode() {
         if (graph != null) {
             graph.removeGraphListener(this);
             graph = null;
         }
-        
+
         if (childGraphs != null) {
             for (Graph childGraph : childGraphs) {
                 childGraph.removeGraphListener(this);
@@ -328,14 +328,14 @@ class MapperNode implements GraphListener {
             childGraphs.clear();
             childGraphs = null;
         }
-        
+
         removeAllChildren();
     }
 
 
     void updateChildren() {
         MapperModel model = mapper.getFilteredModel();
-        
+
         List<MapperNode> oldChildren = Collections.emptyList();
         if (children != null) oldChildren = children;
 
@@ -365,7 +365,7 @@ class MapperNode implements GraphListener {
     void insertChildren(TreeModelEvent e) {
         if (isLoaded()) {
             MapperModel model = getModel();
-            
+
             int[] indeces = e.getChildIndices();
             Arrays.sort(indeces);
 
@@ -373,8 +373,8 @@ class MapperNode implements GraphListener {
                 if (children == null) {
                     children = new ArrayList<MapperNode>();
                 }
-                
-                children.add(index, new MapperNode(mapper, this, 
+
+                children.add(index, new MapperNode(mapper, this,
                         model.getChild(value, index)));
             }
         }
@@ -412,7 +412,7 @@ class MapperNode implements GraphListener {
         if (valid) {
             valid = false;
             MapperNode parent = getParent();
-            
+
             if (parent != null) {
                 parent.invalidate();
             } else {
@@ -420,8 +420,8 @@ class MapperNode implements GraphListener {
             }
         }
     }
-    
-    
+
+
     void invalidateTree() {
         invalidate();
         if (isLoaded()) {
@@ -430,8 +430,8 @@ class MapperNode implements GraphListener {
             }
         }
     }
-    
-    
+
+
     void repaint() {
         mapper.repaintNodes();
     }
@@ -467,7 +467,7 @@ class MapperNode implements GraphListener {
 
                 y += childHeight;
             }
-        } else { 
+        } else {
             // collapsed
         }
     }
@@ -482,7 +482,7 @@ class MapperNode implements GraphListener {
         Dimension labelSize = getLabelSize();
 
         int w = labelSize.width;
-        int h = (getParent() == null) ? 0 
+        int h = (getParent() == null) ? 0
                 : Math.max(getGraphHeight(), labelSize.height + 4) + 1;
 
         int indent = mapper.getTotalIndent();
@@ -496,7 +496,7 @@ class MapperNode implements GraphListener {
                 w = Math.max(w, size.width + indent);
                 h += size.height;
             }
-        } else { 
+        } else {
             // collapsed
             if (hasNonEmptyChildGraphs()) {
                 Dimension childrenLabelSize = getChildrenLabelSize();
@@ -507,8 +507,8 @@ class MapperNode implements GraphListener {
 
         return new Dimension(w, h);
     }
-    
-    
+
+
     private boolean hasNonEmptyChildGraphs() {
         if (childGraphs != null) {
             for (Graph childGraph : childGraphs) {
@@ -517,17 +517,17 @@ class MapperNode implements GraphListener {
         }
         return false;
     }
-    
-    
+
+
     XRange getGraphXRange() {
         int x1 = Integer.MAX_VALUE;
         int x2 = Integer.MIN_VALUE;
-        
+
         if (graph != null && isGraphExpanded()) {
             x1 = graph.getX();
             x2 = x1 + graph.getWidth();
         }
-        
+
         if (!isLeaf()) {
             if (isExpanded()) {
                 for (int i = getChildCount() - 1; i >= 0; i--) {
@@ -539,31 +539,31 @@ class MapperNode implements GraphListener {
                 }
             }
         }
-        
+
         return (x1 <= x2) ? new XRange(x1, x2 - x1) : null;
     }
-    
+
     boolean isVisibleGraph() {
         if (graph == null) return false;
         if (graph.isEmpty()) return false;
         if (!isVisible()) return false;
         return isGraphExpanded();
     }
-    
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-    private boolean isVisible() {
+
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    public boolean isVisible() {
         if (this == getMapper().getRoot()) return true;
         if (getParent().isCollapsed()) return false;
         return getParent().isVisible();
     }
-    
+
     int getGraphHeight() {
         int step = mapper.getStepSize();
         int size = step - 1;
         int topInset = size / 2;
         int bottomInset = size - topInset;
 
-        return (isVisibleGraph() && !getGraph().isEmptyOrOneLink()) 
+        return (isVisibleGraph() && !getGraph().isEmptyOrOneLink())
                 ? Math.max(2, graph.getHeight()) * step + size + 2
                 : 0;
     }
@@ -573,8 +573,8 @@ class MapperNode implements GraphListener {
         Dimension d = getRightTree().getCellRendererComponent(this).getPreferredSize();
         return new Dimension(Math.max(16, d.width), Math.max(16, d.height));
     }
-    
-    
+
+
     Dimension getChildrenLabelSize() {
         return mapper.getRightTree().getChildrenLabel().getPreferredSize();
     }
@@ -590,60 +590,61 @@ class MapperNode implements GraphListener {
             repaint();
         }
     }
-    
+
     public boolean mustDrawLine() {
         if (getParent() == null) {
-            // Root node is never visible. 
+            // Root node is never visible.
             // We should not paint line for invisible node
             return false;
         }
-        
+
         MapperNode nextNode = getNextVisibleNode(this);
         // graph or nextGraph is not Empty or One Link
         if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
                     (nextNode != null && nextNode.getGraph() != null &&
-                    !nextNode.getGraph().isEmptyOrOneLink() )) 
+                    !nextNode.getGraph().isEmptyOrOneLink() ))
         {
-            return true; 
+            return true;
         }
         // node or nextNode is Selected or dndSelected
         if (this.isSelected() || (nextNode != null &&
                     nextNode.isSelected()) ||
                     (this.isDnDSelected() || (nextNode != null &&
-                    nextNode.isDnDSelected()))) 
+                    nextNode.isDnDSelected())))
         {
             return true;
         }
         // node or nextNode have [...]
         if (isCollapsed() && getHeight() != getContentHeight() ||
-                nextNode != null && nextNode.isCollapsed() && 
+                nextNode != null && nextNode.isCollapsed() &&
                 nextNode.getHeight() != nextNode.getContentHeight())
         {
             return true;
         }
         return false;
     }
-    
+
     public boolean mustDrawDottedLine() {
-        return  isCollapsed() && getHeight() != getContentHeight(); 
+        return  isCollapsed() && getHeight() != getContentHeight();
     }
-    
+
     public MapperNode getNextVisibleNode() {
         return  getNextVisibleNode(this);
     }
-    
+
     public MapperNode getPrevVisibleNode() {
-        return getPrevVisibleNode(this); 
+        return getPrevVisibleNode(this);
     }
-    
+
     private MapperNode getPrevVisibleNode(MapperNode node) {
         if (node == mapper.getRoot()) {return null;}
-        
+
         if (node == this) {
             int index = node.getParent().getChildIndex(node);
             if (index > 0) {
-                if (node.getParent().getChild(index - 1).isCollapsed() 
-                        || node.getParent().getChild(index - 1).isLeaf()) 
+                MapperNode childeNode = node.getParent().getChild(index - 1);
+                if (childeNode.isCollapsed() || childeNode.isLeaf() ||
+                        childeNode.getChildCount() == 0 )
                 {
                     return  node.getParent().getChild(index - 1);
                 } else {
@@ -651,10 +652,13 @@ class MapperNode implements GraphListener {
                 }
             }  else {
                 return node.getParent();
-            }    
+            }
         } else {
-            if (node.getChild(node.getChildCount() - 1).isLeaf() 
-                    || node.getChild(node.getChildCount() - 1).isCollapsed()) 
+            if (node.getChildCount()== 0) {
+                return node;
+            }
+            if ( node.getChild(node.getChildCount() - 1).isLeaf()
+                    || node.getChild(node.getChildCount() - 1).isCollapsed())
             {
                 return node.getChild(node.getChildCount() - 1);
             } else {
@@ -662,11 +666,11 @@ class MapperNode implements GraphListener {
             }
         }
     }
-    
+
     private MapperNode getNextVisibleNode(MapperNode node) {
         MapperNode root = mapper.getRoot();
-        if (node == root && (node != this || root.isLeaf() 
-                || root.isCollapsed() || root.getChildCount() < 1)) 
+        if (node == root && (node != this || root.isLeaf()
+                || root.isCollapsed() || root.getChildCount() < 1))
         {
             return null;
         }
@@ -690,12 +694,12 @@ class MapperNode implements GraphListener {
         }
         return result;
     }
-    
+
     public void graphBoundsChanged(Graph graph) {
         invalidate();
         repaint();
     }
-    
+
 
     public void graphLinksChanged(Graph graph) {
         getRightTree().getLeftTree().repaint();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,13 @@ package org.netbeans.core.startup.layers;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -55,6 +61,8 @@ import org.openide.util.Lookup;
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  */
 public class CachingPreventsFileTouchesTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(CachingPreventsFileTouchesTest.class.getName());
+
     private static void initCheckReadAccess() throws IOException {
         Set<String> allowedFiles = new HashSet<String>();
         CountingSecurityManager.initialize(null, CountingSecurityManager.Mode.CHECK_READ, allowedFiles);
@@ -66,6 +74,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     
     public static Test suite() throws IOException {
         CountingSecurityManager.initialize("none", CountingSecurityManager.Mode.CHECK_READ, null);
+        System.setProperty("org.netbeans.Stamps.level", "ALL");
 
         NbTestSuite suite = new NbTestSuite();
         {
@@ -75,6 +84,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             conf = conf.addTest("testInitUserDir").gui(false);
             suite.addTest(NbModuleSuite.create(conf));
         }
+
+        suite.addTest(new CachingPreventsFileTouchesTest("testInMiddle"));
 
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
@@ -90,11 +101,17 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     public void testInitUserDir() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        FileObject fo = FileUtil.getConfigFile("Services/Browsers");
+        fo.delete();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
+    }
+
+    public void testInMiddle() {
+        LOG.info("First run finished, starting another one");
     }
 
     public void testReadAccess() throws Exception {

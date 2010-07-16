@@ -24,6 +24,9 @@ import java.nio.charset.Charset;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.cookies.SaveCookie;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -32,6 +35,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.modules.bpel.core.wizard.NewBpelFileIterator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -57,42 +61,41 @@ public class BpelproProjectGenerator {
     private static final String DEFAULT_DOC_BASE_FOLDER = "conf"; //NOI18N
     private static final String DEFAULT_SRC_FOLDER = "src"; //NOI18N
     private static final String DEFAULT_RESOURCE_FOLDER = "setup"; //NOI18N
-    private static final String DEFAULT_BPELASA_FOLDER = "bpelasa"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
 
     private BpelproProjectGenerator() {}
 
     /**
-     * Create a new empty J2SE project.
+     * Create a new empty BPEL project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the code name for the project
-     * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, final String name) throws IOException {
+    public static FileObject createProject(File dir, final String name) throws IOException {
         final FileObject fo = createProjectDir(dir);
-        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject[] process = new FileObject[1];
 
         fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                h[0] = setupProject(fo, name);
-                FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-                createCatalogXml(h[0].getProjectDirectory());
+                final AntProjectHelper h = setupProject(fo, name);
+                FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER);
+                createCatalogXml(h.getProjectDirectory());
+
+                // # 92015
+                process[0] = NewBpelFileIterator.createBpelProcess(srcRoot, name, lowerCase(name)).getPrimaryFile();
 
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
 
                         public Void run() throws Exception {
-                            EditableProperties ep = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
                             ep.setProperty(IcanproProjectProperties.META_INF, "${" + IcanproProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_DOC_BASE_FOLDER); //NOI18N
                             ep.setProperty(IcanproProjectProperties.SRC_DIR, "${" + IcanproProjectProperties.SOURCE_ROOT + "}"); //NOI18N
                             ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
-                            Project p = ProjectManager.getDefault().findProject(h[0].getProjectDirectory());
+                            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                            Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
                             ProjectManager.getDefault().saveProject(p);
-
                             return null;
                         }
                     });
@@ -101,12 +104,22 @@ public class BpelproProjectGenerator {
                 }
             }
         });
+        return process[0];
+    }
 
-        return h[0];
+    private static String lowerCase(String value) {
+        if (value == null || value.length() <= 1) {
+            return value;
+        }
+        if (value.length() >= 2 && Character.isUpperCase(value.charAt(1))) {
+            return value;
+        }
+        return Character.toLowerCase(value.charAt(0)) + value.substring(1);
     }
 
     private static FileObject createProjectDir(File dir) throws IOException {
         FileObject dirFO;
+
         if(!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem (dir);
@@ -130,14 +143,13 @@ public class BpelproProjectGenerator {
         dirFO.getFileSystem().refresh(false);
     }
     
-    // vlv # 111020
+    // # 111020
     private static void createCatalogXml(FileObject project) {
-      try {
-        FileObject resource = FileUtil.getConfigFile("bpel-project-resources/catalog.xml");
-        FileUtil.copyFile(resource, project, "catalog", "xml"); // NOI18N
-      }
-      catch (IOException e) {
-      }
+        try {
+            FileObject resource = FileUtil.getConfigFile("bpel-project-resources/catalog.xml"); // NOI18N
+            FileUtil.copyFile(resource, project, "catalog", "xml"); // NOI18N
+        }
+        catch (IOException e) {}
     }
 
     public static AntProjectHelper importProject(File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject configFilesBase, String j2eeLevel, String buildfile) throws IOException {
@@ -145,7 +157,7 @@ public class BpelproProjectGenerator {
         refreshFileSystem(dir);
         FileObject fo = FileUtil.toFileObject(SoaUtil.getRoot(dir));
 
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -225,10 +237,9 @@ public class BpelproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-bpel-engine"); // NOI18N
         ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 
-        // vlv # 109451 todo r
+        // # 109451 todo r
         ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
-        ep.setProperty("jbi.service-unit.description", 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
+        ep.setProperty("jbi.service-unit.description", NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "BCDeployment.jar");
         ep.setProperty(IcanproProjectProperties.SE_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "SEDeployment.jar");

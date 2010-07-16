@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,11 +63,12 @@ public final class MainLookup extends ProxyLookup {
     /** dynamic lookup service for this top mangager */
     private static Lookup instanceLookup = new AbstractLookup (instanceContent);
 
-    /** Someone called NbTopManager.get().
+    /**
+     * GuiRunLevel has started up.
      * That means that subsequent calls to lookup on ModuleInfo
      * need not try to get it again.
      */
-    public static void startedNbTopManager() {
+    public static void started() {
         started = true;
     }
     
@@ -74,8 +78,6 @@ public final class MainLookup extends ProxyLookup {
         return started;
     } 
 
-    /** Initialize the lookup to delegate to NbTopManager.
-    */
     public MainLookup () {
         super (new Lookup[] {
                    // #14722: pay attention also to META-INF/services/class.Name resources:
@@ -136,7 +138,7 @@ public final class MainLookup extends ProxyLookup {
 
     public static final void modulesClassPathInitialized () {
         //System.err.println("mCPI");
-    //StartLog.logStart ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
+    //StartLog.logStart ("MainLookup: initialization of FolderLookup"); // NOI18N
 
         // replace the lookup by new one
         Lookup lookup = Lookup.getDefault ();
@@ -193,7 +195,7 @@ public final class MainLookup extends ProxyLookup {
 
         setLookups (arr);
         StartLog.logProgress ("Lookups set"); // NOI18N
-    //StartLog.logEnd ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
+    //StartLog.logEnd ("MainLookup: initialization of FolderLookup"); // NOI18N
     }
 
     @Override

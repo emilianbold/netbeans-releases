@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
  * @author Josh Sandusky
  */
 public class CasaDesignModelListener implements PropertyChangeListener {
-    
+
     private CasaDataObject mDataObject;
     private CasaModelGraphScene mScene;
     
@@ -124,9 +127,10 @@ public class CasaDesignModelListener implements PropertyChangeListener {
             
         } else if (name.equals(CasaWrapperModel.PROPERTY_ENDPOINT_NAME_CHANGED)) {
             renameEndpoint((CasaComponent) source);
+            updateEndpointToolTip((CasaComponent) source);
             
         } else if (name.equals(CasaWrapperModel.PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED)) {
-            renameEndpointTooltip((CasaComponent) source);
+            updateEndpointToolTip((CasaComponent) source);
             
         } else if (name.equals(CasaWrapperModel.PROPERTY_ENDPOINT_INTERFACE_QNAME_CHANGED)) {
             // FIXME
@@ -264,25 +268,14 @@ public class CasaDesignModelListener implements PropertyChangeListener {
             CasaPinWidget pinWidget = (CasaPinWidget) widget;
             CasaEndpointRef endpointRef = (CasaEndpointRef) component;
             pinWidget.setProperties(endpointRef.getDisplayName());
-            pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
-            
+            //pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef));
         } else if (widget instanceof CasaNodeWidgetBinding) {
             CasaNodeWidgetBinding portWidget = (CasaNodeWidgetBinding) widget;
             CasaPort casaPort = (CasaPort) component;
-            CasaWrapperModel model = mScene.getModel();
-            portWidget.setEndpointLabel(casaPort.getEndpointName());
+            portWidget.setPortLabel(casaPort.getEndpointName());
         }
     }
-    
-    private void renameEndpointTooltip(CasaComponent component) {
-        Widget widget = mScene.findWidget(component);
-        if (widget instanceof CasaPinWidget) {
-            CasaPinWidget pinWidget = (CasaPinWidget) widget;
-            CasaEndpointRef endpointRef = (CasaEndpointRef) component;
-            pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
-        }
-    }
-    
+
     private void renameServiceUnit(CasaServiceEngineServiceUnit su) {
         Widget widget = mScene.findWidget(su);
         if (widget != null) {
@@ -291,6 +284,22 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                     mScene.getModel(),
                     su,
                     nodeWidget);
+        }
+    }
+
+    private void updateEndpointToolTip(CasaComponent component) {
+        Widget widget = mScene.findWidget(component);
+        if (widget instanceof CasaPinWidget) {
+            CasaPinWidget pinWidget = (CasaPinWidget) widget;
+            CasaEndpointRef endpointRef = (CasaEndpointRef) component;
+
+            CasaWrapperModel model = (CasaWrapperModel) component.getModel();
+            if (CasaModelGraphUtilities.getShowToolTip(model)) {
+                pinWidget.setToolTipText(
+                        CasaModelGraphUtilities.getToolTipName(endpointRef));
+            } else {
+                pinWidget.setToolTipText(null);
+            }
         }
     }
 }

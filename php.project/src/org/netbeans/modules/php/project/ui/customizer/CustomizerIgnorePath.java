@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,18 +43,17 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.io.File;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -81,9 +83,11 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         initComponents();
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            @Override
             public File getCurrentDirectory() {
                 return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
             }
+            @Override
             public void setCurrentDirectory(File currentDirectory) {
             }
         };
@@ -97,14 +101,17 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
                                                directoryHandler);
 
         ignorePathList.getModel().addListDataListener(new ListDataListener() {
+            @Override
             public void intervalAdded(ListDataEvent e) {
                 validateData();
             }
 
+            @Override
             public void intervalRemoved(ListDataEvent e) {
                 validateData();
             }
 
+            @Override
             public void contentsChanged(ListDataEvent e) {
                 validateData();
             }
@@ -115,13 +122,21 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         int size = ignorePathList.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             BasePathSupport.Item item = (BasePathSupport.Item) ignorePathList.getModel().getElementAt(i);
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(item.getFilePath())));
-            if (fo != null) {
-                if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
-                    category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotSourceGroupSubdirectory", fo.getNameExt()));
-                    category.setValid(false);
-                    return;
-                }
+            if (item.isBroken()) {
+                continue;
+            }
+            String filePath = item.getFilePath();
+            FileObject fo = project.getHelper().resolveFileObject(filePath);
+            if (fo == null) {
+                // not broken but not found?!
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", filePath));
+                category.setValid(false);
+                return;
+            }
+            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotSourceGroupSubdirectory", fo.getNameExt()));
+                category.setValid(false);
+                return;
             }
         }
         category.setErrorMessage(null);
@@ -144,39 +159,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         addButton = new JButton();
         removeButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  addButton){
-                    return removeButton;
-                }
-                if(aComponent ==  ignorePathList){
-                    return addButton;
-                }
-                return removeButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  removeButton){
-                    return addButton;
-                }
-                if(aComponent ==  addButton){
-                    return ignorePathList;
-                }
-                return removeButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         ignorePathLabel.setLabelFor(ignorePathList);
         Mnemonics.setLocalizedText(ignorePathLabel, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.text")); // NOI18N
@@ -189,36 +172,36 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         ignorePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.text"));
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(ignorePathLabel)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(ignorePathLabel)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(removeButton)
-                    .add(addButton))
-                .add(0, 0, 0))
+                .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(removeButton)
+                    .addComponent(addButton))
+                .addGap(0, 0, 0))
         );
 
-        layout.linkSize(new Component[] {addButton, removeButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(ignorePathLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(addButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removeButton))
-                    .add(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(ignorePathLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removeButton))
+                    .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
 
         ignorePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -241,6 +224,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
     private JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerIgnorePath.class);
     }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.ReThrow;
@@ -60,7 +59,7 @@ public class ReThrowNode extends BpelNode<ReThrow> {
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
         //
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        PropertyUtils.getInstance().registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;

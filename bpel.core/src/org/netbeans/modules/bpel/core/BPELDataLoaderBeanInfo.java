@@ -29,9 +29,8 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 
 import org.openide.loaders.DataLoader;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.ErrorManager;
 
 /**
@@ -47,6 +46,7 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
         "org/netbeans/modules/bpel/core/resources/bpel_file.gif";   // NOI18N
 
     /** {@inheritDoc} */
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
@@ -63,6 +63,7 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
      * properties of this bean.  May return null if the
      * information should be obtained by automatic analysis.
      */
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = 
             new BeanDescriptor ( BPELDataLoader.class , null );
@@ -77,6 +78,7 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
     }
     
     /** {@inheritDoc} */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         // Make extensions into a r/o property.
         // It will only contain the BPEL MIME type.
@@ -101,16 +103,19 @@ public class BPELDataLoaderBeanInfo extends SimpleBeanInfo {
     }
     
     /** {@inheritDoc} */
+    @Override
     public MethodDescriptor[] getMethodDescriptors() {
         return new MethodDescriptor[0];
     }
     
     /** {@inheritDoc} */
+    @Override
     public EventSetDescriptor[] getEventSetDescriptors() {
         return new EventSetDescriptor[0];
     }
 
     /** {@inheritDoc} */
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return ImageUtilities.loadImage( PATH_TO_IMAGE );

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@ package org.netbeans.modules.java.api.common;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -55,6 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -88,7 +92,7 @@ import org.w3c.dom.NodeList;
  * in project properties (see {@link #PROP_ROOTS}).
  * @author Tomas Zezula, Tomas Mysik
  */
-public final class SourceRoots {
+public final class SourceRoots extends Roots {
 
     /**
      * Property name of a event that is fired when Ant project metadata change.
@@ -108,6 +112,8 @@ public final class SourceRoots {
      */
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
 
+    private static final Logger LOG = Logger.getLogger(SourceRoots.class.getName());
+
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
@@ -118,7 +124,6 @@ public final class SourceRoots {
     private List<String> sourceRootNames;
     private List<FileObject> sourceRoots;
     private List<URL> sourceRootURLs;
-    private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final boolean isTest;
     private final File projectDir;
@@ -138,6 +143,7 @@ public final class SourceRoots {
 
     private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
             String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
+        super(true,true,JavaProjectConstants.SOURCES_TYPE_JAVA, isTest ? JavaProjectConstants.SOURCES_HINT_TEST : JavaProjectConstants.SOURCES_HINT_MAIN);
         assert helper != null;
         assert evaluator != null;
         assert refHelper != null;
@@ -153,7 +159,6 @@ public final class SourceRoots {
         this.isTest = isTest;
         this.newRootNameTemplate = newRootNameTemplate;
         this.projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
-        this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this.listener, this.evaluator));
         this.helper.getAntProjectHelper().addAntProjectListener(
@@ -174,16 +179,28 @@ public final class SourceRoots {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
                     }
+                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
                 }
-                return sourceRootNames.toArray(new String[sourceRootNames.size()]);
             }
         });
     }
 
-    /**
-     * Returns names of Ant properties in the <i>project.properties</i> file holding the source roots.
-     * @return an array of String.
-     */
+    @Override
+    public String[] getRootDisplayNames() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
+                final String[] props = getRootProperties();
+                final String[] names = getRootNames();
+                final String[] displayNames = new String[props.length];
+                for (int i=0; i< props.length; i++) {
+                    displayNames[i] = getRootDisplayName(names[i], props[i]);
+                }
+                return displayNames;
+            }
+        });
+    }
+
+    @Override
     public String[] getRootProperties() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
@@ -204,7 +221,7 @@ public final class SourceRoots {
     public FileObject[] getRoots() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
                 public FileObject[] run() {
-                    synchronized (this) {
+                    synchronized (SourceRoots.this) {
                         // local caching
                         if (sourceRoots == null) {
                             URL [] rootURLs = getRootURLs();
@@ -221,8 +238,8 @@ public final class SourceRoots {
                             }
                             sourceRoots = Collections.unmodifiableList(result);
                         }
+                        return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
-                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
         });
     }
@@ -262,8 +279,8 @@ public final class SourceRoots {
                         }
                         sourceRootURLs = Collections.unmodifiableList(result);
                     }
+                    return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
                 }
-                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
         });
     }
@@ -297,25 +314,6 @@ public final class SourceRoots {
             }
         });
     }
-
-    /**
-     * Adds {@link PropertyChangeListener}, see class description for more information
-     * about listening to the source roots changes.
-     * @param listener a listener to add.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Removes {@link PropertyChangeListener}, see class description for more information
-     * about listening to the source roots changes.
-     * @param listener a listener to remove.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
 
     /**
      * Replaces the current roots by the given ones.
@@ -470,9 +468,9 @@ public final class SourceRoots {
         }
         if (fire) {
             if (isXMLChange) {
-                support.firePropertyChange(PROP_ROOT_PROPERTIES, null, null);
+                firePropertyChange(PROP_ROOT_PROPERTIES, null, null);
             }
-            support.firePropertyChange(PROP_ROOTS, null, null);
+            firePropertyChange(PROP_ROOTS, null, null);
         }
     }
 
@@ -505,6 +503,7 @@ public final class SourceRoots {
         private final Set<File> files = new HashSet<File>();
         private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
 
+        //@GuardedBy("SourceRoots.this")
         public void add(File f) {
             if (!files.contains(f)) {
                 files.add(f);
@@ -512,9 +511,15 @@ public final class SourceRoots {
             }
         }
 
+        //@GuardedBy("SourceRoots.this")
         public void removeFileListeners() {
             for(File f : files) {
-                FileUtil.removeFileChangeListener(weakFilesListener, f);
+                try {
+                    FileUtil.removeFileChangeListener(weakFilesListener, f);
+                } catch (IllegalArgumentException iae) {
+                    // log
+                    LOG.log(Level.FINE, null, iae);
+                }
             }
             files.clear();
         }

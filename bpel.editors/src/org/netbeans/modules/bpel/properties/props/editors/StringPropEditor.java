@@ -20,11 +20,9 @@ package org.netbeans.modules.bpel.properties.props.editors;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
-import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.form.Reusable;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropertyCustomizer;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,10 @@ package org.netbeans.modules.php.project.api;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
@@ -58,6 +63,9 @@ public final class PhpEditorExtender {
     }
 
     public static EditorExtender forFileObject(FileObject fo) {
+        if (!isCurrentlyOpened(fo)) {
+            return EMPTY_EDITOR_EXTENDER;
+        }
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fo);
         if (phpProject == null) {
             return EMPTY_EDITOR_EXTENDER;
@@ -67,15 +75,22 @@ public final class PhpEditorExtender {
         return editorExtender;
     }
 
+    private static boolean isCurrentlyOpened(FileObject fo) {
+        JTextComponent component = EditorRegistry.lastFocusedComponent();
+        if (component == null) {
+            return false;
+        }
+        FileObject opened = NbEditorUtilities.getFileObject(component.getDocument());
+        if (opened == null) {
+            return false;
+        }
+        return opened.equals(fo);
+    }
+
     private static final class EmptyEditorExtender extends EditorExtender {
         @Override
-        public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+        public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
             return Collections.emptyList();
-        }
-
-        @Override
-        public PhpClass getClass(FileObject fo, String variableName) {
-            return null;
         }
     }
 }

@@ -37,7 +37,7 @@ import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
-import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
+import org.netbeans.modules.soa.ui.properties.PropertyVetoError;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.ErrorManager;

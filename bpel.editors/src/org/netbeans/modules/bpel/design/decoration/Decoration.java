@@ -30,6 +30,8 @@ public class Decoration {
     
     private TextstyleDescriptor textstyle;
     
+    private LabelStyleDescriptor labelStyle;
+    
     private ComponentsDescriptor components;
     
     private StripeDescriptor stripe;
@@ -57,6 +59,8 @@ public class Decoration {
                 glow = (GlowDescriptor) d;
             } else if (d instanceof StrokeDescriptor){
                 stroke = (StrokeDescriptor) d;
+            } else if (d instanceof LabelStyleDescriptor) {
+                labelStyle = (LabelStyleDescriptor) d;
             } else if (d instanceof TextstyleDescriptor){
                 textstyle = (TextstyleDescriptor) d;
             } else if (d instanceof ComponentsDescriptor){
@@ -87,8 +91,10 @@ public class Decoration {
     public DimmDescriptor getDimmed() {
         return dimmed;
     }
-    
-    
+
+    public LabelStyleDescriptor getLabelStyle() {
+        return labelStyle;
+    }
     
     public StrokeDescriptor getStroke() {
         return stroke;
@@ -118,7 +124,10 @@ public class Decoration {
     public boolean hasTextstyle(){
         return (textstyle != null);
     }
-    
+   
+    public boolean hasLabelStyle(){
+        return (labelStyle != null);
+    }
     
     public boolean  hasComponents(){
         return (components != null);
@@ -132,24 +141,28 @@ public class Decoration {
     
     
     public Decoration combineWith(Decoration d) {
-        if (d == null){
+        if (d == null) {
             return this;
         }
         
-        if (d.hasGlow()){
+        if (d.hasGlow()) {
             glow = d.getGlow();
         }
         
-        if (d.hasStroke()){
+        if (d.hasStroke()) {
             stroke = d.getStroke();
         }
         
-        if (d.hasDimmed()){
+        if (d.hasDimmed()) {
             dimmed = d.getDimmed();
         }
         
-        if (d.hasTextstyle()){
+        if (d.hasTextstyle()) {
             textstyle = d.getTextstyle();
+        }
+        
+        if (d.hasLabelStyle()) {
+            labelStyle = d.getLabelStyle();
         }
         
         if (d.hasComponents()){

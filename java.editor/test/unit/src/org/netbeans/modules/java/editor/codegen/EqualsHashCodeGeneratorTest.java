@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -462,6 +465,105 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         TaskImpl t = new TaskImpl();
 
         js.runModificationTask(t);
+    }
+
+    public void test156994() throws Exception {
+        EqualsHashCodeGenerator.randomNumber = 1;
+
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {\n" +
+                             "  private float f;\n" +
+                             "  private double d;\n" +
+                             "  private long l;\n" +
+                             "  private boolean b;\n" +
+                             "  private char c;\n" +
+                             "  private E e;\n";
+
+        String what2 =
+            "  public enum E {A, B;}\n}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t).commit();
+
+        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
+
+        String golden = "class X {\n" +
+                        "  private float f;\n" +
+                        "  private double d;\n" +
+                        "  private long l;\n" +
+                        "  private boolean b;\n" +
+                        "  private char c;\n" +
+                        "  private E e;\n" +
+                        "  public enum E {A, B;}\n" +
+                        "    @Override\n" +
+                        "    public int hashCode() {\n" +
+                        "        int hash = 1;\n" +
+                        "        hash = 1 * hash + Float.floatToIntBits(this.f);\n" +
+                        "        hash = 1 * hash + (int) (Double.doubleToLongBits(this.d) ^ (Double.doubleToLongBits(this.d) >>> 32));\n" +
+                        "        hash = 1 * hash + (int) (this.l ^ (this.l >>> 32));\n" +
+                        "        hash = 1 * hash + this.b ? 1 : 0;\n" +
+                        "        hash = 1 * hash + this.c;\n" +
+                        "        hash = 1 * hash + (this.e != null ? this.e.hashCode() : 0);\n" +
+                        "        return hash;\n" +
+                        "    }\n" +
+                        "    @Override\n" +
+                        "    public boolean equals(Object obj) {\n" +
+                        "        if (obj == null) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (getClass() != obj.getClass()) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        final X other = (X) obj;\n" +
+                        "        if (Float.floatToIntBits(this.f) != Float.floatToIntBits(other.f)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (Double.doubleToLongBits(this.d) != Double.doubleToLongBits(other.d)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.l != other.l) {\n" +
+                        "            return false;\n" +
+                        "        }" +
+                        "        if (this.b != other.b) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.c != other.c) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.e != other.e) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}\n";
+
+        result = result.replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
+
+        assertEquals(golden, result);
     }
 
     private static final class DD extends DialogDisplayer {

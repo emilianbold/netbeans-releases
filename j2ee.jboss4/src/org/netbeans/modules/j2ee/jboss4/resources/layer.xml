@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,7 +19,7 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
 by Sun in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
@@ -49,8 +52,10 @@ made subject to such option by the copyright holder.
                 <file name="Descriptor" url="nbdep.xml"/>
                 
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.create"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^jboss-deployer:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 
@@ -67,8 +72,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.jboss4.Bundle#SERVER_NAME"/>
                 </file>

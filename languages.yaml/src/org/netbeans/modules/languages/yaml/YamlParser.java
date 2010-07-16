@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -126,36 +129,40 @@ public class YamlParser extends Parser {
         return result;
     }
 
-    // for test package private
-    YamlParserResult parse(String source, Snapshot snapshot) {
-        // TODO
+    // package private for unit tests
+    static String replacePhpFragments(String source) {
         // this is a hack. The right solution would be to create a toplevel language, which
         // will have embeded yaml and php.
         // This code replaces php fragments with space, because jruby parser fails
         // on this.
         int startReplace = source.indexOf("<?");
+        if (startReplace == -1) {
+            return source;
+        }
+
+        StringBuilder result = new StringBuilder(source);
+
         while (startReplace > -1) {
-            int endReplace = source.indexOf("?>", startReplace);
+            int endReplace = result.indexOf("?>", startReplace);
             if (endReplace > -1) {
                 endReplace = endReplace + 1;
-                String replaceString = "";
-                for (int i = 0; i < source.length(); i++) {
-                    if (startReplace <= i && i <= endReplace) {
-                        replaceString = replaceString + ' ';
-                    }
-                    else {
-                        replaceString = replaceString + source.charAt(i);
-                    }
+                StringBuilder spaces = new StringBuilder(endReplace - startReplace);
+                for (int i = 0; i <= endReplace - startReplace; i++) {
+                    spaces.append(' ');
                 }
-                source = replaceString;
-                startReplace = source.indexOf("<?", endReplace);
-            }
-            else {
+                result.replace(startReplace, endReplace + 1, spaces.toString());
+                startReplace = result.indexOf("<?", endReplace);
+            } else {
                 startReplace = -1;
             }
         }
+        return result.toString();
+    }
+    // for test package private
+    YamlParserResult parse(String source, Snapshot snapshot) {
+        
+        source = replacePhpFragments(source);
 
-        // end of the hack
         try {
             if (isTooLarge(source)) {
                 return resultForTooLargeFile(snapshot);

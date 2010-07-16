@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.openide.awt;
 
 import javax.swing.JComponent;
+import org.openide.util.Utilities;
 
 /**
  * Dynamic result of a {@link org.openide.util.actions.Presenter.Menu} or {@link org.openide.util.actions.Presenter.Popup}. If the presenters return
@@ -66,4 +70,17 @@ public interface DynamicMenuContent {
      * @return a new set of items to show in menu. Can be either an updated old set of instances or a completely new one.
      */
     public JComponent[] synchMenuPresenters(JComponent[] items);
+
+    /**
+     * Marker for actions which should be hidden rather than merely disabled.
+     * {@link Utilities#actionsToPopup(Action[],Lookup)} will skip over any disabled
+     * actions which have this property set to true, unless they implement
+     * {@link org.openide.util.actions.Presenter.Popup}.
+     * This is a convenient way to make context menu items disappear when disabled;
+     * for more complex cases you still need to have a popup presenter with dynamic
+     * menu content.
+     * @since org.openide.awt 7.22
+     */
+    String HIDE_WHEN_DISABLED = "hideWhenDisabled"; // NOI18N
+
 }

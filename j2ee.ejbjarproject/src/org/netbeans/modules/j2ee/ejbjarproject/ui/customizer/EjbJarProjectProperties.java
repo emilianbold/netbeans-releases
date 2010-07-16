@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -206,6 +212,7 @@ final public class EjbJarProjectProperties {
     // CustomizerLibraries
     ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
+    DefaultListModel JAVAC_PROCESSORPATH_MODEL;
     
     //DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
@@ -222,6 +229,9 @@ final public class EjbJarProjectProperties {
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     
     // CustomizerCompileTest
                 
@@ -264,6 +274,12 @@ final public class EjbJarProjectProperties {
     
     private String includes, excludes;
     
+    //Hotfix of the issue #70058 (copied from J2seProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
+    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
+    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+
     EjbJarProject getProject() {
         return project;
     }
@@ -311,13 +327,19 @@ final public class EjbJarProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
+        String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
+        processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
+        JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (Profile.JAVA_EE_5.equals(Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM)))) {
+        Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+        if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.6");
+        } else if (Profile.JAVA_EE_5.equals(profile)) {
             minimalSourceLevel = new SpecificationVersion("1.5");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
@@ -333,6 +355,13 @@ final public class EjbJarProjectProperties {
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
         JAVAC_DEBUG_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVAC_DEBUG );
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null)
+            annotationProcessors = ""; //NOI18N
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
         // CustomizerJar
@@ -354,7 +383,6 @@ final public class EjbJarProjectProperties {
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
 
         // CustomizerRun
-        Profile profile = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
             privateProperties.getProperty(J2EE_SERVER_INSTANCE),
             profile,
@@ -369,6 +397,7 @@ final public class EjbJarProjectProperties {
             saveLibrariesLocation();
             // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     storeProperties();
                     return null;
@@ -428,6 +457,7 @@ final public class EjbJarProjectProperties {
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ), null );
+        String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
                 
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -448,6 +478,7 @@ final public class EjbJarProjectProperties {
                 
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
@@ -459,29 +490,18 @@ final public class EjbJarProjectProperties {
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
+        Profile newJ2eeVersion = J2eePlatformUiSupport.getJavaEEProfile(J2EE_PLATFORM_MODEL.getSelectedItem());
         
-        // Configure new server instance
-        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
-                EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH);
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties, instanceId,
+                    cs, javaClasspathList,
+                    new CallbackImpl(project), project,
+                    newJ2eeVersion, J2eeModule.Type.EJB);
         }
-
-        // Configure server libraries (if any)
-        boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, javaClasspathList);
-
-        // Configure classpath from server (no server libraries)
-        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, true);
-        }        
         
         // Update the deployment descriptor if upgrading from J2EE 1.3 to 1.4 and set the new J2EE spec version
         Profile oldJ2eeVersion = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
-        Profile newJ2eeVersion = J2eePlatformUiSupport.getJavaEEProfile(J2EE_PLATFORM_MODEL.getSelectedItem());
         if (oldJ2eeVersion != null && newJ2eeVersion != null) {
             if (oldJ2eeVersion.equals(Profile.J2EE_13) && newJ2eeVersion.equals(Profile.J2EE_14)) {
                 org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModules[] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project);
@@ -505,6 +525,20 @@ final public class EjbJarProjectProperties {
 
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
+
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements())
+                sb.append(',');
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
 
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -538,12 +572,14 @@ final public class EjbJarProjectProperties {
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
@@ -600,15 +636,17 @@ final public class EjbJarProjectProperties {
         roots.putRoots(rootURLs,rootLabels);
     }
     
-    public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final EjbJarProject project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
-                    setNewServerInstanceValue(serverInstanceID, project, projectProps,
-                            privateProps, !serverLibUsed); 
+                    Profile prof = Profile.fromPropertiesString(projectProps.getProperty(J2EE_PLATFORM));
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                            null, null, new CallbackImpl(project), project, prof, J2eeModule.Type.EJB);
+
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -624,163 +662,21 @@ final public class EjbJarProjectProperties {
         additionalProperties.put(propertyName, propertyValue);
     }
     
-    private static void setNewServerInstanceValue(String newServInstID, Project project,
-            EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-
-        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
-
-        // update j2ee.platform.classpath
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((EjbJarProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
+    //Hotfix of the issue #70058 (copied from J2SEProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static String encodeBoolean (boolean value, Integer kind) {
+        if ( kind == BOOLEAN_KIND_ED ) {
+            return value ? "on" : "off"; // NOI18N
         }
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
-        if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.type (throws NPE)
-            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-
-            removeServerClasspathProperties(privateProps);
-            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT);
-            
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-            return;
+        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+            return value ? "yes" : "no";
         }
-        ((EjbJarProject)project).registerJ2eePlatformListener(j2eePlatform);
-        if (setFromServer) {
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-
-            // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
-                privateProps.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                        Utils.toClasspathString(ejbClasspath));
-            } else {
-                privateProps.remove(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH);
-            }
-
-            // update j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-            }
-        }
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.EJB, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (deployAntPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
+        else {
+            return value ? "true" : "false"; // NOI18N
         }
     }
+
     
-    private static void removeServerClasspathProperties(EditableProperties props) {
-        props.remove(J2EE_PLATFORM_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-    }
-
-    private static boolean setServerClasspathProperties(EditableProperties props,
-            EditableProperties privateProps, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-
-        if (serverItems.isEmpty()) {
-            removeServerClasspathProperties(props);
-            return false;
-        }
-        removeServerClasspathProperties(privateProps);
-        
-        props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsgenerate")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsinterop")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsjwsdp")); // NOI18N
-        return true;
-    }
-
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
-    }
-
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
@@ -802,4 +698,24 @@ final public class EjbJarProjectProperties {
     }
     
     
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private EjbJarProject project;
+
+        public CallbackImpl(EjbJarProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+
+    }
+
 }

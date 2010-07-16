@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,9 @@ package org.netbeans.modules.jmx.test.actions;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OpenAction;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
@@ -56,32 +58,21 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * Check components and created files.
  */
 public class GenerateMBeanRegistrationActions extends ActionsTestCase {
+    private static boolean initialized;
     
     /** Need to be defined because of JUnit */
     public GenerateMBeanRegistrationActions(String name) {
         super(name);
         popupPath = ACTION_JMX + "|" + ACTION_GENERATE_MBEAN_REGISTRATION;
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new GenerateMBeanRegistrationActions("init"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test1"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test2"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test3"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test4"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test5"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test6"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test7"));
-        suite.addTest(new GenerateMBeanRegistrationActions("test8"));
-        return suite;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
     
     /**
@@ -89,7 +80,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
      */
     public void init() {
         
-        System.out.println("====================  init  ====================");
+        System.out.println("====================  setup GenerateMBeanRegistrationActions  ====================");
         
         System.out.println("Create new java class " + SIMPLE_1);
         createJavaFile(SIMPLE_1);
@@ -148,11 +139,11 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_3);
         System.out.println("Open java file " + SIMPLE_3);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_3);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled(jmio));
     }
     
     public void test2() {
@@ -165,14 +156,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -220,14 +211,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -265,14 +256,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -338,14 +329,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -389,14 +380,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -442,14 +433,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -493,14 +484,14 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);

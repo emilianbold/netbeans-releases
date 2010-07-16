@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,9 +51,14 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
@@ -267,7 +275,10 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
-        ArrayList<PopupItem> modelList = new ArrayList<PopupItem>();
+        List<PopupItem> modelList = new ArrayList<PopupItem>();
+        List<Issue> recentIssues = new ArrayList<Issue>(BugtrackingUtil.getRecentIssues(repository));
+        Collections.sort(currentHitlist, new IssueComparator(recentIssues));
+
         for (PopupItem item : currentHitlist) {
             modelList.add(item);
             if(modelList.size() > 4 && !fullList) {
@@ -288,6 +299,50 @@ public class QuickSearchPopup extends javax.swing.JPanel
             modelList.add(new SearchItem(criteria));
         }
         rModel.setContent(modelList);
+    }
+
+    private class IssueComparator implements Comparator<PopupItem> {
+        private final List<Issue> recentIssues;
+
+        public IssueComparator(List<Issue> recentIssues) {
+            this.recentIssues = recentIssues;
+        }
+
+        @Override
+        public int compare(PopupItem i1, PopupItem i2) {
+            if(!(i1 instanceof IssueItem)) {
+                return -1;
+            }
+            if(!(i2 instanceof IssueItem)) {
+                return 1;
+            }
+            
+            IssueItem ii1 = (IssueItem) i1;
+            IssueItem ii2 = (IssueItem) i2;
+            int idx1 = getRecentIssueIdx(ii1.getIssue());
+            int idx2 = getRecentIssueIdx(ii2.getIssue());
+
+            if(idx1 > -1 && idx2 > -1) {
+                return idx1 > idx2 ? 1 : (idx2 > idx1 ? -1 : 0);
+            }
+            if(idx1 > -1) {
+                return -1;
+            }
+            if(idx2 > -1) {
+                return 1;
+            }
+            return ii1.getIssue().getID().compareTo(ii2.getIssue().getID());
+        }
+
+        private int getRecentIssueIdx(Issue issue) {
+            for (int i = 0; i < recentIssues.size(); i++) {
+                Issue recentIssue = recentIssues.get(i);
+                if(recentIssue.getID().equals(issue.getID())) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 
 

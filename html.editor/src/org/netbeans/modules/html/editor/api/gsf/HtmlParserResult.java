@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,14 @@
 package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
@@ -57,6 +65,7 @@ import org.netbeans.modules.html.editor.HtmlVersion;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * HTML parser result
@@ -65,11 +74,12 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlParserResult extends ParserResult {
 
-    /** 
+    /**
      * Used as a key of a swing document to find a default fallback dtd.
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
-
+    private static final String UNEXPECTED_TOKEN = "unexpected_token"; //NOI18N
+    
     private SyntaxParserResult result;
     private List<Error> errors;
     private boolean isValid = true;
@@ -93,7 +103,7 @@ public class HtmlParserResult extends ParserResult {
      * 1) doctype declaration content
      * 2) if not present, xhtml file extension
      * 3) if not xhtml extension, present of default XHTML namespace declaration
-     * 
+     *
      */
     public HtmlVersion getHtmlVersion() {
         String publicId = result.getPublicID();
@@ -147,7 +157,7 @@ public class HtmlParserResult extends ParserResult {
         String fallbackPublicID = version == HtmlVersion.UNKNOWN ?
             HtmlVersion.HTML41.getFallbackPublicId() :
             version.getFallbackPublicId();
-        
+
         return org.netbeans.editor.ext.html.dtd.Registry.getDTD(fallbackPublicID, null);
     }
 
@@ -157,7 +167,7 @@ public class HtmlParserResult extends ParserResult {
         for(String uri : getNamespaces().keySet()) {
             roots.put(uri, root(uri));
         }
-        
+
         //non xhtml workaround, add the default namespaces if missing
         if(!roots.containsValue(root())) {
             roots.put(null, root());
@@ -235,7 +245,9 @@ public class HtmlParserResult extends ParserResult {
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
-            errors = new ArrayList<Error>(findErrors());
+            errors = new ArrayList<Error>();
+            errors.addAll(findErrors());
+            errors.addAll(findLexicalErrors());
         }
         return errors;
     }
@@ -245,39 +257,90 @@ public class HtmlParserResult extends ParserResult {
         this.isValid = false;
     }
 
+    private List<Error> findLexicalErrors() {
+        TokenHierarchy th = getSnapshot().getTokenHierarchy();
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+        if (ts == null) {
+            return Collections.emptyList();
+        }
+
+        final List<Error> lexicalErrors = new ArrayList<Error>();
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id() == HTMLTokenId.ERROR) {
+                //some error in the node, report
+                String msg = NbBundle.getMessage(HtmlParserResult.class, "MSG_UnexpectedToken", ts.token().text()); //NOI18N
+                DefaultError error =
+                        new DefaultError(UNEXPECTED_TOKEN,
+                        msg,
+                        msg,
+                        getSnapshot().getSource().getFileObject(),
+                        ts.offset(),
+                        ts.offset() + ts.token().length(),
+                        false /* not line error */,
+                        Severity.ERROR);
+                
+                lexicalErrors.add(error);
+            }
+        }
+        return lexicalErrors;
+
+    }
+
     private List<Error> findErrors() {
         final List<Error> _errors = new ArrayList<Error>();
-        AstNodeUtils.visitChildren(root(),
-                new AstNodeVisitor() {
 
-                    public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.ENDTAG ||
-                                node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+        AstNodeVisitor errorsCollector = new AstNodeVisitor() {
 
-                            for (Description desc : node.getDescriptions()) {
-                                if (desc.getType() < Description.WARNING) {
-                                    continue;
-                                }
-                                //some error in the node, report
-                                Error error =
-                                        DefaultError.createDefaultError("tag_error", //NOI18N
-                                        desc.getText(),
-                                        desc.getText(),
-                                        getSnapshot().getSource().getFileObject(),
-                                        getSnapshot().getOriginalOffset(desc.getFrom()),
-                                        getSnapshot().getOriginalOffset(desc.getTo()),
-                                        false /* not line error */,
-                                        desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
-                                _errors.add(error);
+            @Override
+            public void visit(AstNode node) {
+                if (node.type() == AstNode.NodeType.OPEN_TAG
+                        || node.type() == AstNode.NodeType.ENDTAG
+                        || node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
-                            }
+                    for (Description desc : node.getDescriptions()) {
+                        if (desc.getType() < Description.WARNING) {
+                            continue;
                         }
+                        //some error in the node, report
+                        DefaultError error =
+                                new DefaultError(desc.getKey(), //NOI18N
+                                desc.getText(),
+                                desc.getText(),
+                                getSnapshot().getSource().getFileObject(),
+                                desc.getFrom(),
+                                desc.getTo(),
+                                false /* not line error */,
+                                desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+
+                        error.setParameters(new Object[]{node});
+
+                        _errors.add(error);
+
                     }
-                });
+                }
+            }
+        };
+
+        Collection<AstNode> roots = new ArrayList<AstNode>();
+        roots.addAll(roots().values());
+        roots.add(root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+        for(AstNode root : roots) {
+            AstNodeUtils.visitChildren(root, errorsCollector);
+        }
 
         return _errors;
 
+    }
+
+    public static AstNode getBoundAstNode(Error e) {
+        if(e instanceof DefaultError) {
+            if(e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof AstNode) {
+                return (AstNode)e.getParameters()[0];
+            }
+        }
+
+        return null;
     }
 
     static {
@@ -286,6 +349,7 @@ public class HtmlParserResult extends ParserResult {
 
     private static class Accessor extends HtmlParserResultAccessor {
 
+        @Override
         public HtmlParserResult createInstance(Snapshot snapshot, SyntaxParserResult result) {
             return new HtmlParserResult(snapshot, result);
         }

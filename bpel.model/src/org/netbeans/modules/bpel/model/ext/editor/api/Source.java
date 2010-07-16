@@ -38,7 +38,7 @@ public enum Source implements EnumValue {
 
     }
 
-    Source( String str ) {
+    Source( String str) {
         myValue = str;
     }
 

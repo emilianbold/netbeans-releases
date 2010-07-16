@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ public final class Profile {
 
     public static final Comparator<Profile> UI_COMPARATOR = new Comparator<Profile>() {
 
+        @Override
         public int compare(Profile o1, Profile o2) {
             return -(o1.order - o2.order);
         }
@@ -74,8 +78,6 @@ public final class Profile {
 
     private final int order;
 
-    private final String canonicalName;
-
     // cache
     private final String propertiesString;
 
@@ -83,7 +85,6 @@ public final class Profile {
 
     private Profile(int order, String canonicalName, String profile, String bundleKey) {
         this.order = order;
-        this.canonicalName = canonicalName;
         this.bundleKey = bundleKey;
 
         StringBuilder builder = new StringBuilder(canonicalName);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.jrubyparser.ast.CallNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.FCallNode;
@@ -112,7 +116,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         final String prefix = request.prefix;
         final int lexOffset = request.lexOffset;
-        final TokenHierarchy<?> th = request.th;
+        final TokenHierarchy<Document> th = request.th;
         final AstPath path = request.path;
         final QuerySupport.Kind kind = request.kind;
         final Node target = request.target != null ? AstUtilities.findNextNonNewLineNode(request.target) : null;
@@ -142,7 +146,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
-        RubyType type = RubyType.createUnknown();
+        RubyType type = RubyType.unknown();
         final RubyType callType = call.getType();
         if (callType.isKnown() && !call.isLHSConstant()) {
             type = callType;
@@ -244,7 +248,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
                 // Add methods in the class (without an FQN)
                 for (String realType : type.getRealTypes()) {
-                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind));
+                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind, true, true));
                 }
             }
         }
@@ -270,6 +274,11 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
             // Do not offer instance methods of Module class as instance methods (issue #110267)
             if (!skipInstanceMethods && method.doesBelongToModule()) {
+                continue;
+            }
+
+            // do not offer static methods for instances
+            if (!skipInstanceMethods && method.isStatic()) {
                 continue;
             }
 
@@ -311,7 +320,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
             }
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
     }
 
     private Node findClosestMatchingNode(Node target) {
@@ -323,6 +332,9 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
         // this method tries to find the real target based on the lhs.
         String name = AstUtilities.getCallName(target);
         String lhs = call.getLhs();
+        if (lhs == null) {
+            return target;
+        }
         if (lhs.equals(name)) {
             return target;
         }
@@ -682,7 +694,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
             }
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
 
     }
 }

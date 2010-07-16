@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,7 +90,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     public BasicConfVisualPanel(final NewModuleProjectData data) {
         super(data);
         initComponents();
-        initAccessibility();
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
                 checkValues(true, false, false); 
@@ -100,6 +102,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             generateLayer.setVisible(false);
             layerDL = null;
             layerAL = null;
+            // We do not intend to support OSGi-style lib wrappers.
+            // These would need to use Bundle-ClassPath etc.
+            osgi.setVisible(false);
         } else {
             layerDL = new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
@@ -120,15 +125,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 checkValues(false, true, false); 
             }
         };
-    }
-    
-    private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_BasicConfVisualPanel"));
-        bundleValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BundleValue"));
-        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CodeNameBaseValue"));
-        displayNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayNameValue"));
-        layerValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_LayerValue"));
-        generateLayer.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_GenerateLayer"));
     }
     
     private boolean checkCodeNameBase() {
@@ -224,6 +220,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         getData().setProjectDisplayName(displayNameValue.getText());
         getData().setBundle(getBundleValue());
         getData().setLayer(getLayerValue());
+        getData().setOsgi(osgi.isSelected());
     }
     
     private String getCodeNameBaseValue() {
@@ -240,20 +237,21 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private boolean cnbIsAlreadyInSuite(String suiteDir, String cnb) {
-        boolean result = false;
         FileObject suiteDirFO = FileUtil.toFileObject(new File(suiteDir));
         try {
             Project suite = ProjectManager.getDefault().findProject(suiteDirFO);
+            if (suite == null) { // #180644
+                return false;
+            }
             for (Project p : SuiteUtils.getSubProjects(suite)) {
                 if (ProjectUtils.getInformation(p).getName().equals(cnb)) {
-                    result = true;
-                    break;
+                    return true;
                 }
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
-        return result;
+        return false;
     }
     
     public @Override void addNotify() {
@@ -306,16 +304,17 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
 
         confPanel = new javax.swing.JPanel();
         codeNameBase = new javax.swing.JLabel();
-        displayName = new javax.swing.JLabel();
-        bundle = new javax.swing.JLabel();
-        layer = new javax.swing.JLabel();
         codeNameBaseValue = new javax.swing.JTextField();
-        displayNameValue = new javax.swing.JTextField();
-        bundleValue = new javax.swing.JTextField();
-        layerValue = new javax.swing.JTextField();
         filler = new javax.swing.JLabel();
         cnbHint = new javax.swing.JLabel();
+        displayName = new javax.swing.JLabel();
+        displayNameValue = new javax.swing.JTextField();
+        bundle = new javax.swing.JLabel();
+        bundleValue = new javax.swing.JTextField();
         generateLayer = new javax.swing.JCheckBox();
+        layer = new javax.swing.JLabel();
+        layerValue = new javax.swing.JTextField();
+        osgi = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -327,64 +326,20 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(1, 5, 6, 12);
         confPanel.add(codeNameBase, gridBagConstraints);
-
-        displayName.setLabelFor(displayNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(displayName, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_ModuleDisplayName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 12);
-        confPanel.add(displayName, gridBagConstraints);
-
-        bundle.setLabelFor(bundleValue);
-        org.openide.awt.Mnemonics.setLocalizedText(bundle, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_LocalizingBundle")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 5, 0, 12);
-        confPanel.add(bundle, gridBagConstraints);
-
-        layer.setLabelFor(layerValue);
-        org.openide.awt.Mnemonics.setLocalizedText(layer, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_XMLLayer")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 20, 0, 12);
-        confPanel.add(layer, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
         confPanel.add(codeNameBaseValue, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        confPanel.add(displayNameValue, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
-        confPanel.add(bundleValue, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        confPanel.add(layerValue, gridBagConstraints);
+        codeNameBaseValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_CodeNameBaseValue")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
         confPanel.add(filler, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(cnbHint, getMessage("LBL_CodeNameBaseHint"));
@@ -396,6 +351,39 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         confPanel.add(cnbHint, gridBagConstraints);
 
+        displayName.setLabelFor(displayNameValue);
+        org.openide.awt.Mnemonics.setLocalizedText(displayName, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_ModuleDisplayName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 12);
+        confPanel.add(displayName, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        confPanel.add(displayNameValue, gridBagConstraints);
+        displayNameValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_DisplayNameValue")); // NOI18N
+
+        bundle.setLabelFor(bundleValue);
+        org.openide.awt.Mnemonics.setLocalizedText(bundle, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_LocalizingBundle")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 5, 0, 12);
+        confPanel.add(bundle, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
+        confPanel.add(bundleValue, gridBagConstraints);
+        bundleValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_BundleValue")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(generateLayer, getMessage("CTL_GenerateLayer")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -406,6 +394,33 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         confPanel.add(generateLayer, gridBagConstraints);
+        generateLayer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_GenerateLayer")); // NOI18N
+
+        layer.setLabelFor(layerValue);
+        org.openide.awt.Mnemonics.setLocalizedText(layer, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_XMLLayer")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 20, 0, 12);
+        confPanel.add(layer, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        confPanel.add(layerValue, gridBagConstraints);
+        layerValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_LayerValue")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(osgi, NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel.osgi")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        confPanel.add(osgi, gridBagConstraints);
+        osgi.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel.osgi.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -416,6 +431,8 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         add(confPanel, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_BasicConfVisualPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -431,6 +448,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JCheckBox generateLayer;
     private javax.swing.JLabel layer;
     private javax.swing.JTextField layerValue;
+    private javax.swing.JCheckBox osgi;
     // End of variables declaration//GEN-END:variables
     
 }

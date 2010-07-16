@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -132,16 +135,29 @@ final class ActionFilterNode extends FilterNode {
         this.mode = mode;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         Action[] result = initActions();        
         return result;
     }
 
+    @Override
+    public String getShortDescription() {
+        final DataObject dobj = getLookup().lookup(DataObject.class);
+        FileObject pf;
+        if (dobj != null && (pf = dobj.getPrimaryFile()) != null) {
+            return FileUtil.getFileDisplayName(pf);
 
+        } else {
+            return super.getShortDescription();
+        }
+    }
+
+    @Override
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
-            if (actions.length > 0 && (actions[0] instanceof OpenAction || actions[0] instanceof EditAction)) {
+            if (actions.length > 0 && isOpenAction(actions[0])) {
                 return actions[0];
             }
         }
@@ -153,11 +169,7 @@ final class ActionFilterNode extends FilterNode {
             List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 for (Action superAction : super.getActions(false)) {
-                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
-                        result.add(superAction);
-                    }
-                    if (superAction != null &&
-                        "org.netbeans.api.actions.Openable".equals(superAction.getValue("type"))) { //NOI18N
+                    if (isOpenAction(superAction)) {
                         result.add(superAction);
                     }
                 }
@@ -180,6 +192,19 @@ final class ActionFilterNode extends FilterNode {
         return actionCache;
     }
 
+    private static boolean isOpenAction(final Action action) {
+        if (action == null) {
+            return false;
+        }
+        if (action instanceof OpenAction || action instanceof EditAction) {
+            return true;
+        }
+        if ("org.netbeans.api.actions.Openable".equals(action.getValue("type"))) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+
     private static class ActionFilterChildren extends FilterNode.Children {
 
         private final int mode;
@@ -191,6 +216,7 @@ final class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
+        @Override
         protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
@@ -226,6 +252,7 @@ final class ActionFilterNode extends FilterNode {
             this.resource = resource;
         }
 
+        @Override
         public boolean hasJavadoc() {
             try {
                 return resource != null && JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots().length>0;
@@ -234,6 +261,7 @@ final class ActionFilterNode extends FilterNode {
             }
         }
 
+        @Override
         public void showJavadoc() {
             try {
                 String relativeName = FileUtil.getRelativePath(cpRoot,resource);
@@ -280,12 +308,14 @@ final class ActionFilterNode extends FilterNode {
        }
 
 
+        @Override
        public boolean canRemove () {
             //Allow to remove only entries from PROJECT_PROPERTIES, same behaviour as the project customizer
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             return props.getProperty (classPathId) != null;
         }
 
+        @Override
        public Project remove() {        
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.           

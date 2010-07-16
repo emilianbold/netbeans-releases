@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -162,7 +166,7 @@ public class OpenSolaris extends KnownProject {
             if (TRACE) {System.out.println(OpenSolaris.BUILD_SCRIPT+"="+buildScript);} //NOI18N
             if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "SCANNING_LOG"));} //NOI18N
             sources = scan(nightly_log, root);
-            if (sources == null || sources.size() == 0) {
+            if (sources == null || sources.isEmpty()) {
                 return false;
             }
             return createImpl();
@@ -444,66 +448,82 @@ public class OpenSolaris extends KnownProject {
             this.root = root;
             this.configurations = provider.analyze(null,null);
         }
+        @Override
         public Project getProject() {
             return project;
         }
 
+        @Override
         public void setProject(Project project) {
             this.project = project;
         }
 
+        @Override
         public DiscoveryProvider getProvider() {
             return provider;
         }
 
+        @Override
         public String getProviderID() {
             return provider.getID();
         }
 
+        @Override
         public void setProvider(DiscoveryProvider provider) {
             this.provider = provider;
         }
 
+        @Override
         public String getRootFolder() {
             return root;
         }
 
+        @Override
         public void setRootFolder(String root) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getBuildResult() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setBuildResult(String binaryPath) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getAditionalLibraries() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setAditionalLibraries(String binaryPath) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getBuildLog() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setBuildLog(String logFile) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getLevel() {
             return ConsolidationStrategyPanel.FILE_LEVEL;
         }
 
+        @Override
         public void setLevel(String level) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public List<ProjectConfiguration> getConfigurations() {
             if (projectConfigurations ==null) {
                 provider.analyze(null,null);
@@ -522,10 +542,12 @@ public class OpenSolaris extends KnownProject {
             return projectConfigurations;
         }
 
+        @Override
         public void setConfigurations(List<ProjectConfiguration> configuration) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public List<String> getIncludedFiles() {
             if (includedFiles == null) {
                 includedFiles = new ArrayList<String>();
@@ -537,31 +559,48 @@ public class OpenSolaris extends KnownProject {
             return includedFiles;
         }
 
+        @Override
         public void setIncludedFiles(List<String> includedFiles) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public boolean isInvokeProvider() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setInvokeProvider(boolean invoke) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public boolean isSimpleMode() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setSimpleMode(boolean simple) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setMessage(String message) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void clean() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public String getCompilerName() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public void setCompilerName(String compiler) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
@@ -573,38 +612,47 @@ public class OpenSolaris extends KnownProject {
             this.sources = sources;
             this.root = root;
         }
+        @Override
         public String getID() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getName() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public String getDescription() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public List<String> getPropertyKeys() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public ProviderProperty getProperty(String key) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void clean() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public boolean isApplicable(ProjectProxy project) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
-        public int canAnalyze(ProjectProxy project) {
+        @Override
+        public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public List<Configuration> analyze(ProjectProxy project, Progress progress) {
             List<Configuration> confs = new ArrayList<Configuration>();
             Configuration conf = new Configuration() {
@@ -612,6 +660,7 @@ public class OpenSolaris extends KnownProject {
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
 
+                @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
@@ -632,10 +681,12 @@ public class OpenSolaris extends KnownProject {
                     return res;
                 }
 
+                @Override
                 public List<Configuration> getDependencies() {
                     return null;
                 }
 
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null) {
                         myFileProperties = getSourceFileProperties();
@@ -643,6 +694,7 @@ public class OpenSolaris extends KnownProject {
                     return myFileProperties;
                 }
 
+                @Override
                 public List<String> getIncludedFiles() {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
@@ -666,6 +718,7 @@ public class OpenSolaris extends KnownProject {
             return confs;
         }
 
+        @Override
         public void stop() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }

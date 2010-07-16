@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -92,7 +95,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private Project project;
     boolean waitingForScan;
     boolean waitingForEntities;
-    private PersistenceUnit persistenceUnit;
+    //private PersistenceUnit persistenceUnit;
+    private boolean createPU = true;//right now this panel is used in wizards with required pu (but need to handle if pu already created)
 
     private EntityClosure entityClosure;
 
@@ -104,6 +108,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         initComponents();
         ListSelectionListener selectionListener = new ListSelectionListener() {
 
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 updateButtons();
             }
@@ -113,12 +118,10 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
 
     /**
-     * @return PersistenceUnit that was created by invoking the PU wizard from
-     * this wizard or <code>null</code> if there was already a persistence unit, i.e.
-     * there was no reason to create a new persistence unit from this wizard.
+     * @return if wizard have selected option to create new pu.
      */
-    public PersistenceUnit getPersistenceUnit() {
-        return persistenceUnit;
+    public boolean getCreatePersistenceUnit() {
+        return createPU && createPUCheckbox.isVisible();//if checkbox isn't visible, regardless of selection, pu creation is not required
     }
 
     private Set<String> getSelectedEntities(JList list) {
@@ -143,7 +146,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         buttonAddAll = new javax.swing.JButton();
         buttonRemoveAll = new javax.swing.JButton();
         labelSelectedEntities = new javax.swing.JLabel();
-        createPUButton = new javax.swing.JButton();
+        createPUCheckbox = new javax.swing.JCheckBox();
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
@@ -159,7 +162,6 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         cbAddRelated.setSelected(true);
         cbAddRelated.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferenced")); // NOI18N
         cbAddRelated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddRelated.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbAddRelated.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbAddRelatedActionPerformed(evt);
@@ -242,11 +244,13 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         labelSelectedEntities.setLabelFor(listSelected);
         labelSelectedEntities.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntities")); // NOI18N
 
-        createPUButton.setMnemonic(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MNE_CreatePersistenceUnit").charAt(0));
-        createPUButton.setText(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnit")); // NOI18N
-        createPUButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createPUButtonActionPerformed(evt);
+        createPUCheckbox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(createPUCheckbox, org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnit")); // NOI18N
+        createPUCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        createPUCheckbox.setEnabled(false);
+        createPUCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                createPUCheckboxItemStateChanged(evt);
             }
         });
 
@@ -259,17 +263,17 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(labelAvailableEntities)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(panelButtons, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(0, 0, 0))
                     .add(layout.createSequentialGroup()
-                        .add(createPUButton)
+                        .add(createPUCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(cbAddRelated)
                     .add(labelSelectedEntities)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -281,23 +285,18 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     .add(labelAvailableEntities))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                     .add(panelButtons, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(cbAddRelated)
-                        .add(31, 31, 31))
-                    .add(layout.createSequentialGroup()
-                        .add(createPUButton)
-                        .addContainerGap())))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbAddRelated)
+                    .add(createPUCheckbox))
+                .add(31, 31, 31))
         );
 
         cbAddRelated.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_IncludeReferencedCheckbox")); // NOI18N
         cbAddRelated.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_IncludeReferencedCheckbox")); // NOI18N
-        createPUButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_CreatePersistenceUnitButton")); // NOI18N
-        createPUButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_CreatePersistenceUnitButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbAddRelatedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddRelatedActionPerformed
@@ -307,14 +306,6 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
         changeSupport.fireChange();
     }//GEN-LAST:event_cbAddRelatedActionPerformed
-
-    private void createPUButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPUButtonActionPerformed
-        persistenceUnit = Util.buildPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
-        if (persistenceUnit != null) {
-            updatePersistenceUnitButton();
-            changeSupport.fireChange();
-        }
-    }//GEN-LAST:event_createPUButtonActionPerformed
 
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
         entityClosure.removeAllEntities();
@@ -346,6 +337,11 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         changeSupport.fireChange();
     }//GEN-LAST:event_buttonAddActionPerformed
 
+    private void createPUCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPUCheckboxItemStateChanged
+        createPU = createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
+
+    }//GEN-LAST:event_createPUCheckboxItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdd;
@@ -353,7 +349,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private javax.swing.JButton buttonRemove;
     private javax.swing.JButton buttonRemoveAll;
     private javax.swing.JCheckBox cbAddRelated;
-    private javax.swing.JButton createPUButton;
+    private javax.swing.JCheckBox createPUCheckbox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel labelAvailableEntities;
@@ -368,10 +364,10 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     boolean valid(WizardDescriptor wizard) {
         // check PU - not just warning, required
-        if (createPUButton.isVisible()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
-            return false;
-        }
+//        if (createPUButton.isVisible()) {
+//            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
+//            return false;
+//        }
         
         SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
         if (groups.length > 0) {
@@ -385,6 +381,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         if (!entityClosure.isModelReady()) {
             RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
 
+                @Override
                 public void run() {
                     entityClosure.waitModelIsReady();
                     changeSupport.fireChange();
@@ -412,6 +409,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         
         entityClosure = EntityClosure.create(entityClassScope, project);
         entityClosure.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 updateAddAllButton();
             }
@@ -449,7 +447,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
     
     public void updatePersistenceUnitButton() {
-        boolean visible = getPersistenceUnit() == null;
+        boolean visible = true;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {
             PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project);
             for (int i = 0; i < scopes.length; i++) {
@@ -468,7 +466,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 }
             }
         }
-        createPUButton.setVisible(visible);
+        createPUCheckbox.setVisible(visible);
     }
 
     private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
@@ -486,10 +484,12 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             refresh();
         }
 
+        @Override
         public int getSize() {
             return entities.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return entities.get(index);
         }
@@ -501,6 +501,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             return entities;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             refresh();
         }
@@ -519,6 +520,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
             if (value instanceof Entity) {

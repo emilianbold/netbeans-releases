@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes.actions;
 
+import javax.swing.KeyStroke;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentContainer;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
@@ -29,6 +30,12 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class DeleteAction extends TMapAbstractNodeAction {
+
+    private static final String DELETE_KEYSTROKE = "DELETE"; // NOI18N
+    public DeleteAction() {
+        super();
+        putValue(DeleteAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(DELETE_KEYSTROKE));
+    }
 
     @Override
     protected String getBundleName() {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.List;
+import java.util.Arrays;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -65,18 +68,22 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -87,7 +94,7 @@ import org.openide.util.Exceptions;
  */
 public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
-    public org.openide.util.HelpCtx getHelpCtx() {
+    public @Override org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HtmlKit.class);
     }
     static final long serialVersionUID = -1381945567613910297L;
@@ -140,23 +147,13 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
-            new ToggleBlockCommentAction(new HtmlCommentHandler()),
+            new ToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
-            new ExtKit.UncommentAction("") //NOI18N
+            new ExtKit.UncommentAction(""), //NOI18N
+            new HtmlNextWordAction(nextWordAction),
+            new HtmlPreviousWordAction(previousWordAction)
         };
         return TextAction.augmentList(super.createActions(), HtmlActions);
-    }
-
-    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument) doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -167,6 +164,212 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return true;
     }
 
+    //The HtmlKit is used only for .html documents, if the html code is embedded,
+    //another editor kit has to implement its own Next/PreviousWordAction-s or delegate
+    //to this implementation
+    public static class HtmlNextWordAction extends BaseAction {
+
+        private static final long serialVersionUID = -5722429169917082001L;
+
+        HtmlNextWordAction(String name) {
+            super(name, BaseAction.MAGIC_POSITION_RESET | BaseAction.ABBREV_RESET | BaseAction.UNDO_MERGE_RESET
+                  | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
+        }
+
+        protected int getNextWordOffset(JTextComponent target, int dotPos) throws BadLocationException {
+            TokenHierarchy hi = TokenHierarchy.get(target.getDocument());
+            TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
+            if(ts == null) {
+                return -1;
+            }
+
+            int diff = ts.move(dotPos);
+            if(!ts.moveNext()) {
+                return -1;
+            }
+
+            Token<HTMLTokenId> token = ts.token();
+            int offset = -1;
+            switch(token.id()) {
+                case ARGUMENT:
+                    //jump from attribute name into its value
+                    Token next = LexerUtils.followsToken(ts,
+                            Arrays.asList(new HTMLTokenId[]{HTMLTokenId.VALUE, HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_JAVASCRIPT}),
+                            false, false, HTMLTokenId.WS, HTMLTokenId.OPERATOR);
+                    if(next != null) {
+                        offset = ts.offset();
+                        if(WebUtils.isValueQuoted(ts.token().text())) {
+                            offset++; //jump after the leading quote
+                        }
+                    }
+                    break;
+                case TAG_OPEN_SYMBOL:
+                    //jump from tag open symbol "<" or "</" after its name
+                    next = LexerUtils.followsToken(ts,
+                            Arrays.asList(new HTMLTokenId[]{HTMLTokenId.TAG_OPEN,HTMLTokenId.TAG_CLOSE}),
+                            false, false);
+                    if(next != null) {
+                        offset = ts.offset() + next.length();
+                    }
+                    break;
+
+                case TAG_CLOSE_SYMBOL:
+                    // <tag |> ... <tag >|
+                    offset = ts.offset() + ts.token().length();
+                    break;
+
+                case VALUE:
+                case VALUE_CSS:
+                case VALUE_JAVASCRIPT:
+                    // <div align="center|" > ... <div align="center"| >
+                    char c = token.text().charAt(diff);
+                    if((token.length() - 1 == diff) && c == '"' || c == '\'') {
+                        offset = ts.offset() + token.length();
+                    }
+
+            }
+
+            return offset;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                try {
+                    int originalDotPos = caret.getDot();
+                    int dotPos = getNextWordOffset(target, originalDotPos);
+                    if(dotPos == -1) {
+                        //delegate to the default finder-s
+                        dotPos = Utilities.getNextWord(target, originalDotPos);
+                    }
+                    boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
+                    if (caret instanceof BaseCaret){
+                        BaseCaret bCaret = (BaseCaret) caret;
+                        if (select) {
+                            bCaret.moveDot(dotPos);
+                        } else {
+                            bCaret.setDot(dotPos, false);
+                        }
+                    }else {
+                        if (select) {
+                            caret.moveDot(dotPos);
+                        } else {
+                            caret.setDot(dotPos);
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    target.getToolkit().beep();
+                }
+            }
+        }
+    }
+
+      public static class HtmlPreviousWordAction extends BaseAction {
+
+
+        HtmlPreviousWordAction(String name) {
+            super(name, BaseAction.MAGIC_POSITION_RESET | BaseAction.ABBREV_RESET | BaseAction.UNDO_MERGE_RESET
+                  | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
+        }
+
+        protected int getPreviousWordOffset(JTextComponent target, int dotPos) throws BadLocationException {
+            TokenHierarchy hi = TokenHierarchy.get(target.getDocument());
+            TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
+            if(ts == null) {
+                return -1;
+            }
+
+            int diff = ts.move(dotPos);
+            if(diff == 0) {
+                if(!ts.movePrevious()) {
+                    return -1;
+                }
+            } else {
+                if(!ts.moveNext()) {
+                    return -1;
+                }
+            }
+            
+            Token<HTMLTokenId> token = ts.token();
+            int offset = -1;
+            switch(token.id()) {
+                case VALUE:
+                case VALUE_CSS:
+                case VALUE_JAVASCRIPT:
+                    if(diff == 0) {
+                        //we are just after an attribute value, jump to the end of its value if quoted
+                        if(WebUtils.isValueQuoted(ts.token().text())) {
+                            offset = ts.offset() + token.length() - 1;
+                        }
+
+                    } else if (diff == 1 && WebUtils.isValueQuoted(token.text())){
+                        //jump from attribute value to its name if we are just after the
+                        //opening quote
+                        Token prev = LexerUtils.followsToken(ts,
+                                HTMLTokenId.ARGUMENT,
+                                true, false, HTMLTokenId.WS, HTMLTokenId.OPERATOR);
+                        if(prev != null) {
+                            offset = ts.offset();
+                        }
+                    }
+                    break;
+                case TAG_OPEN:
+                case TAG_CLOSE:
+                    //jump from tag name to its open symbol "<" or "</"
+                    Token prev = LexerUtils.followsToken(ts,
+                            HTMLTokenId.TAG_OPEN_SYMBOL,
+                            true, false);
+                    if(prev != null) {
+                        offset = ts.offset();
+                    }
+                    break;
+
+                case TAG_CLOSE_SYMBOL:
+                    // <tag >| ... <tag |>
+                    offset = ts.offset();
+
+                    break;
+            }
+
+            return offset;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                try {
+                    int originalDotPos = caret.getDot();
+                    int dot = getPreviousWordOffset(target, originalDotPos);
+                    if(dot == -1) {
+                        //delegate to the default finder-s
+                        dot = Utilities.getPreviousWord(target, originalDotPos);
+                    }
+
+                    boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
+                    if (caret instanceof BaseCaret){
+                        BaseCaret bCaret = (BaseCaret) caret;
+                        if (select) {
+                            bCaret.moveDot(dot);
+                        } else {
+                            bCaret.setDot(dot, false);
+                        }
+                    }else {
+                        if (select) {
+                            caret.moveDot(dot);
+                        } else {
+                            caret.setDot(dot);
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    target.getToolkit().beep();
+                }
+            }
+        }
+    }
+
+
     public class HtmlInsertBreakAction extends InsertBreakAction {
 
         static final long serialVersionUID = -1506173310438326380L;
@@ -174,7 +377,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -230,7 +433,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 boolean overwrite) throws BadLocationException {
                 
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -262,7 +465,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -323,7 +526,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
@@ -783,6 +986,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * for providing the data (from most richly descriptive to least descriptive).
          * @return an array of data flavors in which this data can be transferred
          */
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             DataFlavor[] richerFlavors = getRicherFlavors();
             int nRicher = (richerFlavors != null) ? richerFlavors.length : 0;
@@ -819,6 +1023,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * @param flavor the requested flavor for the data
          * @return boolean indicating whether or not the data flavor is supported
          */
+        @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             DataFlavor[] flavors = getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
@@ -840,6 +1045,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * @exception UnsupportedFlavorException if the requested data flavor is
          *              not supported.
          */
+        @Override
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
             DataFlavor[] richerFlavors = getRicherFlavors();
             if (isRicherFlavor(flavor)) {

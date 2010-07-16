@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -140,7 +143,7 @@ public abstract class DocumentModelAccess extends ModelAccess {
         Node next = element.getNextSibling();
         try {
             javax.swing.text.Document doc = getModel().getBaseDocument();
-            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()-1));
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             if (parent instanceof Document) {
                 assert ((Document)parent).getDocumentElement() == element;
                 end = sb.lastIndexOf(">") + 1;
@@ -257,15 +260,26 @@ public abstract class DocumentModelAccess extends ModelAccess {
 
     public abstract Node getNewEventParentNode(PropertyChangeEvent evt);
     
-    public String lookupNamespaceURI(Node node, List<Node> pathToRoot) {
+    public String lookupNamespaceURI(Node node, List<? extends Node> pathToRoot) {
         String prefix = node.getPrefix();
         if (prefix == null) prefix = ""; //NOI18N
         String namespace = node.lookupNamespaceURI(prefix);
         if (namespace == null) {
+            boolean skipDeeperNodes = true;
             for (Node n : pathToRoot) {
-                namespace = n.lookupNamespaceURI(prefix);
-                if (namespace != null) {
-                    break;
+                if (skipDeeperNodes) {
+                    // The target node has to be inside of pathToRoot. 
+                    // But it can be not a top element of the list. 
+                    // It's necessary to skip items until the target node 
+                    // isn't found in the list.
+                    if (areSameNodes(n, node)) {
+                        skipDeeperNodes = false;
+                    }
+                } else {
+                    namespace = n.lookupNamespaceURI(prefix);
+                    if (namespace != null) {
+                        break;
+                    }
                 }
             }
         }
@@ -273,6 +287,8 @@ public abstract class DocumentModelAccess extends ModelAccess {
     }
     
     private long dirtyTimeMillis = 0;
+
+    @Override
     public long dirtyIntervalMillis() {
         if (dirtyTimeMillis == 0) return 0;
         return System.currentTimeMillis() - dirtyTimeMillis;
@@ -282,6 +298,7 @@ public abstract class DocumentModelAccess extends ModelAccess {
         dirtyTimeMillis = System.currentTimeMillis();
     }
     
+    @Override
     public void unsetDirty() {
         dirtyTimeMillis = 0;
     }

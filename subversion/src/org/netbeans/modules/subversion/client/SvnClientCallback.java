@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,9 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import java.net.PasswordAuthentication;
+import java.util.Arrays;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
@@ -62,7 +66,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private final int handledExceptions;
     
     private String username = null;
-    private String password = null;        
+    private char[] password = null;
 
     private final boolean prompt;
     
@@ -85,7 +89,11 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
     public String getPassword() {
         getAuthData();
-        return password;
+        String retval = ""; //NOI18N
+        if (password != null) {
+            retval = new String(password);
+        }
+        return retval;
     }
 
     public int askTrustSSLServer(String certMessage, boolean b) {
@@ -166,10 +174,10 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return null;
     }
 
-    private void getKenaiAuthData(SvnKenaiSupport support) {
+    private void getKenaiAuthData(SvnKenaiAccessor support) {
         final String urlString = url.toString();
         
-        PasswordAuthentication pa = support.getPasswordAuthentication(true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(urlString, true);
         if(pa == null) {
             throw new RuntimeException(new InterruptedException(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser"))); //NOI18N
         }
@@ -177,7 +185,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         char[] psswd = pa.getPassword();
 
         username = user != null ? user : "";
-        password = psswd != null ? new String(psswd) : "";
+        password = psswd;
     }
 
     private void showDialog(DialogDescriptor dialogDescriptor) {
@@ -189,7 +197,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {        
-        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
+        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         if(support != null && support.isKenai(url.toString())) {
             getKenaiAuthData(support);
         } else {

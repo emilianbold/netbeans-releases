@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.model.AttributeMetadata;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 
 /**

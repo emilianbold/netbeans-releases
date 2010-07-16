@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.mercurial;
 
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -55,6 +59,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -86,6 +92,7 @@ public class HgModuleConfig {
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";        // NOI18N
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
     private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
+    private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -98,7 +105,7 @@ public class HgModuleConfig {
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
-    private static final HgModuleConfig INSTANCE = new HgModuleConfig();    
+    private static final HgModuleConfig INSTANCE = new HgModuleConfig();
     
     private static String userName;
 
@@ -107,6 +114,7 @@ public class HgModuleConfig {
     }
     
     private Set<String> exclusions;
+    private String lastCanceledCommitMessage;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -282,8 +290,7 @@ public class HgModuleConfig {
     public Boolean isUserNameValid(String name) {
         if (userName == null) getSysUserName();
         if (name.equals(userName)) return true;
-        if (name.length() == 0) return true;
-        return HgMail.isUserNameValid(name);
+        return !name.trim().isEmpty();
     }
 
     public Boolean isExecPathValid(String name) {
@@ -405,6 +412,14 @@ public class HgModuleConfig {
         return getHgConfigFiles(file).getProperties(section);
     }
 
+    public boolean getExludeNewFiles () {
+        return getPreferences().getBoolean(PROP_EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles (boolean excludeNewFiles) {
+        getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
+    }
+
     private HgConfigFiles getHgConfigFiles(File file) {
         if (file == null) {
             return HgConfigFiles.getSysInstance();
@@ -449,9 +464,9 @@ public class HgModuleConfig {
         getPreferences().putBoolean(SET_MAIN_PROJECT, bl);
     }
     
-    public void insertRecentUrl(RepositoryConnection rc) {        
+    public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
-        
+
         for (String rcOldString : Utils.getStringList(prefs, RECENT_URL)) {
             RepositoryConnection rcOld;
             try {
@@ -465,35 +480,51 @@ public class HgModuleConfig {
             if(rcOld.equals(rc)) {
                 Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
             }
-        }        
-        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
+        }
+        final char[] password = rc.getUrl().getPassword();
+        if (password != null) {
+            Runnable outOfAWT = new Runnable() {
+                public void run() {
+                    KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, rc.getUrl().toHgCommandStringWithNoPassword(), password.clone(), null);
+                }
+            };
+            // keyring should be called only in a background thread
+            if (EventQueue.isDispatchThread()) {
+                Mercurial.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);
     }    
 
-    public void setRecentUrls(List<RepositoryConnection> recentUrls) {
-        List<String> urls = new ArrayList<String>(recentUrls.size());
-       
-        int idx = 0;
-        for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
-            idx++;
-            RepositoryConnection rc = it.next();
-            urls.add(RepositoryConnection.getString(rc));            
-        }
-        Preferences prefs = getPreferences();
-        Utils.put(prefs, RECENT_URL, urls);            
-    }
-    
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
+        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
         for (String urlString : urls) {
             try {
-                ret.add(RepositoryConnection.parse(urlString));
+                RepositoryConnection conn = RepositoryConnection.parse(urlString);
+                char[] password = conn.getUrl().getPassword();
+                if (password != null) {
+                    withPassword.add(conn);
+                } else {
+                    ret.add(conn);
+                }
             } catch (URISyntaxException ex) {
                 Logger.global.throwing(getClass().getName(),
                                        "getRecentUrls",                 //NOI18N
                                        ex);
             }
+        }
+        // there's an old-style connection with password set
+        // rewrite these connections with the new version with no password included
+        if (withPassword.size() > 0) {
+            for (RepositoryConnection conn : withPassword) {
+                insertRecentUrl(conn);
+            }
+            return getRecentUrls();
         }
         return ret;
     }
@@ -573,6 +604,23 @@ public class HgModuleConfig {
         } else {
             DialogDisplayer.getDefault().notifyLater(nd);
         }
+    }
+
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
+    }
+
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
     }
     
     synchronized Set<String> getCommitExclusions() {

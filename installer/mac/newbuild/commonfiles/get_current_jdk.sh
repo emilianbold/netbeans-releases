@@ -17,7 +17,7 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
-default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
 
 java_bin=`which java 2>&1`
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,6 +100,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private DocL docListener;
     private int lastAddIndex; // Index where last add to marks list was done
     private int lastMoveNextIndex; // Index where last moveNext() with idx=-1 was done
+    private StackTraceElement [] discardCaller = null;
+    private String discardThreadId = null;
     
     /**
      * Creates a new instance of <code>OffsetsBag</code>, which trims highlights
@@ -139,6 +144,14 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 version++;
                 docListener = null;
                 document = null;
+
+                boolean ae = false;
+                assert ae = true;
+                if (ae) {
+                    Thread t = Thread.currentThread();
+                    discardCaller = t.getStackTrace();
+                    discardThreadId = t.getName() + ":" + t.getId(); //NOI18N
+                }
             }
         }
     }
@@ -451,6 +464,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
      * @return The <code>HighlightsSequence</code> which iterates through the
      *         highlights in the given area of this bag.
      */
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         if (LOG.isLoggable(Level.FINE) && !(startOffset < endOffset)) {
             LOG.fine("startOffset must be less than endOffset: startOffset = " + //NOI18N
@@ -506,9 +520,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         if (startOffset == endOffset) {
             return null;
         } else {
-            assert document != null : "Can't modify discarded bag."; //NOI18N
+            assert document != null : "Can't modify discarded bag. Called on " + discardThreadId + " by " + printStackTrace(discardCaller); //NOI18N
             assert startOffset < endOffset : "Start offset must be before the end offset. startOffset = " + startOffset + ", endOffset = " + endOffset; //NOI18N
             assert attributes != null : "Highlight attributes must not be null."; //NOI18N
+            if (document == null || startOffset >= endOffset || attributes == null) {
+                return null;
+            }
         }
 
         if (mergeHighlights) {
@@ -783,7 +800,16 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private int indexBeforeOffset(int offset) {
         return indexBeforeOffset(offset, 0, marks.size() - 1);
     }
-    
+
+    private static String printStackTrace(StackTraceElement[] stackTrace) {
+        StringBuilder sb = new StringBuilder();
+        for(StackTraceElement e : stackTrace) {
+            sb.append(e);
+            sb.append('\n'); //NOI18N
+        }
+        return sb.toString();
+    }
+
     /* package */ static final class Mark extends OffsetGapList.Offset {
         private AttributeSet attribs;
         
@@ -825,6 +851,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             this.endOffset = endOffset;
         }
 
+        @Override
         public boolean moveNext() {
             synchronized (OffsetsBag.this.marks) {
                 if (checkVersion()) {
@@ -837,10 +864,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                         idx++;
                     }
 
-                    while (isIndexValid(idx)) {
+                    int []  offsets = new int [2];
+                    while (isIndexValid(idx, offsets)) {
                         if (marks.get(idx).getAttributes() != null) {
-                            highlightStart = Math.max(marks.get(idx).getOffset(), startOffset);
-                            highlightEnd = Math.min(marks.get(idx + 1).getOffset(), endOffset);
+                            highlightStart = Math.max(offsets[0], startOffset);
+                            highlightEnd = Math.min(offsets[1], endOffset);
                             highlightAttributes = marks.get(idx).getAttributes();
                             return true;
                         }
@@ -854,6 +882,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public int getStartOffset() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -861,6 +890,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -868,6 +898,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -875,11 +906,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
         
-        private boolean isIndexValid(int idx) {
+        private boolean isIndexValid(int idx, int [] offsets) {
             return  idx >= 0 && 
                     idx + 1 < marks.size() && 
-                    marks.get(idx).getOffset() < endOffset &&
-                    marks.get(idx + 1).getOffset() > startOffset;
+                    (offsets[0] = marks.get(idx).getOffset()) < endOffset &&
+                    (offsets[1] = marks.get(idx + 1).getOffset()) > startOffset;
         }
         
         private OffsetsBag getBag() {
@@ -900,6 +931,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             this.document = bag.getDocument();
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             OffsetsBag bag = get();
             if (bag != null) {
@@ -917,6 +949,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             OffsetsBag bag = get();
             if (bag != null) {
@@ -934,10 +967,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             // not interested
         }
 
+        @Override
         public void run() {
             Document d = document;
             if (d != null) {

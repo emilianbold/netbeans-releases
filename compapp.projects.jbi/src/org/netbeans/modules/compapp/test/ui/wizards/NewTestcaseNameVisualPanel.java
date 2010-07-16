@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -133,17 +136,17 @@ public class NewTestcaseNameVisualPanel extends JPanel implements DocumentListen
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (mNameTf.getText().length() == 0) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_name_cannot_be_empty")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_name_cannot_be_empty")); //NOI18N
             return false; // Display name not specified
         }
         
         // 2. no existing testcase under Test node has name: mComponent.getTestcaseName()
         if (panel.mTestDir.getFileObject(mNameTf.getText()) != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Name_is_already_used_by_another_testcase")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Name_is_already_used_by_another_testcase")); //NOI18N
             return false;
         }
         
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
     

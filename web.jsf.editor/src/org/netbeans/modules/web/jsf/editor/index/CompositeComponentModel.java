@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,7 +119,7 @@ public class CompositeComponentModel extends JsfPageModel {
     }
 
     @Override
-    public void storeToIndex(IndexDocument document) {
+    public String storeToIndex(IndexDocument document) {
         //store library name
         String libraryName = getLibraryPath();
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
@@ -132,7 +135,7 @@ public class CompositeComponentModel extends JsfPageModel {
                 String value = attrs.get(key);
                 buf.append(key);
                 buf.append(KEY_VALUE_SEPARATOR);
-                buf.append(value);
+                buf.append(encode(value));
                 if (attrsKeysItr.hasNext()) {
                     buf.append(VALUES_SEPARATOR);
                 }
@@ -145,6 +148,8 @@ public class CompositeComponentModel extends JsfPageModel {
 
         //store implementation mark
         document.addPair(HAS_IMPLEMENTATION_KEY, Boolean.toString(hasImplementation), false, true);
+
+	return JsfUtils.getCompositeLibraryURL(libraryName);
 
     }
 
@@ -161,7 +166,9 @@ public class CompositeComponentModel extends JsfPageModel {
     private static boolean isCompositeLibraryMember(FileObject file) {
         FileObject resourcesFolder = getResourcesDirectory(file);
         if (resourcesFolder != null) {
-                if (FileUtil.isParentOf(resourcesFolder, file)) {
+                //test if the file is an indirect ancestor of the resources folder.
+                //the file cannot be in the resources folder itself
+                if (FileUtil.isParentOf(resourcesFolder, file) && !file.getParent().equals(resourcesFolder)) {
                     return true;
                 }
             }
@@ -171,28 +178,33 @@ public class CompositeComponentModel extends JsfPageModel {
     private static FileObject getResourcesDirectory(FileObject file) {
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null) {
-            //we are in webmodule
+            //check webmodule's resources folder
             FileObject docRoot = wm.getDocumentBase();
             if(docRoot != null) { //document root may be null if the folder is deleted
-                return getChild(docRoot, RESOURCES_FOLDER_NAME);
-            }
-        } else {
-            //out of a webmodule, means in a library archive
-            //just check if the parent's parent directory is resources and then META-INF
-            FileObject folder = file;
-            do {
-                if (folder.getName().equalsIgnoreCase("resources")) {
-                    //check if its parent is META-INF
-                    FileObject parent = folder.getParent();
-                    if (parent != null && parent.getNameExt().startsWith("META-INF")) {
-                        //the folder seems to be the right resources folder
-                        return folder;
-                    }
+                FileObject resourcesFolder = getChild(docRoot, RESOURCES_FOLDER_NAME);
+                //check if the file is a descendant of the resources folder
+                if(resourcesFolder != null && FileUtil.isParentOf(resourcesFolder, file)) {
+                    return resourcesFolder;
                 }
-                folder = folder.getParent();
-            } while (folder != null);
-
+            }
         }
+        
+        //check project's sources - META-INF.*/resources
+        //just check if the parent's parent directory is resources and then META-INF
+        FileObject folder = file;
+        do {
+            if (folder.getName().equalsIgnoreCase("resources")) {
+                //check if its parent is META-INF
+                FileObject parent = folder.getParent();
+                if (parent != null && parent.getNameExt().startsWith("META-INF")) {
+                    //the folder seems to be the right resources folder
+                    return folder;
+                }
+            }
+            folder = folder.getParent();
+        } while (folder != null);
+
+
         return null;
     }
 
@@ -274,7 +286,7 @@ public class CompositeComponentModel extends JsfPageModel {
                 while (st2.hasMoreTokens()) {
                     String pair = st2.nextToken();
                     String key = pair.substring(0, pair.indexOf(KEY_VALUE_SEPARATOR));
-                    String value = pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1);
+                    String value = decode(pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1));
                     pairs.put(key, value);
                 }
                 parsedAttrs.add(pairs);
@@ -282,5 +294,61 @@ public class CompositeComponentModel extends JsfPageModel {
             return new CompositeComponentModel(result.getFile(), result.getRelativePath(), parsedAttrs, hasImplementation);
 
         }
+    }
+
+
+    static final String encode(String attributeValue) {
+        //comma and equal sign needs to be encoded
+        StringBuilder out = new StringBuilder();
+        for(int i = 0; i < attributeValue.length(); i++) {
+            char c = attributeValue.charAt(i);
+            switch(c) {
+                case ',':
+                    out.append("\\c");
+                    break;
+                case '=':
+                    out.append("\\e");
+                    break;
+                case '\\':
+                    out.append("\\s");
+                    break;
+                default:
+                    out.append(c);
+
+            }
+        }
+        return out.toString();
+    }
+
+    static final String decode(String attributeValue) {
+        //comma and equal sign needs to be encoded
+        StringBuilder out = new StringBuilder();
+        boolean encodeChar = false;
+        for(int i = 0; i < attributeValue.length(); i++) {
+            char c = attributeValue.charAt(i);
+            if(encodeChar) {
+                switch(c) {
+                    case 'c':
+                        out.append(',');
+                        break;
+                    case 'e':
+                        out.append('=');
+                        break;
+                    case 's':
+                        out.append('\\');
+                        break;
+                    default:
+                        assert false;
+                }
+                encodeChar = false;
+            } else {
+                if(c == '\\') {
+                    encodeChar = true;
+                } else {
+                    out.append(c);
+                }
+            }
+        }
+        return out.toString();
     }
 }

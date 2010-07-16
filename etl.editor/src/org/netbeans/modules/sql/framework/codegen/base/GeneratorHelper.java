@@ -21,7 +21,7 @@ package org.netbeans.modules.sql.framework.codegen.base;
 
 import org.netbeans.modules.sql.framework.codegen.AbstractGeneratorFactory;
 import org.netbeans.modules.sql.framework.codegen.Generator;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * @author Ritesh Adval

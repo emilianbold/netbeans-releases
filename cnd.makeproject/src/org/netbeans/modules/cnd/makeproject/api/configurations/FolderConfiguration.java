@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     // Tools
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
+    private LinkerConfiguration linkerConfiguration = null;
 
     public FolderConfiguration(Configuration configuration, CCompilerConfiguration parentCCompilerConfiguration, CCCompilerConfiguration parentCCCompilerConfiguration, Folder folder) {
         // General
@@ -64,6 +68,14 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         // Compilers
         cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration);
         ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration);
+        if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
+            linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
+            if (folder.isTest()) {
+                linkerConfiguration.getOutput().setValue("${TESTDIR}/" + folder.getPath()); // NOI18N
+                cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+                ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+            }
+        }
         clearChanged();
     }
 
@@ -102,18 +114,30 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return ccCompilerConfiguration;
     }
 
+    // Linker
+    public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
+        this.linkerConfiguration = linkerConfiguration;
+    }
+
+    public LinkerConfiguration getLinkerConfiguration() {
+        return linkerConfiguration;
+    }
+
     // interface ConfigurationAuxObject
+    @Override
     public boolean shared() {
         return true;
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean hasChanged() {
         return needSave;
     }
 
     // interface ProfileAuxObject
-    public void clearChanged() {
+    @Override
+    public final void clearChanged() {
         needSave = false;
     }
 
@@ -121,6 +145,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
      * Returns an unique id (String) used to retrive this object from the
      * pool of aux objects
      */
+    @Override
     public String getId() {
         return folder.getId();
     }
@@ -128,8 +153,12 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public void assignValues(FolderConfiguration folderConfiguration) {
         getCCompilerConfiguration().assign(folderConfiguration.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
+        if (getLinkerConfiguration() != null && folderConfiguration.getLinkerConfiguration() != null) {
+            getLinkerConfiguration().assign(folderConfiguration.getLinkerConfiguration());
+        }
     }
 
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {
             // FIXUP: exception ????
@@ -146,6 +175,9 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
         getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+        if (getLinkerConfiguration() != null && i.getLinkerConfiguration() != null) {
+            getLinkerConfiguration().assign(i.getLinkerConfiguration());
+        }
     }
 
     public FolderConfiguration copy(MakeConfiguration makeConfiguration) {
@@ -160,19 +192,25 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        if (getLinkerConfiguration() != null) {
+            i.setLinkerConfiguration(getLinkerConfiguration().clone());
+        }
         return i;
     }
 
     //
     // XML codec support
+    @Override
     public XMLDecoder getXMLDecoder() {
         return new FolderXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
         return new FolderXMLCodec(this);
     }
 
+    @Override
     public void initialize() {
         // FIXUP: this doesn't make sense...
     }
@@ -192,17 +230,19 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
     private static class StringRONodeProp extends PropertySupport<String> {
 
-        String value;
+        private String value;
 
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);
             this.value = value;
         }
 
+        @Override
         public String getValue() {
             return value;
         }
 
+        @Override
         public void setValue(String v) {
         }
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,12 @@
 package org.netbeans.modules.j2ee.archive.customizer;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.netbeans.modules.j2ee.archive.project.ArchiveProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.util.HelpCtx;
@@ -68,6 +74,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
     }
     
     
+    @Override
     public void initValues() {
         initialized = false;
         initServerInstances();
@@ -142,6 +149,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
@@ -153,8 +161,18 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
         Deployment deployment = Deployment.getDefault();
         for (int i = 0; i < servInstIDs.length; i++) {
             String instanceID = servInstIDs[i];
-            J2eePlatform j2eePlat = deployment.getJ2eePlatform(instanceID);
-            String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
+            J2eePlatform j2eePlat = null;
+            try {
+                j2eePlat = deployment.getServerInstance(instanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger("global").log(Level.INFO, instanceID, ex);
+            }
+            String servInstDisplayName = null;
+            try {
+                servInstDisplayName = Deployment.getDefault().getServerInstance(servInstIDs[i]).getDisplayName();
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger("global").log(Level.INFO, instanceID, ex);
+            }
             if (servInstDisplayName != null
                     && j2eePlat != null 
                     && j2eePlat.getSupportedTypes().contains(J2eeModule.Type.WAR))

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,11 +49,13 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.ComboBoxModel;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
@@ -61,16 +66,22 @@ import org.openide.util.Utilities;
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
     private final PanelConfigureProject panel;
+    /**
+     * Keeps track of platforms for which local gems have already been reloaded 
+     */
+    private final Set<RubyPlatform> reloaded = new HashSet<RubyPlatform>();
     
     public PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
         
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            @Override
             public void platformChanged() {
                 initServerComboBox();
                 fireChangeEvent();
                 initWarCheckBox();
+                reloadLocalGems();
             }
         });
 
@@ -79,12 +90,25 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         fireChangeEvent();
         initWarCheckBox();
         initServerComboBox();
+        reloadLocalGems();
     }
 
     public @Override void removeNotify() {
         Util.storeWizardPlatform(platforms);
         super.removeNotify();
     }
+    private void reloadLocalGems() {
+        // reload local gems to pick up external changes in gems
+        RubyPlatform platform = getPlatform();
+        if (platform != null && !reloaded.contains(platform)) {
+            GemManager gemManager = platform.getGemManager();
+            if (gemManager != null) {
+                gemManager.reloadLocalGems(true);
+                reloaded.add(platform);
+            }
+        }
+    }
+
 
     private void initWarCheckBox() {
         warCheckBox.addItemListener(new ItemListener() {

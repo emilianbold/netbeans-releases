@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,7 +68,7 @@ public class CssParserResult extends ParserResult {
     
     public SimpleNode root() {
         if(invalidated) {
-            throw new IllegalStateException("The CssParserResult already invalidated!");
+            throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
         }
         return root;
     }
@@ -73,91 +76,13 @@ public class CssParserResult extends ParserResult {
     @Override
     public List<? extends Error> getDiagnostics() {
         if(invalidated) {
-            throw new IllegalStateException("The CssParserResult already invalidated!");
+            throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
         }
         return errors;
     }
 
     @Override
     protected void invalidate() {
-//        invalidated = true;
-//        root = null;
-//        errors = null;
     }
-
-//        @Override
-//    public synchronized AstTreeNode getAst() {
-//        if(astNodesRoot == null) {
-//            astNodesRoot = new CssAstTreeNode(root);
-//        }
-//        return astNodesRoot;
-//    }
-//    private static final class CssAstTreeNode implements AstTreeNode {
-//
-//        private final SimpleNode node;
-//        private ArrayList<CssAstTreeNode> children = null;
-//
-//        public CssAstTreeNode(SimpleNode node) {
-//            this.node = node;
-//        }
-//
-//        public Object getAstNode() {
-//            return node;
-//        }
-//
-//        public int getStartOffset() {
-//            return node.startOffset();
-//        }
-//
-//        public int getEndOffset() {
-//            return node.endOffset();
-//        }
-//
-//        public TreeNode getChildAt(int childIndex) {
-//            if(children == null) {
-//                initChildren();
-//            }
-//            return children.get(childIndex);
-//        }
-//
-//        public int getChildCount() {
-//            return node.jjtGetNumChildren();
-//        }
-//
-//        public TreeNode getParent() {
-//            return null;
-//        }
-//
-//        public int getIndex(TreeNode tnode) {
-//            if(children == null) {
-//                initChildren();
-//            }
-//            return children.indexOf(tnode);
-//        }
-//
-//        public boolean getAllowsChildren() {
-//            return true;
-//        }
-//
-//        public boolean isLeaf() {
-//            return getChildCount() == 0;
-//        }
-//
-//        public Enumeration children() {
-//            return Collections.enumeration(children);
-//        }
-//
-//        public String toString() {
-//            return CSSParserTreeConstants.jjtNodeName[node.kind()] + " (" + node.startOffset() + "-" + node.endOffset() + ") '" + node.image() + "'";
-//        }
-//
-//        private synchronized void initChildren() {
-//            children = new ArrayList<CssAstTreeNode>(node.jjtGetNumChildren());
-//            for(int i = 0; i < node.jjtGetNumChildren(); i++ ) {
-//                children.add(new CssAstTreeNode((SimpleNode)node.jjtGetChild(i)));
-//            }
-//        }
-//
-//    }
     
 }

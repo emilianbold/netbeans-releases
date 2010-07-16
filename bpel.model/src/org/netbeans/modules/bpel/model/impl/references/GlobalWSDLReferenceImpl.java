@@ -55,7 +55,15 @@ class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
      */
     public T get() {
         if ( getReferenced() == null ){
-            T ret = myResolver.resolve( this );
+            T ret = myResolver.resolve(this);
+//System.out.println();
+//System.out.println();
+//System.out.println();
+//System.out.println("G G G G G myResolver: " + myResolver.getClass().getName());
+//System.out.println("G G G G G : " + ret);
+//System.out.println();
+//System.out.println();
+//System.out.println();
             setReferenced( ret );
             return ret;
         }

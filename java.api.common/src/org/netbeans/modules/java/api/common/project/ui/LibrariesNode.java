@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,7 +70,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,26 +151,32 @@ public final class LibrariesNode extends AbstractNode {
         this.librariesNodeActions = librariesNodeActions;
     }
 
+    @Override
     public String getDisplayName () {
         return this.displayName; 
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }    
 
+    @Override
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
         
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
 
+    @Override
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
@@ -272,6 +280,7 @@ public final class LibrariesNode extends AbstractNode {
             this.project = project;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             final boolean propRoots = ClassPath.PROP_ROOTS.equals(propName);
@@ -282,6 +291,7 @@ public final class LibrariesNode extends AbstractNode {
                     }
                 }
                 rp.post (new Runnable () {
+                    @Override
                     public void run () {
                         setKeys(getKeys());
                         if (propRoots) {
@@ -295,6 +305,7 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
             if (refHelper.getProjectLibraryManager() != null) {
@@ -305,6 +316,7 @@ public final class LibrariesNode extends AbstractNode {
             this.setKeys(getKeys ());
         }
 
+        @Override
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
             if (refHelper.getProjectLibraryManager() != null) {
@@ -321,6 +333,7 @@ public final class LibrariesNode extends AbstractNode {
             this.setKeys(Collections.<Key>emptySet());
         }
 
+        @Override
         protected Node[] createNodes(Key key) {
             Node[] result = null;
             switch (key.getType()) {
@@ -466,7 +479,10 @@ public final class LibrariesNode extends AbstractNode {
             Icon openedIcon;
             String displayName;
             final URL url = FileUtil.urlForArchiveOrDir(file);
-            if ("jar".equals(url.getProtocol())) {  //NOI18N
+            if (url == null) {
+                return null;
+            }
+            else if ("jar".equals(url.getProtocol())) {  //NOI18N
                 icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                 displayName = file.getName();
             }
@@ -552,6 +568,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         
+        @Override
         public int hashCode() {
             int hashCode = this.type<<16;
             switch (this.type) {
@@ -567,6 +584,7 @@ public final class LibrariesNode extends AbstractNode {
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Key)) {
                 return false;
@@ -605,6 +623,7 @@ public final class LibrariesNode extends AbstractNode {
             this.sources = sources;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             AntArtifactItem ai[] = AntArtifactItem.showAntArtifactItemChooser(
                     new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
@@ -653,6 +672,7 @@ public final class LibrariesNode extends AbstractNode {
             this.filter = filter;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Set<Library> added = LibraryChooser.showDialog(
                     refHelper.getProjectLibraryManager(), filter,
@@ -694,6 +714,7 @@ public final class LibrariesNode extends AbstractNode {
             this.sources = sources;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             org.netbeans.api.project.ant.FileChooser chooser;
             if (helper.isSharableProject()) {
@@ -822,6 +843,7 @@ public final class LibrariesNode extends AbstractNode {
             this.extensions.addAll(FileUtil.getMIMETypeExtensions("application/x-java-archive"));    //NOI18N
         }
 
+        @Override
         public boolean accept(final File f) {
             if (f.isDirectory()) {
                 return true;
@@ -845,6 +867,7 @@ public final class LibrariesNode extends AbstractNode {
             return false;
         }
 
+        @Override
         public String getDescription() {
             return this.description;
         }

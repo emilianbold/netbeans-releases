@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,8 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
 
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -119,9 +124,10 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
 
         vps.register(jTextFieldServiceAssemblyDescription, JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
         vps.register(jTextFieldServiceUnitDescription, JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
-        
-        String originalEncoding = projProperties.getProject().evaluator().
-                getProperty(JbiProjectProperties.SOURCE_ENCODING);
+
+        JbiProject jbiProject = projProperties.getProject();
+        PropertyEvaluator propEvaluator = jbiProject.getLookup().lookup(PropertyEvaluator.class);
+        String originalEncoding = propEvaluator.getProperty(JbiProjectProperties.SOURCE_ENCODING);
         if (originalEncoding == null) {
             originalEncoding = Charset.defaultCharset().name();
         }
@@ -129,10 +135,12 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
                 new EncodingRenderer(), JbiProjectProperties.SOURCE_ENCODING,
                 Charset.class);
 
-        vps.register(jCheckBox1, JbiProjectProperties.OSGI_SUPPORT);
+        vps.register(jCheckBoxOsgiSupport, JbiProjectProperties.OSGI_SUPPORT);
         vps.register(jTextFieldOsgiContainerDir, JbiProjectProperties.OSGI_CONTAINER_DIR);
+        vps.register(jCheckBoxSkipBuildWhenDeploy, JbiProjectProperties.SKIP_BUILD_WHEN_DEPLOY);
+        vps.register(jCheckBoxSkipCompAppValidationWhenBuild, JbiProjectProperties.SKIP_COMPAPP_VALIDATION_WHEN_BUILD);
         
-        boolean osgiSupport = jCheckBox1.isSelected();
+        boolean osgiSupport = jCheckBoxOsgiSupport.isSelected();
         osgiContainerLabel.setEnabled(osgiSupport);
         jTextFieldOsgiContainerDir.setEnabled(osgiSupport);
         browseButton.setEnabled(osgiSupport);
@@ -235,11 +243,14 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jComboBoxEncoding = new javax.swing.JComboBox();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        jCheckBoxOsgiSupport = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
         osgiContainerLabel = new javax.swing.JLabel();
         jTextFieldOsgiContainerDir = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        jCheckBoxSkipBuildWhenDeploy = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        jCheckBoxSkipCompAppValidationWhenBuild = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -259,9 +270,7 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
         jLabel2.setLabelFor(jComboBoxEncoding);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Encoding")); // NOI18N
 
-        jComboBoxEncoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jCheckBox1.addItemListener(new java.awt.event.ItemListener() {
+        jCheckBoxOsgiSupport.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 osgiSupportItemStateChanged(evt);
             }
@@ -278,6 +287,20 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxSkipBuildWhenDeploy, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_SkipProjectBuildDuringDeployment_JCheckbox")); // NOI18N
+        jCheckBoxSkipBuildWhenDeploy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxSkipBuildWhenDeployActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxSkipCompAppValidationWhenBuild, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_SkipProjectValidationDuringBuild_JCheckbox")); // NOI18N
+        jCheckBoxSkipCompAppValidationWhenBuild.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxSkipCompAppValidationWhenBuildActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -285,6 +308,9 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckBoxSkipCompAppValidationWhenBuild)
+                    .add(jCheckBoxSkipBuildWhenDeploy)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -301,7 +327,7 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jCheckBoxOsgiSupport, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(jComboBoxEncoding, 0, 413, Short.MAX_VALUE)))))
                     .add(layout.createSequentialGroup()
                         .add(osgiContainerLabel)
@@ -332,13 +358,19 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
                     .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jCheckBox1)
+                    .add(jCheckBoxOsgiSupport)
                     .add(jLabel3))
                 .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(osgiContainerLabel)
                     .add(browseButton)
                     .add(jTextFieldOsgiContainerDir, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jCheckBoxSkipBuildWhenDeploy)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jCheckBoxSkipCompAppValidationWhenBuild)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -377,9 +409,19 @@ private void osgiSupportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     // browseButton.setEnabled(osgiSupport);
 }//GEN-LAST:event_osgiSupportItemStateChanged
 
+private void jCheckBoxSkipBuildWhenDeployActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxSkipBuildWhenDeployActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_jCheckBoxSkipBuildWhenDeployActionPerformed
+
+private void jCheckBoxSkipCompAppValidationWhenBuildActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxSkipCompAppValidationWhenBuildActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_jCheckBoxSkipCompAppValidationWhenBuildActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBoxOsgiSupport;
+    private javax.swing.JCheckBox jCheckBoxSkipBuildWhenDeploy;
+    private javax.swing.JCheckBox jCheckBoxSkipCompAppValidationWhenBuild;
     private javax.swing.JComboBox jComboBoxEncoding;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -387,6 +429,7 @@ private void osgiSupportItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     private javax.swing.JLabel jLabelProjectName;
     private javax.swing.JLabel jLabelServiceAssemblyDescription;
     private javax.swing.JLabel jLabelServiceUnitDescription;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTextFieldOsgiContainerDir;
     private javax.swing.JTextField jTextFieldProjectFolder;
     private javax.swing.JTextField jTextFieldServiceAssemblyDescription;

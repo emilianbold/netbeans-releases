@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileChangeAdapter;
@@ -65,9 +69,10 @@ import org.openide.filesystems.FileUtil;
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
     private static final boolean TRACE = false;
 
-   private final ModelImpl model;
-   private final NativeProject nativeProject;
-   
+    private final ModelImpl model;
+    private final NativeProject nativeProject;
+    private volatile boolean enabledEventsHandling = true;
+
     public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject) {
 	this.model = model;
         this.nativeProject = nativeProject;
@@ -75,6 +80,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     
     public void fileAdded(NativeFileItem fileItem) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event fileAdded:"); // NOI18N
             System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
         }
@@ -83,6 +89,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filesAdded(List<NativeFileItem> fileItems) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event filesAdded:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
@@ -95,6 +102,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void fileRemoved(NativeFileItem fileItem) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event fileRemoved:"); // NOI18N
             System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
         }
@@ -103,6 +111,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filesRemoved(List<NativeFileItem> fileItems) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event filesRemoved:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
@@ -115,6 +124,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event fileRenamed:"); // NOI18N
             System.err.println("\tOld Name:"+oldPath); // NOI18N
             System.err.println("\tNew Name:"+newFileIetm.getFile().getAbsolutePath()); // NOI18N
@@ -124,6 +134,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filePropertiesChanged(NativeFileItem fileItem) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event filePropertiesChanged:"); // NOI18N
             System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
         }
@@ -132,20 +143,35 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event filesPropertiesChanged:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
             }
         }
-	// FIXUP for #109425
-	ModelImpl.instance().enqueueModelTask(new Runnable() {
-	    public void run() {
-                filesPropertiesChangedImpl(fileItems);
-	    }
-	}, "Applying property changes"); // NOI18N
-
+        if (enabledEventsHandling) {
+            // FIXUP for #109425
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+                public void run() {
+                    filesPropertiesChangedImpl(fileItems);
+                }
+            }, "Applying property changes"); // NOI18N
+        } else {
+            if (TraceFlags.TIMING) {
+                System.err.printf("\nskipped filesPropertiesChanged(list) %s...\n",
+                        nativeProject.getProjectDisplayName());
+            }
+        }
     }
-    
+
+    /*package*/final void enableListening(boolean enable) {
+        if (TraceFlags.TIMING) {
+            System.err.printf("\n%s ProjectListeners %s...\n", enable?"enable":"disable",
+                    nativeProject.getProjectDisplayName());
+        }
+        enabledEventsHandling = enable;
+    }
+
     private void filesPropertiesChangedImpl(List<NativeFileItem> fileItems) {
         for (List<NativeFileItem> list : divideByProjects(fileItems)){
             onProjectItemChanged(list);
@@ -154,30 +180,38 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filesPropertiesChanged() {
         if (TRACE) {
+            new Exception().printStackTrace(System.err);
             System.err.println("Native event projectPropertiesChanged:"); // NOI18N
             for(NativeFileItem fileItem : nativeProject.getAllFiles()){
                 System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
             }
         }
-	// FIXUP for #109425
-	ModelImpl.instance().enqueueModelTask(new Runnable() {
-	    public void run() {
-                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-                for(NativeFileItem item : nativeProject.getAllFiles()){
-                    if (!item.isExcluded()) {
-                        switch(item.getLanguage()){
-                            case C:
-                            case CPP:
-                                list.add(item);
-                                break;
-                            default:
-                                break;
+        if (enabledEventsHandling) {
+            // FIXUP for #109425
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+                public void run() {
+                    ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                    for(NativeFileItem item : nativeProject.getAllFiles()){
+                        if (!item.isExcluded()) {
+                            switch(item.getLanguage()){
+                                case C:
+                                case CPP:
+                                case FORTRAN:
+                                    list.add(item);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
+                    filesPropertiesChangedImpl(list);
                 }
-                filesPropertiesChangedImpl(list);
-	    }
-	}, "Applying property changes"); // NOI18N
+            }, "Applying property changes"); // NOI18N
+        } else {
+            if (TraceFlags.TIMING) {
+                System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
+            }
+        }
     }
 
     public void projectDeleted(NativeProject nativeProject) {

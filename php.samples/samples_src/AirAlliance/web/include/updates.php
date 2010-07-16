@@ -13,6 +13,6 @@
         <li>
             <h3>21st May</h3>
             <p><a href="#">Find a job at AirAirlines and watch your career takeoff!</a></p>
-        </li>        
+        </li>
     </ul>
 </li>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,14 +49,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.netbeans.modules.versioning.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
-import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileChangeAdapter;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -72,7 +74,9 @@ public class VCSInterceptorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         dataRootDir = new File(System.getProperty("data.root.dir"));
-        System.setProperty("netbeans.user", dataRootDir + "/userdir");
+        File userdir = new File(dataRootDir + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         if(!dataRootDir.exists()) dataRootDir.mkdirs();
         Lookup.getDefault().lookupAll(VersioningSystem.class);
         inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();
@@ -131,6 +135,15 @@ public class VCSInterceptorTest extends TestCase {
         battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
         assertNotNull(battr);
         assertFalse(battr);
+    }
+
+    public void testRefreshRecursively() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        f.mkdirs();
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createFolder("folder");
+        fo.addRecursiveListener(new FileChangeAdapter());
+        assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(FileUtil.toFile(fo)));     
     }
 
     public void testChangedFile() throws IOException {

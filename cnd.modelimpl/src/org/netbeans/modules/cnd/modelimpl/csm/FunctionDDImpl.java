@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
@@ -49,10 +51,21 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -61,7 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * @author Vladimir Kvasihn
  */
 public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition {
-    
+
     private final CsmCompoundStatement body;
 
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
@@ -146,7 +159,19 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
-        CsmDeclaration decl = prj.findDeclaration(uname);
+        CsmDeclaration decl = null;
+        for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
+            if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
+                if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), candidate)) {
+                    decl = candidate;
+                    break;
+                }
+                if (decl == null) {
+                    decl = candidate;
+                }
+            }
+        }
         if( decl != null && (decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
             return (CsmFunction) decl;
@@ -154,7 +179,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         FunctionParameterListImpl parameterList = getParameterList();
         if (parameterList != null && !parameterList.isEmpty()) {
             CsmFile file = getContainingFile();
-            if (!ProjectBase.isCppFile(file)){
+            if (!Utils.isCppFile(file)){
                 uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
                 decl = prj.findDeclaration(uname);
                 if( (decl instanceof FunctionImpl<?>) &&
@@ -165,33 +190,33 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return null;
     }
-    
+
     @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
-    
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.body != null: "null body in " + this.getQualifiedName();
         PersistentUtils.writeCompoundStatement(body, output);
     }
-    
+
     public FunctionDDImpl(DataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
         assert this.body != null: "read null body for " + this.getName();
-    }       
+    }
 }
 

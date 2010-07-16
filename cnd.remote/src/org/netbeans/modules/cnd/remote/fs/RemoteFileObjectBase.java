@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.swing.event.EventListenerList;
@@ -65,13 +69,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final File cache;
     private volatile EventListenerList eventSupport;
     protected final String nameExt;
+    protected final FileObject parent;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
-            String remotePath, File cache) {
+            FileObject parent, String remotePath, File cache) {
         CndUtils.assertTrue(execEnv.isRemote());
         CndUtils.assertTrue(cache.exists());
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
+        this.parent = parent;
         this.remotePath = RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
         int slashPos = this.remotePath.lastIndexOf('/');
@@ -87,6 +93,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
             eventSupport = new EventListenerList();
         }
         return eventSupport;
+    }
+
+    @Override
+    public String getPath() {
+        return this.remotePath;
     }
 
     @Override
@@ -117,10 +128,9 @@ public abstract class RemoteFileObjectBase extends FileObject {
         return null;
     }
 
-
     @Override
     public Enumeration<String> getAttributes() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return Collections.enumeration(Collections.singleton("java.io.File")); // NOI18N
     }
 
     @Override
@@ -154,18 +164,18 @@ public abstract class RemoteFileObjectBase extends FileObject {
     
     @Override
     public FileObject getParent() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // TODO: should we just ask fileSystem to find it?
+        return parent;
     }
 
     @Override
     public long getSize() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // FIXUP
+        return 1024;
     }
 
-    // unfortunately warnings supression does not work due to a Java bug
-    // http://bugs.sun.com/view_bug.do?bug_id=6460147
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated
     public boolean isReadOnly() {
         return true;
     }
@@ -182,7 +192,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isValid() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return cache.exists();
     }
 
     @Override
@@ -192,7 +202,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // FIXUP
+        return new Date(cache.lastModified());
     }
 
     @Override
@@ -215,10 +226,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
-    // unfortunately warnings supression does not work due to a Java bug
-    // http://bugs.sun.com/view_bug.do?bug_id=6460147
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated
     public void setImportant(boolean b) {
         // Deprecated. Noithing to do.
     }
@@ -229,4 +238,38 @@ public abstract class RemoteFileObjectBase extends FileObject {
         }
     }
 
+    @Override
+    public String toString() {
+        return execEnv.toString() + ":" + remotePath; //NOI18N
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        if (this.execEnv != other.execEnv && (this.execEnv == null || !this.execEnv.equals(other.execEnv))) {
+            return false;
+        }
+        if (this.cache != other.cache && (this.cache == null || !this.cache.equals(other.cache))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 11 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+        hash = 11 * hash + (this.execEnv != null ? this.execEnv.hashCode() : 0);
+        hash = 11 * hash + (this.cache != null ? this.cache.hashCode() : 0);
+        return hash;
+    }
 }

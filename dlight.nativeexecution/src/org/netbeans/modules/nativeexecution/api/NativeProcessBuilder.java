@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,21 +42,25 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
+import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
@@ -103,8 +110,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return new NativeProcessBuilder(ExecutionEnvironmentFactory.getLocal());
     }
 
-    public void redirectError() {
+    public NativeProcessBuilder redirectError() {
         info.redirectError(true);
+        return this;
     }
 
     /**
@@ -152,53 +160,66 @@ public final class NativeProcessBuilder implements Callable<Process> {
      *             in this builder
      * @throws IOException if the process could not be created
      */
+    @Override
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
 
         ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("No connection to " + execEnv.getDisplayName()); // NOI18N
-        }
-
         if (info.getCommand() == null) {
             throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
         }
 
-        if (info.getExecutionEnvironment().isRemote()) {
-            process = new RemoteNativeProcess(info);
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IOException("No connection to " + execEnv.getDisplayName()); // NOI18N
+        }
+
+        if (info.isPtyMode() && isPtySupportedFor(info.getExecutionEnvironment())) {
+            process = new PtyNativeProcess(info);
         } else {
-            if (externalTerminal != null) {
-                boolean canProceed = true;
-                boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
+            if (info.getExecutionEnvironment().isRemote()) {
+                process = new RemoteNativeProcess(info);
+            } else {
+                if (externalTerminal != null) {
+                    boolean canProceed = true;
+                    boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
 
-                if (!available) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE));
-                    canProceed = false;
-                } else {
-                    if (Utilities.isWindows()) {
-                        Shell shell = WindowsSupport.getInstance().getActiveShell();
-                        if (shell == null) {
-                            DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
-                                    NotifyDescriptor.WARNING_MESSAGE));
-                            canProceed = false;
+                    if (!available) {
+                        if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                            System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
                         } else {
-                            ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
+                            DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                                    NotifyDescriptor.WARNING_MESSAGE));
+                        }
+                        canProceed = false;
+                    } else {
+                        if (Utilities.isWindows()) {
+                            Shell shell = WindowsSupport.getInstance().getActiveShell();
+                            if (shell == null) {
+                                if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                                    System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
+                                } else {
+                                    DialogDisplayer.getDefault().notify(
+                                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                            NotifyDescriptor.WARNING_MESSAGE));
+                                }
+                                canProceed = false;
+                            } else {
+                                ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
 
-                            if (!validationStatus.isValid()) {
-                                canProceed = ShellValidationSupport.confirm(
-                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
-                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
-                                        validationStatus);
+                                if (!validationStatus.isValid()) {
+                                    canProceed = ShellValidationSupport.confirm(
+                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
+                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
+                                            validationStatus);
+                                }
                             }
                         }
-                    }
 
-                    if (canProceed) {
-                        process = new TerminalLocalNativeProcess(info, externalTerminal);
+                        if (canProceed) {
+                            process = new TerminalLocalNativeProcess(info, externalTerminal);
+                        }
                     }
                 }
             }
@@ -302,5 +323,65 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(NativeProcessBuilder.class, key, params);
+    }
+
+    /**
+     * Configure whether process starts in a prseudo-terminal or not.
+     * 
+     * @param usePty - if true, process builder will start the process in
+     * a pty mode
+     * @return this
+     */
+    public NativeProcessBuilder setUsePty(boolean usePty) {
+        info.setPtyMode(usePty);
+        return this;
+    }
+
+    /**
+     * Process builder try to expand, escape, quote command line according to subset of shell man.
+     * By default builder do this. This method allows to forbid  preprocessing of command line.
+     *
+     * @param expandMacros - if false, process builder do not preprocess command line
+     * @return this
+     */
+    public NativeProcessBuilder setMacroExpansion(boolean expandMacros) {
+        info.setExpandMacros(expandMacros);
+        return this;
+    }
+
+    private boolean isPtySupportedFor(final ExecutionEnvironment executionEnvironment) {
+        if (!HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
+            return false;
+        }
+
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+
+            switch (hostInfo.getOSFamily()) {
+                case WINDOWS:
+                    // for now pty mode only supported with Cygwin
+                    Shell shell = WindowsSupport.getInstance().getActiveShell();
+                    return shell.type == Shell.ShellType.CYGWIN;
+                case MACOSX:
+                    return true;
+                case LINUX:
+                    return true;
+                case SUNOS:
+                    return true;
+                default:
+                    return false;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return false;
+    }
+
+    public NativeProcessBuilder setCharset(Charset charset) {
+        info.setCharset(charset);
+        return this;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,7 +84,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("netbeans.full.hack", "true");
     }
     
-    public void testPreparePathes() throws URISyntaxException {
+    public void testPreparePatches() throws URISyntaxException {
         Properties p = new Properties();
 
         String prop = File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator +
@@ -116,7 +119,8 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("ins.one", "no");
         System.setProperty("ins.fs", "no");
 
-        Test instance = NbModuleSuite.allModules(NbModuleSuiteIns.class);
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
+                gui(false).clusters(".*").enableModules(".*"));
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -127,7 +131,8 @@ public class NbModuleSuiteTest extends TestCase {
         System.setProperty("ins.one", "no");
         System.setProperty("ins.fs", "no");
 
-        Test instance = NbModuleSuite.allModules(NbModuleSuiteIns.class, "testFS");
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).
+                gui(false).clusters(".*").enableModules(".*").addTest("testFS"));
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "no");
@@ -162,7 +167,7 @@ public class NbModuleSuiteTest extends TestCase {
 
 
 
-        Test instance = NbModuleSuite.create(NbModuleSuiteIns.class, null, null, "testOne", "testThree");
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).addTest("testOne", "testThree"));
         junit.textui.TestRunner.run(instance);
 
         assertProperty("ins.one", "OK");
@@ -170,6 +175,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.three", "OK");
     }
 
+    /* Cannot meaningfully rewrite while passing gui(false):
     public void testEmptyArrayMeansAll() {
         System.setProperty("ins.one", "No");
         System.setProperty("ins.two", "No");
@@ -182,6 +188,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.two", "OK");
         assertProperty("ins.three", "OK");
     }
+     */
 
     static void assertProperty(String name, String value) {
         String v = System.getProperty(name);
@@ -216,9 +223,9 @@ public class NbModuleSuiteTest extends TestCase {
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(
             AskForOrgOpenideUtilEnumClass.class
         )
-        .enableModules("ide.*", "org.netbeans.modules.java.platform.*")
-        .enableModules("platf.*", "org.openide.util.enumerations")
-        .enableModules("ide.*", "org.openide.loaders.*")
+        .enableModules("ide", "org.netbeans.modules.java.platform.*")
+        .enableModules("platform", "org.openide.util.enumerations")
+        .enableModules("ide", "org.openide.loaders.*")
         .gui(false)
         .addTest(NbModuleSuiteIns.class);
         Test instance = NbModuleSuite.create(config);
@@ -257,8 +264,8 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("ide[0-9]*").
-            clusters("java.*").
+            clusters("ide").
+            clusters("java").
             addTest(NbModuleSuiteClusters.class)
         );
         junit.textui.TestRunner.run(instance);
@@ -272,8 +279,8 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("java.*").
-            clusters("ide[0-9]*").
+            clusters("java").
+            clusters("ide").
             addTest(NbModuleSuiteClusters.class)
         );
         junit.textui.TestRunner.run(instance);
@@ -303,9 +310,10 @@ public class NbModuleSuiteTest extends TestCase {
     public void testModulesForCL() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 3, s.size());
+        assertEquals("Four modules left: " + s, 4, s.size());
 
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("Lookup: " + s, s.contains("org.openide.util.lookup"));
         assertTrue("junit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }
@@ -334,9 +342,10 @@ public class NbModuleSuiteTest extends TestCase {
     public void testModulesForMe() throws Exception {
         Set<String> s = NbModuleSuite.S.findEnabledModules(getClass().getClassLoader());
         s.remove("org.netbeans.modules.nbjunit");
-        assertEquals("Two modules left: " + s, 3, s.size());
+        assertEquals("Four modules left: " + s, 4, s.size());
 
         assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("Lookup: " + s, s.contains("org.openide.util.lookup"));
         assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,21 +43,27 @@ package org.netbeans.modules.nativeexecution.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
@@ -62,372 +71,269 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         super(name);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    public NativeProcessBuilderTest(String name, ExecutionEnvironment execEnv) {
+        super(name, execEnv);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    @SuppressWarnings("unchecked")
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(NativeProcessBuilderTest.class);
     }
 
-    @Before
-    @Override
-    public void setUp() {
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-    }
-
-    /**
-     * Test of newProcessBuilder method, of class NativeProcessBuilder.
-     */
-//    @Test
-//    public void testNewProcessBuilder() {
-//        fail("The test case is a prototype.");
-//    }
-    /**
-     * Test of newLocalProcessBuilder method, of class NativeProcessBuilder.
-     */
-    @Test
-    public void testNewLocalProcessBuilder() throws IOException {
-        System.out.println("newLocalProcessBuilder"); // NOI18N
-
+    public void testNewLocalProcessBuilder() throws Exception {
         NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
         assertNotNull(npb);
     }
 
-    /**
-     * Test of setExecutable method, of class NativeProcessBuilder.
-     */
-    @Test
-    public void testSetExecutable() throws CancellationException, IOException {
-        System.out.println("setExecutable: ..."); // NOI18N
-        ExecutionEnvironment ee;
+    public void testSetExecutableLocal() throws Exception {
+        doTestSetExecutable(ExecutionEnvironmentFactory.getLocal());
+    }
 
-        ee = ExecutionEnvironmentFactory.getLocal();
-        System.out.println("... test on a localhost [" + ee.toString() + "] ..."); // NOI18N
-        testSetExecutable(ee);
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testSetExecutable() throws Exception {
+        doTestSetExecutable(getTestExecutionEnvironment());
+    }
 
-        String[] mspecs = new String[]{
-            "intel-S2", // NOI18N
-            "intel-Linux", // NOI18N
-        };
+    public void testListenersLocal() throws Exception {
+        doTestListeners(ExecutionEnvironmentFactory.getLocal());
+    }
 
-        for (String mspec : mspecs) {
-            ee = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec); // NOI18N
-            if (ee == null) {
-                System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
-            } else {
-                System.out.println("... test on " + mspec + " [" + ee.toString() + "] ..."); // NOI18N
-                testSetExecutable(ee);
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testListeners() throws Exception {
+        int count = 5;
+        RequestProcessor rp = new RequestProcessor("testListeners", 50);
+        final CountDownLatch cdl = new CountDownLatch(count);
+
+        for (int i = 0; i < count; i++) {
+            rp.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    doTestListeners(getTestExecutionEnvironment());
+                    cdl.countDown();
+                }
+            });
+        }
+
+        cdl.await();
+        rp.shutdownNow();
+    }
+
+    private void doTestListeners(ExecutionEnvironment env) {
+
+        try {
+            ConnectionManager.getInstance().connectTo(env);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("echo");
+        final Counters counters = new Counters();
+        final AtomicInteger result = new AtomicInteger();
+        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+
+        npb.addNativeProcessListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (!(e instanceof NativeProcessChangeEvent)) {
+                    fail("Unexpected event");
+                    return;
+                }
+
+                if (!(e.getSource() instanceof NativeProcess)) {
+                    fail("Unexpected event");
+                    return;
+                }
+
+                final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+                final NativeProcess process = (NativeProcess) event.getSource();
+                final State state = event.state;
+
+                processRef.compareAndSet(null, process);
+                counters.getCounter(state.name()).incrementAndGet();
+
+                if (state == State.FINISHED) {
+                    result.set(processRef.get().exitValue());
+                }
+
+                switch (state) {
+                    case STARTING:
+                        assertEquals(0, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(0, counters.getCounter(State.FINISHED.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                    case RUNNING:
+                        assertEquals(1, counters.getCounter(State.STARTING.name()).get());
+                        assertEquals(0, counters.getCounter(State.FINISHED.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                    case FINISHED:
+                        assertEquals(1, counters.getCounter(State.STARTING.name()).get());
+                        assertEquals(1, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                }
             }
+        });
+
+        try {
+            NativeProcess process = npb.call();
+            assertEquals(process, processRef.get());
+            int exitCode = process.waitFor();
+            assertTrue(exitCode == result.get());
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
-    private void testSetCommandLine(ExecutionEnvironment ee) throws IOException {
-        if (ee == null) {
-            System.out.println("null ExecutionEnvironment - skip"); // NOI18N
-            return;
-        }
+    public void testSetCommandLineLocal() throws Exception {
+        doTestSetCommandLine(ExecutionEnvironmentFactory.getLocal());
+    }
 
-        String tmpDir = HostInfoUtils.getHostInfo(ee).getTempDir();
-        String testDir = tmpDir + "/path with a space"; // NOI18N
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testSetCommandLine() throws Exception {
+        doTestSetCommandLine(getTestExecutionEnvironment());
+    }
 
-        System.out.println("Do remove directory " + testDir); // NOI18N
+    private void doTestSetCommandLine(ExecutionEnvironment execEnv) throws Exception {
+        HostInfo hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        String tmpDir = hostinfo.getTempDir();
+        String testDir = tmpDir + "/path with a space";
+        NativeProcessBuilder npb;
 
-        try {
-            CommonTasksSupport.rmDir(ee, testDir, true, null).get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        // Don't use CommonTasksSupport.{rmDir,mkDir} in this test
 
-        System.out.println("Do create directory " + testDir); // NOI18N
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setCommandLine("rm -rf \"" + testDir + "\"");
+        assertEquals("rm -rf \"" + testDir + "\"", 0, npb.call().waitFor());
 
-        // as we use setCommandLine we need to take care of escaping,
-        // quoting, etc...
-
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ee);
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setCommandLine("mkdir \"" + testDir + "\""); // NOI18N
-        NativeProcess process = npb.call();
+        assertEquals("mkdir \"" + testDir + "\"", 0, npb.call().waitFor());
 
-        int result = -1;
-
-        try {
-            result = process.waitFor();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        assertEquals(0, result);
-
-        if (ee.isLocal()) {
-            File dir = new File(testDir);
-            assertTrue(dir.exists() && dir.isDirectory());
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            String realDir = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            assertTrue(new File(realDir).isDirectory());
         } else {
-            assertTrue(HostInfoUtils.fileExists(ee, testDir));
+            assertTrue(testDir + " does not exist", HostInfoUtils.fileExists(execEnv, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
-
-        npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setCommandLine("cp /bin/ls \"" + testDir + "/copied ls\""); // NOI18N
-
-        try {
-            result = npb.call().waitFor();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+        String lsCmd;
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            lsCmd = findComand("ls.exe");
+            assertNotNull("Cannot find ls.exe in paths", lsCmd);
+            lsCmd = WindowsSupport.getInstance().convertToShellPath(lsCmd);
+        } else {
+            lsCmd = "/bin/ls";
         }
 
-        assertEquals(0, result);
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setCommandLine("cp " + lsCmd + " \"" + testDir + "/copied ls\""); // NOI18N
+        assertEquals("cp " + lsCmd + " \"" + testDir + "/copied ls\"", 0, npb.call().waitFor());
 
-        System.out.println("Invoke copied ls and ensure that it works"); // NOI18N
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            npb.setCommandLine("\"" + WindowsSupport.getInstance().convertToWindowsPath(testDir + "/copied ls") + "\" \"" + testDir + "\"");
+        } else {
+            npb.setCommandLine("\"" + testDir + "/copied ls\" \"" + testDir + "\"");
+        }
 
-        npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setCommandLine("\"" + testDir + "/copied ls\" \"" + testDir + "\""); // NOI18N
-
-        NativeProcess ls = npb.call();
-        List<String> out = ProcessUtils.readProcessOutput(ls);
-
+        List<String> lsOut = ProcessUtils.readProcessOutput(npb.call());
         boolean found = false;
-
-        for (String line : out) {
-            if ("copied ls".equals(line)) { // NOI18N
+        for (String line : lsOut) {
+            if (line.equals("copied ls")) {
                 found = true;
                 break;
             }
         }
-
-        assertTrue(found);
-
-        System.out.println("... OK ..."); // NOI18N
+        assertTrue("\"copied ls\" not found in ls output", found);
     }
 
-    private void testSetExecutable(ExecutionEnvironment ee) throws IOException {
-        if (ee == null) {
-            System.out.println("null ExecutionEnvironment - skip"); // NOI18N
-            return;
-        }
-
-        String tmpDir = HostInfoUtils.getHostInfo(ee).getTempDir();
+    private void doTestSetExecutable(ExecutionEnvironment execEnv) throws Exception {
+        HostInfo hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        String tmpDir = hostinfo.getTempDir();
         String testDir = tmpDir + "/path with a space"; // NOI18N
+        NativeProcessBuilder npb;
 
-        System.out.println("Do remove directory " + testDir); // NOI18N
+        // Don't use CommonTasksSupport.{rmDir,mkDir} in this test
 
-        try {
-            CommonTasksSupport.rmDir(ee, testDir, true, null).get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("rm").setArguments("-rf", testDir);
+        assertEquals("rm -rf \"" + testDir + "\"", 0, npb.call().waitFor());
 
-        System.out.println("Do create directory " + testDir); // NOI18N
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("mkdir").setArguments(testDir);
+        assertEquals("mkdir \"" + testDir + "\"", 0, npb.call().waitFor());
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable("mkdir").setArguments(testDir); // NOI18N
-        NativeProcess process = npb.call();
-
-        int result = -1;
-
-        try {
-            result = process.waitFor();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        assertEquals(0, result);
-
-        if (ee.isLocal()) {
-            File dir = new File(testDir);
-            assertTrue(dir.exists() && dir.isDirectory());
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            String realDir = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            assertTrue(new File(realDir).isDirectory());
         } else {
-            assertTrue(HostInfoUtils.fileExists(ee, testDir));
+            assertTrue(testDir + " does not exist", HostInfoUtils.fileExists(execEnv, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
-
-        npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable("cp").setArguments("/bin/ls", testDir + "/copied ls"); // NOI18N
-
-        try {
-            result = npb.call().waitFor();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+        String lsCmd;
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            lsCmd = findComand("ls.exe");
+            assertNotNull("Cannot find ls.exe in paths", lsCmd);
+            lsCmd = WindowsSupport.getInstance().convertToShellPath(lsCmd);
+        } else {
+            lsCmd = "/bin/ls";
         }
 
-        assertEquals(0, result);
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setCommandLine("cp " + lsCmd + " \"" + testDir + "/copied ls\""); // NOI18N
+        assertEquals("cp " + lsCmd + " \"" + testDir + "/copied ls\"", 0, npb.call().waitFor());
 
-        System.out.println("Invoke copied ls and ensure that it works"); // NOI18N
-
-        npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable(testDir + "/copied ls"); // NOI18N
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            npb.setExecutable(WindowsSupport.getInstance().convertToWindowsPath(testDir + "/copied ls"));
+        } else {
+            npb.setExecutable(testDir + "/copied ls");
+        }
         npb.setArguments(testDir);
 
-        NativeProcess ls = npb.call();
-        List<String> out = ProcessUtils.readProcessOutput(ls);
+        List<String> lsOut = ProcessUtils.readProcessOutput(npb.call());
         boolean found = false;
-
-        for (String line : out) {
-            if ("copied ls".equals(line)) { // NOI18N
+        for (String line : lsOut) {
+            if (line.equals("copied ls")) {
                 found = true;
                 break;
             }
         }
-
-        assertTrue(found);
-
-        System.out.println("... OK ..."); // NOI18N
+        assertTrue("\"copied ls\" not found in ls output", found);
     }
 
-    /**
-     * Test of setCommandLine method, of class NativeProcessBuilder.
-     */
-    @Test
-    public void testSetCommandLine() throws IOException {
-        System.out.println("setCommandLine: ..."); // NOI18N
-        ExecutionEnvironment ee;
-
-        ee = ExecutionEnvironmentFactory.getLocal();
-        System.out.println("... test on localhost [" + ee.toString() + "] ..."); // NOI18N
-        testSetCommandLine(ee);
-
-        String[] mspecs = new String[]{
-            "intel-S2", // NOI18N
-            "intel-Linux", // NOI18N
-        };
-
-        for (String mspec : mspecs) {
-            ee = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec); // NOI18N
-            if (ee == null) {
-                System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
-            } else {
-                System.out.println("... test on " + mspec + " [" + ee.toString() + "] ..."); // NOI18N
-                testSetCommandLine(ee);
+    private String findComand(String command) {
+        ArrayList<String> list = new ArrayList<String>();
+        String path = System.getenv("PATH"); // NOI18N
+        if (path != null) {
+            StringTokenizer st = new StringTokenizer(path, File.pathSeparator); // NOI18N
+            while (st.hasMoreTokens()) {
+                String dir = st.nextToken();
+                list.add(dir);
+            }
+        } else {
+            list.add("C:/WINDOWS/System32"); // NOI18N
+            list.add("C:/WINDOWS"); // NOI18N
+            list.add("C:/cygwin/bin"); // NOI18N
+        }
+        for (String p : list) {
+            String task = p + File.separatorChar + command;
+            File tool = new File(task);
+            if (tool.exists() && tool.isFile()) {
+                return tool.getAbsolutePath();
             }
         }
+        return null;
     }
-//
-//    /**
-//     * Test of addNativeProcessListener method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testAddNativeProcessListener() {
-//        System.out.println("addNativeProcessListener");
-//        ChangeListener listener = null;
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.addNativeProcessListener(listener);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of call method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testCall() throws Exception {
-//        System.out.println("call");
-//        NativeProcessBuilder instance = null;
-//        NativeProcess expResult = null;
-//        NativeProcess result = instance.call();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setWorkingDirectory method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testSetWorkingDirectory() {
-//        System.out.println("setWorkingDirectory");
-//        String workingDirectory = "";
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.setWorkingDirectory(workingDirectory);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of addEnvironmentVariable method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testAddEnvironmentVariable() {
-//        System.out.println("addEnvironmentVariable");
-//        String name = "";
-//        String value = "";
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.addEnvironmentVariable(name, value);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of addEnvironmentVariables method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testAddEnvironmentVariables() {
-//        System.out.println("addEnvironmentVariables");
-//        Map<String, String> envs = null;
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.addEnvironmentVariables(envs);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setArguments method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testSetArguments() {
-//        System.out.println("setArguments");
-//        String[] arguments = null;
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.setArguments(arguments);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of useExternalTerminal method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testUseExternalTerminal() {
-//        System.out.println("useExternalTerminal");
-//        ExternalTerminal terminal = null;
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.useExternalTerminal(terminal);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of unbufferOutput method, of class NativeProcessBuilder.
-//     */
-////    @Test
-//    public void testUnbufferOutput() {
-//        System.out.println("unbufferOutput");
-//        boolean unbuffer = false;
-//        NativeProcessBuilder instance = null;
-//        NativeProcessBuilder expResult = null;
-//        NativeProcessBuilder result = instance.unbufferOutput(unbuffer);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
 }

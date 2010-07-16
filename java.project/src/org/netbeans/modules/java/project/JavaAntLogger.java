@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -218,7 +221,7 @@ public final class JavaAntLogger extends AntLogger {
     private static final class SessionData {
         public ClassPath platformSources = null;
         public String classpath = null;
-        public Collection<FileObject> classpathSourceRoots = null;
+        public volatile Collection<FileObject> classpathSourceRoots = null;
         public String possibleExceptionText = null;
         public String lastExceptionMessage = null;
         public SessionData() {}
@@ -351,8 +354,12 @@ public final class JavaAntLogger extends AntLogger {
         if (data.classpath == null) {
             return Collections.emptySet();
         }
-        if (data.classpathSourceRoots == null) {
-            data.classpathSourceRoots = new LinkedHashSet<FileObject>();
+        Collection<FileObject> result;
+        synchronized (data) {
+            result = data.classpathSourceRoots;
+        }
+        if (result == null) {
+            result = new LinkedHashSet<FileObject>();
             StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String binrootS = tok.nextToken();
@@ -362,20 +369,24 @@ public final class JavaAntLogger extends AntLogger {
                     continue;
                 }
                 FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
-                data.classpathSourceRoots.addAll(Arrays.asList(someRoots));
+                result.addAll(Arrays.asList(someRoots));
             }
             if (data.platformSources != null) {
-                data.classpathSourceRoots.addAll(Arrays.asList(data.platformSources.getRoots()));
+                result.addAll(Arrays.asList(data.platformSources.getRoots()));
             } else {
                 // no platform found. use default one:
                 JavaPlatform plat = JavaPlatform.getDefault();
                 // in unit tests the default platform may be null:
                 if (plat != null) {
-                    data.classpathSourceRoots.addAll(Arrays.asList(plat.getSourceFolders().getRoots()));
+                    result.addAll(Arrays.asList(plat.getSourceFolders().getRoots()));
                 }
             }
+            result = Collections.unmodifiableCollection(result);
+            synchronized (data) {
+                data.classpathSourceRoots = result;
+            }
         }
-        return data.classpathSourceRoots;
+        return result;
     }
     
     private static String guessExceptionMessage(SessionData data) {

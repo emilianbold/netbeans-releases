@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,19 +49,21 @@ import java.awt.Insets;
 import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.openide.WizardDescriptor;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
+ * @author Vitaly Bychkov
  * @author Vladimir Yaroslavskiy
  * @version 2007.02.02
  */
-final class PanelWSDLs<T> extends Panel<T> {
+final class PanelWSDLs extends Panel {
     
-  PanelWSDLs(Project project, Panel<T> parent) {
+  PanelWSDLs(Project project, Panel parent) {
     super(project, parent);
-    myWebServiceImplement = new PanelWebService<T>(project, parent);
-    myWebServiceCall = new PanelWebService<T>(project, parent, i18n("LBL_Web_Service_File2")); // NOI18N
+    myWebServiceImplement = new PanelXsltWebService(project, this);
+    myWebServiceCall = new PanelWebService(project, this);
  }
 
   @Override
@@ -68,22 +73,60 @@ final class PanelWSDLs<T> extends Panel<T> {
   }
 
   @Override
-  protected Panel<T> getNext()
+  protected Panel getNext()
   {
-    return new PanelProxy<T>(getProject(), this,
-      (WSDLModel) myWebServiceImplement.getResult(),
-      (WSDLModel) myWebServiceCall.getResult());
+    return new PanelProxy(getProject(), this,
+      (Operation) myWebServiceImplement.getResult(),
+      (Operation) myWebServiceCall.getResult());
   }
 
   @Override
-  protected String getError()
-  {
-    return getError(myWebServiceImplement.getError(), myWebServiceCall.getError());
+  public boolean isValid() {
+      return !isInitializedUI || getError() == null;
+  }
+  
+  @Override
+  public void readSettings(WizardDescriptor object) {
+    super.readSettings(object);
+    myWebServiceImplement.readSettings(object);
+    myWebServiceCall.readSettings(object);
   }
 
   @Override
-  protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
-  {
+  public void storeSettings(WizardDescriptor object) {
+    super.storeSettings(object);
+    myWebServiceImplement.storeSettings(object);
+    myWebServiceCall.storeSettings(object);
+  }
+
+  @Override
+  protected String getError() {
+      String error = getError(myWebServiceImplement.getError(), myWebServiceCall.getError());
+      if (error == null && isExistLongRunningError()) {
+          error = getLongRunningError();
+          setExistLongRunningError(error != null);
+      }
+      return error;
+  }
+
+    private String checkOperations() {
+        Operation callOperation = myWebServiceCall.getWsdlOperation();
+        Operation implOperation = myWebServiceImplement.getWsdlOperation();
+        if (callOperation == null || implOperation == null) {
+            return null;
+        }
+        return callOperation.equals(implOperation) 
+                ? i18n("ERR_ReqursiveWsdlOperationInvocation") : null; // NOI18N
+    }
+
+    @Override
+    protected String getLongRunningError() {
+        String error = checkOperations();
+        return error;
+    }
+    
+  @Override
+  protected void createPanel(JPanel mainPanel, GridBagConstraints cc) {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
@@ -96,8 +139,7 @@ final class PanelWSDLs<T> extends Panel<T> {
     panel.add(createSeparator(i18n("LBL_We_Implement")), c); // NOI18N
 
     c.gridy++;
-    c.insets = new Insets(
-      TINY_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE * 2, TINY_SIZE, 0);
     myWebServiceImplement.createPanel(panel, c);
 
     // we call
@@ -106,14 +148,16 @@ final class PanelWSDLs<T> extends Panel<T> {
     panel.add(createSeparator(i18n("LBL_We_Call")), c); // NOI18N
 
     c.gridy++;
-    c.insets = new Insets(
-      TINY_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE * 2, TINY_SIZE, 0);
     myWebServiceCall.createPanel(panel, c);
 
     mainPanel.add(panel, cc);
     mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewBridgeService2"));
+    
+    isInitializedUI = true;    
   }
 
-  private Panel<T> myWebServiceImplement;
-  private Panel<T> myWebServiceCall;
+  private PanelWebService myWebServiceImplement;
+  private PanelWebService myWebServiceCall;
+  private boolean isInitializedUI = false;
 }

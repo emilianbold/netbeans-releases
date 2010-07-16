@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,12 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.ListMatcher;
+import org.netbeans.modules.java.source.save.Measure;
 
 /**
  * Test ListMatcher.
@@ -158,6 +164,56 @@ public class ListMatcherTest extends NbTestCase {
             String result = matcher.printResult(false);
             System.err.println("-----------");
             System.err.println("testComplex");
+            System.err.println("-----------");
+            System.err.println(result);
+            assertEquals(golden, result);
+        } else {
+            assertTrue("No match!", false);
+        }
+    }
+
+    public void testSimilar1() {
+        String[] oldL = {       "A" };
+        String[] newL = { "A1", "A" };
+        String golden =
+                "{insert} A1\n" +
+                "{nochange} A\n";
+        ListMatcher<String> matcher = ListMatcher.<String>instance(Arrays.asList(oldL), Arrays.asList(newL), new Comparator<String>(){
+            @Override
+            public int compare(String o1, String o2) {
+                if (o1.equals(o2)) return Measure.OBJECTS_MATCH;
+                if (o1.startsWith(o2) || o2.startsWith(o1)) return Measure.ALMOST_THE_SAME;
+                return Measure.INFINITE_DISTANCE;
+            }
+        });
+        if (matcher.match()) {
+            String result = matcher.printResult(false);
+            System.err.println("-----------");
+            System.err.println("testSimilar1");
+            System.err.println("-----------");
+            System.err.println(result);
+            assertEquals(golden, result);
+        } else {
+            assertTrue("No match!", false);
+        }
+    }
+
+    public void testSimilar2() {
+        String[] oldL = {       "A1" };
+        String[] newL = { "A3", "A2" };
+        String golden =
+                "{insert} A3\n" +
+                "{modify} A2\n";
+        ListMatcher<String> matcher = ListMatcher.<String>instance(Arrays.asList(oldL), Arrays.asList(newL), new Comparator<String>(){
+            @Override
+            public int compare(String o1, String o2) {
+                return Math.abs(o1.charAt(1) - o2.charAt(1));
+            }
+        });
+        if (matcher.match()) {
+            String result = matcher.printResult(false);
+            System.err.println("-----------");
+            System.err.println("testSimilar2");
             System.err.println("-----------");
             System.err.println(result);
             assertEquals(golden, result);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,8 +81,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.mapper.HostMappingsAnalyzer;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -130,10 +134,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private final JButton btnOK;
     private Dialog presenter;
-    private ServerRecord currentHost;
-    private DefaultComboBoxModel serverListModel;
+    private final ServerRecord currentHost;
+    private final DefaultComboBoxModel serverListModel;
     private final String pathToValidate;
-    private final Map<ServerRecord, DefaultTableModel> cache = new HashMap<ServerRecord, DefaultTableModel>();
+    private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<ServerRecord, PathMapTableModel>();
     private ProgressHandle phandle;
 
     /** Creates new form EditPathMapDialog */
@@ -170,7 +174,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             jScrollPane3.setOpaque(false);
         }
 
-        initTableModel(currentHost);
+        initTableModel();
     }
 
     private void initTable(){
@@ -191,6 +195,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); //NOI18N
         tblPathMappings.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), ACTION_ESCAPE_TABLE);
         tblPathMappings.getActionMap().put(ACTION_ESCAPE_TABLE, new AbstractAction(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 EditPathMapDialog.this.btnOK.requestFocus();
             }
@@ -204,6 +209,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private void addTableActions() throws MissingResourceException {
 
         Action removeAction = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_Remove")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 int[] rows = tblPathMappings.getSelectedRows();
                 if (rows.length > 0) {
@@ -217,6 +223,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         };
 
         Action insertAction = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_Insert")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 int row = tblPathMappings.getSelectedRow();
                 row = (row < 0) ? 0: row;
@@ -236,8 +243,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     if (row >= 0 && tblPathMappings.getSelectionModel().isSelectionEmpty()) {
                         tblPathMappings.getSelectionModel().setSelectionInterval(row, row);
                     }
+                    menu.show(evt.getComponent(), evt.getX(), evt.getY());
                 }
-                menu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
 
             @Override
@@ -257,54 +264,41 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tblPathMappings.addMouseListener(menuListener);
     }
 
-    private synchronized void initTableModel(final ServerRecord host) {
-        DefaultTableModel tableModel = cache.get(host);
+    private synchronized void initTableModel() {
+        PathMapTableModel tableModel = cache.get(currentHost);
         if (tableModel == null) {
+            enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
             handleProgress(true);
-            tableModel = new DefaultTableModel(0, 2);
+            tableModel = new PathMapTableModel();
+            cache.put(currentHost, tableModel);
             RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
                 public void run() {
-                    final DefaultTableModel tm = prepareTableModel(host.getExecutionEnvironment());
-                    cache.put(host, tm);
+                    final PathMapTableModel tm = prepareTableModel(currentHost.getExecutionEnvironment());
+                    cache.put(currentHost, tm);
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
-                            if (tblPathMappings != null) {
-                                handleProgress(false);
-                                updatePathMappingsTable(tm);
-                                enableControls(true, "");
-                            }
+                            handleProgress(false);
+                            updatePathMappingsTable(tm);
+                            enableControls(true, "");
                         }
                     });
                 }
             });
-            enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
-
-            cache.put(host, tableModel);
         }
-
         updatePathMappingsTable(tableModel);
     }
 
-    private void enableControls(boolean value, String message) {
-        btnOK.setEnabled(value);
-        tblPathMappings.setEnabled(value);
-        txtError.setText(message);
-    }
-
-    private void updatePathMappingsTable(DefaultTableModel tableModel) {
-        tblPathMappings.setModel(tableModel);
-        tblPathMappings.getColumnModel().getColumn(0).setCellEditor(new PathCellEditor());
-        setColumnNames();
-    }
-
-    private DefaultTableModel prepareTableModel(ExecutionEnvironment host) {
-        Map<String, String> pm = getRemotePathMap(host).getMap();
-        DefaultTableModel tableModel = new DefaultTableModel(0, 2);
+    private PathMapTableModel prepareTableModel(Map<String, String> pm) {
+        PathMapTableModel tableModel = new PathMapTableModel();
         for (Map.Entry<String, String> entry : pm.entrySet()) {
             tableModel.addRow(new String[]{entry.getKey(), entry.getValue()});
         }
-        if (tableModel.getRowCount() < 4) { // TODO: switch from JTable to a normal TableView
+        if (tableModel.getRowCount() < 4) {
+            // TODO: switch from JTable to a normal TableView
             for (int i = 4; i > tableModel.getRowCount(); i--) {
                 tableModel.addRow(new String[]{null, null});
             }
@@ -314,9 +308,20 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         return tableModel;
     }
 
-    private void setColumnNames() {
-        tblPathMappings.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(EditPathMapDialog.class, "LocalPathColumnName")); // NOI18N
-        tblPathMappings.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(EditPathMapDialog.class, "RemotePathColumnName")); // NOI18N
+    private void enableControls(boolean value, String message) {
+        btnOK.setEnabled(value);
+        restore.setEnabled(value);
+        tblPathMappings.setEnabled(value);
+        txtError.setText(message);
+    }
+
+    private void updatePathMappingsTable(DefaultTableModel tableModel) {
+        tblPathMappings.setModel(tableModel);
+    }
+
+    private PathMapTableModel prepareTableModel(ExecutionEnvironment host) {
+        Map<String, String> pm = getRemotePathMap(host).getMap();
+        return prepareTableModel(pm);
     }
 
     /* package */ void applyChanges() {
@@ -349,7 +354,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         lblHostName = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblPathMappings = new javax.swing.JTable();
+        tblPathMappings = new PathTable();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtExplanation = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -357,19 +362,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         tfHostName = new javax.swing.JTextField();
+        restore = new javax.swing.JButton();
 
         lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
         lblHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.lblHostName.text")); // NOI18N
         lblHostName.setFocusable(false);
 
-        tblPathMappings.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
+        tblPathMappings.setModel(new PathMapTableModel());
         tblPathMappings.getTableHeader().setResizingAllowed(false);
         tblPathMappings.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblPathMappings);
@@ -386,7 +385,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtExplanation.setRows(4);
         txtExplanation.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.txtExplanation.text")); // NOI18N
         txtExplanation.setWrapStyleWord(true);
-        txtExplanation.setAutoscrolls(false);
         txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         txtExplanation.setFocusable(false);
         jScrollPane2.setViewportView(txtExplanation);
@@ -412,47 +410,84 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tfHostName.setEditable(false);
         tfHostName.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.tfHostName.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        org.openide.awt.Mnemonics.setLocalizedText(restore, org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.restore.text")); // NOI18N
+        restore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(lblHostName)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(tfHostName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
-                    .add(jLabel1))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(lblHostName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(tfHostName, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(restore))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblHostName)
-                    .add(tfHostName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(5, 5, 5)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblHostName)
+                    .addComponent(tfHostName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7)
+                .addComponent(restore)
                 .addContainerGap())
         );
 
         lblHostName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Hostname")); // NOI18N
         lblHostName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Host_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
+        enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
+        handleProgress(true);
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                HostMappingsAnalyzer an = new HostMappingsAnalyzer(currentHost.getExecutionEnvironment());
+                final PathMapTableModel tm = prepareTableModel(an.getMappings());
+                cache.put(currentHost, tm);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (tblPathMappings != null) {
+                            handleProgress(false);
+                            updatePathMappingsTable(tm);
+                            enableControls(true, "");
+                        }
+                    }
+                });
+            }
+        });
+        
+
+    }//GEN-LAST:event_restoreActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -461,11 +496,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblHostName;
+    private javax.swing.JButton restore;
     private javax.swing.JTable tblPathMappings;
     private javax.swing.JTextField tfHostName;
     private javax.swing.JTextArea txtError;
     private javax.swing.JTextArea txtExplanation;
     // End of variables declaration//GEN-END:variables
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnOK) {
             if (cache.get(currentHost).getRowCount() == 0) {
@@ -477,10 +514,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Validating"));
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     final String errors = validateMaps();
                     Runnable action = errors.length() == 0
                             ? new Runnable() {
+                                @Override
                                 public void run() {
                                     try {
                                         //this is done to don't scare user with red note if validateMaps() was fast
@@ -492,6 +531,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                                 }
                             }
                             : new Runnable() {
+                                @Override
                                 public void run() {
                                     handleProgress(false);
                                     enableControls(true, errors);
@@ -558,8 +598,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         private final JPanel panel;
         private final JTextField tfPath;
         private final JButton btnBrowse;
+        private final ExecutionEnvironment execEnv;
 
-        public PathCellEditor() {
+        public PathCellEditor(ExecutionEnvironment execEnv) {
+            this.execEnv = execEnv;
             tfPath = new JTextField();
             btnBrowse = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Browse"));
             panel = new JPanel();
@@ -576,6 +618,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             btnBrowse.addActionListener(this);
             tfPath.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), ACTION_TAB_IN_CELL);
             tfPath.getActionMap().put(ACTION_TAB_IN_CELL, new AbstractAction(){
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     tfPath.setSelectionStart(0);
                     tfPath.setSelectionEnd(0);
@@ -585,6 +628,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             });
             btnBrowse.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_MASK), ACTION_SHIFT_TAB_IN_CELL);
             btnBrowse.getActionMap().put(ACTION_SHIFT_TAB_IN_CELL, new AbstractAction(){
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     tfPath.setSelectionStart(0);
                     tfPath.setSelectionEnd(tfPath.getText().length());
@@ -594,18 +638,22 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             });
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            File file = new File(tfPath.getText());
-            JFileChooser fc = new JFileChooser(file);
+            String title = execEnv.isLocal() ?
+                NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Local") :
+                NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Remote", ServerList.get(execEnv).getDisplayName());
+            JFileChooser fc = new FileChooserBuilder(execEnv).createFileChooser(tfPath.getText());
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.setApproveButtonText(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Choose"));
-            fc.setDialogTitle(NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title"));
+            fc.setDialogTitle(title);
             fc.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
             if (fc.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) {
                 tfPath.setText(fc.getSelectedFile().getAbsolutePath());
             }
         }
 
+        @Override
         public Object getCellEditorValue() {
             return tfPath.getText().trim();
         }
@@ -636,7 +684,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 field.requestFocusInWindow();
                 field.selectAll();
             } else {
-                JTextField field = (JTextField) tab.getEditorComponent();
+                JPanel panel = (JPanel) tab.getEditorComponent();
+                JTextField field = (JTextField) panel.getComponent(0);
                 field.setCaretPosition(field.getText().length());
                 field.requestFocusInWindow();
                 field.selectAll();
@@ -645,8 +694,38 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static class EditAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent ae) {
             autoEdit((JTable) ae.getSource());
+        }
+    }
+
+    private static class PathMapTableModel extends DefaultTableModel {
+
+        public PathMapTableModel() {
+            super(new String[] {
+                NbBundle.getMessage(EditPathMapDialog.class, "LocalPathColumnName"),
+                NbBundle.getMessage(EditPathMapDialog.class, "RemotePathColumnName")
+            }, 0);
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return String.class;
+        }
+    }
+
+    private class PathTable extends JTable {
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            switch (column) {
+                case 0:
+                    return new PathCellEditor(ExecutionEnvironmentFactory.getLocal());
+                case 1:
+                    return new PathCellEditor(currentHost.getExecutionEnvironment());
+                default:
+                    throw new IllegalArgumentException("Invalid column number" + column); //NOI18N
+            }
         }
     }
 }

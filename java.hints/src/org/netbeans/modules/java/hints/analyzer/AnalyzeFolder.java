@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.analyzer;
 
@@ -48,7 +51,8 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.java.hints.infrastructure.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
@@ -61,8 +65,6 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class AnalyzeFolder extends AbstractAction implements ContextAwareAction {
-    private static final String JAVADOC_ERROR_FOR_NONPUBLIC_PKGS = "availabilityfalse"; // NOI18N
-    private static final String JAVADOC_CREATE_FOR_NONPUBLIC_PKGS = "availabilitytrue"; // NOI18N
 
     private final boolean def;
     private final Lookup context;
@@ -93,22 +95,16 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
     
     public void actionPerformed(ActionEvent e) {
         Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
-        for (List<TreeRule> rules : RulesManager.getInstance().getHints().values()) {
-            for (TreeRule r : rules) {
-                String id = r.getId();
-                
-                if (r instanceof AbstractHint && !preferencesOverlay.containsKey(id)) {
-                    Preferences origPreferences = ((AbstractHint) r).getPreferences(null);
-                    OverridePreferences prefs = new OverridePreferences(origPreferences);
-                    
-                    preferencesOverlay.put(r.getId(),prefs);
-                    if (SUPPORTED_IDS.contains(id)) {
-                        HintsSettings.setEnabled(prefs, true);
-                        prefs.putBoolean(JAVADOC_ERROR_FOR_NONPUBLIC_PKGS, origPreferences.getBoolean(JAVADOC_ERROR_FOR_NONPUBLIC_PKGS, false));
-                        prefs.putBoolean(JAVADOC_CREATE_FOR_NONPUBLIC_PKGS, origPreferences.getBoolean(JAVADOC_CREATE_FOR_NONPUBLIC_PKGS, false));
-                    }
-                    HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
-                }
+        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+            String id = hm.id;
+
+            if (!preferencesOverlay.containsKey(id)) {
+                Preferences origPreferences = RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId());
+                OverridePreferences prefs = new OverridePreferences(origPreferences);
+
+                preferencesOverlay.put(id, prefs);
+                HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
+                HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
             }
         }
         

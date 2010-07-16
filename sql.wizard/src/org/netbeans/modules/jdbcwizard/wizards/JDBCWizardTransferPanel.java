@@ -13,13 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * 
- * Copyright 2009 Sun Microsystems, Inc.
+ * Copyright 2005 Sun Microsystems, Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
 import org.openide.NotifyDescriptor;
@@ -57,19 +58,28 @@ import org.openide.util.HelpCtx;
  * 
  * @author
  */
-public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor.Panel {
+public class JDBCWizardTransferPanel extends JPanel implements ActionListener, WizardDescriptor.Panel {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = JDBCWizardTransferPanel.class.getName();
 
     /* Set <ChangeListeners> */
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set listeners = new HashSet(1);
 
     private List selTableList = new ArrayList();
 
     private JDBCWizardTablePanel tablePanel;
-    private JDBCWizardTransferPanelUI comp;
-    private String title;
+    private PreparedStatementPanel prepstmtPanel;
+    private StoredProceduresPanel procPanel;
+
+    /** Creates a default instance of JDBCWizardTransferPanel. */
+    public JDBCWizardTransferPanel() {
+    }
 
     /**
      * Creates a new instance of JDBCWizardTransferPanel using the given ListModels to initially
@@ -82,7 +92,11 @@ public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor
      *            it displays available destination OTDs
      */
     public JDBCWizardTransferPanel(final String title) {
-        this.title = title;
+        this();
+        if (title != null && title.trim().length() != 0) {
+            this.setName(title);
+        }
+
 //        final ArrayList testList = new ArrayList();
 //        this.tablePanel = new JDBCWizardTablePanel(testList);
 //
@@ -114,10 +128,7 @@ public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor
      * @see org.openide.WizardDescriptor.Panel#getComponent
      */
     public Component getComponent() {
-        if (comp == null) {
-            comp = new JDBCWizardTransferPanelUI (title);
-        }
-        return comp;
+        return this;
     }
 
     /**
@@ -163,11 +174,8 @@ public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor
 			final ArrayList testList = new ArrayList();
 		    this.tablePanel = new JDBCWizardTablePanel(testList);
 
-		    if (comp == null) {
-                getComponent ();
-            }
-            comp.setLayout(new BorderLayout());
-		    comp.add(this.tablePanel, BorderLayout.CENTER);
+		    this.setLayout(new BorderLayout());
+		    this.add(this.tablePanel, BorderLayout.CENTER);
 		    JDBCWizardTransferPanel.this.tablePanel.resetTable(this.selTableList);
 		}
 	}
@@ -199,10 +207,7 @@ public class JDBCWizardTransferPanel implements ActionListener, WizardDescriptor
                 return;
         }
         if(selectedOption.toString().equals("PREVIOUS_OPTION")){
-            if (comp == null) {
-                getComponent ();
-            }
-        	comp.remove(this.tablePanel);
+        	this.remove(this.tablePanel);
         	this.selTableList = null;
         	return;
         }

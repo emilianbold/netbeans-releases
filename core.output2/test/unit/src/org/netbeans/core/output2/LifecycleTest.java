@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -54,6 +58,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -336,6 +341,52 @@ public class LifecycleTest extends NbTestCase {
 
         assertFalse ("Reset on a used writer should replace its underlying output", writer.out() == out);
 
+    }
+
+    // Not really a Lifecycle feature but requires a bonafide TC container
+    // which this Test provides.
+    public void testFineSelect() {
+        System.out.println("testFineSelect");
+
+	EnumSet<IOSelect.AdditionalOperation> extraOps;
+
+	extraOps = null;
+	boolean sawException = false;
+	try {
+	    IOSelect.select(io, extraOps);
+	} catch (NullPointerException ex) {
+	    // extraOps is NonNull
+	    sawException = true;
+	}
+	assertTrue("null pointer not caught", sawException);
+	sleep();
+
+	extraOps = EnumSet.noneOf(IOSelect.AdditionalOperation.class);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.REQUEST_ACTIVE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		              IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		              IOSelect.AdditionalOperation.REQUEST_VISIBLE,
+			      IOSelect.AdditionalOperation.REQUEST_ACTIVE);
+	IOSelect.select(io, extraOps);
+	sleep();
     }
 
     static JComponent getIOWindow() {

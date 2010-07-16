@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,9 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,11 +53,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -142,9 +143,8 @@ public class JiraQuery extends Query {
         return NbJiraIssue.getColumnDescriptors(repository);
     }
 
-    @Override
-    public boolean refresh() { // XXX what if already running! - cancel task
-        return refreshIntern(false);
+    public void refresh() { // XXX what if already running! - cancel task
+        refreshIntern(false);
     }
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
@@ -176,7 +176,6 @@ public class JiraQuery extends Query {
 
                     // run query to know what matches the criteria
                     // IssuesIdCollector will populate the issues set
-                    ensureProjects(jiraFilter);
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, jiraFilter, new IssuesCollector());
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
@@ -198,21 +197,6 @@ public class JiraQuery extends Query {
             }
         });
         return ret[0];
-    }
-
-    private void ensureProjects(JiraFilter jiraFilter) {
-        if(!(jiraFilter instanceof FilterDefinition)) {
-            return;
-        }
-        FilterDefinition fd = (FilterDefinition) jiraFilter;
-        ProjectFilter pf = fd.getProjectFilter();
-        if(pf == null) {
-            return;
-        }
-        Project[] projects = pf.getProjects();
-        for (Project project : projects) {
-            repository.getConfiguration().ensureProjectLoaded(project);
-        }
     }
 
     public String getStoredQueryName() {
@@ -322,6 +306,7 @@ public class JiraQuery extends Query {
             String id = NbJiraIssue.getID(taskData);
             NbJiraIssue issue;
             try {
+                getController().progress(NbJiraIssue.getDisplayName(taskData));
                 IssueCache<TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -85,14 +89,18 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
         return null;
     }
 
+    @Override
     protected void addJaxWs20Library() throws Exception{
         SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
         if (sgs.length > 0) {
             FileObject srcRoot = sgs[0].getRootFolder();
-            ClassPath classPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
-            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
 
-            if (wsimportFO == null) {
+            ClassPath compileClassPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
+            ClassPath bootClassPath = ClassPath.getClassPath(srcRoot,ClassPath.BOOT);
+            ClassPath classPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{compileClassPath, bootClassPath});
+            FileObject jaxWsClass = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
+
+            if (jaxWsClass == null) {
                 //Add the jaxws21 library to the project to be packed with the archive
                 Library MetroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
                 if (MetroLib != null) {
@@ -107,10 +115,7 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
             }
             // add JAX-WS Endorsed Classpath
             try {
-                String java_version = System.getProperty("java.version"); //NOI18N
-                if (java_version.compareTo("1.6") >= 0) {
-                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
-                }
+                WSUtils.addJaxWsApiEndorsed(project, srcRoot);
             } catch (IOException ex) {
                 Logger.getLogger(WebProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
             }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -82,89 +85,62 @@ public final class NamingFactory {
         return nameMap.size();
     }
     
-    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
-        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, FileType.unknown);
+    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
+        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, null, ignoreCache, FileType.unknown);
     }
     
-    public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
+    public static synchronized FileNaming checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
         if (!childName.getFile().getName().equals(f.getName())) {
             boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
-                    NamingFactory.rename(childName,f.getName());
+                FileName fn = (FileName)childName;
+                fn.updateCase(f.getName());
             }
-        }                        
+        }
+        return childName;
     }
 
-    private static synchronized FileNaming[] rename (FileNaming fNaming, String newName) throws IOException {
-        return rename(fNaming, newName, null);
-    }
-    
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
-        final ArrayList all = new ArrayList();
-        boolean retVal = false;
-        synchronized(NamingFactory.class) {
-            remove(fNaming, null);
-        }
+        final List<FileNaming> all = new ArrayList<FileNaming>();
         
-        retVal = fNaming.rename(newName, handler);
+        FileNaming newNaming = fNaming.rename(newName, handler);
+        boolean retVal = newNaming != fNaming;
         
         synchronized(NamingFactory.class) {        
-            all.add(fNaming);
-            NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming, true, FileType.unknown);
-            renameChildren(all);
+            all.add(newNaming);
+            renameChildren(fNaming, all);
             return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
         }
     }
 
-    private static void renameChildren(final ArrayList all) {
-        HashMap toRename = new HashMap ();
+    private static void renameChildren(FileNaming root, List<FileNaming> all) {
+        assert Thread.holdsLock(NamingFactory.class);
         for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
-            Integer id = (Integer)entry.getKey();
             
-            List list = new ArrayList();
-            
-            //handle possible List
+            List list;
             Object value = entry.getValue();
             if (value instanceof Reference) {
-                list.add(value);
+                list = Collections.singletonList((Reference)value);
             } else if (value instanceof List) {
-                list.addAll((List) value);
+                list = (List)value;
+            } else {
+                list = Collections.emptyList();
             }
             
             for (int i = 0; i < list.size(); i++) {
                 FileNaming fN = (FileNaming)((Reference) list.get(i)).get();
-                if (fN == null) continue;
-                Integer computedId = NamingFactory.createID(fN.getFile());
-                
-                boolean isRenamed = (!computedId.equals(id));
-                if (isRenamed) {
-                    toRename.put(id, fN);
-                }        
+                for (FileNaming up = fN;;) {
+                    if (up == null) {
+                        break;
+                    }
+                    if (root.equals(up)) {
+                        all.add(fN);
+                        break;
+                    }
+                    up = up.getParent();
+                }
             }
-        }
-        
-        for (Iterator iterator = toRename.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Integer id = (Integer)entry.getKey();
-            FileNaming fN = (FileNaming)entry.getValue(); 
-            all.add(fN);    
-            remove(fN, id);
-            fN.getId(true);
-            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false, FileType.unknown);            
-        }
-    }
-
-    public static void remove(final FileNaming fNaming, Integer id) {
-        id = (id != null) ? id : fNaming.getId();         
-        Object value = NamingFactory.nameMap.get(id);
-        if (value instanceof List) {
-            Reference ref = NamingFactory.getReference((List) value, fNaming.getFile());
-            if (ref != null) {
-                ((List) value).remove(ref);                
-            }            
-        } else {
-            NamingFactory.nameMap.remove(id);
         }
     }
 
@@ -178,20 +154,26 @@ public final class NamingFactory {
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
         FileNaming retVal;
 
-        final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
+        assert Thread.holdsLock(NamingFactory.class);
+        final Object value = nameMap.get(new Integer(file.hashCode()));
         Reference ref = (Reference) (value instanceof Reference ? value : null);
         ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
-        final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
+        FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
+        if (ignoreCache && cachedElement != null && (
+            cachedElement.isDirectory() != file.isDirectory() || !cachedElement.getName().equals(file.getName())
+        )) {
+            cachedElement = null;
+        }
 
-        if (!ignoreCache && cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
+        if (cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
             retVal = cachedElement;
         } else {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName, type) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
 
             final boolean isList = (value instanceof List);
-            if ((!ignoreCache && cachedElement != null) || isList) {
+            if (cachedElement != null || isList) {
                 // List impl.
                 if (isList) {
                     ((List) value).add(refRetVal);
@@ -203,55 +185,12 @@ public final class NamingFactory {
             } else {
                 // Reference impl.
                 Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
-                if (ignoreCache && r != null) {
-                    FileName original = (FileName)r.get();
-                    if (original != null) {
-                        List children = collectChildren(original);
-                        for (Iterator childrenIt = children.iterator(); childrenIt.hasNext();) {
-                            FileNaming child = (FileNaming) childrenIt.next();
-                            remove(child, null);
-                        }
-                    }
-                }
             }
         }
 
         assert retVal != null;
 
         return retVal;
-    }
-
-    private static List collectChildren(FileName parent) {
-        List retval = new ArrayList();
-        for (Object value : nameMap.values()) {
-            if (value instanceof List) {
-                for (Object item : (List) value) {
-                    Reference ref = (Reference) item;
-                    FileNaming naming = (FileNaming) ref.get();
-                    if (isChild(parent, naming)) {
-                        retval.add(naming);
-                    }
-                }
-            } else {
-                Reference ref = (Reference) value;
-                FileNaming naming = (FileNaming) ref.get();
-                if (isChild(parent, naming)) {
-                    retval.add(naming);
-                }
-            }
-        }
-        return retval;
-    }
-    
-    private static boolean isChild(FileName parent, FileNaming naming) {
-        FileNaming temp = naming;
-        while (temp != null) {
-            if (temp == parent) {
-                return true;
-            }
-            temp = temp.getParent();
-        }
-        return false;
     }
     
     private static Reference getReference(final List list, final File f) {
@@ -266,7 +205,7 @@ public final class NamingFactory {
         return retVal;
     }
 
-    public static enum FileType {file, directory, unknown}
+    static enum FileType {file, directory, unknown}
     
     private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
         FileName retVal = null;

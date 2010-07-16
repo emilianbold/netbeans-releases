@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -64,15 +66,14 @@ import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.ri.platform.RIPlatform;
+import org.netbeans.modules.javacard.ri.platform.installer.RIPlatformFactory;
 import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
+import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -130,6 +131,7 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
     protected JavacardPlatform createFrom(ObservableProperties properties) {
         String old = properties.getProperty(JavacardPlatformKeyNames.PLATFORM_ID);
         boolean idPropMatch = getName().equals(old);
+        boolean empty = properties.isEmpty();
         if (!idPropMatch) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, JavacardPlatformKeyNames.PLATFORM_ID
@@ -140,24 +142,20 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
             //be looked up without having to iterate all platforms.
             properties.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, getName());
         }
-        if (properties.isEmpty()) {
+        if (empty) {
             return JavacardPlatform.createBrokenJavacardPlatform(getName());
         } else {
-            JavacardPlatform result = new RIPlatform(properties);
-            return result;
+            try {
+                JavacardPlatform result = RIPlatformFactory.createPlatform(properties, this);
+                return result;
+            } catch (IOException ioe) {
+                return JavacardPlatform.createBrokenJavacardPlatform(getName());
+            }
         }
     }
 
     public void showManageDevicesDialog(Component parent) {
-        try {
-            //XXX needs to be registered by kind instead!
-            FileObject p = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getName(), true);
-            DataObject dob = DataObject.find(p);
-//            new ServersPanel(dob.getNodeDelegate()).showDialog();
-            new ServersPanel(getLookup().lookup(JavacardPlatform.class)).showDialog();
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        new ServersPanel(getLookup().lookup(JavacardPlatform.class)).showDialog();
     }
 
     private static final class ND extends DataNode {

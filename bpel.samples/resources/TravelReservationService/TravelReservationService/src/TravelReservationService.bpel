@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+  Copyright (c) 2010, Oracle. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
@@ -12,7 +12,7 @@
     this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
-  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+  * Neither the name of Oracle nor the names of its contributors
     may be used to endorse or promote products derived from this software without
     specific prior written permission.
 
@@ -30,41 +30,41 @@
 -->
 <process name="TravelReservationService" 
          targetNamespace="tres" 
+         xmlns:tns="tres"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
-         xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
          xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
-         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
-         xmlns:tns="tres" xmlns:tres="http://www.sun.com/javaone/05/TravelReservationService" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:tres="http://www.sun.com/javaone/05/TravelReservationService" 
          xmlns:ares="http://www.sun.com/javaone/05/AirlineReservationService" 
          xmlns:vres="http://www.sun.com/javaone/05/VehicleReservationService" 
          xmlns:hres="http://www.sun.com/javaone/05/HotelReservationService" 
          xmlns:ota="http://www.opentravel.org/OTA/2003/05">
-    
-    <documentation>
-        The Travel Reservation Service is an example of real-life service for travel organization. An .xsd schema for the sample was taken from an existing  travel agency. The process works as follows. It gets an itinerary from the client, examines it, and processes the itinerary to completion. By the end of the process the client  has an airline, a vehicle and a hotel reserved.
-    </documentation>
 
-    <import namespace="http://www.opentravel.org/OTA/2003/05"
-            location="OTA_TravelItinerary.xsd" 
-            importType="http://www.w3.org/2001/XMLSchema"/>
+    <documentation>
+        The Travel Reservation Service is an example of real-life service for travel organization. An .xsd schema for this project was taken from an existing  travel agency. The process works as follows. It gets an itinerary from the client, examines it, and processes the itinerary to completion. By the end of the process the client  has an airline, a vehicle and a hotel reserved.
+    </documentation>
 
     <import namespace="http://www.sun.com/javaone/05/TravelReservationService" 
             location="TravelReservationService.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
-    
+
     <import namespace="http://www.sun.com/javaone/05/AirlineReservationService" 
             location="AirlineReservationService.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
-    
+
     <import namespace="http://www.sun.com/javaone/05/VehicleReservationService" 
             location="VehicleReservationService.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
-    
+
     <import namespace="http://www.sun.com/javaone/05/HotelReservationService" 
             location="HotelReservationService.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
-    
+
     <partnerLinks>
         <partnerLink
             name="Travel" 

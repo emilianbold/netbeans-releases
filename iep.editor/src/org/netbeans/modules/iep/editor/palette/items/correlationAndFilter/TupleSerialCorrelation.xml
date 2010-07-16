@@ -22,10 +22,8 @@
 <editor_palette_item version="1.0">
     <class name="org.netbeans.modules.iep.editor.palette.items.correlationAndFilter.TupleSerialCorrelation"/>
     
-    <!--<icon16 urlvalue="images/tupleSerialCorrelationx16.png" />
-    <icon32 urlvalue="images/tupleSerialCorrelationx32.png" />-->
-    <icon16 urlvalue="images/new/icons32x32/tupleSerialCorrelationx32.png" />
-    <icon32 urlvalue="images/new/icons32x32/tupleSerialCorrelationx32.png" />
+    <icon16 urlvalue="images/icons16x16/tupleSerialCorrelationx16.png" />
+    <icon32 urlvalue="images/icons32x32/tupleSerialCorrelationx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.correlationAndFilter.Bundle"
                display-name-key="NAME_html-TupleSerialCorrelation"
                tooltip-key="HINT_html-TupleSerialCorrelation" />

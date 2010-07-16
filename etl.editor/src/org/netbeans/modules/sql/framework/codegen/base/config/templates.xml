@@ -25,7 +25,7 @@
 	<attr attributeName="rowCount" attributeType="java.lang.String" attributeValue="base/config/rowCount.vm" />
 	<attr attributeName="drop" attributeType="java.lang.String" attributeValue="base/config/drop.vm" />
 	<attr attributeName="truncate" attributeType="java.lang.String" attributeValue="base/config/truncate.vm" />
-    <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="base/config/tableExists.vm" />	
+        <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="base/config/tableExists.vm" />	
 	<attr attributeName="selectIntegrityCheck" attributeType="java.lang.String" attributeValue="base/config/selectIntegrityCheck.vm" />
 	<attr attributeName="updateStatic" attributeType="java.lang.String" attributeValue="base/config/updateStatic.vm" />
 </templates>

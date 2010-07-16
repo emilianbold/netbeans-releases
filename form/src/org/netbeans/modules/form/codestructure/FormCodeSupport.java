@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -121,14 +124,17 @@ public class FormCodeSupport {
             this.property = property;
         }
 
+        @Override
         public Class getType() {
             return property.getValueType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             try {
                 return property.getValue();
@@ -138,10 +144,12 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return property;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             try {
                 PropertyEditor pred = property.getPropertyEditor();
@@ -152,6 +160,7 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -164,14 +173,17 @@ public class FormCodeSupport {
             this.property = property;
         }
 
+        @Override
         public Class getType() {
             return property.getValueType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             try {
                 return property.getRealValue();
@@ -182,14 +194,17 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return property;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return property.getJavaInitializationString();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -204,26 +219,32 @@ public class FormCodeSupport {
             this.propertyEditor = prEd;
         }
 
+        @Override
         public Class getType() {
             return type;
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             return propertyEditor.getValue();
         }
 
+        @Override
         public Object getMetaObject() {
             return propertyEditor;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return propertyEditor.getJavaInitializationString();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -236,31 +257,37 @@ public class FormCodeSupport {
             this.component = component;
         }
 
+        @Override
         public Class getType() {
             return component.getBeanClass();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return component;
         }
 
+        @Override
         public Object getValue() {
             return component.getBeanInstance();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             if (component == component.getFormModel().getTopRADComponent())
                 return "this"; // NOI18N
 
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             buf.append("new "); // NOI18N
             buf.append(component.getBeanClass().getName().replace('&','.')); // NOI18N

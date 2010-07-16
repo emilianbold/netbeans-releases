@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.model.ext.editor.impl;
 
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
@@ -25,6 +26,7 @@ import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
 import org.w3c.dom.Element;
 
 /**
@@ -34,35 +36,38 @@ import org.w3c.dom.Element;
  */
 public abstract class EditorEntityImpl extends BpelContainerImpl implements ExtensionEntity {
 
-    private EditorEntityFactory mFactory;
-
-
-    EditorEntityImpl(EditorEntityFactory factory, BpelModelImpl model, Element e ) {
+    EditorEntityImpl(BpelModelImpl model, Element e ) {
         super(model, e);
-        mFactory = factory;
     }
 
-    EditorEntityImpl(EditorEntityFactory factory, BpelBuilderImpl builder, EditorElements editorElements) {
-        super(builder.getModel(),
+    EditorEntityImpl(BpelBuilderImpl builder, EditorElements editorElements) {
+        this(builder.getModel(),
                 builder.getModel().getDocument().createElementNS(
                 editorElements.getNamespace(), editorElements.getName()));
-        mFactory = factory;
+        // below code is reqired to invoke generating UID, unique name e.c. services
+        writeLock();
+        try {
+            BuildEvent<? extends BpelEntity> event = preCreated(this);
+            postEvent(event);
+        } finally {
+            writeUnlock();
+        }
     }
 
     public void accept(BpelModelVisitor visitor) {
         visitor.visit(this);
     }
 
-    public EditorEntityFactory getFactory() {
-        return mFactory;
-    }
-
     public boolean canExtend(ExtensibleElements extensible) {
-        if (getFactory().canExtend(extensible, getElementType())) {
+        if (EditorEntityFactory.sCanExtend(extensible, getElementType())) {
             return true;
         } else {
             return false;
         }
     }
 
+    @Override
+    protected BpelEntity create( Element element ) {
+        return new EditorEntityFactory().create(this, element);
+    }
 }

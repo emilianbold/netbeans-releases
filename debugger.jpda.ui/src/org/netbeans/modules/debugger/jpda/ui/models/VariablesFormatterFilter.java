@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,8 @@ import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +61,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -68,9 +74,12 @@ import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -83,10 +92,27 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     //private JPDADebugger debugger;
     private IOManager ioManager;
+    private VariablesFormatter[] formatters;
+    private VariablesFormatter[] formattersWithExpandTestCode;
+    private final Object formattersLock = new Object();
+    private Properties jpdaProperties;
+    private PropertyChangeListener formattersChangeListener;
     private boolean formattersLoopWarned = false;
+    private final Map<ObjectVariable, Boolean> childrenExpandTest = new WeakHashMap<ObjectVariable, Boolean>();
+    private final Set<ObjectVariable> childrenExpandTestProcessing = new HashSet<ObjectVariable>();
+    private final RequestProcessor expandTestProcessor = new RequestProcessor("Variables expand test processor", 1);
+    private final ContextProvider lookupProvider;
+    private VariablesTreeModelFilter vtmf;
 
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+    }
+
+    private IOManager getIOManager() {
+        if (ioManager != null) {
+            return ioManager;
+        }
         List lamls = lookupProvider.lookup
             (null, LazyActionsManagerListener.class);
         for (Iterator i = lamls.iterator (); i.hasNext ();) {
@@ -96,10 +122,51 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 break;
             }
         }
+        return ioManager;
+    }
+
+    private VariablesFormatter[] getFormatters() {
+        synchronized (formattersLock) {
+            if (formatters == null) {
+                formattersChangeListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ("VariableFormatters".equals(evt.getPropertyName())) {
+                            synchronized (formattersLock) {
+                                formatters = null;
+                                formattersWithExpandTestCode = null;
+                                childrenExpandTest.clear();
+                            }
+                        }
+                    }
+                };
+                jpdaProperties = Properties.getDefault().getProperties("debugger.options.JPDA");
+                jpdaProperties.addPropertyChangeListener(WeakListeners.propertyChange(formattersChangeListener, jpdaProperties));
+                formatters = VariablesFormatter.loadFormatters();
+            }
+            return formatters;
+        }
+    }
+
+    private VariablesFormatter[] getFormattersWithExpandTestCode() {
+        synchronized (formattersLock) {
+            if (formattersWithExpandTestCode == null) {
+                VariablesFormatter[] formatters = getFormatters();
+                ArrayList<VariablesFormatter> formattersWithExpandTestCodeList = new ArrayList<VariablesFormatter>();
+                for (VariablesFormatter vf : formatters) {
+                    String expandTestCode = vf.getChildrenExpandTestCode();
+                    if (expandTestCode != null && expandTestCode.length() > 0) {
+                        formattersWithExpandTestCodeList.add(vf);
+                    }
+                }
+                formattersWithExpandTestCode = (VariablesFormatter[]) formattersWithExpandTestCodeList.toArray(new VariablesFormatter[]{});
+            }
+            return formattersWithExpandTestCode;
+        }
     }
     
     public String[] getSupportedTypes () {
-        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
+        VariablesFormatter[] formatters = getFormatters();
         List<String> types = new ArrayList<String>();
         for (int i = 0; i < formatters.length; i++) {
             if (!formatters[i].isIncludeSubTypes()) {
@@ -113,7 +180,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     }
     
     public String[] getSupportedAncestors () {
-        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
+        VariablesFormatter[] formatters = getFormatters();
         List<String> types = new ArrayList<String>();
         for (int i = 0; i < formatters.length; i++) {
             if (formatters[i].isIncludeSubTypes()) {
@@ -147,11 +214,14 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         int to
     ) throws UnknownTypeException {
 
+        Object[] children;
         if (!(variable instanceof ObjectVariable)) {
-            original.getChildren (variable, from, to);
-        }
-        return getChildren(original, variable, from, to,
+            children = original.getChildren (variable, from, to);
+        } else {
+            children = getChildren(original, variable, from, to,
                            new FormattersLoopControl());
+        }
+        return children;
     }
 
     private Object[] getChildren (
@@ -164,6 +234,21 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
         if (variable instanceof ObjectVariable) {
             ObjectVariable ov = (ObjectVariable) variable;
+
+            synchronized (childrenExpandTestProcessing) {
+                while (childrenExpandTestProcessing.contains(ov)) {
+                    try {
+                        childrenExpandTestProcessing.wait();
+                    } catch (InterruptedException ex) {
+                        return new Object[] {};
+                    }
+                }
+            }
+            if (Boolean.TRUE.equals(childrenExpandTest.get(ov))) {
+                // The variable should be a leaf in fact - do not ask for children!
+                return new Object[] {};
+            }
+
             JPDAClassType ct = ov.getClassType();
 
             if (ct == null) {
@@ -202,6 +287,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                             java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                             evaluateMethod.setAccessible(true);
                             Variable ret = (Variable) evaluateMethod.invoke(ov, code);
+                            if (ret == null) {
+                                return new Object[] {}; // No children for null values.
+                            }
                             return getChildren(original, ret, from, to, formatters);
                         } catch (java.lang.reflect.InvocationTargetException itex) {
                             Throwable t = itex.getTargetException();
@@ -264,6 +352,72 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         return Integer.MAX_VALUE;
     }
 
+    private void doExpandTest(final ObjectVariable ov, final JPDAClassType ct, final TreeModel original) {
+        synchronized (childrenExpandTestProcessing) {
+            childrenExpandTestProcessing.add(ov);
+        }
+        expandTestProcessor.post(new Runnable() {
+            public void run() {
+                boolean isLeaf = false;
+                try {
+                    VariablesFormatter f = getFormatterForType(ct, getFormattersWithExpandTestCode());
+                    if (f != null) {
+                        String expandTestCode = f.getChildrenExpandTestCode();
+                        if ("false".equals(expandTestCode)) {   // Optimalization for constant
+                            childrenExpandTest.put(ov, true);   // is leaf
+                            isLeaf = true;
+                        }
+                        if ("true".equals(expandTestCode)) {   // Optimalization for constant
+                            childrenExpandTest.put(ov, false);   // is not leaf
+                        }
+                        try {
+                            java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
+                            evaluateMethod.setAccessible(true);
+                            Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
+                            if (ret != null) {
+                                isLeaf = !"true".equals(ret.getValue());
+                                childrenExpandTest.put(ov, isLeaf);
+                                
+                            }
+                        } catch (java.lang.reflect.InvocationTargetException itex) {
+                            Throwable t = itex.getTargetException();
+                            if (t instanceof InvalidExpressionException) {
+                                // Ignore, expression failed to evaluate.
+                            } else {
+                                Exceptions.printStackTrace(t);
+                            }
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } finally {
+                    synchronized (childrenExpandTestProcessing) {
+                        childrenExpandTestProcessing.remove(ov);
+                        childrenExpandTestProcessing.notifyAll();
+                    }
+                    if (isLeaf) {
+                        fireLeafChange(original, ov);
+                    }
+                }
+            }
+        });
+    }
+
+    private void fireLeafChange(TreeModel original, Variable variable) {
+        if (vtmf == null) {
+            List<? extends TreeModelFilter> tmfs = lookupProvider.lookup("LocalsView", TreeModelFilter.class); // NOI18N
+            for (TreeModelFilter tmf : tmfs) {
+                if (tmf instanceof VariablesTreeModelFilter) {
+                    vtmf = (VariablesTreeModelFilter) tmf;
+                    break;
+                }
+            }
+        }
+        if (vtmf != null) {
+            vtmf.fireChildrenChange(variable);
+        }
+    }
+
     /**
      * Returns true if node is leaf.
      * 
@@ -282,23 +436,14 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             if (ct == null) {
                 return original.isLeaf (variable);
             }
-
-            /* TODO: Must not be performed in AWT!
-            VariablesFormatter f = getFormatterForType(ct);
-            if (f != null) {
-                String expandTestCode = f.getChildrenExpandTestCode();
-                if (expandTestCode != null && expandTestCode.length() > 0) {
-                    try {
-                        java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
-                        evaluateMethod.setAccessible(true);
-                        Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
-                        return !"true".equals(ret.getValue());
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+            // We do the check for children expansion in a separate thread, it must not execute in AWT.
+            Boolean leaf = childrenExpandTest.get(ov);
+            if (leaf != null) {
+                return leaf;
+            } else {
+                doExpandTest(ov, ct, original);
+                return false; // Suppose that we're not leaf if expand test is not yet computed
             }
-             */
         }
         String type = variable.getType ();
         // PATCH for J2ME
@@ -348,6 +493,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                     evaluateMethod.setAccessible(true);
                     Variable ret = (Variable) evaluateMethod.invoke(ov, code);
+                    if (ret == null) {
+                        return null;
+                    }
                     return getValueAt(original, ret, columnID, formatters);
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable t = itex.getTargetException();
@@ -492,21 +640,19 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     private final class FormattersLoopControl {
 
-        private VariablesFormatter[] formatters;
         private Map<String, VariablesFormatter> usedFormatters;
 
         public FormattersLoopControl() {
-            this.formatters = VariablesFormatter.loadFormatters();
             usedFormatters = new LinkedHashMap<String, VariablesFormatter>();
         }
 
         public VariablesFormatter[] getFormatters() {
-            return formatters;
+            return VariablesFormatterFilter.this.getFormatters();
         }
 
         public boolean canUse(VariablesFormatter f, String type) {
             boolean can = usedFormatters.put(type, f) == null;
-            if (!can && ioManager != null) {
+            if (!can && getIOManager() != null && !String.class.getName().equals(type)) {
                 if (!formattersLoopWarned) {
                     formattersLoopWarned = true;
                     ioManager.println(

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,6 +81,8 @@ public final class ExecutionDescriptor {
 
     private final boolean controllable;
 
+    private final boolean noReset;
+
     private boolean outLineBased;
 
     private boolean errLineBased;
@@ -124,6 +129,7 @@ public final class ExecutionDescriptor {
         this.rerunCondition = data.rerunCondition;
         this.optionsPath = data.optionsPath;
         this.charset = data.charset;
+        this.noReset = data.noReset;
     }
 
     /**
@@ -273,6 +279,33 @@ public final class ExecutionDescriptor {
 
     boolean showSuspended() {
         return suspend;
+    }
+
+    /**
+     * Returns a descriptor with configured no reset flag. When configured
+     * value is <code>true</code> the output window won't be cleared before
+     * the execution. <i>Valid only for custom {@link InputOutput} configured via
+     * {@link #inputOutput(org.openide.windows.InputOutput)}, ignored in all
+     * other cases.</i>
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param noReset no reset flag
+     * @return new descriptor with configured no reset flag
+     * @since 1.20
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor noReset(boolean noReset) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.noReset(noReset));
+    }
+
+    boolean noReset() {
+        return noReset;
     }
 
     /**
@@ -657,6 +690,8 @@ public final class ExecutionDescriptor {
 
         private boolean controllable;
 
+        private boolean noReset;
+
         private boolean outLineBased;
 
         private boolean errLineBased;
@@ -699,6 +734,7 @@ public final class ExecutionDescriptor {
             this.rerunCondition = descriptor.rerunCondition;
             this.optionsPath = descriptor.optionsPath;
             this.charset = descriptor.charset;
+            this.noReset = descriptor.noReset;
         }
 
         public DescriptorData inputOutput(InputOutput io) {
@@ -728,6 +764,11 @@ public final class ExecutionDescriptor {
 
         public DescriptorData showSuspended(boolean showSuspended) {
             this.suspend = showSuspended;
+            return this;
+        }
+
+        public DescriptorData noReset(boolean noReset) {
+            this.noReset = noReset;
             return this;
         }
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,18 +43,26 @@
  */
 package org.eclipse.core.runtime;
 
+import java.io.File;
+import org.eclipse.core.runtime.content.IContentType;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
 import java.util.*;
+import org.eclipse.core.runtime.content.IContentTypeManager;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 
 /**
  * @author Maros Sandor
  */
 public final class Platform {
+
+    private static IContentTypeManager contentTypeManager;
+    private static IPath stateLocation;
     
     public static boolean isRunning() {
-        return true;
+        return false; // prevents TaskRepository from using o.e.equinox.security.storage.
+                      // until 3.3.1 there are no other known usages of .isRunning()  
     }
     
     private static Map<URL, Map> infos = new HashMap<URL, Map>();
@@ -77,7 +88,12 @@ public final class Platform {
     }
     
     public static IPath getStateLocation(Bundle bundle) {
-        return null;
+        if(stateLocation == null) {
+            File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
+            f.mkdirs();
+            stateLocation = new StateLocation(f);
+        }
+        return stateLocation;
     }
     
     public static String getOS() {
@@ -86,5 +102,38 @@ public final class Platform {
     
     public static String getOSArch() {
         return null;
+    }
+
+    public static String getWS() {
+        return null;
+    }
+
+    public static IContentTypeManager getContentTypeManager() {
+        if (contentTypeManager == null) {
+            contentTypeManager = new IContentTypeManager() {
+                public IContentType findContentTypeFor(String fileName) {
+                    return null;
+                }
+            };
+        }
+        return contentTypeManager;
+    }
+
+    private static class StateLocation implements IPath {
+        private final File file;
+
+        private StateLocation(File file) {
+            this.file = file;
+        }
+
+        public IPath append(String path) {
+            File f = new File(file, path);
+            return new StateLocation(f);
+        }
+
+        public File toFile() {
+            return file;
+        }
+
     }
 }

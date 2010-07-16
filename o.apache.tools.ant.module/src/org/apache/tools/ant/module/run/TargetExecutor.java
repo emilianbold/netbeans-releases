@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -63,6 +68,7 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntPanelController;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -84,6 +90,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
+import org.openide.windows.IOSelect;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.w3c.dom.Element;
@@ -91,6 +98,8 @@ import org.w3c.dom.Element;
 /** Executes an Ant Target asynchronously in the IDE.
  */
 public final class TargetExecutor implements Runnable {
+
+    private static final RequestProcessor RP = new RequestProcessor(TargetExecutor.class.getName());
 
     /**
      * All tabs which were used for some process which has now ended.
@@ -172,7 +181,7 @@ public final class TargetExecutor implements Runnable {
     }
     
     private static final Map<InputOutput,StopAction> stopActions = new HashMap<InputOutput,StopAction>();
-    private static final Map<InputOutput,RerunAction> rerunActions = new HashMap<InputOutput,RerunAction>();
+    private static final Map<InputOutput,RerunAction[]> rerunActions = new HashMap<InputOutput,RerunAction[]>();
 
     private static final class StopAction extends AbstractAction {
 
@@ -204,13 +213,15 @@ public final class TargetExecutor implements Runnable {
 
     private static final class RerunAction extends AbstractAction implements FileChangeListener {
 
+        private final boolean withModifications;
         private AntProjectCookie pcookie;
         private List<String> targetNames;
-        //private int verbosity;
+        private int verbosity;
         private Map<String,String> properties;
         private String displayName;
 
-        public RerunAction(TargetExecutor prototype) {
+        public RerunAction(TargetExecutor prototype, boolean withModifications) {
+            this.withModifications = withModifications;
             reinit(prototype);
             setEnabledEQ(this, false); // initially, until ready
             FileObject script = pcookie.getFileObject();
@@ -222,7 +233,7 @@ public final class TargetExecutor implements Runnable {
         private void reinit(TargetExecutor prototype) {
             pcookie = prototype.pcookie;
             targetNames = prototype.targetNames;
-            //verbosity = prototype.verbosity;
+            verbosity = prototype.verbosity;
             properties = prototype.properties;
             displayName = prototype.suggestedDisplayName;
         }
@@ -230,9 +241,17 @@ public final class TargetExecutor implements Runnable {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun.png"));
+                if (withModifications) {
+                    return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun-mod.png"));
+                } else {
+                    return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun.png"));
+                }
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun");
+                if (withModifications) {
+                    return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun_different");
+                } else {
+                    return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun");
+                }
             } else {
                 return super.getValue(key);
             }
@@ -241,14 +260,24 @@ public final class TargetExecutor implements Runnable {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             try {
-                TargetExecutor exec = new TargetExecutor(pcookie,
-                        targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
-                //exec.setVerbosity(verbosity);
-                exec.setProperties(properties);
-                if (displayName != null) {
-                    exec.setDisplayName(displayName);
+                if (withModifications) {
+                    AdvancedActionPanel panel = new AdvancedActionPanel(pcookie, TargetLister.getTargets(pcookie));
+                    panel.setTargets(targetNames);
+                    panel.setVerbosity(verbosity);
+                    panel.setProperties(properties);
+                    if (!panel.display()) {
+                        setEnabled(true);
+                    }
+                } else {
+                    TargetExecutor exec = new TargetExecutor(pcookie,
+                            targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
+                    //exec.setVerbosity(verbosity);
+                    exec.setProperties(properties);
+                    if (displayName != null) {
+                        exec.setDisplayName(displayName);
+                    }
+                    exec.execute();
                 }
-                exec.execute();
             } catch (IOException x) {
                 Logger.getLogger(TargetExecutor.class.getName()).log(Level.INFO, null, x);
             }
@@ -299,6 +328,7 @@ public final class TargetExecutor implements Runnable {
      */
     public ExecutorTask execute () throws IOException {
         String dn = suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames);
+        synchronized (activeDisplayNames) {
         if (activeDisplayNames.contains(dn)) {
             // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
             int i = 2;
@@ -311,6 +341,7 @@ public final class TargetExecutor implements Runnable {
         assert !activeDisplayNames.contains(dn);
         displayName = dn;
         activeDisplayNames.add(displayName);
+        }
         
         final ExecutorTask task;
         synchronized (this) {
@@ -338,15 +369,15 @@ public final class TargetExecutor implements Runnable {
             }
             if (io == null) {
                 StopAction sa = new StopAction();
-                RerunAction ra = new RerunAction(this);
-                io = IOProvider.getDefault().getIO(displayName, new Action[] {ra, sa, new OptionsAction()});
+                RerunAction[] ras = {new RerunAction(this, false), new RerunAction(this, true)};
+                io = IOProvider.getDefault().getIO(displayName, new Action[] {ras[0], ras[1], sa, new OptionsAction()});
                 stopActions.put(io, sa);
-                rerunActions.put(io, ra);
+                rerunActions.put(io, ras);
             }
-            task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
+            task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
-        RequestProcessor.getDefault().post(wrapper);
+        RP.post(wrapper);
         return wrapper;
     }
     
@@ -394,19 +425,28 @@ public final class TargetExecutor implements Runnable {
   
     /** Call execute(), not this method directly!
      */
-    synchronized public void run () {
+    @SuppressWarnings("NestedSynchronizedStatement")
+    synchronized public @Override void run () {
         final LastTargetExecuted[] thisExec = new LastTargetExecuted[1];
         final StopAction sa = stopActions.get(io);
         assert sa != null;
-        RerunAction ra = rerunActions.get(io);
-        assert ra != null;
+        RerunAction[] ras = rerunActions.get(io);
+        assert ras != null;
         try {
             
-        final boolean[] displayed = new boolean[] {AntSettings.getAlwaysShowOutput()};
+        final AtomicBoolean displayed = new AtomicBoolean(AntSettings.getAlwaysShowOutput());
         
         if (outputStream == null) {
-            if (displayed[0]) {
+            if (displayed.get()) {
                 io.select();
+            } else if (IOSelect.isSupported(io)) {
+                boolean onlyProcessRunning;
+                synchronized (activeDisplayNames) {
+                    onlyProcessRunning = activeDisplayNames.size() == 1;
+                }
+                if (onlyProcessRunning) {
+                    IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
+                }
             }
         }
         
@@ -442,8 +482,7 @@ public final class TargetExecutor implements Runnable {
         final Runnable interestingOutputCallback = new Runnable() {
             public void run() {
                 // #58513: display output now.
-                if (!displayed[0]) {
-                    displayed[0] = true;
+                if (!displayed.getAndSet(true)) {
                     io.select();
                 }
             }
@@ -494,7 +533,9 @@ public final class TargetExecutor implements Runnable {
         handle.setInitialDelay(0); // #92436
         handle.start();
         setEnabledEQ(sa, true);
-        setEnabledEQ(ra, false);
+        for (RerunAction ra : ras) {
+            setEnabledEQ(ra, false);
+        }
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
         
         } finally {
@@ -508,9 +549,13 @@ public final class TargetExecutor implements Runnable {
             }
             sa.t = null;
             setEnabledEQ(sa, false);
-            setEnabledEQ(ra, true);
-            ra.reinit(this);
-            activeDisplayNames.remove(displayName);
+            for (RerunAction ra : ras) {
+                setEnabledEQ(ra, true);
+                ra.reinit(this);
+            }
+            synchronized (activeDisplayNames) {
+                activeDisplayNames.remove(displayName);
+            }
         }
     }
     

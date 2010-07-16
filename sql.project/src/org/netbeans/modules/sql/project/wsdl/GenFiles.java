@@ -335,19 +335,13 @@ public class GenFiles extends CallableSystemAction {
 
     private void getDatabaseConnection() {
         DatabaseConnection[] dbConnections = ConnectionManager.getDefault().getConnections();
-        if (dbConn == null) {
             for (int j = 0; j < dbConnections.length; j++) {
                 if (dbConnections[j].getDatabaseURL().equalsIgnoreCase(dbURL)) {
                     dbConn = dbConnections[j];
                     conn = dbConn.getJDBCConnection();
                     break;
                 }
-            }
-        }
-        if ((dbConn != null) && (conn == null)) {
-            ConnectionManager.getDefault().showConnectionDialog(dbConn);
-            conn = dbConn.getJDBCConnection();
-        }
+            }        
     }
 
 }

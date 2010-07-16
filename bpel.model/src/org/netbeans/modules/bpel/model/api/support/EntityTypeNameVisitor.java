@@ -44,6 +44,7 @@ import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.ExtensibleAssign;
 import org.netbeans.modules.bpel.model.api.Extension;
 import org.netbeans.modules.bpel.model.api.ExtensionActivity;
+import org.netbeans.modules.bpel.model.api.ExtensionAssignOperation;
 import org.netbeans.modules.bpel.model.api.ExtensionContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -308,6 +309,10 @@ public class EntityTypeNameVisitor implements SimpleBpelModelVisitor {
         myTypeName = "ExtensibleAssign"; // NOI18N
     }
     
+    public void visit(ExtensionAssignOperation extAssignOp) {
+        myTypeName = "ExtensionAssignOperation"; // NOI18N
+    }
+
     public void visit(ExtensionActivity activity) {
         myTypeName = "ExtensionActivity"; // NOI18N
     }

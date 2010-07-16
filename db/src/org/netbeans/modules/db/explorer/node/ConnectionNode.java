@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
@@ -72,6 +76,7 @@ public class ConnectionNode extends BaseNode {
     private static final String CONNECTEDICONBASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ConnectionNode.class.getName());
     
     /** 
      * Create an instance of ConnectionNode.
@@ -96,12 +101,15 @@ public class ConnectionNode extends BaseNode {
     private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
+        lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
     }
 
+    @Override
     protected void initialize() {
         // listen for change events
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
+            @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
                             evt.getPropertyName().equals("disconnected")) { // NOI18N
@@ -286,8 +294,9 @@ public class ConnectionNode extends BaseNode {
     }
     
     private synchronized void updateModel() {
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     boolean connected = !connection.getConnector().isDisconnected();
 
@@ -323,8 +332,9 @@ public class ConnectionNode extends BaseNode {
     
     @Override
     public void destroy() {
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     try {
                         ConnectionList.getDefault().remove(connection);
@@ -336,6 +346,7 @@ public class ConnectionNode extends BaseNode {
         );
     }
     
+    @Override
     public String getName() {
         return connection.getName();
     }
@@ -345,6 +356,7 @@ public class ConnectionNode extends BaseNode {
         return connection.getDisplayName();
     }
  
+    @Override
     public String getIconBase() {
         boolean disconnected = ! DatabaseConnection.isVitalConnection(connection.getConnection(), null);
 
@@ -365,6 +377,7 @@ public class ConnectionNode extends BaseNode {
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.CONNECTION_FLAVOR) {
+            @Override
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createConnectionData(connection.getDatabaseConnection(),
                         connection.findJDBCDriver());

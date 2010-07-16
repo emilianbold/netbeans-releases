@@ -20,7 +20,10 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
@@ -129,6 +132,23 @@ public class OperationImpl extends TMapComponentContainerImpl
         return var;
     }
 
+    public Variable getDefaultInputVariable() {
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> opRef = getOperation();
+        org.netbeans.modules.xml.wsdl.model.Operation op = opRef == null ? null : opRef.get();
+        return op == null ? null : getDefaultVariable(op.getInput());
+    }
+
+    private Variable getDefaultVariable(OperationParameter opParam) {
+        NamedComponentReference<Message> messageRef = opParam == null 
+                ? null : opParam.getMessage();
+        Message message = messageRef == null ? null : messageRef.get();
+        String varName = message == null ? null : message.getName();
+        
+        Variable var = varName == null ?
+            null : new InputVariableImpl(getModel(), varName, this);
+        return var;
+    }
+
     public void setInputVariableName(String inputVariable) {
         setAttribute(INPUT_VARIABLE, TMapAttributes.INPUT_VARIABLE, inputVariable);
     }
@@ -139,6 +159,12 @@ public class OperationImpl extends TMapComponentContainerImpl
         Variable var = varName == null ?
             null : new OutputVariableImpl(getModel(), varName, this);
         return var;
+    }
+
+    public Variable getDefaultOutputVariable() {
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> opRef = getOperation();
+        org.netbeans.modules.xml.wsdl.model.Operation op = opRef == null ? null : opRef.get();
+        return op == null ? null : getDefaultVariable(op.getOutput());
     }
 
     public void setOutputVariableName(String outputVariable) {
@@ -165,11 +191,17 @@ public class OperationImpl extends TMapComponentContainerImpl
         }
 
         Variable tmpVar = varContainer.getInputVariable();
+        if (tmpVar == null) {
+            tmpVar = varContainer.getDefaultInputVariable();
+        }
         if (tmpVar != null) {
             vars.add(tmpVar);
         }
         
         tmpVar = varContainer.getOutputVariable();
+        if (tmpVar == null) {
+            tmpVar = varContainer.getDefaultOutputVariable();
+        }
         if (tmpVar != null) {
             vars.add(tmpVar);
         }

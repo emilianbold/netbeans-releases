@@ -25,13 +25,16 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
-import org.netbeans.modules.bpel.mapper.multiview.DesignContextControllerImpl2;
-import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.multiview.BpelMapperDcc;
+import org.netbeans.modules.bpel.mapper.tree.search.ByNameVariableFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.BpelFinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.VariableAndNMPropertyFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.VariableAndPropertyFinder;
 import org.netbeans.modules.soa.ui.tree.impl.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -41,6 +44,7 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.xml.xpath.ext.XPathCoreFunction;
@@ -58,6 +62,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
 import org.netbeans.modules.xml.xpath.ext.metadata.StubExtFunction;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -77,7 +82,9 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     
     protected BpelDesignContext currentBpelDesignContext;   
     
-    public GraphBuilderVisitor(Graph graph, MapperSwingTreeModel leftTreeModel, 
+    private boolean propertyVariableWorkaround = false;
+    
+    public GraphBuilderVisitor(Graph graph, MapperSwingTreeModel leftTreeModel,
             boolean connectToTargetTree, BpelDesignContext context) {
         mGraph = graph;
         mLeftTreeModel = leftTreeModel;
@@ -88,7 +95,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     @Override
     public void visit(XPathCoreFunction coreFunction) {
         CoreFunctionType functionType = coreFunction.getFunctionType();
-        Vertex newVertex = VertexFactory.getInstance().createCoreFunction(functionType);
+        Vertex newVertex = BpelVertexFactory.getInstance().createCoreFunction(functionType);
         //
         mGraph.addVertex(newVertex);
         //
@@ -100,7 +107,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     @Override
     public void visit(XPathCoreOperation coreOperation) {
         CoreOperationType operationType = coreOperation.getOperationType();
-        Vertex newVertex = VertexFactory.getInstance().createCoreOperation(operationType);
+        Vertex newVertex = BpelVertexFactory.getInstance().createCoreOperation(operationType);
         //
         mGraph.addVertex(newVertex);
         //
@@ -111,24 +118,147 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
 
     @Override
     public void visit(XPathExtensionFunction extensionFunction) {
+//System.out.println();
+//System.out.println("VISIT: " + extensionFunction);
+
         if (StubExtFunction.STUB_FUNC_NAME.equals(extensionFunction.getName())) {
             // The stub() function doesn't appear in the mapper's graph.
             // But it occupy a connection point of the parent vertex.
             stubLinkToParent();
+//System.out.println("  V1");
         } else {
+//System.out.println("  V2");
+            if (specialProcessingForGetVariableProperty(extensionFunction)) {
+                return;
+            }
+//System.out.println("  V3");
+            if (specialProcessingForGetVariableNMProperty(extensionFunction)) {
+                return;
+            }
+//System.out.println("  V4");
             ExtFunctionMetadata metadata = extensionFunction.getMetadata();
-            Vertex newVertex = VertexFactory.getInstance().createExtFunction(metadata);
-            //
+            Vertex newVertex = BpelVertexFactory.getInstance().createExtFunction(metadata);
+//System.out.println("  V5: " + newVertex);
+//System.out.println("  metadata: " + metadata);
             if (newVertex != null) {
                 mGraph.addVertex(newVertex);
                 //
+                
                 linkToParent(newVertex);
                 //
-                processChildren(newVertex, extensionFunction);
+                
+                if (metadata == BpelXPathExtFunctionMetadata.GET_VARIABLE_PROPERTY_METADATA
+                        || metadata == BpelXPathExtFunctionMetadata.GET_VARIABLE_NM_PROPERTY_METADATA) 
+                {
+                    propertyVariableWorkaround = true;
+                }
+                try {
+//System.out.println("  V6");
+                    processChildren(newVertex, extensionFunction);
+                } finally {
+                    propertyVariableWorkaround = false;
+                }
             }
+//System.out.println("  V7");
         }
     }
+    
+    private boolean specialProcessingForGetVariableProperty(
+            XPathExtensionFunction extensionFunction) 
+    {
+        ExtFunctionMetadata metadata = extensionFunction.getMetadata();
+        if (metadata != BpelXPathExtFunctionMetadata
+                .GET_VARIABLE_PROPERTY_METADATA)
+        {
+            return false;
+        }
+      
+        if (extensionFunction.getChildCount() != 2) {
+            return false;
+        }
 
+        XPathExpression variableExpression = extensionFunction
+                .getChild(0);
+
+        if (!(variableExpression instanceof XPathStringLiteral)) {
+            return false;
+        }
+        
+        XPathExpression propertyExpression = extensionFunction
+                .getChild(1);
+        
+        if (!(propertyExpression instanceof XPathStringLiteral)) {
+            return false;
+        }
+        
+        String variableName = ((XPathStringLiteral) variableExpression)
+                .getValue();
+        if (variableName == null || variableName.trim().length() == 0) {
+            return false;
+        }
+        
+        String propertyName = ((XPathStringLiteral) propertyExpression)
+                .getValue();
+        if (propertyName == null || propertyName.trim().length() == 0) {
+            return false;
+        }
+        
+        List<TreeItemFinder> findersList = new ArrayList<TreeItemFinder>(1);
+        
+        findersList.add(new VariableAndPropertyFinder(currentBpelDesignContext, 
+                variableName, propertyName));
+        
+        return connectToLeftTree(findersList);
+    }
+
+    private boolean specialProcessingForGetVariableNMProperty(
+            XPathExtensionFunction extensionFunction) 
+    {
+        ExtFunctionMetadata metadata = extensionFunction.getMetadata();
+        if (metadata != BpelXPathExtFunctionMetadata
+                .GET_VARIABLE_NM_PROPERTY_METADATA)
+        {
+            return false;
+        }
+      
+        if (extensionFunction.getChildCount() != 2) {
+            return false;
+        }
+
+        XPathExpression variableExpression = extensionFunction
+                .getChild(0);
+
+        if (!(variableExpression instanceof XPathStringLiteral)) {
+            return false;
+        }
+        
+        XPathExpression propertyExpression = extensionFunction
+                .getChild(1);
+        
+        if (!(propertyExpression instanceof XPathStringLiteral)) {
+            return false;
+        }
+        
+        String variableName = ((XPathStringLiteral) variableExpression)
+                .getValue();
+        if (variableName == null || variableName.trim().length() == 0) {
+            return false;
+        }
+        
+        String propertyName = ((XPathStringLiteral) propertyExpression)
+                .getValue();
+        if (propertyName == null || propertyName.trim().length() == 0) {
+            return false;
+        }
+        
+        List<TreeItemFinder> findersList = new ArrayList<TreeItemFinder>(1);
+        
+        findersList.add(new VariableAndNMPropertyFinder(currentBpelDesignContext, 
+                variableName, propertyName));
+        
+        return connectToLeftTree(findersList);
+    }
+    
     @Override
     public void visit(XPathLocationPath locationPath) {
         // TODO:
@@ -146,7 +276,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     @Override
     public void visit(XPathNumericLiteral numericLiteral) { 
         Number value = numericLiteral.getValue();
-        Vertex newVertex = VertexFactory.getInstance().createNumericLiteral(value);
+        Vertex newVertex = BpelVertexFactory.getInstance().createNumericLiteral(value);
         //
         mGraph.addVertex(newVertex);
         //
@@ -155,8 +285,22 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
 
     @Override
     public void visit(XPathStringLiteral stringLiteral) {
+        if (propertyVariableWorkaround) {
+            String value = stringLiteral.getValue();
+            propertyVariableWorkaround = false;
+            
+            if (value != null) {
+                List<TreeItemFinder> finders = Collections
+                        .singletonList((TreeItemFinder)
+                        new ByNameVariableFinder(value));
+                if (connectToLeftTree(finders)) {
+                    return;
+                }
+            }
+        } 
+        
         String value = stringLiteral.getValue();
-        Vertex newVertex = VertexFactory.getInstance().createStringLiteral(value);
+        Vertex newVertex = BpelVertexFactory.getInstance().createStringLiteral(value);
         //
         mGraph.addVertex(newVertex);
         //
@@ -212,7 +356,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
             mGraph.addLink(newLink);
         }
     }
-    
+
     /**
      * Occupies the next free input connection point of the parent vertex. 
      */
@@ -252,9 +396,9 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     }
 
     protected void connectToLeftTree(XPathExpressionPath path) {
-        if ((! connectToLeftTree(FinderListBuilder.build(path))) && 
+        if ((! connectToLeftTree(BpelFinderListBuilder.singl().build(path))) &&
             (currentBpelDesignContext != null)) {
-            DesignContextControllerImpl2.addErrMessage(
+            BpelMapperDcc.addErrMessage(
                 currentBpelDesignContext.getValidationErrMsgBuffer(), 
                 path.getExpressionString(), "from");
         }
@@ -360,30 +504,27 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
             if (dataObject instanceof ArgumentDescriptor) {
                 //
                 // A new real vertex item has to be inserted after the hairline item
-                VertexItem newRealVItem = VertexFactory.constructVItem(
+                VertexItem newRealVItem = BpelVertexFactory.constructVItem(
                         mVertex, (ArgumentDescriptor)dataObject);
                 result.add(newRealVItem);
                 //
                 // A new hairline item has to be inserted after the real vertex item
                 VertexItem newHirelineVItem = 
-                        VertexFactory.constructHairline(mVertex, dataObject);
+                        BpelVertexFactory.constructHairline(mVertex, dataObject);
                 result.add(newHirelineVItem);
             } else if (dataObject instanceof ArgumentGroup) {
-                List<VertexItem> itemsList = VertexFactory.getInstance().
+                List<VertexItem> itemsList = BpelVertexFactory.getInstance().
                         createGroupItems(mVertex, (ArgumentGroup)dataObject);
                 //
                 result.addAll(itemsList);
                 //
                 // A new hairline item will appear just after the group's items.
                 VertexItem newHirelineVItem = 
-                        VertexFactory.constructHairline(mVertex, dataObject);
+                        BpelVertexFactory.constructHairline(mVertex, dataObject);
                 result.add(newHirelineVItem);
             }
             //
             return result;
         }
-    
     }
-    
 }
-    

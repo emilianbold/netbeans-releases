@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,7 +112,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private WizardDescriptor descriptor = null;
     private PropertyChangeListener phpInterpreterListener;
 
-    private ConfigManager.ConfigProvider configProvider;
     private ConfigManager configManager;
 
     private RunConfigurationPanelVisual runConfigurationPanelVisual = null;
@@ -132,10 +134,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return steps;
     }
 
+    @Override
     public Component getComponent() {
         if (runConfigurationPanelVisual == null) {
-            configProvider = new WizardConfigProvider();
-            configManager = new ConfigManager(configProvider);
+            configManager = new ConfigManager(new WizardConfigProvider());
 
             runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderProvider);
             runAsRemoteWeb = new RunAsRemoteWeb(configManager, sourcesFolderProvider);
@@ -181,6 +183,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
             // listen to the changes in php interpreter
             phpInterpreterListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                         runAsScript.loadPhpInterpreter();
@@ -195,10 +198,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return runConfigurationPanelVisual;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(RunConfigurationPanel.class);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
@@ -222,8 +227,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb.setCopyFilesState(false);
             canceled = false;
             PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                @Override
                 public void finished(final List<DocumentRoot> documentRoots) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             initLocalServerModel(documentRoots);
                         }
@@ -236,6 +243,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent();
         // first remove all the properties
@@ -345,6 +353,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
@@ -389,14 +398,17 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isFinishPanel() {
         switch (wizardType) {
             case REMOTE:
@@ -425,8 +437,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {
-        String activeConfig = configProvider.getActiveConfig();
-        String runAs = configManager.configurationFor(activeConfig).getValue(RUN_AS);
+        String runAs = configManager.currentConfiguration().getValue(RUN_AS);
         if (runAs == null) {
             switch (wizardType) {
                 case REMOTE:
@@ -472,7 +483,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null);
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null, null, null);
     }
 
     private String validateServerLocation() {
@@ -672,6 +683,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         switch (getRunAsType()) {
             case LOCAL:
@@ -685,6 +697,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         fireChangeEvent();
     }
 
+    @Override
     public void cancel() {
         canceled = true;
     }
@@ -705,19 +718,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             configs.put(null, new HashMap<String, String>());
         }
 
+        @Override
         public String[] getConfigProperties() {
             return CFG_PROPS;
         }
 
+        @Override
         public Map<String, Map<String, String>> getConfigs() {
             return configs;
-        }
-
-        public String getActiveConfig() {
-            return null;
-        }
-
-        public void setActiveConfig(String configName) {
         }
     }
 }

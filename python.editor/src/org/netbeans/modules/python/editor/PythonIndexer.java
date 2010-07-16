@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -191,7 +194,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.121"; // NOI18N
+        return "0.123"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -287,7 +290,12 @@ public class PythonIndexer implements Indexer {
             if (root == null) {
                 return documents;
             }
-            assert root instanceof Module;
+            if (!(root instanceof Module)) {
+                // Unexpected... http://netbeans.org/bugzilla/show_bug.cgi?id=165756
+                // Maybe some kind of top level error node?
+                System.err.println("WARNING - top level AST node type was " + root + " of type " + root.getClass().getName());
+                return documents;
+            }
             symbolTable = result.getSymbolTable();
             ScopeInfo scopeInfo = symbolTable.getScopeInfo(root);
             for (Map.Entry<String, SymInfo> entry : scopeInfo.tbl.entrySet()) {
@@ -1180,30 +1188,32 @@ public class PythonIndexer implements Indexer {
             }
         }
 
-        if (namesFound.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("FOUND for ");
-            sb.append(clz);
-            sb.append(" in ");
-            sb.append(module);
-            sb.append(": ");
-            appendList(sb, namesFound);
-            System.err.println(sb.toString());
-        }
+        if (PREINDEXING) {
+            if (namesFound.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("FOUND for ");
+                sb.append(clz);
+                sb.append(" in ");
+                sb.append(module);
+                sb.append(": ");
+                appendList(sb, namesFound);
+                System.err.println(sb.toString());
+            }
 
-        if (noneFound && search) {
-            System.err.println("ERROR: NONE of the passed in names for " + clz + " were found!");
-        }
+            if (noneFound && search) {
+                System.err.println("ERROR: NONE of the passed in names for " + clz + " were found!");
+            }
 
-        if (namesMissing.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("WARNING: Missing these names from ");
-            sb.append(module);
-            sb.append(" for use by class ");
-            sb.append(clz);
-            sb.append(" : ");
-            appendList(sb, namesMissing);
-            System.err.println(sb.toString());
+            if (namesMissing.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("WARNING: Missing these names from ");
+                sb.append(module);
+                sb.append(" for use by class ");
+                sb.append(clz);
+                sb.append(" : ");
+                appendList(sb, namesMissing);
+                System.err.println(sb.toString());
+            }
         }
     }
 
@@ -1276,7 +1286,7 @@ public class PythonIndexer implements Indexer {
             String s = fo.getURL().toExternalForm() + "!"; // NOI18N
             URL u = new URL("jar:" + s); // NOI18N
             FileObject root = URLMapper.findFileObject(u);
-            String rootUrl = u.toExternalForm();
+            String rootUrl = PythonIndex.getPreindexUrl(u.toExternalForm());
             indexScriptDocRecursively(factory, documents, root, rootUrl);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);

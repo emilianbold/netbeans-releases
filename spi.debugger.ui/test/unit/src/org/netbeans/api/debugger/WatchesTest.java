@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,6 +128,59 @@ public class WatchesTest extends DebuggerApiTestBase {
         Watch [] watches = dm.getWatches();
         assertEquals("Wrong number of installed watches", watchesSize + 1, watches.length);
         return newWatch;
+    }
+
+    public void testWatchesReorder() throws Exception {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        dm.createWatch("w1");
+        dm.createWatch(0, "w0");
+
+        Watch[] watches = dm.getWatches();
+        assertEquals("w0", watches[0].getExpression());
+
+        boolean exThrown = false;
+        try {
+            dm.createWatch(100, "w100");
+        } catch (ArrayIndexOutOfBoundsException aioobex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+        dm.removeAllWatches();
+
+        for (int i = 0; i < 5; i++) {
+            dm.createWatch(i, "w"+(i+1));
+        }
+        dm.reorderWatches(new int[] { 2, 0, 1, 4, 3 });
+        String[] reorderedWatches = new String[] { "w2", "w3", "w1", "w5", "w4" };
+        watches = dm.getWatches();
+        String watchesStr = Arrays.toString(watches);
+        for (int i = 0; i < 5; i++) {
+            assertEquals(watchesStr, reorderedWatches[i], watches[i].getExpression());
+        }
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1, 4, 3, 5 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1, 0, 3 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
     }
 
 }

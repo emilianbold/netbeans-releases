@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.ErrorManager;
 
@@ -64,10 +68,13 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
     private String mNamespace;
     private boolean mIsAttribute;
     private XPathExpression mXPathParentExpression;
+    private XPathCastResolver mXPathResolver;
 
-    public static XPathExpression getExpression(PseudoComp pseudoComp) {
+    public static XPathExpression getExpression(PseudoComp pseudoComp,
+            XPathCastResolver parentResolver) {
         String parentPathText = pseudoComp.getParentPath();
-        XPathModel xPathModel = BpelXPathModelFactory.create(pseudoComp);
+        XPathModel xPathModel = 
+                BpelXPathModelFactory.create(pseudoComp, parentResolver);
         XPathExpression xPathExpr = null;
         try {
             xPathExpr = xPathModel.parseExpression(parentPathText);
@@ -77,6 +84,36 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
 
         }
         return xPathExpr;
+    }
+    
+    public static XPathPseudoCompImpl convert(PseudoComp pseudoComp, 
+            XPathCastResolver parentResolver) {
+        SchemaReference<? extends GlobalType> gTypeRef = pseudoComp.getType();
+        if (gTypeRef == null) {
+            return null;
+        }
+        GlobalType gType = gTypeRef.get();
+        String parentPathText = pseudoComp.getParentPath();
+        //
+        if (pseudoComp == null || parentPathText == null || parentPathText.length() == 0) {
+            return null;
+        }
+        XPathPseudoCompImpl result = new XPathPseudoCompImpl();
+        result.mPseudoComp = pseudoComp;
+        result.myParentPathText = parentPathText;
+        result.mType = gType;
+        //
+        QName qName = pseudoComp.getName();
+        if (qName == null) {
+            return null;
+        }
+        result.mName = qName.getLocalPart();
+        result.mNamespace = qName.getNamespaceURI();
+        //
+        result.mIsAttribute = pseudoComp.isAttribute();
+        result.mXPathResolver = parentResolver;
+        //
+        return result;
     }
 
     public static XPathPseudoCompImpl convert(PseudoComp pseudoComp) {
@@ -145,7 +182,7 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
 
     public XPathExpression getParentPathExpression() {
         if (mXPathParentExpression == null) {
-            mXPathParentExpression = getExpression(mPseudoComp);
+            mXPathParentExpression = getExpression(mPseudoComp, mXPathResolver);
         }
         return mXPathParentExpression;
     }
@@ -169,7 +206,9 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
                 // different type
                 return false;
             }
-            if (!(otherPC.getParentPathText().equals(this.getParentPathText()))) {
+            boolean sameParentSContext = XPathSchemaContext.Utilities.equalsChain(
+                    this.getSchemaContext(), otherPC.getSchemaContext());
+            if (!sameParentSContext) {
                 // different location
                 return false;
             }
@@ -177,6 +216,16 @@ public class XPathPseudoCompImpl implements XPathPseudoComp {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + (this.mType != null ? this.mType.getName().hashCode() : 0);
+        hash = 83 * hash + (this.mName != null ? this.mName.hashCode() : 0);
+        hash = 83 * hash + (this.mNamespace != null ? this.mNamespace.hashCode() : 0);
+        hash = 83 * hash + (this.mIsAttribute ? 1 : 0);
+        return hash;
     }
     
     @Override

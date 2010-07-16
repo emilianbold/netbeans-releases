@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,13 +54,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 
 /**
  * Represents on DIFF setup.
  *
  * @author Maros Sandor
  */
-public final class Setup {
+public final class Setup extends AbstractDiffSetup {
 
     /**
      * What was locally changed? The right pane contains local file.
@@ -99,11 +104,6 @@ public final class Setup {
      */
     public static final int DIFFTYPE_ALL       = 2;
     
-    public static final String REVISION_PRISTINE = "PRISTINE"; // NOI18N
-    public static final String REVISION_BASE = "BASE"; // NOI18N
-    public static final String REVISION_CURRENT = "LOCAL"; // NOI18N
-    public static final String REVISION_HEAD    = "HEAD"; // NOI18N
-    
     private final File      baseFile;
 
     /**
@@ -111,8 +111,8 @@ public final class Setup {
      */
     private final String    propertyName;
 
-    private final String    firstRevision;
-    private final String    secondRevision;
+    private final HgRevision    firstRevision;
+    private final HgRevision    secondRevision;
     private FileInformation info;
 
     private DiffStreamSource    firstSource;
@@ -142,7 +142,7 @@ public final class Setup {
 
                 if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-                    firstRevision = REVISION_BASE;
+                    firstRevision = HgRevision.BASE;
 
                     firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
@@ -150,10 +150,10 @@ public final class Setup {
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-                    firstRevision = REVISION_BASE;
+                    firstRevision = HgRevision.BASE;
                     firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 } else {
-                    firstRevision = REVISION_BASE;
+                    firstRevision = HgRevision.BASE;
                     firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 }
 
@@ -172,11 +172,11 @@ public final class Setup {
                 // to-LOCAL
 
                 if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
-                    secondRevision = REVISION_CURRENT;
+                    secondRevision = HgRevision.CURRENT;
                     secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { secondRevision }); // NOI18N
                 } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-                    secondRevision = REVISION_CURRENT;
+                    secondRevision = HgRevision.CURRENT;
                     secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     secondRevision = null;
@@ -186,7 +186,7 @@ public final class Setup {
                     secondRevision = null;
                     secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
                 } else {
-                    secondRevision = REVISION_CURRENT;
+                    secondRevision = HgRevision.CURRENT;
                     secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { secondRevision }); // NOI18N
                 }
                 break;
@@ -205,13 +205,19 @@ public final class Setup {
      * @param firstRevision first revision or <code>null</code> for inital.
      * @param secondRevision second revision
      */
-    public Setup(File baseFile, String firstRevision, String secondRevision) {
+    public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, final boolean forceNonEditable) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision.getRevisionNumber());
+        // XXX delete when UndoAction works correctly
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.getRevisionNumber()) {
+            @Override
+            public boolean isEditable() {
+                return !forceNonEditable && super.isEditable();
+            }
+        };
     }
 
     public String getPropertyName() {
@@ -234,10 +240,12 @@ public final class Setup {
         return view;
     }
 
+    @Override
     public StreamSource getFirstSource() {
         return firstSource;
     }
 
+    @Override
     public StreamSource getSecondSource() {
         return secondSource;
     }

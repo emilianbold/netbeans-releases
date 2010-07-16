@@ -27,14 +27,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.soa.ui.ExtendedLookup;
+import org.netbeans.api.print.PrintManager;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.nodes.LogicalTreeHandler;
 import org.netbeans.modules.xslt.tmap.nodes.NavigatorNodeFactory;
-import org.netbeans.modules.xslt.tmap.nodes.TransformMapNode;
-import org.openide.ErrorManager;
+import org.netbeans.modules.xslt.tmap.nodes.NodeType;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.explorer.ExplorerManager;
@@ -69,6 +67,9 @@ public class TMapLogicalPanel extends JPanel
 
     public TMapLogicalPanel() {
         initComponent();
+        // add print support
+        putClientProperty(PrintManager.PRINT_PRINTABLE, Boolean.TRUE); // NOI18N
+        putClientProperty(PrintManager.PRINT_NAME, NodeType.TRANSFORMMAP.getDisplayName()); // NOI18N
     }
 
     public void navigate(Lookup contextLookup, TMapModel model) {
@@ -115,6 +116,9 @@ public class TMapLogicalPanel extends JPanel
         //init empty panel
         myMsgLabel = new JLabel();
         add(myMsgLabel, BorderLayout.CENTER);
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TMapLogicalPanel.class, "ACSN_TMapTreePanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TMapLogicalPanel.class, "ACSD_TMapTreePanel")); // NOI18N
+        
     }
 
     public void showWaitMsg() {
@@ -187,6 +191,8 @@ public class TMapLogicalPanel extends JPanel
                 getContextLookup());
                 
         beanTree = myTreeHandler.getBeanTreeView();
+        beanTree.getAccessibleContext().setAccessibleName(getAccessibleContext().getAccessibleName());
+        beanTree.getAccessibleContext().setAccessibleDescription(getAccessibleContext().getAccessibleDescription());
         return beanTree;
     }
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -80,27 +85,20 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor {
 
-    private Kenai kenai = Kenai.getDefault();
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
     public List<SourceHandle> getSources(ProjectHandle prjHandle) {
 
-        KenaiProject project = null;
+        KenaiProject project = prjHandle.getKenaiProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
 
-        try {
-            project = kenai.getProject(prjHandle.getId());
-        } catch (KenaiException ex) {
-            // XXX
-            Exceptions.printStackTrace(ex);
-        }
         if (project != null) {
             try {
                 for (KenaiFeature feature : project.getFeatures(Type.SOURCE)) {
                     SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
                     handlesList.add(srcHandle);
-                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
+                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getKenaiProject(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
                 }
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
@@ -221,25 +219,29 @@ public class SourceAccessorImpl extends SourceAccessor {
                     FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
                     Favorites.getDefault().selectWithAddition(fo);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (NullPointerException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 }
              }
         };
     }
 
+    private static void printStackTrace(Throwable t) {
+        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
+    }
+
 
     public static class ProjectAndFeature {
 
-        public String projectName;
+        public KenaiProject kenaiProject;
         public KenaiFeature feature;
         public String externalScmType;
 
-        public ProjectAndFeature(String name, KenaiFeature ftr, String externalScmType) {
-            projectName = name;
+        public ProjectAndFeature(KenaiProject name, KenaiFeature ftr, String externalScmType) {
+            kenaiProject = name;
             feature = ftr;
             this.externalScmType=externalScmType;
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +57,7 @@ import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -68,6 +72,7 @@ import org.openide.windows.InputOutput;
 public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor>, CancelablePanel, ChangeListener {
     static final String REMOTE_FILES = "remoteFiles"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Fetching remote files", 2); // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
@@ -85,6 +90,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         return steps;
     }
 
+    @Override
     public Component getComponent() {
         if (confirmationPanel == null) {
             confirmationPanel = new RemoteConfirmationPanelVisual(this, descriptor);
@@ -93,10 +99,12 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         return confirmationPanel;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(RemoteConfirmationPanel.class);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         descriptor = settings;
         getComponent();
@@ -106,6 +114,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         fetchRemoteFiles();
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         descriptor = settings;
         getComponent();
@@ -115,6 +124,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         settings.putProperty(REMOTE_FILES, confirmationPanel.getRemoteFiles());
     }
 
+    @Override
     public boolean isValid() {
         switch (confirmationPanel.getState()) {
             case FETCHING:
@@ -141,18 +151,22 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         canceled = true;
         if (remoteClient != null) {
@@ -164,13 +178,14 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         getComponent();
         confirmationPanel.setFetchingFiles();
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteConfirmationPanel.class, "LBL_FetchingRemoteFilesProgress"));
                 try {
                     handle.start();
 
-                    Set<TransferFile> remoteFiles = null;
+                    Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
                     String reason = ""; // NOI18N
                     try {
                         remoteFiles = getRemoteFiles();
@@ -179,10 +194,11 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
                         reason = ex.getMessage();
                     }
 
-                    final boolean hasAnyTransferableFiles = TransferFilter.hasAnyTransferableFiles(remoteFiles);
+                    final boolean hasAnyTransferableFiles = TransferFilesChooser.forDownload(remoteFiles).hasAnyTransferableFiles();
                     final Set<TransferFile> rmt = remoteFiles;
                     final String rsn = reason;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             if (canceled) {
                                 return;
@@ -216,6 +232,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         return remoteClient.prepareDownload(sources, sources);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -120,11 +123,11 @@ public final class FileBasedFileSystem extends FileSystem {
         return FileObjectFactory.factories();
     }        
 
-    public static final FileObject getFileObject(final File file) {
+    public static FileObject getFileObject(final File file) {
         return getFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
     
-    public static final FileObject getFileObject(final File file, FileObjectFactory.Caller caller) {
+    public static FileObject getFileObject(final File file, FileObjectFactory.Caller caller) {
         FileObjectFactory fs = FileObjectFactory.getInstance(file);
         FileObject retval = null;
         if (fs != null) {
@@ -145,12 +148,14 @@ public final class FileBasedFileSystem extends FileSystem {
     @Override
     public void refresh(final boolean expected) {                        
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 refreshImpl(expected);
             }            
         };
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -243,6 +248,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return new ProvidedExtensionsProxy(c);
         }
 
+        @Override
         public void resultChanged(org.openide.util.LookupEvent ev) {
             Collection<? extends AnnotationProvider> now = annotationProviders.allInstances();
             Collection<? extends AnnotationProvider> add;
@@ -295,10 +301,12 @@ public final class FileBasedFileSystem extends FileSystem {
             return null;
         }
 
+        @Override
         public void annotationChanged(org.openide.filesystems.FileStatusEvent ev) {
             fireFileStatusChanged(ev);
         }
 
+        @Override
         public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
             Image retVal = null;
 
@@ -314,6 +322,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return icon;
         }
 
+        @Override
         public String annotateName(String name, Set<? extends FileObject> files) {
             String retVal = null;
             Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
@@ -327,6 +336,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return name;
         }
 
+        @Override
         public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             String retVal = null;
             Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();

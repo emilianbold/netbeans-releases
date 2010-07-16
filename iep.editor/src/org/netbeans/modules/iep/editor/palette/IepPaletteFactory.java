@@ -20,8 +20,11 @@
 package org.netbeans.modules.iep.editor.palette;
 
 
-import org.netbeans.modules.iep.editor.tcg.palette.TcgPaletteActions;
+import org.netbeans.modules.tbls.editor.palette.TcgPaletteActions;
 import java.io.IOException;
+
+
+
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 
@@ -41,14 +44,17 @@ public class IepPaletteFactory {
     
     public static PaletteController getPalette() {
         try {
-        if (palette == null)
-            palette = PaletteFactory.createPalette(IEP_PALETTE_FOLDER, new TcgPaletteActions());//, null, new IepDragAndDropHandler());
-            
+            if (palette == null) {
+                palette = PaletteFactory.createPalette(IEP_PALETTE_FOLDER, new TcgPaletteActions(), new IepPaletteFilter(), new IepPaletteDragAndDropHandler());//, null, new IepDragAndDropHandler());
+            }
+        
         } catch (IOException e) {
             e.printStackTrace();
         }
         
+        
         return palette;
     }
     
+        
 }

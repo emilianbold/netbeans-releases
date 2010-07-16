@@ -29,7 +29,7 @@ import org.openide.filesystems.FileUtil;
  * @author Vitaly Bychkov
  *
  */
-public class IDETMapCatalogModel {
+public class IDETMapCatalogModel implements IDECatalogModel<TMapModel> {
 
     static IDETMapCatalogModel singletonCatMod = null;
 
@@ -50,7 +50,10 @@ public class IDETMapCatalogModel {
         return singletonCatMod;
     }
 
-
+    public boolean isAccepted(File file) {
+//        System.out.println("tmapCatalog model: file: "+file+"; fileName: "+file.getName());
+        return file != null && file.isFile() && Util.TRANSFORMMAP_XML.equals(file.getName());
+    }
 
     /**
      * Creates TMap Model from transformation descriptor
@@ -58,7 +61,10 @@ public class IDETMapCatalogModel {
      * @throws java.lang.Exception
      * @return Transformation Model
      */
-     public TMapModel getTMapModel(File file) throws Exception {
+     public TMapModel getModel(File file) throws Exception {
+             if (!isAccepted(file)) {
+                return null;
+             }
              //convert file to FileObject
              ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
 

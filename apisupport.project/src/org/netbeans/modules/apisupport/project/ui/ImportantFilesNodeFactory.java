@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,8 +55,8 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerNode;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -182,10 +185,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
     
     public static Node createLayerNode(Project prj) {
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(prj);
+        LayerHandle handle = LayerHandle.forProject(prj);
         if (handle != null && handle.getLayerFile() != null) {
             return new SpecialFileNode(new LayerNode(handle), null);
         }
+        // XXX consider also displaying node for generated-layer.xml where applicable
         return null;
     }
     
@@ -244,8 +248,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
-            } else if (key instanceof LayerUtils.LayerHandle) {
-                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
+            } else if (key instanceof LayerHandle) {
+                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerHandle) key), null)};
             } else {
                 throw new AssertionError(key);
             } 
@@ -254,7 +258,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<FileObject>();
             List<Object> newVisibleFiles = new ArrayList<Object>();
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+            LayerHandle handle = LayerHandle.forProject(project);
             FileObject layerFile = handle.getLayerFile();
             if (layerFile != null) {
                 newVisibleFiles.add(handle);

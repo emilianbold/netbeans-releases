@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,7 +70,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        password = cfg.getValue(FtpConnectionProvider.PASSWORD, true);
+        password = readPassword(cfg, FtpConnectionProvider.PASSWORD);
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -118,7 +121,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        return password != null ? password : "";//NOI18N
+        return password != null ? password : ""; // NOI18N
     }
 
     @Override
@@ -129,6 +132,21 @@ public final class FtpConfiguration extends RemoteConfiguration {
             path += directory;
         }
         return "ftp://" + host + path.replaceAll(PATH_SEPARATOR + "{2,}", PATH_SEPARATOR); // NOI18N
+    }
+
+    @Override
+    public boolean saveProperty(String key, String value) {
+        if (FtpConnectionProvider.PASSWORD.equals(key)) {
+            // value cannot be used (is scrambled)
+            savePassword(password, FtpConnectionProvider.get().getDisplayName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void notifyDeleted() {
+        deletePassword();
     }
 
     @Override

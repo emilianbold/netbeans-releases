@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -148,7 +151,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             }
         };
         output.setEditable(false);
-        output.setFont(new Font("Monospaced", Font.PLAIN, output.getFont().getSize() + 1)); // NOI18N
+        Font f = output.getFont();
+        output.setFont(new Font("Monospaced", Font.PLAIN, null == f ? 12 : f.getSize() + 1)); // NOI18N
         output.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
         output.setBackground(UIManager.getColor("Label.background")); // NOI18N
 
@@ -270,20 +274,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
         
         // #50018 Don't try to show any notify dialog when reporting headless exception
-        if ("java.awt.HeadlessException".equals(t.getClassName()) && GraphicsEnvironment.isHeadless()) { // NOI18N
+        if (/*"java.awt.HeadlessException".equals(t.getClassName()) &&*/ GraphicsEnvironment.isHeadless()) { // NOI18N
             t.printStackTrace(System.err);
             return;
-        }
-        //#133092: Error in JDK 5 during printing #6704417.
-        if ("java.lang.NullPointerException".equals(t.getClassName())) { // NOI18N
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            if (sw.toString().contains("sun.awt.windows.WComponentPeer.nativeHandleEvent") && // NOI18N
-                System.getProperty("java.version").startsWith("1.5")) { // NOI18N
-                 t.printStackTrace(System.err);
-                 return;
-            }
         }
 
         SwingUtilities.invokeLater (new Runnable () {
@@ -644,7 +637,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 exceptions = null;
                 flash = null;
                 timer.stop();
-                note.clear();
+                if( null != note )
+                    note.clear();
             }
         }
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -104,6 +107,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
+        @Override
         public void run() {
             Runnable toRun = RUNNABLES.poll();
             while (toRun != null) {
@@ -143,6 +147,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         RUNNABLES.add(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
                 handle.start();
@@ -215,6 +220,7 @@ public final class CreateTestsAction extends NodeAction {
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
         FileUtil.runAtomicAction(new Runnable() {
+            @Override
             public void run() {
                 try {
                     final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
@@ -233,7 +239,7 @@ public final class CreateTestsAction extends NodeAction {
         });
 
         if (!failed.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(50);
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
                 sb.append("\n"); // NOI18N
@@ -285,7 +291,7 @@ public final class CreateTestsAction extends NodeAction {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(sourceFo);
-        if (classes.size() == 0) {
+        if (classes.isEmpty()) {
             // run phpunit in order to have some output
             generateSkeleton(phpUnit, configFiles, sourceFo.getName(), sourceFo, workingDirectory, paramSkeleton);
             failed.add(sourceFo);
@@ -326,7 +332,13 @@ public final class CreateTestsAction extends NodeAction {
         ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                 .workingDirectory(workingDirectory);
 
-        // #176413 - bootstrap file not used for creating tests
+        // #179960
+        if (configFiles.bootstrap != null
+                && configFiles.useBootstrapForCreateTests) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
+                    .addArgument(configFiles.bootstrap.getAbsolutePath());
+        }
         if (configFiles.configuration != null) {
             externalProcessBuilder = externalProcessBuilder
                     .addArgument(PhpUnit.PARAM_CONFIGURATION)
@@ -348,7 +360,7 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private File getGeneratedFile(String className, File parent) {
-        return new File(parent, className + PhpUnit.TEST_FILE_SUFFIX);
+        return new File(parent, PhpUnit.makeTestFile(className));
     }
 
     private File getTestDirectory(PhpProject phpProject) {
@@ -367,7 +379,7 @@ public final class CreateTestsAction extends NodeAction {
 
         File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
-        return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
+        return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {
@@ -435,7 +447,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         if (!generatedFile.delete()) {
-            LOGGER.info("Cannot delete generated file " + generatedFile);
+            LOGGER.log(Level.INFO, "Cannot delete generated file {0}", generatedFile);
         }
         return testFile;
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,14 +66,17 @@ public final class DelegateRepository implements Repository {
     public DelegateRepository() {
     }
 
+    @Override
     public void hang(Key key, Persistent obj) {
         delegate.hang(key, obj);
     }
 
+    @Override
     public void put(Key key, Persistent obj) {
         delegate.put(key, obj);
     }
 
+    @Override
     public Persistent get(Key key) {
         Persistent result = delegate.get(key);
         if (result == null && Stats.useNullWorkaround) {
@@ -85,19 +91,23 @@ public final class DelegateRepository implements Repository {
         return result;
     }
 
+    @Override
     public Persistent tryGet(Key key) {
         return delegate.tryGet(key);
     }
 
+    @Override
     public void remove(Key key) {
         delegate.remove(key);
     }
 
+    @Override
     public void debugClear() {
         delegate.debugClear();
         delegate = null;
     }
 
+    @Override
     public void shutdown() {
         Repository aDelegate = delegate;
         if (aDelegate != null) {
@@ -105,30 +115,40 @@ public final class DelegateRepository implements Repository {
         }
     }
 
-    public void openUnit(int unitId, String unitName) {
+    @Override
+    public void openUnit(int unitId, CharSequence unitName) {
         delegate.openUnit(unitId, unitName);
     }
 
-    public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        delegate.closeUnit(unitName, cleanRepository, requiredUnits);
+    @Override
+    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
+        Repository aDelegate = delegate;
+        if (aDelegate != null) {
+            aDelegate.closeUnit(unitName, cleanRepository, requiredUnits);
+        }
     }
 
-    public void removeUnit(String unitName) {
+    @Override
+    public void removeUnit(CharSequence unitName) {
         delegate.removeUnit(unitName);
     }
 
+    @Override
     public void cleanCaches() {
         delegate.cleanCaches();
     }
 
+    @Override
     public void registerRepositoryListener(RepositoryListener aListener) {
         RepositoryListenersManager.getInstance().registerListener(aListener);
     }
 
+    @Override
     public void unregisterRepositoryListener(RepositoryListener aListener) {
         RepositoryListenersManager.getInstance().unregisterListener(aListener);
     }
 
+    @Override
     public void startup(int persistMechanismVersion) {
         initDelegate();
         RepositoryTranslatorImpl.startup(persistMechanismVersion);
@@ -152,6 +172,7 @@ public final class DelegateRepository implements Repository {
         }
     }
 
+    @Override
     public void debugDistribution() {
         delegate.debugDistribution();
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,12 +49,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -66,7 +72,7 @@ public final class FileData {
     private final Properties data;
     private final File dataFile;
 
-    private static final String VERSION = "1.1"; // NOI18N
+    private static final String VERSION = "1.2"; // NOI18N
     private static final String VERSION_KEY = "VERSION"; // NOI18N
 
     //
@@ -89,7 +95,30 @@ public final class FileData {
 
     }
 
-    public FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+    private static Map<String, WeakReference<FileData>> instances = new HashMap<String, WeakReference<FileData>>();
+
+    public static FileData get(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+        String key;
+        try {
+            key = privProjectStorageDir.getCanonicalPath();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            key = privProjectStorageDir.getAbsolutePath();
+        }
+        key += ExecutionEnvironmentFactory.toUniqueID(executionEnvironment);
+        WeakReference<FileData> ref = instances.get(key);
+        FileData instance = null;
+        if (ref != null) {
+            instance = ref.get();
+        }
+        if (instance == null) {
+            instance = new FileData(privProjectStorageDir, executionEnvironment);
+            instances.put(key, new WeakReference<FileData>(instance));
+        }
+        return instance;
+    }
+
+    private FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         data = new Properties();
         String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
@@ -149,11 +178,14 @@ public final class FileData {
     public FileInfo getFileInfo(File file) {
         return getFileInfo(getFileKey(file));
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void store()  {
         File dir = dataFile.getParentFile();
         if (!dir.exists()) {
-            dir.mkdirs(); // no ret value check - the code below will throw exception
+            if (!dir.mkdirs()) {
+                System.err.printf("Error creating directory %s\n", dir.getAbsolutePath());
+            }
         }
         try {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
@@ -162,7 +194,9 @@ public final class FileData {
             os.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            dataFile.delete();
+            if (!dataFile.delete()) {
+                System.err.printf("Error deleting file %s\n", dataFile.getAbsolutePath());
+            }
         }
     }
 
@@ -178,8 +212,12 @@ public final class FileData {
         if (dataFile.exists()) {
             long time = System.currentTimeMillis();
             final FileInputStream is = new FileInputStream(dataFile);
-            data.load(new BufferedInputStream(is));
-            is.close();
+            BufferedInputStream bs = new BufferedInputStream(is);
+            try {
+                data.load(bs);
+            } finally {
+                bs.close();
+            }
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                 time = System.currentTimeMillis() - time;
                 System.out.printf("reading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N

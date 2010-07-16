@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,13 +46,12 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,21 +68,29 @@ public class MakeTemplateListener implements OperationListener {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeTemplateListener.class.getName());
 
+    private static final String ADD_TO_LOGICAL_FOLDER_ATTRIBUTE = "addToLogicalFolder"; // NOI18N
+
+    @Override
     public void operationPostCreate(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationCopy(OperationEvent.Copy copy) {
     }
 
+    @Override
     public void operationMove(OperationEvent.Move move) {
     }
 
+    @Override
     public void operationDelete(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationRename(OperationEvent.Rename rename) {
     }
 
+    @Override
     public void operationCreateShadow(OperationEvent.Copy copy) {
     }
 
@@ -94,11 +104,25 @@ public class MakeTemplateListener implements OperationListener {
         return pdp.getConfigurationDescriptor();
     }
 
+    @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
-        Project p = Utilities.actionsGlobalContext().lookup(Project.class);
+        Project project = Utilities.actionsGlobalContext().lookup(Project.class);
 
-        if (folder == null || p == null) {
+        DataObject originalDataObject = copy.getOriginalDataObject();
+        if(originalDataObject != null) {
+            FileObject originalPrimaryFile = originalDataObject.getPrimaryFile();
+            if(originalPrimaryFile != null) {
+                if(originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE) != null) {
+                    boolean addToLogicalFolder = (Boolean)originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE);
+                    if(!addToLogicalFolder) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (folder == null || project == null) {
             //maybe a file belonging into a project is selected. Try:
             DataObject od = Utilities.actionsGlobalContext().lookup(DataObject.class);
 
@@ -109,9 +133,9 @@ public class MakeTemplateListener implements OperationListener {
 
             FileObject file = od.getPrimaryFile();
 
-            p = FileOwnerQuery.getOwner(file);
+            project = FileOwnerQuery.getOwner(file);
 
-            if (p == null) {
+            if (project == null) {
                 //no project:
                 return;
             }
@@ -124,7 +148,7 @@ public class MakeTemplateListener implements OperationListener {
             }
 
             //check if the project is a Makefile project:
-            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
+            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
 
             if (makeConfigurationDescriptor == null) {
                 //no:
@@ -145,7 +169,7 @@ public class MakeTemplateListener implements OperationListener {
         if (folder.isDiskFolder()) {
             return; // item is added via Folder.fileDataCreated event
         }
-        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
 
         assert makeConfigurationDescriptor != null;
 
@@ -156,10 +180,10 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "processing file=" + file); // NOI18N
             ERR.log(ErrorManager.INFORMATIONAL, "FileUtil.toFile(file.getPrimaryFile())=" + FileUtil.toFile(file)); // NOI18N
             ERR.log(ErrorManager.INFORMATIONAL, "into folder = " + folder); // NOI18N
-            ERR.log(ErrorManager.INFORMATIONAL, "in project = " + p.getProjectDirectory()); // NOI18N
+            ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == p.getProjectDirectory()) {
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;
@@ -168,14 +192,14 @@ public class MakeTemplateListener implements OperationListener {
                 return;
             }
             String itemPath;
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                itemPath = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
             } else {
                 itemPath = ioFile.getPath();
             }
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = new Item(itemPath);
 
             folder.addItemAction(item);

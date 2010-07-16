@@ -20,6 +20,7 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import java.awt.Image;
+import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 
 /**
@@ -27,12 +28,10 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface DecoratedTMapComponent<T extends TMapComponent> {
+public interface DecoratedTMapComponent<T extends TMapComponent> extends InstanceRef<T> {
     String getName();
     String getDisplayName();
     String getHtmlDisplayName();
     String getTooltip();
     Image getIcon();
-
-    T getOriginal();
 }

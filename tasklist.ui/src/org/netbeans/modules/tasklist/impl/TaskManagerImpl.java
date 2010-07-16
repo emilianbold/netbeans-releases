@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,6 +94,8 @@ public class TaskManagerImpl extends TaskManager {
     private boolean workingStatus = false;
     private Loader loader;
 
+    public static final RequestProcessor RP = new RequestProcessor("TaskList"); //NOI18N
+
     public static TaskManagerImpl getInstance() {
         if( null == theInstance )
             theInstance = new TaskManagerImpl();
@@ -98,7 +103,8 @@ public class TaskManagerImpl extends TaskManager {
     }
 
     public void observe( final TaskScanningScope newScope, final TaskFilter newFilter ) {
-        RequestProcessor.getDefault().post( new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
                 doObserve( newScope, newFilter );
             }
@@ -213,7 +219,8 @@ public class TaskManagerImpl extends TaskManager {
     }
 
     public void abort() {
-        RequestProcessor.getDefault().post( new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
                 doAbort();
             }
@@ -264,7 +271,7 @@ public class TaskManagerImpl extends TaskManager {
             loader.cancel();
 
         loader = new Loader( scope, filter, taskList );
-        RequestProcessor.getDefault().post(loader);
+        RP.post(loader);
     }
     
     private void stopLoading() {
@@ -279,6 +286,7 @@ public class TaskManagerImpl extends TaskManager {
         return filter;
     }
 
+    @Override
     public void refresh( final FileTaskScanner scanner, final FileObject... resources) {
         try {
             synchronized( this ) {
@@ -298,6 +306,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
     
+    @Override
     public void refresh( FileTaskScanner scanner ) {
         synchronized( this ) {
             taskList.clear( scanner );
@@ -315,9 +324,11 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
 
+    @Override
     public void refresh( final TaskScanningScope scopeToRefresh ) {
         if( this.scope.equals( scopeToRefresh ) ) {
-            RequestProcessor.getDefault().post( new Runnable() {
+            RP.post( new Runnable() {
+                @Override
                 public void run() {
                     doRefresh( scopeToRefresh );
                 }
@@ -341,6 +352,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
 
+    @Override
     public void started(PushTaskScanner scanner) {
         synchronized( workingScanners ) {
             workingScanners.add( scanner );
@@ -348,6 +360,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
 
+    @Override
     public void finished(PushTaskScanner scanner) {
         synchronized( workingScanners ) {
             workingScanners.remove( scanner );
@@ -355,6 +368,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
 
+    @Override
     public void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks ) {
         if( isObserved() && scope.isInScope( resource ) ) {
             try {
@@ -376,6 +390,7 @@ public class TaskManagerImpl extends TaskManager {
         }
     }
     
+    @Override
     public void clearAllTasks( PushTaskScanner scanner ) {
         taskList.clear( scanner );
     }

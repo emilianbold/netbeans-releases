@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,11 +45,14 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -55,15 +61,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -80,7 +88,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
-        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
+    }
+
+    @Before @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        List<CompilerSet> sets = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {
                 SunStudioSet = set;
@@ -91,7 +104,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             if (set.getName().equals("MinGW")) {
                 MinGWSet = set;
             }
-            if (set.getName().equals("Cygwin")) {
+            if (set.getName().equals("Cygwin_4.x")) {
+                CygwinSet = set;
+            }
+            if (set.getName().equals("Cygwin") &&  CygwinSet == null) {
                 CygwinSet = set;
             }
         }
@@ -110,32 +126,32 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     @Test
-    public void testArguments() throws IOException {
+    public void testArguments() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "Arguments", defaultConfs, "");
     }
 
     @Test
-    public void testInputOutput() throws IOException {
+    public void testInputOutput() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "InputOutput", defaultConfs, "");
     }
 
     @Test
-    public void testWelcome() throws IOException {
+    public void testWelcome() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "Welcome", defaultConfs, "");
     }
 
     @Test
-    public void testQuote() throws IOException {
+    public void testQuote() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "Quote", defaultConfs, "");
     }
 
     @Test
-    public void testSubProjects() throws IOException {
+    public void testSubProjects() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "SubProjects", defaultConfs, "");
     }
 
     @Test
-    public void testPi() throws IOException {
+    public void testPi() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             testSample(SunStudioCompilerSet, "Pi", new String[] {"Serial", "Pthreads", "Pthreads_safe", "Pthread_Hot", "OpenMP"}, "");
             testSample(GNUCompilerSet, "Pi", new String[] {"Serial"}, "");
@@ -146,40 +162,40 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     @Test
-    public void testFreeway() throws IOException {
+    public void testFreeway() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             testSample(allAvailableCompilerSets, "Freeway", defaultConfs, "");
         }
     }
 
     @Test
-    public void testFractal() throws IOException {
+    public void testFractal() throws IOException, InterruptedException, InvocationTargetException {
         testSample(allAvailableCompilerSets, "Fractal", new String[] {"FastBuild", "Debug", "PerformanceDebug", "DianogsableRelease", "Release", "PerformanceRelease"}, "");
     }
 
     @Test
-    public void testLexYacc() throws IOException {
+    public void testLexYacc() throws IOException, InterruptedException, InvocationTargetException {
         if (!Utilities.isWindows()) {
             testSample(allAvailableCompilerSets, "LexYacc", defaultConfs, "");
         }
     }
 
     @Test
-    public void testMP() throws IOException {
+    public void testMP() throws IOException, InterruptedException, InvocationTargetException {
         if (!Utilities.isWindows()) {
             testSample(allAvailableCompilerSets, "MP", new String[] {"Debug", "Debug_mp", "Release", "Release_mp"}, "");
         }
     }
 
     @Test
-    public void testHello() throws IOException {
+    public void testHello() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             testSample(SunStudioCompilerSet, "Hello", defaultConfs, "");
         }
     }
 
     @Test
-    public void testHelloQtWorld() throws IOException {
+    public void testHelloQtWorld() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
         }
@@ -189,35 +205,53 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     @Test
-    public void testProfilingDemo() throws IOException {
+    public void testProfilingDemo() throws IOException, InterruptedException, InvocationTargetException {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS || Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
             testSample(SunStudioCompilerSet, "ProfilingDemo", defaultConfs, "");
         }
     }
 
     @Override
-    protected List<Class> getServises() {
-        List<Class> list = new ArrayList<Class>();
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
+        list.addAll(super.getServices());
         return list;
     }
 
-    private static Set<DataObject> instantiateSample(String name, File destdir) throws IOException {
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
+    protected static Set<DataObject>  instantiateSample(String name, final File destdir) throws IOException, InterruptedException, InvocationTargetException {
+        if(destdir.exists()) {
+            assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectoryContent(destdir));
+        }
+        final FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
-        DataObject templateDO = DataObject.find(templateFO);
+        final DataObject templateDO = DataObject.find(templateFO);
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
-        TemplateWizard wiz = new TemplateWizard();
-        wiz.setTemplate(templateDO);
-        projectCreator.initialize(wiz);
-        wiz.putProperty("name", destdir.getName());
-        wiz.putProperty("projdir", destdir);
-        return projectCreator.instantiate(wiz);
+        final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
+        final AtomicReference<Set<DataObject>> setRef = new AtomicReference<Set<DataObject>>();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
+                TemplateWizard wiz = new TemplateWizard();
+                wiz.setTemplate(templateDO);
+                projectCreator.initialize(wiz);
+                wiz.putProperty("name", destdir.getName());
+                wiz.putProperty("projdir", destdir);
+                try {
+                    setRef.set(projectCreator.instantiate());
+                } catch (IOException ex) {
+                    exRef.set(ex);
+                }
+            }
+        });
+        if (exRef.get() != null) {
+            throw exRef.get();
+        }
+        return setRef.get();
     }
 
-    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions) throws IOException {
+    public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions) throws IOException, InterruptedException, InvocationTargetException {
         for (CompilerSet set : sets) {
             if (set != null) {
                 for (String conf : confs) {
@@ -227,11 +261,11 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         }
     }
 
-    public void testSample(CompilerSet set, String sample, String conf, String makeOptions) throws IOException {
+    public void testSample(CompilerSet set, String sample, String conf, String makeOptions) throws IOException, InterruptedException, InvocationTargetException {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
-        CompilerSetManager.getDefault().setDefault(set);
+        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
         MakeOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
@@ -241,6 +275,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         Set<DataObject> projectDataObjects;
 
         projectDataObjects = instantiateSample(sample, projectDir);
+        assertTrue(projectDataObjects.size()>0);
 
         for (DataObject projectDataObject : projectDataObjects) {
             FileObject projectDirFO = projectDataObject.getPrimaryFile();
@@ -258,15 +293,16 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final String failureLine = "BUILD FAILED";
 
         IOProvider iop = IOProvider.getDefault();
-        assert iop instanceof CndTestIOProvider;
+        assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+            @Override
             public void linePrinted(String line) {
                 if(line != null) {
-                    if (line.startsWith(successLine)) {
+                    if (line.trim().startsWith(successLine)) {
                         build_rc.set(0);
                         done.countDown();
                     }
-                    else if (line.startsWith(failureLine)) {
+                    else if (line.trim().startsWith(failureLine)) {
                         // message is:
                         // BUILD FAILED (exit value 1, total time: 326ms)
                         int rc = -1;
@@ -286,6 +322,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         });
 
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
+        assertNotNull(makeProject);
         MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
         makeActionProvider.invokeAction("build", null);
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,16 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -129,7 +141,7 @@ public final class ParserQueue {
 
         public String toString(boolean detailed) {
             StringBuilder retValue = new StringBuilder();
-            retValue.append("ParserQueue.Entry " + file + " of project " + file.getProject()); // NOI18N
+            retValue.append("ParserQueue.Entry ").append(file).append(" of project ").append(file.getProject()); // NOI18N
             if (detailed) {
                 retValue.append("\nposition: ").append(position); // NOI18N
                 retValue.append(", serial: ").append(serial); // NOI18N
@@ -182,6 +194,7 @@ public final class ParserQueue {
             this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
         }
 
+        @Override
         public int compareTo(Entry that) {
             int cmp = this.position.compareTo(that.position);
             if (cmp == 0) {
@@ -284,15 +297,19 @@ public final class ParserQueue {
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
         private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
         private volatile boolean notifyListeners;
-
+        private volatile int pendingActivity;
         ProjectData(boolean notifyListeners) {
             this.notifyListeners = notifyListeners;
+            this.pendingActivity = 0;
         }
 
         public boolean isEmpty() {
             return filesInQueue.isEmpty() && filesBeingParsed.isEmpty();
         }
-
+        
+        public boolean noActivity() {
+            return filesInQueue.isEmpty() && filesBeingParsed.isEmpty() && (pendingActivity == 0);
+        }
         public int size() {
             return filesInQueue.size();
         }
@@ -316,6 +333,8 @@ public final class ParserQueue {
     private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Diagnostic.ProjectStat parseWatch = TraceFlags.TIMING ? new Diagnostic.ProjectStat() : null;
+    private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<ProjectBase, AtomicInteger>();
 
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
@@ -359,7 +378,13 @@ public final class ParserQueue {
      */
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
-
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception("ParserQueue: add for " + file).printStackTrace(System.err);  // NOI18N
+            int i = 0;
+            for (APTPreprocHandler.State aState : ppStates) {
+                System.err.printf("ParserQueue: State %d from original %s\n", i++, aState);
+            }
+        }
         if (ppStates.isEmpty()) {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
@@ -530,12 +555,11 @@ public final class ParserQueue {
 
         ProjectBase project;
         boolean lastFileInProject;
-        boolean notifyListeners;
 
         FileImpl file = null;
 
+        ProjectData data;
         synchronized (lock) {
-            ProjectData data = null;
             e = findFirstNotBeeingParsedEntry(true);
             if (e == null) {
                 return null;
@@ -545,23 +569,16 @@ public final class ParserQueue {
             data = getProjectData(project, true);
             data.filesInQueue.remove(file);
             data.filesBeingParsed.add(file);
-            lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
-            if (lastFileInProject) {
-                removeProjectData(project);
-            }
-            notifyListeners = lastFileInProject && data.notifyListeners;
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             if (TraceFlags.TIMING && stopWatch != null && !stopWatch.isRunning()) {
                 stopWatch.start();
-                System.err.println("=== Starting parser queue stopwatch"); // NOI18N
+                System.err.println("=== Starting parser queue stopwatch " + project.getName() + " (" + project.getFileContainerSize() + " files)"); // NOI18N
             }
         }
         // TODO: think over, whether this should be under if( notifyListeners
         ProgressSupport.instance().fireFileParsingStarted(file);
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
         if (TraceFlags.TRACE_PARSER_QUEUE_POLL) {
             System.err.printf("ParserQueue: polling %s with %d states in thread %s\n", // NOI18N
@@ -574,11 +591,10 @@ public final class ParserQueue {
 
         ProjectBase project;
         boolean lastFileInProject = false;
-        boolean notifyListeners = false;
-
+        ProjectData data;
         synchronized (lock) {
             project = file.getProjectImpl(true);
-            ProjectData data = getProjectData(project, true);
+            data = getProjectData(project, true);
             if (data.filesInQueue.contains(file)) {
                 //queue.remove(file); //TODO: think over / profile, probably this line is expensive
                 Entry e = findEntry(file);//TODO: think over / profile, probably this line is expensive
@@ -586,19 +602,12 @@ public final class ParserQueue {
                     queue.remove(e);
                 }
                 data.filesInQueue.remove(file);
-                lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
-                if (lastFileInProject) {
-                    removeProjectData(project);
-                }
-                notifyListeners = lastFileInProject && data.notifyListeners;
+                lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             }
         }
 
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
     }
 
@@ -616,10 +625,23 @@ public final class ParserQueue {
         for (ProjectBase prj : copiedProjects) {
             ProgressSupport.instance().fireProjectParsingFinished(prj);
         }
+        clearParseWatch();
     }
 
     public void startup() {
         state = State.ON;
+    }
+
+    void clearParseWatch() {
+        if (parseWatch != null) {
+            parseWatch.clear();
+        }
+    }
+
+    void addParseStatistics(ProjectBase project, FileImpl file, long parseTime) {
+        if (parseWatch != null) {
+            parseWatch.addParseFileStatistics(project, file, parseTime);
+        }
     }
 
     public void removeAll(ProjectBase project) {
@@ -627,16 +649,10 @@ public final class ParserQueue {
         boolean lastFileInProject;
         synchronized (lock) {
             data = _clean(project);
-            lastFileInProject = data.filesBeingParsed.isEmpty();
-            if (lastFileInProject) {
-                removeProjectData(project);
-            }
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
         }
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
     }
 
@@ -673,14 +689,10 @@ public final class ParserQueue {
         return false;
     }
 
-    public boolean hasFiles(ProjectBase project, FileImpl skipFile) {
-        return hasFiles(project, skipFile, true);
-    }
-
-    private boolean hasFiles(ProjectBase project, FileImpl skipFile, boolean create) {
+    public boolean hasPendingProjectRelatedWork(ProjectBase project, FileImpl skipFile) {
         synchronized (lock) {
-            ProjectData data = getProjectData(project, create);
-            if (data == null || data.isEmpty()) {
+            ProjectData data = getProjectData(project, false);
+            if (data == null || data.noActivity()) {
                 // nothing in queue and nothing in progress => no files
                 return false;
             } else {
@@ -690,9 +702,9 @@ public final class ParserQueue {
                 } else {
                     if (data.filesBeingParsed.contains(skipFile) ||
                             data.filesInQueue.contains(skipFile)) {
-                        return data.filesBeingParsed.size() + data.filesInQueue.size() > 1;
+                        return data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity > 1;
                     }
-                    return !data.isEmpty();
+                    return !data.noActivity();
                 }
             }
         }
@@ -728,15 +740,41 @@ public final class ParserQueue {
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
-        getProjectData(project, true).notifyListeners = true;
-        ProgressSupport.instance().fireProjectParsingStarted(project);
+        boolean fire;
+        synchronized(onStartLevel) {
+            AtomicInteger level = onStartLevel.get(project);
+            if (level == null) {
+                level = new AtomicInteger();
+                onStartLevel.put(project, level);
+            }
+            fire = level.incrementAndGet() == 1;
+        }
+        if (fire) {
+            getProjectData(project, true).notifyListeners = true;
+            ProgressSupport.instance().fireProjectParsingStarted(project);
+        }
     }
 
     public void onEndAddingProjectFiles(ProjectBase project) {
-        int cnt = getProjectFiles(project).size();
-        ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
-        if (cnt == 0) {
-            ProgressSupport.instance().fireProjectParsingFinished(project);
+        boolean fire;
+        synchronized(onStartLevel) {
+            AtomicInteger level = onStartLevel.get(project);
+            if (level == null) {
+                assert false : "Not balanced start/end adding in project"; // NOI18N
+                level = new AtomicInteger(1);
+                onStartLevel.put(project, level);
+            }
+            fire = level.decrementAndGet() == 0;
+            if (fire) {
+                onStartLevel.remove(project);
+            }
+        }
+        if (fire) {
+            int cnt = getProjectFiles(project).size();
+            ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
+            if (cnt == 0) {
+                ProgressSupport.instance().fireProjectParsingFinished(project);
+            }
         }
     }
 
@@ -749,15 +787,17 @@ public final class ParserQueue {
             project = file.getProjectImpl(true);
             data = getProjectData(project, true);
             data.filesBeingParsed.remove(file);
-            lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             if (lastFileInProject) {
-                removeProjectData(project);
                 idle = projectData.isEmpty();
                 // this work only for a single project
                 // but on the other hand in the case of multiple projects such measuring will never work
                 // since project files might be shuffled in queue
                 if (TraceFlags.TIMING && stopWatch != null && stopWatch.isRunning()) {
-                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch: \t"); // NOI18N
+                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + " (" + project.getFileContainerSize() + " files): \t"); // NOI18N
+                    if (parseWatch != null) {
+                        parseWatch.traceProjectData(project);
+                    }
                 }
             }
             lock.notifyAll();
@@ -765,17 +805,40 @@ public final class ParserQueue {
         ProgressSupport.instance().fireFileParsingFinished(file);
         if (lastFileInProject) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
-                System.err.println("Last file in project " + project.getName()); // NOI18N
+                System.err.println("Last file in project " + project.getName() + " (" + project.getFileContainerSize() + " files)"); // NOI18N
             }
-            project.onParseFinish(false);
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
             if (idle) {
                 ProgressSupport.instance().fireIdle();
             }
             // notify all "wait" empty listeners
             notifyWaitEmpty(project);
+        }
+    }
+
+    private boolean markLastProjectFileActivityIfNeeded(ProjectData data) {
+        if (data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty()) {
+            data.pendingActivity++;
+            return true;
+        }
+        return false;
+    }
+
+    private void handleLastProjectFile(ProjectBase project, ProjectData data) {
+        project.onParseFinish();
+        boolean last = false;
+        synchronized (lock) {
+            data.pendingActivity--;
+            if (data.isEmpty() && (data.pendingActivity == 0)) {
+                projectData.remove(project);
+                last = true;
+            }
+        }
+        if (last) {
+            project.notifyOnWaitParseLock();
+            if (data.notifyListeners) {
+                ProgressSupport.instance().fireProjectParsingFinished(project);
+            }
         }
     }
 
@@ -797,7 +860,7 @@ public final class ParserQueue {
         if (TraceFlags.TRACE_CLOSE_PROJECT) {
             System.err.println("Waiting Empty Project " + project.getName()); // NOI18N
         }
-        while (hasFiles(project, null, false)) {
+        while (hasPendingProjectRelatedWork(project, null)) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
                 System.err.println("Waiting Empty Project 2 " + project.getName()); // NOI18N
             }

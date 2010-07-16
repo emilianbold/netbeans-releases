@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,9 +52,9 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
@@ -59,10 +62,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
+public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
 
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
+        if(notification.getService() != VCSKenaiAccessor.Service.VCS_HG) {
             Mercurial.LOG.fine("rejecting VCS notification " + notification + " because not from hg"); // NOI18N
             return;
         }
@@ -111,7 +114,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 KenaiNotificationListener.class,
                 "MSG_NotificationBubble_Description", 
                 getFileNames(files),
-                HgKenaiSupport.getInstance().getRevisionUrl(url, revision)); //NOI18N
+                HgKenaiAccessor.getInstance().getRevisionUrl(url, revision)); //NOI18N
         pane.setText(text);
 
         pane.addHyperlinkListener(new HyperlinkListener() {

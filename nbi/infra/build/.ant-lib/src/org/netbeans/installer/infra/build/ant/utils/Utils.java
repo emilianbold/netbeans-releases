@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -36,6 +39,7 @@
 
 package org.netbeans.installer.infra.build.ant.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -92,6 +97,9 @@ public final class Utils {
     private static boolean tarInitialized = false;
 
     private static String tarExecutable = null;
+
+    private static boolean lsInitialized = false;
+    private static String lsExecutable = null;
     /**
      * Setter for the 'project' property.
      *
@@ -169,17 +177,31 @@ public final class Utils {
         JarFile jar = new JarFile(file);
         
         try {
-            if (jar.getEntry(SUN_MICR_RSA) == null) {
-                return false;
+            Enumeration<JarEntry> entries = jar.entries();
+            boolean signatureInfoPresent = false;
+            boolean signatureFilePresent = false;
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement().getName();
+                if (entryName.startsWith("META-INF/")) {
+                    if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                        signatureFilePresent = true;
+                        if(signatureInfoPresent) {
+                            break;
+                        }
+                    } else if (entryName.endsWith(".SF")) {
+                        signatureInfoPresent = true;
+                        if(signatureFilePresent) {
+                            break;
+                        }
+                    }
+                }
             }
-            if (jar.getEntry(SUN_MICR_SF) == null) {
-                return false;
-            }
-            return true;
+            return signatureFilePresent && signatureInfoPresent;
         } finally {
             jar.close();
         }
     }
+
     
     /**
      * Packs the given jar archive using the pack200 utility.
@@ -491,6 +513,17 @@ public final class Utils {
         tarInitialized = true;
         return tarExecutable;
     }
+    private static final String findLsExecutable() {
+        if (!lsInitialized) {
+            try {
+                run(LS_EXECUTABLE);
+                lsExecutable = LS_EXECUTABLE;
+            } catch (IOException ex) {
+            }
+            lsInitialized = true;
+        }        
+        return lsExecutable;
+    }
     /**
      * Untars a tar(.tar.gz|.tgz|.tar.bz2|.tar.bzip2) archive to the specified directory.
      *
@@ -782,10 +815,95 @@ public final class Utils {
         
         return handleProcess(process);
     }
+
+    private static int getPermissionsAnalized(final File file) {
+        if (file.isDirectory()) {
+            return getIntegerValue(DEFAULT_PERMISSION_DIR_PROP, DEFAULT_PERMISSION_DIR);
+                        
+        } else {
+            return isExecutableAnalized(file) ? 
+                getIntegerValue(DEFAULT_EXECUTABLE_PERMISSION_FILE_PROP, DEFAULT_EXECUTABLE_PERMISSION_FILE) :
+                getIntegerValue(DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE_PROP, DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE);
+        }
+    }
+    private static final int getIntegerValue(String prop, int defaultValue) {
+        int result = defaultValue;
+        String value = project.getProperty(prop);
+        if (value != null && !value.equals("")) {
+            try {
+                result = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                if (project != null) {
+                    project.log("Error while parsing property " + prop
+                            + " which value is [" + value + "]"
+                            + " but should be integer", e, Project.MSG_WARN);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static final boolean isExecutableAnalized(File file) {
+        int index = file.getName().lastIndexOf(".");
+        String ext = (index != -1) ? file.getName().substring(index + 1) : "";
+    
+        for (String e : EXECUTABLE_EXTENSIONS) {
+            if (ext.equals(e)) {
+                return true;
+            }
+        }
+        for (String e : NOT_EXECUTABLE_EXTENSIONS) {
+            if (ext.equals(e)) {
+                return false;
+            }
+        }
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            byte[] bytes = new byte[64];
+
+            int c;
+            c = fis.read(bytes);
+            if (c >= 4) { // length of ELF header and min length of "#!/X" string
+                if (bytes[0] == '\177'
+                        && bytes[1] == 'E'
+                        && bytes[2] == 'L'
+                        && bytes[3] == 'F') {
+                    return true;
+                } else if (bytes[0] == '#' && bytes[1] == '!') {
+                    String s = new String(bytes, 0, c);
+                    String[] array = s.split("(?:\r\n|\n|\r)");
+
+                    if (array.length > 0) {
+                        //read the first line only
+                        //allow lines like "#! /bin/sh"
+                        if (array[0].replaceAll("#!(\\s)+/", "#!/").startsWith("#!/")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if(fis!=null) {
+                try {
+                    fis.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+
+        return false;
+    }
     
     public static int getPermissions(final File file) {
         try {
-            final Results results = run(file.getParentFile(), getLsExecutable(), "-ld", file.getName());
+            final String lsExec = getLsExecutable();
+            if (lsExec == null) {
+                //no ls found
+                return getPermissionsAnalized(file);
+            }
+            final Results results = run(file.getParentFile(), lsExec, "-ld", file.getName());
             
             final String output = results.getStdout().toString().trim();
             
@@ -980,7 +1098,8 @@ public final class Utils {
         return getExecutable(UNPACKER_EXECUTABLE_PROPERTY, UNPACKER_EXECUTABLE);
     }
     public static String getLsExecutable() {
-        return getExecutable(LS_EXECUTABLE_PROPERTY, LS_EXECUTABLE);
+        final String value = project.getProperty(LS_EXECUTABLE_PROPERTY);
+        return (value == null || value.equals("")) ? findLsExecutable() : value;
     }
     public static String getUnzipExecutable() {
         return getExecutable(UNZIP_EXECUTABLE_PROPERTY, NATIVE_UNZIP_EXECUTABLE);
@@ -1367,10 +1486,27 @@ public final class Utils {
             "jarsigner.executable";
     public static final String VERIFICATION_JAVA_EXECUTABLE_PROPERTY =
             "verification.java.executable";
+
+    public static final String DEFAULT_EXECUTABLE_PERMISSION_FILE_PROP =
+            "default.file.executable.permissions";
+    public static final String DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE_PROP =
+            "default.file.not.executable.permissions";
+    public static final String DEFAULT_PERMISSION_DIR_PROP =
+            "default.dir.permissions";
     
     private static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
         ((IS_WINDOWS) ? "\\..\\bin\\jarsigner.exe" : "/../bin/jarsigner");//NOI18N
     private static final String LS_EXECUTABLE = 
         (IS_WINDOWS) ? "ls.exe" : "ls";//NOI18N
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    public static final String [] EXECUTABLE_EXTENSIONS =
+            {"so", "a", "jnilib", "dylib", "sl",
+             "sh", "pl", "rb", "py", "command"};
+    public static final String [] NOT_EXECUTABLE_EXTENSIONS =
+            {"jar", "zip", "gz", "bzip2", "tgz", "txt", "xml", 
+             "html", "htm", "pdf", "conf", "css", "java"};
+    public static final int DEFAULT_EXECUTABLE_PERMISSION_FILE = 755;//rwx r-x r-x
+    public static final int DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE = 644;//rwx r-- r--
+    public static final int DEFAULT_PERMISSION_DIR = 755; //rwx r-x r-x
 }

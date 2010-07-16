@@ -32,13 +32,17 @@
             right-click the project node in the Projects window, choose Properties, click Sources, and define
             a new source package folder.</li>
             <li><b>Package.</b> Specifies the package name where the web service files will be housed.</li>
-            <li><b>Create an Empty Web Service.</b> Use this when you have no code to expose. 
-            <li><b>Delegate to Existing Session Enterprise Bean.</b> Use this when you have a 
-            session bean in an EJB module or a class in a web application 
+            <li><b>Create Web Service from Scratch.</b> Use this when you have no code to expose.
+            <li><b>Create Web Service from Existing Session Bean.</b> Use this when you have a
+            session bean in an EJB module or web application 
             that you want to expose. Click Browse and then select the session bean 
             that you want to expose as a web service.</li>
+            <li><b>Implement Web Service as Stateless Session Bean.</b> (EE6 only) If you are creating a web service from scratch, you can
+            select this option to create the web service as a stateless session bean. Note that the ability to have session beans in web applications
+            was introduced in EE6.
+            </li>
         </ul>
-        </ul>
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../../about/about_ws.html">About Web Services</a></dd>

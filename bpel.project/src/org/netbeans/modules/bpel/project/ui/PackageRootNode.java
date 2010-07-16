@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui;
 
 import java.awt.Component;
@@ -54,11 +52,10 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
@@ -107,22 +104,24 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             fs.addFileStatusListener(fileSystemListener);
         } catch (FileStateInvalidException e) {
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not get " + file + " filesystem, ignoring...");  // NO18N
+            err.annotate(e, "Cannot get " + file + " filesystem, ignoring...");  // NO18N
             err.notify(ErrorManager.INFORMATIONAL, e);
         }
         setName( group.getName() );
         setDisplayName( group.getDisplayName() );        
-        // setIconBase("org/netbeans/modules/java/j2seproject/ui/resources/packageRoot");
     }
 
+    @Override
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
-        
+
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
-    
+
+    @Override
     public String getDisplayName () {
         String s = super.getDisplayName ();
 
@@ -135,6 +134,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         return s;
     }
 
+    @Override
     public String getHtmlDisplayName() {
          try {
              FileSystem.Status stat = file.getFileSystem().getStatus();
@@ -181,7 +181,8 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
         task.schedule(50);  // batch by 50 ms
     }    
-    
+
+    @Override
     public Action[] getActions( boolean context ) {
 
         if ( actions == null ) {
@@ -202,6 +203,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     // Show reasonable properties of the DataFolder,
     //it shows the sorting names as rw property, the name as ro property and the path to root as ro property
+    @Override
     public PropertySet[] getPropertySets() {            
         PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
         for (int i=0; i< properties.length; i++) {
@@ -229,6 +231,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     }
 
     // XXX Paste types - probably not very nice 
+    @Override
     public void createPasteTypes( Transferable t, List list ) {
         if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             try {
@@ -301,6 +304,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         }
     }
     
+    @Override
     public /*@Override*/ PasteType getDropType(Transferable t, int action, int index) {        
         PasteType pasteType = super.getDropType(t, action, index);
         //The pasteType can be:
@@ -435,6 +439,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             return null;
         }
         
+        @Override
         public String toString() {
             return "PathFinder[" + group + "]"; // NOI18N
         }

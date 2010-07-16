@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).getNodes().length > 0;
+        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).length > 0;
     }
 
     /**
@@ -131,12 +134,16 @@ public class CommitAction extends AbstractSystemAction {
         dialog.addWindowListener(new DialogBoundsPreserver(CvsModuleConfig.getDefault().getPreferences(), "svn.commit.dialog"));  // NOI18N
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));  // NOI18N
         dialog.setVisible(true);
+        final String message = settings.getCommitMessage().trim();
+        if (descriptor.getValue() != commit && !message.isEmpty()) {
+            CvsModuleConfig.getDefault().setLastCanceledCommitMessage(message);
+        }
         if (descriptor.getValue() != commit) return;
 
+        CvsModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
         saveExclusions(settings);
 
-        cmd.setMessage(settings.getCommitMessage());
-        String message = cmd.getMessage();
+        cmd.setMessage(message);
         org.netbeans.modules.versioning.util.Utils.insert(
                 CvsModuleConfig.getDefault().getPreferences(),
                 RECENT_COMMIT_MESSAGES,
@@ -198,10 +205,10 @@ public class CommitAction extends AbstractSystemAction {
         }
         
         if (stickyTags.size() > 1) {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         } else {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         }
         

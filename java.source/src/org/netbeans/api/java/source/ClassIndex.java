@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,10 +52,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -75,7 +80,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -118,11 +122,10 @@ public final class ClassIndex {
     //INV: Never null
     //@GuardedBy (this)
     private final Set<ClassIndexImpl> depsIndeces;
-    
-    private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
-    private final SPIListener spiListener = new SPIListener ();    
-    
-    
+
+    private final Collection<ClassIndexListener> listeners = new ConcurrentLinkedQueue<ClassIndexListener>();
+    private final SPIListener spiListener = new SPIListener ();
+
     /**
      * Encodes a type of the name kind used by 
      * {@link ClassIndex#getDeclaredTypes} method.
@@ -234,13 +237,10 @@ public final class ClassIndex {
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
-        
-        final ClassIndexManager manager = ClassIndexManager.getDefault();
-        manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
         this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
         this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));                
-        reset (true, true);	    
+        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        reset (true, true);
     }
     
     
@@ -474,7 +474,7 @@ public final class ClassIndex {
             }
             else {
                 srcRoots = new URL[] {entry.getURL()};
-            }                
+            }
             for (URL srcRoot : srcRoots) {
                 oldState.add (srcRoot);
                 ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
@@ -482,7 +482,7 @@ public final class ClassIndex {
                     ci.addClassIndexImplListener(spiListener);
                     queries.add (ci);
                 }
-            }	    
+            }
 	}
     }
     
@@ -528,7 +528,9 @@ public final class ClassIndex {
     }           
     
     private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener, PropertyChangeListener {
-        
+
+        private final AtomicBoolean attached = new AtomicBoolean();
+
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
             final Runnable action = new Runnable () {
@@ -598,6 +600,13 @@ public final class ClassIndex {
             //Not important handled by propertyChange from ClassPath
         }
 
+        private void attachClassIndexManagerListener () {
+            if (!attached.getAndSet(true)) {
+                final ClassIndexManager manager = ClassIndexManager.getDefault();
+                manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this, manager));
+            }
+        }
+
         @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
@@ -608,28 +617,28 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
                     if (roots.contains(url)) {
                         affectedRoots.add(url);
-                        result = true;                    
+                        result = true;
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
                         if (roots.contains(_url)) {
                             affectedRoots.add(url);
-                            result = true;                    
+                            result = true;
                         }
                     }
-                }                
+                }
             }
             return result;
         }
-        
+
         private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots,
                 final List<? super URL> newRoots, final List<? super URL> removedRoots,
-                final boolean translate) throws IOException {
+                final Set<? super URL> attachListener, final boolean translate) throws IOException {
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
             final ClassIndexManager mgr = ClassIndexManager.getDefault();
@@ -639,18 +648,26 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
-                    if (!roots.remove(url) && mgr.getUsagesQuery(url)!=null) {
-                        newRoots.add (url);
-                        result = true;
+                    if (!roots.remove(url)) {
+                        if (mgr.getUsagesQuery(url)!=null) {
+                            newRoots.add (url);
+                            result = true;
+                        } else {
+                            attachListener.add(url);
+                        }
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
-                        if (!roots.remove(_url) && mgr.getUsagesQuery(_url)!=null) {
-                            newRoots.add (_url);
-                            result = true;
+                        if (!roots.remove(_url)) {
+                            if (mgr.getUsagesQuery(_url)!=null) {
+                                newRoots.add (_url);
+                                result = true;
+                            } else {
+                                attachListener.add(_url);
+                            }
                         }
                     }
                 }
@@ -659,8 +676,9 @@ public final class ClassIndex {
             Collection<? super URL> c = removedRoots;
             c.addAll(roots);
             return result;
-        }                
+        }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
                 final List<URL> newRoots = new LinkedList<URL>();
@@ -668,30 +686,43 @@ public final class ClassIndex {
                 boolean dirtySource = false;
                 boolean dirtyDeps = false;
                 try {
-                    Object source = evt.getSource();                
+                    Object source = evt.getSource();
+                    final Set<URL> unknownRoots = new HashSet<URL>();
                     if (source == ClassIndex.this.sourcePath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldSources);
                         }
-                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, false);                        
-                    }                
+                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, unknownRoots, false);
+                    }
                     else if (source == ClassIndex.this.classPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldCompile);
                         }
-                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, true);                        
+                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, unknownRoots, true);
                     }
                     else if (source == ClassIndex.this.bootPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldBoot);
                         }
-                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, true);
+                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, unknownRoots, true);
                     }
-                    
-                    if (dirtySource || dirtyDeps) {                        
+                    if (!unknownRoots.isEmpty()) {
+                        attachClassIndexManagerListener();
+                        final ClassIndexManager mgr = ClassIndexManager.getDefault();
+                        for (Iterator<URL> it = unknownRoots.iterator(); it.hasNext();) {
+                            final URL url = it.next();
+                            if (mgr.getUsagesQuery(url)==null) {
+                                it.remove();
+                            }
+                        }
+                        if (!unknownRoots.isEmpty()) {
+                            classIndexAdded(new ClassIndexManagerEvent(mgr, unknownRoots));
+                        }
+                    }
+                    if (dirtySource || dirtyDeps) {
                         ClassIndex.this.reset(dirtySource, dirtyDeps);
                         final RootsEvent ae = newRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, newRoots);
                         final RootsEvent re = removedRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, removedRoots);

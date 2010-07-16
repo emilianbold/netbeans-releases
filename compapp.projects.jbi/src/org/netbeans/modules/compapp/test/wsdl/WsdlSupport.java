@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -172,6 +175,14 @@ public class WsdlSupport {
             Map<String, XmlObject> schemaTable = new HashMap<String, XmlObject>();        
             getSchemas(wsdlUrl, schemaTable, new ArrayList<String>());
 
+            /*
+            System.out.println("=================================================");
+            System.out.println("loadSchemaTypes:");
+            for (String schema : schemaTable.keySet()) {
+                System.out.println(schema);
+            }
+            System.out.println("=================================================");
+            */
             List<XmlObject> schemaList = 
                     new ArrayList<XmlObject>(schemaTable.values());        
             for (XmlObject schema : schemaList) {
@@ -217,18 +228,32 @@ public class WsdlSupport {
             return null;
         }
     }
-    
+
+    /**
+     *
+     * @param schemaOrWsdlUrl   a Schema or WSDL URL.
+     *                          Example for WSDL URL: file:C:\...\PIXPDQ_HL7V3_Direct_ca.wsdl
+     *                          Example for Schema URL: file:C:\...\COCT_MT150002UV01.xsd
+     * @param schemaTable       a map mapping schema URLs to schema XmlObjects.
+     *                          Example for inline schema URL: file:C:\...\PDQSupplier.wsdl@1
+     *                          Example for external schema URL: file:C:\...\MCCI_IN000002UV01.xsd
+     * @param visitedSchemaAndWsdlUrls  the set of URLs of all the Schemas and
+     *                          WSDLs that have already been visited
+     * @throws SchemaException
+     */
     private static void getSchemas(
-            String wsdlUrl,
+            String schemaOrWsdlUrl,
             Map<String, XmlObject> schemaTable,
-            List<String> visitedSchemaWsdls)
+            List<String> visitedSchemaAndWsdlUrls)
             throws SchemaException {
-        
-        if(schemaTable.containsKey(wsdlUrl)) {
+
+        if (visitedSchemaAndWsdlUrls.contains(schemaOrWsdlUrl)) {
             return;
         }
+        visitedSchemaAndWsdlUrls.add(schemaOrWsdlUrl);
+
         ArrayList errorList = new ArrayList();
-        
+
         Map<String, XmlObject> result = new HashMap<String, XmlObject>();
         
         try {
@@ -246,18 +271,19 @@ public class WsdlSupport {
             options.setSaveSyntheticDocumentElement(
                     new QName("http://www.w3.org/2001/XMLSchema", "schema")); // NOI18N
             
-            XmlObject xmlObject = XmlObject.Factory.parse(new URL(wsdlUrl), options);
+            XmlObject xmlObject = XmlObject.Factory.parse(new URL(schemaOrWsdlUrl), options);
             
             Document dom = (Document) xmlObject.getDomNode();
             Node domNode = dom.getDocumentElement();
             if (domNode.getLocalName().equals("schema") && // NOI18N
-                domNode.getNamespaceURI().equals(
-                    "http://www.w3.org/2001/XMLSchema")) { // NOI18N
-                result.put(wsdlUrl, xmlObject);
-            } else {
+                domNode.getNamespaceURI().equals("http://www.w3.org/2001/XMLSchema")) { // NOI18N
+
+                result.put(schemaOrWsdlUrl, xmlObject);
+
+            } else { // this is a WSDL document
+                // inline Schemas
                 XmlObject[] schemas = xmlObject.selectPath(
-                        "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:schema"); // NOI18N
-                
+                        "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:schema"); // NOI18N                
                 for (int i = 0; i < schemas.length; i++) {
                     XmlCursor xmlCursor = schemas[i].newCursor();
                     String xmlText = xmlCursor.getObject().xmlText(options);
@@ -266,20 +292,21 @@ public class WsdlSupport {
                             XmlObject.Factory
                             //org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
                             .parse(xmlText, options);
-                    schemas[i].documentProperties().setSourceName(wsdlUrl);
+                    schemas[i].documentProperties().setSourceName(schemaOrWsdlUrl);
                     
-                    result.put(wsdlUrl + "@" + (i+1), schemas[i]); // NOI18N
+                    result.put(schemaOrWsdlUrl + "@" + (i+1), schemas[i]); // NOI18N
                 }
-                
+
+                // imported WSDLs
                 XmlObject[] wsdlImports = xmlObject.selectPath(
                         "declare namespace s='http://schemas.xmlsoap.org/wsdl/' .//s:import/@location"); // NOI18N
                 for (int i = 0; i < wsdlImports.length; i++) {
                     String location = ((SimpleValue) wsdlImports[i]).getStringValue();
                     if (location != null) {
                         if (!location.startsWith("file:") && location.indexOf("://") <= 0) { // NOI18N
-                            location = resolveRelativeUrl(wsdlUrl, location);
+                            location = resolveRelativeUrl(schemaOrWsdlUrl, location);
                         }
-                        getSchemas(location, schemaTable, visitedSchemaWsdls);                        
+                        getSchemas(location, schemaTable, visitedSchemaAndWsdlUrls);
                     }
                 }
             }
@@ -307,12 +334,9 @@ public class WsdlSupport {
                             // avoid duplicate global type definition error.
                             !location.equals("http://schemas.xmlsoap.org/soap/encoding/")) { // NOI18N
                         if (!location.startsWith("file:") && location.indexOf("://") <= 0) { // NOI18N
-                            location = resolveRelativeUrl(wsdlUrl, location);
+                            location = resolveRelativeUrl(schemaOrWsdlUrl, location);
                         }
-                        if (!visitedSchemaWsdls.contains(location)) {
-                            visitedSchemaWsdls.add(location);
-                            getSchemas(location, schemaTable, visitedSchemaWsdls);
-                        }
+                        getSchemas(location, schemaTable, visitedSchemaAndWsdlUrls);
                     }
                 }
             }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,7 @@ abstract class AbstractCodeStatement implements CodeStatement {
         this.parentExpression = parentExpression;
     }
 
+    @Override
     public CodeExpression getParentExpression() {
         return parentExpression;
     }
@@ -67,18 +71,22 @@ abstract class AbstractCodeStatement implements CodeStatement {
     // UsingCodeObject implementation
 
     // notifying about registering this object in used object
+    @Override
     public void usageRegistered(UsedCodeObject usedObject) {
     }
 
     // notifying about removing the used object from structure
+    @Override
     public boolean usedObjectRemoved(UsedCodeObject usedObject) {
         return false;
     }
 
+    @Override
     public UsedCodeObject getDefiningObject() {
         return getParentExpression();
     }
 
+    @Override
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
@@ -96,10 +104,12 @@ abstract class AbstractCodeStatement implements CodeStatement {
                 parameters = CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public boolean hasNext() {
             return index < parameters.length;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new java.util.NoSuchElementException();
@@ -109,6 +119,7 @@ abstract class AbstractCodeStatement implements CodeStatement {
             return obj;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

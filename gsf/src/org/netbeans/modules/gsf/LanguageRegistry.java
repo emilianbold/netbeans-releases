@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,9 +52,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -592,8 +597,8 @@ public final class LanguageRegistry implements Iterable<Language> {
                     }
                 }
 
-                if (!foundConfig) {
-                    LOG.warning("No GsfLanguage instance registered in " + subtypes[j].getPath()); //NOI18N
+                if (!foundConfig && warnedPaths.add(subtypes[j].getPath())) {
+                    LOG.log(Level.WARNING, "No GsfLanguage instance registered in {0}", subtypes[j].getPath());
                 }
             }
         }
@@ -601,6 +606,8 @@ public final class LanguageRegistry implements Iterable<Language> {
         LOG.fine("-- Finished reading " + FOLDER + " registry!"); //NOI18N
         return newMap;
     }
+
+    private static final Set<String> warnedPaths = Collections.synchronizedSet(new HashSet<String>());
 
     private void userdirCleanup() {
         // Don't do this check in release builds, it's for dev builds only.

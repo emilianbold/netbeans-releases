@@ -580,7 +580,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="org.netbeans.log.startup" category="friend" group="property" type="export">
+      <api name="org.netbeans.log.startup" category="friend" group="systemproperty" type="export">
           <p>
           If started with <code>-J-Dorg.netbeans.log.startup=print</code> parameter, then
           times of various start operations are printed to console. If the value is
@@ -595,6 +595,10 @@ Microsystems, Inc. All Rights Reserved.
           <code>log(Level.FINE, "progress", "msg")</code>, then these messages
           are collected into the start log as well.
           </p>
+      </api>
+      <api name="netbeans.logger.noSystem" category="friend" group="systemproperty" type="export">
+          Allows unit tests to prevent changes to <code>System.err</code> and
+          <code>System.out</code> by the logging infrastructure.
       </api>
   </p>
  </answer>

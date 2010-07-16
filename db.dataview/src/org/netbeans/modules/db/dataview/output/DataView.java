@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -217,10 +220,16 @@ public class DataView {
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
+        if (execHelper == null) {
+            execHelper = new SQLExecutionHelper(this);
+        }
         return execHelper;
     }
 
     SQLStatementGenerator getSQLStatementGenerator() {
+        if (stmtGenerator == null) {
+            stmtGenerator = new SQLStatementGenerator(this);
+        }
         return stmtGenerator;
     }
 
@@ -236,6 +245,7 @@ public class DataView {
         assert dataViewUI != null;
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.disableButtons();
             }
@@ -246,6 +256,7 @@ public class DataView {
     synchronized void removeComponents() {
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.getParent().setVisible(false);
                 dataViewUI.removeAll();
@@ -288,6 +299,7 @@ public class DataView {
         assert dataViewUI != null;
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.resetToolbar(wasError);
             }
@@ -305,6 +317,7 @@ public class DataView {
         if (dataPage.getCurrentRows() != null) {
             Mutex.EVENT.readAccess(new Runnable() {
 
+                @Override
                 public void run() {
                     dataViewUI.setDataRows(dataPage.getCurrentRows());
                     dataViewUI.setTotalCount(dataPage.getTotalRows());
@@ -318,6 +331,7 @@ public class DataView {
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.setTotalCount(dataPage.getTotalRows());
             }
@@ -329,6 +343,7 @@ public class DataView {
         dataPage.decrementRowSize(count);
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.setTotalCount(dataPage.getTotalRows());
             }

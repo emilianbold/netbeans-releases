@@ -28,7 +28,6 @@
 package org.netbeans.modules.bpel.model.ext.editor.api;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.OutOfImportReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
@@ -37,10 +36,10 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 
 /**
  * @author Vitaly Bychkov
- * @author nk160297
+ * @author Nikita Krjukov
  * @version 1.0
  */
-public interface Cast extends ExtensionEntity, BpelContainer, 
+public interface Cast extends LocationStepModifier, BpelContainer,
         ReferenceCollection, OutOfImportReference {
     
     SchemaReference<? extends GlobalType> getType();
@@ -51,6 +50,4 @@ public interface Cast extends ExtensionEntity, BpelContainer,
     void setPath(String path) throws VetoException;
     void removePath();
 
-    Source getSource();
-    void setSource(Source source);
 }

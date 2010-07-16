@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -108,6 +111,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //    private TableSorter tableSorterModel = new TableSorter();
     private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
+    private boolean isLoadingContent;
     private boolean isShown = true;
     private final OutlineView outlineView;
     private final String nodeColumnName;
@@ -146,6 +150,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property<?>> result = new ArrayList<Property<?>>();
         List<Column> columns = new ArrayList<Column>();
+        List<String> columnProperties = new ArrayList<String>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
@@ -162,10 +167,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                     }
                 };
                 result.add(property);
+                columnProperties.add(c.getColumnName());
+                columnProperties.add(c.getColumnUName());
             }
         }
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
-        outlineView.setProperties(result.toArray(new Property<?>[0]));
+        //outlineView.setProperties(result.toArray(new Property<?>[0]));
+        outlineView.setPropertyColumns(columnProperties.toArray(new String[0]));
         outlineView.setPopupAllowed(false);
         outlineView.setDragSource(false);
         outlineView.setDropTarget(false);
@@ -216,7 +224,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //            });
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outlineView.setProperties(result.toArray(new Property[0]));
+//        outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
@@ -272,13 +280,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     @Override
     public void addNotify() {
         super.addNotify();
-        addComponentListener(this);
-        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
-        asyncFillModel();
-        if (timerHandler != null && timerHandler.isSessionRunning()) {
-            timerHandler.startTimer();
-            return;
-        }
+//        addComponentListener(this);
+//        VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+//        asyncFillModel(false);
+//        if (timerHandler != null && timerHandler.isSessionRunning()) {
+//            timerHandler.startTimer();
+//            return;
+//        }
     }
 
     @Override
@@ -309,6 +317,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
     private void setLoadingContent() {
         isEmptyContent = false;
+        isLoadingContent = true;
         this.removeAll();
         JLabel label = new JLabel(getMessage("Loading"), JLabel.CENTER); // NOI18N
         add(label, BorderLayout.CENTER);
@@ -317,25 +326,52 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void setContent(boolean isEmpty) {
-        if (isEmptyContent && isEmpty) {
+        if (isLoadingContent && isEmpty) {
+            isLoadingContent = false;
+            setEmptyContent();
+            return;
+        }
+        if (isLoadingContent && !isEmpty) {
+            isLoadingContent = false;
+            setNonEmptyContent();
             return;
         }
         if (isEmptyContent && !isEmpty) {
             setNonEmptyContent();
             return;
         }
-        if (!isEmptyContent && isEmpty) {
+        if (isEmpty) {
             setEmptyContent();
             return;
         }
 
     }
 
-    protected void updateList(List<DataRow> list) {
-        synchronized (uiLock) {
-            setNonEmptyContent();
-            this.explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
+    protected void updateList(final List<DataRow> list) {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
         }
+        final boolean isEmptyConent = list == null || list.isEmpty();
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                synchronized (uiLock) {
+                    setContent(isEmptyConent);
+                    if (!isEmptyConent) {
+                        if (!Children.MUTEX.isReadAccess()) {
+                            Children.MUTEX.writeAccess(new Runnable() {
+
+                                public void run() {
+                                    explorerManager.setRootContext(new AbstractNode(new DataChildren(list)));
+                                    setNonEmptyContent();
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
     }
 
     private void setNonEmptyContent() {
@@ -381,7 +417,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         refresh.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asyncFillModel();
+                asyncFillModel(false);
             }
         });
 
@@ -403,14 +439,18 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     public void refresh() {
-        asyncFillModel();
+        asyncFillModel(false);
     }
 
 
-    private void asyncFillModel() {
+    private void asyncFillModel(boolean cancelIfNotDone) {
         synchronized (queryLock) {
-            if (task != null) {
-                task.cancel(true);
+            if (task != null && !task.isDone()) {
+                if (cancelIfNotDone) {
+                    task.cancel(true);
+                } else {
+                    return;
+                }
             }
 
             UIThread.invoke(new Runnable() {

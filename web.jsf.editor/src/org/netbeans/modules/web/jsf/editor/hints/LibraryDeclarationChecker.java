@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -56,6 +60,7 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -93,52 +98,92 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //        - or search all the libraries for such component and offer the match/es
     //
     private void checkLibraryDeclarations(final List<Hint> hints, final RuleContext context) {
-        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        final HtmlParserResult result = (HtmlParserResult) context.parserResult;
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
+        final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
         JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
-        Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
+        Map<String, FaceletsLibrary> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getFaceletsLibraries();
         }
 
         //Find the namespaces declarations itself
-        //a.take the html AST
+        //a.take the html AST & the AST for undeclared components
         //b.search for nodes with xmlns attribute
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, AstNode.Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         AstNode root = result.root();
-        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-            public void visit(AstNode node) {
-                if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                    //put all NS attributes to the namespace2Attribute map for #1.
-                    Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
+        final Document doc = snapshot.getSource().getDocument(true);
+        final AtomicReference<String> docTextRef = new AtomicReference<String>();
+        doc.render(new Runnable() {
 
-                        public boolean accepts(Attribute attribute) {
-                            return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
-                        }
-                    });
-                    for (AstNode.Attribute attr : nsAttrs) {
-                        namespace2Attribute.put(attr.unquotedValue(), attr);
-                    }
-                } else if (node.type() == AstNode.NodeType.UNKNOWN_TAG && node.getNamespacePrefix() != null) {
-                    //3. check for undeclared components
-
-                    //this itself means that the node is undeclared since
-                    //otherwise it wouldn't appear in the pure html parse tree
-                    Hint hint = new Hint(DEFAULT_ERROR_RULE,
-                            NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
-                            context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
-                            Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
-                    hints.add(hint);
+            @Override
+            public void run() {
+                try {
+                    docTextRef.set(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
+
         });
+        final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+
+        AstNodeVisitor namespacesCollector = new AstNodeVisitor() {
+
+            @Override
+            public void visit(AstNode node) {
+                //put all NS attributes to the namespace2Attribute map for #1.
+                Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
+
+                    @Override
+                    public boolean accepts(Attribute attribute) {
+                        return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
+                    }
+                });
+                for (AstNode.Attribute attr : nsAttrs) {
+                    namespace2Attribute.put(attr.unquotedValue(), attr);
+                }
+            }
+        };
+
+        AstNodeUtils.visitChildren(root, namespacesCollector, AstNode.NodeType.OPEN_TAG);
+        AstNode undeclaredComponentsTreeRoot = result.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+        if(undeclaredComponentsTreeRoot != null) {
+            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, AstNode.NodeType.OPEN_TAG);
+
+            //check for undeclared tags
+            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, new AstNodeVisitor() {
+
+                @Override
+                public void visit(AstNode node) {
+                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNamespacePrefix() != null) {
+                        //3. check for undeclared components
+
+                        List<HintFix> fixes = new ArrayList<HintFix>();
+                        List<FaceletsLibrary> libs = FixLibDeclaration.getLibsByPrefix(context.doc, node.getNamespacePrefix());
+
+                        for (FaceletsLibrary lib : libs){
+                            FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
+                            fixes.add(fix);
+                        }
+
+                        //this itself means that the node is undeclared since
+                        //otherwise it wouldn't appear in the pure html parse tree
+                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                                NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
+                                context.parserResult.getSnapshot().getSource().getFileObject(),
+                                JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                                fixes, DEFAULT_ERROR_HINT_PRIORITY);
+                        hints.add(hint);
+                    }
+                }
+            });
+        }
 
         for (String namespace : declaredNamespaces) {
             FaceletsLibrary lib = libs.get(namespace);
@@ -152,45 +197,52 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
-                            Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
+                            JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
+                            Collections.<HintFix>emptyList(), DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
             }
         }
 
         //2. find for unused declarations
-        Collection<PositionRange> ranges = new ArrayList<PositionRange>();
-        for (FaceletsLibrary lib : declaredLibraries) {
-            AstNode rootNode = result.root(lib.getNamespace());
-            if (rootNode == null) {
-                continue; //no parse result for this namespace, the namespace is not declared
-            }
-            final int[] usages = new int[1];
-            AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
+        final Collection<PositionRange> ranges = new ArrayList<PositionRange>();
+        context.doc.render(new Runnable() { //isFunctionLibraryPrefixUsadInEL accesses the document's token hierarchy
+            @Override
+            public void run() {
+                for (FaceletsLibrary lib : declaredLibraries) {
+                    AstNode rootNode = result.root(lib.getNamespace());
+                    if (rootNode == null) {
+                        continue; //no parse result for this namespace, the namespace is not declared
+                    }
+                    final int[] usages = new int[1];
+                    AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 
-                public void visit(AstNode node) {
-                    usages[0]++;
-                }
-            }, AstNode.NodeType.OPEN_TAG);
+                        @Override
+                        public void visit(AstNode node) {
+                            usages[0]++;
+                        }
+                    }, AstNode.NodeType.OPEN_TAG);
 
-            usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+                    usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib) ? 1 : 0;
 
-            if (usages[0] == 0) {
-                //unused declaration
-                Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
-                if (declAttr != null) {
-                    int from = declAttr.nameOffset();
-                    int to = declAttr.valueOffset() + declAttr.value().length();
-                    try {
-                        ranges.add(new PositionRange(context, from, to));
-                    } catch (BadLocationException ex) {
-                        //just ignore
+                    if (usages[0] == 0) {
+                        //unused declaration
+                        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+                        if (declAttr != null) {
+                            int from = declAttr.nameOffset();
+                            int to = declAttr.valueOffset() + declAttr.value().length();
+                            try {
+                                ranges.add(new PositionRange(context, from, to));
+                            } catch (BadLocationException ex) {
+                                //just ignore
+                            }
+                        }
+
                     }
                 }
-
             }
-        }
+        });
+        
 
         //generate remove all unused declarations
         for (PositionRange range : ranges) {
@@ -204,7 +256,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             Hint hint = new Hint(DEFAULT_WARNING_RULE,
                     NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                    JsfUtils.createOffsetRange(snapshot, from, to),
+                    JsfUtils.createOffsetRange(snapshot, docText, from, to),
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
             hints.add(hint);
@@ -212,7 +264,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     }
 
-    private boolean isFunctionLibraryPrefixUsadInEL(RuleContext context, FaceletsLibrary lib) {
+    private boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, FaceletsLibrary lib) {
         String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
         Document doc = context.doc;
 
@@ -260,13 +312,16 @@ public class LibraryDeclarationChecker extends HintsProvider {
             this.ranges = ranges;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_REMOVE_ALL_UNUSED_LIBRARIES_DECLARATION");
         }
 
+        @Override
         public void implement() throws Exception {
             document.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         for (PositionRange range : ranges) {
@@ -289,10 +344,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
             });
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }

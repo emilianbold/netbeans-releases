@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,7 +94,19 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     
     /** */
     private Object findActionMapKey;
-    
+
+    /**
+     * Holds class {@code SearchScopeNodeSelection.LookupSensitive}.
+     * See Bug #183434.
+     */
+    private Class<SearchScopeNodeSelection.LookupSensitive> ssnslsClass;
+
+    /**
+     * Holds class {@code FindInFilesAction.LookupSensitive}.
+     * See Bug #183434.
+     */
+    private Class<FindInFilesAction.LookupSensitive> fifalsClass;
+
     /**
      */
     private FindActionManager() {
@@ -111,9 +126,13 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     /**
      */
     void init() {
-        TopComponent.getRegistry().addPropertyChangeListener(this);
-        
+        TopComponent.getRegistry().addPropertyChangeListener(this);       
         Mutex.EVENT.writeAccess(this);
+
+        // Fix of the Bug #183434 - caching of the classes to avoid their 
+        // loading during execution of the action
+        ssnslsClass = SearchScopeNodeSelection.LookupSensitive.class;
+        fifalsClass = FindInFilesAction.LookupSensitive.class;
     }
 
     /**
@@ -137,6 +156,10 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
                 return null;
             }
         });
+
+        // cleaning up classes that have been cached
+        ssnslsClass = null;
+        fifalsClass = null;
     }
     
     /**

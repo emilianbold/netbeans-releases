@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -92,10 +95,11 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
-    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTRustContractImpl"; //NOI18N
+    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTrustContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
+    public static final String DEFAULT_ITERATIONS = "1000";                     //NOI18N
     
     private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
             new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
@@ -979,6 +983,14 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
+    public static String getHandlerIterations(Binding b) {
+        CallbackHandlerConfiguration chc = getCBHConfiguration(b);
+        if (chc != null) {
+            return chc.getIterationsForPDK();
+        }
+        return null;
+    }
+
     public static String getHandlerTimestampTimeout(Binding b) {
         CallbackHandlerConfiguration chc = getCBHConfiguration(b);
         if (chc != null) {
@@ -986,6 +998,28 @@ public class ProprietarySecurityPolicyModelHelper {
         }
         return null;
     }    
+
+    public static void setHandlerIterations(Binding b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class,false);
+            if (((p == null) || (chc == null)) && value != null) {
+                chc = createCallbackHandlerConfiguration(b, client);
+            }
+            if (chc != null) {
+                chc.setIterationsForPDK(value);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
 
     public static void setHandlerTimestampTimeout(Binding b, String value, boolean client) {
         WSDLModel model = b.getModel();

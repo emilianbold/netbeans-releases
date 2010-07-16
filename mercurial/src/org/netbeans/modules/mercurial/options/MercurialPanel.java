@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -115,6 +118,7 @@ final class MercurialPanel extends javax.swing.JPanel {
 
         backupOnRevertModifications.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(backupOnRevertModifications, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jCheckBox1.text")); // NOI18N
+        backupOnRevertModifications.setBorder(null);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel5.text")); // NOI18N
 
@@ -135,20 +139,31 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbOpenOutputWindow.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbOpenOutputWindow, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbOpenOutputWindow.text")); // NOI18N
         cbOpenOutputWindow.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
+        cbOpenOutputWindow.setBorder(null);
 
         cbAskBeforeCommitAfterMerge.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbAskBeforeCommitAfterMerge, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.text")); // NOI18N
         cbAskBeforeCommitAfterMerge.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbAskBeforeCommitAfterMerge.toolTipText")); // NOI18N
+        cbAskBeforeCommitAfterMerge.setBorder(null);
 
         cbInternalMergeToolEnabled.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbInternalMergeToolEnabled, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbInternalMergeToolEnabled.text")); // NOI18N
         cbInternalMergeToolEnabled.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbInternalMergeToolEnabled.toolTipText")); // NOI18N
+        cbInternalMergeToolEnabled.setBorder(null);
+
+        org.openide.awt.Mnemonics.setLocalizedText(excludeNewFiles, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.excludeNewFiles.text")); // NOI18N
+        excludeNewFiles.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.excludeNewFiles.toolTipText")); // NOI18N
+        excludeNewFiles.setBorder(null);
+        excludeNewFiles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                excludeNewFilesActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(backupOnRevertModifications)
             .add(jLabel1)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -166,9 +181,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                             .add(exportFilename))
                         .add(30, 30, 30)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(exportFilenameBrowseButton)
@@ -189,14 +204,24 @@ final class MercurialPanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .add(0, 0, 0))
             .add(layout.createSequentialGroup()
-                .add(cbOpenOutputWindow)
-                .addContainerGap())
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(backupOnRevertModifications)
+                    .add(layout.createSequentialGroup()
+                        .add(cbOpenOutputWindow)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 171, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(cbAskBeforeCommitAfterMerge)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(cbAskBeforeCommitAfterMerge)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(cbInternalMergeToolEnabled)
-                .addContainerGap())
+                .addContainerGap(135, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(excludeNewFiles)
+                .addContainerGap(60, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -239,7 +264,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(cbAskBeforeCommitAfterMerge)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbInternalMergeToolEnabled)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(excludeNewFiles)
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         userNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_userNameTextField")); // NOI18N
@@ -252,6 +279,10 @@ final class MercurialPanel extends javax.swing.JPanel {
         manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_manageButton")); // NOI18N
         cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void excludeNewFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeNewFilesActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_excludeNewFilesActionPerformed
     
     private void nameChange() {
         controller.changed();
@@ -274,6 +305,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
         cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault().getConfirmCommitAfterMerge());
         cbInternalMergeToolEnabled.setSelected(HgModuleConfig.getDefault().isInternalMergeToolEnabled());
+        excludeNewFiles.setSelected(HgModuleConfig.getDefault().getExludeNewFiles());
     }
     
     void store() {
@@ -299,6 +331,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
         HgModuleConfig.getDefault().setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
         HgModuleConfig.getDefault().setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
+        HgModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
     }
     
     boolean valid() {
@@ -320,6 +353,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbAskBeforeCommitAfterMerge;
     private javax.swing.JCheckBox cbInternalMergeToolEnabled;
     private javax.swing.JCheckBox cbOpenOutputWindow;
+    final javax.swing.JCheckBox excludeNewFiles = new javax.swing.JCheckBox();
     final javax.swing.JButton execPathBrowseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
     private javax.swing.JLabel exportFilename;

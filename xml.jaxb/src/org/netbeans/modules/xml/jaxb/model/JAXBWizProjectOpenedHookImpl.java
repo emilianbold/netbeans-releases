@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,17 +75,20 @@ public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
     @Override
     protected void projectOpened() {
         Schemas scs = ProjectHelper.getXMLBindingSchemas(prj);
-        if ((scs != null) || (scs.sizeSchema() > 0)){
+        if (scs != null && scs.sizeSchema() > 0){
             BigDecimal v = scs.getVersion();
             if ((v == null) || (JAXBWizModuleConstants.LATEST_CFG_VERSION.compareTo(v) > 0)){
                 ProjectHelper.migrateProjectFromPreDot5Version(prj);
             }
-            // Update privat.properties for headless run.
-
+            // Set endorsed classpath
             ProjectManager.mutex().writeAccess(
                     new Mutex.Action() {
                         public Object run() {
-                            ProjectHelper.setPrivateProjPros(prj);
+                            try {
+                                ProjectHelper.addJaxbApiEndorsed(prj);
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
                             return null;
                         }
                     });

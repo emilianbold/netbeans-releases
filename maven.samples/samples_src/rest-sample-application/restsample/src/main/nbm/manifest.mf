@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Localizing-Bundle: demo/rest/mvn/restsample/Bundle.properties
+OpenIDE-Module-Layer: demo/rest/mvn/restsample/layer.xml

@@ -25,6 +25,7 @@ package org.netbeans.modules.bpel.model.impl;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.NMPropertyHolder;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
@@ -34,6 +35,7 @@ import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute.NMPropertyAttibute;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
@@ -48,7 +50,7 @@ import org.w3c.dom.Element;
  */
 public abstract class ToFromIntersectImpl extends ExtensibleElementsImpl 
     implements PartnerLinkReference, VariableReference, PartReference, 
-    PropertyReference, ContentElement
+    PropertyReference, NMPropertyHolder, ContentElement
 {
 
 
@@ -138,6 +140,25 @@ public abstract class ToFromIntersectImpl extends ExtensibleElementsImpl
      */
     public void removeProperty() {
         removeReference( BpelAttributes.PROPERTY );
+    }
+
+    public String getNMProperty() {
+        return getAttribute(new NMPropertyAttibute());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.soa.model.bpel20.api.PropertyReference#setProperty(org.netbeans.modules.soa.model.bpel20.references.WSDLReference)
+     */
+    public void setNMProperty(String nmProperty) throws VetoException {
+        assert nmProperty != null;
+        setBpelAttribute(new NMPropertyAttibute(this), nmProperty);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.soa.model.bpel20.api.PropertyReference#removeProperty()
+     */
+    public void removeNMProperty() {
+        removeAttribute(new NMPropertyAttibute());
     }
     
 

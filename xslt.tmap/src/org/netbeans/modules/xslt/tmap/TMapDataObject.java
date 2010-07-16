@@ -24,10 +24,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
-import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.validation.core.Controller;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.multiview.TMapMultiViewSupport;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
 import org.openide.cookies.SaveCookie;
@@ -44,6 +45,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.xml.sax.InputSource;
 
 /**
  * @author Vitaly Bychkov
@@ -64,6 +66,8 @@ public class TMapDataObject extends MultiDataObject {
         
         CookieSet cookies = getCookieSet();
         cookies.add( getEditorSupport() );
+        InputSource is = DataObjectAdapters.inputSource(this);
+        cookies.add(new CheckXMLSupport(is));
         
         // add xsl transform support
         Source source = DataObjectAdapters.source(this);

@@ -21,8 +21,10 @@ package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.table.ReadOnlyNoExpressionDefaultMoveableRowTableModel;
+
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -41,8 +43,7 @@ import javax.swing.border.TitledBorder;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -90,7 +91,7 @@ public class NotificationStreamCustomEditor extends DefaultCustomEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -114,7 +115,7 @@ public class NotificationStreamCustomEditor extends DefaultCustomEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
@@ -159,8 +160,8 @@ public class NotificationStreamCustomEditor extends DefaultCustomEditor {
 
             // size
             String sizeStr = NbBundle.getMessage(NotificationStreamCustomEditor.class, "CustomEditor.NOTIFY_EVERY");
-            Property sizeProp = mComponent.getProperty(SIZE_KEY);
-            Property unitProp = mComponent.getProperty(UNIT_KEY);
+            Property sizeProp = mComponent.getProperty(PROP_SIZE);
+            Property unitProp = mComponent.getProperty(PROP_UNIT);
             mSizePanel = PropertyPanel.createDurationPanel(sizeStr, sizeProp, unitProp, false);
             gbc.gridx = 3;
             gbc.gridy = 0;
@@ -192,6 +193,14 @@ public class NotificationStreamCustomEditor extends DefaultCustomEditor {
             gbc.fill = GridBagConstraints.NONE;
             pane.add(mSizePanel.component[2], gbc);
 
+            //accessibilty for notification duration
+            String acsn = NbBundle.getMessage(NotificationStreamCustomEditor.class, "ACSN_NotificationStreamCustomEditor.NOTIFY_EVERY");
+            String acsd = NbBundle.getMessage(NotificationStreamCustomEditor.class, "ACSD_NotificationStreamCustomEditor.NOTIFY_EVERY");
+            
+            mSizePanel.component[2].getAccessibleContext().setAccessibleName(acsn);
+            mSizePanel.component[2].getAccessibleContext().setAccessibleDescription(acsd);
+            
+            
             // glue
             gbc.gridx = 6;
             gbc.gridy = 0;
@@ -223,5 +232,25 @@ public class NotificationStreamCustomEditor extends DefaultCustomEditor {
             mSizePanel.store();
         }
         
+        
+        @Override
+        protected SelectPanel createSelectPanel(OperatorComponent component) {
+            return new MySelectPanel(component);
+        }
+        
+        class MySelectPanel extends SelectPanel {
+
+            public MySelectPanel(OperatorComponent component) {
+                 super(component);
+             }
+                     
+             @Override
+             protected DefaultMoveableRowTableModel createTableModel() {
+                 return new ReadOnlyNoExpressionDefaultMoveableRowTableModel();
+             }
+         }
+         
+         
+
     }
 }

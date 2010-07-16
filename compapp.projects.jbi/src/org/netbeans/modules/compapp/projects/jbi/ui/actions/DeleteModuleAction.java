@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,8 +65,8 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.OutputWriter;
 
 import java.util.List;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -142,21 +145,21 @@ public class DeleteModuleAction extends SystemAction {
             List<VisualClassPathItem> deletedProjsList){
         if ((deletedProjsList != null) && (deletedProjsList.size() > 0)){
             Iterator<VisualClassPathItem> itr = deletedProjsList.iterator();
-            VisualClassPathItem vcpi = null;
-            Project prj = null;
-            FileObject projDir = null;
             FileObject jbiPrjDir = jbiProject.getProjectDirectory();
             while (itr.hasNext()){
-                vcpi = itr.next();
-                prj = vcpi.getAntArtifact().getProject();
-                projDir = prj.getProjectDirectory();
-                if (FileUtil.isParentOf(jbiPrjDir, projDir)){
-                    //DefaultProjectOperations.performDefaultDeleteOperation(prj);
-                    FileObject fo = projDir;
-                    try {
-                        fo.delete();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                VisualClassPathItem vcpi = itr.next();
+                AntArtifact aa = vcpi.getAntArtifact();
+                if (aa != null) { // aa is null if the corresponding projects has been deleted.
+                    Project prj = aa.getProject();
+                    FileObject projDir = prj.getProjectDirectory();
+                    if (FileUtil.isParentOf(jbiPrjDir, projDir)){
+                        //DefaultProjectOperations.performDefaultDeleteOperation(prj);
+                        FileObject fo = projDir;
+                        try {
+                            fo.delete();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }
@@ -170,6 +173,8 @@ public class DeleteModuleAction extends SystemAction {
      * @param artifactName  the artifact name of a JBI module
      */
     public boolean removeProject(final Project jbiProject, String artifactName) {
+
+        removeDeadProjects(jbiProject);
         
         JbiProjectProperties projProperties = 
                 ((ProjectPropertyProvider) jbiProject).getProjectProperties();
@@ -188,12 +193,11 @@ public class DeleteModuleAction extends SystemAction {
         
         for (int i = 0; i < oldCompProjList.size(); i++) {
             VisualClassPathItem cp = oldCompProjList.get(i);
-            
             if (artifactName.equalsIgnoreCase(cp.getShortName())) {
                 itemRemovedIndex = i;
                 deleteModuleProperties(jbiProject, cp, artifactName);
-                subProjName = cp.getProjectName();  
-                subproject = cp.getAntArtifact().getProject();  
+                subProjName = cp.getProjectName();
+                subproject = cp.getAntArtifact().getProject();
                 deletedProjsList.add(oldCompProjList.get(i));
             } else {
                 newCompProjList.add(oldCompProjList.get(i));
@@ -213,11 +217,53 @@ public class DeleteModuleAction extends SystemAction {
             projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, targetComps);                
             
             projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newCompProjList);
-            
+
             updateModuleProperties(jbiProject, projProperties, newCompProjList, subProjName);
             projProperties.store();   
-            
+
             jbiProject.getLookup().lookup(JbiSubprojectProvider.class).subprojectRemoved(subproject);
+            deleteEmbeddedProjects(jbiProject, deletedProjsList);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean removeDeadProjects(final Project jbiProject) {
+
+        JbiProjectProperties projProperties =
+                ((ProjectPropertyProvider) jbiProject).getProjectProperties();
+
+        @SuppressWarnings("unchecked")
+        List<VisualClassPathItem> oldCompProjList =
+                (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+
+        @SuppressWarnings("unchecked")
+        List<String> targetComps = new ArrayList<String>(
+                (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_COMPONENT));
+        assert targetComps.size() == oldCompProjList.size() :
+            "Properties jbi.content.additional and jbi.content.component are not in sync."; // NOI18N
+
+        List<VisualClassPathItem> newCompProjList =
+                new ArrayList<VisualClassPathItem>();
+        List<VisualClassPathItem> deletedProjsList =
+                new ArrayList<VisualClassPathItem>();
+
+        for (int i = oldCompProjList.size() - 1; i >= 0; i--) {
+            VisualClassPathItem cp = oldCompProjList.get(i);
+            if (cp.getAntArtifact() == null) { // encounter a project that no longer exists
+                targetComps.remove(i);
+                deletedProjsList.add(oldCompProjList.get(i));
+            } else {
+                newCompProjList.add(oldCompProjList.get(i));
+            }
+        }
+
+        if (deletedProjsList.size() > 0) {
+            projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, targetComps);
+            projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newCompProjList);
+            projProperties.store();
+
             deleteEmbeddedProjects(jbiProject, deletedProjsList);
             return true;
         } else {

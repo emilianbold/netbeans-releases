@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -63,13 +66,13 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class APTPredefinedMacroMap implements APTMacroMap {
        
     private static CharSequence []preMacro = new CharSequence [] {
-         CharSequenceKey.create("__FILE__"),  // NOI18N
-         CharSequenceKey.create("__LINE__"),  // NOI18N
-         CharSequenceKey.create("__DATE__"),  // NOI18N
-         CharSequenceKey.create("__TIME__"),  // NOI18N
-         CharSequenceKey.create("__FUNCTION__"),  // NOI18N
-         CharSequenceKey.create("_Pragma"),  // NOI18N
-         CharSequenceKey.create("__pragma")  // NOI18N
+         CharSequences.create("__FILE__"),  // NOI18N
+         CharSequences.create("__LINE__"),  // NOI18N
+         CharSequences.create("__DATE__"),  // NOI18N
+         CharSequences.create("__TIME__"),  // NOI18N
+         CharSequences.create("__FUNCTION__"),  // NOI18N
+         CharSequences.create("_Pragma"),  // NOI18N
+         CharSequences.create("__pragma")  // NOI18N
     };
 
     public APTPredefinedMacroMap() {
@@ -89,7 +92,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         if (token.length() < 2 || token.charAt(0) != '_' || (token.charAt(1) != '_' && token.charAt(1) != 'P')) {
             return false;
         }
-        CharSequence tokenText = CharSequenceKey.create(token);
+        CharSequence tokenText = CharSequences.create(token);
                     
         for (i = 0; i < preMacro.length; i++) {
             if(preMacro[i].equals(tokenText)) {
@@ -141,7 +144,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         }
 
         public CharSequence getFile() {
-            return CharSequenceKey.empty();
+            return CharSequences.empty();
         }
 
         public Kind getKind() {

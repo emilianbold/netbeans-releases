@@ -16,6 +16,9 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -56,6 +59,7 @@ public class DatabaseSingleTableSelectionPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         mAvailableTablesList = new javax.swing.JList();
 
+        jLabel1.setLabelFor(mDatasourceConnectionComboBox);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseTableSelectionPanel.jLabel1.text")); // NOI18N
 
         mDatasourceConnectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -65,6 +69,7 @@ public class DatabaseSingleTableSelectionPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel2.setLabelFor(mAvailableTablesList);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseTableSelectionPanel.jLabel2.text")); // NOI18N
 
         mAvailableTablesList.setModel(new javax.swing.AbstractListModel() {
@@ -74,6 +79,8 @@ public class DatabaseSingleTableSelectionPanel extends javax.swing.JPanel {
         });
         mAvailableTablesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(mAvailableTablesList);
+        mAvailableTablesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseSingleTableSelectionPanel.mAvailableTablesList.AccessibleContext.accessibleName")); // NOI18N
+        mAvailableTablesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseSingleTableSelectionPanel.mAvailableTablesList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -103,8 +110,15 @@ public class DatabaseSingleTableSelectionPanel extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        mDatasourceConnectionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseSingleTableSelectionPanel.mDatasourceConnectionComboBox.AccessibleContext.accessibleName")); // NOI18N
+        mDatasourceConnectionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseSingleTableSelectionPanel.mDatasourceConnectionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    public JList getAvailableTablesList() {
+        return this.mAvailableTablesList;
+    }
+    
     public List<TableInfo> getSelectedTables() {
         List<TableInfo> selectedTables = new ArrayList<TableInfo>();
         int selectedIndex = mAvailableTablesList.getSelectedIndex();
@@ -123,6 +137,12 @@ public class DatabaseSingleTableSelectionPanel extends javax.swing.JPanel {
     }
     
     private void init() {
+        String label = org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseTableSelectionPanel.jLabel1.text");
+        org.openide.awt.Mnemonics.setLocalizedText(this.jLabel1, label);
+                
+        String selectTableLabel = org.openide.util.NbBundle.getMessage(DatabaseSingleTableSelectionPanel.class, "DatabaseTableSelectionPanel.jLabel2.text");
+        org.openide.awt.Mnemonics.setLocalizedText(this.jLabel2, selectTableLabel);
+        
         this.mAvailableTablesList.setModel(this.mAvailableTableListModel);
         MyListSelectionListener listener = new MyListSelectionListener();
         this.mAvailableTablesList.addListSelectionListener(listener);

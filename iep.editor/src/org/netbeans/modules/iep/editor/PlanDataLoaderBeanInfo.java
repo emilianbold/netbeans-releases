@@ -24,7 +24,6 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /** Description of {@link PlanDataLoader}.
@@ -32,6 +31,7 @@ import org.openide.util.Utilities;
  * @author Bing Lu
  */
 public class PlanDataLoaderBeanInfo extends SimpleBeanInfo {
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             // I.e. MultiFileLoader.class or UniFileLoader.class.
@@ -42,12 +42,13 @@ public class PlanDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16
             || type == BeanInfo.ICON_MONO_16x16) {
-            return ImageUtilities.loadImage("org/netbeans/modules/iep/editor/eventProcess.png");
+            return Utilities.loadImage("org/netbeans/modules/iep/editor/eventProcess.png");
         } else {
-            return ImageUtilities.loadImage("org/netbeans/modules/iep/editor/eventProcess.png");
+            return Utilities.loadImage("org/netbeans/modules/iep/editor/eventProcess.png");
         }
     }
 }

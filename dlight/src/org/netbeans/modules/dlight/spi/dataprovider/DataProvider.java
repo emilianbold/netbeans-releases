@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,8 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 
 /**
  * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI impplementator should implement
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} which
+ * Along with DataProvider SPI  
+ * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} should be implemented which
  * will be used to create the data provider instance
  *
  */
@@ -56,7 +59,7 @@ public interface DataProvider extends VisualizerDataProvider{
   /**
    * Attaches DataProvider to the>storage.
    * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastracture
+   * be extracted from this storage. This method is invoked  automatically by infrastructure
    * when  Visualizer need to be displayed.
    * It will be invoked automatically when needed.</i></b>
    * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.

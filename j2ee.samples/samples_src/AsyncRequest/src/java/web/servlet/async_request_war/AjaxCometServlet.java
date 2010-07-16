@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -14,7 +17,7 @@
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
+ * as provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code.  If applicable, add the following below the License
  * Header, with the fields enclosed by brackets [] replaced by your own
  * identifying information: "Portions Copyrighted [year]
@@ -72,6 +75,10 @@ public class AjaxCometServlet extends HttpServlet {
 
     private static final long serialVersionUID = -2919167206889576860L;
 
+    private static final String JUNK = "<!-- Comet is a programming technique that enables web " +
+            "servers to send data to the client without having any need " +
+            "for the client to request it. -->\n";
+
     private Thread notifierThread = null;
 
     @Override
@@ -111,14 +118,15 @@ public class AjaxCometServlet extends HttpServlet {
         res.setHeader("Pragma", "no-cache");
         
         PrintWriter writer = res.getWriter();
-        // for IE
-        writer.println("<!-- Comet is a programming technique that enables web servers to send data to the client without having any need for the client to request it. -->\n");
+        // for Safari, Chrome, IE and Opera
+        for (int i = 0; i < 10; i++) {
+            writer.write(JUNK);
+        }
         writer.flush();
 
-        req.setAsyncTimeout(10 * 60 * 1000);
         final AsyncContext ac = req.startAsync();
-        queue.add(ac);
-        req.addAsyncListener(new AsyncListener() {
+        ac.setTimeout(10  * 60 * 1000);
+        ac.addListener(new AsyncListener() {
             public void onComplete(AsyncEvent event) throws IOException {
                 queue.remove(ac);
             }
@@ -127,9 +135,14 @@ public class AjaxCometServlet extends HttpServlet {
                 queue.remove(ac);
             }
 
-            public void onError(AsyncEvent arg0) throws IOException {
+            public void onError(AsyncEvent event) throws IOException {
+                queue.remove(ac);
+            }
+
+            public void onStartAsync(AsyncEvent event) throws IOException {
             }
         });
+        queue.add(ac);
     }
 
     @Override
@@ -169,7 +182,9 @@ public class AjaxCometServlet extends HttpServlet {
         try {
             messageQueue.put(cMessage);
         } catch(Exception ex) {
-            throw new IOException(ex);
+            IOException t = new IOException();
+            t.initCause(ex);
+            throw t;
         }
     }
 

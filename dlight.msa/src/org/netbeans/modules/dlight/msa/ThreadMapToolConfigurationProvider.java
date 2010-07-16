@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,6 +73,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ThreadMapTool.DetailedToolName"); // NOI18N
 
+    @Override
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
@@ -84,14 +88,15 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         final TimeSeriesIndicatorConfiguration indicatorConfig = new TimeSeriesIndicatorConfiguration(
                 new IndicatorMetadata(indicatorDataColumns), INDICATOR_POSITION);
 
+        indicatorConfig.setPersistencePrefix("dlight_msa"); // NOI18N
         indicatorConfig.setTitle(loc("ThreadMapTool.Indicator.Title")); // NOI18N
         indicatorConfig.setGraphScale(1);
 
         indicatorConfig.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_SLEEPING.color, ThreadStateResources.THREAD_SLEEPING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_WAITING.color, ThreadStateResources.THREAD_WAITING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+                new TimeSeriesDescriptor("sleeping", ThreadStateResources.THREAD_SLEEPING.name, ThreadStateResources.THREAD_SLEEPING.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("waiting", ThreadStateResources.THREAD_WAITING.name, ThreadStateResources.THREAD_WAITING.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("blocked", ThreadStateResources.THREAD_BLOCKED.name, ThreadStateResources.THREAD_BLOCKED.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("running", ThreadStateResources.THREAD_RUNNING.name, ThreadStateResources.THREAD_RUNNING.color, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
         indicatorConfig.setDataRowHandler(new IndicatorDataHandler(indicatorDataColumns));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
         indicatorConfig.setActionTooltip(loc("ThreadMapTool.Indicator.Action.Tooltip"));//NOI18N

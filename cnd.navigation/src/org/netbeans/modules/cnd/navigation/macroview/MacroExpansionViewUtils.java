@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,12 +55,9 @@
 package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,7 +109,7 @@ public final class MacroExpansionViewUtils {
         if (mainDoc == null) {
             return false;
         }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
             return false;
         }
@@ -136,29 +137,15 @@ public final class MacroExpansionViewUtils {
         setOffset(newExpandedContextDoc, startOffset, endOffset);
         saveDocumentAndMarkAsReadOnly(newExpandedContextDoc);
 
-        // Init expanded macro field
-        final Document expandedMacroDoc = createExpandedMacroDocument(mainDoc, csmFile);
-        if (expandedMacroDoc == null) {
-            return false;
-        }
-        CsmDeclaration decl = ContextUtils.findInnerFileDeclaration(csmFile, newOffset);
-        if (decl != null) {
-            try {
-                expandedMacroDoc.insertString(0, decl.getName().toString(), null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
-
         // Open view
         Runnable openView = new Runnable() {
 
+            @Override
             public void run() {
                 if (!view.isOpened()) {
                     view.open();
                 }
-                view.setDocuments(newExpandedContextDoc, expandedMacroDoc);
+                view.setDocuments(newExpandedContextDoc);
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
             }
         };
@@ -226,33 +213,14 @@ public final class MacroExpansionViewUtils {
         doc.putProperty(FileObject.class, fobj);
         doc.putProperty("beforeSaveRunnable", null); // NOI18N
         doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT, true);
+        
+        // close old if any
+        closeMemoryBasedDocument((Document) mainDoc.getProperty(Document.class));
 
         mainDoc.putProperty(Document.class, doc);
         doc.putProperty(Document.class, mainDoc);
-
         setupMimeType(doc);
 
-        return doc;
-    }
-
-    /**
-     * Creates document for expanded macro pane.
-     *
-     * @param mainDoc - original document
-     * @param csmFile - file
-     * @return document
-     */
-    public static Document createExpandedMacroDocument(Document mainDoc, CsmFile csmFile) {
-        FileObject fobj = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
-        if (fobj == null) {
-            return null;
-        }
-        final Document doc = openFileDocument(fobj);
-        if (doc == null) {
-            return null;
-        }
-        doc.putProperty(FileObject.class, fobj);
-        setupMimeType(doc);
         return doc;
     }
 
@@ -354,6 +322,26 @@ public final class MacroExpansionViewUtils {
         return doc;
     }
 
+    public static void closeMemoryBasedDocument(Document doc) {
+        if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+            DataObject dob = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+            if (dob != null) {
+                CloseCookie closeCookie = dob.getCookie(CloseCookie.class);
+                if (closeCookie != null) {
+                    closeCookie.close();
+                }
+                FileObject primaryFile = dob.getPrimaryFile();
+                if (primaryFile != null) {
+                    assert primaryFile.equals(doc.getProperty(FileObject.class));
+                    try {
+                        primaryFile.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
     /**
      * Saves document.
      *

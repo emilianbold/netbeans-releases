@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,7 +67,6 @@ public final class MacroExpansionTopComponent extends TopComponent {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
     private MacroExpansionPanel panel = null;
-    private int lastDividerLocation = -1;
     private boolean lastSyncCaretAndContext = true;
     private boolean lastLocalContext = true;
     private Document lastExpandedContextDoc = null;
@@ -79,28 +81,24 @@ public final class MacroExpansionTopComponent extends TopComponent {
     /**
      * Initializes documents of the panel.
      */
-    public void setDocuments(Document expandedContextDoc, Document expandedMacroDoc) {
+    public void setDocuments(Document expandedContextDoc) {
         lastExpandedContextDoc = expandedContextDoc;
         if (panel != null) {
-            lastDividerLocation = panel.getDividerLocation();
             lastSyncCaretAndContext = panel.isSyncCaretAndContext();
             lastLocalContext = panel.isLocalContext();
+        } else {
+            panel = new MacroExpansionPanel(true);
+            removeAll();
+            add(panel, BorderLayout.CENTER);
         }
 
-        panel = new MacroExpansionPanel(true);
         panel.setContextExpansionDocument(expandedContextDoc);
-        panel.setMacroExpansionDocument(expandedMacroDoc);
-        if (lastDividerLocation != -1) {
-            panel.setDividerLocation(lastDividerLocation);
-        }
         panel.setLocalContext(isLocalContext());
         panel.setSyncCaretAndContext(lastSyncCaretAndContext);
         panel.setLocalContext(lastLocalContext);
         if (panel.isSyncCaretAndContext()) {
             panel.updateCaretPosition();
         }
-        removeAll();
-        add(panel, BorderLayout.CENTER);
         validate();
         OpenedEditors.getDefault().fireStateChanged();
     }
@@ -219,17 +217,20 @@ public final class MacroExpansionTopComponent extends TopComponent {
         removeAll();
         initComponents();
         if (panel != null) {
-            lastDividerLocation = panel.getDividerLocation();
             lastSyncCaretAndContext = panel.isSyncCaretAndContext();
             lastLocalContext = panel.isLocalContext();
 
             Document doc = getExpandedContextDoc();
             if (doc != null) {
+                // clean reference on expanded document from real document
                 Document doc2 = (Document) doc.getProperty(Document.class);
                 if (doc2 != null) {
                     doc2.putProperty(Document.class, null);
                 }
+                MacroExpansionViewUtils.closeMemoryBasedDocument(doc);
             }
+            lastExpandedContextDoc = null;
+            panel.removeAll();
             panel = null;
         }
     }

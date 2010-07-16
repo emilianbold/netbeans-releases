@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,14 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,27 +70,27 @@ public class HelpLineProcessorTest extends NbTestCase {
         assertEquals(10, commands.size());
 
         FrameworkCommand command = commands.get(0);
-        assertEquals("help", command.getCommand());
+        assertEquals("help", command.getCommands()[0]);
         assertEquals("help", command.getDisplayName());
         assertEquals("Displays help for a task (h)", command.getDescription());
 
         command = commands.get(1);
-        assertEquals("list", command.getCommand());
+        assertEquals("list", command.getCommands()[0]);
         assertEquals("list", command.getDisplayName());
         assertEquals("Lists tasks", command.getDescription());
 
         command = commands.get(2);
-        assertEquals("app:routes", command.getCommand());
+        assertEquals("app:routes", command.getCommands()[0]);
         assertEquals("app:routes", command.getDisplayName());
         assertEquals("Displays current routes for an application", command.getDescription());
 
         command = commands.get(5);
-        assertEquals("configure:database", command.getCommand());
+        assertEquals("configure:database", command.getCommands()[0]);
         assertEquals("configure:database", command.getDisplayName());
         assertEquals("Configure database DSN", command.getDescription());
 
         command = commands.get(9);
-        assertEquals("test:unit", command.getCommand());
+        assertEquals("test:unit", command.getCommands()[0]);
         assertEquals("test:unit", command.getDisplayName());
         assertEquals("Launches unit tests (test-unit)", command.getDescription());
     }
@@ -146,6 +151,11 @@ public class HelpLineProcessorTest extends NbTestCase {
 
         @Override
         public PhpModuleProperties getProperties() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Preferences getPreferences(Class<?> clazz, boolean shared) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

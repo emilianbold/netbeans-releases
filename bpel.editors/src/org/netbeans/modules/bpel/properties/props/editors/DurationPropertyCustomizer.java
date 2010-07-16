@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,8 +56,6 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.soa.validation.util.Duration;
-import org.netbeans.modules.soa.validation.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
 import org.netbeans.modules.soa.ui.form.RangeDoubleDocument;
@@ -63,11 +64,13 @@ import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
+import org.netbeans.modules.xml.time.Duration;
+import org.netbeans.modules.xml.time.TimeUtil;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
-import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
+import org.netbeans.modules.soa.ui.properties.PropertyVetoError;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
@@ -98,14 +101,14 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
                 }
             }
         });
-        //
+/*
         fldYear.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldMonth.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldDay.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldHour.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldMinute.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldSecond.setDocument(new RangeDoubleDocument(0.0, Double.MAX_VALUE));
-        //
+*/
         ActionListener timerListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 revalidate(true);
@@ -196,7 +199,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     public void propertyChange(PropertyChangeEvent event) {
         if (PropertyEnv.PROP_STATE.equals(event.getPropertyName()) &&
                 event.getNewValue() == PropertyEnv.STATE_VALID) {
-            String currText = DurationUtil.addQuotes(getContent());
+            String currText = TimeUtil.addQuotes(getContent());
             try {
                 myPropertyEditor.setAsText(currText);
             } catch (PropertyVetoError ex) {
@@ -207,24 +210,30 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     }
     
     private void parseFor(String text) {
-      Duration duration = DurationUtil.parseDuration(text, false);
+       Duration duration = TimeUtil.parseDuration(text, false);
+
+       if (duration == null) {
+           return;
+       }
+//System.out.println();
 //System.out.println("set duration: " + duration);
-      fldYear.setText("" + duration.getYears());
-      fldMonth.setText("" + duration.getMonths());
-      fldDay.setText("" + duration.getDays());
-      fldHour.setText("" + duration.getHours());
-      fldMinute.setText("" + duration.getMinutes());
-      fldSecond.setText("" + duration.getSeconds());
+       fldYear.setText("" + duration.getYears());
+       fldMonth.setText("" + duration.getMonths());
+       fldDay.setText("" + duration.getDays());
+       fldHour.setText("" + duration.getHours());
+       fldMinute.setText("" + duration.getMinutes());
+       fldSecond.setText("" + duration.getSeconds());
     }
     
     private String getContent() {
-        return DurationUtil.getContent(true,
-               DurationUtil.parseInt(fldYear.getText()),
-               DurationUtil.parseInt(fldMonth.getText()),
-               DurationUtil.parseInt(fldDay.getText()),
-               DurationUtil.parseInt(fldHour.getText()),
-               DurationUtil.parseInt(fldMinute.getText()),
-               DurationUtil.parseDouble(fldSecond.getText()));
+        return
+            TimeUtil.getForValue(
+            TimeUtil.parseInt(fldYear.getText()),
+            TimeUtil.parseInt(fldMonth.getText()),
+            TimeUtil.parseInt(fldDay.getText()),
+            TimeUtil.parseInt(fldHour.getText()),
+            TimeUtil.parseInt(fldMinute.getText()),
+            TimeUtil.parseDouble(fldSecond.getText()), false);
     }
     
     public Validator createValidator() {
@@ -238,6 +247,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         }
         
         public void doFastValidation() {
+/*
             if ( !check(fldYear)) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_YEARS"); // NOI18N
             }
@@ -253,13 +263,15 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
             if ( !check(fldMinute)) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_MINUTES"); // NOI18N
             }
-            if (DurationUtil.parseDouble(fldSecond.getText()) < 0) {
+            if (TimeUtil.parseDouble(fldSecond.getText()) == null) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_SECONDS"); // NOI18N
             }
+*/
         }
         
         private boolean check(JTextField field) {
-            return DurationUtil.parseInt(field.getText()) >= 0;
+//System.out.println("parse: " + field.getText() + " " + TimeUtil.parseInt(field.getText()));
+            return TimeUtil.parseInt(field.getText()) != null;
         }
     }
     

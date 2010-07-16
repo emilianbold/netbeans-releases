@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * Class OneFeatureMBean3
- * 
+ *
  * @author <author>
  */
 public class OneFeatureMBean3 extends StandardMBean implements OneFeatureMBean3MBean {
@@ -57,7 +57,6 @@ public class OneFeatureMBean3 extends StandardMBean implements OneFeatureMBean3M
         if (info.getName().equals("FirstAttribute")) {
             description = "First Attribute description";
         }
-
         return description;
     }
 
@@ -77,7 +76,6 @@ public class OneFeatureMBean3 extends StandardMBean implements OneFeatureMBean3M
                     return null;
             }
         }
-
         return null;
     }
 
@@ -97,7 +95,6 @@ public class OneFeatureMBean3 extends StandardMBean implements OneFeatureMBean3M
                     return null;
             }
         }
-
         return null;
     }
 
@@ -114,13 +111,10 @@ public class OneFeatureMBean3 extends StandardMBean implements OneFeatureMBean3M
             signature[i] = params[i].getType();
         }
         String[] methodSignature;
-
         methodSignature = new String[]{java.lang.String.class.getName(), javax.management.ObjectName.class.getName()};
         if (info.getName().equals("FirstOperation") && Arrays.equals(signature, methodSignature)) {
             description = "First Operation Description";
         }
-
-
         return description;
     }
 

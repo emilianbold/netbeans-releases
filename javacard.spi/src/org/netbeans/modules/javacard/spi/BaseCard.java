@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
@@ -124,7 +127,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
-    protected ApduSupport createApduSupport(T t) {
+    protected UrlCapability createApduSupport(T t) {
         return null;
     }
 
@@ -164,7 +167,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
-    protected CardCustomizerProvider createCardCustomizerProvidert(T t) {
+    protected CardCustomizerProvider createCardCustomizerProvider(T t) {
         return null;
     }
 
@@ -255,7 +258,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
             maybeAddCapability(createProfileCapability(props));
         }
         if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
-            maybeAddCapability(createCardCustomizerProvidert(props));
+            maybeAddCapability(createCardCustomizerProvider(props));
         }
         if (declaredCapabilities.contains(DeleteCapability.class)) {
             maybeAddCapability(createDeleteCapability(props));
@@ -297,31 +300,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
         boolean resumeSupported = capabilityTypes.contains(ResumeCapability.class);
         if ((resumeSupported && epromFile != null && epromSupported) || (resumeSupported && !epromSupported)) {
-            maybeAddCapability(createResumeCapability(props));
+            ResumeCapability resume = createResumeCapability(props);
+            maybeAddCapability(resume);
         }
-    }
-
-    /**
-     * XXX DELETEME
-     * @param create
-     * @return
-     */
-    protected FileObject getEpromFile(boolean create) {
-        FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemId(), create);
-        FileObject result = null;
-        if (fld != null) {
-            result = fld.getFileObject(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-            if (result == null && create) {
-                if (result == null) {
-                    try {
-                        result = fld.createData(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -347,6 +328,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
      * @param nue The new state
      */
     @Override
+    @SuppressWarnings("fallthrough") //NOI18N
     protected void onStateChanged(CardState old, CardState nue) {
         if (old == nue) return;
         log(this + " stateChange " + old + "->" + nue); //NOI18N
@@ -383,7 +365,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                     maybeAddCapability(createStartCapability(t));
                 }
                 if (declaredCapabilities.contains(CardCustomizerProvider.class)) {
-                    maybeAddCapability(createCardCustomizerProvidert(t));
+                    maybeAddCapability(createCardCustomizerProvider(t));
                 }
             case STOPPING:
                 //Do this here as well as in BEFORE_STOPPING, to handle

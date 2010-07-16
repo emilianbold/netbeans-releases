@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -82,7 +85,7 @@ public final class SimpleValueNames {
      * Values: java.lang.Integer instances
      */
     public static final String INDENT_SHIFT_WIDTH = "indent-shift-width"; // NOI18N
-    
+
     /**
      * The type of the editor caret in the insert mode.
      * <p>The available types are:
@@ -235,6 +238,18 @@ public final class SimpleValueNames {
      */
     public static final String TEXT_LIMIT_WIDTH = "text-limit-width"; // NOI18N
     
+    /**
+     * Determines if and what kind of line wrapping algorithm should be used in the editor.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>none
+     * <li>words
+     * <li>chars
+     * </ul>
+     * @since 1.29
+     */
+    public static final String TEXT_LINE_WRAP = "text-line-wrap"; //NOI18N
+
     /**
      * Enable/Disable code folding 
      * Values: java.lang.Boolean instances
@@ -402,6 +417,25 @@ public final class SimpleValueNames {
      * @since 1.22
      */
     public static final String JAVADOC_POPUP_NEXT_TO_CC = "javadoc-popup-next-to-cc"; // NOI18N
+
+    /**
+     * Whether to display non-printable characters (eg. space, tab and new-line).
+     * Values: java.lang.Boolean instances
+     * @since 1.30
+     */
+    public static final String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"; //NOI18N
+
+    /**
+     * Determines whether to remove trailing whitespace when saving files and how exactly to do that.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>never
+     * <li>always
+     * <li>modified-lines
+     * </ul>
+     * @since 1.33
+     */
+    public static final String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"; //NOI18N
 
     @PatchedPublic
     private SimpleValueNames() {

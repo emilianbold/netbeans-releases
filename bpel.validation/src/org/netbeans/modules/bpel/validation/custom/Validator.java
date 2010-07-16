@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.validation.core.Expression;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.CompletionCondition;
+import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
@@ -79,899 +88,976 @@ import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.api.support.AtomicTxType;
+import org.netbeans.modules.bpel.model.api.support.BinaryCopy;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public final class Validator extends BpelValidator {
 
-  @Override
-  protected void init() {
-    myErrored = new ArrayList<Component>();
-  }
+    @Override
+    protected void init() {
+        myErrored = new ArrayList<Component>();
+    }
 
-  @Override
-  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+    @Override
+    protected SimpleBpelModelVisitor getVisitor() {
+        return new SimpleBpelModelVisitorAdaptor() {
 
-  @Override
-  public void visit(ForEach forEach) {
+            @Override
+            public void visit(ForEach forEach) {
 //out();
-    // # 124918
-    checkCounters(forEach);
+                // # 86259
+                checkReceive(forEach);
 
-    // # 125001
-    checkNegativeCounter(forEach);
+                // # 124918
+                checkCounters(forEach);
+
+                // # 125001
+                checkNegativeCounter(forEach);
 
 //out("forEach: " + forEach);
 //out("forEach.getCounterName: " + forEach.getCounterName());
-    String counter = forEach.getCounterName();
+                String counter = forEach.getCounterName();
 
-    if (counter == null) {
-      return;
-    }
-    CompletionCondition completionCondition = forEach.getCompletionCondition();
+                if (counter == null) {
+                    return;
+                }
+                CompletionCondition completionCondition = forEach.getCompletionCondition();
 
-    if (completionCondition == null) {
-      return;
-    }
-    Branches branches = completionCondition.getBranches();
+                if (completionCondition == null) {
+                    return;
+                }
+                Branches branches = completionCondition.getBranches();
 
-    if (branches == null) {
-      return;
-    }
-    String expression = branches.getContent();
+                if (branches == null) {
+                    return;
+                }
+                String expression = branches.getContent();
 
-    if (expression == null) {
-      return;
-    }
-    Collection<String> variables = ExpressionUpdater.getInstance().getUsedVariables(expression);
+                if (expression == null) {
+                    return;
+                }
+                List<String> variables = Expression.getUsedVariables(expression);
 
-    if (variables == null) {
-      return;
-    }
+                if (variables == null) {
+                    return;
+                }
 //out("variables: " + variables);
 //out();
-    for (String variable : variables) {
-      if (variable.equals(counter)) {
-        addError("FIX_Branches_Cant_Use_Counter", branches, counter); // NOI18N
-      }
-    }
-  }
+                for (String variable : variables) {
+                    if (variable.equals(counter)) {
+                        addError("FIX_Branches_Cant_Use_Counter", branches, counter); // NOI18N
+                    }
+                }
+            }
 
-  private void checkCounters(ForEach forEach) {
-    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+            private void checkReceive(ForEach forEach) {
+                if (forEach.getParallel() != TBoolean.YES) {
+                    return;
+                }
+                if (hasReceive(forEach)) {
+                    addError("FIX_Parallel_ForEach", forEach, forEach.getName()); // NOI18N
+                }
+            }
 
-    if (startCounterValue == null) {
-      return;
-    }
-    int startCounter;
+            private boolean hasReceive(BpelEntity entity) {
+                if (entity == null) {
+                    return false;
+                }
+                List<BpelEntity> children = entity.getChildren();
 
-    try {
-      startCounter = Integer.parseInt(startCounterValue.getContent());
-    }
-    catch (NumberFormatException e) {
-      return;
-    }
-    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+                for (BpelEntity child : children) {
+                    if (child instanceof Receive) {
+                        return true;
+                    }
+                    if (hasReceive(child)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-    if (finalCounterValue == null) {
-      return;
-    }
-    int finalCounter;
+            private void checkCounters(ForEach forEach) {
+                StartCounterValue startCounterValue = forEach.getStartCounterValue();
 
-    try {
-      finalCounter = Integer.parseInt(finalCounterValue.getContent());
-    }
-    catch (NumberFormatException e) {
-      return;
-    }
-    if (finalCounter < startCounter) {
-      addError("FIX_Final_Start_Counters", forEach, "" + startCounter, "" + finalCounter); // NOI18N
-    }
-  }
+                if (startCounterValue == null) {
+                    return;
+                }
+                int startCounter;
 
-  private void checkNegativeCounter(ForEach forEach) {
-    // start
-    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+                try {
+                    startCounter = Integer.parseInt(startCounterValue.getContent());
+                } catch (NumberFormatException e) {
+                    return;
+                }
+                FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
 
-    if (startCounterValue == null) {
-      return;
-    }
-    int startCounter;
+                if (finalCounterValue == null) {
+                    return;
+                }
+                int finalCounter;
 
-    try {
-      startCounter = Integer.parseInt(startCounterValue.getContent());
-    }
-    catch (NumberFormatException e) {
-      return;
-    }
-    if (startCounter < 0) {
-      addError("FIX_Negative_Start_Counter", startCounterValue, "" + startCounter); // NOI18N
-    }
-    // final
-    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+                try {
+                    finalCounter = Integer.parseInt(finalCounterValue.getContent());
+                } catch (NumberFormatException e) {
+                    return;
+                }
+                if (finalCounter < startCounter) {
+                    addError("FIX_Final_Start_Counters", forEach, "" + startCounter, "" + finalCounter); // NOI18N
+                }
+            }
 
-    if (finalCounterValue == null) {
-      return;
-    }
-    int finalCounter;
+            private void checkNegativeCounter(ForEach forEach) {
+                // start
+                StartCounterValue startCounterValue = forEach.getStartCounterValue();
 
-    try {
-      finalCounter = Integer.parseInt(finalCounterValue.getContent());
-    }
-    catch (NumberFormatException e) {
-      return;
-    }
-    if (finalCounter < 0) {
-      addError("FIX_Negative_Final_Counter", finalCounterValue, "" + finalCounter); // NOI18N
-    }
-    // completion
-    CompletionCondition completionCondition = forEach.getCompletionCondition();
+                if (startCounterValue == null) {
+                    return;
+                }
+                int startCounter;
 
-    if (completionCondition == null) {
-      return;
-    }
-    Branches branches = completionCondition.getBranches();
+                try {
+                    startCounter = Integer.parseInt(startCounterValue.getContent());
+                } catch (NumberFormatException e) {
+                    return;
+                }
+                if (startCounter < 0) {
+                    addError("FIX_Negative_Start_Counter", startCounterValue, "" + startCounter); // NOI18N
+                }
+                // final
+                FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
 
-    if (branches == null) {
-      return;
-    }
-    int completionCounter;
+                if (finalCounterValue == null) {
+                    return;
+                }
+                int finalCounter;
 
-    try {
-      completionCounter = Integer.parseInt(branches.getContent());
-    }
-    catch (NumberFormatException e) {
-      return;
-    }
-    if (completionCounter < 0) {
-      addError("FIX_Negative_Completion_Counter", branches, "" + completionCounter); // NOI18N
-    }
-  }
+                try {
+                    finalCounter = Integer.parseInt(finalCounterValue.getContent());
+                } catch (NumberFormatException e) {
+                    return;
+                }
+                if (finalCounter < 0) {
+                    addError("FIX_Negative_Final_Counter", finalCounterValue, "" + finalCounter); // NOI18N
+                }
+                // completion
+                CompletionCondition completionCondition = forEach.getCompletionCondition();
 
-  @Override
-  public void visit(EventHandlers handlers) {
+                if (completionCondition == null) {
+                    return;
+                }
+                Branches branches = completionCondition.getBranches();
+
+                if (branches == null) {
+                    return;
+                }
+                int completionCounter;
+
+                try {
+                    completionCounter = Integer.parseInt(branches.getContent());
+                } catch (NumberFormatException e) {
+                    return;
+                }
+                if (completionCounter < 0) {
+                    addError("FIX_Negative_Completion_Counter", branches, "" + completionCounter); // NOI18N
+                }
+            }
+
+            @Override
+            public void visit(EventHandlers handlers) {
 //out();
 //out("HANDLERS: " + handlers);
 //out();
-    // # 112489
-    checkCase1(handlers);
-    checkCase3(handlers);
-    checkCase245(handlers);
-  }
+                // # 112489
+                checkCase1(handlers);
+                checkCase3(handlers);
+                checkCase245(handlers);
+            }
 
-  private void checkCase3(EventHandlers handlers) {
-    OnAlarmEvent [] onAlarms = handlers.getOnAlarms();
+            @Override
+            public void visit(Copy copy) {
+                // # 170271
+                checkAttribueValue(copy, "", Copy.BINARY_COPY, BinaryCopy.values(), "FIX_BinaryCopy"); // NOI18N
+            }
 
-    if (onAlarms == null) {
-      return;
-    }
-    for (OnAlarmEvent onAlarm : onAlarms) {
-      if (onAlarm.getRepeatEvery() == null) {
-        continue;
-      }
-      List<Receive> receives = getReceives(onAlarm);
+            private void checkCase3(EventHandlers handlers) {
+                OnAlarmEvent[] onAlarms = handlers.getOnAlarms();
 
-      for (Receive receive : receives) {
-        addWarning("FIX_Receive_in_OnAlarm", receive, receive.getName()); // NOI18N
-      }
-    }
-  }
+                if (onAlarms == null) {
+                    return;
+                }
+                for (OnAlarmEvent onAlarm : onAlarms) {
+                    if (onAlarm.getRepeatEvery() == null) {
+                        continue;
+                    }
+                    List<Receive> receives = getReceives(onAlarm);
 
-  private void checkCase245(EventHandlers handlers) {
-    List<Receive> receives = new ArrayList<Receive>();
-    
-    receives.addAll(getReceives(handlers.getOnEvents()));
-    receives.addAll(getReceives(handlers.getOnAlarms()));
+                    for (Receive receive : receives) {
+                        addWarning("FIX_Receive_in_OnAlarm", receive, receive.getName()); // NOI18N
+                    }
+                }
+            }
 
-    checkDuplicate(receives);
-  }
+            private void checkCase245(EventHandlers handlers) {
+                List<Receive> receives = new ArrayList<Receive>();
 
-  private List<Receive> getReceives(OnEvent [] onEvents) {
-    List<Receive> receives = new ArrayList<Receive>();
+                receives.addAll(getReceives(handlers.getOnEvents()));
+                receives.addAll(getReceives(handlers.getOnAlarms()));
 
-    if (onEvents == null) {
-      return receives;
-    }
-    for (OnEvent onEvent : onEvents) {
-      receives.addAll(getReceives(onEvent));
-    }
-    return receives;
-  }
+                checkDuplicate(receives);
+            }
 
-  private void checkDuplicate(List<Receive> receives) {
-    for (int i=0; i < receives.size(); i++) {
-      for (int j=i+1; j < receives.size(); j++) {
-        checkDuplicate(receives.get(i), receives.get(j));
-      }
-    }
-  }
-  
-  private void checkDuplicate(Receive receive1, Receive receive2) {
-    if (
-      samePartnerLink(receive1, receive2) &&
-      samePortType(receive1, receive2) &&
-      sameOperation(receive1, receive2)
-    ) {
-      addWarning("FIX_Receives_in_OnEventOnAlarm", receive1, receive1.getName(), receive2.getName()); // NOI18N
-      addWarning("FIX_Receives_in_OnEventOnAlarm", receive2, receive2.getName(), receive1.getName()); // NOI18N
-    }
-  }
+            private List<Receive> getReceives(OnEvent[] onEvents) {
+                List<Receive> receives = new ArrayList<Receive>();
 
-  private boolean sameOperation(Receive receive1, Receive receive2) {
-    WSDLReference<Operation> reference1 = receive1.getOperation();
+                if (onEvents == null) {
+                    return receives;
+                }
+                for (OnEvent onEvent : onEvents) {
+                    receives.addAll(getReceives(onEvent));
+                }
+                return receives;
+            }
 
-    if (reference1 == null) {
-      return false;
-    }
-    WSDLReference<Operation> reference2 = receive2.getOperation();
+            private void checkDuplicate(List<Receive> receives) {
+                for (int i = 0; i < receives.size(); i++) {
+                    for (int j = i + 1; j < receives.size(); j++) {
+                        checkDuplicate(receives.get(i), receives.get(j));
+                    }
+                }
+            }
 
-    if (reference2 == null) {
-      return false;
-    }
-    return same(reference1.get(), reference2.get());
-  }
+            private void checkDuplicate(Receive receive1, Receive receive2) {
+                if (samePartnerLink(receive1, receive2) &&
+                        samePortType(receive1, receive2) &&
+                        sameOperation(receive1, receive2)) {
+                    addWarning("FIX_Receives_in_OnEventOnAlarm", receive1, receive1.getName(), receive2.getName()); // NOI18N
+                    addWarning("FIX_Receives_in_OnEventOnAlarm", receive2, receive2.getName(), receive1.getName()); // NOI18N
+                }
+            }
 
-  private boolean samePortType(Receive receive1, Receive receive2) {
-    WSDLReference<PortType> reference1 = receive1.getPortType();
+            private boolean sameOperation(Receive receive1, Receive receive2) {
+                WSDLReference<Operation> reference1 = receive1.getOperation();
 
-    if (reference1 == null) {
-      return false;
-    }
-    WSDLReference<PortType> reference2 = receive2.getPortType();
+                if (reference1 == null) {
+                    return false;
+                }
+                WSDLReference<Operation> reference2 = receive2.getOperation();
 
-    if (reference2 == null) {
-      return false;
-    }
-    return same(reference1.get(), reference2.get());
-  }
+                if (reference2 == null) {
+                    return false;
+                }
+                return same(reference1.get(), reference2.get());
+            }
 
-  private boolean samePartnerLink(Receive receive1, Receive receive2) {
-    BpelReference<PartnerLink> reference1 = receive1.getPartnerLink();
+            private boolean samePortType(Receive receive1, Receive receive2) {
+                WSDLReference<PortType> reference1 = receive1.getPortType();
 
-    if (reference1 == null) {
-      return false;
-    }
-    BpelReference<PartnerLink> reference2 = receive2.getPartnerLink();
+                if (reference1 == null) {
+                    return false;
+                }
+                WSDLReference<PortType> reference2 = receive2.getPortType();
 
-    if (reference2 == null) {
-      return false;
-    }
-    return same(reference1.get(), reference2.get());
-  }
+                if (reference2 == null) {
+                    return false;
+                }
+                return same(reference1.get(), reference2.get());
+            }
 
-  private boolean same(Object object1, Object object2) {
-    if (object1 == null) {
-      return false;
-    }
-    return object1.equals(object2);
-  }
+            private boolean samePartnerLink(Receive receive1, Receive receive2) {
+                BpelReference<PartnerLink> reference1 = receive1.getPartnerLink();
 
-  private List<Receive> getReceives(OnAlarmEvent [] onAlarms) {
-    List<Receive> receives = new ArrayList<Receive>();
+                if (reference1 == null) {
+                    return false;
+                }
+                BpelReference<PartnerLink> reference2 = receive2.getPartnerLink();
 
-    if (onAlarms == null) {
-      return receives;
-    }
-    for (OnAlarmEvent onAlarm : onAlarms) {
-      if (onAlarm.getRepeatEvery() == null) {
-        receives.addAll(getReceives(onAlarm));
-      }
-    }
-    return receives;
-  }
+                if (reference2 == null) {
+                    return false;
+                }
+                return same(reference1.get(), reference2.get());
+            }
 
-  private void checkCase1(EventHandlers handlers) {
-    OnEvent [] onEvents = handlers.getOnEvents();
+            private boolean same(Object object1, Object object2) {
+                if (object1 == null) {
+                    return false;
+                }
+                return object1.equals(object2);
+            }
 
-    if (onEvents == null) {
-      return;
-    }
-    for (OnEvent onEvent : onEvents) {
-      List<Receive> receives = getReceives(onEvent);
+            private List<Receive> getReceives(OnAlarmEvent[] onAlarms) {
+                List<Receive> receives = new ArrayList<Receive>();
 
-      for (Receive receive : receives) {
-        addWarning("FIX_Receive_in_OnEvent", receive, receive.getName()); // NOI18N
-      }
-    }
-  }
+                if (onAlarms == null) {
+                    return receives;
+                }
+                for (OnAlarmEvent onAlarm : onAlarms) {
+                    if (onAlarm.getRepeatEvery() == null) {
+                        receives.addAll(getReceives(onAlarm));
+                    }
+                }
+                return receives;
+            }
 
-  private List<Receive> getReceives(BpelEntity entity) {
-    List<Receive> receives = new ArrayList<Receive>();
-    collectReceives(entity, receives);
-    return receives;
-  }
+            private void checkCase1(EventHandlers handlers) {
+                OnEvent[] onEvents = handlers.getOnEvents();
 
-  private void collectReceives(BpelEntity entity, List<Receive> receives) {
-    if (entity instanceof Receive) {
-      receives.add((Receive) entity);
-    }
-    List<BpelEntity> children = entity.getChildren();
+                if (onEvents == null) {
+                    return;
+                }
+                for (OnEvent onEvent : onEvents) {
+                    List<Receive> receives = getReceives(onEvent);
 
-    for (BpelEntity child : children) {
-      collectReceives(child, receives);
-    }
-  }
+                    for (Receive receive : receives) {
+                        addWarning("FIX_Receive_in_OnEvent", receive, receive.getName()); // NOI18N
+                    }
+                }
+            }
 
-  // # 93078
-  @Override
-  public void visit(Branches branches) {
-    String content = branches.getContent();
+            private List<Receive> getReceives(BpelEntity entity) {
+                List<Receive> receives = new ArrayList<Receive>();
+                collectReceives(entity, receives);
+                return receives;
+            }
 
-    if (content == null) {
-      return;
-    }
-    content = content.toLowerCase();
+            private void collectReceives(BpelEntity entity, List<Receive> receives) {
+                if (entity instanceof Receive) {
+                    receives.add((Receive) entity);
+                }
+                List<BpelEntity> children = entity.getChildren();
 
-    if (
-      content.contains("true") || content.contains("false")) { // NOI18N
-      addError("FIX_Branches_Must_Be_Integer", branches); // NOI18N
-    }
-  }
+                for (BpelEntity child : children) {
+                    collectReceives(child, receives);
+                }
+            }
 
-  @Override
-  public void visit(Process process) {
-    List<Reply> replies = new ArrayList<Reply>();
-    List<CorrelationsHolder> holders = new ArrayList<CorrelationsHolder>();
-    visitEntities(process.getChildren(), replies, holders);
-    // # 81404
-    checkReplies(replies);
-    // # 109412
-    checkHolders(holders);
-    // # 129266
-    checkExit(process);
-  }
+            // # 93078
+            @Override
+            public void visit(Branches branches) {
+                String content = branches.getContent();
 
-  private void checkExit(BpelEntity entity) {
-    List<BpelEntity> children = entity.getChildren();
-    boolean hasExit = false;
+                if (content == null) {
+                    return;
+                }
+                content = content.toLowerCase();
 
-    if ( !(entity instanceof Flow)) {
-      for (BpelEntity child : children) {
-        if (hasExit) {
-          addError("FIX_Activity_after_Exit", child); // NOI18N
-        }
-        if (child instanceof Exit) {
-          hasExit = true;
-        }
-      }
-    }
-    for (BpelEntity child : children) {
-      checkExit(child);
-    }
-  }
+                if (content.contains("true") || content.contains("false")) { // NOI18N
+                    addError("FIX_Branches_Must_Be_Integer", branches); // NOI18N
+                }
+            }
 
-  private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
-    for (BpelEntity entity : entities) {
-      if (entity instanceof Reply) {
-        replies.add((Reply) entity);
-      }
-      else if (entity instanceof CorrelationsHolder) {
-        holders.add((CorrelationsHolder) entity);
-      }
-      visitEntities(entity.getChildren(), replies, holders);
-    }
-  }
+            @Override
+            public void visit(Process process) {
+                List<Reply> replies = new ArrayList<Reply>();
+                List<CorrelationsHolder> holders = new ArrayList<CorrelationsHolder>();
+                visitEntities(process.getChildren(), replies, holders);
+                // # 81404
+                checkReplies(replies);
+                // # 109412
+                checkHolders(holders);
+                // # 129266
+                checkExit(process);
+                // # 169664
+                checkAtomicValues(process);
+            }
 
-  private void checkReplies(List<Reply> replies) {
+            private void checkAtomicValues(Process process) {
+                checkAttribueValue(process, "sxtx:", Process.ATOMIC, TBoolean.values(), "FIX_Atomic"); // NOI18N
+                checkAttribueValue(process, "sxtx:", Process.ATOMIC_TX_TYPE, AtomicTxType.values(), "FIX_AtomicTxType"); // NOI18N
+                checkAtomicAndAtomicTxType(process);
+            }
+
+            private void checkAttribueValue(BpelEntity entity, String prefix, String attribute, Object[] values, String error) {
+                String cuurent = getPrefixAttribute(entity, prefix, attribute);
+
+                if (cuurent == null) {
+                    return;
+                }
+//out();
+//out("values: " + values);
+//out();
+                for (Object value : values) {
+//out("  see value: " + value);
+
+                    if (cuurent.equals(value.toString())) {
+                        return;
+                    }
+                }
+                addError(error, entity);
+            }
+
+            private String getPrefixAttribute(BpelEntity entity, String prefix, String attribute) {
+                String value = getAttribute(entity, attribute);
+
+                if (value != null) {
+                    return value;
+                }
+                return getAttribute(entity, prefix + attribute);
+            }
+
+            private String getAttribute(BpelEntity entity, String attribute) {
+                String value = entity.getPeer().getAttribute(attribute);
+
+                if (value != null && value.length() == 0) {
+                    value = null;
+                }
+                return value;
+            }
+
+            private void checkAtomicAndAtomicTxType(Process process) {
+                if (process.getAtomicTxType() != null && process.isAtomic() != TBoolean.YES) {
+                    addError("FIX_Atomic_and_AtomicTxType", process); // NOI18N
+                }
+            }
+
+            private void checkExit(BpelEntity entity) {
+                List<BpelEntity> children = entity.getChildren();
+                boolean hasExit = false;
+
+                if (!(entity instanceof Flow)) {
+                    for (BpelEntity child : children) {
+                        if (hasExit) {
+                            addError("FIX_Activity_after_Exit", child); // NOI18N
+                        }
+                        if (child instanceof Exit) {
+                            hasExit = true;
+                        }
+                    }
+                }
+                for (BpelEntity child : children) {
+                    checkExit(child);
+                }
+            }
+
+            private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
+                for (BpelEntity entity : entities) {
+                    if (entity instanceof Reply) {
+                        replies.add((Reply) entity);
+                    } else if (entity instanceof CorrelationsHolder) {
+                        holders.add((CorrelationsHolder) entity);
+                    }
+                    visitEntities(entity.getChildren(), replies, holders);
+                }
+            }
+
+            private void checkReplies(List<Reply> replies) {
 //out();
 //out();
-    for (int i=0; i < replies.size(); i++) {
-      Reply reply1 = replies.get(i);
+                for (int i = 0; i < replies.size(); i++) {
+                    Reply reply1 = replies.get(i);
 
-      for (int j=i+1; j < replies.size(); j++) {
-        checkReplies(reply1, replies.get(j));
-      }
-    }
+                    for (int j = i + 1; j < replies.size(); j++) {
+                        checkReplies(reply1, replies.get(j));
+                    }
+                }
 //out();
 //out();
-  }
+            }
 
-  private void checkHolders(List<CorrelationsHolder> holders) {
-    for (CorrelationsHolder holder : holders) {
-      checkInitiateAndUse(holder);
-    }
+            private void checkHolders(List<CorrelationsHolder> holders) {
+                for (CorrelationsHolder holder : holders) {
+                    checkInitiateAndUse(holder);
+                }
 //out();
 //out();
-    for (int i=0; i < holders.size(); i++) {
-      CorrelationsHolder holder1 = holders.get(i);
+                for (int i = 0; i < holders.size(); i++) {
+                    CorrelationsHolder holder1 = holders.get(i);
 
-      for (int j=i+1; j < holders.size(); j++) {
-        checkHolders(holder1, holders.get(j));
-      }
-    }
+                    for (int j = i + 1; j < holders.size(); j++) {
+                        checkHolders(holder1, holders.get(j));
+                    }
+                }
 //out();
 //out();
-  }
+            }
 
-  // # 120390
-  private void checkInitiateAndUse(CorrelationsHolder holder) {
-    CorrelationContainer container = holder.getCorrelationContainer();
+            // # 120390
+            private void checkInitiateAndUse(CorrelationsHolder holder) {
+                CorrelationContainer container = holder.getCorrelationContainer();
 
-    if (container == null) {
-      return;
-    }
-    Correlation [] correlations = container.getCorrelations();
+                if (container == null) {
+                    return;
+                }
+                Correlation[] correlations = container.getCorrelations();
 
-    if (correlations == null) {
-      return;
-    }
-    Process process = holder.getBpelModel().getProcess();
+                if (correlations == null) {
+                    return;
+                }
+                Process process = holder.getBpelModel().getProcess();
 //out();
 //out("SEE: " + getName(holder));
-    for (Correlation correlation : correlations) {
-      Initiate initiate = correlation.getInitiate();
+                for (Correlation correlation : correlations) {
+                    Initiate initiate = correlation.getInitiate();
 
-      if (initiate != Initiate.NO) {
-        continue;
-      }
-      BpelReference<CorrelationSet> ref = correlation.getSet();
+                    if (initiate != Initiate.NO) {
+                        continue;
+                    }
+                    BpelReference<CorrelationSet> ref = correlation.getSet();
 
-      if (ref == null) {
-        continue;
-      }
-      CorrelationSet set = ref.get();
+                    if (ref == null) {
+                        continue;
+                    }
+                    CorrelationSet set = ref.get();
 
-      if (set == null) {
-        continue;
-      }
+                    if (set == null) {
+                        continue;
+                    }
 //out("check: " + getName(correlation));
-      if ( !checkCorrelationSet(set, holder, process)) {
-        addError("FIX_Not_Instantiated_Correlation_Set", correlation, set.getName()); // NOI18N
-      }
-    }
-  }
+                    if (!checkCorrelationSet(set, holder, process)) {
+                        addError("FIX_Not_Instantiated_Correlation_Set", correlation, set.getName()); // NOI18N
+                    }
+                }
+            }
 
-  private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity entity) {
-    List<BpelEntity> children = entity.getChildren();
+            private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity entity) {
+                List<BpelEntity> children = entity.getChildren();
 
-    for (BpelEntity child : children) {
-      if (checkCorrelationSet(set, holder, child)) {
-        return true;
-      }
-    }
-    if (holder == entity) {
-      return false;
-    }
-    if (checkCorrelationSetInInvoke(set, entity)) {
-      return true;
-    }
-    if ( !(entity instanceof CorrelationsHolder)) {
-      return false;
-    }
-    CorrelationsHolder current = (CorrelationsHolder) entity;
-    CorrelationContainer container = current.getCorrelationContainer();
+                for (BpelEntity child : children) {
+                    if (checkCorrelationSet(set, holder, child)) {
+                        return true;
+                    }
+                }
+                if (holder == entity) {
+                    return false;
+                }
+                if (checkCorrelationSetInInvoke(set, entity)) {
+                    return true;
+                }
+                if (!(entity instanceof CorrelationsHolder)) {
+                    return false;
+                }
+                CorrelationsHolder current = (CorrelationsHolder) entity;
+                CorrelationContainer container = current.getCorrelationContainer();
 
-    if (container == null) {
-      return false;
-    }
-    Correlation [] correlations = container.getCorrelations();
+                if (container == null) {
+                    return false;
+                }
+                Correlation[] correlations = container.getCorrelations();
 
-    if (correlations == null) {
-      return false;
-    }
-    for (Correlation correlation : correlations) {
-      if (theSame(set, correlation)) {
+                if (correlations == null) {
+                    return false;
+                }
+                for (Correlation correlation : correlations) {
+                    if (theSame(set, correlation)) {
 //out("    view: " + getName(corr));
-        return true;
+                        return true;
 //out("    FOUND");
-      }
-    }
-    return false;
-  }
+                    }
+                }
+                return false;
+            }
 
-  private boolean checkCorrelationSetInInvoke(CorrelationSet set, BpelEntity entity) {
-    if ( !(entity instanceof Invoke)) {
-      return false;
-    }
-    Invoke invoke = (Invoke) entity;
-    PatternedCorrelationContainer container = invoke.getPatternedCorrelationContainer();
+            private boolean checkCorrelationSetInInvoke(CorrelationSet set, BpelEntity entity) {
+                if (!(entity instanceof Invoke)) {
+                    return false;
+                }
+                Invoke invoke = (Invoke) entity;
+                PatternedCorrelationContainer container = invoke.getPatternedCorrelationContainer();
 
-    if (container == null) {
-      return false;
-    }
-    PatternedCorrelation [] correlations = container.getPatternedCorrelations();
+                if (container == null) {
+                    return false;
+                }
+                PatternedCorrelation[] correlations = container.getPatternedCorrelations();
 
-    if (correlations == null) {
-      return false;
-    }
-    for (PatternedCorrelation correlation : correlations) {
-      if (theSame(set, correlation)) {
+                if (correlations == null) {
+                    return false;
+                }
+                for (PatternedCorrelation correlation : correlations) {
+                    if (theSame(set, correlation)) {
 //out("    view: " + getName(corr));
-        return true;
+                        return true;
 //out("    FOUND");
-      }
-    }
-    return false;
-  }
+                    }
+                }
+                return false;
+            }
 
-  private boolean theSame(CorrelationSet set, BaseCorrelation correlation) {
-    BpelReference<CorrelationSet> ref = correlation.getSet();
+            private boolean theSame(CorrelationSet set, BaseCorrelation correlation) {
+                BpelReference<CorrelationSet> ref = correlation.getSet();
 
-    if (ref == null) {
-      return false;
-    }
-    CorrelationSet corr = ref.get();
+                if (ref == null) {
+                    return false;
+                }
+                CorrelationSet corr = ref.get();
 
-    if (corr == null) {
-      return false;
-    }
+                if (corr == null) {
+                    return false;
+                }
 //out("    view: " + getName(corr));
-    return corr == set && correlation.getInitiate() != Initiate.NO;
-  }
+                return corr == set && correlation.getInitiate() != Initiate.NO;
+            }
 
-  private void checkReplies(Reply reply1, Reply reply2) {
+            private void checkReplies(Reply reply1, Reply reply2) {
 //out();
 //out("reply1: " + reply1.getName());
 //out("reply2: " + reply2.getName());
 
-    if ( !isInGate(reply1) && !isInGate(reply2)) {
-      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
-        if ( !hasNextExit(reply1) && !hasNextExit(reply2)) {
-          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1, reply1.getName(), reply2.getName()); // NOI18N
-          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2, reply2.getName(), reply1.getName()); // NOI18N
-          return;
-        }
-      }
-    }
-    if (getParent(reply1) == getParent(reply2)) {
-      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
-        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1, reply1.getName(), reply2.getName()); // NOI18N
-        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2, reply2.getName(), reply1.getName()); // NOI18N
-        return;
-      }
-    }
-  }
+                if (!isInGate(reply1) && !isInGate(reply2)) {
+                    if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
+                        if (!hasNextExit(reply1) && !hasNextExit(reply2)) {
+                            addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1, reply1.getName(), reply2.getName()); // NOI18N
+                            addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2, reply2.getName(), reply1.getName()); // NOI18N
+                            return;
+                        }
+                    }
+                }
+                if (getParent(reply1) == getParent(reply2)) {
+                    if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
+                        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1, reply1.getName(), reply2.getName()); // NOI18N
+                        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2, reply2.getName(), reply1.getName()); // NOI18N
+                        return;
+                    }
+                }
+            }
 
-  private boolean hasNextExit(BpelEntity entity) {
-    if (entity == null) {
-      return false;
-    }
-    BpelEntity parent = entity.getParent();
+            private boolean hasNextExit(BpelEntity entity) {
+                if (entity == null) {
+                    return false;
+                }
+                BpelEntity parent = entity.getParent();
 
-    if (parent == null) {
-      return false;
-    }
-    List<BpelEntity> children = parent.getChildren();
-    boolean findExit = false;
+                if (parent == null) {
+                    return false;
+                }
+                List<BpelEntity> children = parent.getChildren();
+                boolean findExit = false;
 
-    for (BpelEntity child : children) {
-      if (findExit) {
-        if (child instanceof Exit) {
-          return true;
-        }
-      }
-      if (child == entity) {
-        findExit = true;
-      }
-    }
-    return false;
-  }
+                for (BpelEntity child : children) {
+                    if (findExit) {
+                        if (child instanceof Exit) {
+                            return true;
+                        }
+                    }
+                    if (child == entity) {
+                        findExit = true;
+                    }
+                }
+                return false;
+            }
 
-  private void checkHolders(CorrelationsHolder holder1, CorrelationsHolder holder2) {
+            private void checkHolders(CorrelationsHolder holder1, CorrelationsHolder holder2) {
 //out();
 //out("holder1: " + holder1);
 //out("holder2: " + holder2);
-    BpelEntity parent1 = getParent(holder1);
-    BpelEntity parent2 = getParent(holder2);
+                BpelEntity parent1 = getParent(holder1);
+                BpelEntity parent2 = getParent(holder2);
 
-    if ( !isInGate(holder1) && !isInGate(holder2)) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-        addErrorCheck("FIX_Holder_Correlation_Gate", holder1, getName(holder1), getName(holder2)); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation_Gate", holder2, getName(holder2), getName(holder1)); // NOI18N
-        return;
-      }
-    }
-    if (parent1 == parent2) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-        addErrorCheck("FIX_Holder_Correlation_Scope", holder1, getName(holder1), getName(holder2)); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation_Scope", holder2, getName(holder2), getName(holder1)); // NOI18N
-        return;
-      }
-    }
-  }
+                if (!isInGate(holder1) && !isInGate(holder2)) {
+                    if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+                        addErrorCheck("FIX_Holder_Correlation_Gate", holder1, getName(holder1), getName(holder2)); // NOI18N
+                        addErrorCheck("FIX_Holder_Correlation_Gate", holder2, getName(holder2), getName(holder1)); // NOI18N
+                        return;
+                    }
+                }
+                if (parent1 == parent2) {
+                    if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+                        addErrorCheck("FIX_Holder_Correlation_Scope", holder1, getName(holder1), getName(holder2)); // NOI18N
+                        addErrorCheck("FIX_Holder_Correlation_Scope", holder2, getName(holder2), getName(holder1)); // NOI18N
+                        return;
+                    }
+                }
+            }
 
-  private boolean haveTheSameCorrelationWithInitiateYes(
-    CorrelationsHolder holder1,
-    CorrelationsHolder holder2,
-    BpelEntity parent1,
-    BpelEntity parent2
-  ) {
-    // # 128357
-    if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
-      return false;
-    }
-    if (holder2 instanceof OnMessage && parent2 instanceof Pick) {
-      return false;
-    }
-    CorrelationContainer container1 = holder1.getCorrelationContainer();
+            private boolean haveTheSameCorrelationWithInitiateYes(
+                    CorrelationsHolder holder1,
+                    CorrelationsHolder holder2,
+                    BpelEntity parent1,
+                    BpelEntity parent2) {
+                // # 128357
+                if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
+                    return false;
+                }
+                if (holder2 instanceof OnMessage && parent2 instanceof Pick) {
+                    return false;
+                }
+                CorrelationContainer container1 = holder1.getCorrelationContainer();
 //out("  1");
 
-    if (container1 == null) {
-      return false;
-    }
+                if (container1 == null) {
+                    return false;
+                }
 //out("  2");
-    Correlation[] correlations1 = container1.getCorrelations();
+                Correlation[] correlations1 = container1.getCorrelations();
 
-    if (correlations1 == null) {
-      return false;
-    }
+                if (correlations1 == null) {
+                    return false;
+                }
 //out("  3");
-    CorrelationContainer container2 = holder2.getCorrelationContainer();
+                CorrelationContainer container2 = holder2.getCorrelationContainer();
 
-    if (container2 == null) {
-      return false;
-    }
+                if (container2 == null) {
+                    return false;
+                }
 //out("  4");
-    Correlation[] correlations2 = container2.getCorrelations();
+                Correlation[] correlations2 = container2.getCorrelations();
 
-    if (correlations2 == null) {
-      return false;
-    }
+                if (correlations2 == null) {
+                    return false;
+                }
 //out("  5");
-    return checkCorrelations(correlations1, correlations2);
-  }
+                return checkCorrelations(correlations1, correlations2);
+            }
 
-  private boolean checkCorrelations(Correlation [] correlations1, Correlation [] correlations2) {
+            private boolean checkCorrelations(Correlation[] correlations1, Correlation[] correlations2) {
 //out(" ");
-    for (Correlation correlation : correlations1) {
+                for (Correlation correlation : correlations1) {
 //out("SEE: " + correlation + " " + correlation.getInitiate());
-      if (correlation.getInitiate() != Initiate.YES) {
-        continue;
-      }
-      if (checkCorrelation(correlations2, correlation)) {
-        return true;
-      }
-    }
-    return false;
-  }
+                    if (correlation.getInitiate() != Initiate.YES) {
+                        continue;
+                    }
+                    if (checkCorrelation(correlations2, correlation)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-  private boolean checkCorrelation(Correlation [] correlations, Correlation correlation) {
+            private boolean checkCorrelation(Correlation[] correlations, Correlation correlation) {
 //out("for: " + correlation);
-    for (Correlation next : correlations) {
+                for (Correlation next : correlations) {
 //out("  see: " + next + " " + next.getInitiate());
-      if (theSame(next, correlation)) {
-        return next.getInitiate() == Initiate.YES;
-      }
-    }
-    return false;
-  }
+                    if (theSame(next, correlation)) {
+                        return next.getInitiate() == Initiate.YES;
+                    }
+                }
+                return false;
+            }
 
-  private boolean theSame(Correlation correlation1, Correlation correlation2) {
-    BpelReference<CorrelationSet> ref1 = correlation1.getSet();
+            private boolean theSame(Correlation correlation1, Correlation correlation2) {
+                BpelReference<CorrelationSet> ref1 = correlation1.getSet();
 
-    if (ref1 == null) {
-      return false;
-    }
-    BpelReference<CorrelationSet> ref2 = correlation2.getSet();
+                if (ref1 == null) {
+                    return false;
+                }
+                BpelReference<CorrelationSet> ref2 = correlation2.getSet();
 
-    if (ref2 == null) {
-      return false;
-    }
-    return ref1.get() == ref2.get();
-  }
+                if (ref2 == null) {
+                    return false;
+                }
+                return ref1.get() == ref2.get();
+            }
 
-  private boolean haveTheSamePartnerLinkAndOperation(Reply reply1, Reply reply2) {
-    if (reply1.getPartnerLink() == null) {
+            private boolean haveTheSamePartnerLinkAndOperation(Reply reply1, Reply reply2) {
+                if (reply1.getPartnerLink() == null) {
 //out("  reply1 has PL ref null");
-      return false;
-    }
-    PartnerLink partnerLink1 = reply1.getPartnerLink().get();
+                    return false;
+                }
+                PartnerLink partnerLink1 = reply1.getPartnerLink().get();
 
-    if (partnerLink1 == null) {
+                if (partnerLink1 == null) {
 //out("  reply1 has PL null");
-      return false;
-    }
-    if (reply2.getPartnerLink() == null) {
+                    return false;
+                }
+                if (reply2.getPartnerLink() == null) {
 //out("  reply2 has PL ref null");
-      return false;
-    }
-    PartnerLink partnerLink2 = reply2.getPartnerLink().get();
+                    return false;
+                }
+                PartnerLink partnerLink2 = reply2.getPartnerLink().get();
 
-    if (partnerLink2 == null) {
+                if (partnerLink2 == null) {
 //out("  reply2 has PL null");
-      return false;
-    }
-    if (partnerLink1 != partnerLink2) {
-      return false;
-    }
-    // operation
-    if (reply1.getOperation() == null) {
-      return false;
-    }
-    Operation operation1 = reply1.getOperation().get();
+                    return false;
+                }
+                if (partnerLink1 != partnerLink2) {
+                    return false;
+                }
+                // operation
+                if (reply1.getOperation() == null) {
+                    return false;
+                }
+                Operation operation1 = reply1.getOperation().get();
 
-    if (operation1 == null) {
-      return false;
-    }
-    if (reply2.getOperation() == null) {
-      return false;
-    }
-    Operation operation2 = reply2.getOperation().get();
+                if (operation1 == null) {
+                    return false;
+                }
+                if (reply2.getOperation() == null) {
+                    return false;
+                }
+                Operation operation2 = reply2.getOperation().get();
 
-    if (operation2 == null) {
-      return false;
-    }
-    return operation1 == operation2;
-  }
+                if (operation2 == null) {
+                    return false;
+                }
+                return operation1 == operation2;
+            }
 
-  private BpelEntity getParent(BpelEntity entity) {
-    BpelEntity parent = entity.getParent();
-    
-    while (true) {
-      if (parent instanceof Sequence) {
-        parent = parent.getParent();
-        continue;
-      }
-      break;
-    }
-    return parent;
-  }
+            private BpelEntity getParent(BpelEntity entity) {
+                BpelEntity parent = entity.getParent();
 
-  private boolean isInGate(BpelEntity entity) {
+                while (true) {
+                    if (parent instanceof Sequence) {
+                        parent = parent.getParent();
+                        continue;
+                    }
+                    break;
+                }
+                return parent;
+            }
+
+            private boolean isInGate(BpelEntity entity) {
 //out();
 //out("is in gate ...");
-    BpelEntity parent = entity.getParent();
+                BpelEntity parent = entity.getParent();
 //out("  entity: " + entity);
 //out("  parent: " + parent);
 
-    while (true) {
+                while (true) {
 //out("  parent: " + parent);
-      if (parent == null) {
-        break;
-      }
-      if (parent instanceof If) {
-        return true;
-      }
-      if (parent instanceof Else) {
-        return true;
-      }
-      if (parent instanceof ElseIf) {
-        return true;
-      }
-      if (parent instanceof FaultHandlers) {
-        return true;
-      }
-      if (parent instanceof Flow) {
-        return true;
-      }
-      if (parent instanceof OnMessage) {
-        return true;
-      }
-      parent = parent.getParent();
-    }
-    return false;
-  }
-  
-  // # 90125
-  @Override
-  public void visit(CorrelationContainer container) {
+                    if (parent == null) {
+                        break;
+                    }
+                    if (parent instanceof If) {
+                        return true;
+                    }
+                    if (parent instanceof Else) {
+                        return true;
+                    }
+                    if (parent instanceof ElseIf) {
+                        return true;
+                    }
+                    if (parent instanceof FaultHandlers) {
+                        return true;
+                    }
+                    if (parent instanceof Flow) {
+                        return true;
+                    }
+                    if (parent instanceof OnMessage) {
+                        return true;
+                    }
+                    if (parent instanceof OnAlarmEvent) {
+                        return true;
+                    }
+                    parent = parent.getParent();
+                }
+                return false;
+            }
+
+            // # 90125
+            @Override
+            public void visit(CorrelationContainer container) {
 //out();
 //out("see container: " + container + " " + container.getParent());
 //out();
-    Component parent = container.getParent();
+                Component parent = container.getParent();
 
-    if ( !(parent instanceof CreateInstanceActivity)) {
-      return;
-    }
-    CreateInstanceActivity activity = (CreateInstanceActivity) parent;
+                if (!(parent instanceof CreateInstanceActivity)) {
+                    return;
+                }
+                CreateInstanceActivity activity = (CreateInstanceActivity) parent;
 
-    if ( !isCreateInstanceYes(activity)) {
-      return;
-    }
-    Correlation [] correlations = container.getCorrelations();
+                if (!isCreateInstanceYes(activity)) {
+                    return;
+                }
+                Correlation[] correlations = container.getCorrelations();
 
-    if (correlations == null) {
-      return;
-    }
-    for (Correlation correlation : correlations) {
-      Initiate initiate = correlation.getInitiate();
+                if (correlations == null) {
+                    return;
+                }
+                for (Correlation correlation : correlations) {
+                    Initiate initiate = correlation.getInitiate();
 
-      if (initiate != Initiate.NO) {
-        return;
-      }
-    }
-    addError("FIX_Activity_with_Correlation", parent); // NOI18N
-  }
-  
-  // # 129986
-  @Override
-  public void visit(Receive receive) {
+                    if (initiate != Initiate.NO) {
+                        return;
+                    }
+                }
+                addError("FIX_Activity_with_Correlation", parent); // NOI18N
+            }
+
+            // # 129986
+            @Override
+            public void visit(Receive receive) {
 //out();
 //out("RECEIVE: " + receive);
-    WSDLReference<PortType> ref = receive.getPortType();
+                WSDLReference<PortType> ref = receive.getPortType();
 
-    if (ref == null) {
-      return;
+                if (ref == null) {
+                    return;
+                }
+                PortType portType = ref.get();
+
+                if (portType == null) {
+                    return;
+                }
+                Collection<Operation> operations = portType.getOperations();
+
+                if (operations.size() != 1) {
+                    return;
+                }
+                Operation operation = operations.iterator().next();
+
+                if (operation == null) {
+                    return;
+                }
+                if (operation.getInput() == null || operation.getOutput() == null) {
+                    return;
+                }
+                if (!findReply(receive.getBpelModel().getProcess(), portType)) {
+                    addError("FIX_In_Out_Receive_Reply", receive, receive.getName()); // NOI18N
+                }
+            }
+
+            private boolean findReply(BpelEntity entity, PortType portType) {
+                if (entity instanceof Reply) {
+                    WSDLReference<PortType> ref = ((Reply) entity).getPortType();
+
+                    if (ref != null && portType == ref.get()) {
+                        return true;
+                    }
+                }
+                List<BpelEntity> children = entity.getChildren();
+
+                for (BpelEntity child : children) {
+                    if (findReply(child, portType)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void visit(Reply reply) {
+                super.visit(reply);
+                WSDLReference<Operation> opRef = reply.getOperation();
+
+                if (opRef == null) {
+                    return;
+                }
+                Operation operation = opRef.get();
+
+                if (operation == null) {
+                    return;
+                }
+                if (!(operation instanceof RequestResponseOperation)) {
+                    addError("FIX_ReplyOperation", reply, opRef.getQName().toString()); // NOI18N
+                }
+            }
+
+            // # 111409
+            @Override
+            public void visit(Throw _throw) {
+                if (_throw.getParent() instanceof TerminationHandler) {
+                    addError("FIX_Throw_in_TerminationHandler", _throw, _throw.getName()); // NOI18N
+                }
+            }
+
+            private void addErrorCheck(String key, Component component, String name1, String name2) {
+                if (myErrored.contains(component)) {
+                    return;
+                }
+                myErrored.add(component);
+                addError(key, component, name1, name2);
+            }
+        };
     }
-    PortType portType = ref.get();
 
-    if (portType == null) {
-      return;
-    }
-    Collection<Operation> operations = portType.getOperations();
-
-    if (operations.size() != 1) {
-      return;
-    }
-    Operation operation = operations.iterator().next();
-
-    if (operation == null) {
-      return;
-    }
-    if (operation.getInput() == null || operation.getOutput() == null) {
-      return;
-    }
-    if ( !findReply(receive.getBpelModel().getProcess(), portType)) {
-      addError("FIX_In_Out_Receive_Reply", receive, receive.getName()); // NOI18N
-    }
-  }
-
-  private boolean findReply(BpelEntity entity, PortType portType) {
-    if (entity instanceof Reply) {
-      WSDLReference<PortType> ref = ((Reply) entity).getPortType();
-
-      if (ref != null && portType == ref.get()) {
-        return true;
-      }
-    }
-    List<BpelEntity> children = entity.getChildren();
-
-    for (BpelEntity child : children) {
-      if (findReply(child, portType)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public void visit(Reply reply) {
-      super.visit(reply);
-      WSDLReference<Operation> opRef = reply.getOperation();
-      
-      if (opRef == null) {
-          return;
-      }
-      Operation operation = opRef.get();
-
-      if (operation == null) {
-          return;
-      }
-      if ( !(operation instanceof RequestResponseOperation)) {
-          addError("FIX_ReplyOperation", reply, opRef.getQName().toString()); // NOI18N
-      }
-  }
-
-  // # 111409
-  @Override
-  public void visit(Throw _throw) {
-    if (_throw.getParent() instanceof TerminationHandler) {
-      addError("FIX_Throw_in_TerminationHandler", _throw, _throw.getName()); // NOI18N
-    }
-  }
-
-  private void addErrorCheck(String key, Component component, String name1, String name2) {
-    if (myErrored.contains(component)) {
-      return;
-    }
-    myErrored.add(component);
-    addError(key, component, name1, name2);
-  }
-  
-  };}
-
-  private List<Component> myErrored;
+    private List<Component> myErrored;
 }

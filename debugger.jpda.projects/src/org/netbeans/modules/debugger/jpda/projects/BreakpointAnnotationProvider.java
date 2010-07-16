@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
@@ -59,6 +64,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -107,8 +113,13 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                             DataObject dobj = (DataObject) evt.getSource();
-                            FileObject newFO = dobj.getPrimaryFile();
-                            annotate(newFO);
+                            final FileObject newFO = dobj.getPrimaryFile();
+                            annotationProcessor.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    annotate(newFO);
+                                }
+                            });
                         }
                     }
                 };
@@ -244,7 +255,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     private static boolean isAnnotatable(Breakpoint b) {
         return (b instanceof LineBreakpoint ||
                 b instanceof FieldBreakpoint ||
-                b instanceof MethodBreakpoint) &&
+                b instanceof MethodBreakpoint ||
+                b instanceof ClassLoadUnloadBreakpoint) &&
                !((JPDABreakpoint) b).isHidden();
     }
     
@@ -265,6 +277,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             annotationType = b.isEnabled () ?
                 EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE :
                 EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            annotationType = b.isEnabled() ?
+                EditorContext.CLASS_BREAKPOINT_ANNOTATION_TYPE :
+                EditorContext.DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE;
         } else {
             throw new IllegalStateException(b.toString());
         }
@@ -290,7 +306,20 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             FieldBreakpoint fb = (FieldBreakpoint) b;
             String className = fb.getClassName();
             String fieldName = fb.getFieldName();
-            int line = EditorContextImpl.getFieldLineNumber(fo, className, fieldName);
+            Future<Integer> fi = EditorContextImpl.getFieldLineNumber(fo, className, fieldName);
+            int line;
+            if (fi != null) {
+                try {
+                    line = fi.get();
+                } catch (InterruptedException ex) {
+                    return null;
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
+            } else {
+                return null;
+            }
             return new int[] { line };
         } else if (b instanceof MethodBreakpoint) {
             MethodBreakpoint mb = (MethodBreakpoint) b;
@@ -299,17 +328,58 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             for (int i = 0; i < filters.length; i++) {
                 // TODO: annotate also other matched classes
                 if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
-                    int[] newlns = EditorContextImpl.getMethodLineNumbers(
+                    Future<int[]> futurelns = EditorContextImpl.getMethodLineNumbers(
                             fo, filters[i], mb.getClassExclusionFilters(),
                             mb.getMethodName(),
                             mb.getMethodSignature());
-                    if (lns.length == 0) {
-                        lns = newlns;
-                    } else {
-                        int[] ln = new int[lns.length + newlns.length];
-                        System.arraycopy(lns, 0, ln, 0, lns.length);
-                        System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
-                        lns = ln;
+                    int[] newlns;
+                    if (futurelns != null) {
+                        try {
+                            newlns = futurelns.get();
+                            if (lns.length == 0) {
+                                lns = newlns;
+                            } else {
+                                int[] ln = new int[lns.length + newlns.length];
+                                System.arraycopy(lns, 0, ln, 0, lns.length);
+                                System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
+                                lns = ln;
+                            }
+                        } catch (InterruptedException ex) {
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            return lns;
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            ClassLoadUnloadBreakpoint cb = (ClassLoadUnloadBreakpoint) b;
+            String[] filters = cb.getClassFilters();
+            int[] lns = new int[] {};
+            for (int i = 0; i < filters.length; i++) {
+                // TODO: annotate also other matched classes
+                if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                    Future<Integer> futurelns = EditorContextImpl.getClassLineNumber(
+                            fo, filters[i], cb.getClassExclusionFilters());
+                    Integer newline;
+                    if (futurelns != null) {
+                        try {
+                            newline = futurelns.get();
+                            if (newline == null) {
+                                continue;
+                            }
+                            if (lns.length == 0) {
+                                lns = new int[] { newline };
+                            } else {
+                                int[] ln = new int[lns.length + 1];
+                                System.arraycopy(lns, 0, ln, 0, lns.length);
+                                ln[lns.length] = newline;
+                                lns = ln;
+                            }
+                        } catch (InterruptedException ex) {
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }
@@ -332,6 +402,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             condition = ((FieldBreakpoint) b).getCondition();
         } else if (b instanceof MethodBreakpoint) {
             condition = ((MethodBreakpoint) b).getCondition();
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            condition = null;
         } else {
             throw new IllegalStateException(b.toString());
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -88,6 +92,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -188,11 +193,11 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             }
         }
         // Need to create it.
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (java == null) {
             return null;
         }
-        List<Element> compilationUnits = Util.findSubElements(java);
+        List<Element> compilationUnits = XMLUtil.findSubElements(java);
         it = compilationUnits.iterator();
         while (it.hasNext()) {
             Element compilationUnitEl = (Element)it.next();
@@ -222,6 +227,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         ClassPath.BOOT,
         ClassPath.EXECUTE,
         ClassPath.COMPILE,
+        JavaClassPathConstants.PROCESSOR_PATH,
     };
     
     /**
@@ -252,11 +258,11 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             for (String type : TYPES) {
                 _registeredClasspaths.put(type, new HashSet<ClassPath>());
             }
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
             if (java == null) {
                 return;
             }
-            for (Element compilationUnitEl : Util.findSubElements(java)) {
+            for (Element compilationUnitEl : XMLUtil.findSubElements(java)) {
                 assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
                 // For each compilation unit, find the package roots first.
                 List<FileObject> packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
@@ -316,30 +322,32 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     /**
      * Called when project is closed.
      * Unregisters any previously registered classpaths.
-     * XXX: Threading: calls non private code under lock
      */
-    public synchronized void closed() {
-        if (registeredClasspaths == null) {
-            return;
+    public void closed() {
+        Map<String,Set<ClassPath>> toUnregister;
+        synchronized (this) {
+            if (registeredClasspaths == null) {
+                return;
+            }
+            toUnregister = new HashMap<String,Set<ClassPath>>(registeredClasspaths);
+            registeredClasspaths = null;
         }
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-        for (int i = 0; i < TYPES.length; i++) {
-            String type = TYPES[i];
-            Set<ClassPath> registeredClasspathsOfType = registeredClasspaths.get(type);
+        for (String type : TYPES) {
+            Set<ClassPath> registeredClasspathsOfType = toUnregister.get(type);
             gpr.unregister(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
         }
-        registeredClasspaths = null;
     }
     
     static List<String> findPackageRootNames(Element compilationUnitEl) {
         List<String> names = new ArrayList<String>();
-        Iterator it = Util.findSubElements(compilationUnitEl).iterator();
+        Iterator it = XMLUtil.findSubElements(compilationUnitEl).iterator();
         while (it.hasNext()) {
             Element e = (Element) it.next();
             if (!e.getLocalName().equals("package-root")) { // NOI18N
                 continue;
             }
-            String location = Util.findText(e);
+            String location = XMLUtil.findText(e);
             names.add(location);
         }
         return names;
@@ -375,7 +383,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     
     private ClassPath getPath(Element compilationUnitEl, List<FileObject> packageRoots, String type) {
         if (type.equals(ClassPath.SOURCE) || type.equals(ClassPath.COMPILE) ||
-                type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT)) {
+                type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT) ||
+                type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
             List<String> packageRootNames = findPackageRootNames(compilationUnitEl);
             Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType;
             synchronized (this) {
@@ -416,7 +425,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     }
     
     private List<URL> createCompileClasspath(Element compilationUnitEl) {
-        for (Element e : Util.findSubElements(compilationUnitEl)) {
+        for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("compile")) { // NOI18N
                 return createClasspath(e);
             }
@@ -429,7 +438,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
      * Create a classpath from a &lt;classpath&gt; element.
      */
     private List<URL> createClasspath(Element classpathEl) {
-        String cp = Util.findText(classpathEl);
+        String cp = XMLUtil.findText(classpathEl);
         if (cp == null) {
             cp = "";
         }
@@ -451,7 +460,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     }
     
     private List<URL> createExecuteClasspath(List<String> packageRoots, Element compilationUnitEl) {
-        for (Element e : Util.findSubElements(compilationUnitEl)) {
+        for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("execute")) { // NOI18N
                 return createClasspath(e);
             }
@@ -461,12 +470,12 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         List<URL> urls = new ArrayList<URL>();
         urls.addAll(createCompileClasspath(compilationUnitEl));
         boolean foundBuiltTos = false;
-        for (Element builtTo : Util.findSubElements(compilationUnitEl)) {
+        for (Element builtTo : XMLUtil.findSubElements(compilationUnitEl)) {
             if (!builtTo.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }
             foundBuiltTos = true;
-            String rawtext = Util.findText(builtTo);
+            String rawtext = XMLUtil.findText(builtTo);
             assert rawtext != null : "Must have nonempty text inside <built-to>";
             String text = evaluator.evaluate(rawtext);
             if (text == null) {
@@ -479,9 +488,21 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
         return urls;
     }
-    
+
+    private List<URL> createProcessorClasspath(Element compilationUnitEl) {
+        final Element ap = XMLUtil.findElement(compilationUnitEl, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_3);
+        if (ap != null) {
+            final Element path = XMLUtil.findElement(ap, AnnotationProcessingQueryImpl.EL_PROCESSOR_PATH, JavaProjectNature.NS_JAVA_3);
+            if (path != null) {
+                return createClasspath(path);
+            }
+        }
+        // None specified; assume it is the same as the compile classpath.
+        return createCompileClasspath(compilationUnitEl);
+    }
+
     private List<URL> createBootClasspath(Element compilationUnitEl) {
-        for (Element e : Util.findSubElements(compilationUnitEl)) {
+        for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("boot")) { // NOI18N
                 return createClasspath(e);
             }
@@ -552,11 +573,11 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
         
         private Element findCompilationUnit() {
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
             if (java == null) {
                 return null;
             }
-            List<Element> compilationUnits = Util.findSubElements(java);
+            List<Element> compilationUnits = XMLUtil.findSubElements(java);
             Iterator it = compilationUnits.iterator();
             while (it.hasNext()) {
                 Element compilationUnitEl = (Element)it.next();
@@ -582,6 +603,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                     roots = createCompileClasspath(compilationUnitEl);
                 } else if (type.equals(ClassPath.EXECUTE)) {
                     roots = createExecuteClasspath(packageRootNames, compilationUnitEl);
+                } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                    roots = createProcessorClasspath(compilationUnitEl);
                 } else {
                     assert type.equals(ClassPath.BOOT) : type;
                     roots = createBootClasspath(compilationUnitEl);
@@ -663,28 +686,28 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 rootFolder = null;
             }
             Element genldata = Util.getPrimaryConfigurationData(helper);
-            Element foldersE = Util.findElement(genldata, "folders", Util.NAMESPACE); // NOI18N
+            Element foldersE = XMLUtil.findElement(genldata, "folders", Util.NAMESPACE); // NOI18N
             if (foldersE != null) {
-                for (Element folderE : Util.findSubElements(foldersE)) {
+                for (Element folderE : XMLUtil.findSubElements(foldersE)) {
                     if (folderE.getLocalName().equals("source-folder")) {
-                        Element typeE = Util.findElement(folderE, "type", Util.NAMESPACE); // NOI18N
+                        Element typeE = XMLUtil.findElement(folderE, "type", Util.NAMESPACE); // NOI18N
                         if (typeE != null) {
-                            String type = Util.findText(typeE);
+                            String type = XMLUtil.findText(typeE);
                             if (type.equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                                Element locationE = Util.findElement(folderE, "location", Util.NAMESPACE); // NOI18N
-                                String location = evaluator.evaluate(Util.findText(locationE));
+                                Element locationE = XMLUtil.findElement(folderE, "location", Util.NAMESPACE); // NOI18N
+                                String location = evaluator.evaluate(XMLUtil.findText(locationE));
                                 if (location != null && helper.resolveFile(location).equals(rootFolder)) {
-                                    Element includesE = Util.findElement(folderE, "includes", Util.NAMESPACE); // NOI18N
+                                    Element includesE = XMLUtil.findElement(folderE, "includes", Util.NAMESPACE); // NOI18N
                                     if (includesE != null) {
-                                        incl = evaluator.evaluate(Util.findText(includesE));
+                                        incl = evaluator.evaluate(XMLUtil.findText(includesE));
                                         if (incl != null && incl.matches("\\$\\{[^}]+\\}")) { // NOI18N
                                             // Clearly intended to mean "include everything".
                                             incl = null;
                                         }
                                     }
-                                    Element excludesE = Util.findElement(folderE, "excludes", Util.NAMESPACE); // NOI18N
+                                    Element excludesE = XMLUtil.findElement(folderE, "excludes", Util.NAMESPACE); // NOI18N
                                     if (excludesE != null) {
-                                        excl = evaluator.evaluate(Util.findText(excludesE));
+                                        excl = evaluator.evaluate(XMLUtil.findText(excludesE));
                                     }
                                 }
                             }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,12 +53,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
+import org.netbeans.spi.debugger.ui.MethodChooser;
 
 /**
  * Implements non visual part of stepping through code in gdb debugger.
@@ -64,8 +68,10 @@ import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
  * 
  */
 public class StepActionProvider extends GdbDebuggerActionProvider {
+
+    private MethodChooser currentMethodChooser;
     
-    private final Set actions  = new HashSet<Object>(Arrays.asList(new Object[] {
+    private final Set<Object> actions  = new HashSet<Object>(Arrays.asList(new Object[] {
             ActionsManager.ACTION_STEP_INTO,
             ActionsManager.ACTION_STEP_OUT,
             ActionsManager.ACTION_STEP_OVER,
@@ -80,6 +86,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      */
     public StepActionProvider(ContextProvider lookupProvider) {
         super(lookupProvider);
+        setProviderToDisableOnLazyAction(this);
     }
     
     // ActionProviderSupport ...................................................
@@ -89,6 +96,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      *
      * @return set of actions supported by this ActionsProvider
      */
+    @Override
     public Set getActions() {
         return actions;
     }
@@ -98,6 +106,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      *
      * @param action an action which has been called
      */
+    @Override
     public void doAction(Object action) {
         runAction(action);
     }
@@ -108,37 +117,78 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      * @param action an action which has been called
      */    
     public void runAction(final Object action) {
-        if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_STEP_INTO) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepI();
-                    } else {
-                        getDebugger().stepInto();
+        if (action == ActionsManager.ACTION_STEP_INTO) {
+            if (Disassembly.isInDisasm()) {
+                getDebugger().stepI();
+            } else {
+                doSmartStepInto();
+            }
+            return;
+        }
+        if (action == ActionsManager.ACTION_STEP_OUT) {
+            getDebugger().stepOut();
+            return;
+        }
+        if (action == ActionsManager.ACTION_STEP_OVER) {
+            if (Disassembly.isInDisasm()) {
+                getDebugger().stepOverInstr();
+            } else {
+                getDebugger().stepOver();
+            }
+            return;
+        }
+        if (action == ActionsManager.ACTION_CONTINUE) {
+            getDebugger().resume();
+            return;
+        }
+        if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
+            getDebugger().runToCursor();
+            return;
+        }
+    }
+
+    private void doSmartStepInto() {
+        //getDebugger().stepInto();
+
+        synchronized (this) {
+            if (currentMethodChooser != null) {
+                // perform action
+                currentMethodChooser.releaseUI(true);
+                return;
+            }
+        }
+
+        String url = EditorContextBridge.getContext().getCurrentURL();
+        final MethodChooserSupport cSupport = new MethodChooserSupport(getDebugger(), url);
+        boolean continuedDirectly = cSupport.init();
+        if (cSupport.getSegmentsCount() == 0) {
+            return;
+        }
+        if (continuedDirectly) {
+            return;
+        }
+        MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
+            @Override
+            public void released(boolean performAction) {
+                synchronized (StepActionProvider.this) {
+                    currentMethodChooser = null;
+                    cSupport.tearDown();
+                    if (performAction) {
+                        cSupport.doStepInto();
                     }
-                    return;
-                }
-                if (action == ActionsManager.ACTION_STEP_OUT) {
-                    getDebugger().stepOut();
-                    return;
-                }
-                if (action == ActionsManager.ACTION_STEP_OVER) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepOverInstr();
-                    } else {
-                        getDebugger().stepOver();
-                    }
-                    return;
-                }
-                if (action == ActionsManager.ACTION_CONTINUE) {
-                    getDebugger().resume();
-                    return;
-                }
-                if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
-                    getDebugger().runToCursor();
-                    return;
                 }
             }
+        };
+        MethodChooser chooser = cSupport.createChooser();
+        chooser.addReleaseListener(releaseListener);
+        boolean success = chooser.showUI();
+        if (success && chooser.isUIActive()) {
+            synchronized (this) {
+                cSupport.tearUp(chooser);
+                currentMethodChooser = chooser;
+            }
+        } else {
+            chooser.removeReleaseListener(releaseListener);
         }
     }
     
@@ -154,10 +204,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      */
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        doLazyAction(new Runnable() {
+            @Override
             public void run() {
                 try {
-                    doAction(action);
+                    runAction(action);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -165,6 +216,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
         });
     }
     
+    @Override
     protected void checkEnabled(GdbDebugger.State debuggerState) {
         boolean enabled = debuggerState == GdbDebugger.State.STOPPED;
         for (Object action : getActions()) {

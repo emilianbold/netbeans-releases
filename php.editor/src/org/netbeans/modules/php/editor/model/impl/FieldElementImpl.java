@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,17 +47,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.openide.filesystems.FileObject;
@@ -67,6 +72,13 @@ import org.openide.util.Union2;
 class FieldElementImpl extends ScopeImpl implements FieldElement {
     String defaultType;
     private String className;
+
+    FieldElementImpl(Scope inScope, String defaultType, ASTNodeInfo<FieldAccess> nodeInfo) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), null);
+        this.defaultType = defaultType;
+        assert inScope instanceof TypeScope;
+        className = inScope.getName();
+    }
 
     FieldElementImpl(Scope inScope, String defaultType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
@@ -82,21 +94,27 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, IndexedConstant indexedConstant) {
-        super(inScope, indexedConstant, PhpKind.FIELD);
+    FieldElementImpl(Scope inScope, org.netbeans.modules.php.editor.api.elements.FieldElement indexedConstant) {
+        super(inScope, indexedConstant, PhpElementKind.FIELD);
         String in = indexedConstant.getIn();
         if (in != null) {
             className = in;
         } else {
             className = inScope.getName();
         }
-        this.defaultType = indexedConstant.getTypeName();
+        Set<TypeResolver> instanceTypes = indexedConstant.getInstanceTypes();
+        for (TypeResolver typeResolver : instanceTypes) {
+            if (typeResolver.isResolved()) {
+                this.defaultType = typeResolver.getTypeName(false).getName();
+                break;
+            }
+        }
     }
 
     private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
             PhpModifiers modifiers, String defaultType) {
-        super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);
+        super(inScope, name, file, offsetRange, PhpElementKind.FIELD, modifiers);
         this.defaultType = defaultType;
     }
 
@@ -115,7 +133,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     static PhpModifiers toAccessModifiers(FieldsDeclaration node) {
-        return new PhpModifiers(node.getModifier());
+        return PhpModifiers.fromBitMask(node.getModifier());
     }
 
     public Collection<? extends TypeScope> getDefaultTypes() {
@@ -227,7 +245,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         sb.append(noDollarName.toLowerCase()).append(";");//NOI18N
         sb.append(noDollarName).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getPhpModifiers().toBitmask()).append(";");
+        sb.append(getPhpModifiers().toFlags()).append(";");
         if (defaultType != null) {
             sb.append(defaultType);
         }

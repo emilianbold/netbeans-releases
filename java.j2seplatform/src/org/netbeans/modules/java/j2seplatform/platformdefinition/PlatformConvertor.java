@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
     private static final String JAVAC13 = "javac1.3";       //NOI18N
-    static final String[] IMPORTANT_TOOLS = {
+    public static final String[] IMPORTANT_TOOLS = {
         // Used by j2seproject:
         "javac", // NOI18N
         "java", // NOI18N
@@ -94,6 +97,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     };
     
     private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class.getName(), 1, false, false);
 
     private PlatformConvertor() {}
 
@@ -222,7 +226,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (this) {
             if (saveTask == null)
-                saveTask = RequestProcessor.getDefault().create(this);
+                saveTask = RP.create(this);
         }
         synchronized (this) {
             keepAlive.add(evt);
@@ -561,11 +565,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         
         private boolean shouldWriteJavadoc () {
             if (defaultPlatform) {
-                assert this.instance instanceof DefaultPlatformImpl;
-                DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
-                List jdf = dp.getJavadocFolders();
-                List defaultJdf = DefaultPlatformImpl.getJavadoc(FileUtil.normalizeFile(new File(dp.getSystemProperties().get("jdk.home")))); // NOI18N
-                return defaultJdf == null || !jdf.equals (defaultJdf);
+                return !instance.getJavadocFolders().equals(J2SEPlatformImpl.defaultJavadoc(instance));
             }
             return true;
         }

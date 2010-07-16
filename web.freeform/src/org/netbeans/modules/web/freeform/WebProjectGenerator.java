@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,8 +51,8 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -102,40 +105,40 @@ public class WebProjectGenerator {
 
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl == null) {
             foldersEl = doc.createElementNS(Util.NAMESPACE, "folders"); // NOI18N
-            Util.appendChildElement(data, foldersEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
-            List l = Util.findSubElements(foldersEl);
+            List l = XMLUtil.findSubElements(foldersEl);
             for (int i = 0; i < l.size(); i++) {
                 Element e = (Element) l.get(i);
-                Element te = Util.findElement(e, "type", Util.NAMESPACE);
-                if (te != null && Util.findText(te).equals(folderType)) {
+                Element te = XMLUtil.findElement(e, "type", Util.NAMESPACE);
+                if (te != null && XMLUtil.findText(te).equals(folderType)) {
                     foldersEl.removeChild(e);
                     break;
                 }
             }
         }
         
-        Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+        Element viewEl = XMLUtil.findElement(data, "view", Util.NAMESPACE); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(Util.NAMESPACE, "view"); // NOI18N
-            Util.appendChildElement(data, viewEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, viewEl, rootElementsOrder);
         }
-        Element itemsEl = Util.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
+        Element itemsEl = XMLUtil.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
         if (itemsEl == null) {
             itemsEl = doc.createElementNS(Util.NAMESPACE, "items"); // NOI18N
-            Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
+            XMLUtil.appendChildElement(viewEl, itemsEl, viewElementsOrder);
         } else {
-            List l = Util.findSubElements(itemsEl);
+            List l = XMLUtil.findSubElements(itemsEl);
             for (int i = 0; i < l.size(); i++) {
                 Element e = (Element) l.get(i);
                 if (e.hasAttribute("style")) {
                     if (e.getAttribute("style").equals("tree")) {
                         // #110173
-                        Element labelElement = Util.findElement(e, "label", Util.NAMESPACE);
-                        if (labelElement != null && label.equals(Util.findText(labelElement))) {
+                        Element labelElement = XMLUtil.findElement(e, "label", Util.NAMESPACE);
+                        if (labelElement != null && label.equals(XMLUtil.findText(labelElement))) {
                             itemsEl.removeChild(e);
                             break;
                         }
@@ -159,7 +162,7 @@ public class WebProjectGenerator {
             el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
             el.appendChild(doc.createTextNode(path));
             sourceFolderEl.appendChild(el);
-            Util.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
+            XMLUtil.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
             
             sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
             sourceFolderEl.setAttribute("style", "tree"); // NOI18N
@@ -177,7 +180,7 @@ public class WebProjectGenerator {
                     insertWebInfElement(itemsEl, firstNode, sourceFolderEl);
                 }
             } else {
-                Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+                XMLUtil.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
             }
         }
         Util.putPrimaryConfigurationData(helper, data);
@@ -192,7 +195,7 @@ public class WebProjectGenerator {
         if (secondNode != null) {
             itemsEl.insertBefore(sourceFolderEl, secondNode);
         } else {
-            Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            XMLUtil.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
         }
     }
     
@@ -213,32 +216,32 @@ public class WebProjectGenerator {
                 return list;
             }
         }
-        List<Element> wms = Util.findSubElements(data);
+        List<Element> wms = XMLUtil.findSubElements(data);
         Iterator<Element> it = wms.iterator();
         while (it.hasNext()) {
             Element wmEl = it.next();
             WebModule wm = new WebModule();
-            Iterator it2 = Util.findSubElements(wmEl).iterator();
+            Iterator it2 = XMLUtil.findSubElements(wmEl).iterator();
             while (it2.hasNext()) {
                 Element el = (Element)it2.next();
                 if (el.getLocalName().equals("doc-root")) { // NOI18N
-                    wm.docRoot = Util.findText(el);
+                    wm.docRoot = XMLUtil.findText(el);
                     continue;
                 }
                 if (el.getLocalName().equals("classpath")) { // NOI18N
-                    wm.classpath = Util.findText(el);
+                    wm.classpath = XMLUtil.findText(el);
                     continue;
                 }
                 if (el.getLocalName().equals("context-path")) { // NOI18N
-                    wm.contextPath = Util.findText(el);
+                    wm.contextPath = XMLUtil.findText(el);
                     continue;
                 }
                 if (el.getLocalName().equals("j2ee-spec-level")) { // NOI18N
-                    wm.j2eeSpecLevel = Util.findText(el);
+                    wm.j2eeSpecLevel = XMLUtil.findText(el);
                     continue;
                 }
                 if (el.getLocalName().equals("web-inf")) { // NOI18N
-                    wm.webInf = Util.findText(el);
+                    wm.webInf = XMLUtil.findText(el);
                 }
             }
             list.add(wm);
@@ -295,7 +298,7 @@ public class WebProjectGenerator {
         }
         
         Document doc = data.getOwnerDocument();
-        List<Element> wms = Util.findSubElements(data);
+        List<Element> wms = XMLUtil.findSubElements(data);
         Iterator<Element> it = wms.iterator();
         while (it.hasNext()) {
             Element wmEl = it.next();

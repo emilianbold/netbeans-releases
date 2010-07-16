@@ -46,6 +46,7 @@ import org.netbeans.modules.bpel.model.api.Link;
 import org.netbeans.modules.bpel.model.api.MessageExchange;
 import org.netbeans.modules.bpel.model.api.MessageExchangeReference;
 import org.netbeans.modules.bpel.model.api.MessageTypeReference;
+import org.netbeans.modules.bpel.model.api.NMPropertyHolder;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OperationReference;
@@ -66,6 +67,7 @@ import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
+import org.netbeans.modules.bpel.model.api.support.BinaryCopy;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.Pattern;
 import org.netbeans.modules.bpel.model.api.support.Roles;
@@ -147,13 +149,14 @@ public enum BpelAttributes implements Attribute {
     KEEP_SRC_ELEMENT_NAME( Copy.KEEP_SRC_ELEMENT_NAME , TBoolean.class ),
     REFERENCE_SCHEME( ServiceRef.REFERENCE_SCHEME , String.class , AttrType.URI ),
     IGNORE_MISSING_FROM_DATA( Copy.IGNORE_MISSING_FROM_DATA , TBoolean.class ),
-    ;
+    BINARY_COPY(Copy.BINARY_COPY, BinaryCopy.class);
     
     public static enum AttrType {
         STRING,
         NCNAME,
         URI,
-        VARIABLE
+        VARIABLE,
+        NON_NEGATIVE_INTEGER;
     }
 
     BpelAttributes( String name, Class type ) {

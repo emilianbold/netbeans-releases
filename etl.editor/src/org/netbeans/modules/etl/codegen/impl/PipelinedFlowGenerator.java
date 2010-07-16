@@ -35,10 +35,10 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConstants;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConstants;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 

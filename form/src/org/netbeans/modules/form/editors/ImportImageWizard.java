@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -150,6 +153,7 @@ class ImportImageWizard extends WizardDescriptor {
         try {
             FileUtil.runAtomicAction(
             new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     for (int i=0; i < selectedFiles.length; i++) {
                         File f = selectedFiles[i];
@@ -214,6 +218,7 @@ class ImportImageWizard extends WizardDescriptor {
         private EventListenerList listenerList;
         private boolean setSelectedFiles;
 
+        @Override
         public Component getComponent() {
             if (fileChooser == null) {
                 fileChooser = new JFileChooser(lastDirectoryUsed);
@@ -224,6 +229,7 @@ class ImportImageWizard extends WizardDescriptor {
                 fileChooser.setMultiSelectionEnabled(true);
 
                 fileChooser.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ev) {
                         if (JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand()))
                             wizard.stepToNext();
@@ -233,6 +239,7 @@ class ImportImageWizard extends WizardDescriptor {
                 });
 
                 fileChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (!setSelectedFiles && JFileChooser.SELECTED_FILES_CHANGED_PROPERTY
                                             .equals(ev.getPropertyName()))
@@ -250,16 +257,19 @@ class ImportImageWizard extends WizardDescriptor {
             return fileChooser;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return HelpCtx.DEFAULT_HELP;
         }
 
         // readSettings is called before getComponent
+        @Override
         public void readSettings(Object settings) {
             wizard = (ImportImageWizard) settings;
             setSelectedFiles = true; // set only once when getComponent is called
         }
 
+        @Override
         public void storeSettings(Object settings) {
             if (fileChooser != null) {
                 File[] files = fileChooser.getSelectedFiles();
@@ -270,21 +280,25 @@ class ImportImageWizard extends WizardDescriptor {
             }
         }
 
+        @Override
         public boolean isValid() {
             return fileChooser != null && fileChooser.getSelectedFiles().length > 0;
         }
 
 
+        @Override
         public boolean isFinishPanel() {
             return wizard != null && wizard.targetFolder != null;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, l);
@@ -316,11 +330,13 @@ class ImportImageWizard extends WizardDescriptor {
         private EventListenerList listenerList;
         private boolean setTargetFolder;
 
+        @Override
         public Component getComponent() {
             if (cpfChooser == null) {
                 cpfChooser = new ClassPathFileChooser(
                         wizard.fileInProject,
                         new ClassPathFileChooser.Filter() {
+                    @Override
                             public boolean accept(FileObject fo) {
                                 return fo.isFolder();
                             }
@@ -328,6 +344,7 @@ class ImportImageWizard extends WizardDescriptor {
                         true, false);
 
                 cpfChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (!setTargetFolder && ClassPathFileChooser.PROP_SELECTED_FILE
                                     .equals(ev.getPropertyName()))
@@ -346,22 +363,26 @@ class ImportImageWizard extends WizardDescriptor {
             return cpfChooser;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return HelpCtx.DEFAULT_HELP;
         }
 
         // readSettings is called before getComponent
+        @Override
         public void readSettings(Object settings) {
             wizard = (ImportImageWizard) settings;
             setTargetFolder = true; // set only once when getComponent is called
         }
 
+        @Override
         public void storeSettings(Object settings) {
             if (cpfChooser != null) {
                 wizard.targetFolder = cpfChooser.getSelectedFile();
             }
         }
 
+        @Override
         public boolean isValid() {
             if (cpfChooser != null) {
                 FileObject fo = cpfChooser.getSelectedFile();
@@ -373,12 +394,14 @@ class ImportImageWizard extends WizardDescriptor {
             return false;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, l);

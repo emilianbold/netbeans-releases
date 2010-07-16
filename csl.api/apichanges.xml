@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -46,6 +49,89 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="overriding-annotations">
+        <api name="csl.api"/>
+        <summary>Adding OverridingMethods to compute overriding annotations</summary>
+        <version major="2" minor="3"/>
+        <date day="3" month="3" year="2010"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+                Adding OverridingMethods API class that allows to compute overriding/is overridden annotations.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="OverridingMethods"/>
+        <issue number="177571"/>
+    </change>
+    <change id="ToggleBlockCommentAction-noarg-ctor">
+        <api name="csl.api"/>
+        <summary>Adding no-arg constructor to ToggleBlockCommentAction</summary>
+        <version major="2" minor="2"/>
+        <date day="15" month="2" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+            Adding no-arg constructor to <code>ToggleBlockCommentAction</code> class and deprecated
+            the <code>ToggleBlockCommentAction(CommentHandler cH)</code> constructor. The action dynamically
+            determines the type of comments for the document section where it is invoked.
+            </p>
+        </description>
+        <issue number="167300"/>
+    </change>
+    <change id="api-cleanup">
+        <api name="csl.api"/>
+        <summary>Removing o.n.m.csl.core and o.n.m.csl.editor from public API</summary>
+        <version major="2" minor="1"/>
+        <date day="28" month="1" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="no" deletion="yes" modification="yes" binary="incompatible" source="incompatible"/>
+        <description>
+            <p>
+            The packages <code>o.n.m.csl.core</code> and <code>o.n.m.csl.editor</code> were removed
+            from the public API. They contained implementation classes and should never have been
+            made public in the first place. The only classes in these packages that were needed
+            by language plugins are several editor actions. They were moved to <code>o.n.m.csl.api</code>
+            package.
+            </p>
+        </description>
+        <issue number="169991"/>
+    </change>
+    <change id="LanguageRegistration-annotation">
+        <api name="csl.api"/>
+        <summary>Adding @LanguageRegistration annotation</summary>
+        <version major="1" minor="19"/>
+        <date day="22" month="1" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            A new annotation <code>@LanguageRegistration</code> was added as a replacement
+            for <code>CslJar</code> ant task. The language plugins now do not have to
+            customize their 'jar' build target and run <code>CslJar</code> task. Instead they
+            should annotate their language class (ie. subclass of <code>DefaultLanguageConfig</code>) with
+            the <code>@LanguageRegistration</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.spi" name="LanguageRegistration"/>
+        <issue number="169991"/>
+    </change>
+    <change id="Error.Badging">
+        <api name="csl.api"/>
+        <summary>Added Error.BadgeError</summary>
+        <version major="1" minor="18"/>
+        <date day="21" month="1" year="2010"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            Adding Error.Badging class to allow showing error badges in the projects tab.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="Error"/>
+        <issue number="179459"/>
+    </change>
     <change id="Error.isLineError">
         <api name="csl.api"/>
         <summary>Add Error.isLineError</summary>

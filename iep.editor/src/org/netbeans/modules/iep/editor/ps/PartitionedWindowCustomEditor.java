@@ -20,19 +20,17 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizer;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -44,13 +42,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -146,6 +142,15 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
                 mPartitionPanel.setPreferredSize(new Dimension(500, 300));
                 attributePane.add(mPartitionPanel, gbc);
                 
+                if (mPartitionPanel.hasAttributes()) {
+                    attributePane.setToolTipText(NbBundle.getMessage(PartitionedWindowCustomEditor.class, 
+                	    	"InputSchemaTreePanel_Tooltip.inputoperator_connected"));
+                } else {
+                    attributePane.setToolTipText(NbBundle.getMessage(PartitionedWindowCustomEditor.class, 
+                	    	"InputSchemaTreePanel_Tooltip.inputoperator_not_connected"));
+
+                }
+                
 //                // status bar
 //                gbc.gridx = 0;
 //                gbc.gridy = gGridy++;
@@ -176,7 +181,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -200,7 +205,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);
@@ -236,7 +241,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // size
-            Property sizeProp = mComponent.getProperty(SIZE_KEY);
+            Property sizeProp = mComponent.getProperty(PROP_SIZE);
             String sizeStr = NbBundle.getMessage(PartitionedWindowCustomEditor.class, "CustomEditor.SIZE");
             mSizePanel = PropertyPanel.createIntNumberPanel(sizeStr, sizeProp, false);
             gbc.gridx = 3;
@@ -279,7 +284,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getDisplayName();
+                String name = mComponent.getString(PROP_NAME);
                 if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
@@ -291,7 +296,7 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
                 mSizePanel.validateContent(evt);
                 
                 // partition key
-                mPartitionPanel.validateContent(evt);
+                mPartitionPanel.validateContent(evt, null);
             } catch (Exception e) {
                 String msg = e.getMessage();
                 mStatusLbl.setText(msg);

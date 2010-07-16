@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,11 +68,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -91,6 +94,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -241,6 +246,8 @@ public class ProjectsRootNode extends AbstractNode {
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
+
+        static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
@@ -350,7 +357,11 @@ public class ProjectsRootNode extends AbstractNode {
         
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-                setKeys( getKeys() );
+                RP.post(new Runnable() {
+                    public @Override void run() {
+                        setKeys(getKeys());
+                    }
+                });
             }
         }
         
@@ -370,8 +381,8 @@ public class ProjectsRootNode extends AbstractNode {
             }
             
             // Fix for 50259, callers sometimes hold locks
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
+            RP.post(new Runnable() {
+                public @Override void run() {
                     refresh(project);
                 }
             } );
@@ -385,7 +396,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         public Collection<Pair> getKeys() {
             List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
-            Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+            Collections.sort(projects, OpenProjectList.projectByDisplayName());
             
             List<Pair> dirs = Arrays.asList( new Pair[projects.size()] );
             
@@ -473,16 +484,38 @@ public class ProjectsRootNode extends AbstractNode {
                 setProjectFiles();
             }
         });
+        private final Lookup.Result<ProjectIconAnnotator> result = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        class AnnotationListener implements LookupListener, ChangeListener {
+            private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
+            void init() {
+                for (ProjectIconAnnotator annotator : result.allInstances()) {
+                    if (annotators.add(annotator)) {
+                        annotator.addChangeListener(WeakListeners.change(this, annotator));
+                    }
+                }
+            }
+            public @Override void resultChanged(LookupEvent ev) {
+                init();
+                stateChanged(null);
+            }
+            public @Override void stateChanged(ChangeEvent e) {
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        }
 
         public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
             this.ch = ch;
             this.pair = p;
             this.logicalView = logicalView;
-            OpenProjectList.log(Level.FINE, "BadgingNode init {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             setProjectFiles();
-            OpenProjectList.log(Level.FINE, "BadgingNode finished {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
+            AnnotationListener annotationListener = new AnnotationListener();
+            annotationListener.init();
+            result.addLookupListener(annotationListener);
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
@@ -755,29 +788,28 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
         public @Override Image getIcon(int type) {
-            Image img = super.getIcon(type);
-
-            if (logicalView && files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    LOG.log(Level.INFO, null, e);
-                }
-            }
-
-            return img;
+            return getIcon(type, false);
         }
-
         public @Override Image getOpenedIcon(int type) {
-            Image img = super.getOpenedIcon(type);
+            return getIcon(type, true);
+        }
+        private Image getIcon(int type, boolean opened) {
+            Image img = opened ? super.getOpenedIcon(type) : super.getIcon(type);
 
-            if (logicalView && files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    LOG.log(Level.INFO, null, e);
+            if (logicalView) {
+                if (files != null && files.iterator().hasNext()) {
+                    try {
+                        FileObject fo = files.iterator().next();
+                        img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                    } catch (FileStateInvalidException e) {
+                        LOG.log(Level.INFO, null, e);
+                    }
+                }
+                Project p = getLookup().lookup(Project.class);
+                if (p != null) {
+                    for (ProjectIconAnnotator pa : result.allInstances()) {
+                        img = pa.annotateIcon(p, img, opened);
+                    }
                 }
             }
 

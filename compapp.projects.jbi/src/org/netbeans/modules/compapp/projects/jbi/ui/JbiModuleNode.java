@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,8 +61,6 @@ import org.openide.actions.CustomizeAction;
 import org.openide.nodes.*;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileUtil;
@@ -69,6 +70,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -208,7 +210,8 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
     public Image getIcon(int type) {
         Image ret = getProjIcon();
         if (ret == null){
-            ret = ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/jbi/ui/resources/jar.gif"); // NOI18N
+            ret = ImageUtilities.loadImage(
+                    "org/netbeans/modules/compapp/projects/jbi/ui/resources/jar.gif"); // NOI18N
         }
 
         return ret;

@@ -74,6 +74,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
             add(NbMavenProject.TYPE_EJB);
             add(NbMavenProject.TYPE_NBM);
             add(NbMavenProject.TYPE_NBM_APPLICATION);
+            add(NbMavenProject.TYPE_OSGI);
         }
     };
     

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -93,43 +96,30 @@ import javax.xml.namespace.QName;
 public class WsitClientConfigAction extends NodeAction {
 
     private static String helpID = "org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl"; // NOI18N
-    private static String cbNamespace = "http://www.sun.com/jbi/wsit/callbackproject"; // NOI18N
-    private static String cbAttribute = "CallbackProject";                             // NOI18N
+    private static String CALLBACK_PROJECT_NAMESPACE = "http://www.sun.com/jbi/wsit/callbackproject"; // NOI18N
+    private static String CALLBACK_PROJECT_ATTRIBUTE = "CallbackProject";                             // NOI18N
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param activatedNodes DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    private static final String EMPTY_WSDL = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" + // NOI18N
+            "<definitions \n" + // NOI18N
+            "    xmlns=\"http://schemas.xmlsoap.org/wsdl/\" \n" + // NOI18N
+            "    xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\" \n" + // NOI18N
+            "    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \n" + // NOI18N
+            "    xmlns:soap=\"http://schemas.xmlsoap.org/wsdl/soap/\" \n" + // NOI18N
+            ">\n\n\n</definitions>\n"; // NOI18N
+
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getName() {
         return NbBundle.getMessage(WsitClientConfigAction.class, "LBL_WsitClientConfigAction_Name"); // NOI18N
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
 
@@ -137,39 +127,47 @@ public class WsitClientConfigAction extends NodeAction {
         // return new HelpCtx(AddModuleAction.class);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param activatedNodes DOCUMENT ME!
-     */
     protected void performAction(Node[] activatedNodes) {
-        String mName = activatedNodes[0].getDisplayName();
-        final WSDLEndpointNode node = ((WSDLEndpointNode) activatedNodes[0]); // .getData(); // CasaPortImpl
-        final CasaPort cp = (CasaPort) node.getData();
-        String ptn = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp).toString();
+        final WSDLEndpointNode node = ((WSDLEndpointNode) activatedNodes[0]); 
+        final CasaPort casaPort = (CasaPort) node.getData();
 
-        Node[] ns = node.getChildren().getNodes();
-        Port p = null;
-        Service s = null;
-        Binding b = null;
-        PortType pt = null;
-        for (int i=0; i<ns.length; i++) {
-            Node n = ns[i];
-            if (n instanceof PortNode) {
-                p = (Port) ((PortNode) n).getWSDLComponent();
-                s = (Service) p.getParent();
-            } else if (n instanceof BindingNode) {
-                b = (Binding) ((BindingNode) n).getWSDLComponent();
+        Port port = null;
+        Service service = null;
+        Binding binding = null;
+
+        for (Node childNode : node.getChildren().getNodes()) {
+            if (childNode instanceof PortNode) {
+                port = (Port) ((PortNode) childNode).getWSDLComponent();
+                service = (Service) port.getParent();
+            } else if (childNode instanceof BindingNode) {
+                binding = (Binding) ((BindingNode) childNode).getWSDLComponent();
             }
         }
-        pt = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp);
 
-        final WSDLModel wsdlModel = (WSDLModel) b.getModel();
+        // Usability enhancement (#124850)
+        if (binding.getExtensibilityElements(Policy.class).size() == 0 &&
+                binding.getExtensibilityElements(PolicyReference.class).size() == 0) {
+            String title = NbBundle.getMessage(
+                    WsitClientConfigAction.class,
+                    "TTL_BINDING_CONTAINS_NO_WS_POLICY"); // NOI18N
+            String msg = NbBundle.getMessage(
+                    WsitClientConfigAction.class,
+                    "MSG_BINDING_CONTAINS_NO_WS_POLICY", // NOI18N
+                    port.getName(),
+                    binding.getName());
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
+            if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+        }
+
+        final WSDLModel wsdlModel = (WSDLModel) binding.getModel();
         Collection<Binding> bindings = new HashSet<Binding>();
-        bindings.add(b);
+        bindings.add(binding);
 
         Collection<FileObject> createdFiles = new LinkedList<FileObject>();
-        Project proj = ((CasaWrapperModel) cp.getModel()).getJBIProject();
+        Project proj = ((CasaWrapperModel) casaPort.getModel()).getJBIProject();
         final WSDLModel clientModel = getModelForClient(proj, wsdlModel, true, createdFiles);
         if (clientModel == null) return;
 
@@ -180,22 +178,44 @@ public class WsitClientConfigAction extends NodeAction {
             node.removeContent(fo);
         }
 
-        for (CasaExtensibilityElement ee : cp.getExtensibilityElements()) {
+        for (CasaExtensibilityElement ee : casaPort.getExtensibilityElements()) {
             QName eeQName = ee.getQName();
-            if (eeQName.getNamespaceURI().equals(cbNamespace)) {
-                String projName = ee.getAttribute(cbAttribute);
-                File f = new File(projName);
-                if (f.exists()) {
-                    fo = FileUtil.toFileObject(f);
-                    node.addContent(fo);
+            if (eeQName.getNamespaceURI().equals(CALLBACK_PROJECT_NAMESPACE)) {
+                String callbackProjName = ee.getAttribute(CALLBACK_PROJECT_ATTRIBUTE);
+                if (callbackProjName != null && !callbackProjName.equals("")) { // NOI18N
+                    File f = new File(callbackProjName);
+                    if (f.exists()) {
+                        fo = FileUtil.toFileObject(f);
+                        node.addContent(fo);
+                    }
                 }
             }
-         }
+        }
+
+        // (See #174952)
+        // Not sure how WSIT Config uses the above Callback Project FileObject
+        // in the lookup...
+        //
+        // TransportPanelClient (in websvc.wsitconf) requires the node
+        // (WSDLEndpointNode) to have a FileObject or a JAXWSLightSupport
+        // in the lookup. TransportPanelClient uses it to find a Project to
+        // check for Metro Library.
+        //
+        // The following temp fix is to make sure some arbitrary FileObject
+        // (CASA file in particular) gets put into the node's lookup (if there
+        // is no callback project configured for the endpoint) so that at least
+        // no NPE occurs when expanding the WSIT Config's Transport panel.
+        //          -- Jun 11/12/2009
+        fo = node.getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            FileObject casaFO = node.getModel().getModelSource().getLookup().lookup(FileObject.class);
+            node.addContent(casaFO);
+        }
 
         // todo: 08/27/07, add undo manager...
         final UndoManager undoManager = new UndoManager();
         clientModel.addUndoableEditListener(undoManager);  //maybe use WeakListener instead
-        final JComponent stc = WSITConfigProvider.getDefault().getWSITClientConfig(s, clientModel, wsdlModel, node);
+        final JComponent stc = WSITConfigProvider.getDefault().getWSITClientConfig(service, clientModel, wsdlModel, node);
         stc.setPreferredSize(new Dimension(450, 360)); // set a larger initial default size..
 
         SwingUtilities.invokeLater(new Runnable(){
@@ -221,14 +241,14 @@ public class WsitClientConfigAction extends NodeAction {
                     } catch (Exception e){
                         // System.out.println("Got Error: "+e);
                     }
-
                 }
             }
         });
     }
 
-    public WSDLModel getModelForClient(Project p, WSDLModel originalwsdlmodel, boolean create, Collection<FileObject> createdFiles) {
-        System.out.println("Calling getModelForClient...");
+    public WSDLModel getModelForClient(Project p, WSDLModel originalwsdlmodel,
+            boolean create, Collection<FileObject> createdFiles) {
+        //System.out.println("Calling getModelForClient...");
         WSDLModel model = null;
 
         try {
@@ -242,14 +262,17 @@ public class WsitClientConfigAction extends NodeAction {
             FileObject originalWsdlFO = originalwsdlmodel.getModelSource().getLookup().lookup(FileObject.class);
 
             // check whether config file already exists
-            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(),
+                    WSITModelSupport.CONFIG_WSDL_EXTENSION);
             if ((configFO != null) && (configFO.isValid())) {
                 return getModelFromFO(configFO, true);
             }
 
             if (create) {
                 // check whether main config file exists
-                FileObject mainConfigFO = srcFolder.getFileObject(WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX, WSITModelSupport.MAIN_CONFIG_EXTENSION);
+                FileObject mainConfigFO = srcFolder.getFileObject(
+                        WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX,
+                        WSITModelSupport.MAIN_CONFIG_EXTENSION);
                 if (mainConfigFO == null) {
                     mainConfigFO = createMainConfig(srcFolder, createdFiles);
                 }
@@ -331,16 +354,19 @@ public class WsitClientConfigAction extends NodeAction {
         return model;
     }
 
-    private static FileObject createMainConfig(FileObject folder, Collection<FileObject> createdFiles) {
+    private static FileObject createMainConfig(FileObject folder,
+            Collection<FileObject> createdFiles) {
         FileObject mainConfig = null;
         try {
-            mainConfig = FileUtil.createData(folder, WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX + "." + WSITModelSupport.MAIN_CONFIG_EXTENSION); //NOI18N
+            mainConfig = FileUtil.createData(folder,
+                    WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX +
+                    "." + WSITModelSupport.MAIN_CONFIG_EXTENSION); // NOI18N
             if ((mainConfig != null) && (mainConfig.isValid()) && !(mainConfig.isVirtual())) {
                 if (createdFiles != null) {
                     createdFiles.add(mainConfig);
                 }
                 FileWriter fw = new FileWriter(FileUtil.toFile(mainConfig));
-                fw.write(NbBundle.getMessage(WsitClientConfigAction.class, "EMPTY_WSDL"));       //NOI18N
+                fw.write(EMPTY_WSDL);
                 fw.close();
                 mainConfig.refresh(true);
             }
@@ -350,14 +376,16 @@ public class WsitClientConfigAction extends NodeAction {
         return mainConfig;
     }
 
-    private void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
+    private void copyImports(final WSDLModel model, final FileObject srcFolder,
+            Collection<FileObject> createdFiles) throws CatalogModelException {
 
         // IZ#129853 can not copy from file, when the project wsdl is not yet saved..
         // ...needed to force a save of project wsdl!!!
         FileObject modelFO = Utilities.getFileObject(model.getModelSource());
 
         try {
-            FileObject configFO = FileUtil.copyFile(modelFO, srcFolder, modelFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+            FileObject configFO = FileUtil.copyFile(modelFO, srcFolder,
+                    modelFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
             if (createdFiles != null) {
                 createdFiles.add(configFO);
             }
@@ -376,7 +404,8 @@ public class WsitClientConfigAction extends NodeAction {
                 newModel.startTransaction();
                 try {
                     if (newImportsIt.next() != null) {
-                        newImportsIt.next().setLocation(oldImportFO.getName() + "." + WSITModelSupport.CONFIG_WSDL_EXTENSION);
+                        newImportsIt.next().setLocation(oldImportFO.getName() + 
+                                "." + WSITModelSupport.CONFIG_WSDL_EXTENSION); // NOI18N
                     }
                 } finally {
                     newModel.endTransaction();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -80,20 +87,28 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Josh Sandusky
+ * @author Jun Qian
  */
 public class CasaModelGraphUtilities {
     
     private static final DisablingAction DISABLER = new DisablingAction();
+
+    private static final String CASA_SHOW_TOOLTIP = "casa.show_tooltip"; // NOI18N
+    private static final String CASA_SHOW_HOVERING_HIGHLIGHT = "casa.show_hovering_highlight"; // NOI18N
     
-    private static final String NULL_PROCESS_NAME = "<NULL_PROCESS_NAME>";
+    private static final String NULL_PROCESS_NAME = "<NULL_PROCESS_NAME>"; // NOI18N
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
+        clearShowToolTip(model);
+        clearShowHoveringHighlight(model);
+
         setSceneEnabled(scene, false);
         scene.setIsAdjusting(true);
         try {
@@ -361,18 +376,12 @@ public class CasaModelGraphUtilities {
         String bcCompName = model.getBindingComponentName(casaPort);
         if (bcCompName == null || bcCompName.length() == 0) {
             ErrorManager.getDefault().notify(new UnsupportedOperationException(
-                     NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_No_Binding_Component_name_for_endpoint") + name));   // NOI18N
+                     NbBundle.getMessage(CasaModelGraphUtilities.class,
+                     "Error_No_Binding_Component_name_for_endpoint") + name));   // NOI18N
             return false;
         }
         String bindingType = model.getBindingType(casaPort);
-        if (bindingType == null) {
-            ErrorManager.getDefault().notify(new UnsupportedOperationException(
-                    NbBundle.getMessage(CasaModelGraphUtilities.class, "Error_Invalid_Binding_Component") + bcCompName));
-            return false;
-        }
-        bindingType = bindingType.toUpperCase();
-
-        widget.setNodeProperties(name, bindingType);
+        widget.setNodeProperties(name, bindingType.toUpperCase());
 
         return true;
     }
@@ -414,7 +423,13 @@ public class CasaModelGraphUtilities {
     {
         CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
         pinWidget.setProperties(name);
-        pinWidget.setToolTipText(getToolTipName(node, pin, scene.getModel()));
+
+        CasaWrapperModel model = (CasaWrapperModel) node.getModel();
+        if (getShowToolTip(model)) {
+            pinWidget.setToolTipText(getToolTipName(pin));
+        } else {
+            pinWidget.setToolTipText(null);
+        }
 
         if (doUpdate) {
             scene.validate();
@@ -471,7 +486,7 @@ public class CasaModelGraphUtilities {
         return nodeWidget;
     }
 
-    public static String getToolTipName(CasaComponent node, CasaComponent pin, CasaWrapperModel model) {
+    public static String getToolTipName(CasaComponent pin) {
         String toolTip = "";
         if(pin instanceof CasaEndpointRef) {
             CasaEndpointRef endPointRef = (CasaEndpointRef) pin;
@@ -537,7 +552,85 @@ public class CasaModelGraphUtilities {
                 priorActions.addAction(0, DISABLER);
             }
         }
-    }      
+    }
+
+    //==========================================================================
+    private static Map<CasaWrapperModel, Boolean> showEndpointToolTipMap =
+            new HashMap<CasaWrapperModel, Boolean>();
+
+    public static void clearShowToolTip(CasaWrapperModel model) {
+        showEndpointToolTipMap.remove(model);
+    }
+
+    public static boolean getShowToolTip(CasaWrapperModel model) {
+        Boolean showEndpointToolTip = showEndpointToolTipMap.get(model);
+        if (showEndpointToolTip == null) {
+            Project project = model.getJBIProject();
+            Preferences prefs = ProjectUtils.getPreferences(project, CasaDesignView.class, true);
+            showEndpointToolTip = prefs.getBoolean(CASA_SHOW_TOOLTIP, true);
+            showEndpointToolTipMap.put(model, showEndpointToolTip);
+        }
+
+        return showEndpointToolTip;
+    }
+
+    public static void setShowToolTip(CasaWrapperModel model,
+            boolean showEndpointToolTip) {
+        if (getShowToolTip(model) != showEndpointToolTip) {
+            showEndpointToolTipMap.put(model, showEndpointToolTip);
+
+            // persist it
+            Project project = model.getJBIProject();
+            Preferences prefs = ProjectUtils.getPreferences(project, CasaDesignView.class, true);
+            prefs.putBoolean(CASA_SHOW_TOOLTIP, showEndpointToolTip);
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    //==========================================================================
+
+
+    //==========================================================================
+    private static Map<CasaWrapperModel, Boolean> showHoveringHighlightMap =
+            new HashMap<CasaWrapperModel, Boolean>();
+
+    public static void clearShowHoveringHighlight(CasaWrapperModel model) {
+        showHoveringHighlightMap.remove(model);
+    }
+
+    public static boolean getShowHoveringHighlight(CasaWrapperModel model) {
+        Boolean showHoveringHighlight = showHoveringHighlightMap.get(model);
+        if (showHoveringHighlight == null) {
+            Project project = model.getJBIProject();
+            Preferences prefs = ProjectUtils.getPreferences(project, CasaDesignView.class, true);
+            showHoveringHighlight = prefs.getBoolean(CASA_SHOW_HOVERING_HIGHLIGHT, true);
+            showHoveringHighlightMap.put(model, showHoveringHighlight);
+        }
+
+        return showHoveringHighlight;
+    }
+
+    public static void setShowHoveringHighlight(CasaWrapperModel model,
+            boolean showHoveringHighlight) {
+        if (getShowHoveringHighlight(model) != showHoveringHighlight) {
+            showHoveringHighlightMap.put(model, showHoveringHighlight);
+
+            // persist it
+            Project project = model.getJBIProject();
+            Preferences prefs = ProjectUtils.getPreferences(project, CasaDesignView.class, true);
+            prefs.putBoolean(CASA_SHOW_HOVERING_HIGHLIGHT, showHoveringHighlight);
+            try {
+                prefs.flush();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    //==========================================================================
+
     
     private static class DisablingAction extends WidgetAction.LockedAdapter {
         

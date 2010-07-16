@@ -79,7 +79,7 @@ Other names may be trademarks of their respective owners. The contents of
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
-            <version>6.0-SNAPSHOT</version>
+            <version>6.0-RC2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

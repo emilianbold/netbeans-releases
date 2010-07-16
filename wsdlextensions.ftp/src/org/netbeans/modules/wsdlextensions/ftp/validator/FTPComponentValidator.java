@@ -20,34 +20,24 @@ package org.netbeans.modules.wsdlextensions.ftp.validator;
 
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponentEncodable;
 import org.netbeans.modules.wsdlextensions.ftp.FTPMessage;
-//import org.netbeans.modules.wsdlextensions.ftp.FTPMessageActivePassive;
-import java.net.URI;
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.ResourceBundle;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.Reference;
@@ -71,7 +61,6 @@ import org.netbeans.modules.wsdlextensions.ftp.FTPAddress;
  *
  * @author jfu
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class FTPComponentValidator
         implements Validator, FTPComponent.Visitor {
     
@@ -155,10 +144,8 @@ public class FTPComponentValidator
                 boolean foundFTPOp = false;
                 int transCntInput = 0;
                 int msgCntInput = 0;
-                //int msgModeCntInput = 0;
                 int transCntOutput = 0;
                 int msgCntOutput = 0;
-                //int msgModeCntOutput = 0;
                 Object inputChild = null, outputChild = null;
                 while (bindingOps.hasNext()) {
                     BindingOperation bindingOp = bindingOps.next();
@@ -221,42 +208,18 @@ public class FTPComponentValidator
                                             Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {msgCntInput})));
                                 }
                             }
-
-//                            Iterator<FTPMessageActivePassive> ftpMessagesMode =
-//                                    bindingInput.getExtensibilityElements(FTPMessageActivePassive.class).iterator();
-//                            if ( ftpMessagesMode != null ) {                                    
-//                                while (ftpMessagesMode.hasNext()) {
-//                                    msgModeCntInput++;
-//                                    FTPMessageActivePassive ftpMessageMode = ftpMessagesMode.next();
-//                                    ftpMessageMode.accept(this);
-//                                    inputChild = ftpMessageMode;
-//                                }
-//                                if ( msgModeCntInput > 1 ) {
-//                                    results.add(
-//                                            new Validator.ResultItem(this,
-//                                            Validator.ResultType.ERROR,
-//                                            binding,
-//                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {msgModeCntInput})));
-//                                }
-//                            }
                         }
                         
-                        if ( transCntInput + msgCntInput /*+ msgModeCntInput*/ > 1 ) {
+                        if ( transCntInput + msgCntInput > 1 ) {
                             results.add(
                                     new Validator.ResultItem(this,
                                     Validator.ResultType.ERROR,
                                     binding,
                                     Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {transCntInput + msgCntInput /*+ msgModeCntInput*/})));
                         }
-                        
-                        if ( bindingInput != null && transCntInput + msgCntInput /*+ msgModeCntInput*/ == 0 ) {
-                            results.add(
-                                    new Validator.ResultItem(this,
-                                    Validator.ResultType.ERROR,
-                                    binding,
-                                    Util.getMessage("FTPBindingValidation.NO_EXTENSIBILITY_ELEMENT_FOUND_IN_INPUT")));
-                        }
+
                         BindingOutput bindingOutput = bindingOp.getBindingOutput();
+                        
                         if (bindingOutput != null) {
                             // reset and do output checking
                             transCntOutput = 0;
@@ -298,25 +261,7 @@ public class FTPComponentValidator
                                 }
                             }
 
-//                            Iterator<FTPMessageActivePassive> ftpMessagesMode =
-//                                    bindingOutput.getExtensibilityElements(FTPMessageActivePassive.class).iterator();
-//                            if ( ftpMessagesMode != null ) {
-//                                while (ftpMessagesMode.hasNext()) {
-//                                    msgModeCntOutput++;
-//                                    FTPMessageActivePassive ftpMessageMode = ftpMessagesMode.next();
-//                                    ftpMessageMode.accept(this);
-//                                    outputChild = ftpMessageMode;
-//                                }
-//                                if ( msgModeCntOutput > 1 ) {
-//                                    results.add(
-//                                            new Validator.ResultItem(this,
-//                                            Validator.ResultType.ERROR,
-//                                            binding,
-//                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_OUTPUT", new Object[] {msgModeCntOutput})));
-//                                }
-//                            }
-
-                            if ( transCntOutput + msgCntOutput /*+ msgModeCntOutput*/ > 1 ) {
+                            if ( transCntOutput + msgCntOutput > 1 ) {
                                 results.add(
                                         new Validator.ResultItem(this,
                                         Validator.ResultType.ERROR,
@@ -324,7 +269,7 @@ public class FTPComponentValidator
                                         Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_OUTPUT", new Object[] {transCntOutput + msgCntOutput /*+ msgModeCntOutput*/})));
                             }
                             
-                            if ( transCntOutput + msgCntOutput /*+ msgModeCntOutput*/ == 0 ) {
+                            if ( transCntOutput + msgCntOutput == 0 ) {
                                 results.add(
                                         new Validator.ResultItem(this,
                                         Validator.ResultType.ERROR,
@@ -333,38 +278,20 @@ public class FTPComponentValidator
                             }
                         }
                         
-                        //Reference<Operation> opRef = bindingOp.getOperation();
-                        //boolean noAbstractOp = false;
-                        //if ( opRef == null ) {
-                        //    noAbstractOp = true;
-                        //    results.add(
-                        //            new Validator.ResultItem(this,
-                        //            Validator.ResultType.ERROR,
-                        //            binding,
-                        //            Util.getMessage("FTPBindingValidation.OP_ABSTRACT_NOT_FOUND", new Object[] {bindingOp.getName()})));
-                        //}
-                        //else {
-                        //    Operation op = opRef.get();
-                        //    if ( op == null ) {
-                        //        noAbstractOp = true;
-                        //        results.add(
-                        //                new Validator.ResultItem(this,
-                        //                Validator.ResultType.ERROR,
-                        //                binding,
-                        //                Util.getMessage("FTPBindingValidation.OP_ABSTRACT_NOT_FOUND", new Object[] {bindingOp.getName()})));
-                        //    }
-                        //}
-
-                        // taken care of by generic wsdl model validation
-                        //if ( !noAbstractOp ) {
-                        //    if ( !checkSignature(bindingOp/*, inputChild, outputChild*/) ) {
-                        //        results.add(
-                        //                new Validator.ResultItem(this,
-                        //                Validator.ResultType.ERROR,
-                        //                binding,
-                        //                Util.getMessage("FTPBindingValidation.OP_SIG_MISMATCH_BINDING_ABSTRACT", new Object[] {bindingOp.getName()})));
-                        //    }
-                        //}
+                        // now with the introduction of solicit read
+                        // it is OK to have empty <input>;
+                        // as long as <output> has binding extensibiltiy element
+                        if ( bindingOutput == null ) {
+                            // when output is not null, it is a one way
+                            // then it is invalid to have an empty <input>
+                            if ( bindingInput != null && transCntInput + msgCntInput == 0 ) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        binding,
+                                        Util.getMessage("FTPBindingValidation.NO_EXTENSIBILITY_ELEMENT_FOUND_IN_INPUT")));
+                            }
+                        }
 
                         // inputChild and outputChild should be same type
                         // if input & output both present, they should have same type 
@@ -491,6 +418,18 @@ public class FTPComponentValidator
         // (1) attribute 'url' has the right syntax: i.e. ftp://[ftp_user]:[ftp_password]@[ftp_host]:[ftp_port]
         // (2) if attribute 'useProxy' is true, also validate attribute 'proxy'
         // has the right syntax: [proxy protocol]://[proxy_user]:[proxy_password]@[proxy_host]:[proxy_port]
+
+        // open jbi components - issue #586
+        // impl FTP/TLS, need to also validate new attrs
+        //
+        // if securedFTP == 'ExplicitSSL' || securedFTP == 'ImplicitSSL'
+        // trustStore must be specified (with password), 
+        // keyStore must be specified (with password) if not - default to truststore location   
+        //
+        // if enableCCC == true, securedFTP must be 'ExplicitSSL'
+        //
+        //
+        //
         Collection<ResultItem> results =
                 mValidationResult.getValidationResult();
         FTPAddressURL url = new FTPAddressURL(target.getFTPURL());
@@ -514,6 +453,27 @@ public class FTPComponentValidator
             }
         }
 
+        if ( target.getEnableCCC() ) {
+            if ( target.getSecureFTPType() == null || !target.getSecureFTPType().equals("ExplicitSSL") ) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        Util.getMessage("FTPAddress.INVALID_SECURE_FTP_TYPE", new Object[] {target.getSecureFTPType()})));
+            }
+        }
+
+        if ( target.getSecureFTPType() != null && !target.getSecureFTPType().equals("None") ) {
+            // key store location and trust store location can be fall back onto each other
+            if ( target.getTrustStore() == null || target.getTrustStore().trim().length() == 0 ) {
+                if ( target.getKeyStore() == null || target.getKeyStore().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPAddress.MISSING_KEY_TRUST_STORE_INFO", new Object[] {target.getSecureFTPType()})));
+                } 
+            } 
+        }
+        
         validateFTPChannelTimeout(target.getCmdChannelTimeout(), results, target);
         validateFTPChannelTimeout(target.getDataChannelTimeout(), results, target);
     }
@@ -741,76 +701,6 @@ public class FTPComponentValidator
         validatePollInterval(target.getPollInterval(), results, target);
     }
 
-    /**
-    public void visit(FTPMessageActivePassive target) {
-        String t = null;
-        Collection<ResultItem> results =
-                mValidationResult.getValidationResult();
-        if ( !doStructuralChecking(results, target) )
-            return;
-        // validate that a messageRepository is specified
-        if ( target.getMessageRepository() == null
-                || target.getMessageRepository().trim().length() == 0 ) {
-            results.add(new Validator.ResultItem(this,
-                    Validator.ResultType.ERROR,
-                    target,
-                    Util.getMessage("FTPMessage.A_PATH_POINTING_TO_MESSAGE_EXCHANGE_AREA_REQUIRED", "")));
-        }
-        // validate use: if use="encoded", encodingStyle must be specified
-        if ( !Util.hasMigrationEnvVar(target.getUse()) ) {
-            if ( target.getUse() != null && target.getUse().equals("encoded") ) {
-                    if ( target.getEncodingStyle() == null || target.getEncodingStyle().trim().length() == 0 ) {
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.ERROR,
-                            target,
-                            Util.getMessage("FTPMessage.MISSING_STYLE_WHEN_USE_ENCODED")));
-                    }
-            }
-        }
-        // if messageName specified, and does not contain pattern chars (% escaped symbols)
-        // give warning (message name usually contains patterns, especially %u)
-        t = target.getMessageName();
-        if ( t != null && t.trim().length() > 0 ) {
-            if ( !Util.hasMigrationEnvVar(t) ) {
-                if ( t.indexOf("%") < 0 ) {
-                    results.add(new Validator.ResultItem(this,
-                            Validator.ResultType.WARNING,
-                            target,
-                            Util.getMessage("FTPMessage.MSG_NAME_SPEC_DOES_NOT_INCLUDE_PATTERN")));
-                }
-            }
-        }
-        
-        // if messageNamePrefixIB or messageNamePrefixOB specified, and contains pattern chars (% escaped symbols)
-        // give warning (prefix must be a literal string)
-        t = target.getMessageNamePrefixIB();
-        if ( t != null && t.trim().length() > 0 ) {
-            if ( t.indexOf("%") >= 0 ) {
-                // this is not an accurate check, but just do not allow % in the prefix,
-                // period!
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        Util.getMessage("FTPMessage.IB_MSG_PREFIX_HAS_PATTERN")));
-            }
-        }
-        t = target.getMessageNamePrefixOB();
-        if ( t != null && t.trim().length() > 0 ) {
-            if ( t.indexOf("%") >= 0 ) { 
-                // this is not an accurate check, but just do not allow % in the prefix,
-                // period!
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        Util.getMessage("FTPMessage.OB_MSG_PREFIX_HAS_PATTERN")));
-            }
-        }
-
-        // check polling interval
-        validatePollInterval(target.getPollInterval(), results, target);
-    }
-    */
-    
     private boolean checkPartReference(BindingOperation bop, boolean isInputChild, String part) {
         boolean result = false;
         if ( bop != null ) {

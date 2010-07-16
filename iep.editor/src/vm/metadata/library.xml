@@ -23,11 +23,11 @@
    <!--BasicModuleProgramming-->
    <component_type_group name="BasicModuleProgramming" icon="" title="Metadata.BasicModuleProgramming.title" description="Metadata.BasicModuleProgramming.description">
       <!--Group-->
-      <component_type name="Group" palette="" icon="" title="Metadata.BasicModuleProgramming.Group.title" description="Metadata.BasicModuleProgramming.Group.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+      <component_type name="Group" palette="" icon="" title="Metadata.BasicModuleProgramming.Group.title" description="Metadata.BasicModuleProgramming.Group.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.tbls.model.OkValidator">
          <property required="true" name="name" title="Metadata.BasicModuleProgramming.Group.name.title" description="Metadata.BasicModuleProgramming.Group.name.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
       </component_type>
       <!--Property-->
-      <component_type name="Property" palette="" icon="" title="Metadata.BasicModuleProgramming.Property.title" description="Metadata.BasicModuleProgramming.Property.description" allowsChildren="false" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+      <component_type name="Property" palette="" icon="" title="Metadata.BasicModuleProgramming.Property.title" description="Metadata.BasicModuleProgramming.Property.description" allowsChildren="false" visible="false" validator="org.netbeans.modules.tbls.model.OkValidator">
          <property required="true" name="name" title="Metadata.BasicModuleProgramming.Property.name.title" description="Metadata.BasicModuleProgramming.Property.name.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
          <property required="true" name="type" title="Metadata.BasicModuleProgramming.Property.type.title" description="Metadata.BasicModuleProgramming.Property.type.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
          <property required="true" name="direction" title="Metadata.BasicModuleProgramming.Property.direction.title" description="Metadata.BasicModuleProgramming.Property.direction.description" type="string" editor="combo_in_inout_out" default="" renderer="string" access="read,write,map" multiple="false"/>

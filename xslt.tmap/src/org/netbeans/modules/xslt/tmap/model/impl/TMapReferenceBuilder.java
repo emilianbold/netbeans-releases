@@ -170,12 +170,9 @@ abstract class AbstractTMapVarReferenceFactory implements
         boolean isEqual = false;
         if (var != null && varRef != null) {
             String refString = varRef.getRefString();
-            if (refString != null) {
-                int lastDotIndex = refString.lastIndexOf(".");
-                refString = lastDotIndex > 0 ? refString.substring(0,lastDotIndex) : null;
-            }
+            String varName = VariableReferenceImpl.getVarName(refString);
 
-            isEqual = refString != null && refString.equals(var.getName());
+            isEqual = varName != null && varName.equals(var.getName());
         }
         
         return isEqual;
@@ -184,13 +181,16 @@ abstract class AbstractTMapVarReferenceFactory implements
     private boolean haveInputVarRef( 
             VariableReference ref, VariableDeclarator component) 
     {
-        return compare(component.getInputVariable(), ref);
+        return compare(component.getInputVariable(), ref) ||
+            compare(component.getDefaultInputVariable(), ref);
     }
 
     private boolean haveOutputVarRef( 
             VariableReference ref, VariableDeclarator component) 
     {
-        return compare(component.getOutputVariable(), ref);
+        return compare(component.getOutputVariable(), ref) ||
+            compare(component.getDefaultOutputVariable(), ref);
+
     }
     
     public <T extends TMapReferenceable> TMapReference<T> create( T target, 
@@ -278,6 +278,17 @@ class VariableReferenceFactory extends AbstractTMapVarReferenceFactory {
             isDeclarator = tmpVar != null && varName.equals(tmpVar.getName());
         }
         
+        // perhops it is DefaultVariable 
+        if (!isDeclarator) {
+            tmpVar = varContainer.getDefaultInputVariable();
+            isDeclarator = tmpVar != null && varName.equals(tmpVar.getName());
+        }
+        
+        if (!isDeclarator) {
+            tmpVar = varContainer.getDefaultOutputVariable();
+            isDeclarator = tmpVar != null && varName.equals(tmpVar.getName());
+        }
+
         return isDeclarator;
     }
     

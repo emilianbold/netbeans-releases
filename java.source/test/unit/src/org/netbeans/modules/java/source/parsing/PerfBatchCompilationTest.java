@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,22 +44,11 @@
 
 package org.netbeans.modules.java.source.parsing;
 import java.util.jar.JarFile;
-import junit.extensions.TestSetup;
-import junit.framework.*;
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.zip.ZipFile;
-import javax.tools.JavaFileObject;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.source.StopWatch;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.util.Factory;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileUtil;
 
 /** Tests performance of batch compilation large amount of files.
  *
@@ -65,9 +57,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hrebejk
  */
-public class PerfBatchCompilationTest extends TestCase {
+public class PerfBatchCompilationTest extends NbTestCase {
     
-    private static Setup setup;
+    private File workDir;
+    private File rtFile, srcFile;
+    private File rtFolder, srcFolder;
+    private File javacSrcFolder;
     private CachingArchiveProvider archiveProvider;
     
     public PerfBatchCompilationTest(String testName) {
@@ -75,19 +70,36 @@ public class PerfBatchCompilationTest extends TestCase {
     }
     
     protected void setUp() throws Exception {
-        archiveProvider = new CachingArchiveProvider();
+        File retouche = TestUtil.getDataDir().getParentFile().getParentFile().getParentFile().getParentFile();
+        File javac = new File(retouche, "Jsr199");
+
+        clearWorkDir();
+        workDir = getWorkDir();
+        System.out.println("Workdir " + workDir);
+        TestUtil.copyFiles(TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR);
+        TestUtil.copyFiles(TestUtil.getJdkDir(), workDir, TestUtil.SRC_ZIP);
+
+        rtFile = new File(workDir, TestUtil.RT_JAR);
+        JarFile rtJar = new JarFile(rtFile);
+        srcFile = new File(workDir, TestUtil.SRC_ZIP);
+        ZipFile srcZip = new ZipFile(srcFile);
+
+
+
+        //rtFolder = new File( workDir, "rtFolder" );
+        //TestUtil.unzip( rtJar, rtFolder );
+
+        srcFolder = new File(workDir, "src");
+        TestUtil.unzip(srcZip, srcFolder);
+
+        // Create archive provider
+        archiveProvider = CachingArchiveProvider.getDefault();
+
+        // Set up the output path
+        File cacheDir = new File(workDir, "cache");
+        cacheDir.mkdirs();
+        IndexUtil.setCacheFolder(cacheDir);
     }
-    
-    protected void tearDown() throws Exception {
-    }
-    
-    public static Test suite() {
-        //TestSuite suite = new TestSuite( ArchiveTest.class );
-        //return suite;
-        setup = new Setup( new TestSuite( PerfBatchCompilationTest.class ) );
-        return setup;
-    }
-    
     
     public void testJdkSourceCompilationAtOnce() throws Throwable {
 	
@@ -167,61 +179,5 @@ public class PerfBatchCompilationTest extends TestCase {
 //	} 
 //        return result;	       
 //    }
-    
-    // Private innerclasses ----------------------------------------------------
-    
-    
-    private static class Setup extends TestSetup {
-        
-        public File workDir;
-	public File rtFile, srcFile;
-        public File rtFolder, srcFolder;
-	public File javacSrcFolder;
-        public CachingArchiveProvider archiveProvider;
-        
-        public Setup( Test test ) {
-            super( test );
-        }
-        
-        protected void tearDown() throws Exception {
-	    TestUtil.removeWorkFolder( workDir );
-            super.tearDown();
-        }
-        
-        protected void setUp() throws Exception {
-            super.setUp();
-	    
-	    File retouche = TestUtil.getDataDir().getParentFile().getParentFile().getParentFile().getParentFile();
-	    File javac = new File( retouche, "Jsr199" ); 
-	    
-            workDir = TestUtil.createWorkFolder();
-	    System.out.println("Workdir " + workDir );
-            TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
-            TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.SRC_ZIP );	    
-	    
-	    rtFile = new File( workDir, TestUtil.RT_JAR );
-            JarFile rtJar = new JarFile( rtFile );
-            srcFile = new File( workDir, TestUtil.SRC_ZIP );
-            ZipFile srcZip = new ZipFile( srcFile );
-            
-	    
-	    
-            //rtFolder = new File( workDir, "rtFolder" );
-            //TestUtil.unzip( rtJar, rtFolder );
-            
-            srcFolder = new File( workDir, "src" );
-            TestUtil.unzip( srcZip, srcFolder );
-            
-	    // Create archive provider
-            archiveProvider = CachingArchiveProvider.getDefault();
-	    
-	    // Set up the output path
-	    File cacheDir = new File( workDir, "cache" );
-	    cacheDir.mkdirs();
-	    IndexUtil.setCacheFolder( cacheDir );
-	    
-        }
-        
-    }
     
 }

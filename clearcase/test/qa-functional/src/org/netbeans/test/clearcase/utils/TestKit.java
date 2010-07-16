@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -87,31 +90,25 @@ public class TestKit {
         return false;
     }
 
-    public static File prepareProject(String category, String project, String project_name) throws Exception {
-        //create temporary folder for test
-        String folder = "work" + File.separator + "w" + System.currentTimeMillis();
-        File file = new File("/tmp", folder); // NOI18N
-        file.mkdirs();
-        
-        file.mkdirs();
-        //PseudoVersioned project
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory(category);
-        npwo.selectProject(project);
-        npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath()); // NOI18N
-        new JTextFieldOperator(npnlso, 0).setText(project_name); // NOI18N
-        //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
-        new NewProjectWizardOperator().finish();
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+    public static File prepareProject(String prj_category, String prj_type, String prj_name) throws Exception {
+		//create temporary folder for test
+		String folder = "work" + File.separator + "w" + System.currentTimeMillis();
+		File file = new File("/tmp", folder); // NOI18N
+		file.mkdirs();
 
-        // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
-        //new QueueTool().waitEmpty(1000);
-        //ProjectSupport.waitScanFinished();
+		//PseudoVersioned project
+		NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+		npwo.selectCategory(prj_category);
+		npwo.selectProject(prj_type);
+		npwo.next();
+		NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
+		new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath());
+		new JTextFieldOperator(npnlso, 0).setText(prj_name);
+		new NewProjectWizardOperator().finish();
 
-        return file;
+		ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
+
+		return file;
     }
 
     public static void deleteFolder(File dir) {

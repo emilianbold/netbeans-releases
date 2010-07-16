@@ -40,7 +40,8 @@ public enum JMSQName {
     PROPERTIES(createJMSQName("properties")),
     PROPERTY(createJMSQName("property")),
     JNDIENV(createJMSQName("jndienv")),
-    JNDIENVENTRY(createJMSQName("jndienventry"));
+    JNDIENVENTRY(createJMSQName("jndienventry")),
+    JMSJCAOPTIONS(createJMSQName("jmsjcaOptions"));
     
     
     

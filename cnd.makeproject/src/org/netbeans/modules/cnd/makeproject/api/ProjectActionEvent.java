@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,55 +51,65 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class ProjectActionEvent {
+public final class ProjectActionEvent {
 
-    public static enum Type {
+    public interface Type {
+        int ordinal();
+        String name();
+        String getLocalizedName();
+        void setLocalizedName(String name);
+    }
+
+    public static enum PredefinedType implements Type {
         BUILD("Build"), // NOI18N
         CLEAN("Clean"), // NOI18N
-        CONFIGURE("Configure"), // NOI18N
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
-        DEBUG_LOAD_ONLY("Debug"), // NOI18N
         CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
-        CUSTOM_ACTION("Custom"); // NOI18N
+        CUSTOM_ACTION("Custom"), // NOI18N
+        BUILD_TESTS("BuildTests"), // NOI18N
+        TEST("Test"); // NOI18N
 
         private final String localizedName;
 
-        private Type(String resourceNamePrefix) {
+        private PredefinedType(String resourceNamePrefix) {
             localizedName = getString(resourceNamePrefix + "ActionName"); // NOI18N
         }
 
+        @Override
         public String getLocalizedName() {
             return localizedName;
         }
 
+        @Override
+        public void setLocalizedName(String name) {
+            // predefined events already have localized name
+            throw new UnsupportedOperationException();
+        }
     }
 
-    private Project project;
-    private Type type;
-    private String tabName;
+    private final Project project;
+    private final Type type;
     private String executable;
-    private MakeConfiguration configuration;
-    private RunProfile profile;
-    private boolean wait;
+    private final MakeConfiguration configuration;
+    private final RunProfile profile;
+    private final boolean wait;
     private final Lookup context;
     private boolean isFinalExecutable;
 
-    public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
-        this(project, type, tabName, executable, configuration, profile, wait, Lookup.EMPTY);
+    public ProjectActionEvent(Project project, Type type, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
+        this(project, type, executable, configuration, profile, wait, Lookup.EMPTY);
     }
 
-    public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait, Lookup context) {
+    public ProjectActionEvent(Project project, Type type, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait, Lookup context) {
         this.project = project;
         this.type = type;
-	this.tabName = tabName;
 	this.executable = executable;
 	this.configuration = configuration;
 	this.profile = profile;
 	this.wait = wait;
         this.context = context;
-
     }
     
     public Project getProject() {
@@ -111,28 +124,13 @@ public class ProjectActionEvent {
         return type;
     }
 
-    public String getTabName() {
-        return tabName;
-    }
-
+    // TODO: move method to ProjectActionHandlerFactory or ProjectActionHandler
     public String getActionName() {
         return type.getLocalizedName();
     }
 
     public String getExecutable() {
 	return executable;
-    }
-
-    public void setExecutable(String executable) {
-        this.executable = executable;
-    }
-
-    void setFinalExecutable(){
-        isFinalExecutable = true;
-    }
-
-    boolean isFinalExecutable(){
-        return isFinalExecutable;
     }
 
     public MakeConfiguration getConfiguration() {
@@ -150,7 +148,24 @@ public class ProjectActionEvent {
     public boolean getWait() {
         return wait;
     }
-    
+
+    void setExecutable(String executable) {
+        this.executable = executable;
+    }
+
+    void setFinalExecutable(){
+        isFinalExecutable = true;
+    }
+
+    boolean isFinalExecutable(){
+        return isFinalExecutable;
+    }
+
+    @Override
+    public String toString() {
+        return "PAE " + type + " " + getActionName() + " exec: " + getExecutable(); // NOI18N
+    }
+
      /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {

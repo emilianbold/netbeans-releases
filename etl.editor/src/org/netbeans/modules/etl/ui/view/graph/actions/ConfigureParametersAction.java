@@ -64,9 +64,9 @@ import org.openide.util.actions.CookieAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.XmlUtil;
+import com.sun.etl.utils.XmlUtil;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.openide.awt.StatusDisplayer;
 

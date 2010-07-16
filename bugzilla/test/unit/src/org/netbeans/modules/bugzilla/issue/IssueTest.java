@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,7 +53,6 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
@@ -60,10 +61,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Comment;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 
 /**
  *
@@ -384,7 +383,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
 
         BugzillaRepository repository = getRepository();
-        BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector();
+        BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
         TaskData data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
         BugzillaIssue modIssue = new BugzillaIssue(data, repository);
 
@@ -918,7 +917,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         while (!lh.done) {
             Thread.sleep(100);
         }
-        for (IssueField f : IssueField.values()) {
+        for (IssueField f : issue.getBugzillaRepository().getConfiguration().getFields()) {
             // seen -> everything's uptodate
             assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
         }

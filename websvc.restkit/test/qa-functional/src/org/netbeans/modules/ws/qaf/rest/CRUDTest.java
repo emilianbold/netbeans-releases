@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,9 +49,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -97,19 +97,12 @@ public class CRUDTest extends RestTestBase {
      * and deploy the project
      */
     public void testRfE() {
-        //Persistence
-        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         if (!getProjectType().isAntBasedProject()) {
-            //Persistence Unit
-            String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
-            createNewFile(getProject(), persistenceLabel, puLabel);
-            WizardOperator wo = new WizardOperator(puLabel);
-            new JComboBoxOperator(wo, 1).selectItem(0);
-            wo.finish();
-            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
-            new EventTool().waitNoEvent(2500);
+            createPU();
         }
         copyDBSchema();
+        //Persistence
+        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
         //Entity Classes from Database
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
@@ -164,10 +157,7 @@ public class CRUDTest extends RestTestBase {
     public void testPropAccess() throws IOException {
         //copy entity class into a project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
-        Sources s = getProject().getLookup().lookup(Sources.class);
-        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject targetDir = sg[0].getRootFolder();
-        fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        fo.copy(getProjectSourceRoot().createFolder("entity"), "Person", "java"); //NOI18N
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
@@ -251,6 +241,22 @@ public class CRUDTest extends RestTestBase {
         n.performPopupAction(testRestActionName);
     }
 
+    protected void createPU() {
+        //Persistence
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Persistence Unit
+        String puLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "Templates/Persistence/PersistenceUnit");
+        createNewFile(getProject(), category, puLabel);
+        String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
+        WizardOperator wo = new WizardOperator(title);
+        new JComboBoxOperator(wo, 1).selectItem(0); //NOI18N
+        wo.finish();
+        if (!getProjectType().isAntBasedProject()) {
+            new Node(getProjectRootNode(), "Other Sources|src/main/resources|META-INF").expand();
+            new EventTool().waitNoEvent(2500);
+        }
+    }
+
     protected void copyDBSchema() {
         //copy dbschema file to the project
         FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "sampleDB.dbschema")); //NOI18N
@@ -308,9 +314,7 @@ public class CRUDTest extends RestTestBase {
 
     protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
-        Sources s = getProject().getLookup().lookup(Sources.class);
-        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fo = sg[0].getRootFolder().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
+        FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
         File pkgRoot = FileUtil.toFile(fo);
         if (pkgRoot.listFiles() != null) {
             files.addAll(Arrays.asList(pkgRoot.listFiles()));
@@ -331,7 +335,7 @@ public class CRUDTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N

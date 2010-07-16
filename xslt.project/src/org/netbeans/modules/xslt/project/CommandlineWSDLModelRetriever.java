@@ -35,7 +35,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vitaly Bychkov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever.class)
 public class CommandlineWSDLModelRetriever implements ExternalModelRetriever {
 
     private Logger logger = Logger.getLogger(CommandlineWSDLModelRetriever.class.getName());    

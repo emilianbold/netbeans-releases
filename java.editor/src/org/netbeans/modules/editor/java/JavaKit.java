@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,8 +60,10 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.PartType;
@@ -70,6 +75,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
@@ -360,6 +366,43 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
+
+        // TODO: remove this method once ExtKit uses the new Editor Indent API
+        protected void checkIndentHotChars(JTextComponent target, String typedText) {
+            BaseDocument doc = Utilities.getDocument(target);
+            if (doc != null) {
+                Formatter f = doc.getFormatter();
+                if (f instanceof ExtFormatter) {
+                    ExtFormatter ef = (ExtFormatter)f;
+                    int[] fmtBlk = ef.getReformatBlock(target, typedText);
+
+                    if (fmtBlk != null) {
+                        try {
+                            fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+                            fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+
+                            //this was the of #18922, that causes the bug #20198
+                            //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
+
+                            //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
+                            try {
+                                doc.atomicLock();
+                                try {
+                                    reformat.reformat(fmtBlk[0], fmtBlk[1]);
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                            } finally {
+                                reformat.unlock();
+                            }
+                        } catch (BadLocationException e) {
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @EditorActionRegistration(name = generateGoToPopupAction, mimeType = JAVA_MIME_TYPE)
@@ -585,9 +628,16 @@ public class JavaKit extends NbEditorKit {
             if (BraceCompletion.posWithinString(doc, dotPos)) {
                 try {
                     doc.insertString(dotPos, "\" + \"", null); //NOI18N
-                    dotPos += 3;
-                    caret.setDot(dotPos);
-                    return new Integer(dotPos);
+                    CodeStyle cs = CodeStyle.getDefault(doc);
+                    if (cs.wrapAfterBinaryOps()) {
+                        dotPos += 3;
+                        caret.setDot(dotPos);
+                        return new Integer(1);
+                    } else {
+                        dotPos += 1;
+                        caret.setDot(dotPos);
+                        return new Integer(3);
+                    }
                 } catch (BadLocationException ex) {
                 }
             } else {
@@ -614,7 +664,7 @@ public class JavaKit extends NbEditorKit {
                 if (cookie instanceof Integer) {
                     // integer
                     int nowDotPos = caret.getDot();
-                    caret.setDot(nowDotPos+1);
+                    caret.setDot(nowDotPos+((Integer)cookie).intValue());
                 }
             }
         }
@@ -623,6 +673,9 @@ public class JavaKit extends NbEditorKit {
             try {
                 TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
                 TokenSequence ts = tokens.tokenSequence();
+                if (ts == null) {
+                    return null;
+                }
                 ts.move(dotPosition);
                 if (! ((ts.moveNext() || ts.movePrevious()) && ts.token().id() == JavaTokenId.JAVADOC_COMMENT)) {
                     return null;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -95,7 +98,7 @@ public class Utilities {
         while (ts.moveNext()) {
             Token<JavaTokenId> t = ts.token();
             
-            if (text.equals(t.text().toString())) {
+            if (t.id() == JavaTokenId.IDENTIFIER && text.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
                 return t;
             }
         }
@@ -172,7 +175,7 @@ public class Utilities {
             while (ts.offset() >= start) {
                 Token<JavaTokenId> t = ts.token();
 
-                if (member.equals(t.text().toString())) {
+                if (t.id() == JavaTokenId.IDENTIFIER && member.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
                     return t;
                 }
 
@@ -282,7 +285,7 @@ public class Utilities {
 
     public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {
         final int[] result = new int[] {-1, -1};
-        doc.render(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 Token<JavaTokenId> t = findIdentifierSpan(info, doc, decl);
                 if (t != null) {
@@ -290,20 +293,28 @@ public class Utilities {
                     result[1] = t.offset(null) + t.length();
                 }
             }
-        });
-        
+        };
+        if (doc != null) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
         return result;
     }
     
     public static Token<JavaTokenId> findIdentifierSpan(final CompilationInfo info, final Document doc, final TreePath decl) {
         @SuppressWarnings("unchecked")
         final Token<JavaTokenId>[] result = new Token[1];
-        doc.render(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 result[0] = findIdentifierSpanImpl(info, decl);
             }
-        });
-        
+        };
+        if (doc != null) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
         return result[0];
     }
     
@@ -360,7 +371,7 @@ public class Utilities {
         return result[0];
     }
     
-    private static int findLastBracketImpl(MethodTree tree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
+    private static int findLastBracketImpl(Tree tree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
         int start = (int)positions.getStartPosition(cu, tree);
         int end   = (int)positions.getEndPosition(cu, tree);
         
@@ -392,7 +403,7 @@ public class Utilities {
         return (-1);
     }
     
-    public static int findLastBracket(final MethodTree tree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
+    public static int findLastBracket(final Tree tree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
         final int[] result = new int[1];
         
         doc.render(new Runnable() {
@@ -423,15 +434,16 @@ public class Utilities {
             return null;
         }
         
-        ts.moveNext();
-        Token<JavaTokenId> token = ts.token();
-        if (ts.offset() == start && token != null) {
-            final JavaTokenId id = token.id();
-            if (id == JavaTokenId.IDENTIFIER) {
-                return token;
-            }
-            if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
-                return ts.offsetToken();
+        if (ts.moveNext()) {
+            Token<JavaTokenId> token = ts.token();
+            if (ts.offset() == start && token != null) {
+                final JavaTokenId id = token.id();
+                if (id == JavaTokenId.IDENTIFIER) {
+                    return token;
+                }
+                if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
+                    return ts.offsetToken();
+                }
             }
         }
         
@@ -504,6 +516,6 @@ public class Utilities {
         
         return el.getModifiers().contains(Modifier.PRIVATE);
     }
-    
+
 
 }

@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.projects.base;
 
 import java.beans.PropertyChangeListener;
@@ -26,8 +24,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -57,9 +57,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -70,15 +70,9 @@ import org.w3c.dom.Text;
  * Represents one ejb module project
  * @author Chris Webster
  */
-@AntBasedProjectRegistration(
-    type=IcanproProjectType.TYPE,
-    iconResource="org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif",
-    sharedNamespace=IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=IcanproProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
 public final class IcanproProject implements Project, AntProjectListener {
 
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif", false); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
     private final AntProjectHelper helper;
@@ -126,7 +120,7 @@ public final class IcanproProject implements Project, AntProjectListener {
             new String[] {"${src.dir}/*.java"}, // NOI18N
             new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
 
@@ -135,7 +129,11 @@ public final class IcanproProject implements Project, AntProjectListener {
 
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
         // sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,

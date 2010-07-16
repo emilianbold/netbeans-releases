@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -164,6 +167,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         return PREFERRED_ID;
     }
 
+    @Override
     public void setContent(String toolName, JComponent viewComponent) {
         if (currentToolName != null && currentToolName.equals(toolName) && this.viewComponent == viewComponent){//INCORRECT! should update if different component itself
             return;//DO NOTHING
@@ -198,23 +202,27 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         repaint();
     }
 
+    @Override
     public void addVisualizer(String toolID,String toolName, Visualizer<?> view) {
         setContent(toolName, view.getComponent());
         view.refresh();
 
     }
 
+    @Override
     public void showup() {
         open();
         requestActive();
     }
 
+    @Override
     public void removeVisualizer(final Visualizer<?> v) {
         if (EventQueue.isDispatchThread()){
             closePerformanceMonitor(v);
         }else{
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     closePerformanceMonitor(v);
                 }
@@ -223,6 +231,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     }
 
     @Override
+    @Deprecated
     public void requestFocus() {
         if (viewComponent != null){
             viewComponent.requestFocus();
@@ -233,6 +242,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
 
 
+    @Override
     public void addContent(String toolName, JComponent viewComponent) {
         if (currentToolName == null || !currentToolName.equals(toolName) || this.viewComponent != viewComponent) {
             this.currentToolName = toolName;
@@ -249,20 +259,23 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     }
 
+    @Override
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
         this.session = newSession;
         toolbarArea.update(session);
     }
 
+    @Override
     public void sessionAdded(DLightSession newSession) {
     //    throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void sessionRemoved(DLightSession removedSession) {
       //  throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    static final class ResolvableHelper implements Serializable {
+    private static final class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 

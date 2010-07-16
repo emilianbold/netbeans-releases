@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -85,64 +88,22 @@ import org.openide.util.RequestProcessor;
  * @version 
  */
 public class JbiDefaultComponentInfo {
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String COMP_ID = "id"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String COMP_NAME = "name"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String COMP_DESC = "description"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
+
+    public static final String COMP_ID = "id"; // NOI18N 
+    public static final String COMP_NAME = "name"; // NOI18N    
+    public static final String COMP_DESC = "description"; // NOI18N    
     public static final String COMP_TYPE = "type"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
     public static final String COMP_NAMESPACE = "namespace"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
     public static final String COMP_ICON = "icon"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
     public static final String PROJ_ICON = "projectIcon"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
     public static final String FILE_ICON = "fileIcon"; // NOI18N
-
-    /**
-     * DOCUMENT ME!
-     */
-    private static final String OLD_NAME_PREFIX = "com.sun."; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    private static final String NEW_NAME_PREFIX = "sun-"; // NOI18N
-
-    /**
-     * DOCUMENT ME!
-     */
     public static final String SB_COMP_RESOURCE_NAME = "SeeBeyondJbiComponents"; // NOI18N
     public static final String COMP_RESOURCE_NAME = "JbiComponents"; // NOI18N
     public static final String WSDLEDITOR_NAME = "WSDLEditor"; // NOI18N
     public static final String WSDL_ICON_NAME = "SystemFileSystem.icon"; // NOI18N
 
+    private static final String OLD_NAME_PREFIX = "com.sun."; // NOI18N
+    private static final String NEW_NAME_PREFIX = "sun-"; // NOI18N
     private static Logger sLogger = Logger.getLogger(JbiDefaultComponentInfo.class.getName());
     
     private static JbiDefaultComponentInfo singleton = null;
@@ -166,6 +127,7 @@ public class JbiDefaultComponentInfo {
 
     private JbiDefaultComponentInfo() {
     }
+
     /** 
      * Initializes the class and loads the data from the layer filesystem. This can be
      * used to initialize this object after creation or to reload the data when the 
@@ -215,9 +177,9 @@ public class JbiDefaultComponentInfo {
         }       
         return singleton;
     }
-
     
-    private static void loadJbiDefaultComponentInfoForSDLEditor(FileObject fo) { // Register Binding Component Icon: WSDLEditor/Binding/{FileBinding, ...}
+    private static void loadJbiDefaultComponentInfoForSDLEditor(FileObject fo) {
+        // Register Binding Component Icon: WSDLEditor/Binding/{FileBinding, ...}
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] bs = df.getChildren();
@@ -240,7 +202,8 @@ public class JbiDefaultComponentInfo {
         }
     }
 
-    private static void loadJbiDefaultComponentInfoFromFileObject(FileObject fo) { // JbiComponents or SeeBeyondJbiComponents
+    private static void loadJbiDefaultComponentInfoFromFileObject(FileObject fo) {
+        // JbiComponents or SeeBeyondJbiComponents
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);            
             for (DataObject compDO : df.getChildren()) {
@@ -275,9 +238,12 @@ public class JbiDefaultComponentInfo {
                         
                 if (JBIComponentStatus.BINDING.equals(type) && compDO instanceof DataFolder) {
                     for (DataObject bindingTypeDO : ((DataFolder)compDO).getChildren()) { 
-                        FileObject bindingTypeFO = bindingTypeDO.getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
+                        FileObject bindingTypeFO = bindingTypeDO.getPrimaryFile();
+                        // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
                         
-                        String bindingType = bindingTypeFO.getName(); // e.x., file.binding-1    // for http soap, there are two files: http.binding-1 and soap.binding-1
+                        String bindingType = bindingTypeFO.getName();
+                        // e.x., file.binding-1    // for http soap, there are two files: http.binding-1 and soap.binding-1
+
                         int idx = bindingType.indexOf('.');
                         if (idx > 0) {
                             bindingType = bindingType.substring(0,idx).toLowerCase();
@@ -328,6 +294,7 @@ public class JbiDefaultComponentInfo {
             System.err.println("WARNING: missing icon for JBI binding component " + id);
         }
     }
+
     /**
      * reloads the model from the layer filesystem and notifies the change listeners
      * of this model about the change.
@@ -340,6 +307,7 @@ public class JbiDefaultComponentInfo {
             fireChangeEvent();
         }
     }
+
     /**
      * add change listener
      * @param listener
@@ -350,6 +318,7 @@ public class JbiDefaultComponentInfo {
         // add it now. 
         changeSupport.addChangeListener(listener);
     }
+
     /**
      * removes the change listener
      * @param listener
@@ -358,6 +327,7 @@ public class JbiDefaultComponentInfo {
         sLogger.fine("removing the jbi def comp info change listener..."); //NOI18N
         changeSupport.removeChangeListener(listener);
     }
+
     /**
      * fires the change event 
      */
@@ -463,6 +433,7 @@ public class JbiDefaultComponentInfo {
         }
         return null;
     }
+
     /**
      * This class provides the implementation that can be used to monitor
      * the layer filesytem chagnes correpsonding to the jbi component folder
@@ -473,6 +444,7 @@ public class JbiDefaultComponentInfo {
         private FileChangeListener mFileChangeListener = null;
         private RequestProcessor mReqProcessor = null;
         private Runnable mRunnable;
+
         /**
          * constructor
          */
@@ -481,6 +453,7 @@ public class JbiDefaultComponentInfo {
             initFileChangeAdapter();
             registerFileChangeListener();
         }
+
         /**
          * creates a request processor that will reload the model in a separate thread.
          */
@@ -498,6 +471,7 @@ public class JbiDefaultComponentInfo {
                 };
             }
         }
+
         /**
          * initializes the file change lisnter implementation for the layer
          * filesystem
@@ -515,6 +489,7 @@ public class JbiDefaultComponentInfo {
                 }
             };
         }
+
         /**
          * reloads the model on a change in the jbi component folders
          * @param fe
@@ -537,16 +512,12 @@ public class JbiDefaultComponentInfo {
                 mReqProcessor.post(mRunnable, timeToWait);
             }
         }
+        
         /**
          * registers the file change listener on the layer filesystem.
          */
         private void registerFileChangeListener() {
-            FileSystem fileSystem = null;
-            try {
-                fileSystem = FileUtil.getConfigRoot().getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                sLogger.log(Level.FINE, ex.getMessage(), ex);
-            }
+            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
             // listen on filesystem for changes to the jbi component folder
             //TODO: use weak listener
             fileSystem.addFileChangeListener(mFileChangeListener);

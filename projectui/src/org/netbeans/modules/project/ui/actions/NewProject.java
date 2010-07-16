@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,8 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -58,7 +59,9 @@ import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.modules.project.ui.TemplatesPanel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,18 +74,15 @@ import org.openide.util.RequestProcessor;
 
 public class NewProject extends BasicAction {
         
-    private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newProject.png", false); //NOI18N
-    private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
-    private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Tooltip" ); // NOI18N
-    
     private boolean isPreselect = false;
     
     private RequestProcessor.Task bodyTask;
 
     public NewProject() {
-        super( NAME, ICON );
+        super(NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Name"),
+                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newProject.png", false));
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.png"); //NOI18N
-        putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Tooltip"));
         bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
             public void run () {
                 doPerform ();
@@ -110,12 +110,12 @@ public class NewProject extends BasicAction {
             
         if ( isPreselect ) {
             // XXX make the properties public ?
-            wizard.putProperty( "PRESELECT_CATEGORY", getValue ("PRESELECT_CATEGORY")); 
-            wizard.putProperty( "PRESELECT_TEMPLATE", getValue ("PRESELECT_TEMPLATE")); 
+            wizard.putProperty(TemplatesPanel.PRESELECT_CATEGORY, getValue(TemplatesPanel.PRESELECT_CATEGORY));
+            wizard.putProperty(TemplatesPanel.PRESELECT_TEMPLATE, getValue(TemplatesPanel.PRESELECT_TEMPLATE));
         }
         else {
-            wizard.putProperty( "PRESELECT_CATEGORY", null ); 
-            wizard.putProperty( "PRESELECT_TEMPLATE", null ); 
+            wizard.putProperty(TemplatesPanel.PRESELECT_CATEGORY, null);
+            wizard.putProperty(TemplatesPanel.PRESELECT_TEMPLATE, null);
         }
 
         FileObject folder = (FileObject) getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
@@ -147,13 +147,6 @@ public class NewProject extends BasicAction {
                             prjDir.delete();
                         }
                     }
-                    
-                    Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
-                    boolean setFirstMain = true;
-                    if ( mainProperty instanceof Boolean ) {
-                        setFirstMain = ((Boolean)mainProperty).booleanValue();
-                    }
-                    final boolean setFirstMainFinal = setFirstMain;
                     
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
@@ -207,24 +200,22 @@ public class NewProject extends BasicAction {
                         Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
                         
                         Project mainProject = null;
-                        if (setFirstMainFinal && lastProject != null) {
+                        if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
                             mainProject = lastProject;
                         }
                         
                         OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[0]), false, true, mainProject);
                         
                         // Show the project tab to show the user we did something
-                        if (! Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
-                            ProjectUtilities.makeProjectTabVisible( true );
-                        }
+                        ProjectUtilities.makeProjectTabVisible();
                         
                         if (lastProject != null) {
                             // Just select and expand the project node
                             ProjectUtilities.selectAndExpandProject(lastProject);
                         }
                         // Second open the files
-                        for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
-                            ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                        for (DataObject d : filesToOpen) { // Open the files
+                            ProjectUtilities.openAndSelectNewObject(d);
                         }
                         
                     }

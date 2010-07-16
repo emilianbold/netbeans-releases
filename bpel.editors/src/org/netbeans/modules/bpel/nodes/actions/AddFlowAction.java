@@ -35,6 +35,7 @@ public class AddFlowAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddFlowAction() {
+        super("structured/flow"); // NOI18N
     }    
     
     protected String getBundleName() {

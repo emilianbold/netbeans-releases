@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -46,6 +49,112 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="addRecursiveListenerStop">
+            <api name="filesystems"/>
+            <summary>Interruptable addRecursiveListener</summary>
+            <version major="7" minor="37"/>
+            <date day="17" month="2" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    New variant of <code>addRecursiveListener</code> method
+                    that allows the caller to control the process enumerating
+                    files in subtree and stop it.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="180523"/>
+        </change>
+        <change id="MultiFileSystem.weight">
+            <api name="filesystems"/>
+            <summary>Ability to specify "weight" for <code>MultiFileSystem</code> overrides</summary>
+            <version major="7" minor="36"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="jglick"/>
+            <compatibility semantic="compatible">
+                <p>
+                    Modules need no longer declare runtime-only dependencies
+                    on other modules merely to override their layer entries.
+                    Instead, they should specify a higher weight.
+                    (Normally the base module will declare no weight, so any
+                    positive number will do.)
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>MultiFileSystem</code>s will now interpret a special
+                    file attribute <code>weight</code> to determine how to
+                    resolve otherwise ambiguous overrides. For example, in the
+                    system filesystem, module XML layers can use this attribute.
+                    Suppose a generic infrastructure module declares:
+                </p>
+                <pre>
+&lt;filesystem>
+    &lt;folder name="my-snippets">
+        &lt;file name="common.xml" url="generic-snippet.xml"/>
+    &lt;/folder>
+&lt;/filesystem>
+                </pre>
+                <p>
+                    If another module wishes to override this declaration, it
+                    can do so by specifying:
+                </p>
+                <pre>
+&lt;filesystem>
+    &lt;folder name="my-snippets">
+        &lt;file name="common.xml" url="special-snippet.xml">
+            &lt;attribute name="weight" intvalue="100"/>
+        &lt;/file>
+    &lt;/folder>
+&lt;/filesystem>
+                </pre>
+                <p>
+                    This override will work even if the module system happens
+                    to load the specializing module <em>before</em> the infrastructure
+                    module (as could happen if there is no module dependency
+                    between them). The weight attribute also makes it clear that
+                    something is being overridden.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MultiFileSystem"/>
+            <issue number="141925"/>
+        </change>
+           <change id="JarFileSystem-constructor-file">
+              <api name="filesystems"/>
+              <summary>Effective constructor for JarFileSystem</summary>
+              <version major="7" minor="35"/>
+              <date day="26" month="1" year="2010"/>
+              <author login="jtulach"/>
+              <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+              <description>
+                  <p>
+                      New constructor for <code>JarFileSystem</code>
+                      that initializes everything without opening the underlaying
+                      JAR file.
+                  </p>
+              </description>
+              <class package="org.openide.filesystems" name="JarFileSystem"/>
+              <issue number="177461"/>
+          </change>
+        <change id="MIMEResolverImpl">
+            <api name="filesystems"/>
+            <summary>Access methods added to <code>MIMEResolver.UIHelpers</code></summary>
+            <version major="7" minor="34"/>
+            <date day="8" month="1" year="2010"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Several internal methods were added to nested class
+                    of <code>MIMEResolver</code> - <code>UIHelpers</code>
+                    for use from other parts of the NetBeans Platform. Use from
+                    other modules is not supported.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="179289"/>
+        </change>
           <change id="recursive-listener">
              <api name="filesystems"/>
              <summary>Support for recursive listeners</summary>
@@ -518,7 +627,7 @@ made subject to such option by the copyright holder.
                     influenced by adding own 
                     <a href="@TOP@/org/openide/filesystems/FileSystem.html">FileSystem</a>s
                     into global 
-                    <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup.getDefault()</a>.
+                    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">Lookup.getDefault()</a>.
                     This is supposed to work in a standalone mode as well 
                     as inside NetBeans Platform. The tutorial is available
                     in the <a href="@TOP@/architecture-summary.html#answer-arch-usecases">usecases section</a> of achitecture description.

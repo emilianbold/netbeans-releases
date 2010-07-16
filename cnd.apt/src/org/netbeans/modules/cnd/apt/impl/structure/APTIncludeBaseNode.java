@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -93,15 +96,18 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         return endOffset;
     }
 
+    @Override
     public APT getFirstChild() {
         return null;
     }
 
+    @Override
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "include doesn't support children"; // NOI18N
     }
 
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
@@ -109,7 +115,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
             return false;
         }
         // eat all till END_PREPROC_DIRECTIVE
-        switch (token.getType()) {
+        switch (ttype) {
             case APTTokenTypes.INCLUDE_STRING:
             case APTTokenTypes.SYS_INCLUDE_STRING:
                 if (includeFileToken == EMPTY_INCLUDE) {
@@ -121,6 +127,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 break;
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 // just skip comments, they are valid
                 break;
             default:
@@ -167,21 +174,21 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     }
 
     public String getFileName(APTMacroCallback callback) {
-        String file = getIncludeString(callback);
+        CharSequence file = getIncludeString(callback);
         String out = ""; // NOI18N
         if (file != null) {
             if (file.length() > 2) {
-                if (file.startsWith("<")) { // NOI18N
+                if (file.charAt(0) == '<') { // NOI18N
                     for (int i = 2; i < file.length(); i++) {
                         if (file.charAt(i) == '>') { // NOI18N
-                            out = file.substring(1, i);
+                            out = file.subSequence(1, i).toString();
                             break;
                         }
                     }
-                } else if (file.startsWith("\"")) { // NOI18N
+                } else if (file.charAt(0) == '"') { // NOI18N
                     for (int i = 2; i < file.length(); i++) {
                         if (file.charAt(i) == '\"') { // NOI18N
-                            out = file.substring(1, i);
+                            out = file.subSequence(1, i).toString();
                             break;
                         }
                     }
@@ -192,17 +199,17 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     }
 
     public boolean isSystem(APTMacroCallback callback) {
-        String file = getIncludeString(callback);
+        CharSequence file = getIncludeString(callback);
         return file.length() > 0 ? file.charAt(0) == '<' : false; // NOI18N
     }
 
-    private String getIncludeString(APTMacroCallback callback) {
+    private CharSequence getIncludeString(APTMacroCallback callback) {
         assert (includeFileToken != null);
-        String file;
+        CharSequence file;
         if (!isSimpleIncludeToken()) {
             file = stringize(((MultiTokenInclude) includeFileToken).getTokenList(), callback);
         } else {
-            file = includeFileToken.getText();
+            file = includeFileToken.getTextID();
         }
         return file;
     }

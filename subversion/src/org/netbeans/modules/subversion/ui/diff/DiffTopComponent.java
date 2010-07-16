@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +49,7 @@ import java.util.*;
 import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.awt.UndoRedo;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Diff TopComponent, synchronizing selected node and providing
@@ -56,43 +60,61 @@ import org.openide.awt.UndoRedo;
 public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
     private final MultiDiffPanel panel;
+    private final Lookup lookup;
 
     public DiffTopComponent(MultiDiffPanel c) {
         setLayout(new BorderLayout());
         c.putClientProperty(TopComponent.class, this);
         add(c, BorderLayout.CENTER);
         panel = c;
+        lookup = panel.getLookup();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
     }
 
+    @Override
+    public Lookup getLookup() {
+        return new ProxyLookup(super.getLookup(), lookup);
+    }
+
+    @Override
+    public boolean canClose() {
+        return panel.canClose();
+    }
+
+    @Override
     public UndoRedo getUndoRedo() {
         return panel.getUndoRedo();
     }
     
+    @Override
     public int getPersistenceType(){
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Override
     protected void componentClosed() {
         panel.componentClosed();
         super.componentClosed();
     }
 
+    @Override
     protected String preferredID(){
         return "PERSISTENCE_NEVER-DiffTopComponent";    // NOI18N       
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         panel.requestActive();
     }
 
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
         return mainPanel.getSetups();
     }

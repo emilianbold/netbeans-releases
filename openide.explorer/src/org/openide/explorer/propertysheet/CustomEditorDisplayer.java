@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,12 +55,14 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 
 import java.lang.reflect.InvocationTargetException;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -141,10 +146,14 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
         try {
             if (editor != null) {
                 if (!editor.supportsCustomEditor()) {
+                    Class<?> type = prop.getValueType();
                     throw new IllegalArgumentException(
-                        "Property editor " + editor + " for property " + getProperty() +
-                        " does not support a custom editor."
-                    ); //NOI18N
+                        "#177688: property editor " + editor + " for property " + prop +
+                        " does not support a custom editor; valueType=" + type.getName() +
+                        "; PropertyEditorManager says: " + PropertyEditorManager.findEditor(type) +
+                        "; search path is: " + Arrays.toString(PropertyEditorManager.getEditorSearchPath()) +
+                        "; CCL: " + Thread.currentThread().getContextClassLoader()
+                    );
                 }
 
                 try {

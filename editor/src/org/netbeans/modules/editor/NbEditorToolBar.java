@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -119,6 +124,9 @@ import org.openide.util.lookup.ProxyLookup;
  */
 
 /* package */ final class NbEditorToolBar extends JToolBar {
+
+    // -J-Dorg.netbeans.modules.editor.NbEditorToolBar.level=FINE
+    private static final Logger LOG = Logger.getLogger(NbEditorToolBar.class.getName());
     
     /** Flag for testing the sorting support by debugging messages. */
     private static final boolean debugSort
@@ -478,6 +486,8 @@ import org.openide.util.lookup.ProxyLookup;
         }
         
         for(Object item : items) {
+            LOG.log(Level.FINE, "Adding item {0}", item); //NOI18N
+
             if (item == null || item instanceof JSeparator) {
                 addSeparator();
                 continue;
@@ -488,6 +498,9 @@ import org.openide.util.lookup.ProxyLookup;
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit) kit).getActionByName((String) item);
                     if (a != null) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Item {0} converted to an editor action {1}", new Object [] { item, s2s(a) }); //NOI18N
+                        }
                         item = a;
                     } else {
                         // unknown action
@@ -508,6 +521,9 @@ import org.openide.util.lookup.ProxyLookup;
                     // use the context aware instance only if it implements Presenter.Toolbar
                     // or is a Component else fall back to the original object
                     if (caa instanceof Presenter.Toolbar || caa instanceof Component) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Item {0} converted to a context-aware Action {1}", new Object [] { s2s(item), s2s(caa) }); //NOI18N
+                        }
                         item = caa;
                     }
                 }
@@ -516,12 +532,18 @@ import org.openide.util.lookup.ProxyLookup;
             if (item instanceof Presenter.Toolbar) {
                 Component presenter = ((Presenter.Toolbar) item).getToolbarPresenter();
                 if (presenter != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Item {0} converted to a Presenter.Toolbar {1}", new Object [] { s2s(item), s2s(presenter) }); //NOI18N
+                    }
                     item = presenter;
                 }
             }
             
             if (item instanceof Component) {
                 add((Component)item);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Adding component {0}", s2s(item)); //NOI18N
+                }
             } else if (item instanceof Action) {
                 // Wrap action to execute on the proper text component
                 // because the default fallback in TextAction.getTextComponent()
@@ -534,8 +556,14 @@ import org.openide.util.lookup.ProxyLookup;
 
                 // Add the action and let the JToolbar to creat a presenter for it
                 item = add(a);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Adding action {0} as {1}", new Object [] { s2s(a), s2s(item) }); //NOI18N
+                }
             } else {
                 // Some sort of crappy item -> ignore
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Ignoring item {0}", s2s(item)); //NOI18N
+                }
                 continue;
             }
 
@@ -548,6 +576,9 @@ import org.openide.util.lookup.ProxyLookup;
                     keybindings = l == null ? Collections.<MultiKeyBinding>emptyList() : l;
                 }
                 updateTooltip(button, keybindings);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Special treatment for button {0}", s2s(item)); //NOI18N
+                }
             }
         }
     }
@@ -677,7 +708,11 @@ import org.openide.util.lookup.ProxyLookup;
         }
         return ret;
     }
-    
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+
     /** No operation action  - do nothing when invoked 
      *  issue #69642
      */

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,13 @@
 
 package org.openide.filesystems;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.test.TestFileUtils;
 
 // XXX should only *unused* mask files be listed when propagateMasks?
 // XXX write similar test for ParsingLayerCacheManager (simulate propagateMasks)
@@ -73,8 +78,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
             l.add(kids[i].getNameExt());
         }
         Collections.sort(l);
-        StringBuffer b = new StringBuffer();
-        Iterator i = l.iterator();
+        StringBuilder b = new StringBuilder();
+        Iterator<String> i = l.iterator();
         if (i.hasNext()) {
             b.append(i.next());
             while (i.hasNext()) {
@@ -249,6 +254,64 @@ public class MultiFileSystemMaskTest extends NbTestCase {
     
     // XXX test create -> mask -> recreate in same MFS
     
+    @SuppressWarnings("deprecation") // for debugging only
+    private static void setSystemName(FileSystem fs, String s) throws PropertyVetoException {
+        fs.setSystemName(s);
+    }
+    public void testWeightedOverrides() throws Exception { // #141925
+        FileSystem wr = FileUtil.createMemoryFileSystem();
+        setSystemName(wr, "wr");
+        FileSystem fs1 = FileUtil.createMemoryFileSystem();
+        setSystemName(fs1, "fs1");
+        FileObject f = TestFileUtils.writeFile(fs1.getRoot(), "d/f", "1");
+        f.setAttribute("a", 1);
+        FileSystem fs2 = FileUtil.createMemoryFileSystem();
+        setSystemName(fs2, "fs2");
+        f = TestFileUtils.writeFile(fs2.getRoot(), "d/f", "2");
+        f.setAttribute("a", 2);
+        // Test behavior with no weights: first layer wins.
+        FileSystem mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        f = mfs.findResource("d/f");
+        assertEquals(1, f.getAttribute("a"));
+        assertEquals("1", f.asText());
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        f = mfs.findResource("d/f");
+        assertEquals(2, f.getAttribute("a"));
+        assertEquals("2", f.asText());
+        // Now test that weighted layer wins over unweighted regardless of order.
+        fs2.findResource("d/f").setAttribute("weight", 100);
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        f = mfs.findResource("d/f");
+        assertEquals(2, f.getAttribute("a"));
+        assertEquals("2", f.asText());
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        f = mfs.findResource("d/f");
+        assertEquals(2, f.getAttribute("a"));
+        assertEquals("2", f.asText());
+        // And that a higher weight beats a lower weight.
+        fs1.findResource("d/f").setAttribute("weight", 200);
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        f = mfs.findResource("d/f");
+        assertEquals(1, f.getAttribute("a"));
+        assertEquals("1", f.asText());
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs2, fs1});
+        f = mfs.findResource("d/f");
+        assertEquals(1, f.getAttribute("a"));
+        assertEquals("1", f.asText());
+        // Now test writable layer which should always win regardless of weights.
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        f = mfs.findResource("d/f");
+        f.setAttribute("a", 0);
+        TestFileUtils.writeFile(mfs.getRoot(), "d/f", "0");
+        f = wr.findResource("d/f");
+        // Oddly, it is null: assertEquals(0, f.getAttribute("a"));
+        assertEquals("0", f.asText());
+        mfs = new MultiFileSystem(new FileSystem[] {wr, fs1, fs2});
+        f = mfs.findResource("d/f");
+        assertEquals(0, f.getAttribute("a"));
+        assertEquals("0", f.asText());
+    }
+
     public void testMultipleMaskLayers() throws Exception {
         MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
             TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {

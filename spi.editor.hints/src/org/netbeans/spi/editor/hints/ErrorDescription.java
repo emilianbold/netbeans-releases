@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,4 +119,46 @@ public final class ErrorDescription {
             throw (IllegalStateException) new IllegalStateException().initCause(ex);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ErrorDescription other = (ErrorDescription) obj;
+        if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
+            return false;
+        }
+        if (this.severity != other.severity && (this.severity == null || !this.severity.equals(other.severity))) {
+            return false;
+        }
+        if (this.span.getBegin().getOffset() != other.span.getBegin().getOffset()) {
+            return false;
+        }
+        if (this.span.getEnd().getOffset() != other.span.getEnd().getOffset()) {
+            return false;
+        }
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 17 * hash + (this.description != null ? this.description.hashCode() : 0);
+        hash = 17 * hash + (this.severity != null ? this.severity.hashCode() : 0);
+        hash = 17 * hash + this.span.getBegin().getOffset();
+        hash = 17 * hash + this.span.getEnd().getOffset();
+        hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
+
+
+
 }

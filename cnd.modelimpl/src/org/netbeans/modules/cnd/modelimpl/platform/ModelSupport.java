@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -79,9 +83,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -111,20 +115,6 @@ public class ModelSupport implements PropertyChangeListener {
         return 8;
     }
 
-    public File locateFile(String fileName) {
-        InstalledFileLocator locator = InstalledFileLocator.getDefault();
-        if (locator != null) {
-            File file = locator.locate(fileName, "com.sun.tools.swdev.parser.impl/1", false); // NOI18N
-            if (file != null) {
-                return file;
-            }
-        }
-        // the above code is mostly for debugging purposes;
-        // but seems it didn't spoil anything :)
-        File file = new File(fileName);
-        return file.exists() ? file : null;
-    }
-
     public void setModel(ModelImpl model) {
         this.theModel = model;
         synchronized (this) {
@@ -140,7 +130,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void startup() {
-
+        modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
         if (!CndUtils.isStandalone()) {
@@ -162,6 +152,7 @@ public class ModelSupport implements PropertyChangeListener {
                 postponeParse = true;
                 WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (TRACE_STARTUP) {
                             System.out.println("Model support: invoked after ready UI"); // NOI18N
@@ -169,6 +160,7 @@ public class ModelSupport implements PropertyChangeListener {
                         postponeParse = false;
                         Runnable task = new Runnable() {
 
+                            @Override
                             public void run() {
                                 OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
                                 openProjects();
@@ -187,12 +179,14 @@ public class ModelSupport implements PropertyChangeListener {
 
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
+        modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
             model.shutdown();
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
             if (TRACE_STARTUP) {
@@ -205,6 +199,7 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             openProjects();
                         }
@@ -278,6 +273,7 @@ public class ModelSupport implements PropertyChangeListener {
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
+                    case FORTRAN:
                         sources.add(item);
                         break;
                     case C_HEADER:
@@ -313,8 +309,8 @@ public class ModelSupport implements PropertyChangeListener {
         StringBuilder sb = new StringBuilder();
         ProjectInformation pi = ProjectUtils.getInformation(project);
         if (pi != null) {
-            sb.append(" Name=" + pi.getName()); // NOI18N
-            sb.append(" DisplayName=" + pi.getDisplayName()); // NOI18N
+            sb.append(" Name=").append(pi.getName()); // NOI18N
+            sb.append(" DisplayName=").append(pi.getDisplayName()); // NOI18N
         }
 //        SourceGroup[] sg = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
 //        for( int i = 0; i < sg.length; i++ ) {
@@ -342,14 +338,16 @@ public class ModelSupport implements PropertyChangeListener {
                 dumpProjectFiles(nativeProject);
             }
 
-            nativeProject.runOnCodeModelReadiness(new Runnable() {
-
-                public void run() {
+            String taskName = NbBundle.getMessage(getClass(), "MSG_CodeAssistanceInitializationTask",
+                    nativeProject.getProjectDisplayName());
+            NamedRunnable task = new NamedRunnable(taskName) {
+                @Override
+                protected void runImpl() {
                     boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
-
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
-            });
+            };
+            nativeProject.runOnProjectReadiness(task);
         }
     }
 
@@ -363,6 +361,7 @@ public class ModelSupport implements PropertyChangeListener {
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
+                        case FORTRAN:
                             sources.add(item);
                             break;
                         case C_HEADER:
@@ -459,7 +458,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private class ModifiedObjectsChangeListener implements ChangeListener {
 
-        private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
+        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
 
         private Collection<BufAndProj> getBufNP(DataObject dao) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
@@ -513,7 +512,7 @@ public class ModelSupport implements PropertyChangeListener {
 
         private boolean isCndDataObject(FileObject fo) {
             String type = fo.getMIMEType();
-            return MIMENames.isHeaderOrCppOrC(type);
+            return MIMENames.isFortranOrHeaderOrCppOrC(type);
         }
 
         private NativeFileItemSet findCanonicalSet(DataObject curObj) {
@@ -543,47 +542,11 @@ public class ModelSupport implements PropertyChangeListener {
 //                bufNP.project.onFileEditEnd(bufNP.buffer);
 //            }
 //        }
-        private void traceStateChanged(ChangeEvent e) {
-            if (TraceFlags.DEBUG) {
-                Diagnostic.trace("state of registry changed:"); // NOI18N
-                Diagnostic.indent();
-                if (e != null) {
-                    DataObject[] objs = DataObject.getRegistry().getModified();
-                    if (objs.length == 0) {
-                        Diagnostic.trace("all objects are saved"); // NOI18N
-                    } else {
-                        Diagnostic.trace("set of edited objects:"); // NOI18N
-                        for (int i = 0; i < objs.length; i++) {
-                            DataObject curObj = objs[i];
-                            Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
-                            Diagnostic.indent();
-                            Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-                            NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
-                            if (set == null) {
-                                Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
-                            } else {
-                                Diagnostic.trace("NativeFileItemSet:"); // NOI18N
-                                for (NativeFileItem item : set.getItems()) {
-                                    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
-                                }
-                            }
-                            EditorCookie editor = curObj.getCookie(EditorCookie.class);
-                            Diagnostic.trace("has editor support: " + editor); // NOI18N
-                            Document doc = editor != null ? editor.getDocument() : null;
-                            Diagnostic.trace("with document: " + doc); // NOI18N
-                            Diagnostic.unindent();
-                        }
-                    }
-                } else {
-                    Diagnostic.trace("no additional info from event object"); // NOI18N
-                }
-                Diagnostic.unindent();
-            }
-        }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (TraceFlags.DEBUG) {
-                traceStateChanged(e);
+                traceDataObjectRegistryStateChanged(e);
             }
             if (e != null) {
 
@@ -629,6 +592,46 @@ public class ModelSupport implements PropertyChangeListener {
             }
             return false;
         }
+
+        private void clean() {
+            buffers.clear();
+        }
+    }
+
+    public static void traceDataObjectRegistryStateChanged(ChangeEvent e) {
+        Diagnostic.trace("state of registry changed:"); // NOI18N
+        Diagnostic.indent();
+        if (e != null) {
+            DataObject[] objs = DataObject.getRegistry().getModified();
+            if (objs.length == 0) {
+                Diagnostic.trace("all objects are saved"); // NOI18N
+            } else {
+                Diagnostic.trace("set of edited objects:"); // NOI18N
+                for (int i = 0; i < objs.length; i++) {
+                    DataObject curObj = objs[i];
+                    Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
+                    Diagnostic.indent();
+                    Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
+                    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                    if (set == null) {
+                        Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
+                    } else {
+                        Diagnostic.trace("NativeFileItemSet:"); // NOI18N
+                        for (NativeFileItem item : set.getItems()) {
+                            Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
+                        }
+                    }
+                    EditorCookie editor = curObj.getCookie(EditorCookie.class);
+                    Diagnostic.trace("has editor support: " + editor); // NOI18N
+                    Document doc = editor != null ? editor.getDocument() : null;
+                    Diagnostic.trace("with document: " + doc); // NOI18N
+                    Diagnostic.unindent();
+                }
+            }
+        } else {
+            Diagnostic.trace("no additional info from event object"); // NOI18N
+        }
+        Diagnostic.unindent();
     }
 
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
@@ -693,6 +696,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
 
+        @Override
         public void run() {
             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("External updates: running update task\n");
@@ -722,7 +726,7 @@ public class ModelSupport implements PropertyChangeListener {
                             project.onFileExternalCreate(fo);
                         }
                    } else {
-                        CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+                        CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);
                         for (int i = 0; i < files.length; ++i) {
                             FileImpl file = (FileImpl) files[i];
                             ProjectBase project = file.getProjectImpl(true);
@@ -744,7 +748,7 @@ public class ModelSupport implements PropertyChangeListener {
                     System.err.printf("MIME resolved: %s\n", mime);
                 }
             }
-            return MIMENames.isHeaderOrCppOrC(mime);
+            return MIMENames.isFortranOrHeaderOrCppOrC(mime);
         }
     }
 }

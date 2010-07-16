@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,8 +52,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 
-import org.netbeans.modules.soa.validation.core.Validator;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.xml.validation.core.Validator;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -58,39 +61,39 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class WsdlValidator extends Validator {
 
-  protected abstract WSDLVisitor getVisitor();
+    protected abstract WSDLVisitor getVisitor();
 
-  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
-    if ( !(m instanceof WSDLModel)) {
-      return null;
-    }
+    public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+        if (!(m instanceof WSDLModel)) {
+            return null;
+        }
 //out();
 //out("VALIDATE WSDL");
-    WSDLModel model = (WSDLModel) m;
+        WSDLModel model = (WSDLModel) m;
 
-    if (model.getState() == Model.State.NOT_WELL_FORMED) {
+        if (model.getState() == Model.State.NOT_WELL_FORMED) {
 //out("11");
-      return null;
-    }
+            return null;
+        }
 //out("22");
-    init(validation, type);
+        init(validation, type);
 
-    if ( !isComplete()) {
+        if (!isComplete()) {
 //out("33");
-      return null;
-    }
-    Definitions definitions = model.getDefinitions();
+            return null;
+        }
+        Definitions definitions = model.getDefinitions();
 //out("44");
 
-    if (definitions == null) {
+        if (definitions == null) {
 //out("55");
-      return null;
-    }
+            return null;
+        }
 //out("66");
-    startTime();
-    definitions.accept(getVisitor());
-    endTime(getDisplayName());
+        startTime();
+        definitions.accept(getVisitor());
+        endTime(getDisplayName());
 
-    return createValidationResult(model);
-  }
+        return createValidationResult(model);
+    }
 }

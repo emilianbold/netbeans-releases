@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,11 +57,11 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.POJOHelper;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 
 
 /**
@@ -94,10 +97,10 @@ public class VisualClassPathItem {
     private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/compapp/projects/jbi/ui/resources/libraries.gif"; // NOI18N
     private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/compapp/projects/jbi/ui/resources/projectDependencies.gif"; // NOI18N
     private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/compapp/projects/jbi/ui/resources/j2seProject.gif"; // NOI18N
-    private static Icon ICON_JAR = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAR, false);
-    private static Icon ICON_LIBRARY = ImageUtilities.loadImageIcon(RESOURCE_ICON_LIBRARY, false);
-    private static Icon ICON_ARTIFACT = ImageUtilities.loadImageIcon(RESOURCE_ICON_ARTIFACT, false);
-    private static Icon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
+    private static Icon ICON_JAR = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_JAR));
+    private static Icon ICON_LIBRARY = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_LIBRARY));
+    private static Icon ICON_ARTIFACT = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_ARTIFACT));
+    private static Icon ICON_CLASSPATH = new ImageIcon(ImageUtilities.loadImage(RESOURCE_ICON_CLASSPATH));
     
     private int type;
     private Object cpElement;
@@ -204,20 +207,20 @@ public class VisualClassPathItem {
         }
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param artifact DOCUMENT ME!
-     * @param pathInWar DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
-        return new VisualClassPathItem(
-                artifact, VisualClassPathItem.TYPE_ARTIFACT,
-                artifact.getArtifactLocations()[0].toString(), pathInWar, false
-                );
-    }
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param artifact DOCUMENT ME!
+//     * @param pathInWar DOCUMENT ME!
+//     *
+//     * @return DOCUMENT ME!
+//     */
+//    public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
+//        return new VisualClassPathItem(
+//                artifact, VisualClassPathItem.TYPE_ARTIFACT,
+//                artifact.getArtifactLocations()[0].toString(), pathInWar, false
+//                );
+//    }
     
     public static boolean isJavaEEProjectAntArtifact(AntArtifact aa){
         Project project = aa.getProject();

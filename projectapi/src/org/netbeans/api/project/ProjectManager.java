@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -64,6 +68,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -158,19 +163,19 @@ public final class ProjectManager {
      * Cache of loaded projects (modified or not).
      * Also caches a dir which is <em>not</em> a project.
      */
-    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>();
+    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = Collections.synchronizedMap(new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>());
     
     /**
      * Set of modified projects (subset of loaded projects).
      */
     private final Set<Project> modifiedProjects = new HashSet<Project>();
     
-    private final Set<Project> removedProjects = new WeakSet<Project>();
+    private final Set<Project> removedProjects = Collections.synchronizedSet(new WeakSet<Project>());
     
     /**
      * Mapping from projects to the factories that created them.
      */
-    private final Map<Project,ProjectFactory> proj2Factory = new WeakHashMap<Project,ProjectFactory>();
+    private final Map<Project,ProjectFactory> proj2Factory = Collections.synchronizedMap(new WeakHashMap<Project,ProjectFactory>());
     
     /**
      * Checks for deleted projects.
@@ -190,6 +195,7 @@ public final class ProjectManager {
         dir2Proj.clear();
         modifiedProjects.clear();
         proj2Factory.clear();
+        removedProjects.clear();
     }
     
     /**
@@ -244,7 +250,8 @@ public final class ProjectManager {
                                     dir2Proj.wait();
                                     LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                 } catch (InterruptedException e) {
-                                    LOG.log(Level.WARNING, null, e);
+                                    LOG.log(Level.INFO, null, e);
+                                    return null;
                                 }
                             }
                         } while (LoadStatus.LOADING_PROJECT.is(o));
@@ -441,7 +448,8 @@ public final class ProjectManager {
                             try {
                                 dir2Proj.wait();
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                LOG.log(Level.INFO, null, e);
+                                return null;
                             }
                         }
                     } while (LoadStatus.LOADING_PROJECT.is(o));
@@ -543,10 +551,11 @@ public final class ProjectManager {
             LOG.log(Level.FINE, "markModified({0})", p.getProjectDirectory());
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
-                    if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalStateException("An attempt to call ProjectState.markModified on a deleted project: " + p.getProjectDirectory()); // NOI18N
+                    if (proj2Factory.containsKey(p)) {
+                        modifiedProjects.add(p);
+                    } else {
+                        LOG.log(Level.WARNING, "An attempt to call ProjectState.markModified on an unknown project: {0}", p.getProjectDirectory());
                     }
-                    modifiedProjects.add(p);
                     return null;
                 }
             });
@@ -556,14 +565,12 @@ public final class ProjectManager {
             assert p != null;
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
-                    if (proj2Factory.get(p) == null) {
-                        throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory()); // NOI18N
-                    }
-                    
                     dir2Proj.remove(p.getProjectDirectory());
                     proj2Factory.remove(p);
                     modifiedProjects.remove(p);
-                    removedProjects.add(p);
+                    if (!removedProjects.add(p)) {
+                        LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", p.getProjectDirectory());
+                    }
                     //#111892
                     Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
                     for (FileOwnerQueryImplementation impl : col) {
@@ -596,14 +603,13 @@ public final class ProjectManager {
      * <p>Acquires read access.
      * @param p a project loaded by this manager
      * @return true if it is modified, false if has been saved since the last modification
-     * @throws IllegalArgumentException if the project was not created through this manager
      */
-    public boolean isModified(final Project p) throws IllegalArgumentException {
+    public boolean isModified(final Project p) {
         return mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
                 synchronized (dir2Proj) {
                     if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
+                        LOG.log(Level.WARNING, "Project {0} was already deleted", p);
                     }
                 }
                 return modifiedProjects.contains(p);
@@ -625,10 +631,9 @@ public final class ProjectManager {
      * </p>
      * @param p the project to save
      * @throws IOException if it cannot be saved
-     * @throws IllegalArgumentException if the project was not created through this manager
      * @see ProjectFactory#saveProject
      */
-    public void saveProject(final Project p) throws IOException, IllegalArgumentException {
+    public void saveProject(final Project p) throws IOException {
         try {
             mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
@@ -636,13 +641,14 @@ public final class ProjectManager {
                     if (removedProjects.contains(p)) {
                         return null;
                     }
-                    if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
-                    }
                     if (modifiedProjects.contains(p)) {
                         ProjectFactory f = proj2Factory.get(p);
-                        f.saveProject(p);
-                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        if (f != null) {
+                            f.saveProject(p);
+                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        } else {
+                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
+                        }
                         modifiedProjects.remove(p);
                     }
                     return null;
@@ -672,9 +678,12 @@ public final class ProjectManager {
                     while (it.hasNext()) {
                         Project p = it.next();
                         ProjectFactory f = proj2Factory.get(p);
-                        assert f != null : p;
-                        f.saveProject(p);
-                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        if (f != null) {
+                            f.saveProject(p);
+                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        } else {
+                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
+                        }
                         it.remove();
                     }
                     return null;
@@ -691,7 +700,7 @@ public final class ProjectManager {
      *
      * @since 1.6
      *
-     * @param p a project loaded by this manager
+     * @param p a project
      * @return true if the project is still valid, false if it has been deleted
      */
     public boolean isValid(final Project p) {
@@ -713,9 +722,12 @@ public final class ProjectManager {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            synchronized (dir2Proj) {
-                dir2Proj.remove(fe.getFile());
-            }
+            dir2Proj.remove(fe.getFile());
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            dir2Proj.remove(fe.getFile());
         }
         
     }

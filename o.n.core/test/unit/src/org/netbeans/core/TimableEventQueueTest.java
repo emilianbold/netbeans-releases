@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,10 +46,12 @@ import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
@@ -59,9 +64,10 @@ public class TimableEventQueueTest extends NbTestCase {
     static {
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
         System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
+        System.setProperty("org.netbeans.core.TimeableEventQueue.report", "600");
         TimableEventQueue.initialize();
     }
-    private static CountingHandler handler = new CountingHandler();
+    private CharSequence log;
     
     
     public TimableEventQueueTest(String testName) {
@@ -69,23 +75,14 @@ public class TimableEventQueueTest extends NbTestCase {
     }
 
     @Override
-    protected Level logLevel() {
-        return Level.FINEST;
-    }
-
-    @Override
     protected void setUp() throws Exception {
-        Logger l = Logger.getLogger("org.netbeans.core");
-        l.setUseParentHandlers(false);
-        l.removeHandler(handler);
-        l.addHandler(handler);
-        handler.records.clear();
+        log = Log.enable(TimableEventQueue.class.getName(), Level.FINE);
     }
 
-    @RandomlyFails
     public void testDispatchEvent() throws Exception {
         class Slow implements Runnable {
             private int ok;
+            @Override
             public void run() {
                 try {
                     Thread.sleep(1000);
@@ -99,30 +96,12 @@ public class TimableEventQueueTest extends NbTestCase {
         
         EventQueue.invokeAndWait(slow);
         EventQueue.invokeAndWait(slow);
+        TimableEventQueue.RP.awaitTermination(1, TimeUnit.SECONDS);
         
         assertEquals("called", 2, slow.ok);
 
-        if (handler.records.isEmpty()) {
-            fail("There shall be some reports: " + handler.records);
-        }
-    }
-
-    private static final class CountingHandler extends Handler {
-        List<LogRecord> records = Collections.synchronizedList(new LinkedList<LogRecord>());
-
-        @Override
-        public void publish(LogRecord record) {
-            if (record.getLevel().intValue() >= Level.INFO.intValue()) {
-                records.add(record);
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
+        if (!log.toString().contains("too much time in AWT thread")) {
+            fail("There shall be warning about too much time in AWT thread:\n" + log);
         }
     }
 }

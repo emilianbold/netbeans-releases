@@ -349,7 +349,9 @@ public class VariablesModel extends ViewModelSupport
         if ( node instanceof AbstractVariableNode ){
             AbstractVariableNode var = (AbstractVariableNode)node;
             String name = var.getFullName();
-            if ( property.getFullName().equals( name )){
+            final String propertyFullName = property.getFullName();
+            String propertyName = property.getName();
+            if ((propertyFullName != null  && propertyFullName.equals(name)) || propertyName.equals(name)){
                 Collection<ModelEvent> events = new ArrayList<ModelEvent>();
                 var.collectUpdates( this , AbstractModelNode.
                         createVariable( property , var.getParent()), events);
@@ -432,7 +434,7 @@ public class VariablesModel extends ViewModelSupport
         if ( id == null ){
             return null;
         }
-        return SessionManager.getInstance().getCurrentSession(id);
+        return SessionManager.getInstance().getSession(id);
     }
     
     private ContextProvider getContextProvider() {
@@ -531,10 +533,7 @@ public class VariablesModel extends ViewModelSupport
                 VariableNode node, Collection<ModelEvent> events )
         {
             AbstractVariableNode newNode = (AbstractVariableNode)node;
-            boolean hasChanged = false;
-            
-            assert getFullName().equals(node.getFullName());
-
+            boolean hasChanged = false;            
             /*
              * Always update property.
              */

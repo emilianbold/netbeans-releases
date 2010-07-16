@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,10 +69,14 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -117,12 +124,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     }
     
     private void init() {
-        addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
-                               NbDocument.BREAKPOINT_STYLE_NAME + "Layer:10"); // NOI18N
-        addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
-                               NbDocument.ERROR_STYLE_NAME + "Layer:20"); // NOI18N
-        addStyleToLayerMapping(NbDocument.CURRENT_STYLE_NAME,
-                               NbDocument.CURRENT_STYLE_NAME + "Layer:30"); // NOI18N
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
         
         annoMap = new HashMap(20);
@@ -133,6 +134,27 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             public Object getValue() {
                 MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
                 return ComplexValueSettingsFactory.getIndentEngine(mimePath);
+            }
+        });
+
+        putProperty(SimpleValueNames.TEXT_LINE_WRAP, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().get(SimpleValueNames.TEXT_LINE_WRAP, "none"); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document fire the property change event
+                return null;
+            }
+        });
+        putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, EditorPreferencesDefaults.defaultTextLimitWidth); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document fire the property change event
+                return null;
             }
         });
     }
@@ -306,6 +328,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         private PropertyChangeListener l;
         private Position pos;
         private BaseDocument doc;
+
+        private int lastKnownOffset = -1;
+        private int lastKnownLine = -1;
         
         AnnotationDescDelegate(BaseDocument doc, Position pos, int length, Annotation anno) {
             super(pos.getOffset(),length);
@@ -351,11 +376,23 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
         
         public int getLine() {
-            try {
-                return Utilities.getLineOffset(doc, pos.getOffset());
-            } catch (BadLocationException e) {
-                return 0;
+            int offset = pos.getOffset();
+
+            if (lastKnownOffset != -1 && lastKnownLine != -1) {
+                if (lastKnownOffset == offset) {
+                    return lastKnownLine;
+                }
             }
+
+            try {
+                lastKnownLine = Utilities.getLineOffset(doc, offset);
+                lastKnownOffset = offset;
+            } catch (BadLocationException e) {
+                lastKnownOffset = -1;
+                lastKnownLine = 0;
+            }
+
+            return lastKnownLine;
         }
 
         public Lookup getLookup() {

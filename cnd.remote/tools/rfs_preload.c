@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,20 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <dlfcn.h>
-#include <memory.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include  <stdarg.h>
-#include  <string.h>
-#include  <limits.h>
+#include <stdarg.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <fcntl.h>
 #include <alloca.h>
 
@@ -66,13 +58,13 @@ static int test_env = 0;
 
 static int __thread inside_open = 0;
 
-#define get_real_addr(name) _get_real_addr(#name, name);
+#define get_real_addr(name) _get_real_addr(#name, (void*)name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     void *res;
     int saved_errno = errno;
     res = dlsym(RTLD_NEXT, name);
-    if (res && res == wrapper_addr) {
+    if (res && (res == wrapper_addr)) {
         res = dlsym(RTLD_NEXT, name);
     }
     if (!res) {
@@ -82,14 +74,12 @@ static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     return res;
 }
 
-#if TRACE
+/*--------------------------------------------------
 static void dbg_print_addr(const char* name) {
     void* addr = dlsym(RTLD_NEXT, name);
     trace("\t%s=%X\n", name, addr);
 }
-#endif
 
-#if TRACE
 static inline void print_dlsym() {
     const char* names[] = {
         "lstat", "_lstat", "stat", "_lxstat", "fstat", "lstat64", "fstat64", "_fxstat",
@@ -102,7 +92,7 @@ static inline void print_dlsym() {
         i++;
     }
 }
-#endif
+--------------------------------------------------*/
 
 static bool is_writing(int flags) {
     return flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT);
@@ -128,15 +118,13 @@ static void post_open(const char *path, int flags) {
     }
     inside = 1;
 
-    if (path[0] != '/') {
-        static __thread char real_path[PATH_MAX];
-        if ( realpath(path, real_path)) {
-            path = real_path;
-        } else {
-            trace_unresolved_path(path);
-            inside = 0;
-            return;
-        }
+    static __thread char real_path[PATH_MAX + 1];
+    if ( realpath(path, real_path)) {
+        path = real_path;
+    } else {
+        trace_unresolved_path(path, "post_open");
+        inside = 0;
+        return;
     }
 
     if (strncmp(my_dir, path, my_dir_len) != 0) {
@@ -189,19 +177,13 @@ static bool pre_open(const char *path, int flags) {
     }
     inside = 1;
 
-    const char* real_path;
-    if (path[0] != '/') {
-        static __thread char real_path_buffer[PATH_MAX];
-        if ( realpath(path, real_path_buffer)) {
-            //path = real_path;
-            real_path = real_path_buffer;
-        } else {
-            trace_unresolved_path(path);
-            inside = 0;
-            return false;
-        }
-    } else {
-        real_path = path;
+    static __thread char real_path[PATH_MAX + 1];
+    if ( !realpath(path, real_path)) {
+        trace_unresolved_path(path, "pre_open");
+        inside = 0;
+        // We usually get here if file does not exist.
+        // Don't return false - let real open apply its logic
+        return true;
     }
 
     if (strncmp(my_dir, real_path, my_dir_len) != 0) {
@@ -256,8 +238,8 @@ pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
-        }
+            prev = (pid_t (*)(void)) get_real_addr(fork);
+            }
         if (prev) {
             result = prev();
         } else {
@@ -280,7 +262,7 @@ pid_t fork() {
 /** gets current process short name */
 static char* get_procname(char* name, int len) {
     #ifdef __linux__
-    char path[PATH_MAX];
+    char path[PATH_MAX + 1];
     if (readlink ("/proc/self/exe", path, sizeof path) != -1) {
         trace("0 %d\n", path);
         char *res = basename(path);
@@ -353,37 +335,47 @@ static void sleep_if_need() {
 static void
 __attribute__((constructor))
 rfs_startup(void) {
+    init_trace_flag("RFS_PRELOAD_TRACE");
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
-
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
     trace("test_env %s\n", test_env ? "ON" : "OFF");
     
 //#if TRACE
 //    print_dlsym();
 //#endif
-    //curr_dir = malloc(curr_dir_len = PATH_MAX);
+    //curr_dir = malloc(curr_dir_len = PATH_MAX + 1);
     //getcwd(curr_dir, curr_dir_len);
-    my_dir = getenv("RFS_CONTROLLER_DIR");
-    if (!my_dir) {
-        //my_dir = curr_dir;
-        char* p = malloc(PATH_MAX);
-        getcwd(p, PATH_MAX);
-        my_dir = p;
+    char* dir = getenv("RFS_CONTROLLER_DIR");
+    if (dir) {
+        dir = strdup(dir);
+    } else {
+        char* p = malloc(PATH_MAX + 1);
+        getcwd(p, PATH_MAX + 1);
+        dir = p;
     }
-    my_dir_len = strlen(my_dir);
-    if (my_dir[my_dir_len-1] == '/') {
-        my_dir = strdup(my_dir);
+    char* real_dir = malloc(PATH_MAX + 1);
+    if ( realpath(dir, real_dir)) {
+        char *to_free = dir;
+        dir = real_dir;
+        free(to_free);
+    } else {
+        trace_unresolved_path(dir, "RFS startup");
+    }
+    my_dir_len = strlen(dir);
+    if (dir[my_dir_len-1] == '/') {
+        dir = strdup(dir);
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcpy(p, my_dir);
+        strcpy(p, dir);
         strcat(p, "/");
-        my_dir = p;
+        dir = p;
     }
+    my_dir = dir;
 
     static int startup_count = 0;
     startup_count++;
-    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+    trace("RFS startup (%d) my dir: %s\n", startup_count, dir);
 
     release_socket();
     trace_sd("startup");
@@ -448,7 +440,9 @@ int pthread_create(void *newthread,
         } \
         if (prev) {\
             result = prev(path, flags, mode); \
-            post_open(path, flags); \
+            if (result != -1) { \
+                post_open(path, flags); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function_name); \
             errno = EFAULT; \
@@ -471,7 +465,9 @@ int pthread_create(void *newthread,
         } \
         if (prev) { \
             result = prev(path, mode); \
-            post_open(path, int_mode); \
+            if (result) { \
+                post_open(path, int_mode); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \
@@ -523,11 +519,12 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
     if (pre_open(path, flags)) {
         static int (*prev)(const char *, char *const *, char *const *);
         if (!prev) {
-            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, execve);
+            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, (void*) execve);
         }
         if (prev) {
             result = prev(path, argv, envp);
-            post_open(path, flags);
+            // no post_open here since execve never returns in the case of success
+            //post_open(path, flags);
         } else {
             trace("Could not find original \"%s\" function\n", function_name);
             errno = EFAULT;
@@ -548,15 +545,17 @@ int rename(const char *oldpath, const char *path) {
     if (pre_open(oldpath, 0)) {
         static int (*prev)(const char *, const char *);
         if (!prev) {
-            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, rename);
+            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, (void*) rename);
         }
         if (prev) {
             result = prev(oldpath, path);
             if (result == -1) {
                 trace("Errno=%d %s\n", errno, strerror(errno));
-                perror("RENAMING ");
+                // why should we call perror here? it's up to caller
+                // perror("RENAMING ");
+            } else {
+                post_open(path, O_TRUNC | O_CREAT | O_WRONLY);
             }
-            post_open(path, O_TRUNC | O_CREAT | O_WRONLY);
         } else {
             trace("Could not find original \"%s\" function\n", function_name);
             errno = EFAULT;
@@ -592,7 +591,9 @@ FILE *fopen64(const char * filename, const char * mode) {
         } \
         if (prev) { \
             result = prev(path, mode, stream); \
-            post_open(path, int_mode); \
+            if (result) { \
+                post_open(path, int_mode); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \

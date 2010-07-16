@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -185,6 +188,7 @@ public final class PhpSourcePath {
     // PhpSourcePathImplementation implementation for file which does not belong to any project
     private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
+        @Override
         public FileType getFileType(FileObject file) {
             for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
                 if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
@@ -199,10 +203,12 @@ public final class PhpSourcePath {
             return FileType.UNKNOWN;
         }
 
+        @Override
         public List<FileObject> getIncludePath() {
             return new ArrayList<FileObject>(getPlatformPath());
         }
 
+        @Override
         public FileObject resolveFile(FileObject directory, String fileName) {
             FileObject resolved = directory.getFileObject(fileName);
             if (resolved != null) {
@@ -220,9 +226,11 @@ public final class PhpSourcePath {
         // XXX cache?
         private List<FileObject> getPlatformPath() {
             String[] paths = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
-            List<FileObject> dirs = new ArrayList<FileObject>(paths.length);
+            List<FileObject> internalPath = CommonPhpSourcePath.getInternalPath();
+            List<FileObject> dirs = new ArrayList<FileObject>(paths.length + internalPath.size());
+            dirs.addAll(internalPath);
             for (String path : paths) {
-                FileObject resolvedFile = FileUtil.toFileObject(new File(path));
+                FileObject resolvedFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
                 if (resolvedFile != null) { // XXX check isValid() as well?
                     dirs.add(resolvedFile);
                 }

@@ -5,7 +5,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -338,9 +341,9 @@ public class ConfigManager {
                 }
 
                 // process the ordered documents
-                FACES_CONFIG_PROCESSOR_CHAIN.process(facesDocuments);
+                FACES_CONFIG_PROCESSOR_CHAIN.process(null, facesDocuments);
                 if (!isFaceletsDisabled) {
-                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(
+                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(null,
                           getConfigDocuments(sc,
                                              getFaceletConfigResourceProviders(),
                                              executor,

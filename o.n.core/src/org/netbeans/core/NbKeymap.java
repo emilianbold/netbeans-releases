@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,6 +62,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -71,12 +75,18 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Keymap.class)
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
+
+    private static final RequestProcessor RP = new RequestProcessor("NbKeyMap", 1); //NOI18N
+    //for unit testing only
+    private RequestProcessor.Task refreshTask;
 
     private static final Action BROKEN = new AbstractAction("<broken>") { // NOI18N
         public void actionPerformed(ActionEvent e) {
@@ -143,9 +153,24 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         }
     };
 
-    private synchronized void refreshBindings() {
+    private void refreshBindings() {
+        refreshTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                doRefreshBindings();
+            }
+        });
+    }
+
+    private synchronized void doRefreshBindings() {
         bindings = null;
         bindings();
+    }
+
+    //for unit testing only
+    void waitFinished() throws InterruptedException {
+        if( null != refreshTask )
+            refreshTask.waitFinished(5000);
     }
 
     private synchronized Map<KeyStroke,Binding> bindings() {
@@ -211,9 +236,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             if (refresh) {
                 // Update accelerators of existing actions after switching keymap.
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
-                            entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                        synchronized( action2Id ) {
+                            for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
+                                entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                            }
                         }
                     }
                 });
@@ -334,18 +362,33 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     }
 
     public KeyStroke[] getKeyStrokesForAction(Action a) {
-        FileObject definingFile = (FileObject) a.getValue("definingFile"); // cf. o.o.awt.Toolbar.setAccelerator
-        if (definingFile == null) {
-            LOG.log(Level.FINE, "no defining file known for {0}", id(a));
-            return new KeyStroke[0];
-        }
+        return new KeyStroke[0];
+    }
+
+    KeyStroke keyStrokeForAction(Action a, FileObject definingFile) {
         String id = idForFile(definingFile);
         bindings();
-        action2Id.put(a, id);
-        KeyStroke k = id2Stroke.get(id);
-        LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
-        return k != null ? new KeyStroke[] {k} : new KeyStroke[0];
+        synchronized( action2Id ) {
+            action2Id.put(a, id);
+            KeyStroke k = id2Stroke.get(id);
+            LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+            return k;
+        }
     }
+
+    @ServiceProvider(service=AcceleratorBinding.class)
+    public static final class AcceleratorBindingImpl extends AcceleratorBinding {
+        protected @Override KeyStroke keyStrokeForAction(Action action, FileObject definingFile) {
+            Keymap km = Lookup.getDefault().lookup(Keymap.class);
+            if (km instanceof NbKeymap) {
+                return ((NbKeymap) km).keyStrokeForAction(action, definingFile);
+            } else {
+                LOG.log(Level.WARNING, "unexpected keymap: {0}", km);
+                return null;
+            }
+        }
+    }
+
     /**
      * Traverses shadow files to origin.
      * Returns impl class name if that is obvious (common for SystemAction's);
@@ -366,7 +409,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                         f = ((DataShadow) d).getOriginal().getPrimaryFile();
                     }
                 } catch (DataObjectNotFoundException x) {
-                    LOG.log(Level.INFO, f.getPath(), x);
+                    LOG.log(Level.FINE, f.getPath(), x);
                 }
             }
         }

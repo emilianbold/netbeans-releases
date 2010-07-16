@@ -31,6 +31,11 @@ public interface FileMessage extends FileComponent {
      * 
      */
     public static final String ATTR_FILE_ENCODING_STYLE = "encodingStyle";
+    
+   /**
+     * 
+     */
+    public static final String ATTR_FILE_CHARSET = "charset";
     /**
      * 
      */
@@ -39,6 +44,10 @@ public interface FileMessage extends FileComponent {
      * 
      */
     public static final String ATTR_FILE_NAME_IS_PATTERN = "fileNameIsPattern";
+    /**
+     * 
+     */
+    public static final String ATTR_FILE_NAME_IS_REGEX = "fileNameIsRegex";
     /**
      * 
      */
@@ -100,6 +109,10 @@ public interface FileMessage extends FileComponent {
      */
     public static final String ATTR_STAGING_DIR = "stageDirectory";
     public static final String ATTR_STAGING_DIR_IS_RELATIVE = "stageDirIsRelative";
+    /**
+     * 
+     */
+    public static final String ATTR_FORWARD_AS_ATTACHMENT = "forwardAsAttachment";
     
     /**
      * 
@@ -151,6 +164,16 @@ public interface FileMessage extends FileComponent {
      * @return 
      */
     public boolean getFileNameIsPattern();
+    /**
+     * 
+     * @param val 
+     */
+    public void setFileNameIsRegex(boolean val);
+    /**
+     * 
+     * @return 
+     */
+    public boolean getFileNameIsRegex();
     /**
      * 
      * @param val 
@@ -248,4 +271,16 @@ public interface FileMessage extends FileComponent {
 
     public boolean getStagingDirIsRelative();
     public void setStagingDirIsRelative(boolean b);
+    
+    /**
+     * Return true if payload is to be send as an attachment
+     * @return boolean
+     */
+    public boolean getForwardAsAttachment();
+    
+    /**
+     * Set the forward as attachment flag
+     * @param b
+     */
+    public void setForwardAsAttachment(boolean b);    
 }

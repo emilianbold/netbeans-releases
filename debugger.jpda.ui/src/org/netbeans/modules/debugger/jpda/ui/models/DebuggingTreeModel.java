@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -112,6 +115,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
 
+    private final DebuggingMonitorModel.Children monitorChildrenFilter;
+    private final TreeModel childrenModelImpl;
+
     private RequestProcessor RP;
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
@@ -124,46 +130,103 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             prefListener = new DebuggingPreferenceChangeListener();
             preferences.addPreferenceChangeListener(prefListener);
         }
+        monitorChildrenFilter = new DebuggingMonitorModel.Children(debugger,
+                new ModelListener() {
+                    @Override
+                    public void modelChanged(ModelEvent event) {
+                        fireModelChange(event);
+                    }
+                }, this);
+        childrenModelImpl = new ChildrenImplModel();
     }
 
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
-        if (parent == ROOT) {
-            boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
-            if (showThreadGroups) {
-                return getTopLevelThreadsAndGroups();
-            } else {
-                JPDAThread[] threads = debugger.getThreadsCollector().getAllThreads().toArray(new JPDAThread[0]);
+        return monitorChildrenFilter.getChildren(childrenModelImpl, parent, 0, Integer.MAX_VALUE);
+    }
+
+    private class ChildrenImplModel implements TreeModel {
+
+        @Override
+        public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
+            //System.err.println("DebuggingTreeModel.computeChildren("+parent+")");
+            if (parent == ROOT) {
+                boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
+                if (showThreadGroups) {
+                    return getTopLevelThreadsAndGroups();
+                } else {
+                    JPDAThread[] threads = debugger.getThreadsCollector().getAllThreads().toArray(new JPDAThread[0]);
+                    for (JPDAThread t : threads) {
+                        watchState(t);
+                    }
+                    return threads;
+                }
+            }
+            if (parent instanceof JPDAThread) {
+                JPDAThread t = (JPDAThread) parent;
+                watchState(t);
+                try {
+                    return t.getCallStack();
+                } catch (AbsentInformationException aiex) {
+                    return new Object[0];
+                }
+            }
+            if (parent instanceof JPDAThreadGroup) {
+                JPDAThread[] threads = ((JPDAThreadGroup)parent).getThreads();
                 for (JPDAThread t : threads) {
                     watchState(t);
                 }
-                return threads;
+                Object[] groups = ((JPDAThreadGroup)parent).getThreadGroups();
+                Object[] result = new Object[threads.length + groups.length];
+                System.arraycopy(threads, 0, result, 0, threads.length);
+                System.arraycopy(groups, 0, result, threads.length, groups.length);
+                return result;
             }
-        }
-        if (parent instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) parent;
-            watchState(t);
-            try {
-                return t.getCallStack();
-            } catch (AbsentInformationException aiex) {
+            if (parent instanceof CallStackFrame) {
                 return new Object[0];
             }
+            throw new UnknownTypeException(parent.toString());
         }
-        if (parent instanceof JPDAThreadGroup) {
-            JPDAThread[] threads = ((JPDAThreadGroup)parent).getThreads();
-            for (JPDAThread t : threads) {
-                watchState(t);
+
+        @Override
+        public int getChildrenCount(Object node) throws UnknownTypeException {
+            if (node instanceof CallStackFrame) {
+                return 0;
             }
-            Object[] groups = ((JPDAThreadGroup)parent).getThreadGroups();
-            Object[] result = new Object[threads.length + groups.length];
-            System.arraycopy(threads, 0, result, 0, threads.length);
-            System.arraycopy(groups, 0, result, threads.length, groups.length);
-            return result;
+            if (node instanceof JPDAThread) {
+                if (!((JPDAThread) node).isSuspended()) {
+                    return 0;
+                }
+            }
+            return Integer.MAX_VALUE;
         }
-        if (parent instanceof CallStackFrame) {
-            return new Object[0];
+
+        @Override
+        public Object getRoot() {
+            return ROOT;
         }
-        throw new UnknownTypeException(parent.toString());
+
+        @Override
+        public boolean isLeaf(Object node) throws UnknownTypeException {
+            if (node instanceof CallStackFrame) {
+                return true;
+            }
+            if (node instanceof JPDAThread) {
+                if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void addModelListener(ModelListener l) {
+        }
+
+        @Override
+        public void removeModelListener(ModelListener l) {
+        }
+
     }
     
     protected Object[] reorder(Object[] nodes) {
@@ -263,40 +326,18 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     @Override
-    protected boolean cacheChildrenOf(Object node) {
-        if (node instanceof JPDAThread) {
-            return false;
-        } else {
-            return super.cacheChildrenOf(node);
-        }
-    }
-    
     public int getChildrenCount(Object node) throws UnknownTypeException {
-        if (node instanceof CallStackFrame) {
-            return 0;
-        }
-        if (node instanceof JPDAThread) {
-            if (!((JPDAThread) node).isSuspended()) {
-                return 0;
-            }
-        }
-        return Integer.MAX_VALUE;
+        return monitorChildrenFilter.getChildrenCount(childrenModelImpl, node);
     }
 
+    @Override
     public Object getRoot() {
         return ROOT;
     }
 
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
-        if (node instanceof CallStackFrame) {
-            return true;
-        }
-        if (node instanceof JPDAThread) {
-            if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
-                return true;
-            }
-        }
-        return false;
+        return monitorChildrenFilter.isLeaf(childrenModelImpl, node);
     }
 
     public void addModelListener(ModelListener l) {
@@ -318,21 +359,27 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
     }
 
+    private void fireModelChange(ModelEvent me) {
+        ModelListener[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray(new ModelListener[0]);
+        }
+        for (int i = 0; i < ls.length; i++) {
+            ls[i].modelChanged(me);
+        }
+    }
+
     public void fireNodeChanged (Object node) {
+        //System.err.println("FIRE node changed ("+node+")");
+        //Thread.dumpStack();
         try {
             recomputeChildren();
         } catch (UnknownTypeException ex) {
             Exceptions.printStackTrace(ex);
             return ;
         }
-        ModelListener[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray(new ModelListener[0]);
-        }
         ModelEvent ev = new ModelEvent.NodeChanged(this, node);
-        for (int i = 0; i < ls.length; i++) {
-            ls[i].modelChanged (ev);
-        }
+        fireModelChange(ev);
     }
 
 
@@ -462,16 +509,15 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
             fireNodeChanged(ROOT);
         }
-        List<ModelListener> ls;
-        synchronized (listeners) {
-            ls = new ArrayList<ModelListener>(listeners);
+        try {
+            recomputeChildren(node);
+        } catch (UnknownTypeException ex) {
+            refreshCache(node);
         }
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.CHILDREN_MASK |
                 ModelEvent.NodeChanged.EXPANSION_MASK);
-        for (ModelListener ml : ls) {
-            ml.modelChanged (event);
-        }
+        fireModelChange(event);
     }
     
     private void watchState(JPDAThread t) {
@@ -502,8 +548,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             // gets suspended or is resumed
             // When thread is resumed because of a method invocation, do the
             // refresh only if the method takes a long time.
-            if (t.isSuspended() || !isMethodInvoking(t)) {
-                boolean suspended = t.isSuspended();
+            boolean isMethodInvoking = "methodInvoke".equals(evt.getPropagationId());
+            boolean suspended = t.isSuspended();
+            if (suspended || !isMethodInvoking) {
                 synchronized (this) {
                     if (task == null) {
                         task = RP.create(new Refresher());

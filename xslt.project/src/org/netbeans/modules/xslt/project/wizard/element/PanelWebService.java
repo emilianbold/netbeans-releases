@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,138 +47,207 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.List;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
+import javax.swing.JTextField;
+import javax.swing.event.DocumentListener;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xml.reference.ReferenceFile;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.ui.editors.ServiceParamChooser;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
+ * @author Vitaly Bychkov
  * @author Vladimir Yaroslavskiy
  * @version 2007.01.30
  */
-final class PanelWebService<T> extends Panel<T> {
-    
-  PanelWebService(Project project, Panel<T> parent) {
-    this(project, parent, null);
-  }
+class PanelWebService extends WizardSettingsPanel {
 
-  PanelWebService(Project project, Panel<T> parent, String alternativeLabel) {
-    super(project, parent);
-    myFileLabelString = alternativeLabel;
-  }
+    public static final String CHOOSER_LABEL2 = "LBL_Chooser2";
+    public static final String SERVICE_LABEL2 = "LBL_Xslt_Service_Operation2";
 
-  @Override
-  protected String getError()
-  {
-    myFile = getWSDL();
-
-    if (myFile == null) {
-      return i18n("ERR_Web_Service_Is_Required"); // NOI18N
+    PanelWebService(Project project, Panel stepPanel) {
+        super(project);
+        myServiceLabelString = SERVICE_LABEL2;
+        myChooserLabelString = CHOOSER_LABEL2;
+        myWsdlPanel = stepPanel;
+        myServiceModel = new XsltServiceConfigurationModel(project, false);
     }
-    return null;
-  }
 
-  @Override
-  protected Object getResult()
-  {
-    return PanelUtil.getWSDLModel(myFile);
-  }
-
-  @Override
-  protected void createPanel(JPanel mainPanel, GridBagConstraints cc)
-  {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.WEST;
-
-    // label
-    c.gridy++;
-    c.weightx = 0.0;
-    c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
-    if (myFileLabelString == null) {
-        myFileLabelString = i18n("LBL_Web_Service_File");
-    }
-    myFileLabel = createLabel(myFileLabelString); // NOI18N
-    a11y(myFileLabel, "ACSN_LBL_Web_Service_File", "ACSD_LBL_Web_Service_File");
-    panel.add(myFileLabel, c);
-
-    // wsdl
-    c.weightx = 1.0;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
-    myWSDL = new JComboBox();
-    myWSDL.setRenderer(new Renderer());
-    myFileLabel.setLabelFor(myWSDL);
-    panel.add(myWSDL, c);
-
-    // [browse]
-    c.weightx = 0.0;
-    c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
-    myBrowse = createButton(
-      new ButtonAction(
-        i18n("LBL_Browse_WSDL"), // NOI18N
-        i18n("TLT_Browse_WSDL")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          printInformation( // to do m
-            "Dialog will be implemented by xml team," + // NOI18N
-            " see issue 93596."); // NOI18N
+    @Override
+    protected String getError() {
+        if (getWsdlOperation() == null) {
+            return i18n("ERR_CallWeb_ServiceOperation_Is_Required"); // NOI18N
         }
-      }
-    );
-//  panel.add(myBrowse, c);
-    mainPanel.add(panel, cc);
-    update();
-  }
-
-  private ItemListener createItemListener(final boolean existing) {
-    return new ItemListener() {
-      public void itemStateChanged(ItemEvent event) {
-        setEnabled(existing);
-      }
-    };
-  }
-
-  @Override
-  protected void setEnabled(boolean enabled)
-  {
-    myWSDL.setEnabled(enabled);
-    myBrowse.setEnabled(enabled);
-    myFileLabel.setEnabled(enabled);
-  }
-
-  @Override
-  protected void update()
-  {
-    myWSDL.removeAllItems();
-    List<ProjectWSDL> wsdls = ProjectUtilities.getProjectWSDLRecursively(getProject());
-
-    for (ProjectWSDL wsdl : wsdls) {
-      myWSDL.addItem(wsdl);
+        return null;
     }
-  }
 
-  private FileObject getWSDL() {
-    if (myWSDL.getItemCount() == 0) {
-      return null;
+    @Override
+    protected Object getResult() {
+        return getWsdlOperation();
     }
-    return ((ProjectWSDL) myWSDL.getSelectedItem()).getFile();
-  }
 
-  private String myFileLabelString;
-  private JButton myBrowse;
-  private JComboBox myWSDL;
-  private JLabel myFileLabel;
-  private FileObject myFile;
+    @Override
+    protected void createPanel(JPanel mainPanel, GridBagConstraints cc) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.WEST;
+
+        // label
+        c.gridy++;
+        c.weightx = 0.0;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
+
+        myServiceLabel = createLabel(i18n(myServiceLabelString)); // NOI18N
+        a11y(myServiceLabel, "ACSN_LBL_Xslt_Service_Operation", "ACSD_LBL_Xslt_Service_Operation");
+        panel.add(myServiceLabel, c);
+
+        // textField
+        c.weightx = 1.0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
+        JTextField wsdlOperationTextField = getWsdlOperationTextField();
+        wsdlOperationTextField.setEditable(false);
+        myServiceLabel.setLabelFor(wsdlOperationTextField);
+        panel.add(wsdlOperationTextField, c);
+
+        // [choose]
+        c.weightx = 0.0;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
+        myChooser = createChooseWsdlOperationButton(myWsdlOperationTextField,
+                myChooserLabelString);
+        panel.add(myChooser, c);
+
+        setWsdlOperation(myServiceModel.getPartnerWsdlOperation());
+
+        DocumentListener docListener = new DocumentListenerImpl(this, myWsdlPanel);
+        wsdlOperationTextField.getDocument().addDocumentListener(docListener);
+
+        mainPanel.add(panel, cc);
+        update();
+    }
+
+    @Override
+    protected void setEnabled(boolean enabled) {
+        myWsdlOperationTextField.setEnabled(enabled);
+        myChooser.setEnabled(enabled);
+        myServiceLabel.setEnabled(enabled);
+    }
+
+    //-----------------------------------
+    protected final JButton createChooseWsdlOperationButton(JTextField fileTextField) {
+        return createBrowseButton(fileTextField, CHOOSER_LABEL2);
+    }
+
+    protected final JButton createChooseWsdlOperationButton(final JTextField fileTextField, String labelKey) {
+
+        JButton chooseButton = createButton(
+                new ButtonAction(
+                i18n(labelKey), // NOI18N
+                i18n("TLT_ChooseWsdlOperation")) { // NOI18N
+
+
+                    public void actionPerformed(ActionEvent event) {
+
+                        TMapModel tMapModel = Util.getTMapModel(Util.getTMapFo(getProject()));
+                        if (tMapModel == null) {
+                            LOGGER.log(Level.WARNING, "ERR_TMapModelIsNull"); // NOI18N
+                            return;
+                        }
+                        ServiceParamChooser chooser = new ServiceParamChooser(
+                                tMapModel, Operation.class);
+                        chooser.setSelectedValue(getWsdlOperation());
+                        if (!ServiceParamChooser.showDlg(chooser)) {
+                            return; // The cancel is pressed
+                        }
+                        WSDLComponent selOperation = chooser.getSelectedValue();
+
+                        if (!(selOperation instanceof Operation)) {
+                            LOGGER.log(Level.WARNING, i18n("MSG_WrongElementWereSelected", selOperation.getClass().toString(), Operation.class.toString()));
+                            return;
+                        }
+
+                        // generate user text info
+                        setWsdlOperation(fileTextField, (Operation) selOperation);
+                    }
+                });
+        return chooseButton;
+    }
+
+    protected JTextField getWsdlOperationTextField() {
+        if (myWsdlOperationTextField == null) {
+            myWsdlOperationTextField = new JTextField();
+        }
+        return myWsdlOperationTextField;
+    }
+
+    protected Operation getWsdlOperation() {
+        return myWsdlOperation;
+    }
+
+    protected Panel getStepPanel() {
+        return myWsdlPanel;
+    }
+    
+    protected void setWsdlOperation(Operation wsdlOperation) {
+        setWsdlOperation(getWsdlOperationTextField(), wsdlOperation);
+    }
+
+    protected void setWsdlOperation(JTextField fileTextField, Operation wsdlOperation) {
+        assert fileTextField != null;
+        if (wsdlOperation == null) {
+            return;
+        }
+        WSDLModel wsdlModel = wsdlOperation.getModel();
+        ReferenceFile prjWSDL = null;
+        FileObject wsdlFo = wsdlModel == null ? null : SoaUtil.getFileObjectByModel(wsdlModel);
+        if (wsdlFo != null) {
+            prjWSDL = new ReferenceFile(wsdlFo, getProject());
+        }
+
+        myWsdlOperation = wsdlOperation;
+        StringBuffer wsdlOpTfValue = new StringBuffer();
+        if (prjWSDL != null) {
+            wsdlOpTfValue.append(prjWSDL.getName());
+        }
+
+        PortType pt = (PortType) myWsdlOperation.getParent();
+        assert pt != null;
+        String ptName = pt.getName();
+        if (ptName != null) {
+            wsdlOpTfValue.append(SERVICE_PARAM_SEPARATOR).append(ptName);
+        }
+
+        String opName = myWsdlOperation.getName();
+        if (opName != null) {
+            wsdlOpTfValue.append(SERVICE_PARAM_SEPARATOR).append(opName);
+            fileTextField.setText(opName);
+        }
+
+        fileTextField.setToolTipText(wsdlOpTfValue.toString());
+    }
+    private static final Logger LOGGER = Logger.getLogger(PanelWebService.class.getName());
+    private static final String SERVICE_PARAM_SEPARATOR = "/"; // NOI18N
+
+    private String myServiceLabelString;
+    private String myChooserLabelString;
+    private JButton myChooser;
+    private JLabel myServiceLabel;
+    private JTextField myWsdlOperationTextField;
+    private Operation myWsdlOperation;
+    private Panel myWsdlPanel;
+    private XsltServiceConfigurationModel myServiceModel;
 }

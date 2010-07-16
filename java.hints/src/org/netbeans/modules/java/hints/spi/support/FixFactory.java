@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,16 +51,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.errors.SuppressWarningsFixer;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -75,6 +78,90 @@ public final class FixFactory {
     
     private FixFactory() {}
 
+    /** Creates a fix, which when invoked adds a set of modifiers to the existing ones
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toAdd set of Modifiers to add
+     * @param text text displayed as a fix description
+     */
+    public static final Fix addModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toAdd, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toAdd", toAdd);
+        Parameters.notNull("text", text);
+
+        return changeModifiersFix(compilationInfo, treePath, toAdd, Collections.<Modifier>emptySet(), text);
+    }
+
+    /** Creates a fix, which when invoked removes a set of modifiers from the existing ones
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toRemove set of Modifiers to remove
+     * @param text text displayed as a fix description
+     */
+    public static final Fix removeModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toRemove, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toRemove", toRemove);
+        Parameters.notNull("text", text);
+
+        return changeModifiersFix(compilationInfo, treePath, Collections.<Modifier>emptySet(), toRemove, text);
+    }
+
+    /** Creates a fix, which when invoked changes the existing modifiers
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toAdd set of Modifiers to add
+     * @param toRemove set of Modifiers to remove
+     * @param text text displayed as a fix description
+     */
+    public static final Fix changeModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toAdd", toAdd);
+        Parameters.notNull("toRemove", toRemove);
+        Parameters.notNull("text", text);
+
+        if (treePath.getLeaf().getKind() != Kind.MODIFIERS) {
+            return null;
+        }
+        return new ChangeModifiersFixImpl(TreePathHandle.create(treePath, compilationInfo), toAdd, toRemove, text);
+    }
+
+    /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
+     * nearest declaration.
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a tree. The method will find nearest outer
+     *        declaration. (type, method, field or local variable)
+     * @param keys keys to be contained in the SuppresWarnings annotation. E.g.
+     *        @SuppresWarnings( "key" ) or @SuppresWarnings( {"key1", "key2", ..., "keyN" } ).
+     * @throws IllegalArgumentException if keys are null or empty or id no suitable element
+     *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
+     */
+    public static Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("keys", keys);
+
+        if (keys.length == 0) {
+            throw new IllegalArgumentException("key must not be empty"); // NOI18N
+        }
+
+        if (!isSuppressWarningsSupported(compilationInfo)) {
+            return null;
+        }
+
+        while (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(treePath.getLeaf().getKind())) {
+            treePath = treePath.getParentPath();
+        }
+
+        if (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+            return new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject(), keys);
+        } else {
+            return null;
+        }
+    }
+
     /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
      * nearest declaration.
      * @param compilationInfo CompilationInfo to work on
@@ -89,24 +176,23 @@ public final class FixFactory {
         Parameters.notNull("compilationInfo", compilationInfo);
         Parameters.notNull("treePath", treePath);
         Parameters.notNull("keys", keys);
-        
+
         if (keys.length == 0) {
             throw new IllegalArgumentException("key must not be empty"); // NOI18N
         }
-        	
-        if (!isSuppressWarningsSupported(compilationInfo)) {
-            return Collections.emptyList();
-        }
 
-        while (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(treePath.getLeaf().getKind())) {
-            treePath = treePath.getParentPath();
-        }
-                
-        if (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
-            return Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject(), keys));
+        Fix f = createSuppressWarningsFix(compilationInfo, treePath, keys);
+
+        if (f != null) {
+            return Collections.<Fix>singletonList(f);
         } else {
             return Collections.emptyList();
         }        
+    }
+
+    //XXX: probably should not be in the "SPI"
+    public static boolean isSuppressWarningsFix(Fix f) {
+        return f instanceof FixImpl;
     }
     
     private static boolean isSuppressWarningsSupported(CompilationInfo info) {
@@ -114,20 +200,7 @@ public final class FixFactory {
         if (info.getElements().getTypeElement("java.lang.SuppressWarnings") == null)
             return false;
 
-        String sourceVersion = SourceLevelQuery.getSourceLevel(info.getFileObject());
-
-        if (sourceVersion == null) {
-            return true;
-        }
-
-        try {
-            SpecificationVersion version = new SpecificationVersion(sourceVersion);
-            SpecificationVersion supp = new SpecificationVersion("1.5");
-
-            return version.compareTo(supp) >= 0;
-        } catch (NumberFormatException e) {
-            return true;
-        }
+        return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
     
     private static final class FixImpl implements Fix {
@@ -152,7 +225,7 @@ public final class FixFactory {
                 }
             }
 
-            return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
+            return NbBundle.getMessage(FixFactory.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
         }
 
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
@@ -209,14 +282,14 @@ public final class FixFactory {
                             List<? extends ExpressionTree> arguments = at.getArguments();
 
                             if (arguments.isEmpty() || arguments.size() > 1) {
-                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
+                                Logger.getLogger(FixFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
                                 return ;
                             }
 
                             ExpressionTree et = at.getArguments().get(0);
 
                             if (et.getKind() != Kind.ASSIGNMENT) {
-                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
+                                Logger.getLogger(FixFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
                                 return ;
                             }
 
@@ -296,7 +369,76 @@ public final class FixFactory {
             hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
             return hash;
         }
+    }
 
-        
+    private static final class ChangeModifiersFixImpl implements Fix {
+
+        private final TreePathHandle modsHandle;
+        private final Set<Modifier> toAdd;
+        private final Set<Modifier> toRemove;
+        private final String text;
+
+        public ChangeModifiersFixImpl(TreePathHandle modsHandle, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+            this.modsHandle = modsHandle;
+            this.toAdd = toAdd;
+            this.toRemove = toRemove;
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public ChangeInfo implement() throws Exception {
+            JavaSource.forFileObject(modsHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(Phase.RESOLVED);
+                    TreePath path = modsHandle.resolve(wc);
+                    if (path == null) {
+                        return;
+                    }
+                    ModifiersTree mt = (ModifiersTree) path.getLeaf();
+                    Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
+                        EnumSet.noneOf(Modifier.class) :
+                        EnumSet.copyOf(mt.getFlags());
+                    modifiers.addAll(toAdd);
+                    modifiers.removeAll(toRemove);
+                    ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
+                    wc.rewrite(mt, newMod);
+                }
+            }).commit();
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ChangeModifiersFixImpl other = (ChangeModifiersFixImpl) obj;
+            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
+                return false;
+            }
+            if (this.toAdd != other.toAdd && (this.toAdd == null || !this.toAdd.equals(other.toAdd))) {
+                return false;
+            }
+            if (this.toRemove != other.toRemove && (this.toRemove == null || !this.toRemove.equals(other.toRemove))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
+            hash = 71 * hash + (this.toAdd != null ? this.toAdd.hashCode() : 0);
+            hash = 71 * hash + (this.toRemove != null ? this.toRemove.hashCode() : 0);
+            return hash;
+        }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,7 @@ import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries;
@@ -59,6 +62,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -123,7 +127,7 @@ public class SuiteProjectGenerator {
         props.setProperty("nbplatform.active", platformID); // NOI18N
 
         NbPlatform plaf = NbPlatform.getPlatformByID(platformID);
-        if (plaf != null && plaf.getHarnessVersion() > NbPlatform.HARNESS_VERSION_65) {
+        if (plaf != null && plaf.getHarnessVersion().compareTo(HarnessVersion.V65) > 0) {
             List<String> clusterPath = new ArrayList<String>();
             File[] files = plaf.getDestDir().listFiles();
             for (File file : files) {
@@ -155,7 +159,7 @@ public class SuiteProjectGenerator {
         if (plaf != null) {
             ModuleEntry bootstrapModule = plaf.getModule("org.netbeans.bootstrap");
             if (bootstrapModule != null) {
-                if (plaf.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65) {
+                if (plaf.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0) {
                     // Will be stripped of version suffix if appropriate for the platform.
                     suiteProps.setEnabledClusters(new String[] {bootstrapModule.getClusterDirectory().getName()});
                 } else {

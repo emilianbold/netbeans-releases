@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +62,9 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
 /** 
@@ -135,12 +141,32 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             String prop = evaluator.getProperty(p);
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
-                    File f = PropertyUtils.resolveFile(this.projectFolder, piece);
+                    final File f = PropertyUtils.resolveFile(this.projectFolder, piece);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
-                        result.add(ClassPathSupport.createResource(entry));
+                        try {
+                            result.add(ClassPathSupport.createResource(entry));
+                        } catch (IllegalArgumentException iae) {
+                            //Logging for issue #181155
+                            String foStatus;
+                            try {
+                                final FileObject fo = URLMapper.findFileObject(f.toURI().toURL());
+                                foStatus = fo == null ? "not exist" : fo.isValid() ? "valid" : "invalid";   //NOI18N
+                            } catch (MalformedURLException ex) {
+                                foStatus = "malformed"; //NOI18N
+                            }
+                            final String log = String.format("File: %s, Property value: %s, Exists: %b, FileObject: %s, Folder: %b, Size: %d, Retry: %s", //NOI18N
+                                    f.getAbsolutePath(),
+                                    piece,
+                                    f.exists(),
+                                    foStatus,
+                                    f.isDirectory(),
+                                    f.length(),
+                                    FileUtil.urlForArchiveOrDir(f).toExternalForm());
+                            throw new IllegalArgumentException(log, iae);
+                        }
                     } else {
-                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");
+                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");   //NOI18N
                     }
                 }
             }

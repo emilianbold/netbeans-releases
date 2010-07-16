@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,17 +80,17 @@ public class RestConnection {
     private String date;
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl) {
-        this(baseUrl, null, null);
+    public RestConnection(String baseUrl, PasswordAuthentication pa) {
+        this(baseUrl, null, pa);
     }
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] params) {
-        this(baseUrl, null, params);
+    public RestConnection(String baseUrl, String[][] params, PasswordAuthentication pa) {
+        this(baseUrl, null, params, pa);
     }
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] pathParams, String[][] params) {
+    public RestConnection(String baseUrl, String[][] pathParams, String[][] params, PasswordAuthentication pa) {
         //T9Y
         String testUrl = System.getProperty("netbeans.t9y.kenai.testUrl");
         if (testUrl != null && testUrl.length() > 0) {
@@ -130,10 +133,9 @@ public class RestConnection {
                 conn.setConnectTimeout(TIMEOUT);
                 //TODO: KenaiAuthenticator not working. Why?
                 //this is just workaround this should be implemented properly
-                PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-                if (a!= null && a.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
-                    assert a.getPassword()!=null;
-                    String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
+                if (pa!= null && pa.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
+                    assert pa.getPassword()!=null;
+                    String userPassword = pa.getUserName() + ":" + String.valueOf(pa.getPassword());
                     String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
                     conn.setRequestProperty("Authorization", "Basic " + encoding);
                 }

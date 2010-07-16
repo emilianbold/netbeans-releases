@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -53,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author  thp
  */
-public class DirectoryChooserPanel extends javax.swing.JPanel implements PropertyChangeListener {
+/*package*/final class DirectoryChooserPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private PropertyEditorSupport editor;
     private String seed;
 
@@ -69,6 +72,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements Propert
         propenv.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(directoryTextField.getText());
@@ -123,12 +127,14 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements Propert
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-            if (seed == null && FileChooser.getCurrectChooserFile() != null)
-		seed = FileChooser.getCurrectChooserFile().getPath();
+            if (seed == null && FileChooser.getCurrectChooserFile() != null) {
+                seed = FileChooser.getCurrectChooserFile().getPath();
+            }
 	    FileChooser fileChooser = new FileChooser(getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return;
+	    if (ret == JFileChooser.CANCEL_OPTION) {
+                return;
+            }
 	    String dirPath = fileChooser.getSelectedFile().getPath();
             directoryTextField.setText(dirPath);
 }//GEN-LAST:event_browseButtonActionPerformed

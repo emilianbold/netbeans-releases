@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -308,34 +311,34 @@ public final class SharableLibrariesUtils {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String value = ahelper.getStandardPropertyEvaluator().evaluate(reference);
-            File absFile = ahelper.resolveFile(value);
-            String location = ahelper.getLibrariesLocation();
-            File libraryFile = ahelper.resolveFile(location);
-            File directory = libraryFile.getParentFile();
-            if (!directory.exists()) {
-                directory.mkdirs();
-                FileUtil.refreshFor(directory);
-            }
-            FileObject dir = FileUtil.toFileObject(directory);
-            if (!absFile.exists()) {
-                //#131535 is a broken reference probably, ignore.
-                return;
-            }
-            updateReference(absFile, reference, true, dir);
-            //now process source reference
-            String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
-            value = ahelper.getStandardPropertyEvaluator().evaluate(source);
-            if (!value.startsWith("${source.")) { //NOI18N
-                absFile = ahelper.resolveFile(value);
-                updateReference(absFile, source.replace("${", "").replace("}", ""), false, dir);
-            }
-            //now process javadoc reference
-            String javadoc = reference.replace("${file.reference", "${javadoc.reference"); //NOI18N
-            value = ahelper.getStandardPropertyEvaluator().evaluate(javadoc);
-            if (!value.startsWith("${javadoc.")) { //NOI18N
-                absFile = ahelper.resolveFile(value);
-                updateReference(absFile, javadoc.replace("${", "").replace("}", ""), false, dir);
+            try {
+                String value = ahelper.getStandardPropertyEvaluator().evaluate(reference);
+                File absFile = ahelper.resolveFile(value);
+                String location = ahelper.getLibrariesLocation();
+                File libraryFile = ahelper.resolveFile(location);
+                File directory = libraryFile.getParentFile();
+                final FileObject dir = FileUtil.createFolder(directory);
+                if (!absFile.exists()) {
+                    //#131535 is a broken reference probably, ignore.
+                    return;
+                }
+                updateReference(absFile, reference, true, dir);
+                //now process source reference
+                String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
+                value = ahelper.getStandardPropertyEvaluator().evaluate(source);
+                if (!value.startsWith("${source.")) { //NOI18N
+                    absFile = ahelper.resolveFile(value);
+                    updateReference(absFile, source.replace("${", "").replace("}", ""), false, dir);
+                }
+                //now process javadoc reference
+                String javadoc = reference.replace("${file.reference", "${javadoc.reference"); //NOI18N
+                value = ahelper.getStandardPropertyEvaluator().evaluate(javadoc);
+                if (!value.startsWith("${javadoc.")) { //NOI18N
+                    absFile = ahelper.resolveFile(value);
+                    updateReference(absFile, javadoc.replace("${", "").replace("}", ""), false, dir);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         

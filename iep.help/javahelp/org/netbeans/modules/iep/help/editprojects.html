@@ -1,31 +1,42 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
 <head>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<title>Editing Intelligent Event Processing Module Projects </title>
+<title>Validating Event Processes</title>
 </head>
 <body>
-<h2>Editing Intelligent Event Processing Module Projects </h2>
+
+<h2>Validating Event Processes</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You can edit Intelligent Event Project modules you develop.</p>
-<p><strong>To edit an IEP project node using a Property Editor:</strong></p>
+
+<p>You can run a set of predefined validation rules on an event process at design time. The validation rules include:</p>
+
+<ul>
+  <li>An event process must have at least one input operator.</li>
+  <li>An event process must have at least one output operator.</li>
+  <li>All of an operator's required properties must have values.</li>
+  <li>If an attribute has a data type of VARCHAR, then the size must also be specified.</li>
+</ul>
+
+<p><strong>To validate event processes:</strong></p>
+
 <ol>
-  <li>After dragging an operator to the Design view, click on the operator now in the Design view. The Property Window opens.</li>
-  <li>In the Property window, make your changes. </li>
-  <li>Click OK. </li>
-  <li>Once you have created and connected all operators for your IEP process, you can click the validation icon at the top of the IEP Design view to validate the operators that make up your IEP process.<br> 
-  The validation process runs a set of predefined validation rules, and provides output in the IDE's output area. For example, one validation rule checks to see if all required operator properties have been set, and reports in the output area if the property has not been set. </li>
+  <li>In the NetBeans IDE, open the event process that you want to validate.</li>
+  <li>Click the Validate XML icon at the top of the Design view.<br>The results appear in the Output window.</li>
+  <li>If you switch to the Source view and click a validation error in the Output window, the source of the error is highlighted.</li>
 </ol>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="understandprojects.html">Understanding Intelligent Event Project Module Projects </a></dd>
 <dt>&nbsp;</dt>
-<dd><a href="../cvswork/iep/help/javahelp/org/netbeans/modules/iep/help/usingprop.html"></a></dd>
+<dd><a href="understandprojects.html">Creating Intelligent Event Processing Module Projects</a></dd>
+<dt>&nbsp;</dt>
 </dl>
+
 <hr>
 <small><a href="credits.html">Legal Notices</a></small>
 <table cellpadding="150" border="0"> 

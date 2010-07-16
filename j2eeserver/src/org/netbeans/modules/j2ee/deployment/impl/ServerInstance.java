@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -68,6 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -75,6 +80,8 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -85,6 +92,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -127,7 +135,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private static final long DEFAULT_TIMEOUT = 1200000; // in millis
     
     private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
-    
+
+    private static final RequestProcessor REFRESH_PROCESSOR =
+            new RequestProcessor("Java EE server registry refresh", 5);
+
     private final String url;
     private final Server server;
     private DeploymentManager manager;
@@ -139,6 +150,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private J2eePlatformImpl j2eePlatformImpl;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
+    private ServerLibraryManager libraryManager;
+    private ServerLibraryManager disconnectedLibraryManager;
     private DatasourceManager dsMgr;
     private DatasourceManager ddsMgr;
     private MessageDestinationDeployment msgDestDeploymentConnected;
@@ -347,7 +360,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public void refresh() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        REFRESH_PROCESSOR.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     int oldState = getServerState();
@@ -678,7 +692,32 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return ddsMgr;
         }
     }
-    
+
+    private ServerLibraryManager getServerLibraryManager() {
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (libraryManager == null) {
+                libraryManager = server.getOptionalFactory().getServerLibraryManager(dm);
+            }
+            return libraryManager;
+        }
+    }
+
+    private ServerLibraryManager getDisconnectedServerLibraryManager() {
+        DeploymentManager dm = null;
+        try {
+            dm = getDisconnectedDeploymentManager();
+        }  catch (DeploymentManagerCreationException dmce) {
+            throw new RuntimeException(dmce);
+        }
+        synchronized (this) {
+            if (disconnectedLibraryManager == null) {
+                disconnectedLibraryManager = server.getOptionalFactory().getServerLibraryManager(dm);
+            }
+            return disconnectedLibraryManager;
+        }
+    }
+
     /**
      * Gets the data sources deployed on the this server instance.
      *
@@ -709,7 +748,69 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (dsMgr != null) 
             dsMgr.deployDatasources(datasources);
     }
-    
+
+    public boolean isServerLibraryManagementSupported() {
+        return getDisconnectedServerLibraryManager() != null;
+    }
+
+    public Set<ServerLibrary> getDeployableLibraries() {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibrary> libraries = Collections.emptySet();
+        if (libraryManager != null) {
+            libraries = libraryManager.getDeployableLibraries();
+        }
+
+        return libraries;
+    }
+
+    public Set<ServerLibrary> getDeployedLibraries() {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibrary> libraries = Collections.emptySet();
+        if (libraryManager != null) {
+            libraries = libraryManager.getDeployedLibraries();
+        }
+
+        return libraries;
+    }
+
+    public Set<ServerLibraryDependency> getDeployableDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies) {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibraryDependency> result = Collections.emptySet();
+        if (libraryManager != null) {
+            result = libraryManager.getDeployableDependencies(dependencies);
+        }
+
+        return result;
+    }
+
+    public Set<ServerLibraryDependency> getMissingDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies) {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibraryDependency> result = Collections.emptySet();
+        if (libraryManager != null) {
+            result = libraryManager.getMissingDependencies(dependencies);
+        }
+
+        return result;
+    }
+
+    public void deployLibraries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
+        ServerLibraryManager libraryManager = getServerLibraryManager();
+
+        if (libraryManager != null) {
+            StartServer ss = getStartServer();
+            if (ss != null && !ss.isRunning() && ss.needsStartForAdminConfig()) {
+                start();
+            }
+            libraryManager.deployLibraries(libraries);
+        }
+    }
+
     private synchronized MessageDestinationDeployment getMessageDestinationDeploymentConnected() {
         if (msgDestDeploymentConnected == null) {
             msgDestDeploymentConnected = server.getOptionalFactory().

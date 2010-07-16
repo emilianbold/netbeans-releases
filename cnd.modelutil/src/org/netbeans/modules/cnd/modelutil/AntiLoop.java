@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.cnd.modelutil;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -51,7 +55,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 public class AntiLoop {
     
     private Set<Object> set;
-    
+
+    private static final int MAX_INHERITANCE_DEPTH = 15;
+
     public AntiLoop() {
         set = new HashSet<Object>();
     }
@@ -62,19 +68,32 @@ public class AntiLoop {
     
     
     public boolean add(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            return set.add(cls.getQualifiedName());
-        } else {
-            return set.add(cls);
+        if (isRecursion(cls)) {
+            return false;
         }
+        return set.add(cls);
     }
 
     public boolean contains(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            return set.contains(cls.getQualifiedName());
-        } else {
-            return set.contains(cls);
+        if (isRecursion(cls)) {
+            return true;
         }
+        return set.contains(cls);
+    }
+
+    private static boolean isRecursion(CsmClassifier cls) {
+        if(CsmKindUtilities.isInstantiation(cls)) {
+            int instLevel = MAX_INHERITANCE_DEPTH;
+            CsmInstantiation inst = (CsmInstantiation) cls;
+            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                instLevel--;
+            }
+            if(instLevel <= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

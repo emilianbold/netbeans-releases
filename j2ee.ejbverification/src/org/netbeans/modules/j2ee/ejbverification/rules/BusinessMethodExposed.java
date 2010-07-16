@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,8 +52,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
@@ -62,6 +68,7 @@ import org.netbeans.modules.j2ee.ejbverification.fixes.ExposeBusinessMethod;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +81,17 @@ public class BusinessMethodExposed extends EJBVerificationRule {
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session) {
             Session session = (Session) ctx.getEjb();
-
+            EjbJar ejbModule = EjbJar.getEjbJar(ctx.getFileObject());
+            Profile profile = ejbModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+                int intfCount = 0;
+                try {
+                    intfCount = session.getBusinessLocal().length + session.getBusinessRemote().length;
+                } catch (VersionNotSupportedException ex) {}
+                if (intfCount == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)){
+                    return null;
+                }
+            }
             // if an EJB is annotated with "@javax.jws.WebService"
             // then no business interface is needed, see issue #147512
             if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.WEB_SERVICE)){
@@ -108,7 +125,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             Map<String, ExecutableElement> definedMethodsByName = new HashMap<String, ExecutableElement>();
             
             for (ExecutableElement method : definedMethods){
-                definedMethodsByName.put(method.getSimpleName().toString(), method);
+                definedMethodsByName.put(method.toString(), method);
             }
             
             // ----
@@ -116,7 +133,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             Collection<ErrorDescription> problemsFound = new LinkedList<ErrorDescription>();
             for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())){
                 if (isEligibleMethod(method)){
-                    ExecutableElement potentialMatch = definedMethodsByName.get(method.getSimpleName().toString());
+                    ExecutableElement potentialMatch = definedMethodsByName.get(method.toString());
                     
                     if (potentialMatch != null && JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
                             method, potentialMatch)){

@@ -1,7 +1,10 @@
  /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,22 +64,19 @@ public class HgLogMessage {
     public static char HgCopyStatus = 'C';
 
     private List<HgLogMessageChangedPath> paths;
-    private String rev;
+    private HgRevision rev;
     private String author;
+    private String username;
     private String desc;
     private Date date;
-    private String id;
     private String timeZoneOffset;
 
-    private String parentOneRev;
-    private String parentTwoRev;
+    private HgRevision parentOneRev;
+    private HgRevision parentTwoRev;
     private boolean bMerged;
     private String rootURL;
     private OutputLogger logger;
-    private HashMap<File, String> ancestors = new HashMap<File, String>();
-
-    public HgLogMessage(String changeset){
-    }
+    private HashMap<File, HgRevision> ancestors = new HashMap<File, HgRevision>();
 
     private void updatePaths(List<String> pathsStrings, String path, List<String> filesShortPaths, char status) {
         if (filesShortPaths.isEmpty()) {
@@ -92,24 +92,22 @@ public class HgLogMessage {
         }
     }
 
-    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id,
+    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String username, String desc, String date, String id,
             String parents, String fm, String fa, String fd, String fc) {
 
         this.rootURL = rootURL;
-        this.rev = rev;
+        this.rev = new HgRevision(id, rev);
         this.author = auth;
+        this.username = username;
         this.desc = desc;
-        this.id = id;
         this.date = new Date(Long.parseLong(date.split(" ")[0]) * 1000); // UTC in miliseconds
         String[] parentSplits;
         parentSplits = parents != null ? parents.split(" ") : null;
         if ((parentSplits != null) && (parentSplits.length == 2)) {
-        String[] ps1 = parentSplits[0].split(":"); // NOI18N
-        this.parentOneRev = ps1 != null && ps1.length >= 1 ? ps1[0] : null;
-        String[] ps2 = parentSplits[1].split(":"); // NOI18N
-        this.parentTwoRev = ps2 != null && ps2.length >= 1 ? ps2[0] : null;
+            parentOneRev = createRevision(parentSplits[0]);
+            parentTwoRev = createRevision(parentSplits[1]);
         }
-        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null && !this.parentOneRev.equals("-1") && !this.parentTwoRev.equals("-1") ? true : false;
+        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null && !this.parentOneRev.getRevisionNumber().equals("-1") && !this.parentTwoRev.getRevisionNumber().equals("-1");
 
         this.paths = new ArrayList<HgLogMessageChangedPath>();
         List<String> apathsStrings = new ArrayList<String>();
@@ -153,19 +151,27 @@ public class HgLogMessage {
         return paths.toArray(new HgLogMessageChangedPath[paths.size()]);
     }
 
-    public String getRevision() {
-        return rev;
+    /**
+     * Equal to getHgRevision().getRevisionNumber()
+     * @return
+     */
+    public String getRevisionNumber () {
+        return rev.getRevisionNumber();
     }
 
     public long getRevisionAsLong() {
         long revLong;
         try{
-            revLong = Long.parseLong(rev);
+            revLong = Long.parseLong(rev.getRevisionNumber());
         }catch(NumberFormatException ex){
             // Ignore number format errors
             return 0;
         }
         return revLong;
+    }
+    
+    public HgRevision getHgRevision () {
+        return rev;
     }
 
     public Date getDate() {
@@ -176,35 +182,45 @@ public class HgLogMessage {
         return author;
     }
 
-    public String getCSetShortID() {
-        return id;
+    public String getUsername () {
+        return username;
     }
 
-    public  String getAncestor (File file) {
-        String ancestor = getAncestorFromMap(file);
+    /**
+     * Equal to getHgRevision().getChangesetId()
+     * @return
+     */
+    public String getCSetShortID() {
+        return rev.getChangesetId();
+    }
+
+    public HgRevision getAncestor (File file) {
+        HgRevision ancestor = getAncestorFromMap(file);
         if (ancestor != null) {
             return ancestor;
         }
         if(bMerged){
             try{
-                ancestor = HgCommand.getCommonAncestor(rootURL, parentOneRev, parentTwoRev, getLogger());
+                ancestor = HgCommand.getCommonAncestor(rootURL, parentOneRev.getRevisionNumber(), parentTwoRev.getRevisionNumber(), getLogger());
             } catch (HgException ex) {
-                Mercurial.LOG.log(Level.INFO, null, ex);
+                Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
+                return HgRevision.EMPTY;
             }
         } else if (parentOneRev != null) {
             ancestor = parentOneRev;
         } else {
             try{
-                ancestor = HgCommand.getParent(rootURL, file, rev);
+                ancestor = HgCommand.getParent(new File(rootURL), file, rev.getRevisionNumber());
             } catch (HgException ex) {
-                Mercurial.LOG.log(Level.INFO, null, ex);
+                Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
+                return HgRevision.EMPTY;
             }
             if (ancestor == null) {
                 // fallback to the old impl in case of any error
                 try {
-                    Integer.toString(Integer.parseInt(rev) - 1);
+                    Integer.toString(Integer.parseInt(rev.getRevisionNumber()) - 1);
                 } catch (NumberFormatException ex) {
-                    ancestor = "-1";                                    //NOI18N
+                    ancestor = HgRevision.EMPTY;
                 }
             }
         }
@@ -233,9 +249,9 @@ public class HgLogMessage {
 
     @Override
     public String toString(){
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("rev: ");
-        sb.append(this.rev);
+        sb.append(rev.getRevisionNumber());
         sb.append("\nauthor: ");
         sb.append(this.author);
         sb.append("\ndesc: ");
@@ -243,17 +259,46 @@ public class HgLogMessage {
         sb.append("\ndate: ");
         sb.append(this.date);
         sb.append("\nid: ");
-        sb.append(this.id);
+        sb.append(rev.getChangesetId());
         sb.append("\npaths: ");
         sb.append(this.paths);
         return sb.toString();
     }
 
-    private void addAncestorToMap(File file, String ancestor) {
+    private void addAncestorToMap (File file, HgRevision ancestor) {
         ancestors.put(file, ancestor);
     }
 
-    private String getAncestorFromMap(File file) {
+    private HgRevision getAncestorFromMap(File file) {
         return ancestors.get(file);
+    }
+
+    private HgRevision createRevision (String revisionString) {
+        String[] ps1 = revisionString.split(":"); // NOI18N
+        String revisionNumber = ps1 != null && ps1.length >= 1 ? ps1[0] : null;
+        String changesetId = ps1 != null && ps1.length >= 2 ? ps1[1] : revisionNumber;
+        return revisionNumber == null ? null : new HgRevision(changesetId, revisionNumber);
+    }
+    
+    public static class HgRevision {
+        private final String changesetId;
+        private final String revisionNumber;
+        
+        public static final HgRevision EMPTY = new HgRevision("-1", "-1"); //NOI18N
+        public static final HgRevision BASE = new HgRevision("BASE", "BASE"); //NOI18N
+        public static final HgRevision CURRENT = new HgRevision("LOCAL", "LOCAL"); //NOI18N
+
+        public HgRevision(String changesetId, String revisionNumber) {
+            this.changesetId = changesetId;
+            this.revisionNumber = revisionNumber;
+        }
+
+        public String getChangesetId() {
+            return changesetId;
+        }
+
+        public String getRevisionNumber() {
+            return revisionNumber;
+        }
     }
 }

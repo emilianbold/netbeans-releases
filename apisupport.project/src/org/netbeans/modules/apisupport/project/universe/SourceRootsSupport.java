@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -137,17 +140,24 @@ public final class SourceRootsSupport implements SourceRootsProvider {
             listsForSources = _listsForSources;
         }
         for (ModuleList l : listsForSources) {
-            for (ModuleEntry entry : l.getAllEntriesSoft()) {
-                // XXX should be more strict (e.g. compare also clusters)
-                if (!entry.getJarLocation().getName().equals(jar.getName())) {
-                    continue;
+            String name = jar.getName();
+            if (name.endsWith(".jar")) { // direct guess
+                String cnb = name.substring(0, name.length() - ".jar".length()).replace('-', '.');
+                if (cnb.equals("boot")) { // NOI18N
+                    cnb = "org.netbeans.bootstrap"; // NOI18N
+                } else if (cnb.equals("core")) { // NOI18N
+                    cnb = "org.netbeans.core.startup"; // NOI18N
                 }
-                File src = entry.getSourceLocation();
-                if (src != null && src.isDirectory()) {
-                    return src;
+                ModuleEntry entry = l.getEntry(cnb);
+                if (entry != null) {
+                    File src = entry.getSourceLocation();
+                    if (src != null && src.isDirectory()) {
+                        return src;
+                    }
                 }
             }
             for (ModuleEntry entry : l.getAllEntries()) {
+                // XXX should be more strict (e.g. compare also clusters)
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.awt.GridBagLayout;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +71,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImp
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -92,6 +97,7 @@ import org.openide.util.ChangeSupport;
 public class DetectPanel extends javax.swing.JPanel {
 
     private static final int COLS = 30;
+    private static final RequestProcessor RP = new RequestProcessor(DetectPanel.class.getName(), 1, false, false);
 
     private NewJ2SEPlatform primaryPlatform;
     private final ChangeSupport cs = new ChangeSupport(this);
@@ -419,7 +425,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 final NewJ2SEPlatform secondaryPlatform = this.iterator.getSecondaryPlatform();
                 component = new DetectPanel(primaryPlatform);
                 component.addChangeListener (this);
-                task = RequestProcessor.getDefault().create(
+                task = RP.create(
                     new Runnable() {
                         public void run() {
                             primaryPlatform.run();
@@ -452,7 +458,6 @@ public class DetectPanel extends javax.swing.JPanel {
             this.wiz = settings;
             JavaPlatform platform = this.iterator.getPlatform();
             String srcPath = null;
-            String jdocPath = null;
             ClassPath src = platform.getSourceFolders();
             if (src.entries().size()>0) {
                 URL folderRoot = src.entries().get(0).getURL();
@@ -477,29 +482,9 @@ public class DetectPanel extends javax.swing.JPanel {
                         }
                     }
                 }                
-            }
-            List<URL> jdoc = platform.getJavadocFolders();
-            if (jdoc.size()>0) {
-                URL folderRoot = jdoc.get(0);
-                if ("jar".equals(folderRoot.getProtocol())) {
-                    folderRoot = FileUtil.getArchiveFile (folderRoot);
-                }
-                jdocPath = new File (URI.create(folderRoot.toExternalForm())).getAbsolutePath();
-            }
-            else if (firstPass) {
-                for (FileObject folder : platform.getInstallFolders()) {
-                    File base = FileUtil.toFile(folder);
-                    if (base!=null) {
-                        File f = new File (base,"docs"); //NOI18N
-                        if (f.isDirectory() && f.canRead()) {
-                            jdocPath = f.getAbsolutePath();
-                        }                        
-                    }
-                }
                 firstPass = false;
             }
             this.component.setSources (srcPath);
-            this.component.setJavadoc (jdocPath);
             this.component.jdkName.setEditable(false);
             this.component.progressPanel.setVisible (true);
             this.component.progressLabel.setVisible (true);
@@ -531,7 +516,7 @@ public class DetectPanel extends javax.swing.JPanel {
             if (isValid()) {                                
                 String name = component.getPlatformName();                
                 List<PathResourceImplementation> src = new ArrayList<PathResourceImplementation>();
-                List<URL> jdoc = new ArrayList<URL>();
+                List<URL> jdoc = null;
                 String srcPath = this.component.getSources();
                 if (srcPath!=null) {
                     File f = new File (srcPath);
@@ -558,16 +543,21 @@ public class DetectPanel extends javax.swing.JPanel {
                 }
                 String jdocPath = this.component.getJavadoc();
                 if (jdocPath!=null) {
-                    File f = new File (jdocPath);
                     try {
-                        URL url = f.toURI().toURL();
-                        if (FileUtil.isArchiveFile(url)) {
-                            url = FileUtil.getArchiveRoot(url);
+                        jdoc = new ArrayList<URL>();
+                        if (jdocPath.startsWith("http")) {
+                            jdoc.add(new URL(jdocPath));
+                        } else {
+                            File f = new File(jdocPath);
+                            URL url = f.toURI().toURL();
+                            if (FileUtil.isArchiveFile(url)) {
+                                url = FileUtil.getArchiveRoot(url);
+                            }
+                            else if (!f.exists()){
+                                url = new URL (url.toExternalForm()+'/');
+                            }
+                            jdoc.add (url);
                         }
-                        else if (!f.exists()){
-                            url = new URL (url.toExternalForm()+'/');
-                        }
-                        jdoc.add (url);
                     } catch (MalformedURLException mue) {
                     }
                 }
@@ -576,7 +566,9 @@ public class DetectPanel extends javax.swing.JPanel {
                 platform.setDisplayName (name);
                 platform.setAntName (createAntName (name));
                 platform.setSourceFolders (ClassPathSupport.createClassPath(src));
-                platform.setJavadocFolders (jdoc);
+                if (jdoc != null) {
+                    platform.setJavadocFolders(jdoc);
+                }
                 
                 platform = this.iterator.getSecondaryPlatform();
                 if (platform != null) {
@@ -584,7 +576,9 @@ public class DetectPanel extends javax.swing.JPanel {
                     platform.setDisplayName (name);
                     platform.setAntName (createAntName(name));
                     platform.setSourceFolders (ClassPathSupport.createClassPath(src));
-                    platform.setJavadocFolders (jdoc);
+                    if (jdoc != null) {
+                        platform.setJavadocFolders(jdoc);
+                    }
                 }                                
             }
         }
@@ -595,6 +589,27 @@ public class DetectPanel extends javax.swing.JPanel {
         public void taskFinished(Task task) {
             EventQueue.invokeLater(new Runnable() {
                 public void run () {
+                    JavaPlatform platform = iterator.getPlatform();
+                    List<URL> jdoc = platform.getJavadocFolders();
+                    try {
+                        URL url = null;
+                        if (jdoc.size() > 0) {
+                            url = jdoc.get(0);
+                            if ("jar".equals(url.getProtocol())) {
+                                url = FileUtil.getArchiveFile(url);
+                            }
+                        } else {
+                            List<URL> urls = J2SEPlatformImpl.defaultJavadoc(platform);
+                            if (urls.size() == 1) {
+                                url = urls.iterator().next();
+                            }
+                        }
+                        if (url != null) {
+                            component.setJavadoc(url.getProtocol().equals("file") ? new File(url.toURI()).getAbsolutePath() : url.toString());
+                        }
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     component.updateData ();
                     component.jdkName.setEditable(true);
                     assert progressHandle != null;

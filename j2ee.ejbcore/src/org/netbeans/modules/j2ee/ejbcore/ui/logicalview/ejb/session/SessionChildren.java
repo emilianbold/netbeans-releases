@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -89,6 +91,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
         controller = new SessionMethodController(ejbClass, ejbModule.getMetadataModel());
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
         try {
@@ -104,6 +107,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
         final boolean[] results = new boolean[] { false, false, true };
         
         ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            @Override
             public Void run(EjbJarMetadata metadata) throws Exception {
                 Session entity = (Session) metadata.findByEjbClass(ejbClass);
                 if (entity != null) {
@@ -117,6 +121,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
         });
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 List<Key> keys = new ArrayList<Key>();
                 if (results[REMOTE]) { keys.add(Key.REMOTE); }
@@ -127,12 +132,14 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
         });
     }
     
+    @Override
     protected void removeNotify() {
 //        session.removePropertyChangeListener(this);
         setKeys(Collections.<Key>emptyList());
         super.removeNotify();
     }
     
+    @Override
     protected Node[] createNodes(Key key) {
         if (Key.LOCAL.equals(key)) {
             Children children = new MethodChildren(cpInfo, controller, controller.getLocalInterfaces(), MethodsNode.ViewType.LOCAL);
@@ -149,7 +156,7 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
             return new Node[] { n };
         }
         if (Key.BEAN.equals(key)) {
-            Children children = new MethodChildren(cpInfo, controller,Arrays.asList(controller.getBeanClass()), MethodsNode.ViewType.NO_INTERFACE);
+            Children children = new MethodChildren(cpInfo, controller, controller.getBeanSuperclasses(), MethodsNode.ViewType.NO_INTERFACE);
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.NO_INTERFACE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/MethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_BeanMethods"));
@@ -158,16 +165,21 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
         return null;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    updateKeys();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+        String prop = propertyChangeEvent.getPropertyName();
+        if (Session.BUSINESS_LOCAL.equals(prop) || Session.BUSINESS_REMOTE.equals(prop)){
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        updateKeys();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     
 }

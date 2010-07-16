@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,10 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
@@ -55,14 +61,17 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         // Windows is supported for localhosts only.
-
         if (!execEnv.isLocal() || !Utilities.isWindows()) {
             return null;
         }
 
-        return new HostInfoImpl();
+        HostInfoImpl info = new HostInfoImpl();
+        info.initTmpDirs();
+        info.initUserDirs();
+        return info;
     }
 
     private static class HostInfoImpl implements HostInfo {
@@ -76,12 +85,14 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final int cpuNum;
         private final String hostname;
         private final String shell;
-        private final File tmpDirFile;
-        private final String tmpDir;
-        private final String path;
+        private File tmpDirFile;
+        private String tmpDir;
+        private File userDirFile;
+        private String userDir;
+        private Map<String, String> environment;
 
-        public HostInfoImpl() {
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
+        HostInfoImpl() {
+            Map<String, String> env = new HashMap<String, String>(System.getenv());
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
@@ -102,94 +113,224 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
 
-            File _tmpDirFile = null;
-            String _tmpDir = null;
-            String _path = "";
-
-            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
-
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
-
-            _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
-
-            // create the directory if absent (IZ#174327)
-            _tmpDirFile.mkdirs();
-
-            _tmpDir = _tmpDirFile.getAbsolutePath();
-
-            try {
-                _tmpDirFile = _tmpDirFile.getCanonicalFile();
-                _tmpDir = _tmpDirFile.getCanonicalPath();
-            } catch (IOException ex) {
-            }
-
             if (shell != null) {
-                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
-                _path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
+                String path = new File(shell).getParent();
+
+                if (env.containsKey("Path")) { // NOI18N
+                    path = path + ";" + env.get("Path"); // NOI18N
+                    env.put("Path", path); // NOI18N
+                } else if (env.containsKey("PATH")) { // NOI18N
+                    path = path + ";" + env.get("PATH"); // NOI18N
+                    env.put("PATH", path); // NOI18N
+                }
             }
 
-            tmpDirFile = _tmpDirFile;
-            tmpDir = _tmpDir;
-            path = _path;
+            environment = Collections.unmodifiableMap(env);
 
             os = new OS() {
 
+                @Override
                 public OSFamily getFamily() {
                     return osFamily;
                 }
 
+                @Override
                 public String getName() {
                     return osName;
                 }
 
+                @Override
                 public String getVersion() {
                     return osVersion;
                 }
 
+                @Override
                 public Bitness getBitness() {
                     return osBitness;
                 }
             };
         }
 
+        public void initTmpDirs() throws IOException {
+            File _tmpDirFile = null;
+            String _tmpDir = null;
+            String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+
+            if (checkForNonLatin(ioTmpDir) == false) {
+                log.log(Level.WARNING, "Default tmp dir [{0}] has spaces/non-latin chars in the path. " + // NOI18N
+                        "It is recommended to use a path without spaces/non-latin chars for tmp dir. " + // NOI18N
+                        "Either change TEMP environment variable in System Properties or use " + // NOI18N
+                        "-J-Djava.io.tmpdir=c:\\tmp to change the temp dir.", ioTmpDir); // NOI18N
+            }
+
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+
+            String username = environment.get("USERNAME"); // NOI18N
+            
+            if (checkForNonLatin(username) == false) {
+                username = "" + username.hashCode(); // NOI18N
+            }
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + username); // NOI18N
+            _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
+            _tmpDir = _tmpDirFile.getAbsolutePath();
+
+            if (shell != null) {
+                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
+            }
+
+            // create the directory if absent (IZ#174327)
+            if (!_tmpDirFile.exists() && !_tmpDirFile.mkdirs()) {
+                throw new IOException("Unable to create tmpdir " + _tmpDirFile); // NOI18N
+            }
+
+            tmpDirFile = _tmpDirFile;
+            tmpDir = _tmpDir;
+        }
+
+        public void initUserDirs() throws IOException {
+            File _userDirFile = null;
+            String _userDir = null;
+            String ioUserDir = System.getProperty("user.home"); // NOI18N
+
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+            String username = environment.get("USERNAME"); // NOI18N
+
+            if (username != null) {
+                for (int i = 0; i < username.length(); i++) {
+                    char c = username.charAt(i);
+
+                    if (Character.isDigit(c) || c == '_') {
+                        continue;
+                    }
+
+                    if (c >= 'A' && c <= 'Z') {
+                        continue;
+                    }
+
+                    if (c >= 'a' && c <= 'z') {
+                        continue;
+                    }
+
+                    username = "" + username.hashCode(); // NOI18N
+                    break;
+                }
+            }
+
+            _userDirFile = new File(ioUserDir); // NOI18N
+            _userDir = _userDirFile.getAbsolutePath();
+
+            if (shell != null) {
+                _userDir = WindowsSupport.getInstance().convertToShellPath(_userDir);
+            }
+
+
+            userDirFile = _userDirFile;
+            userDir = _userDir;
+        }
+
+        @Override
         public OS getOS() {
             return os;
         }
 
+        @Override
         public CpuFamily getCpuFamily() {
             return cpuFamily;
         }
 
+        @Override
         public int getCpuNum() {
             return cpuNum;
         }
 
+        @Override
         public OSFamily getOSFamily() {
             return osFamily;
         }
 
+        @Override
         public String getHostname() {
             return hostname;
         }
 
+        @Override
         public String getShell() {
             return shell;
         }
 
+        @Override
+        public String getLoginShell() {
+            return shell;
+        }
+
+        @Override
         public String getTempDir() {
             return tmpDir;
         }
 
+        @Override
         public File getTempDirFile() {
             return tmpDirFile;
         }
 
+        @Override
+        public String getUserDir() {
+            return userDir;
+        }
+
+        @Override
+        public File getUserDirFile() {
+            return userDirFile;
+        }
+
+        @Override
         public long getClockSkew() {
             return 0;
         }
 
-        public String getPath() {
-            return path;
+        @Override
+        public Map<String, String> getEnvironment() {
+            return environment;
+        }
+
+        private boolean checkForNonLatin(String str) {
+            if (str == null) {
+                // NULL is OK?
+                return true;
+            }
+
+            String okChars = "~-_/\\:"; // NOI18N
+            
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+
+                if (Character.isDigit(c) || okChars.indexOf(c) >= 0) {
+                    continue;
+                }
+
+                if (c >= 'A' && c <= 'Z') {
+                    continue;
+                }
+
+                if (c >= 'a' && c <= 'z') {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
         }
     }
 }

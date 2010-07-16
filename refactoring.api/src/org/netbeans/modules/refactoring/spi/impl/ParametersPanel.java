@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -57,7 +61,6 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProblemDetails;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.spi.impl.UndoWatcher;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -83,6 +86,7 @@ import org.openide.awt.Mnemonics;
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
     private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ParametersPanel.class.getName(), 1, false, false);
     /** @see #result */
     private final Object RESULT_LOCK = new Object();
     // refactoring elements that will be returned as a result of showDialog method
@@ -285,8 +289,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 }//GEN-LAST:event_preview
 
     private void helpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpActionPerformed
-        Help help = (Help) Lookup.getDefault().lookup(Help.class);
-        help.showHelp(getHelpCtx());
+        Help _help = (Help) Lookup.getDefault().lookup(Help.class);
+        _help.showHelp(getHelpCtx());
     }//GEN-LAST:event_helpActionPerformed
     
     private void backActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backActionPerformed
@@ -308,7 +312,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
     }//GEN-LAST:event_cancelActionPerformed
     private void refactor(final boolean previewAll) {
-        LOGGER.finest("refactor - currentState="+currentState);
+        LOGGER.log(Level.FINEST, "refactor - currentState={0}", currentState);
         if (currentState == PRE_CHECK) {
             LOGGER.finest("refactor - PRE_CHECK");
             //next is "Next>"
@@ -319,6 +323,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (currentState == POST_CHECK && previewAll && currentProblemAction!=null) {
             LOGGER.finest("refactor - POST_CHECK - problems");
             Cancellable doCloseParent = new Cancellable() {
+                @Override
                 public boolean cancel() {
                     cancelActionPerformed(new ActionEvent(this,0,null));
                     return true;
@@ -344,6 +349,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 } catch (final IOException ioe) {
                     currentState = POST_CHECK;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             String message = ioe.getMessage();
                             message = message != null ? message : ""; // NOI18N
@@ -367,9 +373,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //refactoring is done asynchronously
         LOGGER.finest("refactor - asynchronously");
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 //inputState != currentState means, that panels changed and dialog will not be closed
-                LOGGER.finest("refactor - inputState=" + inputState + ", currentState=" + currentState);
+                LOGGER.log(Level.FINEST, "refactor - inputState={0}, currentState={1}", new Object[] {inputState, currentState});
                 if (inputState == currentState) {
                     try {
                         RefactoringSession session = getResult();
@@ -417,6 +424,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      */
     private void setVisibleLater(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 dialog.setVisible(visible);
             }
@@ -480,7 +488,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         
         dialog.pack();
         
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.Task task = RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     problem = rui.getRefactoring().preCheck();
@@ -494,6 +503,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         customComponent.initialize();
                     }
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             placeErrorPanel(problem);
                             dialog.setVisible(true);
@@ -503,6 +513,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     if (customPanel != null)
                         customComponent.initialize();
                         SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                             public void run() {
                                 placeCustomPanel();
                             }
@@ -535,12 +546,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return temp;
     }
     
-    private final void setCancelStuff() {
+    private void setCancelStuff() {
         canceledDialog = false;
         KeyStroke k = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         Object actionKey = "cancel"; // NOI18N
         getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k, actionKey);
         Action cancelAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 if (cancel.isEnabled())
                     cancelActionPerformed(ev);
@@ -550,6 +562,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         getRootPane().getActionMap().put(actionKey, cancelAction);
         
         dialog.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent evt) {
                 if (cancel.isEnabled())
                     cancelActionPerformed(null);
@@ -640,8 +653,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * sets progress label and progress bar bounds.
      * @param event Event object.
      */
+    @Override
     public void start(final ProgressEvent event) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
@@ -684,8 +699,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * by 1.
      * @param event Event object.
      */
+    @Override
     public void step(final ProgressEvent event) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     if (progressHandle == null) {
@@ -709,8 +726,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * its maximum.
      * @param event Event object.
      */
+    @Override
     public void stop(ProgressEvent event) {
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle == null) {
                     return;
@@ -730,6 +749,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (rui instanceof RefactoringUIBypass && ((RefactoringUIBypass)rui).isRefactoringBypassRequired()) {
                 showProblem(null);
@@ -782,6 +802,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     private class Prepare implements Runnable {
+        @Override
         public void run() {
             if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 problem = rui.setParameters();
@@ -789,18 +810,21 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     currentState = CHECK_PARAMETERS;
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
                             public void run() {
                                 placeErrorPanel(problem);
                             }});
                     } catch (Exception ie) {
-                        throw (RuntimeException) new RuntimeException().initCause(ie);
+                        throw new RuntimeException (ie);
                     }
                     return;
                 }
             }
             
             try {
-                problem = rui.getRefactoring().prepare(getResult());
+                RefactoringSession refactoringSession = getResult ();
+                if (refactoringSession != null)
+                    problem = rui.getRefactoring ().prepare (refactoringSession);
             } catch (RuntimeException e) {
                 setVisibleLater(false);
                 throw e;
@@ -809,6 +833,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             if (problem != null) {
                 currentState = POST_CHECK;
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         placeErrorPanel(problem);
                     }});
@@ -827,6 +852,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return rui.getHelpCtx();
     }
     
+    @Override
     public void invalidateObject() {
     }
 

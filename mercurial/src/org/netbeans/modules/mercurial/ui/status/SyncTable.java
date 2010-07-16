@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.modules.mercurial.ui.status;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -50,7 +52,6 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.openide.explorer.view.NodeTableModel;
@@ -76,12 +77,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -90,7 +97,7 @@ import org.netbeans.modules.versioning.util.SortedTable;
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
+class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -222,6 +229,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return component;
     }
     
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Mercurial.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
+            refreshNodes();
+        }
+    }
+
     /**
      * Sets visible columns in the Versioning table.
      * 
@@ -253,12 +267,35 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     void setTableModel(SyncFileNode [] nodes) {
+        assert EventQueue.isDispatchThread();
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable () {
+            @Override
+            public void run() {
+                refreshNodes();
+            }
+        });
     }
 
     void focus() {
         table.requestFocus();
+    }
+
+    private void refreshNodes () {
+        SyncFileNode[] toRefreshNodes = nodes;
+        for (SyncFileNode node : toRefreshNodes) {
+            node.refresh();
+        }
+        if (toRefreshNodes.length > 0) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run() {
+                    table.revalidate();
+                    table.repaint();
+                }
+            });
+        }
     }
 
     private static class ColumnDescriptor extends ReadOnly {
@@ -292,8 +329,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // invoke later so the selection on the table will be set first
-                JPopupMenu menu = getPopup();         
-                menu.show(table, e.getX(), e.getY());
+                if (table.isShowing()) {
+                    JPopupMenu menu = getPopup();
+                    menu.show(table, e.getX(), e.getY());
+                }
             }
         });
     }
@@ -309,46 +348,40 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Open
         -------------------
         Diff                 (default action)
-        Update
         Commit...        
         --------------------
         Conflict Resolved    (on conflicting file)
         --------------------
-        Blame
-        Show History...
+        Show Annotations
         --------------------        
         Revert Modifications  (Revert Delete)(Delete)
         Exclude from Commit   (Include in Commit)
-        Ignore                (Unignore)
         </pre>
      */
     private JPopupMenu getPopup() {
 
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
-        VCSContext context = HgUtils.getCurrentContext(null);
-        ResourceBundle loc = NbBundle.getBundle(Mercurial.class);
         
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
-        item = menu.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
         menu.addSeparator();
 
-        item = menu.add(new ConflictResolvedAction(loc.getString("CTL_PopupMenuItem_MarkResolved"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), actionString("CTL_PopupMenuItem_MarkResolved"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
         menu.addSeparator();
 
-        AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context); // NOI18N
-        if (tempA.visible(null)) {
-            tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), context); // NOI18N
-        }
-        item = menu.add(tempA);
+        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class),
+                                               ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(null) ?
+                                               actionString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
+                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
 
@@ -363,16 +396,20 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
         if (allLocallyDeleted) {
-            item = menu.add(new RevertModificationsAction(loc.getString("CTL_PopupMenuItem_RevertDelete"), context)); // NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete"))); //NOI18N
         } else {
-            item = menu.add(new RevertModificationsAction(loc.getString("CTL_PopupMenuItem_GetClean"), context)); // NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean"))); //NOI18N
         }
         Mnemonics.setLocalizedText(item, item.getText());
 
-        ExcludeFromCommitAction exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_IncludeInCommit"), context); // NOI18N
-        if (exclude.getActionStatus(null) != exclude.INCLUDING)
-            exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context); // NOI18N
-        item = menu.add(exclude);
+        String label;
+        ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+        if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
+            label = actionString("CTL_PopupMenuItem_IncludeInCommit");  //NOI18N
+        } else {
+            label = actionString("CTL_PopupMenuItem_ExcludeFromCommit"); //NOI18N
+        }
+        item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());
 /*
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N

@@ -27,7 +27,7 @@ import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
-
+import static org.netbeans.modules.xslt.tmap.TMapConstants.*;
 /**
  *
  * @author Vitaly Bychkov
@@ -36,8 +36,6 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 public class VariableReferenceImpl extends TMapReferenceImpl<VariableDeclarator> 
         implements VariableReference
 {
-    public static final String DOT = "."; // NOI18N
-
     VariableReferenceImpl( VariableDeclarator target , AbstractComponent parent, 
             String value , TMapReferenceBuilder.TMapResolver resolver )
     {
@@ -170,15 +168,17 @@ public class VariableReferenceImpl extends TMapReferenceImpl<VariableDeclarator>
     }
     
     public static String getVarRefString(String varName, String partRef) {
-        return varName+DOT+partRef;
+        return DOLLAR_SIGN+varName+DOT+partRef;
     }
 
     public static String getVarName(String refStr) {
         String varName = null;
         int dotIndex = refStr == null ? -1 : refStr.lastIndexOf(DOT);
         
-        if (dotIndex > 0) {
-            varName = refStr.substring(0, dotIndex);
+        varName = dotIndex > 0 ? refStr.substring(0, dotIndex) : refStr;
+        
+        if (varName != null && varName.startsWith(DOLLAR_SIGN)) {
+            varName = varName.substring(1);
         }
         
         return varName;
@@ -196,15 +196,7 @@ public class VariableReferenceImpl extends TMapReferenceImpl<VariableDeclarator>
     }
 
     private String getVarName() {
-        String varName = null;
-        String refStr = getRefString();
-        int dotIndex = refStr == null ? -1 : refStr.lastIndexOf(DOT);
-        
-        if (dotIndex > 0) {
-            varName = refStr.substring(0, dotIndex);
-        }
-        
-        return varName;
+        return getVarName(getRefString());
     }
     
 }

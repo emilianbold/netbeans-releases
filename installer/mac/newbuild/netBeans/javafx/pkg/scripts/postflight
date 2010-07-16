@@ -31,7 +31,7 @@ dirname=`dirname "$0"`
 
 
 
-"$dirname"/add_cluster.sh "javafx2"
+"$dirname"/add_cluster.sh "javafx"
 
 touch ~/.javafx_eula_accepted
 

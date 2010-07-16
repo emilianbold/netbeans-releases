@@ -21,7 +21,7 @@
 package org.netbeans.modules.iep.editor.model;
 
 
-import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponent;
 
 /**
  * Interface that extends Component

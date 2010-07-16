@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,6 +92,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      */
     public static final String EVENT_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
 
+
+    /**
+     * Priority defining the order of versioning systems used when determining the owner of a file. I.e. what versioning system should handle the file.
+     * @see #getProperty(String)
+     * @see #putProperty(String, Object)
+     */
+    static final String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
     
     private static VersioningManager instance;
 
@@ -112,7 +122,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * Holds all registered versioning systems.
      */
-    private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
+    private final List<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(5);
 
     /**
      * What folder is versioned by what versioning system. 
@@ -177,6 +187,8 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
             // inline loadVersioningSystems(systems);
             versioningSystems.addAll(systems);
+            Collections.sort(versioningSystems, new ByPriorityComparator());
+            Collections.reverse(versioningSystems); // systems with higher priority should be at the end of the list, see getOwner logic
             for (VersioningSystem system : versioningSystems) {
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
@@ -414,24 +426,36 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     boolean needsLocalHistory(String methodName) {
         boolean ret = false;
         try {
-            if(localHistory == null) {
-                return ret;
-}
-            Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
-            if(s == null) {
-                s = new HashSet<String>();
-                Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
-                for (Method method : m) {
-                    if((method.getModifiers() & Modifier.PUBLIC) != 0) {
-                        s.add(method.getName());
-                    }
+            synchronized(versioningSystems) {
+                if(localHistory == null) {
+                    return ret;
                 }
-                interceptedMethods.put(localHistory.getClass().getName(), s);
+                Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
+                if(s == null) {
+                    s = new HashSet<String>();
+                    Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
+                    for (Method method : m) {
+                        if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                            s.add(method.getName());
+                        }
+                    }
+                    interceptedMethods.put(localHistory.getClass().getName(), s);
+                }
+                ret = s.contains(methodName);
+                return ret;
             }
-            ret = s.contains(methodName);
-            return ret;
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
+        }
+    }
+
+    /**
+     * Sorts versioning systems according to their priority. Systems with lower value (higher priority) will be stated before those with higher value (lower priority) in the given list.
+     */
+    private static final class ByPriorityComparator implements Comparator<VersioningSystem> {
+        @Override
+        public int compare(VersioningSystem o1, VersioningSystem o2) {
+            return Utils.getPriority(o1).compareTo(Utils.getPriority(o2));
         }
     }
 }

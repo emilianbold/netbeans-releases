@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
 import org.openide.windows.OutputEvent;
 import org.openide.xml.XMLUtil;
 
@@ -279,6 +283,8 @@ public class Controller {
                 return true;
             }
         }
+        if( version.startsWith("1.6.0_20") && "Aqua".equals( UIManager.getLookAndFeel().getID() ) )
+            return true;
         return false;
     }
 
@@ -376,10 +382,38 @@ public class Controller {
                 if (tab == null) {
                     tab = createOutputTab(io);
                 }
-                if (io.isFocusTaken()) {
-                    ioContainer.requestActive();
+		if (io.isFocusTaken()) {
+		    ioContainer.requestActive();
+		}
+
+		// After fixing bug#185209 IOContainer.select() no longer
+		// performs these operations for us so we have to do them.
+		ioContainer.open();
+		ioContainer.requestVisible();
+
+		ioContainer.select(tab);
+                break;
+            case IOEvent.CMD_FINE_SELECT :
+                if (tab == null) {
+                    tab = createOutputTab(io);
                 }
-                ioContainer.select(tab);
+
+		// We get here via IOSelect.select().
+		assert data == null || data instanceof Set;
+		@SuppressWarnings("unchecked")		// NOI18N
+		Set<IOSelect.AdditionalOperation> extraOps =
+		    (Set<IOSelect.AdditionalOperation>) data;
+
+		if (extraOps != null) {
+		    // the order of these tests mimics the order of calls above.
+		    if (io.isFocusTaken() && extraOps.contains(IOSelect.AdditionalOperation.REQUEST_ACTIVE))
+			ioContainer.requestActive();
+		    if (extraOps.contains(IOSelect.AdditionalOperation.OPEN))
+			ioContainer.open();
+		    if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_VISIBLE))
+			ioContainer.requestVisible();
+		}
+		ioContainer.select(tab);
                 break;
             case IOEvent.CMD_SET_TOOLBAR_ACTIONS :
                 if (tab != null) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -92,6 +95,9 @@ import org.openide.util.RequestProcessor;
  * @author Jan Lahoda
  */
 public class JavaFixAllImports {
+    
+    //-J-Dorg.netbeans.modules.java.editor.imports.JavaFixAllImports.invalid_import_html="<html><font color='#808080'>"
+    public static final String NOT_VALID_IMPORT_HTML = System.getProperty(JavaFixAllImports.class.getName() + ".invalid_import_html", "");
     
     private static final String PREFS_KEY = JavaFixAllImports.class.getName();
     private static final String KEY_REMOVE_UNUSED_IMPORTS = "removeUnusedImports"; // NOI18N
@@ -201,25 +207,25 @@ public class JavaFixAllImports {
         }
     }
 
-    //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
-    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
-        throws IOException {
-        // do not modify the list given by the caller (may be reused or immutable).
-        toImport = new ArrayList<String>(toImport); 
+    //XXX: copied from SourceUtils.addImports and extended by fommil@netbeans.org. Ideally, should be on one place only:
+    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make, boolean doStatic) {
+        toImport = new ArrayList<String>(toImport);
         Collections.sort(toImport);
 
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         int currentToImport = toImport.size() - 1;
         int currentExisting = imports.size() - 1;
-        
+
         while (currentToImport >= 0 && currentExisting >= 0) {
             String currentToImportText = toImport.get(currentToImport);
-            
-            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
+
+            boolean ignore = (doStatic ^ imports.get(currentExisting).isStatic());
+            while (currentExisting >= 0 && (ignore || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0)) {
                 currentExisting--;
-            
+            }
+
             if (currentExisting >= 0) {
-                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
+                imports.add(currentExisting + 1, make.Import(make.Identifier(currentToImportText), doStatic));
                 currentToImport--;
             }
         }
@@ -227,13 +233,13 @@ public class JavaFixAllImports {
         // to add, put them to the very beginning
         while (currentToImport >= 0) {
             String importText = toImport.get(currentToImport);
-            imports.add(0, make.Import(make.Identifier(importText), false));
+            imports.add(0, make.Import(make.Identifier(importText), doStatic));
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
         return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
-
+    
     private static void performFixImports(WorkingCopy wc, ImportData data, String[] selections, boolean removeUnusedImports) throws IOException {
         //do imports:
         List<String> toImport = new ArrayList<String>();
@@ -267,7 +273,7 @@ public class JavaFixAllImports {
             }
         }
 
-        cut = addImports(cut, toImport, wc.getTreeMaker());
+        cut = addImports(cut, toImport, wc.getTreeMaker(), false);
 
         wc.rewrite(wc.getCompilationUnit(), cut);
 
@@ -329,9 +335,10 @@ public class JavaFixAllImports {
                         continue;
 
                     String fqn = e.getQualifiedName().toString();
-                    String dn = "<html><font color='#808080'><s>" + fqn;
+                    String dn = NOT_VALID_IMPORT_HTML + fqn;
 
                     data.variants[index][++i] = dn;
+                    data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
                     int level = Utilities.getImportanceLevel(fqn);
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];

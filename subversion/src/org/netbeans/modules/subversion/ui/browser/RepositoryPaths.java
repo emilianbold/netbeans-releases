@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -83,6 +87,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     
     private JButton browseButton;
     private JButton searchRevisionButton;
+    private JButton browseRevisionButton;
 
     // browser
     private int browserMode;
@@ -97,12 +102,26 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     
     private PropertyChangeSupport propertyChangeSupport;
     
+    public RepositoryPaths(RepositoryFile repositoryFile,
+                           JTextComponent repositoryPathTextField,
+                           JButton browseButton,
+                           JTextField revisionTextField,
+                           JButton searchRevisionButton) {
+        this(repositoryFile,
+            repositoryPathTextField,
+            browseButton,
+            revisionTextField,
+            searchRevisionButton,
+            null);
+    }
+
     public RepositoryPaths(RepositoryFile repositoryFile, 
                            JTextComponent repositoryPathTextField,  
                            JButton browseButton, 
                            JTextField revisionTextField, 
-                           JButton searchRevisionButton) 
-    {                
+                           JButton searchRevisionButton,
+                           JButton browseRevisionButton) {
+
         assert repositoryFile != null;
         assert (repositoryPathTextField !=null && browseButton != null) ||
                (revisionTextField != null && searchRevisionButton != null);
@@ -122,9 +141,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             this.revisionTextField = revisionTextField;
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
+            this.browseRevisionButton = browseRevisionButton;
             if(searchRevisionButton != null) {
                 searchRevisionButton.addActionListener(this);   
             }            
+            if(browseRevisionButton != null) {
+                browseRevisionButton.addActionListener(this);
+            }
         }                
     }
 
@@ -220,6 +243,24 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }             
     }          
     
+    private void browseRepositoryForRevision() {
+        final SVNUrl repositoryUrl = getRepositoryUrl();
+
+        String title = NbBundle.getMessage(RepositoryPaths.class, "CTL_BrowseTag"); // NOI18N
+        RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        int mode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
+        Browser browser = new Browser(title, mode, repoFile, null, null, Browser.BROWSER_HELP_ID_MERGE_TAG);
+        final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
+        if(repositoryFiles == null || repositoryFiles.length == 0) {
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                revisionTextField.setText(repositoryFiles[0].getRevision().toString());
+            }
+        });
+    }
+
     private void searchRepository() {
         SVNRevision revision = getRevision();     
         
@@ -286,6 +327,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             browseRepository();
         } else if (e.getSource() == searchRevisionButton) {
             searchRepository();
+        } else if (e.getSource() == browseRevisionButton) {
+            browseRepositoryForRevision();
         }
     }
 

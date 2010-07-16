@@ -49,17 +49,20 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperFactory;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
+import org.netbeans.modules.bpel.mapper.palette.BpelPalette;
 import org.netbeans.modules.bpel.mapper.model.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.palette.Palette;
-import org.netbeans.modules.bpel.mapper.tree.actions.BpelCopyAction;
-import org.netbeans.modules.bpel.mapper.tree.actions.BpelCutAction;
-import org.netbeans.modules.bpel.mapper.tree.actions.BpelDeleteSelectionGraphAction;
-import org.netbeans.modules.bpel.mapper.tree.actions.BpelPasteAction;
+import org.netbeans.modules.soa.xpath.mapper.actions.MapperCopyAction;
+import org.netbeans.modules.soa.xpath.mapper.actions.MapperCutAction;
+import org.netbeans.modules.soa.xpath.mapper.actions.MapperDeleteGraphSelectionAction;
+import org.netbeans.modules.soa.xpath.mapper.actions.MapperPasteAction;
+import org.netbeans.modules.soa.xpath.mapper.actions.MapperFindAction;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -78,24 +81,25 @@ import org.openide.windows.TopComponent;
  * @version 1.0
  */
 public abstract class MapperMultiviewElement extends TopComponent
-        implements MultiViewElement, Serializable, MapperTcContext, ExplorerManager.Provider
+        implements MultiViewElement, Serializable, MapperTcContext,
+        ExplorerManager.Provider
 {
 
-//    private static final long serialVersionUID = 1L;
     public static final String MAPPER_PANEL_ID = "mapperPanelId"; // NOI18N
     private transient JPanel myMapperPanel;
     private transient Mapper myMapper;
+    private transient LockablePanel<Mapper> mLockablePanel;
+    private transient BpelMapperModel mMapperModel;
     private transient JEditorPane myErrorPanel;
+    private transient JPanel mFullContent;
     private transient CardLayout myCardLayout;
     private transient JComponent myToolBarPanel;
     private transient MultiViewElementCallback myMultiViewObserver;
-    private BPELDataObject myDataObject;
-    private DesignContextChangeListener myContextChangeListener;
-    private DesignContextController myContextController;
-    private Boolean groupVisible;
-    private ActivatedNodesMediator myNodesMediator;
-    private CookieProxyLookup myCookieProxyLookup;
-    private ExplorerManager myExplorerManager;
+    private transient BPELDataObject myDataObject;
+    private transient BpelDesignContextController myContextController;
+    private transient ActivatedNodesMediator myNodesMediator;
+    private transient CookieProxyLookup myCookieProxyLookup;
+    private transient ExplorerManager myExplorerManager;
 
     // for deexternalization
     public MapperMultiviewElement() {
@@ -104,8 +108,8 @@ public abstract class MapperMultiviewElement extends TopComponent
 
     public MapperMultiviewElement(BPELDataObject dObj) {
         myDataObject = dObj;
-        initialize();
         initializeUI();
+        initialize();
     }
 
     public JComponent getVisualRepresentation() {
@@ -157,7 +161,7 @@ public abstract class MapperMultiviewElement extends TopComponent
     }
 
     // TODO r | m
-    public DesignContextController getDesignContextController() {
+    public BpelDesignContextController getDesignContextController() {
         return myContextController;
     }
 
@@ -191,9 +195,8 @@ public abstract class MapperMultiviewElement extends TopComponent
     // TODO m
     @Override
     public void componentActivated() {
-//        System.out.println("mapperTC activated "+getClass());
+//System.out.println("MAPPER ACTIVATED");
         super.componentActivated();
-
         boolean clearFocus = true;
 
         if (myMapper != null) {
@@ -205,25 +208,20 @@ public abstract class MapperMultiviewElement extends TopComponent
                 }
             }
         }
-
         if (clearFocus) {
-            KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                    .clearGlobalFocusOwner();
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         }
-
-        activateContextNode();
         ExplorerUtils.activateActions(myExplorerManager, true);
+//System.out.println(".");
     }
 
     private boolean isFocusInside(Component container) {
-        Component focusOwner = KeyboardFocusManager
-                .getCurrentKeyboardFocusManager().getFocusOwner();
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         for (Component c = focusOwner; c != null; c = c.getParent()) {
             if (c == container) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -247,55 +245,67 @@ public abstract class MapperMultiviewElement extends TopComponent
 
     @Override
     public void componentOpened() {
-//        System.out.println("mapperTC opened: "+getClass());
+//System.out.println("MAPPER OPENED");
         super.componentOpened();
+//System.out.println(".");
     }
 
     @Override
     public void componentShowing() {
-//        System.out.println("mapperTC showing "+getClass());
+//System.out.println();
+//System.out.println("MAPPER SHOWING");
         super.componentShowing();
         myContextController.showMapper();
+
         if (myMapper != null) {
             ActionMap aMap = getActionMap();
 
-            BpelPasteAction paste = SystemAction.get(BpelPasteAction.class);
+            MapperPasteAction paste = SystemAction.get(MapperPasteAction.class);
             paste.initialize(myMapper);
             aMap.put(SystemAction.get(PasteAction.class).getActionMapKey(), paste);
 
-            BpelCopyAction copy = SystemAction.get(BpelCopyAction.class);
+            MapperCopyAction copy = SystemAction.get(MapperCopyAction.class);
             copy.initialize(myMapper);
             aMap.put(SystemAction.get(CopyAction.class).getActionMapKey(), copy);
 
-            BpelCutAction cut = SystemAction.get(BpelCutAction.class);
+            MapperCutAction cut = SystemAction.get(MapperCutAction.class);
             cut.initialize(myMapper);
             aMap.put(SystemAction.get(CutAction.class).getActionMapKey(), cut);
 
-            BpelDeleteSelectionGraphAction del = SystemAction.get(BpelDeleteSelectionGraphAction.class);
+            MapperDeleteGraphSelectionAction del = SystemAction.get(MapperDeleteGraphSelectionAction.class);
             del.initialize(myMapper);
             aMap.put(SystemAction.get(DeleteAction.class).getActionMapKey(), del);
+            
+            MapperFindAction find = SystemAction.get(MapperFindAction.class);
+            find.initialize(myMapper);
+            aMap.put(SystemAction.get(FindAction.class).getActionMapKey(), find);
         }
+//System.out.println(".");
+//System.out.println();
     }
 
     @Override
     public void componentDeactivated() {
-//        System.out.println("mapperTC deactivated "+getClass());
+//System.out.println("MAPPER DEACTIVATED");
         super.componentDeactivated();
         ExplorerUtils.activateActions(myExplorerManager, false);
+//System.out.println(".");
     }
 
     @Override
     public void componentHidden() {
-//        System.out.println("mapperTC hidden "+getClass());
+//System.out.println("MAPPER HIDDEN"/* + myContextController.getClass().getName()*/);
         super.componentHidden();
         myContextController.hideMapper();
+//System.out.println(".");
     }
 
     @Override
     public void componentClosed() {
-//        System.out.println("mapperTC closed "+getClass());
+//System.out.println("MAPPER CLOSED");
         super.componentClosed();
         cleanup();
+//System.out.println(".");
     }
 
     private void cleanup() {
@@ -303,18 +313,13 @@ public abstract class MapperMultiviewElement extends TopComponent
             myExplorerManager.setSelectedNodes(new Node[0]);
         } catch (PropertyVetoException e) {
         }
-////        removePropertyChangeListener(myContextChangeListener);
-
         removePropertyChangeListener(TopComponent.Registry.PROP_ACTIVATED_NODES, myNodesMediator);
         removePropertyChangeListener(TopComponent.Registry.PROP_ACTIVATED_NODES, myCookieProxyLookup);
         myNodesMediator = null;
         myCookieProxyLookup = null;
 
-        //required to release all references to OM
-//        myMapper.closeView();
         myContextController.cleanup();
         myContextController = null;
-        myContextChangeListener = null;
         myMapper = null;
         removeAll();
     }
@@ -322,51 +327,6 @@ public abstract class MapperMultiviewElement extends TopComponent
     @Override
     public UndoRedo getUndoRedo() {
         return myDataObject.getEditorSupport().getUndoManager();
-    }
-
-    /**
-     * Opens or closes the bpel_mapper_tcgroup TopComponentGroup.
-     *
-     * TODO: Figure out if it necessary to use a group here or using
-     * of topComp.open() or topComp.close is enough.
-     */
-    public void showMapperTcGroup(final boolean show) {
-// TODO a & m
-////////        // when active TopComponent changes, check if we should open or close
-////////        // the BPEL  editor group of windows
-////////        WindowManager wm = WindowManager.getDefault();
-////////        final TopComponentGroup group = wm.findTopComponentGroup("bpel_designer"); // NOI18N
-////////        if (group == null) {
-////////            return; // group not found (should not happen)
-////////        }
-////////        //
-////////        boolean mapperSelected = false;
-////////        Iterator it = wm.getModes().iterator();
-////////        while (it.hasNext()) {
-////////            Mode mode = (Mode) it.next();
-////////            TopComponent selected = mode.getSelectedTopComponent();
-////////            if (selected != null) {
-////////            MultiViewHandler mvh = MultiViews.findMultiViewHandler(selected);
-////////                if (mvh != null) {
-////////                    MultiViewPerspective mvp = mvh.getSelectedPerspective();
-////////                    if (mvp != null) {
-////////                        String id = mvp.preferredID();
-////////                        if (BpelMapperMultiviewElementDesc.PREFERED_ID.equals(id)) {
-////////                            mapperSelected = true;
-////////                            break;
-////////                        }
-////////                    }
-////////                }
-////////            }
-////////        }
-////////        //
-////////        if (mapperSelected && !Boolean.TRUE.equals(groupVisible)) {
-////////            group.open();
-////////        } else if (!mapperSelected && !Boolean.FALSE.equals(groupVisible)) {
-////////            group.close();
-////////        }
-////////        //
-////////        groupVisible = mapperSelected ? Boolean.TRUE : Boolean.FALSE;
     }
 
     public static String getTitleBase() {
@@ -393,7 +353,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         return oneOrLess;
     }
 
-    protected abstract DesignContextController createDesignContextController();
+    protected abstract BpelDesignContextController createDesignContextController();
 
     protected void initialize() {
         ShowMapperCookie showCookie = new ShowMapperCookie() {
@@ -403,6 +363,10 @@ public abstract class MapperMultiviewElement extends TopComponent
 
             public void show(String message) {
                 MapperMultiviewElement.this.setMessage(message);
+            }
+
+            public void showLoading(boolean flag) {
+                mLockablePanel.setLocked(flag);
             }
         };
 
@@ -437,48 +401,32 @@ public abstract class MapperMultiviewElement extends TopComponent
    }
 
     protected void initializeUI() {
-        // activate cur node
-        activateContextNode();
         // create empty mapper;
         myMapperPanel = new JPanel();
         myMapperPanel.setLayout(new BorderLayout());
-        myMapper = BpelMapperFactory.createMapper(null);
+        myMapper = new BpelMapperFactory().createMapper(null);
+        //
         myMapperPanel.add(myMapper, BorderLayout.CENTER);
-        myMapperPanel.add(new Palette(myMapper).createMenuBar(), BorderLayout.NORTH);
+        myMapperPanel.add(new BpelPalette((MapperTcContext)this).getPanel(),
+                BorderLayout.NORTH);
 
         myErrorPanel = new MessagePanel(myMapper);
         myErrorPanel.setText("<b>It is Error Panel !!!</b>"); // NOI18N
 
+        mFullContent = new JPanel();
+
         myCardLayout = new CardLayout();
-        setLayout(myCardLayout);
-        add(myMapperPanel, MAPPER_PANEL_ID);
-        add(myErrorPanel, MessagePanel.MESSAGE_PANEL_ID);
-    }
+        mFullContent.setLayout(myCardLayout);
+        mFullContent.add(myMapperPanel, MAPPER_PANEL_ID);
+        mFullContent.add(myErrorPanel, MessagePanel.MESSAGE_PANEL_ID);
 
-    private void activateContextNode() {
-        BpelDesignContext context = myContextController != null
-                ? myContextController.getContext() : null;
-        Node aNode = null;
-        if (DesignContextUtil.isValidContext(context)) {
-            aNode = context == null ? null : context.getActivatedNode();
-        }
+        mLockablePanel = new LockablePanel(mFullContent);
+        String loadingMessage = NbBundle.getMessage(
+                MapperMultiviewElement.class,"LBL_MapperLoading"); // NOI18N
+        mLockablePanel.setLockedText(loadingMessage);
 
-        Node[] tcANodes = getActivatedNodes();
-        Node tcANode = null;
-
-        if (tcANodes != null && tcANodes.length > 0
-                && DesignContextUtil.isValidNode(tcANodes[0])) {
-            tcANode = tcANodes[0];
-        }
-
-        if (tcANode == null
-                || !tcANode.equals(aNode)) {
-            if (aNode != null) {
-                setActivatedNodes(new Node[] {aNode});
-            } else {
-                setActivatedNodes(new Node[0]);
-            }
-        }
+        setLayout(new BorderLayout());
+        add(mLockablePanel, BorderLayout.CENTER);
     }
 
     // TODO m
@@ -531,25 +479,13 @@ public abstract class MapperMultiviewElement extends TopComponent
 ////        }
     }
 
-    private void setMapperInAwt(Mapper newMapper) {
-        assert EventQueue.isDispatchThread();
-
-        //removeAll();
-
-        if (newMapper != null) {
-            myCardLayout.show(this, MAPPER_PANEL_ID);
-        }
-        revalidate();
-        repaint();
-    }
-
     private void showMapper() {
         assert EventQueue.isDispatchThread();
         if (myMapper == null) {
             return;
         }
 
-        myCardLayout.show(this, MAPPER_PANEL_ID);
+        myCardLayout.show(mFullContent, MAPPER_PANEL_ID);
 
         revalidate();
         repaint();
@@ -558,6 +494,18 @@ public abstract class MapperMultiviewElement extends TopComponent
     // TODO r
     public Mapper getMapper() {
         return myMapper;
+    }
+
+    private void switchToMapper() {
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showMapper();
+                }
+            });
+        } else {
+            showMapper();
+        }
     }
 
     private void setMessage(final String message) {
@@ -582,7 +530,11 @@ public abstract class MapperMultiviewElement extends TopComponent
         } else {
             myErrorPanel.setText(NbBundle.getMessage(MapperMultiviewElement.class, "LBL_CantShowMapper")); // NOI18N
         }
-        myCardLayout.show(this, MessagePanel.MESSAGE_PANEL_ID);
+        myCardLayout.show(mFullContent, MessagePanel.MESSAGE_PANEL_ID);
+    }
+
+    public BpelMapperModel getMapperModel() {
+        return mMapperModel;
     }
 
     // TODO m
@@ -604,9 +556,11 @@ public abstract class MapperMultiviewElement extends TopComponent
     private void setMapperModelInAwt(MapperModel mModel) {
         assert EventQueue.isDispatchThread();
 
+        assert mModel instanceof BpelMapperModel;
+        mMapperModel = BpelMapperModel.class.cast(mModel);
+
         if (myMapper != null) {
             myMapper.setModel(mModel);
-
             //
 //            setMapper(myMapper);
             showMapper();

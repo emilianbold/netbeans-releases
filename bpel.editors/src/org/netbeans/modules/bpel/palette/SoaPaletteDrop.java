@@ -27,12 +27,7 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class SoaPaletteDrop implements ActiveEditorDrop {
 
-  /**
-   * A method called from the drop target that supports the artificial DataFlavor.
-   * @param target a Component where drop operation occured
-   * @return true if implementor allowed a drop operation into the targetComponent
-   */
-  public boolean handleTransfer(JTextComponent target) {
-    return false;
-  }
+    public boolean handleTransfer(JTextComponent target) {
+        return false;
+    }
 }

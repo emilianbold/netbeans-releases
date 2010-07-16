@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -137,6 +141,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         result.add(key);
                     }
                 }
+                Collections.sort(result);
                 return result.toArray(new String[result.size()]);
             } catch (FileNotFoundException ex) {
                 // rcfile does not exists - no tests to run
@@ -164,7 +169,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         }
 
         for (TestMethodData methodData : testData.testMethods) {
-            if (!checkConditionals(methodData)) {
+            if (!checkConditionals(methodData, testClass)) {
                 continue;
             }
             if (methodData.isForAllEnvironments()) {
@@ -232,16 +237,21 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
          * if the method is not annotated with @ForAllEnvironments, contains null
          */
         public final String envSection;
-        public final String condSection;
-        public final String condKey;
-        public final boolean condDefault;
+        public final String ifSection;
+        public final String ifKey;
+        public final boolean ifDefault;
+        public final String ifdefSection;
+        public final String ifdefKey;
 
-        public TestMethodData(String name, String envSection, String condSection, String condKey, boolean condDefault) {
+        public TestMethodData(String name, String envSection, String condSection, String condKey, boolean condDefault,
+                String ifdefSection, String ifdefKey) {
             this.name = name;
             this.envSection = envSection;
-            this.condSection = condSection;
-            this.condKey = condKey;
-            this.condDefault = condDefault;
+            this.ifSection = condSection;
+            this.ifKey = condKey;
+            this.ifDefault = condDefault;
+            this.ifdefSection = ifdefSection;
+            this.ifdefKey = ifdefKey;
         }
 
 
@@ -275,22 +285,45 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * @return true in the case there are no @ignore annotation
      * and either there are no @conditional or it's condition is true
      */
-    private boolean checkConditionals(TestMethodData methodData) {
-        if (methodData.condSection == null || methodData.condSection.length() == 0) {
-            return true; // no condition
-        }
-        if (methodData.condKey == null || methodData.condKey.length() == 0) {
-            addTest(warning(methodData.name + " @condition does not specify key"));
-            return false;
-        }
+    private boolean checkConditionals(TestMethodData methodData, Class<? extends NativeExecutionBaseTestCase> testClass) {
         try {
-            RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-            String value = rcFile.get(methodData.condSection, methodData.condKey);
-            if (value == null) {
-                return methodData.condDefault;
-            } else {
-                return Boolean.parseBoolean(value);
+            final RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+            //
+            // check @ignore for class and method
+            //
+            if (rcFile.containsKey("ignore", testClass.getName())) {
+                return false;
             }
+            if (rcFile.containsKey("ignore", testClass.getName() + '.' + methodData.name)) {
+                return false;
+            }
+            //
+            // check @If for method
+            //
+            if (methodData.ifSection != null && methodData.ifSection.length() != 0) {
+                if (methodData.ifKey == null || methodData.ifKey.length() == 0) {
+                    addTest(warning(methodData.name + " @If does not specify a key"));
+                    return false;
+                }
+                String value = rcFile.get(methodData.ifSection, methodData.ifKey);
+                boolean result = (value == null) ? methodData.ifDefault : Boolean.parseBoolean(value);
+                if (!result) {
+                    return false;
+                }
+            }
+            //
+            // check @Ifdef for method
+            //
+            if (methodData.ifdefSection != null && methodData.ifdefSection.length() != 0) {
+                if (methodData.ifdefKey == null || methodData.ifdefKey.length() == 0) {
+                    addTest(warning(methodData.name + " @Ifdef does not specify a key"));
+                    return false;
+                }
+                if (!rcFile.containsKey(methodData.ifdefSection, methodData.ifdefKey)) {
+                    return false;
+                }
+            }
+            return true;
         } catch (FileNotFoundException ex) {
             // silently: just no file => condition is false, that's it
             return false;
@@ -338,22 +371,25 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                             addTest(warning("Method " + testClass.getName() + '.' + method.getName() + " should have no parameters"));
                         } else {
                             if (method.getAnnotation(org.junit.Ignore.class) == null) {
-                                Conditional conditionalAnnotation = method.getAnnotation(Conditional.class);
-                                String condSection = (conditionalAnnotation == null) ? null : conditionalAnnotation.section();
-                                String condKey = (conditionalAnnotation == null) ? null : conditionalAnnotation.key();
-                                boolean condDefault = (conditionalAnnotation == null) ? false : conditionalAnnotation.defaultValue();
+                                If ifAnnotation = method.getAnnotation(If.class);
+                                String condSection = (ifAnnotation == null) ? null : ifAnnotation.section();
+                                String condKey = (ifAnnotation == null) ? null : ifAnnotation.key();
+                                boolean condDefault = (ifAnnotation == null) ? false : ifAnnotation.defaultValue();
+                                Ifdef ifdefAnnotation = method.getAnnotation(Ifdef.class);
+                                String ifdefSection = (ifdefAnnotation == null) ? null : ifdefAnnotation.section();
+                                String ifdefKey = (ifdefAnnotation == null) ? null : ifdefAnnotation.key();
                                 if (forAllEnvAnnotation != null) {
                                     String envSection = forAllEnvAnnotation.section();
                                     if (envSection == null || envSection.length() == 0) {
                                         envSection = defaultSection;
                                     }
                                     if (envSection != null && envSection.length() > 0) {
-                                        result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey, condDefault));
+                                        result.testMethods.add(new TestMethodData(method.getName(), envSection, condSection, condKey, condDefault, ifdefSection, ifdefKey));
                                     } else {
                                         addTest(warning("@ForAllEnvironments annotation for method " + testClass.getName() + '.' + method.getName() + " does not specify section"));
                                     }
                                 } else {
-                                    result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey, condDefault));
+                                    result.testMethods.add(new TestMethodData(method.getName(), null, condSection, condKey, condDefault, ifdefSection, ifdefKey));
                                 }
                             }
                         }

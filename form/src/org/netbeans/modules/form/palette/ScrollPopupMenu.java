@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@
 package org.netbeans.modules.form.palette;
 
 import java.awt.*;
-import java.lang.reflect.Field;
 import javax.swing.*;
 
 
@@ -149,8 +151,6 @@ public class ScrollPopupMenu extends JPopupMenu {
                     d.width = 12;
                     bar.setPreferredSize(d);
                     bar.setUnitIncrement(21);
-                    // Issue 47181
-                    doNotCancelPopupHack(bar);
                 }
 
                 popWin.getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -167,24 +167,5 @@ public class ScrollPopupMenu extends JPopupMenu {
 
     public JScrollBar getScrollBar() {
         return scrollPane != null ? scrollPane.getVerticalScrollBar() : null;
-    }
-    
-    public static void doNotCancelPopupHack(JComponent component) {
-        if (System.getProperty("java.version").startsWith("1.5")) { // NOI18N
-            try {
-                Class clazz = javax.swing.plaf.basic.BasicComboBoxUI.class;
-                Field field = clazz.getDeclaredField("HIDE_POPUP_KEY"); // NOI18N
-                field.setAccessible(true);
-                component.putClientProperty("doNotCancelPopup", field.get(null)); // NOI18N
-                for (int i=0; i<component.getComponentCount(); i++) {
-                    Component comp = component.getComponent(i);
-                    if (comp instanceof JComponent) {
-                        doNotCancelPopupHack((JComponent)comp);
-                    }
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
     }
 }

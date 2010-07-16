@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 package org.netbeans.modules.javacard.project.deps.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -51,7 +55,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
-final class ChooseDeploymentStrategyWizardPanel implements WizardDescriptor.FinishablePanel<Map<String,Object>>, ChangeListener {
+final class ChooseDeploymentStrategyWizardPanel implements /* WizardDescriptor.AsynchronousValidatingPanel<Map<String,Object>>, */ WizardDescriptor.FinishablePanel<Map<String,Object>>, ChangeListener {
     private ChooseDeploymentStrategyPanelVisual component;
     private final WizardDescriptor wiz;
 
@@ -65,6 +69,7 @@ final class ChooseDeploymentStrategyWizardPanel implements WizardDescriptor.Fini
             component = new ChooseDeploymentStrategyPanelVisual(wiz);
             component.setDependencyKind(kind);
             component.setDeploymentStrategy(strat);
+            component.setSigFile(sigFile);
             component.addChangeListener (WeakListeners.change(this, component));
         }
         return component;
@@ -101,18 +106,31 @@ final class ChooseDeploymentStrategyWizardPanel implements WizardDescriptor.Fini
     static final String PROP_DEPLOYMENT_STRATEGY = "_deploymentStrategy"; //NOI18N
     private DependencyKind kind;
     private DeploymentStrategy strat;
+    private File sigFile;
+    private Map<String, Object> settings;
     public void readSettings(Map<String, Object> settings) {
+        this.settings = settings;
         kind = (DependencyKind) settings.get(ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND);
         strat = (DeploymentStrategy) settings.get(PROP_DEPLOYMENT_STRATEGY);
+        sigFile = (File) settings.get(ChooseOriginWizardPanel.PROP_SIG_FILE);
         if (component != null) {
             component.setDependencyKind(kind);
             component.setDeploymentStrategy(strat);
+            component.setSigFile (sigFile);
         }
     }
 
     public void storeSettings(Map<String, Object> settings) {
         if (strat != null) {
             settings.put (PROP_DEPLOYMENT_STRATEGY, strat);
+            if (component != null) {
+                File f = component.getSignatureFile();
+                if (f != null) {
+                    settings.put(ChooseOriginWizardPanel.PROP_SIG_FILE, f);
+                } else {
+                    settings.remove (ChooseOriginWizardPanel.PROP_SIG_FILE);
+                }
+            }
         }
     }
 
@@ -120,5 +138,35 @@ final class ChooseDeploymentStrategyWizardPanel implements WizardDescriptor.Fini
         strat = component.getDeploymentStrategy();
         supp.fireChange();
     }
+
+//    @Override
+//    public void prepareValidation() {
+//        //do nothing
+//    }
+//
+//    @Override
+//    public void validate() throws WizardValidationException {
+//        if (DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES.equals(strat) && !kind.isOriginAFolder()) {
+//            File origin = (File) settings.get(ChooseOriginWizardPanel.PROP_ORIGIN_FILE);
+//            try {
+//                JarFile jf = new JarFile(origin);
+//                try {
+//                    for (JarEntry je : NbCollections.iterable(jf.entries())) {
+//                        String name = je.getName();
+//                        if (name.endsWith(".class")) {
+//
+//                        }
+//                    }
+//                } finally {
+//                    jf.close();
+//                }
+//            } catch (IOException ioe) {
+//                Logger.getLogger (ChooseDeploymentStrategyWizardPanel.class.getName()).log(Level.INFO, null, ioe);
+//                throw new WizardValidationException (component, ioe.getLocalizedMessage(), ioe.getLocalizedMessage());
+//            }
+//        }
+//    }
+
+
 }
 

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -271,29 +274,42 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Project">
             <!-- Project operations -->
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingFolderItemsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-NewFolderAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.NewFolderAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.api.actions.BatchBuildAction.MainBatchBuildAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-RunTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.RunTestAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-ConfigurationManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.ConfigurationManagerAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-DebugTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.DebugTestAction"/>
             </file>
-            
+            <file name="org-netbeans-modules-cnd-makeproject-actions-StepIntoTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.actions.BatchBuildAction.MainBatchBuildAction"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-ConfigurationManagerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
+            </file>            
+        </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory.createNewTestsSubmenu"/>
+            </file>
         </folder>
     </folder>
     
     <folder name="Menu"> <!-- Hacking menus -->
         <folder name="BuildProject">
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance"/>
                 <attr name="position" intvalue="210"/>
             </file>
             
@@ -302,8 +318,8 @@ made subject to such option by the copyright holder.
         </folder>
         <!--
         <folder name="File">
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance"/>
                 <attr name="position" intvalue="300"/>
             </file>
         </folder>
@@ -315,8 +331,13 @@ made subject to such option by the copyright holder.
             <folder name="x-executable+elf">
                 <folder name="Actions">
                     <file name="RunDialogAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.RunDialogAction"/>
                         <attr name="position" intvalue="100"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
+                    </file>
+                    <file name="DebugDialogAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.DebugDialogAction"/>
+                        <attr name="position" intvalue="110"/>
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
                     <file name="Separator0.instance">
@@ -327,5 +348,289 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="CND">
+        <folder name="BuildAction">
+            <folder name="build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="build_packages">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build-package">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="clean">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="compile.single">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="compile-single">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="custom.action">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="custom-action">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="debug">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="debug">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+            <folder name="debug.single">
+                <file name="debug-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="debug.stepinto">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="debug-stepinto">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+            <folder name="rebuild">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="run">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="run">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+            <folder name="run.single">
+                <file name="run-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test">
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+            <folder name="test.single">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test-single">
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+        </folder>        <!-- BuildAction -->
+        <folder name="NoBuildAction">
+            <folder name="build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="build_packages">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build-package">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="clean">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="custom.action">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="custom-action">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="debug">
+                <file name="debug">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="debug.stepinto">
+                <file name="debug-stepinto">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="rebuild">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="run">
+                <file name="run">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test">
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+            <folder name="test.single">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test-single">
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+        </folder>        <!-- NoBuildAction -->
+    </folder>       <!-- CND -->
+    <folder name="Projects">
+        <!-- MakeProject Extension Points-->
+        <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="Nodes"/>
+            <folder name="ImportantFiles"/>
+            <folder name="Customizer"/>
+            <folder name="Actions"/>
+            <folder name="ActionsFolder"/>
+            <folder name="ActionsExtFolder"/>
+            <folder name="Lookup">
+                <!-- put org.netbeans.spi.project.LookupProvider here
+                    or use @LookupProvider.Registration in code
+                -->
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

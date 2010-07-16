@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,13 +45,14 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeListener;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.openide.util.NbBundle;
-
-import javax.swing.*;
 import org.openide.util.HelpCtx;
 
-public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener, ValidationGroupProvider {
 
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
@@ -59,6 +63,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
     public WebProjectCustomizerRun(WebProjectProperties props) {
         initComponents();
         platformAndDevicePanel21.setPlatformAndCard(props);
+        platformAndDevicePanel21.setProjectKind(props.getProject().kind());
         pageComboBox.setModel(props.PAGES);
         servletRadioButton.setModel(props.SELECT_SERVLET);
         pageRadioButton.setModel(props.SELECT_PAGE);
@@ -307,4 +312,8 @@ private void urlRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JRadioButton urlRadioButton;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
+
+    public ValidationGroup getValidationGroup() {
+        return platformAndDevicePanel21.getValidationGroup();
+    }
 }

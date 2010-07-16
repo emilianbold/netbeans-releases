@@ -2,4 +2,78 @@
 <project basedir="." default="netbeans" name="javacard.kit">
     <description>Builds, tests, and runs the project org.netbeans.modules.javacard.kit</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-</project>
+    <target name="test" description="Run all tests in all javacard modules">
+        <ant antfile="../javacard.spi/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.common/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.ri.platform/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.apdufile/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.filemodels/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.project/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.console/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../properties.based.dataobjects/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../spi.actions/build.xml" target="test" inheritall="false" inheritrefs="false"/>
+    </target>
+
+    <target name="clean-and-build-all-nbms" depends="clean-all,all-nbms" description="Cleans and builds NBMs of all Java Card modules"/>
+
+    <target name="clean-all" description="Clean all javacard modules" depends="clean">
+        <ant antfile="../javacard.apdu.io/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.common/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.spi/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.ri.platform/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.ri.bundle/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.apdufile/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.filemodels/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.project/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.console/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.oberthur/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.platform.ui/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../properties.based.dataobjects/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../simple.project.templates/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../simple.project.templates/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../swing.validation/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../swing.customizerlayout/build.xml" target="clean" inheritall="false" inheritrefs="false"/>
+    </target>
+
+    <target name="all-nbms" description="Builds all Java Card NBMs" depends="build-all-nbms,copy-all-nbms"/>
+
+    <target name="build-all-nbms" depends="nbm">
+        <ant antfile="../javacard.apdu.io/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.common/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.spi/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.ri.platform/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.ri.bundle/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.apdufile/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.filemodels/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.project/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.console/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.oberthur/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../javacard.platform.ui/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../properties.based.dataobjects/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../simple.project.templates/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../simple.project.templates/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../swing.validation/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+        <ant antfile="../swing.customizerlayout/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
+    </target>
+
+    <target name="copy-all-nbms" depends="nbm" description="Copies all nbms into the Java Card build dir">
+        <copy todir="build">
+            <fileset dir="../javacard.apdu.io/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.common/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.spi/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.ri.platform/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.ri.bundle/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.apdufile/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.filemodels/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.project/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.console/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.oberthur/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../javacard.platform.ui/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../properties.based.dataobjects/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../simple.project.templates/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../simple.project.templates/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../swing.validation/build"><include name="**/*.nbm"/></fileset>
+            <fileset dir="../swing.customizerlayout/build"><include name="**/*.nbm"/></fileset>
+        </copy>
+    </target>
+    </project>

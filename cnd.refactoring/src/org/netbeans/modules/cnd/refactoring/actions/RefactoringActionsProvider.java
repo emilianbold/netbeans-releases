@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -81,21 +85,26 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         return false;
     }
 
+    private static final String FIND_USAGES_TRACKING = "FIND_USAGES"; // NOI18N
+    private static final String RENAME_TRACKING = "RENAME"; // NOI18N
+
     @Override
     public void doFindUsages(final Lookup lookup) {
         Runnable task;
         if (isFromEditor(lookup)) {
             task = new TextComponentTask(lookup) {
-
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, FIND_USAGES_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup) {
 
+                @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, FIND_USAGES_TRACKING); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
@@ -130,6 +139,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return new RenameRefactoringUI(selectedElement);
                 }
             };
@@ -138,6 +148,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING);
                     return new RenameRefactoringUI(selectedElement);
                 }
             };

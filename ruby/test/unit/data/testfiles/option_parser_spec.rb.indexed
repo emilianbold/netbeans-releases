@@ -1,0 +1,14 @@
+
+
+Document 0
+Searchable Keys:
+  class : OptionParserSpec
+  class-ig : optionparserspec
+  field : err|PRIVATE;;StringIO;
+  field : out|PRIVATE;;StringIO;
+  field : parser|PRIVATE;;Spec::Runner::OptionParser;
+  fqn : OptionParserSpec
+  require : option_parser_spec
+
+Not Searchable Keys:
+  attrs : |VIRTUAL|

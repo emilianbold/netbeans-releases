@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,6 +64,7 @@ public class EntityClass {
     private final String className;
     private final String packageName;
     private final Set<List<String>> uniqueConstraints;
+    private final UpdateType updateType;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -70,13 +75,14 @@ public class EntityClass {
     private boolean forTable = true;  // false means forView
     
     public EntityClass( String catalogName, String schemaName, String tableName, 
-            FileObject rootFolder, String packageName, String className, Set<List<String>> uniqueConstraints) {
+            FileObject rootFolder, String packageName, String className, UpdateType updateType, Set<List<String>> uniqueConstraints) {
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
+        this.updateType = updateType;
         this.uniqueConstraints = uniqueConstraints;
         
         roles = Collections.<RelationshipRole>emptyList();
@@ -147,6 +153,10 @@ public class EntityClass {
     
     public String getClassName() {
         return className;
+    }
+
+    public UpdateType getUpdateType() {
+        return updateType;
     }
 
     public FileObject getPackageFileObject() {

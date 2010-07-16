@@ -21,10 +21,10 @@
 package org.netbeans.modules.iep.editor.model;
 
 
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponentDelegate;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentDelegate;
+import org.netbeans.modules.tbls.model.TcgModelManager;
+import org.netbeans.modules.tbls.model.TcgComponent;
+import org.netbeans.modules.tbls.model.TcgComponentType;
 
 
 /**
@@ -59,19 +59,19 @@ class AttributeMetadataImpl
     }
 
     public String getAttributeName() throws Exception {
-        return mComponent.getProperty(NAME_KEY).getStringValue();
+        return mComponent.getProperty(ModelConstants.NAME_KEY).getStringValue();
     }
     
     public String getAttributeType() throws Exception {
-        return mComponent.getProperty(TYPE_KEY).getStringValue();
+        return mComponent.getProperty(PROP_TYPE).getStringValue();
     }
     
     public String getAttributeSize() throws Exception {
-        return mComponent.getProperty(SIZE_KEY).getStringValue();
+        return mComponent.getProperty(PROP_SIZE).getStringValue();
     }
     
     public String getAttributeScale() throws Exception {
-        return mComponent.getProperty(SCALE_KEY).getStringValue();
+        return mComponent.getProperty(PROP_SCALE).getStringValue();
     }
     
     public String getComment() throws Exception {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -103,7 +106,7 @@ public class FileInformation implements Serializable {
      * Merging during update resulted in merge conflict. Conflicts in the local copy must be resolved before
      * the file can be commited.  
      */ 
-    public static final int STATUS_VERSIONED_CONFLICT           = 64;
+    public static final int STATUS_VERSIONED_CONFLICT_CONTENT   = 64;
 
     /**
      * The file was modified both locally and remotely and these changes may or may not result in
@@ -142,6 +145,12 @@ public class FileInformation implements Serializable {
      * The file has an active lock against it.
      */
     public static final int STATUS_LOCKED = 8192;
+
+    /**
+     * Local tree conflict
+     */
+    public static final int STATUS_VERSIONED_CONFLICT_TREE = 16384;
+    public static final int STATUS_VERSIONED_CONFLICT = STATUS_VERSIONED_CONFLICT_CONTENT | STATUS_VERSIONED_CONFLICT_TREE;
     
     public static final int STATUS_ALL = ~0;
 
@@ -339,6 +348,8 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_AddedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
             return loc.getString("CTL_FileInfoStatus_UpToDate");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return loc.getString("CTL_FileInfoStatus_TreeConflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
@@ -382,6 +393,8 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_DeletedLocally_Short");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return loc.getString("CTL_FileInfoStatus_TreeConflict_Short");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict_Short");
         } else {

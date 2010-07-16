@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,7 +67,7 @@ public class MemoryFileManager implements JavaFileManager {
     
     //Todo: Can be mem optimzed by converting to packed UTF.
     private final Map<String,List<Integer>> packages = new HashMap<String, List<Integer>>();
-    private final Map<Integer,FileObjects.InferableJavaFileObject> content = new HashMap<Integer,FileObjects.InferableJavaFileObject>(); 
+    private final Map<Integer, InferableJavaFileObject> content = new HashMap<Integer, InferableJavaFileObject>();
     private final AtomicInteger currentId = new AtomicInteger ();
 
     public MemoryFileManager () {        
@@ -85,7 +88,7 @@ public class MemoryFileManager implements JavaFileManager {
             final List<Integer> pkglst = packages.get(packageName);
             if (pkglst != null) {
                 for (Integer foid : pkglst) {
-                    FileObjects.InferableJavaFileObject jfo = content.get(foid);
+                    InferableJavaFileObject jfo = content.get(foid);
                     assert jfo != null;
                     if (kinds.contains(jfo.getKind())) {
                         result.add(jfo);
@@ -98,8 +101,8 @@ public class MemoryFileManager implements JavaFileManager {
 
     public String inferBinaryName(Location location, JavaFileObject file) {
         if (location == StandardLocation.SOURCE_PATH) {
-            if (file instanceof FileObjects.InferableJavaFileObject) {
-                return ((FileObjects.InferableJavaFileObject)file).inferBinaryName();
+            if (file instanceof InferableJavaFileObject) {
+                return ((InferableJavaFileObject)file).inferBinaryName();
             }
         }
         return null;
@@ -124,7 +127,7 @@ public class MemoryFileManager implements JavaFileManager {
                 final List<Integer> pkglst = this.packages.get(namePair[0]);
                 if (pkglst != null) {
                     for (Integer id : pkglst) {
-                        final FileObjects.InferableJavaFileObject jfo = this.content.get (id);
+                        final InferableJavaFileObject jfo = this.content.get (id);
                         assert jfo != null;
                         if (className.equals(jfo.inferBinaryName())) {
                             return jfo;
@@ -145,7 +148,7 @@ public class MemoryFileManager implements JavaFileManager {
             final List<Integer> pkglst = packages.get(packageName);
             if (pkglst != null) {
                 for (Integer id : pkglst) {
-                    final FileObjects.InferableJavaFileObject jfo = this.content.get (id);
+                    final InferableJavaFileObject jfo = this.content.get (id);
                     assert jfo != null;
                     if (relativeName.equals(jfo.getName())) {   //Todo: Rely on the file instanceof FileObjects.Base 
                         return jfo;
@@ -173,7 +176,7 @@ public class MemoryFileManager implements JavaFileManager {
     }
     
     
-    public boolean register (final FileObjects.InferableJavaFileObject jfo) {
+    public boolean register (final InferableJavaFileObject jfo) {
         Parameters.notNull("jfo", jfo);
         final String inferedName = jfo.inferBinaryName();
         final String[] pkgName = FileObjects.getPackageAndName (inferedName);
@@ -185,7 +188,7 @@ public class MemoryFileManager implements JavaFileManager {
         //Check for duplicate
         for (Iterator<Integer> it = ids.iterator(); it.hasNext();) {
             final Integer id = it.next();
-            final FileObjects.InferableJavaFileObject rfo = this.content.get(id);
+            final InferableJavaFileObject rfo = this.content.get(id);
             assert rfo != null;
             if (inferedName.equals(rfo.inferBinaryName())) {
                 this.content.put(id, jfo);
@@ -205,7 +208,7 @@ public class MemoryFileManager implements JavaFileManager {
         final List<Integer> ids = this.packages.get(pkgName[0]);
         for (Iterator<Integer> it = ids.iterator(); it.hasNext();) {
             final Integer id = it.next();
-            final FileObjects.InferableJavaFileObject jfo = this.content.get(id);
+            final InferableJavaFileObject jfo = this.content.get(id);
             assert jfo != null;
             if (fqn.equals(jfo.inferBinaryName())) {
                 it.remove();

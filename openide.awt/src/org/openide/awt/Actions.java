@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,12 +52,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +83,7 @@ import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.LookupListener;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -87,7 +93,6 @@ import org.openide.util.actions.SystemAction;
 * @author   Jaroslav Tulach
 */
 public class Actions {
-
     /**
      * @deprecated should not be used
      */
@@ -179,7 +184,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(JMenuItem item, Action action, boolean popup) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(item, action, popup)) {
                 return;
             }
@@ -190,6 +195,7 @@ public class Actions {
             ((Actions.MenuItem)item).setBridge(b);
         }
         b.updateState(null);
+        item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
     /** Attaches checkbox menu item to boolean state action.
@@ -232,7 +238,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(AbstractButton button, Action action) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(button, action)) {
                 return;
             }
@@ -282,6 +288,10 @@ public class Actions {
      */
     public static String cutAmpersand(String text) {
         // XXX should this also be deprecated by something in Mnemonics?
+
+        if( null == text )
+            return null;
+
         int i;
         String result = text;
 
@@ -333,7 +343,7 @@ public class Actions {
      *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -381,7 +391,7 @@ public class Actions {
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -430,7 +440,7 @@ public class Actions {
      *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt; &lt;!-- may be missing --&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -488,7 +498,7 @@ public class Actions {
      *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; 
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -505,12 +515,12 @@ public class Actions {
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * where <code>pkg.YourClass</code> is defined with public constructor taking
@@ -537,12 +547,12 @@ public class Actions {
      * <pre>
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * Now the constructor of <code>YourClass</code> needs to have following
@@ -1240,8 +1250,7 @@ public class Actions {
             }
 
             if (!popup) {
-                boolean jdk16orNewer = "1.6".compareTo(System.getProperty("java.version")) <= 0;
-                button.setIcon(ImageUtilities.loadImageIcon(jdk16orNewer ? "org/openide/resources/actions/empty.gif" : "org/openide/resources/actions/gap.gif", true)); // NOI18N
+                button.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/actions/empty.gif", true)); // NOI18N
             }
         }
 
@@ -1601,5 +1610,30 @@ public class Actions {
          *    default connect implementation is called
          */
         boolean connect(JMenuItem item, Action action, boolean popup);
+    }
+
+    private static final ButtonActionConnectorGetter GET = new ButtonActionConnectorGetter();
+    private static Collection<? extends ButtonActionConnector> buttonActionConnectors() {
+        return GET.all();
+    }
+    private static final class ButtonActionConnectorGetter implements LookupListener {
+        private final Lookup.Result<ButtonActionConnector> result;
+        private Collection<? extends ButtonActionConnector> all;
+
+        ButtonActionConnectorGetter() {
+            result = Lookup.getDefault().lookupResult(ButtonActionConnector.class);
+            result.addLookupListener(this);
+            resultChanged(null);
+        }
+
+        final Collection<? extends ButtonActionConnector> all() {
+            return all;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            all = result.allInstances();
+        }
+
     }
 }

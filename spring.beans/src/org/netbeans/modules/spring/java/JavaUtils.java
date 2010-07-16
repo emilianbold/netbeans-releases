@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,11 +42,15 @@
 
 package org.netbeans.modules.spring.java;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -57,6 +64,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -74,6 +84,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -139,9 +151,15 @@ public final class JavaUtils {
         }
         
         if(methodName.startsWith(GET_PREFIX) || methodName.startsWith(SET_PREFIX)) {
-            return convertToPropertyName(methodName.substring(3));
+            String substring = methodName.substring(3);
+            if (!"".equals(substring)) {
+                return convertToPropertyName(substring);
+            }
         } else if(methodName.startsWith(IS_PREFIX)) {
-            return convertToPropertyName(methodName.substring(2));
+            String substring = methodName.substring(2);
+            if (!"".equals(substring)) {
+                return convertToPropertyName(substring);
+            }
         }
         
         return null;
@@ -302,8 +320,48 @@ public final class JavaUtils {
         final JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
+
+                class AL implements ActionListener {
+                    private Dialog dialog;
+                    private Future<Void> monitor;
+
+                    public void start (final Future<Void> monitor) {
+                        assert monitor != null;
+                        this.monitor = monitor;
+                        if (dialog != null) {
+                            dialog.setVisible(true);
+                        }
+                    }
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        monitor.cancel(false);
+                        close ();
+                    }
+
+                    void close () {
+                        if (dialog != null) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                            dialog = null;
+                        }
+                    }
+                };
+
+                final AL listener = new AL();
+                
+                JLabel label = new JLabel(NbBundle.getMessage(JavaUtils.class,"MSG_WaitScan"),
+                        javax.swing.UIManager.getIcon("OptionPane.informationIcon"), SwingConstants.LEFT);
+                label.setBorder(new EmptyBorder(12,12,11,11));
+                String actionName=NbBundle.getMessage(JavaUtils.class,"TTL_WaitScan");
+                DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{NbBundle.getMessage(JavaUtils.class,"LBL_CancelAction",actionName)}, null, 0, null, listener);
+                listener.dialog = DialogDisplayer.getDefault().createDialog(dd);
+                listener.dialog.pack();
+
+                Future<Void> future = js.runWhenScanFinished(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController cc) throws Exception {
+                        listener.close();
                         boolean opened = false;
                         if (classBinaryName == null) {
                             return;
@@ -317,7 +375,11 @@ public final class JavaUtils {
                             StatusDisplayer.getDefault().setStatusText(msg);
                         }
                     }
-                }, false);
+                }, true);
+                
+                if (!future.isDone()) {
+                    listener.start(future);
+                }
             } catch (IOException ex) {
                 Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
             }

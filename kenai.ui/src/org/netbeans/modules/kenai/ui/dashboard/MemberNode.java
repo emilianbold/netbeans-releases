@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,7 @@ public class MemberNode extends LeafNode {
     private JPanel panel;
     private JLabel lbl;
     private LinkButton btn;
+    private Object LOCK = new Object();
 
     public MemberNode( final MemberHandle user, TreeListNode parent ) {
         super( parent );
@@ -74,29 +78,34 @@ public class MemberNode extends LeafNode {
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if( null == panel ) {
-            panel = new JPanel( new BorderLayout() );
-            panel.setOpaque(false);
-            String role = user.getRole();
-            String displayName = role != null
-                    ? NbBundle.getMessage(MemberNode.class, "LBL_MEMBER_FORMAT", user.getDisplayName(), role) // NOI18N
-                    : user.getDisplayName();
-            lbl = new TreeLabel(displayName) {
-                @Override
-                public String getToolTipText() {
-                    return NbBundle.getMessage(UserNode.class, user.isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
-                }
-            };
-            lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
-            panel.add( lbl, BorderLayout.CENTER);
-            btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
-            panel.add(btn, BorderLayout.EAST);
-            panel.validate();
-       }
-       lbl.setForeground(foreground);
-       btn.setForeground(foreground);
-       btn.setVisible(user.hasMessages());
-       return panel;
+        synchronized (LOCK) {
+            if (null == panel) {
+                panel = new JPanel(new BorderLayout());
+                panel.setOpaque(false);
+                String role = user.getRole();
+                String displayName = role != null
+                        ? NbBundle.getMessage(MemberNode.class, "LBL_MEMBER_FORMAT", user.getDisplayName(), role) // NOI18N
+                        : user.getDisplayName();
+                lbl = new TreeLabel(displayName) {
+
+                    @Override
+                    public String getToolTipText() {
+                        return NbBundle.getMessage(UserNode.class, user.isOnline() ? "LBL_ONLINE_MEMBER_TOOLTIP" : "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
+                    }
+                };
+                lbl.setIcon(new KenaiUserUI(user.getFQN()).getIcon());
+                panel.add(lbl, BorderLayout.CENTER);
+                btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
+                panel.add(btn, BorderLayout.EAST);
+                panel.validate();
+            }
+            lbl.setForeground(foreground);
+            if (btn != null) {
+                btn.setForeground(foreground);
+                btn.setVisible(user.hasMessages());
+            }
+            return panel;
+        }
     }
 
     @Override

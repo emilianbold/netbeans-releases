@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,10 +52,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -70,6 +73,7 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
      */
     private static final Pattern[] PATTERNS = {
         Pattern.compile(".*INFO: Glassfish v3 started.*", Pattern.DOTALL),
+        Pattern.compile(".*Press Ctrl\\+C to stop\\..*", Pattern.DOTALL),
         Pattern.compile(".*[0-9] milliseconds.*", Pattern.DOTALL)
     };
     
@@ -114,15 +118,15 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
         return location;
     }
 
-    public String getStartupParam() {
-        return null;
+    public List<String> getStartupParams(RailsVersion version) {
+        return Collections.emptyList();
     }
 
     public String getScriptPrefix() {
         return "-S";
     }
 
-    public String getServerPath() {
+    public String getServerPath(RailsVersion version) {
         // glassfish_rails is deprecated in 0.9.4 and newer
         return compareVersion("0.9.4") >= 0 ? "glassfish" : "glassfish_rails";
     }

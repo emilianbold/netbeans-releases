@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -98,7 +101,7 @@ public class OpenProjectListTest extends NbTestCase {
         return Level.FINE;
     }
 
-    protected void setUp () throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp ();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
         clearWorkDir ();
@@ -131,7 +134,7 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
     
-    protected void tearDown () {
+    protected @Override void tearDown() {
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
 
@@ -277,6 +280,7 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1}, false);
         
         assertEquals("both open hooks were called", 2, TestProjectOpenedHookImpl.opened);
+        OpenProjectList.OPENING_RP.post(new Runnable() {public void run() {}}).waitFinished(); // flush running tasks
         assertEquals("both close hooks were called", 2, TestProjectOpenedHookImpl.closed);
     }
     
@@ -286,34 +290,34 @@ public class OpenProjectListTest extends NbTestCase {
         FileObject p1 = workDir.createFolder("p1");
         FileObject p1TestProject = p1.createFolder("testproject");
         
-        Project project1 = ProjectManager.getDefault().findProject(p1);
+        Project prj1 = ProjectManager.getDefault().findProject(p1);
         
-        assertNotNull("project1 is recognized", project1);
+        assertNotNull("project1 is recognized", prj1);
         
-        OpenProjectList.getDefault().open(project1);
+        OpenProjectList.getDefault().open(prj1);
         
-        OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        OpenProjectList.getDefault().close(new Project[] {prj1}, false);
         
         p1TestProject.delete();
-        TestSupport.notifyDeleted(project1);
+        TestSupport.notifyDeleted(prj1);
         
         assertNull("project1 is deleted", ProjectManager.getDefault().findProject(p1));
         
-        assertFalse("project1 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project1));
+        assertFalse("project1 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(prj1));
         
         FileObject p2 = workDir.createFolder("p2");
-        FileObject p2TestProject = p2.createFolder("testproject");
+        p2.createFolder("testproject");
         
-        Project project2 = ProjectManager.getDefault().findProject(p2);
+        Project prj2 = ProjectManager.getDefault().findProject(p2);
         
-        assertNotNull("project2 is recognized", project2);
-        OpenProjectList.getDefault().open(project2);
+        assertNotNull("project2 is recognized", prj2);
+        OpenProjectList.getDefault().open(prj2);
         
-        OpenProjectList.getDefault().close(new Project[] {project2}, false);
+        OpenProjectList.getDefault().close(new Project[] {prj2}, false);
         
-        TestSupport.notifyDeleted(project2);
+        TestSupport.notifyDeleted(prj2);
         
-        assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
+        assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(prj2));
     }
     
     public void testMainProject() throws Exception {
@@ -322,16 +326,16 @@ public class OpenProjectListTest extends NbTestCase {
         FileObject p1 = workDir.createFolder("p1");
         FileObject p1TestProject = p1.createFolder("testproject");
         
-        Project project1 = ProjectManager.getDefault().findProject(p1);
+        Project prj1 = ProjectManager.getDefault().findProject(p1);
         
-        assertNotNull("project1 is recognized", project1);
+        assertNotNull("project1 is recognized", prj1);
         
         FileObject p2 = workDir.createFolder("p2");
-        FileObject p2TestProject = p2.createFolder("testproject");
+        p2.createFolder("testproject");
         
-        Project project2 = ProjectManager.getDefault().findProject(p2);
+        Project prj2 = ProjectManager.getDefault().findProject(p2);
         
-        assertNotNull("project2 is recognized", project2);
+        assertNotNull("project2 is recognized", prj2);
         
         FileObject p3 = workDir.createFolder("p3");
         FileObject p3TestProject = p3.createFolder("testproject");
@@ -342,19 +346,19 @@ public class OpenProjectListTest extends NbTestCase {
         
         assertNull("no main project set when OPL is empty", OpenProjectList.getDefault().getMainProject());
         
-        OpenProjectList.getDefault().open(project1);
+        OpenProjectList.getDefault().open(prj1);
         
         assertNull("open project does not change main project", OpenProjectList.getDefault().getMainProject());
         
-        OpenProjectList.getDefault().setMainProject(project1);
+        OpenProjectList.getDefault().setMainProject(prj1);
         
-        assertTrue("main project correctly set", OpenProjectList.getDefault().getMainProject() == project1);
+        assertTrue("main project correctly set", OpenProjectList.getDefault().getMainProject() == prj1);
         
-        OpenProjectList.getDefault().open(project2);
+        OpenProjectList.getDefault().open(prj2);
         
-        assertTrue("open project does not change main project", OpenProjectList.getDefault().getMainProject() == project1);
+        assertTrue("open project does not change main project", OpenProjectList.getDefault().getMainProject() == prj1);
         
-        OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        OpenProjectList.getDefault().close(new Project[] {prj1}, false);
         
         assertNull("no main project set when main project is closed", OpenProjectList.getDefault().getMainProject());
         
@@ -372,7 +376,7 @@ public class OpenProjectListTest extends NbTestCase {
         exceptionThrown = false;
         
         try {
-            OpenProjectList.getDefault().setMainProject(project1);
+            OpenProjectList.getDefault().setMainProject(prj1);
         } catch (IllegalArgumentException e) {
             exceptionThrown = true;
         }

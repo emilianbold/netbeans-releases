@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -107,12 +110,90 @@ is the proper place.
         <!-- org.netbeans.modules.j2ee.deployment.profiler -->
         <apidef name="profiler">J2EE Server Common API</apidef>
         <!-- org.netbeans.modules.j2ee.deployment.plugins.spi.support -->
-        <apidef name="support">Server Integration Plugin SPI Support</apidef>        
+        <apidef name="support">Server Integration Plugin SPI Support</apidef>
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="serverLibraries">
+	    <summary>
+                Implemented support for handling the server libraries.
+	    </summary>
+	    <version major="1" minor="68"/>
+	    <date day="9" month="6" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Implemented both SPI and API to provide support for server
+                libraries management.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="Version"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibrary"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibraryDependency"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryImplementation"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryManager"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="ServerLibraryConfiguration"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="182282"/>
+	 </change>
+
+        <change id="optionalFactoryProxy">
+	    <api name="support"/>
+	    <summary>
+                Added class proxying the OptionalDeploymentManagerFactory and adding
+                the optional noInitializationFinish attribute.
+	    </summary>
+	    <version major="1" minor="66"/>
+	    <date day="25" month="2" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added class ProxyOptionalFactory which delegates all calls
+                to configured delegate. Via noInitializationFinish it
+                is possible to supress finishInitialization() method when
+                it is not required by the plugin.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="180893"/>
+	 </change>
+
+        <change id="deploymentFactoryProxy">
+	    <api name="support"/>
+	    <summary>
+                Added class proxying the DeploymentFactory and adding
+                the optional urlPattern attribute.
+	    </summary>
+	    <version major="1" minor="65"/>
+	    <date day="22" month="2" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added class ProxyDeploymentFactory which delegates all calls
+                to configured delegate. Via urlPattern it is possible to do
+                precheck of server instance uri. The uri has to mach the pattern
+                otherwise the instance is rejected as not supported but
+                the factory.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyDeploymentFactory"/>
+            <issue number="148177"/>
+	 </change>
 
         <change id="resourceChangeReporter">
 	    <api name="devmodules"/>

@@ -416,10 +416,11 @@
     </rule-map>
     
     <rule-map source-type="clob">
+        <rule name="equivalent" target-types="longvarchar,anytype" />
     </rule-map>
 
     <rule-map source-type="longvarchar">
-      <rule name="equivalent" target-types="char,varchar,anytype" />
+      <rule name="equivalent" target-types="char,varchar,clob,anytype" />
       <rule name="downcast" target-types="numeric,tinyint,smallint,integer,bigint,decimal,double,float,real,time,date,timestamp" />
     </rule-map>
 
@@ -460,12 +461,12 @@
     </rule-map>
     
     <rule-map source-type="longvarbinary">
-      <rule name="equivalent" target-types="varbinary,binary,anytype" />
+      <rule name="equivalent" target-types="blob,varbinary,binary,anytype" />
       <rule name="downcast" target-types="bit" />
     </rule-map>
 
     <rule-map source-type="blob">
-        <rule name="equivalent" target-types="anytype" />
+        <rule name="equivalent" target-types="longvarbinary,anytype" />
     </rule-map>
 
     <rule-map source-type="java_object">

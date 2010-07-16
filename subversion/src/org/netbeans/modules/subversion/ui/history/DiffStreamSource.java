@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,16 +52,13 @@ import org.netbeans.modules.versioning.util.Utils;
 import java.io.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -113,6 +113,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         this.repoUrl = repoUrl;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -121,10 +122,12 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         try {
             init();
@@ -135,6 +138,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         init();
         if (revision == null || remoteFile == null) return null;
@@ -145,10 +149,12 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    @Override
     public boolean isEditable() {
         return false;
     }
@@ -166,6 +172,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         return true;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         try {
             init();
@@ -216,6 +223,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public boolean cancel() {
         if(client != null) {
             client.cancel();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -96,11 +99,26 @@ public class AddProjectAction implements ProjectActionPerformer {
     private static final String WEB_PROJ_DESC = "descWebProject" ; // No I18N
     private static final String EAR_PROJ_DESC = "descEarProject" ; // No I18N
     
+    // whether the SU project to be added is internal or external
+    private boolean internal;
       
     /**
-     * Creates a new instance of ProjectLevelAddAction
+     * Creates a new instance of AddProjectAction for adding an internal
+     * SU project.
      */
     public AddProjectAction() {
+        this(true);
+    }
+
+    /**
+     * Creates a new instance of AddProjectAction for adding an internal or
+     * external SU project.
+     *
+     * @param internal  whether the SU project to be added is internal
+     *                  or external
+     */
+    public AddProjectAction(boolean internal) {
+        this.internal = internal;
         init();
     }
     
@@ -180,7 +198,8 @@ public class AddProjectAction implements ProjectActionPerformer {
                 
         VisualClassPathItem vi = new VisualClassPathItem(
                 artifact, VisualClassPathItem.TYPE_ARTIFACT, null,
-                artifact.getArtifactLocations()[0].toString(), true
+                artifact.getArtifactLocations()[0].toString(), 
+                internal
                 );
         String projName = vi.getProjectName();
         for (VisualClassPathItem oldVi : oldList) {
@@ -221,7 +240,6 @@ public class AddProjectAction implements ProjectActionPerformer {
         newTargetIDs.addAll(oldTargetIDs);
         
         projProperties.put(JbiProjectProperties.JBI_CONTENT_ADDITIONAL, newList);
-        storeJavaEEJarList(projProperties, newList);
         
         projProperties.put(JbiProjectProperties.JBI_CONTENT_COMPONENT, newTargetIDs);
         projProperties.store();
@@ -234,26 +252,7 @@ public class AddProjectAction implements ProjectActionPerformer {
         
         return true;
     }
-    
-    private void storeJavaEEJarList(JbiProjectProperties projProp, List<VisualClassPathItem> subprojJars){
-        if (subprojJars != null){
-            List<VisualClassPathItem> javaeeList = new ArrayList<VisualClassPathItem>();
-            VisualClassPathItem vcpi = null;
-            Iterator <VisualClassPathItem> itr = subprojJars.iterator();
-            while (itr.hasNext()){
-                vcpi = itr.next();
-                if ((vcpi.getObject() instanceof AntArtifact)
-                && (VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact) vcpi.getObject()))){
-                    javaeeList.add(vcpi);
-                }
-            }
             
-            if (javaeeList.size() > 0){
-                projProp.put(JbiProjectProperties.JBI_JAVAEE_JARS, javaeeList);
-            }
-        }
-    }
-        
     public class EJBArtifactsFilter extends FileFilter {
         public EJBArtifactsFilter(){
         }

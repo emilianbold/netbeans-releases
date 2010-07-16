@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,8 +82,15 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -91,6 +101,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -177,8 +188,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     libraries = new Library[]{jsfLibrary};
                 }
                 // This is a way how to add libraries to the project classpath and
-                // packed them to the war file by default.
-                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                // packed them to the war file by default.  classpath/compile_only (for scope provided)
+                boolean modified = false;
+                Boolean isMaven = (Boolean)panel.getController().getProperties().getProperty("maven");  //NOI18N
+                if (isMaven!=null && isMaven.booleanValue()) {
+                    Project prj = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                    J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+                    if (provider != null) {
+                        String serverInstanceId = provider.getServerInstanceID();
+                        if ( serverInstanceId == null || "".equals(serverInstanceId) || "DEV-NULL".equals(serverInstanceId)) {    //NOI18N
+                            if (!panel.packageJars()) {
+                                //Add to pom with scope provided
+                                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], "classpath/compile_only"); //NOI18N
+                                modified = true;
+                            }
+                        }
+                    }
+
+                }
+                if (!modified) {
+                    ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
+                }
             }
 
             boolean isMyFaces;
@@ -197,7 +227,28 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
             }
             assert webInf != null;
-            FileSystem fileSystem = webModule.getWebInf().getFileSystem();
+
+            // configure server library
+            ServerLibrary serverLibrary = panel.getServerLibrary();
+            if (serverLibrary != null) {
+                String implementationTitle = serverLibrary.getImplementationTitle();
+                isMyFaces = implementationTitle != null && implementationTitle.contains("MyFaces"); // NOI18N
+                Project prj = FileOwnerQuery.getOwner(webInf);
+                if (prj != null) {
+                    J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+                    if (provider != null) {
+                        provider.getConfigSupport().configureLibrary(
+                                ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
+                                    serverLibrary.getSpecificationVersion(),
+                                    serverLibrary.getImplementationVersion()));
+
+                        Preferences prefs = ProjectUtils.getPreferences(prj, ProjectUtils.class, true);
+                        prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
+                    }
+                }
+            }
+
+            FileSystem fileSystem = webInf.getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
@@ -205,14 +256,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (welcomeFile != null) {
                 result.add(welcomeFile);
             }
-        }  catch (IOException exception) {   
+        } catch (IOException exception) {   
+           LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
+        } catch (ConfigurationException exception) {
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
         createWelcome = true;
 
         return result;
     }
-    
+
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sbuffer = new StringBuffer();
@@ -230,15 +283,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
-        assert wm != null;
-        FileObject dd = wm.getDeploymentDescriptor();
-        if (dd != null){
-            FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
-            File[] files = new File[filesFO.length];
-            for (int i = 0; i < filesFO.length; i++)
-                files[i] = FileUtil.toFile(filesFO[i]);
-            if (files.length > 0)
-                return files;
+        if (wm != null) {
+            FileObject dd = wm.getDeploymentDescriptor();
+            if (dd != null){
+                FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
+                File[] files = new File[filesFO.length];
+                for (int i = 0; i < filesFO.length; i++)
+                    files[i] = FileUtil.toFile(filesFO[i]);
+                if (files.length > 0)
+                    return files;
+            }
         }
         return null;
     }
@@ -246,13 +300,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        if (webModule != null) {
-            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        if (webModule != null && webModule.getDocumentBase() != null) {
+            FileObject docBase = webModule.getDocumentBase();
+            Project project = FileOwnerQuery.getOwner(docBase);
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
-                ClassPath cp  = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
-                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
+                ClassPath cp  = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
+                boolean faceletsPresent = cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
                                           cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
                 if (faceletsPresent) {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
@@ -260,6 +314,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
         } else {
+            if (webModule!=null && webModule.getDocumentBase() == null) {
+                controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
+            }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         }
         panel.setCreateExamples(createWelcome);
@@ -309,6 +366,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null){
             url = FileUtil.getRelativePath(wm.getDocumentBase(), file);
+            if (url == null) {
+                return null;
+            }
             if (url.charAt(0)!='/')
                 url = "/" + url;
             String mapping = ConfigurationUtils.getFacesServletMapping(wm);
@@ -366,12 +426,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
             }
 
-            if (jsfLibrary !=null) {
+            if (jsfLibrary != null) {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
                 isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
             } else {
-                ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
+                if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER && panel.getServerLibrary() != null) {
+                    isJSF20 = Version.fromJsr277NotationWithFallback("2.0").isBelowOrEqual(
+                            panel.getServerLibrary().getSpecificationVersion());
+                } else {
+                    ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+                    isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
+                }
             }
 
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
@@ -453,6 +518,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         }
                     } else if (faceletsEnabled && welcomeFiles == null) {
                         welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
+                    }
+                    if (welcomeFiles != null && welcomeFileList.isEmpty()) {
+                        for (String fileName : welcomeFiles.getWelcomeFile()) {
+                            welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, fileName));
+                        }
+                        welcomeFiles = null;
                     }
                     if (welcomeFiles == null && !welcomeFileList.isEmpty()) {
                         welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
@@ -536,6 +607,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 application.addViewHandler(viewHandler);
                             }
                             ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+                            // FIXME icefaces on server
                             if (panel.getLibrary()!=null && panel.getLibrary().getName().indexOf("facelets-icefaces") != -1 //NOI18N
                                     && cp != null && cp.findResource("com/icesoft/faces/facelets/D2DFaceletViewHandler.class") != null){    //NOI18N
                                 ViewHandler iceViewHandler = model.getFactory().createViewHandler();

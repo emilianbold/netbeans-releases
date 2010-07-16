@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,9 +83,9 @@ public class WsdlModeler {
     private EntityResolver entityResolver;
     private Set<String> bindingFiles;
     private String packageName;
-    private List<WsdlModelListener> modelListeners;
+    private final List<WsdlModelListener> modelListeners;
     private List<WsdlChangeListener> wsdlChangeListeners;
-    RequestProcessor.Task task, task1;
+    RequestProcessor.Task task;
     int listenersSize;
     protected Properties properties;
     private Throwable creationException;
@@ -92,7 +95,7 @@ public class WsdlModeler {
         this.wsdlUrl = wsdlUrl;
         modelListeners = Collections.synchronizedList(new ArrayList<WsdlModelListener>());
         wsdlChangeListeners = new ArrayList<WsdlChangeListener>();
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        task = new RequestProcessor("WsdlModeler-request-processor").create(new Runnable() { //NOI18N
 
             public void run() {
                 generateWsdlModel();
@@ -150,7 +153,7 @@ public class WsdlModeler {
     }
 
     public void generateWsdlModel(WsdlModelListener listener, final WsdlErrorHandler errorHandler) {
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.Task task1 = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 generateWsdlModel(errorHandler);
@@ -158,7 +161,7 @@ public class WsdlModeler {
             }
         }, true);
         addWsdlModelListener(listener);
-        task.run();
+        task1.run();
     }
 
     public void generateWsdlModel(WsdlModelListener listener) {
@@ -173,12 +176,10 @@ public class WsdlModeler {
             } catch (InterruptedException ex) {
             }
             addWsdlModelListener(listener);
-            task.schedule(0);
+            task.schedule(100);
         } else {
             addWsdlModelListener(listener);
-            if (task.isFinished()) {
-                task.schedule(0);
-            }
+            task.schedule(100);
         }
     }
 

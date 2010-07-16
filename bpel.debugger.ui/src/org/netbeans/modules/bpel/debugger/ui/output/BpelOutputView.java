@@ -46,14 +46,11 @@ public class BpelOutputView implements Tracer {
         myDateFormat = new SimpleDateFormat("HH:mm:ss"); // NOI18N
         final String title;
 
-        if (name == null) {
-           title = NbBundle.getMessage(BpelOutputView.class,
-              "CTL_DebuggerConsoleName"); // NOI18N
-        } else {
-           title = NbBundle.getMessage(BpelOutputView.class,
-              "CTL_DebuggerConsole", name); // NOI18N
-        }
-        
+//      if (name == null) {
+           title = NbBundle.getMessage(BpelOutputView.class, "CTL_DebuggerConsoleName"); // NOI18N
+//      } else {
+//         title = NbBundle.getMessage(BpelOutputView.class, "CTL_DebuggerConsole", name); // NOI18N
+//      }
         if (EventQueue.isDispatchThread()) {
             prepareOutput(title);
         } else {
@@ -63,7 +60,6 @@ public class BpelOutputView implements Tracer {
                 }
             });
         }
-        
     }
     
     /**{@inheritDoc}*/
@@ -136,7 +132,5 @@ public class BpelOutputView implements Tracer {
 
     private DateFormat myDateFormat;
     private OutputWriter myOutputWriter;
-    private static boolean ourEnabled =
-      System.getProperty("org.netbeans.modules.bpel.debugger.debug") // NOI18N
-        != null;
+    private static boolean ourEnabled = System.getProperty("org.netbeans.modules.bpel.debugger.debug") != null; // NOI18N
 }

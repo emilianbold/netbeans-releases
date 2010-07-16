@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,9 @@ import com.sun.jdi.request.MethodExitRequest;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -70,6 +75,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -88,7 +94,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodEntryRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodExitRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -106,25 +111,6 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
-    }
-    
-    public static boolean canGetMethodReturnValues(VirtualMachine vm) {
-        if (!JPDAUtils.IS_JDK_16) return false;
-        boolean canGetMethodReturnValues = false;
-        java.lang.reflect.Method m = null;
-        try {
-            m = vm.getClass().getMethod("canGetMethodReturnValues", new Class[] {});
-        } catch (Exception ex) {
-        }
-        if (m != null) {
-            try {
-                m.setAccessible(true);
-                Object ret = m.invoke(vm, new Object[] {});
-                canGetMethodReturnValues = Boolean.TRUE.equals(ret);
-            } catch (Exception ex) {
-            }
-        }
-        return canGetMethodReturnValues;
     }
     
     protected void setRequests () {
@@ -190,7 +176,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         return null;
     }
 
-    private Value[] returnValuePtr;
+    private final Map<Event, Value> returnValueByEvent = new WeakHashMap<Event, Value>();
 
     public boolean processCondition(Event event) {
         try {
@@ -213,32 +199,14 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 Set methodNames = (Set) EventRequestWrapper.getProperty(EventWrapper.request(event), "methodNames");
                 if (methodNames == null || methodNames.contains(methodName)) {
                     Value returnValue = null;
-                    /* JDK 1.6.0 code */
-                    if (JPDAUtils.IS_JDK_16) { // Retrieval of the return value
-                        VirtualMachine vm = MirrorWrapper.virtualMachine(event);
-                        // vm.canGetMethodReturnValues();
-                        if (canGetMethodReturnValues(vm)) {
-                            //Value returnValue = ((MethodExitEvent) event).returnValue();
-                            java.lang.reflect.Method m = null;
-                            try {
-                                m = event.getClass().getDeclaredMethod("returnValue", new Class[] {});
-                            } catch (Exception ex) {
-                                m = null;
-                            }
-                            if (m != null) {
-                                try {
-                                    m.setAccessible(true);
-                                    Object ret = m.invoke(event, new Object[] {});
-                                    returnValue = (Value) ret;
-                                } catch (Exception ex) {
-                                }
-                            }
-                        }
+                    VirtualMachine vm = MirrorWrapper.virtualMachine(event);
+                    if (vm.canGetMethodReturnValues()) {
+                        returnValue = ((MethodExitEvent) event).returnValue();
                     }
                     boolean success = processCondition(event, breakpoint.getCondition (),
                                 LocatableEventWrapper.thread((MethodExitEvent) event), returnValue);
                     if (success) {
-                        returnValuePtr = new Value[] { returnValue };
+                        returnValueByEvent.put(event, returnValue);
                     }
                     return success;
                 } else {
@@ -284,13 +252,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 if (LocatableWrapper.location(me) != null) {
                     refType = LocationWrapper.declaringType(LocatableWrapper.location(me));
                 }
-                Value returnValue;
-                if (returnValuePtr != null) {
-                    returnValue = returnValuePtr[0];
-                    returnValuePtr = null;
-                } else {
-                    returnValue = null;
-                }
+                Value returnValue = returnValueByEvent.remove(event);
                 return perform (
                     event,
                     LocatableEventWrapper.thread(me),
@@ -398,6 +360,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     }
                 } catch (InternalExceptionWrapper e) {
                 } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
                 } catch (VMDisconnectedExceptionWrapper e) {
                     return ;
                 }
@@ -410,6 +374,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         entryReq = null;
                     } catch (ObjectCollectedExceptionWrapper e) {
                         entryReq = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
+                        entryReq = null;
                     }
                 }
                 if (exitReq != null) {
@@ -418,6 +385,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     } catch (InternalExceptionWrapper e) {
                         exitReq = null;
                     } catch (ObjectCollectedExceptionWrapper e) {
+                        exitReq = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
                         exitReq = null;
                     }
                 }

@@ -69,9 +69,11 @@ import org.netbeans.modules.bpel.nodes.actions.GoToDiagrammAction;
 import org.netbeans.modules.bpel.nodes.actions.WrapAction;
 import org.openide.actions.NewAction;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -162,7 +164,7 @@ public abstract class Pattern {
     
     public BpelEntity getOMReference() {
 //        assert bpelModel.getEntity((UniqueId)this.omReference) != null :
-//            "Can not resolve element for pattern: " + this;
+//            "Cannot resolve element for pattern: " + this;
         if ( this.omReference != null) {
             return bpelModel.getEntity((UniqueId) this.omReference);
             
@@ -173,18 +175,19 @@ public abstract class Pattern {
     
     
     public void setParent(CompositePattern newParent){
-        
         CompositePattern oldParent = parent;
         
-        if (oldParent != null){
-            oldParent.removePattern(this);
+        if (oldParent != newParent) {
+            if (oldParent != null){
+                oldParent.removePattern(this);
+            }
+
+            if (newParent != null){
+                newParent.appendPattern(this);
+            }
+
+            parent = newParent;
         }
-        
-        if (newParent != null){
-            newParent.appendPattern(this);
-        }
-        
-        parent = newParent;
     }
     
     
@@ -358,22 +361,22 @@ public abstract class Pattern {
 
                                 AddPaletteActivityAction[] paletteActions = null;
                                 if (paletteCategory instanceof AddBasicActivitiesAction) {
-                                     paletteActions = ((AddBasicActivitiesAction)paletteCategory)
-                                        .getPaletteActions(new Node[] {node});
+                                     paletteActions = ((AddBasicActivitiesAction)paletteCategory).getPaletteActions(new Node[] {node});
                                 } else if (paletteCategory instanceof AddStructuredActivitiesAction) {
-                                     paletteActions = ((AddStructuredActivitiesAction)paletteCategory)
-                                        .getPaletteActions(new Node[] {node});
+                                     paletteActions = ((AddStructuredActivitiesAction)paletteCategory).getPaletteActions(new Node[] {node});
                                 } else if (paletteCategory instanceof AddWebServiceActivitiesAction) {
-                                     paletteActions = ((AddWebServiceActivitiesAction)paletteCategory)
-                                        .getPaletteActions(new Node[] {node});
+                                     paletteActions = ((AddWebServiceActivitiesAction)paletteCategory).getPaletteActions(new Node[] {node});
                                 }
-                                
                                 if (paletteActions != null && paletteActions.length == 1) {
                                     submenu.add(new Actions.MenuItem(paletteCategory, false));
-                                } else if (paletteActions != null ) {
+                                }
+                                else if (paletteActions != null ) {
                                     JMenu subsubmenu = new JMenu(((BpelNodeAction)paletteCategory).getName());
+                                
                                     for (AddPaletteActivityAction paletteElem : paletteActions) {
-                                        subsubmenu.add(new Actions.MenuItem(paletteElem, false));
+                                        Actions.MenuItem item = new Actions.MenuItem(paletteElem, false);
+                                        item.setIcon(paletteElem.getIcon());
+                                        subsubmenu.add(item);
                                     }
                                     submenu.add(subsubmenu);
                                 }
@@ -383,7 +386,18 @@ public abstract class Pattern {
                     } else if (a != null) {
                         // it's diagramm already !
                         if (!(a instanceof GoToDiagrammAction)) {
-                            menu.add(new Actions.MenuItem(a, false));
+                            if (a instanceof Presenter.Popup) {
+                                JMenuItem menuItem = ((Presenter.Popup) a)
+                                        .getPopupPresenter();
+                                if (menuItem instanceof DynamicMenuContent) {
+                                    ((DynamicMenuContent) menuItem)
+                                            .synchMenuPresenters(null);
+                                    menuItem.setEnabled(a.isEnabled());
+                                }
+                                menu.add(menuItem);
+                            } else {
+                                menu.add(new Actions.MenuItem(a, false));
+                            }
                         }
                     } else {
                         menu.addSeparator();

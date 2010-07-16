@@ -60,11 +60,10 @@ import org.netbeans.modules.bpel.model.api.events.VetoException;
  * @author ads
  */
 public interface ServiceRef extends BpelContainer {
-    
-    String SERVICE_REF_NS   = 
-        "http://docs.oasis-open.org/wsbpel/2.0/serviceref";     // NOI18N
-
-    String REFERENCE_SCHEME = "reference-scheme";               // NOI18N
+    String 
+        SERVICE_REF_NS = "http://docs.oasis-open.org/wsbpel/2.0/serviceref", // NOI18N
+        SERVICE_REF_LOCATION = "http://docs.oasis-open.org/wsbpel/2.0/OS/serviceref/ws-bpel_serviceref.xsd", // NOI18N
+        REFERENCE_SCHEME = "reference-scheme"; // NOI18N
     
     /**
      * @return "reference-scheme" attribute value.

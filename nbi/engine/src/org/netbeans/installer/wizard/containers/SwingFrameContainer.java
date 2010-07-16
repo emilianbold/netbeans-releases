@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -60,19 +63,18 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -207,12 +209,18 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             currentUi = null;
             return;
         }
-        if (!SwingUtilities.isEventDispatchThread()) {         
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateWizardUi(wizardUi);
-                }
-            });
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        updateWizardUi(wizardUi);
+                    }
+                });
+            } catch (InterruptedException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            } catch (InvocationTargetException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            }
             return;
         }
         
@@ -248,6 +256,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         contentPane.repaint();
                              
         // handle the default buttons - Enter
+        
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
         // handle the default buttons - Escape
@@ -636,10 +645,17 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // titlePanel ///////////////////////////////////////////////////////////
             titlePanel = new NbiPanel();
-            titlePanel.setBackground(Color.WHITE);
+            
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
-            
+
+            final String backgroundImageUri = System.getProperty(WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY);
+            if(backgroundImageUri != null) {
+                titlePanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_FULL);
+            } else {
+                titlePanel.setBackground(Color.WHITE);
+            }
+
             final String leftImageUri = System.getProperty(WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY);
             int titlePanelDx = 0;
             if(leftImageUri!=null) {
@@ -893,7 +909,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY =
             "nbi.wizard.ui.swing.frame.head.left.image"; // NOI18N
-    
+
+    public static final String WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.head.background.image"; // NOI18N
     
     /**
      * Name of the system property which is expected to contain the desired value

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,8 +53,8 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.modules.soa.validation.core.Controller;
-import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.xml.validation.core.Controller;
+import org.netbeans.modules.xml.misc.Xml;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
@@ -60,7 +63,7 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -70,8 +73,6 @@ import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.core.multiview.source.XSLTSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
 import org.netbeans.modules.xslt.core.context.MapperContextFactory;
-import org.netbeans.modules.xslt.tmap.util.Util;
-import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.openide.ErrorManager;
@@ -89,8 +90,6 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -100,6 +99,8 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xslt.core.context.MapperContext;
 
 /**
  * @author Vitaly Bychkov
@@ -116,6 +117,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
       return getUndoManager();
     }
 
+    @Override
     public void saveDocument() throws IOException {
         super.saveDocument();
         syncModel();
@@ -233,10 +235,10 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                 if (mvp.preferredID().equals(
                         XSLTSourceMultiViewElementDesc.PREFERED_ID)) 
                 {
-                    Line line = LineUtil.getLine(resultItem);
+                    Line line = Xml.getLine(resultItem);
 
                     if (line != null) {
-                      line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                      line.show(Line.SHOW_GOTO);
                     }
                 }
             }
@@ -255,7 +257,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     
     private List<TopComponent> getAssociatedTopComponents() {
         // Create a list of TopComponents associated with the
-        // editor's schema data object, starting with the the
+        // editor's schema data object, starting with the
         // active TopComponent. Add all open TopComponents in
         // any mode that are associated with the DataObject.
         // [Note that EDITOR_MODE does not contain editors in
@@ -279,6 +281,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
         return associatedTCs;
     }
 
+    @Override
     protected CloneableEditorSupport.Pane createPane() {
         TopComponent multiview = XsltMultiViewSupport
                 .createMultiView((XSLTDataObject) getDataObject());
@@ -418,7 +421,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     /**
      * Environment that connects the dataobject and ClonneableEditorSupport
      */
-    private static class XSLTEnv extends DataEditorSupport.Env {
+    protected static class XSLTEnv extends DataEditorSupport.Env {
 
         private static final long serialVersionUID = 835762240381934851L;
         
@@ -441,7 +444,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
 
         public MapperContext getMapperContext() {
             FileObject xsltFo = getFile();
-            Project project = Util.getProject(xsltFo);
+            Project project = SoaUtil.getProject(xsltFo);
 
             MapperContext context = null;
             
@@ -460,7 +463,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
 ////                // TODO m 
 ////                try {
 ////                    if (tMapFo == null) {
-////                        XmlUtil.createNewXmlFo(
+////                        Xml.createNewXmlFo(
 ////                                projectSource.getPath(),
 ////                                "transformmap", 
 ////                                TMapComponent.TRANSFORM_MAP_NS_URI);

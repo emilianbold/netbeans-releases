@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,12 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -51,6 +59,11 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -78,12 +91,16 @@ public class RemoteServerRecord implements ServerRecord {
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
 //    private boolean x11forwardingPossible;
+
+    HostInfo.OSFamily cachedOsFamily = null;
+    HostInfo.CpuFamily cachedCpuFamily = null;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
      * thread if called during startup from cached information.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {
         CndUtils.assertTrue(env != null);
         CndUtils.assertTrue(syncFactory != null);
@@ -103,6 +120,8 @@ public class RemoteServerRecord implements ServerRecord {
         }
         x11forwarding = Boolean.getBoolean("cnd.remote.X11"); //NOI18N;
 //        x11forwardingPossible = true;
+        
+        checkHostInfo(); // is this a paranoya?
     }
 
     @Override
@@ -120,7 +139,7 @@ public class RemoteServerRecord implements ServerRecord {
         if (isOnline()) {
             return;
         }
-        RemoteUtil.LOGGER.fine("RSR.validate2: Validating " + toString());
+        RemoteUtil.LOGGER.log(Level.FINE, "RSR.validate2: Validating {0}", toString());
         if (force) {
             ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
@@ -142,6 +161,17 @@ public class RemoteServerRecord implements ServerRecord {
      */
     public synchronized void init(PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
+        try {
+            ConnectionManager.getInstance().connectTo(executionEnvironment);
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, "Error connecting to " + executionEnvironment, ex);
+            state = State.OFFLINE;
+            reason = ex.getMessage();
+            return;
+        } catch (CancellationException ex) {
+            state = State.CANCELLED;
+            return;
+        }
         Object ostate = state;
         state = State.INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
@@ -151,6 +181,8 @@ public class RemoteServerRecord implements ServerRecord {
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();
 //        }
+        boolean initPathMap = false;
+
         synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = State.CANCELLED;
@@ -158,9 +190,12 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getPathMap(getExecutionEnvironment()).init();
+                initPathMap = true;
                 state = State.ONLINE;
             }
+        }
+        if (initPathMap) {
+            RemotePathMap.getPathMap(getExecutionEnvironment()).init();
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
@@ -195,11 +230,17 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public boolean isOnline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.ONLINE;
     }
 
     @Override
     public boolean isOffline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.OFFLINE;
     }
 
@@ -288,11 +329,21 @@ public class RemoteServerRecord implements ServerRecord {
     public String getUserName() {
         return executionEnvironment.getUser();
     }
+
+    @Override
+    public boolean isRememberPassword() {
+        return PasswordManager.getInstance().isRememberPassword(executionEnvironment);
+    }
+
+    public void setRememberPassword(boolean rememberPassword) {
+        PasswordManager.getInstance().setRememberPassword(executionEnvironment, rememberPassword);
+    }
     
     public String getReason() {
         return reason == null ? "" : reason;
     }
 
+    @Override
     public RemoteSyncFactory getSyncFactory() {
         return this.syncFactory;
     }
@@ -342,4 +393,125 @@ public class RemoteServerRecord implements ServerRecord {
 //    public void setX11forwardingPossible(boolean x11forwardingPossible) {
 //        this.x11forwardingPossible = x11forwardingPossible;
 //    }
+
+    private static final char SERVER_RECORD_SEPARATOR = '|'; //NOI18N
+    private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
+
+    /*package-local*/ static List<RemoteServerRecord> fromString(String slist) {
+        List<RemoteServerRecord> result = new ArrayList<RemoteServerRecord>();
+
+        for (String serverString : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
+            // there moght be to forms:
+            // 1) user@host:port
+            // 2) user@host:port|DisplayName
+            // 3) user@host:port|DisplayName|syncID
+            // 4) user@host:port|DisplayName|syncID|x11possible|x11
+            String displayName = null;
+            RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
+            final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR); // NOI18N
+            CndUtils.assertTrue(arr.length > 0);
+            String hostKey = arr[0];
+            if (arr.length > 1) {
+                displayName = arr[1];
+            }
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
+            if (arr.length > 2) {
+                final String syncId = arr[2];
+                syncFactory = RemoteSyncFactory.fromID(syncId);
+                if (syncFactory == null) {
+                    syncFactory = RemoteSyncFactory.getDefault();
+                    RemoteUtil.LOGGER.log(Level.WARNING, "Unsupported synchronization mode \"{0}\" for {1}. Switching to default one.", new Object[]{syncId, env.toString()}); //NOI18N
+                }
+            }
+            if (env.isRemote()) {
+                RemoteServerRecord record = new RemoteServerRecord(env, displayName, syncFactory, false);
+                record.setState(RemoteServerRecord.State.OFFLINE);
+                result.add(record);
+                if (arr.length > 3) {
+                    record.setX11Forwarding(Boolean.parseBoolean(arr[3]));
+                }
+                if (arr.length > 4) {
+                    if (arr[4].length() > 0) {
+                        try {
+                            record.cachedOsFamily = HostInfo.OSFamily.valueOf(arr[4]);
+                        } catch (IllegalArgumentException ex) {
+                            RemoteUtil.LOGGER.log(Level.WARNING, "Error restoring OS family", ex);
+                        }
+                    }
+                }
+                if (arr.length > 5) {
+                    if (arr[5].length() > 0) {
+                        try {
+                            record.cachedCpuFamily = HostInfo.CpuFamily.valueOf(arr[5]);
+                        } catch (IllegalArgumentException ex) {
+                            RemoteUtil.LOGGER.log(Level.WARNING, "Error restoring CPU family", ex);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /*package-local*/ static String toString(List<RemoteServerRecord> records) {
+        StringBuilder result = new StringBuilder();
+        for (RemoteServerRecord record : records) {
+            if (result.length() > 0) {
+                result.append(SERVER_LIST_SEPARATOR);
+            }
+            String displayName = record.getRawDisplayName();
+            String hostKey = ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment());
+
+            HostInfo.CpuFamily cpuFamily = record.getCpuFamily();
+            HostInfo.OSFamily osFamily = record.getOsFamily();
+
+            String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
+                    ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
+                    record.getSyncFactory().getID()  + SERVER_RECORD_SEPARATOR +
+                    record.getX11Forwarding() + SERVER_RECORD_SEPARATOR +
+                    ((osFamily == null) ? "" : osFamily.name()) + SERVER_RECORD_SEPARATOR +
+                    ((cpuFamily == null) ? "" : cpuFamily.name());
+            result.append(preferencesKey);
+
+        }
+        return result.toString();
+    }
+
+    public HostInfo.CpuFamily getCpuFamily() {
+        return cachedCpuFamily;
+    }
+
+    public HostInfo.OSFamily getOsFamily() {
+        return cachedOsFamily;
+    }
+
+    /*package-local*/ void checkHostInfo() {
+        if (HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
+                HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
+                if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) ) {
+                    cachedOsFamily = osFamily;
+                    cachedCpuFamily = cpuFamily;
+                    if (!syncFactory.isApplicable(executionEnvironment)) {
+                        for (RemoteSyncFactory newFactory : RemoteSyncFactory.getFactories()) {
+                            if (newFactory.isApplicable(executionEnvironment)) {
+                                RemoteUtil.LOGGER.log(Level.WARNING, "Inapplicable factory for {0} : {1}; changing to {2}",
+                                        new Object[] { executionEnvironment.getDisplayName(), syncFactory.getDisplayName(), newFactory.getDisplayName() });
+                                syncFactory = newFactory;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                // don't report
+            } catch (CancellationException ex) {
+                // don't report
+            }
+        }
+
+    }
 }

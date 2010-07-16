@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
+import org.openide.util.Lookup;
 
 public class DebuggerChooserConfiguration {
 
@@ -57,8 +61,8 @@ public class DebuggerChooserConfiguration {
     private boolean modified;
     private boolean dirty = false;
 
-    public DebuggerChooserConfiguration() {
-        init();
+    public DebuggerChooserConfiguration(Lookup lookup) {
+        init(lookup);
         reset();
     }
 
@@ -67,9 +71,9 @@ public class DebuggerChooserConfiguration {
         setModified(false);
     }
 
-    private static void init() {
+    private static void init(Lookup lookup) {
         if (nodes == null) {
-            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
+            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug", lookup); // NOI18N
             String[] defnames = new String[] { "" };
 
             if (nodes.size() >= 1) {
@@ -117,7 +121,7 @@ public class DebuggerChooserConfiguration {
         return value;
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -137,7 +141,7 @@ public class DebuggerChooserConfiguration {
         return def;
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

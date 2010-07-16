@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -49,29 +52,36 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jackson-core-asl-1.1.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-client-1.1.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-core-1.1.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-json-1.1.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-server-1.1.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jersey-spring-1.1.4.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/jettison-1.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/activation.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/api/jaxb-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/jaxb-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/jaxb-xjc.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/api/jsr173_api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/asm-3.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-core-asl-1.1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-client-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-core-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-json-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jettison-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.1.5.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jersey-1.1.4-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-client-1.1.5.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-core-1.1.5.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-json-1.1.5.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-spring-1.1.5.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-client-1.1.5.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-signature-1.1.5.1-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.4/jersey-json-1.1.4.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.4/jersey-server-1.1.4.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.4/jersey-client-1.1.4.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.5.1/jersey-json-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.5.1/jersey-server-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.5.1/jersey-client-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.1.5.1/oauth-client-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.1.5.1/oauth-signature-1.1.5.1.pom</resource>
     </volume>
 </library>

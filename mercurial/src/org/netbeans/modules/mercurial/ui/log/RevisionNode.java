@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,8 +59,6 @@ import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
-import java.util.*;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 
 /**
  * Visible in the Search History Diff view.
@@ -80,7 +81,7 @@ class RevisionNode extends AbstractNode {
         this.container = container;
         this.event = null;
         this.path = null;
-        setName(container.getLog().getRevision() +
+        setName(container.getLog().getRevisionNumber() +
                 NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", container.getLog().getChangedPaths().length));
         initProperties();
     }
@@ -105,10 +106,12 @@ class RevisionNode extends AbstractNode {
         return event;
     }
 
+    @Override
     public String getShortDescription() {
         return path;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
@@ -141,6 +144,7 @@ class RevisionNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();
@@ -150,6 +154,7 @@ class RevisionNode extends AbstractNode {
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             try {
                 return new RevisionPropertyEditor((String) getValue());
@@ -166,6 +171,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getAuthor();
@@ -182,6 +188,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
@@ -198,6 +205,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getMessage();
@@ -211,9 +219,10 @@ class RevisionNode extends AbstractNode {
 
         public RollbackToAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
-                    event.getLogInfoHeader().getLog().getRevision()));
+                    event.getLogInfoHeader().getLog().getRevisionNumber()));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             SummaryView.revertModifications(event);
         }
@@ -221,6 +230,7 @@ class RevisionNode extends AbstractNode {
 
     private static class BackoutAction extends NodeAction {
 
+        @Override
         protected void performAction(Node[] activatedNodes) {
             RepositoryRevision.Event event = null;
             RepositoryRevision repoRev = null;
@@ -245,14 +255,17 @@ class RevisionNode extends AbstractNode {
             SummaryView.backout(event);
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(BackoutAction.class);
         }
@@ -270,6 +283,7 @@ class RevisionNode extends AbstractNode {
             setValue(value);
         }
 
+        @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
             renderer.setText((String) getValue());
@@ -277,6 +291,7 @@ class RevisionNode extends AbstractNode {
             renderer.paint(gfx);
         }
 
+        @Override
         public boolean isPaintable() {
             return true;
         }

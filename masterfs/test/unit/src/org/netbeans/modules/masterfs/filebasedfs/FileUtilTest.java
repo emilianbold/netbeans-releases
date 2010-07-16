@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
@@ -173,7 +178,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -309,7 +314,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -449,194 +454,10 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
     }
 
-    /** Tests FileObject.addRecursiveListener on folder as declared in
-     * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
-     * It is expected that all events from sub folders are delivered just once.
-     */
-    @RandomlyFails // NB-Core-Build #3405
-    public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
-        checkFolderRecursiveListener(false);
-    }
-
-    /** Tests FileUtil.addRecursiveListener on folder as declared in
-     * {@link FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File) }.
-     * It is expected that all events from sub folders are delivered just once.
-     */
-    @RandomlyFails
-    public void testAddRecursiveListenerToFileFolder() throws Exception {
-        checkFolderRecursiveListener(true);
-    }
-
-    /** Tests addRecursiveListener on folder either added to FileObject or File.
-     * @param isOnFile true to add listener to java.io.File, false to FileObject
-     */
-    private void checkFolderRecursiveListener(boolean isOnFile) throws Exception {
-        clearWorkDir();
-        // test files: dir/file1, dir/subdir/subfile, dir/subdir/subsubdir/subsubfile
-        final File rootF = getWorkDir();
-        final File dirF = new File(rootF, "dir");
-        File fileF = new File(dirF, "file1");
-        File subdirF = new File(dirF, "subdir");
-        File subfileF = new File(subdirF, "subfile");
-        File subsubdirF = new File(subdirF, "subsubdir");
-        File subsubfileF = new File(subsubdirF, "subsubfile");
-
-        TestFileChangeListener fcl = new TestFileChangeListener();
-        FileObject dirFO;
-        if (isOnFile) {
-            FileUtil.addRecursiveListener(fcl, dirF);
-            dirFO = FileUtil.createFolder(dirF);
-            assertEquals("Wrong number of events fired when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        } else {
-            dirFO = FileUtil.createFolder(dirF);
-            dirFO.addRecursiveListener(fcl);
-        }
-
-        // create dir
-        FileObject subdirFO = dirFO.createFolder("subdir");
-        assertEquals("Wrong number of events fired when sub folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        FileObject subsubdirFO = subdirFO.createFolder("subsubdir");
-        assertEquals("Wrong number of events when sub sub folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-
-        // create file
-        FileObject file1FO = dirFO.createData("file1");
-        assertEquals("Wrong number of events when data created.", 1, fcl.check(EventType.DATA_CREATED));
-        FileObject subfileFO = subdirFO.createData("subfile");
-        assertEquals("Wrong number of events when data in sub folder created.", 1, fcl.check(EventType.DATA_CREATED));
-        FileObject subsubfileFO = subsubdirFO.createData("subsubfile");
-        assertEquals("Wrong number of events when data in sub sub folder created.", 1, fcl.check(EventType.DATA_CREATED));
-
-        // modify
-        file1FO.getOutputStream().close();
-        assertEquals("Wrong number of events when file folder modified.", 1, fcl.check(EventType.CHANGED));
-        subfileFO.getOutputStream().close();
-        assertEquals("Wrong number of events when file in sub folder modified.", 1, fcl.check(EventType.CHANGED));
-        subsubfileFO.getOutputStream().close();
-        assertEquals("Wrong number of events when file in sub sub folder modified.", 1, fcl.check(EventType.CHANGED));
-
-        // delete
-        file1FO.delete();
-        assertEquals("Wrong number of events when child file deleted.", 1, fcl.check(EventType.DELETED));
-        subsubfileFO.delete();
-        assertEquals("Wrong number of events when child file in sub sub folder deleted.", 1, fcl.check(EventType.DELETED));
-        subsubdirFO.delete();
-        assertEquals("Wrong number of events when sub sub folder deleted.", 1, fcl.check(EventType.DELETED));
-        subfileFO.delete();
-        assertEquals("Wrong number of events when child file in sub folder deleted.", 1, fcl.check(EventType.DELETED));
-        subdirFO.delete();
-        assertEquals("Wrong number of events when sub folder deleted.", 1, fcl.check(EventType.DELETED));
-
-        // atomic action
-        FileUtil.runAtomicAction(new Runnable() {
-
-            public void run() {
-                try {
-                    FileObject rootFO = FileUtil.toFileObject(rootF);
-                    rootFO.createFolder("fakedir");  // no events
-                    rootFO.setAttribute("fake", "fake");  // no events
-                    rootFO.createData("fakefile");  // no events
-                    FileObject dirFO = FileUtil.toFileObject(dirF);
-                    dirFO.createData("file1");
-                    FileObject subdirFO = dirFO.createFolder("subdir");
-                    subdirFO.createData("subfile");
-                    FileObject subsubdirFO = subdirFO.createFolder("subsubdir");
-                    subsubdirFO.createData("subsubfile");
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-
-            }
-        });
-        // TODO - should be 3
-        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.DATA_CREATED));
-        // TODO - should be 2
-        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.FOLDER_CREATED));
-        assertEquals("No other events should be fired.", 0, fcl.checkAll());
-
-        // rename
-        file1FO = dirFO.getFileObject("file1");
-        subdirFO = dirFO.getFileObject("subdir");
-        subfileFO = subdirFO.getFileObject("subfile");
-        subsubdirFO = subdirFO.getFileObject("subsubdir");
-        subsubfileFO = subsubdirFO.getFileObject("subsubfile");
-        fcl.clearAll();
-        FileLock lock = file1FO.lock();
-        file1FO.rename(lock, "file1Renamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when child file renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = subfileFO.lock();
-        subfileFO.rename(lock, "subfileRenamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when child file in sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = subsubfileFO.lock();
-        subsubfileFO.rename(lock, "subsubfileRenamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when child file in sub sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = subsubdirFO.lock();
-        subsubdirFO.rename(lock, "subsubdirRenamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when sub sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = subdirFO.lock();
-        subdirFO.rename(lock, "subdirRenamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = dirFO.lock();
-        dirFO.rename(lock, "dirRenamed", null);
-        lock.releaseLock();
-        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        lock = dirFO.lock();
-        dirFO.rename(lock, "dir", null);
-        lock.releaseLock();
-        /* According to jskrivanek in http://www.netbeans.org/nonav/issues/showattachment.cgi/86910/X.diff, the rename back does not need to
-         * fire an event. Instead the support delivers FOLDER_CREATED event:
-        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
-        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.FOLDER_CREATED));
-        fcl.printAll();
-        assertEquals("No other events should be fired.", 0, fcl.checkAll());
-         */
-        // cleanup after rename
-        dirFO.getFileObject("file1Renamed").delete();
-        dirFO.getFileObject("subdirRenamed").delete();
-        fcl.clearAll();
-
-        // disk changes
-        Thread.sleep(1000); // give OS same time
-        assertTrue(subsubdirF.mkdirs());
-        assertTrue(fileF.createNewFile());
-        assertTrue(subfileF.createNewFile());
-        assertTrue(subsubfileF.createNewFile());
-        FileUtil.refreshAll();
-        // TODO - should be 3
-        assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
-        // TODO - should be 2
-        assertEquals("Wrong number of events when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        // TODO - should be 0
-        assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
-        assertEquals("No other events should be fired.", 0, fcl.checkAll());
-
-        TestFileUtils.touch(subsubfileF, null);
-        TestFileUtils.touch(subfileF, null);
-        TestFileUtils.touch(fileF, null);
-        FileUtil.refreshAll();
-        assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
-        assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
-
-        assertTrue(subsubfileF.delete());
-        assertTrue(subsubdirF.delete());
-        assertTrue(subfileF.delete());
-        assertTrue(subdirF.delete());
-        assertTrue(fileF.delete());
-        FileUtil.refreshAll();
-        assertEquals("Wrong number of events when file deleted.", 5, fcl.check(EventType.DELETED));
-
-        // delete folder itself
-        dirFO.delete();
-        assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
-    }
-
     /** Tests recursive FileChangeListener on File.
      * @see FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3632: Wrong number of events when file was modified. expected:<1> but was:<0>
     public void testAddRecursiveListenerToFile() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -696,7 +517,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -766,12 +587,12 @@ public class FileUtilTest extends NbTestCase {
         assertGC("FileChangeListener not collected.", ref);
     }
 
-    private static enum EventType {
+    public static enum EventType {
 
         DATA_CREATED, FOLDER_CREATED, DELETED, CHANGED, RENAMED, ATTRIBUTE_CHANGED
     };
 
-    private static class TestFileChangeListener implements FileChangeListener {
+    public static class TestFileChangeListener implements FileChangeListener {
         boolean disabled;
 
         private final Map<EventType, List<FileEvent>> type2Event = new HashMap<EventType, List<FileEvent>>();
@@ -812,32 +633,45 @@ public class FileUtilTest extends NbTestCase {
                 }
             }
         }
+        public void printAll(Logger log) {
+            for (EventType type : EventType.values()) {
+                for (FileEvent fe : type2Event.get(type)) {
+                    log.log(Level.WARNING, "{0} = {1} @ {2}", new Object[]{type, fe.getFile(), fe.getTime()});
+                }
+            }
+        }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.FOLDER_CREATED).add(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.DATA_CREATED).add(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.CHANGED).add(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.DELETED).add(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.RENAMED).add(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.ATTRIBUTE_CHANGED).add(fe);

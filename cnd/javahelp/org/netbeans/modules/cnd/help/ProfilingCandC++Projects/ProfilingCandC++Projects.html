@@ -7,49 +7,57 @@ Use is subject to license terms.
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
-    <title>Profiling C and C++ Projects</title>
+    <title>Profiling C/C++/Fortran Projects</title>
   </head>
   <body>
     <h2>
-       Profiling C and C++&nbsp;Projects
+       Profiling C/C++/Fortran Projects
     </h2>
     <p>
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-      You can examine the behavior of your running C/C++ project with several profiling tools in the IDE.
-       The profiling tools run automatically by default whenever you run your C or C++ project on a Solaris 10
-       or OpenSolaris operating system.
+      You can examine the behavior of your running C/C++/Fortran project with several profiling tools in the IDE.
+       The profiling tools run automatically by default whenever you run your C or C++ or Fortran project on Oracle Solaris 10
+       or OpenSolaris.
     </p>
     <p>
-      The profiling information is collected using either DTrace or Sun Studio tools, and
+      The profiling information is collected using either DTrace or Oracle Solaris Studio tools, and
       the underlying operating system. You can change the profiler configuration in the Project
       Properties dialog's Profile category.
     </p>
     <p>
-      If you are running the project on a Solaris system (either on a local Solaris system, or on a remote
-      Solaris development host), you can click a button in the indicator graphs to get more detailed information. A new
+      If you are running the project on an Oracle Solaris system (either on a local system, or on a remote
+      development host), you can click a button in the indicator graphs to get more detailed information. A new
       tab is displayed in the IDE to show details about what the data being displayed in the relevant indicator.
     </p>
     <p>
       If you are running the project on a Linux system as a local host or remote development host,
-      you can get the detailed information only if you have installed Sun Studio tools on the Linux
-      system. You must select a C/C++ Sun Studio profile configuration in your project properties.
+      you can get the detailed information only if you have installed Oracle Solaris Studio tools on the Linux
+      system. You must select a C/C++ Oracle Solaris Studio profile configuration in your project properties.
     </p>
     <p>
       If you are running the project on a Windows or Mac OS X system, you cannot get the detailed
-      information because Sun Studio tools are not available for these platforms, and DTrace is
-      fully supported only on Solaris platforms.
+      information because Oracle Solaris Studio tools are not available for these platforms, and DTrace is
+      fully supported only on Oracle Solaris platforms.
     </p>
     <p>
-       You can disable the Profile tools in the project's properties so that the profiling does not
+      You can disable the Profile tools in the project's properties so that the profiling does not
       automatically occur when you run the project, as described below. You can also disable profiling for all projects,
-      or disable any particular tool by  <a href="ManagingProfileConfigurations.html">Managing Profile Configurations</a>.
+      or disable any particular tool by <a href="ManagingProfileConfigurations.html">Managing Profile Configurations</a>.
     </p>
-    <p><b>To disable profiling tools on a particular project:</b></p>
+    <p><b>To disable Run Monitor profiling tools on a particular project:</b></p>
     <ol><li>Right-click the project node in the Project window.</li>
     <li>Select the Profile category in the Project Properties dialog box.</li>
     <li>Deselect the option Show profiling indicators during run.</li>
+    <li>Click OK.</li>
+    </ol>
+
+     <p><b>To disable Run Monitor profiling tools on all new projects:</b></p>
+     <ol><li>Select Tools &gt; Options.</li>
+    <li>Click C/C++ panel.
+    <li>Click Project Options.</li>
+    <li>Deselect the option Show profiler indicators during run (new projects only).</li>
     <li>Click OK.</li>
     </ol>
    
@@ -63,13 +71,14 @@ Use is subject to license terms.
         <td width="23">
           &nbsp;
         </td>
-        <td>
-              <a href="OverviewOfCandC++Profiling.html">Overview of C and C++ Profiling</a><br>
-              <a href="ManagingProfileConfigurations.html">Managing Profile Configurations</a><br>
-          <a href="../WorkingWithCandC++Projects/ConfiguringBuildTools.html">Configuring Build Tools</a><br>
-           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++ Project Properties Dialog Box: Profile</a> <br>
-
-        </td>
+         <td>
+          <a href="OverviewOfCandC++Profiling.html">Overview of C/C++/Fortran Profiling</a><br>
+         <a href="../WorkingWithCandC++Projects/ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+          <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+          <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+          <a href="RunMonitorWindowforCandC++Fort.html">Run Monitor Window for C/C++/Fortran Projects</a><br>
+          <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
+             </td>
       </tr>
     </table>
     <hr>

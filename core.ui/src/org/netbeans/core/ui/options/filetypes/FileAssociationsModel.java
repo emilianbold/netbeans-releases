@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -56,13 +58,14 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 
 /** Model holds mapping between extension and MIME type.
  *
  * @author Jiri Skrivanek
  */
-final class FileAssociationsModel {
+final class FileAssociationsModel extends MIMEResolver.UIHelpers {
 
     private static final String MIME_RESOLVERS_PATH = "Services/MIMEResolver";  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(FileAssociationsModel.class.getName());
@@ -94,6 +97,20 @@ final class FileAssociationsModel {
 
     /** Creates new model. */
     FileAssociationsModel() {
+        // the following code is a dirty trick to allow the UIHelpers class
+        // to be a nested class (and thus not be visible in the general javadoc)
+        // in the openide.filesystems API
+        // It does not matter that you suffer reading this code. The important
+        // thing is that millions of users of openide.filesystems are not
+        // disturbed by presence of UIHelpers class or its methods
+        // in javadoc overview.
+        new MIMEResolver() {
+            @Override
+            public String findMIMEType(FileObject fo) {
+                return null;
+            }
+        }.super();
+
         FileObject resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
         if (resolvers != null) {
             resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
@@ -252,7 +269,7 @@ final class FileAssociationsModel {
             }
             extensions.add(extension);
         }
-        MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+        storeUserDefinedResolver(mimeToExtensions);
     }
 
     private void init() {
@@ -261,9 +278,9 @@ final class FileAssociationsModel {
         }
         LOGGER.fine("FileAssociationsModel.init");  //NOI18N
         initialized = true;
-        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
-            boolean userDefined = MIMEResolverImpl.isUserDefined(mimeResolverFO);
-            Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
+        for (FileObject mimeResolverFO : getOrderedResolvers()) {
+            boolean userDefined = isUserDefined(mimeResolverFO);
+            Map<String, Set<String>> mimeToExtensions = getMIMEToExtensions(mimeResolverFO);
             for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
                 String mimeType = entry.getKey();
                 Set<String> extensions = entry.getValue();

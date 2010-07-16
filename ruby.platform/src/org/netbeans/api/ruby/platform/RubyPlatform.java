@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,6 +76,8 @@ import org.openide.util.Utilities;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
+ *<p>
+ * This class is thread safe.
  */
 public final class RubyPlatform implements Comparable<RubyPlatform> {
 
@@ -105,32 +110,50 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private final RubyPlatformValidator validator;
     private final String id;
     private final String interpreter;
+    private final PropertyChangeSupport pcs;
+    // the following are guarded by "this"
+    /** @GuardedBy("this") */
     private File home;
+    /** @GuardedBy("this") */
     private String homeUrl;
+    /** @GuardedBy("this") */
     private FileObject libDirFO;
+    /** @GuardedBy("this") */
     private GemManager gemManager;
+    /** @GuardedBy("this") */
     private static FileObject stubsFO;
 
     // XXX - see updateIndexRoots below
 //    private boolean indexInitialized;
 
     // Platform tools
+    /** @GuardedBy("this") */
     private String gemTool;
+    /** @GuardedBy("this") */
     private String rdoc;
+    /** @GuardedBy("this") */
     private String irb;
 
-    private PropertyChangeSupport pcs;
 
-    /** 'rake' executable for this platform. */
+    /**
+     * 'rake' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String rake;
 
-    /** 'rails' executable for this platform. */
+    /** 'rails' executable for this platform.
+     *  @GuardedBy("this")
+     */
     private String rails;
 
-    /** 'autotest' executable for this platform. */
+    /** 'autotest' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String autotest;
 
-    /** 'autospec' executable for this platform. */
+    /** 'autospec' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String autospec;
 
     RubyPlatform(String id, String interpreterPath, Info info) {
@@ -138,6 +161,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         this.interpreter = interpreterPath;
         this.info = info;
         this.validator = new RubyPlatformValidator(this);
+        this.pcs = new PropertyChangeSupport(this);
     }
 
     /**
@@ -260,7 +284,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return platform.hasValidRake(warn);
     }
 
-    public String getRake() {
+    public synchronized String getRake() {
         if (rake == null) {
             rake = findExecutable("rake"); // NOI18N
 
@@ -287,21 +311,21 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return rake;
     }
 
-    public String getRails() {
+    public synchronized String getRails() {
         if (rails == null) {
             rails = findExecutable("rails"); // NOI18N
         }
         return rails;
     }
 
-    public String getAutoTest() {
+    public synchronized String getAutoTest() {
         if (autotest == null) {
             autotest = findExecutable("autotest"); // NOI18N
         }
         return autotest;
     }
 
-    public String getAutoSpec() {
+    public synchronized String getAutoSpec() {
         if (autospec == null) {
             autospec = findExecutable("autospec"); // NOI18N
         }
@@ -343,7 +367,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return getHome(true);
     }
 
-    public File getHome(boolean canonical) {
+    public synchronized File getHome(boolean canonical) {
         if (home == null) {
             try {
                 String rp = getInterpreter(canonical);
@@ -372,7 +396,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return home;
     }
 
-    public String getHomeUrl() {
+    public synchronized String getHomeUrl() {
         if (homeUrl == null) {
             try {
                 File r = getHome();
@@ -423,7 +447,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /** Utility method. See {@link #getLibDir()}. */
-    public FileObject getLibDirFO() {
+    public synchronized FileObject getLibDirFO() {
         if (libDirFO == null) {
             String lib = getLibDir();
             if (lib != null) {
@@ -611,7 +635,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return either an instance of {@link GemManager} or <tt>null</tt>.
      */
     @CheckForNull
-    public GemManager getGemManager() {
+    public synchronized GemManager getGemManager() {
         if (gemManager == null && hasRubyGemsInstalled()) {
             gemManager = new GemManager(this);
         }
@@ -632,6 +656,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return rubybin;
     }
 
+    /**
+     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * specific" manner.
+     *
+     * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
+     * @return path to the found executable; might be <tt>null</tt> if not
+     *         found.
+     */
     public String findExecutable(final String toFind) {
         return findExecutable(toFind, true);
     }
@@ -718,28 +750,28 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
      *         found.
      */
-    public String getGemTool() {
+    public synchronized String getGemTool() {
         if (gemTool == null) {
             gemTool = findExecutable("gem", false, true); // NOI18N
         }
         return gemTool;
     }
 
-    public String getRDoc() {
+    public synchronized String getRDoc() {
         if (rdoc == null) {
             rdoc = findExecutable("rdoc", false, true); // NOI18N
         }
         return rdoc;
     }
 
-    public String getIRB() {
+    public synchronized String getIRB() {
         if (irb == null) {
             irb = findExecutable(isJRuby() ? "jirb" : "irb", false, true); // NOI18N
         }
         return irb;
     }
 
-    public static FileObject getRubyStubs() {
+    public synchronized static FileObject getRubyStubs() {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
@@ -972,9 +1004,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         // XXX - Parsing API
 //        Source.clearSourceCache();
 
-        if (pcs != null) {
-            pcs.firePropertyChange("roots", null, null); // NOI18N
-        }
+        pcs.firePropertyChange("roots", null, null); // NOI18N
 
         //        // Force ClassIndex registration
         //        // Dummy class path provider just to trigger recomputation
@@ -987,17 +1017,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
-        }
-
         pcs.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (pcs != null) {
-            pcs.removePropertyChangeListener(listener);
-        }
+        pcs.removePropertyChangeListener(listener);
     }
 
     public void setGemHome(File gemHome) {
@@ -1125,22 +1149,22 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.7"); // NOI18N
-            info.jversion = "1.4.0"; // NOI18N
-            info.patchlevel = "174"; // NOI18N
+            info.jversion = "1.5.1"; // NOI18N
+            info.patchlevel = "249"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2009-11-04"; // NOI18N
+            info.releaseDate = "2010-05-12"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.4.0", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.5.1", "org.jruby.distro", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.3.5"; // NOI18N
+            info.gemVersion = "1.3.6"; // NOI18N
             return info;
         }
 

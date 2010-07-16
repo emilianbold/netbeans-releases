@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.design.decoration.providers;
 
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.decoration.components.ContextToolBar;
 import org.netbeans.modules.bpel.design.decoration.components.ContextToolBarButton;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
+import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
@@ -71,84 +71,86 @@ import org.openide.nodes.Node;
  *
  * @author aa160298
  */
-public class ToolbarDecorationProvider extends DecorationProvider implements
-        DiagramSelectionListener {
-    
-
-    
-    
+public class ToolbarDecorationProvider extends DecorationProvider implements DiagramSelectionListener {
     
     public ToolbarDecorationProvider(DesignView designView) {
         super(designView);
         getDesignView().getSelectionModel().addSelectionListener(this);
     }
-    
-    
+
     public Decoration getDecoration(BpelEntity entity) {
-        
         UniqueId entityID = entity.getUID();
         UniqueId selectedEntityID = getDesignView().getSelectionModel().getSelectedID();
-        
+
+        if (getDesignView().getCopyPasteHandler().isActive()){
+            return null;
+        }
         if (entityID!= null && entityID.equals(selectedEntityID)) {
             List<Descriptor> descriptors = new ArrayList<Descriptor>();
-            
-            List<Action> actions = getContextActions(entity);
-            
             ContextToolBar toolBar = new ContextToolBar();
-            
-            Action collapseExpandAction = getDesignView()
-                    .getCollapseExpandDecorationProvider()
-                    .createCollapseExpandAction(entity);
+            Action collapseExpandAction = getDesignView().getCollapseExpandDecorationProvider().createCollapseExpandAction(entity);
+            List<Action> actions = getContextActions(entity);
             
             if (collapseExpandAction != null) {
                 toolBar.add(new ContextToolBarButton(collapseExpandAction));
             }
-            
             for (int i = 0; i < actions.size(); i++) {
                 Action a = actions.get(i);
                 JButton button = new ContextToolBarButton(CONTEXT_ICONS.get(a.getClass()));
                 Actions.connect(button, a);
                 toolBar.add(button);
             }
-            
-            if (!actions.isEmpty() || (collapseExpandAction != null)) {
+            if ( !actions.isEmpty() || (collapseExpandAction != null)) {
                 ComponentsDescriptor components = new ComponentsDescriptor();
                 components.add(toolBar);
                 descriptors.add(components);
             }
-            
-            return new Decoration(descriptors.toArray(new Descriptor[descriptors
-                    .size()]));
+            return new Decoration(descriptors.toArray(new Descriptor[descriptors.size()]));
         }
         return null;
     }
     
-    
     public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
             fireDecorationChanged();
     }
-    
-    
+
+    private List<Action> getContextActions(BpelEntity entity) {
+        List<Action> result = new ArrayList<Action>();
+        Map<Class, Action> classToActionMap = extractActions(entity);
+        List<Class> contextActionsClasses = null;
+        
+        for (Class bpelEntityClass : CONTEXT_ACTIONS.keySet()) {
+            if (bpelEntityClass.isAssignableFrom(entity.getClass())) {
+                contextActionsClasses = CONTEXT_ACTIONS.get(bpelEntityClass);
+                break;
+            }
+        }
+        if (contextActionsClasses == null) {
+            return result;
+        }
+        for (Class contextActionClass : contextActionsClasses) {
+            Action action = classToActionMap.get(contextActionClass);
+
+            if (action != null) {
+                result.add(action);
+            }
+        }
+        return result;
+    }
     
     private Map<Class, Action> extractActions(BpelEntity entity) {
         Map<Class, Action> result = new HashMap<Class, Action>();
-        
-        Node node = getDesignView().getNodeForPattern(
-                getDesignView().getModel().getPattern(entity)
-        );
+        Node node = getDesignView().getNodeForPattern(getDesignView().getModel().getPattern(entity));
         
         if ((node == null) || !(node instanceof BpelNode)) {
             return result;
         }
-        
         BpelNode bpelNode = (BpelNode) node;
-        
         Action[] actions = node.getActions(true);
         
         if (actions == null){
             return result;
         }
-        
         for (Action action : actions) {
             if (action == null) {
                 continue;
@@ -168,53 +170,19 @@ public class ToolbarDecorationProvider extends DecorationProvider implements
                 result.put(action.getClass(), action);
             }
         }
-        
         return result;
     }
-    
-    
-    private List<Action> getContextActions(BpelEntity entity) {
-        List<Action> result = new ArrayList<Action>();
-        
-        Map<Class, Action> classToActionMap = extractActions(entity);
-        
-        List<Class> contextActionsClasses = null;
-        
-        for (Class bpelEntityClass : CONTEXT_ACTIONS.keySet()) {
-            if (bpelEntityClass.isAssignableFrom(entity.getClass())) {
-                contextActionsClasses = CONTEXT_ACTIONS.get(bpelEntityClass);
-                break;
-            }
-        }
-        
-        if (contextActionsClasses == null) {
-            return result;
-        }
-        
-        for (Class contextActionClass : contextActionsClasses) {
-            Action action = classToActionMap.get(contextActionClass);
-            if (action != null) {
-                result.add(action);
-            }
-        }
-        
-        return result;
-    }
-    
-   
+
     private static final Map<Class, List<Class>> CONTEXT_ACTIONS;
     private static final Map<Class, Icon> CONTEXT_ICONS;
     
-    
     private static Icon loadPNGIcon(String name) {
-        return new ImageIcon(Decoration.class
-                .getResource("resources/" + name + ".png")); // NOI18N
+        return new ImageIcon(Decoration.class.getResource("resources/" + name + ".png")); // NOI18N
     }
-    
     
     static {
         CONTEXT_ACTIONS = new HashMap<Class, List<Class>>();
-        
+
         CONTEXT_ACTIONS.put(Invoke.class, new ArrayList<Class>());
         CONTEXT_ACTIONS.get(Invoke.class).add(ShowPropertyEditorAction.class);
         CONTEXT_ACTIONS.get(Invoke.class).add(AddCatchAllAction.class);
@@ -226,7 +194,10 @@ public class ToolbarDecorationProvider extends DecorationProvider implements
         
         CONTEXT_ACTIONS.put(Reply.class, new ArrayList<Class>());
         CONTEXT_ACTIONS.get(Reply.class).add(ShowPropertyEditorAction.class);
-        
+
+        CONTEXT_ACTIONS.put(Assign.class, new ArrayList<Class>());
+        CONTEXT_ACTIONS.get(Assign.class).add(ShowPropertyEditorAction.class);
+
         CONTEXT_ACTIONS.put(PartnerLink.class, new ArrayList<Class>());
         CONTEXT_ACTIONS.get(PartnerLink.class).add(ShowPropertyEditorAction.class);
         CONTEXT_ACTIONS.get(PartnerLink.class).add(OpenPartnerLinkInEditor.class);

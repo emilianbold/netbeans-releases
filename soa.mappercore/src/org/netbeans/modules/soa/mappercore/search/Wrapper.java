@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,8 +82,31 @@ final class Wrapper extends JPanel {
     for (int i=0; i < listeners.length; i++) {
       mySearchable.getSearchableComponent().removeKeyListener(listeners[i]);
     }
-    mySearchable.getSearchableComponent().addKeyListener(new MyKeyAdapter());
+    mySearchable.getSearchableComponent().addKeyListener(new KeyAdapter() {
+      public void keyTyped(KeyEvent event) {
+        int modifiers = event.getModifiers();
+        char c = event.getKeyChar();
 
+        if (c == KeyEvent.VK_ENTER) {
+          return;
+        }
+        if (c == KeyEvent.VK_ESCAPE) {
+          return;
+        }
+        if (c == KeyEvent.VK_DELETE) {
+          return;
+        }
+        if (isCtrl(modifiers)) {
+          return;
+        }
+        if (isAlt(modifiers)) {
+          return;
+        }
+        event.consume();
+        myTextField.setText(String.valueOf(c));
+        showPanel();
+      }
+    });
     JLabel label = new JLabel(" " + i18n(Wrapper.class, "LBL_Quick_Search")); // NOI18N
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     add(label);
@@ -117,7 +143,6 @@ final class Wrapper extends JPanel {
     label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
   }
 
-  // vlv
   private String i18n(Class clazz, String key) {
     if (key == null) {
       return null;
@@ -264,29 +289,7 @@ final class Wrapper extends JPanel {
     private List<TreePath> myResults;
   }
 
-  // --------------------------------------------
-  private class MyKeyAdapter extends KeyAdapter {
-    public void keyTyped(KeyEvent event) {
-      char c = event.getKeyChar();
-      int modifiers = event.getModifiers();
-
-      if (c == KeyEvent.VK_ESCAPE) {
-        return;
-      }
-      if (isCtrl(modifiers)) {
-        return;
-      }
-      if (isAlt(modifiers)) {
-        return;
-      }
-      myTextField.setText(String.valueOf(c));
-      showPanel();
-      event.consume();
-    }
-  }
-
   private Searchable mySearchable;
   private JTextField myTextField;
-
   private static final int TEXT_WIDTH = 60;
 }

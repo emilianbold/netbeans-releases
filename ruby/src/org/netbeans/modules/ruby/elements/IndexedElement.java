@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,8 @@ public abstract class IndexedElement extends RubyElement {
     public static final int STATIC = 1 << 4;
     /** This element is deliberately not documented (rdoc :nodoc:) */
     public static final int NODOC = 1 << 5;
+    /** This element is virtual, i.e. doesn't have a direct match in sources/AST*/
+    public static final int VIRTUAL = 1 << 9;
     
     protected final FileObject file;
     protected final String clz;
@@ -139,14 +144,14 @@ public abstract class IndexedElement extends RubyElement {
             }
         }
         if (type == null) {
-            type = RubyType.createUnknown();
+            type = RubyType.unknown();
         }
         return type;
     }
 
     private RubyType parseTypes(final String types) {
         if (types.length() == 0) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
         if (!types.contains("|")) { // just one type
             return RubyType.create(types);
@@ -318,6 +323,13 @@ public abstract class IndexedElement extends RubyElement {
         return (flags & NODOC) != 0;
     }
     
+    /**
+     * @see #VIRTUAL
+     */
+    public boolean isVirtual() {
+        return (flags & VIRTUAL) != 0;
+    }
+
     // For testsuite
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
@@ -338,6 +350,9 @@ public abstract class IndexedElement extends RubyElement {
         }
         if ((flags & NODOC) != 0) {
             sb.append("|NODOC");
+        }
+        if ((flags & VIRTUAL) != 0) {
+            sb.append("|VIRTUAL");
         }
         
         return sb.toString();
@@ -363,6 +378,9 @@ public abstract class IndexedElement extends RubyElement {
         }
         if (string.indexOf("|NODOC") != -1) {
             flags += NODOC;
+        }
+        if (string.indexOf("|VIRTUAL") != -1) {
+            flags += VIRTUAL;
         }
 
         return flags;

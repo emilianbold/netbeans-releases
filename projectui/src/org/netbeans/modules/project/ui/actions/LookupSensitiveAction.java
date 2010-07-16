@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -119,7 +123,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     public @Override Object getValue( String key ) {
         init ();
         if ( needsRefresh ) {
-            doRefresh();
+            doRefresh(true);
         }
         return super.getValue( key );
     }
@@ -129,7 +133,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     public @Override boolean isEnabled() {
         init ();
         if ( needsRefresh ) {
-            doRefresh();
+            doRefresh(true);
         }
         return super.isEnabled();
     }
@@ -170,7 +174,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         return lookup;
     }
 
-    private void doRefresh() {
+    private void doRefresh(boolean immediate) {
         if (refreshing) {
             return;
         }
@@ -186,7 +190,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
                 r.setLoggerName(LOG.getName());
                 LOG.log(r);
             }
-            refresh( lookup );
+            refresh(lookup, immediate);
         } finally {
             refreshing = false;
         }
@@ -202,10 +206,11 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     /** Place where to change properties (enablement/name) when
      *  the set of current projects changes.
      */
-    protected abstract void refresh( Lookup context );
+    protected abstract void refresh(Lookup context, boolean immediate);
 
     // Implementation of LookupListener ----------------------------------------
 
+    @Override
     public void resultChanged( LookupEvent e ) {
         if ( refreshing ) {
             return;
@@ -218,16 +223,19 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         }
     }
 
+    @Override
     public void run() {
-        doRefresh();
+        doRefresh(false);
     }
 
     // Implementation of Presenter.Menu and Presenter.Popup --------------------
     
+    @Override
     public JMenuItem getMenuPresenter () {
         return new DynamicMenuItem(this, false);
     }
     
+    @Override
     public JMenuItem getPopupPresenter () {
         return new DynamicMenuItem(this, true);
     }
@@ -243,12 +251,14 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
             org.openide.awt.Actions.connect(this, action, popup);
         }
         
+        @Override
         public JComponent[] getMenuPresenters() {
             JMenuItem menuPresenter = new JMenuItem();
             org.openide.awt.Actions.connect(menuPresenter, action, popup);
             return new JComponent [] { menuPresenter };
         }
         
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }
@@ -279,6 +289,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
             setLookups(delegates);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
                 updateLookups();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -155,6 +158,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // -----
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
+    @Override
     public void commit() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -215,6 +219,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
+    @Override
     public void rollback() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -238,6 +243,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
+    @Override
     public void performChange() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -332,6 +338,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         final FormEditorSupport fes = formDataObject.getFormEditorSupport();
         if (fes.isOpened()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     formEditor = fes.reloadFormEditor();
                     formMove2(/*saveAll*/);
@@ -482,6 +489,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 final FormEditorSupport fes = formDataObject.getFormEditorSupport();
                 if (fes.isOpened()) {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             formEditor = fes.reloadFormEditor();
                             updateForm(true);
@@ -667,6 +675,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
         } else { // file does not exist - will be created; to undo we must delete it
            id = new BackupFacility.Handle() {
+                @Override
                 public void restore() throws IOException {
                     FileObject file = URLMapper.findFileObject(url);
                     if (file != null) {
@@ -715,25 +724,31 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             this.file = file;
         }
 
+        @Override
         public String getText() {
             return "GUI form update"; // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate1"); // NOI18N
         }
 
+        @Override
         public void performChange() {
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return file;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -742,26 +757,31 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // -----
 
     // RefactoringElementImplementation
+    @Override
     public String getText() {
         return "GUI form update";
     }
 
     // RefactoringElementImplementation
+    @Override
     public String getDisplayText() {
         return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate2"); // NOI18N
     }
 
     // RefactoringElementImplementation
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
 
     // RefactoringElementImplementation
+    @Override
     public FileObject getParentFile() {
         return changingFile;
     }
 
     // RefactoringElementImplementation
+    @Override
     public PositionBounds getPosition() {
         return null;
     }

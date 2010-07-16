@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,6 +94,7 @@ import org.netbeans.modules.compapp.projects.jbi.api.*;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Support for creating logical views.
@@ -100,7 +104,7 @@ import org.openide.filesystems.FileChangeListener;
 public class JbiLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        JbiProjectProperties.JAVAC_CLASSPATH, JbiProjectProperties.DEBUG_CLASSPATH,
+//        JbiProjectProperties.JAVAC_CLASSPATH, JbiProjectProperties.DEBUG_CLASSPATH,
         JbiProjectProperties.JBI_CONTENT_ADDITIONAL, JbiProjectProperties.SRC_DIR
     };
     
@@ -111,19 +115,18 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
     private final ReferenceHelper resolver;
     
     /** The open folder icon */
-    private static Image mIcon =
+    private static Image mProjectIcon =
             new ImageIcon(JbiLogicalViewProvider.class.getClassLoader().getResource
             ("org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png")).getImage(); // NOI18N
     
     /** The open folder icon */
-    private static Image mEmpty =
+    private static Image mBrokenBadge =
             new ImageIcon(JbiLogicalViewProvider.class.getClassLoader().getResource
             ("org/netbeans/modules/compapp/projects/jbi/ui/resources/brokenProjectBadge.gif")).getImage(); // NOI18N
     
-    private static Image mEmptyIcon = mIcon;
+    private static Image mBrokenProjectIcon = mProjectIcon;
     
     private JbiLogicalViewRootNode jRoot;
-    private boolean isEmpty = false;
     
     /**
      * Creates a new JbiLogicalViewProvider object.
@@ -148,18 +151,11 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         assert spp != null;
         this.resolver = resolver;
         
-        if (mEmpty != null) {
-            mEmptyIcon = ImageUtilities.mergeImages(mIcon, mEmpty, 8, 0);
+        if (mBrokenBadge != null) {
+            mBrokenProjectIcon = ImageUtilities.mergeImages(mProjectIcon, mBrokenBadge, 8, 0);
         }
-        
-//        isEmpty = isProjectEmpty();
     }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+   
     public Node createLogicalView() {
         jRoot = new JbiLogicalViewRootNode();
         Children kids = jRoot.getChildren();
@@ -225,30 +221,12 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         return jRoot;
     }
     
-    
     /**
-     * DOCUMENT ME!
-     *
+     * Refreshes the root node.
      */
     public void refreshRootNode() {
-        boolean newEmpty = isProjectEmpty();
-        if (newEmpty != isEmpty) {
-            isEmpty = newEmpty;
-            if (jRoot != null) {
-                jRoot.refreshNode();
-            }
-        }
-    }
-    
-    private boolean isProjectEmpty() {
-        String comps = helper.getStandardPropertyEvaluator().getProperty(
-                JbiProjectProperties.JBI_CONTENT_ADDITIONAL
-                );
-        
-        if (comps != null && comps.trim().length() > 0) {
-            return false;
-        } else {
-            return ! CasaHelper.containsWSDLPort(project);
+        if (jRoot != null) {
+            jRoot.refreshNode();
         }
     }
     
@@ -260,20 +238,11 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 );
                 
         return comps != null && comps.contains("sun-bpel-engine"); // NOI18N
-    }
+    }    
     
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param root DOCUMENT ME!
-     * @param target DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Node findPath(Node root, Object target) {
-        Project project = root.getLookup().lookup(Project.class);
-        if (project == null) {
+        Project proj = root.getLookup().lookup(Project.class);
+        if (proj == null) {
             return null;
         }
         
@@ -284,7 +253,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         if (target instanceof FileObject) {
             FileObject fo = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(fo);
-            if (!project.equals(owner)) {
+            if (!proj.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
             
@@ -318,7 +287,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
     public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
         return BrokenReferencesSupport.isBroken(
                 helper, resolver, BREAKABLE_PROPERTIES,
-                new String[] {JbiProjectProperties.JAVA_PLATFORM}
+                new String[] {} //JbiProjectProperties.JAVA_PLATFORM}
         );
     }
     
@@ -372,22 +341,12 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(JbiLogicalViewProvider.class);
         }
-        
-        /**
-         * DOCUMENT ME!
-         *
-         * @param context DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+
+        @Override
         public Action[] getActions(boolean context) {
             if (context) {
                 return super.getActions(true);
@@ -395,47 +354,47 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 return getAdditionalActions(context);
             }
         }
-        
-        /**
-         * DOCUMENT ME!
-         *
-         * @param type DOCUMENT ME!
-         * @return DOCUMENT ME!
-         */
-        public Image getIcon(int type) {
-            return broken || isEmpty ? mEmptyIcon : mIcon;
+
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(JbiLogicalViewProvider.class, 
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
         }
-        
+
+        @Override
+        public Image getIcon(int type) {
+            return broken ? mBrokenProjectIcon : mProjectIcon;
+        }
+
+        @Override
         public String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
-            return broken || isEmpty ? "<font color=\"#A40000\">" + dispName + "</font>" : null; // NOI18N
+            return broken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; // NOI18N
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param type DOCUMENT ME!
-         * @return DOCUMENT ME!
-         */
+        @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
         
         public void refreshNode() {
-            fireIconChange();
-            fireOpenedIconChange();
-            fireDisplayNameChange(null, null);
+            SwingUtilities.invokeLater(new Runnable() { // #150295
+                public void run() {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
+                }
+            });
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+        @Override
         public boolean canRename() {
             return true; 
         }
-        
+
+        @Override
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
@@ -447,8 +406,14 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             List<Action> actions = new ArrayList<Action>();
             
             actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                    new AddProjectAction(), 
+                    new AddProjectAction(true),
                     bundle.getString("LBL_AddProjectAction_Name"),  // NOI18N
+                    null
+                    ));
+
+            actions.add(ProjectSensitiveActions.projectSensitiveAction(
+                    new AddProjectAction(false),
+                    bundle.getString("LBL_AddExternalProjectAction_Name"),  // NOI18N
                     null
                     ));
             
@@ -529,6 +494,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     null
                     );
             actions.add(new ActionDecorator(debugAction) {
+                @Override
                 public boolean isEnabled() {
                     return projectContainsBPELModule();
                 }                
@@ -561,13 +527,12 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         }
         
         /**
-         * This action is created only when project has broken references. Once these are resolved
-         * the action is disabled.
+         * This action is created only when project has broken references.
+         * Once these are resolved the action is disabled.
          */
-        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener {
-            /**
-             * Creates a new BrokenLinksAction object.
-             */
+        private class BrokenLinksAction extends AbstractAction
+                implements PropertyChangeListener {
+           
             public BrokenLinksAction() {
                 evaluator.addPropertyChangeListener(this);
                 putValue(
@@ -578,15 +543,10 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                         );
             }
             
-            /**
-             * DOCUMENT ME!
-             *
-             * @param e DOCUMENT ME!
-             */
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(
                         helper, resolver, BREAKABLE_PROPERTIES,
-                        new String[] {JbiProjectProperties.JAVA_PLATFORM}
+                        new String[] {} //JbiProjectProperties.JAVA_PLATFORM}
                 );
                 
                 if (!hasBrokenLinks(helper, resolver)) {
@@ -617,11 +577,6 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             
-            /**
-             * DOCUMENT ME!
-             *
-             * @param evt DOCUMENT ME!
-             */
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!broken) {
                     disable();
@@ -639,9 +594,6 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 broken = false;
                 setEnabled(false);
                 evaluator.removePropertyChangeListener(this);
-//                fireIconChange();
-//                fireOpenedIconChange();
-//                fireDisplayNameChange(null, null);
             }
         }       
         
@@ -650,10 +602,12 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
          */
         private class SubprojectListener extends FileChangeAdapter {
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 checkBrokenLinks();
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 checkBrokenLinks();
             }

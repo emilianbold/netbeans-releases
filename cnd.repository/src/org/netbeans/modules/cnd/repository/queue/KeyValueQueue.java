@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The queue that is based on key-value pairs
@@ -84,8 +88,14 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
     
     public void addLast(K key, V value) {
-	if( needsTrace() ) System.err.printf("%s: addLast %s\n", getTraceName(), key.toString());
+	if( needsTrace() ) {
+            System.err.printf("%s: addLast %s\n", getTraceName(), key.toString()); // NOI18N
+        }
         dispatcher.newEvent(createEntry(key, value));
+    }
+
+    protected final void pushLastFromDispatcher() {
+        dispatcher.pushLast();
     }
 
     private void addLastImpl(K key, V value) {
@@ -94,12 +104,12 @@ public class KeyValueQueue<K, V> extends BaseQueue {
             if (entry == null) {
                 doAddLast(key, value);
                 if (needsTrace()) {
-                    System.err.printf("%s: added last %s\n", getTraceName(), key.toString());
+                    System.err.printf("%s: added last %s\n", getTraceName(), key.toString()); // NOI18N
                 }
             } else {
                 doReplaceAddLast(key, value, entry);
                 if (needsTrace()) {
-                    System.err.printf("%s: replaced last %s\n", getTraceName(), key.toString());
+                    System.err.printf("%s: replaced last %s\n", getTraceName(), key.toString()); // NOI18N
                 }
             }
             lock.notifyAll();
@@ -109,36 +119,62 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     private final static class EventsDispatcher<KK, VV> extends Thread {
         private final KeyValueQueue<KK, VV> delegate;
         private final BlockingQueue<Entry<KK, VV>> queue = new LinkedBlockingQueue<Entry<KK, VV>>();
-        
+        private AtomicLong request = new AtomicLong(0);
+        private AtomicLong response = new AtomicLong(0);
         public EventsDispatcher(KeyValueQueue<KK, VV> delegate) {
             super("CND Repository Queue Dispatcher"); // NOI18N
             this.delegate = delegate;
         }
 
         void newEvent(Entry<KK, VV> entry) {
+            request.incrementAndGet();
             queue.add(entry);
         }
         
         void handleEvent(KK key, VV value) {
             delegate.addLastImpl(key, value);
+            response.incrementAndGet();
         }
 
         @Override
         public void run() {
-            while (!isInterrupted()) {
-                try {
-                    Entry<KK, VV> event;
+            try {
+                while (!isInterrupted()) {
                     try {
-                        event = queue.take();
-                    } catch (InterruptedException ex) {
-                        // it's ok
-                        break;
+                        Entry<KK, VV> event;
+                        try {
+                            event = queue.take();
+                            //Thread.sleep(2); // emulate slow dispather
+                        } catch (InterruptedException ex) {
+                            // it's ok
+                            break;
+                        }
+                        handleEvent(event.key, event.value);
+                    } catch (Throwable th) {
+                        th.printStackTrace(System.err);
                     }
-                    handleEvent(event.key, event.value);
-                } catch (Throwable th) {
-                    th.printStackTrace(System.err);
                 }
+            } finally {
+                response.set(Long.MAX_VALUE/2);
             }
+        }
+
+        private void pushLast() {
+            long last = request.get();
+            do {
+                //System.err.println("Waiting on Queue size "+queue.size() + " " + (last - response.get())); // NOI18N
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ex) {
+                    // it's ok
+                }
+            } while (last > response.get());
+            //try {
+            //    Thread.sleep(1);
+            //} catch (InterruptedException ex) {
+            //    Exceptions.printStackTrace(ex);
+            //}
+            //System.err.println("Waiting on Queue size final "+queue.size() + " " + (last - response.get())); // NOI18N
         }
     }
 
@@ -162,14 +198,18 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
     
     public Entry<K, V> poll() throws InterruptedException {
-	if( needsTrace() ) System.err.printf("%s: Polling...\n", getTraceName());
+	if( needsTrace() ) {
+            System.err.printf("%s: Polling...\n", getTraceName()); // NOI18N
+        }
 	synchronized( lock ) {
             try {
                 @SuppressWarnings("unchecked")
                 Entry<K, V> e = (Entry<K, V>) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
                 if( e != null ) {
                     doPostPoll(e);
-                    if( needsTrace() ) System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey());
+                    if( needsTrace() ) {
+                        System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey()); // NOI18N
+                    }
                 }
                 return e;
             } finally {
@@ -183,9 +223,11 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
     
     public void remove(K key) {
-	if( needsTrace() ) System.err.printf("%s: Removing %s\n", getTraceName(), key);
+	if( needsTrace() ) {
+            System.err.printf("%s: Removing %s\n", getTraceName(), key); // NOI18N
+        }
 	synchronized( lock ) {
-	    Entry e = map.remove(key);
+	    Entry<K, V> e = map.remove(key);
 	    if( e != null ) {
 		queue.remove(e);
 	    }
@@ -196,9 +238,13 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     public void waitReady() throws InterruptedException {
         synchronized ( lock ) {
             while( active && !isReady() ) {
-		if( needsTrace() ) System.err.printf("%s: waitReady() ...\n", getTraceName());
+		if( needsTrace() ) {
+                    System.err.printf("%s: waitReady() ...\n", getTraceName()); // NOI18N
+                }
                 lock.wait();
-		if( needsTrace() ) System.err.printf("%s: waiting finished\n", getTraceName());
+		if( needsTrace() ) {
+                    System.err.printf("%s: waiting finished\n", getTraceName()); // NOI18N
+                }
             }
         }
     }

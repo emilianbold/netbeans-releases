@@ -22,6 +22,7 @@
  */
 package org.netbeans.modules.bpel.model.impl;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -36,6 +37,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author ads
+ * @author Vitaly Bychkov
  *
  */
 public class LiteralImpl extends BpelContainerImpl implements Literal {
@@ -96,9 +98,24 @@ public class LiteralImpl extends BpelContainerImpl implements Literal {
     {
         return null;
     } 
-        
+       
+    public String getXmlContent() {
+        return getCorrectedXmlContent();
+    }
+
+    public void setXmlContent(String xmlContent) throws VetoException, IOException {
+        getAttributeAccess().setXmlContent(xmlContent);
+    }
+
     private static AtomicReference<Attribute[]> myAttributes  = 
         new AtomicReference<Attribute[]>();
 
+    public String getCDataContent() {
+        return getCorrectedCDataContent();
+    }
+
+    public void setCDataContent(String content) throws VetoException, IOException {
+        getAttributeAccess().setCDataContent(content);
+    }
 
 }

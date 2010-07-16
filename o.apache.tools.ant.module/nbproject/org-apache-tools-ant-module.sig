@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 3.35.1
+#Signature file v4.1
+#Version 3.41.0
 
 CLSS public java.beans.FeatureDescriptor
-cons public FeatureDescriptor()
+cons public init()
 meth public boolean isExpert()
 meth public boolean isHidden()
 meth public boolean isPreferred()
@@ -28,7 +28,7 @@ CLSS public abstract interface java.io.Flushable
 meth public abstract void flush() throws java.io.IOException
 
 CLSS public abstract java.io.OutputStream
-cons public OutputStream()
+cons public init()
 intf java.io.Closeable
 intf java.io.Flushable
 meth public abstract void write(int) throws java.io.IOException
@@ -44,7 +44,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -95,6 +95,7 @@ meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public abstract interface static org.apache.tools.ant.module.api.AntProjectCookie$ParseStatus
+ outer org.apache.tools.ant.module.api.AntProjectCookie
 intf org.apache.tools.ant.module.api.AntProjectCookie
 meth public abstract boolean isParsed()
 
@@ -106,7 +107,8 @@ supr java.lang.Object
 hfds env
 
 CLSS public final static org.apache.tools.ant.module.api.AntTargetExecutor$Env
-cons public Env()
+ outer org.apache.tools.ant.module.api.AntTargetExecutor
+cons public init()
 meth public int getVerbosity()
 meth public java.io.OutputStream getLogger()
 meth public java.util.Properties getProperties()
@@ -123,7 +125,7 @@ intf org.openide.nodes.Node$Cookie
 meth public abstract org.w3c.dom.Element getElement()
 
 CLSS public final org.apache.tools.ant.module.api.IntrospectedInfo
-cons public IntrospectedInfo()
+cons public init()
 meth public boolean isKnown(java.lang.String)
 meth public boolean supportsText(java.lang.String)
 meth public java.lang.String toString()
@@ -139,7 +141,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void scanProject(java.util.Map<java.lang.String,java.util.Map<java.lang.String,java.lang.Class>>)
 meth public void unregister(java.lang.String,java.lang.String)
 supr java.lang.Object
-hfds LOG,antBridgeListener,clazzes,cs,defaults,defaultsEverInited,defaultsInited,holder,merged,namedefs
+hfds LOG,RP,antBridgeListener,clazzes,cs,defaults,defaultsEverInited,defaultsInited,holder,merged,namedefs
 hcls ChangeTask,IntrospectedClass
 
 CLSS public abstract interface org.apache.tools.ant.module.api.IntrospectionCookie
@@ -169,6 +171,7 @@ supr java.lang.Object
 hcls Script
 
 CLSS public final static org.apache.tools.ant.module.api.support.TargetLister$Target
+ outer org.apache.tools.ant.module.api.support.TargetLister
 meth public boolean isDefault()
 meth public boolean isDescribed()
 meth public boolean isInternal()
@@ -206,7 +209,7 @@ supr java.lang.Object
 hfds impl
 
 CLSS public abstract org.apache.tools.ant.module.spi.AntLogger
-cons protected AntLogger()
+cons protected init()
 fld public final static java.lang.String[] ALL_TARGETS
 fld public final static java.lang.String[] ALL_TASKS
 fld public final static java.lang.String[] NO_TARGETS
@@ -229,7 +232,7 @@ supr java.lang.Object
 
 CLSS public abstract org.apache.tools.ant.module.spi.AntOutputStream
  anno 0 java.lang.Deprecated()
-cons public AntOutputStream()
+cons public init()
 meth protected abstract void writeLine(java.lang.String) throws java.io.IOException
 meth protected boolean writeLine(java.lang.String,java.net.URL,int,int,int,int,java.lang.String) throws java.io.IOException
  anno 0 java.lang.Deprecated()
@@ -277,8 +280,8 @@ supr java.lang.Object
 hfds impl
 
 CLSS public abstract org.openide.nodes.Node
-cons protected Node(org.openide.nodes.Children)
-cons protected Node(org.openide.nodes.Children,org.openide.util.Lookup)
+cons protected init(org.openide.nodes.Children)
+cons protected init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld public final static java.lang.String PROP_COOKIE = "cookie"
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_ICON = "icon"
@@ -337,6 +340,7 @@ meth public final void addNodeListener(org.openide.nodes.NodeListener)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removeNodeListener(org.openide.nodes.NodeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public int hashCode()
 meth public java.lang.String getHtmlDisplayName()
 meth public java.lang.String toString()
 meth public javax.swing.Action getPreferredAction()
@@ -358,11 +362,12 @@ hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBa
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
+ outer org.openide.nodes.Node
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -378,10 +383,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -398,5 +404,6 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 

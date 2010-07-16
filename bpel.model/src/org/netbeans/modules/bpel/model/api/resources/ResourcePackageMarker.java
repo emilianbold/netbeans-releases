@@ -18,33 +18,27 @@
  */
 package org.netbeans.modules.bpel.model.api.resources;
 
-
 /**
  * This is class for mark its pacakge.
  * We can access to files in this package via pointer to this class.
  * If package chages his name it will automatically reflected in usages
  * ( via refactoring ).
  * @author ads
- *
  */
 public final class ResourcePackageMarker {
     
-    private ResourcePackageMarker() {
-    }
+    private ResourcePackageMarker() {}
     
-    public static final String WS_BPEL_SCHEMA       = "wsbpel_2_0.xsd";   // NOI18N
-    
-    public static final String WS_BPEL_1_1_SCHEMA   = "bpel4ws_1_1.xsd";  // NOI18N
-    
-    public static final String WS_BPEL_SERVICE_REF_SCHEMA       = "ws-bpel_serviceref.xsd";   // NOI18N
+    public static final String WS_BPEL_SCHEMA = "wsbpel_2_0.xsd"; // NOI18N
+    public static final String WS_BPEL_1_1_SCHEMA = "bpel4ws_1_1.xsd"; // NOI18N
+    public static final String WS_BPEL_SERVICE_REF_SCHEMA = "ws-bpel_serviceref.xsd"; // NOI18N
+    public static final String XSD_SCHEMA = "xml.xsd"; // NOI18N
+    public static final String TRACE_SCHEMA = "trace.xsd"; // NOI18N
+    public static final String EDITOR_EXT_SCHEMA = "editor.xsd"; // NOI18N
+    public static final String ERROR_HANDLING_WSDL = "ErrorHandling.wsdl"; // NOI18N
+    public static final String ERROR_HANDLING_SCHEMA = "ErrorHandling.xsd"; // NOI18N
 
-    public static final String XSD_SCHEMA            = "xml.xsd";          // NOI18N
-
-    public static final String TRACE_SCHEMA            = "trace.xsd";          // NOI18N
-
-    public static final String EDITOR_EXT_SCHEMA            = "editor.xsd";          // NOI18N
     /**
-     *
      * fix for IZ94241:
      * class.getPackage() returns null with antClassloader
      * workaround is to use class name and extract package name from it.

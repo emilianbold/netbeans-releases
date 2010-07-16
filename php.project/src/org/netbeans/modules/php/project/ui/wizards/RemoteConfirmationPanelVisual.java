@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,15 +46,17 @@ import java.awt.Font;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.connections.ui.TransferFileTableChangeListener;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel.TransferFilesChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -59,16 +64,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RemoteConfirmationPanelVisual extends JPanel {
+public final class RemoteConfirmationPanelVisual extends JPanel {
     static enum State { FETCHING, NO_FILES, FILES };
 
     private static final long serialVersionUID = 3753241413078222434L;
     private static final int STEP_INDEX = 2;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final TransferFileTableChangeListener transferFilterListener;
+    private final TransferFilesChangeListener transferFilesChangeListener;
 
-    private TransferFilter transferFilter;
+    private TransferFilesChooserPanel transferPanel;
     private State state = null;
 
     public RemoteConfirmationPanelVisual(RemoteConfirmationPanel wizardPanel, WizardDescriptor descriptor) {
@@ -86,11 +91,12 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         setFetchingFiles();
         uploadInfoLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "TXT_UploadInfo"));
 
-        transferFilterListener = new TransferFileTableChangeListener() {
-            public void updateUnitsChanged() {
+        transferFilesChangeListener = new TransferFilesChangeListener() {
+            @Override
+            public void selectedFilesChanged() {
                 changeSupport.fireChange();
             }
-
+            @Override
             public void filterChanged() {
             }
         };
@@ -109,11 +115,11 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         assert remoteFiles != null;
 
         state = State.FILES;
-        transferFilter = TransferFilter.getEmbeddableDownloadDialog(remoteFiles);
-        transferFilter.addUpdateUnitListener(transferFilterListener);
+        transferPanel = TransferFilesChooser.forDownload(remoteFiles).getEmbeddablePanel();
+        transferPanel.addChangeListener(transferFilesChangeListener);
 
         filesPanel.removeAll();
-        filesPanel.add(transferFilter);
+        filesPanel.add(transferPanel);
 
         statusLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "LBL_Confirmation")); // NOI18N
         setState(true);
@@ -140,10 +146,10 @@ public class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     public Set<TransferFile> getRemoteFiles() {
-        if (transferFilter == null) {
+        if (transferPanel == null) {
             return Collections.emptySet();
         }
-        return TransferFilter.getSelectedFiles(transferFilter);
+        return transferPanel.getSelectedFiles();
     }
 
     State getState() {
@@ -157,10 +163,10 @@ public class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     private void resetTransferFilter() {
-        if (transferFilter != null) {
-            transferFilter.removeUpdateUnitListener(transferFilterListener);
+        if (transferPanel != null) {
+            transferPanel.removeChangeListener(transferFilesChangeListener);
         }
-        transferFilter = null;
+        transferPanel = null;
     }
 
     /** This method is called from within the constructor to
@@ -180,35 +186,41 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getStyle() | Font.BOLD));
         statusLabel.setText("DUMMY"); // NOI18N
 
-
         downloadInfoLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.text")); // NOI18N
+
         uploadInfoLabel.setText("DUMMY"); // NOI18N
 
         filesPanel.setLayout(new BoxLayout(filesPanel, BoxLayout.LINE_AXIS));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(statusLabel)
-                    .add(downloadInfoLabel)
-                    .add(uploadInfoLabel))
-                .addContainerGap(27, Short.MAX_VALUE))
-            .add(filesPanel, GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(statusLabel)
+                    .addComponent(downloadInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(uploadInfoLabel))
+                .addContainerGap(41, Short.MAX_VALUE))
+            .addComponent(filesPanel, GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(statusLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(downloadInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(filesPanel, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(uploadInfoLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(statusLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(downloadInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(filesPanel, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(uploadInfoLabel))
         );
+
+        downloadInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        downloadInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

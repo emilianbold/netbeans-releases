@@ -18,11 +18,10 @@
  */
 package org.netbeans.modules.bpel.properties.choosers;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.soa.ui.axinodes.AxiomNode;
 import org.netbeans.modules.soa.ui.axinodes.ElementNode;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
@@ -35,18 +34,19 @@ import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.TypeContainer;
-import org.netbeans.modules.bpel.properties.editors.controls.filter.ChildTypeFilter;
 import org.netbeans.modules.bpel.nodes.MessageTypeNode;
 import org.netbeans.modules.bpel.nodes.SchemaFileNode;
 import org.netbeans.modules.bpel.nodes.WsdlFileNode;
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.ImportNode;
 import org.netbeans.modules.bpel.nodes.ImportSchemaNode;
 import org.netbeans.modules.bpel.nodes.PrimitiveTypeNode;
-import org.netbeans.modules.bpel.nodes.ReloadableChildren;
 import org.netbeans.modules.bpel.nodes.SchemaComponentNode;
 import org.netbeans.modules.bpel.properties.Constants.StereotypeFilter;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
+import org.netbeans.modules.bpel.nodes.EmbeddedSchemaNode;
+import org.netbeans.modules.bpel.nodes.ExternalProjectNode;
+import org.netbeans.modules.bpel.nodes.GlobalElementNode;
+import org.netbeans.modules.bpel.nodes.RefResourceNode;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -56,7 +56,6 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
@@ -139,6 +138,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
         initControls();
     }
     
+    @Override
     public void createContent() {
         initComponents();
         //
@@ -209,62 +209,71 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
                         text = ResolverUtility.getDisplayName(gSimpleType);
                         fldTypeName.setText(text);
                     }
+                } else if (selectedNode instanceof RefResourceNode) {
+                    String resUrl = ((RefResourceNode)selectedNode).getReference().getURL();
+                    fldTypeName.setText(resUrl);
+                } else if (selectedNode instanceof ExternalProjectNode) {
+                    Project proj = ((ExternalProjectNode)selectedNode).getReference();
+                    String projDirName = proj.getProjectDirectory().toString();
+                    fldTypeName.setText(projDirName);
                 } else {
                     fldTypeName.setText("");
                 }
             }
         });
         //
-        chbShowImportedOnly.setSelected(true);
-        //
-        chbShowImportedOnly.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BpelModel model = (BpelModel)getLookup().lookup(BpelModel.class);
-                Process process = model.getProcess();
-                BpelNode soughtNode = NodeUtils.findFirstNode(
-                        process, getExplorerManager().getRootContext());
-                //
-                Children childrent = soughtNode.getChildren();
-                if (childrent instanceof ReloadableChildren) {
-                    ((ReloadableChildren)childrent).reload();
-                }
-//                } else {
-//                    // boolean importedOnly = chbShowImportedOnly.isSelected();
-//                    NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
-//                        public boolean accept(Node node) {
-//                            if (node instanceof BpelNode) {
-//                                NodeType type = ((BpelNode)node).getNodeType();
-//                                if (type == NodeType.STEREOTYPE_GROUP) {
-//                                    return true;
-//                                }
-//                            }
-//                            return false;
-//                        }
-//
-//                        public boolean drillDeeper(Node node) {
-//                            return true;
-//                        }
-//                    };
-//                    List<Node> nodesList = NodeUtils.findNodes(
-//                            getExplorerManager().getRootContext(), visitor, 3);
-//                    //
-//                    for (Node node: nodesList) {
-//                        Children childrent = node.getChildren();
-//                        if (childrent instanceof ReloadableChildren) {
-//                            ((ReloadableChildren)childrent).reload();
-//                        }
-//                    }
+//        chbShowImportedOnly.setSelected(true);
+//        //
+//        chbShowImportedOnly.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                BpelModel model = (BpelModel)getLookup().lookup(BpelModel.class);
+//                Process process = model.getProcess();
+//                BpelNode soughtNode = NodeUtils.findFirstNode(
+//                        process, getExplorerManager().getRootContext());
+//                //
+//                Children childrent = soughtNode.getChildren();
+//                if (childrent instanceof ReloadableChildren) {
+//                    ((ReloadableChildren)childrent).reload();
 //                }
-            }
-        });
+////                } else {
+////                    // boolean importedOnly = chbShowImportedOnly.isSelected();
+////                    NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
+////                        public boolean accept(Node node) {
+////                            if (node instanceof BpelNode) {
+////                                NodeType type = ((BpelNode)node).getNodeType();
+////                                if (type == NodeType.STEREOTYPE_GROUP) {
+////                                    return true;
+////                                }
+////                            }
+////                            return false;
+////                        }
+////
+////                        public boolean drillDeeper(Node node) {
+////                            return true;
+////                        }
+////                    };
+////                    List<Node> nodesList = NodeUtils.findNodes(
+////                            getExplorerManager().getRootContext(), visitor, 3);
+////                    //
+////                    for (Node node: nodesList) {
+////                        Children childrent = node.getChildren();
+////                        if (childrent instanceof ReloadableChildren) {
+////                            ((ReloadableChildren)childrent).reload();
+////                        }
+////                    }
+////                }
+//            }
+//        });
     }
     
+    @Override
     public boolean afterClose() {
         super.afterClose();
         myStereotypeFilter = null;
         return true;
     }
     
+    @Override
     protected Node constructRootNode() {
         Node result = null;
         //
@@ -273,31 +282,31 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
         NodeFactory factory = new TypeChooserNodeFactory(
                 PropertyNodeFactory.getInstance());
         //
-        // Create a filter to prevent showing not imported WSDL or Schema files
-        ChildTypeFilter showImportedOnlyFilter = new ChildTypeFilter() {
-            public boolean isPairAllowed(
-                    NodeType parentType, NodeType childType) {
-                if (chbShowImportedOnly.isSelected()) {
-                    if (childType.equals(NodeType.WSDL_FILE) ||
-                            childType.equals(NodeType.SCHEMA_FILE)) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                return true;
-            }
-        };
-        Lookup lookup = new ExtendedLookup(getLookup(), showImportedOnlyFilter);
+//        // Create a filter to prevent showing not imported WSDL or Schema files
+//        ChildTypeFilter showImportedOnlyFilter = new ChildTypeFilter() {
+//            public boolean isPairAllowed(
+//                    NodeType parentType, NodeType childType) {
+//                if (chbShowImportedOnly.isSelected()) {
+//                    if (childType.equals(NodeType.WSDL_FILE) ||
+//                            childType.equals(NodeType.SCHEMA_FILE)) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                return true;
+//            }
+//        };
+//        Lookup lookup = new ExtendedLookup(getLookup(), showImportedOnlyFilter);
         //
         result = factory.createNode(
-                NodeType.PROCESS, process, lookup);
+                NodeType.PROCESS, process, getLookup());
         return result;
     }
     
-    public void hideChbShowImportedOnly(boolean hide) {
-        chbShowImportedOnly.setVisible(!hide);
-    }
+//    public void hideChbShowImportedOnly(boolean hide) {
+//        chbShowImportedOnly.setVisible(!hide);
+//    }
     
     public TypeContainer getSelectedValue() {
         Node selectedNode = getSelectedNode();
@@ -346,11 +355,11 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
             case MESSAGE: {
                 final Message message = typeContainer.getMessage();
                 //
-                boolean isImported = ResolverUtility.isModelImported(
-                        message.getModel(), getLookup());
-                if (!isImported && chbShowImportedOnly.isSelected()) {
-                    chbShowImportedOnly.setSelected(false);
-                }
+//                boolean isImported = ResolverUtility.isModelImported(
+//                        message.getModel(), getLookup());
+//                if (!isImported && chbShowImportedOnly.isSelected()) {
+//                    chbShowImportedOnly.setSelected(false);
+//                }
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
@@ -367,13 +376,11 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
                     
                     public boolean drillDeeper(Node node) {
                         if (node instanceof SchemaFileNode ||
-                                node instanceof ImportSchemaNode) {
+                                node instanceof ImportSchemaNode ||
+                                node instanceof EmbeddedSchemaNode ||
+                                node instanceof MessageTypeNode ||
+                                node instanceof SchemaComponentNode) {
                             return false;
-                        } else if (node instanceof ElementNode) {
-                            Element element = ((ElementNode)node).getReference();
-                            SchemaComponent sc = element.getPeer();
-                            return sc instanceof GlobalElement || 
-                                    sc instanceof GlobalType;
                         } else {
                             return true;
                         }
@@ -388,18 +395,18 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
             case GLOBAL_ELEMENT: {
                 final GlobalElement element = typeContainer.getGlobalElement();
                 //
-                boolean isImported = ResolverUtility.isModelImported(
-                        element.getModel(), getLookup());
-                if (!isImported && chbShowImportedOnly.isSelected()) {
-                    chbShowImportedOnly.setSelected(false);
-                }
+//                boolean isImported = ResolverUtility.isModelImported(
+//                        element.getModel(), getLookup());
+//                if (!isImported && chbShowImportedOnly.isSelected()) {
+//                    chbShowImportedOnly.setSelected(false);
+//                }
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
-                        if (node instanceof SchemaComponentNode) {
-                            SchemaComponent sComp =
-                                    ((SchemaComponentNode)node).getReference();
-                            if (sComp != null && sComp.equals(element)) {
+                        if (node instanceof GlobalElementNode) {
+                            GlobalElement gElem =
+                                    ((GlobalElementNode)node).getReference();
+                            if (gElem != null && gElem.equals(element)) {
                                 return true;
                             }
                         }
@@ -408,13 +415,9 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
                     }
                     
                     public boolean drillDeeper(Node node) {
-                        if (node instanceof SchemaComponentNode) {
+                        if (node instanceof SchemaComponentNode ||
+                                node instanceof MessageTypeNode) {
                             return false;
-                        } else if (node instanceof ElementNode) {
-                            Element element = ((ElementNode)node).getReference();
-                            SchemaComponent sc = element.getPeer();
-                            return sc instanceof GlobalElement || 
-                                    sc instanceof GlobalType;
                         } else {
                             return true;
                         }
@@ -432,11 +435,11 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
             case GLOBAL_TYPE:
                 final GlobalType type = typeContainer.getGlobalType();
                 //
-                boolean isImported = ResolverUtility.isModelImported(
-                        type.getModel(), getLookup());
-                if (!isImported && chbShowImportedOnly.isSelected()) {
-                    chbShowImportedOnly.setSelected(false);
-                }
+//                boolean isImported = ResolverUtility.isModelImported(
+//                        type.getModel(), getLookup());
+//                if (!isImported && chbShowImportedOnly.isSelected()) {
+//                    chbShowImportedOnly.setSelected(false);
+//                }
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
@@ -480,6 +483,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
         }
     }
     
+    @Override
     protected Validator createValidator() {
         return new MyValidator();
     }
@@ -492,6 +496,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
     
     private class MyValidator extends DefaultChooserValidator {
         
+        @Override
         protected String getIncorrectNodeSelectionReasonKey() {
             return incorrectNodeSelectionReasonKey == null ?
                 DEFAULT_INCORRECT_NODE_SELECTION_REASON_KEY
@@ -505,75 +510,67 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel<TypeContainer>
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         lblType = new javax.swing.JLabel();
         fldTypeName = new javax.swing.JTextField();
-        chbShowImportedOnly = new javax.swing.JCheckBox();
         pnlLookupProvider = new TreeWrapperPanel();
         treeView = new BeanTreeView();
-        
+
         lblType.setLabelFor(fldTypeName);
-        lblType.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_Type"));
-        lblType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Type"));
-        lblType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Type"));
-        
+        lblType.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_Type")); // NOI18N
+
         fldTypeName.setEditable(false);
-        fldTypeName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_TypeIndicator"));
-        fldTypeName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_TypeIndicator"));
-        
-        chbShowImportedOnly.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "CHB_Show_Imported_Files_Only"));
-        chbShowImportedOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chbShowImportedOnly.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        chbShowImportedOnly.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_CHB_Show_Imported_Files_Only"));
-        chbShowImportedOnly.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_CHB_Show_Imported_Files_Only"));
-        
+
         pnlLookupProvider.setFocusable(false);
+
         treeView.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_TypeChooser"));
-        treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_TypeChooser"));
-        
+
         org.jdesktop.layout.GroupLayout pnlLookupProviderLayout = new org.jdesktop.layout.GroupLayout(pnlLookupProvider);
         pnlLookupProvider.setLayout(pnlLookupProviderLayout);
         pnlLookupProviderLayout.setHorizontalGroup(
-                pnlLookupProviderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(treeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                );
+            pnlLookupProviderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(treeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+        );
         pnlLookupProviderLayout.setVerticalGroup(
-                pnlLookupProviderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(treeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                );
-        
+            pnlLookupProviderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(treeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+        );
+
+        treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_TypeChooser")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_TypeChooser")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
                 .add(lblType)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fldTypeName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
-                .add(pnlLookupProvider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createSequentialGroup()
-                .add(chbShowImportedOnly)
-                .addContainerGap())
-                );
+                .add(fldTypeName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+            .add(pnlLookupProvider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
         layout.setVerticalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(pnlLookupProvider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chbShowImportedOnly)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(lblType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(fldTypeName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                );
-    }
+                    .add(lblType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(fldTypeName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        lblType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Type")); // NOI18N
+        lblType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Type")); // NOI18N
+        fldTypeName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_TypeIndicator")); // NOI18N
+        fldTypeName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_TypeIndicator")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     
-// Variables declaration - do not modify
-    private javax.swing.JCheckBox chbShowImportedOnly;
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField fldTypeName;
     private javax.swing.JLabel lblType;
     private javax.swing.JPanel pnlLookupProvider;
     private javax.swing.JScrollPane treeView;
-// End of variables declaration
+    // End of variables declaration//GEN-END:variables
 }

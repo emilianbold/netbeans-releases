@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,350 +61,925 @@ public final class EventRequestManagerWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.AccessWatchpointRequest> accessWatchpointRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "accessWatchpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).accessWatchpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.accessWatchpointRequests();
+            java.util.List<com.sun.jdi.request.AccessWatchpointRequest> ret;
+            ret = a.accessWatchpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "accessWatchpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.AccessWatchpointRequest> accessWatchpointRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "accessWatchpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).accessWatchpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.accessWatchpointRequests();
+            java.util.List<com.sun.jdi.request.AccessWatchpointRequest> ret;
+            ret = a.accessWatchpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "accessWatchpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.BreakpointRequest> breakpointRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "breakpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).breakpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.breakpointRequests();
+            java.util.List<com.sun.jdi.request.BreakpointRequest> ret;
+            ret = a.breakpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "breakpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.BreakpointRequest> breakpointRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "breakpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).breakpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.breakpointRequests();
+            java.util.List<com.sun.jdi.request.BreakpointRequest> ret;
+            ret = a.breakpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "breakpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ClassPrepareRequest> classPrepareRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "classPrepareRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).classPrepareRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.classPrepareRequests();
+            java.util.List<com.sun.jdi.request.ClassPrepareRequest> ret;
+            ret = a.classPrepareRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "classPrepareRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ClassPrepareRequest> classPrepareRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "classPrepareRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).classPrepareRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.classPrepareRequests();
+            java.util.List<com.sun.jdi.request.ClassPrepareRequest> ret;
+            ret = a.classPrepareRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "classPrepareRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ClassUnloadRequest> classUnloadRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "classUnloadRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).classUnloadRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.classUnloadRequests();
+            java.util.List<com.sun.jdi.request.ClassUnloadRequest> ret;
+            ret = a.classUnloadRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "classUnloadRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ClassUnloadRequest> classUnloadRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "classUnloadRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).classUnloadRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.classUnloadRequests();
+            java.util.List<com.sun.jdi.request.ClassUnloadRequest> ret;
+            ret = a.classUnloadRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "classUnloadRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.AccessWatchpointRequest createAccessWatchpointRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.Field b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createAccessWatchpointRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createAccessWatchpointRequest({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.createAccessWatchpointRequest(b);
+            com.sun.jdi.request.AccessWatchpointRequest ret;
+            ret = a.createAccessWatchpointRequest(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createAccessWatchpointRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.BreakpointRequest createBreakpointRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.Location b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createBreakpointRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createBreakpointRequest({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.createBreakpointRequest(b);
+            com.sun.jdi.request.BreakpointRequest ret;
+            ret = a.createBreakpointRequest(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createBreakpointRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ClassPrepareRequest createClassPrepareRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createClassPrepareRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createClassPrepareRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createClassPrepareRequest();
+            com.sun.jdi.request.ClassPrepareRequest ret;
+            ret = a.createClassPrepareRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createClassPrepareRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ClassUnloadRequest createClassUnloadRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createClassUnloadRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createClassUnloadRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createClassUnloadRequest();
+            com.sun.jdi.request.ClassUnloadRequest ret;
+            ret = a.createClassUnloadRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createClassUnloadRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ExceptionRequest createExceptionRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.ReferenceType b, boolean c, boolean d) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createExceptionRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createExceptionRequest({1}, {2}, {3})",
+                    new Object[] {a, b, c, d});
+        }
+        Object retValue = null;
         try {
-            return a.createExceptionRequest(b, c, d);
+            com.sun.jdi.request.ExceptionRequest ret;
+            ret = a.createExceptionRequest(b, c, d);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createExceptionRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.MethodEntryRequest createMethodEntryRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMethodEntryRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMethodEntryRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createMethodEntryRequest();
+            com.sun.jdi.request.MethodEntryRequest ret;
+            ret = a.createMethodEntryRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMethodEntryRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.MethodExitRequest createMethodExitRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMethodExitRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMethodExitRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createMethodExitRequest();
+            com.sun.jdi.request.MethodExitRequest ret;
+            ret = a.createMethodExitRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMethodExitRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ModificationWatchpointRequest createModificationWatchpointRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.Field b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createModificationWatchpointRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createModificationWatchpointRequest({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.createModificationWatchpointRequest(b);
+            com.sun.jdi.request.ModificationWatchpointRequest ret;
+            ret = a.createModificationWatchpointRequest(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createModificationWatchpointRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorContendedEnterRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/ createMonitorContendedEnterRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorContendedEnterRequest createMonitorContendedEnterRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMonitorContendedEnterRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMonitorContendedEnterRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorContendedEnterRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.request.MonitorContendedEnterRequest ret;
+            ret = a.createMonitorContendedEnterRequest();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMonitorContendedEnterRequest",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorContendedEnteredRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/ createMonitorContendedEnteredRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorContendedEnteredRequest createMonitorContendedEnteredRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMonitorContendedEnteredRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMonitorContendedEnteredRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorContendedEnteredRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.request.MonitorContendedEnteredRequest ret;
+            ret = a.createMonitorContendedEnteredRequest();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMonitorContendedEnteredRequest",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorWaitRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorWaitRequest*/ createMonitorWaitRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorWaitRequest createMonitorWaitRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMonitorWaitRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMonitorWaitRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (Object/*com.sun.jdi.request.MonitorWaitRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorWaitRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.request.MonitorWaitRequest ret;
+            ret = a.createMonitorWaitRequest();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMonitorWaitRequest",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorWaitedRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorWaitedRequest*/ createMonitorWaitedRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorWaitedRequest createMonitorWaitedRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createMonitorWaitedRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createMonitorWaitedRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (Object/*com.sun.jdi.request.MonitorWaitedRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorWaitedRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            com.sun.jdi.request.MonitorWaitedRequest ret;
+            ret = a.createMonitorWaitedRequest();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createMonitorWaitedRequest",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.StepRequest createStepRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.ThreadReference b, int c, int d) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createStepRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createStepRequest({1}, {2}, {3})",
+                    new Object[] {a, b, c, d});
+        }
+        Object retValue = null;
         try {
-            return a.createStepRequest(b, c, d);
+            com.sun.jdi.request.StepRequest ret;
+            ret = a.createStepRequest(b, c, d);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createStepRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ThreadDeathRequest createThreadDeathRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createThreadDeathRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createThreadDeathRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createThreadDeathRequest();
+            com.sun.jdi.request.ThreadDeathRequest ret;
+            ret = a.createThreadDeathRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createThreadDeathRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.ThreadStartRequest createThreadStartRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createThreadStartRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createThreadStartRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createThreadStartRequest();
+            com.sun.jdi.request.ThreadStartRequest ret;
+            ret = a.createThreadStartRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createThreadStartRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.request.VMDeathRequest createVMDeathRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "createVMDeathRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).createVMDeathRequest()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.createVMDeathRequest();
+            com.sun.jdi.request.VMDeathRequest ret;
+            ret = a.createVMDeathRequest();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "createVMDeathRequest",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void deleteAllBreakpoints(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "deleteAllBreakpoints",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).deleteAllBreakpoints()",
+                    new Object[] {a});
+        }
         try {
             a.deleteAllBreakpoints();
         } catch (com.sun.jdi.InternalException ex) {
@@ -409,11 +987,25 @@ public final class EventRequestManagerWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "deleteAllBreakpoints",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void deleteEventRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.request.EventRequest b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void deleteEventRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.request.EventRequest b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "deleteEventRequest",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).deleteEventRequest({1})",
+                    new Object[] {a, b});
+        }
         try {
             a.deleteEventRequest(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -421,11 +1013,27 @@ public final class EventRequestManagerWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "deleteEventRequest",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void deleteEventRequests(com.sun.jdi.request.EventRequestManager a, java.util.List<? extends com.sun.jdi.request.EventRequest> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void deleteEventRequests(com.sun.jdi.request.EventRequestManager a, java.util.List<? extends com.sun.jdi.request.EventRequest> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "deleteEventRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).deleteEventRequests({1})",
+                    new Object[] {a, b});
+        }
         try {
             a.deleteEventRequests(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -433,406 +1041,927 @@ public final class EventRequestManagerWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "deleteEventRequests",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ExceptionRequest> exceptionRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "exceptionRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).exceptionRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.exceptionRequests();
+            java.util.List<com.sun.jdi.request.ExceptionRequest> ret;
+            ret = a.exceptionRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "exceptionRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ExceptionRequest> exceptionRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "exceptionRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).exceptionRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.exceptionRequests();
+            java.util.List<com.sun.jdi.request.ExceptionRequest> ret;
+            ret = a.exceptionRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "exceptionRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.MethodEntryRequest> methodEntryRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "methodEntryRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).methodEntryRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.methodEntryRequests();
+            java.util.List<com.sun.jdi.request.MethodEntryRequest> ret;
+            ret = a.methodEntryRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "methodEntryRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.MethodEntryRequest> methodEntryRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "methodEntryRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).methodEntryRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.methodEntryRequests();
+            java.util.List<com.sun.jdi.request.MethodEntryRequest> ret;
+            ret = a.methodEntryRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "methodEntryRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.MethodExitRequest> methodExitRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "methodExitRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).methodExitRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.methodExitRequests();
+            java.util.List<com.sun.jdi.request.MethodExitRequest> ret;
+            ret = a.methodExitRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "methodExitRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.MethodExitRequest> methodExitRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "methodExitRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).methodExitRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.methodExitRequests();
+            java.util.List<com.sun.jdi.request.MethodExitRequest> ret;
+            ret = a.methodExitRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "methodExitRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ModificationWatchpointRequest> modificationWatchpointRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "modificationWatchpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).modificationWatchpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.modificationWatchpointRequests();
+            java.util.List<com.sun.jdi.request.ModificationWatchpointRequest> ret;
+            ret = a.modificationWatchpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "modificationWatchpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ModificationWatchpointRequest> modificationWatchpointRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "modificationWatchpointRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).modificationWatchpointRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.modificationWatchpointRequests();
+            java.util.List<com.sun.jdi.request.ModificationWatchpointRequest> ret;
+            ret = a.modificationWatchpointRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "modificationWatchpointRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnterRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/> monitorContendedEnterRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> monitorContendedEnterRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorContendedEnterRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorContendedEnterRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnterRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> ret;
+            ret = a.monitorContendedEnterRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorContendedEnterRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnterRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/> monitorContendedEnterRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> monitorContendedEnterRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorContendedEnterRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorContendedEnterRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnterRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
+            java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> ret;
+            ret = a.monitorContendedEnterRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorContendedEnterRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnteredRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/> monitorContendedEnteredRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> monitorContendedEnteredRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorContendedEnteredRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorContendedEnteredRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnteredRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> ret;
+            ret = a.monitorContendedEnteredRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorContendedEnteredRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnteredRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/> monitorContendedEnteredRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> monitorContendedEnteredRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorContendedEnteredRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorContendedEnteredRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnteredRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
+            java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> ret;
+            ret = a.monitorContendedEnteredRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorContendedEnteredRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/> monitorWaitRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitRequest> monitorWaitRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorWaitRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorWaitRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            java.util.List<com.sun.jdi.request.MonitorWaitRequest> ret;
+            ret = a.monitorWaitRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorWaitRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/> monitorWaitRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitRequest> monitorWaitRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorWaitRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorWaitRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
+            java.util.List<com.sun.jdi.request.MonitorWaitRequest> ret;
+            ret = a.monitorWaitRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorWaitRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitedRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/> monitorWaitedRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitedRequest> monitorWaitedRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorWaitedRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorWaitedRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitedRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            java.util.List<com.sun.jdi.request.MonitorWaitedRequest> ret;
+            ret = a.monitorWaitedRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorWaitedRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitedRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/> monitorWaitedRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitedRequest> monitorWaitedRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "monitorWaitedRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).monitorWaitedRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitedRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
+            java.util.List<com.sun.jdi.request.MonitorWaitedRequest> ret;
+            ret = a.monitorWaitedRequests();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "monitorWaitedRequests",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.StepRequest> stepRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "stepRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).stepRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.stepRequests();
+            java.util.List<com.sun.jdi.request.StepRequest> ret;
+            ret = a.stepRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "stepRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.StepRequest> stepRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "stepRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).stepRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.stepRequests();
+            java.util.List<com.sun.jdi.request.StepRequest> ret;
+            ret = a.stepRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "stepRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ThreadDeathRequest> threadDeathRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "threadDeathRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).threadDeathRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.threadDeathRequests();
+            java.util.List<com.sun.jdi.request.ThreadDeathRequest> ret;
+            ret = a.threadDeathRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "threadDeathRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ThreadDeathRequest> threadDeathRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "threadDeathRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).threadDeathRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.threadDeathRequests();
+            java.util.List<com.sun.jdi.request.ThreadDeathRequest> ret;
+            ret = a.threadDeathRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "threadDeathRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ThreadStartRequest> threadStartRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "threadStartRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).threadStartRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.threadStartRequests();
+            java.util.List<com.sun.jdi.request.ThreadStartRequest> ret;
+            ret = a.threadStartRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "threadStartRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.ThreadStartRequest> threadStartRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "threadStartRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).threadStartRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.threadStartRequests();
+            java.util.List<com.sun.jdi.request.ThreadStartRequest> ret;
+            ret = a.threadStartRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "threadStartRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.VMDeathRequest> vmDeathRequests0(com.sun.jdi.request.EventRequestManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "vmDeathRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).vmDeathRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.vmDeathRequests();
+            java.util.List<com.sun.jdi.request.VMDeathRequest> ret;
+            ret = a.vmDeathRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "vmDeathRequests",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.request.VMDeathRequest> vmDeathRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.EventRequestManager",
+                    "vmDeathRequests",
+                    "JDI CALL: com.sun.jdi.request.EventRequestManager({0}).vmDeathRequests()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.vmDeathRequests();
+            java.util.List<com.sun.jdi.request.VMDeathRequest> ret;
+            ret = a.vmDeathRequests();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.EventRequestManager",
+                        "vmDeathRequests",
+                        retValue);
+            }
         }
     }
 

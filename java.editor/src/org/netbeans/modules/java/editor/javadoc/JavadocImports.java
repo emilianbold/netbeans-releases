@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.java.editor.javadoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Tag;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +58,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -98,10 +101,11 @@ public final class JavadocImports {
      * @param el an element to search
      * @return referenced elements.
      */
-    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, Element el) {
+    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, TreePath tp) {
         Set<TypeElement> result = null;
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
-        if (jdTokenSequence != null) {
+        Element el = javac.getTrees().getElement(tp);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, tp.getLeaf(), el);
+        if (el != null && jdTokenSequence != null) {
             ElementKind kind = el.getKind();
             TypeElement scope;
             
@@ -153,10 +157,11 @@ public final class JavadocImports {
      * @param toFind an element to find in favadoc
      * @return referenced elements.
      */
-    public static List<Token> computeTokensOfReferencedElements(CompilationInfo javac, Element el, Element toFind) {
+    public static List<Token> computeTokensOfReferencedElements(CompilationInfo javac, TreePath forElement, Element toFind) {
         List<Token> result = null;
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
-        if (jdTokenSequence != null) {
+        Element el = javac.getTrees().getElement(forElement);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, forElement.getLeaf(), el);
+        if (el != null && jdTokenSequence != null) {
             ElementKind kind = el.getKind();
             TypeElement scope;
             
@@ -221,7 +226,8 @@ public final class JavadocImports {
                     ParamTag ptag = (ParamTag) tag;
                     boolean isKindMatching = (isParam && !ptag.isTypeParameter())
                             || (isTypeParam && ptag.isTypeParameter());
-                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())) {
+                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())
+                            && toFind == paramElementFor(el, ptag)) {
                         Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
                         if (token != null) {
                             if (result == null) {
@@ -238,6 +244,28 @@ public final class JavadocImports {
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    /** maps ParamTag to parameter or type parameter of method or class */
+    private static Element paramElementFor(Element methodOrClass, ParamTag ptag) {
+        ElementKind kind = methodOrClass.getKind();
+        List<? extends Element> params = Collections.emptyList();
+        if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+            ExecutableElement ee = (ExecutableElement) methodOrClass;
+            params = ptag.isTypeParameter()
+                    ? ee.getTypeParameters()
+                    : ee.getParameters();
+        } else if (kind.isClass() || kind.isInterface()) {
+            TypeElement te = (TypeElement) methodOrClass;
+            params = te.getTypeParameters();
+        }
+
+        for (Element param : params) {
+            if (param.getSimpleName().contentEquals(ptag.parameterName())) {
+                return param;
+            }
+        }
+        return null;
     }
     
     /**
@@ -301,30 +329,9 @@ public final class JavadocImports {
                                 : 0;
                     }
                 }
-            } else if (tag != null && "@param".equals(tag.name())) { // NOI18N
+            } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
                 ParamTag ptag = (ParamTag) tag;
-                if (ptag.isTypeParameter()) {
-                    List<? extends TypeParameterElement> params =  null;
-                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                        params = ((ExecutableElement) el).getTypeParameters();
-                    } else if (kind.isClass() || kind.isInterface()) {
-                        params = ((TypeElement) el).getTypeParameters();
-                    } else {
-                        return null;
-                    }
-                    for (TypeParameterElement param : params) {
-                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
-                            return param;
-                        }
-                    }
-                } else if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                    ExecutableElement ee = (ExecutableElement) el;
-                    for (VariableElement param : ee.getParameters()) {
-                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
-                            return param;
-                        }
-                    }
-                }
+                result = paramElementFor(el, ptag);
             }
         }
         return result;
@@ -550,7 +557,7 @@ public final class JavadocImports {
             String jdText = javac.getElements().getDocComment(el);
             if (jdText != null) {
                 Doc javadoc = javac.getElementUtilities().javaDocFor(el);
-                TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
+                TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, null, el);
                 if (jdTokenSequence != null) {
                     DocPositions positions = DocPositions.get(javac, javadoc, jdTokenSequence);
                     if (positions != null) {

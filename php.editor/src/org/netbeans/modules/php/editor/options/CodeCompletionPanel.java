@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,13 +49,14 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -310,10 +314,10 @@ public class CodeCompletionPanel extends JPanel {
 
 
             public Component getDefaultComponent(Container focusCycleRoot){
-                return unqualifiedRadioButton;
+                return autoCompletionFullRadioButton;
             }//end getDefaultComponent
             public Component getFirstComponent(Container focusCycleRoot){
-                return unqualifiedRadioButton;
+                return autoCompletionFullRadioButton;
             }//end getFirstComponent
             public Component getLastComponent(Container focusCycleRoot){
                 return unqualifiedRadioButton;
@@ -322,71 +326,71 @@ public class CodeCompletionPanel extends JPanel {
                 if(aComponent ==  autoCompletionFullRadioButton){
                     return autoCompletionCustomizeRadioButton;
                 }
+                if(aComponent ==  allVariablesRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
                 if(aComponent ==  autoCompletionCustomizeRadioButton){
                     return autoCompletionVariablesCheckBox;
-                }
-                if(aComponent ==  autoCompletionVariablesCheckBox){
-                    return autoCompletionTypesCheckBox;
-                }
-                if(aComponent ==  autoCompletionTypesCheckBox){
-                    return autoCompletionNamespacesCheckBox;
                 }
                 if(aComponent ==  codeCompletionStaticMethodsCheckBox){
                     return codeCompletionNonStaticMethodsCheckBox;
                 }
-                if(aComponent ==  autoCompletionNamespacesCheckBox){
-                    return codeCompletionStaticMethodsCheckBox;
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionTypesCheckBox;
                 }
                 if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
                     return allVariablesRadioButton;
                 }
+                if(aComponent ==  smartRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
                 if(aComponent ==  currentFileVariablesRadioButton){
                     return smartRadioButton;
                 }
-                if(aComponent ==  allVariablesRadioButton){
-                    return currentFileVariablesRadioButton;
-                }
-                if(aComponent ==  smartRadioButton){
-                    return fullyQualifiedRadioButton;
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionNamespacesCheckBox;
                 }
                 if(aComponent ==  fullyQualifiedRadioButton){
                     return unqualifiedRadioButton;
                 }
-                return unqualifiedRadioButton;//end getComponentAfter
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                return autoCompletionFullRadioButton;//end getComponentAfter
             }
             public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
                 if(aComponent ==  autoCompletionCustomizeRadioButton){
                     return autoCompletionFullRadioButton;
                 }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return allVariablesRadioButton;
+                }
                 if(aComponent ==  autoCompletionVariablesCheckBox){
                     return autoCompletionCustomizeRadioButton;
-                }
-                if(aComponent ==  autoCompletionTypesCheckBox){
-                    return autoCompletionVariablesCheckBox;
-                }
-                if(aComponent ==  autoCompletionNamespacesCheckBox){
-                    return autoCompletionTypesCheckBox;
                 }
                 if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
                     return codeCompletionStaticMethodsCheckBox;
                 }
-                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
-                    return autoCompletionNamespacesCheckBox;
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionVariablesCheckBox;
                 }
                 if(aComponent ==  allVariablesRadioButton){
                     return codeCompletionNonStaticMethodsCheckBox;
                 }
-                if(aComponent ==  smartRadioButton){
-                    return currentFileVariablesRadioButton;
-                }
-                if(aComponent ==  currentFileVariablesRadioButton){
-                    return allVariablesRadioButton;
-                }
                 if(aComponent ==  fullyQualifiedRadioButton){
                     return smartRadioButton;
                 }
+                if(aComponent ==  smartRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
                 if(aComponent ==  unqualifiedRadioButton){
                     return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return autoCompletionNamespacesCheckBox;
                 }
                 return unqualifiedRadioButton;//end getComponentBefore
 
@@ -450,81 +454,81 @@ public class CodeCompletionPanel extends JPanel {
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(autoCompletionCustomizeRadioButton)
-                    .add(autoCompletionFullRadioButton)
-                    .add(currentFileVariablesRadioButton)
-                    .add(allVariablesRadioButton)
-                    .add(methodCodeCompletionLabel)
-                    .add(codeCompletionNonStaticMethodsCheckBox)
-                    .add(codeCompletionStaticMethodsCheckBox)
-                    .add(codeCompletionTypeLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(smartInfoLabel))
-                    .add(smartRadioButton)
-                    .add(fullyQualifiedRadioButton)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(fullyQualifiedInfoLabel))
-                    .add(unqualifiedRadioButton)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(unqualifiedInfoLabel))
-                    .add(enableAutocompletionLabel)
-                    .add(codeCompletionVariablesScopeLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(autoCompletionTypesCheckBox)
-                            .add(autoCompletionVariablesCheckBox)
-                            .add(autoCompletionNamespacesCheckBox))))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(autoCompletionCustomizeRadioButton)
+                    .addComponent(autoCompletionFullRadioButton)
+                    .addComponent(currentFileVariablesRadioButton)
+                    .addComponent(allVariablesRadioButton)
+                    .addComponent(methodCodeCompletionLabel)
+                    .addComponent(codeCompletionNonStaticMethodsCheckBox)
+                    .addComponent(codeCompletionStaticMethodsCheckBox)
+                    .addComponent(codeCompletionTypeLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(smartInfoLabel))
+                    .addComponent(smartRadioButton)
+                    .addComponent(fullyQualifiedRadioButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(fullyQualifiedInfoLabel))
+                    .addComponent(unqualifiedRadioButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(unqualifiedInfoLabel))
+                    .addComponent(enableAutocompletionLabel)
+                    .addComponent(codeCompletionVariablesScopeLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(autoCompletionTypesCheckBox)
+                            .addComponent(autoCompletionVariablesCheckBox)
+                            .addComponent(autoCompletionNamespacesCheckBox))))
                 .addContainerGap(109, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(enableAutocompletionLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(autoCompletionFullRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(autoCompletionCustomizeRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(autoCompletionVariablesCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(autoCompletionTypesCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(autoCompletionNamespacesCheckBox)
-                .add(18, 18, 18)
-                .add(methodCodeCompletionLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(codeCompletionStaticMethodsCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(codeCompletionNonStaticMethodsCheckBox)
-                .add(18, 18, 18)
-                .add(codeCompletionVariablesScopeLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(allVariablesRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(currentFileVariablesRadioButton)
-                .add(18, 18, 18)
-                .add(codeCompletionTypeLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(smartRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(smartInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(fullyQualifiedRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(fullyQualifiedInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(unqualifiedRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(unqualifiedInfoLabel)
+                .addComponent(enableAutocompletionLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionFullRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionCustomizeRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionVariablesCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionTypesCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionNamespacesCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(methodCodeCompletionLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(codeCompletionStaticMethodsCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(codeCompletionNonStaticMethodsCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(codeCompletionVariablesScopeLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(allVariablesRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(currentFileVariablesRadioButton)
+                .addGap(18, 18, 18)
+                .addComponent(codeCompletionTypeLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(smartRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(smartInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(fullyQualifiedRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(fullyQualifiedInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(unqualifiedRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(unqualifiedInfoLabel)
                 .addContainerGap(64, Short.MAX_VALUE))
         );
 

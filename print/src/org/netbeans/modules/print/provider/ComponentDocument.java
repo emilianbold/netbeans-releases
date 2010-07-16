@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -60,6 +63,10 @@ import static org.netbeans.modules.print.ui.UI.*;
 final class ComponentDocument extends JComponent {
 
     ComponentDocument(String text) {
+//out();
+//out();
+//out("TEXT PROVIDER");
+//out(text);
         init();
         prepare(text);
         perform();
@@ -73,6 +80,7 @@ final class ComponentDocument extends JComponent {
 
     private void init() {
 //out();
+//out("INIT");
         myWrapLines = Config.getDefault().isWrapLines();
         myLineNumbers = Config.getDefault().isLineNumbers();
         myTextColor = Config.getDefault().getTextColor();
@@ -88,6 +96,7 @@ final class ComponentDocument extends JComponent {
         while (stk.hasMoreTokens()) {
             ComponentLine line = new ComponentLine(trimEnded(stk.nextToken()), myTextFont, myTextColor);
 //out();
+//out("prepare");
 //out(line.getWidth() + " '" + line + "'");
 //line.show();
             myLines.add(line);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,8 +128,8 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     private void replaceCreatedObject() {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "replaceCreatedObject() on " + //NOI18N
-                    getPrimaryFile().getPath() + " for " + type().getName() +
-                    " discarding old InstanceContent.Converter and its" +
+                    getPrimaryFile().getPath() + " for " + type().getName() + //NOI18N
+                    " discarding old InstanceContent.Converter and its" + //NOI18N
                     " instance, and invoking onReplaceObject()"); //NOI18N
         }
         lkp.replaceConverter(new C());
@@ -137,7 +140,6 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     @Override
     protected final void handleDelete() throws IOException {
         final FileObject parent = getPrimaryFile().getParent();
-        super.handleDelete();
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
 
@@ -155,6 +157,7 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
                 throw ioe;
             }
         }
+        super.handleDelete();
     }
 
     /**
@@ -431,11 +434,8 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     }
 
     private final class IC implements InstanceCookie.Of, InstanceCookie {
-        //No idea why this is necessary, but the platforms dialog logs a
-        //warning that there is no InstanceCookie in our node otherwise
-
         public boolean instanceOf(Class<?> type) {
-            return type.equals(PropertiesBasedDataObject.this.type);
+            return type.isAssignableFrom(PropertiesBasedDataObject.this.type);
         }
 
         public String instanceName() {

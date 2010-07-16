@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.beans.beaninfo;
@@ -57,7 +60,12 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -85,6 +93,10 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -94,11 +106,11 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;
@@ -117,7 +129,10 @@ final class BIEditorSupport extends DataEditorSupport
     private BIGES guardedEditor;
     private GuardedSectionsProvider guardedProvider;
     private GenerateBeanInfoAction.BeanInfoWorker worker;
-    
+
+    private static final Set<BIEditorSupport> opened = Collections.synchronizedSet(new HashSet<BIEditorSupport>());
+    private static Map<FileSystem,FileStatusListener> fsToStatusListener = new HashMap<FileSystem,FileStatusListener>();
+
     /**
      * The embracing multiview TopComponent (holds the form designer and
      * java editor) - we remeber the last active TopComponent (not all clones)
@@ -210,6 +225,10 @@ final class BIEditorSupport extends DataEditorSupport
 
     @Override
     protected void notifyClosed() {
+        opened.remove(this);
+        if (opened.isEmpty()) {
+            detachStatusListeners();
+        }
         super.notifyClosed();
         worker = null;
         if (topComponentsListener != null) {
@@ -246,6 +265,46 @@ final class BIEditorSupport extends DataEditorSupport
             topComponentsListener = new TopComponentsListener();
             TopComponent.getRegistry().addPropertyChangeListener(topComponentsListener);
         }
+        opened.add(this);
+        try {
+            addStatusListener(getDataObject().getPrimaryFile().getFileSystem());
+        } catch (FileStateInvalidException fsiex) {
+            Exceptions.printStackTrace(fsiex);
+        }
+
+    }
+    
+    private void addStatusListener(FileSystem fs) {
+        FileStatusListener fsl = fsToStatusListener.get(fs);
+        if (fsl == null) {
+            fsl = new FileStatusListener() {
+                @Override
+                public void annotationChanged(FileStatusEvent ev) {
+                    synchronized (opened) {
+                        Iterator<BIEditorSupport> iter = opened.iterator();
+                        while (iter.hasNext()) {
+                            BIEditorSupport fes = iter.next();
+                            if (ev.hasChanged(fes.getDataObject().getPrimaryFile())) {
+                                fes.updateMVTCName();
+                            }
+                        }
+                    }
+                }
+            };
+            fs.addFileStatusListener(fsl);
+            fsToStatusListener.put(fs, fsl);
+        } // else do nothing - the listener is already added
+    }
+    
+    private static void detachStatusListeners() {
+        Iterator iter = fsToStatusListener.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            FileSystem fs = (FileSystem)entry.getKey();
+            FileStatusListener fsl = (FileStatusListener)entry.getValue();
+            fs.removeFileStatusListener(fsl);
+        }
+        fsToStatusListener.clear();
     }
     
     private void updateMVTCName() {

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,8 +57,10 @@ import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
+import org.netbeans.modules.subversion.client.cli.commands.CleanupCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CopyCommand;
+import org.netbeans.modules.subversion.client.cli.commands.ExportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ListPropertiesCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ImportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.InfoCommand;
@@ -137,7 +142,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             checkErrors(cmd);            
             if(!cmd.checkForErrors()) {
                 if (cmd.isUnsupportedVersion()) {
-                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
+                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5");
                 }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
             }                       
@@ -207,6 +212,16 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     public void checkout(SVNUrl url, File file, SVNRevision revision, boolean recurse) throws SVNClientException {
         CheckoutCommand cmd = new CheckoutCommand(url, file, revision, recurse);
+        exec(cmd);
+    }
+
+    public void doExport(SVNUrl url, File destination, SVNRevision revision, boolean force) throws SVNClientException {
+        ExportCommand cmd = new ExportCommand(url, destination, revision, force);
+        exec(cmd);
+    }
+
+    public void doExport(File fileFrom, File fileTo, boolean force) throws SVNClientException {
+        ExportCommand cmd = new ExportCommand(fileFrom, fileTo, force);
         exec(cmd);
     }
 
@@ -830,14 +845,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void doExport(SVNUrl arg0, File arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void doExport(File arg0, File arg1, boolean arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void setRevProperty(SVNUrl arg0, Number arg1, String arg2, String arg3, boolean arg4) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -930,8 +937,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void cleanup(File arg0) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void cleanup(File file) throws SVNClientException {
+        CleanupCommand cmd = new CleanupCommand(file);
+        exec(cmd);
     }
 
     private void notifyChangedStatus(File file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {

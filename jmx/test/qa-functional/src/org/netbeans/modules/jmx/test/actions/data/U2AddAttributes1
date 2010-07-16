@@ -5,7 +5,7 @@ import java.util.List;
 import javax.management.ObjectName;
 
 
-public class U2AddAttributes1 extends U2AddAttributes1Super 
+public class U2AddAttributes1 extends U2AddAttributes1Super
         implements U2AddAttributes1MBean {
     /**
      * Attribute : Attr7

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +43,6 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -77,12 +79,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -93,8 +95,6 @@ import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -148,12 +148,12 @@ public class HintsTestBase extends NbTestCase {
                 }
             }
         });
-        
+
+        clearWorkDir();
+
         if (cache == null) {
-            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
-            cacheFO = FileUtil.toFileObject(cache);
-            
-            cache.deleteOnExit();
+            cache = FileUtil.normalizeFile(new File(getWorkDir(), "cache"));
+            cacheFO = FileUtil.createFolder(cache);
             
             IndexUtil.setCacheFolder(cache);
             
@@ -176,7 +176,14 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = makeScratchDir(this);
+        File workFolder = new File(getWorkDir(), "work");
+        FileObject workFO = FileUtil.createFolder(workFolder);
+        
+        assertNotNull(workFO);
+
+        workFO.delete();
+
+        workFO = FileUtil.createFolder(workFolder);
         
         assertNotNull(workFO);
         
@@ -226,7 +233,7 @@ public class HintsTestBase extends NbTestCase {
 
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
-        doc.putProperty("mimeType", "text/x-java");
+        doc.putProperty("mimeType", Utilities.JAVA_MIME_TYPE);
 
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
@@ -243,35 +250,6 @@ public class HintsTestBase extends NbTestCase {
         task = new LazyHintComputationFactory().createTask(testSource);
     }
     
-    /**Copied from org.netbeans.api.project.
-     * Create a scratch directory for tests.
-     * Will be in /tmp or whatever, and will be empty.
-     * If you just need a java.io.File use clearWorkDir + getWorkDir.
-     */
-    public static FileObject makeScratchDir(NbTestCase test) throws IOException {
-        test.clearWorkDir();
-        File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
-
-        FileUtil.refreshFor(File.listRoots());
-        
-        FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            // Presumably using masterfs.
-            return fo;
-        } else {
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
-    }
-
     private void copyFiles(File sourceDir, File destDir, String[] resourceNames) throws IOException {
         for( String resourceName : resourceNames ) {
 
@@ -384,7 +362,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -406,7 +384,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -446,7 +424,7 @@ public class HintsTestBase extends NbTestCase {
         try {
             Document doc = ec.openDocument();
             
-            List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+            List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
             List<Fix> fixes = new ArrayList<Fix>();
             
             for (ErrorDescription d : errors) {
@@ -464,6 +442,7 @@ public class HintsTestBase extends NbTestCase {
                 Writer hintsWriter = new FileWriter(fixesDump);
                 
                 for (Fix f : fixes) {
+                    if (!includeFix(f)) continue;
                     if (f.getText().indexOf(performHint) != (-1)) {
                         toPerform = f;
                     }
@@ -519,5 +498,8 @@ public class HintsTestBase extends NbTestCase {
             LifecycleManager.getDefault().saveAll();
         }
     }
-    
+
+    protected boolean includeFix(Fix f) {
+        return true;
+    }
 }

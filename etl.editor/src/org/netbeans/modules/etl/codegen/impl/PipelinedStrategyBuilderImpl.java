@@ -31,7 +31,7 @@ import org.netbeans.modules.etl.codegen.ETLCodegenUtil;
 import org.netbeans.modules.etl.codegen.ETLScriptBuilderModel;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilderContext;
 import org.netbeans.modules.etl.utils.MessageManager;
-import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
+
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.codegen.DB;
@@ -49,11 +49,12 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.jdbc.SQLPart;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.jdbc.DBConstants;
+import com.sun.etl.jdbc.SQLPart;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBDefinition;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
@@ -192,17 +193,17 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
         InternalDBMetadata tgtInternalMetadata = model.getInternalMetadata(tTable);
 
         //For Target Table
-        FlatfileDefinition trgFFDef = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
-        if (trgFFDef instanceof FlatfileDefinition && tgtInternalMetadata != null) {
+        VirtualDBDefinition trgFFDef = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
+        if (trgFFDef instanceof VirtualDBDefinition && tgtInternalMetadata != null) {
             getFlatfileInitSQLParts(trgFFDef, tgtInternalMetadata, initTask, cleanupTask, tTable, true);
         }
 
         //For all SourceTables associated with Target table
         for (Iterator it = participatingTables.iterator(); it.hasNext();) {
             SQLDBTable dbTable = (SQLDBTable) it.next();
-            FlatfileDefinition srcRepObj = ETLCodegenUtil.getStcdbObjectTypeDefinition(dbTable);
+            VirtualDBDefinition srcRepObj = ETLCodegenUtil.getStcdbObjectTypeDefinition(dbTable);
             if (srcRepObj != null) {
-                FlatfileDefinition srcFFDef = srcRepObj;
+                VirtualDBDefinition srcFFDef = srcRepObj;
                 InternalDBMetadata srcInternalMetadata = model.getInternalMetadata(dbTable);
                 if (srcInternalMetadata != null) {
                     getFlatfileInitSQLParts(srcFFDef, srcInternalMetadata, initTask, cleanupTask, dbTable, false);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,7 @@ import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -75,7 +79,6 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 
 /**
  *
@@ -139,7 +142,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return new AbstractObjectVariable(debugger, cl, "Loader "+getName());
     }
     
-    public SuperVariable getSuperClass() {
+    public Super getSuperClass() {
         if (classType instanceof ClassType) {
             try {
                 return new SuperVariable(debugger, null, ClassTypeWrapper.superclass((ClassType) classType), getName());
@@ -208,27 +211,21 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             return Collections.emptyList();
         }
         List<Field> staticFields = new ArrayList<Field>();
+        String parentID = getName();
         for (int i = 0; i < allFieldsOrig.size(); i++) {
             Value value = null;
             com.sun.jdi.Field origField = allFieldsOrig.get(i);
             try {
                 if (TypeComponentWrapper.isStatic(origField)) {
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("STARTED : " + classType + ".getValue(" + origField + ")");
-                    }
-                    value = ReferenceTypeWrapper.getValue(classType, origField);
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("FINISHED: " + classType + ".getValue(" + origField + ") = " + value);
-                    }
-                    if (value instanceof PrimitiveValue) {
-                        staticFields.add(new FieldVariable(debugger, (PrimitiveValue) value, origField, "", (ObjectReference) null));
+                    if (origField.signature().length() == 1) {
+                        // Must be a primitive type or the void type
+                        staticFields.add(new FieldVariable(debugger, origField, parentID, null));
                     } else {
-                        staticFields.add(new ObjectFieldVariable(debugger, (ObjectReference) value, origField, "", (ObjectReference) null));
+                        staticFields.add(new ObjectFieldVariable(debugger, origField, parentID,
+                                JPDADebuggerImpl.getGenericSignature(origField), null));
                     }
                 }
             } catch (InternalExceptionWrapper ex) {
-            } catch (ObjectCollectedExceptionWrapper ex) {
-                return Collections.emptyList();
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return Collections.emptyList();
             }
@@ -237,7 +234,6 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
     
     public long getInstanceCount() {//boolean refresh) {
-        if (JPDAUtils.IS_JDK_16) {
             /*synchronized (this) {
                 if (!refresh && cachedInstanceCount > -1L) {
                     return cachedInstanceCount;
@@ -254,13 +250,9 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             /*synchronized (this) {
                 cachedInstanceCount = counts[0];
             }*/
-        } else {
-            return 0L;
-        }
     }
     
     public List<ObjectVariable> getInstances(long maxInstances) {
-        if (JPDAUtils.IS_JDK_16) {
             final List<ObjectReference> instances;
             try {
                 instances = ReferenceTypeWrapper.instances(classType, maxInstances);
@@ -281,9 +273,6 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                     return instances.size();
                 }
             };
-        } else {
-            return Collections.emptyList();
-        }
     }
     
     public boolean equals(Object o) {

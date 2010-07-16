@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,7 +69,7 @@ import org.openide.util.NbPreferences;
 public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;
     static {
-        Class c = CodeStyle.class;
+        Class<?> c = CodeStyle.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
@@ -113,6 +116,8 @@ public class EditorOptions {
      */
     public static final String indentPreprocessorDirectives = "indentPreprocessorDirectives"; //NOI18N
     public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
+    public static final String indentVisibility = "indentVisibility"; //NOI18N
+    public static final String indentVisibilityDefault = CodeStyle.VisibilityIndent.NO_INDENT.name();
     public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
@@ -187,6 +192,9 @@ public class EditorOptions {
     public static final boolean newLineElseDefault = false;
     public static final String newLineWhile = "newLineWhile"; //NOI18N
     public static final boolean newLineWhileDefault = false;
+
+    public static final String spaceKeepExtra = "spaceKeepExtra"; //NOI18N
+    public static final boolean spaceKeepExtraDefault = false;
 
     //SpacesBeforeKeywords
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
@@ -338,11 +346,12 @@ public class EditorOptions {
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(constructorListContinuationIndent,constructorListContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
+        defaults.put(indentVisibility,indentVisibilityDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
         defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
         defaults.put(absoluteLabelIndent, absoluteLabelIndentDefault);
-
+        defaults.put(spaceKeepExtra, spaceKeepExtraDefault);
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);

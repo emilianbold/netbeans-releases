@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,8 +72,8 @@ public final class MacroExpanderFactory {
     public static synchronized MacroExpander getExpander(
             ExecutionEnvironment execEnv, ExpanderStyle style) {
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("Host must be connected at this point"); // NOI18N
+        if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            throw new IllegalStateException("Host info " + execEnv + " must be available at this point"); // NOI18N
         }
 
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;
@@ -86,7 +89,22 @@ public final class MacroExpanderFactory {
                 // should not occur - as info is available
             }
         }
+        if (result == null) {
+            // avoid unexpected NPE in clients
+            // TODO: fix empty cathces above
+            result = new MacroExpander() {
 
+                @Override
+                public String expandPredefinedMacros(String string) throws ParseException {
+                    return  string;
+                }
+
+                @Override
+                public String expandMacros(String string, Map<String, String> envVariables) throws ParseException {
+                    return  string;
+                }
+            };
+        }
         return result;
     }
 
@@ -146,11 +164,13 @@ public final class MacroExpanderFactory {
             return result == null ? "${" + macro + "}" : result; // NOI18N
         }
 
+        @Override
         public final String expandPredefinedMacros(
                 final String string) throws ParseException {
             return expandMacros(string, predefinedMacros);
         }
 
+        @Override
         public final String expandMacros(
                 final String string,
                 final Map<String, String> map) throws ParseException {
@@ -228,7 +248,7 @@ public final class MacroExpanderFactory {
             return res.toString();
         }
 
-        protected void setupPredefined(ExpanderStyle style) {
+        protected final void setupPredefined(ExpanderStyle style) {
             String soext;
             String osname;
             switch (hostInfo.getOSFamily()) {

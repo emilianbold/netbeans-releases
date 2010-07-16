@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,7 +86,7 @@ import org.openide.util.NbBundle;
  */
 public class TomcatManager implements DeploymentManager {
     
-    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60};
+    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70};
     
     private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
 
@@ -211,6 +214,8 @@ public class TomcatManager implements DeploymentManager {
      */
     public String getUri () {
         switch (tomcatVersion) {
+            case TOMCAT_70:
+                return TomcatFactory.TOMCAT_URI_PREFIX_70 + uri;
             case TOMCAT_60: 
                 return TomcatFactory.TOMCAT_URI_PREFIX_60 + uri;
             case TOMCAT_55: 
@@ -225,6 +230,9 @@ public class TomcatManager implements DeploymentManager {
      * @return URI without home and base specification
      */
     public String getPlainUri () {
+        if (isTomcat70()) {
+            return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/text/"; //NOI18N
+        }
         return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
     }
     
@@ -372,7 +380,11 @@ public class TomcatManager implements DeploymentManager {
 
         return false;
     }
-    
+
+    public boolean isTomcat70() {
+        return tomcatVersion == TomcatVersion.TOMCAT_70;
+    }
+
     public boolean isTomcat60() {
         return tomcatVersion == TomcatVersion.TOMCAT_60;
     }
@@ -388,7 +400,7 @@ public class TomcatManager implements DeploymentManager {
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
     public String libFolder() {
         // Tomcat 5.x and 6.0 uses different lib folder
-        return isTomcat60() ?  "lib" : "common/lib"; // NOI18N
+        return isTomcat60() || isTomcat70() ?  "lib" : "common/lib"; // NOI18N
     }
     
     public TomcatVersion getTomcatVersion() {
@@ -777,7 +789,7 @@ public class TomcatManager implements DeploymentManager {
                 passwd = tp.getPassword();
                 if ("ide_manager".equals(passwd)) { // NOI18N
                     // change the default password that comes from the bundled Tomcat module
-                    passwd = TomcatInstallUtil.generatePassword(8);
+                    passwd = Utils.generatePassword(8);
                     tp.setPassword(passwd);
                 }
             }

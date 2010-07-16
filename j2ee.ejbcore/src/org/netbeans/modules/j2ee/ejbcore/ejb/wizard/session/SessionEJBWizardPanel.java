@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,29 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 
 /**
  *
@@ -59,6 +77,8 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
     private final ChangeListener listener;
     private final Project project;
+    private ComboBoxModel projectsList;
+
 
     /** Creates new form SingleEJBWizardPanel */
     public SessionEJBWizardPanel(Project project, ChangeListener changeListener) {
@@ -85,12 +105,71 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }
         });
 
-        remoteCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
+        inProjectCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 listener.stateChanged(null);
             }
         });
+        remoteCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                listener.stateChanged(null);
+                updateInProjectCombo(remoteCheckBox.isSelected());
+            }
+        });
+        updateInProjectCombo(false);
+    }
 
+    private void updateInProjectCombo(boolean show) {
+        if (show) {
+            remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_In_Project")); // NOI18N
+        } else {
+            remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Remote")); // NOI18N
+        }
+        inProjectCombo.setVisible(show);
+        if (show && projectsList == null) {
+            List<Project> projects = getProjectsList();
+            projectsList = new DefaultComboBoxModel(projects.toArray(new Project[projects.size()]));
+            final ListCellRenderer defaultRenderer = inProjectCombo.getRenderer();
+            if (!projects.isEmpty()){
+                inProjectCombo.setRenderer(new ListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                        String name = ProjectUtils.getInformation((Project)value).getDisplayName();
+                        return defaultRenderer.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+                    }
+                });
+                inProjectCombo.setModel(projectsList);
+                inProjectCombo.setSelectedIndex(0);
+            }
+            listener.stateChanged(null);
+        }
+    }
+
+    private List<Project> getProjectsList() {
+        List<Project> names = new ArrayList<Project>();
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            if (p.equals(project)) {
+                continue;
+            }
+            // if this is an Ant-based project and not e.g. a Maven project
+            if (p.getLookup().lookup(AntArtifactProvider.class) != null) {
+                // list only projects which produce jars so that they can be added to classpath
+                if (AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+                    continue;
+                }
+            }
+            // list only projects which have java source root
+            if (ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length == 0) {
+                continue;
+            }
+            // skip the j2ee projects
+            if (p.getLookup().lookup(J2eeModuleProvider.class) != null){
+                continue;
+            }
+            names.add(p);
+        }
+        return names;
     }
     
     /** This method is called from within the constructor to
@@ -100,7 +179,6 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         sessionStateButtons = new javax.swing.ButtonGroup();
         sessionTypeLabel = new javax.swing.JLabel();
@@ -110,84 +188,94 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         remoteCheckBox = new javax.swing.JCheckBox();
         localCheckBox = new javax.swing.JCheckBox();
         singletonButton = new javax.swing.JRadioButton();
-
-        setLayout(new java.awt.GridBagLayout());
+        inProjectCombo = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(sessionTypeLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_SessionType")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(sessionTypeLabel, gridBagConstraints);
 
         sessionStateButtons.add(statelessButton);
         statelessButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Stateless").charAt(0));
         statelessButton.setSelected(true);
         statelessButton.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Stateless")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        add(statelessButton, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle"); // NOI18N
-        statelessButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Stateless")); // NOI18N
-        statelessButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Stateless")); // NOI18N
 
         sessionStateButtons.add(statefulButton);
         statefulButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Stateful").charAt(0));
         statefulButton.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Stateful")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        add(statefulButton, gridBagConstraints);
-        statefulButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Stateful")); // NOI18N
-        statefulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Stateful")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(interfaceLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Interface")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
-        add(interfaceLabel, gridBagConstraints);
 
         remoteCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Remote").charAt(0));
         remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Remote")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        add(remoteCheckBox, gridBagConstraints);
-        remoteCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Remote")); // NOI18N
-        remoteCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Remote")); // NOI18N
 
         localCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Local").charAt(0));
         localCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Local")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        add(localCheckBox, gridBagConstraints);
-        localCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Local")); // NOI18N
-        localCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Local")); // NOI18N
 
         sessionStateButtons.add(singletonButton);
         singletonButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Singleton").charAt(0));
         singletonButton.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Singleton")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        add(singletonButton, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(sessionTypeLabel)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(statelessButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(statefulButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(singletonButton))
+                    .add(interfaceLabel)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(remoteCheckBox)
+                                .add(6, 6, 6)
+                                .add(inProjectCombo, 0, 129, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(localCheckBox)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 152, Short.MAX_VALUE)))))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(sessionTypeLabel)
+                .add(0, 0, 0)
+                .add(statelessButton)
+                .add(0, 0, 0)
+                .add(statefulButton)
+                .add(0, 0, 0)
+                .add(singletonButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(interfaceLabel)
+                .add(0, 0, 0)
+                .add(localCheckBox)
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(remoteCheckBox)
+                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle"); // NOI18N
+        statelessButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Stateless")); // NOI18N
+        statelessButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Stateless")); // NOI18N
+        statefulButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Stateful")); // NOI18N
+        statefulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Stateful")); // NOI18N
+        remoteCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Remote")); // NOI18N
+        remoteCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Remote")); // NOI18N
+        localCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Local")); // NOI18N
+        localCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Local")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
                         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox inProjectCombo;
     private javax.swing.JLabel interfaceLabel;
     private javax.swing.JCheckBox localCheckBox;
     private javax.swing.JCheckBox remoteCheckBox;
@@ -216,5 +304,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     
     public boolean isLocal() {
         return localCheckBox.isSelected();
+    }
+
+    public Project getRemoteInterfaceProject() {
+        if (projectsList == null) {
+            return null;
+        }
+        return (Project)projectsList.getSelectedItem();
     }
 }

@@ -44,7 +44,7 @@ package org.netbeans.modules.bpel.model.api;
  * </pre>
  */
 public interface Expression extends BpelEntity, ContentElement, 
-    ExpressionLanguageSpec 
+    ExpressionLanguageSpec, ExtensibleElements
 {
 
 }

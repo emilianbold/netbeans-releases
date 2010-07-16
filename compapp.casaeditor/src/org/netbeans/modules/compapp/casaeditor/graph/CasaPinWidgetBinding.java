@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,13 +48,26 @@ import java.awt.Image;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author rdara
+ * @author jqian
  */
-public class CasaPinWidgetBinding extends CasaPinWidget {       
+public abstract class CasaPinWidgetBinding extends CasaPinWidget {
     
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N    
+    private static final Image IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRightClassic.png"); // NOI18N
+    
+    private static final Image IMAGE_ARROW_LEFT_PROVIDES = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeft.png"); // NOI18N
+    private static final Image IMAGE_ARROW_LEFT_PROVIDES_CLASSIC = ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeftClassic.png"); // NOI18N
+
+
     public CasaPinWidgetBinding(Scene scene, Image pinImage, Image classicPinImage) {
         super(scene, pinImage, classicPinImage);
         
@@ -61,9 +77,27 @@ public class CasaPinWidgetBinding extends CasaPinWidget {
     protected void setPinName(String name) {
         // do nothing
     }
-   
+  
     @Override
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, Directions.RIGHT, 0);
+    }
+
+    /**
+     * The Consume Pin inside Binding Widget.
+     */
+    public static class Consumes extends CasaPinWidgetBinding {
+        public Consumes(Scene scene) {
+            super(scene, IMAGE_ARROW_RIGHT_CONSUMES, IMAGE_ARROW_RIGHT_CONSUMES_CLASSIC);
+        }
+    }
+
+    /**
+     * The Provide Pin inside Binding Widget.
+     */
+    public static class Provides extends CasaPinWidgetBinding {
+        public Provides(Scene scene) {
+            super(scene, IMAGE_ARROW_LEFT_PROVIDES, IMAGE_ARROW_LEFT_PROVIDES_CLASSIC);
+        }
     }
 }

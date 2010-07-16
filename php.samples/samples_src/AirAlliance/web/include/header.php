@@ -10,7 +10,7 @@
             <li><a href="index.php">Home</a></li>
             <li><a href="processitinerary.php">Book</a></li>
             <li><a href="confirmreservation.php">Check</a></li>
-           
+
         </ul>
     </div>
     <!-- end div#menu -->

@@ -28,6 +28,11 @@
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Serial" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -55,6 +60,11 @@
       </item>
     </conf>
     <conf name="Pthreads" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <commandLine>-xinstrument=datarace</commandLine>
@@ -86,6 +96,11 @@
       </item>
     </conf>
     <conf name="Pthreads_safe" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <commandLine>-xinstrument=datarace</commandLine>
@@ -117,6 +132,11 @@
       </item>
     </conf>
     <conf name="Pthread_Hot" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <commandLine>-xinstrument=datarace</commandLine>
@@ -148,6 +168,11 @@
       </item>
     </conf>
     <conf name="OpenMP" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <commandLine>-xinstrument=datarace</commandLine>

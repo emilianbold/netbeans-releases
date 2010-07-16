@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -86,7 +89,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert namespaceUID != null;
         this.namespaceRef = null;
         
-        nsImpl.addNamespaceDefinition(this);
+        nsImpl.addNamespaceDefinition(NamespaceDefinitionImpl.this);
     }
 
     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
@@ -104,10 +107,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
             
+    @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
         synchronized (declarations) {
@@ -124,33 +129,32 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
          return out;
     }
 
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<CsmOffsetableDeclaration> out = null;
         // look for the object with the same start position and the same name
         // TODO: for now we are in O(n), but better to be O(ln n) speed
         synchronized (declarations) {
             out = UIDUtilities.findExistingUIDInList(declarations, start, end, name);
-//            if (FileImpl.traceFile(getContainingFile().getAbsolutePath())) {
-//                System.err.printf("%s found %s [%d-%d] in \n\t%s\n", (out == null) ? "NOT " : "", name, start, end, declarations);
-//            }
         }
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
 
+    @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         synchronized (declarations) {
             UIDUtilities.insertIntoSortedUIDList(uid, declarations);
         }
-        if (decl instanceof VariableImpl) {
-            VariableImpl v = (VariableImpl) decl;
+        if (decl instanceof VariableImpl<?>) {
+            VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
                 v.setScope(this, true);
             }
         }
-        if (decl instanceof FunctionImpl) {
-            FunctionImpl f = (FunctionImpl) decl;
+        if (decl instanceof FunctionImpl<?>) {
+            FunctionImpl<?> f = (FunctionImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(f)) {
                 f.setScope(this);
             }
@@ -159,26 +163,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         RepositoryUtils.put(this);
     }
     
-    private void insertIntoSortedDeclArray(CsmUID<CsmOffsetableDeclaration> uid) {
-        int start = UIDUtilities.getStartOffset(uid);
-        // start from the last, because most of the time we are in append, not insert mode
-        for (int pos = declarations.size() - 1; pos >= 0; pos--) {
-            CsmUID<CsmOffsetableDeclaration> currUID = declarations.get(pos);
-            int i = UIDUtilities.compareWithinFile(currUID, uid);
-            if (i <= 0) {
-                if (i == 0){
-                    declarations.set(pos, uid);
-                } else {
-                    declarations.add(pos+1, uid);
-                }
-                return;
-            } else if (UIDUtilities.getStartOffset(currUID) < start){
-                break;
-            }
-        }
-        declarations.add(uid);
-    }
-    
+    @Override
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
@@ -190,31 +175,31 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         RepositoryUtils.put(this);
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return getNamespace().getQualifiedName();
     }
-    
-//    Moved to OffsetableDeclarationBase
-//    public String getUniqueName() {
-//        return getQualifiedName();
-//    }
 
+    @Override
     public CsmNamespace getNamespace() {
         return _getNamespaceImpl();
     }
 
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CsmScope getScope() {
         return getContainingFile();
     }
     
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        for (Iterator iter = getDeclarations().iterator(); iter.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) iter.next();
+        for (Iterator<CsmOffsetableDeclaration> iter = getDeclarations().iterator(); iter.hasNext();) {
+            CsmDeclaration decl = iter.next();
             if (isOfMyScope(decl)) {
                 l.add(decl);
             }
@@ -223,10 +208,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     private boolean isOfMyScope(CsmDeclaration decl) {
-        if (decl instanceof VariableImpl) {
-            return ! NamespaceImpl.isNamespaceScope((VariableImpl) decl, false);
-        } else if (decl instanceof FunctionImpl) {
-            return ! NamespaceImpl.isNamespaceScope((FunctionImpl) decl);
+        if (decl instanceof VariableImpl<?>) {
+            return ! NamespaceImpl.isNamespaceScope((VariableImpl<?>) decl, false);
+        } else if (decl instanceof FunctionImpl<?>) {
+            return ! NamespaceImpl.isNamespaceScope((FunctionImpl<?>) decl);
 
         } else {
             return false;

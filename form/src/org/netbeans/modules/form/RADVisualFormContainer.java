@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -264,11 +267,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_FormSizePolicy"), // NOI18N
             bundle.getString("HINT_FormSizePolicy")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return new Integer(getFormSizePolicy());
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Integer)) throw new IllegalArgumentException();
@@ -296,11 +301,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_FormSize"), // NOI18N
             bundle.getString("HINT_FormSize")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getFormSize();
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
 //                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
@@ -321,11 +328,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_FormPosition"), // NOI18N
             bundle.getString("HINT_FormPosition")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getFormPosition();
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Point)) throw new IllegalArgumentException();
@@ -347,11 +356,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_GeneratePosition"), // NOI18N
             bundle.getString("HINT_GeneratePosition")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getGeneratePosition() ? Boolean.TRUE : Boolean.FALSE;
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
@@ -374,11 +385,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_GenerateSize"), // NOI18N
             bundle.getString("HINT_GenerateSize")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getGenerateSize() ? Boolean.TRUE : Boolean.FALSE;
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
@@ -399,11 +412,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_GenerateCenter"), // NOI18N
             bundle.getString("HINT_GenerateCenter")) // NOI18N
         {
+            @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getGenerateCenter() ? Boolean.TRUE : Boolean.FALSE;
             }
 
+            @Override
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
@@ -424,6 +439,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             bundle.getString("MSG_DesignerSize"), // NOI18N
             bundle.getString("HINT_DesignerSize")) // NOI18N
         {
+            @Override
             public Dimension getValue()
                 throws IllegalAccessException, IllegalArgumentException,
                        java.lang.reflect.InvocationTargetException
@@ -503,6 +519,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 // undecorated is not a bound property => it is not possible to
                 // listen on the beanInstance => we have to listen on the node
                 node.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if ("undecorated".equals(evt.getPropertyName())) { // NOI18N
                             // Keep current designer size and force update of form size

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.print.PrintManager;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -59,129 +62,130 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class Panel extends JPanel {
 
-  Panel(Tree list, Tree tree) {
-    myList = list;
-    myTree = tree;
-    myCurrent = tree;
+    Panel(Tree list, Tree tree) {
+        myList = list;
+        myTree = tree;
+        myCurrent = tree;
 
-    setLayout(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.NORTH;
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.NORTH;
 
-    // buttons
-    add(createButtonPanel(), c);
+        // buttons
+        add(createButtonPanel(), c);
 
-    // tree
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    c.fill = GridBagConstraints.BOTH;
-    myInner = new JPanel(new GridBagLayout());
-    add(myInner, c);
-    updateView();
-  }
-
-  private void updateView() {
-    SwingUtilities.invokeLater(new Runnable() { public void run() {
-      myInner.removeAll();
-      GridBagConstraints c = new GridBagConstraints();
-
-      c.weightx = 1.0;
-      c.weighty = 1.0;
-      c.fill = GridBagConstraints.BOTH;
-      c.anchor = GridBagConstraints.NORTH;
-      JScrollPane scrollPane = new JScrollPane(myCurrent);
-      myInner.add(new Navigation(myCurrent, scrollPane), c);
-      
-      myInner.revalidate();
-      myInner.repaint();
-      myCurrent.requestFocus();
-    }});
-  }
-
-  private JToolBar createButtonPanel() {
-    JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
-    toolBar.setFloatable(false);
-    JButton button;
-
-    // collapse / expand
-    button = createButton(
-      new ButtonAction(
-        icon(Panel.class, "expose"), // NOI18N
-        i18n(Panel.class, "TLT_Expose")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myCurrent.expose();
-        }
-      }
-    );
-    toolBar.add(button);
-
-    // view
-    button = createButton(
-      new ButtonAction(
-        icon(Panel.class, "view"), // NOI18N
-        i18n(Panel.class, "TLT_Change_View")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          changeView();
-        }
-      }
-    );
-    toolBar.add(button);
-
-    // previous occurence
-    button = createButton(
-      new ButtonAction(
-        icon(Panel.class, "previous"), // NOI18N
-        i18n(Panel.class, "TLT_Previous_Occurence")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myCurrent.previousOccurence();
-        }
-      }
-    );
-    toolBar.add(button);
-
-    // next occurence
-    button = createButton(
-      new ButtonAction(
-        icon(Panel.class, "next"), // NOI18N
-        i18n(Panel.class, "TLT_Next_Occurence")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myCurrent.nextOccurence();
-        }
-      }
-    );
-    toolBar.add(button);
-
-    // vlv: print
-    button = createButton(PrintManager.printAction(this));
-    toolBar.add(button);
-
-    // export
-    button = createButton(
-      new ButtonAction(
-        icon(Panel.class, "export"), // NOI18N
-        i18n(Panel.class, "TLT_Export")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myCurrent.export();
-        }
-      }
-    );
-    toolBar.add(button);
-
-    return toolBar;
-  }
-
-  private void changeView() {
-    if (myCurrent == myTree) {
-      myCurrent = myList;
+        // tree
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        c.fill = GridBagConstraints.BOTH;
+        myInner = new JPanel(new GridBagLayout());
+        add(myInner, c);
+        updateView();
     }
-    else {
-      myCurrent = myTree;
-    }
-    updateView();
-  }
 
-  private Tree myList;
-  private Tree myTree;
-  private Tree myCurrent;
-  private JPanel myInner;
+    private void updateView() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                myInner.removeAll();
+                GridBagConstraints c = new GridBagConstraints();
+
+                c.weightx = 1.0;
+                c.weighty = 1.0;
+                c.fill = GridBagConstraints.BOTH;
+                c.anchor = GridBagConstraints.NORTH;
+                JScrollPane scrollPane = new JScrollPane(myCurrent);
+                myInner.add(new Navigation(myCurrent, scrollPane), c);
+
+                myInner.revalidate();
+                myInner.repaint();
+                myCurrent.requestFocus();
+            }
+        });
+    }
+
+    private JToolBar createButtonPanel() {
+        JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
+        toolBar.setFloatable(false);
+        JButton button;
+
+        // collapse / expand
+        button = createButton(
+            new ButtonAction(
+            icon(Panel.class, "expose"), // NOI18N
+            i18n(Panel.class, "TLT_Expose")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    myCurrent.expose();
+                }
+            }
+        );
+        toolBar.add(button);
+
+        // view
+        button = createButton(
+            new ButtonAction(
+            icon(Panel.class, "view"), // NOI18N
+            i18n(Panel.class, "TLT_Change_View")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    changeView();
+                }
+            }
+        );
+        toolBar.add(button);
+
+        // previous occurence
+        button = createButton(
+            new ButtonAction(
+            icon(Panel.class, "previous"), // NOI18N
+            i18n(Panel.class, "TLT_Previous_Occurence")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    myCurrent.previousOccurence();
+                }
+            }
+        );
+        toolBar.add(button);
+
+        // next occurence
+        button = createButton(
+            new ButtonAction(
+            icon(Panel.class, "next"), // NOI18N
+            i18n(Panel.class, "TLT_Next_Occurence")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    myCurrent.nextOccurence();
+                }
+            }
+        );
+        toolBar.add(button);
+
+        // vlv: print
+        button = createButton(PrintManager.printAction(this));
+        toolBar.add(button);
+
+        // export
+        button = createButton(
+            new ButtonAction(
+            icon(Panel.class, "export"), // NOI18N
+            i18n(Panel.class, "TLT_Export")) { // NOI18N
+                public void actionPerformed(ActionEvent event) {
+                    myCurrent.export();
+                }
+            }
+        );
+        toolBar.add(button);
+
+        return toolBar;
+    }
+
+    private void changeView() {
+        if (myCurrent == myTree) {
+            myCurrent = myList;
+        } else {
+            myCurrent = myTree;
+        }
+        updateView();
+    }
+
+    private Tree myList;
+    private Tree myTree;
+    private Tree myCurrent;
+    private JPanel myInner;
 }

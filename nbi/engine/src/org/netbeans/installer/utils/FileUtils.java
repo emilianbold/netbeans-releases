@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -58,6 +61,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -540,15 +544,28 @@ public final class FileUtils {
     public static boolean isSigned(
             final File file) throws IOException {
         JarFile jar = new JarFile(file);
-        
+
         try {
-            if (jar.getEntry(SUN_MICR_RSA) == null) {
-                return false;
+            Enumeration<JarEntry> entries = jar.entries();
+            boolean signatureInfoPresent = false;
+            boolean signatureFilePresent = false;
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement().getName();
+                if (entryName.startsWith("META-INF/")) {
+                    if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                        signatureFilePresent = true;
+                        if(signatureInfoPresent) {
+                            break;
+                        }
+                    } else if (entryName.endsWith(".SF")) {
+                        signatureInfoPresent = true;
+                        if(signatureFilePresent) {
+                            break;
+                        }
+                    }
+                }
             }
-            if (jar.getEntry(SUN_MICR_SF) == null) {
-                return false;
-            }
-            return true;
+            return signatureFilePresent && signatureInfoPresent;
         } finally {
             jar.close();
         }
@@ -643,19 +660,35 @@ public final class FileUtils {
             final File file,
             final String token,
             final Object replacement) throws IOException {
-        modifyFile(file, token, replacement, false);
+        modifyFile(file, token, replacement, false, Charset.defaultCharset().name());
+    }
+    public static void modifyFile(
+            final File file,
+            final String token,
+            final Object replacement,
+            final String charset) throws IOException {
+        modifyFile(file, token, replacement, false, charset);
+    }
+
+    public static void modifyFile(
+            final File file,
+            final String token,
+            final Object replacement,
+            final boolean regexp) throws IOException {
+        modifyFile(file, token, replacement, regexp, Charset.defaultCharset().name());
     }
     
     public static void modifyFile(
             final File file,
             final String token,
             final Object replacement,
-            final boolean regexp) throws IOException {
+            final boolean regexp,
+            final String charset) throws IOException {
         final Map<String, Object> replacementMap = new HashMap<String, Object>();
         
         replacementMap.put(token, replacement);
         
-        modifyFile(file, replacementMap, regexp);
+        modifyFile(file, replacementMap, regexp, charset);
     }
     
     public static void modifyFile(
@@ -663,18 +696,25 @@ public final class FileUtils {
             final Map<String, Object> map) throws IOException {
         modifyFile(file, map, false);
     }
-    
+
     public static void modifyFile(
             final File file,
             final Map<String, Object> map,
             final boolean regexp) throws IOException {
+        modifyFile(file, map,regexp, Charset.defaultCharset().name());
+    }
+    public static void modifyFile(
+            final File file,
+            final Map<String, Object> map,
+            final boolean regexp,
+            final String charset) throws IOException {
         if (!exists(file)) {
             return;
         }
         
         if (file.isDirectory()) {
             for (File child: file.listFiles()) {
-                modifyFile(child, map, regexp);
+                modifyFile(child, map, regexp, charset);
             }
         } else {
             // if the file is larger than 100 Kb - skip it
@@ -682,7 +722,7 @@ public final class FileUtils {
                 return;
             }
             
-            final String original = readFile(file);
+            final String original = readFile(file, charset);
             
             String modified = new String(original);
             for(String token : map.keySet()) {
@@ -708,7 +748,7 @@ public final class FileUtils {
             if (!modified.equals(original)) {
                 LogManager.log("modifying file: " + file.getAbsolutePath());
                 
-                writeFile(file, modified);
+                writeFile(file, modified, charset);
             }
         }
     }

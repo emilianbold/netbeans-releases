@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -830,22 +833,31 @@ public class ExtKit extends BaseKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            ToggleCommentAction action = null;
+            BaseAction action = null;
             
             if (delegateAction != null) {
                 action = delegateAction;
             } else {
                 BaseKit kit = Utilities.getKit(target);
                 Action a = kit == null ? null : kit.getActionByName(toggleCommentAction);
-                if (a instanceof ToggleCommentAction) {
-                    action = (ToggleCommentAction) a;
+                if (a instanceof BaseAction) {
+                    action = (BaseAction) a;
                 }
             }
 
-            if (action != null) {
+            if (action instanceof ToggleCommentAction) {
                 ((ToggleCommentAction) action).commentUncomment(evt, target, Boolean.TRUE);
             } else {
-                target.getToolkit().beep();
+                if (action != null) {
+                    action.putValue("force-comment", Boolean.TRUE); // NOI18N
+                    try {
+                        action.actionPerformed(evt, target);
+                    } finally {
+                        action.putValue("force-comment", null); // NOI18N
+                    }
+                } else {
+                    target.getToolkit().beep();
+                }
             }
         }
     } // End of CommentAction class
@@ -868,22 +880,31 @@ public class ExtKit extends BaseKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            ToggleCommentAction action = null;
+            BaseAction action = null;
             
             if (delegateAction != null) {
                 action = delegateAction;
             } else {
                 BaseKit kit = Utilities.getKit(target);
                 Action a = kit == null ? null : kit.getActionByName(toggleCommentAction);
-                if (a instanceof ToggleCommentAction) {
-                    action = (ToggleCommentAction) a;
+                if (a instanceof BaseAction) {
+                    action = (BaseAction) a;
                 }
             }
 
-            if (action != null) {
+            if (action instanceof ToggleCommentAction) {
                 ((ToggleCommentAction) action).commentUncomment(evt, target, Boolean.FALSE);
             } else {
-                target.getToolkit().beep();
+                if (action != null) {
+                    action.putValue("force-uncomment", Boolean.TRUE); // NOI18N
+                    try {
+                        action.actionPerformed(evt, target);
+                    } finally {
+                        action.putValue("force-uncomment", null); // NOI18N
+                    }
+                } else {
+                    target.getToolkit().beep();
+                }
             }
         }
     } // End of UncommentAction class

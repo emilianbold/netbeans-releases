@@ -78,6 +78,8 @@ public class PlanEditorSupport extends DataEditorSupport
 
     private PlanDesignViewMultiViewElement mDesignViewElement;
     
+    private IEPModel mModel;
+    
     /**
      *
      *
@@ -289,13 +291,29 @@ public class PlanEditorSupport extends DataEditorSupport
     }
     
     public IEPModel getModel() {
-        PlanDataObject dobj = getEnv().getPlanDataObject();
-        ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
-        if(modelSource != null) {
-            return IEPModelFactory.getDefault().getModel(modelSource);
+        //keeping a local copy of model so that
+        //it does not get garbage collected
+        //This is to fix issues 147675 where
+        //in save cookie there is one model is created
+        //and a listener is registered but this model gets
+        //garbage collected somehow so the next time
+        //getModel is called , the factory does not
+        //have a cached model and creates a new model.
+        //so out logic for generating wsdl in save cookie 
+        //does not work since the old model where listener is
+        //registered was garbage collected.
+        //We need to see if keep a locale copy here
+        //has any side effects when a iep is renamed etc.
+        
+        if(mModel == null) {
+            PlanDataObject dobj = getEnv().getPlanDataObject();
+            ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
+            if(modelSource != null) {
+                mModel = IEPModelFactory.getDefault().getModel(modelSource);
+            }
         }
 
-        return null;
+        return mModel;
     }
     
     /**
@@ -489,31 +507,31 @@ public class PlanEditorSupport extends DataEditorSupport
         }
     }
 
-    public void save() {
-        try {
-            PlanDataObject dataObj = (PlanDataObject) getDataObject();
-            Date planLastModified = dataObj.getPrimaryFile().lastModified();
-            
-            File wsdlFile = getModel().getWsdlFile();
-            // Note that editor saves plan after saving its wsdl
-            // Hence the only way wsdl has later modified time than plan is 
-            // through modification outside editor
-            if (wsdlFile.exists() && planLastModified.before(new Date(wsdlFile.lastModified()))) {
-                String msg = NbBundle.getMessage(PlanCanvas.class, "PlanDesigner.WSDL_HAS_BEEN_MANUALLY_CHANGED_OVERWRITE", wsdlFile.getName());
-                NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
-                DialogDisplayer.getDefault().notify(d);
-                if (NotifyDescriptor.YES_OPTION == d.getValue()) {
-                    getModel().saveWsdl();
-                }         
-           } else {
-               getModel().saveWsdl();
-           }                  
-           
-           //mStatusBar.setDirty(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public void save() {
+//        try {
+//            PlanDataObject dataObj = (PlanDataObject) getDataObject();
+//            Date planLastModified = dataObj.getPrimaryFile().lastModified();
+//            
+//            File wsdlFile = getModel().getWsdlFile();
+//            // Note that editor saves plan after saving its wsdl
+//            // Hence the only way wsdl has later modified time than plan is 
+//            // through modification outside editor
+//            if (wsdlFile.exists() && planLastModified.before(new Date(wsdlFile.lastModified()))) {
+//                String msg = NbBundle.getMessage(PlanCanvas.class, "PlanDesigner.WSDL_HAS_BEEN_MANUALLY_CHANGED_OVERWRITE", wsdlFile.getName());
+//                NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
+//                DialogDisplayer.getDefault().notify(d);
+//                if (NotifyDescriptor.YES_OPTION == d.getValue()) {
+//                    getModel().saveWsdl();
+//                }         
+//           } else {
+//               getModel().saveWsdl();
+//           }                  
+//           
+//           //mStatusBar.setDirty(false);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
     
     public void setPlanDesignMultiviewElement(PlanDesignViewMultiViewElement designElement) {
         this.mDesignViewElement = designElement;

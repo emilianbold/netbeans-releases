@@ -38,8 +38,8 @@ public class AnnotationManagerProvider implements AnnotationManagerCookie {
     public final static String ANNOTATIONS_COOKIE_KEY = "annotations";
     
     private BPELDataObject myDataObject;
-    private LinkedList<AnnotationListener> myListeners =
-            new LinkedList<AnnotationListener>();
+    private ArrayList<AnnotationListener> myListeners =
+            new ArrayList<AnnotationListener>();
     private HashMap<UniqueId, ArrayList<DiagramAnnotation>> myAnnotationById =
             new HashMap<UniqueId, ArrayList<DiagramAnnotation>>();
     
@@ -237,9 +237,9 @@ public class AnnotationManagerProvider implements AnnotationManagerCookie {
     }
     
     protected void fireAnnotationAdded(DiagramAnnotation annotation) {
-        LinkedList<AnnotationListener> cloneListeners = null;
+        ArrayList<AnnotationListener> cloneListeners = null;
         synchronized(myListeners) {
-            cloneListeners = (LinkedList<AnnotationListener>)myListeners.clone();
+            cloneListeners = (ArrayList<AnnotationListener>)myListeners.clone();
         }
         
         for (AnnotationListener listener : cloneListeners) {
@@ -248,9 +248,9 @@ public class AnnotationManagerProvider implements AnnotationManagerCookie {
     }
     
     protected void fireAnnotationRemoved(DiagramAnnotation annotation) {
-        LinkedList<AnnotationListener> cloneListeners = null;
+        ArrayList<AnnotationListener> cloneListeners = null;
         synchronized(myListeners) {
-            cloneListeners = (LinkedList<AnnotationListener>)myListeners.clone();
+            cloneListeners = (ArrayList<AnnotationListener>)myListeners.clone();
         }
         
         for (AnnotationListener listener : cloneListeners) {

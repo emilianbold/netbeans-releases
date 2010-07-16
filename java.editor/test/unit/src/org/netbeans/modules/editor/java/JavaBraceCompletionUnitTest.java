@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,11 +47,13 @@ package org.netbeans.modules.editor.java;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.PlainDocument;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -807,6 +812,29 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "if (c == '\\\\'|)"
         );
+    }
+
+    public void testCorrectHandlingOfStringEscapes184059() throws Exception {
+        assertTrue(isInsideString("foo\n\"bar|\""));
+        assertTrue(isInsideString("foo\n\"bar\\\"|\""));
+        assertFalse(isInsideString("foo\n\"bar\\\\\"|"));
+        assertFalse(isInsideString("foo\n|\"bar\\\\\""));
+        assertTrue(isInsideString("foo\n\"|bar\\\\\""));
+    }
+
+    private boolean isInsideString(String code) throws BadLocationException {
+        int pos = code.indexOf('|');
+
+        assertNotSame(-1, pos);
+
+        code = code.replaceAll(Pattern.quote("|"), "");
+
+        Document doc = new PlainDocument();
+
+        doc.putProperty(Language.class, JavaTokenId.language());
+        doc.insertString(0, code, null);
+
+        return BraceCompletion.posWithinString(doc, pos);
     }
 
     private static final class Context {

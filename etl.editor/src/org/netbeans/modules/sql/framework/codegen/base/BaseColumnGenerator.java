@@ -24,8 +24,8 @@ import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.StringUtil;
 
 /**
  * @author Ritesh Adval

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,14 +46,13 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -61,15 +63,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.ui.options.IsChangedListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ui.IsChangedListener;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -77,10 +81,9 @@ import org.openide.util.RequestProcessor;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
-    private Map<String, PredefinedPanel> predefinedPanels = new HashMap<String, PredefinedPanel>();
+    private Map<Tool, PredefinedPanel> predefinedPanels = new WeakHashMap<Tool, PredefinedPanel>();
     private boolean updating = false;
     private boolean modified = false;
-    private ToolsPanel tp;
 //    private boolean initialized = false;
     
     /**
@@ -107,15 +110,13 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 return label;
             }
         });
-        tp = ToolsPanel.getToolsPanel();
-        if (tp != null) {
-            // This gets called from commitValidation and tp is null - its not a run-time problem
-            // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
-            ToolsPanel.addCompilerSetChangeListener(this);
-            ToolsPanel.addIsChangedListener(this);
-        }
+        // This gets called from commitValidation and tp is null - its not a run-time problem
+        // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
+        ToolsPanelSupport.addCompilerSetChangeListener(this);
+        ToolsPanelSupport.addIsChangedListener(this);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (!updating && isShowing()) {
             updateTabs();
@@ -124,7 +125,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
     private static class CompilerSetPresenter {
 
-        public CompilerSet cs;
+        private CompilerSet cs;
         private String displayName;
 
         public CompilerSetPresenter(CompilerSet cs, String displayName) {
@@ -139,7 +140,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     private CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
+        ToolsCacheManager manager = ToolsPanelSupport.getToolsCacheManager();
         CompilerSetManager copy = manager.getCompilerSetManagerCopy(execEnv, true);
         while (copy.isPending()) {
             try {
@@ -158,6 +159,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         final Collection<? extends ServerRecord> servers = ServerList.getRecords();
 
         final Runnable uiUpdater = new Runnable() { //NOI18N
+            @Override
             public void run() {
                 compilerCollectionComboBox.removeActionListener(ParserSettingsPanel.this);
                 compilerCollectionComboBox.removeAllItems();
@@ -196,7 +198,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     assert ! servers.iterator().next().isRemote();
                 }
 
-                if (allCS.size() == 0) {
+                if (allCS.isEmpty()) {
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
@@ -227,23 +229,22 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
-        Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);
+        Tool cCompiler = compilerCollection.getTool(PredefinedToolKind.CCompiler);
         if (cCompiler != null && cCompiler.getPath().length() > 0) {
             toolSet.add(cCompiler);
         }
-        Tool cppCompiler = compilerCollection.getTool(Tool.CCCompiler);
+        Tool cppCompiler = compilerCollection.getTool(PredefinedToolKind.CCCompiler);
         if (cppCompiler != null && cppCompiler.getPath().length() > 0) {
             toolSet.add(cppCompiler);
         }
         for (Tool tool : toolSet) {
-            String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
-            PredefinedPanel predefinedPanel = predefinedPanels.get(key);
+            PredefinedPanel predefinedPanel = predefinedPanels.get(tool);
             if (predefinedPanel == null) {
-                predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
-                predefinedPanels.put(key, predefinedPanel);
+                predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this);
+                predefinedPanels.put(tool, predefinedPanel);
             //modified = true; // See 126368
             } else {
-                predefinedPanel.updateCompiler((CCCCompiler) tool);
+                predefinedPanel.updateCompiler((AbstractCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
@@ -270,6 +271,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent ev) {
         Object o = ev.getSource();
         if (o instanceof CompilerSet) {
@@ -301,36 +303,36 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
         compilerCollectionLabel.setText(bundle.getString("COMPILER_COLLECTION_LBL")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout collectionPanelLayout = new org.jdesktop.layout.GroupLayout(collectionPanel);
+        javax.swing.GroupLayout collectionPanelLayout = new javax.swing.GroupLayout(collectionPanel);
         collectionPanel.setLayout(collectionPanelLayout);
         collectionPanelLayout.setHorizontalGroup(
-            collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(collectionPanelLayout.createSequentialGroup()
-                .add(compilerCollectionLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(compilerCollectionComboBox, 0, 310, Short.MAX_VALUE)
+            collectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(collectionPanelLayout.createSequentialGroup()
+                .addComponent(compilerCollectionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compilerCollectionComboBox, 0, 313, Short.MAX_VALUE)
                 .addContainerGap())
         );
         collectionPanelLayout.setVerticalGroup(
-            collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(collectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(compilerCollectionLabel)
-                .add(compilerCollectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            collectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(collectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(compilerCollectionLabel)
+                .addComponent(compilerCollectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         scrollPane.setOpaque(false);
 
         tabPanel.setOpaque(false);
 
-        org.jdesktop.layout.GroupLayout tabPanelLayout = new org.jdesktop.layout.GroupLayout(tabPanel);
+        javax.swing.GroupLayout tabPanelLayout = new javax.swing.GroupLayout(tabPanel);
         tabPanel.setLayout(tabPanelLayout);
         tabPanelLayout.setHorizontalGroup(
-            tabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+            tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
         );
         tabPanelLayout.setVerticalGroup(
-            tabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+            tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
         );
 
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ParserSettingsPanel.class, "COMPILERS_TABBEDPANE_AN")); // NOI18N
@@ -338,27 +340,27 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         scrollPane.setViewportView(tabPanel);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(collectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(0, 0, 0)
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-                    .add(0, 0, 0)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(collectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, 0)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .addGap(0, 0, 0)))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(collectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(collectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(272, Short.MAX_VALUE))
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(36, 36, 36)
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
-                    .add(0, 0, 0)))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(36, 36, 36)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                    .addGap(0, 0, 0)))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -379,7 +381,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
-            updateCompilerCollections(tp.getCurrentCompilerSet());
+            updateCompilerCollections(ToolsPanelSupport.getCurrentCompilerSet());
             PredefinedPanel[] viewedPanels = getPredefinedPanels();
             for (int i = 0; i < viewedPanels.length; i++) {
                 viewedPanels[i].update();
@@ -397,6 +399,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             viewedPanels[i].cancel();
         }
+        ToolsPanelSupport.getToolsCacheManager().discardChanges();
     }
 
     boolean isDataValid() {
@@ -411,6 +414,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         return isDataValid;
     }
 
+    @Override
     public boolean isChanged() {
         boolean isChanged = false;
         PredefinedPanel[] viewedPanels = getPredefinedPanels();

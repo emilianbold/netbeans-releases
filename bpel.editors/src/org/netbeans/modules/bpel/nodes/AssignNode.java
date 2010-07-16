@@ -18,7 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
+import java.awt.Component;
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityInsertEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
@@ -44,7 +46,6 @@ import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author nk160297
  */
 public class AssignNode extends BpelNode<Assign> {
@@ -60,15 +61,40 @@ public class AssignNode extends BpelNode<Assign> {
     public NodeType getNodeType() {
         return NodeType.ASSIGN;
     }
-    
+
+    @Override
+    protected Image getRawIcon(int type) {
+        Image rawIcon = getNodeType().getImage();
+        Assign assign = getReference();
+        if (assign != null && assign.isJavaScript()) {
+            rawIcon = NodeType.JAVA_SCRIPT.getImage();
+        }
+        return rawIcon;
+    }
+
+    @Override
     public String getHelpId() {
         return getNodeType().getHelpId();
     }
     
+    @Override
     protected boolean isDropNodeInstanceSupported(BpelNode childNode) {
         return childNode.getNodeType().equals(NodeType.COPY);
     }
     
+    @Override
+    public Component getCustomizer(CustomNodeEditor.EditingMode editingMode) {
+        Assign assign = getReference();
+
+        if (assign != null && assign.isJavaScript()) {
+            return new javax.swing.JPanel();
+        }
+        else {
+            return super.getCustomizer(editingMode);
+        }
+    }
+
+    @Override
     public List<BpelEntityPasteType> createSupportedPasteTypes(BpelNode childNode) {
         if (childNode==null) {
             return Collections.EMPTY_LIST;
@@ -80,31 +106,31 @@ public class AssignNode extends BpelNode<Assign> {
         
         Assign assign = getReference();
         BpelEntity childRefObj = (BpelEntity)childNode.getReference();
-        supportedPTs.add(new CopyEntityPasteType(assign, (Copy)childRefObj));
+        if (childRefObj instanceof Copy) {
+            supportedPTs.add(new CopyEntityPasteType(assign, (Copy)childRefObj));
+        }
         
         return supportedPTs;
     }
 
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
 
         if (getReference() == null) {
             return sheet;
         }
-        //
-        Sheet.Set mainPropertySet =
-                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
-        //
-        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
-                NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
-        //
-        Property prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                ASSIGNMENT_COUNT, "sizeOfAssignChildren", null, null);
-        prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
-        //
-        PropertyUtils.registerProperty(this, mainPropertySet,
-                DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
-        //
+        Sheet.Set mainPropertySet = getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
+        propUtil.registerAttributeProperty(this, mainPropertySet, NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
+
+        if ( !(getReference()).isJavaScript()) {
+            Property prop = propUtil.registerProperty(this, mainPropertySet, ASSIGNMENT_COUNT, "sizeOfAssignChildren", null, null);
+            prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
+        }
+        propUtil.registerProperty(this, mainPropertySet, VALIDATE, "getValidate", "setValidate", "removeValidate"); // NOI18N
+        propUtil.registerProperty(this, mainPropertySet, DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
+
         return sheet;
     }
     
@@ -114,7 +140,6 @@ public class AssignNode extends BpelNode<Assign> {
     }
     
     private static class MyChildren extends Children.Keys {
-        
         private Lookup lookup;
         
         public MyChildren(Assign assign, Lookup lookup) {
@@ -125,11 +150,10 @@ public class AssignNode extends BpelNode<Assign> {
         
         protected Node[] createNodes(Object key) {
             assert key instanceof AssignChild;
-            //
+
             if (!(key instanceof Copy)) {
                 return null;
             }
-            //
             return new Node[] {new CopyNode((Copy)key, lookup)};
         }
         
@@ -147,44 +171,104 @@ public class AssignNode extends BpelNode<Assign> {
         }
     }
 
+    @Override
     protected ActionType[] getActionsArray() {
-        return new ActionType[] {
-//            ActionType.GO_TO_SOURCE,
-//            ActionType.GO_TO_DIAGRAMM,
-            ActionType.GO_TO,
-            ActionType.SEPARATOR,
-            ActionType.WRAP,
-            ActionType.SEPARATOR,
-            ActionType.MOVE_UP,
-            ActionType.MOVE_DOWN,
-            ActionType.SEPARATOR,
-            ActionType.TOGGLE_BREAKPOINT,
-            ActionType.SEPARATOR,
-            ActionType.REMOVE,
-//            ActionType.SEPARATOR,
-//            ActionType.SHOW_BPEL_MAPPER,
-            ActionType.SEPARATOR,
-            ActionType.PROPERTIES
-        };
+        if ((getReference()).isJavaScript()) {
+            return new ActionType[] {
+                ActionType.GO_TO,
+                ActionType.SEPARATOR,
+                ActionType.WRAP,
+
+                ActionType.SEPARATOR,
+                ActionType.SHOW_POPERTY_EDITOR,
+                ActionType.SEPARATOR,
+
+                ActionType.MOVE_UP,
+                ActionType.MOVE_DOWN,
+                ActionType.SEPARATOR,
+                ActionType.TOGGLE_BREAKPOINT,
+                ActionType.SEPARATOR,
+                ActionType.REMOVE,
+                ActionType.SEPARATOR,
+                ActionType.PROPERTIES
+            };
+        }
+        else {
+            return new ActionType[] {
+                ActionType.GO_TO,
+                ActionType.SEPARATOR,
+                ActionType.WRAP,
+
+                ActionType.SEPARATOR,
+
+                ActionType.MOVE_UP,
+                ActionType.MOVE_DOWN,
+                ActionType.SEPARATOR,
+                ActionType.TOGGLE_BREAKPOINT,
+                ActionType.SEPARATOR,
+                ActionType.REMOVE,
+                ActionType.SEPARATOR,
+                ActionType.PROPERTIES
+            };
+        }
     }
     
+    @Override
     protected void updateComplexProperties(ChangeEvent event) {
+        Assign curAssign = getReference();
+        if (curAssign == null || curAssign.isJavaScript()) {
+            return;
+        }
         if (event instanceof EntityInsertEvent) {
-            BpelEntity parentEvent = event.getParent();
-            if (parentEvent != null && parentEvent.equals(this.getReference())) {
+            BpelEntity parentEntity = event.getParent();
+            if (curAssign.equals(parentEntity)) {
                 BpelEntity newEntity = ((EntityInsertEvent)event).getValue();
                 if (newEntity instanceof Copy) {
                     updateProperty(ASSIGNMENT_COUNT);
                 }
             }
         } else if (event instanceof EntityRemoveEvent) {
-            BpelEntity parentEvent = event.getParent();
-            if (parentEvent != null && parentEvent.equals(this.getReference())) {
+            BpelEntity parentEntity = event.getParent();
+            if (curAssign.equals(parentEntity)) {
                 BpelEntity oldEntity = ((EntityRemoveEvent)event).getOldValue();
                 if (oldEntity instanceof Copy) {
                     updateProperty(ASSIGNMENT_COUNT);
                 }
             }
         }
+    }
+
+    @Override
+    protected void updateComplexIcons(ChangeEvent event) {
+        boolean isUpdate = false;
+        if (event instanceof EntityInsertEvent || event instanceof EntityRemoveEvent) {
+            BpelEntity parentEntity = event.getParent();
+            isUpdate = parentEntity != null && parentEntity.equals(getReference());
+            if (!isUpdate) {
+                parentEntity = parentEntity != null ? parentEntity.getParent() : null;
+                isUpdate = parentEntity != null && parentEntity.equals(this.getReference());
+            }
+        }
+
+        if (isUpdate) {
+            updateIcon();
+        }
+    }
+
+    @Override
+    protected boolean isRequireNameUpdate(ChangeEvent event) {
+        if (super.isRequireNameUpdate(event)) {
+            return true;
+        }
+        boolean isUpdate = false;
+        if (event instanceof EntityInsertEvent || event instanceof EntityRemoveEvent) {
+            BpelEntity parentEntity = event.getParent();
+            isUpdate = parentEntity != null && parentEntity.equals(getReference());
+            if (!isUpdate) {
+                parentEntity = parentEntity != null ? parentEntity.getParent() : null;
+                isUpdate = parentEntity != null && parentEntity.equals(this.getReference());
+            }
+        }
+        return isUpdate;
     }
 }

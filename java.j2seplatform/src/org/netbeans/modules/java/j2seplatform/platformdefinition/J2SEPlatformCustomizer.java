@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,9 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
-
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -51,7 +55,16 @@ import java.util.Arrays;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
-import javax.swing.*;
+import javax.swing.AbstractListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -61,9 +74,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
-
-
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
 
@@ -97,7 +110,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         private JList resources;
         private JButton addButton;
-//        private JButton addURLButton;
+        private JButton addURLButton;
         private JButton removeButton;
         private JButton moveUpButton;
         private JButton moveDownButton;
@@ -197,24 +210,24 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.insets = new Insets (0,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
-//                if (this.type == JAVADOC) {
-//                    addURLButton  = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddURL"));
-//                    addURLButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_AddURL").charAt(0));
-//                    addURLButton.addActionListener(new ActionListener () {
-//                        public void actionPerformed(ActionEvent e) {
-//                            addURLElement ();
-//                        }
-//                    });
-//                    c = new GridBagConstraints();
-//                    c.gridx = 1;
-//                    c.gridy = 2;
-//                    c.gridwidth = GridBagConstraints.REMAINDER;
-//                    c.fill = GridBagConstraints.HORIZONTAL;
-//                    c.anchor = GridBagConstraints.NORTHWEST;
-//                    c.insets = new Insets (0,6,6,12);
-//                    ((GridBagLayout)this.getLayout()).setConstraints(addURLButton,c);
-//                    this.add (addURLButton);
-//                }
+                if (this.type == JAVADOC) {
+                    addURLButton = new JButton(NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddURL"));
+                    addURLButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_AddURL").charAt(0));
+                    addURLButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            addURLElement();
+                        }
+                    });
+                    c = new GridBagConstraints();
+                    c.gridx = 1;
+                    c.gridy = 2;
+                    c.gridwidth = GridBagConstraints.REMAINDER;
+                    c.fill = GridBagConstraints.HORIZONTAL;
+                    c.anchor = GridBagConstraints.NORTHWEST;
+                    c.insets = new Insets(0, 6, 6, 12);
+                    ((GridBagLayout) this.getLayout()).setConstraints(addURLButton, c);
+                    this.add(addURLButton);
+                }
                 removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
                 removeButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Remove").charAt(0));
                 removeButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_Remove"));
@@ -272,55 +285,55 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }
 
-//        private void addURLElement() {
-//            JPanel p = new JPanel ();
-//            GridBagLayout lm = new GridBagLayout();
-//            p.setLayout (lm);
-//            GridBagConstraints c = new GridBagConstraints ();
-//            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-//            c.insets = new Insets (12,12,12,6);
-//            c.anchor = GridBagConstraints.NORTHWEST;
-//            JLabel label = new JLabel (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLMessage"));
-//            label.setDisplayedMnemonic ('U');
-//            lm.setConstraints(label,c);
-//            p.add (label);
-//            c = new GridBagConstraints ();
-//            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-//            c.gridwidth = GridBagConstraints.REMAINDER;
-//            c.insets = new Insets (12,0,12,6);
-//            c.fill = GridBagConstraints.HORIZONTAL;
-//            c.anchor = GridBagConstraints.NORTHWEST;
-//            JTextField text = new JTextField ();
-//            text.setColumns(30);
-//            text.setText (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_DefaultProtocol"));
-//            text.selectAll();
-//            label.setLabelFor(text);
-//            lm.setConstraints(text,c);
-//            p.add (text);            
-//            JButton[] options = new JButton[] {
-//                new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle")),
-//                new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_Cancel"))
-//            };
-//            options[0].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,"MNE_Add").charAt(0));
-//            options[1].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,"MNE_Cancel").charAt(0));
-//            DialogDescriptor input = new DialogDescriptor (
-//                p,
-//                NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_AddJavadocURLTitle"),
-//                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);            
-//            if (DialogDisplayer.getDefault().notify(input) == options[0]) {
-//                try {
-//                    String value = text.getText();
-//                    URL url = new URL (value);
-//                    ((PathModel)this.resources.getModel()).addPath(url);
-//                    this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
-//                } catch (MalformedURLException mue) {
-//                    DialogDescriptor.Message message = new DialogDescriptor.Message (
-//                        NbBundle.getMessage(J2SEPlatformCustomizer.class,"CTL_InvalidURLFormat"),
-//                        DialogDescriptor.ERROR_MESSAGE);
-//                    DialogDisplayer.getDefault().notify(message);
-//                }
-//            }
-//        }
+        private void addURLElement() {
+            JPanel p = new JPanel();
+            GridBagLayout lm = new GridBagLayout();
+            p.setLayout(lm);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+            c.insets = new Insets(12, 12, 12, 6);
+            c.anchor = GridBagConstraints.NORTHWEST;
+            JLabel label = new JLabel(NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddJavadocURLMessage"));
+            label.setDisplayedMnemonic('U');
+            lm.setConstraints(label, c);
+            p.add(label);
+            c = new GridBagConstraints();
+            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.insets = new Insets(12, 0, 12, 6);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            JTextField text = new JTextField();
+            text.setColumns(30);
+            text.setText(NbBundle.getMessage(J2SEPlatformCustomizer.class, "TXT_DefaultProtocol"));
+            text.selectAll();
+            label.setLabelFor(text);
+            lm.setConstraints(text, c);
+            p.add(text);
+            JButton[] options = new JButton[] {
+                new JButton(NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddJavadocURLTitle")),
+                new JButton(NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Cancel"))
+            };
+            options[0].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Add").charAt(0));
+            options[1].setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Cancel").charAt(0));
+            DialogDescriptor input = new DialogDescriptor(
+                    p,
+                    NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddJavadocURLTitle"),
+                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+            if (DialogDisplayer.getDefault().notify(input) == options[0]) {
+                try {
+                    String value = text.getText();
+                    URL url = new URL(value);
+                    ((PathModel) this.resources.getModel()).addPath(url);
+                    this.resources.setSelectedIndex(this.resources.getModel().getSize() - 1);
+                } catch (MalformedURLException mue) {
+                    DialogDescriptor.Message message = new DialogDescriptor.Message(
+                            NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_InvalidURLFormat"),
+                            DialogDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(message);
+                }
+            }
+        }
 
         private void addPathElement () {
             JFileChooser chooser = new JFileChooser ();

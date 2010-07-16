@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,9 +47,12 @@ package org.netbeans.modules.java.editor.hyperlink;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.java.GoToSupport;
+import org.netbeans.modules.java.editor.overridden.GoToImplementation;
 
 /**
  * Implementation of the hyperlink provider for java language.
@@ -59,12 +65,11 @@ import org.netbeans.modules.editor.java.GoToSupport;
  */
 public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
  
-    /** Creates a new instance of JavaHyperlinkProvider */
     public JavaHyperlinkProvider() {
     }
 
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
-        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION);
+        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION, HyperlinkType.ALT_HYPERLINK);
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
@@ -76,11 +81,23 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        GoToSupport.goTo(doc, offset, false);
+        switch (type) {
+            case GO_TO_DECLARATION:
+                GoToSupport.goTo(doc, offset, false);
+                break;
+            case ALT_HYPERLINK:
+                JTextComponent focused = EditorRegistry.focusedComponent();
+                
+                if (focused.getDocument() == doc) {
+                    focused.setCaretPosition(offset);
+                    GoToImplementation.goToImplementation(focused);
+                }
+                break;
+        }
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return GoToSupport.getGoToElementTooltip(doc, offset, false);
+        return GoToSupport.getGoToElementTooltip(doc, offset, false, type == HyperlinkType.GO_TO_DECLARATION ? "TP_OverriddenTooltipSugg" : "TP_GoToOverriddenTooltipSugg");
     }
 
 }

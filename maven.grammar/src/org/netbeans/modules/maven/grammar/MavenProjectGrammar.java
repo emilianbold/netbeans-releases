@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.io.File;
 import java.io.FileFilter;
@@ -78,13 +79,18 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
+<<<<<<< local
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+=======
+import org.netbeans.modules.maven.grammar.spi.GrammarExtensionProvider;
+>>>>>>> other
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -126,6 +132,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     @Override
     protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
+        List<GrammarResult> result = null;
         if (path.endsWith("plugins/plugin/configuration") || //NOI18N
             path.endsWith("plugins/plugin/executions/execution/configuration")) { //NOI18N
             // assuming we have the configuration node as parent..
@@ -135,18 +142,27 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 : hintCtx.getParentNode().getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            List<GrammarResult> res = collectPluginParams(info, hintCtx);
-            if (res == null) { //let the local processing geta changce 
+            result = collectPluginParams(info, hintCtx);
+            if (result == null) { //let the local processing geta changce
                                //once the index failed.
                 Document pluginDoc = loadDocument(info, embedder);
                 if (pluginDoc != null) {
-                    return collectPluginParams(pluginDoc, hintCtx);
+                    result = collectPluginParams(pluginDoc, hintCtx);
                 }
-            } else {
-                return res;
             }
         }
-        return Collections.<GrammarResult>emptyList();
+
+        GrammarExtensionProvider extProvider = Lookup.getDefault().lookup(GrammarExtensionProvider.class);
+        if (extProvider != null) {
+            List<GrammarResult> extResult = extProvider.getDynamicCompletion(path, hintCtx, parent);
+            if (result == null) {
+                result = extResult;
+            } else {
+                result.addAll(extResult);
+            }
+        }
+
+        return result;
     }
     
     private ArtifactInfoHolder findArtifactInfo(Node previous) {
@@ -420,16 +436,34 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             FileObject fo = getEnvironment().getFileObject();
             if (fo != null) {
                 File dir = FileUtil.toFile(fo).getParentFile();  
-            
+                String prefix = virtualTextCtx.getCurrentPrefix();
+                boolean endingSlash = prefix.endsWith("/");
+                String[] elms = StringUtils.split(prefix, "/");
+                String lastElement = "";
+                for (int i = 0; i < elms.length; i++) {
+                    if ("..".equals(elms[i])) { //NOI18N
+                        dir = dir != null ? dir.getParentFile() : null;
+                    } else if (i < elms.length - (endingSlash ? 0 : 1)) {
+                        dir = dir != null ? new File(dir, elms[i]) : null;
+                    } else {
+                        lastElement = elms[i];
+                    }
+                }
+                prefix = lastElement != null ? lastElement : prefix;
+                if (dir == null || !dir.exists() || !dir.isDirectory()) {
+                    return null;
+                }
+                
                 File[] modules = dir.listFiles(new FileFilter() {
+                    @Override
                     public boolean accept(File pathname) {
                          return pathname.isDirectory() && new File(pathname, "pom.xml").exists(); //NOI18N
                     }
                 });
                 Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                 for (int i = 0; i < modules.length; i++) {
-                    if (modules[i].getName().startsWith(virtualTextCtx.getCurrentPrefix())) {
-                        elems.add(new MyTextElement(modules[i].getName(), virtualTextCtx.getCurrentPrefix()));
+                    if (modules[i].getName().startsWith(prefix)) {
+                        elems.add(new MyTextElement(modules[i].getName(), prefix));
                     }
                 }
                 return Collections.enumeration(elems);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,205 +61,653 @@ public final class VirtualMachineManagerWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.Connector> allConnectors0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "allConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).allConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.allConnectors();
+            java.util.List<com.sun.jdi.connect.Connector> ret;
+            ret = a.allConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "allConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.Connector> allConnectors(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "allConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).allConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.allConnectors();
+            java.util.List<com.sun.jdi.connect.Connector> ret;
+            ret = a.allConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "allConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.AttachingConnector> attachingConnectors0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "attachingConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).attachingConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.attachingConnectors();
+            java.util.List<com.sun.jdi.connect.AttachingConnector> ret;
+            ret = a.attachingConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "attachingConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.AttachingConnector> attachingConnectors(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "attachingConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).attachingConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.attachingConnectors();
+            java.util.List<com.sun.jdi.connect.AttachingConnector> ret;
+            ret = a.attachingConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "attachingConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.VirtualMachine> connectedVirtualMachines0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "connectedVirtualMachines",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).connectedVirtualMachines()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.connectedVirtualMachines();
+            java.util.List<com.sun.jdi.VirtualMachine> ret;
+            ret = a.connectedVirtualMachines();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "connectedVirtualMachines",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.VirtualMachine> connectedVirtualMachines(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "connectedVirtualMachines",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).connectedVirtualMachines()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.connectedVirtualMachines();
+            java.util.List<com.sun.jdi.VirtualMachine> ret;
+            ret = a.connectedVirtualMachines();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "connectedVirtualMachines",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.VirtualMachine createVirtualMachine(com.sun.jdi.VirtualMachineManager a, com.sun.jdi.connect.spi.Connection b) throws java.io.IOException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "createVirtualMachine",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).createVirtualMachine({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.createVirtualMachine(b);
+            com.sun.jdi.VirtualMachine ret;
+            ret = a.createVirtualMachine(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (java.io.IOException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "createVirtualMachine",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.VirtualMachine createVirtualMachine(com.sun.jdi.VirtualMachineManager a, com.sun.jdi.connect.spi.Connection b, java.lang.Process c) throws java.io.IOException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "createVirtualMachine",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).createVirtualMachine({1}, {2})",
+                    new Object[] {a, b, c});
+        }
+        Object retValue = null;
         try {
-            return a.createVirtualMachine(b, c);
+            com.sun.jdi.VirtualMachine ret;
+            ret = a.createVirtualMachine(b, c);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (java.io.IOException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "createVirtualMachine",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.connect.LaunchingConnector defaultConnector(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "defaultConnector",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).defaultConnector()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.defaultConnector();
+            com.sun.jdi.connect.LaunchingConnector ret;
+            ret = a.defaultConnector();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "defaultConnector",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.LaunchingConnector> launchingConnectors0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "launchingConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).launchingConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.launchingConnectors();
+            java.util.List<com.sun.jdi.connect.LaunchingConnector> ret;
+            ret = a.launchingConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "launchingConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.LaunchingConnector> launchingConnectors(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "launchingConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).launchingConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.launchingConnectors();
+            java.util.List<com.sun.jdi.connect.LaunchingConnector> ret;
+            ret = a.launchingConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "launchingConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.ListeningConnector> listeningConnectors0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "listeningConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).listeningConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.listeningConnectors();
+            java.util.List<com.sun.jdi.connect.ListeningConnector> ret;
+            ret = a.listeningConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "listeningConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.connect.ListeningConnector> listeningConnectors(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "listeningConnectors",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).listeningConnectors()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.listeningConnectors();
+            java.util.List<com.sun.jdi.connect.ListeningConnector> ret;
+            ret = a.listeningConnectors();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "listeningConnectors",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int majorInterfaceVersion0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "majorInterfaceVersion",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).majorInterfaceVersion()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.majorInterfaceVersion();
+            int ret;
+            ret = a.majorInterfaceVersion();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return 0;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "majorInterfaceVersion",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int majorInterfaceVersion(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "majorInterfaceVersion",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).majorInterfaceVersion()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.majorInterfaceVersion();
+            int ret;
+            ret = a.majorInterfaceVersion();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "majorInterfaceVersion",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int minorInterfaceVersion0(com.sun.jdi.VirtualMachineManager a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "minorInterfaceVersion",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).minorInterfaceVersion()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.minorInterfaceVersion();
+            int ret;
+            ret = a.minorInterfaceVersion();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return 0;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "minorInterfaceVersion",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int minorInterfaceVersion(com.sun.jdi.VirtualMachineManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.VirtualMachineManager",
+                    "minorInterfaceVersion",
+                    "JDI CALL: com.sun.jdi.VirtualMachineManager({0}).minorInterfaceVersion()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.minorInterfaceVersion();
+            int ret;
+            ret = a.minorInterfaceVersion();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.VirtualMachineManager",
+                        "minorInterfaceVersion",
+                        retValue);
+            }
         }
     }
 

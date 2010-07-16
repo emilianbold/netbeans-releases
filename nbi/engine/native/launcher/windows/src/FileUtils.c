@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -348,11 +351,32 @@ void createDirectory(LauncherProperties * props, WCHAR * directory) {
     }
 }
 
-WCHAR newRandDigit() {
-	WCHAR digit = '0';
-	digit += (WCHAR) rand()%10;
-    return digit;
+#define a 16807         /* multiplier */
+#define m 2147483647L   /* 2**31 - 1 */
+#define q 127773L       /* m div a */
+#define r 2836          /* m mod a */
+
+long nextRandDigit(long seed)
+{
+      unsigned long lo, hi;
+
+      lo = a * (long)(seed & 0xFFFF);
+      hi = a * (long)((unsigned long)seed >> 16);
+      lo += (hi & 0x7FFF) << 16;
+      if (lo > m)
+      {
+            lo &= m;
+            ++lo;
+      }
+      lo += hi >> 15;
+      if (lo > m)
+      {
+            lo &= m;
+            ++lo;
+      }
+      return (long)lo;
 }
+
 void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD createRndSubDir) {
     WCHAR * t = (argTempDir!=NULL) ? appendStringW(NULL, argTempDir) : getSystemTemporaryDirectory();
     
@@ -361,11 +385,13 @@ void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD c
     if(createRndSubDir) {
         WCHAR * randString = newpWCHAR(6);
         DWORD i=0;
-        nbiTmp = appendStringW(nbiTmp, L"\\NBI");
-        srand(GetTickCount());
+        DWORD initValue = GetTickCount() & 0x7FFFFFFF;
+        long value = (long) initValue;
+        nbiTmp = appendStringW(nbiTmp, L"\\NBI");        
         
         for(i=0;i<5;i++) {
-            randString[i]=newRandDigit();
+            value = nextRandDigit(value);
+            randString[i] = '0' + (WCHAR) (value% 10);
         }
         nbiTmp = appendStringW(appendStringW(nbiTmp, randString), L".tmp");
         FREE(randString);
@@ -490,42 +516,44 @@ WCHAR * getSystemTemporaryDirectory() {
 }
 
 WCHAR * getExePath() {
-    WCHAR szPath[MAX_PATH];
+    WCHAR * szPath = newpWCHAR(MAX_PATH);
     
     if( !GetModuleFileNameW( NULL, szPath, MAX_PATH ) ) {
+        FREE(szPath);
         return NULL;
     } else {
-        return appendStringNW(NULL, 0, szPath, getLengthW(szPath));
+        return szPath;//appendStringNW(NULL, 0, szPath, getLengthW(szPath));
     }
 }
 
 
 WCHAR * getExeName() {
-    WCHAR szPath[MAX_PATH];
+    WCHAR * szPath = newpWCHAR(MAX_PATH);
+    WCHAR * result = NULL;
     if(GetModuleFileNameW( NULL, szPath, MAX_PATH )) {
         WCHAR * lastSlash = szPath;
         while(searchW(lastSlash, FILE_SEP)!=NULL) {
             lastSlash = searchW(lastSlash, FILE_SEP) + 1;
         }
-        return appendStringW(NULL, lastSlash);
-    } else {
-        return NULL;
-    }
+        result = appendStringW(NULL, lastSlash);
+    } 
+    FREE(szPath);
+    return result;
 }
 
 WCHAR * getExeDirectory() {
-    WCHAR szPath[MAX_PATH];
+    WCHAR * szPath = newpWCHAR(MAX_PATH);
+    WCHAR * result = NULL;
     if(GetModuleFileNameW( NULL, szPath, MAX_PATH )) {
         WCHAR * lastSlash = szPath;
         while(searchW(lastSlash, FILE_SEP)!=NULL) {
             lastSlash = searchW(lastSlash, FILE_SEP) + 1;
-        }
-        
-        return appendStringNW(NULL, 0 , szPath,
+        }        
+        result = appendStringNW(NULL, 0 , szPath,
                 getLengthW(szPath) - getLengthW(lastSlash) - 1);
-    } else {
-        return NULL;
     }
+    FREE(szPath);
+    return result;
 }
 
 WCHAR * getCurrentDirectory() {

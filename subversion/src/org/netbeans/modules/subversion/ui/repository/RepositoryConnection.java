@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,13 +62,13 @@ public class RepositoryConnection {
     
     private String url;   
     private String username;
-    private String password;
+    private char[] password;
     private String externalCommand;
     private boolean savePassword;
     private SVNUrl svnUrl;
     private SVNRevision svnRevision;
     private String certFile;
-    private String certPassword;
+    private char[] certPassword;
     private static Boolean keepUserInHostname;
     
     public RepositoryConnection(RepositoryConnection rc) {
@@ -76,7 +79,7 @@ public class RepositoryConnection {
         this(url, null, null, null, false, null, null);
     }
             
-    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword, String certFile, String certPassword) {
+    public RepositoryConnection(String url, String username, char[] password, String externalCommand, boolean savePassword, String certFile, char[] certPassword) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
@@ -94,8 +97,12 @@ public class RepositoryConnection {
         return username == null ? "" : username;
     }
 
-    public String getPassword() {
-        return password == null ? "" : password;
+    /**
+     *
+     * @return can be null
+     */
+    public char[] getPassword() {
+        return password;
     }
 
     public String getExternalCommand() {
@@ -110,8 +117,8 @@ public class RepositoryConnection {
         return certFile == null ? "" : certFile;
     }
 
-    public String getCertPassword() {
-        return certPassword == null ? "" : certPassword;
+    public char[] getCertPassword() {
+        return certPassword;
     }
 
     
@@ -161,7 +168,7 @@ public class RepositoryConnection {
         this.username = username;
     }
 
-    void setPassword(String password) {
+    void setPassword(char[] password) {
         this.password = password;
     }
 
@@ -177,7 +184,7 @@ public class RepositoryConnection {
         this.certFile = certFile;
     }
 
-    public void setCertPassword(String certPassword) {
+    public void setCertPassword(char[] certPassword) {
         this.certPassword = certPassword;
     }
     
@@ -252,7 +259,6 @@ public class RepositoryConnection {
         sb.append(RC_DELIMITER);
         if(rc.getSavePassword()) sb.append(rc.getUsername());
         sb.append(RC_DELIMITER);
-        if(rc.getSavePassword()) sb.append(Scrambler.getInstance().scramble(rc.getPassword()));
         sb.append(RC_DELIMITER);
         sb.append(rc.getExternalCommand());
         sb.append(RC_DELIMITER);        
@@ -260,7 +266,6 @@ public class RepositoryConnection {
         sb.append(RC_DELIMITER);
         sb.append(rc.getCertFile());
         sb.append(RC_DELIMITER);
-        sb.append(Scrambler.getInstance().scramble(rc.getCertPassword()));
         sb.append(RC_DELIMITER);
         return sb.toString();
     }
@@ -274,8 +279,9 @@ public class RepositoryConnection {
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
         boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
         String certFile     = l > 5 && !fields[5].equals("") ? fields[5] : null;
-        String certPasswrod = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
-        return new RepositoryConnection(url, username, password, extCmd, save, certFile, certPasswrod);
+        String certPassword = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
+        return new RepositoryConnection(url, username, password == null ? null : password.toCharArray(), extCmd, save, certFile,
+                certPassword == null ? null : certPassword.toCharArray());
     }
 
     private static String ripUserFromHost (String hostname) {

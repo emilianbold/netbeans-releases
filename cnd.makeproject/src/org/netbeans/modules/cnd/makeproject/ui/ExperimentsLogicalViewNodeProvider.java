@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,10 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 
 public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvider {
 
+    @Override
     public AbstractNode getLogicalViewNode(Project project) {
         return new ExperimentsRootNode(project);
     }
@@ -92,7 +97,7 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
 
     private static class ExperimentsRootNodeChildren extends Children.Keys<ExperimentsGroupNode> implements ChangeListener {
 
-        Project project;
+        private Project project;
 
         public ExperimentsRootNodeChildren(Project project) {
             this.project = project;
@@ -110,17 +115,19 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(ExperimentsGroupNode key) {
             Node node = key;
             return new Node[]{node};
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             setKeys(getKeys());
         }
 
         private Collection<ExperimentsGroupNode> getKeys() {
-            Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
+            List<ExperimentsGroupNode> v = new ArrayList<ExperimentsGroupNode>();
             v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
             v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
             v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
@@ -160,7 +167,7 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
 
     private static class ExperimentsGroupNodeChildren extends Children.Keys<Experiment> implements ChangeListener {
 
-        Project project;
+        private Project project;
 
         public ExperimentsGroupNodeChildren(Project project) {
             this.project = project;
@@ -178,17 +185,19 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(Experiment key) {
             return new Node[]{key};
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             setKeys(getKeys());
         }
 
         private Collection<Experiment> getKeys() {
             // FIXUP: add per project...
-            Vector<Experiment> v = new Vector<Experiment>();
+            List<Experiment> v = new ArrayList<Experiment>();
             v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
             v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
             v.add(new Experiment("Experiment-01212007-1532")); // NOI18N
@@ -252,17 +261,21 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             this.name = name;
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void performAction(Node[] activatedNodes) {
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }

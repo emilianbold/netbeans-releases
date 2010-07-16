@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -86,6 +89,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
@@ -103,6 +107,8 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -203,7 +209,13 @@ public class JaxWsUtils {
         String artifactsPckg = "service." + targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109Supported, false);
+
+        boolean jsr109 = true;
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+        if (jaxWsModel != null) {
+            jsr109 = isJsr109(jaxWsModel);
+        }
+        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109, false);
     }
 
     private static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
@@ -333,8 +345,15 @@ public class JaxWsUtils {
         DataObject.find(implClassFo).setValid(false);
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+
+        boolean jsr109 = true;
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+        if (jaxWsModel != null) {
+            jsr109 = isJsr109(jaxWsModel);
+        }
+
         String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
-                port.getName(), artifactsPckg, jsr109Supported, true);
+                port.getName(), artifactsPckg, jsr109, true);
 
         generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID, isStatelessSB);
 
@@ -356,7 +375,12 @@ public class JaxWsUtils {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported, false);
+            boolean jsr109 = true;
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                jsr109 = isJsr109(jaxWsModel);
+            }
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109, false);
             if (serviceID == null) {
                 Logger.getLogger(JaxWsUtils.class.getName()).log(Level.WARNING, "Failed to add service element to nbproject/jax-ws.xml. Either problem with downloading wsdl file or problem with writing into nbproject/jax-ws.xml.");
                 return;
@@ -576,9 +600,19 @@ public class JaxWsUtils {
                 if (antArtifactProvider != null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                     if (jarArtifact != null) {
+                        FileObject targetFo = targetFile;
+                        if (!"java".equals(targetFile.getExt())) { //NOI18N
+                            SourceGroup[] srcGroups =
+                                    ProjectUtils.getSources(targetProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            if (srcGroups != null && srcGroups.length >0) {
+                                targetFo = srcGroups[0].getRootFolder();
+                            } else {
+                                return false;
+                            }
+                        }
                         AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact};
                         URI[] artifactsUri = jarArtifact.getArtifactLocations();
-                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFile, ClassPath.COMPILE);
+                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFo, ClassPath.COMPILE);
                         return true;
                     }
                 }
@@ -1326,20 +1360,22 @@ public class JaxWsUtils {
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().
                     getModel(org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(wsdlFO, true));
             Definitions definitions = wsdlModel.getDefinitions();
-            Collection<Binding> bindings = definitions.getBindings();
-            for (Binding binding : bindings) {
-                List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
-                for (SOAPBinding soapBinding : soapBindings) {
-                    if (soapBinding.getStyle() == Style.RPC) {
-                        Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
-                        for (BindingOperation bindingOperation : bindingOperations) {
-                            BindingInput bindingInput = bindingOperation.getBindingInput();
-                            if (bindingInput != null) {
-                                List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
-                                if (soapBodies != null && soapBodies.size() > 0) {
-                                    SOAPBody soapBody = soapBodies.get(0);
-                                    if (soapBody.getUse() == Use.ENCODED) {
-                                        return true;
+            if (definitions != null) {
+                Collection<Binding> bindings = definitions.getBindings();
+                for (Binding binding : bindings) {
+                    List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+                    for (SOAPBinding soapBinding : soapBindings) {
+                        if (soapBinding.getStyle() == Style.RPC) {
+                            Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                            for (BindingOperation bindingOperation : bindingOperations) {
+                                BindingInput bindingInput = bindingOperation.getBindingInput();
+                                if (bindingInput != null) {
+                                    List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                                    if (soapBodies != null && soapBodies.size() > 0) {
+                                        SOAPBody soapBody = soapBodies.get(0);
+                                        if (soapBody.getUse() == Use.ENCODED) {
+                                            return true;
+                                        }
                                     }
                                 }
                             }
@@ -1459,5 +1495,44 @@ public class JaxWsUtils {
             return "J2SE"; //NOI18N
         }
 
+    }
+
+    public static boolean askForSunJaxWsConfig(JaxWsModel jaxWsModel) {
+        NotifyDescriptor desc =
+               new DialogDescriptor.Confirmation(
+               NbBundle.getMessage(JaxWsUtils.class, "MSG_USE_METRO"),
+               DialogDescriptor.YES_NO_OPTION);
+        DialogDisplayer.getDefault().notify(desc);
+        boolean jsr109 = true;
+        if (desc.getValue().equals(DialogDescriptor.YES_OPTION)) {
+            // NON JSR 109
+            jaxWsModel.setJsr109(Boolean.FALSE);
+            try {
+                jaxWsModel.write();
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.FINE,"jax-ws.xml not yet exists",ex);
+            }
+            jsr109 = false;
+        } else {
+            // JSR 109
+            jaxWsModel.setJsr109(Boolean.TRUE);
+            try {
+                jaxWsModel.write();
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.FINE,"jax-ws.xml not yet exists",ex);
+            }
+            jsr109 = true;
+       }
+       return jsr109;
+    }
+
+    private static boolean isJsr109 (JaxWsModel jaxWsModel) {
+        if (jaxWsModel.getJsr109() != null) {
+            return jaxWsModel.getJsr109();
+        } else if (!jsr109Supported) {
+            return askForSunJaxWsConfig(jaxWsModel);
+        } else {
+            return true;
+        }
     }
 }

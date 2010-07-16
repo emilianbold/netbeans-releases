@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,7 @@ import java.util.List;
 public interface DataStorage {
 
     /**
-     *  Attaches ServiceInfoDataStorage
+     * Attaches ServiceInfoDataStorage
      * @param serviceInfoStorage ServiceInfoDataStorage to be attached
      */
     void attachTo(ServiceInfoDataStorage serviceInfoStorage);
@@ -74,12 +77,19 @@ public interface DataStorage {
     boolean hasData(DataTableMetadata data);
 
     /**
-     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
-     * soprage.
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this  storage.
      * @param tableName table name to add data into
      * @param data data to add
      */
     void addData(String tableName, List<DataRow> data);
+
+/**
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this  storage.
+     * This method should guaranty that when it is returned the data 
+     * @param tableName table name to add data into
+     * @param data data to add
+     */
+    void syncAddData(String tableName, List<DataRow> data);
 
     /**
      * Please be sure this method will return not null for the object
@@ -98,7 +108,7 @@ public interface DataStorage {
 
     /**
      * Creates tables: invoked to create {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} needed
-     * @param tableMetadatas tables decsription to create in the storage
+     * @param tableMetadatas tables description to create in the storage
      */
     void createTables(List<DataTableMetadata> tableMetadatas);
 
@@ -107,5 +117,11 @@ public interface DataStorage {
      * @return <code>true</code> if succeeded, <code>false</code> otherwise
      */
     boolean shutdown();
+
+    /**
+     * Returns the storage services provided by the DataStorage
+     * @return
+     */
+  //  Collection<DataStorageService> getDataStorageServices();
 
 }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -51,7 +54,7 @@ made subject to such option by the copyright holder.
                     <folder name=".package">
                         <folder name="org.hibernate.impl"/>
                     </folder>
-                    <folder name=".type">
+                    <!--folder name=".type">
                         <folder name="org.hibernate.impl.AbstractQueryImpl"/>
                         <folder name="org.hibernate.impl.CriteriaImpl"/>
                         <folder name="org.hibernate.impl.FetchingScrollableResultsImpl"/>
@@ -64,7 +67,7 @@ made subject to such option by the copyright holder.
                         <folder name="org.hibernate.impl.SessionFactoryObjectFactory"/>
                         <folder name="org.hibernate.impl.SessionImpl"/>
                         <folder name="org.hibernate.impl.StatelessSessionImpl"/>
-                    </folder>
+                    </folder-->
                 </folder>
                 <folder name="JDBC">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
@@ -72,7 +75,7 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
                         <folder name=".subtypes">
                             <folder name="java.sql.Connection"/>
-                            <folder name="java.sql.DataSource"/>
+                            <folder name="javax.sql.DataSource"/>
                             <folder name="java.sql.DriverManager">
                                 <attr name="includes" stringvalue="getConnection"/>
                             </folder>
@@ -209,8 +212,12 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="Persistence">
-                    <attr name="link" stringvalue="NBProfiler/Categories/Persistence"/>
+					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2ee.Bundle"/>
+                    <folder name=".custom">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.marking.EJB2PersistenceMarkingProvider"/>
+                    </folder>
                 </folder>
+                
                 <folder name=".custom">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.profiler.j2ee.marking.EJBMarkingProvider"/>
                 </folder>

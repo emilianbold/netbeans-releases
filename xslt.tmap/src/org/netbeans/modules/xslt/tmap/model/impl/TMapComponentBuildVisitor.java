@@ -100,7 +100,9 @@ public class TMapComponentBuildVisitor implements TMapVisitor {
     }
 
     public void visit(Transform transform) {
-        if (isAcceptable(TMapComponents.PARAM)) {
+        if (isAcceptable(TMapComponents.INVOKE)) {
+            setResult(new InvokeImpl(getModel(), getElement()));
+        } else if (isAcceptable(TMapComponents.PARAM)) {
             setResult(new ParamImpl(getModel(), getElement()));
         }
     }

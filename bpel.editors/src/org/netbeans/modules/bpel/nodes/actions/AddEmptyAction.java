@@ -35,6 +35,7 @@ public class AddEmptyAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddEmptyAction() {
+        super("basic/empty"); // NOI18N
     }    
     
     protected String getBundleName() {

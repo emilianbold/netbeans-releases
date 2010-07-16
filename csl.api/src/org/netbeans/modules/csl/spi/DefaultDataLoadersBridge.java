@@ -32,14 +32,14 @@ import org.openide.util.WeakListeners;
  */
 public class DefaultDataLoadersBridge extends DataLoadersBridge {
 
-    private static Logger log = Logger.getLogger(DataLoadersBridge.class.getName());
+    private static final Logger LOG = Logger.getLogger(DataLoadersBridge.class.getName());
 
     private DataObject getDataObject(Document doc) {
         Object o = doc.getProperty(Document.StreamDescriptionProperty);
         if (o instanceof DataObject) {
             return (DataObject) o;
         } else if (o != null) {
-            log.warning("Unable to return DataObject for Document " + doc + ". StreamDescriptionProperty points to non-DataLoader instace: " + o);
+            LOG.warning("Unable to return DataObject for Document " + doc + ". StreamDescriptionProperty points to non-DataLoader instace: " + o); //NOI18N
         }
         return null;
     }
@@ -52,7 +52,7 @@ public class DefaultDataLoadersBridge extends DataLoadersBridge {
         } else if (o instanceof FileObject) {
             return (FileObject) o;
         } else if (o != null) {
-            log.warning("Unable to return FileObject for Document " + doc + ". StreamDescriptionProperty points to non-DataLoader, non-FileObject instace: " + o);
+            LOG.warning("Unable to return FileObject for Document " + doc + ". StreamDescriptionProperty points to non-DataLoader, non-FileObject instace: " + o); //NOI18N
         }
         return null;
     }
@@ -68,7 +68,7 @@ public class DefaultDataLoadersBridge extends DataLoadersBridge {
             }
             return ec.getDocument();
         } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
+            LOG.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e); //NOI18N
             return null;
         }
     }
@@ -213,9 +213,7 @@ public class DefaultDataLoadersBridge extends DataLoadersBridge {
                     flisten.fileChanged(new FileEvent(fobj));
                 } catch (IOException ex) {
                     // should not occur
-                    Logger.getLogger(DataObjectListener.class.getName()).log(Level.SEVERE,
-                            ex.getMessage(),
-                            ex);
+                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             }
         }

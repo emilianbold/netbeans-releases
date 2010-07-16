@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,7 @@ package org.netbeans.junit;
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
-import test.pkg.not.in.junit.NbModuleSuiteT;
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestResult;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import test.pkg.not.in.junit.NbModuleSuiteClusterPath;
@@ -54,35 +55,23 @@ import test.pkg.not.in.junit.NbModuleSuiteClusterPath;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class NbModuleSuiteClusterPathFinalTest extends TestCase {
+public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
     
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public NbModuleSuiteClusterPathFinalTest(String testName) {
         super(testName);
-    }            
-    
-    public static Test suite() {
-        Test t = null;
-        //t = new NbModuleSuiteTest("testRunEmptyConfig");
-        if (t == null) {
-            t = new NbTestSuite(NbModuleSuiteClusterPathFinalTest.class);
-        }
-        return t;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected @Override int timeOut() {
+        return 100000;
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     
     public void testClusterPathFinal() throws Exception{
         LinkedList<File> clusters = new LinkedList<File>();
-        NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide[0-9]*"));
+        NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide"));
         assertFalse("Something found", clusters.isEmpty());
         assertEquals("One element found", 1, clusters.size());
         final File ideCluster = clusters.get(0);
@@ -93,8 +82,8 @@ public class NbModuleSuiteClusterPathFinalTest extends TestCase {
         String val = System.getProperty("my.clusters");
         assertNotNull("The test was running", clusters);
         assertTrue("ide cluster shall be included: " + val, val.contains(ideCluster.getPath()));
-        assertFalse("no java cluster shall be included: " + val, val.matches(".*java[0-9]*[:;].*"));
-        assertFalse("no apisupport cluster shall be included: " + val, val.matches(".*apisupport[0-9]*[:;].*"));
-        assertFalse("no ergonomics cluster shall be included: " + val, val.matches(".*ergonomics[0-9]*[:;].*"));
+        assertFalse("no java cluster shall be included: " + val, val.matches(".*java[:;].*"));
+        assertFalse("no apisupport cluster shall be included: " + val, val.matches(".*apisupport[:;].*"));
+        assertFalse("no ergonomics cluster shall be included: " + val, val.matches(".*ergonomics[:;].*"));
     }
 }

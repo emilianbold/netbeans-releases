@@ -1,7 +1,10 @@
-#!/bin/sh 
+#!/bin/sh
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -112,12 +115,16 @@ do
 		SUSPEND="n"
 		;;
         --ycpu|-ycpu)
-                echo "profile using YourKit Profiler with CPU sampling, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=sampling,monitors,noj2ee,disablej2ee,dir=${HOME}/yjp_data/IDE"
+                echo "profile using YourKit Profiler with CPU sampling, save snapshots in ${HOME}/yjp_data/CPU"
+                PROFILE="-J-agentlib:yjpagent=sampling,monitors,disablealloc,disabletracing,disablej2ee,builtinprobes=none,onexit=memory,dir=${HOME}/yjp_data/CPU"
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,noj2ee,disablestacktelemetry,disablej2ee,disableexceptiontelemetry"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,disablej2ee,noj2ee"
+		;;
+	--ypl|-ypl)
+		echo "light profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,telemetryperiod=250,disabletracing,disablealloc,disablej2ee,noj2ee,disablej2ee,disableexceptiontelemetry"
                 ;;
         --userdir)
 		shift
@@ -170,7 +177,8 @@ if [ -n "${DEBUG}" ]; then
     DEBUG="${DEBUG},suspend=${SUSPEND},address=${DBGPORT}"
 fi
 
-DEFS="-J-Dnetbeans.system_http_proxy=webcache:8080"
+##DEFS="-J-Dnetbeans.system_http_proxy=webcache:8080"
+DEFS=""
 DEFS="${DEFS} ${CONSOLE}"
 DEFS="${DEFS} ${PARSERRORS}"
 DEFS="${DEFS} -J-Dcnd.modelimpl.timing=true"
@@ -199,4 +207,4 @@ else
     NBDIST="${NB_COPY}"
 fi
 
-${NBDIST}/bin/netbeans -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}
+"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

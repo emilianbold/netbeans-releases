@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.csl.navigation;
 
 
 import java.awt.Image;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -249,6 +253,14 @@ public class ElementNode extends AbstractNode {
 
     public void updateRecursively( StructureItem newDescription ) {
         Children ch = getChildren();
+
+        //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
+        //to ElementChildren to be able to hold the new child data
+        if(!(ch instanceof ElementChildren) && newDescription.getNestedItems().size()>0) {
+            ch=new ElementChildren((List<StructureItem>)Collections.EMPTY_LIST, ui.getFilters(), ui, fileObject);
+            setChildren(ch);
+        }
+        
         if ( ch instanceof ElementChildren ) {           
            HashSet<StructureItem> oldSubs = new HashSet<StructureItem>( description.getNestedItems() );
 
@@ -429,7 +441,7 @@ public class ElementNode extends AbstractNode {
                     case FIELD:
                         return 3;
                     case CLASS:
-//                    case INTERFACE:
+                    case INTERFACE:
 //                    case ENUM:
 //                    case ANNOTATION_TYPE:                        
 //                        return 4;

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -161,11 +164,11 @@ made subject to such option by the copyright holder.
   <code>platform*/lib/nbexec</code> executable. In case of first
   invocations it can also get a callback from the NetBeans platform
   code via
-    <api name="netbeans.importclass" category="friend" group="property" type="import" >
+    <api name="netbeans.importclass" category="friend" group="systemproperty" type="import" >
         to handle the import of settings from previous version
     </api>
     or via
-    <api name="netbeans.accept_license_class" category="friend" group="property" type="import" >
+    <api name="netbeans.accept_license_class" category="friend" group="systemproperty" type="import" >
         to show dialog with license.
     </api>. 
   </p>
@@ -1033,9 +1036,9 @@ made subject to such option by the copyright holder.
         <p/>
         Lines that start with <q>#</q> are ignored. The rest of the lines
         is interpreted as followed: the first one shall contain reference to
-        the platform cluster - e.g. <code>platform7</code> or so where one
+        the platform cluster - e.g. <code>platform</code> or so where one
         can fine <code>lib/nbexec</code> executable. The second line shall
-        be the application specific cluster like <code>nb6.0</code> - this
+        be the application specific cluster like <code>nb</code> - this
         cluster is supposed to be private to the NetBeans IDE and no other
         product can rely on it or use it. The rest of the lines contain
         references to other clusters composing the application. All references

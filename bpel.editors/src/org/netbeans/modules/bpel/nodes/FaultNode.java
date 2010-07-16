@@ -53,7 +53,7 @@ public class FaultNode extends BpelNode<QName> {
         String namespace = ref.getNamespaceURI();
         if (BpelStandardFaults.BPEL_2_0_NS.equals(namespace)) {
             name = ref.getLocalPart();
-        } else if (Extensions.ERROR_EXT_URI.equals(namespace)) {
+        } else if (Extensions.ERROR_HANDLER_URI.equals(namespace)) {
             name = ref.getLocalPart();
         } else {
             name = ResolverUtility.qName2DisplayText(ref);

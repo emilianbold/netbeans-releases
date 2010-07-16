@@ -46,6 +46,7 @@ import org.netbeans.modules.bpel.nodes.ToPartNode;
 import org.netbeans.modules.bpel.nodes.VariableContainerNode;
 import org.netbeans.modules.bpel.nodes.VariableNode;
 import org.netbeans.modules.bpel.nodes.WsdlFileNode;
+import org.netbeans.modules.bpel.nodes.FaultMessageNode;
 import org.netbeans.modules.bpel.nodes.AssignNode;
 import org.netbeans.modules.bpel.nodes.BpelProcessNode;
 import org.netbeans.modules.bpel.nodes.CatchAllNode;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bpel.nodes.CompensationHandlerNode;
 import org.netbeans.modules.bpel.nodes.ElseIfNode;
 import org.netbeans.modules.bpel.nodes.ElseNode;
 import org.netbeans.modules.bpel.nodes.EmptyNode;
+import org.netbeans.modules.bpel.nodes.ValidateNode;
 import org.netbeans.modules.bpel.nodes.EventHandlersNode;
 import org.netbeans.modules.bpel.nodes.FaultHandlersNode;
 import org.netbeans.modules.bpel.nodes.FlowNode;
@@ -82,9 +84,11 @@ import org.netbeans.modules.bpel.nodes.ImportWsdlNode;
 import org.netbeans.modules.bpel.nodes.OnAlarmEventNode;
 import org.netbeans.modules.bpel.nodes.OnEventNode;
 import org.netbeans.modules.bpel.nodes.ReThrowNode;
+import org.netbeans.modules.bpel.nodes.RefResourceNode;
 import org.netbeans.modules.bpel.nodes.TerminationHandlerNode;
 import org.netbeans.modules.bpel.nodes.ThenNode;
 import org.netbeans.modules.bpel.nodes.ThrowNode;
+import org.netbeans.modules.bpel.nodes.VariableReferenceNode;
 import org.netbeans.modules.bpel.nodes.WaitNode;
 import org.netbeans.modules.bpel.nodes.WhileNode;
 import org.netbeans.modules.soa.ui.nodes.ReflectionNodeFactory;
@@ -117,6 +121,7 @@ public class PropertyNodeFactory extends ReflectionNodeFactory<NodeType> {
         key2Class.put(NodeType.THEN, ThenNode.class);
         //
         key2Class.put(NodeType.EMPTY, EmptyNode.class);
+        key2Class.put(NodeType.VALIDATE, ValidateNode.class);
         key2Class.put(NodeType.INVOKE, InvokeNode.class);
         key2Class.put(NodeType.RECEIVE, ReceiveNode.class);
         key2Class.put(NodeType.REPLY, ReplyNode.class);
@@ -151,10 +156,12 @@ public class PropertyNodeFactory extends ReflectionNodeFactory<NodeType> {
         //
         key2Class.put(NodeType.MESSAGE_TYPE, MessageTypeNode.class);
         key2Class.put(NodeType.WSDL_FILE, WsdlFileNode.class);
+        key2Class.put(NodeType.FAULT_MESSAGE, FaultMessageNode.class);
         key2Class.put(NodeType.SCHEMA_FILE, SchemaFileNode.class);
         //
         key2Class.put(NodeType.VARIABLE_CONTAINER, VariableContainerNode.class);
         key2Class.put(NodeType.VARIABLE, VariableNode.class);
+        key2Class.put(NodeType.VARIABLE_REFERENCE, VariableReferenceNode.class);
         key2Class.put(NodeType.CORRELATION, CorrelationNode.class);
         key2Class.put(NodeType.CORRELATION_P, CorrelationPNode.class);
         key2Class.put(NodeType.CORRELATION_SET_CONTAINER, CorrelationSetContainerNode.class);
@@ -192,9 +199,9 @@ public class PropertyNodeFactory extends ReflectionNodeFactory<NodeType> {
         key2Class.put(NodeType.GLOBAL_COMPLEX_TYPE, GlobalComplexTypeNode.class);
         key2Class.put(NodeType.GLOBAL_SIMPLE_TYPE, GlobalSimpleTypeNode.class);
         key2Class.put(NodeType.GLOBAL_ELEMENT, GlobalElementNode.class);
+        key2Class.put(NodeType.REFERENCED_RESOURCE, RefResourceNode.class);
         //
         // key2Class.put(NodeType., Node.class);
         //
     }
-    
 }

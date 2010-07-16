@@ -55,7 +55,7 @@ public class TMapDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return ImageUtilities.loadImage("org/netbeans/modules/xslt/tmap/resources/tmap.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/xslt/tmap/resources/tmap.png"); // NOI18N
         } else {
             return null;
         }
@@ -86,11 +86,11 @@ public class TMapDataLoaderBeanInfo extends SimpleBeanInfo {
         // So bypass UniFileLoader in the beaninfo search.
         try {
             PropertyDescriptor extensions = new PropertyDescriptor(
-				"extensions", TMapDataLoader.class, "getExtensions", null);// NOI18N
+                                "extensions", TMapDataLoader.class, "getExtensions", null);// NOI18N
             extensions.setDisplayName(
-				NbBundle.getMessage(TMapDataLoader.class, "PROP_extensions"));
+                                NbBundle.getMessage(TMapDataLoader.class, "PROP_extensions"));
             extensions.setShortDescription(
-				NbBundle.getMessage(TMapDataLoader.class, "HINT_extensions"));
+                                NbBundle.getMessage(TMapDataLoader.class, "HINT_extensions"));
             extensions.setExpert(true);
             return new PropertyDescriptor[] {extensions};
         } catch (IntrospectionException ie) {

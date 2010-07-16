@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -23,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 1997-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 1997-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.api.java.source;
 
@@ -46,6 +49,7 @@ import org.openide.filesystems.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 
 /**
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
@@ -62,6 +66,18 @@ public class CommentCollectorTest extends NbTestCase {
         return suite;
     }
 
+    private File work;
+
+    @Override
+    protected void setUp() throws Exception {
+        File wd = getWorkDir();
+        FileObject cache = FileUtil.createFolder(new File(wd, "cache"));
+        IndexUtil.setCacheFolder(FileUtil.toFile(cache));
+        work = new File(wd, "work");
+        work.mkdirs();
+        
+        super.setUp();
+    }
 
     /**
      * Constructs a test case with the given name.
@@ -80,7 +96,7 @@ public class CommentCollectorTest extends NbTestCase {
 
     @Test
     public void testCollector() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin = "/** (COMM1) This comment belongs before class */\n" +
                 "public class Clazz {\n" +
                 "\n\n\n//TODO: (COMM2) This is just right under class (inside)" +
@@ -103,10 +119,8 @@ public class CommentCollectorTest extends NbTestCase {
 //                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
 //                cc.collect(workingCopy);
-                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
-                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
-                ti.translate(cu);
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
@@ -161,7 +175,7 @@ public class CommentCollectorTest extends NbTestCase {
 
 
     public void testMethod() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         String origin = "\n" +
                 "import java.io.File;\n" +
                 "\n" +
@@ -214,7 +228,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
     public void testMethod2() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin =
                 "public class Origin {\n" +
                         "    /** * comment * @return 1 */\n" +
@@ -234,10 +248,8 @@ public class CommentCollectorTest extends NbTestCase {
 //                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
 //                cc.collect(workingCopy);
-                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
-                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
-                ti.translate(cu);
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
@@ -277,7 +289,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
     public void testVariable() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin =
                        "package test;\n" +
                        "public abstract class Test {\n" +
@@ -323,6 +335,181 @@ public class CommentCollectorTest extends NbTestCase {
 
     }
 
+    public void test186176a() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    private void m2() {\n" +
+                       "    }\n" +
+                       "\n" +
+                       "    /**\n" +
+                       "     *test1*\n" +
+                       "     */\n" +
+                       "    /**\n" +
+                       "     *test2*\n" +
+                       "     */\n" +
+                       "    private void m3() {\n" +
+                       "    }\n\n" +
+                       "}\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("m3")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service,
+                                    "/**\n     *test1*\n     */", "/**\n     *test2*\n     */"
+                            );
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        GeneratorUtilities.get(workingCopy).importComments(node, workingCopy.getCompilationUnit());
+                        return super.visitClass(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void test186176b() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public abstract class Test {\n public void test() {\n /*zbytek*/\nSystem.out.println(\"\"); /*obycej*/\n/*bystry*/\nnew java.io.FileInputStream(\"\");\n/*bylina*/\n} \n }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        GeneratorUtilities.get(workingCopy).importComments(node, workingCopy.getCompilationUnit());
+                        
+                        if (node.getName().contentEquals("test")) {
+                            StatementTree first = node.getBody().getStatements().get(0);
+                            verify(first, CommentSet.RelativePosition.PRECEDING, service,
+                                    "/*zbytek*/"
+                            );
+                            verify(first, CommentSet.RelativePosition.INLINE, service,
+                                    "/*obycej*/"
+                            );
+                            StatementTree second = node.getBody().getStatements().get(1);
+                            verify(second, CommentSet.RelativePosition.PRECEDING, service,
+                                    "/*bystry*/"
+                            );
+                            verify(second, CommentSet.RelativePosition.TRAILING, service,
+                                    "/*bylina*/"
+                            );
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void test179202() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void test() {\n int x = 0; // some comment\n System.currentTimeMillis();\n }\n }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("test")) {
+                            StatementTree second = node.getBody().getStatements().get(1);
+                            GeneratorUtilities.get(workingCopy).importComments(second, workingCopy.getCompilationUnit());
+                            verify(second, CommentSet.RelativePosition.PRECEDING, service);
+                            verify(second, CommentSet.RelativePosition.INLINE, service);
+                            verify(second, CommentSet.RelativePosition.TRAILING, service);
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void test186754() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void test() {\n } //test\n /**foo*/\n private void t() {\n}\n }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        GeneratorUtilities.get(workingCopy).importComments(node, workingCopy.getCompilationUnit());
+                        new CommentPrinter(service).scan(node, null);
+                        return super.visitClass(node, p);
+                    }
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("test")) {
+                            verify(node.getBody(), CommentSet.RelativePosition.PRECEDING, service);
+                            verify(node.getBody(), CommentSet.RelativePosition.INLINE, service, "//test");
+                            verify(node.getBody(), CommentSet.RelativePosition.TRAILING, service);
+                        }
+                        if (node.getName().contentEquals("t")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "/**foo*/");
+                            verify(node, CommentSet.RelativePosition.INLINE, service);
+                            verify(node, CommentSet.RelativePosition.TRAILING, service);
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+    
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);
         CommentSet set = service.getComments(tree);

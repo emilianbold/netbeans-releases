@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,7 +61,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -81,6 +88,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -95,12 +103,13 @@ import javax.lang.model.util.Elements;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.tools.Diagnostic;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
@@ -160,6 +169,7 @@ public class EditorContextImpl extends EditorContext {
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
     private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMap<JavaSource, JavaSourceUtil.Handle>();
+    private final Map<JavaSource, Date> sourceModifStamps = new WeakHashMap<JavaSource, Date>();
     private DebuggerManagerListener sessionsListener; // cleans up sourceHandles
 
 
@@ -200,11 +210,19 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return null;
         }
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        boolean reuseEditorTabs = p.getBoolean("ReuseEditorTabs", true);
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
-            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            if (reuseEditorTabs) {
+                l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            }
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT); //FIX 47825
         } else {
-            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            if (reuseEditorTabs) {
+                l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            } else {
+                l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+            }
         }
         return l;
     }
@@ -289,12 +307,12 @@ public class EditorContextImpl extends EditorContext {
         Line l =  LineTranslations.getTranslations().getLine (
             url,
             lineNumber,
-            (timeStamp instanceof JPDABreakpoint) ? null : timeStamp
+            (timeStamp instanceof Breakpoint) ? null : timeStamp
         );
         if (l == null) return null;
         Annotation annotation;
-        if (timeStamp instanceof JPDABreakpoint) {
-            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
+        if (timeStamp instanceof Breakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
@@ -687,24 +705,41 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        return getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
+        Future<Integer> fi = getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
+        if (fi == null) {
+            return -1;
+        }
+        try {
+            return fi.get();
+        } catch (InterruptedException ex) {
+            return -1;
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
     }
 
-    static int getFieldLineNumber (
+    /**
+     * @param fo
+     * @param className
+     * @param fieldName
+     * @return <code>null</code> or Future with the line number
+     */
+    static Future<Integer> getFieldLineNumber (
         FileObject fo,
         final String className,
         final String fieldName
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return -1;
+        if (js == null) return null;
         final int[] result = new int[] {-1};
         final StyledDocument doc = findDocument(fo);
         if (doc == null) {
-            return -1;
+            return null;
         }
 
         try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -757,37 +792,38 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             });
+            if (!f.isDone()) {
+                return new Future<Integer>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public Integer get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return result[0];
+                    }
+
+                    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return result[0];
+                    }
+
+                };
+            }
         } catch (ParseException pex) {
             ErrorManager.getDefault().notify(pex);
-            return -1;
+            return null;
         }
-        return result[0];
-        /*
-        CompilationUnitTree cutree = ci.getTree();
-        if (cutree == null) return -1;
-        List typeDecls = cutree.getTypeDecls();
-        ClassTree ctree = findClassTree(typeDecls, className);
-        */
-        /*
-        Elements elms = ci.getElements();
-        SourceCookie.Editor sc = (SourceCookie.Editor) dataObject.getCookie
-            (SourceCookie.Editor.class);
-        if (sc == null) return -1;
-        sc.open ();
-        StyledDocument sd = sc.getDocument ();
-        if (sd == null) return -1;
-        ClassElement[] classes = sc.getSource ().getAllClasses ();
-        FieldElement fe = null;
-        int i, k = classes.length;
-        for (i = 0; i < k; i++)
-            if (classes [i].getName ().getFullName ().equals (className)) {
-                fe = classes [i].getField (Identifier.create (fieldName));
-                break;
-            }
-        if (fe == null) return -1;
-        int position = sc.sourceToText (fe).getStartOffset ();
-        return NbDocument.findLineNumber (sd, position) + 1;
-         */
+        return new DoneFuture<Integer>(result[0]);
     }
 
     /**
@@ -811,7 +847,19 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        int[] lns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
+        Future<int[]> flns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
+        if (flns == null) {
+            return -1;
+        }
+        int[] lns;
+        try {
+            lns = flns.get();
+        } catch (InterruptedException ex) {
+            return -1;
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
         if (lns.length == 0) {
             return -1;
         } else {
@@ -819,7 +867,15 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
-    static int[] getMethodLineNumbers(
+    /**
+     * @param fo
+     * @param className
+     * @param classExcludeNames
+     * @param methodName
+     * @param methodSignature
+     * @return <code>null</code> or Future with line numbers
+     */
+    static Future<int[]> getMethodLineNumbers(
         FileObject fo,
         final String className,
         final String[] classExcludeNames,
@@ -827,12 +883,12 @@ public class EditorContextImpl extends EditorContext {
         final String methodSignature
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return new int[] {};
+        if (js == null) return null;
         final List<Integer> result = new ArrayList<Integer>();
         final StyledDocument doc = findDocument(fo);
-        if (doc == null) return new int[] {};
+        if (doc == null) return null;
         try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -909,15 +965,50 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             });
+            if (!f.isDone()) {
+                return new Future<int[]>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public int[] get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return getResultArray();
+                    }
+
+                    public int[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return getResultArray();
+                    }
+
+                    private int[] getResultArray() {
+                        final int[] resultArray = new int[result.size()];
+                        for (int i = 0; i < resultArray.length; i++) {
+                            resultArray[i] = result.get(i).intValue();
+                        }
+                        return resultArray;
+                    }
+
+                };
+            }
         } catch (ParseException pex) {
             ErrorManager.getDefault().notify(pex);
-            return new int[] {};
+            return null;
         }
         int[] resultArray = new int[result.size()];
         for (int i = 0; i < resultArray.length; i++) {
             resultArray[i] = result.get(i).intValue();
         }
-        return resultArray;
+        return new DoneFuture<int[]>(resultArray);
     }
 
     private static boolean egualMethodSignatures(String s1, String s2) {
@@ -926,6 +1017,242 @@ public class EditorContextImpl extends EditorContext {
         i = s2.lastIndexOf(")");
         if (i > 0) s2 = s2.substring(0, i);
         return s1.equals(s2);
+    }
+
+    /**
+     * @param fo
+     * @param className
+     * @param classExcludeNames
+     * @return <code>null</code> or Future with line number
+     */
+    static Future<Integer> getClassLineNumber(
+        FileObject fo,
+        final String className,
+        final String[] classExcludeNames
+    ) {
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return null;
+        final Integer[] result = new Integer[] { null };
+        final StyledDocument doc = findDocument(fo);
+        if (doc == null) return null;
+        try {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
+                    if (classElement == null) return ;
+                    SourcePositions positions =  ci.getTrees().getSourcePositions();
+                    Tree tree = ci.getTrees().getTree(classElement);
+                    if (tree == null) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Null tree for element "+classElement+" in "+className);
+                        return;
+                    }
+                    int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                    if (pos == Diagnostic.NOPOS) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "No position for tree "+tree+" of element "+classElement+" ("+className+")");
+                        return;
+                    }
+                    if (tree.getKind() == Kind.CLASS) {
+                        boolean shifted = false;
+                        ModifiersTree mtree = ((ClassTree) tree).getModifiers();
+                        for (AnnotationTree atree : mtree.getAnnotations()) {
+                            int aend = (int) positions.getEndPosition(ci.getCompilationUnit(), atree);
+                            if (aend != Diagnostic.NOPOS && pos < aend) {
+                                shifted = true;
+                                pos = aend + 1;
+                            }
+                        }
+                        if (shifted) {
+                            String text = ci.getText();
+                            int l = text.length();
+                            while (pos < l && Character.isWhitespace(text.charAt(pos))) {
+                                pos++;
+                            }
+                        }
+                    }
+                    result[0] = new Integer(NbDocument.findLineNumber(doc, pos) + 1);
+                }
+            });
+            if (!f.isDone()) {
+                return new Future<Integer>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public Integer get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return result[0];
+                    }
+
+                    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return result[0];
+                    }
+
+                };
+            }
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
+            return null;
+        }
+        return new DoneFuture<Integer>(result[0]);
+    }
+
+    /** @return declared class name
+     */
+    public String getCurrentClassDeclaration() {
+        FileObject fo = contextDispatcher.getCurrentFile();
+        if (fo == null) return null;
+        JEditorPane ep = contextDispatcher.getCurrentEditor();
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return null;
+        final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
+        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        final String[] currentClassPtr = new String[] { null };
+        final Future<Void> scanFinished;
+        try {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    int offset = currentOffset;
+                    //Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    String text = ci.getText();
+                    int l = text.length();
+                    char c = 0;
+                    while (offset < l && (c = text.charAt(offset)) != '{' && c != '}' && c != '\n' && c != '\r') offset++;
+                    if (offset >= l) {
+                        return ;
+                    }
+                    offset--;
+                    TreePath path = ci.getTreeUtilities().pathFor(offset);
+                    Tree tree;
+                    do {
+                        tree = path.getLeaf();
+                        if (tree.getKind() != Tree.Kind.CLASS) {
+                            path = path.getParentPath();
+                            if (path == null) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    } while (true);
+                    if (tree.getKind() == Tree.Kind.CLASS) {
+                        SourcePositions positions =  ci.getTrees().getSourcePositions();
+                        int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
+                        if (pos == Diagnostic.NOPOS) {
+                            return ; // We do not know where we are!
+                        }
+                        if (offset < pos) {
+                            return ; // We are before the class declaration!
+                        }
+                        int hend = getHeaderEnd((ClassTree) tree, positions, ci.getCompilationUnit());
+                        if (hend > 0) {
+                            pos = hend;
+                        }
+                        while (pos < l && text.charAt(pos) != '{') pos++;
+                        if (pos < offset) { // We are after the class declaration!
+                            return ;
+                        }
+                        Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
+                        if (el != null && (el.getKind() == ElementKind.CLASS || el.getKind() == ElementKind.INTERFACE)) {
+                            currentClassPtr[0] = ElementUtilities.getBinaryName((TypeElement) el);
+                        }
+                    }
+                }
+
+                private int getHeaderEnd(ClassTree classTree, SourcePositions positions, CompilationUnitTree compilationUnit) {
+                    int max = -1;
+                    int pos = (int) positions.getEndPosition(compilationUnit, classTree.getExtendsClause());
+                    if (pos != Diagnostic.NOPOS) {
+                        max = Math.max(max, pos);
+                    }
+                    pos = (int) positions.getEndPosition(compilationUnit, classTree.getModifiers());
+                    if (pos != Diagnostic.NOPOS) {
+                        max = Math.max(max, pos);
+                    }
+                    for (Tree t : classTree.getImplementsClause()) {
+                        pos = (int) positions.getEndPosition(compilationUnit, t);
+                        if (pos != Diagnostic.NOPOS) {
+                            max = Math.max(max, pos);
+                        }
+                    }
+                    for (Tree t : classTree.getTypeParameters()) {
+                        pos = (int) positions.getEndPosition(compilationUnit, t);
+                        if (pos != Diagnostic.NOPOS) {
+                            max = Math.max(max, pos);
+                        }
+                    }
+                    return max;
+                }
+            }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    // Hack: We should not wait for the scan in AWT!
+                    //       Thus we throw IllegalComponentStateException,
+                    //       which returns the data upon call to getMessage()
+                    throw new java.awt.IllegalComponentStateException() {
+
+                        private void waitScanFinished() {
+                            try {
+                                scanFinished.get();
+                            } catch (InterruptedException iex) {
+                            } catch (java.util.concurrent.ExecutionException eex) {
+                                ErrorManager.getDefault().notify(eex);
+                            }
+                        }
+
+                        @Override
+                        public String getMessage() {
+                            waitScanFinished();
+                            return currentClassPtr[0];
+                        }
+
+                    };
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return null;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return null;
+                    }
+                }
+            }
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+        return currentClassPtr[0];
     }
 
     /** @return { "method name", "method signature", "enclosing class name" }
@@ -938,7 +1265,6 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(fo);
         if (js == null) return null;
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
-        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
@@ -1181,14 +1507,18 @@ public class EditorContextImpl extends EditorContext {
                 // No JavaSource, we can not ask for a compilation controller
                 return null;
             }
+            Date lastModified = fo.lastModified();
+            Date storedStamp = null;
             JavaSourceUtil.Handle handle;
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
+                storedStamp = sourceModifStamps.get(js);
             }
-            if (handle == null) {
+            if (handle == null || (storedStamp != null && lastModified.after(storedStamp))) {
                 handle = JavaSourceUtil.createControllerHandle(fo, handle);
                 synchronized (sourceHandles) {
                     sourceHandles.put(js, handle);
+                    sourceModifStamps.put(js, lastModified);
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
@@ -1543,7 +1873,7 @@ public class EditorContextImpl extends EditorContext {
             CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
             final ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
-            if (SourceUtils.isScanInProgress()) {
+            if (fo != null && SourceUtils.isScanInProgress()) {
                 final StyledDocument doc = findDocument(fo);
                 if (doc == null) {
                     return null;
@@ -1806,7 +2136,6 @@ public class EditorContextImpl extends EditorContext {
             currentOffset = 0;
         }
 
-        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
@@ -1861,6 +2190,20 @@ public class EditorContextImpl extends EditorContext {
                             if (currentElementPtr[0].equals("<init>")) {
                                 // The constructor name is the class name:
                                 currentElementPtr[0] = el.getEnclosingElement().getSimpleName().toString();
+                            }
+                        } else {
+                            TreePath path = ci.getTreeUtilities().pathFor(currentOffset);
+                            Tree tree = path != null ? path.getLeaf() : null;
+                            while (tree != null && !(tree instanceof MethodTree || tree instanceof ClassTree)) {
+                                path = path.getParentPath();
+                                tree = path != null ? path.getLeaf() : null;
+                            }
+                            if (tree instanceof MethodTree) {
+                                String name = ((MethodTree)tree).getName().toString();
+                                if (name.equals("<init>") && scope.getEnclosingClass() != null) {
+                                    name = scope.getEnclosingClass().getSimpleName().toString();
+                                }
+                                currentElementPtr[0] = name;
                             }
                         }
                     } else if (kind == ElementKind.FIELD) {
@@ -2080,6 +2423,29 @@ public class EditorContextImpl extends EditorContext {
         return ops;
     }
 
+
+    // Support classes:
+
+    private static final class DoneFuture<T> implements Future<T> {
+
+        private final T result;
+
+        public DoneFuture(T result) {
+            this.result = result;
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) { return false; }
+        public boolean isCancelled() { return false; }
+        public boolean isDone() { return true; }
+
+        public T get() throws InterruptedException, ExecutionException {
+            return result;
+        }
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return result;
+        }
+    }
+
     private class EditorContextDispatchListener extends Object implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -2139,9 +2505,11 @@ public class EditorContextImpl extends EditorContext {
             if (numSession > 0) {
                 // Trigger the check for live values
                 sourceHandles.size();
+                sourceModifStamps.size();
             } else {
                 // No debugger sessions - clean the map
                 sourceHandles.clear();
+                sourceModifStamps.clear();
             }
         }
 

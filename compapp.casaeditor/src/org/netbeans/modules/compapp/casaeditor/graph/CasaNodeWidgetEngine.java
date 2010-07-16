@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,8 @@ import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.AcceptProviderEngineNode;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
@@ -63,8 +68,9 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 /**
  *
  * @author rdara
+ * @author jqian
  */
-public class CasaNodeWidgetEngine extends CasaNodeWidget
+public abstract class CasaNodeWidgetEngine extends CasaNodeWidget
         implements StateModel.Listener, CasaMinimizable {
 
     public static final int ARROW_PIN_WIDTH = 25;
@@ -79,7 +85,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
     private StateModel mStateModel = new StateModel(2);
     private Anchor mNodeAnchor = new CasaNodeAnchor(this);
     private boolean mIsHighlighted;
+    /** Whether the connections involving this SE SU widget are hidden. */
+    private boolean mIsConnectionHidden;
     private static final boolean DEBUG = false;
+    private static Color CONNECTION_HIDDEN_INDICATION_COLOR =
+            new Color(128, 128, 128, 128); // make it customizable
 
     /**
      * Creates a node widget.
@@ -147,15 +157,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
                 // the title from the pin area.
                 Rectangle rect = provider.getHeaderRect();
                 if (rect != null) {
-                    if (getState().isSelected() || getState().isFocused()) {
-                        g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
-                    } else {
-                        g.setColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER());
-                    }
+                    g.setColor(provider.getBorderColor());
                     g.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
                 }
                 if (isHighlighted()) {
                     InnerGlowBorderDrawer.paintInnerGlowBorder(getGraphics(), provider.getClipRect(), CasaFactory.getCasaCustomizer().getCOLOR_SELECTION(), 0.6f, 10);
+                }
+
+                if (isConnectionHidden()) {
+                    g.setColor(CONNECTION_HIDDEN_INDICATION_COLOR);
+                    Rectangle containerRect = mContainerWidget.getBounds();
+                    g.fillRect(containerRect.x, containerRect.y, containerRect.width, containerRect.height);
                 }
             }
         };
@@ -206,7 +218,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         }
         readjustBounds();
     }
-    
+
 //    /**
 //     * Sets all node properties at once.
 //     * 
@@ -218,13 +230,12 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
 //        mTitleWidget.setComponentName(compName);
 //        readjustBounds();
 //    }
-
     public void stateChanged() {
         setMinimized(mStateModel.getBooleanState());
     }
-    
+
     public void updatePinImage() {
-         for (Widget child : mContainerWidget.getChildren()) {          
+        for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidget) {
                 ((CasaPinWidget) child).updatePinImage();
             }
@@ -233,46 +244,30 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
 
     public void setMinimized(boolean isMinimized) {
         ObjectScene scene = (ObjectScene) getScene();
-        
+
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaMinimizable) {
                 ((CasaMinimizable) child).setMinimized(isMinimized);
             }
-            
+
             if (child instanceof CasaPinWidget) {
                 CasaPinWidget pinWidget = (CasaPinWidget) child;
                 for (CasaComponent connection : pinWidget.getConnections()) {
-                    CasaConnectionWidget connectionWidget = 
+                    CasaConnectionWidget connectionWidget =
                             (CasaConnectionWidget) scene.findWidget(connection);
                     if (connectionWidget instanceof CasaMinimizable) {
-                        ((CasaMinimizable)connectionWidget).setMinimized(isMinimized);
+                        ((CasaMinimizable) connectionWidget).setMinimized(isMinimized);
                     }
                 }
             }
         }
-        
+
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         getScene().validate();
     }
 
     public boolean isMinimized() {
         return mStateModel.getBooleanState();
-    }
-
-    protected Color getBackgroundColor() {
-        return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
-    }
-
-    protected Color getPinHolderBorderColor() {
-        return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER();
-    }
-
-    protected Color getPinHolderTitleColor() {
-        return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_TITLE();
-    }
-
-    protected Color getPinHolderBackgroundColor() {
-        return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BACKGROUND();
     }
 
     public void setTitleFont(Font font) {
@@ -307,12 +302,12 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         setPinColor(getPinColor());
         mContainerWidget.setPreferredBounds(null);
     }
-    
+
     public void attachProcessWidget(CasaProcessTitleWidget widget) {
         mContainerWidget.addChild(widget);
         mContainerWidget.setPreferredBounds(null);
     }
-    
+
     public void doneAddingWidget() {
         //Add a cushoning widget only if there are other widgets than the title.
         if (mContainerWidget.getChildren().size() > 1) {
@@ -364,14 +359,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         mTitleWidget.setEditable(bValue);
     }
 
-    public Font getPinFont() {
-        return null;
-    }
-
-    public Color getPinColor() {
-        return null;
-    }
-
     public void setPinFont(Font font) {
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaPinWidgetEngine) {
@@ -397,5 +384,124 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
 
     public boolean isHighlighted() {
         return mIsHighlighted;
+    }
+
+    public void setConnectionHidden(boolean isConnectionHidden) {
+        if (mIsConnectionHidden != isConnectionHidden) {
+            mIsConnectionHidden = isConnectionHidden;
+            repaint();
+        }
+    }
+
+    public boolean isConnectionHidden() {
+        return mIsConnectionHidden;
+    }    
+    
+    protected abstract Color getBackgroundColor();
+
+    protected abstract Color getPinHolderBorderColor();
+
+    protected abstract Color getPinHolderTitleColor();
+
+    protected abstract Color getPinHolderBackgroundColor();
+    
+    protected abstract Font getPinFont();
+
+    protected abstract Color getPinColor();
+
+
+    /** 
+     * Internal Service Engine Service Unit Widget.
+     */
+    public static class Internal extends CasaNodeWidgetEngine {
+
+        public Internal(Scene scene) {
+            this(scene, true);
+        }
+
+        public Internal(Scene scene, boolean confStatus) {
+            super(scene);
+            setConfigurationStatus(confStatus);
+            setTitleFont(CasaFactory.getCasaCustomizer().getFONT_SU_HEADER());
+            setTitleColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_TITLE());
+        }
+
+        @Override
+        protected Color getBackgroundColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
+        }
+
+        @Override
+        protected Color getPinHolderBorderColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BORDER();
+        }
+
+        @Override
+        protected Color getPinHolderTitleColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_TITLE();
+        }
+
+        @Override
+        protected Color getPinHolderBackgroundColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_BACKGROUND();
+        }
+
+        @Override
+        public Font getPinFont() {
+            return CasaFactory.getCasaCustomizer().getFONT_SU_PIN();
+        }
+
+        @Override
+        public Color getPinColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_INTERNAL_PIN();
+        }
+    }
+
+    /**
+     * External Service Engine Service Unit Widget.
+     */
+    public static class External extends CasaNodeWidgetEngine {
+
+        public External(Scene scene) {
+            this(scene, true);
+        }
+
+        public External(Scene scene, boolean confStatus) {
+            super(scene);
+            getActions().addAction(CasaFactory.createAcceptAction(new AcceptProviderEngineNode((CasaModelGraphScene) scene)));
+            setConfigurationStatus(confStatus);
+            setTitleFont(CasaFactory.getCasaCustomizer().getFONT_EXT_SU_HEADER());
+            setTitleColor(CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_TITLE());
+        }
+
+        @Override
+        protected Color getBackgroundColor() {
+            return Color.WHITE;
+        }
+
+        @Override
+        protected Color getPinHolderBorderColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_BORDER();
+        }
+
+        @Override
+        protected Color getPinHolderTitleColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_TITLE();
+        }
+
+        @Override
+        protected Color getPinHolderBackgroundColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_BACKGROUND();
+        }
+
+        @Override
+        public Font getPinFont() {
+            return CasaFactory.getCasaCustomizer().getFONT_EXT_SU_PIN();
+        }
+
+        @Override
+        public Color getPinColor() {
+            return CasaFactory.getCasaCustomizer().getCOLOR_SU_EXTERNAL_PIN();
+        }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -68,11 +72,11 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -83,11 +87,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -97,6 +101,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -109,6 +114,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -138,10 +144,10 @@ import org.w3c.dom.Text;
     sharedNamespace=MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public final class MakeProject implements Project, AntProjectListener {
+public final class MakeProject implements Project, AntProjectListener, Runnable {
 
-    public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
@@ -149,6 +155,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
     private static final String MAKE_PROJECT_TYPE = "make-project-type"; // NOI18N
     private static MakeTemplateListener templateListener = null;
+    private final MakeProjectType kind;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -160,27 +167,27 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> cExtensions = MakeProject.createExtensionSet();
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
+    private boolean isOpenHookDone = false;
+    private AtomicBoolean isDeleted = new AtomicBoolean(false);
 
     private final MakeSources sources;
     private final MutableCP sourcepath;
+    private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
 
     public MakeProject(AntProjectHelper helper) throws IOException {
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Start of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        this.kind = new MakeProjectType();
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Create ConfigurationDescriptorProvider@"+System.identityHashCode(projectDescriptorProvider)+" for MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
         lookup = createLookup(aux);
-        helper.addAntProjectListener(this);
+        helper.addAntProjectListener(MakeProject.this);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -199,9 +206,7 @@ public final class MakeProject implements Project, AntProjectListener {
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("End of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
     }
 
     private void readProjectExtension(Element data, String key, Set<String> set) {
@@ -210,13 +215,12 @@ public final class MakeProject implements Project, AntProjectListener {
             nl = nl.item(0).getChildNodes();
             if (nl.getLength() == 1) {
                 String extensions = nl.item(0).getNodeValue();
-                for (String e : extensions.split(",")) { // NOI18N
-                    set.add(e);
-                }
+                set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
     }
 
+    @Override
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -243,23 +247,24 @@ public final class MakeProject implements Project, AntProjectListener {
         return helper;
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[]{
+        Lookup lkp = Lookups.fixed(new Object[]{
                     new Info(),
                     aux,
                     helper.createCacheDirectoryProvider(),
                     spp,
                     new MakeActionProvider(this),
-                    new MakeLogicalViewProvider(this, spp),
+                    new MakeLogicalViewProvider(this),
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
-                    new ProjectOpenedHookImpl(),
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
                     new AntProjectHelperProvider(),
@@ -269,14 +274,16 @@ public final class MakeProject implements Project, AntProjectListener {
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
-                    new MakeProjectType(),
+                    kind,
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
                 });
+        return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
+    @Override
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
@@ -286,6 +293,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
+    @Override
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored (probably better to listen to evaluator() if you need to)
     }
@@ -305,7 +313,7 @@ public final class MakeProject implements Project, AntProjectListener {
                 }
             }
         }
-        if (usedExtension.size() > 0 && addNewExtensionDialog(usedExtension, "H")) { // NOI18N
+        if (usedExtension.size() > 0) {
             // add unknown extension to header files
             addMIMETypeExtensions(usedExtension, MIMENames.HEADER_MIME_TYPE);
             headerExtensions.addAll(usedExtension);
@@ -383,6 +391,20 @@ public final class MakeProject implements Project, AntProjectListener {
         saveAdditionalExtensions();
     }
 
+    private synchronized void registerClassPath(boolean register) {
+        if (isOpenHookDone) {
+            if (register) {
+                GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            } else {
+                try {
+                    GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+                } catch (Throwable ex) {
+                    // do nothing because register depends on make options
+                }
+            }
+        }
+    }
+
     private void saveAdditionalExtensions() {
         Element data = helper.getPrimaryConfigurationData(true);
         saveAdditionalHeaderExtensions(data, MakeProject.C_EXTENSIONS, cExtensions);
@@ -434,10 +456,10 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     public static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
+        if (CndFileUtils.isSystemCaseSensitive()) {
             return new TreeSet<String>();
+        } else {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         }
     }
 
@@ -471,7 +493,7 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     // Package private methods -------------------------------------------------
-    final class AntProjectHelperProvider {
+    private final class AntProjectHelperProvider {
 
         AntProjectHelper getAntProjectHelper() {
             return helper;
@@ -488,7 +510,8 @@ public final class MakeProject implements Project, AntProjectListener {
             "simple-files", // NOI18N
             "fortran-types", // NOI18N
             "asm-types", // NOI18N
-            "qt-types"}; // NOI18N
+            "qt-types", // NOI18N
+            "cncpp-test-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N
@@ -528,10 +551,12 @@ public final class MakeProject implements Project, AntProjectListener {
             this.configurationProvider = configurationProvider;
         }
 
+        @Override
         public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
 
+        @Override
         public String[] getPrivilegedTemplates() {
             MakeConfigurationDescriptor configurationDescriptor =
                     configurationProvider.getConfigurationDescriptor(false);
@@ -549,6 +574,7 @@ public final class MakeProject implements Project, AntProjectListener {
     public String getName() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
 
+            @Override
             public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -567,6 +593,7 @@ public final class MakeProject implements Project, AntProjectListener {
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
 
+            @Override
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -660,10 +687,12 @@ public final class MakeProject implements Project, AntProjectListener {
     private class MakeSubprojectProvider implements SubprojectProvider {
 
         // Add a listener to changes in the set of subprojects.
+        @Override
         public void addChangeListener(ChangeListener listener) {
         }
 
         // Get a set of projects which this project can be considered to depend upon somehow.
+        @Override
         public Set<Project> getSubprojects() {
             Set<Project> subProjects = new HashSet<Project>();
             Set<String> subProjectLocations = new HashSet<String>();
@@ -694,8 +723,7 @@ public final class MakeProject implements Project, AntProjectListener {
 
             String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
             for (String loc : subProjectLocations) {
-                String location = IpeUtils.toAbsolutePath(baseDir, loc);
-                location = FilePathAdaptor.mapToLocal(location); // PC path
+                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);
@@ -711,6 +739,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         //Remove a listener to changes in the set of subprojects.
+        @Override
         public void removeChangeListener(ChangeListener listener) {
         }
     }
@@ -721,22 +750,29 @@ public final class MakeProject implements Project, AntProjectListener {
     private final static String PROJECT_NAME_WITH_HIDDEN_PATHS = System.getProperty("cnd.project.name.hidden.paths"); //NOI18N
     private final static int PROJECT_NAME_NUM_SHOWN_FOLDERS = Integer.getInteger("cnd.project.name.folders.num", 1); //NOI18N
 
-    private final class Info implements ProjectInformation {
+    interface InfoInterface extends ProjectInformation {
+        public void firePropertyChange(String prop);
+    }
+    
+    private final class Info implements InfoInterface {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         Info() {
         }
 
-        void firePropertyChange(String prop) {
+        @Override
+        public void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
         }
 
+        @Override
         public String getName() {
             String name = PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
             return name;
         }
 
+        @Override
         public String getDisplayName() {
             String name = MakeProject.this.getName();
 
@@ -787,6 +823,7 @@ public final class MakeProject implements Project, AntProjectListener {
             return name;
         }
 
+        @Override
         public Icon getIcon() {
             Icon icon = null;
             icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
@@ -823,14 +860,17 @@ public final class MakeProject implements Project, AntProjectListener {
             return icon;
         }
 
+        @Override
         public Project getProject() {
             return MakeProject.this;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
@@ -838,6 +878,7 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
 
+        @Override
         protected void projectXmlSaved() throws IOException {
             /*
             genFilesHelper.refreshBuildScript(
@@ -860,13 +901,16 @@ public final class MakeProject implements Project, AntProjectListener {
         openedTasks.add(task);
     }
 
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    @Override
+    public void run() {
+        // This is ugly solution introduced for waiting finished opened tasks in discovery module.
+        // see method org.netbeans.modules.cnd.discovery.projectimport.ImportProject.doWork().
+        // TODO: refactor this solution
+        onProjectOpened();
+    }
 
-        ProjectOpenedHookImpl() {
-        }
-
-        protected void projectOpened() {
-
+    private synchronized void onProjectOpened(){
+        if (!isOpenHookDone) {
             checkNeededExtensions();
             if (openedTasks != null) {
                 for (Runnable runnable : openedTasks) {
@@ -875,62 +919,73 @@ public final class MakeProject implements Project, AntProjectListener {
                 openedTasks.clear();
                 openedTasks = null;
             }
+            isOpenHookDone = true;
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
+                registerClassPath(true);
+            }
+            MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
+        }
+    }
 
-            GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+    void setDeleted(){
+        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        isDeleted.set(true);
+    }
 
-//            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
-//            ConfigurationDescriptor projectDescriptor = null;
-//            int count = 15;
-//
-//            // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
-//            // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
-//            // return null and we can remove this change.
-//            while (projectDescriptor == null && count-- > 0) {
-//                projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-//                if (projectDescriptor == null) {
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException ex) {
-//                        return;
-//                    }
-//                }
-//            }
-//            if (projectDescriptor == null) {
-//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
-//                return;
-//            }
-//
-//            Configuration[] confs = projectDescriptor.getConfs().getConfs();
-//            for (int i = 0; i < confs.length; i++) {
-//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-//                CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
-//                if (!csconf.isValid()) {
-//                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
-//                    CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).add(cs);
-//                    if (cs.isValid()) {
-//                        csconf.setValue(cs.getName());
-//                    }
-//                }
-//            }
-//             */
+    private synchronized void onProjectClosed(){
+        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        save();
+        if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+            projectDescriptorProvider.getConfigurationDescriptor().closed();
+        }
+        MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
+        if (isOpenHookDone) {
+            registerClassPath(false);
+            isOpenHookDone = false;
+        }
+        MakeProjectFileProviderFactory.removeSearchBase(this);
+    }
+
+    public synchronized void save(){
+        if (!isDeleted.get()) {
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                projectDescriptorProvider.getConfigurationDescriptor().save();
+            }
+        }
+    }
+
+    public synchronized void saveAndMarkDeleted(){
+        if (isDeleted.compareAndSet(false, true)) {
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                projectDescriptorProvider.getConfigurationDescriptor().save();
+            }
+        }
+    }
+
+    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+
+        ProjectOpenedHookImpl() {
         }
 
-        protected void projectClosed() {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
-            }
+        @Override
+        protected void projectOpened() {
+            onProjectOpened();
+        }
 
-            GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+        @Override
+        protected void projectClosed() {
+            onProjectClosed();
         }
     }
 
     private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
 
+        @Override
         public MakeArtifact[] getBuildArtifacts() {
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+            Configuration[] confs = projectDescriptor.getConfs().toArray();
 
 //            String projectLocation = null;
 //            int configurationType = 0;
@@ -950,7 +1005,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    static class FolderSearchInfo implements SearchInfo {
+    private static class FolderSearchInfo implements SearchInfo {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
@@ -958,10 +1013,12 @@ public final class MakeProject implements Project, AntProjectListener {
             this.projectDescriptorProvider = projectDescriptorProvider;
         }
 
+        @Override
         public boolean canSearch() {
             return true;
         }
 
+        @Override
         public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
@@ -984,15 +1041,17 @@ public final class MakeProject implements Project, AntProjectListener {
         return (dc == null) ? null : dc.getExecutionEnvironment();
     }
 
-    class RemoteProjectImpl implements RemoteProject {
+    private class RemoteProjectImpl implements RemoteProject {
+        @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
     }
+    
+    private class ToolchainProjectImpl implements ToolchainProject {
 
-    class ToolchainProjectImpl implements ToolchainProject {
-
+        @Override
         public CompilerSet getCompilerSet() {
             MakeConfiguration conf = getActiveConfiguration();
             if (conf != null) {
@@ -1012,9 +1071,10 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public MutableCP(MakeSources sources) {
             this.sources = sources;
-            this.sources.addChangeListener(WeakListeners.change(this, this.sources));
+            this.sources.addChangeListener(WeakListeners.change(MutableCP.this, this.sources));
         }
 
+        @Override
         public List<? extends PathResourceImplementation> getResources() {
             final long currentEventId;
             synchronized (this) {
@@ -1042,14 +1102,17 @@ public final class MakeProject implements Project, AntProjectListener {
             return list;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             synchronized (this) {
                 resources = null;
@@ -1072,31 +1135,37 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public PathResourceImpl(PathResourceImplementation delegate) {
             this.delegate = delegate;
-            this.delegate.addPropertyChangeListener(this);
+            this.delegate.addPropertyChangeListener(PathResourceImpl.this);
         }
 
+        @Override
         public boolean includes(URL root, String resource) {
             return !CndFileVisibilityQuery.getDefault().isIgnored(resource);
         }
 
+        @Override
         public URL[] getRoots() {
             return delegate.getRoots();
         }
 
+        @Override
         public ClassPathImplementation getContent() {
             return delegate.getContent();
         }
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             pcs.firePropertyChange(new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
         }
@@ -1109,6 +1178,7 @@ public final class MakeProject implements Project, AntProjectListener {
             this.sources = sources;
         }
 
+        @Override
         public ClassPath findClassPath(FileObject file, String type) {
             if (MakeProjectPaths.SOURCES.equals(type)) {
                 for (SourceGroup sg : sources.getSourceGroups("generic")) { // NOI18N
@@ -1123,6 +1193,17 @@ public final class MakeProject implements Project, AntProjectListener {
             }
 
             return null;
+        }
+
+    }
+
+    private final class IndexerOptionsListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (MakeOptions.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
+                registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
+            }
         }
 
     }

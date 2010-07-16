@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -107,7 +110,7 @@ public class JbiProjectGenerator {
         
         final FileObject fo = createProjectDir(dir);
         
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -248,7 +251,7 @@ public class JbiProjectGenerator {
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject(dir);
 
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
             throw new IOException("Can't create " + dir.getName()); // NOI18N
         }
@@ -331,16 +334,16 @@ public class JbiProjectGenerator {
             JbiProjectProperties.DIST_JAR,
             "${" + JbiProjectProperties.DIST_DIR + "}/" + name + ".zip" // NOI18N
         );
-        ep.setProperty(JbiProjectProperties.J2EE_PLATFORM, j2eeLevel);
-        ep.setProperty(JbiProjectProperties.JAR_COMPRESS, "false"); // NOI18N
-
-        Deployment deployment = Deployment.getDefault();
-                
-        ep.setProperty(JbiProjectProperties.JAVAC_SOURCE, "1.4"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
-
-        ep.setProperty(JbiProjectProperties.JAVAC_TARGET, "1.4"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.J2EE_PLATFORM, j2eeLevel);
+//        ep.setProperty(JbiProjectProperties.JAR_COMPRESS, "false"); // NOI18N
+//
+//        Deployment deployment = Deployment.getDefault();
+//
+//        ep.setProperty(JbiProjectProperties.JAVAC_SOURCE, "1.4"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
+//
+//        ep.setProperty(JbiProjectProperties.JAVAC_TARGET, "1.4"); // NOI18N
 
         ep.setProperty(JbiProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
         ep.setProperty(
@@ -350,30 +353,30 @@ public class JbiProjectGenerator {
         ep.setProperty(
             JbiProjectProperties.BUILD_CLASSES_DIR, "${" + JbiProjectProperties.BUILD_DIR + "}/jar" // NOI18N
         );
-        ep.setProperty(
-            JbiProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs" // NOI18N
-        );
-        ep.setProperty(
-            JbiProjectProperties.DIST_JAVADOC_DIR,
-            "${" + JbiProjectProperties.DIST_DIR + "}/javadoc" // NOI18N
-        );
-        ep.setProperty(JbiProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
-        ep.setProperty(
-            JbiProjectProperties.DEBUG_CLASSPATH,
-            "${" + JbiProjectProperties.JAVAC_CLASSPATH + "}:${" + // NOI18N
-            JbiProjectProperties.BUILD_CLASSES_DIR + "}" // NOI18N 
-        );
-        ep.setProperty(JbiProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_USE, "true"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-        ep.setProperty(JbiProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
+//        ep.setProperty(
+//            JbiProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs" // NOI18N
+//        );
+//        ep.setProperty(
+//            JbiProjectProperties.DIST_JAVADOC_DIR,
+//            "${" + JbiProjectProperties.DIST_DIR + "}/javadoc" // NOI18N
+//        );
+//        ep.setProperty(JbiProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
+//        ep.setProperty(
+//            JbiProjectProperties.DEBUG_CLASSPATH,
+//            "${" + JbiProjectProperties.JAVAC_CLASSPATH + "}:${" + // NOI18N
+//            JbiProjectProperties.BUILD_CLASSES_DIR + "}" // NOI18N
+//        );
+//        ep.setProperty(JbiProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_USE, "true"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+//        ep.setProperty(JbiProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
 
         //============= Start of JBI ========================================//
         ep.setProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID, name); 

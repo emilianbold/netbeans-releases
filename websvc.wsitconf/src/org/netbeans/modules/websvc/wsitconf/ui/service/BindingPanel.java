@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -242,16 +245,19 @@ public class BindingPanel extends SectionInnerPanel {
         }
 
         model.addComponentListener(new ComponentListener() {
+            @Override
             public void valueChanged(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
                 }
             }
+            @Override
             public void childrenAdded(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
                 }
             }
+            @Override
             public void childrenDeleted(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
@@ -420,6 +426,7 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(securityChBox)) {
             String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
+                Util.checkMetroRtLibrary(project, true);
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
                     DefaultSettings.fillDefaults(project, false,true);
@@ -532,8 +539,10 @@ public class BindingPanel extends SectionInnerPanel {
     @Override
     protected void endUIChange() { }
 
+    @Override
     public void linkButtonPressed(Object ddBean, String ddProperty) { }
 
+    @Override
     public javax.swing.JComponent getErrorComponent(String errorId) {
         return new JButton();
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
@@ -115,12 +119,13 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         return new SPSLocalImpl(execEnv, privpCmd);
     }
 
-    public void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
+    @Override
+    public boolean requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         PrintWriter w = null;
 
         try {
             // Construct privileges list
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             for (String priv : requestedPrivileges) {
                 sb.append(priv).append(","); // NOI18N
@@ -135,20 +140,25 @@ public final class SPSLocalImpl extends SPSCommonImpl {
             int result = process.waitFor();
 
             if (result != 0) {
-                Logger.getInstance().fine("privp returned " + result); // NOI18N
+                Logger.getInstance().log(Level.FINE, "privp returned {0}", result); // NOI18N
                 throw new NotOwnerException();
             }
+
+            return true;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (IOException ex) {
-            Logger.getInstance().fine("IOException in requestPrivileges : " + ex); // NOI18N
+            Logger.getInstance().log(Level.FINE, "IOException in requestPrivileges : {0}", ex); // NOI18N
         } finally {
             if (w != null) {
                 w.close();
             }
         }
+
+        return false;
     }
 
+    @Override
     synchronized String getPID() {
         if (pid != null) {
             return pid;

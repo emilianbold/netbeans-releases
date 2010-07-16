@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,10 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -69,24 +76,31 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-class ObjectFieldVariable extends AbstractObjectVariable
-implements org.netbeans.api.debugger.jpda.Field {
+public class ObjectFieldVariable extends AbstractObjectVariable
+implements org.netbeans.api.debugger.jpda.Field, Refreshable {
+
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     protected Field field;
-    private ObjectReference objectReference;
+    private ObjectReference objectReference;    // ObjectReference to retrieve value of an instance field from.
+    private ReferenceType classType;            // ReferenceType to retrieve value of a static field from.
     private String genericSignature;
+    private boolean valueSet = true;
+    private final Object valueLock = new Object();
+    private boolean valueRetrieved = false;
+    private ObjectReference value;
     
-    ObjectFieldVariable (
-        JPDADebuggerImpl debugger, 
-        ObjectReference value, 
+    public ObjectFieldVariable (
+        JPDADebuggerImpl debugger,
+        ObjectReference value,
         //String className,
         Field field,
         String parentID,
         ObjectReference objectReference
     ) {
         super (
-            debugger, 
-            value, 
+            debugger,
+            value,
             getID(parentID, field)
         );
         this.field = field;
@@ -104,7 +118,7 @@ implements org.netbeans.api.debugger.jpda.Field {
         }
     }
 
-    ObjectFieldVariable (
+    public ObjectFieldVariable (
         JPDADebuggerImpl debugger, 
         ObjectReference value, 
         //String className,
@@ -121,6 +135,24 @@ implements org.netbeans.api.debugger.jpda.Field {
             objectReference
         );
         this.genericSignature = genericSignature;
+    }
+
+    public ObjectFieldVariable (
+        JPDADebuggerImpl debugger,
+        Field field,
+        String parentID,
+        String genericSignature,
+        ObjectReference objectReference
+    ) {
+        this (
+            debugger,
+            null,
+            field,
+            parentID,
+            genericSignature,
+            objectReference
+        );
+        this.valueSet = false;
     }
 
     /**
@@ -156,21 +188,15 @@ implements org.netbeans.api.debugger.jpda.Field {
     }
 
     public JPDAClassType getDeclaringClass() {
-        ReferenceType type;
-        try {
-            if (objectReference != null) {
-                type = (ReferenceType) ValueWrapper.type(objectReference);
-            } else {
-                type = TypeComponentWrapper.declaringType(field);
-            }
-        } catch (InternalExceptionWrapper ex) {
-            throw ex.getCause();
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            throw ex.getCause();
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            throw ex.getCause();
+        return new JPDAClassTypeImpl(getDebugger(), getTheDeclaringClassType());
+    }
+
+    private ReferenceType getTheDeclaringClassType() {
+        ReferenceType type = classType;
+        if (type == null) {
+            classType = type = FieldVariable.getTheDeclaringClassType(objectReference, field);
         }
-        return new JPDAClassTypeImpl(getDebugger(), type);
+        return type;
     }
 
     /**
@@ -201,6 +227,8 @@ implements org.netbeans.api.debugger.jpda.Field {
                 return null;
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return null;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                return null;
             }
             if (type instanceof ReferenceType) {
                 return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
@@ -220,6 +248,49 @@ implements org.netbeans.api.debugger.jpda.Field {
     public boolean isStatic () {
         return TypeComponentWrapper.isStatic0(field);
     }
+
+    @Override
+    protected Value getInnerValue() {
+        if (valueSet) {
+            return super.getInnerValue();
+        }
+        synchronized (valueLock) {
+            if (!valueRetrieved) {
+                Value v;
+                if (logger.isLoggable(Level.FINE)) {
+                    if (objectReference == null) {
+                        logger.fine("STARTED (OFV): "+getTheDeclaringClassType()+".getValue("+field+")");
+                    } else {
+                        logger.fine("STARTED (OFV): "+objectReference+".getValue("+field+")");
+                    }
+                }
+                try {
+                    if (objectReference == null) {
+                        v = ReferenceTypeWrapper.getValue (getTheDeclaringClassType(), field);
+                    } else {
+                        v = ObjectReferenceWrapper.getValue (objectReference, field);
+                    }
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    v = null;
+                } catch (InternalExceptionWrapper ocex) {
+                    v = null;
+                } catch (VMDisconnectedExceptionWrapper ocex) {
+                    v = null;
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    if (objectReference == null) {
+                        logger.fine("FINISHED(OFV): "+getTheDeclaringClassType()+".getValue("+field+") = "+v);
+                    } else {
+                        logger.fine("FINISHED(OFV): "+objectReference+".getValue("+field+") = "+v);
+                    }
+                    logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST"));
+                }
+                this.value = (ObjectReference) v;
+                this.valueRetrieved = true;
+            }
+            return value;
+        }
+    }
     
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
@@ -228,7 +299,7 @@ implements org.netbeans.api.debugger.jpda.Field {
                 ObjectReferenceWrapper.setValue(objectReference, field, value);
                 set = true;
             } else {
-                ReferenceType rt = TypeComponentWrapper.declaringType(field);
+                ReferenceType rt = getTheDeclaringClassType();
                 if (rt instanceof ClassType) {
                     ClassType ct = (ClassType) rt;
                     ClassTypeWrapper.setValue(ct, field, value);
@@ -237,6 +308,10 @@ implements org.netbeans.api.debugger.jpda.Field {
             }
             if (!set) {
                 throw new InvalidExpressionException(field.toString());
+            } else if (!valueSet) {
+                synchronized (valueLock) {
+                    this.value = (ObjectReference) value;
+                }
             }
         } catch (IllegalArgumentExceptionWrapper ex) {
             throw new InvalidExpressionException (ex.getCause());
@@ -255,6 +330,24 @@ implements org.netbeans.api.debugger.jpda.Field {
         }
     }
 
+    /** Does wait for the value to be evaluated. */
+    @Override
+    public void refresh() throws RefreshFailedException {
+        if (valueSet) return ;
+        synchronized (valueLock) {
+            if (!valueRetrieved) {
+                getInnerValue();
+            }
+        }
+    }
+
+    /** Tells whether the variable is fully initialized and getValue()
+     *  returns the value immediately. */
+    @Override
+    public synchronized boolean isCurrent() {
+        return valueSet || valueRetrieved;
+    }
+
     @Override
     public ObjectFieldVariable clone() {
         String name;
@@ -265,9 +358,11 @@ implements org.netbeans.api.debugger.jpda.Field {
         } catch (VMDisconnectedExceptionWrapper ex) {
             name = "0";
         }
-        return new ObjectFieldVariable(getDebugger(), (ObjectReference) getJDIValue(), field,
+        ObjectFieldVariable clon = new ObjectFieldVariable(getDebugger(), (ObjectReference) getJDIValue(), field,
                 getID().substring(0, getID().length() - ("." + name + (getJDIValue() instanceof ObjectReference ? "^" : "")).length()),
                 genericSignature, objectReference);
+        clon.classType = classType;
+        return clon;
     }
 
     

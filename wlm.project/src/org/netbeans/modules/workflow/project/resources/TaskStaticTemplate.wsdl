@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="DEFINTION_NAME" targetNamespace="DEFINITON_TARGETNAMESPACE"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             xmlns:tns="DEFINITON_TARGETNAMESPACE"
+             xmlns:ns1="http://jbi.com.sun/wfse/wsdl/TaskCommon"
+             xmlns:ns2="http://wlmse.sample/po" 
+             xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype">    
+    <types>
+        <xsd:schema targetNamespace="http://jbi.com.sun/wfse/wsdl/TaskCommon">
+            <xsd:simpleType name="ResultCodeType">
+                <xsd:restriction base="xsd:string">
+                             <xsd:enumeration value="SUCCESS"/>
+                            <xsd:enumeration value="FAILED"/>
+                 </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:element name="resultCode" type="ns1:ResultCodeType"></xsd:element>          
+            <xsd:complexType name="FaultType">
+                <xsd:sequence>
+                    <xsd:element name="FaultCode" type="xsd:string"></xsd:element>
+                    <xsd:element name="FaultReason" type="xsd:string"></xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="fault" type="ns1:FaultType"></xsd:element>
+            
+        </xsd:schema>
+       
+        <!-- generate any schema imports from bpel wsdl if it has inline schema we can serailize that to an xsd and import it here-->
+        
+    </types>
+    
+     <message name="GetOptOutput_Input">
+        <part name="taskId" type="xsd:long"/>
+    </message>
+    <message name="SetOptOutput_Output">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>  
+    <message name="OptFaultMsg">
+        <part name="fault" element="ns1:fault"/>
+    </message>
+    
+     <message name="TaskIdMsg">
+        <part name="taskId" type="xsd:long"/>
+    </message>
+   
+    
+    <!-- 5 message for each task operations , 2 for input 2 for output and 1 for fault set<opnname>Output will not have fault-->
+    <!--
+    <message name="DEFINITON_TASKNAMEInput">
+        <part name="inputMsg" type="ns2:PurchaseOrderType"/>
+    </message>
+    <message name="DEFINITON_TASKNAMEOutput">
+        <part name="outputMsg" type="ns2:OrderReplyType"/>
+    </message>    
+    
+    <message name="GetDEFINITON_TASKNAMEInput_Input">
+        <part name="taskId" type="xsd:long"/>
+    </message>    
+    
+    <message name="GetDEFINITON_TASKNAMEOutput_Input">
+        <part name="taskId" type="xsd:long"/>
+    </message>     
+    
+    <message name="SetDEFINITON_TASKNAMEOutput_Input">
+        <part name="taskId" type="xsd:long"/>
+        <part name="outputMsg" type="ns2:OrderReplyType"/>
+    </message>      
+    -->
+  
+    <!-- generate porttype for task operation
+        porttype name: same as task operation's porttype name
+        3 operations will be generated:
+        (1) Get<operationName>Input
+            generate input message which takes taskid part
+            <part name="taskId" element="ns1:taskIdentifer"/>
+            
+            generate output message which is same as input message of  bpel <operation>
+            
+            generate fault which constant use tns:OptFaultMsg for message
+            
+        (2) Get<operationName>Output
+            generate input message which takes taskid part
+            <part name="taskId" element="ns1:taskIdentifer"/>
+            
+            generate output message which is same as output message of  bpel <operation>
+            
+            generate fault which constant use tns:OptFaultMsg for message
+            
+        (3) Set<operationName>Output
+            generate one message which has taskid part and part which is output part of the
+            output message of bpel <operation>
+            see SetDEFINITON_TASKNAMEOutput_Input
+        
+    -->
+    <!--
+    <portType name="DEFINITON_TASKNAMEPT">
+        <operation name="GetDEFINITON_TASKNAMEInput">
+            <input name="GetDEFINITON_TASKNAMEInputInput" message="tns:GetDEFINITON_TASKNAMEInput_Input"/>
+            <output name="GetDEFINITON_TASKNAMEInputOutput" message="tns:DEFINITON_TASKNAMEInput"/>
+            <fault name="GetDEFINITON_TASKNAMEInputFault" message="tns:OptFaultMsg"/>            
+        </operation>
+        <operation name="GetDEFINITON_TASKNAMEOutput">
+            <input name="GetDEFINITON_TASKNAMEOutputInput" message="tns:GetDEFINITON_TASKNAMEOutput_Input"/>
+            <output name="GetDEFINITON_TASKNAMEOutputOutput" message="tns:DEFINITON_TASKNAMEOutput"/>
+            <fault name="GetDEFINITON_TASKNAMEOutputFault" message="tns:OptFaultMsg"/>             
+        </operation>
+        <operation name="SetDEFINITON_TASKNAMEOutput">
+            <input name="SetDEFINITON_TASKNAMEOutputInput" message="tns:SetDEFINITON_TASKNAMEOutput_Input"/>
+            <output name="SetDEFINITON_TASKNAMEOutputOutput" message="tns:SetOptOutput_Output"/>
+            <fault name="SetDEFINITON_TASKNAMEOutputFault" message="tns:OptFaultMsg"/>
+        </operation>
+    </portType>
+    -->
+    
+    
+    <!-- generate binding for generated porttype 
+        binding name can be <generate portType name>Binding
+        generate operation
+        generate soap:operation
+        generate input
+        generate soap:body
+        generate output
+        generate soap:body
+        generate fault
+        generate soap:fault
+    -->
+    <!--
+    <binding name="DEFINITON_TASKNAME" type="tns:DEFINITON_TASKNAMEPT">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+        <operation name="GetDEFINITON_TASKNAMEInput">
+            <soap:operation soapAction="GetDEFINITON_TASKNAMEInput"/>
+            <input>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </output>
+            <fault name="GetDEFINITON_TASKNAMEInputFault">
+                <soap:fault name="GetDEFINITON_TASKNAMEInputFault" use="literal"/>
+            </fault>
+        </operation>
+        <operation name="GetDEFINITON_TASKNAMEOutput">
+            <soap:operation soapAction="GetDEFINITON_TASKNAMEOutput"/>
+            <input>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </output>
+            <fault name="GetDEFINITON_TASKNAMEOutputFault">
+                <soap:fault name="GetDEFINITON_TASKNAMEOutputFault" use="literal"/>
+            </fault>
+        </operation>    
+        <operation name="SetDEFINITON_TASKNAMEOutput">
+            <soap:operation soapAction="SetDEFINITON_TASKNAMEOutput"/>
+            <input>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="DEFINITON_TARGETNAMESPACE"/>
+            </output>            
+            <fault name="SetDEFINITON_TASKNAMEOutputFault">
+                <soap:fault name="SetDEFINITON_TASKNAMEOutputFault" use="literal"/>
+            </fault>            
+        </operation> 
+    </binding>    
+    
+    -->
+    <service name="TaskCommonService">
+        
+        <!-- generate port and binding attribute points to the generated binding -->
+        <!--
+        <port name="TaskDEFINITON_TASKNAMEClientPort" binding="tns:DEFINITON_TASKNAME">
+            <soap:address location="http://localhost:18181/wfse/DEFINITON_TASKNAMEClient"/>
+        </port>        
+        -->
+    </service>        
+    
+    <!-- generate partnerLinkType
+        role's portType attribute will point to generated portType name
+    -->
+    
+    <!-- 
+    <plink:partnerLinkType name="TaskDEFINITON_TASKNAMEClientLT">
+        <plink:role name="TaskDEFINITON_TASKNAMEClient_Server" portType="tns:DEFINITON_TASKNAMEPT"/>
+    </plink:partnerLinkType>   
+    -->
+    
+</definitions>

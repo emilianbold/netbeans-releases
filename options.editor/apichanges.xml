@@ -2,7 +2,10 @@
 <!--
    - DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
    -
-   - Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+   - Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+   -
+   - Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+   - Other names may be trademarks of their respective owners.
    -
    - The contents of this file are subject to the terms of either the GNU
    - General Public License Version 2 only ("GPL") or the Common
@@ -14,7 +17,7 @@
    - specific language governing permissions and limitations under the
    - License.  When distributing the software, include this License Header
    - Notice in each file and include the License file at
-   - nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+   - nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
    - particular file as subject to the "Classpath" exception as provided
    - by Sun in the GPL Version 2 section of the License file that
    - accompanied this code. If applicable, add the following below the
@@ -107,6 +110,36 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="FormattingCustomizerPanel.moved">
+      <api name="spi"/>
+      <summary>Moving FormattingCustomizerPanel to editor.indent.project module</summary>
+      <version major="1" minor="20"/>
+      <date day="17" month="2" year="2010"/>
+      <author login="vstejskal"/>
+      <compatibility source="incompatible" binary="compatible" deletion="yes" addition="no" modification="no"/>
+      <description>
+        <p>
+            Moving <code>FormattingCustomizerPanel</code> class to <code>editor.indent.project</code> module.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.indentation" name="FormattingCustomizerPanel"/>
+      <issue number="178311"/>
+  </change>
+
+  <change id="tree.model.filter">
+      <api name="spi"/>
+      <summary>Adding OptionsFilter to allow filtering inside the options dialog</summary>
+      <version major="1" minor="19"/>
+      <date day="17" month="2" year="2010"/>
+      <author login="jlahoda"/>
+      <compatibility source="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Adding <code>OptionsFilter</code> to allow filtering/search inside the options dialog.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.editor.spi" name="OptionsFilter" />
+  </change>
   <change id="project.formatting.category.provider">
       <api name="spi"/>
       <summary>Adding 'allowedMimeTypes' filter to the project formatting settings customizer</summary>

@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -40,54 +42,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <project name="tomcat5" default="netbeans" basedir=".">
   <import file="../nbbuild/templates/projectized.xml"/>
-
-  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
-
-  <target name="build-init" depends="projectized.build-init"/>
-
-  <target name="s2binit" depends="build-init">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	  <classpath>
-		<pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-	  </classpath>
-	</taskdef>
-  </target>
-  
-  <target name="dd2beans_gen" depends="s2binit">
-      <echo message="generating bean graph for Tomcat 5 Server configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
-	  mddFile="tomcat5_server.mdd"
-          attrProp="true"
-	  package="org.netbeans.modules.tomcat5.config.gen"
-	  rootDir="src"/>
-      <echo message="generating bean graph for Tomcat 5 Context configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
-	  mddFile="tomcat5.mdd"
-          attrProp="true"
-	  package="org.netbeans.modules.tomcat5.config.gen"
-	  rootDir="src"/>
-  </target>
-  
-  <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>
-    
-  <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
-
-  <target name="clean-ddgen-check">
-    <available property="have-config" file="${tomcat5_dir}/config/gen"/>
-  </target>
-
-  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
-        <delete>
-            <fileset dir="${tomcat5_dir}/config/gen">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${tomcat5_dir}/config/gen"/>
-  </target>
-  
 </project>

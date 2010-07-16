@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
@@ -36,10 +37,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.xslt.tmap.TMapDataLoader;
+import org.netbeans.modules.xslt.tmap.TMapDataObject;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  * Iterator for a wizard that needs to instantiate new xslt object.
@@ -111,8 +114,7 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
         Project p = ProjectManager.getDefault().findProject(fo);
         if (p != null) {
             FileObject srcFo = Util.getProjectSource(p);
-            FileObject tMapFo = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
-                    srcFo, "transformmap"); //NOI18N
+            FileObject tMapFo = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xml"), srcFo, "transformmap"); //NOI18N
 
             // TODO m
             String projectNamespace = (String)wiz.getProperty(TMAP_NS_PROPERTY);

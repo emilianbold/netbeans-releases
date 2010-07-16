@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@ package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -52,7 +57,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
  */
 public class CndUtils {
 
-    private static Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
+    private static final Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
 
@@ -94,8 +99,9 @@ public class CndUtils {
     }
 
     public static void threadsDump(){
+        final Set<Entry<Thread, StackTraceElement[]>> stack = Thread.getAllStackTraces().entrySet();
         System.err.println("-----Start Thread Dump-----");
-        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
             System.err.println(entry.getKey().getName());
             for (StackTraceElement element : entry.getValue()) {
                 System.err.println("\tat " + element.toString());
@@ -126,6 +132,19 @@ public class CndUtils {
     public static int getConcurrencyLevel() {
         return getNumberCndWorkerThreads();
     }
+
+    private static final class FileNamePrefixAccessor {
+        // use always Unix path, because java.io.File on windows understands it well
+        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+    }
+
+    public static String getIncludeFileBase() {
+        return FileNamePrefixAccessor.path;
+    }
+
+    public static String getIncludeFilePrefix(String hostid) {
+        return getIncludeFileBase() + hostid + "/"; //NOI18N
+    }
     
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
@@ -149,15 +168,19 @@ public class CndUtils {
         }
     }
 
-    public static final void assertNonUiThread() {
+    public static void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+    }
+
+    public static void assertUiThread() {
+        assertTrue(SwingUtilities.isEventDispatchThread(), "Should be called only from UI thread"); //NOI18N
     }
 
     public static void assertNormalized(File file) {
         if (isDebugMode()) {
             File normFile = CndFileUtils.normalizeFile(file);
             if (!file.equals(normFile)) {
-                assertTrueInConsole(false, "Parameter file was not " + "normalized. Was " + file + " instead of " + normFile); // NOI18N
+                assertTrueInConsole(false, "Parameter file was not normalized. Was " + file + " instead of " + normFile); // NOI18N
             }
         }
     }

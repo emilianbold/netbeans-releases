@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,21 +63,20 @@ import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.csl.core.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
-import org.netbeans.modules.csl.core.NextCamelCasePosition;
-import org.netbeans.modules.csl.core.PreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.InstantRenameAction;
+import org.netbeans.modules.csl.api.NextCamelCasePosition;
+import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rhtml.spi.DtdResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -112,7 +114,7 @@ public class RhtmlKit extends HtmlKit {
 
     @Override
     public Document createDefaultDocument() {
-        return super.createDefaultDocument();
+        return new RhtmlDocument(getContentType());
     }
 
     @Override
@@ -155,14 +157,24 @@ public class RhtmlKit extends HtmlKit {
             new RhtmlToggleCommentAction(),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction)),
-            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction)),
-            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction)),
+            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
             new InstantRenameAction(),
          });
+    }
+
+    private static Action findAction(Action [] actions, String name) {
+        for(Action a : actions) {
+            Object nameObj = a.getValue(Action.NAME);
+            if (nameObj instanceof String && name.equals(nameObj)) {
+                return a;
+            }
+        }
+        return null;
     }
 
     private boolean handleDeletion(BaseDocument doc, int dotPos) {
@@ -481,7 +493,7 @@ public class RhtmlKit extends HtmlKit {
                 }
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 doc.runAtomic(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         try {
                             Caret caret = target.getCaret();
                             int startPos;

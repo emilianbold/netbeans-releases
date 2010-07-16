@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,8 +48,11 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractButton;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -81,8 +87,14 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (lCamelCaseBehavior, "Camel_Case_Behavior");
         loc (cbCamelCaseBehavior, "Enable_Camel_Case_In_Java");
         loc (lCamelCaseBehaviorExample, "Camel_Case_Behavior_Example");
-        cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
 
+        loc (lWhenSavingFiles, "When_Saving_Files");
+        loc (lRemoveTrailingWhitespace, "Remove_Trailing_Whitespace");
+        loc (cboRemoveTrailingWhitespace, "Remove_Trailing_Whitespace");
+
+        cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
+        cboRemoveTrailingWhitespace.setRenderer(new RemoveTrailingWhitespaceRenderer(cboRemoveTrailingWhitespace.getRenderer()));
+        cboRemoveTrailingWhitespace.setModel(new DefaultComboBoxModel(new Object [] { "never", "always", "modified-lines" })); //NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -108,6 +120,10 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         jSeparator3 = new javax.swing.JSeparator();
         cbCamelCaseBehavior = new javax.swing.JCheckBox();
         lCamelCaseBehaviorExample = new javax.swing.JLabel();
+        jSeparator4 = new javax.swing.JSeparator();
+        lWhenSavingFiles = new javax.swing.JLabel();
+        lRemoveTrailingWhitespace = new javax.swing.JLabel();
+        cboRemoveTrailingWhitespace = new javax.swing.JComboBox();
 
         setForeground(new java.awt.Color(99, 130, 191));
 
@@ -132,41 +148,74 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         lCamelCaseBehavior.setText("Camel Case  Behavior");
 
-        cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
+        cbCamelCaseBehavior.setText("Enable Camel Case Navigation");
 
         lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
+
+        lWhenSavingFiles.setText("When Saving Files");
+
+        lRemoveTrailingWhitespace.setLabelFor(cboRemoveTrailingWhitespace);
+        lRemoveTrailingWhitespace.setText("Remove Trailing Whitespace:");
+
+        cboRemoveTrailingWhitespace.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lCodeFolding)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(lCamelCaseBehavior)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(lUseCodeFolding)
-                    .add(lCollapseByDefault))
+                    .add(lCollapseByDefault)
+                    .add(lRemoveTrailingWhitespace))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(lCamelCaseBehaviorExample)
-                    .add(cbFoldInitialComments)
-                    .add(cbFoldJavadocComments)
-                    .add(cbUseCodeFolding)
-                    .add(layout.createSequentialGroup()
-                        .add(cbFoldMethods)
-                        .add(18, 18, 18)
-                        .add(cbFoldTags))
-                    .add(cbFoldInnerClasses)
-                    .add(cbFoldImports)
-                    .add(cbCamelCaseBehavior))
-                .addContainerGap(40, Short.MAX_VALUE))
+                    .add(cboRemoveTrailingWhitespace, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbCamelCaseBehavior)
+                .addContainerGap(424, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbFoldImports)
+                .addContainerGap(494, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbFoldInnerClasses)
+                .addContainerGap(494, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbFoldMethods)
+                .add(18, 18, 18)
+                .add(cbFoldTags)
+                .addContainerGap(267, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbUseCodeFolding)
+                .addContainerGap(618, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbFoldJavadocComments)
+                .addContainerGap(494, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(155, 155, 155)
+                .add(cbFoldInitialComments)
+                .addContainerGap(494, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(lWhenSavingFiles)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(lCamelCaseBehavior)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(lCodeFolding)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cbFoldImports, cbFoldInitialComments, cbFoldInnerClasses, cbFoldJavadocComments, cbFoldMethods}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -201,10 +250,19 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                         .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(lCamelCaseBehavior))
                 .add(2, 2, 2)
-                .add(cbCamelCaseBehavior)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(cbCamelCaseBehavior)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lCamelCaseBehaviorExample)
+                        .add(18, 18, 18)
+                        .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(lWhenSavingFiles))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lCamelCaseBehaviorExample)
-                .addContainerGap(59, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lRemoveTrailingWhitespace)
+                    .add(cboRemoveTrailingWhitespace, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(67, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -218,13 +276,17 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JCheckBox cbFoldMethods;
     private javax.swing.JCheckBox cbFoldTags;
     private javax.swing.JCheckBox cbUseCodeFolding;
+    private javax.swing.JComboBox cboRemoveTrailingWhitespace;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JLabel lCamelCaseBehavior;
     private javax.swing.JLabel lCamelCaseBehaviorExample;
     private javax.swing.JLabel lCodeFolding;
     private javax.swing.JLabel lCollapseByDefault;
+    private javax.swing.JLabel lRemoveTrailingWhitespace;
     private javax.swing.JLabel lUseCodeFolding;
+    private javax.swing.JLabel lWhenSavingFiles;
     // End of variables declaration//GEN-END:variables
     
     
@@ -242,7 +304,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 (AbstractButton) c, 
                 loc ("CTL_" + key)
             );
-        } else {
+        } else if (c instanceof JLabel) {
             Mnemonics.setLocalizedText (
                 (JLabel) c, 
                 loc ("CTL_" + key)
@@ -264,6 +326,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbFoldInitialComments.addActionListener (this);
             cbCamelCaseBehavior.addActionListener (this);
             cbFoldTags.addActionListener (this);
+            cboRemoveTrailingWhitespace.addActionListener(this);
         }
         
         // init code folding
@@ -285,7 +348,10 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbCamelCaseBehavior.setEnabled(true);
             cbCamelCaseBehavior.setSelected(ccJava);
         }
-        
+
+        // when saving files section
+        cboRemoveTrailingWhitespace.setSelectedItem(model.getRemoveTrailingWhitespace());
+
         updateEnabledState ();
         
         listen = true;
@@ -309,6 +375,9 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         // java camel case navigation
         model.setCamelCaseNavigation(cbCamelCaseBehavior.isSelected());
         
+        // when saving files section
+        model.setRemoveTrailingWhitespace((String)cboRemoveTrailingWhitespace.getSelectedItem());
+
         changed = false;
     }
     
@@ -324,10 +393,12 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         return changed;
     }
     
+    @Override
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
-        if (e.getSource () == cbUseCodeFolding)
+        if (e.getSource () == cbUseCodeFolding) {
             updateEnabledState ();
+        }
         changed = true;
     }
     
@@ -343,4 +414,24 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldMethods.setEnabled (useCodeFolding);
         cbFoldTags.setEnabled(useCodeFolding);
     }
+
+    private static final class RemoveTrailingWhitespaceRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+        public RemoveTrailingWhitespaceRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(
+                    list,
+                    NbBundle.getMessage(GeneralEditorPanel.class, "RTW_" + value), //NOI18N
+                    index,
+                    isSelected,
+                    cellHasFocus);
+        }
+
+    } // End of RemoveTrailingWhitespaceRendererRenderer class
 }

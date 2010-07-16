@@ -11,12 +11,12 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       generate_timeouts:METHOD:[PUBLIC]:ESCAPED{generate_timeouts}<font color='#777777'> : ESCAPED{Array}</font>:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{config_info}})<font color='#777777'> : ESCAPED{NilClass}</font>:
       initialized:FIELD:[PRIVATE]:ESCAPED{initialized}<font color='#777777'> : ESCAPED{NilClass, TrueClass}</font>:
-      lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{Config, Unknown}</font>:
+      lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{Config}</font>:
       mutex:FIELD:[PRIVATE]:ESCAPED{mutex}<font color='#777777'> : ESCAPED{Mutex}</font>:
       nameserver:FIELD:[PRIVATE]:ESCAPED{nameserver}<font color='#777777'> : ESCAPED{Array}</font>:
       ndots:FIELD:[PRIVATE]:ESCAPED{ndots}<font color='#777777'> : ESCAPED{Fixnum}</font>:
       parse_resolv_conf:METHOD:[PUBLIC, STATIC]:ESCAPED{parse_resolv_conf}(PARAMETERS{ESCAPED{filename}})<font color='#777777'> : ESCAPED{Hash}</font>:
-      resolv:METHOD:[PUBLIC]:ESCAPED{resolv}(PARAMETERS{ESCAPED{name}}):
+      resolv:METHOD:[PUBLIC]:ESCAPED{resolv}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       search:FIELD:[PRIVATE]:ESCAPED{search}<font color='#777777'> : ESCAPED{Array}</font>:
       single?:METHOD:[PUBLIC]:ESCAPED{single?}<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
     DNSThreadGroup:CONSTANT:[]:ESCAPED{DNSThreadGroup}<font color='#777777'> : ESCAPED{ThreadGroup}</font>:
@@ -76,7 +76,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
-      each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}:
+      each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       encode:METHOD:[PUBLIC]:ESCAPED{encode}<font color='#777777'> : ESCAPED{String}</font>:
       id:ATTRIBUTE:[PUBLIC]:ESCAPED{id}:
       identifier:FIELD:[STATIC]:ESCAPED{identifier}:
@@ -299,7 +299,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     initialized:FIELD:[PRIVATE]:ESCAPED{initialized}<font color='#777777'> : ESCAPED{NilClass, TrueClass}</font>:
     lazy_initialize:METHOD:[PUBLIC]:ESCAPED{lazy_initialize}<font color='#777777'> : ESCAPED{DNS}</font>:
     mutex:FIELD:[PRIVATE]:ESCAPED{mutex}<font color='#777777'> : ESCAPED{Mutex}</font>:
-    open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}})<font color='#777777'> : ESCAPED{DNS, Unknown}</font>:
+    open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}})<font color='#777777'> : ESCAPED{Resolv::DNS, Unknown}</font>:
     requester:FIELD:[PRIVATE]:ESCAPED{requester}<font color='#777777'> : ESCAPED{Requester::UnconnectedUDP, Requester::ConnectedUDP, NilClass}</font>:
   DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}<font color='#777777'> : ESCAPED{Resolv}</font>:
   Hosts:CLASS:[]:ESCAPED{Hosts}:

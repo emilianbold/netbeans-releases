@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,8 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -54,12 +59,14 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class ModalMessageDlg extends javax.swing.JPanel {
+    private static final RequestProcessor RP = new RequestProcessor(ModalMessageDlg.class.getName(), 4);
 
     /**
      * allows to display modal dialog with title and message for the period of
@@ -83,24 +90,72 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
     }
 
-    private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
-            String title, String message, final Cancellable canceller) {
+    /**
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param workTask if workTask is Cancellable => dialog will have Cancel button
+     *                 if not => no Cancel button is shown
+     */
+    public static void runLongTask(Window parent, String title, String message,
+            final LongWorker workTask, final Cancellable canceller) {
 
-        final JDialog dialog;
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-
-        if (parent == null) {
-            dialog = new JDialog();
-        } else if (parent instanceof Frame) {
-            dialog = new JDialog((Frame)parent);
-        } else {
-            assert (parent instanceof Dialog);
-            dialog = new JDialog((Dialog)parent);
-        }
-        dialog.setTitle(title);
-        dialog.setModal(true);
+        final JDialog dialog = createDialog(parent, title);
 
         final Runnable finalizer = new Runnable() {
+            @Override
+            public void run() {
+                // hide dialog and run action if successfully connected
+                dialog.setVisible(false);
+                dialog.dispose();
+                workTask.doPostRunInEDT();
+            }
+        };
+
+        JPanel panel;
+        if (canceller == null) {
+            panel = new ModalMessageDlgPane(message);
+        } else {
+            Cancellable wrapper = new Cancellable() {
+                /** is invoked from a separate cancellation thread */
+                @Override
+                public boolean cancel() {
+                    if (canceller.cancel()) {
+                        // remember for return value
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            panel = new ModalMessageDlgCancellablePane(message, wrapper);
+        }
+        addPanel(parent, dialog, panel);
+
+        RP.post(new NamedRunnable(title) {
+            @Override
+            public void runImpl() {
+                try {
+                    workTask.doWork();
+                } finally {
+                    SwingUtilities.invokeLater(finalizer);
+                }
+            }
+        });
+        if (!CndUtils.isStandalone()) { // this means we run in tests
+            dialog.setVisible(true);
+        }
+    }
+
+    private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
+            final String title, String message, final Cancellable canceller) {
+
+        final JDialog dialog = createDialog(parent, title);
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
+
+        final Runnable finalizer = new Runnable() {
+            @Override
             public void run() {
                 // hide dialog and run action if successfully connected
                 dialog.setVisible(false);
@@ -117,6 +172,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         } else {
             Cancellable wrapper = new Cancellable() {
                 /** is invoked from a separate cancellation thread */
+                @Override
                 public boolean cancel() {
                     if (canceller.cancel()) {
                         cancelled.set(true);
@@ -129,7 +185,37 @@ public class ModalMessageDlg extends javax.swing.JPanel {
             };
             panel = new ModalMessageDlgCancellablePane(message, wrapper);
         }
+        addPanel(parent, dialog, panel);
 
+        final WindowAdapterImpl windowAdapterImpl = new WindowAdapterImpl(dialog, title, workTask, finalizer);
+
+        if (CndUtils.isStandalone()) { // this means we run in tests
+            Task task = windowAdapterImpl.submitJob();
+            task.waitFinished();
+        } else {
+            dialog.addWindowListener(windowAdapterImpl);
+            dialog.setVisible(true);
+        }
+        
+        return !cancelled.get();
+    }
+
+    private static JDialog createDialog(Window parent, String title) {
+        JDialog dialog;
+        if (parent == null) {
+            dialog = new JDialog();
+        } else if (parent instanceof Frame) {
+            dialog = new JDialog((Frame)parent);
+        } else {
+            assert (parent instanceof Dialog);
+            dialog = new JDialog((Dialog)parent);
+        }
+        dialog.setTitle(title);
+        dialog.setModal(true);
+        return dialog;
+    }
+
+    private static void addPanel(Window parent, JDialog dialog, JPanel panel){
         dialog.getContentPane().add(panel);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
         dialog.pack();
@@ -143,19 +229,46 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         Dimension size = dialog.getPreferredSize();
 
         dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+    }
 
-        RequestProcessor.getDefault().post(new NamedRunnable(title) {
-            public void runImpl() {
-                try {
-                    workTask.run();
-                } finally {
-                    SwingUtilities.invokeLater(finalizer);
-                }
-            }
-        });
-        if (!CndUtils.isStandalone()) { // this means we run in tests
-            dialog.setVisible(true);
+    public interface LongWorker {
+        void doWork();
+        void doPostRunInEDT();
+    }
+
+    private static class WindowAdapterImpl extends WindowAdapter {
+
+        private final String title;
+        private final Runnable workTask;
+        private final Runnable finalizer;
+        private final JDialog dialog;
+        
+        public WindowAdapterImpl(JDialog dialog, String title, Runnable workTask, Runnable finalizer) {
+            this.title = title;
+            this.workTask = workTask;
+            this.finalizer = finalizer;
+            this.dialog = dialog;
         }
-        return !cancelled.get();
-    }    
+
+        @Override
+        public void windowOpened(WindowEvent e) {
+            dialog.removeWindowListener(this);
+            submitJob();
+        }
+
+        private Task submitJob() {
+            Task task = RP.post(new NamedRunnable(title) {
+
+                @Override
+                public void runImpl() {
+                    try {
+                        workTask.run();
+                    } finally {
+                        SwingUtilities.invokeLater(finalizer);
+                    }
+                }
+            });
+            return task;
+        }
+    }
 }

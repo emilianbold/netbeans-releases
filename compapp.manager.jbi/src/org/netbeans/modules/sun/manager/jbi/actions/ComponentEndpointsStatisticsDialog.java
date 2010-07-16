@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,18 +48,27 @@ import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.common.ManagementRemoteException;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import com.sun.esb.management.common.data.IEndpointStatisticsData;
+import com.sun.esb.management.common.data.ProvisioningEndpointStatisticsData;
+import com.sun.esb.management.common.data.helper.EndpointStatisticsDataReader;
 import java.awt.Frame;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -83,8 +95,6 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
             String compName) 
             throws ManagementRemoteException {
 
-        AdministrationService adminService =
-                controller.getAdministrationService();
         PerformanceMeasurementServiceWrapper perfService =
                 controller.getPerformanceMeasurementServiceWrapper();
 
@@ -92,46 +102,78 @@ public class ComponentEndpointsStatisticsDialog extends javax.swing.JDialog {
                 new HashMap<Endpoint, IEndpointStatisticsData>();
         
         List<Endpoint> endpoints = new ArrayList<Endpoint>();
-        
-        String[] endpointStrings =  
-            adminService.getProvisioningEndpoints(compName,
-                AppserverJBIMgmtController.SERVER_TARGET);       
-        addEndpoints(endpointStrings, endpoint2Statistics, endpoints, false, perfService);
-        
-        endpointStrings =  
-            adminService.getConsumingEndpoints(compName,
+
+        TabularData provisioningEndpointsTable =
+                perfService.getProvidingEndpointsForComponentAsTabularData(compName,
                 AppserverJBIMgmtController.SERVER_TARGET);
-        addEndpoints(endpointStrings, endpoint2Statistics, endpoints, true, perfService);
+        addEndpoints(provisioningEndpointsTable, endpoint2Statistics,
+                endpoints, false, perfService);
+
+        TabularData consumingEndpointsTable =
+                perfService.getConsumingEndpointsForComponentAsTabularData(compName,
+                AppserverJBIMgmtController.SERVER_TARGET);
+        addEndpoints(consumingEndpointsTable, endpoint2Statistics,
+                endpoints, true, perfService);
 
         return new EndpointStatisticsTableModel(endpoints, endpoint2Statistics);
     }
-    
-    private void addEndpoints(String[] endpointStrings, 
-            Map<Endpoint, IEndpointStatisticsData> endpoint2Statistics, 
-            List<Endpoint> endpoints, boolean isConsumes, 
-            PerformanceMeasurementServiceWrapper perfService) 
+
+    private void addEndpoints(TabularData endpointsTabularData,
+            Map<Endpoint, IEndpointStatisticsData> endpoint2Statistics,
+            List<Endpoint> endpoints, boolean isConsumes,
+            PerformanceMeasurementServiceWrapper perfService)
             throws ManagementRemoteException {
-        
-        for (String endpointString : endpointStrings) {
-            
-            // The endpoint string is in the following format:
-            //     ${namespaceURI},${service-name},${endpoint-name},[Provider|Consumer]
-            
-            assert (isConsumes && endpointString.endsWith(",Consumer")) || // NOI18N
-                   (!isConsumes && endpointString.endsWith(",Provider")); // NOI18N
-            
-            endpointString = endpointString.substring(0, endpointString.lastIndexOf(",")); // NOI18N
-            IEndpointStatisticsData statistics =
-                    perfService.getEndpointStatistics(endpointString,
-                    AppserverJBIMgmtController.SERVER_TARGET);
-            
-            String[] parts = endpointString.split(","); // NOI18N
-            Endpoint endpoint = new Endpoint(parts[0], parts[1], parts[2], isConsumes);
-            endpoints.add(endpoint);
-            
-            endpoint2Statistics.put(endpoint, statistics);
+
+        String[] targetNames = {AppserverJBIMgmtController.SERVER_TARGET};
+
+        CompositeData compositeData = endpointsTabularData.get(targetNames);
+
+        if (compositeData.containsKey("Endpoints")) {
+            String[] provisioningEndpoints = (String[]) compositeData.get("Endpoints");
+            if (provisioningEndpoints != null) {
+                for (String endpointName : provisioningEndpoints) {
+                    System.out.println("Endpoint Name: " + endpointName);
+                    String[] parts = endpointName.split(","); // NOI18N
+                    Endpoint endpoint = new Endpoint(parts[0], parts[1], parts[2], isConsumes);
+                    endpoints.add(endpoint);
+
+                    IEndpointStatisticsData statistics =
+                            perfService.getEndpointStatistics(endpointName,
+                            AppserverJBIMgmtController.SERVER_TARGET);
+
+                    endpoint2Statistics.put(endpoint, statistics);
+                    //System.out.println(data.getDisplayString());
+                }
+            }
         }
     }
+    
+//    private void addEndpoints(String[] endpointStrings,
+//            Map<Endpoint, IEndpointStatisticsData> endpoint2Statistics,
+//            List<Endpoint> endpoints, boolean isConsumes,
+//            PerformanceMeasurementServiceWrapper perfService)
+//            throws ManagementRemoteException {
+//
+//        for (String endpointString : endpointStrings) {
+//
+//            // The endpoint string is in the following format:
+//            //     ${namespaceURI},${service-name},${endpoint-name},[Provider|Consumer]
+//
+//            assert (isConsumes && endpointString.endsWith(",Consumer")) || // NOI18N
+//                   (!isConsumes && endpointString.endsWith(",Provider")); // NOI18N
+//
+//            endpointString = endpointString.substring(0, endpointString.lastIndexOf(",")); // NOI18N
+//            IEndpointStatisticsData statistics =
+//                    perfService.getEndpointStatistics(endpointString,
+//                    AppserverJBIMgmtController.SERVER_TARGET);
+//
+//            String[] parts = endpointString.split(","); // NOI18N
+//            Endpoint endpoint = new Endpoint(parts[0], parts[1], parts[2], isConsumes);
+//            endpoints.add(endpoint);
+//
+//            endpoint2Statistics.put(endpoint, statistics);
+//        }
+//    }
         
     class Endpoint {
 

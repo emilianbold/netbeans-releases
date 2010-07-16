@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,7 +64,7 @@ public class MoveUpCanvasAction extends MapperKeyboardAction {
     }
     
     @Override
-    public String getActionKey() {
+    public Object getActionKey() {
         return "press-move-up-action";
     }
 
@@ -78,11 +81,16 @@ public class MoveUpCanvasAction extends MapperKeyboardAction {
 
     public void actionPerformed(ActionEvent e) {
         SelectionModel selectionModel = canvas.getSelectionModel();
-       
-        TreePath treePath = selectionModel.getSelectedPath();
-        if (treePath == null) return;
-        
         Mapper mapper = canvas.getMapper();
+        
+        TreePath treePath = selectionModel.getSelectedPath();
+        if (treePath == null || mapper.getRoot().getTreePath().equals(treePath)) {
+            if (mapper.getRoot() != null && mapper.getRoot().getChildCount() > 0) {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
+            }
+            return; 
+        }
+         
         Graph graph = selectionModel.getSelectedGraph();
         if (graph == null || graph.isEmpty()) {
             MapperNode currentNode = mapper.getNode(treePath, true);
@@ -175,17 +183,10 @@ public class MoveUpCanvasAction extends MapperKeyboardAction {
         }
         // NOTHING
         if (isNothingPress(e)) {
-            TreePath CurrentTreePath = selectionModel.getSelectedPath();
-            if (CurrentTreePath != null && CurrentTreePath != mapper.getRoot().getTreePath()) {
-                MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-                MapperNode prevNode = currentNode.getPrevVisibleNode();
-                if (prevNode != null && prevNode != mapper.getRoot()) {
-                    selectionModel.setSelected(prevNode.getTreePath());
-                }
-            } else if (mapper.getRoot() != null 
-                    && mapper.getRoot().getChildCount() > 0) 
-            {
-                mapper.setSelectedNode(mapper.getRoot().getChild(0));
+            MapperNode currentNode = mapper.getNode(treePath, true);
+            MapperNode prevNode = currentNode.getPrevVisibleNode();
+            if (prevNode != null && prevNode != mapper.getRoot()) {
+                selectionModel.setSelected(prevNode.getTreePath());
             }
         }
     }

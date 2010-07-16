@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,6 +88,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * 
      * @return source code for the current value.
      */
+    @Override
     public String getSourceCode() {
         DefaultTreeModel model = (DefaultTreeModel)getValue();
         
@@ -152,6 +156,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * @param formModel model of the edited form.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
         this.property = property;
@@ -199,6 +204,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * 
      * @return human-readable name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(TreeModelEditor.class).getString("CTL_TreeModelEditor_DisplayName"); // NOI18N
     }
@@ -255,7 +261,7 @@ public class TreeModelEditor extends PropertyEditorSupport
             }
             parent.add(node);
         }
-        if (nodes.size() == 0) {
+        if (nodes.isEmpty()) {
             root = new DefaultMutableTreeNode("root"); // NOI18N
         }
         if (root == null) {
@@ -293,6 +299,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * Raises version of the form file to the NB release where this
      * property editor was added.
      */
+    @Override
     public void updateFormVersionLevel() {
         formModel.raiseVersionLevel(FormModel.FormVersion.NB65, FormModel.FormVersion.NB65);
     }
@@ -310,6 +317,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * 
      * @param element element that holds information about the model.
      */
+    @Override
     public void readFromXML(Node element) {
         Node attr = element.getAttributes().getNamedItem(ATTR_CODE);
         String txt = attr.getNodeValue();
@@ -322,6 +330,7 @@ public class TreeModelEditor extends PropertyEditorSupport
      * @param doc document where the XML representation should be stored.
      * @return XML representation of the model.
      */
+    @Override
     public Node storeToXML(Document doc) {
         String code = getCodeValue();
         if (code != null) {

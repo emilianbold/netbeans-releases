@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,12 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -52,6 +59,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
@@ -64,9 +72,10 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     implements MetadataModelImplementation<WebBeansModel>
 {
 
-    private WebBeansModelImplementation( ModelUnit unit ){
+    protected WebBeansModelImplementation( ModelUnit unit ){
         super( unit );
-        myManagers = new HashMap<String, PersistentObjectManager<Binding>>();
+        myManagers = new HashMap<String, PersistentObjectManager<BindingQualifier>>();
+        myStereotypedManagers = new HashMap<String, PersistentObjectManager<StereotypedObject>>();
     }
     
     public static MetadataModelImplementation<WebBeansModel> createMetaModel( 
@@ -125,12 +134,20 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return super.getModel();
     }
     
-    Map<String,PersistentObjectManager<Binding>> getManagers(){
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
+     */
+    protected BeansModel getBeansModel() {
+        return super.getBeansModel();
+    }
+    
+    Map<String,PersistentObjectManager<BindingQualifier>> getManagers(){
         return myManagers;
     }
     
-    PersistentObjectManager<Binding> getManager( String annotationFQN ){
-        PersistentObjectManager<Binding> result = getManagers().get(annotationFQN);
+    PersistentObjectManager<BindingQualifier> getManager( String annotationFQN ){
+        PersistentObjectManager<BindingQualifier> result = getManagers().get(
+                annotationFQN);
         if ( result == null ) {
             result  = getHelper().createPersistentObjectManager( 
                     new AnnotationObjectProvider( getHelper(), annotationFQN));
@@ -139,6 +156,63 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return result;
     }
     
-    private Map<String,PersistentObjectManager<Binding>> myManagers;
+    PersistentObjectManager<BindingQualifier> getNamedManager(){
+        return getManager( FieldInjectionPointLogic.NAMED_QUALIFIER_ANNOTATION );
+    }
     
+    PersistentObjectManager<NamedStereotype> getNamedStereotypesManager(){
+        if ( myStereotypesManager == null ){
+            myStereotypesManager = getHelper().createPersistentObjectManager(
+                    new NamedStereotypeObjectProvider( getHelper()));
+        }
+        return myStereotypesManager;
+    }
+    
+    PersistentObjectManager<StereotypedObject> getStereotypedManager( 
+            String stereotype )
+    {
+        PersistentObjectManager<StereotypedObject> result = 
+            getStereotypedManagers().get(stereotype);
+        if ( result == null ) {
+            result  = getHelper().createPersistentObjectManager( 
+                    new StereotypedObjectProvider( stereotype, getHelper()));
+            getStereotypedManagers().put(  stereotype , result);
+        }
+        return result;
+    }
+    
+    Map<String,PersistentObjectManager<StereotypedObject>> getStereotypedManagers(){
+        return myStereotypedManagers;
+    }
+    
+    Set<String> adjustStereotypesManagers(){
+        Set<String> stereotypes = getStereotypedManagers().keySet();
+        Collection<NamedStereotype> namedStereotypes = getNamedStereotypesManager().
+            getObjects();
+        Set<String> existingStereotypes = new HashSet<String>(namedStereotypes.size());
+        for (NamedStereotype namedStereotype : namedStereotypes) {
+            String name = namedStereotype.getTypeElement().getQualifiedName().
+                toString();
+            if ( !stereotypes.contains( namedStereotype)){
+                getStereotypedManager(name);
+            }
+            existingStereotypes.add( name );
+        }
+        if ( existingStereotypes.size() == getStereotypedManagers().keySet().size()){
+            return existingStereotypes;
+        }
+        for (Iterator<String> iterator = getStereotypedManagers().keySet().iterator();
+            iterator.hasNext(); ) 
+        {
+            String stereotype = iterator.next();
+            if ( !existingStereotypes.contains( stereotype)){
+                iterator.remove();
+            }
+        }
+        return existingStereotypes;
+    }
+    
+    private Map<String,PersistentObjectManager<BindingQualifier>> myManagers;
+    private PersistentObjectManager<NamedStereotype> myStereotypesManager;
+    private Map<String,PersistentObjectManager<StereotypedObject>> myStereotypedManagers; 
 }

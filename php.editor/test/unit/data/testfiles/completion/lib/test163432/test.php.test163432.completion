@@ -1,4 +1,4 @@
 Code completion result for source line:
 @fn|c163432();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     fnc163432()                                test.php
+METHOD     fnc163432()                     [PUBLIC]   test.php

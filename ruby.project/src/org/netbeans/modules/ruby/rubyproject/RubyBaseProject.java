@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,7 +56,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
@@ -95,6 +100,8 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
      * @see org.netbeans.api.project.Sources
      */
     public static final String SOURCES_TYPE_RUBY = "ruby"; // NOI18N
+
+    private static final RequestProcessor requestProcessor = new RequestProcessor("Ruby refresh rake tasks");
 
     protected final RakeProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -189,7 +196,11 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     public UpdateHelper getUpdateHelper() {
         return this.updateHelper;
     }
-    
+
+    public GeneratedFilesHelper getGenFilesHelper() {
+        return genFilesHelper;
+    }
+
     public Lookup getLookup() {
         return lookup;
     }
@@ -296,11 +307,18 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     private void updateRakeTasks() {
         RubyPlatform platform = getPlatform();
         if (hasRakeFile() && platform != null && platform.hasValidRake(false)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            requestProcessor.post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this, false);
                 }
             });
+        }
+    }
+
+    private void reloadGems() {
+        GemManager gemManager = RubyPlatform.gemManagerFor(this);
+        if (gemManager != null) {
+            gemManager.reloadLocalGems(false);
         }
     }
     
@@ -387,8 +405,11 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
 
         ProjectOpenedHookImpl() {}
         
+        @Override
         protected void projectOpened() {
+            RubyPlatformProvider.ensurePlatformsReady();
             open();
+            reloadGems();
 
             // Ensure that code coverage is initialized in case it's enabled...
             RubyCoverageProvider provider = RubyCoverageProvider.get(RubyBaseProject.this);

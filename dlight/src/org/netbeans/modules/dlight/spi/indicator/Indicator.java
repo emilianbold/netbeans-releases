@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -103,6 +107,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private boolean visible;
     private final Action defaultAction;
     private final Collection<Column> columnsProvided = new ArrayList<Column>();
+    final AtomicReference<Object> oldRef = new AtomicReference<Object>(); 
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -342,6 +347,15 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 }
                 component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
                 component.setBackground(c);
+                JRootPane rootPane = component.getRootPane();
+
+                if (rootPane == null) {
+                    return;
+                }
+                InputMap iMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), oldRef.get());
+                ActionMap aMap = rootPane.getActionMap();
+                aMap.remove("enter"); // NOI18N
 
             }
         });

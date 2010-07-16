@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -74,13 +76,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
     
     // Constructors
-    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
+    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf, CompilerSet cs) {
         this.dhconf = dhconf;
-        CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
         String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
-            if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
-                csName = getCompilerSetManager().getCompilerSet(0).getName();
+            if (getCompilerSetManager().getCompilerSets().size() > 0) {
+                csName = getCompilerSetManager().getCompilerSets().get(0).getName();
             } else {
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     csName = "Sun"; // NOI18N
@@ -95,8 +96,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
-    public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManager.getDefault(dhconf.getExecutionEnvironment());
+    public final CompilerSetManager getCompilerSetManager() {
+        return CompilerSetManager.get(dhconf.getExecutionEnvironment());
     }
 
 //
@@ -132,7 +133,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void setNameAndFlavor(String name, int version) {
         String nm;
         String fl;
-        int index = name.indexOf("|"); // NOI18N
+        int index = name.indexOf('|'); // NOI18N
         if (index > 0) {
             nm = name.substring(0, index);
             fl = name.substring(index+1);
@@ -141,7 +142,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             nm = name;
             fl = name;
         }
-        setValue(CompilerFlavor.mapOldToNew(nm, version), CompilerFlavor.mapOldToNew(fl, version));
+        setValue(CompilerSet2Configuration.mapOldToNew(nm, version), CompilerSet2Configuration.mapOldToNew(fl, version));
     }
 
     public void setValue(String name, String flavor) {
@@ -159,8 +160,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
-                if (s.equals(csname)) {
+            for(CompilerSet cs : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSets()) {
+                if (s.equals(cs.getName())) {
                     return i;
                 }
                 i++;
@@ -318,18 +319,19 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         this.flavor = flavor;
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
-            ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);
+            ocs = CompilerSetManager.get(env).getCompilerSet(oldName);
         } else {
-            ocs = CompilerSetManager.getDefault(env).getDefaultCompilerSet();
+            ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
-        if (ocs == null) {
-            ocs = CompilerSetManager.getDefault(env).getCompilerSet(0);
+        if (ocs == null && !CompilerSetManager.get(env).getCompilerSets().isEmpty()) {
+            ocs = CompilerSetManager.get(env).getCompilerSets().get(0);
         }
         if (ocs == null) {
             return;
@@ -343,6 +345,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             setValue(ocs.getName());
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     ServerRecord record = ServerList.get(env);
                     if (record != null) {
@@ -355,5 +358,32 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                 }
             });
         }
+    }
+
+    private static String mapOldToNew(String flavor, int version) {
+        if (version <= 43) {
+            if (flavor.equals("Sun")) { // NOI18N
+                return "SunStudio"; // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
+                return "SunStudioExpress"; // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
+                return "SunStudio_12"; // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
+                return "SunStudio_11"; // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
+                return "SunStudio_10"; // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
+                return "SunStudio_9"; // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
+                return "SunStudio_8"; // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals(CompilerSet.UNKNOWN)) {
+                return "GNU"; // NOI18N
+            }
+        }
+        return flavor;
     }
 }

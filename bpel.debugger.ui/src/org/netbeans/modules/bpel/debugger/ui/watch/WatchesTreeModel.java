@@ -58,6 +58,8 @@ public class WatchesTreeModel implements TreeModel, Constants {
     
     private Map<Watch, BpelWatch> myWatchToValue =
             new WeakHashMap<Watch, BpelWatch>();
+
+    public static final Object ADD_NEW_WATCH = new Object();
     
     public WatchesTreeModel(
             final ContextProvider contextProvider) {
@@ -183,10 +185,15 @@ public class WatchesTreeModel implements TreeModel, Constants {
             final int to) {
         final Watch[] nbWatches = 
                 DebuggerManager.getDebuggerManager().getWatches();
-        final BpelWatch[] bpelWatches = new BpelWatch[to - from];
-        
+        final Object[] bpelWatches = new Object[to - from];
+         
+        int watchesTo = to;
+        if (to == nbWatches.length + 1) {
+            watchesTo = to - 1;
+        }
+
         int j = 0;
-        for (int i = from; i < to; i++) {
+        for (int i = from; i < watchesTo; i++) {
             BpelWatch bpelWatch = myWatchToValue.get(nbWatches[i]);
             
             if (bpelWatch == null) {
@@ -195,6 +202,10 @@ public class WatchesTreeModel implements TreeModel, Constants {
             }
             
             bpelWatches[j++] = bpelWatch;
+        }
+
+        if (to == nbWatches.length + 1) {
+            bpelWatches[j++] = ADD_NEW_WATCH;
         }
         
         if (myListener == null) {
@@ -206,7 +217,7 @@ public class WatchesTreeModel implements TreeModel, Constants {
     
     private int getWatchCount() {
         return DebuggerManager.getDebuggerManager().
-                getWatches().length;
+                getWatches().length + 1;
     }
     
     private void fireWatchesChanged() {

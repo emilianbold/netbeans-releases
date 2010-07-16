@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,8 +57,8 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLGraphView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 
 
@@ -65,7 +68,8 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class ConditionGraphView extends SQLGraphView {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionGraphView.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(ConditionGraphView.class.getName());
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ConditionGraphView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of ConditionGraphView */
@@ -100,7 +104,7 @@ public class ConditionGraphView extends SQLGraphView {
             }
 
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT158: error in doing reload{0}", ConditionGraphView.class.getName()), ex);
+             logger.log(Level.SEVERE, ex.getMessage());                 
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message("Can not create Node in the canvas " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } finally {

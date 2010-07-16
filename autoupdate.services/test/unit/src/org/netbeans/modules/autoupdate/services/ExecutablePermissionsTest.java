@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,6 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -110,65 +111,6 @@ public class ExecutablePermissionsTest extends NbmAdvancedTestCase {
         installUpdateUnit(u1);
         File f = new File(userDir, "bin/start.sh");
         assertTrue("File " + f + " should exist after module installation", f.exists());
-        if (System.getProperty("java.version").startsWith("1.5")) {
-            File ls = new File("/bin/ls");
-            if (!ls.isFile()) {
-                ls = new File("/usr/bin/ls");
-            }
-            if (ls.isFile()) {
-                String output = readCommandOutput(ls.getAbsolutePath(), "-la", f.getAbsolutePath()).trim();
-                int index = output.indexOf(" ");
-                assertFalse("Can`t read permissions from output:\n" + output, index == -1);
-                String permissions = output.substring(0, index);
-                assertTrue("File " + f + " does not have executable permissions after installation, actual perms : " + permissions,
-                        permissions.matches(".*x.*x.*x.*"));
-            }
-        } else {
-            Method canExecuteMethod = null;
-            try {
-                canExecuteMethod = File.class.getMethod("canExecute", new Class[]{});
-            } catch (Exception e) {
-                assertTrue("java.io.File.canExecute method is not accessible", false);
-            }
-            boolean canExecute = false;
-            try {
-                canExecute = (Boolean) canExecuteMethod.invoke(f);
-            } catch (Exception e) {
-                assertTrue("File " + f + " is not executable after module installation", canExecute);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private String readCommandOutput(String... command) {
-        ProcessBuilder builder = new ProcessBuilder(command);
-        boolean doRun = true;
-        StringBuilder sb = new StringBuilder();
-        byte[] bytes = new byte[8192];
-        int c = 0;
-
-        try {
-            Process process = builder.start();
-            while (doRun) {
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                }
-                try {
-                    process.exitValue();
-                    doRun = false;
-                } catch (IllegalThreadStateException e) {
-                    ; // do nothing - the process is still running
-                }
-                InputStream is = process.getInputStream();
-                while ((c = is.read(bytes)) != -1) {
-                    sb.append(new String(bytes, 0, c));
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new String();
-        }
-    }
+        assertTrue("File " + f + " is not executable after module installation", f.canExecute());
+    }    
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,45 +104,88 @@ public class InvokeSBActionTest extends PerformanceTestCase {
         return suite;
     }
 
-    public void testAddPropertyDialogInSB(){
-//        popupMenu = "Add Property...";
-        dialogTitle = "Add Property";
-        listItem=2;
+    public void testAddBusinessMethodDialogInSB(){
+        dialogTitle = "Add Business Method";
+        listItem=0;
         doMeasurement();
     }
 
-    public void testOverrideMethodDialogInSB(){
-//        popupMenu = "Override Methods...";
-        dialogTitle = "Generate Override Methods";
+    public void testConstructorDialogInSB(){
+        dialogTitle = "Generate Constructor";
         listItem=1;
         doMeasurement();
     }
 
-    public void testCallEnterpriseBeanDialogInSB(){
- //       popupMenu = "Call Enterprise Bean...";
-        dialogTitle = "Call Enterprise Bean";
-        listItem=3;
+    public void testAddGetterSetterDialogInSB(){
+        dialogTitle = "Generate Getters and Setters";
+        listItem=4;
         doMeasurement();
     }
 
-    public void testSendEmailDialogInSB(){
- //       popupMenu = "Send E-mail...";
-        dialogTitle = "Specify Mail Resource";
+    public void testEqualsAndHashDialogInSB(){
+        dialogTitle = "Generate Equals";
+        listItem=5;
+        doMeasurement();
+    }
+
+    public void testToStringDialogInSB(){
+        dialogTitle = "Generate toString";
         listItem=6;
         doMeasurement();
     }
 
-    
+    public void testDelegateDialogInSB(){
+        dialogTitle = "Generate Delegate";
+        listItem=7;
+        doMeasurement();
+    }
+
+    public void testOverrideDialogInSB(){
+        dialogTitle = "Generate Override";
+        listItem=8;
+        doMeasurement();
+    }
+
+    public void testAddPropertyDialogInSB(){
+        dialogTitle = "Add Property";
+        listItem=9;
+        doMeasurement();
+    }
+
+    public void testCallEnterpriseBeanDialogInSB(){
+        dialogTitle = "Call Enterprise Bean";
+        listItem=10;
+        doMeasurement();
+    }
+
+    public void testSendEmailDialogInSB(){
+        dialogTitle = "Specify Mail Resource";
+        listItem=13;
+        doMeasurement();
+    }
+
+    public void testCallWebServiceDialogInSB(){
+        dialogTitle = "Select Operation";
+        listItem=14;
+        doMeasurement();
+    }
+
+    public void testGenerateRESTDialogInSB(){
+        dialogTitle = "Available REST";
+        listItem=15;
+        doMeasurement();
+    }
+  
     public void initialize() {
         
-        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionSB");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionBean");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionSB.java");
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
     }
     
     public void prepare() {
-        editor.setCaretPosition(16, 1);
+        editor.setCaretPosition(105, 1);
         editor.pushKey(java.awt.event.KeyEvent.VK_INSERT,java.awt.event.KeyEvent.ALT_MASK);
         jdo=   new JDialogOperator();
         JListOperator list = new JListOperator(jdo);

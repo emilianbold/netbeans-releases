@@ -1,8 +1,8 @@
-#Signature file v4.0
-#Version 1.12.1
+#Signature file v4.1
+#Version 1.17
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -16,7 +16,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public abstract org.netbeans.api.java.platform.JavaPlatform
-cons protected JavaPlatform()
+cons protected init()
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_JAVADOC_FOLDER = "javadocFolders"
 fld public final static java.lang.String PROP_SOURCE_FOLDER = "sourceFolders"
@@ -41,7 +41,7 @@ supr java.lang.Object
 hfds supp,sysproperties
 
 CLSS public final org.netbeans.api.java.platform.JavaPlatformManager
-cons public JavaPlatformManager()
+cons public init()
 fld public final static java.lang.String PROP_INSTALLED_PLATFORMS = "installedPlatforms"
 meth public org.netbeans.api.java.platform.JavaPlatform getDefaultPlatform()
 meth public org.netbeans.api.java.platform.JavaPlatform[] getInstalledPlatforms()
@@ -57,7 +57,7 @@ meth public static boolean showCustomizer(org.netbeans.api.java.platform.JavaPla
 supr java.lang.Object
 
 CLSS public org.netbeans.api.java.platform.Profile
-cons public Profile(java.lang.String,org.openide.modules.SpecificationVersion)
+cons public init(java.lang.String,org.openide.modules.SpecificationVersion)
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.String getName()
 meth public final org.openide.modules.SpecificationVersion getVersion()
@@ -67,8 +67,8 @@ supr java.lang.Object
 hfds name,version
 
 CLSS public final org.netbeans.api.java.platform.Specification
-cons public Specification(java.lang.String,org.openide.modules.SpecificationVersion)
-cons public Specification(java.lang.String,org.openide.modules.SpecificationVersion,org.netbeans.api.java.platform.Profile[])
+cons public init(java.lang.String,org.openide.modules.SpecificationVersion)
+cons public init(java.lang.String,org.openide.modules.SpecificationVersion,org.netbeans.api.java.platform.Profile[])
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.String getName()
 meth public final org.netbeans.api.java.platform.Profile[] getProfiles()
@@ -79,7 +79,7 @@ supr java.lang.Object
 hfds name,profiles,version
 
 CLSS public abstract org.netbeans.spi.java.platform.CustomPlatformInstall
-cons public CustomPlatformInstall()
+cons public init()
 meth public abstract org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createIterator()
 supr org.netbeans.spi.java.platform.GeneralPlatformInstall
 
@@ -88,7 +88,7 @@ meth public abstract java.lang.String getDisplayName()
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.java.platform.PlatformInstall
-cons public PlatformInstall()
+cons public init()
 meth public abstract boolean accept(org.openide.filesystems.FileObject)
 meth public abstract org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createIterator(org.openide.filesystems.FileObject)
 supr org.netbeans.spi.java.platform.GeneralPlatformInstall

@@ -18,21 +18,24 @@
  */
 package org.netbeans.modules.etl.codegen;
 
-import java.util.UUID;
 import org.netbeans.modules.etl.utils.ETLDeploymentConstants;
-import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
+
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBConnectionDefinitionImpl;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDatabaseModelImpl;
+
+import org.netbeans.modules.dm.virtual.db.model.VirtualDatabaseModel;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBDefinition;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBColumn;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBConnectionDefinition;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDBTable;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDatabaseModel;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
 
@@ -45,22 +48,7 @@ import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
 public class ETLCodegenUtil {
 
     private static final String ETL_FOLDER = "eTL";
-    //private static final String LOG_CATEGORY = ETLCodegenUtil.class.getName();
 
-    //private static final MessageManager MESSAGE_MGR = MessageManager.getManager(ETLCodelet.class);
-    //private static final String IS_SECTION = "IS Configuration" ;
-    //private static final String IS_WORKSPACE_DIR = "WORKSPACEDIR" ;
-//    /**
-//     * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
-//     * @param deployable
-//     * @return Parameterized Monitor DB path.
-//     * @throws BaseException
-//     */
-//    public static String getMonitorDBDir(Deployable deployable) throws BaseException {
-//        return getMonitorDBDir(deployable, ETLDeploymentConstants.PARAM_APP_DATAROOT);
-//    }
-//
-//
     public static String getMonitorDBDir(String deployable, String workspaceDir) throws BaseException {
         String monitorDBFolder = null;
         try {
@@ -75,84 +63,11 @@ public class ETLCodegenUtil {
 
         return monitorDBFolder;
     }
-//    public static String getRSWorkspaceDir (CodeGenFramework framework, ErrorBundle errorBundle,
-//                                            ProjectDeployment projDeployment, Deployable deployable) {
-//            String errorMessage = null;
-//            String svcName = "eTL Service" ;
-//            IConfiguration iConfig = null;
-//            String tRSWorkspaceDir = null;
-//            String runtimeServerWorkspaceDir = null;
-//            ETLDefinitionProjectElement etlDef = null;
-//            int i = 1;
-//
-//            if (errorBundle == null) {
-//                errorBundle = framework.createErrorBundle();
-//            }
-//
-//            Collection tc = errorBundle.getErrors() ;
-//            if (tc != null) {
-//                i = (i <= tc.size())?(tc.size()+1): i;
-//            }
-//
-//            try {
-//                etlDef = (ETLDefinitionProjectElement) ((ProcessingNode) deployable).getProcessingDefinition();
-//                EnvironmentElement ee =projDeployment.getDeployedElement(deployable, projDeployment.getEnvironment());
-//                svcName = deployable.getName();
-//
-//                if ((ee != null) && (ee instanceof IntegrationServer)){
-//                    IntegrationServer is = (IntegrationServer) ee;
-//
-//                    iConfig = ETLCodegenHelper.getIConfiguration(is.getConfiguration());
-//
-//                    if ((iConfig != null) && (iConfig.getSection(IS_SECTION) != null)) {
-//                        ISection section = iConfig.getSection(IS_SECTION) ;
-//                        IParameter param = section.getParameter(IS_WORKSPACE_DIR);
-//                        if ((param != null) && (param.getValue() != null)) {
-//                            tRSWorkspaceDir = param.getValue().toString();
-//                        }
-//
-//                        if ((tRSWorkspaceDir == null) || ("".equals(tRSWorkspaceDir.trim()))){
-//                            errorMessage = MESSAGE_MGR.getString("ERR_RS_WORKSPACE_DIR_NOT_PRESENT", is.getName() );
-//                            errorBundle.addError(framework.createErrorEntry(etlDef, new Integer(i++), errorMessage));
-//                            runtimeServerWorkspaceDir = null;
-//                        }else {
-//                            runtimeServerWorkspaceDir = tRSWorkspaceDir;
-//                        }
-//
-//                    }else {
-//                        errorMessage = MESSAGE_MGR.getString("ERR_GETTING_RS_CONFIG", svcName );
-//                        errorBundle.addError(framework.createErrorEntry(etlDef, new Integer(i++), errorMessage));
-//                    }
-//                }else {
-//                    errorMessage = MESSAGE_MGR.getString("ERR_COLLAB_SVC_NOT_DEPLOYED", svcName);
-//                    errorBundle.addError(framework.createErrorEntry(etlDef, new Integer(i++), errorMessage));
-//                }
-//            }catch (RepositoryException re) {
-//                errorMessage = MESSAGE_MGR.getString("ERR_GETTING_RS_CONFIG", svcName );
-//                errorBundle.addError(framework.createErrorEntry(etlDef, new Integer(i++), errorMessage));
-//
-//            }catch (Exception ex) {
-//                errorMessage = MESSAGE_MGR.getString("ERR_GETTING_RS_CONFIG", svcName);
-//                errorBundle.addError(framework.createErrorEntry(etlDef, new Integer(i++), errorMessage));
-//
-//            }
-//
-//            return runtimeServerWorkspaceDir;
-//    }
-    /**
-     * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
-     * @return Parameterized engine instance DB path.
-     * @throws BaseException
-     */
+
     public static String getEngineInstanceWorkingFolder() {
         return getEngineInstanceWorkingFolder(ETLDeploymentConstants.PARAM_APP_DATAROOT);
     }
 
-    /**
-     * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
-     * @return Parameterized engine instance DB path.
-     * @throws BaseException
-     */
     public static String getEngineInstanceWorkingFolder(String appWorkspaceDirectory) {
         String repOID = String.valueOf(System.currentTimeMillis());
         String engineInstanceDBFolder = null;
@@ -161,11 +76,6 @@ public class ETLCodegenUtil {
         return engineInstanceDBFolder;
     }
 
-    /**
-     * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
-     * @return Parameterized engine instance DB path.
-     * @throws BaseException
-     */
     public static String getUniqueEngineInstanceWorkingFolder(String appWorkspaceDirectory, String dbInstanceName) {
         String engineInstanceDBFolder = null;
         String repoID = String.valueOf(System.currentTimeMillis());
@@ -175,7 +85,7 @@ public class ETLCodegenUtil {
         return engineInstanceDBFolder;
     }
 
-    public static FlatfileDefinition getFFDefinition(DBTable table) {
+    public static VirtualDBDefinition getFFDefinition(DBTable table) {
         if (table.getParent().getSource() == null) {
                 DatabaseModel model = table.getParent();
                 DBConnectionDefinition condef = model.getConnectionDefinition();
@@ -189,26 +99,29 @@ public class ETLCodegenUtil {
 
                 if (condef.getDriverClass().equals("org.axiondb.jdbc.AxionDriver")) {
 
-                    FlatfileDefinition fd = new FlatfileDefinition(model.getModelName());
-                    FlatfileDBConnectionDefinitionImpl ffdbConndef = new FlatfileDBConnectionDefinitionImpl(condef.getName(), condef.getDriverClass(),
-                            condef.getConnectionURL(), condef.getUserName(), condef.getPassword(),
-                            condef.getDescription());
+                    VirtualDBDefinition fd = new VirtualDBDefinition(model.getModelName());
+                    VirtualDBConnectionDefinition ffdbConndef = new VirtualDBConnectionDefinition(condef.getName(), condef.getDriverClass(),
+                            condef.getConnectionURL(), condef.getUserName(), condef.getPassword());
 
-                    FlatfileDatabaseModel fdm = new FlatfileDatabaseModelImpl(model.getModelName(),
+                    VirtualDatabaseModel fdm = new VirtualDatabaseModel(model.getModelName(),
                             ffdbConndef);
                     Iterator iterator = model.getTables().iterator();
                     HashMap fftables = new HashMap();
                     while (iterator.hasNext()) {
                         SQLDBTable element = (SQLDBTable) iterator.next();
-                        element.getClass();
-                        FlatfileDBTableImpl ft = new FlatfileDBTableImpl(element);
+                        VirtualDBTable ft = new VirtualDBTable();
+                        Iterator iter = element.getColumnList().iterator();
+
+                        while (iter.hasNext()) {
+                            SQLDBColumn col = (SQLDBColumn)iter.next();
+                            ft.addColumn(new VirtualDBColumn(col.getName(), col.getJdbcType(), col.getPrecision(), col.getScale(), col.isPrimaryKey(), col.isForeignKey(), col.isIndexed(), col.isNullable()));
+                        }
                         HashMap map = ((SQLDBModelImpl) model).getTableMetaData(condef, element);
                         ft.setProperties(map);
                         fftables.put(element.getName(), ft);
                     }
                     fdm.setTables(fftables);
-                    fd.setFlatfileDatabaseModel(fdm);
-//                return (FlatfileDefinition) table.getParent().getSource();
+                    fd.setVirtualDatabaseModel(fdm);
                     return fd;
                 }
             }
@@ -216,16 +129,16 @@ public class ETLCodegenUtil {
         return null;
     }
 
-    public static FlatfileDefinition getStcdbObjectTypeDefinition(DBTable table) {
+    public static VirtualDBDefinition getStcdbObjectTypeDefinition(DBTable table) {
         if (table.getParent().getSource() != null) {
             Object obj = table.getParent().getSource();
-            if (obj instanceof FlatfileDefinition) {
-                return (FlatfileDefinition) obj;
+            if (obj instanceof VirtualDBDefinition) {
+                return (VirtualDBDefinition) obj;
             }
         } else {
             return getFFDefinition(table);
         }
-        return (FlatfileDefinition) null;
+        return (VirtualDBDefinition) null;
     }
 
     public static String getQualifiedObjectId(SQLDBModel dbModel) {

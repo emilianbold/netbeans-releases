@@ -20,24 +20,99 @@
                 <attr name="position" intvalue="0"/>
                 <folder name="text">
                     <folder name="x-c">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
                     </folder>
                     <folder name="x-h">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
                     </folder>
                     <folder name="x-c++">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCController"/>
                             <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
                         </file>
                     </folder>
                     <folder name="x-fortran">
@@ -56,46 +131,20 @@
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>
-                <file name="x-make" url="resources/makefile/MakeExample"/>
-		<file name="sh" url="resources/sh/ShExample.sh"/>
-		<file name="bat" url="resources/bat/BatExample.bat"/>
             </folder>
         </folder>
     </folder>
 
     <folder name="Editors">
-
         <folder name="text">
-		<folder name="sh">
-			<folder name="FontsColors">
-				<folder name="NetBeans">
-					<folder name="Defaults">
-						<file name="FontAndColors.xml" url="resources/sh/FontAndColors.xml">
-							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
-						</file>
-					</folder>
-				</folder>
-			</folder>
-            <file name="EditorKit.instance">
-                <attr name="beaninfo" boolvalue="false"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>
-                <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.shell.ShellKit"/>
-            </file>
-			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
-		</folder>
-		<folder name="bat">
-			<folder name="FontsColors">
-				<folder name="NetBeans">
-					<folder name="Defaults">
-						<file name="FontAndColors.xml" url="resources/bat/FontAndColors.xml">
-							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
-						</file>
-					</folder>
-				</folder>
-			</folder>
-			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
-		</folder>
-            <folder name="x-cpp-preprocessor">
+            <folder name="x-cnd+sourcefile">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                <file name="org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+            </folder>
+            <folder name="x-cpp+preprocessor">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
@@ -103,7 +152,24 @@
                 </folder>
             </folder>
             <folder name="x-h">
-                 <folder name="Preferences">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
+                </file>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                </folder>
+                <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="h-preferences.xml" url="h-preferences.xml"/>
                     </folder>
@@ -113,7 +179,6 @@
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.HKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -123,7 +188,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -134,7 +198,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/cplusplus/H-DefaultAbbrevs.xml">
@@ -142,13 +205,11 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                     </folder>
-
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1142"/>
@@ -164,8 +225,10 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
-
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-c++.instance">
@@ -180,7 +243,6 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
@@ -196,7 +258,24 @@
                 </file>
             </folder>
             <folder name="x-c++">
-                 <folder name="Preferences">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
+                </file>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                </folder>
+                <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="cpp-preferences.xml" url="cpp-preferences.xml"/>
                     </folder>
@@ -206,7 +285,6 @@
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -216,7 +294,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -227,7 +304,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/cplusplus/CC-DefaultAbbrevs.xml">
@@ -235,13 +311,11 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                     </folder>
-
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1142"/>
@@ -257,8 +331,10 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
-
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-c++.instance">
@@ -273,13 +349,11 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
-
                 <file name="Reformatter.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.ReformatTask$Factory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
@@ -291,17 +365,33 @@
             </folder>
 
             <folder name="x-c">
-                 <folder name="Preferences">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
+                </file>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                </folder>
+                <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="c-preferences.xml" url="c-preferences.xml"/>
                     </folder>
                 </folder>
-                 <file name="EditorKit.instance">
+                <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -311,7 +401,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -322,7 +411,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/cplusplus/C-DefaultAbbrevs.xml">
@@ -330,7 +418,6 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="100"/>
@@ -352,8 +439,10 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
-
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-c.instance">
@@ -368,13 +457,11 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
-
                 <file name="Reformatter.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.ReformatTask$Factory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
@@ -383,21 +470,20 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.indent.CppIndentFactory"/>
                 </file>
-             </folder>
+            </folder>
 
             <folder name="x-fortran">
-                 <folder name="Preferences">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="fortran-preferences.xml" url="fortran-preferences.xml"/>
                     </folder>
                 </folder>
-
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.FKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.fortran.FKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -407,7 +493,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -415,7 +500,6 @@
                         </folder>
                     </folder>
                 </folder>
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/fortran/Fortran-DefaultAbbrevs.xml">
@@ -423,7 +507,6 @@
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="Popup">
                     <file name="format">
                         <attr name="position" intvalue="1480"/>
@@ -432,37 +515,30 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1960"/>
                     </file>
-
                     <file name="SeparatorAfterPaste.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
-
                 </folder>
-
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-fortran.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="19100"/>
                         </file>
-
                         <file name="comment">
                             <attr name="position" intvalue="19200"/>
                         </file>
-
                         <file name="uncomment">
                             <attr name="position" intvalue="19300"/>
                         </file>
                     </folder>
                 </folder>
-
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-fortran-FortranBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
-
                 <file name="Reformatter.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.ReformatTask$Factory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter$Factory"/>
@@ -473,39 +549,6 @@
                 </file>
             </folder>
 
-            <folder name="x-make">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
-
-                <file name="MakefileIndentTaskFactory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileIndentTaskFactory"/>
-                </file>
-
-                <folder name="CodeTemplates">
-                    <folder name="Defaults">
-                        <file name="codetemplates.xml" url="resources/makefile/Makefile-DefaultAbbrevs.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
-
-                <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="coloring.xml" url="resources/makefile/Netbeans-Makefile-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
-
-                <folder name="Preferences">
-                    <folder name="Defaults">
-                        <file name="org-netbeans-modules-cnd-editor-makefile-preferences.xml" url="resources/makefile/Makefile-editor-preferences.xml"/>
-                    </folder>
-                </folder>
-
-            </folder>
         </folder>
     </folder>
 

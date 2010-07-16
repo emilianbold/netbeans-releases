@@ -26,7 +26,6 @@ Microsystems, Inc. All Rights Reserved.
     exclude-result-prefixes="xalan p ejb projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
-
         <xsl:comment><![CDATA[
         *** GENERATED FROM project.xml - DO NOT EDIT  ***
         ***         EDIT ../build.xml INSTEAD         ***
@@ -42,57 +41,41 @@ Microsystems, Inc. All Rights Reserved.
         - javadoc
         - cleanup
 
-        ]]></xsl:comment>
-
+        ]]>
+        </xsl:comment>
         <xsl:variable name="name" select="/p:project/p:configuration/ejb:data/ejb:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-
-            <fail message="Please build using Ant 1.7.1 or higher.">
-                <condition>
-                    <not>
-                        <antversion atleast="1.7.1"/>
-                    </not>
-                </condition>
-            </fail>
-
             <target name="default">
-                <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
+                <xsl:attribute name="depends">dist</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
-
             <xsl:comment> 
                 ======================
                 INITIALIZATION SECTION 
                 ======================
             </xsl:comment>
-
             <target name="pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="init-private">
                 <xsl:attribute name="depends">pre-init</xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
             </target>
-
             <target name="init-userdir">
                 <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
                 <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
             </target>
-
             <target name="init-user">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
-
             <target name="init-project">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
-
             <target name="do-init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
@@ -109,10 +92,9 @@ Microsystems, Inc. All Rights Reserved.
                         platform.javac=$${platforms.${platform.active}.javac}
                     </echo>
                     <property file="${{file.tmp}}"/>
-
                     <delete file="${{file.tmp}}"/>
                     <fail unless="platform.home">Must set platform.home</fail>
-                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
@@ -123,16 +105,11 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
-                <condition property="no.javadoc.preview">
-                    <isfalse value="${{javadoc.preview}}"/>
-                </condition>
             </target>
-
             <target name="post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="init-check">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
@@ -147,31 +124,48 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             <target name="init-taskdefs"   if="from.commandline">
                 <path id="ant.task.classpath.models">
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-iep-editor.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-iep-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-iep-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../soa/modules/org-netbeans-modules-iep-editor.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../soa/modules/org-netbeans-modules-iep-project.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../soa/ant/nblib/org-netbeans-modules-iep-project.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../soa/modules/org-netbeans-modules-soa-validation.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../soa/modules/org-netbeans-modules-soa-ui.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../xml/modules/org-netbeans-modules-xml-search.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/lib/org-openide-util.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/lib/org-openide-util-lookup.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-openide-dialogs.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-openide-text.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-netbeans-modules-masterfs.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../platform/modules/org-netbeans-modules-queries.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/ext/resolver-1.2.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-apache-xml-resolver.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-project-ant.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-projectapi.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-xml-schema-model.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+                    <pathelement location="${{esb.netbeans.platform}}/../xml/modules/org-netbeans-modules-xml-misc.jar"/>
                 </path>
-        <taskdef name="iep-generate-asa-artifacts" classname="org.netbeans.modules.iep.project.anttasks.GenerateAsaArtifacts">
+                <taskdef name="iep-generate-asa-artifacts" classname="org.netbeans.modules.iep.project.anttasks.cli.GenerateAsaArtifacts">
                     <classpath refid="ant.task.classpath.models"/>
-        </taskdef>
+                </taskdef>
             </target>
-            
             <target name="init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs</xsl:attribute>
             </target>
-
             <xsl:comment>
                 ===================
                 COMPILATION SECTION
                 ===================
             </xsl:comment>
-
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
-
             <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <target name="wscompile-init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
@@ -181,12 +175,10 @@ Microsystems, Inc. All Rights Reserved.
                     <mkdir dir="${{build.generated.dir}}/wssrc"/>
                 </target>
             </xsl:if>
-
             <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                 <xsl:variable name="wsname">
                     <xsl:value-of select="ejb:web-service-name"/>
                 </xsl:variable>
-
                 <target name="{$wsname}_wscompile" depends="wscompile-init">
                     <wscompile
                         server="true"
@@ -203,12 +195,10 @@ Microsystems, Inc. All Rights Reserved.
                     </wscompile>
                 </target>
             </xsl:for-each>
-
             <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <xsl:variable name="wsclientname">
                     <xsl:value-of select="ejb:web-service-client-name"/>
                 </xsl:variable>
-
                 <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
                     <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
                         tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
@@ -229,17 +219,14 @@ Microsystems, Inc. All Rights Reserved.
                     </wscompile>
                 </target>
             </xsl:for-each>
-
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
-
             <target name="pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="library-inclusion-in-archive" depends="compile">
                 <xsl:for-each select="//ejb:included-library">
                     <xsl:variable name="included.prop.name">
@@ -248,9 +235,8 @@ Microsystems, Inc. All Rights Reserved.
                     <unjar dest="${{build.classes.dir}}">
                         <xsl:attribute name="src">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                     </unjar>
-                </xsl:for-each>   
-            </target> 
-            
+                </xsl:for-each>
+            </target>
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:for-each select="//ejb:included-library">
                     <xsl:variable name="included.prop.name">
@@ -266,59 +252,48 @@ Microsystems, Inc. All Rights Reserved.
                     <copy todir="${{build.classes.dir}}">
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                     </copy>
-                </xsl:for-each>   
+                </xsl:for-each>
                 <manifest file="${{build.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
-                        <xsl:attribute name="value">
-                            <xsl:for-each select="//ejb:included-library">
-                                <xsl:variable name="base.prop.name">
-                                    <xsl:value-of select="concat('${included.lib.', ., '}')"/>
-                                </xsl:variable>
-                                <xsl:if test="position()>1">,</xsl:if>
+                        <xsl:attribute name="value"><xsl:for-each select="//ejb:included-library">
+                                <xsl:variable name="base.prop.name"><xsl:value-of select="concat('${included.lib.', ., '}')"/></xsl:variable>
+                                <xsl:if test="position()>1">,
+                                </xsl:if>
                                 <xsl:value-of select="$base.prop.name"/>
-                            </xsl:for-each>  
-                        </xsl:attribute>
+                            </xsl:for-each></xsl:attribute>
                     </attribute>
                 </manifest>
             </target>
-            
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
-                    <delete> 
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
+                    <delete>
                         <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
             </target>
-
             <target name="post-compile">
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                    <xsl:attribute name="depends"><xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:variable name="wsname2">
-                                <xsl:value-of select="ejb:web-service-name"/>
-                            </xsl:variable>
-                            <xsl:value-of select="ejb:web-service-name"/><xsl:text>_wscompile</xsl:text>
-                        </xsl:for-each>
-                    </xsl:attribute>
+                            <xsl:variable name="wsname2"><xsl:value-of select="ejb:web-service-name"/></xsl:variable>
+                            <xsl:value-of select="ejb:web-service-name"/>
+                            <xsl:text>_wscompile</xsl:text>
+                        </xsl:for-each></xsl:attribute>
                 </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
-
             <target name="pre-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
@@ -328,22 +303,18 @@ Microsystems, Inc. All Rights Reserved.
                     </customize>
                 </ejbproject:javac>
             </target>
-
             <target name="post-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
             </target>
-
             <xsl:comment>
                 ====================
                 DIST BUILDING SECTION
                 ====================
             </xsl:comment>
-
             <target name="pre-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -352,10 +323,14 @@ Microsystems, Inc. All Rights Reserved.
                 <iep-generate-asa-artifacts
                     srcDirectoryLocation="${{basedir}}/${{src.dir}}"
                     buildDirectoryLocation="${{basedir}}/${{build.dir}}"
-                    jbiDescriptorFileLocation="${{basedir}}/${{build.dir}}/META-INF/jbi.xml">
+                    jbiDescriptorFileLocation="${{basedir}}/${{build.dir}}/META-INF/jbi.xml"
+                    classpathRef="ant.task.classpath.models"
+                    validate="true"
+                    allowBuildWithError="${{allow.build.with.error}}"
+                    alwaysGenerateAbstractWsdl="${{always.generate.abstract.wsdl}}"
+                    >
                 </iep-generate-asa-artifacts>
             </target>
-
             <target name="dist_se">
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
@@ -365,23 +340,18 @@ Microsystems, Inc. All Rights Reserved.
                         <include name="META-INF/jbi.xml" />
                     </fileset>
                 </jar>
-             </target>
-
+            </target>
             <target name="do-dist">
                 <xsl:attribute name="depends">init,pre-dist, dist_se</xsl:attribute>
             </target>
-
             <target name="post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="dist">
                 <xsl:attribute name="depends">init,pre-dist,do-dist,post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
-
-
             <xsl:comment>
                 =================
                 DEBUGGING SECTION
@@ -390,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="debug">
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
                 <xsl:attribute name ="depends">init,compile</xsl:attribute>
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
                     <classpath>
@@ -406,94 +376,37 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:if>
                 </nbjpdaconnect>
             </target>
-
             <target name="pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <fail unless="fix.includes">Must set fix.includes</fail>
                 <property name="javac.includes" value="${{fix.includes}}.java"/>
             </target>
-
             <target name="do-debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
                 <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
             </target>
-
             <target name="debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">esb.netbeans.platform</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
             </target>
-    
-            <xsl:comment>
-                ===============
-                JAVADOC SECTION
-                ===============
-            </xsl:comment>
-
-            <target name="javadoc-build">
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <mkdir dir="${{dist.javadoc.dir}}"/>
-                <!-- XXX do an up-to-date check first -->
-                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                    notree="${{javadoc.notree}}"
-                    use="${{javadoc.use}}"
-                    nonavbar="${{javadoc.nonavbar}}"
-                    noindex="${{javadoc.noindex}}"
-                    splitindex="${{javadoc.splitindex}}"
-                    author="${{javadoc.author}}"
-                    version="${{javadoc.version}}"
-                    windowtitle="${{javadoc.windowtitle}}"
-                    private="${{javadoc.private}}" >
-                    <!-- encoding="${{javadoc.encoding}}" -->
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <pathelement location="${{src.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                    <fileset dir="${{src.dir}}"/>
-                </javadoc>
-            </target>
-
-            <target name="javadoc-browse">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
-                <xsl:attribute name="depends">init,javadoc-build</xsl:attribute>
-                <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-            </target>
-
-            <target name="javadoc">
-                <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
-                <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
-            </target>
-            
             <xsl:comment>
                 ===============
                 CLEANUP SECTION
                 ===============
             </xsl:comment>
-
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'"/>
             </xsl:call-template>
-
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
-
                 <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
             </target>
-
             <target name="post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
             <target name="clean">
                 <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
@@ -516,7 +429,6 @@ Microsystems, Inc. All Rights Reserved.
         -Dorg.netbeans.modules.javahelp=0
 
         -->
-
     </xsl:template>
 
     <!---
@@ -538,12 +450,8 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
                 <xsl:variable name="subtarget">
                     <xsl:choose>
-                        <xsl:when test="$type">
-                            <xsl:value-of select="projdeps:target"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="projdeps:clean-target"/>
-                        </xsl:otherwise>
+                        <xsl:when test="$type"><xsl:value-of select="projdeps:target"/></xsl:when>
+                        <xsl:otherwise><xsl:value-of select="projdeps:clean-target"/></xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
@@ -572,13 +480,10 @@ Microsystems, Inc. All Rights Reserved.
                     <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
                     <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
                     <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
+                        <xsl:attribute name="antfile"><xsl:value-of select="$scriptfile"/></xsl:attribute>
                     </xsl:if>
                 </ant>
             </xsl:for-each>
         </target>
     </xsl:template>
-
 </xsl:stylesheet>

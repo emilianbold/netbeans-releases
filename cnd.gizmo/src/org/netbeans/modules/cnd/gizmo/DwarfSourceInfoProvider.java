@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,28 +41,26 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService.RemoteBinaryID;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
+import java.util.logging.Logger;
+import org.netbeans.modules.remote.api.RemoteBinaryService;
+import org.netbeans.modules.remote.api.RemoteBinaryService.RemoteBinaryID;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToLine;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.SourceLineInfo;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
@@ -67,7 +68,12 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -75,14 +81,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
-    private static final boolean TRACE = false;
+    private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.gizmo.dwarf"); // NOI18N
     private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
-    private Map<String, String> onePath;
 
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
 
+    @Override
     public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
@@ -103,18 +110,34 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return info;
     }
 
-    private SourceFileInfo _fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    private synchronized SourceFileInfo _fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
-
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
-
         String executable = null;
 
         if (execEnv.isLocal()) {
             executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         } else {
+            String remoteExecutable = serviceInfo.get(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE);
+            if (remoteExecutable != null) {
+                if (cache.containsKey(remoteExecutable)){
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutable);
+                    if (sourceInfoMap != null) {
+                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
+                    }
+                } else {
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = getOffsets(execEnv, remoteExecutable);
+                    if (sourceInfoMap != null) {
+                        cache.put(remoteExecutable, sourceInfoMap.isEmpty()?
+                            Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
+                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
+                    } else {
+                        cache.put(remoteExecutable, null);
+                    }
+                }
+            }
             String executableID = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
             RemoteBinaryID id = RemoteBinaryService.RemoteBinaryID.fromIDString(executableID);
             Future<Boolean> remoteSyncResult = RemoteBinaryService.getResult(id);
@@ -131,263 +154,96 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
 
         if (executable != null) {
-            Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
-            if (TRACE) {
-                System.err.println("Search for:"+functionQName+"+"+offset); // NOI18N
+            return findSourceInfo(getSourceInfo(executable), functionQName, lineNumber, offset);
+        }
+        return null;
+    }
+
+    private SourceFileInfo findSourceInfo(Map<String, AbstractFunctionToLine> sourceInfoMap, String functionQName, int lineNumber, long offset ) {
+        logger.log(Level.FINE, "Search for:{0}+{1}", new Object[]{functionQName, offset}); // NOI18N
+        AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
+        if (fl != null) {
+            SourceLineInfo sourceInfo = fl.getLine((int) offset);
+            logger.log(Level.FINE, "Found:{0}", fl); // NOI18N
+            logger.log(Level.FINE, "Line:{0}", sourceInfo); // NOI18N
+            if (lineNumber > 0 && sourceInfo != null) {
+                return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
             }
-            AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
-            if (fl != null) {
-                if (TRACE) {
-                    System.err.println("Found:"+fl); // NOI18N
+            return new SourceFileInfo(sourceInfo.getFileName(), sourceInfo.getLine(), 0);
+        }
+        return null;
+    }
+
+    private Map<String, AbstractFunctionToLine> getOffsets(ExecutionEnvironment execEnv, String executable) {
+        NativeProcess process = null;
+        Task errorTask = null;
+        try {
+            process = RemoteJarServiceProvider.getJavaProcess(Offset2LineService.class, execEnv, new String[]{executable});
+            if (process.getState() != State.ERROR){
+                final NativeProcess startedProcess = process;
+                final List<String> errors = new ArrayList<String>();
+                errorTask = RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            errors.addAll(ProcessUtils.readProcessError(startedProcess));
+                        } catch (Throwable ex) {
+                        }
+                    }
+                });
+
+                BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
+                Map<String, AbstractFunctionToLine> res = Offset2LineService.getOffset2Line(out);
+
+                int rc = process.waitFor();
+                logger.log(Level.FINE, "Return code {0}", rc); // NOI18N
+                boolean hasException = false;
+                for(String error : errors) {
+                    if (error.indexOf("Exception") >= 0) { // NOI18N
+                        hasException = true;
+                    }
+                    logger.log(Level.INFO, error); // NOI18N
                 }
-                SourceFileInfo sourceInfo = fl.getLine((int)offset, serviceInfo);
-                if (TRACE) {
-                    System.err.println("Line:"+sourceInfo); // NOI18N
+                if (rc == 0 && !hasException) {
+                    logger.log(Level.FINE, "Loaded lines info for {0} functions from executable file {1}", new Object[]{res.size(), executable}); // NOI18N
+                    return res;
                 }
-                if (lineNumber > 0 && sourceInfo != null) {
-                    return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
-                }
-                return sourceInfo;
+            }
+        } catch (IOException ex) {
+            logger.log(Level.INFO, ex.getMessage(), ex);
+        } catch (InterruptedException ex) {
+        } catch (Throwable ex) {
+            logger.log(Level.INFO, ex.getMessage(), ex);
+        } finally {
+            if (errorTask != null){
+                errorTask.cancel();
+            }
+            if (process != null) {
+                process.destroy();
             }
         }
         return null;
     }
 
     private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
-        onePath = new HashMap<String, String>();
         Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
         if (sourceInfoMap == null) {
-            sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
-                if (TRACE) {
-                    System.err.println("Process file: "+executable); // NOI18N
-                }
-                Dwarf dwarf = new Dwarf(executable);
-                try {
-                    for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
-                        TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
-                        String filePath = compilationUnit.getSourceFileAbsolutePath();
-                        String compDir = compilationUnit.getCompilationDir();
-                        Set<Long> antiLoop = new HashSet<Long>();
-                        processEntries(compilationUnit, compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                    }
-                } finally {
-                    dwarf.dispose();
-                }
+                sourceInfoMap = Offset2LineService.getOffset2Line(executable);
+                logger.log(Level.FINE, "Loaded lines info for {0} functions from executable file {1}", new Object[]{sourceInfoMap.size(), executable}); // NOI18N
             } catch (FileNotFoundException ex) {
-                DLightLogger.instance.log(Level.SEVERE, ex.getMessage(), ex);
+                DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             } catch (IOException ex) {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage());
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             } catch (Throwable ex) {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
         }
-        onePath = null;
         return sourceInfoMap;
     }
-
-    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, String filePath, String compDir,
-            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
-        for (DwarfEntry entry : declarations) {
-            prosessEntry(compilationUnit, entry, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-        }
-    }
-
-    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, String filePath, String compDir,
-            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
-        if (antiLoop.contains(entry.getRefference())) {
-            return;
-        }
-        antiLoop.add(entry.getRefference());
-        switch (entry.getKind()) {
-            case DW_TAG_subprogram:
-            {
-                if (entry.getLine() < 0 || entry.getDeclarationFilePath() == null) {
-                    return;
-                }
-                if (entry.getLowAddress() == 0) {
-                    DeclarationToLine functionToLine = new DeclarationToLine(filePath, compDir, entry, onePath);
-                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                    if (TRACE) {
-                        System.err.println(functionToLine);
-                    }
-                } else {
-                    FunctionToLine functionToLine = new FunctionToLine(filePath, compDir, entry, lineNumbers, onePath);
-                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                    if (TRACE) {
-                        System.err.println(functionToLine);
-                    }
-                }
-                break;
-            }
-            case DW_TAG_structure_type:
-            case DW_TAG_class_type:
-                processEntries(compilationUnit, entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                break;
-            case DW_TAG_typedef:
-            case DW_TAG_const_type:
-            case DW_TAG_pointer_type:
-            case DW_TAG_reference_type:
-            case DW_TAG_array_type:
-            case DW_TAG_ptr_to_member_type:
-            {
-                DwarfEntry type = compilationUnit.getReferencedType(entry);
-                if (type != null) {
-                    prosessEntry(compilationUnit, type, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                }
-                break;
-            }
-        }
-    }
-
-//    private static String toAbsolutePath(Map<String, String> serviceInfo, String path) {
-//        String projectPath = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
-//        if (projectPath != null) {
-//            path = IpeUtils.toAbsolutePath(projectPath, path);
-//        }
-//        return path;
-//    }
-
-    private static TreeSet<LineNumber> getCompilationUnitLines(CompilationUnit unit) throws IOException{
-        Set<LineNumber> numbers = unit.getLineNumbers();
-        return new TreeSet<LineNumber>(numbers);
-    }
-
-    private static abstract class AbstractFunctionToLine {
-        public abstract SourceFileInfo getLine(int offset, Map<String, String> serviceInfo);
-
-        protected String initPath(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException{
-            String res = _initPath(filePath, compDir, entry);
-            String cached = onePath.get(res);
-            if (cached == null) {
-                onePath.put(res, res);
-                cached = res;
-            }
-            return cached;
-        }
-
-        private String _initPath(String filePath, String compDir, DwarfEntry entry) throws IOException{
-            String entyFilePath = entry.getDeclarationFilePath();
-            if (entyFilePath != null && filePath.endsWith(entyFilePath)) {
-                return filePath;
-            } else {
-                if (entyFilePath != null &&
-                        (entyFilePath.startsWith("/") || // NOI18N
-                         entyFilePath.length()>2 && entyFilePath.charAt(1) == ':')){ // NOI18N
-                    return entyFilePath;
-                } else {
-                    if (compDir.endsWith("/") || compDir.endsWith("\\")) { // NOI18N
-                        return compDir+entyFilePath;
-                    } else {
-                        return compDir+"/"+entyFilePath; // NOI18N
-                    }
-                }
-            }
-        }
-    }
-
-    private static final class DeclarationToLine extends AbstractFunctionToLine {
-        private final String functionName;
-        private final int baseLine;
-        private final String filePath;
-
-        public DeclarationToLine(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
-            assert entry.getKind() == TAG.DW_TAG_subprogram;
-            functionName = entry.getQualifiedName();
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
-        }
-
-        public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
-            return new SourceFileInfo(filePath, baseLine, 0);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder("File: "+filePath); // NOI18N
-            buf.append("\n\tFunction:   "+functionName); // NOI18N
-            buf.append("\n\tBase Line:  "+baseLine); // NOI18N
-            return buf.toString();
-        }
-    }
-
-    private static final class FunctionToLine extends AbstractFunctionToLine {
-        private final String functionName;
-        private final int[] lineStorage;
-        private final int[] offsetStorage;
-        private final int baseLine;
-        private final String filePath;
-
-        public FunctionToLine(String filePath, String compDir, DwarfEntry entry, TreeSet<LineNumber> numbers, Map<String, String> onePath) throws IOException {
-            assert entry.getKind() == TAG.DW_TAG_subprogram;
-            assert entry.getLowAddress() != 0;
-            functionName = entry.getQualifiedName();
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
-            long base =entry.getLowAddress();
-            long baseHihg =entry.getHighAddress();
-            //System.err.println(""+entry);
-            List<Integer> lineStorageList = new ArrayList<Integer>();
-            List<Integer> offsetStorageList = new ArrayList<Integer>();
-            for(LineNumber l : numbers) {
-                if (l.endOffset>=base && l.endOffset <= baseHihg) {
-                    //System.err.println(""+l);
-                    lineStorageList.add(l.line);
-                    offsetStorageList.add((int)(l.endOffset - base));
-                }
-            }
-            lineStorage = new int[lineStorageList.size()];
-            offsetStorage = new int[offsetStorageList.size()];
-            for (int i = 0; i < lineStorageList.size(); i++){
-                lineStorage[i] = lineStorageList.get(i);
-                offsetStorage[i] = offsetStorageList.get(i);
-            }
-        }
-
-        public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            if (offset <= 0) {
-                //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
-                if (baseLine > 0) {
-                    return new SourceFileInfo(filePath, baseLine, 0);
-                } else {
-                    if (lineStorage.length > 0){
-                        return new SourceFileInfo(filePath, lineStorage[0], 0);
-                    }
-                }
-                return null;
-            }
-            int res = -1;
-            int delta = Integer.MAX_VALUE;
-            for (int i = 0; i < offsetStorage.length; i++) {
-                if (offsetStorage[i] > offset) {
-                    int d = offsetStorage[i] - offset;
-                    if (d < delta) {
-                        res = i;
-                        delta = d;
-                    }
-                }
-            }
-            if (res < 0) {
-                return new SourceFileInfo(filePath, baseLine, 0);
-            }
-            //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), lineStorage[res], 0);
-            return new SourceFileInfo(filePath, lineStorage[res], 0);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder("File: "+filePath); // NOI18N
-            buf.append("\n\tFunction:   "+functionName); // NOI18N
-            buf.append("\n\tBase Line:  "+baseLine); // NOI18N
-            if (lineStorage.length>0) {
-                buf.append("\n\tStart Line: "+lineStorage[0]+"\t ("+offsetStorage[0]+")"); // NOI18N
-                buf.append("\n\tEnd Line:   "+lineStorage[lineStorage.length-1]+"\t ("+offsetStorage[lineStorage.length-1]+")"); // NOI18N
-            }
-            return buf.toString();
-        }
-    }
-
 }

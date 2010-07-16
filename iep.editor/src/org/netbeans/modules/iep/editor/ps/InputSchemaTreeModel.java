@@ -20,7 +20,7 @@
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
@@ -43,19 +43,21 @@ import org.openide.util.NbBundle;
  */
 class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(InputSchemaTreeModel.class.getName());
+    private OperatorComponent mOperComp = null;
     
     public InputSchemaTreeModel(DefaultMutableTreeNode root, IEPModel model, OperatorComponent component) {
         super(root);
+        mOperComp = component;
         try {
             List<OperatorComponent> inputs = component.getInputOperatorList();
             Iterator<OperatorComponent> itIn = inputs.iterator();
             while(itIn.hasNext()) {
                 OperatorComponent  input = itIn.next();
                 if(input != null) {
-                    String inputName = input.getDisplayName();
+                    String inputName = input.getString(PROP_NAME);
                     DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
                     root.add(inputNode);
-                    SchemaComponent outputSchema = input.getOutputSchemaId();
+                    SchemaComponent outputSchema = input.getOutputSchema();
                     if(outputSchema != null) {
                         List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
                         Iterator<SchemaAttribute> attrsIt = attrs.iterator();
@@ -69,16 +71,16 @@ class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
                 }
             }
             
-            List<OperatorComponent> tableInputs = component.getStaticInputTableList();
+            List<OperatorComponent> tableInputs = component.getStaticInputList();
             Iterator<OperatorComponent> tableInIt = tableInputs.iterator();
             while(tableInIt.hasNext()) {
                 OperatorComponent input = tableInIt.next();
                 
                 if(input != null) {
-                    String inputName = input.getDisplayName();
+                    String inputName = input.getString(PROP_NAME);
                     DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
                     root.add(inputNode);
-                    SchemaComponent outputSchema = input.getOutputSchemaId();
+                    SchemaComponent outputSchema = input.getOutputSchema();
                     if(outputSchema != null) {
                         List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
                         Iterator<SchemaAttribute> attrsIt = attrs.iterator();
@@ -145,6 +147,16 @@ class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
             mLog.log(Level.SEVERE, NbBundle.getMessage(InputSchemaTreeModel.class, 
                     "InputSchemaTreeModel.FAIL_TO_BUILD_TREE_MODEL_FOR", component.getTitle()), e);
         }
+    }
+    
+    /**
+     * helper to determine if the model is empty, this implies that the operator is 
+     * not connected to any input and hence does not have any attributes to select
+     * in the List.
+     * @return
+     */
+    public boolean isEmpty() {
+	return (mOperComp.getInputOperatorList().size() == 0);
     }
     
 }

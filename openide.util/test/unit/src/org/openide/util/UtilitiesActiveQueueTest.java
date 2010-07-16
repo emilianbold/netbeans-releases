@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -113,48 +116,6 @@ public class UtilitiesActiveQueueTest extends NbTestCase {
         } catch (InterruptedException ex) {
         }
     }
-    
-    public void testMemoryLeak() throws Exception {
-        final Class<?> u1 = Utilities.class;
-        class L extends URLClassLoader {
-            public L() {
-                super(new URL[] {u1.getProtectionDomain().getCodeSource().getLocation()}, u1.getClassLoader().getParent());
-            }
-            protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-                if (name.equals(u1.getName()) || name.startsWith(u1.getName() + "$")) {
-                    Class c = findLoadedClass(name);
-                    if (c == null) {
-                        c = findClass(name);
-                    }
-                    if (resolve) {
-                        resolveClass(c);
-                    }
-                    return c;
-                } else {
-                    return super.loadClass(name, resolve);
-                }
-            }
-        }
-        ClassLoader l = new L();
-        Class<?> u2 = l.loadClass(u1.getName());
-        assertEquals(l, u2.getClassLoader());
-        Object obj = new Object();
-        @SuppressWarnings("unchecked")
-        ReferenceQueue<Object> q = (ReferenceQueue<Object>) u2.getMethod("activeReferenceQueue").invoke(null);
-        RunnableRef ref = new RunnableRef(obj, q);
-        synchronized (ref) {
-            obj = null;
-            assertGC("Ref should be GC'ed as usual", ref);
-            ref.wait();
-            assertTrue("Run method has been executed", ref.executed);
-        }
-        Reference<?> r = new WeakReference<Object>(u2);
-        q = null;
-        u2 = null;
-        l = null;
-        assertGC("#86625: Utilities.class can also be collected now", r);
-    }
-
     
     private static class RunnableRef extends WeakReference<Object>
     implements Runnable {

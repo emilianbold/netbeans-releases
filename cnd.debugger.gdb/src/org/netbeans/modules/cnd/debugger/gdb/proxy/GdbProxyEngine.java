@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,25 +47,22 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 // Imported classes for ShellCommand() class
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -84,7 +84,6 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private int debuggerPid = -1;
 
     private final MICommand[] commandList = new MICommand[20];
     private int nextCommandPos = 0;
@@ -94,12 +93,17 @@ public class GdbProxyEngine {
     private int currentToken = MIN_TOKEN;
     private boolean active;
     private RequestProcessor.Task gdbReader = null;
+    private final NativeProcess proc;
+    private volatile boolean killed = false;
 
     // This queue was created due to the issue 156138
     private final RequestProcessor sendQueue = new RequestProcessor("sendQueue"); // NOI18N
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+
+    private final boolean inferiorTty;
+    public static final boolean ENGINE_PTY = Boolean.getBoolean("gdb.engine.pty"); // NOI18N
 
     /**
      * Create a gdb process
@@ -109,37 +113,25 @@ public class GdbProxyEngine {
      * @param workingDirectory - a directory where the debugger should run
      * @param stepIntoProject - a flag to stop at first source line
      */
-    public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
-                    String[] debuggerEnvironment, String workingDirectory, String termpath,
+    public GdbProxyEngine(final GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
+                    MacroMap debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
-        
-        if (debugger.getPlatform() != PlatformTypes.PLATFORM_WINDOWS && termpath != null) {
-            String tty = ExternalTerminal.create(debugger, termpath, debuggerEnvironment);
-            if (tty != null) {
-                debuggerCommand.add("-tty"); // NOI18N
-                debuggerCommand.add(tty);
-            } else {
-                throw new IllegalStateException(NbBundle.getMessage(GdbProxyEngine.class, "ERR_ExternalTerminalFailedMessage")); // NOI18N
-            }
+        inferiorTty = (tty != null);
+        if (inferiorTty) {
+            debuggerCommand.add("-tty"); // NOI18N
+            debuggerCommand.add(tty);
         }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
         active = true;
         
         getLogger().logMessage("Debugger Command: " + debuggerCommand); // NOI18N
-        getLogger().logMessage("Env[" + debuggerEnvironment.length + "]: " + // NOI18N
-                Arrays.asList(debuggerEnvironment));
+        getLogger().logMessage("Env: " + debuggerEnvironment); // NOI18N
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
 
-        startDebugger(debuggerCommand, workingDirectory, debuggerEnvironment, cspath);
-    }
-    
-    private void startDebugger(List<String> debuggerCommand,
-                               String workingDirectory,
-                               String[] debuggerEnvironment,
-                               String cspath) throws IOException {
+        //start process
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -158,17 +150,22 @@ public class GdbProxyEngine {
             environment.appendPathVariable(pathname, cspath);
         }
 
-        final NativeProcess proc = npb.call();
-        debuggerPid = proc.getPID();
-        toGdb = gdbReader(proc.getInputStream(), proc.getOutputStream());
+        if (ENGINE_PTY) {
+            npb.setUsePty(true);
+        }
+
+        proc = npb.call();
+        // for remote execution we need to convert encoding
+        toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 try {
                     int rc = proc.waitFor();
                     if (rc == 0) {
                         debugger.finish(false);
-                    } else {
+                    } else if (!killed) {
                         unexpectedGdbExit(rc);
                     }
                 } catch (InterruptedException ex) {
@@ -178,13 +175,22 @@ public class GdbProxyEngine {
         });
     }
 
-    // Interrupts the debugger
+    /**
+     * kill gdb process
+     */
+    public void kill() {
+        killed = true;
+        proc.destroy();
+    }
+
+    public boolean isInferiorTty() {
+        return inferiorTty;
+    }
+
+    // Interrupts the debugger by sending ctrl+C (only for pty mode)
     public void interrupt() {
-        CommonTasksSupport.sendSignal(
-                debugger.getHostExecutionEnvironment(),
-                debuggerPid,
-                Signal.SIGINT,
-                null);
+        char[] ctrlC = {(char)0x03};
+        toGdb.println(ctrlC);
     }
 
     private void unexpectedGdbExit(int rc) {
@@ -205,12 +211,67 @@ public class GdbProxyEngine {
         DialogDisplayer.getDefault().notify(nd);
         debugger.finish(false);
     }
-    
-    private PrintStream gdbReader(InputStream is, OutputStream os) {
-        final BufferedReader fromGdb = new BufferedReader(new InputStreamReader(is));
-        PrintStream togdb = new PrintStream(os, true);
+
+    private static PrintStream getPrintStream(final OutputStream os, boolean remote) {
+        /*
+         * There is an issue with gdb on Windows when application that we want
+         * to debug is located in path that conatins non-latin characters.
+         *
+         * See:
+         * Bug 186424 - Windows: gdb doesn't work in case debugged application
+         *              is located in directory with non-latin characters
+         *
+         * There are two problems:
+         *
+         * 1. Current implementation always uses default charset to communicate
+         * with gdb in case of localhost. This is not correct, as in latest
+         * cygwin, for example, UTF-8 should be used (this is gdb/shell -
+         * specific). But even if correct encoding is used, gdb doesn't work.
+         *
+         * See https://netbeans.org/bugzilla/show_bug.cgi?id=186424
+         *
+         */
+
+        // The use of shell-specific encoding following code may be used:
+
+//        String charset;
+//
+//        if (remote) {
+//            charset = ProcessUtils.getRemoteCharSet();
+//        } else {
+//            if (Utilities.isWindows()) {
+//                charset = WindowsSupport.getInstance().getShellCharset().name();
+//            } else {
+//                charset = Charset.defaultCharset().name();
+//            }
+//        }
+//
+//        try {
+//            return new PrintStream(os, true, charset);
+//        } catch (UnsupportedEncodingException ex) {
+//            // this is possible situation
+//        }
+//
+//        return new PrintStream(os, true);
+
+
+        if (remote) {
+            // set charset
+            try {
+                return new PrintStream(os, true, ProcessUtils.getRemoteCharSet());
+            } catch (UnsupportedEncodingException ex) {
+                // this is possible situation
+            }
+        }
+        return new PrintStream(os, true);
+    }
+
+    private PrintStream toGdbWriter(InputStream is, OutputStream os, boolean remote) {
+        PrintStream togdb = getPrintStream(os, remote);
+        final BufferedReader fromGdb = ProcessUtils.getReader(is, remote);
 
         gdbReader = new RequestProcessor("GdbReaderRP").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 String line;
 
@@ -262,6 +323,7 @@ public class GdbProxyEngine {
     private void sendCommand(final MICommand command) {
         if (active) {
             sendQueue.post(new Runnable() {
+                @Override
                 public void run() {
                     if (command.getText().charAt(0) != '-') {
                         addCommand(command);
@@ -284,7 +346,13 @@ public class GdbProxyEngine {
         gdbProxy.putCB(token, cb);
         sendCommand(token, cmd);
         if (waitForCompletion) {
-            cb.waitForCompletion();
+            //extra check for debugger state
+            if (debugger.getState() != GdbDebugger.State.RUNNING) {
+                cb.waitForCompletion();
+            } else {
+                cb.error("Waitin while in running state"); //NOI18N
+                gdbProxy.removeCB(token);
+            }
         }
         return cb;
     }
@@ -464,7 +532,7 @@ public class GdbProxyEngine {
         return gdbProxy.getLogger();
     }
 
-    public MICommand createMICommand(String cmd) {
+    MICommand createMICommand(String cmd) {
         return new MICommandImpl(nextToken(), cmd);
     }
     
@@ -478,14 +546,17 @@ public class GdbProxyEngine {
             this.cmd = cmd;
         }
         
+        @Override
         public String getText() {
             return cmd;
         }
         
+        @Override
         public int getToken() {
             return token;
         }
 
+        @Override
         public synchronized void send() {
             assert !sent : "sending command " + this + " twice"; // NOI18N
             sendCommand(this);

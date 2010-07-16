@@ -41,6 +41,29 @@ public class ModelUtil {
     private ModelUtil() {
     }
     
+    public static String rel2absolut(FileObject startPoint
+            , String relLocation) {
+        if (startPoint == null || relLocation == null) {
+            return null;
+        }
+        
+        if (!startPoint.isFolder()) {
+            startPoint = startPoint.getParent();
+        }
+        
+        if (relLocation.startsWith(UP_REL_FOLDER)) {
+            int upRelLength = UP_REL_FOLDER.length();
+            while (relLocation.startsWith(UP_REL_FOLDER)) {
+                startPoint = startPoint.getParent();
+                relLocation = relLocation.substring(upRelLength);
+            }
+            
+        } else if (relLocation.startsWith(CUR_REL_FOLDER)) {
+            relLocation = relLocation.substring(CUR_REL_FOLDER.length());
+        }
+        return FileUtil.toFile(startPoint).getPath()+"/"+relLocation;
+    }
+    
     /**
      * TODO m - looks like general utility method for all modules
      */
@@ -80,9 +103,9 @@ public class ModelUtil {
             fromFo = fromFo.getParent();
         }
         
-        StringTokenizer fromPath = new StringTokenizer(fromFo.getPath()
+        StringTokenizer fromPath = new StringTokenizer(FileUtil.toFile(fromFo).getPath()
                 , FORWARD_SLASH);
-        StringTokenizer toPath = new StringTokenizer(toFo.getPath()
+        StringTokenizer toPath = new StringTokenizer(FileUtil.toFile(toFo).getPath()
                 , FORWARD_SLASH);
         String tmpFromFolder = null;
         String tmpToFolder = null;
@@ -110,5 +133,4 @@ public class ModelUtil {
         
         return fromRelativePathPart.append(toRelativePathPart).toString();
     }
-    
 }

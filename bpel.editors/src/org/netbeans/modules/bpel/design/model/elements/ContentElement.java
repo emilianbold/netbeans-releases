@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.model.elements;
 
 import java.awt.Color;
@@ -33,6 +31,8 @@ import org.netbeans.modules.bpel.design.geometry.FShape;
 import org.netbeans.modules.bpel.design.geometry.FStroke;
 import org.netbeans.modules.bpel.design.model.elements.icons.ANDIcon2D;
 import org.netbeans.modules.bpel.design.model.elements.icons.AssignIcon2D;
+import org.netbeans.modules.bpel.design.model.elements.icons.ValidateIcon2D;
+import org.netbeans.modules.bpel.design.model.elements.icons.JavaScriptIcon2D;
 import org.netbeans.modules.bpel.design.model.elements.icons.CompensateBadgeIcon2D;
 import org.netbeans.modules.bpel.design.model.elements.icons.CompensateIcon2D;
 import org.netbeans.modules.bpel.design.model.elements.icons.CompensateScopeIcon2D;
@@ -64,20 +64,16 @@ import org.netbeans.modules.bpel.design.model.patterns.Pattern;
  */
 public class ContentElement extends VisualElement {
     
-    
     private Icon2D icon;
-
     
     public ContentElement(Icon2D icon) {
         this(TASK_SHAPE, icon);
     }
     
-    
     public ContentElement(FShape shape, Icon2D icon) {
         super(shape);
         this.icon = icon;
     }
-    
 
     public void paint(Graphics2D g2) {
         FShape shape = this.shape;
@@ -130,7 +126,6 @@ public class ContentElement extends VisualElement {
         }
     }
     
-    
     public void paintThumbnail(Graphics2D g2) {
         FShape shape = this.shape;
         
@@ -147,42 +142,42 @@ public class ContentElement extends VisualElement {
         g2.draw(shape);
     }
     
-    
     public Icon2D getIcon() {
         return icon;
     }
 
-    
     public static ContentElement createAssign() {
         return new ContentElement(TASK_SHAPE, AssignIcon2D.INSTANCE);
     }
 
+    public static ContentElement createJavaScript() {
+        return new ContentElement(TASK_SHAPE, JavaScriptIcon2D.INSTANCE);
+    }
 
+    public static ContentElement createValidate() {
+        return new ContentElement(EVENT_SHAPE, ValidateIcon2D.INSTANCE);
+    }
+    
     public static ContentElement createEmpty() {
         return new ContentElement(TASK_SHAPE, null);
     }
-    
     
     public static ContentElement createReply() {
         return new ContentElement(TASK_SHAPE, ReplyIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createInvoke() {
         return new ContentElement(TASK_SHAPE, InvokeIcon2D.INSTANCE);
     }
-    
     
     public static ContentElement createReceive() {
         return new ContentElement(EVENT_SHAPE, ReceiveIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createExit() {
         return new ContentElement(EVENT_SHAPE, ExitIcon2D.INSTANCE);
     }
 
-    
     public static ContentElement createCompensate() {
         return new ContentElement(EVENT_SHAPE, CompensateIcon2D.INSTANCE);
     }
@@ -191,36 +186,29 @@ public class ContentElement extends VisualElement {
         return new ContentElement(EVENT_SHAPE, CompensateScopeIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createWait() {
         return new ContentElement(EVENT_SHAPE, TimerIcon2D.INSTANCE);
     }
-    
 
     public static ContentElement createCompensateBadge() {
         return new ContentElement(BADGE_SHAPE, CompensateBadgeIcon2D.INSTANCE);
     }
-
     
     public static ContentElement createFaultBadge() {
         return new ContentElement(BADGE_SHAPE, FaultBadgeIcon2D.INSTANCE);
     }
-
     
     public static ContentElement createEventBadge() {
         return new ContentElement(BADGE_SHAPE, EventBadgeIcon2D.INSTANCE);
     }
-
     
     public static ContentElement createTerminationBadge() {
         return new ContentElement(BADGE_SHAPE, TerminationBadgeIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createMessageEvent() {
         return new ContentElement(EVENT_SHAPE, MessageIcon2D.INSTANCE);
     }
-    
     
     public static ContentElement createTimerEvent() {
         return new ContentElement(EVENT_SHAPE, TimerIcon2D.INSTANCE);
@@ -231,54 +219,45 @@ public class ContentElement extends VisualElement {
         return new ContentElement(EVENT_SHAPE, ThrowIcon2D.INSTANCE);
     }
 
-   public static ContentElement createReThrow() {
+    public static ContentElement createReThrow() {
         return new ContentElement(EVENT_SHAPE, ReThrowIcon2D.INSTANCE);
     }
     
     public static ContentElement createEndEvent() {
         return new ContentElement(START_END_EVENT_SHAPE, EndEventIcon2D.INSTANCE);
     }
-    
 
     public static ContentElement createStartEvent() {
         return new ContentElement(START_END_EVENT_SHAPE, null);
     }
-
     
     public static ContentElement createIfGateway() {
         return new ContentElement(GATEWAY_SHAPE, XORIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createWhileGateway() {
         return new ContentElement(GATEWAY_SHAPE, WhileIcon2D.INSTANCE);
     }
-
     
     public static ContentElement createRepeatUntilGateway() {
         return new ContentElement(GATEWAY_SHAPE, RepeatUntilIcon2D.INSTANCE);
     }
 
-    
     public static ContentElement createForEachGateway() {
         return new ContentElement(GATEWAY_SHAPE, ForEachIcon2D.INSTANCE);
     }
-    
     
     public static ContentElement createPickGateway() {
         return new ContentElement(GATEWAY_SHAPE, EventIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createFlowGateway() {
         return new ContentElement(GATEWAY_SHAPE, ANDIcon2D.INSTANCE);
     }
     
-    
     public static ContentElement createElseIfGateway() {
         return new ContentElement(SMALL_GATEWAY_SHAPE, XORSmallIcon2D.INSTANCE);
     }
-    
     
     public static final FShape BADGE_SHAPE = new FEllipse(16, 16);
     public static final FShape START_END_EVENT_SHAPE = new FEllipse(20, 20);
@@ -288,8 +267,6 @@ public class ContentElement extends VisualElement {
     public static final FShape TASK_SHAPE = new FRectangle(40, 28, 6); //new FRectangle(72, 40, 8);
     public static final FShape COLLAPSED_SHAPE = new FRectangle(28, 28, 6); //new FRectangle(40, 40, 8);
     
-    
     private static final FStroke STROKE = new FStroke(1);
-
     public static final Paint STROKE_COLOR = new Color(0xA7A2A7);
 }

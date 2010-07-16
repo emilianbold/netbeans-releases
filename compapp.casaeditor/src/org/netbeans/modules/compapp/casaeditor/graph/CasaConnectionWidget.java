@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,17 +64,18 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaQoSEditAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.ConnectionNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.ClearConfigExtensionsAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * 
@@ -89,8 +93,9 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/UnConfiguredQoS.png");    // NOI18N
 
     private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
-    private Widget mQoSWidget;
+    private Widget mConfiguredQoSWidget;
     private Widget mUnConfiguredQoSWidget;
+    private boolean minimized;
     
     public CasaConnectionWidget(Scene scene) {
         super(scene);
@@ -107,19 +112,21 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
         ObjectScene objectScene = (ObjectScene) getScene();
         final CasaConnection myCasaConnection =
                 (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
-        updateQoSWidgets(myCasaConnection);
+        if (!isMinimized()) {
+            updateQoSWidgets(myCasaConnection);
+        }
     }
 
     private void initQoSWidgets() {
 
-        mQoSWidget = new ImageWidget(getScene(), IMAGE_QOS_BADGE_ICON);
+        mConfiguredQoSWidget = new ImageWidget(getScene(), IMAGE_QOS_BADGE_ICON);
         mUnConfiguredQoSWidget =
                 new ImageWidget(getScene(), IMAGE_UNCONFIGURED_QOS_BADGE_ICON);
 
         CasaQoSEditAction qosEditAction =
                 new CasaQoSEditAction((CasaModelGraphScene) getScene());
 
-        mQoSWidget.getActions().addAction(qosEditAction);
+        mConfiguredQoSWidget.getActions().addAction(qosEditAction);
         mUnConfiguredQoSWidget.getActions().addAction(qosEditAction);
 
         CasaPopupMenuAction popupMenuAction = new CasaPopupMenuAction(new PopupMenuProvider() {
@@ -140,7 +147,7 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                 return popupMenu;
             }
         });
-        mQoSWidget.getActions().addAction(popupMenuAction);
+        mConfiguredQoSWidget.getActions().addAction(popupMenuAction);
         //mUnConfiguredQoSWidget.getActions().addAction(popupMenuAction); 
 
 
@@ -153,7 +160,6 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                 //System.out.println("obj for connection is " + myCasaConnection);
                 if (myCasaConnection == null) {
                     return; // FIXME
-
                 }
 
                 updateQoSWidgets(myCasaConnection);
@@ -199,12 +205,25 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
         Stroke stroke;
         Color fgColor;
 
+        ObjectScene objectScene = (ObjectScene) getScene();
+        final CasaConnection myCasaConnection =
+                        (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
+        if (myCasaConnection == null) {
+            return;  // still in initialization
+        }
+        CasaWrapperModel model = (CasaWrapperModel) myCasaConnection.getModel();
+        if (model == null) { // could be happening when connection is being deleted.
+            return;
+        }
+
         CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
         if (state.isSelected() || state.isFocused()) {
             bringToFront();
             stroke = STROKE_SELECTED;
             fgColor = customizer.getCOLOR_SELECTION();
-        } else if (state.isHovered() || state.isHighlighted()) {
+        } else if ((state.isHovered() || state.isHighlighted()) &&
+                CasaModelGraphUtilities.getShowHoveringHighlight(model)) {
+//                !CasaFactory.getCasaCustomizer().getBOOLEAN_DISABLE_HOVERING_HIGHLIGHT()) {
             bringToFront();
             stroke = STROKE_HOVERED;
             fgColor = customizer.getCOLOR_HOVERED_EDGE();
@@ -254,7 +273,7 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                 
                 }*/
 
-                mQoSWidget.setPreferredLocation(new Point(x, y));
+                mConfiguredQoSWidget.setPreferredLocation(new Point(x, y));
                 mUnConfiguredQoSWidget.setPreferredLocation(new Point(x, y));
             }
         };
@@ -268,14 +287,18 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
 
         mDependenciesRegistry.removeAllDependencies();
 
-        if (mQoSWidget != null) {
-            mQoSWidget.removeFromParent();
+        if (mConfiguredQoSWidget != null) {
+            mConfiguredQoSWidget.removeFromParent();
         }
-        if (mQoSWidget != null) {
+        if (mUnConfiguredQoSWidget != null) {
             mUnConfiguredQoSWidget.removeFromParent();
         }
     }
 
+    /**
+     * Updates this connection widget to show/hide the
+     * configuredQoS/unconfiguredQos widget.
+     */
     private void updateQoSWidgets(CasaConnection casaConnection) {
         boolean needValidation = false;
 
@@ -285,13 +308,13 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                     removeChild(mUnConfiguredQoSWidget);
                     needValidation = true;
                 }
-                if (!getChildren().contains(mQoSWidget)) {
-                    addChild(mQoSWidget);
+                if (!getChildren().contains(mConfiguredQoSWidget)) {
+                    addChild(mConfiguredQoSWidget);
                     needValidation = true;
                 }
             } else {
-                if (getChildren().contains(mQoSWidget)) {
-                    removeChild(mQoSWidget);
+                if (getChildren().contains(mConfiguredQoSWidget)) {
+                    removeChild(mConfiguredQoSWidget);
                     needValidation = true;
                 }
                 if (!getChildren().contains(mUnConfiguredQoSWidget)) {
@@ -304,8 +327,8 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                 removeChild(mUnConfiguredQoSWidget);
                 needValidation = true;
             }
-            if (getChildren().contains(mQoSWidget)) {
-                removeChild(mQoSWidget);
+            if (getChildren().contains(mConfiguredQoSWidget)) {
+                removeChild(mConfiguredQoSWidget);
                 needValidation = true;
             }
         } 
@@ -319,27 +342,24 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
         return casaConnection.getChildren().size() != 0;
     }
 
+    public boolean isMinimized() {
+        return minimized;
+    }
+
     public void setMinimized(boolean isMinimized) {
-        if (isMinimized) {
+        minimized = isMinimized;
+        if (isMinimized) { // do not show any QoS wigets when minimized
             if (getChildren().contains(mUnConfiguredQoSWidget)) {
                 removeChild(mUnConfiguredQoSWidget);
             }
-            if (getChildren().contains(mQoSWidget)) {
-                removeChild(mQoSWidget);
+            if (getChildren().contains(mConfiguredQoSWidget)) {
+                removeChild(mConfiguredQoSWidget);
             }
         } else {
             ObjectScene objectScene = (ObjectScene) getScene();
             CasaConnection casaConnection =
                     (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
-            if (isConnectionConfiguredWithQoS(casaConnection)) {
-                if (!getChildren().contains(mQoSWidget)) {
-                    addChild(mQoSWidget);
-                }
-            } else {
-                if (!getChildren().contains(mUnConfiguredQoSWidget)) {
-                    addChild(mUnConfiguredQoSWidget);
-                }
-            }
+            updateQoSWidgets(casaConnection);
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {

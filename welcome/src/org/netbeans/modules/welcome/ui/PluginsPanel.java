@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,51 +66,51 @@ import org.openide.util.actions.SystemAction;
  */
 class PluginsPanel extends JPanel implements Constants {
 
-    public PluginsPanel() {
+    public PluginsPanel( boolean showInstallPlugins ) {
         super( new GridBagLayout() );
         setOpaque(false);
-        InstallConfig ic = InstallConfig.getDefault();
+        if( showInstallPlugins ) {
+            InstallConfig ic = InstallConfig.getDefault();
 
-        if( ic.isErgonomicsEnabled() ) {
-            if( ic.somePacksDisabled() ) {
-                addActivateFeatures( 0, BundleSupport.getLabel("ActivateFeaturesFullIDE"), BundleSupport.getLabel("ActivateFeaturesDescrFullIDE"));
-                addInstallPlugins(2, BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));
+            if( ic.isErgonomicsEnabled() ) {
+                addInstallPlugins(BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));
             } else {
-                addInstallPlugins(0, BundleSupport.getLabel("InstallPluginsFullIDE"), BundleSupport.getLabel("InstallPluginsDescrFullIDE"));
+                addInstallPlugins(BundleSupport.getLabel("InstallPlugins"), BundleSupport.getLabel("InstallPluginsDescr"));
             }
-        } else if( ic.isJavaFXInstalled() ) {
-            addInstallPlugins(0, BundleSupport.getLabel("InstallPluginsJavaFX"), BundleSupport.getLabel("InstallPluginsDescrJavaFX"));
+            
         } else {
-            addInstallPlugins(0, BundleSupport.getLabel("InstallPlugins"), BundleSupport.getLabel("InstallPluginsDescr"));
+            addActivateFeatures( BundleSupport.getLabel("ActivateFeaturesFullIDE"), BundleSupport.getLabel("ActivateFeaturesDescrFullIDE"));
         }
-        
-//        add( new JLabel(), new GridBagConstraints(0, 4, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0));
     }
 
-    private void addActivateFeatures( int row, String label, String description ) {
-        LinkButton b = new LinkButton(label, true, Utils.getColor(COLOR_HEADER1) ) {
+    private void addActivateFeatures( String label, String description ) {
+        LinkButton b = new LinkButton(label, Utils.getColor(COLOR_HEADER), true, "ActivateFeatures" ) { //NOI18N
 
+            @Override
             public void actionPerformed(ActionEvent e) {
+                logUsage();
                 new ShowPluginManagerAction("installed").actionPerformed(e); //NOI18N
             }
         };
         b.setFont(GET_STARTED_FONT);
-        add( b, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,5,5,5), 0, 0));
-        JLabel lbl = new JLabel(description);
-        add( lbl, new GridBagConstraints(0, row+1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
+        add( b, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,5,5), 0, 0));
+        add( new JLabel(description), new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(20,9,5,5), 0, 0));
+        add( new JLabel(), new GridBagConstraints(0, 2, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
     }
 
-    private void addInstallPlugins( int row, String label, String description ) {
-        LinkButton b = new LinkButton(label, true, Utils.getColor(COLOR_HEADER2)) {
+    private void addInstallPlugins( String label, String description ) {
+        LinkButton b = new LinkButton(label, Utils.getColor(COLOR_HEADER), true, "InstallPlugins") { //NOI18N
 
+            @Override
             public void actionPerformed(ActionEvent e) {
+                logUsage();
                 new ShowPluginManagerAction("available").actionPerformed(e); //NOI18N
             }
         };
         b.setFont(GET_STARTED_FONT);
-        add( b, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5+10,5,5,5), 0, 0));
-        JLabel lbl = new JLabel(description);
-        add( lbl, new GridBagConstraints(0, row+1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5+23,5,5), 0, 0));
+        add( b, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,5,5), 0, 0));
+        add( new JLabel(description), new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(20,9,5,5), 0, 0));
+        add( new JLabel(), new GridBagConstraints(0, 2, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
     }
 
     private static class ShowPluginManagerAction extends AbstractAction {
@@ -117,6 +120,7 @@ class PluginsPanel extends JPanel implements Constants {
             this.initialTab = initialTab;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);

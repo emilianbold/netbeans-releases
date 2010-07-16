@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,9 +65,9 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -234,6 +237,7 @@ public final class LanguageRegistry implements Iterable<Language> {
     private static final String HINTS = "hints.instance"; // NOI18N
     private static final String SEMANTIC = "semantic.instance"; // NOI18N
     private static final String OCCURRENCES = "occurrences.instance"; // NOI18N
+    private static final String OVERRIDING_METHODS = "overridingmethods.instance"; // NOI18N
     private static final String INDEX_SEARCHER = "index_searcher.instance"; // NOI18N
 
     /** Location in the system file system where languages are registered */
@@ -285,7 +289,12 @@ public final class LanguageRegistry implements Iterable<Language> {
         synchronized (this) {
             if (cacheDirty) {
                 cacheDirty = false;
-                FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+                FileSystem sfs;
+                try {
+                    sfs = FileUtil.getConfigRoot().getFileSystem();
+                } catch (FileStateInvalidException fse) {
+                    throw new IllegalStateException(fse);
+                }
                 languagesCache = readSfs(sfs, languagesCache, refreshLoader);
                 if (sfsTracker == null) {
                     // First time we run do the cleanup
@@ -360,6 +369,9 @@ public final class LanguageRegistry implements Iterable<Language> {
                 Integer attr = (Integer) subtypes[j].getAttribute("genver"); //NOI18N
                 if (attr == null) {
                     LOG.log(Level.SEVERE, "Language " + mimeType + " has not been preprocessed during jar module creation"); //NOI18N
+                } else if (attr.intValue() == 1) {
+                    LOG.log(Level.WARNING, "Language " + mimeType + " has been preprocessed using the deprecated CslJar task. " + //NOI18N
+                        "Please use @LanguageRegistration annotation, see https://netbeans.org/bugzilla/show_bug.cgi?id=169991 for details."); //NOI18N
                 }
 
                 Language language = new Language(mimeType);
@@ -415,6 +427,8 @@ public final class LanguageRegistry implements Iterable<Language> {
                         language.setSemanticAnalyzer(fo);
                     } else if (OCCURRENCES.equals(name)) {
                         language.setOccurrencesFinderFile(fo);
+                    } else if (OVERRIDING_METHODS.equals(name)) {
+                        language.setOverridingMethodsFile(fo);
                     } else if (INDEX_SEARCHER.equals(name)) {
                         language.setIndexSearcher(fo);
                     }

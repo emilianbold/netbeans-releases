@@ -66,6 +66,14 @@ public class FileMessageImpl extends FileComponentImpl implements FileMessage {
         return getAttribute(FileAttribute.FILE_MESSAGE_ENCODINGSTYLE_PROPERTY);
     }
     
+    public void setFileCharset(String val) {
+        setAttribute(ATTR_FILE_CHARSET, FileAttribute.FILE_MESSAGE_CHARSET_PROPERTY, val);
+    }    
+
+    public String getFileCharset() {
+        return getAttribute(FileAttribute.FILE_MESSAGE_CHARSET_PROPERTY);
+    }
+    
     public void setFileName(String val) {
         setAttribute(ATTR_FILE_NAME, FileAttribute.FILE_MESSAGE_FILENAME_PROPERTY, val);
     }    
@@ -83,6 +91,14 @@ public class FileMessageImpl extends FileComponentImpl implements FileMessage {
         return s != null && s.equals("true");
     }
     
+    public void setFileNameIsRegex(boolean val) {
+    	setAttribute(ATTR_FILE_NAME_IS_REGEX, FileAttribute.FILE_MESSAGE_FILENAMEISREGEX_PROPERTY, val? "true": "false");
+    }
+    
+    public boolean getFileNameIsRegex() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_FILENAMEISREGEX_PROPERTY);
+        return s != null && s.equals("true");
+    }
     public void setPollingInterval(long val) {
     	setAttribute(ATTR_POLLING_INTERVAL, FileAttribute.FILE_MESSAGE_POLLINTERVAL_PROPERTY, "" + val);
     }
@@ -242,4 +258,12 @@ public class FileMessageImpl extends FileComponentImpl implements FileMessage {
         setAttribute(ATTR_STAGING_DIR_IS_RELATIVE, FileAttribute.FILE_MESSAGE_STAGE_DIR_IS_RELATIVE, b? "true" : "false");
     }
 
+    public boolean getForwardAsAttachment() {
+        String s = getAttribute(FileAttribute.FILE_MESSAGE_FORWARD_AS_ATTACHMENT);
+        return s != null && s.equals("true");
+    }
+
+    public void setForwardAsAttachment(boolean b) {
+        setAttribute(ATTR_FORWARD_AS_ATTACHMENT, FileAttribute.FILE_MESSAGE_FORWARD_AS_ATTACHMENT, b? "true" : "false");
+    }    
 }

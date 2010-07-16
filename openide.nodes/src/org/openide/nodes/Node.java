@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -334,7 +338,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if ((ch != null) && (ch != parent)) {
                 throw new IllegalStateException(
                     "Cannot initialize " + index + "th child of node " + parent.getNode() +
-                    "; it already belongs to node " + ch.getNode()
+                    "; it already belongs to node " + ch.getNode() + "\nChildren of new node: " +
+                    Arrays.toString(parent.getNodes()) + "\nChildren of old node: " +
+                    Arrays.toString(ch.getNodes())
                 ); // NOI18N
             }
 
@@ -544,17 +550,20 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     */
     public abstract boolean canDestroy();
 
-    // [PENDING] "valid" property?  --jglick // NOI18N
-
-    /** Remove the node from its parent and deletes it.
+    /**
+     * Called when a node is deleted.
+     * Generally you would never call this method yourself (only override it);
+     * perform modifications on the underlying model itself.
+     * <p>
     * The default
     * implementation obtains write access to
-    * the {@link Children#MUTEX children's lock}, and removes
+    * {@link Children#MUTEX}, and removes
     * the node from its parent (if any). Also fires a property change.
-    * <P>
-    * This may be overridden by subclasses to do any additional
-    * cleanup.
-    *
+     * <p>Subclasses which return true from {@link #canDestroy} should override
+     * this method to remove the associated model object from its parent. There
+     * is no need to call the super method in this case.
+     * <p>There is no guarantee that after this method has been called, other
+     * methods such as {@link #getIcon} will not also be called for a little while.
     * @exception IOException if something fails
     */
     public void destroy() throws IOException {
@@ -716,13 +725,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return getDefaultAction();
     }
 
-    /** Make a context menu for this node.
-    * The menu is constructed from the set of actions returned by {@link #getActions}.
-    *
-    * @return the context menu
+    /**
+     * Makes a context menu for this node.
+     * <p>Component action maps are not taken into consideration.
+     * {@link Utilities#actionsToPopup(Action[], Component)} is a better choice
+     * if you want to use actions such as "Paste" which look at action maps.
+    * @return the context menu as per {@link NodeOp#findContextMenu}
     */
     public final JPopupMenu getContextMenu() {
-        return NodeOp.findContextMenuImpl(new Node[] { this }, null);
+        return NodeOp.findContextMenu(new Node[] {this});
     }
 
     /** Test whether there is a customizer for this node. If true,
@@ -1257,6 +1268,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         }
 
         return this == obj;
+    }
+
+    // For the benefit of FindBugs.
+    public @Override int hashCode() {
+        return super.hashCode();
     }
 
     /** Obtains a resource string from bundle.

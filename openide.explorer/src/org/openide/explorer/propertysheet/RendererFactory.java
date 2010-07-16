@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -963,17 +967,20 @@ final class RendererFactory {
             //do nothing
         }
 
+        @Override
         public void reset() {
             setText(editor.getAsText());
 
             Image i = null;
+            FeatureDescriptor fd;
 
             if (env != null) {
-                if (env.getState() == env.STATE_INVALID) {
+                if (env.getState() == PropertyEnv.STATE_INVALID) {
                     setForeground(PropUtils.getErrorColor());
                     i = ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif"); //NOI18N
                 } else {
-                    Object o = env.getFeatureDescriptor().getValue("valueIcon"); //NOI18N
+                    fd = env.getFeatureDescriptor();
+                    Object o = fd == null ? null : fd.getValue("valueIcon"); //NOI18N
 
                     if (o instanceof Icon) {
                         setIcon((Icon) o);

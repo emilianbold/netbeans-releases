@@ -10,11 +10,12 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.reportgenerator.generator.DataObjectSettings;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -30,7 +31,8 @@ public class GenerateReportAction extends AbstractAction {
 
     public static final String ACCELERATOR = "alt shift F10"; // NOI18N
     
-    private static final Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/reportgenerator/api/impl/resources/images/generateReport.png", false); 
+    private static final Icon icon = new ImageIcon(Utilities.loadImage(
+    "org/netbeans/modules/reportgenerator/api/impl/resources/images/generateReport.png")); 
     
     private static final String label = NbBundle.getMessage(
     GenerateReportAction.class,"NAME_Generate_Report");
@@ -96,6 +98,15 @@ public class GenerateReportAction extends AbstractAction {
                     if(report != null) {
                         mGenerator.generateReport(report);
                     }
+                    
+                    //show message to user if report is generated
+                    //successfully
+                    String reportSuccessMsg = NbBundle.getMessage(GenerateReportAction.class, "GenerateReportAction.Report_Successfully_Generated");
+                    String reportTitleMsg = NbBundle.getMessage(GenerateReportAction.class, "GenerateReportAction.Report_Sucess_Title");
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(reportSuccessMsg, NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    
+                    //make sure report file is select 
                 }
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ex);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.symfony.ui.actions.GoToActionOrViewAction.GoToActionAction;
 
 public class GoToActionOrViewActionTest extends NbTestCase {
 
@@ -49,15 +51,15 @@ public class GoToActionOrViewActionTest extends NbTestCase {
     }
 
     public void testGetActionMethodName() {
-        assertEquals("executeIndex", GoToActionAction.getActionMethodName("indexSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newError"));
-        assertEquals("executeIndexDemo", GoToActionAction.getActionMethodName("indexDemoSuccess"));
-        assertEquals("executeIndexDemoUglyBug", GoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
-        assertEquals("executeIndex2Demo3", GoToActionAction.getActionMethodName("index2Demo3Success"));
-        assertEquals("executeIndex_Demo", GoToActionAction.getActionMethodName("index_DemoSuccess"));
+        assertEquals("executeIndex", SymfonyGoToActionAction.getActionMethodName("indexSuccess"));
+        assertEquals("executeNew", SymfonyGoToActionAction.getActionMethodName("newSuccess"));
+        assertEquals("executeNew", SymfonyGoToActionAction.getActionMethodName("newError"));
+        assertEquals("executeIndexDemo", SymfonyGoToActionAction.getActionMethodName("indexDemoSuccess"));
+        assertEquals("executeIndexDemoUglyBug", SymfonyGoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
+        assertEquals("executeIndex2Demo3", SymfonyGoToActionAction.getActionMethodName("index2Demo3Success"));
+        assertEquals("executeIndex_Demo", SymfonyGoToActionAction.getActionMethodName("index_DemoSuccess"));
 
-        assertEquals("execute_admin", GoToActionAction.getActionMethodName("_adminInc"));
-        assertNull(GoToActionAction.getActionMethodName("_admin"));
+        assertEquals("execute_admin", SymfonyGoToActionAction.getActionMethodName("_adminInc"));
+        assertNull(SymfonyGoToActionAction.getActionMethodName("_admin"));
     }
 }

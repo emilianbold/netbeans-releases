@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -64,10 +68,17 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
     private final FolderBasedController controller;
     
     /** Creates new form FolderBasedOptionPanel */
-    FolderBasedOptionPanel(FolderBasedController controller) {
+    FolderBasedOptionPanel(FolderBasedController controller, Document filterDocument, boolean allowFiltering) {
         this.controller = controller;
 
         initComponents();
+
+        filter.setDocument(filterDocument);
+
+        if (!allowFiltering) {
+            filter.setVisible(false);
+            filterLabel.setVisible(false);
+        }
         
         ListCellRenderer renderer = new DefaultListCellRenderer() {
             @Override
@@ -109,6 +120,8 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         languageLabel = new javax.swing.JLabel();
         languageCombo = new javax.swing.JComboBox();
         optionsPanel = new javax.swing.JPanel();
+        filter = new javax.swing.JTextField();
+        filterLabel = new javax.swing.JLabel();
 
         languageLabel.setLabelFor(languageCombo);
         org.openide.awt.Mnemonics.setLocalizedText(languageLabel, org.openide.util.NbBundle.getMessage(FolderBasedOptionPanel.class, "LBL_Language")); // NOI18N
@@ -118,6 +131,11 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         optionsPanel.setOpaque(false);
         optionsPanel.setLayout(new java.awt.BorderLayout());
 
+        filter.setColumns(10);
+        filter.setText(org.openide.util.NbBundle.getMessage(FolderBasedOptionPanel.class, "FolderBasedOptionPanel.filter.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getMessage(FolderBasedOptionPanel.class, "FolderBasedOptionPanel.filterLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,7 +144,11 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
                 .add(languageLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(211, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 30, Short.MAX_VALUE)
+                .add(filterLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(filter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, optionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -134,7 +156,9 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(languageLabel)
-                    .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(filter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(filterLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(optionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
         );
@@ -142,6 +166,8 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField filter;
+    private javax.swing.JLabel filterLabel;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
     private javax.swing.JPanel optionsPanel;
@@ -159,6 +185,11 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
                 optionsPanel.add(component, BorderLayout.CENTER);
                 optionsPanel.setVisible(true);
             }
+            filter.setEnabled(controller.supportsFilter(mimeType));
         }
+    }
+
+    void setCurrentMimeType(String key) {
+        languageCombo.setSelectedItem(key);
     }
 }

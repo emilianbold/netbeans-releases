@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.infrastructure;
@@ -50,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -59,6 +63,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
+import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -110,6 +117,14 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
 
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.RESOLVED);
+
+            Document doc = controller.getDocument();
+
+            if (doc == null) {
+                return;
+            }
+            
+            long version = DocumentUtilities.getDocumentVersion(doc);
             int position = ctx.getPosition();
 
             //TODO: better cancel handling (propagate into tasks?)
@@ -117,56 +132,98 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
                 return;
             }
 
+            LastUpdatedHolder holder = getHolder(doc);
+
             //SuggestionsTask
-            SuggestionsTask suggestionsTask = new SuggestionsTask();
-            suggestionsTask.run(controller);
-            eds.put(SuggestionsTask.class.getName(), suggestionsTask.getSuggestions());
+            if ((version > 0 && holder.suggestions < version) || holder.suggestionsCaret != position) {
+                LOG.fine("Computing suggestions");
+                eds.put(HintsTask.KEY_SUGGESTIONS, new HintsInvoker(controller, position, new AtomicBoolean()).computeHints(controller));
+            } else {
+                LOG.fine("Suggestions already computed");
+            }
 
             if (ctx.isCanceled()) {
                 return;
             }
 
             //HintsTask
-            int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
-            int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
-            Set<ErrorDescription> errs = new TreeSet<ErrorDescription>(new Comparator<ErrorDescription>() {
-                public int compare(ErrorDescription arg0, ErrorDescription arg1) {
-                    return arg0.toString().equals(arg1.toString()) ? 0 : 1;
-                }
-            });
+            if (version > 0 && holder.hints < version) {
+                LOG.fine("Computing hints");
+                
+                int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
+                int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
 
-            Set<Tree> encounteredLeafs = new HashSet<Tree>();
-            HintsTask task = new HintsTask();
-            for (int i = rowStart; i <= rowEnd; i++) {
-                TreePath path = controller.getTreeUtilities().pathFor(i);
-                Tree leaf = path.getLeaf();
-                if (leaf.getKind() != Tree.Kind.BLOCK && !encounteredLeafs.contains(leaf)) {
-                    List<ErrorDescription> leafHints = task.computeHints(controller, path);
-
-                    if (LOG.isLoggable(Level.FINE) && leafHints.size() != 0) {
-                        LOG.fine("### RowPosition: " + i + " leaf: " + leaf + " Kind: " + leaf.getKind() +" Err: " + leafHints.toString());
-                    }
-                    errs.addAll(leafHints);
-                    encounteredLeafs.add(leaf);
-                }
+                eds.put(HintsTask.KEY_HINTS, new HintsInvoker(controller, rowStart, rowEnd, new AtomicBoolean()).computeHints(controller));
+            } else {
+                LOG.fine("Hints already computed");
             }
-
-            eds.put(HintsTask.class.getName(), new ArrayList<ErrorDescription>(errs));
 
             if (ctx.isCanceled()) {
                 return;
             }
 
             //ErrorHints
-            final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position);
-            for (ErrorDescription ed : errors) {
-                LazyFixList fixes = ed.getFixes();
-                if (fixes instanceof CreatorBasedLazyFixList) { //compute fixes, since they're lazy computed
-                    ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+            if (version > 0 && holder.errors < version) {
+                LOG.fine("Computing errors");
+
+                final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position, org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE);
+
+                if (errors != null) {
+                    for (ErrorDescription ed : errors) {
+                        LazyFixList fixes = ed.getFixes();
+                        if (fixes instanceof CreatorBasedLazyFixList) { //compute fixes, since they're lazy computed
+                            ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+                        }
+                    }
+                    eds.put(ErrorHintsProvider.class.getName(), errors);
+                }
+            } else {
+                LOG.fine("Errors already computed, computing fixes");
+                
+                for (ErrorDescription ed : holder.errorsContent) {
+                    if (ed.getRange().getBegin().getOffset() <= position && position <= ed.getRange().getEnd().getOffset()) {
+                        if (!ed.getFixes().isComputed()) {
+                            ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+                        }
+                    }
                 }
             }
-            eds.put(ErrorHintsProvider.class.getName(), errors);
+        }
+        
+    }
+
+    public static void hintsUpdated(Document doc, long version) {
+        if (doc == null) return;
+        getHolder(doc).hints = version;
+    }
+
+    public static void suggestionsUpdated(Document doc, long version, int caret) {
+        if (doc == null) return;
+        getHolder(doc).suggestions = version;
+        getHolder(doc).suggestionsCaret = caret;
+    }
+
+    public static void errorsUpdated(Document doc, long version, List<ErrorDescription> errors) {
+        if (doc == null) return;
+        getHolder(doc).errors = version;
+        getHolder(doc).errorsContent = errors;
+    }
+
+    private static LastUpdatedHolder getHolder(Document doc) {
+        LastUpdatedHolder holder = (LastUpdatedHolder) doc.getProperty(LastUpdatedHolder.class);
+
+        if (holder == null) {
+            doc.putProperty(LastUpdatedHolder.class, holder = new LastUpdatedHolder());
         }
 
+        return holder;
+    }
+
+    private static final class LastUpdatedHolder {
+        private long suggestions;
+        private int suggestionsCaret;
+        private long hints;
+        private long errors;
+        private List<ErrorDescription> errorsContent;
     }
 }

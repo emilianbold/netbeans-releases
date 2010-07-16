@@ -5,7 +5,8 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:tns="_NS_">
 
-<!--
+<!-- Standard transformmap document structure appears as follows:
+
     <service name="service1" portType="ns0:portType1">
             <operation opName="operation0" inputVariable="inVar0" outputVariable="outVar0">
                <transform result="" source="" name="transform1" file="test.xsl">

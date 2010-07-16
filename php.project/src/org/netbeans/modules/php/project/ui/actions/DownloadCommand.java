@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,15 +45,17 @@ package org.netbeans.modules.php.project.ui.actions;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -77,6 +82,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     @Override
     protected Runnable getContextRunnable(final Lookup context) {
         return new Runnable() {
+            @Override
             public void run() {
                 invokeActionImpl(context);
             }
@@ -99,25 +105,22 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
-        download(remoteClient, remoteLog, downloadOperationMonitor, getProject().getName(), true, sources, selectedFiles);
+        String projectName = getProject().getName();
+        download(remoteClient, remoteLog, downloadOperationMonitor, projectName, true, sources, selectedFiles, null, getProject());
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }
 
     public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
             FileObject sources, Set<TransferFile> forDownload) {
-        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload);
-    }
-
-    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
-            boolean showDownloadDialog, FileObject sources, FileObject... filesToDownload) {
-        download(remoteClient, remoteLog, operationMonitor, projectName, showDownloadDialog, sources, filesToDownload, null);
+        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload, null);
     }
 
     private static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
-            boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload) {
+            boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload, PhpProject project) {
         String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -126,9 +129,19 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             Set<TransferFile> forDownload = transferFilesToDownload != null ? transferFilesToDownload : remoteClient.prepareDownload(sources, filesToDownload);
 
             if (showDownloadDialog) {
-                // avoid timeout errors
-                remoteClient.disconnect();
-                forDownload = TransferFilter.showDownloadDialog(forDownload);
+                boolean reallyShowDialog = true;
+                if (forDownload.size() == 1
+                        && forDownload.iterator().next().isFile()) {
+                    // do not show transfer dialog for exactly one file (not folder!)
+                    reallyShowDialog = false;
+                }
+
+                if (reallyShowDialog) {
+                    // avoid timeout errors
+                    remoteClient.disconnect();
+                    long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
+                    forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
+                }
             }
 
             if (forDownload.size() > 0) {
@@ -144,6 +157,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 transferInfo = remoteClient.download(sources, forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
+                if (project != null
+                        && !remoteClient.isCancelled()
+                        && transferInfo.hasAnyTransfered()) { // #153406
+                    rememberLastDownload(project, sources, filesToDownload);
+                }
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);
@@ -157,6 +175,18 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 processTransferInfo(transferInfo, remoteLog);
             }
             progressHandle.finish();
+        }
+    }
+
+    // #142955 - but remember only if one of the selected files is source directory
+    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
+    //  -> upload another file or the whole project [timestamp is irrelevant])
+    private static void rememberLastDownload(PhpProject project, FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject fo : selectedFiles) {
+            if (sources.equals(fo)) {
+                ProjectSettings.setLastDownload(project, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                return;
+            }
         }
     }
 }

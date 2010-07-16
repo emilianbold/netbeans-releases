@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,10 +64,10 @@ import java.util.Set;
 
 /**
  * This class provides storage functionality with Weak-referenced entries and
- * one new method <tt>addOrGet<tt> (backed by a hash table)
+ * one new method <tt>putIfAbsent<tt> (backed by a hash table)
  * Access to set should be syncronized if used from different threads
  *
- * @see #addOrGet(Object)
+ * @see #putIfAbsent(Object)
  * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
@@ -137,7 +140,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     }
 
     /**
-     * it is expected that method addOrGet is used instead of add
+     * it is expected that method putIfAbsent is used instead of add
      */
     @Override
     public boolean add(E e) { return m.put(e, null) == null; }
@@ -169,7 +172,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
      * @return the previous set entry equals with <tt>e</tt>, or
      *         passed object <tt>e</tt> if there were not entry in set.
      */
-    public E addOrGet(E e) { return m.putOrGet(e); }
+    public E putIfAbsent(E e) { return m.putIfAbsent(e); }
 
     private static final long serialVersionUID = 2454657854757543876L;
 
@@ -1168,7 +1171,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          * @return the previous set entry equals with <tt>key</tt>, or
          *         new <tt>key</tt> if there were not entry in set.
          */
-        private K putOrGet(K key) {
+        private K putIfAbsent(K key) {
             K k = (K) maskNull(key);
             int h = hash(k.hashCode());
             Entry[] tab = getTable();

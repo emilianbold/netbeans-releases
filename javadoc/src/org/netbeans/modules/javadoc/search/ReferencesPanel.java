@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,16 +40,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * ReferencesPanel.java
- *
- * Created on Apr 14, 2009, 4:38:39 PM
- */
-
 package org.netbeans.modules.javadoc.search;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.net.URL;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -57,8 +55,6 @@ import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -77,6 +73,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     private static final String PLEASE_WAIT = NbBundle.getMessage(ReferencesPanel.class, "ReferencesPanel.wait.text");
     private static final Object LOCK = new Object();
     private static final String EMPTY_LOCATION = ""; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ReferencesPanel.class.getName(), 1, false, false);
     private int state = 0;
     private ListModel model;
     /** Descriptions of indices that should be accessed under {@link #LOCK lock}. */
@@ -91,7 +88,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         this.openBtn = openBtn;
     }
 
-    public static FileObject showInWindow() {
+    public static URL showInWindow() {
         JButton openBtn = new JButton();
         Mnemonics.setLocalizedText(openBtn, NbBundle.getMessage(ReferencesPanel.class, "ReferencesPanel.ok.text"));
         openBtn.getAccessibleContext().setAccessibleDescription(openBtn.getText());
@@ -116,7 +113,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ReferencesPanel.class, "AD_ReferencesDialog"));
 
         // schedule computing indices
-        RequestProcessor.getDefault().post(panel);
+        RP.post(panel);
         dialog.setVisible(true);
         dialog.dispose();
 
@@ -125,7 +122,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
                 : null;
     }
 
-    public void run() {
+    public @Override void run() {
         switch (state) {
             case 0:
                 runGetIndiciesTask();
@@ -137,21 +134,19 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     }
 
     private void runGetIndiciesTask() {
-        final List[] data = IndexBuilder.getDefault().getIndices(true);
-        final List<String> names = data[0]; // List<String>
-        final List<FileObject> indices = data[1]; // List<FileObject>
+        final List<IndexBuilder.Index> data = IndexBuilder.getDefault().getIndices(true);
 
         synchronized (LOCK) {
 
             ItemDesc[] modelItems;
-            if (names.isEmpty()) {
+            if (data.isEmpty()) {
                 modelItems = new ItemDesc[] { ItemDesc.noItem() };
             } else {
-                modelItems = new ItemDesc[names.size()];
+                modelItems = new ItemDesc[data.size()];
                 this.items = modelItems;
                 int i = 0;
-                for (String name : names) {
-                    modelItems[i] = new ItemDesc(name, indices.get(i));
+                for (IndexBuilder.Index index : data) {
+                    modelItems[i] = new ItemDesc(index.display, index.fo);
                     i++;
                 }
             }
@@ -169,16 +164,16 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         refList.setSelectedIndex(0);
     }
 
-    public void valueChanged(ListSelectionEvent e) {
-        FileObject item = getSelectedItem();
+    public @Override void valueChanged(ListSelectionEvent e) {
+        URL item = getSelectedItem();
         String s = item == null
                 ? EMPTY_LOCATION
-                : FileUtil.getFileDisplayName(item);
+                : URLUtils.getDisplayName(item);
         locationField.setText(s);
         openBtn.setEnabled(item != null);
     }
 
-    FileObject getSelectedItem() {
+    URL getSelectedItem() {
         int index = refList.getSelectedIndex();
         synchronized (LOCK) {
             return index < 0 || items == null || items.length == 0
@@ -261,16 +256,16 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         private static ItemDesc NO_ITEM;
         String name;
         String locationName;
-        FileObject location;
+        URL location;
 
-        public ItemDesc(String name, FileObject location) {
+        public ItemDesc(String name, URL location) {
             this.name = name;
             this.location = location;
         }
 
         String getLocationName() {
             if (locationName == null) {
-                locationName = FileUtil.getFileDisplayName(location);
+                locationName = URLUtils.getDisplayName(location);
             }
             return locationName;
         }
@@ -292,19 +287,19 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
             this.items = items;
         }
 
-        public int getSize() {
+        public @Override int getSize() {
             return items.length;
         }
 
-        public Object getElementAt(int index) {
+        public @Override Object getElementAt(int index) {
             return items[index].name;
         }
 
-        public void addListDataListener(ListDataListener l) {
+        public @Override void addListDataListener(ListDataListener l) {
             // no op
         }
 
-        public void removeListDataListener(ListDataListener l) {
+        public @Override void removeListDataListener(ListDataListener l) {
             // no op
         }
 

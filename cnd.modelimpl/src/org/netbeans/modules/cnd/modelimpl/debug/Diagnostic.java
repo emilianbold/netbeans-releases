@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,10 +52,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.openide.util.Exceptions;
 
@@ -79,6 +90,100 @@ public class Diagnostic {
     private Diagnostic() {
     }
 
+    public static class ProjectStat {
+        private static final int SLOW_FILE_NUMBER = Math.max(1, Integer.getInteger("cnd.modelimpl.slow.file.number", 5)); // NOI18N
+        private final ConcurrentMap<CsmUID<CsmProject>, SlowFilesCollection> projectStats = new ConcurrentHashMap<CsmUID<CsmProject>, SlowFilesCollection>();
+        public void addParseFileStatistics(ProjectBase project, FileImpl file, long parseTime) {
+            if (project != null && !project.isArtificial()) {
+                CsmUID<CsmProject> uID = project.getUID();
+                SlowFilesCollection data = projectStats.get(uID);
+                if (data == null && uID != null) {
+                    data = new SlowFilesCollection();
+                    SlowFilesCollection old = projectStats.putIfAbsent(uID, data);
+                    if (old != null) {
+                        data = old;
+                    }
+                }
+                if (data != null) {
+                    data.put(file, parseTime);
+                }
+            }
+        }
+
+        public void traceProjectData(ProjectBase project) {
+            if (project != null && !project.isArtificial()) {
+                SlowFilesCollection data = projectStats.get(project.getUID());
+                if (data != null) {
+                    System.err.printf("Slowest Files for %s are:\n%s", project.getName(), data.asString());
+                    System.err.println();
+                    System.err.flush();
+                } else {
+                    System.err.printf("No Slowest Files info for " +  project.getName());
+                    System.err.println();
+                    System.err.flush();
+                }
+            }
+        }
+
+        public void clear() {
+            projectStats.clear();
+        }
+        
+        private final static class SlowFilesCollection {
+            private final LinkedList<Entry> times = new LinkedList<Entry>();
+
+            private void put(FileImpl file, long parseTime) {
+                synchronized (this) {
+                    // the first is the slowest
+                    ListIterator<Entry> iterator = times.listIterator(times.size());
+                    boolean add = !iterator.hasPrevious();
+                    while (iterator.hasPrevious()) {
+                        Entry elem = iterator.previous();
+                        if (elem.time < parseTime) {
+                            add = true;
+                        } else {
+                            if (add) {
+                                iterator.add(new Entry(parseTime, file.getAbsolutePath()));
+                                break;
+                            }
+                        }
+                    }
+                    if (add) {
+                        times.addFirst(new Entry(parseTime, file.getAbsolutePath()));
+                    }
+                    if (times.size() > SLOW_FILE_NUMBER) {
+                        times.removeLast();
+                    }
+                }
+            }
+
+            private String asString() {
+                StringBuilder out = new StringBuilder();
+                synchronized (this) {
+                    for (Entry entry : times) {
+                        out.append(entry).append('\n'); // NOI18N
+                    }
+                }
+                return out.toString();
+            }
+
+            private final static class Entry {
+                final long time;
+                final CharSequence file;
+
+                public Entry(long time, CharSequence file) {
+                    this.time = time;
+                    this.file = file;
+                }
+
+                @Override
+                public String toString() {
+                    return " file=" + file + " " + time + " ms"; // NOI18N
+                }
+            }
+        }
+    }
+
     public static class StopWatch {
         
         private long time;
@@ -101,18 +206,21 @@ public class Diagnostic {
             lastStart = System.currentTimeMillis();
         }
         
-        public void stop() {
+        public long stop() {
             running = false;
             time += System.currentTimeMillis() - lastStart;
+            return time;
         }
         
-        public void stopAndReport(String text) {
-            stop();
+        public long stopAndReport(String text) {
+            long out = stop();
             report(text);
+            return out;
         }
         
-        public void report(String text) {
+        public long report(String text) {
             System.err.println(' ' + text + ' ' + time + " ms");
+            return time;
         }
         
         public boolean isRunning() {
@@ -278,7 +386,7 @@ public class Diagnostic {
         getDiagnosticUnresolved().dumpStatictics(dumpFile, append);
     }
     
-    private static  DiagnosticUnresolved getDiagnosticUnresolved() {
+    private static synchronized DiagnosticUnresolved getDiagnosticUnresolved() {
         if( diagnosticUnresolved == null ) {
             diagnosticUnresolved = new DiagnosticUnresolved(STATISTICS_LEVEL);
         }

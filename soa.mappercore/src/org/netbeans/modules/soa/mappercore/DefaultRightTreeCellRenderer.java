@@ -22,7 +22,6 @@ package org.netbeans.modules.soa.mappercore;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
-import java.awt.Font;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;

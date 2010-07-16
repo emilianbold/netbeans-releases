@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,12 +50,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-
-import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -99,11 +98,9 @@ public class KillActionProvider extends ActionsProvider {
      */
     public void runAction(final Object action) {
         if (debuggerImpl != null) {
-            synchronized (debuggerImpl.LOCK) {
-                if (action == ActionsManager.ACTION_KILL) {
-                    debuggerImpl.finish(true);
-                    return;
-                }
+            if (action == ActionsManager.ACTION_KILL) {
+                debuggerImpl.finish(true);
+                return;
             }
         }
     }
@@ -121,7 +118,7 @@ public class KillActionProvider extends ActionsProvider {
     @Override
     public void postAction(final Object action,
             final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

@@ -23,6 +23,7 @@ import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.soa.xpath.mapper.tree.ArtificialTreeNode;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -35,7 +36,8 @@ import org.netbeans.modules.xml.wsdl.model.Message;
  * 
  * @author nk160297
  */
-public class VariableDeclarationWrapper implements AbstractVariableDeclaration {
+public class VariableDeclarationWrapper 
+        implements AbstractVariableDeclaration, ArtificialTreeNode {
 
     private VariableDeclaration mVarDeclDelegate;
 

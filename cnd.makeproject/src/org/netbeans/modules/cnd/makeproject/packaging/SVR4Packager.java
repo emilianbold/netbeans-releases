@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,11 +52,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,23 +67,27 @@ public class SVR4Packager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "SVR4"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("SCR4Package"); // FIXUP: typo...
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
-        if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_INTEL) {
+        if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
-        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_SPARC) {
+        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         } else {
             // Anything else ?
@@ -99,6 +106,7 @@ public class SVR4Packager implements PackagerDescriptor {
         return infoList;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
@@ -131,40 +139,49 @@ public class SVR4Packager implements PackagerDescriptor {
         return entryComboBox;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "pkgmk"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return true;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return null;
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.findInfoValueName("PKG"); // NOI18N
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
-    
+
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodySVR4(bw, makeConfiguration);
         }
@@ -187,7 +204,7 @@ public class SVR4Packager implements PackagerDescriptor {
             // Do all sub dirrectories
             for (PackagerFileElement elem : fileList) {
                 if (elem.getType() == PackagerFileElement.FileType.FILE || elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
+                    String path = CndPathUtilitities.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                     String base = ""; // NOI18N
                     if (path != null && path.length() > 0) {
                         StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
@@ -212,8 +229,8 @@ public class SVR4Packager implements PackagerDescriptor {
             String packageName = packagingConfiguration.findInfoValueName("PKG"); // NOI18N // FIXUP: what is null????
 
             bw.write("# Create pkginfo and prototype files\n"); // NOI18N
-            bw.write("PKGINFOFILE=${TMPDIR}/pkginfo\n"); // NOI18N
-            bw.write("PROTOTYPEFILE=${TMPDIR}/prototype\n"); // NOI18N
+            bw.write("PKGINFOFILE=${NBTMPDIR}/pkginfo\n"); // NOI18N
+            bw.write("PROTOTYPEFILE=${NBTMPDIR}/prototype\n"); // NOI18N
             bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
@@ -260,8 +277,8 @@ public class SVR4Packager implements PackagerDescriptor {
                 bw.write(" " + elem.getTo());// NOI18N
                 if (elem.getFrom().length() > 0) {
                     String from = elem.getFrom();
-                    if (IpeUtils.isPathAbsolute(from)) {
-                        from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                    if (CndPathUtilitities.isPathAbsolute(from)) {
+                        from = CndPathUtilitities.toRelativePath(conf.getBaseDir(), from);
                     }
                     bw.write("=" + from);// NOI18N
                 }
@@ -276,12 +293,12 @@ public class SVR4Packager implements PackagerDescriptor {
             bw.write("\n"); // NOI18N
             bw.write("# Make package\n"); // NOI18N  
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $NBTMPDIR\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
-//        bw.write("pkgtrans -s ${TMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
+//        bw.write("pkgtrans -s ${NBTMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
 //        bw.write("checkReturnCode\n"); // NOI18N
             bw.write("rm -rf " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
-            bw.write("mv ${TMPDIR}/" + packageName + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("mv ${NBTMPDIR}/" + packageName + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("echo Solaris SVR4: " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
             bw.write("\n"); // NOI18N

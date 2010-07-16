@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.sql.Clob;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -64,7 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class DBReadWriteHelper {
 
-    private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
+    private static final Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
     public static Object readResultSet(ResultSet rs, DBColumn col, int index) throws SQLException {
@@ -80,7 +84,7 @@ public class DBReadWriteHelper {
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Boolean(bdata);
+                    return bdata;
                 }
             }
             case Types.TIME: {
@@ -170,11 +174,12 @@ public class DBReadWriteHelper {
                 }
             }
             case Types.TINYINT: {
-                byte tidata = rs.getByte(index);
+                // byte primitive data type is not enough for UNSIGNED TINYINT
+                short tidata = rs.getShort(index);
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Byte(tidata);
+                    return new Short(tidata);
                 }
             }
             // JDBC/ODBC bridge JDK1.4 brings back -9 for nvarchar columns in
@@ -200,19 +205,34 @@ public class DBReadWriteHelper {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY: {
-                byte[] bdata = rs.getBytes(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    Byte[] internal = new Byte[bdata.length];
-                    for (int i = 0; i < bdata.length; i++) {
-                        internal[i] = new Byte(bdata[i]);
+                try {
+                    byte[] bdata = rs.getBytes(index);
+                    if (rs.wasNull()) {
+                        return null;
+                    } else {
+                        Byte[] internal = new Byte[bdata.length];
+                        for (int i = 0; i < bdata.length; i++) {
+                            internal[i] = new Byte(bdata[i]);
+                        }
+                        String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+                        if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
+                            return bStr.substring(bStr.length() - col.getPrecision());
+                        }
+                        return bStr;
                     }
-                    String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
-                    if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
-                        return bStr.substring(bStr.length() - col.getPrecision());
+                } catch (SQLDataException x) {
+                    // wrong mapping JavaDB JDBC Type -4
+                    try {
+                        String sdata = rs.getString(index);
+                        if (rs.wasNull()) {
+                            return null;
+                        } else {
+                            return sdata;
+                        }
+                    } catch (SQLException ex) {
+                        // throw the original SQLDataException intead of this one
+                        throw x;
                     }
-                    return bStr;
                 }
             }
             case Types.BLOB: {

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,10 +103,18 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 t);
     }
     
+    public static Hk2OptionalFactory createEe6WC() {
+        ServerUtilities t = ServerUtilities.getEe6WCUtilities();
+        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createEe6WC(),
+                t);
+    }
+
+    @Override
     public StartServer getStartServer(DeploymentManager dm) {
         return new Hk2StartServer(dm);
     }
     
+    @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
         IncrementalDeployment result = null;
         if(dm instanceof Hk2DeploymentManager) {
@@ -115,6 +126,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         return result;
     }
     
+    @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
         // if assertions are on... blame the caller
         assert dm instanceof Hk2DeploymentManager : "dm isn't an hk2dm";  // NOI18N
@@ -202,42 +214,52 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             this.su = su;
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             delegate.removeChangeListener(l);
         }
 
+        @Override
         public void previousPanel() {
             delegate.previousPanel();
         }
 
+        @Override
         public void nextPanel() {
             delegate.nextPanel();
         }
 
+        @Override
         public String name() {
             return delegate.name();
         }
 
+        @Override
         public boolean hasPrevious() {
             return delegate.hasPrevious();
         }
 
+        @Override
         public boolean hasNext() {
             return delegate.hasNext();
         }
 
+        @Override
         public Panel current() {
             return delegate.current();
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             delegate.addChangeListener(l);
         }
 
+        @Override
         public void uninitialize(WizardDescriptor wizard) {
             delegate.uninitialize(wizard);
         }
 
+        @Override
         public Set instantiate() throws IOException {
             Set set = delegate.instantiate();
             if(!set.isEmpty()) {
@@ -265,6 +287,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             return Collections.EMPTY_SET;
         }
 
+        @Override
         public void initialize(WizardDescriptor wizard) {
             delegate.initialize(wizard);
         }
@@ -282,17 +305,20 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 for (String url : urls) {
                     if (df.handlesURI(url)) {
                         InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-                        String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-                        String domainDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+
-                                File.separator+ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
-                        File instDir = new File(installDirName);
-                        File domainDir = new File(domainDirName);
-                        // TODO -- more complete test here...
-                        // TODO -- need to account for remote domain here?
-                        if (!instDir.exists() || !instDir.isDirectory() || 
-                                !domainDir.exists() || !domainDir.isDirectory() ||
-                                !domainDir.canWrite()) {
-                            needToRemove.add(url);
+                        String domainsDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                        if (null != domainsDirName) {
+                            String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+                            String domainDirName = domainsDirName +File.separator +
+                                    ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+                            File instDir = new File(installDirName);
+                            File domainDir = new File(domainDirName);
+                            // TODO -- more complete test here...
+                            // TODO -- need to account for remote domain here?
+                            if (!instDir.exists() || !instDir.isDirectory() ||
+                                    !domainDir.exists() || !domainDir.isDirectory() ||
+                                    !domainDir.canWrite()) {
+                                needToRemove.add(url);
+                            }
                         }
                     }
                 }

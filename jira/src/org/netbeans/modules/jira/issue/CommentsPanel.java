@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,10 +43,13 @@
 package org.netbeans.modules.jira.issue;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -69,13 +75,12 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,10 +96,25 @@ public class CommentsPanel extends JPanel {
     private NbJiraIssue issue;
     private JiraIssueFinder issueFinder;
     private MouseAdapter listener;
+    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        motionListener = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                AttributeSet as = elem.getAttributes();
+                if (StyleConstants.isUnderline(as)) {
+                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        };
         listener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -143,7 +163,8 @@ public class CommentsPanel extends JPanel {
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
         addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
         for (NbJiraIssue.Comment comment : issue.getComments()) {
-            String when = format.format(comment.getWhen());
+            Date date = comment.getWhen();
+            String when = (date == null) ? "" : format.format(date); // NOI18N
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
@@ -175,9 +196,8 @@ public class CommentsPanel extends JPanel {
         rightLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            KenaiUserUI ku = new KenaiUserUI(author);
-            ku.setMessage(KenaiUtil.getChatLink(issue));
-            stateLabel = ku.createUserWidget();
+            String host = ((KenaiRepository) issue.getRepository()).getHost();
+            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue));
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
@@ -210,7 +230,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -241,7 +260,7 @@ public class CommentsPanel extends JPanel {
                     doc.remove(off, length);
                     doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
                 } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                    Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
                 }
             }
         }
@@ -251,6 +270,7 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
+        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
@@ -259,6 +279,7 @@ public class CommentsPanel extends JPanel {
     private ActionListener getReplyListener() {
         if (replyListener == null) {
             replyListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Object source = e.getSource();
                     if (source instanceof JComponent) {
@@ -286,6 +307,7 @@ public class CommentsPanel extends JPanel {
         void openIssue(final String hyperlinkText) {
             final String issueKey = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueKey);
                     if (is != null) {

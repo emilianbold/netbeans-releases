@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,8 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
 
 /**
@@ -109,12 +114,18 @@ public final class ExcludeFromCommitAction extends ContextAction {
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
-                int status = getActionStatus(nodes);                
+                int status = getActionStatus(nodes);
                 List<File> files = new ArrayList<File>();
-                for (Node node : nodes) {                    
+                for (Node node : nodes) {
                     File aFile = node.getLookup().lookup(File.class);
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
                     if (aFile != null) {
-                        files.add(aFile);                        
+                        files.add(aFile);
+                    } else if (fo != null) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) {
+                            files.add(f);
+                        }
                     }
                 }
                 List<String> paths = new ArrayList<String>(files.size());

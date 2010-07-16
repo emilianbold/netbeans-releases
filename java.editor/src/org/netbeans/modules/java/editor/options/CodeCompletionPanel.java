@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -206,37 +209,37 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             }
         });
 
-        org.jdesktop.layout.GroupLayout javaCompletionExcluderDialog2Layout = new org.jdesktop.layout.GroupLayout(javaCompletionExcluderDialog2.getContentPane());
+        javax.swing.GroupLayout javaCompletionExcluderDialog2Layout = new javax.swing.GroupLayout(javaCompletionExcluderDialog2.getContentPane());
         javaCompletionExcluderDialog2.getContentPane().setLayout(javaCompletionExcluderDialog2Layout);
         javaCompletionExcluderDialog2Layout.setHorizontalGroup(
-            javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javaCompletionExcluderDialog2Layout.createSequentialGroup()
+            javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, javaCompletionExcluderDialogLabel, 0, 0, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, javaCompletionExcluderDialogTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(javaCompletionExcluderDialogOkButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(javaCompletionExcluderDialogCancelButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent( javaCompletionExcluderDialogLabel, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
+                    .addComponent( javaCompletionExcluderDialogTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(javaCompletionExcluderDialogOkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(javaCompletionExcluderDialogCancelButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         javaCompletionExcluderDialog2Layout.setVerticalGroup(
-            javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, javaCompletionExcluderDialog2Layout.createSequentialGroup()
-                .add(javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(javaCompletionExcluderDialog2Layout.createSequentialGroup()
+            javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, javaCompletionExcluderDialog2Layout.createSequentialGroup()
+                .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(javaCompletionExcluderDialogLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(javaCompletionExcluderDialog2Layout.createSequentialGroup()
+                        .addComponent(javaCompletionExcluderDialogLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(javaCompletionExcluderDialogCancelButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .add(javaCompletionExcluderDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(javaCompletionExcluderDialogTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(javaCompletionExcluderDialogOkButton))
-                .add(61, 61, 61))
+                        .addComponent(javaCompletionExcluderDialogCancelButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javaCompletionExcluderDialogTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(javaCompletionExcluderDialogOkButton))
+                .addGap(61, 61, 61))
         );
 
         javaCompletionExcluderDialogTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderDialogTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -325,93 +328,93 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaCompletionExcluderLabel.setLabelFor(javaCompletionExcluderTab);
         org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout javaCompletionPaneLayout = new org.jdesktop.layout.GroupLayout(javaCompletionPane);
+        javax.swing.GroupLayout javaCompletionPaneLayout = new javax.swing.GroupLayout(javaCompletionPane);
         javaCompletionPane.setLayout(javaCompletionPaneLayout);
         javaCompletionPaneLayout.setHorizontalGroup(
-            javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javaCompletionPaneLayout.createSequentialGroup()
+            javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javaCompletionPaneLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, javaCompletionExcluderLabel)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, javaCompletionPaneLayout.createSequentialGroup()
-                            .add(6, 6, 6)
-                            .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(javaCompletionExcluderMethodsCheckBox)
-                                .add(javaCompletionPaneLayout.createSequentialGroup()
-                                    .add(javaCompletionExcluderTab, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 298, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(10, 10, 10)
-                                    .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(javaCompletionExcluderAddButton)
-                                        .add(javaCompletionExcluderRemoveButton)
-                                        .add(javaCompletionExcluderEditButton))))))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(javaCompletionPaneLayout.createSequentialGroup()
-                        .add(javadocAutoCompletionTriggersLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(javadocAutoCompletionTriggersField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(javaCompletionPaneLayout.createSequentialGroup()
+                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent( javaCompletionExcluderLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent( jSeparator2, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, javaCompletionPaneLayout.createSequentialGroup()
+                            .addGap(6, 6, 6)
+                            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(javaCompletionExcluderMethodsCheckBox)
+                                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                                    .addComponent(javaCompletionExcluderTab, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(10, 10, 10)
+                                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(javaCompletionExcluderAddButton)
+                                        .addComponent(javaCompletionExcluderRemoveButton)
+                                        .addComponent(javaCompletionExcluderEditButton))))))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                        .addComponent(javadocAutoCompletionTriggersLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
                     .addContainerGap()
-                    .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(guessMethodArguments)
-                        .add(javaCompletionPaneLayout.createSequentialGroup()
-                            .add(javaAutoCompletionTriggersLabel)
-                            .add(34, 34, 34)
-                            .add(javaAutoCompletionTriggersField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(javaAutoPopupOnIdentifierPart)
-                        .add(javaCompletionPaneLayout.createSequentialGroup()
-                            .add(javaCompletionSelectorsLabel)
-                            .add(30, 30, 30)
-                            .add(javaCompletionSelectorsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(213, 213, 213)))
+                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(guessMethodArguments)
+                        .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                            .addComponent(javaAutoCompletionTriggersLabel)
+                            .addGap(34, 34, 34)
+                            .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(javaAutoPopupOnIdentifierPart)
+                        .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                            .addComponent(javaCompletionSelectorsLabel)
+                            .addGap(30, 30, 30)
+                            .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGap(213, 213, 213)))
         );
 
-        javaCompletionPaneLayout.linkSize(new java.awt.Component[] {javaCompletionExcluderAddButton, javaCompletionExcluderEditButton, javaCompletionExcluderRemoveButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        javaCompletionPaneLayout.linkSize( javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[]{javaCompletionExcluderAddButton, javaCompletionExcluderEditButton, javaCompletionExcluderRemoveButton});
 
         javaCompletionPaneLayout.setVerticalGroup(
-            javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javaCompletionPaneLayout.createSequentialGroup()
-                .add(132, 132, 132)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(javaCompletionPaneLayout.createSequentialGroup()
-                        .add(javaCompletionExcluderLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(javaCompletionExcluderTab, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(javaCompletionExcluderMethodsCheckBox))
-                    .add(javaCompletionPaneLayout.createSequentialGroup()
-                        .add(35, 35, 35)
-                        .add(javaCompletionExcluderAddButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(javaCompletionExcluderRemoveButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(javaCompletionExcluderEditButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(javadocAutoCompletionTriggersLabel)
-                    .add(javadocAutoCompletionTriggersField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(javaCompletionPaneLayout.createSequentialGroup()
+            javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                .addGap(132, 132, 132)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                        .addComponent(javaCompletionExcluderLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderTab, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderMethodsCheckBox))
+                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
+                        .addGap(35, 35, 35)
+                        .addComponent(javaCompletionExcluderAddButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderRemoveButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderEditButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javadocAutoCompletionTriggersLabel)
+                    .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
                     .addContainerGap()
-                    .add(guessMethodArguments, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(javaAutoCompletionTriggersLabel)
-                        .add(javaAutoCompletionTriggersField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(javaAutoPopupOnIdentifierPart)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(javaCompletionSelectorsLabel)
-                        .add(javaCompletionSelectorsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(guessMethodArguments, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(javaAutoCompletionTriggersLabel)
+                        .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(javaAutoPopupOnIdentifierPart)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(javaCompletionSelectorsLabel)
+                        .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addContainerGap(268, Short.MAX_VALUE)))
         );
 
@@ -437,17 +440,17 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaCompletionExcluderRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Remove")); // NOI18N
         javaCompletionExcluderEditButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Edit")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javaCompletionPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(javaCompletionPane, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(javaCompletionPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(javaCompletionPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

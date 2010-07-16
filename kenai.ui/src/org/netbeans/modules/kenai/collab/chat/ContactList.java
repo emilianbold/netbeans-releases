@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,8 @@ import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.RosterGroup;
 //import org.jivesoftware.smack.RosterListener;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
@@ -93,11 +98,11 @@ public class ContactList extends javax.swing.JPanel {
 
 
     public void updateFilter() {
-        roster = new FakeRoster(Kenai.getDefault().getXMPPConnection());
+        roster = new FakeRoster();
         filterModel.removeAllElements();
         filterModel.addElement(new FilterItem());
         for (FakeRosterGroup group : roster.getGroups()) {
-            filterModel.addElement(new FilterItem(group.getName()));
+            filterModel.addElement(new FilterItem(group.getName(), group.getKenaiProject()));
         }
         filterCombo.setSelectedIndex(0);
         
@@ -157,9 +162,9 @@ public class ContactList extends javax.swing.JPanel {
         searchLabel = new javax.swing.JLabel();
 
         setBackground(java.awt.SystemColor.control);
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 3, 0, 3));
         setFocusCycleRoot(true);
 
+        filterCombo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         filterCombo.setNextFocusableComponent(contactJList);
         filterCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -172,6 +177,7 @@ public class ContactList extends javax.swing.JPanel {
             }
         });
 
+        contactJList.setBackground(ColorManager.getDefault().getDefaultBackground());
         contactJList.setNextFocusableComponent(searchField);
         contactJList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -227,16 +233,16 @@ public class ContactList extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(filterCombo, 0, 247, Short.MAX_VALUE)
+            .add(filterCombo, 0, 249, Short.MAX_VALUE)
             .add(searchPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+            .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(filterCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
+                .add(2, 2, 2)
+                .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(searchPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -258,7 +264,8 @@ public class ContactList extends javax.swing.JPanel {
             }
         } else {
             String group = ((FilterItem) filterCombo.getSelectedItem()).getName();
-            FakeRosterGroup g = roster.getGroup(group);
+            Kenai k = ((FilterItem) filterCombo.getSelectedItem()).getKenaiProject().getKenai();
+            FakeRosterGroup g = roster.getGroup(k, group);
             listModel.addElement(new GroupListItem(g));
             for (FakeRosterEntry entry:g.getEntries()) {
                 listModel.addElement(new UserListItem(entry));
@@ -283,14 +290,18 @@ public class ContactList extends javax.swing.JPanel {
 
     private void contactJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_contactJListMouseClicked
         if (evt.getClickCount()==2 && !evt.isPopupTrigger()) {
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
         }
     }//GEN-LAST:event_contactJListMouseClicked
 
     private void searchFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyPressed
         if (evt.getKeyCode()==KeyEvent.VK_ENTER) {
             contactJList.requestFocus();
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
             searchPanel.setVisible(false);
             searchField.setText("");
         } else if (evt.getKeyCode()==KeyEvent.VK_DOWN) {

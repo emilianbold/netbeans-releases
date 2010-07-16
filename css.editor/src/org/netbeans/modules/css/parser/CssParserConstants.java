@@ -63,107 +63,113 @@ public interface CssParserConstants {
   /** RegularExpression Id. */
   int INCLUDES = 30;
   /** RegularExpression Id. */
-  int DASHMATCH = 31;
+  int CSS3_BEGINS = 31;
   /** RegularExpression Id. */
-  int IMPORT_SYM = 32;
+  int CSS3_ENDS = 32;
   /** RegularExpression Id. */
-  int PAGE_SYM = 33;
+  int CSS3_CONTAINS = 33;
   /** RegularExpression Id. */
-  int MEDIA_SYM = 34;
+  int DASHMATCH = 34;
   /** RegularExpression Id. */
-  int FONT_FACE_SYM = 35;
+  int IMPORT_SYM = 35;
   /** RegularExpression Id. */
-  int CHARSET_SYM = 36;
+  int PAGE_SYM = 36;
   /** RegularExpression Id. */
-  int ATKEYWORD = 37;
+  int MEDIA_SYM = 37;
   /** RegularExpression Id. */
-  int IMPORTANT_SYM = 38;
+  int FONT_FACE_SYM = 38;
   /** RegularExpression Id. */
-  int INHERIT = 39;
+  int CHARSET_SYM = 39;
   /** RegularExpression Id. */
-  int EMS = 40;
+  int ATKEYWORD = 40;
   /** RegularExpression Id. */
-  int EXS = 41;
+  int IMPORTANT_SYM = 41;
   /** RegularExpression Id. */
-  int LENGTH_PX = 42;
+  int INHERIT = 42;
   /** RegularExpression Id. */
-  int LENGTH_CM = 43;
+  int EMS = 43;
   /** RegularExpression Id. */
-  int LENGTH_MM = 44;
+  int EXS = 44;
   /** RegularExpression Id. */
-  int LENGTH_IN = 45;
+  int LENGTH_PX = 45;
   /** RegularExpression Id. */
-  int LENGTH_PT = 46;
+  int LENGTH_CM = 46;
   /** RegularExpression Id. */
-  int LENGTH_PC = 47;
+  int LENGTH_MM = 47;
   /** RegularExpression Id. */
-  int ANGLE_DEG = 48;
+  int LENGTH_IN = 48;
   /** RegularExpression Id. */
-  int ANGLE_RAD = 49;
+  int LENGTH_PT = 49;
   /** RegularExpression Id. */
-  int ANGLE_GRAD = 50;
+  int LENGTH_PC = 50;
   /** RegularExpression Id. */
-  int TIME_MS = 51;
+  int ANGLE_DEG = 51;
   /** RegularExpression Id. */
-  int TIME_S = 52;
+  int ANGLE_RAD = 52;
   /** RegularExpression Id. */
-  int FREQ_HZ = 53;
+  int ANGLE_GRAD = 53;
   /** RegularExpression Id. */
-  int FREQ_KHZ = 54;
+  int TIME_MS = 54;
   /** RegularExpression Id. */
-  int DIMEN = 55;
+  int TIME_S = 55;
   /** RegularExpression Id. */
-  int PERCENTAGE = 56;
+  int FREQ_HZ = 56;
   /** RegularExpression Id. */
-  int NUMBER = 57;
+  int FREQ_KHZ = 57;
   /** RegularExpression Id. */
-  int RGB = 58;
+  int DIMEN = 58;
   /** RegularExpression Id. */
-  int FUNCTION = 59;
+  int PERCENTAGE = 59;
   /** RegularExpression Id. */
-  int IDENT = 60;
+  int NUMBER = 60;
   /** RegularExpression Id. */
-  int NAME = 61;
+  int RGB = 61;
   /** RegularExpression Id. */
-  int NUM = 62;
+  int FUNCTION = 62;
   /** RegularExpression Id. */
-  int UNICODERANGE = 63;
+  int IDENT = 63;
   /** RegularExpression Id. */
-  int RANGE = 64;
+  int NAME = 64;
   /** RegularExpression Id. */
-  int Q16 = 65;
+  int NUM = 65;
   /** RegularExpression Id. */
-  int Q15 = 66;
+  int UNICODERANGE = 66;
   /** RegularExpression Id. */
-  int Q14 = 67;
+  int RANGE = 67;
   /** RegularExpression Id. */
-  int Q13 = 68;
+  int Q16 = 68;
   /** RegularExpression Id. */
-  int Q12 = 69;
+  int Q15 = 69;
   /** RegularExpression Id. */
-  int Q11 = 70;
+  int Q14 = 70;
   /** RegularExpression Id. */
-  int NMSTART = 71;
+  int Q13 = 71;
   /** RegularExpression Id. */
-  int NMCHAR = 72;
+  int Q12 = 72;
   /** RegularExpression Id. */
-  int STRING1 = 73;
+  int Q11 = 73;
   /** RegularExpression Id. */
-  int STRING2 = 74;
+  int NMSTART = 74;
   /** RegularExpression Id. */
-  int NONASCII = 75;
+  int NMCHAR = 75;
   /** RegularExpression Id. */
-  int ESCAPE = 76;
+  int STRING1 = 76;
   /** RegularExpression Id. */
-  int NL = 77;
+  int STRING2 = 77;
   /** RegularExpression Id. */
-  int UNICODE = 78;
+  int NONASCII = 78;
   /** RegularExpression Id. */
-  int HNUM = 79;
+  int ESCAPE = 79;
   /** RegularExpression Id. */
-  int H = 80;
+  int NL = 80;
   /** RegularExpression Id. */
-  int UNKNOWN = 81;
+  int UNICODE = 81;
+  /** RegularExpression Id. */
+  int HNUM = 82;
+  /** RegularExpression Id. */
+  int H = 83;
+  /** RegularExpression Id. */
+  int UNKNOWN = 84;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -205,6 +211,9 @@ public interface CssParserConstants {
     "\"<!--\"",
     "\"-->\"",
     "\"~=\"",
+    "\"^=\"",
+    "\"$=\"",
+    "\"*=\"",
     "\"|=\"",
     "\"@import\"",
     "\"@page\"",

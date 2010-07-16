@@ -49,7 +49,13 @@ public interface BpelEntity extends DocumentComponent<BpelEntity> {
     
     String BUSINESS_PROCESS_1_1_NS_URI =
         "http://schemas.xmlsoap.org/ws/2003/03/business-process/";      // NOI18N
-    
+
+    //few important namespace uris mentioned in BPEL Spec and supported by runtime
+    String WS_ADDRESSING_2004_08_NS_URI =
+            "http://schemas.xmlsoap.org/ws/2004/08/addressing";         //NOI18N
+    String WS_BPEL_SERVICE_REF_NS_URI =
+            "http://docs.oasis-open.org/wsbpel/2.0/serviceref";         //NOI18N
+
     /** {@inheritDoc} */
     BpelContainer getParent();
 

@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.nodes;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -36,7 +37,7 @@ public class DecoratedParam extends DecoratedTMapComponentAbstract<Param> {
 
     @Override
     public String getHtmlDisplayName() {
-        Param ref = getOriginal();
+        Param ref = getReference();
         ParamType type = ref == null ? null : ref.getType();
 
         String typeStr = null;
@@ -45,8 +46,11 @@ public class DecoratedParam extends DecoratedTMapComponentAbstract<Param> {
             typeStr = type.toString();
             switch (type) {
                 case PART:
-                    ref.getValue();
-                    typeStr += " part=";
+                    String value = ref.getValue();
+                    if (value != null) {
+                        typeStr += " part=";// NOI18N
+                        typeStr += value;
+                    }
                     break;
                 default:
                     typeStr += " ...";
@@ -58,5 +62,27 @@ public class DecoratedParam extends DecoratedTMapComponentAbstract<Param> {
         
         return Util.getGrayString(super.getHtmlDisplayName(), addon.toString());
     }
+
+    @Override
+    public String getTooltip() {
+        Param ref = getReference();
+        StringBuffer attributesTooltip = new StringBuffer();
+        if (ref != null) {
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getName()
+                    , Param.NAME_PROPERTY));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getValue()
+                    , Param.VALUE));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getType().toString()
+                    , Param.TYPE));
+        }
+        return  NbBundle.getMessage(TMapComponentNode.class, 
+                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
+                attributesTooltip.toString());      
+    }    
 }
 

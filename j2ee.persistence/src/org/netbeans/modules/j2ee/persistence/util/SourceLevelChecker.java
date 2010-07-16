@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.j2ee.persistence.util;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 
 /**
  * A helper class for checking the source level of projects.
@@ -62,9 +66,27 @@ public class SourceLevelChecker {
      * otherwise.
      */
     public static boolean isSourceLevel14orLower(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+        String srcLevel = getSourceLevel(project);
         return srcLevel != null ? Double.parseDouble(srcLevel) <= 1.4 : false;
     }
     
+    /**
+     * Return source level 
+     *
+     * @return source level for the project
+     */
+    public static String getSourceLevel(Project project) {
+        String srcLevel = null;
+        SourceLevelQueryImplementation2 sl2 = project.getLookup().lookup(SourceLevelQueryImplementation2.class);
+        if(sl2 != null){
+            srcLevel = sl2.getSourceLevel(project.getProjectDirectory()).getSourceLevel();
+        } else {
+            //backward compartibility
+            SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+            if(sl != null){
+                srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+            }
+        }
+        return srcLevel;
+    }
 }

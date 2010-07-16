@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -102,7 +105,7 @@ public abstract class ModuleProperties {
         reloadProperties();
     }
     
-    protected void reloadProperties() {
+    public void reloadProperties() {
         this.projectProperties = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         this.privateProperties = helper.getProperties(
@@ -131,7 +134,7 @@ public abstract class ModuleProperties {
         return privateProperties;
     }
     
-    final String getProperty(String key) {
+    public final String getProperty(String key) {
         String value = getProjectProperties().getProperty(key);
         return value != null ? value : getDefaultValues().get(key);
     }
@@ -142,7 +145,7 @@ public abstract class ModuleProperties {
                 bValue.equalsIgnoreCase("yes")); // NOI18N
     }
     
-    final String removeProperty(String key) {
+    public final String removeProperty(String key) {
         return getProjectProperties().remove(key);
     }
     
@@ -155,7 +158,7 @@ public abstract class ModuleProperties {
      * given value is equals to the default value it will be removed from the
      * properties.
      */
-    final void setProperty(String key, String value) {
+    public final void setProperty(String key, String value) {
         String def = getDefaultValues().get(key);
         if (def == null) {
             def = ""; // NOI18N
@@ -195,11 +198,11 @@ public abstract class ModuleProperties {
         setProperty(key, Boolean.toString(bProp));
     }
     
-    String getProjectDisplayName() {
+    public String getProjectDisplayName() {
         return Util.getDisplayName(getHelper().getProjectDirectory());
     }
     
-    final File getProjectDirectoryFile() {
+    public final File getProjectDirectoryFile() {
         return FileUtil.toFile(getHelper().getProjectDirectory());
     }
     

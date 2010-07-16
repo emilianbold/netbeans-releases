@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ import java.util.logging.Level;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -72,13 +76,13 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -105,6 +109,7 @@ public class SvnClientExceptionHandler {
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
     private final boolean commandLine;
+    private String methodName;
     
     private class CertificateFailure {
         int mask;
@@ -177,8 +182,8 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(true);
+    public boolean handleKenaiAuthorisation(SvnKenaiAccessor support, String url) {
+        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         if(pa == null) {
             return false;
         }
@@ -193,14 +198,26 @@ public class SvnClientExceptionHandler {
 
         return true;
     }
+    
+    void setMethod (String methodName) {
+        this.methodName = methodName;
+    }
 
-    private boolean handleRepositoryConnectError() {                
+    private boolean handleRepositoryConnectError() throws SVNClientException {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
 
 
-        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
-        if(support.isKenai(url.toString())) {
-            return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
+        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
+        String sUrl = url.toString();
+        if(support.isKenai(sUrl)) {
+            if ("commit".equals(methodName)) { //NOI18N
+                if (!support.canWrite(sUrl)) {
+                    throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write"));//NOI18N
+                }
+            } else if (!support.canRead(sUrl)) {
+                throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
+            }
+            return support.showLogin() && handleKenaiAuthorisation(support, sUrl);
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
@@ -216,11 +233,11 @@ public class SvnClientExceptionHandler {
             if(ret) {
                 RepositoryConnection rc = repository.getSelectedRC();
                 String username = rc.getUsername();
-                String password = rc.getPassword();
+                char[] password = rc.getPassword();
 
                 adapter.setUsername(username);
-                if (commandLine) {
-                    adapter.setPassword(password);
+                if (commandLine && password != null) {
+                    adapter.setPassword(new String(password));
                 }
                 SvnModuleConfig.getDefault().insertRecentUrl(rc);
             }
@@ -245,7 +262,7 @@ public class SvnClientExceptionHandler {
         // otherwise try to retrieve the certificate from the server ...                                             
         SSLSocket socket;
         try {
-            socket = getSSLSocket(hostString, url.getPort());
+            socket = getSSLSocket(hostString, url.getPort(), null);
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
             return false;
@@ -349,7 +366,7 @@ public class SvnClientExceptionHandler {
         return null;
     }  
     
-    private SSLSocket getSSLSocket(String host, int port) throws Exception {
+    private SSLSocket getSSLSocket(String host, int port, String[] protocols) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() { return null; }
@@ -390,7 +407,18 @@ public class SvnClientExceptionHandler {
         context.init(getKeyManagers(), trust, null);
         SSLSocketFactory factory = context.getSocketFactory();
         SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
-        socket.startHandshake();    
+        if (protocols != null) {
+            socket.setEnabledProtocols(protocols);
+        }
+        try {
+            socket.startHandshake();
+        } catch (SSLException ex) {
+            if (protocols == null && isBadRecordMac(ex.getMessage())) {
+                return getSSLSocket(host, port, new String[] {"SSLv3", "SSLv2Hello"}); //NOI18N
+            } else {
+                throw ex;
+            }
+        }
         return socket;
     }
     
@@ -405,8 +433,7 @@ public class SvnClientExceptionHandler {
             if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
                 return null;
             }               
-            String certPassword = rc.getCertPassword();                                                                        
-            char[] certPasswordChars = certPassword != null ? certPassword.toCharArray() : null;                        
+            char[] certPasswordChars = rc.getCertPassword();
             
             KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
             ks.load(new FileInputStream(certFile), certPasswordChars);
@@ -498,13 +525,14 @@ public class SvnClientExceptionHandler {
 
     private String getCertMessage(X509Certificate cert, String host) { 
         CertificateFailure[] certFailures = getCertFailures();
-        Object[] param = new Object[6];
+        Object[] param = new Object[7];
         param[0] = host;
-        param[1] = cert.getNotBefore();
-        param[2] = cert.getNotAfter();
-        param[3] = cert.getIssuerDN().getName();
-        param[4] = getFingerprint(cert, "SHA1");      // NOI18N
-        param[5] = getFingerprint(cert, "MD5");       // NOI18N
+        param[1] = cert.getSubjectDN().getName();
+        param[2] = cert.getNotBefore();
+        param[3] = cert.getNotAfter();
+        param[4] = cert.getIssuerDN().getName();
+        param[5] = getFingerprint(cert, "SHA1");      // NOI18N
+        param[6] = getFingerprint(cert, "MD5");       // NOI18N
 
         String message = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", param); // NOI18N
         for (int i = 0; i < certFailures.length; i++) {
@@ -768,6 +796,11 @@ public class SvnClientExceptionHandler {
         return (msg.contains("has uuid") && msg.contains("but the wc has")); //NOI18N
     }
     
+    public static boolean isNotUnderVersionControl (String message) {
+        message = message.toLowerCase();
+        return message.contains("is not under version control"); //NOI18N
+    }
+    
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoCliSvnClient(ex.getMessage())) {
             if(isUI) {
@@ -865,5 +898,10 @@ public class SvnClientExceptionHandler {
         String msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_InvalidKeyException"); // NOI18N
         annotate(msg);
     }
-        
+
+    private boolean isBadRecordMac (String message) {
+        message = message.toLowerCase();
+        return message.contains("received fatal alert")                 //NOI18N
+                && message.contains("bad_record_mac");                  //NOI18N
+    }
 }

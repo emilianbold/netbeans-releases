@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -226,33 +229,59 @@ public final class ASDDVersion {
         "Sun Java System Application Server 9.1.1" // NOI18N
     );
 
-    /** Represents Sun GlassFish Enterprise Server 10.0
+    /** Represents GF Server 3.0 and 3.0.1
      */
     public static final ASDDVersion SUN_APPSERVER_10_0 = new ASDDVersion(
         "10.0", 100,	// NOI18N
         DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID,
         DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID,
         SunWebApp.VERSION_3_0_0,
-        250,
-        DTDRegistry.SUN_EJBJAR_301_DTD_PUBLIC_ID,
-        DTDRegistry.SUN_EJBJAR_301_DTD_SYSTEM_ID,
-        SunEjbJar.VERSION_3_0_1,
-        301,
+        300,
+        DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID,
+        SunEjbJar.VERSION_3_1_0,
+        310,
         DTDRegistry.SUN_CMP_MAPPING_810_DTD_PUBLIC_ID,
         DTDRegistry.SUN_CMP_MAPPING_810_DTD_SYSTEM_ID,
         "1.2",
         120,
-        DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID,
-        DTDRegistry.SUN_APPLICATION_50_DTD_SYSTEM_ID,
-        SunApplication.VERSION_5_0_0,
-        500,
-        DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID,
-        DTDRegistry.SUN_APPCLIENT_50_DTD_SYSTEM_ID,
-        SunApplicationClient.VERSION_5_0_0,
-        500,
-        "Sun GlassFish Enterprise Server 10.0" // NOI18N
+        DTDRegistry.SUN_APPLICATION_60_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPLICATION_60_DTD_SYSTEM_ID,
+        SunApplication.VERSION_6_0_0,
+        600,
+        DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPCLIENT_60_DTD_SYSTEM_ID,
+        SunApplicationClient.VERSION_6_0_0,
+        600,
+        "GlassFish Server 3.0" // NOI18N
     );
 
+    /** Represents GF Server 3.1
+     */
+    public static final ASDDVersion SUN_APPSERVER_10_1 = new ASDDVersion(
+        "10.1", 100,	// NOI18N
+        DTDRegistry.GLASSFISH_WEBAPP_301_DTD_PUBLIC_ID,
+        DTDRegistry.GLASSFISH_WEBAPP_301_DTD_SYSTEM_ID,
+        SunWebApp.VERSION_3_0_1,
+        301,
+        DTDRegistry.GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID,
+        DTDRegistry.GLASSFISH_EJBJAR_311_DTD_SYSTEM_ID,
+        SunEjbJar.VERSION_3_1_1,
+        311,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_SYSTEM_ID,
+        "1.2",
+        120,
+        DTDRegistry.GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID,
+        DTDRegistry.GLASSFISH_APPLICATION_601_DTD_SYSTEM_ID,
+        SunApplication.VERSION_6_0_1,
+        601,
+        DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID,
+        DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID,
+        SunApplicationClient.VERSION_6_0_1,
+        601,
+        "GlassFish Server 3.1" // NOI18N
+    );
     /** Represents Sun Java System Web Server 7.0
      */
     public static final ASDDVersion SUN_WEBSERVER_7_0 = new ASDDVersion(
@@ -272,7 +301,8 @@ public final class ASDDVersion {
         SUN_APPSERVER_8_0,
         SUN_APPSERVER_8_1,
         SUN_APPSERVER_9_0,
-        SUN_APPSERVER_9_1_1
+        SUN_APPSERVER_9_1_1,
+        SUN_APPSERVER_10_0
     };
     
     /** Ordered list of webserver versions.
@@ -406,6 +436,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.toString().equals(version)) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.toString().equals(version)) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -429,6 +461,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.toString().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.toString().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -451,6 +485,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.getNumericWebAppVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.getNumericWebAppVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -473,6 +509,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.getNumericEjbJarVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.getNumericEjbJarVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -497,6 +535,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.getNumericApplicationVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.getNumericApplicationVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -518,6 +558,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.getNumericAppClientVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.getNumericAppClientVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         return result;
     }
@@ -539,6 +581,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_0;
         } else if(SUN_APPSERVER_9_1_1.getNumericCmpMappingsVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_1_1;
+        } else if(SUN_APPSERVER_10_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_0;
         }
         
         return result;
@@ -575,37 +619,37 @@ public final class ASDDVersion {
         return appClientVersionString;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericServerVersion() {
         return numericVersion;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericWebAppVersion() {
         return servletVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericEjbJarVersion() {
         return ejbVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericCmpMappingsVersion() {
         return cmpMappingsVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericApplicationVersion() {
         return appVersion;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericAppClientVersion() {
         return appClientVersion;

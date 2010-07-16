@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,173 +47,232 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Properties;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.EditorKit;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.NbCatalogManager;
-import org.apache.xml.resolver.tools.NbCatalogResolver;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
 
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+
+import org.netbeans.modules.xml.reference.ReferenceUtil;
+import org.netbeans.modules.xml.reference.ReferenceTraveller;
+import org.netbeans.modules.bpel.project.anttasks.util.PackageCatalogArtifacts;
 
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
 
 public class CliBpelCatalogModel implements CatalogModel {
     
-    static CliBpelCatalogModel singletonCatMod = null;
-    static File projectCatalogFileLocation = null;
-        
-    /**
-     * Constructor
-     */
-    public CliBpelCatalogModel() {
-      URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectCatalogUri();
-      if (catalogFileLocPath != null) {
-          projectCatalogFileLocation = new File(catalogFileLocPath);
-      }
-    }
-    
-    /**
-     * Gets the instance of this class internal API
-     * @return current class instance
-     */
-    public static CliBpelCatalogModel getDefault(){
-        if (singletonCatMod == null){
-            singletonCatMod = new CliBpelCatalogModel();
-        }
+    public static CliBpelCatalogModel getDefault() {
         return singletonCatMod;
     }
     
-    
-    private File getProjectCatalogXML() {
-        if (projectCatalogFileLocation != null && projectCatalogFileLocation.exists()) {
-            return projectCatalogFileLocation;
-        } else {
-            return null;
-        }
-    }    
-    
     public ModelSource getModelSource(URI locationURI) throws CatalogModelException {
+//System.out.println();
+//System.out.println();
+//System.out.println();
+//System.out.println("---------- GET MODEL SOURCE: " + locationURI + " " + locationURI.hashCode());
+//System.out.println();
        List<File> catalogFileList = new ArrayList<File>();
+       // # 154887
+       collectCatalogXmlRecursively(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectDir(), catalogFileList);
        File file = null;
-       File projectCatalogXML = getProjectCatalogXML();
-        if (projectCatalogXML != null) {
-            catalogFileList.add(projectCatalogXML );
-        }
+
        if (catalogFileList.size() > 0) {
+//System.out.println("---------- 1");
             URI uri = null;
 
             try {
-                uri = resolveUsingApacheCatalog(catalogFileList, locationURI.toString());
-            }catch (IOException ioe) {
-                
+                uri = resolveUsingApacheCatalog(catalogFileList, locationURI);
+//System.out.println("---------- 1: " + uri);
             }
-
+            catch (IOException ioe) {
+            }
+//System.out.println("---------- 2: " + uri);
             if (uri != null ) {
-                file =new File(uri);
-            } else {
+                // # 157902
+                file = getFileByURI(uri, catalogFileList);
+//System.out.println("---------- 2.1 THIS: " + file);
+            }
+            else {
                 try {
                     file = new File(locationURI);
-                }catch ( IllegalArgumentException ie) {
-                    throw new CatalogModelException("Invalid URI"+locationURI.toString());
+//System.out.println("---------- 2.2: " + file);
+                }
+                catch (IllegalArgumentException ie) {
+                    throw new CatalogModelException("Invalid URI: " + locationURI.toString());
                 }
             }
        } else {
+//System.out.println("---------- 3");
             try {
                 file = new File(locationURI);
-            }catch ( IllegalArgumentException ie) {
-                    throw new CatalogModelException("Invalid URI"+locationURI.toString());
+            }
+            catch (IllegalArgumentException ie) {
+                    throw new CatalogModelException("Invalid URI: " + locationURI.toString());
            }
        }
-        return createModelSource(file, true);
+//System.out.println("--------- end.");
+//System.out.println();
+//System.out.println();
+//System.out.println();
+       return createModelSource(file, true);
     }
+
+    private File getFileByURI(URI uri, List<File> catalogs) throws CatalogModelException {
+        if ( !uri.getScheme().equals("nb-uri")) {
+            return new File(uri);
+        }
+//System.out.println();
+//System.out.println("uuuuuuuu projectCatalogFileLocation: " + projectCatalogFileLocation + " " + uri);
+        FileObject file = null;
+
+        for (File catalogFile : catalogs) {
+            FileObject catalog = FileUtil.toFileObject(catalogFile);
+            Project project = FileOwnerQuery.getOwner(catalog);
+//System.out.println("uuuuuuuu project: " + project);
+//System.out.println();
+//System.out.println();
+            file = PackageCatalogArtifacts.getCatalogSupport(project).resolveProjectProtocol(uri);
+    
+            if (file != null) {
+                break;
+            }
+        }
+        if (file == null) {
+            throw new CatalogModelException("Can't resolve referenced file. Check the referenced resource: " + uri);
+        }
+        return FileUtil.toFile(file);
+    }
+
+    private void collectCatalogXmlRecursively(File projectDir, final List<File> catalogs) {
+        Project project = FileOwnerQuery.getOwner(projectDir.toURI());
+
+        ReferenceUtil.travelRecursively(project, new ReferenceTraveller() {
+            public void travel(Project project) {
+                File projectCatalogXML = getProjectCatalogXML(project);
+//System.out.println("---------- projectCatalogXML: " + projectCatalogXML);
+
+                if (projectCatalogXML != null) {
+                     catalogs.add(projectCatalogXML);
+                }
+            }
+        });
+    }
+
+    private File getProjectCatalogXML(Project project) {
+        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
+        return CommandlineBpelProjectXmlCatalogProvider.getProjectCatalogFile(projectFolder.getAbsolutePath());
+    }    
     
     public ModelSource getModelSource(URI locationURI, ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
-        if(locationURI == null) {
+        if (locationURI == null) {
             return null;
         }
         URI resolvedURI = locationURI;
         
-        if(modelSourceOfSourceDocument != null) {
+        if (modelSourceOfSourceDocument != null) {
             File sFile = (File) modelSourceOfSourceDocument.getLookup().lookup(File.class);
             
-            if(sFile != null) {
+            if (sFile != null) {
                 URI sURI = sFile.toURI();
                 resolvedURI = sURI.resolve(locationURI);
             }
             
         }
+//System.out.println();
+//System.out.println("(((((((((((((: " + resolvedURI);
+//System.out.println("(((((((((((((: " + resolvedURI.getScheme());
+//System.out.println();
         
-        if(resolvedURI != null) {
+        if (resolvedURI != null && resolvedURI.getScheme().equals("file") && new File(resolvedURI).exists()) {
             return getModelSource(resolvedURI);
         }
-        
-        return null;
+        else {
+//System.out.println();
+//System.out.println("(((((((((((((: " + locationURI);
+//System.out.println("(((((((((((((: " + resolvedURI + " " + new File(resolvedURI).exists());
+//System.out.println();
+            return getModelSource(locationURI);
+        }
     }
 
-     protected Document getDocument(File file) throws CatalogModelException{
-        Document result = null;
-
-        if (result != null) return result;
+    private Document getDocument(File file) throws CatalogModelException{
         try {
+            FileInputStream inputStream = new FileInputStream(file);
+            String encoding = null;
 
+            if (inputStream.markSupported()) {
+                encoding = EncodingUtil.detectEncoding(inputStream);
+            }
+//System.out.println("!!! encoding: " + encoding);
 
-            FileInputStream fis = new FileInputStream(file);
-            byte buffer[] = new byte[fis.available()];
-            result = new javax.swing.text.PlainDocument();
-            result.remove(0, result.getLength());
-            fis.read(buffer);
-            fis.close();
-            String str = new String(buffer);
-            result.insertString(0,str,null);
+            if (encoding == null) {
+                encoding = "UTF8"; // NOI18N
+            }
+            Reader reader = EncodingUtil.getUnicodeReader(inputStream, encoding);
+            Document document = new PlainDocument();
+            new DefaultEditorKit().read(reader, document, 0);
 
-        } catch (Exception dObjEx) {
-            throw new CatalogModelException(file.getAbsolutePath()+" File Not Found");
+            return document;
         }
-
-        return result;
+        catch (FileNotFoundException e) {
+            throw new CatalogModelException("File " + file.getAbsolutePath() + " is not found."); // NOI18N
+        }
+        catch (IOException e) {
+            throw new CatalogModelException("I/O problem with file " + file.getAbsolutePath()); // NOI18N
+        }
+        catch (BadLocationException e) {
+            throw new CatalogModelException("Bad location in file " + file.getAbsolutePath() + ": " + e.getMessage()); // NOI18N
+        }
     }   
-    
+
     private BpelModelFactory getModelFactory() {
-        BpelModelFactory factory =null;
         try {
-            factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
-        }catch (Exception cnfe) {
+            return (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
+        }
+        catch (Exception cnfe) {
             throw new RuntimeException(cnfe);
         }
-        return factory;
     }
     
-     public ModelSource createModelSource(File file, boolean readOnly) throws CatalogModelException{
-         
+    public ModelSource createModelSource(File file, boolean readOnly) throws CatalogModelException{
          Lookup lookup = Lookups.fixed(new Object[]{
                 file,
                 getDocument(file),
                 getDefault(),
                 file
-            });
-            
+         });
          return new ModelSource(lookup, readOnly);
-     }
+    }
     
     public BpelModel getBPELModel(URI locationURI) throws Exception {
         ModelSource source = getDefault().getModelSource(locationURI);
@@ -219,37 +281,43 @@ public class CliBpelCatalogModel implements CatalogModel {
         return model;
     }
     
-    protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
-        NbCatalogResolver catalogResolver;
+    private URI resolveUsingApacheCatalog(List<File> catalogFileList, URI locationURI) throws CatalogModelException, IOException  {
+//System.out.println();
+//System.out.println();
+//System.out.println("oooooooooooooooooo resolveUsingApacheCatalog: " + locationURI);
+        CatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;    
-
-        
-        NbCatalogManager manager = new NbCatalogManager(null);
+        CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new NbCatalogResolver(manager);
-        //catalogResolver = new CatalogResolver(true);
+        manager.setIgnoreMissingProperties(true);
+        catalogResolver = new CatalogResolver(manager);
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         
-        for(File catFile : catalogFileList){
+        for (File catFile : catalogFileList){
             if (catFile.length() > 0) {
                 try {
                     apacheCatalogResolverObj.parseCatalog(catFile.getAbsolutePath());
-                } catch (Throwable ex) {
+                }
+                catch (Throwable ex) {
                     throw new CatalogModelException(ex);
                 }
-                
                 String result = null;
+
                 try {
-                    result = apacheCatalogResolverObj.resolveSystem(locationURI);
+//System.out.println("oooooooooooooooooo resolve: " + locationURI);
+                    result = apacheCatalogResolverObj.resolveSystem(locationURI.toString());
+//System.out.println("oooooooooooooooooo  result: " + result);
                 } catch (MalformedURLException ex) {
                     result = "";
                 } catch (IOException ex) {
                     result = "";
                 }
-                if(result == null){
+
+                if (result == null){
                     result = "";
-                }else{
+                }
+                else {
                     try {
                         //This is a workaround for a bug in resolver module on windows.
                         //the String returned by resolver is not an URI style
@@ -277,11 +345,13 @@ public class CliBpelCatalogModel implements CatalogModel {
         return null;
     }    
     
-     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-         return null;
-     }
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        return null;
+    }
      
-     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-         return null;
-     }    
+    public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+        return null;
+    }    
+
+    private static CliBpelCatalogModel singletonCatMod = new CliBpelCatalogModel();
 }

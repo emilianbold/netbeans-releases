@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,8 +44,9 @@
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import java.awt.GridBagConstraints;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -52,7 +56,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
 
     private Configuration[] configurationItems;
     private JCheckBox[] checkBoxes;
-    JButton[] actionButtons;
+    private JButton[] actionButtons;
 
     public ConfSelectorPanel(String labelText, char mn, Configuration[] configurationItems, JButton[] actionButtons) {
         initComponents();
@@ -116,14 +120,15 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         checkCheckBoxes();
     }
 
-    class CheckBoxActionListener implements java.awt.event.ActionListener {
+    private class CheckBoxActionListener implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             checkCheckBoxes();
         }
     }
 
-    public void checkCheckBoxes() {
+    public final void checkCheckBoxes() {
         boolean oneSelected = false;
         for (int i = 0; i < checkBoxes.length; i++) {
             if (checkBoxes[i].isSelected()) {
@@ -139,7 +144,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
     }
 
     public Configuration[] getSelectedConfs() {
-        Vector<Configuration> vector = new Vector<Configuration>();
+        List<Configuration> vector = new ArrayList<Configuration>();
         for (int i = 0; i < configurationItems.length; i++) {
             if (checkBoxes[i].isSelected()) {
                 vector.add(configurationItems[i]);

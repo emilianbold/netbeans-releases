@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,29 +44,15 @@
 
 package org.netbeans.modules.tasklist.todo;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
-import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ProjectXMLManagerTest;
-import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope;
 import org.netbeans.modules.tasklist.projectint.MainProjectScanningScope;
 import org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
-import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -71,27 +60,26 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Tests ToDo scanner.
  *
  * @author Petr Zajac
  */
-public class ToDoTest extends TestBase {
+public class ToDoTest extends NbTestCase /*extends TestBase*/ {
     
     static {
         // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        LayerTestBase.Lkp.setLookup(new Object[0]);
+//        LayerTestBase.Lkp.setLookup(new Object[0]);
         FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-apisupport-project.instance");
         assertNotNull("apisupport definition is registered", reg);
         Object abpt = reg.getAttribute("instanceCreate");
         FileObject reg2 = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-apisupport-project-suite.instance");
         assertNotNull("j2seproject definition is registered", reg2);
         Object abpt2 = reg2.getAttribute("instanceCreate");
-        LayerTestBase.Lkp.setLookup(new Object[]{new WindowManagerMock(),new TopComponentRegistryMock(), abpt, abpt2});
-        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
+//        LayerTestBase.Lkp.setLookup(new Object[]{new WindowManagerMock(),new TopComponentRegistryMock(), abpt, abpt2});
+//        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
     public ToDoTest(String testName) {
@@ -101,10 +89,10 @@ public class ToDoTest extends TestBase {
     protected void setUp() throws Exception {
         MockServices.setServices(TopComponentRegistryMock.class,WindowManagerMock.class);
         clearWorkDir();
-        noDataDir = true;
+//        noDataDir = true;
         
         super.setUp();
-        InstalledFileLocatorImpl.registerDestDir(destDirF);
+//        InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
     
     private static final String javaFile = "public class Main1 {\n" +
@@ -115,7 +103,8 @@ public class ToDoTest extends TestBase {
 
     private static final String noToDoFile = "public class NoTodo {\n" +
             "}";
-    
+
+    /*
     static FileObject createSrcFile(NbModuleProject prj,String path,String content ) throws IOException {
         FileObject fo = prj.getSourceDirectory().createData(path);
         Writer writer = new OutputStreamWriter(fo.getOutputStream());
@@ -123,6 +112,7 @@ public class ToDoTest extends TestBase {
         writer.close();
         return fo;
     }
+     */
     
     private List<Task> scanOpenProjectsTasks() {
         return scanTasks(OpenedProjectsScanningScope.create());
@@ -148,6 +138,7 @@ public class ToDoTest extends TestBase {
         return scanTasks(scanScope);
     }
 
+    /*
     @RandomlyFails // NB-Core-Build #852
     public void testProject1() throws IOException {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
@@ -227,6 +218,7 @@ public class ToDoTest extends TestBase {
         
         assertEquals("Document with no todo",0,tasks.size());
     }
+     */
     
 //    public void testTodoAndTaskManager() throws IOException, InterruptedException {
 //        NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");

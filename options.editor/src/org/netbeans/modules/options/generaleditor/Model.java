@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.Lookup;
@@ -109,7 +113,7 @@ public class Model {
     }
     
     Boolean isCamelCaseJavaNavigation() {
-        Preferences p = getJavaModulePreferenes();
+        Preferences p = NbPreferences.root ();
         if ( p == null ) {
             return null;
         }
@@ -117,13 +121,19 @@ public class Model {
     }
     
     void setCamelCaseNavigation(boolean value) {
-        Preferences p = getJavaModulePreferenes();
-        if ( p == null ) {
-            return;
-        }
-        p.putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
+        NbPreferences.root ().putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
     }
-        
+
+    String getRemoveTrailingWhitespace() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never");
+    }
+
+    void setRemoveTrailingWhitespace(String value) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, value);
+    }
+
     // private helper methods ..................................................
     
     private static final List<String> PRIVILEDGED_MIME_TYPES = Arrays.asList(new String [] {

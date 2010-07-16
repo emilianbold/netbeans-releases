@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -226,6 +232,7 @@ final public class AppClientProjectProperties {
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;    
     Document SHARED_LIBRARIES_MODEL;
+    DefaultListModel JAVAC_PROCESSORPATH_MODEL;
     
     
     // CustomizerCompile
@@ -233,6 +240,9 @@ final public class AppClientProjectProperties {
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     
     // CustomizerCompileTest
                 
@@ -282,6 +292,7 @@ final public class AppClientProjectProperties {
     private String includes, excludes;
 
     public static final String JAVA_SOURCE_BASED = "java.source.based";
+
     
     AppClientProject getProject() {
         return project;
@@ -330,6 +341,9 @@ final public class AppClientProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator(projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES ) );
+        String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
+        processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
+        JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
@@ -362,8 +376,15 @@ final public class AppClientProjectProperties {
         javacDebugBooleanKind = kind[0];
         
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null)
+            annotationProcessors = ""; //NOI18N
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
-        
+
         // CustomizerJar
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
@@ -402,22 +423,8 @@ final public class AppClientProjectProperties {
         try {                        
             // Store properties 
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws IOException {
-                    if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        AppClientProject.class.getResource("resources/build-impl.xsl")) &
-                            GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(AppClientProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
-                                getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
-                            }
-                        }
-                        else {
-                            return Boolean.FALSE;
-                        }
-                    }
                     storeProperties();
                     return Boolean.TRUE;
                 }
@@ -473,6 +480,7 @@ final public class AppClientProjectProperties {
         }
         
         String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
+        String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ), null );
@@ -507,6 +515,7 @@ final public class AppClientProjectProperties {
                 
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
@@ -528,29 +537,36 @@ final public class AppClientProjectProperties {
             projectProperties.remove(MAIN_CLASS); // Remove the property completely if not set
         }
 
-        // Configure new server instance
-        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
-                AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH); 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
-        }
-
-        // Configure server libraries (if any)
-        boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, javaClasspathList);
-
-        // Configure classpath from server (no server libraries)
-        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, true);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties, instanceId,
+                    cs, javaClasspathList,
+                    new CallbackImpl(project), project,
+                    profile, J2eeModule.Type.CAR);
+            generateExtraServerProperty(privateProperties);
+            updateAppClientServerProperties(instanceId, projectProperties, privateProperties);
         }
 
         projectProperties.putAll(additionalProperties);
 
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
+        
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements())
+                sb.append(',');
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
+
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -585,6 +601,7 @@ final public class AppClientProjectProperties {
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
@@ -592,6 +609,7 @@ final public class AppClientProjectProperties {
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
@@ -712,15 +730,19 @@ final public class AppClientProjectProperties {
         return bm;
     }
     
-    public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final AppClientProject project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
-                    setNewServerInstanceValue(serverInstanceID, project,
-                            projectProps, privateProps, !serverLibUsed);
+                    Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(J2EE_PLATFORM));
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                            null, null, new CallbackImpl(project), project,
+                            profile, J2eeModule.Type.CAR);
+                    generateExtraServerProperty(privateProps);
+                    updateAppClientServerProperties(serverInstanceID, projectProps, privateProps);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -730,64 +752,33 @@ final public class AppClientProjectProperties {
             }
         });
     }
-    
-    private static void setNewServerInstanceValue(String newServInstID, Project project,
-            EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
+
+    public static void generateExtraServerProperty(EditableProperties props) {
+        // TODO: this should come from server instead of hacking it here.
+        // Good enough for now though.
+        String val = props.getProperty("j2ee.appclient.tool.jvmoptions");
+        if (val != null && val.endsWith(",client=jar=")) {
+            props.setProperty("j2ee.appclient.tool.jvmoptions.class", val.substring(0, val.length()-4)+"class=");
+        }
+    }
+
+    private static void updateAppClientServerProperties(String newServInstID,
+            EditableProperties projectProps, EditableProperties privateProps) {
 
         assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
 
-        // update j2ee.platform.classpath
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((AppClientProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
-        }
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.type (throws NPE)
-            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-
-            removeServerClasspathProperties(privateProps);
-
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
             privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
             return;
         }
-        ((AppClientProject)project).registerJ2eePlatformListener(j2eePlatform);
-        if (setFromServer) {        
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-            
-            // update j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-            }      
-            // update j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-            }            
-        }
 
-        // XXX this seems to be used in runtime only so, not part of sharable server        
+        // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
-        
+        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, root));
+
         String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
         if (jvmOpts != null) {
             privateProps.setProperty(APPCLIENT_TOOL_JVMOPTS, jvmOpts);
@@ -815,27 +806,7 @@ final public class AppClientProjectProperties {
             }
             projectProps.put(CLIENT_NAME, mainClassArgs);
         }
-        
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.CLIENT, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (antDeployPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
-        }
-        
+
         // WORKAROUND for --retrieve option in asadmin deploy command
         // works only for local domains
         // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
@@ -845,47 +816,7 @@ final public class AppClientProjectProperties {
         } else {
             privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
-        
-    }
 
-    private static void removeServerClasspathProperties(EditableProperties props) {
-        props.remove(J2EE_PLATFORM_CLASSPATH);
-        props.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-        props.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-    }
-
-    private static boolean setServerClasspathProperties(EditableProperties props,
-            EditableProperties privateProps, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-
-        if (serverItems.isEmpty()) {
-            removeServerClasspathProperties(props);
-            return false;
-        }
-        removeServerClasspathProperties(privateProps);
-
-        props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        return true;
-    }
-
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
     }
 
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
@@ -908,5 +839,23 @@ final public class AppClientProjectProperties {
         excludes = v.getExcludePattern();
     }
     
-    
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private AppClientProject project;
+
+        public CallbackImpl(AppClientProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -36,12 +39,11 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IScopingNode;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -85,6 +87,12 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RailsDeprecations extends RubyAstRule {
+
+    //XXX these constants defined in other modules too, need to consolidate
+    private static final String ACTIVE_RECORD_BASE = "ActiveRecord::Base"; //NOI18N
+    private static final String ACTION_CONTROLLER_BASE = "ActionController::Base"; //NOI18N
+    private static final String APPLICATION_CONTROLLER = "ApplicationController";
+
     static Set<String> deprecatedFields = new HashSet<String>();
     static Map<String,String> deprecatedMethods = new HashMap<String,String>();
     static {
@@ -122,22 +130,19 @@ public class RailsDeprecations extends RubyAstRule {
     public RailsDeprecations() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         ParserResult info = context.parserResult;
         // Only perform these checks in Rails projects
-        Project project = FileOwnerQuery.getOwner(RubyUtils.getFileObject(info));
-        // Ugly!!
-        if (project == null || project.getClass().getName().indexOf("RailsProject") == -1) { // NOI18N
-            return false;
-        }
-
-        return true;
+        return RubyHints.isInRailsProject(RubyUtils.getFileObject(info));
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.ROOTNODE);
     }
 
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node root = context.node;
         ParserResult info = context.parserResult;
@@ -157,14 +162,17 @@ public class RailsDeprecations extends RubyAstRule {
         // Does nothing
     }
 
+    @Override
     public String getId() {
         return "Rails_Deprecations"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecation");
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecationDesc");
     }
@@ -178,11 +186,11 @@ public class RailsDeprecations extends RubyAstRule {
             // (such as    @request    = ActionController::TestRequest.new )
             if (deprecatedFields.contains(name) 
                     && !RubyUtils.getFileObject(info).getName().endsWith("_test")
-                    && inActionController(info, node)) {
+                    && inActionController(info, node, this)) {
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
                 String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsField", name, name.substring(1));
-                addFix(info, node, result, message);
+                addFix(this, info, node, result, message);
             }
         } else if (AstUtilities.isCall(node)) {
             String name = ((INameNode)node).getName();
@@ -216,7 +224,7 @@ public class RailsDeprecations extends RubyAstRule {
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
                 String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsMethodUse", name, deprecatedMethods.get(name));
-                addFix(info, node, result, message);
+                addFix(this, info, node, result, message);
             }
         }
 
@@ -234,13 +242,31 @@ public class RailsDeprecations extends RubyAstRule {
      * @return true if the given node is within a class that is a subclass
      * of <code>ActionController::Base</code>.
      */
-    private boolean inActionController(ParserResult info, Node node) {
+    static boolean inActionController(ParserResult info, Node node, RubyAstRule rule) {
         FileObject fo = RubyUtils.getFileObject(info);
         // fast check based on path, not really exact but 
         // avoids using index which can be slow
         if (!fo.getPath().contains("/app/controllers")) {
             return false;
         }
+        return isChildOf(info, node, rule, ACTION_CONTROLLER_BASE, APPLICATION_CONTROLLER);//NOI18N
+    }
+
+    /**
+     * @return true if the given node is within a class that is a subclass
+     * of <code>ActionController::Base</code>.
+     */
+    static boolean inActiveRecordModel(ParserResult info, Node node, RubyAstRule rule) {
+        FileObject fo = RubyUtils.getFileObject(info);
+        // fast check based on path, not really exact but
+        // avoids using index which can be slow
+        if (!fo.getPath().contains("/app/models")) {
+            return false;
+        }
+        return isChildOf(info, node, rule, ACTIVE_RECORD_BASE);
+    }
+
+    private static boolean isChildOf(ParserResult info, Node node, RubyAstRule rule, String... superClassNames) {
         Node root = AstUtilities.getRoot(info);
         if (root == null) {
             return false;
@@ -250,41 +276,58 @@ public class RailsDeprecations extends RubyAstRule {
         if (clazz == null) {
             return false;
         }
-        String className = AstUtilities.getClassOrModuleName(clazz);
-        RubyIndex index = getIndex(info);
-        IndexedClass superClass = index.getSuperclass(className);
-        while (superClass != null) {
-            String superClassName = superClass.getName();
-            if (superClassName.equals("ActionController::Base")) {  //NOI18N
-                return true;
+        // try the closest parent first
+        if (clazz instanceof ClassNode){
+            String superClass = AstUtilities.getSuperclass((ClassNode) clazz);
+            if (superClass == null) {
+                return false;
             }
-            superClass = index.getSuperclass(superClassName);
+            for (String each : superClassNames) {
+                if (each.equals(superClass)) {
+                    return true;
+                }
+            }
+        }
+        // check index for super classes
+        String className = AstUtilities.getClassOrModuleName(clazz);
+        RubyIndex index = rule.getIndex(info);
+        List<IndexedClass> superClasses = index.getSuperClasses(className);
+        for (IndexedClass superClass : superClasses) {
+            for (String each : superClassNames) {
+                if (each.equals(superClass.getName())) {
+                    return true;
+                }
+            }
         }
         return false;
     }
 
-    private void addFix(ParserResult info, Node node, List<Hint> result, String displayName) {
+    static void addFix(RubyAstRule rule, ParserResult info, Node node, List<Hint> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
         range = LexUtilities.getLexerOffsets(info, range);
         if (range != OffsetRange.NONE) {
-            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, Collections.<HintFix>emptyList(), 100);
+            Hint desc = new Hint(rule, displayName, RubyUtils.getFileObject(info), range, Collections.<HintFix>emptyList(), 100);
             result.add(desc);
         }
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public boolean showInTasklist() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }

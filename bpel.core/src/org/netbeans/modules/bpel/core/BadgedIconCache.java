@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.ImageIcon;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * copied from Jato and LiteJ2eePlugin module
@@ -161,7 +160,7 @@ abstract class BadgedIconCache {
      * each one and null replaced by the string "null".
      * Order (clockwise from nw): base;nw;ne;se;sw
      *
-     * Known minor problem: if any of the .gif files can't be opened, would be
+     * Known minor problem: if any of the .gif files cannot be opened, would be
      * better to use "null" in the key for that badge.  Currently the bad file name
      * is used to construct the key.
      */
@@ -179,7 +178,7 @@ abstract class BadgedIconCache {
 
     /**
      * Instantiate an Image for each not-null argument.
-     * Then call org.openide.util.Utilities.mergeImages() to do the overlaying.
+     * Then call org.openide.util.ImageUtilities.mergeImages() to do the overlaying.
      * return the resulting icon.
      *
      * Note: the special rule that "if swBadge = seriousErrorBadge then other
@@ -244,7 +243,7 @@ abstract class BadgedIconCache {
             return theImage;    // cache hit
         }
         // got following line of code from openide.util.IconManager.java:
-        // ("BadgedIconCache.class.getClassLoader().getResource(iconFile)" doesn't work)
+        // ("BadgedIconCache.class.getClassLoader().getResource(iconFile)" does not work)
         ClassLoader loader =  (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
         URL tmpURL = loader.getResource(filename);
 
@@ -259,7 +258,7 @@ abstract class BadgedIconCache {
     
     /**
      * Make the format of the .gif file path name a little more flexible:
-     * fix so doesn't start with "/" and does end in ".gif".
+     * fix so does not start with "/" and does end in ".gif".
      */
     public static String normalizeGifPath(String gifPath) {
         if (gifPath == null) {

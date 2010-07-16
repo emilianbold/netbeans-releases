@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,7 @@ public class IgnoreAction extends AbstractSystemAction {
     public static final int UNIGNORING = 2;
     
     protected String getBaseName(Node [] activatedNodes) {
-        int actionStatus = getActionStatus(activatedNodes);
+        int actionStatus = getActionStatus(activatedNodes, true);
         switch (actionStatus) {
         case UNDEFINED:
         case IGNORING:
@@ -74,18 +77,29 @@ public class IgnoreAction extends AbstractSystemAction {
         }
     }
 
-    public int getActionStatus(Node [] nodes) {
-        return getActionStatus(Utils.getCurrentContext(nodes).getFiles());
+    public int getActionStatus(Node [] nodes, boolean cached) {
+        return getActionStatus((cached ? getCachedContext(nodes) : getContext(nodes)).getFiles(), cached);
     }
 
-    public int getActionStatus(File [] files) {
+    @Override
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    @Override
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    public int getActionStatus(File [] files, boolean cached) {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
-            FileInformation info = cache.getStatus(files[i]);
-            if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            FileInformation info = cached ? cache.getCachedStatus(files[i]) : cache.getStatus(files[i]);
+            int status = info == null ? FileInformation.STATUS_VERSIONED_UPTODATE : info.getStatus();
+            if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ? IGNORING : UNDEFINED;
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                 actionStatus = (actionStatus == -1 || actionStatus == UNIGNORING) ? UNIGNORING : UNDEFINED;
             } else {
                 actionStatus = UNDEFINED;
@@ -96,11 +110,11 @@ public class IgnoreAction extends AbstractSystemAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        return getActionStatus(nodes) != UNDEFINED;
+        return getActionStatus(nodes, true) != UNDEFINED;
     }
 
     public void performCvsAction(Node[] nodes) {
-        int actionStatus = getActionStatus(nodes);
+        int actionStatus = getActionStatus(nodes, false);
         if (actionStatus == IGNORING) {
             CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext(nodes).getFiles());
         } else if (actionStatus == UNIGNORING) {

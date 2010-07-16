@@ -252,7 +252,7 @@ public class ETLSourceMultiViewElement extends CloneableEditor implements MultiV
             if(!(action instanceof FileSystemAction))
             actionsList.add(action);
         }
-        actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
+      //[FIME_MOVE_To6.1]  actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
         Action[] actions = new Action[actionsList.size()];
         actionsList.toArray(actions);
         return actions;

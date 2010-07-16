@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,6 +66,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  * @author Tor Norbye
  */
 public class AstElement extends JsElement {
+
+    private static final Logger LOG = Logger.getLogger(AstElement.class.getName());
+    
     public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
     public static final Set<Modifier> PRIVATE = EnumSet.of(Modifier.PRIVATE);
@@ -330,7 +336,7 @@ public class AstElement extends JsElement {
             }
             
         } else if (object != null) {
-            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
+            LOG.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
                 ((object != null) ? object.getClass().getName() : "null")); //NOI18N
             
         } else {

@@ -73,5 +73,4 @@ public class UserNotification {
         DialogDisplayer.getDefault().notify(descriptor);
         return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
     }
-    
 }

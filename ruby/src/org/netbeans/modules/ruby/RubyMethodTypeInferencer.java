@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -155,11 +158,17 @@ final class RubyMethodTypeInferencer {
             case VCALLNODE:
                 Node root = knowledge.getRoot();
                 AstPath path = new AstPath(root, callNodeToInfer);
-                IScopingNode clazz = AstUtilities.findClassOrModule(path);
-                if (clazz == null) {
+                String className = AstUtilities.getFqnName(path);
+                if (className.isEmpty()) {
                     break;
                 }
-                receiverType = RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+                // check whether it is a call to a method in the same file that 
+                // we've already analyzed (so we don't have to use the index for such cases)
+                RubyType methodInSameFile = knowledge.getTypeForMethod(className, name);
+                if (methodInSameFile != null) {
+                    return methodInSameFile;
+                }
+                receiverType = RubyType.create(className);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal node passed: " + callNodeToInfer);
@@ -176,26 +185,32 @@ final class RubyMethodTypeInferencer {
         }
 
         if (receiverType == null) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
 
         if (returnsReceiver(name)) {
             return receiverType;
         }
 
-        if (FindersHelper.isFinderMethod(name)) {
-            // -Possibly- ActiveRecord finders, very important
+        if (FindersHelper.isFinderMethod(name) || ActiveRecordQueryIndexer.isQueryMethod(name)) {
+            // -Possibly- ActiveRecord finders or query methods, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
                 if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
-                    // Looks like a find method on active record The big
-                    // question is whether this is going to return the type
-                    // itself (receivedName) or an array of it; that depends on
-                    // the args (for find(:all) it's asn array, find(:first)
-                    // it's an item, and for find(1,2,3) it's an array etc.
-                    // There are other find signatures which define other
-                    // semantics
-                    return FindersHelper.pickFinderType(callNodeToInfer, name, receiverType);
+                    return FindersHelper.isFinderMethod(name) 
+                            // Looks like a find method on active record The big
+                            // question is whether this is going to return the type
+                            // itself (receivedName) or an array of it; that depends on
+                            // the args (for find(:all) it's asn array, find(:first)
+                            // it's an item, and for find(1,2,3) it's an array etc.
+                            // There are other find signatures which define other
+                            // semantics
+                            ? FindersHelper.pickFinderType(callNodeToInfer, name, receiverType)
+                            // looks like a query method
+                            : ActiveRecordQueryIndexer.getReturnType(name);
+                } else if (ActiveRecordQueryIndexer.isQueryMethod(name)
+                        && RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
+                    return ActiveRecordQueryIndexer.getReturnType(name);
                 }
             }
         }
@@ -203,7 +218,7 @@ final class RubyMethodTypeInferencer {
         // this can be very time consuming, return if TI is not enabled and
         // we're operating in the fast mode
         if (fast && !TypeInferenceSettings.getDefault().getMethodTypeInference()) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
 
         RubyType resultType = new RubyType();
@@ -214,9 +229,7 @@ final class RubyMethodTypeInferencer {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         // first methods from the class itself
-        for (String type : receiverType.getRealTypes()) {
-            methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
-        }
+        methods.addAll(index.getMethods(name, receiverType.getRealTypes(), QuerySupport.Kind.EXACT));
         if (methods.isEmpty()) {
             // inherited methods
             // TODO: should consider only the return type of the first inherited method in the hiearchy
@@ -226,7 +239,6 @@ final class RubyMethodTypeInferencer {
             RubyType type = indexedMethod.getType();
             resultType.append(type);
         }
-        index.logMostTimeConsuming();
         return resultType;
     }
 

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,7 +94,9 @@ import org.openide.util.Exceptions;
  * @author Po-Ting Wu
  */
 public class JSFConfigUtilities {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JSFConfigUtilities.class.getName());
+
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
     private static String FACES_PARAM = "javax.faces";  //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
@@ -134,7 +139,7 @@ public class JSFConfigUtilities {
                         }
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(JSFConfigUtilities.class.getName()).log(Level.WARNING, ex.getMessage());
+                    LOGGER.log(Level.WARNING, ex.getMessage());
                 }
             }
 
@@ -155,7 +160,7 @@ public class JSFConfigUtilities {
                                 }
                                 return Boolean.FALSE;
                             } finally {
-                                Logger.getLogger(this.getClass().getName()).log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
+                                LOGGER.log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
                             }
                         }
                     });
@@ -164,8 +169,10 @@ public class JSFConfigUtilities {
                     } else {
                         return false;
                     }
-                }catch(Exception e){
-                    Exceptions.printStackTrace(e);
+                } catch(NullPointerException npe){
+                    //source path is null, nothing to do here, just return false
+                } catch (Exception ex) {
+                    LOGGER.log(Level.WARNING, ex.getMessage());
                 }
             } else {
                 return true;

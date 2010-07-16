@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,21 +58,21 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHook;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -122,7 +125,7 @@ public class Subversion {
     public static String[] selectRepositoryFolders(String dialogTitle,
                                                    String repositoryUrl,
                                                    String username,
-                                                   String password)
+                                                   char[] password)
                 throws MalformedURLException, IOException {
 
         if (!isClientAvailable(true)) {
@@ -140,7 +143,7 @@ public class Subversion {
                                       repositoryFile,
                                       null,     //files to select
                                       (username != null) ? username : "", //NOI18N
-                                      ((username != null) && (password != null)) ? password : "", //NOI18N
+                                      username != null ? password : null,
                                       null,     //node actions
                                       Browser.BROWSER_HELP_ID_CHECKOUT);    //PENDING - is this help ID correct?
 
@@ -308,6 +311,7 @@ public class Subversion {
                 repositoryFiles,
                 localFolder,
                 atLocalFolderLevel,
+                false,                    // false -> do export
                 scanForNewProjects).waitFinished();
 
         try {
@@ -319,11 +323,13 @@ public class Subversion {
         if(notVersionedYet) {
             getSubversion().versionedFilesChanged();
             SvnUtils.refreshParents(localFolder);
-            getSubversion().getStatusCache().refreshRecursively(localFolder);
+            getSubversion().getStatusCache().refreshRecursively(localFolder, false);
         }
 
-        SvnKenaiSupport.getInstance().setFirmAssociations(new File[]{localFolder}, repositoryUrl);
-
+        VCSBugtrackingAccessor bugtrackingSupport = Lookup.getDefault().lookup(VCSBugtrackingAccessor.class);
+        if(bugtrackingSupport != null) {
+            bugtrackingSupport.setFirmAssociations(new File[]{localFolder}, repositoryUrl);
+        }
     }
 
     /**
@@ -406,7 +412,7 @@ public class Subversion {
                 public void perform() {
                     SvnClient client;
                     try {
-                        client = getSubversion().getClient(repositoryUrl, user, password, this);
+                        client = getSubversion().getClient(repositoryUrl, user, password.toCharArray(), this);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                         return;
@@ -419,47 +425,7 @@ public class Subversion {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-    }
-
-    /**
-     * Opens search history panel with a specific DiffResultsView, which does not moves accross differences but initially fixes on the given line.
-     * Right panel shows current local changes if the file, left panel shows revisions in the file's repository.
-     * Do not run in AWT, IllegalStateException is thrown.
-     * Validity of the arguments is checked and result is returned as a return value
-     * @param path requested file absolute path. Must be a versioned file (not a folder), otherwise false is returned and the panel would not open
-     * @param lineNumber requested line number to fix on
-     * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
-     */
-    public static boolean showFileHistory (final File file, final int lineNumber) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
-
-        if (!file.exists()) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!file.isFile()) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!SvnUtils.isManaged(file)) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if(!isClientAvailable(true)) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
-            throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
-        }
-
-        /**
-         * Open in AWT
-         */
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                SearchHistoryAction.openSearch(file, lineNumber);
-            }
-        });
-        return true;
-    }
+    }    
 
     /**
      * Tries to resolve the given URL and determine if the URL represents a subversion repository
@@ -683,7 +649,7 @@ public class Subversion {
         try {
             if(username != null) {
                 password = password != null ? password : "";                    // NOI18N
-                return getSubversion().getClient(url, username, password);
+                return getSubversion().getClient(url, username, password.toCharArray());
             } else {
                 return getSubversion().getClient(url);
             }

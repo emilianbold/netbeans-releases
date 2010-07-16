@@ -48,7 +48,6 @@ public class GoToAction extends BpelNodeAction {
     private static BpelNodeAction[] GO_TO_ACTIONS = new BpelNodeAction[] {
             (BpelNodeAction)SystemAction.get(GoToDiagrammAction.class),
             (BpelNodeAction)SystemAction.get(GoToSourceAction.class),
-            (BpelNodeAction)SystemAction.get(ShowBpelMapperAction.class),
             (BpelNodeAction)SystemAction.get(GoToLoggingAction.class)
     };
 
@@ -88,15 +87,6 @@ public class GoToAction extends BpelNodeAction {
     public boolean enable(Node[] nodes) {
         model = new ActSubMenuModel(nodes);
         return super.enable(nodes);
-//        if (nodes == null || nodes.length < 0 ) {
-//            return false;
-//        }
-//        // TODO m
-//        if (nodes[0] instanceof BpelNode) {
-//            return true;
-//        }
-//
-//        return false;
     }
 
     @Override
@@ -125,8 +115,11 @@ public class GoToAction extends BpelNodeAction {
     public static final BpelNodeAction[] getGoToActions(Node[] nodes) {
         List<BpelNodeAction> availableGotoActions = new ArrayList<BpelNodeAction>();
         if (nodes != null && nodes.length > 0) {
+//System.out.println();
             for (BpelNodeAction gotoAction : GO_TO_ACTIONS) {
+//System.out.println("see: " + gotoAction);
                 if (gotoAction.enable(nodes)) {
+//System.out.println("     yes");
                     availableGotoActions.add(gotoAction);
                 }
             }

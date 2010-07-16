@@ -47,15 +47,13 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-
-import org.openide.util.actions.SystemAction;
 
 // XXX need unit test
 
@@ -104,30 +102,37 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
 
+    @Override
     public String getName() {
         return g.getName();
     }
 
+    @Override
     public String getDisplayName() {
         return g.getDisplayName();
     }
 
+    @Override
     public boolean canRename() {
         return false;
     }
 
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }
@@ -236,6 +241,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }       
                 
         
+        @Override
         protected /*@Override*/ Node copyNode (final Node originalNode) {
             DataObject dobj = (DataObject) originalNode.getLookup().lookup (DataObject.class);
             return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
@@ -248,6 +254,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             super (origNode, new PackageFilterChildren (origNode));
         }
         
+        @Override
         public /*@Override*/ void setName (final String name) {
             if (Utilities.isJavaIdentifier (name)) {
                 super.setName (name);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -96,14 +99,28 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
             }
 
             FileObject webModuleRoot = wm.getDocumentBase();
+            FileObject webInfBase = wm.getWebInf() == null ? null : wm.getWebInf().getParent();
             Collection<URL> librariesURLs = new ArrayList<URL>();
             if(faceletsLibrariesList != null) {
                 StringTokenizer st = new StringTokenizer(faceletsLibrariesList, ";");
                 while(st.hasMoreTokens()) {
                     String libraryPath = st.nextToken();
-                    FileObject libraryFO = webModuleRoot.getFileObject(libraryPath);
+                    FileObject libraryFO = null;
+                    if(webInfBase != null) {
+                        //try to resolve according to the web-inf parent
+                        libraryFO = webInfBase.getFileObject(libraryPath);
+                    }
+                    if(libraryFO == null) {
+                        //try to resolve according to the web module root,
+                        //in most cases a folder identical to the web-inf's parent folder
+                        //but may not always be true
+                        libraryFO = webModuleRoot.getFileObject(libraryPath);
+                    }
                     if(libraryFO != null) {
-                        librariesURLs.add(URLMapper.findURL(libraryFO, URLMapper.INTERNAL));
+                        URL url = URLMapper.findURL(libraryFO, URLMapper.INTERNAL);
+                        if(url != null) {
+                            librariesURLs.add(url);
+                        }
                     }
                 }
             }
@@ -116,5 +133,5 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
         }
         return null;
     }
-    
+
 }

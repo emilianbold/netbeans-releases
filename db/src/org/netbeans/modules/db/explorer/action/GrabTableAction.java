@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,42 +42,22 @@
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.awt.Dialog;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
-import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.netbeans.modules.db.explorer.node.TableNode;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -83,6 +66,7 @@ import org.openide.windows.WindowManager;
  */
 public class GrabTableAction extends BaseAction {
 
+    @Override
     public String getName() {
         return NbBundle.getMessage (GrabTableAction.class, "GrabStructure"); // NOI18N
     }
@@ -92,6 +76,7 @@ public class GrabTableAction extends BaseAction {
         return new HelpCtx(GrabTableAction.class);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -102,6 +87,7 @@ public class GrabTableAction extends BaseAction {
         return enabled;
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
 
@@ -113,10 +99,12 @@ public class GrabTableAction extends BaseAction {
             FileChooserBuilder chooserBuilder = new FileChooserBuilder(RecreateTableAction.class);
             chooserBuilder.setTitle(NbBundle.getMessage (GrabTableAction.class, "GrabTableFileSaveDialogTitle")); //NOI18N
             chooserBuilder.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
                 public boolean accept(File f) {
                   return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                 }
 
+                @Override
                 public String getDescription() {
                   return NbBundle.getMessage (GrabTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                 }
@@ -156,11 +144,13 @@ public class GrabTableAction extends BaseAction {
             final File theFile = file;
             RequestProcessor.getDefault().post(
                 new Runnable() {
+                @Override
                     public void run() {
                         try {
                             new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
                                 spec, node.getTableHandle(), theFile);
                         } catch (Exception exc) {
+                            Logger.getLogger(GrabTableAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
                             DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
                         }
                     }
@@ -168,81 +158,9 @@ public class GrabTableAction extends BaseAction {
             );
 
         } catch(Exception exc) {
+            Logger.getLogger(GrabTableAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
         }
     }
 
-    private static final class GrabTableWorker {
-
-        private TableNode nfo;
-        private Task task;
-        private Dialog dialog;
-        private ProgressHandle progressHandle;
-
-        private Enumeration<MetadataElementHandle<Column>> enumeration;
-        private DatabaseException exception;
-
-        public GrabTableWorker(TableNode nfo) {
-            this.nfo = nfo;
-        }
-
-        public Enumeration<MetadataElementHandle<Column>> execute(final MetadataModel model) throws DatabaseException {
-            progressHandle = ProgressHandleFactory.createHandle(null);
-            GrabTableProgressPanel progressPanel = new GrabTableProgressPanel();
-            progressPanel.setProgressComponent(ProgressHandleFactory.createProgressComponent(progressHandle));
-            String dialogTitle = NbBundle.getMessage (GrabTableAction.class, "GrabTableProgressDialogTitle"); // NOI18N
-            DialogDescriptor desc = new DialogDescriptor(progressPanel, dialogTitle, true, new Object[0], DialogDescriptor.NO_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-            dialog = DialogDisplayer.getDefault().createDialog(desc);
-            dialog.setResizable(false);
-            if (dialog instanceof JDialog) {
-                ((JDialog)dialog).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-            }
-            progressHandle.start();
-
-            task = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        model.runReadAction(
-                            new Action<Metadata>() {
-                                public void run(Metadata metaData) {
-                                    MetadataElementHandle<Table> handle = nfo.getTableHandle();
-                                    Table table = handle.resolve(metaData);
-                                    List<MetadataElementHandle<Column>> list =
-                                            new ArrayList<MetadataElementHandle<Column>>();
-
-                                    for (Column column : table.getColumns()) {
-                                        list.add(MetadataElementHandle.create(column));
-                                    }
-
-                                    enumeration = Collections.enumeration(list);
-                                }
-                            }
-                        );
-                    } catch (MetadataModelException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            });
-
-            task.addTaskListener(new TaskListener() {
-                public void taskFinished(org.openide.util.Task task) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            dialog.setVisible(false);
-                        }
-                    });
-                }
-            });
-
-            if (!task.isFinished()) {
-                dialog.setVisible(true);
-            }
-            dialog.dispose();
-            progressHandle.finish();
-            if (exception != null) {
-                throw exception;
-            }
-            return enumeration;
-        }
-    }
 }

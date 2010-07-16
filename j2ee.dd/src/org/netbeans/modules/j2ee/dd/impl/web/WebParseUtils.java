@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,7 +82,7 @@ public class WebParseUtils {
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("web-app".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+version);
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?"2.3":version)); // NOI18N
             }
             if ("web-fragment".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
@@ -105,7 +108,11 @@ public class WebParseUtils {
             }
             String resource=null;
             // return a proper input source
-            if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) { //NOI18N
+            if ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN".equals(publicId)) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_3.dtd"; //NOI18N
+            } else if ("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN".equals(publicId)) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_2.dtd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_4.xsd"; //NOI18N
             } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_5.xsd"; //NOI18N

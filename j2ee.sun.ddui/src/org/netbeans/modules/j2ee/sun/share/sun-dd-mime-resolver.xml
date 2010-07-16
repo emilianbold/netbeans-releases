@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -45,13 +48,22 @@ made subject to such option by the copyright holder.
 
 <MIME-resolver>
 
-    <!-- mime type definitions for Sun AppServer & GlassFish descriptor files -->
+    <!-- mime type definitions for sun-* descriptor files -->
     <!-- sun-web.xml -->
     <file>
         <ext name="xml"/>
         <resolver mime="text/x-dd-sun-web+xml">
             <xml-rule>
                 <element name="sun-web-app"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-web+xml">
+            <xml-rule>
+                <element name="glassfish-web-app"/>
             </xml-rule>
         </resolver>
     </file>
@@ -66,6 +78,15 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-ejb-jar+xml">
+            <xml-rule>
+                <element name="glassfish-ejb-jar"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
     <!-- sun-application.xml -->
     <file>
         <ext name="xml"/>
@@ -76,6 +97,15 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-application+xml">
+            <xml-rule>
+                <element name="glassfish-application"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
     <!-- sun-application-client.xml -->
     <file>
         <ext name="xml"/>
@@ -86,4 +116,12 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-app-client+xml">
+            <xml-rule>
+                <element name="glassfish-application-client"/>
+            </xml-rule>
+        </resolver>
+    </file>
 </MIME-resolver>

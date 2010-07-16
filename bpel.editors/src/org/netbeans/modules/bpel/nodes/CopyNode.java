@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
@@ -73,21 +72,25 @@ public class CopyNode extends BpelNode<Copy> {
         //
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        PropertyUtils propUtil = PropertyUtils.getInstance();
         //
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 From.class, COPY_FROM, "getFrom", null, null); // NOI18N
-        PropertyUtils.registerElementProperty(this, null, mainPropertySet,
+        propUtil.registerElementProperty(this, null, mainPropertySet,
                 To.class, COPY_TO, "getTo", null, null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
 // TODO add after the runtime will supported it
 //        PropertyUtils.registerProperty(this, mainPropertySet,
 //                KEEP_SRC_ELEMENT_NAME, "getKeepSrcElementName", "setKeepSrcElementName", "removeKeepSrcElementName"); // NOI18N
 //        //
-        PropertyUtils.registerProperty(this, mainPropertySet,
+        propUtil.registerProperty(this, mainPropertySet,
                 IGNORE_MISSING_FROM_DATA, "getIgnoreMissingFromData", "setIgnoreMissingFromData", "removeIgnoreMissingFromData"); // NOI18N
+        //
+        propUtil.registerProperty(this, mainPropertySet,
+                BINARY_COPY, "getBinaryCopy", "setBinaryCopy", "removeBinaryCopy"); // NOI18N
         //
         return sheet;
     }

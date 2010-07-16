@@ -2,8 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -15,9 +17,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -42,98 +44,4 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="j2ee.persistence">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <property name="s2b_root_orm_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/orm/model_1_0"/>
-    <property name="s2b_root_persistence_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_1_0"/>
-    <property name="s2b_root_orm_2_0" location="src/org/netbeans/modules/j2ee/persistence/dd/orm/model_2_0"/>
-    <property name="s2b_root_persistence_2_0" location="src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_2_0"/>
-    <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/persistence/dd/resources"/>
-
-    <target name="s2binit" depends="build-init">
-        <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-            <classpath>
-                <pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-                <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-                <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-            </classpath>
-        </taskdef>
-    </target>
-
-    <target name="dd2beansgen" depends="s2binit">
-        <echo message="generating code generation input file information" />
-        <schema2beans schema="${s2b_res_root}/orm_1_0.xsd"
-        docRoot="entity-mappings"
-        mddFile="${s2b_res_root}/orm_1_0.mdd"
-        package="org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0"
-        schemaType="xmlschema"
-        useInterfaces="true"
-        validate="true"
-        attrProp="true"
-        removeUnreferencedNodes="true"
-        rootDir="src"/> 
-        <schema2beans schema="${s2b_res_root}/persistence_1_0.xsd"
-        mddFile="${s2b_res_root}/persistence_1_0.mdd"
-        package="org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0"
-        schemaType="xmlschema"
-        useInterfaces="true"
-        validate="true"
-        attrProp="true"
-        removeUnreferencedNodes="true"
-        rootDir="src"/> 
-        <schema2beans schema="${s2b_res_root}/orm_2_0.xsd"
-        docRoot="entity-mappings"
-        mddFile="${s2b_res_root}/orm_2_0.mdd"
-        package="org.netbeans.modules.j2ee.persistence.dd.orm.model_2_0"
-        schemaType="xmlschema"
-        useInterfaces="true"
-        validate="true"
-        attrProp="true"
-        removeUnreferencedNodes="true"
-        rootDir="src"/>
-        <schema2beans schema="${s2b_res_root}/persistence_2_0.xsd"
-        mddFile="${s2b_res_root}/persistence_2_0.mdd"
-        package="org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0"
-        schemaType="xmlschema"
-        useInterfaces="true"
-        validate="true"
-        attrProp="true"
-        removeUnreferencedNodes="true"
-        rootDir="src"/>
-    </target>
-
-    <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
-  
-    <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
-
-    <target name="clean-ddgen-src">
-        <mkdir dir="${s2b_root_orm_1_0}"/>
-        <mkdir dir="${s2b_root_persistence_1_0}"/>
-        <delete>
-            <fileset dir="${s2b_root_orm_1_0}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_orm_1_0}"/>
-        <delete>
-            <fileset dir="${s2b_root_persistence_1_0}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_persistence_1_0}"/>
-        <mkdir dir="${s2b_root_orm_2_0}"/>
-        <mkdir dir="${s2b_root_persistence_2_0}"/>
-        <delete>
-            <fileset dir="${s2b_root_orm_2_0}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_orm_2_0}"/>
-        <delete>
-            <fileset dir="${s2b_root_persistence_2_0}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${s2b_root_persistence_2_0}"/>
-    </target>
-        
 </project>

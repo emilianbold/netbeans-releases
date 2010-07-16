@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -671,6 +674,7 @@ public class VisualReplicator {
                 Iterator<RADProperty> applyProperties;
                 if (clone instanceof Window) { // some properties should not be set to Window, e.g. visible
                     applyProperties = metacomp.getBeanPropertiesIterator(new FormProperty.Filter() {
+                        @Override
                         public boolean accept(FormProperty property) {
                             return !"visible".equals(property.getName()); // NOI18N
                         }
@@ -984,6 +988,7 @@ public class VisualReplicator {
 
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ViewConverter.class)
     public static class DefaultConverter implements ViewConverter {
+        @Override
         public Convert convert(Object component, boolean root, boolean designRestrictions) {
             Class compClass = component.getClass();
             Class convClass = null;
@@ -1041,6 +1046,7 @@ public class VisualReplicator {
             }
         }
 
+        @Override
         public boolean canVisualize(Class componentClass) {
             return false; // not able to visualize non-visual components
               // AWT menus are converted, but never used as the root in the design view
@@ -1054,9 +1060,11 @@ public class VisualReplicator {
             this.converted = converted;
             this.enclosed = enclosed;
         }
+        @Override
         public Object getConverted() {
             return converted;
         }
+        @Override
         public Object getEnclosed() {
             return enclosed;
         }

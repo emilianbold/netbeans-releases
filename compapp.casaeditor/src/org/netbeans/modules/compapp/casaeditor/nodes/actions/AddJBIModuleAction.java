@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -30,12 +33,13 @@ package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.openide.util.NbBundle;
 
 /**
- * Action to add a new JBI module.
+ * Action to add a new internal/external JBI module.
  *
  * @author jqian
  */
@@ -43,15 +47,40 @@ public class AddJBIModuleAction extends AbstractAction {
 
     private WeakReference mProjectReference;
 
+    // whether the SU project to be added is internal or external
+    private boolean internal;
+
+    /**
+     * Creates a new instance of AddJBIModuleAction for adding an internal
+     * SU project.
+     *
+     * @param jbiProject    the JBI project
+     */
     public AddJBIModuleAction(Project jbiProject) {
-        super(NbBundle.getMessage(AddJBIModuleAction.class, "LBL_AddProjectAction_Name"), null);
+        this(jbiProject, true);
+    }
+
+    /**
+     * Creates a new instance of AddJBIModuleAction for adding an internal or
+     * external SU project.
+     *
+     * @param jbiProject    the JBI project
+     * @param internal      whether the SU project to be added is internal
+     *                      or external
+     */
+    public AddJBIModuleAction(Project jbiProject, boolean internal) {
         mProjectReference = new WeakReference<Project>(jbiProject);
+        this.internal = internal;
+
+        String name = NbBundle.getMessage(AddJBIModuleAction.class,
+                internal ? "LBL_AddProjectAction_Name" : "LBL_AddExternalProjectAction_Name"); // NOI18N
+        putValue(Action.NAME, name);
     }
 
     public void actionPerformed(ActionEvent e) {
         Project jbiProject = (Project) mProjectReference.get();
         if (jbiProject != null) {
-            new AddProjectAction().perform(jbiProject);
+            new AddProjectAction(internal).perform(jbiProject);
         }
     }
 }

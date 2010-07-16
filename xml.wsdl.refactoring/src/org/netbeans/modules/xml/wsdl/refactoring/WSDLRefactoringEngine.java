@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -152,8 +155,6 @@ public class WSDLRefactoringEngine {
 //System.out.println("      schema ref: " + reference);
                 if (reference != null) {
                     String newLocation = reference.getSchemaLocation();
-//System.out.println("        xml location: " + newLocation);
-//System.out.println("       wsdl location: " + model.getModelSource().getLookup().lookup(FileObject.class));
                     
                     if (request instanceof MoveRefactoring) {
                         try {
@@ -161,10 +162,12 @@ public class WSDLRefactoringEngine {
 //System.out.println("    new location: " + newLocation);
                         }
                         catch (Exception e) {
-                            // do nothing, let the old wsdl location remain
+                            // do nothing, let the old schema location remain
                         }
                     }
-                    reference.setSchemaLocation(newLocation);
+//System.out.println("    new location: " + newLocation);
+                    // temporary commented till # 172444 is fixed
+                    // TODO reference.setSchemaLocation(newLocation);
                 }
             }
 //System.out.println();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,20 +46,16 @@ package org.netbeans.test.editor.suites.keybindings;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 import junit.framework.Test;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -75,27 +74,6 @@ public class KeyMapTest extends JellyTestCase {
      */
     public KeyMapTest(String name) {
         super(name);
-    }
-
-    public void prepareFileInEditor() {
-        PROJECT_NAME = "keymapTestProject";
-        NewProjectWizardOperator newProjectOper = NewProjectWizardOperator.invoke();
-        newProjectOper.selectCategory("Java");
-        newProjectOper.selectProject("Java Application");
-        newProjectOper.next();
-        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
-        new JTextFieldOperator(npnlso, 1).setText(getDataDir().getAbsolutePath()); // NOI18N
-        newProjectOper.finish();
-        newProjectOper.waitClosed();
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException ex) {
-            fail("Waiting for project scanning was interupted. Other tests will fail.");
-        }
-
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        editor = new EditorOperator("Main.java");
     }
 
     public void closeProject() {

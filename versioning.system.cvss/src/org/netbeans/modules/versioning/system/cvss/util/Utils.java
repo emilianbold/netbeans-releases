@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,8 @@ import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -80,6 +85,9 @@ public class Utils {
 
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
     
+    private static Reference<Context>  contextCached = new WeakReference<Context>(null);
+    private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
+
     private static final FileFilter cvsFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
             if (CvsVersioningSystem.FILENAME_CVS.equals(pathname.getName())) return false;
@@ -135,8 +143,15 @@ public class Utils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        VCSContext ctx = VCSContext.forNodes(nodes);
-        return new Context(new HashSet(ctx.computeFiles(cvsFileFilter)), new HashSet(ctx.getRootFiles()), new HashSet(ctx.getExclusions()));  
+        if (Arrays.equals(contextNodesCached.get(), nodes)) {
+            Context ctx = contextCached.get();
+            if (ctx != null) return ctx;
+        }
+        VCSContext vcsCtx = VCSContext.forNodes(nodes);
+        Context ctx = new Context(new HashSet(vcsCtx.computeFiles(cvsFileFilter)), new HashSet(vcsCtx.getRootFiles()), new HashSet(vcsCtx.getExclusions()));
+        contextCached = new WeakReference<Context>(ctx);
+        contextNodesCached = new WeakReference<Node []>(nodes);
+        return ctx;
     }
 
     
@@ -149,23 +164,25 @@ public class Utils {
      * @param nodes null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned
      * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned
+     * @param onlyCachedStatus if set to true, only cached status will be considered
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */ 
-    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
+    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus, boolean onlyCachedStatus) {
         Context context = getCurrentContext(nodes);
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = context.getRootFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            FileInformation fi = cache.getStatus(file);
+            FileInformation fi = onlyCachedStatus ? cache.getCachedStatus(file) : cache.getStatus(file);
+            int status = fi == null ? FileInformation.STATUS_VERSIONED_UPTODATE : fi.getStatus();
             if (file.isDirectory()) {
-                if ((fi.getStatus() & includingFolderStatus) == 0) return Context.Empty;
+                if ((status & includingFolderStatus) == 0) return Context.Empty;
             } else {
-                if ((fi.getStatus() & includingFileStatus) == 0) return Context.Empty;
+                if ((status & includingFileStatus) == 0) return Context.Empty;
             }
         }
         // if there are no exclusions, we may safely return this context because filtered files == root files
-        if (context.getExclusions().size() == 0) return context;
+        if (context.getExclusions().isEmpty()) return context;
 
         // in this code we remove files from filteredFiles to NOT include any files that do not have required status
         // consider a freeform project that has 'build' in filteredFiles, the Branch action would try to branch it
@@ -192,11 +209,12 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
@@ -206,8 +224,9 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -216,7 +235,11 @@ public class Utils {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {
-                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && CvsVersioningSystem.isManaged(f)) {
+                        return true;
+                    }
                 }
             }
         }

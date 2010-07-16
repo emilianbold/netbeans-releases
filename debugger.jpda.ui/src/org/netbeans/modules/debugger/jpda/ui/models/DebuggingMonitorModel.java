@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,9 +49,12 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
 import java.awt.Color;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +66,8 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
+import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.Field;
 
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -71,6 +79,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
+import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -92,7 +101,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
-public class DebuggingMonitorModel implements TreeModelFilter, ExtendedNodeModelFilter, 
+public class DebuggingMonitorModel implements ExtendedNodeModelFilter, 
 NodeActionsProviderFilter, TableModel, Constants {
     
     public static final String SHOW_MONITORS = "show.monitors"; // NOI18N
@@ -106,223 +115,294 @@ NodeActionsProviderFilter, TableModel, Constants {
 
     private RequestProcessor evaluationRP;
     private final Collection modelListeners = new HashSet();
-    private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
-    private PreferenceChangeListener prefListener;
-    private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
-    private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
     private JPDADebugger debugger;
     
     public DebuggingMonitorModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
-        prefListener = new MonitorPreferenceChangeListener();
-        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
     
     // TreeView impl............................................................
+    // DebuggingTreeModel uses cached children, therefore we provide this class
+    // as a children filter
+
+    static class Children {
+
+        private JPDADebugger debugger;
+        private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
+        private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
+        private final DeadlockDetector deadlockDetector;
+        private boolean isDeadlock;
+        private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+        private PreferenceChangeListener prefListener;
+
+        private ModelListener modelListener;
+        private DebuggingTreeModel modelEventSource;
     
-    public Object getRoot (TreeModel model) {
-        return model.getRoot ();
-    }
-    
-    public Object[] getChildren (
-        TreeModel   model, 
-        Object      o, 
-        int         from, 
-        int         to
-    ) throws UnknownTypeException {
-        if (o instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) o;
-            synchronized (threadsAskedForMonitors) {
-                threadsAskedForMonitors.add(t);
-            }
-            if (preferences.getBoolean(SHOW_MONITORS, false)) {
-                try {
-                    ObjectVariable contended = t.getContendedMonitor ();
-                    ObjectVariable[] owned;
-                    List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
-                    List<Monitor> ownedMonitors;
-                    if (mf.size() > 0) {
-                        ownedMonitors = new ArrayList<Monitor>();
-                        for (MonitorInfo m: mf) {
-                            if (m.getFrame() == null) {
-                                ownedMonitors.add(new Monitor(m.getMonitor(), m.getFrame(), debugger));
+        Children(JPDADebugger debugger, ModelListener modelListener, DebuggingTreeModel modelEventSource) {
+            this.debugger = debugger;
+            this.modelListener = modelListener;
+            this.modelEventSource = modelEventSource;
+            prefListener = new MonitorPreferenceChangeListener();
+            preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+            deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
+            deadlockDetector.addPropertyChangeListener(new DeadlockListener());
+        }
+
+        public Object[] getChildren (
+            TreeModel   model,
+            Object      o,
+            int         from,
+            int         to
+        ) throws UnknownTypeException {
+            if (o instanceof JPDAThread) {
+                JPDAThread t = (JPDAThread) o;
+                synchronized (threadsAskedForMonitors) {
+                    threadsAskedForMonitors.add(t);
+                }
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                    try {
+                        ObjectVariable contended = t.getContendedMonitor ();
+                        ObjectVariable[] owned;
+                        List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
+                        List<Monitor> ownedMonitors;
+                        if (mf.size() > 0) {
+                            ownedMonitors = new ArrayList<Monitor>();
+                            for (MonitorInfo m: mf) {
+                                if (m.getFrame() == null) {
+                                    ownedMonitors.add(new Monitor(m.getMonitor(), m.getFrame(), debugger));
+                                }
+                            }
+                            owned = null;
+                        } else {
+                            owned = t.getOwnedMonitors ();
+                            ownedMonitors = null;
+                        }
+                        ContendedMonitor cm = null;
+                        OwnedMonitors om = null;
+                        if (contended != null &&
+                            (from  == 0) && (to > 0)) {
+                            CallStackFrame f = null;
+                            try {
+                                CallStackFrame[] frames = t.getCallStack(0, 1);
+                                if (frames != null && frames.length == 1) {
+                                    f = frames[0];
+                                }
+                            } catch (AbsentInformationException aiex) {}
+                            if (f != null) {
+                                cm = new ContendedMonitor (contended, f, debugger);
                             }
                         }
-                        owned = null;
-                    } else {
-                        owned = t.getOwnedMonitors ();
-                        ownedMonitors = null;
-                    }
-                    ContendedMonitor cm = null;
-                    OwnedMonitors om = null;
-                    if (contended != null &&
-                        (from  == 0) && (to > 0)) {
-                        CallStackFrame f = null;
-                        try {
-                            CallStackFrame[] frames = t.getCallStack(0, 1);
-                            if (frames != null && frames.length == 1) {
-                                f = frames[0];
-                            }
-                        } catch (AbsentInformationException aiex) {}
-                        if (f != null) {
-                            cm = new ContendedMonitor (contended, f, debugger);
+                        if (ownedMonitors != null && ownedMonitors.size() > 0 &&
+                             ( ((contended != null) && (from < 2) && (to > 1)) ||
+                               ((contended == null) && (from == 0) && (to > 0)))) {
+                            om = new OwnedMonitors(ownedMonitors.toArray(new Monitor[] {}));
                         }
+                        if (owned != null && (owned.length > 0) &&
+                             ( ((contended != null) && (from < 2) && (to > 1)) ||
+                               ((contended == null) && (from == 0) && (to > 0))
+                             )) {
+                            om = new OwnedMonitors (owned);
+                        }
+                        int i = 0;
+                        if (cm != null) i++;
+                        if (om != null) i++;
+                        Object[] os = new Object [i];
+                        i = 0;
+                        if (cm != null) os[i++] = cm;
+                        if (om != null) os[i++] = om;
+                        Object[] ch = model.getChildren(o, from, to);
+                        if (i > 0) {
+                            Object[] newCh = new Object[i + ch.length];
+                            System.arraycopy(os, 0, newCh, 0, os.length);
+                            System.arraycopy(ch, 0, newCh, i, ch.length);
+                            ch = newCh;
+                        }
+                        return ch;
+                    } catch (ObjectCollectedException e) {
+                    } catch (VMDisconnectedException e) {
                     }
-                    if (ownedMonitors != null && ownedMonitors.size() > 0 &&
-                         ( ((contended != null) && (from < 2) && (to > 1)) ||
-                           ((contended == null) && (from == 0) && (to > 0)))) {
-                        om = new OwnedMonitors(ownedMonitors.toArray(new Monitor[] {}));
-                    }
-                    if (owned != null && (owned.length > 0) &&
-                         ( ((contended != null) && (from < 2) && (to > 1)) ||
-                           ((contended == null) && (from == 0) && (to > 0))
-                         )) {
-                        om = new OwnedMonitors (owned);
-                    }
-                    int i = 0;
-                    if (cm != null) i++;
-                    if (om != null) i++;
-                    Object[] os = new Object [i];
-                    i = 0;
-                    if (cm != null) os[i++] = cm;
-                    if (om != null) os[i++] = om;
-                    Object[] ch = model.getChildren(o, from, to);
-                    if (i > 0) {
-                        Object[] newCh = new Object[i + ch.length];
-                        System.arraycopy(os, 0, newCh, 0, os.length);
-                        System.arraycopy(ch, 0, newCh, i, ch.length);
-                        ch = newCh;
-                    }
-                    return ch;
-                } catch (ObjectCollectedException e) {
-                } catch (VMDisconnectedException e) {
                 }
+                return model.getChildren(o, from, to);
             }
-            return model.getChildren(o, from, to);
-        }
-        /*if (o instanceof JPDAThreadGroup) {
-            JPDAThreadGroup tg = (JPDAThreadGroup) o;
-            Object[] ch = model.getChildren (o, from, to);
-            int i, k = ch.length;
-            for (i = 0; i < k; i++) {
-                if (!(ch [i] instanceof JPDAThread)) continue;
-                try {
-                    JPDAThread t = (JPDAThread) ch [i];
-                    if (t.getContendedMonitor () == null &&
-                        t.getOwnedMonitors ().length == 0
-                    ) continue;
-                    ThreadWithBordel twb = new ThreadWithBordel ();
-                    twb.originalThread = t;
-                    ch [i] = twb;
-                } catch (ObjectCollectedException e) {
-                } catch (VMDisconnectedException e) {
+            /*if (o instanceof JPDAThreadGroup) {
+                JPDAThreadGroup tg = (JPDAThreadGroup) o;
+                Object[] ch = model.getChildren (o, from, to);
+                int i, k = ch.length;
+                for (i = 0; i < k; i++) {
+                    if (!(ch [i] instanceof JPDAThread)) continue;
+                    try {
+                        JPDAThread t = (JPDAThread) ch [i];
+                        if (t.getContendedMonitor () == null &&
+                            t.getOwnedMonitors ().length == 0
+                        ) continue;
+                        ThreadWithBordel twb = new ThreadWithBordel ();
+                        twb.originalThread = t;
+                        ch [i] = twb;
+                    } catch (ObjectCollectedException e) {
+                    } catch (VMDisconnectedException e) {
+                    }
                 }
+                return ch;
+            }*/
+            if (o instanceof OwnedMonitors) {
+                OwnedMonitors om = (OwnedMonitors) o;
+                Object[] fo = new Object [to - from];
+                if (om.monitors != null) {
+                    System.arraycopy (om.monitors, from, fo, 0, to - from);
+                } else {
+                    System.arraycopy (om.variables, from, fo, 0, to - from);
+                }
+                return fo;
             }
-            return ch;
-        }*/
-        if (o instanceof OwnedMonitors) {
-            OwnedMonitors om = (OwnedMonitors) o;
-            Object[] fo = new Object [to - from];
-            if (om.monitors != null) {
-                System.arraycopy (om.monitors, from, fo, 0, to - from);
-            } else {
-                System.arraycopy (om.variables, from, fo, 0, to - from);
+            if (o instanceof Monitor) {
+                return model.getChildren (((Monitor) o).variable, from, to);
             }
-            return fo;
-        }
-        if (o instanceof Monitor) {
-            return model.getChildren (((Monitor) o).variable, from, to);
-        }
-        if (o instanceof CallStackFrame) {
-            if (preferences.getBoolean(SHOW_MONITORS, false)) {
+            if (o instanceof CallStackFrame) {
                 CallStackFrame frame = (CallStackFrame) o;
-                List<MonitorInfo> monitors = frame.getOwnedMonitors();
-                int n = monitors.size();
-                if (n > 0) {
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                    List<MonitorInfo> monitors = frame.getOwnedMonitors();
+                    int n = monitors.size();
+                    if (n > 0) {
+                        synchronized (framesAskedForMonitors) {
+                            framesAskedForMonitors.add(frame);
+                        }
+                        Monitor[] ms = new Monitor[n];
+                        for (int i = 0; i < n; i++) {
+                            ms[i] = new Monitor(monitors.get(i).getMonitor(), frame, debugger);
+                        }
+                        return ms;
+                    }
+                } else {
                     synchronized (framesAskedForMonitors) {
                         framesAskedForMonitors.add(frame);
                     }
-                    Monitor[] ms = new Monitor[n];
-                    for (int i = 0; i < n; i++) {
-                        ms[i] = new Monitor(monitors.get(i).getMonitor(), frame, debugger);
-                    }
-                    return ms;
-                }
-            } else {
-                synchronized (framesAskedForMonitors) {
-                    framesAskedForMonitors.add((CallStackFrame) o);
                 }
             }
+            return model.getChildren (o, from, to);
         }
-        return model.getChildren (o, from, to);
-    }
-    
-    public int getChildrenCount (
-        TreeModel   model, 
-        Object      o
-    ) throws UnknownTypeException {
-        /*if (o instanceof ThreadWithBordel) {
-            // Performance, see issue #59058.
-            return Integer.MAX_VALUE;
-            /*
-            try {
-                JPDAThread t = ((ThreadWithBordel) o).originalThread;
-                ObjectVariable contended = t.getContendedMonitor ();
-                ObjectVariable[] owned = t.getOwnedMonitors ();
-                int i = 0;
-                if (contended != null) i++;
-                if (owned.length > 0) i++;
-                return i;
-            } catch (ObjectCollectedException e) {
-            } catch (VMDisconnectedException e) {
+
+        public int getChildrenCount (
+            TreeModel   model,
+            Object      o
+        ) throws UnknownTypeException {
+            /*if (o instanceof ThreadWithBordel) {
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                /*
+                try {
+                    JPDAThread t = ((ThreadWithBordel) o).originalThread;
+                    ObjectVariable contended = t.getContendedMonitor ();
+                    ObjectVariable[] owned = t.getOwnedMonitors ();
+                    int i = 0;
+                    if (contended != null) i++;
+                    if (owned.length > 0) i++;
+                    return i;
+                } catch (ObjectCollectedException e) {
+                } catch (VMDisconnectedException e) {
+                }
+                return 0;
+                 *//*
             }
-            return 0;
-             *//*
-        }
-        if (o instanceof ThreadWithBordel) {
-            return model.getChildrenCount (
-                ((ThreadWithBordel) o).originalThread
-            );
-        }*/
-        if (o instanceof OwnedMonitors) {
-            OwnedMonitors om = (OwnedMonitors)o;
-            if (om.monitors != null) {
-                return om.monitors.length;
-            } else {
-                return om.variables.length;
+            if (o instanceof ThreadWithBordel) {
+                return model.getChildrenCount (
+                    ((ThreadWithBordel) o).originalThread
+                );
+            }*/
+            if (o instanceof OwnedMonitors) {
+                OwnedMonitors om = (OwnedMonitors)o;
+                if (om.monitors != null) {
+                    return om.monitors.length;
+                } else {
+                    return om.variables.length;
+                }
             }
+            if (o instanceof Monitor) {
+                return model.getChildrenCount(((Monitor) o).variable);
+            }
+            if (o instanceof CallStackFrame) {
+                return Integer.MAX_VALUE;
+            }
+            return model.getChildrenCount (o);
         }
-        if (o instanceof Monitor) {
-            return model.getChildrenCount(((Monitor) o).variable);
-        }
-        return model.getChildrenCount (o);
-    }
-    
-    public boolean isLeaf (TreeModel model, Object o) 
-    throws UnknownTypeException {
-        /*if (o instanceof ThreadWithBordel) {
-            return false;
-        }*/
-        if (o instanceof OwnedMonitors)
-            return false;
-        if (o instanceof ContendedMonitor)
-            return true;
-        if (o instanceof Monitor) {
-            return true;
-        }
-        if (o instanceof ObjectVariable)
-            return true;
-        if (o instanceof CallStackFrame) {
-            if (preferences.getBoolean(SHOW_MONITORS, false)) {
+
+        public boolean isLeaf (TreeModel model, Object o)
+        throws UnknownTypeException {
+            /*if (o instanceof ThreadWithBordel) {
                 return false;
-            } else {
-                synchronized (framesAskedForMonitors) {
-                    framesAskedForMonitors.add((CallStackFrame) o);
+            }*/
+            if (o instanceof OwnedMonitors)
+                return false;
+            if (o instanceof ContendedMonitor)
+                return true;
+            if (o instanceof Monitor) {
+                return true;
+            }
+            if (o instanceof ObjectVariable)
+                return true;
+            if (o instanceof CallStackFrame) {
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                    return false;
+                } else {
+                    synchronized (framesAskedForMonitors) {
+                        framesAskedForMonitors.add((CallStackFrame) o);
+                    }
                 }
             }
+            return model.isLeaf (o);
         }
-        return model.isLeaf (o);
+
+        /*void setModelListener (ModelListener l, DebuggingTreeModel modelEventSource) {
+            modelListener = l;
+            this.modelEventSource = modelEventSource;
+        }*/
+
+        private void fireModelChange(ModelEvent me) {
+            modelListener.modelChanged(me);
+        }
+
+        private class MonitorPreferenceChangeListener implements PreferenceChangeListener {
+
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                String key = evt.getKey();
+                if (SHOW_MONITORS.equals(key)) {
+                    isDeadlock = false;
+                    List<JPDAThread> threads;
+                    synchronized (threadsAskedForMonitors) {
+                        threads = new ArrayList(threadsAskedForMonitors);
+                    }
+                    for (JPDAThread t : threads) {
+                        modelEventSource.refreshCache(t);
+                    }
+                    List<CallStackFrame> frames;
+                    synchronized (framesAskedForMonitors) {
+                        frames = new ArrayList(framesAskedForMonitors);
+                    }
+                    for (CallStackFrame frame : frames) {
+                        modelEventSource.refreshCache(frame);
+                    }
+                    for (CallStackFrame frame : frames) {
+                        fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
+                                        frame, ModelEvent.NodeChanged.CHILDREN_MASK));
+                    }
+                    for (JPDAThread t : threads) {
+                        fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
+                                        t, ModelEvent.NodeChanged.CHILDREN_MASK));
+                    }
+                }
+            }
+
+        }
+
+        private class DeadlockListener implements PropertyChangeListener {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                Set<Deadlock> deadlocks = deadlockDetector.getDeadlocks();
+                isDeadlock = deadlocks.size() > 0;
+            }
+
+        }
+
     }
     
     
@@ -665,31 +745,5 @@ NodeActionsProviderFilter, TableModel, Constants {
         return model.getIconBaseWithExtension(node);
     }
     
-    
-    private class MonitorPreferenceChangeListener implements PreferenceChangeListener {
-
-        public void preferenceChange(PreferenceChangeEvent evt) {
-            String key = evt.getKey();
-            if (SHOW_MONITORS.equals(key)) {
-                List<JPDAThread> threads;
-                synchronized (threadsAskedForMonitors) {
-                    threads = new ArrayList(threadsAskedForMonitors);
-                }
-                for (JPDAThread t : threads) {
-                    fireModelChange(new ModelEvent.NodeChanged(DebuggingMonitorModel.this,
-                                    t, ModelEvent.NodeChanged.CHILDREN_MASK));
-                }
-                List<CallStackFrame> frames;
-                synchronized (framesAskedForMonitors) {
-                    frames = new ArrayList(framesAskedForMonitors);
-                }
-                for (CallStackFrame frame : frames) {
-                    fireModelChange(new ModelEvent.NodeChanged(DebuggingMonitorModel.this,
-                                    frame, ModelEvent.NodeChanged.CHILDREN_MASK));
-                }
-            }
-        }
-        
-    }
     
 }

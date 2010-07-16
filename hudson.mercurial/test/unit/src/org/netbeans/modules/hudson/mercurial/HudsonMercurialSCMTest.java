@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,19 +64,24 @@ public class HudsonMercurialSCMTest extends NbTestCase {
         assertPullURI("http://host/repo/", "[paths]", "default-pull = http://host/repo/", "default = http://host/other/");
         assertPullURI(getWorkDir().toURI().toString(), "[paths]", "default=" + getWorkDirPath().replace(File.separatorChar, '/'));
         assertPullURI(getWorkDir().toURI() + "foo/", "[paths]", "default = foo");
-        assertPullURI(null, "[paths]");
+        assertPullURI(getWorkDir().toURI().toString(), "[paths]");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob:sEcReT@host/repo/");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob@host/repo/");
         assertPullURI("ssh://host/repo/", "[paths]", "default = ssh://bob@host/repo");
         assertPullURI(null, "[paths");
+        assertPullURI(getWorkDir().toURI().toString());
     }
 
     private void assertPullURI(String pull, String... hgrc) throws Exception {
-        StringBuilder b = new StringBuilder();
-        for (String line : hgrc) {
-            b.append(line).append('\n');
+        clearWorkDir();
+        TestFileUtils.writeFile(new File(getWorkDir(), ".hg/requires"), "revlogv1\nstore\n");
+        if (hgrc.length > 0) {
+            StringBuilder b = new StringBuilder();
+            for (String line : hgrc) {
+                b.append(line).append('\n');
+            }
+            TestFileUtils.writeFile(new File(getWorkDir(), ".hg/hgrc"), b.toString());
         }
-        TestFileUtils.writeFile(new File(getWorkDir(), ".hg/hgrc"), b.toString());
         assertEquals(pull != null ? URI.create(pull) : null, HudsonMercurialSCM.getDefaultPull(getWorkDir().toURI()));
     }
 

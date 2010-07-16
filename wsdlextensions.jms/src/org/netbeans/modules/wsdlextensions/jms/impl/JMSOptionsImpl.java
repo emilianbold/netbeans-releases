@@ -25,6 +25,7 @@ import org.netbeans.modules.wsdlextensions.jms.JMSOption;
 import java.util.List;
 import java.util.Iterator;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
 
@@ -42,6 +43,10 @@ public class JMSOptionsImpl extends JMSComponentImpl implements JMSOptions {
         this(model, createPrefixedElement(JMSQName.OPTIONS.getQName(), model));
     }
 
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }    
+    
     public List<JMSOption> getOptions() {
         return getExtensibilityElements(JMSOption.class);
     }

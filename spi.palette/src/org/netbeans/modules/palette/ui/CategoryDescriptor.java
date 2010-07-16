@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,6 +77,7 @@ class CategoryDescriptor implements CategoryListener {
     private boolean opened;
     private boolean resetItems = true;
     private Settings settings;
+    private String searchString;
 
     CategoryDescriptor( PalettePanel palettePanel, Category category ) {
         assert palettePanel != null : "No palette panel"; // NOI18N
@@ -160,7 +164,8 @@ class CategoryDescriptor implements CategoryListener {
         if( items != null ) {
             for( int i=0; i<items.length; i++ ) {
                 if( settings.isVisible( items[i] ) ) {
-                    newModel.addElement( items[i] );
+                    if( null == searchString || items[i].getDisplayName().toLowerCase().contains(searchString) )
+                        newModel.addElement( items[i] );
                 }
             }
         }
@@ -266,6 +271,26 @@ class CategoryDescriptor implements CategoryListener {
     
     CategoryButton getButton() {
         return categoryButton;
+    }
+
+    private boolean wasOpened;
+    boolean match(String searchString) {
+        if( null == searchString && this.searchString == null )
+            return true;
+        if( null != searchString && searchString.equals(this.searchString) )
+            return itemsList.getModel().getSize() > 0;
+        if( null == this.searchString && null != searchString )
+            wasOpened = opened;
+        this.searchString = searchString;
+        computeItems();
+
+        if( null != searchString )
+            opened = true;
+        else if( null == searchString && this.searchString != null )
+            opened = wasOpened;
+        itemsList.setVisible( opened );
+        categoryButton.setSelected( opened );
+        return itemsList.getModel().getSize() > 0 ||  null == searchString;
     }
 
     private static class MyFocusTraversal extends FocusTraversalPolicy {

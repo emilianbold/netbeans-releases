@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -159,10 +162,13 @@ public final class ShellValidationSupport {
 
     public static boolean confirm(final String header, final String footer, final ShellValidationStatus status) {
         if (status == null || status == NOSHELL) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    loc("ShellValidationSupport.ValidationError.NoShell"), // NOI18N
-                    NotifyDescriptor.ERROR_MESSAGE));
-
+            if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+                System.err.println(loc("ShellValidationSupport.ValidationError.NoShell"));
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        loc("ShellValidationSupport.ValidationError.NoShell"), // NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE));
+            }
             return false;
         }
 
@@ -178,29 +184,41 @@ public final class ShellValidationSupport {
             return true;
         }
 
-        final ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
-
-        final JButton noButton = new JButton("No"); // NOI18N
-        errorPanel.setActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                noButton.setEnabled(!errorPanel.isRememberDecision());
+        Object response = null;
+        if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+            System.err.println(loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"));
+            System.err.println(header);
+            for (String error : status.shell.getValidationStatus().getErrors()) {
+                System.err.println(error);
             }
-        });
+            System.err.println(footer);
+            response = DialogDescriptor.YES_OPTION;
+        } else {
+            final ShellValidationStatusPanel errorPanel = new ShellValidationStatusPanel(header, footer, status.shell);
 
-        DialogDescriptor dd = new DialogDescriptor(errorPanel,
-                loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"), // NOI18N
-                true,
-                new Object[]{DialogDescriptor.YES_OPTION, noButton},
-                noButton,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
+            final JButton noButton = new JButton("No"); // NOI18N
+            errorPanel.setActionListener(new ActionListener() {
 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        Object response = dd.getValue();
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    noButton.setEnabled(!errorPanel.isRememberDecision());
+                }
+            });
 
-        if (response == DialogDescriptor.YES_OPTION && errorPanel.isRememberDecision()) {
-            NbPreferences.forModule(WindowsSupport.class).put(key, "yes"); // NOI18N
+            DialogDescriptor dd = new DialogDescriptor(errorPanel,
+                    loc("ShellValidationSupport.ValidationError.ErrorDialogTitle", "cygwin"), // NOI18N
+                    true,
+                    new Object[]{DialogDescriptor.YES_OPTION, noButton},
+                    noButton,
+                    DialogDescriptor.DEFAULT_ALIGN, null, null);
+
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.setVisible(true);
+            response = dd.getValue();
+
+            if (response == DialogDescriptor.YES_OPTION && errorPanel.isRememberDecision()) {
+                NbPreferences.forModule(WindowsSupport.class).put(key, "yes"); // NOI18N
+            }
         }
 
         return (response == DialogDescriptor.YES_OPTION);

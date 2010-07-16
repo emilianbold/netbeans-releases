@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -71,121 +76,150 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         clean();
     }
     
-    public void clean() {
+    @Override
+    public final void clean() {
         myProperties.clear();
         myProperties.put(EXECUTABLE_KEY, new ProviderProperty(){
             private String myPath;
+            @Override
             public String getName() {
                 return i18n("Executable_Files_Name"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("Executable_Files_Description"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.BinaryFile;
             }
         });
         myProperties.put(LIBRARIES_KEY, new ProviderProperty(){
             private String myPath[];
+            @Override
             public String getName() {
                 return i18n("Libraries_Files_Name"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("Libraries_Files_Description"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String[]){
                     myPath = (String[])value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.BinaryFiles;
             }
         });
         myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
         myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
     }
     
+    @Override
     public String getID() {
         return "dwarf-executable"; // NOI18N
     }
     
+    @Override
     public String getName() {
         return i18n("Executable_Provider_Name"); // NOI18N
     }
     
+    @Override
     public String getDescription() {
         return i18n("Executable_Provider_Description"); // NOI18N
     }
     
+    @Override
     public List<String> getPropertyKeys() {
         return new ArrayList<String>(myProperties.keySet());
     }
     
+    @Override
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
     }
     
-    public int canAnalyze(ProjectProxy project) {
+    @Override
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
         if (set == null || set.length() == 0) {
-            return 0;
+            return ApplicableImpl.NotApplicable;
         }
-        if (sizeComilationUnit(set) > 0) {
-            return 70;
+        ApplicableImpl applicable = sizeComilationUnit(set);
+        if (applicable.isApplicable()) {
+            return new ApplicableImpl(true, applicable.getCompilerName(), 70, applicable.isSunStudio());
         }
-        return 0;
+        return ApplicableImpl.NotApplicable;
     }
     
+    @Override
     public List<Configuration> analyze(ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
@@ -194,14 +228,17 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
+                @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
+                @Override
                 public List<Configuration> getDependencies() {
                     return null;
                 }
                 
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
@@ -212,9 +249,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
-                                for(int i = 0; i < add.length; i++){
-                                    all[i+1]=add[i];
-                                }
+                                System.arraycopy(add, 0, all, 1, add.length);
                                 myFileProperties = getSourceFileProperties(all,null, null);
                             }
                         }
@@ -222,6 +257,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     return myFileProperties;
                 }
                 
+                @Override
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,15 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * ConnectionNode.java
- *
- * Created on November 2, 2006, 8:59 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
@@ -66,11 +60,11 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Josh Sandusky
+ * @author Jun Qian
  */
 public class ConnectionNode extends CasaNode {
 
@@ -108,7 +102,7 @@ public class ConnectionNode extends CasaNode {
                         getModel(),
                         getValue(),
                         getDisplayName(),
-                        false);
+                        false, false);
             }
         };
         Node.Property<String> consumerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
@@ -142,7 +136,7 @@ public class ConnectionNode extends CasaNode {
                         getModel(),
                         getValue(),
                         getDisplayName(),
-                        false);
+                        false, false);
             }
         };
         Node.Property<String> providerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
@@ -158,11 +152,9 @@ public class ConnectionNode extends CasaNode {
         providerProperties.put(providerServiceNameSupport);
         providerProperties.put(providerEndpointNameSupport);
 
-
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                casaConnection, sheet, "connection", null, "all"); // NOI18N
-        
+                casaConnection, sheet, "connection", null, "all"); // NOI18N        
     }
 
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...
@@ -172,7 +164,7 @@ public class ConnectionNode extends CasaNode {
         if (casaConnection != null) {
             try {
                 return casaConnection.getConsumer().get().getDisplayName() +
-                        "<->" + casaConnection.getProvider().get().getDisplayName();   // NOI18N
+                        " -> " + casaConnection.getProvider().get().getDisplayName();   // NOI18N
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
                 return getBadName();
@@ -185,7 +177,7 @@ public class ConnectionNode extends CasaNode {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
             return casaConnection.getConsumer().get().getDisplayName() +
-                    "&#60;-&#62;" + casaConnection.getProvider().get().getDisplayName();   // NOI18N
+                    "&nbsp;-&#62;&nbsp;" + casaConnection.getProvider().get().getDisplayName();   // NOI18N
         }
         return super.getName();
     }
@@ -233,18 +225,14 @@ public class ConnectionNode extends CasaNode {
 
     @Override
     public boolean isEditable(String propertyType) {
-        if (propertyType.equals(ALWAYS_WRITABLE_PROPERTY)) {
-            return true;
-        }
-
-        return false;
+        return propertyType.equals(ALWAYS_WRITABLE_PROPERTY);
     }
 
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaConnection casaConnection = (CasaConnection) getData();
 
-        if (casaConnection != null && isConnectionConfiguredWithQoS(casaConnection)) {
+        if (isConnectionConfiguredWithQoS(casaConnection)) {
             actions.add(new ClearConfigExtensionsAction(
                     NbBundle.getMessage(ConnectionNode.class,
                     "CLEAR_QOS_CONFIG"), this));  // NOI18N
@@ -252,7 +240,9 @@ public class ConnectionNode extends CasaNode {
     }
 
     private boolean isConnectionConfiguredWithQoS(CasaConnection casaConnection) {
-        return casaConnection.getChildren().size() != 0;
+        return casaConnection != null &&
+                casaConnection.getChildren() != null &&
+                casaConnection.getChildren().size() != 0;
     }
 }
 

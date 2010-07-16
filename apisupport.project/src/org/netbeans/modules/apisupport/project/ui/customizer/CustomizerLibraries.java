@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ItemEvent;
@@ -85,6 +89,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
@@ -150,7 +155,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
     }
 
-    void refresh() {
+    protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
@@ -244,7 +249,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         addDepButton.setEnabled(okEnabled && getProperties().isActivePlatformValid());
         boolean javaEnabled = getProperties().isNetBeansOrg() ||
                 (getProperties().isStandalone() &&
-                /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
+                /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0);
         javaPlatformCombo.setEnabled(javaEnabled);
         javaPlatformButton.setEnabled(javaEnabled);
 
@@ -708,10 +713,10 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
         for (int i = 0; i < newDeps.length; i++) {
             ModuleDependency dep = newDeps[i];
-            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDepedendency()) { // #72216 NOI18N
+            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
                 dep = new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
-                            dep.hasCompileDependency(), dep.hasImplementationDepedendency());
+                            dep.hasCompileDependency(), dep.hasImplementationDependency());
             }
             String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
             if (warn != null) {
@@ -741,7 +746,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         chooser.enableVariableBasedSelection(true);
         chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
@@ -769,7 +774,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             for (String path : filePaths) {
                 File fl = PropertyUtils.resolveFile(base, path);
                 FileObject fo = FileUtil.toFileObject(fl);
-                assert fo != null : fl;
+                if (fo == null) {
+                    continue;
+                }
                 if (FileUtil.isArchiveFile (fo))
                     try {
                         new JarFile (fl);

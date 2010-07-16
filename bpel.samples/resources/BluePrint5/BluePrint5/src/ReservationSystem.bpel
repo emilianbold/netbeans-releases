@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+  Copyright (c) 2010, Oracle. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
@@ -12,7 +12,7 @@
     this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
-  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+  * Neither the name of Oracle nor the names of its contributors
     may be used to endorse or promote products derived from this software without
     specific prior written permission.
 
@@ -34,13 +34,17 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:ns0="http://localhost/BluePrint5/Reservation"
          xmlns:ns1="http://localhost/BluePrint5/AirLineReservation"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
-         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
          xmlns:ns3="http://localhost/BluePrint5/HotelReservation"
          xmlns:ns2="http://localhost/BluePrint5/CarReservation"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
-    
+
     <import namespace="http://localhost/BluePrint5/Reservation"
             location="Reservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
@@ -48,19 +52,15 @@
     <import namespace="http://localhost/BluePrint5/AirLineReservation"
             location="AirLineReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
-    
+
     <import namespace="http://localhost/BluePrint5/CarReservation"
             location="CarReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
-    
+
     <import namespace="http://localhost/BluePrint5/HotelReservation"
             location="HotelReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
-    
-    <import namespace="http://ReservationSystem.org/xsd/reserve"
-            location="reservation.xsd"
-            importType="http://www.w3.org/2001/XMLSchema"></import>
-    
+
     <partnerLinks>
         <partnerLink name="reservationPLink" partnerLinkType="ns0:reservationPLinkType" myRole="reservationServicing"/>
         <partnerLink name="airlineReservation" partnerLinkType="ns1:AirlineReservationPLinkType" partnerRole="reservingRole"/>

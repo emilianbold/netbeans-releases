@@ -43,5 +43,14 @@ public class FileOperationImpl extends FileComponentImpl implements FileOperatio
     public void accept(FileComponent.Visitor visitor) {
         visitor.visit(this);
     }
+    
+    public void setVerb(String v) {
+        setAttribute(ATTR_FILE_OPERATION_VERB, FileAttribute.FILE_OPERATION_VERB, (v != null ? v : "poll") );
+    }
+    
+    public String getVerb() {
+        String s = getAttribute(FileAttribute.FILE_OPERATION_VERB);
+        return s != null ? s: "poll";
+    }
 	
 }

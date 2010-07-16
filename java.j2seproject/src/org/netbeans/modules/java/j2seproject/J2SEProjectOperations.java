@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,11 +58,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -74,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
     
     private final J2SEProject project;
     private final J2SEActionProvider actionProvider;
@@ -143,7 +147,11 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
     
-    public void notifyDeleting() throws IOException {                
+    public @Override void notifyDeleting() throws IOException {
+        clean();
+    }
+
+    private void clean() throws IOException {
         Properties p = new Properties();
         String[] targetNames = this.actionProvider.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p, false);
         FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
@@ -187,7 +195,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         rememberLibraryLocation();
         readPrivateProperties ();
         rememberConfigurations();
-        notifyDeleting();
+        clean();
     }
             
     public void notifyMoved(Project original, File originalPath, String nueName) {        
@@ -203,6 +211,19 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
         restoreConfigurations(origOperations);
+    }
+
+    public @Override void notifyRenaming() throws IOException {
+        if (!this.project.getUpdateHelper().requestUpdate()) {
+            throw new IOException(NbBundle.getMessage(J2SEProjectOperations.class, "MSG_OldProjectMetadata"));
+        }
+        clean();
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        fixDistJarProperty(nueName);
+        fixApplicationTitle(nueName);
+        project.setName(nueName);
     }
 
     private void fixLibraryLocation(J2SEProjectOperations original) throws IllegalArgumentException {
@@ -244,9 +265,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         ProjectManager.mutex().readAccess(new Runnable() {
             public void run () {
                 privatePropsToRestore.clear();
-                backUpPrivateProp(J2SEProjectProperties.APPLICATION_ARGS);
-                backUpPrivateProp(J2SEProjectProperties.RUN_WORK_DIR);
-                backUpPrivateProp(J2SEProjectProperties.COMPILE_ON_SAVE);                                                
+                backUpPrivateProp(ProjectProperties.APPLICATION_ARGS);
+                backUpPrivateProp(ProjectProperties.RUN_WORK_DIR);
+                backUpPrivateProp(ProjectProperties.COMPILE_ON_SAVE);                                                
             }
         });
     }    
@@ -386,5 +407,5 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             }
         }
     }
-    
+
 }

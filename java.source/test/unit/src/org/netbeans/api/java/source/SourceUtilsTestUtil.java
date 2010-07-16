@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -119,14 +124,21 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     private static Object[] extraLookupContent = null;
     
     public static void prepareTest(String[] additionalLayers, Object[] additionalLookupContent) throws IOException, SAXException, PropertyVetoException {
-        URL[] layers = new URL[additionalLayers.length];
+        List<URL> layers = new LinkedList<URL>();
         
         for (int cntr = 0; cntr < additionalLayers.length; cntr++) {
-            layers[cntr] = Thread.currentThread().getContextClassLoader().getResource(additionalLayers[cntr]);
+            boolean found = false;
+
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(additionalLayers[cntr]); en.hasMoreElements(); ) {
+                found = true;
+                layers.add(en.nextElement());
+            }
+
+            Assert.assertTrue(additionalLayers[cntr], found);
         }
         
         XMLFileSystem xmlFS = new XMLFileSystem();
-        xmlFS.setXmlUrls(layers);
+        xmlFS.setXmlUrls(layers.toArray(new URL[0]));
         
         FileSystem system = new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), xmlFS});
         
@@ -168,7 +180,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         System.arraycopy(extraLookupContent, 0, lookupContent, 4, extraLookupContent.length);
         
         lookupContent[0] = new TestProxyClassPathProvider(sourceRoot, buildRoot, classPathElements);
-        lookupContent[1] = new TestSourceForBinaryQuery(sourceRoot, classPathElements);
+        lookupContent[1] = new TestSourceForBinaryQuery(sourceRoot, buildRoot);
         lookupContent[2] = new TestSourceLevelQueryImplementation();
         lookupContent[3] = JavaDataLoader.findObject(JavaDataLoader.class, true);
         
@@ -230,34 +242,34 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
 
     private static class TestSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
         
-        private FileObject sourceRoot;
-        private List<FileObject> classPathElements;
+        private final FileObject sourceRoot;
+        private final FileObject buildRoot;
         
-        public TestSourceForBinaryQuery(FileObject sourceRoot, FileObject[] classPathElements) {
+        public TestSourceForBinaryQuery(FileObject sourceRoot, FileObject buildRoot) {
             this.sourceRoot = sourceRoot;
-            this.classPathElements = Arrays.asList(classPathElements);
+            this.buildRoot = buildRoot;
         }
         
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            if (getBootClassPath().contains(binaryRoot))
-                return null;
+            FileObject f = URLMapper.findFileObject(binaryRoot);
 
-            if (classPathElements.contains(URLMapper.findFileObject(binaryRoot)))
-                return null;
+            if (buildRoot.equals(f)) {
+                return new SourceForBinaryQuery.Result() {
+                    public FileObject[] getRoots() {
+                        return new FileObject[] {
+                            sourceRoot,
+                        };
+                    }
 
-            return new SourceForBinaryQuery.Result() {
-                public FileObject[] getRoots() {
-                    return new FileObject[] {
-                        sourceRoot,
-                    };
-                }
-                
-                public void addChangeListener(ChangeListener l) {
-                }
-                
-                public void removeChangeListener(ChangeListener l) {
-                }
-            };
+                    public void addChangeListener(ChangeListener l) {
+                    }
+
+                    public void removeChangeListener(ChangeListener l) {
+                    }
+                };
+            }
+
+            return null;
         }
         
     }

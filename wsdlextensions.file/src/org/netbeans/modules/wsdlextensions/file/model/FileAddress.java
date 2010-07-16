@@ -21,15 +21,19 @@ package org.netbeans.modules.wsdlextensions.file.model;
 
 /**
  * @author sweng
+ * @author jfu
  */
 public interface FileAddress extends FileComponent {
 
     public static final String ATTR_FILE_ADDRESS = "fileDirectory";
     public static final String ATTR_FILE_RELATIVE_PATH = "relativePath";
     public static final String ATTR_FILE_PATH_RELATIVE_TO = "pathRelativeTo";
+    public static final String ATTR_FILE_PERSIST_BASELOC = "persistenceBaseLoc";
     public static final String ATTR_FILE_LOCK_NAME = "lockName";
     public static final String ATTR_FILE_WORK_AREA = "workArea";
     public static final String ATTR_FILE_SEQ_NAME = "seqName";
+    public static final String ATTR_FILE_RECURSIVE = "recursive";
+    public static final String ATTR_FILE_RECURSIVE_EXCLUDE = "recursiveExclude";
     
     public void setRelativePath(boolean val);
     public boolean getRelativePath();
@@ -38,10 +42,17 @@ public interface FileAddress extends FileComponent {
     public void setPathRelativeTo(String val);
     public String getPathRelativeTo();
 
+    public void setPersistenceBaseLoc(String val);
+    public String getPersistenceBaseLoc();
+
     public void setLockName(String val);
     public String getLockName();
     public void setWorkArea(String val);
     public String getWorkArea();
     public void setSeqName(String val);
     public String getSeqName();
+    public void setRecursive(boolean val);
+    public boolean getRecursive();
+    public void setRecursiveExclude(String val);
+    public String getRecursiveExclude();
 }

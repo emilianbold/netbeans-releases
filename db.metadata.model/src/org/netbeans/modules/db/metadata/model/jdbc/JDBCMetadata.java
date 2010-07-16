@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc;
@@ -94,15 +97,18 @@ public class JDBCMetadata extends MetadataImplementation {
         }
     }
 
+    @Override
     public final Catalog getDefaultCatalog() {
         initCatalogs();
         return defaultCatalog;
     }
 
+    @Override
     public final Collection<Catalog> getCatalogs() {
         return initCatalogs().values();
     }
 
+    @Override
     public final Catalog getCatalog(String name) {
         Catalog catalog = MetadataUtilities.find(name, initCatalogs());
         if (catalog == null && name == null) {
@@ -112,6 +118,7 @@ public class JDBCMetadata extends MetadataImplementation {
         return catalog;
     }
 
+    @Override
     public Schema getDefaultSchema() {
         Catalog catalog = getDefaultCatalog();
         if (catalog != null) {
@@ -120,6 +127,7 @@ public class JDBCMetadata extends MetadataImplementation {
         return null;
     }
 
+    @Override
     public final void refresh() {
         LOGGER.fine("Refreshing metadata");
         defaultCatalog = null;
@@ -139,7 +147,7 @@ public class JDBCMetadata extends MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
-            LOGGER.log(Level.FINE, "Default catalog is ''{0}''", defaultCatalogName);
+            LOGGER.log(Level.FINE, "Default catalog is ''{0}'', supportsCatalogsInTableDefinitions()? {1}", new Object[] { defaultCatalogName, dmd.supportsCatalogsInTableDefinitions()});
             if (dmd.supportsCatalogsInTableDefinitions()) {
                 ResultSet rs = dmd.getCatalogs();
                 try {
@@ -157,7 +165,9 @@ public class JDBCMetadata extends MetadataImplementation {
                         }
                     }
                 } finally {
-                    rs.close();
+                    if (rs != null) {
+                        rs.close();
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -168,7 +178,7 @@ public class JDBCMetadata extends MetadataImplementation {
             
             // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null,
             // unless it's the *only* catalog (e.g. with Derby, where it doesn't have a concept of catalogs)
-            if (newCatalogs.size() == 0) {
+            if (newCatalogs.isEmpty()) {
                 newCatalogs.put(null, defaultCatalog);
             }
             

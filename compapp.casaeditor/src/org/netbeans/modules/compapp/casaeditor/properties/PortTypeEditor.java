@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -29,10 +32,8 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -41,20 +42,19 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.InplaceEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author rdara
+ * @author jqian
  */
 public class PortTypeEditor extends PropertyEditorSupport {
 //                   implements ExPropertyEditor, InplaceEditor.Factory {
 
     private final static String EMPTY = Constants.EMPTY_STRING;
-    
+
     private String mPropertyName;
     private PortType mPortType;
     private List<PortType> mAllPortTypes;
@@ -74,21 +74,24 @@ public class PortTypeEditor extends PropertyEditorSupport {
         mCanWrite = canWrite;
     }
 
-    
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
-    
+
+    @Override
     public String getAsText() {
         Object value = super.getValue();
         return value == null ? EMPTY : super.getAsText();
     }
 
+    @Override
     public void setAsText(String s) {
         if (EMPTY.equals(s) && getValue() == null) // NOI18N
             return;
     }
 
+    @Override
     public Component getCustomEditor() {
         final PortTypeEditorPanel panel = new PortTypeEditorPanel(mAllPortTypes, mPortType, mCanWrite);
         
@@ -115,6 +118,10 @@ public class PortTypeEditor extends PropertyEditorSupport {
             }
         }
         );
+
+        if (!mCanWrite) {
+            descriptor.setValid(false);
+        }
         
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         //dlg.setPreferredSize(new Dimension(500, 250));

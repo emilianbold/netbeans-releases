@@ -22,10 +22,8 @@
 <editor_palette_item version="1.0">
     <class name="org.netbeans.modules.iep.editor.palette.items.aggregator.RelationAggregator"/>
     
-    <!-- <icon16 urlvalue="images/relationAggregatorx16.png" />
-    <icon32 urlvalue="images/relationAggregatorx32.png" /> -->
-    <icon16 urlvalue="images/new/icons32x32/relationAggregatorx32.png" />
-    <icon32 urlvalue="images/new/icons32x32/relationAggregatorx32.png" />
+    <icon16 urlvalue="images/icons16x16/relationAggregatorx16.png" />
+    <icon32 urlvalue="images/icons32x32/relationAggregatorx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.aggregator.Bundle"
                display-name-key="NAME_html-RelationAggregator"
                tooltip-key="HINT_html-RelationAggregator" />

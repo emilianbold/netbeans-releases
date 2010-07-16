@@ -5,12 +5,24 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.Connection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeListener;
+import java.util.Set;
 
-import org.openide.ErrorManager;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -23,6 +35,8 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     private DatabaseTableSelectionVisualPanel2 component;
 
     private boolean mAddWhereClausePanel = true;
+    
+    private boolean mIsValid = false;
     
     public DatabaseTableSelectionWizardPanel2() {
     }
@@ -38,6 +52,7 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     public Component getComponent() {
         if (component == null) {
             component = new DatabaseTableSelectionVisualPanel2();
+            component.getPollingTableDatabaseTableColumnSelectionPanel().getDatabaseTableColumnSelectionPanel().getSchemaArtifactTreeCellEditor().addPropertyChangeListener(new ButtonStatePropertyChangeLister());
         }
         return component;
     }
@@ -51,7 +66,7 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
 
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
-        return true;
+        return mIsValid;
     // If it depends on some condition (form filled out...), then:
     // return someCondition();
     // and when this condition changes (last form field filled in...) then:
@@ -59,34 +74,33 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     // and uncomment the complicated stuff below.
     }
 
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-    /*
+   
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    
     public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-    }
+    
     public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-    }
+    
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
+     
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -115,6 +129,30 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     	wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS, selectedColumns);
         String joinCondition = component.getJoinCondition();
         wiz.putProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION, joinCondition);
+    }
+    
+    private void updateButtonState() {
+        if(component.getSelectedColumns() != null && component.getSelectedColumns().size() != 0) {
+            mIsValid = true;
+        } else {
+            mIsValid = false;
+        }
+        
+        Runnable run = new Runnable() {
+            public void run() {
+                fireChangeEvent();
+            };
+        };
+        
+        SwingUtilities.invokeLater(run);
+        
+    }
+    
+    
+    class ButtonStatePropertyChangeLister implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateButtonState();
+        }
     }
 }
 

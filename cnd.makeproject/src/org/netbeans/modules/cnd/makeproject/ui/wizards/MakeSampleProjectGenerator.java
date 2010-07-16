@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.BufferedReader;
@@ -50,24 +52,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -86,68 +89,88 @@ import org.w3c.dom.Element;
  * Create a sample web project by unzipping a template into some directory
  */
 public class MakeSampleProjectGenerator {
-    
+
     private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
-    
-    private MakeSampleProjectGenerator() {}
-    
-    public static Set<DataObject> createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
-        String mainProject = (String)template.getAttribute("mainProjectLocation"); // NOI18N
-        String subProjects = (String)template.getAttribute("subProjectLocations"); // NOI18N
+
+    private MakeSampleProjectGenerator() {
+    }
+
+    /*package*/ static Set<DataObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+        String mainProject = (String) template.getAttribute("mainProjectLocation"); // NOI18N
+        String subProjects = (String) template.getAttribute("subProjectLocations"); // NOI18N
         if (mainProject != null) {
-            File mainProjectLocation = new File(projectLocation.getPath() + File.separator + mainProject);
+            File parentFolderLocation = prjParams.getProjectFolder();
+            File mainProjectLocation = new File(parentFolderLocation, mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
-                Vector<File> subProjectsFiles = new Vector<File>();
+                List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
-                    subProjectsFiles.add(new File(projectLocation.getPath() + File.separator + st.nextToken()));
+                    subProjectsFiles.add(new File(parentFolderLocation, st.nextToken()));
                 }
                 subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
-            return createProjectFromTemplate(template.getInputStream(), projectLocation, mainProjectLocation, subProjectLocations, name);
+            return createProjectWithSubprojectsFromTemplate(template.getInputStream(), parentFolderLocation, mainProjectLocation, subProjectLocations, prjParams);
         } else {
-            return createProjectFromTemplate(template.getInputStream(), projectLocation, name);
+            return createProjectFromTemplate(template.getInputStream(), prjParams);
         }
     }
-    
-    public static Set<DataObject> createProjectFromTemplate(final URL template, File projectLocation, final String name) throws IOException {
-        return createProjectFromTemplate(template.openStream(), projectLocation, name);
-    }
-    
-    private static void postProcessProject(FileObject prjLoc, String name) throws IOException {
+
+    private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
+            File prjFile = FileUtil.toFile(prjLoc);
+            if (prjFile != null) {
+                // we can not refresh full system as was done orriginally for IZ124952
+                // prjLoc.getFileSystem().refresh(false); // IZ124952
+
+                // to fix #186803 we refresh only project dir
+                FileUtil.refreshFor(prjFile);
+            }
             // Change project name in 'project.xml'
-            prjLoc.getFileSystem().refresh(false); // IZ124952
             FileObject fo = prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
             File projXml = FileUtil.toFile(fo);
             Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-            if (name != null)
+            if (name != null) {
                 changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
+            }
             saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
-            
+
             // Change working dir and default conf in 'projectDescriptor.xml'
             //String workingDir = projectLocation.getPath();
-            String systemOs = getCurrentSystemOs();
+//            String systemOs = getCurrentSystemOs();
             projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
             doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
             //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-
-            ExecutionEnvironment env = CompilerSetManager.getDefaultExecutionEnvironment();
-            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
+//            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
+            String hostUID = prjParams.getHostUID();
+            ExecutionEnvironment env = null;
+            if (hostUID != null) {
+                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
+            env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
+            String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
+            CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
             int platform = compilerSetManager.getPlatform();
-            CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
+            CompilerSet compilerSet = prjParams.getToolchain();
+            compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
             String variant = null;
+            String csVariant = "GNU|GNU"; // NOI18N
             if (compilerSet != null) {
                 variant = MakeConfiguration.getVariant(compilerSet, platform);
+                csVariant = compilerSet.getName();
+                if (compilerSet.getCompilerFlavor() != null) {
+                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
+                }
             }
-            if (platform == Platform.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
+            changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+            changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
+            changeXmlFileByTagName(doc, "platform", "" + platform, "X-PLATFORM-INDEX-X"); // NOI18N
+            if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
@@ -156,7 +179,7 @@ public class MakeSampleProjectGenerator {
                     changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
                 }
             }
-            if (platform == Platform.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
@@ -177,24 +200,17 @@ public class MakeSampleProjectGenerator {
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
             recordCreateSampleProject(env);
         } catch (Exception e) {
-            IOException ex = new IOException();
-            ex.initCause(e);
+            IOException ex = new IOException(e);
             throw ex;
         }
     }
-    
+
     // http://wiki.netbeans.org/UsageLoggingSpecification
     private static void recordCreateSampleProject(ExecutionEnvironment env) {
-        final Logger logger = Logger.getLogger(ConfigurationDescriptorProvider.USG_LOGGER_NAME);
-        if (!logger.isLoggable(Level.INFO)) {
-            return;
-        }
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
         CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
-        LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
-        logRecord.setLoggerName(logger.getName());
         String host;
-        if (compilerSetManager.getExecutionEnvironment().isLocal()) {
+        if (env.isLocal()) {
             host = "LOCAL"; // NOI18N
         } else {
             host = "REMOTE"; // NOI18N
@@ -227,92 +243,94 @@ public class MakeSampleProjectGenerator {
             }
             family = buffer.toString();
         }
-        logRecord.setParameters(new Object[]{"APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"}); // NOI18N
-        logger.log(logRecord);
+        UIGesturesSupport.submit(ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND,
+                "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"); //NOI18N
     }
 
-    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, final String name) throws IOException {
+    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         FileObject prjLoc;
-        unzip(inputStream, projectLocation);
-        prjLoc = FileUtil.toFileObject(projectLocation);
-        
-        postProcessProject(prjLoc, name);
-        
+        unzip(inputStream, prjParams.getProjectFolder());
+        prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
+
+        postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+
         prjLoc.refresh(false);
-        
+
         return Collections.singleton(DataObject.find(prjLoc));
     }
-    
-    private static void addToSet(Vector<DataObject> set, File projectFile) throws IOException {
+
+    private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         try {
             FileObject prjLoc = null;
             prjLoc = FileUtil.toFileObject(projectFile);
-            postProcessProject(prjLoc, null);
+            postProcessProject(prjLoc, null, prjParams);
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
         } catch (Exception e) {
-            IOException ex = new IOException();
-            ex.initCause(e);
+            IOException ex = new IOException(e);
             throw ex;
         }
     }
-    
-    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
-        Vector<DataObject> set = new Vector<DataObject>();
-        unzip(inputStream, projectLocation);
-        addToSet(set, mainProjectLocation);
+
+    private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, File parentFolderLocation, File mainProjectLocation, File[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+        List<DataObject> set = new ArrayList<DataObject>();
+        unzip(templateResourceStream, parentFolderLocation);
+        addToSet(set, mainProjectLocation, prjParams);
         if (subProjectLocations != null) {
-            for (int i = 0; i < subProjectLocations.length; i++)
-                addToSet(set, subProjectLocations[i]);
+            for (int i = 0; i < subProjectLocations.length; i++) {
+                addToSet(set, subProjectLocations[i], prjParams);
+            }
         }
         return new LinkedHashSet<DataObject>(set);
     }
-    
+
     private static void changeXmlFileByNameNS(Document doc, String tagNameNS, String tagName, String newText, String regex) throws IOException {
         NodeList nlist = doc.getElementsByTagNameNS(tagNameNS, tagName); // NOI18N
         changeXmlFileByNodeList(nlist, newText, regex);
     }
-    
+
     private static void changeXmlFileByTagName(Document doc, String tagName, String newText, String regex) throws IOException {
         NodeList nlist = doc.getElementsByTagName(tagName); // NOI18N
         changeXmlFileByNodeList(nlist, newText, regex);
     }
-    
+
     private static void changeXmlFileByTagAttrName(Document doc, String tagName, String attrName, String newText, String regex) throws IOException {
         NodeList nlist = doc.getElementsByTagName(tagName); // NOI18N
         changeXmlFileByAttrList(nlist, attrName, newText, regex);
     }
-    
+
     private static void changeXmlFileByNodeList(NodeList nlist, String newText, String regex) throws IOException {
         if (nlist != null) {
-            for (int i=0; i < nlist.getLength(); i++) {
+            for (int i = 0; i < nlist.getLength(); i++) {
                 Node n = nlist.item(i);
                 if (n.getNodeType() != Node.ELEMENT_NODE) {
                     continue;
                 }
-                Element e = (Element)n;
+                Element e = (Element) n;
                 replaceText(e, newText, regex);
             }
         }
     }
+
     private static void changeXmlFileByAttrList(NodeList nlist, String attrName, String newText, String regex) throws IOException {
         if (nlist != null) {
-            for (int i=0; i < nlist.getLength(); i++) {
+            for (int i = 0; i < nlist.getLength(); i++) {
                 Node n = nlist.item(i);
                 if (n.getNodeType() != Node.ELEMENT_NODE) {
                     continue;
                 }
-                Element e = (Element)n;
+                Element e = (Element) n;
                 Attr attr = e.getAttributeNode(attrName);
-                if (attr != null)
+                if (attr != null) {
                     attr.setValue(attr.getValue().replaceAll(regex, newText));
+                }
             }
         }
     }
-    
+
     private static void unzip(InputStream source, File targetFolder) throws IOException {
         //installation
-        ZipInputStream zip=new ZipInputStream(source);
+        ZipInputStream zip = new ZipInputStream(source);
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
@@ -354,12 +372,12 @@ public class MakeSampleProjectGenerator {
         }
         bw.flush();
     }
-    
+
     private static void replaceText(Element parent, String name, String regex) {
         NodeList l = parent.getChildNodes();
         for (int i = 0; i < l.getLength(); i++) {
             if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
+                Text text = (Text) l.item(i);
                 if (regex != null) {
                     String s = text.getNodeValue();
                     text.setNodeValue(s.replaceAll(regex, name));
@@ -370,7 +388,7 @@ public class MakeSampleProjectGenerator {
             }
         }
     }
-    
+
     /**
      * Save an XML config file to a named path.
      * If the file does not yet exist, it is created.
@@ -388,23 +406,5 @@ public class MakeSampleProjectGenerator {
         } finally {
             lock.releaseLock();
         }
-    }
-    
-    /*
-     * "0" = solaris/sparc
-     * "1" = solaris/x86
-     * "2" = Linux
-     */
-    private static String getCurrentSystemOs() {
-        // FIXUP: needs improvement...
-        String osname = System.getProperty("os.name"); // NOI18N
-        String osarch = System.getProperty("os.arch"); // NOI18N
-        
-        if (osname.toLowerCase().indexOf("linux") >= 0) // NOI18N
-            return "2"; // NOI18N
-        else if (osarch.indexOf("86") >= 0) // NOI18N
-            return "1"; // NOI18N
-        else
-            return "0"; // NOI18N
     }
 }

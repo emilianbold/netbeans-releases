@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 
@@ -68,11 +72,11 @@ public abstract class J2eePlatformImpl {
     
     /** Display name property */
     public static final String PROP_DISPLAY_NAME = "displayName";       //NOI18N
+
     /** Libraries property */
-    public static final String PROP_LIBRARIES = "libraries";            //NOI18N
-    /** Platform roots property */
-    public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
-    
+    public static final String PROP_LIBRARIES = "libraries"; //NOI18N
+    public static final String PROP_SERVER_LIBRARIES = "serverLibraries"; //NOI18N
+
     private PropertyChangeSupport supp;
     
     /**
@@ -81,7 +85,11 @@ public abstract class J2eePlatformImpl {
      * @return platform's libraries.
      */
     public abstract LibraryImplementation[] getLibraries();
-    
+
+    public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+        return getLibraries();
+    }
+
     /**
      * Return platform's display name.
      *

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,12 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -56,10 +59,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -67,24 +70,32 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
 
+    public enum Kind {
+
+        SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST
+    };
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
+    public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
     private MakeConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
     private final Folder parent;
     private ArrayList<Object> items = null; // Folder or Item
+    private HashMap<String, HashMap<Configuration, DeletedConfiguration>> deletedItems;
     private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
     private String root;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static boolean checkedLogging = checkLogging();
+    private Kind kind;
 
     public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -95,6 +106,22 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.items = new ArrayList<Object>();
     }
 
+    /**
+     * For internal purpose.
+     * Method reduce folder items size
+     */
+    public void pack() {
+        items.trimToSize();
+    }
+
+    private void setKind(Kind kind) {
+        this.kind = kind;
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
     public void setRoot(String root) {
         this.root = root;
     }
@@ -103,42 +130,38 @@ public class Folder implements FileChangeListener, ChangeListener {
         return root;
     }
 
-    public Folder getThis() {
-        return this;
-    }
-
-    public void refreshDiskFolder() {
+    public void refreshDiskFolder(boolean setModified) {
         if (log.isLoggable(Level.FINER)) {
-            log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
+            log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() ||
-            !folderFile.isDirectory() ||
-            !VisibilityQuery.getDefault().isVisible(folderFile) ||
-            getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
+        if (!folderFile.exists()
+                || !folderFile.isDirectory()
+                || !VisibilityQuery.getDefault().isVisible(folderFile)
+                || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
-                log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+                log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
             }
-            getParent().removeFolder(this);
+            getParent().removeFolder(this, setModified);
             return;
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
             File file = item.getFile();
-            if (!file.exists() ||
-                !file.isFile() ||
-                !VisibilityQuery.getDefault().isVisible(file) ||
-                !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+            if (!file.exists()
+                    || !file.isFile()
+                    || !VisibilityQuery.getDefault().isVisible(file)
+                    || !CndFileVisibilityQuery.getDefault().isVisible(file)) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                    log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
                 }
-                removeItem(item);
+                removeItem(item, setModified);
             }
         }
         // files/folders to be added
@@ -147,51 +170,60 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         List<File> fileList = new ArrayList<File>();
+        ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
         for (int i = 0; i < files.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
             }
-            if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                continue;
-            }
-            if (files[i].isDirectory() && getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
-                continue;
+            if (files[i].isDirectory()) {
+                if (getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
+                    continue;
+                }
+            } else {
+                if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                    otherFileList.add(CharSequences.create(files[i].getName()));
+                    continue;
+                }
             }
             fileList.add(files[i]);
         }
+        if (otherFileList.size() > 0) {
+            otherFileList.trimToSize();
+        }
+        MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
         for (File file : fileList) {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                        log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
 
                 }
             } else {
-                String path = getRootPath() + '/' + file.getName();
+                String path = rootPath + '/' + file.getName();
                 if (path.startsWith("./")) { // NOI18N
                     path = path.substring(2);
                 }
                 if (findItemByPath(path) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                        log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItem(new Item(path));
+                    addItem(new Item(path), true, setModified);
                 }
             }
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.refreshDiskFolder();
+            f.refreshDiskFolder(setModified);
         }
     }
 
     public void attachListeners() {
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
         File folderFile = new File(AbsRootPath);
 
         if (!folderFile.exists() || !folderFile.isDirectory()) {
@@ -203,24 +235,24 @@ public class Folder implements FileChangeListener, ChangeListener {
             CndFileVisibilityQuery.getDefault().addChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().addChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
         }
 
         try {
             FileUtil.addFileChangeListener(this, folderFile);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
             }
         } catch (IllegalArgumentException iae) {
             // Can happen if trying to attach twice...
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
             }
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
             f.attachListeners();
         }
@@ -228,7 +260,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void detachListener() {
         if (log.isLoggable(Level.FINER)) {
-           log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
+            log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
         }
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
@@ -236,14 +268,10 @@ public class Folder implements FileChangeListener, ChangeListener {
             CndFileVisibilityQuery.getDefault().removeChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().removeChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------detachFilterListener {0}", getPath()); // NOI18N
             }
         }
 
-    }
-
-    public int size() {
-        return items.size();
     }
 
     public Folder getParent() {
@@ -258,7 +286,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         return name;
     }
 
-    public String getSortName() {
+    private String getSortName() {
         return displayName;
     }
 
@@ -324,11 +352,23 @@ public class Folder implements FileChangeListener, ChangeListener {
         return false;
     }
 
+    public boolean isTestLogicalFolder() {
+        return getKind() == Kind.TEST_LOGICAL_FOLDER;
+    }
+
+    public boolean isTestRootFolder() {
+        return isTestLogicalFolder() && getName().equals(MakeConfigurationDescriptor.TEST_FILES_FOLDER);
+    }
+
+    public boolean isTest() {
+        return getKind() == Kind.TEST;
+    }
+
     public ArrayList<Object> getElements() {
         return items;
     }
 
-    public void reInsertElement(Object element) {
+    private void reInsertElement(Object element) {
         int index = items.indexOf(element);
         if (index < 0) {
             return;
@@ -397,9 +437,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         insertItemElementInList(items, element);
     }
 
-    public void addElement(Object element) { // FIXUP: shopuld be private
+    private void addElement(Object element, boolean setModified) { // FIXUP: shopuld be private
         // Always keep the vector sorted
-        int indexAt = -1;
         if (element instanceof Item) {
             insertItemElement((Item) element);
         } else if (element instanceof Folder) {
@@ -407,11 +446,15 @@ public class Folder implements FileChangeListener, ChangeListener {
         } else {
             assert false;
         }
-        fireChangeEvent();
+        fireChangeEvent(this, setModified);
     }
 
     public Item addItemAction(Item item) {
-        if (addItem(item) == null) {
+        return addItemAction(item, true);
+    }
+
+    public Item addItemAction(Item item, boolean setModified) {
+        if (addItem(item, true, setModified) == null) {
             return null; // Nothing added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
@@ -425,6 +468,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItem(Item item, boolean notify) {
+        return addItem(item, notify, true);
+    }
+
+    public Item addItem(Item item, boolean notify, boolean setModified) {
         if (item == null) {
             return null;
         }
@@ -432,12 +479,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         Item existingItem;
         if (isProjectFiles() && (existingItem = configurationDescriptor.findProjectItemByPath(item.getPath())) != null) {
             //System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
-            refresh(existingItem);
+            fireChangeEvent(existingItem, setModified);
             return null; // Nothing added
         }
         // Add it to the folder
         item.setFolder(this);
-        addElement(item);
+        addElement(item, setModified);
 
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
@@ -447,7 +494,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 myNativeFileItemSet.add(item);
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("can not add folder's " + this + " item " + item + " using " + dao); // NOI18N
+                    log.log(Level.FINE, "can not add folder\'s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
                 }
             }
         }
@@ -455,28 +502,48 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Add it to project Items
         if (isProjectFiles()) {
             configurationDescriptor.addProjectItem(item);
+            if (setModified) {
+                configurationDescriptor.setModified();
+            }
+
             // Add configuration to all configurations
             if (configurationDescriptor.getConfs() == null) {
                 return item;
             }
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            HashMap<Configuration, DeletedConfiguration> map = null;
+            if (deletedItems != null) {
+                map = deletedItems.get(item.getPath());
+            }
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
-                configurations[i].addAuxObject(new ItemConfiguration(configurations[i], item));
+                DeletedConfiguration old = null;
+                if (map != null) {
+                    old = map.get(configurations[i]);
+                }
+                ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
+                if (old != null && old.ic != null && old.aux != null) {
+                    ic.setTool(old.ic.getTool());
+                    ic.assignValues(old.aux);
+                }
+                configurations[i].addAuxObject(ic);
+            }
+            if (map != null && deletedItems != null) {
+                deletedItems.remove(item.getPath());
             }
         }
 
         return item;
     }
 
-    public void addFolder(Folder folder) {
-        addElement(folder);
+    public void addFolder(Folder folder, boolean setModified) {
+        addElement(folder, setModified);
         if (isProjectFiles()) {
             // Add configuration to all configurations
             if (configurationDescriptor.getConfs() == null) {
                 return;
             }
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
@@ -496,7 +563,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public FolderConfiguration getFolderConfiguration(Configuration configuration) {
         FolderConfiguration folderConfiguration = null;
-        if (isProjectFiles()) {
+        if (isProjectFiles() || isTest() || isTestLogicalFolder()) {
             folderConfiguration = (FolderConfiguration) configuration.getAuxObject(getId());
             if (folderConfiguration == null) {
                 CCompilerConfiguration parentCCompilerConfiguration;
@@ -519,7 +586,32 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folderConfiguration;
     }
 
+    public String suggestedNewTestFolderName() {
+        return suggestedName(DEFAULT_TEST_FOLDER_DISPLAY_NAME);
+    }
+
+    public String suggestedNewFolderName() {
+        return suggestedName(DEFAULT_FOLDER_DISPLAY_NAME);
+    }
+
+    public String suggestedName(String template) {
+        String aNname;
+        String aDisplayName;
+        for (int i = 1;; i++) {
+            aNname = DEFAULT_FOLDER_NAME + i;
+            aDisplayName = template + " " + i; // NOI18N
+            if (findFolderByName(aNname) == null) {
+                break;
+            }
+        }
+        return aDisplayName;
+    }
+
     public Folder addNewFolder(boolean projectFiles) {
+        return addNewFolder(projectFiles, getKind());
+    }
+
+    public Folder addNewFolder(boolean projectFiles, Kind kind) {
         String aNname;
         String aDisplayName;
         for (int i = 1;; i++) {
@@ -529,22 +621,45 @@ public class Folder implements FileChangeListener, ChangeListener {
                 break;
             }
         }
-        return addNewFolder(aNname, aDisplayName, projectFiles); // NOI18N
+        return addNewFolder(aNname, aDisplayName, projectFiles, kind); // NOI18N
     }
 
-    public Folder addNewFolder(String name, String displayName, boolean projectFiles) {
+    public Folder addNewFolder(String name, String displayName, boolean projectFiles, String kindText) {
+        Kind k = null;
+        if (kindText != null) {
+            if (kindText.equals("IMPORTANT_FILES_FOLDER")) { // NOI18N
+                k = Kind.IMPORTANT_FILES_FOLDER;
+            } else if (kindText.equals("SOURCE_DISK_FOLDER")) { // NOI18N
+                k = Kind.SOURCE_DISK_FOLDER;
+            } else if (kindText.equals("SOURCE_LOGICAL_FOLDER")) { // NOI18N
+                k = Kind.SOURCE_LOGICAL_FOLDER;
+            } else if (kindText.equals("TEST")) { // NOI18N
+                k = Kind.TEST;
+            } else if (kindText.equals("TEST_LOGICAL_FOLDER")) { // NOI18N
+                k = Kind.TEST_LOGICAL_FOLDER;
+            }
+        }
+        return addNewFolder(name, displayName, projectFiles, k);
+    }
+
+    public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
         Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
-        addFolder(newFolder);
+        newFolder.setKind(kind);
+        addFolder(newFolder, true);
         return newFolder;
     }
 
     public boolean removeItemAction(Item item) {
+        return removeItemAction(item, true);
+    }
+
+    public boolean removeItemAction(Item item, boolean setModified) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
         if (isProjectFiles()) {
             configurationDescriptor.fireFilesRemoved(list);
         }
-        return removeItem(item);
+        return removeItem(item, setModified);
     }
 
     public void renameItemAction(String oldPath, Item newItem) {
@@ -552,6 +667,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeItem(Item item) {
+        return removeItem(item, true);
+    }
+
+    private boolean removeItem(Item item, boolean setModified) {
         boolean ret = false;
         if (item == null) {
             return false;
@@ -559,6 +678,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Remove it from folder
         ret = items.remove(item);
         if (!ret) {
+            fireChangeEvent(this, false);
             return ret;
         }
 
@@ -577,31 +697,45 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (isProjectFiles()) {
             // Remove it from project Items
             configurationDescriptor.removeProjectItem(item);
+            if (setModified) {
+                configurationDescriptor.setModified();
+            }
+
             // Remove it form all configurations
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            if (deletedItems == null) {
+                deletedItems = new HashMap<String, HashMap<Configuration, DeletedConfiguration>>();
+            }
+            HashMap<Configuration, DeletedConfiguration> map = new HashMap<Configuration, DeletedConfiguration>();
+            deletedItems.put(item.getPath(), map);
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
-                configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
+                DeletedConfiguration del = new DeletedConfiguration();
+                del.ic = item.getItemConfiguration(configurations[i]);
+                del.aux = configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
+                map.put(configurations[i], del);
             }
         }
         item.setFolder(null);
-        fireChangeEvent();
+        fireChangeEvent(this, setModified);
         return ret;
     }
 
-    public boolean removeItemByPath(String path) {
-        boolean ret = false;
-        Item item = findItemByPath(path);
-        return removeItem(item);
-    }
-
     public boolean removeFolderAction(Folder folder) {
-        configurationDescriptor.fireFilesRemoved(folder.getAllItemsAsList());
-        return removeFolder(folder);
+        return removeFolderAction(folder, true);
     }
 
-    public boolean removeFolder(Folder folder) {
+    public boolean removeFolderAction(Folder folder, boolean setModified) {
+        configurationDescriptor.fireFilesRemoved(folder.getAllItemsAsList());
+        return removeFolder(folder, setModified);
+    }
+
+    private boolean removeFolder(Folder folder, boolean setModified) {
         boolean ret = false;
         if (folder != null) {
+            for (Folder f : folder.getAllFolders(false)) {
+                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), f, null);
+            }
+            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), folder, null);
             if (folder.isDiskFolder()) {
                 folder.detachListener();
             }
@@ -609,14 +743,14 @@ public class Folder implements FileChangeListener, ChangeListener {
             ret = items.remove(folder);
             if (isProjectFiles()) {
                 // Remove it form all configurations
-                Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+                Configuration[] configurations = configurationDescriptor.getConfs().toArray();
                 for (int i = 0; i < configurations.length; i++) {
                     configurations[i].removeAuxObject(folder.getId());
                 }
             }
         }
         if (ret) {
-            fireChangeEvent();
+            fireChangeEvent(this, setModified);
         }
         return ret;
     }
@@ -624,14 +758,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     /**
      * Remove all items and folders recursively
      */
-    public void removeAll() {
+    private void removeAll() {
         Item[] itemsToRemove = getItemsAsArray();
         Folder[] foldersToRemove = getFoldersAsArray();
         for (int i = 0; i < itemsToRemove.length; i++) {
             removeItem(itemsToRemove[i]);
         }
         for (int i = 0; i < foldersToRemove.length; i++) {
-            removeFolder(foldersToRemove[i]);
+            removeFolder(foldersToRemove[i], true);
         }
     }
 
@@ -708,7 +842,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public Item[] getItemsAsArray() {
         ArrayList<Item> found = new ArrayList<Item>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -718,9 +852,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         return found.toArray(new Item[found.size()]);
     }
 
-    public List<NativeFileItem> getAllItemsAsList() {
+    private List<NativeFileItem> getAllItemsAsList() {
         ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -740,70 +874,13 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     /*
-     * Returns a set of all files in this logical folder as FileObjetc's
-     */
-    public Set<FileObject> getItemsAsFileObjectSet() {
-        ArrayList<FileObject> files = new ArrayList<FileObject>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
-        while (iter.hasNext()) {
-            Item item = (Item) iter.next();
-            FileObject fo = item.getFileObject();
-            if (fo != null) {
-                files.add(fo);
-            }
-        }
-        return new LinkedHashSet<FileObject>(files);
-    }
-
-    /*
-     * Returns a set of all files in this logical folder and subfolders as FileObjetc's
-     */
-    public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly) {
-        ArrayList<FileObject> files = new ArrayList<FileObject>();
-
-        if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
-            while (iter.hasNext()) {
-                Object item = iter.next();
-                if (item instanceof Item) {
-                    FileObject fo = ((Item) item).getFileObject();
-                    if (fo != null) {
-                        files.add(fo);
-                    }
-                }
-                if (item instanceof Folder) {
-                    files.addAll(((Folder) item).getAllItemsAsFileObjectSet(projectFilesOnly));
-                }
-            }
-        }
-
-        return new LinkedHashSet<FileObject>(files);
-    }
-
-    /*
-     * Returns a set of all files in this logical folder as FileObjetc's
-     */
-    public Set<DataObject> getItemsAsDataObjectSet(String MIMETypeFilter) {
-        ArrayList<DataObject> files = new ArrayList<DataObject>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
-        while (iter.hasNext()) {
-            Item item = (Item) iter.next();
-            DataObject da = item.getDataObject();
-            if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
-                files.add(da);
-            }
-        }
-        return new LinkedHashSet<DataObject>(files);
-    }
-
-    /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
         ArrayList<DataObject> files = new ArrayList<DataObject>();
 
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
@@ -825,16 +902,16 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all logical folder in this folder as an array
      */
     public Folder[] getFoldersAsArray() {
-        Vector<Folder> folders = getFolders();
+        List<Folder> folders = getFolders();
         return folders.toArray(new Folder[folders.size()]);
     }
 
     /*
      * Returns a set of all logical folder in this folder
      */
-    public Vector<Folder> getFolders() {
-        Vector<Folder> folders = new Vector<Folder>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+    public List<Folder> getFolders() {
+        List<Folder> folders = new ArrayList<Folder>();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
             if (item instanceof Folder) {
@@ -847,11 +924,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all logical folder and subfolders in this folder
      */
-    public Vector<Folder> getAllFolders(boolean projectFilesOnly) {
-        Vector<Folder> folders = new Vector<Folder>();
+    public List<Folder> getAllFolders(boolean projectFilesOnly) {
+        List<Folder> folders = new ArrayList<Folder>();
 
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
@@ -866,13 +943,26 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folders;
     }
 
-    public String[] getFolderNamesAsArray() {
-        Folder[] anItems = getFoldersAsArray();
-        String[] names = new String[anItems.length];
-        for (int i = 0; i < anItems.length; i++) {
-            names[i] = anItems[i].getName();
+    public List<Folder> getAllTests() {
+        List<Folder> list = new ArrayList<Folder>();
+        getTests(list);
+        return list;
+    }
+
+    /*
+     * recursive!
+     */
+    private void getTests(List<Folder> list) {
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof Folder) {
+                if (((Folder) o).isTest()) {
+                    list.add((Folder) o);
+                }
+                ((Folder) o).getTests(list);
+            }
         }
-        return names;
     }
 
     public void addChangeListener(ChangeListener cl) {
@@ -887,91 +977,93 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
-    public void refresh() {
-        fireChangeEvent(this);
-    }
-
     public void refresh(Object source) {
-        fireChangeEvent(source);
+        fireChangeEvent(source, true);
     }
 
     public void fireChangeEvent() {
-        fireChangeEvent(this);
+        fireChangeEvent(this, true);
     }
 
-    public void fireChangeEvent(Object source) {
-        Iterator it;
+    private void fireChangeEvent(Object source, boolean setModified) {
+        Iterator<ChangeListener> it;
 
         synchronized (changeListenerList) {
             it = new HashSet<ChangeListener>(changeListenerList).iterator();
         }
         ChangeEvent ev = new ChangeEvent(source);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            (it.next()).stateChanged(ev);
         }
-        configurationDescriptor.setModified();
+        if (setModified) {
+            configurationDescriptor.setModified();
+        }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (log.isLoggable(Level.FINER)) {
-            log.fine("------------stateChanged " + getThis().getPath()); // NOI18N
+            log.log(Level.FINE, "------------stateChanged {0}", getPath()); // NOI18N
         }
         // Happens when filter has changed
         if (isDiskFolder()) {
-            refreshDiskFolder();
+            refreshDiskFolder(true);
         }
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileDataCreated " + file + " in " + getThis().getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
         }
         //if (true) return;
         if (!file.exists() || file.isDirectory()) {
             return; // FIXUP: error
         }
-        if (!AllSourceFileFilter.getInstance().accept(file)) {
+        if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
+            fireChangeEvent(this, false);
             return;
         }
         String itemPath = file.getPath();
-        itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = FilePathAdaptor.normalize(itemPath);
+        itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+        itemPath = CndPathUtilitities.normalize(itemPath);
         Item item = new Item(itemPath);
-        addItemAction(item);
-        getConfigurationDescriptor().setModified(currentState);
+        addItemAction(item, false);
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
-        File file = FileUtil.toFile(fileObject);
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+        assert fileObject.isFolder();
+        if (fileObject.isValid()) {
+            File file = FileUtil.toFile(fileObject);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+            }
+            if (!file.exists() || !file.isDirectory()) {
+                // It is possible that short-living temporary folder is created while building project
+                return;
+            }
+            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
         }
-        //if (true) return;
-        if (!file.exists() || !file.isDirectory()) {
-            assert false;
-            return;
-        }
-        Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(getThis(), file, true);
-        getConfigurationDescriptor().setModified(currentState);
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileDeleted " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
         //if (true) return;
         String path = getRootPath() + '/' + file.getName();
@@ -981,26 +1073,25 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Try item first
         Item item = findItemByPath(path);
         if (item != null) {
-            removeItemAction(item);
-            getConfigurationDescriptor().setModified(currentState);
+            removeItemAction(item, false);
             return;
         }
         // then folder
         Folder folder = findFolderByName(file.getName());
         if (folder != null) {
-            removeFolderAction(folder);
-            getConfigurationDescriptor().setModified(currentState);
+            removeFolderAction(folder, false);
             return;
         }
+        fireChangeEvent(this, false);
     }
 
-    public void copyConfigurations(Folder src) {
+    private void copyConfigurations(Folder src) {
         MakeConfigurationDescriptor makeConfigurationDescriptor = getConfigurationDescriptor();
         if (makeConfigurationDescriptor == null) {
             return;
         }
 
-        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().toArray()) {
             FolderConfiguration srcFolderConfiguration = src.getFolderConfiguration(conf);
             FolderConfiguration dstFolderConfiguration = getFolderConfiguration(conf);
             if (srcFolderConfiguration != null && dstFolderConfiguration != null) {
@@ -1029,24 +1120,22 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileRenamed " + file.getPath() + " in " + getThis().getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
         // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(getThis(), file, true);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder
-            removeFolderAction(folder);
-            getConfigurationDescriptor().setModified(currentState);
-            return;
+            removeFolderAction(folder, false);
         }
     }
 
@@ -1075,5 +1164,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public String toString() {
         return name;
+    }
+
+    private static final class DeletedConfiguration {
+
+        private ConfigurationAuxObject aux;
+        private ItemConfiguration ic;
     }
 }

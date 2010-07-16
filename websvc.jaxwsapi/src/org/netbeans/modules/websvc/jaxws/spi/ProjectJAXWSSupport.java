@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,6 +70,8 @@ import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
@@ -74,6 +79,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /** Abstract class that implements most of JAXWSSupportImpl methods
@@ -87,6 +93,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile";  //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
+    private static final String TARGET_OPTION = "target"; //NOI18N
+
+    protected static final String JAVA_EE_VERSION_NONE="java-ee-version-none"; //NOI18N
+    protected static final String JAVA_EE_VERSION_15="java-ee-version-15"; //NOI18N
+    protected static final String JAVA_EE_VERSION_16="java-ee-version-16"; //NOI18N
     
     private Project project;
     private AntProjectHelper antProjectHelper;
@@ -143,21 +154,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
         return antProjectHelper;
     }
     
-    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {           
-            Boolean value = jaxWsModel.getJsr109();
-            if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
-                jaxWsModel.setJsr109(Boolean.FALSE);
-                writeJaxWsModel(jaxWsModel);
-            } else if (Boolean.FALSE.equals(value) && isJsr109) {
-                jaxWsModel.setJsr109(Boolean.TRUE);
-                writeJaxWsModel(jaxWsModel);
-            }
-        }
-        
+    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {  
         if(!isJsr109 ){
-            try{
+            try {
                 addJaxwsArtifacts(project, serviceName, serviceImpl);
             } catch(Exception e){
                 ErrorManager.getDefault().notify(e); //TODO handle this
@@ -231,7 +230,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     }
 
                     Boolean value = jaxWsModel.getJsr109();
-                    if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
+                    if (value == null) {
+                        jaxWsModel.setJsr109(isJsr109);
+                    } else if (Boolean.TRUE.equals(value) && !isJsr109) {
                         jaxWsModel.setJsr109(Boolean.FALSE);
                     } else if (Boolean.FALSE.equals(value) && isJsr109) {
                         jaxWsModel.setJsr109(Boolean.TRUE);
@@ -266,6 +267,12 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                             WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
                             wsimportOption.setWsimportOptionName(XENDORSED_OPTION);
                             wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                            wsimportOptions.addWsimportOption(wsimportOption);
+                        }
+                        if (JAVA_EE_VERSION_15.equals(getProjectJavaEEVersion())) {
+                            WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                            wsimportOption.setWsimportOptionName(TARGET_OPTION);
+                            wsimportOption.setWsimportOptionValue("2.1"); //NOI18N
                             wsimportOptions.addWsimportOption(wsimportOption);
                         }
                     }
@@ -378,7 +385,8 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
         String folderName = forWsdl?"wsdl":"bindings"; //NOI18N
         FileObject root = getXmlArtifactsRoot();
         if (root==null) {
-            assert !createFolder : "Cannot create XML artifacts folder"; //NOI18N
+            DialogDisplayer.getDefault().notify(
+                new DialogDescriptor.Message(NbBundle.getMessage(ProjectJAXWSSupport.class, "MSG_MISSING_SRC_CONF")));
             return null;
         }
         FileObject wsdlLocalFolder = root.getFileObject(XML_RESOURCES_FOLDER+"/"+SERVICES_LOCAL_FOLDER+"/"+serviceName+"/"+folderName); //NOI18N
@@ -486,4 +494,8 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      * @return metadata model of a webservices deployment descriptor
      */
     public abstract MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
+
+    protected String getProjectJavaEEVersion() {
+        return JAVA_EE_VERSION_NONE;
+    }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,12 @@
 package org.netbeans.modules.kenai.ui.treelist;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +91,12 @@ public abstract class TreeListNode {
     private RendererPanel renderer;
 
     private ChildrenLoader loader;
+
+    private static RequestProcessor rp = new RequestProcessor("Asynchronous Tree List Node", 5); // NOI18N
+
+    protected static void post(Runnable run) {
+        rp.post(run);
+    }
 
     /**
      * C'tor
@@ -271,12 +283,12 @@ public abstract class TreeListNode {
             listener.contentChanged(this);
     }
 
-    final protected JLabel createProgressLabel() {
+    final protected ProgressLabel createProgressLabel() {
         return createProgressLabel(NbBundle.getMessage(TreeListNode.class, "LBL_LoadingInProgress")); //NOI18N
     }
 
-    final protected JLabel createProgressLabel( String text ) {
-        return new ProgressLabel(text);
+    final protected ProgressLabel createProgressLabel( String text ) {
+        return new ProgressLabel(text, this);
     }
 
     final int getNestingDepth() {
@@ -290,7 +302,7 @@ public abstract class TreeListNode {
         if( null != loader )
             loader.cancel();
         loader = new ChildrenLoader();
-        RequestProcessor.getDefault().post(loader);
+        post(loader);
     }
 
     private class ChildrenLoader implements Runnable, Cancellable {
@@ -343,23 +355,42 @@ public abstract class TreeListNode {
         }
     }
 
-    private class ProgressLabel extends TreeLabel {
+    public static final class ProgressLabel extends TreeLabel {
         private int frame = 0;
         private Timer t;
         final BusyPainter painter;
+        private final Reference<TreeListNode> ref;
 
-        public ProgressLabel( String text ) {
+        public ProgressLabel( String text, TreeListNode nd ) {
             super( text );
+            ref = new WeakReference <TreeListNode> (nd);
             painter = new BusyPainter(16);
             PainterIcon icon = new PainterIcon(new Dimension(16, 16));
             icon.setPainter(painter);
             setIcon(icon );
             t = new Timer(100, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    frame = (frame+1)%painter.getPoints();
-                    painter.setFrame(frame);
-                    ProgressLabel.this.repaint();
-                    fireContentChanged();
+                    //#183004 - The timer is never explicitly stopped (no
+                    //guarantee that setVisible(false) will ever be called
+                    //again.  This way, if the node it was rendering becomes
+                    //unreferenced, this label can be collected.  Since it is
+                    //no longer an inner class, although it may continue
+                    //running on a timer, it will not hold a reference to the
+                    //owning node
+                    TreeListNode nd = ref.get();
+                    if (nd == null) {
+                        t.stop();
+                        Container p = getParent();
+                        if (p != null) {
+                            p.remove(ProgressLabel.this);
+                        }
+                        return;
+                    } else {
+                        frame = (frame+1)%painter.getPoints();
+                        painter.setFrame(frame);
+                        ProgressLabel.this.repaint();
+                        nd.fireContentChanged();
+                    }
                 }
             });
             t.setRepeats(true);
@@ -378,6 +409,34 @@ public abstract class TreeListNode {
                 }
             }
         }
-    }
 
+        /**
+         * Stop the timer.  Make sure to call this method if you do not
+         * explicitly call setVisible(false) on this label.  Otherwise, its
+         * timer will keep running and it will be referenced forever.
+         */
+        public void stop() {
+            t.stop();
+        }
+
+        //The usual cell-renderer performance overrides
+        public void repaint() {
+            //do nothing
+        }
+
+        @Override
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            //do nothing
+        }
+
+        @Override
+        public void validate() {
+            //do nothing
+        }
+
+        @Override
+        public void invalidate() {
+            //do nothing
+        }
+    }
 }

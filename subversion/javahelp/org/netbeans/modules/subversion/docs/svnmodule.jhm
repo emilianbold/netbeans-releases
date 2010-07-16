@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 
@@ -23,10 +26,10 @@
     <!-- Viewing File Status Information -->
     <mapID target="svn_status" url="svnmodule/svn_status.html" />
 
-    <!-- Working with Version Histories -->  
+    <!-- Working with Version Histories -->
     <mapID target="svn_histories" url="svnmodule/svn_histories.html" />
 
-    <!-- Setting Up Subversion -->           
+    <!-- Setting Up Subversion -->
     <mapID target="svn_setup" url="svnmodule/svn_setup.html" />
 
     <!-- Checking Out Files from a Subversion Repository -->   

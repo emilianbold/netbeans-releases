@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -72,6 +75,16 @@ public class FileModelTest extends TraceModelTestBase {
         // init flags needed for file model tests
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
+    }
+
+    // it behaved differently on 1-st and subsequent runs
+    public void testResolverClassString_01() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
+    }
+
+    // it behaved differently on 1-st and subsequent runs
+    public void testResolverClassString_02() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
     }
     
     public void testDeclSpec() throws Exception {
@@ -395,8 +408,8 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
-    public void test100000parameters() throws Exception {
-        performTest("100000parameters.c"); // NOI18N
+    public void test10000parameters() throws Exception {
+        performTest("10000parameters.c"); // NOI18N
     }
     
     public void testTypedefPointerToStaticMember() throws Exception {

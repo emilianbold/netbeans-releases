@@ -7,14 +7,12 @@ package org.netbeans.modules.iep.editor.wizard.database.tableInput;
 
 import java.awt.Component;
 import java.sql.Connection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
 import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 

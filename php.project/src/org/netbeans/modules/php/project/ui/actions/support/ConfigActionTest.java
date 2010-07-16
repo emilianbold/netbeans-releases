@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -52,9 +58,12 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -240,6 +249,7 @@ class ConfigActionTest extends ConfigAction {
             return info.testName == null;
         }
 
+        @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
             boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
@@ -250,12 +260,14 @@ class ConfigActionTest extends ConfigAction {
             if (phpUnitValid) {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
+                            @Override
                             public void run() {
                                 rerunUnitTestHandler.disable();
                                 testRunner.start();
                             }
                         })
                         .postExecution(new Runnable() {
+                            @Override
                             public void run() {
                                 testRunner.showResults();
                                 rerunUnitTestHandler.enable();
@@ -269,6 +281,7 @@ class ConfigActionTest extends ConfigAction {
             return executionDescriptor;
         }
 
+        @Override
         public ExternalProcessBuilder getProcessBuilder() {
             File startFile = FileUtil.toFile(info.startFile);
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
@@ -298,12 +311,13 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.SUITE.getName())
+                    .addArgument(PhpUnit.SUITE_NAME)
                     .addArgument(PhpUnit.SUITE.getAbsolutePath())
                     .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;
         }
 
+        @Override
         public String getOutputTabTitle() {
             String title = null;
             if (allTests(info)) {
@@ -319,6 +333,7 @@ class ConfigActionTest extends ConfigAction {
             return String.format("%s - %s", phpUnit.getProgram(), title);
         }
 
+        @Override
         public boolean isValid() {
             return phpUnit.isValid() && info.startFile != null;
         }
@@ -360,10 +375,12 @@ class ConfigActionTest extends ConfigAction {
             super(info);
         }
 
+        @Override
         public PhpProject getProject() {
             return project;
         }
 
+        @Override
         public FileObject getStartFile() {
             return info.startFile;
         }
@@ -378,6 +395,16 @@ class ConfigActionTest extends ConfigAction {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
             return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, allTests(info));
         }
+
+        @Override
+        public List<Pair<String, String>> getDebugPathMapping() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Pair<String, Integer> getDebugProxy() {
+            return null;
+        }
     }
 
     private class RerunUnitTestHandler implements RerunHandler {
@@ -390,22 +417,32 @@ class ConfigActionTest extends ConfigAction {
             this.info = info;
         }
 
+        @Override
         public void rerun() {
             PhpActionProvider.submitTask(new Runnable() {
+                @Override
                 public void run() {
                     ConfigActionTest.this.run(info);
                 }
             });
         }
 
-        public boolean enabled() {
-            return enabled;
+        @Override
+        public void rerun(Set<Testcase> tests) {
+            //not implemented yet
         }
 
+        @Override
+        public boolean enabled(RerunType type) {
+            return RerunType.ALL.equals(type) && enabled;
+        }
+
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
@@ -433,6 +470,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         public void rerun() {
             PhpActionProvider.submitTask(new Runnable() {
+                @Override
                 public void run() {
                     ConfigActionTest.this.debug(info);
                 }
@@ -447,14 +485,18 @@ class ConfigActionTest extends ConfigAction {
             this.phpUnit = phpUnit;
         }
 
+        @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return new InputProcessor() {
+                @Override
                 public void processInput(char[] chars) throws IOException {
                     defaultProcessor.processInput(chars);
                 }
+                @Override
                 public void reset() throws IOException {
                     defaultProcessor.reset();
                 }
+                @Override
                 public void close() throws IOException {
                     String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
                     char[] separator = new char[msg.length()];
@@ -473,6 +515,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     static final class PhpUnitLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        @Override
         public LineConvertor newLineConvertor() {
             return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
         }

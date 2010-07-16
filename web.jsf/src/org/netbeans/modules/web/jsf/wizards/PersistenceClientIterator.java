@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -90,8 +93,11 @@ import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -105,7 +111,11 @@ import org.netbeans.modules.web.jsf.palette.items.FromEntityBase;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -146,15 +156,16 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY)) && "Facelets".equals(preferredLanguage);   //NOI18N
         final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
         
-        PersistenceUnit persistenceUnit = 
-                (PersistenceUnit) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.PERSISTENCE_UNIT);
+        boolean createPersistenceUnit = (Boolean) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.CREATE_PERSISTENCE_UNIT);
 
-        if (persistenceUnit != null){
-            try {
-                ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
-            }
-            catch (InvalidPersistenceXmlException e) {
-                throw new IOException(e.toString());
+        if (createPersistenceUnit) {
+            PersistenceUnitWizardDescriptor puPanel = (PersistenceUnitWizardDescriptor) (panels[panels.length - 1] instanceof PersistenceUnitWizardDescriptor ? panels[panels.length - 1] : null);
+            if(puPanel!=null) {
+                    PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getDBResourceSelection(), TableGeneration.NONE, puPanel.getSelectedProvider());
+                    ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
+                    if (punit != null){
+                        Util.addPersistenceUnitToProject( project, punit );
+                    }
             }
         }
         
@@ -555,8 +566,26 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         } finally {
             model.endTransaction();
             model.sync();
+            saveFacesConfig(fo);
         }
 
+    }
+
+    private static void saveFacesConfig(FileObject fo) {
+        DataObject facesDO;
+        try {
+            facesDO = DataObject.find(fo);
+            if (facesDO !=null) {
+                SaveCookie save = facesDO.getCookie(SaveCookie.class);
+                if (save != null) {
+                    save.save();
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static ResourceBundle findBundle(JSFConfigModel model, ResourceBundle rb) {
@@ -667,6 +696,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         return null;
     }
 
+    @Override
     public void initialize(TemplateWizard wizard) {
         index = 0;
         wme = null;
@@ -680,40 +710,55 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
 
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        WizardDescriptor.Panel secondPanel = new ValidationPanel(
-                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                        new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
-        PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+        HelpCtx helpCtx;
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
         if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
+            helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
+        } else {
+            helpCtx = new HelpCtx("persistence_entity_selection_javaee5");  //NOI18N
         }
+
+        WizardDescriptor.Panel secondPanel = new ValidationPanel(
+                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+                        helpCtx, wizard)); // NOI18N
+        PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+
 
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         String[] names;
-        if (fp.isInWebModule(wm)) {
-            panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
-            names = new String[] {
-                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses")
-            };
-        }
-        else {
+        ArrayList<WizardDescriptor.Panel> panelsList = new ArrayList<WizardDescriptor.Panel>();
+        ArrayList<String> namesList = new ArrayList<String>();
+        panelsList.add(secondPanel);
+        panelsList.add(thirdPanel);
+        namesList.add(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"));
+        namesList.add(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses"));
+
+        if (!fp.isInWebModule(wm)) {
             updateWebModuleExtender(project, wm, fp);
-            
             JSFConfigurationWizardPanel jsfWizPanel = new JSFConfigurationWizardPanel(wme);
-            
             thirdPanel.setFinishPanel(false);
-            panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel, jsfWizPanel };
-            names = new String[] {
-                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses"),
-                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSF_Config_CRUD"),
-            };
+            panelsList.add(jsfWizPanel);
+            namesList.add(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSF_Config_CRUD"));
         }
+
+        boolean noPuNeeded = true;
+        try {
+            noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
+        } catch (InvalidPersistenceXmlException ex) {
+            Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: "+ ex.getPath()); //NOI18N
+        }
+
+        if(!noPuNeeded){
+            panelsList.add(new PersistenceUnitWizardDescriptor(project));
+            namesList.add(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_PersistenceUnitSetup"));
+        }
+
+        panels = panelsList.toArray(new WizardDescriptor.Panel[0]);
+        names = namesList.toArray(new String[0]);
+
         wizard.putProperty("NewFileWizard_Title", 
             NbBundle.getMessage(PersistenceClientIterator.class, "Templates/Persistence/JsfFromDB"));
         Wizards.mergeSteps(wizard, panels, names);
@@ -752,19 +797,23 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         return res;
     }
     
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
         wme = null;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage (PersistenceClientIterator.class, "LBL_WizardTitle_FromEntity");
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }

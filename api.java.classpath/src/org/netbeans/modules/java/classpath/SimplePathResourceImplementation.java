@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,19 +56,62 @@ import java.net.URL;
 
 public final class SimplePathResourceImplementation  extends PathResourceBase {
 
-    private URL[] url;
+    /**
+     * Check URL for correct syntax for a classpath root.
+     * Must be folder URL, and JARs must use jar protocol.
+     * @param context additional information to include in exception, or null if stack trace suffices
+     */
+    public static void verify(final URL root, String context) throws IllegalArgumentException {
+        verify(root, context, null);
+    }
 
+    /**
+     * Check URL for correct syntax for a classpath root.
+     * Must be folder URL, and JARs must use jar protocol.
+     * @param root to verify
+     * @param context additional information to include in exception, or null if stack trace suffices
+     * @param initiatedIn the root case
+     */
+    public static void verify(final URL root,
+            String context,
+            final Throwable initiatedIn) throws IllegalArgumentException {
+        if (context == null) {
+            context = "";
+        }
+        if (root == null) {
+            final IllegalArgumentException iae = new IllegalArgumentException("Root cannot be null." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
+        }
+        String rootS = root.toString();
+        if (rootS.matches("file:.+[.]jar/?")) {
+            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
+        }
+        if (!rootS.endsWith("/")) {
+            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; it must end with a slash." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
+        }
+    }
 
+    private URL url;
 
     public SimplePathResourceImplementation (URL root) {
-        if (root == null)
-            throw new IllegalArgumentException ();
-        this.url = new URL[] {root};
+        verify(root, null);
+        this.url = root;
     }
 
 
     public URL[] getRoots() {
-        return this.url;
+        return new URL[] {url};
     }
 
     public ClassPathImplementation getContent() {
@@ -73,17 +119,17 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
     }
 
     public String toString () {
-        return "SimplePathResource{"+this.getRoots()[0]+"}";   //NOI18N
+        return "SimplePathResource{" + url + "}"; // NOI18N
     }
 
     public int hashCode () {
-        return this.url[0].hashCode();
+        return url.hashCode();
     }
 
     public boolean equals (Object other) {
         if (other instanceof SimplePathResourceImplementation) {
             SimplePathResourceImplementation opr = (SimplePathResourceImplementation) other;
-            return this.url[0].equals (opr.url[0]);
+            return url.equals(opr.url);
         }
         else
             return false;

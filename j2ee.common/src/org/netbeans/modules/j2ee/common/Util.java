@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,9 +60,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -68,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,6 +92,8 @@ public class Util {
     public static final String DESTINATION_DIRECTORY_ROOT = "100";
     public static final String DESTINATION_DIRECTORY_LIB = "200";
     public static final String DESTINATION_DIRECTORY_DO_NOT_COPY = "300";
+
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     public static void updateDirsAttributeInCPSItem(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item item,
             Element element) {
@@ -208,8 +217,21 @@ public class Util {
      * @return source level string representation, e.g. "1.6"
      */
     public static String getSourceLevel(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        return sl.getSourceLevel(project.getProjectDirectory());
+        // XXX clients should never request source level for a project, as it may differ
+        // from file to file. Source root file object should be used instead (just use
+        // org.netbeans.api.java.queries.SourceLevelQuery).
+        String srcLevel = null;
+        SourceLevelQueryImplementation2 sl2 = project.getLookup().lookup(SourceLevelQueryImplementation2.class);
+        if(sl2 != null){
+            srcLevel = sl2.getSourceLevel(project.getProjectDirectory()).getSourceLevel();
+        } else {
+            //backward compartibility
+            SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+            if(sl != null){
+                srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+            }
+        }
+        return srcLevel;
     }
     
     /**
@@ -295,7 +317,14 @@ public class Util {
             if (j2eeModuleProvider != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
                 if (j2eePlatform != null) {
-                    return j2eePlatform.getClasspathEntries();
+                    File[] classpath = null;
+                    try {
+                        classpath = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                    } catch (ConfigurationException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                        classpath = j2eePlatform.getClasspathEntries();
+                    }
+                    return classpath;
                 }
             }
         }

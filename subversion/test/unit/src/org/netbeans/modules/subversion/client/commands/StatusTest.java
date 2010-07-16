@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,13 +44,12 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -125,7 +127,56 @@ public class StatusTest extends AbstractCommandTest {
         
         assertEquals(10, sNb.length);
         assertStatus(sRef, sNb);        
-    }       
+    }
+
+    /**
+     * Simulates wrong implementation of CommandlineClient.getStatus(File, boolean, boolean)
+     * This status call does not return status for deleted (svn remove) files. Unfortunately it's called from FileStatusCache, so there's a chance we're missing something
+     */
+    public void testStatusDeletedFile () throws Exception {
+        File deleted = createFile("deleted");
+        File folder = createFolder("f");
+        folder = createFolder(folder, "f");
+        File file = createFile(folder, "f");
+        add(deleted);
+        add(folder);
+        add(file);
+        commit(getWC());
+
+        remove(deleted);
+        ISVNStatus[] sNb = getNbClient().getStatus(deleted.getParentFile(), true, true);
+        assertEquals(5, sNb.length);
+        assertFiles(sNb, new File[] {deleted, deleted.getParentFile()});
+
+        // now test for regression of the fix - no additional statuses may be returned and we should not miss locally new files either
+        sNb = getNbClient().getStatus(folder.getParentFile(), true, true);
+        assertEquals(3, sNb.length);
+        assertFiles(sNb, new File[] {folder, folder.getParentFile(), file});
+
+        sNb = getNbClient().getStatus(folder.getParentFile(), false, true);
+        assertEquals(2, sNb.length);
+        assertFiles(sNb, new File[] {folder, folder.getParentFile()});
+
+        sNb = getNbClient().getStatus(folder, false, true);
+        assertEquals(2, sNb.length);
+        assertFiles(sNb, new File[] {file, folder});
+
+        File file2 = createFile(folder, "f2");
+        sNb = getNbClient().getStatus(folder, false, true);
+        assertEquals(3, sNb.length);
+        assertFiles(sNb, new File[] {file, file2, folder});
+    }
+
+    private void assertFiles (ISVNStatus[] sNb, File[] files) {
+        int foundFiles = 0;
+        HashSet<File> fileSet = new HashSet<File>(Arrays.asList(files));
+        for (ISVNStatus status : sNb) {
+            if (fileSet.contains(status.getFile())) {
+                ++foundFiles;
+            }
+        }
+        assertEquals(files.length, foundFiles);
+    }
     
     public void testStatusFile() throws Exception {
         File uptodate = createFile("uptodate");

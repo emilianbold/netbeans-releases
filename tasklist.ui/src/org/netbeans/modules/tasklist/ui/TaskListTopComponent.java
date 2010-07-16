@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -76,7 +78,6 @@ import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -165,15 +166,15 @@ final class TaskListTopComponent extends TopComponent {
 
         tableScroll.setBorder(null);
 
-        org.jdesktop.layout.GroupLayout tableHolderPanelLayout = new org.jdesktop.layout.GroupLayout(tableHolderPanel);
+        javax.swing.GroupLayout tableHolderPanelLayout = new javax.swing.GroupLayout(tableHolderPanel);
         tableHolderPanel.setLayout(tableHolderPanelLayout);
         tableHolderPanelLayout.setHorizontalGroup(
-            tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+            tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
         );
         tableHolderPanelLayout.setVerticalGroup(
-            tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
+            tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -265,8 +266,10 @@ final class TaskListTopComponent extends TopComponent {
         }
 
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
             public void run() {
-                RequestProcessor.getDefault().post(new Runnable() {
+                TaskManagerImpl.RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         init();
                     }
@@ -302,8 +305,10 @@ final class TaskListTopComponent extends TopComponent {
             model = new TaskListModel( taskManager.getTasks() );
             table.setModel( model );
             tasksListener = new TaskList.Listener() {
+                @Override
                 public void tasksAdded( List<? extends Task> tasks ) {
                     Runnable runnable = new Runnable() {
+                        @Override
                         public void run() {
                             tableScroll.setViewportView( table );
                             Color background = UIManager.getColor("TextArea.background"); //NOI18N
@@ -325,15 +330,18 @@ final class TaskListTopComponent extends TopComponent {
                     tasksListener = null;
                 }
 
+                @Override
                 public void tasksRemoved(List<? extends Task> tasks) {
                 }
 
+                @Override
                 public void cleared() {
                 }
             };
             taskManager.getTasks().addListener(tasksListener);
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     tableScroll.setViewportView( createNoTasksMessage() );
                     tableScroll.setBorder( BorderFactory.createEmptyBorder() );
@@ -347,16 +355,17 @@ final class TaskListTopComponent extends TopComponent {
                 }
             });
         }
-        ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
-        ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
-        ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
-        
-        final TaskScanningScope scopeToObserve = activeScope;
         SwingUtilities.invokeLater( new Runnable() {
+            @Override
             public void run() {
-                taskManager.observe( scopeToObserve, filters.getActive() );
+                ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
+                ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
+                ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
             }
         });
+        
+        final TaskScanningScope scopeToObserve = activeScope;
+        taskManager.observe( scopeToObserve, filters.getActive() );
     }
 
     private Component createNoTasksMessage() {
@@ -426,13 +435,19 @@ final class TaskListTopComponent extends TopComponent {
     private PropertyChangeListener getScopeListListener() {
         if( null == scopeListListener ) {
             scopeListListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent arg0) {
                     ScanningScopeList scopeList = ScanningScopeList.getDefault();
                     List<TaskScanningScope> newScopes = scopeList.getTaskScanningScopes();
                     if( newScopes.isEmpty() ) {
                         getLogger().log( Level.INFO, "No task scanning scope found" ); //NOI18N
                     }
-                    rebuildToolbar();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            rebuildToolbar();
+                        }
+                    });
                 }
             };
         }
@@ -442,16 +457,14 @@ final class TaskListTopComponent extends TopComponent {
     private PropertyChangeListener getScannerListListener() {
         if( null == scannerListListener ) {
             scannerListListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent e) {
+                    final TaskScanningScope scopeToObserve = taskManager.getScope();
+                    taskManager.observe( null, null );
                     SwingUtilities.invokeLater( new Runnable() {
+                        @Override
                         public void run() {
-                            final TaskScanningScope scopeToObserve = taskManager.getScope();
-                            taskManager.observe( null, null );
-                            SwingUtilities.invokeLater( new Runnable() {
-                                public void run() {
-                                    taskManager.observe( scopeToObserve, filters.getActive() );
-                                }
-                            });
+                            taskManager.observe( scopeToObserve, filters.getActive() );
                         }
                     });
                 }
@@ -476,6 +489,7 @@ final class TaskListTopComponent extends TopComponent {
         toolbar.addSeparator();
         final JToggleButton toggleGroups = new JToggleButton( ImageUtilities.loadImageIcon("org/netbeans/modules/tasklist/ui/resources/groups.png", false)); //NOI18N
         toggleGroups.addItemListener( new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 switchTableModel( e.getStateChange() == ItemEvent.SELECTED );
                 Settings.getDefault().setGroupTasksByCategory( toggleGroups.isSelected() );
@@ -514,6 +528,7 @@ final class TaskListTopComponent extends TopComponent {
     private ProgressHandle progress;
     private PropertyChangeListener createChangeListener() {
         return new PropertyChangeListener() {
+            @Override
             public void propertyChange( PropertyChangeEvent e ) {
                 synchronized( TaskListTopComponent.this ) {
                     if( ((Boolean)e.getNewValue()).booleanValue() ) {
@@ -521,6 +536,7 @@ final class TaskListTopComponent extends TopComponent {
                             progress = ProgressHandleFactory.createHandle(
                                     NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
                                     new Cancellable() { //NOI18N
+                                        @Override
                                         public boolean cancel() {
                                             taskManager.abort();
                                             return true;

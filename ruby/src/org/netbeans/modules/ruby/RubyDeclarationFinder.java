@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SuperNode;
 import org.jrubyparser.ast.ZSuperNode;
 import org.netbeans.api.lexer.Token;
@@ -530,7 +534,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 AliasNode an = (AliasNode)closest;
 
                 // TODO - determine if the click is over the new name or the old name
-                String newName = an.getNewName();
+                String newName = AstUtilities.getNameOrValue(an.getNewName());
+                if (newName == null) {
+                    return DeclarationLocation.NONE;
+                }
 
                 // XXX I don't know where the old and new names are since the user COULD
                 // have used more than one whitespace character for separation. For now I'll
@@ -549,7 +556,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         // The problem is that we don't know if it's a local, a dynamic, an instance
                         // variable, etc. (The $ and @ parts are not included in the alias statement).
                         // First see if it's a local variable.
-                        String name = an.getOldName();
+                        String name = AstUtilities.getNameOrValue(an.getOldName());
+                        if (name == null) {
+                            return DeclarationLocation.NONE;
+                        }
                         ignoreAlias = true;
 
                         try {
@@ -776,31 +786,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     name = "_" + name;
                 }
                 
-                // Try to find the partial file
-                FileObject partial = dir.getFileObject(name);
-                // try extensions
-                if (partial == null) {
-                    for (String ext : RubyUtils.RUBY_VIEW_EXTS) {
-                        partial = dir.getFileObject(name + ext);
-                        if (partial != null) {
-                            break;
-                        }
-                    }
+                DeclarationLocation partialLocation = findPartial(name, dir);
+                if (partialLocation != DeclarationLocation.NONE) {
+                    return partialLocation;
                 }
-                if (partial == null) {
-                    // Handle some other file types for the partials
-                    for (FileObject child : dir.getChildren()) {
-                        if (child.isValid() && !child.isFolder() && child.getName().equals(name)) {
-                            partial = child;
-                            break;
-                        }
-                    }
-                }
-
-                if (partial != null) {
-                    return new DeclarationLocation(partial, 0);
-                }
-                
             } else if (type.indexOf(CONTROLLER) != -1 || type.indexOf(ACTION) != -1) { // NOI18N
                 // Look for the controller file in the corresponding directory
                 FileObject file = RubyUtils.getFileObject(info);
@@ -899,6 +888,48 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return getLocation(methods);
     }
 
+    /**
+     * Finds the location of the partial matching the given <code>name</code> in the
+     * given <code>dir</code>.
+     * 
+     * @param name
+     * @param dir
+     * @return
+     */
+    private DeclarationLocation findPartial(String name, FileObject dir) {
+        // Try to find the partial file
+        FileObject partial = dir.getFileObject(name);
+        if (partial != null) {
+            return new DeclarationLocation(partial, 0);
+        }
+        // try extensions
+        for (String ext : RubyUtils.RUBY_VIEW_EXTS) {
+            partial = dir.getFileObject(name + ext);
+            if (partial != null) {
+                return new DeclarationLocation(partial, 0);
+
+            }
+        }
+        // Handle some other file types for the partials
+        for (FileObject child : dir.getChildren()) {
+            if (child.isValid() && !child.isFolder() && child.getName().equals(name)) {
+                return new DeclarationLocation(child, 0);
+            }
+        }
+
+        // finally, try matching just the first part of the file name
+        for (FileObject child : dir.getChildren()) {
+            if (child.isValid() && !child.isFolder()) {
+                String fileName = child.getName();
+                int firstDot = fileName.indexOf('.');
+                if (firstDot != -1 && name.equals(fileName.substring(0, firstDot))) {
+                    return new DeclarationLocation(child, 0);
+                }
+            }
+        }
+        return DeclarationLocation.NONE;
+
+    }
     /** Locate the :action and :controller strings in the hash list that is under the
      * given offsets
      * @return A string[2] where string[0] is the controller or null, and string[1] is the
@@ -1142,7 +1173,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (!type.isKnown()) {
                 methods.addAll(index.getMethods(name, QuerySupport.Kind.EXACT));
             } else {
-                methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
+                methods.addAll(index.getMethods(name, type.getRealTypes(), QuerySupport.Kind.EXACT));
             }
             if (methods.size() == 0 && type.isKnown()) {
                 methods = index.getMethods(name, QuerySupport.Kind.EXACT);
@@ -1170,7 +1201,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             Node node = AstUtilities.getForeignNode(candidate);
-            int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
+            int nodeOffset = 0;
+            if (node != null) {
+                nodeOffset = node.getPosition().getStartOffset();
+                if (node.getNodeType() == NodeType.ALIASNODE) {
+                    nodeOffset += 6; // 6 = lenght of 'alias '
+                }
+            }
 
             DeclarationLocation loc = new DeclarationLocation(
                 fileObject, nodeOffset, candidate);
@@ -1805,7 +1842,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         } else if (node instanceof ArgsNode) {
@@ -1874,7 +1912,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         }
@@ -1901,7 +1940,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         } else if (AstUtilities.isAttr(node)) {
@@ -1945,7 +1985,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
 
@@ -2011,7 +2052,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         }
@@ -2040,7 +2082,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 // No obvious way to check arity
                 return getLocation(info, node);
             }

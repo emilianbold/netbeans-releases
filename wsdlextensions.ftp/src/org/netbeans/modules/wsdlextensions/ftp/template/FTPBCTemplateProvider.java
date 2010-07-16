@@ -21,9 +21,10 @@ package org.netbeans.modules.wsdlextensions.ftp.template;
 
 import java.io.InputStream;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardExtensionIterator;
 import org.openide.util.NbBundle;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class FTPBCTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String templateUrl = "/org/netbeans/modules/wsdlextensions/ftp/template/template.xml";
@@ -36,6 +37,13 @@ public class FTPBCTemplateProvider extends ExtensibilityElementTemplateProvider 
         return NbBundle.getMessage(FTPBCTemplateProvider.class, str, objects);
     }
     
-    
+    @Override
+    public InputStream getTemplateFileInputStream(String filePath) {
+        return FTPBCTemplateProvider.class.getResourceAsStream("/org/netbeans/modules/wsdlextensions/ftp/template/" + filePath);
+    }
 
+    @Override
+    public WSDLWizardExtensionIterator getWSDLWizardExtensionIterator(WSDLWizardContext context) {
+        return new FTPBCWSDLWizardExtensionIterator(context);
+    }
 }

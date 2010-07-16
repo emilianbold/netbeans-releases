@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,6 @@ package org.netbeans.modules.web.beans.navigation.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
@@ -77,13 +79,15 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesModel;
-import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesPanel;
+import org.netbeans.modules.web.beans.navigation.InjectablesModel;
+import org.netbeans.modules.web.beans.navigation.InjectablesPanel;
 import org.netbeans.modules.web.beans.navigation.ResizablePopup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -103,15 +107,16 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
     private static final long serialVersionUID = 1857528107859448216L;
     
     private static final String INSPECT_INJACTABLES_AT_CARET =
-        "LBL_InspectInjactablesAtCaret";                     // NOI18N
+        "inspect-injactables-at-caret";                     // NOI18N
     
     private static final String INSPECT_INJACTABLES_AT_CARET_POPUP =
-        "LBL_PopupInspectInjactablesAtCaret";                // NOI18N
+        "inspect-injactables-at-caret-popup";               // NOI18N
 
     public InspectInjectablesAtCaretAction() {
         super(NbBundle.getMessage(InspectInjectablesAtCaretAction.class, 
                 INSPECT_INJACTABLES_AT_CARET), 0);
         
+        putValue(ACTION_COMMAND_KEY, INSPECT_INJACTABLES_AT_CARET);
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
         putValue(POPUP_MENU_TEXT, NbBundle.getMessage(
@@ -192,7 +197,21 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         {
             return false;
         }
-        return OpenProjects.getDefault().getOpenProjects().length > 0;
+        if ( OpenProjects.getDefault().getOpenProjects().length == 0 ){
+            return false;
+        }
+        final FileObject fileObject = NbEditorUtilities.getFileObject( 
+                EditorRegistry.lastFocusedComponent().getDocument());
+        if ( fileObject == null ){
+            return false;
+        }
+        WebModule webModule = WebModule.getWebModule(fileObject);
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return profile.equals(Profile.JAVA_EE_6_FULL) || 
+            profile.equals(Profile.JAVA_EE_6_WEB);
     }
     
     
@@ -216,11 +235,19 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         }
         SourceGroup[] sourceGroups = sources.getSourceGroups( 
                 JavaProjectConstants.SOURCES_TYPE_JAVA );
-        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        SourceGroup[] webGroup = sources.getSourceGroups(
+                WebProjectConstants.TYPE_WEB_INF);
+        ClassPath[] paths = new ClassPath[ sourceGroups.length+webGroup.length];
         int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
             paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
+        }
+        for (SourceGroup sourceGroup : webGroup) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
         }
         return ClassPathSupport.createProxyClassPath( paths );
     }
@@ -230,73 +257,56 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
      * qualified name and simple name of variable itself.
      * Model methods are used further for injectable resolution.   
      */
-    private void inspectInjectables( final JTextComponent component, 
-            final FileObject fileObject, final WebBeansModel model, 
-            final MetadataModel<WebBeansModel> metaModel, 
+    private void inspectInjectables( final JTextComponent component,
+            final FileObject fileObject, final WebBeansModel model,
+            final MetadataModel<WebBeansModel> metaModel,
             final Object[] variablePath )
     {
         VariableElement var = findVariable(model, variablePath);
-        if ( var == null ){
+        if (var == null) {
             return;
         }
         try {
-            if (model.isInjectionPoint(var)) {
-                try {
-                    Element injectable = model.getInjectable(var);
-                    if ( injectable == null ){
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                                InspectInjectablesAtCaretAction.class, 
-                                "LBL_InjectableNotFound"), 
-                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                    }
-                    final CompilationController controller = model.getCompilationController();
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    Collection<Element> elements ;
-                    final VariableElement varElement = var;
-                    if ( injectable == null){
-                        elements = Collections.emptyList();
-                    }
-                    else {
-                        elements = Collections.singletonList( injectable );
-                    }
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( elements, varElement, bindings, controller, 
-                                metaModel);
-                    }
-                    else {
-                        final Collection<Element> els = elements; 
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showDialog( els, varElement, bindings, controller,
-                                        metaModel);
-                            }
-                        });
-                    }
-                }
-                catch (final AmbiguousDependencyException adExcpeption) {
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    final VariableElement varElement = var;
-                    final CompilationController controller = model.getCompilationController();
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( adExcpeption , varElement, bindings, 
-                                controller , metaModel );
-                    }
-                    else {
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showDialog(adExcpeption, varElement, bindings, 
-                                        controller, metaModel);
-                            }
-                        });
-                    }
-                }
+            if (!model.isInjectionPoint(var)) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                                "LBL_NotInjectionPoint"), // NOI18N
+                        StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                return;
             }
         }
-        catch (WebBeansModelException e) {
-            /*
-             * TODO : one need somehow notice user that injection point has
-             * inconsistency
-             */
+        catch (InjectionPointDefinitionError e) {
+            StatusDisplayer.getDefault().setStatusText(e.getMessage(),
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        }
+        final Result result = model.getInjectable(var, null);
+        if (result == null) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(GoToInjectableAtCaretAction.class,
+                            "LBL_InjectableNotFound"), // NOI18N
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            return;
+        }
+        if (result instanceof Result.Error) {
+            StatusDisplayer.getDefault().setStatusText(
+                    ((Result.Error) result).getMessage(),
+                    StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        }
+        if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
+            return;
+        }
+        final CompilationController controller = model
+                .getCompilationController();
+        final List<AnnotationMirror> bindings = model.getQualifiers(var);
+        if (SwingUtilities.isEventDispatchThread()) {
+            showDialog(result, bindings, controller, metaModel);
+        }
+        else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showDialog(result, bindings, controller, metaModel);
+                }
+            });
         }
     }
 
@@ -356,7 +366,7 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
     private boolean getVariableElementAtDot( final JTextComponent component,
             final Object[] variable ) 
     {
-        JavaSource javaSource = JavaSource.forDocument( component.getDocument());
+        JavaSource javaSource = JavaSource.forDocument(component.getDocument());
         if ( javaSource == null ){
             Toolkit.getDefaultToolkit().beep();
             return false;
@@ -404,25 +414,17 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         return variable[1] !=null ;
     }
     
-    private void showDialog( AmbiguousDependencyException adExcpeption , 
-            VariableElement var , List<AnnotationMirror> bindings , 
-            CompilationController controller, MetadataModel<WebBeansModel> model ) 
-    {
-        showDialog( adExcpeption.getElements(), var, bindings, controller, model);
-    }
-    
-    private void showDialog( Collection<Element> elements , 
-            VariableElement var , List<AnnotationMirror> bindings , 
+    private void showDialog( Result result , List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                AmbiguousInjectablesModel.class, "LBL_WaitNode"));
+                InjectablesModel.class, "LBL_WaitNode"));
         JDialog dialog = ResizablePopup.getDialog();
         String title = NbBundle.getMessage(InspectInjectablesAtCaretAction.class,
-                "TITLE_Injectables" , var.getSimpleName().toString() );
+                "TITLE_Injectables" , result.getVariable().getSimpleName().toString() );
         dialog.setTitle( title );
-        dialog.setContentPane( new AmbiguousInjectablesPanel(elements, var, 
-                bindings, controller , model));
+        dialog.setContentPane( new InjectablesPanel(result, bindings, 
+                controller , model));
         dialog.setVisible( true );
     }
 

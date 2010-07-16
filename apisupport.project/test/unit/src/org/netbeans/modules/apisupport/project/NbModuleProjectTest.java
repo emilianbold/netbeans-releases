@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,20 +44,26 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.util.Arrays;
+import java.util.ResourceBundle;
+import java.util.logging.LogManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.MemoryFilter;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of NbModuleProject.
  * @author Jesse Glick
  */
 public class NbModuleProjectTest extends TestBase {
-    
+
     public NbModuleProjectTest(String name) {
         super(name);
     }
@@ -160,5 +169,35 @@ public class NbModuleProjectTest extends TestBase {
 //        SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
 //        assertEquals("two generic source group", 2, sourceGroups.length); // prjFolder and unitFolder
 //    }
+
+    public void testGetSpecVersion() throws Exception {
+        NbModuleProject m = generateStandaloneModule(getWorkDir(), "module", false);
+        assertEquals("1.0", m.getSpecVersion());
+        m = generateStandaloneModule(getWorkDir(), "bundle", true);
+        assertEquals("1.0", m.getSpecVersion()); // #185020
+    }
+
+    public void testMemoryConsumption() throws Exception { // #90195
+        assertSize("java.project is not too big", Arrays.asList(javaProjectProject.evaluator(), javaProjectProject.getHelper()), 1234567, new MemoryFilter() {
+            final Class<?>[] REJECTED = {
+                Project.class,
+                FileObject.class,
+                ClassLoader.class,
+                Class.class,
+                ModuleInfo.class,
+                LogManager.class,
+                RequestProcessor.class,
+                ResourceBundle.class,
+            };
+            public @Override boolean reject(Object obj) {
+                for (Class<?> c : REJECTED) {
+                    if (c.isInstance(obj)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
 
 }

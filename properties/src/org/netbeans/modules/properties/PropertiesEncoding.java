@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,7 +74,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author  Marian Petras
  */
-final class PropertiesEncoding extends FileEncodingQueryImplementation {
+public final class PropertiesEncoding extends FileEncodingQueryImplementation {
     
     /*
      * TO DO:
@@ -81,6 +84,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
      * - allow decoding of supplementary characters (?)
      */
     
+    @Override
     public Charset getEncoding(FileObject file) {
         assert !file.isValid() || file.isData();
         try {
@@ -353,8 +357,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         private static final byte zeroByte = (byte) '0';
-        private static final byte[] hexadecimalChars
-                = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+        private static final byte[] hexadecimalChars = UtilConvert.hexDigit;
         
         private int encodeChar(final char c) {
             final int oldPos = outBufPos;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import javax.swing.Icon;
 
 public abstract class ConfigurationDescriptor {
     private Configurations confs = new Configurations();
-    int version = -1;
+    private int version = -1;
     private State state = State.READING;
 
     public ConfigurationDescriptor() {
@@ -71,7 +74,7 @@ public abstract class ConfigurationDescriptor {
             this.confs = confs;
         } else {
             //jlahoda:added in order to support listeners on Configurations:
-            this.confs.init(confs.getConfs(), confs.getActiveAsIndex());
+            this.confs.init(confs.toArray(), confs.getActiveAsIndex());
         }
     }
     
@@ -113,7 +116,7 @@ public abstract class ConfigurationDescriptor {
     public abstract boolean save(String extraMessage);
     public abstract boolean getModified();
     public abstract void setModified();
-    public abstract void setModified(boolean state);
+    //public abstract void setModified(boolean state);
     public abstract void closed();
     public enum State {
         READING,

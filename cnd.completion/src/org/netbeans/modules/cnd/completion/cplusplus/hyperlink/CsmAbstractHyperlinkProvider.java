@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -83,12 +87,14 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         caret.setMagicCaretPosition(null);
     }
 
+    @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
         return EnumSet.of(HyperlinkType.GO_TO_DECLARATION, HyperlinkType.ALT_HYPERLINK);
     }
 
     protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type);
 
+    @Override
     public void performClickAction(Document originalDoc, final int offset, final HyperlinkType type) {
         if (originalDoc == null) {
             return;
@@ -103,8 +109,10 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
         Runnable run = new Runnable() {
 
+            @Override
             public void run() {
-                if (type == HyperlinkType.ALT_HYPERLINK) {
+                int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, false);
+                if (type == HyperlinkType.ALT_HYPERLINK && (span != null && span[0] != span[1])) {
                     // in this mode we open MacroView
                     CsmMacroExpansion.showMacroExpansionView(doc, offset);
                 } else {
@@ -118,6 +126,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");// NOI18N
     }
 
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
         return isValidToken(token, type);
@@ -125,6 +134,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     protected abstract boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type);
 
+    @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
         if (type == HyperlinkType.ALT_HYPERLINK) {
@@ -203,6 +213,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         }
     }
 
+    @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         if (doc == null || offset < 0 || offset > doc.getLength()) {
             return null;
@@ -232,6 +243,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         final StringBuilder docText = new StringBuilder();
         doc.render(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     docText.append(doc.getText(start, end - start));
@@ -244,6 +256,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     protected final CharSequence getAlternativeHyperlinkTip(Document doc, String altTextKey, CharSequence tooltip) {
+        UIGesturesSupport.submit("USG_CND_HYPERLINK_TOOLTIP", altTextKey); //NOI18N
         Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
         int shortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
         return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, altTextKey, tooltip, InputEvent.getModifiersExText(shortCut)); // NOI18N

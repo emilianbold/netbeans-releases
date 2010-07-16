@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.model.ext.editor.api;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
+import org.netbeans.modules.bpel.model.ext.Extensions;
 
 /**
  *
@@ -27,20 +28,13 @@ import org.netbeans.modules.bpel.model.api.ExtensionEntity;
  * @author nk160297
  * @version 1.0
  */
-public interface Editor extends ExtensionEntity, BpelContainer {
-    String EDITOR_NAMESPACE_URI =
-            "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor";
+public interface Editor extends ExtensionEntity, BpelContainer, LsmContainer {
+    String EDITOR_NAMESPACE_URI = Extensions.EDITOR2_EXT_URI;
 
-    Casts getCasts();
+    NMProperties getNMProperties();
 
-    void removeCasts();
-
-    void setCasts(Casts casts);
-
-    PseudoComps getPseudoComps();
-
-    void removePseudoComps();
-
-    void setPseudoComps(PseudoComps pseudoComps);
+    void removeNMProperties();
+    
+    void setNMProperties(NMProperties nmProperties);
 
 }

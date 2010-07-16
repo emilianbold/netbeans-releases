@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -91,6 +94,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -358,6 +362,14 @@ public class BaseKit extends DefaultEditorKit {
 
     private final SearchableKit searchableKit;
 
+    /* package */ static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap");
+        LINEWRAP_ENABLED = (value != null)
+                ? value.equalsIgnoreCase("true")
+                : true; // false for NB6.9 Beta
+    }
+
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
 //            String settingName = (evt != null) ? evt.getSettingName() : null;
@@ -559,7 +571,10 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        return null;
+        //Boolean.getBoolean("org.netbeans.editor.linewrap")
+        return  HighlightingManager.LINEWRAP_ENABLED
+                ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
+                : null;
     }
 
     /** Create caret to navigate through document */
@@ -878,6 +893,7 @@ public class BaseKit extends DefaultEditorKit {
                    new PreviousWordAction(selectionPreviousWordAction),
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
+                   new ActionFactory.ToggleHighlightSearchAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),

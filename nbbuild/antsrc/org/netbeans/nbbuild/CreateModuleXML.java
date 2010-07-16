@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.apache.tools.ant.*;
 import java.util.jar.*;
 import java.io.*;
 import java.util.zip.ZipEntry;
-import org.apache.tools.ant.types.Mapper;
 
 /** Create XML files corresponding to the set of known modules
  * without actually running the IDE.
@@ -99,6 +101,22 @@ public class CreateModuleXML extends Task {
     public void setXmldir(File f) {
         xmldir = f;
     }
+
+    private File trackingdir;
+    /** Directory where to generate the update tracking file. Does not need
+     * to be specified.
+     */
+    public void setUpdateTrackingRoot(File f) {
+        trackingdir = f;
+    }
+
+    private boolean failOnMissingManifest = true;
+    /** By default true. Set to false if JAR files without proper manifest
+     * shall be ignored.
+     */
+    public void setFailOnMissingManifest(boolean fail) {
+        failOnMissingManifest = fail;
+    }
     
     private List<String> enabledNames = new ArrayList<String>(50);
     private List<String> disabledNames = new ArrayList<String>(10);
@@ -118,6 +136,7 @@ public class CreateModuleXML extends Task {
         this.hiddenList = hiddenList;
     }
 
+    @Override
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
         if (!xmldir.exists ()) {
@@ -150,19 +169,19 @@ public class CreateModuleXML extends Task {
         Collections.sort(eagerNames);
         Collections.sort(hiddenNames);
         if (!enabledNames.isEmpty()) {
-            log("Enabled modules: " + enabledNames);
+            log("Enabled modules: " + enabledNames, Project.MSG_VERBOSE);
         }
         if (!disabledNames.isEmpty()) {
-            log("Disabled modules: " + disabledNames);
+            log("Disabled modules: " + disabledNames, Project.MSG_VERBOSE);
         }
         if (!autoloadNames.isEmpty()) {
-            log("Autoload modules: " + autoloadNames);
+            log("Autoload modules: " + autoloadNames, Project.MSG_VERBOSE);
         }
         if (!eagerNames.isEmpty()) {
-            log("Eager modules: " + eagerNames);
+            log("Eager modules: " + eagerNames, Project.MSG_VERBOSE);
         }
         if (!hiddenNames.isEmpty()) {
-            log("Hidden modules: " + hiddenNames);
+            log("Hidden modules: " + hiddenNames, Project.MSG_VERBOSE);
         }
     }
     
@@ -184,7 +203,23 @@ public class CreateModuleXML extends Task {
         }
     }
 
-    private void scanOneModule(File module, String kid, boolean isEnabled,boolean isAutoload, boolean isEager, boolean isHidden, List<String> names) throws BuildException {
+    private void scanOneModule(
+        File module, String kid, boolean isEnabled,
+        boolean isAutoload, boolean isEager,
+        boolean isHidden, List<String> names
+    ) throws BuildException {
+        UpdateTracking ut = null;
+        if (trackingdir != null) {
+            ut = new UpdateTracking(trackingdir.getAbsolutePath());
+        }
+
+        processModule(module, kid, isEnabled, isAutoload, isEager, isHidden, names, ut);
+    }
+    private void processModule(
+        File module, String kid, boolean isEnabled,boolean isAutoload,
+        boolean isEager, boolean isHidden,
+        List<String> names, UpdateTracking ut
+    ) throws BuildException {
         if (!module.exists()) {
             throw new BuildException("Module file does not exist: " + module, getLocation());
         }
@@ -195,10 +230,19 @@ public class CreateModuleXML extends Task {
             JarFile jar = new JarFile(module);
             try {
                 Manifest m = jar.getManifest();
-                Attributes attr = m.getMainAttributes();
-                String codename = attr.getValue("OpenIDE-Module");
+                Attributes attr = null;
+                String codename = null;
+                if (m != null) {
+                    attr = m.getMainAttributes();
+                    codename = JarWithModuleAttributes.extractCodeName(attr);
+                }
                 if (codename == null) {
-                    throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    if (failOnMissingManifest) {
+                        throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    } else {
+                        log("No module manifest in " + module, Project.MSG_WARN);
+                        return;
+                    }
                 }
                 if (codename.endsWith(" ") || codename.endsWith("\t")) {
                     // #62887
@@ -206,17 +250,10 @@ public class CreateModuleXML extends Task {
                 }
                 int idx = codename.lastIndexOf('/');
                 String codenamebase;
-                int rel;
                 if (idx == -1) {
                     codenamebase = codename;
-                    rel = -1;
                 } else {
                     codenamebase = codename.substring(0, idx);
-                    try {
-                        rel = Integer.parseInt(codename.substring(idx + 1));
-                    } catch (NumberFormatException e) {
-                        throw new BuildException("Invalid OpenIDE-Module '" + codename + "' in " + module, getLocation());
-                    }
                 }
                 File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                 if (xml.exists()) {
@@ -263,6 +300,11 @@ public class CreateModuleXML extends Task {
                 }
                 names.add(displayname);
                 String spec = attr.getValue("OpenIDE-Module-Specification-Version");
+                UpdateTracking.Version v = null;
+                if (ut != null) {
+                    v = ut.addNewModuleVersion(codename, spec);
+                    v.addFileForRoot(module);
+                }
                 if (isHidden) {
                     File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
                     h.createNewFile();
@@ -282,22 +324,22 @@ public class CreateModuleXML extends Task {
                             pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
                         }
                         pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
-                        if (rel != -1) {
-                            pw.println("    <param name=\"release\">" + rel + "</param>");
-                        }
                         pw.println("    <param name=\"reloadable\">false</param>");
-                        if (spec != null) {
-                            pw.println("    <param name=\"specversion\">" + spec + "</param>");
-                        }
                         pw.println("</module>");
                         pw.flush();
                         pw.close();
                     } finally {
                         os.close();
                     }
+                    if (v != null) {
+                        v.addFileForRoot(xml);
+                    }
                 }
             } finally {
                 jar.close();
+            }
+            if (ut != null) {
+                ut.write();
             }
         } catch (IOException ioe) {
             throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());

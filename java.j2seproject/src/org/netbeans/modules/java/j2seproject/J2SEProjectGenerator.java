@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,6 +59,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -72,6 +76,7 @@ import org.openide.util.MutexException;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -93,6 +98,8 @@ public class J2SEProjectGenerator {
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, 
             final String manifestFile, final String librariesDefinition) throws IOException {
+        Parameters.notNull("dir", dir); //NOI18N
+        Parameters.notNull("name", name);   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
@@ -127,7 +134,10 @@ public class J2SEProjectGenerator {
                                                   final File[] sourceFolders, final File[] testFolders, 
                                                   final String manifestFile, final String librariesDefinition,
                                                   final String buildXmlName) throws IOException {
-        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
+        Parameters.notNull("dir", dir); //NOI18N
+        Parameters.notNull("name", name);   //NOI8N
+        Parameters.notNull("sourceFolders", sourceFolders); //NOI18N
+        Parameters.notNull("testFolders", testFolders); //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
@@ -246,10 +256,18 @@ public class J2SEProjectGenerator {
         }
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", new String[0]); // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
+        ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", new String[] { // NOI18N
@@ -303,8 +321,8 @@ public class J2SEProjectGenerator {
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
         ep.setProperty("platform.active", "default_platform"); // NOI18N
 
-        ep.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, ""); // NOI18N
-        ep.setComment(J2SEProjectProperties.RUN_JVM_ARGS, new String[] {
+        ep.setProperty(ProjectProperties.RUN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(ProjectProperties.RUN_JVM_ARGS, new String[] {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
@@ -328,7 +346,7 @@ public class J2SEProjectGenerator {
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         logUsage();
         return h;

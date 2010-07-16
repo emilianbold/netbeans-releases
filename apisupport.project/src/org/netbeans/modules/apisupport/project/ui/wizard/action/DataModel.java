@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 
 /**
  * Data model used across the <em>New Action Wizard</em>.
@@ -156,8 +160,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         boolean actionContext;
         try {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
-            actionProxy = current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
-            actionContext = current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
+            actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
+            actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
@@ -269,7 +273,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 attrs.put("delegate", "methodvalue:org.openide.awt.Actions.inject"); // NOI18N
                 attrs.put("injectable", getPackageName() + '.' + className); // NOI18N
                 attrs.put("selectionType", multiSelection ? "ANY" : "EXACTLY_ONE"); // NOI18N
-                attrs.put("type", fullClassName(cName)); // NOI18N
+                attrs.put("type", fullClassName(cookieClasses[0])); // NOI18N
                 attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
                 if (relativeIconPath != null) {
                     attrs.put("iconBase", relativeIconPath); // NOI18N
@@ -307,6 +311,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        if (actionProxy) {
+            cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
+        }
         if (!alwaysEnabled) {
             cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
             for (String fqn : addedFQNCs) {
@@ -543,6 +550,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     static final class Position {
+
+        public static final Position PROTOTYPE = new Position(null, null, "One Thing", "Another Thing"); // NOI18N
         
         private String before;
         private String after;
@@ -575,6 +584,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String getAfterName() {
             return afterName;
         }
+
+        private static final String POSITION_HERE = NbBundle.getMessage(DataModel.class, "CTL_PositionHere");
+        private static final String POSITION_SEPARATOR = " - "; // NOI18N
+        public @Override String toString() {
+            String beforeText = beforeName == null ? "" : beforeName + POSITION_SEPARATOR;
+            String afterText = afterName == null ? "" : POSITION_SEPARATOR + afterName;
+            return beforeText + POSITION_HERE + afterText;
+        }
     }
     
     private void generateSeparator(final String parentPath, final String sepName) {
@@ -585,7 +602,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 "javax.swing.JSeparator")); // NOI18N
     }
 
-    static String fullClassName(String type) {
+    private static String fullClassName(String type) {
         if (type.contains(".")) {
             return type;
         }

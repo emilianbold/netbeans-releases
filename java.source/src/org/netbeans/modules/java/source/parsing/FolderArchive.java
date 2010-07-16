@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,28 +104,37 @@ public class FolderArchive implements Archive {
             if (normalize) {
                 folder = FileUtil.normalizeFile(folder);
             }
-            if (folder.canRead()) {
-                File[] content = folder.listFiles();            
-                if (content != null) {
-                    List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
-                    for (File f : content) {
-                        if (f.isFile()) {
-                            if (entry == null || entry.includes(f.toURI().toURL())) {
-                                if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) {
-                                    result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
-                                }
-                            }
-                        }
+            final File[] content = folder.listFiles();
+            if (content != null) {
+                List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
+                for (File f : content) {
+                    if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
+                        f.isFile() &&
+                        (entry == null || entry.includes(f.toURI().toURL()))) {
+                        result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
                     }
-                    return Collections.unmodifiableList(result);
                 }
+                return Collections.unmodifiableList(result);
             }
+            
         }
         return Collections.<JavaFileObject>emptyList();
-    }               
-    
-    public void clear () {
-        
     }
-    
+
+    public JavaFileObject create (String relativePath, final JavaFileFilterImplementation filter) throws UnsupportedOperationException {
+        if (File.separatorChar != '/') {    //NOI18N
+            relativePath = relativePath.replace('/', File.separatorChar);
+        }
+        final File file = new File (root, relativePath);
+        return FileObjects.fileFileObject(file, root, filter, encoding);
+    }
+
+    public void clear () {
+    }
+
+    @Override
+    public JavaFileObject getFile(String name) {
+        final File file = new File (this.root, name.replace('/', File.separatorChar));      //NOI18N
+        return file.exists() ? FileObjects.fileFileObject(file,this.root,null,encoding) : null ;
+    }
 }

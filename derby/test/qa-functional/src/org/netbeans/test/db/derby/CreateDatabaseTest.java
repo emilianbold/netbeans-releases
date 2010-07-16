@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.test.db.derby;
 
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -71,10 +75,23 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     
     @Override
     public void setUp() {
+        getDataDir().mkdirs();
         DerbyOptions.getDefault().setSystemHome(getDataDir().getAbsolutePath());
-        DerbyOptions.getDefault().setLocation(System.getProperty("derby.location"));
+        String derbyLoc = System.getProperty("derby.location");
+        if (derbyLoc == null || derbyLoc.length() == 0) {
+            derbyLoc = getLocationInJDK(System.getProperty("java.home")).getAbsolutePath();
+        }
+        DerbyOptions.getDefault().setLocation(derbyLoc);
     }
     
+    private static File getLocationInJDK(String javaHome) {
+        File dir = new File(javaHome);
+        assert dir != null && dir.exists() && dir.isDirectory() : "java.home is directory";
+        // path to JavaDB in JDK6
+        File loc = new File(dir.getParentFile(), "db"); // NOI18N
+        return loc != null && loc.exists() && loc.isDirectory() ? loc : null;
+    }
+
     public void testCreateDatabase(){        
         // <workaround for #112788> - FIXME
         SystemAction.get(StartAction.class).performAction();

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,8 +50,6 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 import java.io.File;
 import java.util.*;
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 
@@ -72,13 +73,8 @@ public class ChildrenSupportTest extends NbTestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        Test suite = null;
-        //suite = new ChildrenSupportTest("testRefresh150009");
-        if (suite == null) {
-            suite = new NbTestSuite(ChildrenSupportTest.class);
-        }
-        return suite;
+    public static void assertNoLock() {
+        assertFalse("No read and write access", ChildrenSupport.isLock());
     }
 
     @Override
@@ -114,7 +110,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -145,7 +141,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -191,7 +187,7 @@ public class ChildrenSupportTest extends NbTestCase {
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
         assertEquals(0,chCache.getChildren(true).size());
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
         assertEquals(0,childrenSupport.getCachedChildren().size());
         assertTrue(file.createNewFile());
         assertTrue(file2.createNewFile());
@@ -208,7 +204,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -253,7 +249,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -405,7 +401,6 @@ public class ChildrenSupportTest extends NbTestCase {
     public void testRefresh150009() {
         FileNaming fpiName = NamingFactory.fromFile(fbase);
         // remove and plug our File implementation
-        NamingFactory.remove(fpiName, fpiName.getId());
         fpiName = NamingFactory.fromFile(new File150009(fbase));
         ChildrenSupport fpi = new ChildrenSupport();
         assertNotNull(fpi.getChild("removed1", fpiName, false));

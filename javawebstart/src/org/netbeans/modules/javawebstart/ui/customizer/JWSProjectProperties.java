@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,14 +48,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.ButtonGroup;
@@ -67,7 +74,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -76,6 +87,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -94,6 +106,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -115,14 +128,21 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String JNLP_MAX_HEAP     = "jnlp.max-heap-size";
     
     public static final String JNLP_SIGNED = "jnlp.signed";
+    public static final String JNLP_MIXED_CODE = "jnlp.mixed.code";
     
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
     public static final String CB_TYPE_USER = "user";
+    public static final String CB_NO_CODEBASE = "no.codebase";
     
     public static final String DEFAULT_APPLET_WIDTH = "300";
     public static final String DEFAULT_APPLET_HEIGHT = "300";
-    
+
+    private static final String JAR_INDEX = "jar.index";    //NOI18N
+    private static final String JAR_ARCHIVE_DISABLED ="jar.archive.disabled";   //NOI18N
+    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+
+
     public enum DescType {
         application, applet, component;
     }
@@ -145,7 +165,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     private J2SEPropertyEvaluator j2sePropEval;
     private PropertyEvaluator evaluator;
-    private Project j2seProject;
+    private Project project;
     
     private List<Map<String,String>> extResProperties;
     private List<Map<String,String>> appletParamsProperties;
@@ -160,9 +180,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String CONFIG_TARGET_RUN = "jws-run";
     public static final String CONFIG_TARGET_DEBUG = "jws-debug";
 
+    private static final String LIB_JAVAWS = "javaws.jar";  //NOI18N
+    private static final String LIB_PLUGIN = "plugin.jar";  //NOI18N
+
     private DescType selectedDescType = null;
 
-    boolean isJnlpImplPreviousVersion = false;
+    boolean jnlpImplOldOrModified = false;
 
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
@@ -171,6 +194,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     ComboBoxModel codebaseModel;
     ComboBoxModel appletClassModel;
+    ComboBoxModel mixedCodeModel;
     
     ButtonModel applicationDescButtonModel;
     ButtonModel appletDescButtonModel;
@@ -189,11 +213,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     /** Creates a new instance of JWSProjectProperties */
     public JWSProjectProperties(Lookup context) {
         
-        j2seProject = context.lookup(Project.class);
+        project = context.lookup(Project.class);
         
-        if (j2seProject != null) {
+        if (project != null) {
             
-            j2sePropEval = j2seProject.getLookup().lookup(J2SEPropertyEvaluator.class);
+            j2sePropEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             
             evaluator = j2sePropEval.evaluator();
         
@@ -203,22 +227,23 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
             appletWidthDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_WIDTH);
             appletHeightDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_HEIGHT);
-            
+
             codebaseModel = new CodebaseComboBoxModel();
             codebaseURLDocument = createCBTextFieldDocument();
-        
-            appletClassModel = new AppletClassComboBoxModel(j2seProject);
+
+            appletClassModel = new AppletClassComboBoxModel(project);
+            mixedCodeModel = createMixedCodeModel(j2sePropEval.evaluator());
             initRadioButtons();
-            
+
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
 
             // check if the jnlp-impl.xml script is of previous version -> should be upgraded
-            FileObject jnlpImlpFO = j2seProject.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
+            FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
                 try {
                     String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
-                    isJnlpImplPreviousVersion = JWSCompositeCategoryProvider.isJnlpImplPreviousVer(crc);
+                    jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
                 } catch (IOException ex) {
                     // nothing to do really
                 }
@@ -345,6 +370,17 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (descType != null) {
             editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
         }
+
+        //Store Mixed Code
+        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
+        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
+        //Store jar indexing
+        if (editableProps.getProperty(JAR_INDEX) == null) {
+            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
+        }
+        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
+            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
+        }
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
@@ -353,11 +389,12 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
-        final FileObject projPropsFO = j2seProject.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         try {
             final InputStream is = projPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     try {
                         ep.load(is);
@@ -382,6 +419,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                             os.close();
                         }
                     }
+                    updateWebStartJars(project, evaluator);
                     return null;
                 }
             });
@@ -429,7 +467,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         
     public String getProjectDistDir() {
         String dD = evaluator.getProperty("dist.dir"); // NOI18N
-        File distDir = new File(FileUtil.toFile(j2seProject.getProjectDirectory()), dD != null ? dD : ""); // NOI18N
+        File distDir = new File(FileUtil.toFile(project.getProjectDirectory()), dD != null ? dD : ""); // NOI18N
         return distDir.toURI().toString();
     }
     
@@ -437,29 +475,55 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public String getProperty(String propName) {
         return evaluator.getProperty(propName);
     }
+
+    public static void updateWebStartJars(
+            final Project project,
+            final PropertyEvaluator eval) throws IOException {
+        FileObject srcRoot = null;
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isTest(sg.getRootFolder(),project)) {
+                srcRoot = sg.getRootFolder();
+                break;
+            }
+        }
+        if (srcRoot != null) {
+            final Collection<? extends URL> toAdd  = isWebStart(eval) ? findWebStartJars(eval, isApplet(eval)) : new LinkedList<URL>();
+            final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
+            final Collection<? extends URL> included = findWebStartJars(bootCp);
+            final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
+            toRemove.removeAll(toAdd);
+            toAdd.removeAll(included);
+            if (!toRemove.isEmpty()) {
+                ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+            if (!toAdd.isEmpty()) {
+                ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+        }
+    }
     
     // ----------
     
     public class CodebaseComboBoxModel extends DefaultComboBoxModel {
         
-        String localLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Local");
-        String webLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Web");
-        String userLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_User");
-        Object visItems[] = new Object[] { localLabel, webLabel, userLabel };
-        String cbItems[] = new String[] { CB_TYPE_LOCAL, CB_TYPE_WEB, CB_TYPE_USER };
+        final String localLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Local");
+        final String webLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Web");
+        final String userLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_User");
+        final String noCodeBaseLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_No_Codebase");
+        final String visItems[] = new String[] { noCodeBaseLabel, localLabel, webLabel, userLabel};
+        final String cbItems[] = new String[] { CB_NO_CODEBASE, CB_TYPE_LOCAL, CB_TYPE_WEB, CB_TYPE_USER};
         
         public CodebaseComboBoxModel() {
             super();
-            addElement(visItems[0]);
-            addElement(visItems[1]);
-            addElement(visItems[2]);
+            for (String visItem : visItems) {
+                addElement(visItem);
+            }
             String propValue = evaluator.getProperty(JNLP_CBASE_TYPE);
-            if (cbItems[2].equals(propValue)) {
-                setSelectedItem(visItems[2]);
-            } else if (cbItems[1].equals(propValue)) {
-                setSelectedItem(visItems[1]);
-            } else {
-                setSelectedItem(visItems[0]);
+            for (int i=0; i<cbItems.length; i++) {
+                if (cbItems[i].equals(propValue)) {
+                    setSelectedItem(visItems[i]);
+                    break;
+                }
             }
         }
         
@@ -468,7 +532,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         
     }
-    
+
     public class AppletClassComboBoxModel extends DefaultComboBoxModel {
         
         Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
@@ -672,7 +736,146 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             }
             propGroupIndex++;
         }
-        
     }
-    
+
+    private static enum MixedCodeOptions {
+        DEFAULT("defaut"),  //NOI18N
+        TRUSTED_ONLY("trusted_only"),   //NOI18N
+        TRUSTED_LIBRARY("trusted_library"); //NOI18N
+
+        private final String propValue;
+
+        private MixedCodeOptions(final String propValue) {
+            this.propValue = propValue;
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(JWSCustomizerPanel.class, String.format("TXT_MIXED_MODE_%s",name()));
+        }
+
+        public String getPropertyValue() {
+            return this.propValue;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+
+        static MixedCodeOptions fromPropertyValue(final String propValue) {
+            assert propValue != null;
+            for (MixedCodeOptions option : MixedCodeOptions.values()) {
+                if (propValue.equals(option.getPropertyValue())) {
+                    return option;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static ComboBoxModel createMixedCodeModel (final PropertyEvaluator eval) {
+        assert eval != null;
+        final DefaultComboBoxModel model = new DefaultComboBoxModel();
+        for (MixedCodeOptions option : MixedCodeOptions.values()) {
+            model.addElement(option);
+        }
+        final String strValue = eval.getProperty(JNLP_MIXED_CODE);
+        final MixedCodeOptions value = strValue == null ? null : MixedCodeOptions.fromPropertyValue(strValue);
+        if (value != null) {
+            model.setSelectedItem(value);
+        }
+        return model;
+    }
+
+    private static Collection<? extends URL> findWebStartJars(
+            final PropertyEvaluator evaluator,
+            final boolean applet) throws IOException {
+        final List<URL> result = new ArrayList<URL>(2);
+        final String platformName = evaluator.getProperty("platform.active");   //NOI18N
+        if (platformName != null) {
+            JavaPlatform active = null;
+            for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                if (platformName.equals(platform.getProperties().get("platform.ant.name"))) {   //NOI18N
+                    active = platform;
+                    break;
+                }
+            }
+            if (active != null) {
+                URL lib = findLib(LIB_JAVAWS,active.getInstallFolders());
+                if (lib != null) {
+                    result.add(lib);
+                }
+                if (applet) {
+                    lib = findLib(LIB_PLUGIN,active.getInstallFolders());
+                    if (lib != null) {
+                        result.add(lib);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
+        final List<URL> result = new ArrayList<URL>(2);
+        Pattern pattern = Pattern.compile(
+                ".*/("+Pattern.quote(LIB_JAVAWS)+"|"+Pattern.quote(LIB_PLUGIN)+")!/",Pattern.CASE_INSENSITIVE); //NOI18N
+        for (ClassPath.Entry entry : cp.entries()) {
+            final URL url = entry.getURL();
+            if (pattern.matcher(url.toString()).matches()) {
+                result.add(url);
+            }
+        }
+        return result;
+    }
+
+    private static URL findLib(final String name, final Iterable<? extends FileObject> installFolders) throws IOException {
+        if (Utilities.isMac()) {
+            //On Mac deploy is fixed in /System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/
+            final File deployFramework = new File("/System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/");
+            final File lib = FileUtil.normalizeFile(new File(deployFramework,name));    //NOI18N
+            if (lib.exists()) {
+                return FileUtil.getArchiveRoot(lib.toURI().toURL());
+            }
+        } else {
+            for (FileObject installFolder : installFolders) {
+                FileObject lib = installFolder.getFileObject(String.format("jre/lib/%s",name)); //NOI18N
+                if (lib != null) {
+                    return FileUtil.getArchiveRoot(lib.getURL());
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isTest(final FileObject root, final Project project) {
+        assert root != null;
+        assert project != null;
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        for (ClassPath.Entry entry : cp.entries()) {
+            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+            for (FileObject srcRoot : srcRoots) {
+                if (project.equals(FileOwnerQuery.getOwner(srcRoot))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWebStart (final PropertyEvaluator eval) {
+        assert eval != null;
+        return isTrue(eval.getProperty(JNLP_ENABLED));
+    }
+
+    private static boolean isApplet(final PropertyEvaluator eval) {
+        return DescType.applet.toString().equals(eval.getProperty(JNLP_DESCRIPTOR));
+    }
+
+    public static boolean isTrue(final String value) {
+        return value != null &&
+                (value.equalsIgnoreCase("true") ||  //NOI18N
+                 value.equalsIgnoreCase("yes") ||   //NOI18N
+                 value.equalsIgnoreCase("on"));     //NOI18N
+    }
 }

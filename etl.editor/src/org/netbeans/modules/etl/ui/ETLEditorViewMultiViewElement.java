@@ -98,7 +98,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private static transient final Logger mLogger = Logger.getLogger(ETLEditorViewMultiViewElement.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     public ETLEditorViewMultiViewElement() {
         super();
     }
@@ -111,7 +111,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         } catch (Exception ex) {
             String nbBundle1 = mLoc.t("BUND177: Error in creating eTL Editor view");
             ErrorManager.getDefault().log(ErrorManager.ERROR,
-                 nbBundle1.substring(15) + ex.getMessage());
+                    nbBundle1.substring(15) + ex.getMessage());
         }
     }
 
@@ -160,46 +160,47 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         nodesHack = new InstanceContent();
         nodesHack.add(controller);
         /*controller.addPropertyChangeListener( new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( PaletteController.PROP_SELECTED_ITEM.equals( evt.getPropertyName() ) ) {
-                    Lookup selItem = controller.getSelectedItem();
-                    if( null != selItem ) {
-                        ActiveEditorDrop selNode = (ActiveEditorDrop)selItem.lookup( ActiveEditorDrop.class );
-                        if(null != selNode){
-                            StatusDisplayer.getDefault().setStatusText("Selected "+selNode);
-                        }
-                    }
-                }
-            }
-            
+        public void propertyChange(PropertyChangeEvent evt) {
+        if( PaletteController.PROP_SELECTED_ITEM.equals( evt.getPropertyName() ) ) {
+        Lookup selItem = controller.getSelectedItem();
+        if( null != selItem ) {
+        ActiveEditorDrop selNode = (ActiveEditorDrop)selItem.lookup( ActiveEditorDrop.class );
+        if(null != selNode){
+        StatusDisplayer.getDefault().setStatusText("Selected "+selNode);
+        }
+        }
+        }
+        }
+        
         });
         setDropTarget(new DropTarget(this,new DropTargetListener() {
-            public void dragEnter(DropTargetDragEvent dtde) {            
-            }
-
-            public void dragOver(DropTargetDragEvent dtde) {                
-            }
-
-            public void dropActionChanged(DropTargetDragEvent dtde) {
-            }
-
-            public void dragExit(DropTargetEvent dte) {
-            }
-
-            public void drop(DropTargetDropEvent dtde) {
-              NotifyDescriptor d =new NotifyDescriptor.Message("Drop",NotifyDescriptor.INFORMATION_MESSAGE);
-              DialogDisplayer.getDefault().notify(d);
-            }
+        public void dragEnter(DropTargetDragEvent dtde) {            
+        }
+        
+        public void dragOver(DropTargetDragEvent dtde) {                
+        }
+        
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+        }
+        
+        public void dragExit(DropTargetEvent dte) {
+        }
+        
+        public void drop(DropTargetDropEvent dtde) {
+        NotifyDescriptor d =new NotifyDescriptor.Message("Drop",NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(d);
+        }
         }));*/
         return new ProxyLookup(new Lookup[]{
-            //
-            // other than nodesHack what else do we need in the associated
-            // lookup?  I think that XmlNavigator needs DataObject
-            //
-            getETLDataObject().getLookup(), // this lookup contain objects that are used in OM clients
-            Lookups.singleton(this),
-            new AbstractLookup(nodesHack),
-            Lookups.fixed(new Object[]{controller}),});
+                    //
+                    // other than nodesHack what else do we need in the associated
+                    // lookup?  I think that XmlNavigator needs DataObject
+                    //
+                    getETLDataObject().getLookup(), // this lookup contain objects that are used in OM clients
+                    Lookups.singleton(this),
+                    new AbstractLookup(nodesHack),
+                    Lookups.fixed(new Object[]{controller}),
+                });
     }
 
     private PaletteController createPalette() throws IOException {
@@ -221,6 +222,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_ONLY_OPENED;//was PERSISTENCE_NEVER
+
     }
 
     public void setMultiViewCallback(final MultiViewElementCallback callback) {
@@ -265,10 +267,10 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         }
         getETLDataObject().createNodeDelegate();
         DataObjectProvider.activeDataObject = dataObject;
-        /*GraphView graphView = (GraphView) this.topPanel.getGraphView();
-        if (null != graphView) {
-            graphView.setObserved(graphView);
-        }*/
+    /*GraphView graphView = (GraphView) this.topPanel.getGraphView();
+    if (null != graphView) {
+    graphView.setObserved(graphView);
+    }*/
     }
 
     @Override
@@ -329,6 +331,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         errorLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         errorLabel.setEnabled(false);
         Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
+
         errorLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         errorLabel.setOpaque(true);
         add(errorLabel, BorderLayout.CENTER);
@@ -423,13 +426,12 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     @Override
     public Action[] getActions() {
         ArrayList<Action> actionsList = new ArrayList<Action>();
-        for (Action action : super.getActions()) {            
+        for (Action action : super.getActions()) {
             actionsList.add(action);
         }
-        actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
+        //[FIXME_MOVE_TO_61]actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
         Action[] actions = new Action[actionsList.size()];
         actionsList.toArray(actions);
         return actions;
     }
-
 }

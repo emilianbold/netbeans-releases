@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
 public class ETLDataLoader extends UniFileLoader {
     public static final String PROP_EXTENSIONS = "extensions"; // NOI18N
     private static transient final Logger mLogger = Logger.getLogger(ETLDataLoader.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
+    //private static transient final Localizer mLoc = Localizer.get();
 
 //        if we use text/*xml mime type then data editor support 
 //        automatically recognize this mime type and show xml editor
@@ -93,7 +93,7 @@ public class ETLDataLoader extends UniFileLoader {
     
     
     protected String defaultDisplayName () {
-        String nbBundle1 = mLoc.t("BUND153: ETL Data Loader");
+        String nbBundle1 = Localizer.get().t("BUND153: ETL Data Loader");
         return nbBundle1.substring(15);
     }
 

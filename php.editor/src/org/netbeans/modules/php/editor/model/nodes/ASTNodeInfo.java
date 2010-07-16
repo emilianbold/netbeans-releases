@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,8 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -121,10 +124,19 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (type && node instanceof StaticDispatch) {
             StaticDispatch staticDispatch = (StaticDispatch) node;
             retval = QualifiedName.create(staticDispatch.getClassName());
+        } else if (node instanceof Scalar) {
+            String toName = toName(node);
+            retval = QualifiedName.create(toName);
         }
         if (retval == null) {
             String toName = toName(node);
-            retval = QualifiedName.createUnqualifiedName(toName);
+            if (toName == null) {
+                //#185702 - NullPointerException at org.netbeans.modules.php.editor.api.QualifiedNameKind.resolveKind
+                //$this->{'_find' . ucfirst($type)}('before', $query);
+                retval = QualifiedName.createUnqualifiedName("");//NOI18N
+            } else {
+                retval = QualifiedName.createUnqualifiedName(toName);
+            }
         }
         return retval;
     }
@@ -133,37 +145,37 @@ public class ASTNodeInfo<T extends ASTNode> {
         return (kind == null) ? toKind(getOriginalNode()) : kind;
     }
 
-    public PhpKind getPhpKind() {
+    public PhpElementKind getPhpElementKind() {
         Kind k = getKind();
         switch (k) {
             case INCLUDE:
-                return PhpKind.INCLUDE;
+                return PhpElementKind.INCLUDE;
             case IFACE:
-                return PhpKind.IFACE;
+                return PhpElementKind.IFACE;
             case CLASS:
-                return PhpKind.CLASS;
+                return PhpElementKind.CLASS;
             case CLASS_INSTANCE_CREATION:
-                return PhpKind.CLASS;
+                return PhpElementKind.CLASS;
             case METHOD:
-                return PhpKind.METHOD;
+                return PhpElementKind.METHOD;
             case STATIC_METHOD:
-                return PhpKind.METHOD;
+                return PhpElementKind.METHOD;
             case FIELD:
-                return PhpKind.FIELD;
+                return PhpElementKind.FIELD;
             case STATIC_FIELD:
-                return PhpKind.FIELD;
+                return PhpElementKind.FIELD;
             case CLASS_CONSTANT:
-                return PhpKind.CLASS_CONSTANT;
+                return PhpElementKind.TYPE_CONSTANT;
             case STATIC_CLASS_CONSTANT:
-                return PhpKind.CLASS_CONSTANT;
+                return PhpElementKind.TYPE_CONSTANT;
             case VARIABLE:
-                return PhpKind.VARIABLE;
+                return PhpElementKind.VARIABLE;
             case CONSTANT:
-                return PhpKind.CONSTANT;
+                return PhpElementKind.CONSTANT;
             case FUNCTION:
-                return PhpKind.FUNCTION;
+                return PhpElementKind.FUNCTION;
             case USE_STATEMENT:
-                return PhpKind.USE_STATEMENT;
+                return PhpElementKind.USE_STATEMENT;
         }
         throw new IllegalStateException();
     }
@@ -397,7 +409,8 @@ public class ASTNodeInfo<T extends ASTNode> {
         return retval;
     }
 
-    static OffsetRange toOffsetRangeVar(Variable node) {
+    // public because of frameworks!
+    public static OffsetRange toOffsetRangeVar(Variable node) {
         Expression name = node.getName();
         //TODO: dangerous never ending loop
         while ((name instanceof Variable)) {

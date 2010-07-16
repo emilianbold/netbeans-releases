@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -233,6 +236,35 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         
     }
     
+    public static class InvalidProjectPanel extends Panel {
+
+        public InvalidProjectPanel(WizardDescriptor wiz) {
+            super(wiz);
+            setError(NbBundle.getMessage(InvalidProjectPanel.class, "LBL_InvalidProjectMsg"));
+        }
+
+        @Override
+        protected String getPanelName() {
+            return NbBundle.getMessage(InvalidProjectPanel.class, "LBL_InvalidProject");
+        }
+
+        @Override
+        protected HelpCtx getHelp() {
+            return new HelpCtx(InvalidProjectPanel.class);
+        }
+
+        @Override
+        protected void readFromDataModel() {
+            // nothing
+        }
+
+        @Override
+        protected void storeToDataModel() {
+            // nothing
+        }
+        
+    }
+
     public void initialize(WizardDescriptor wiz) {
         // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
         String[] beforeSteps = null;
@@ -241,7 +273,13 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             beforeSteps = (String[])prop;
         }
         position = 0;
-        BasicWizardIterator.Panel[] panels = createPanels(wiz);
+
+        // #176828: do not continue with wizard if called on non-NBM project;
+        // can be e.g. LazyProject or project without preferred templates
+        Project tmpProject = Templates.getProject(wiz);
+        boolean isValidPrj = (tmpProject != null && tmpProject.getLookup().lookup(NbModuleProvider.class) != null);
+        Panel[] panels = isValidPrj ? createPanels(wiz)
+                : new Panel[] { new InvalidProjectPanel(wiz) };
         String[] steps = BasicWizardIterator.createSteps(beforeSteps, panels);
         wizardPanels = new BasicWizardIterator.PrivateWizardPanel[panels.length];
         

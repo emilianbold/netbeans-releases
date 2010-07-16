@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,7 @@ public class SyntaxParserResultTest extends TestBase {
         super(testName);
     }
 
-    
+
     public void testBasic() {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
         SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
@@ -104,13 +107,13 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals("http://www.w3.org/1999/xhtml", nsmap.get("").toString());
         assertEquals("http://java.sun.com/JSP/Page", nsmap.get("jsp").toString());
     }
-    
+
     public void testGetDeclaredNamespaces() {
         String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" " +
                 "xmlns:jsp=\"http://java.sun.com/JSP/Page\">" +
                 "<ui:composition xmlns:ui=\"http://java.sun.com/jsf/facelets\"/>" +
                 "</html>";
-        
+
         SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
@@ -127,7 +130,7 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals(null, nsmap.get("http://www.w3.org/1999/xhtml"));
         assertEquals("ui", nsmap.get("http://java.sun.com/jsf/facelets"));
         assertEquals("jsp", nsmap.get("http://java.sun.com/JSP/Page"));
-        
+
     }
 
     public void testGetAstRoot() {
@@ -148,7 +151,23 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals(2, root.children().size());
         assertNotNull(AstNodeUtils.query(root, "html"));
         assertNotNull(AstNodeUtils.query(root, "html/div"));
-        
+
+    }
+
+    public void testUndeclaredTagsParseTree() {
+        String code = "<html>" +
+                          "<x:out><div><x:in></x:in></div></x:out>" +
+                      "</html>";
+
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+
+        AstNode froot = result.getASTRoot(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+
+        assertNotNull(froot);
+        assertEquals(2, froot.children().size());
+        assertNotNull(AstNodeUtils.query(froot, "x:out"));
+        assertNotNull(AstNodeUtils.query(froot, "x:out/x:in"));
+
     }
 
 }

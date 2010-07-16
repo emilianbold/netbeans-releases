@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -154,16 +157,16 @@ public class CallEjbGenerator {
         }
 
         if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
+            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO, refIType);
         } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
             switch(refIType){
                 case REMOTE: {
-                    erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
                 case NO_INTERFACE:
                 case LOCAL:{
-                    erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbLocalReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
             }
@@ -415,9 +418,9 @@ public class CallEjbGenerator {
         }
         if (global){
             String moduleFullName = ProjectUtils.getInformation(ejbProject).getName();
-            Project project = FileOwnerQuery.getOwner(fileObject);
-            if (project != null && !project.equals(ejbProject)){
-                moduleFullName = ProjectUtils.getInformation(project).getName() + "/" + moduleFullName;
+            Project j2eeAppProject = Utils.getNestingJ2eeApp(ejbProject);
+            if (j2eeAppProject != null && !j2eeAppProject.equals(ejbProject)){
+                moduleFullName = ProjectUtils.getInformation(j2eeAppProject).getName() + "/" + moduleFullName;
             }
             body = MessageFormat.format(JNDI_LOOKUP_GLOBAL, new Object[] {moduleFullName, ejbName, componentName});
         } else if (isSimplified && isTargetJavaSE){
@@ -577,9 +580,9 @@ public class CallEjbGenerator {
         return caps.toString();
     }
     
-    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO) throws IOException {
+    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO, EjbRefIType refIType) throws IOException {
         
-        Project target = Utils.getProject(ref);
+        Project target = Utils.getProject(ref, refIType);
         
         boolean differentProject = target != null && !enterpriseProject.equals(target);
         if (differentProject) {

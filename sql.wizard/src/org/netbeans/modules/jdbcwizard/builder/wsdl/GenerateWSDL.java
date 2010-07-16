@@ -20,10 +20,14 @@ package org.netbeans.modules.jdbcwizard.builder.wsdl;
 
 import java.io.File;
 
+import org.netbeans.modules.jdbcwizard.builder.Procedure;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 public class GenerateWSDL {
+
     private String mSrcDirectoryLocation;
     private String mBuildDirectoryLocation;
     private String mWSDLFileName;
@@ -31,8 +35,11 @@ public class GenerateWSDL {
     private String mDBType;
     private String mJNDIName;
     private DBConnectionDefinition dbinfo;
+    private Procedure mProcedure;
+    private String sqlText;
 
-    public GenerateWSDL() {}
+    public GenerateWSDL() {
+    }
 
     public String getSrcDirectoryLocation() {
         return this.mSrcDirectoryLocation;
@@ -54,6 +61,10 @@ public class GenerateWSDL {
         return this.mWSDLFileName;
     }
 
+    public void setStoredProcedure(Procedure procedure) {
+        this.mProcedure = procedure;
+    }
+
     public void setWSDLFileName(final String wsdlFileName) {
         this.mWSDLFileName = wsdlFileName;
     }
@@ -72,21 +83,76 @@ public class GenerateWSDL {
     public void setJNDIName(final String jndiName) {
         this.mJNDIName = jndiName;
     }
-    
-    public void setDBInfo(DBConnectionDefinition dbinfo){
+
+    public void setDBInfo(DBConnectionDefinition dbinfo) {
         this.dbinfo = dbinfo;
     }
 
+    public void setSql(String sql) {
+        this.sqlText = sql;
+    }
+
     public void execute() {
+        execute(null);
+    }
+    
+
+    public WSDLModel execute(WSDLComponent wsdlComponent) {
+        WSDLGenerator wsdlgen = null;
+        WSDLModel wsdlModel = null;
         final File srcDir = new File(this.mSrcDirectoryLocation);
         if (!srcDir.exists()) {
             throw new IllegalArgumentException("Directory " + this.mSrcDirectoryLocation + " does not exist.");
         }
         final String srcDirPath = srcDir.getAbsolutePath();
-        final WSDLGenerator wsdlgen = new WSDLGenerator(this.mTable, this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
-        wsdlgen.setTopEleName();
-        wsdlgen.setXSDName();
-        wsdlgen.setDBInfo(this.dbinfo);
-        wsdlgen.generateWSDL();
+        if (this.mTable != null) {
+            wsdlgen = new WSDLGenerator(this.mTable, this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
+        } else if (this.mProcedure != null) {
+            wsdlgen = new WSDLGenerator(this.mProcedure, this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
+        }
+        if (wsdlgen != null) {
+            wsdlgen.setTopEleName();
+            wsdlgen.setXSDName();
+            wsdlgen.setDBInfo(this.dbinfo);
+            wsdlModel = wsdlgen.generateWSDL(wsdlComponent);
+        }
+        return wsdlModel;
     }
+
+    public void executePrepStmt() {
+        executePrepStmt(null);
+    }
+
+    public WSDLModel executePrepStmt(WSDLComponent wsdlComponent) {
+        WSDLModel wsdlModel = null;
+        final File srcDir = new File(this.mSrcDirectoryLocation);
+        if (!srcDir.exists()) {
+            throw new IllegalArgumentException("Directory " + this.mSrcDirectoryLocation + " does not exist.");
+        }
+        final String srcDirPath = srcDir.getAbsolutePath();
+        final PrepStmtWSDLGenerator wsdlgen = new PrepStmtWSDLGenerator(this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
+        wsdlgen.setDBInfo(this.dbinfo);
+        wsdlgen.setSql(this.sqlText);
+        wsdlgen.parseSQLStatement();
+        wsdlModel = wsdlgen.generatePrepStmtWSDL(wsdlComponent);
+        return wsdlModel;
+    }
+
+    public void executeStoredProc() {
+        executeStoredProc(null);
+    }     
+    
+    public WSDLModel executeStoredProc(WSDLComponent wsdlComponent) {
+        WSDLModel wsdlModel = null;
+        final File srcDir = new File(this.mSrcDirectoryLocation);
+        if (!srcDir.exists()) {
+            throw new IllegalArgumentException("Directory " + this.mSrcDirectoryLocation + " does not exist.");
+        }
+        final String srcDirPath = srcDir.getAbsolutePath();
+        final StoredProcWSDLGenerator wsdlgen = new StoredProcWSDLGenerator(this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
+        wsdlgen.setDBInfo(this.dbinfo);
+        wsdlgen.setStoredProcedure(this.mProcedure);
+        wsdlModel = wsdlgen.generateProcWSDL(wsdlComponent);
+        return wsdlModel;
+    }       
 }

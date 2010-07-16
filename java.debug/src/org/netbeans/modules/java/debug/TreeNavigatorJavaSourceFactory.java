@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,12 +47,14 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -61,7 +66,12 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
     private CancellableTask<CompilationInfo> task;
     
     static TreeNavigatorJavaSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(TreeNavigatorJavaSourceFactory.class);
+        for (JavaSourceTaskFactory f :  Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
+            if (f instanceof TreeNavigatorJavaSourceFactory) {
+                return (TreeNavigatorJavaSourceFactory) f;
+            }
+        }
+        return null;
     }
     
     public TreeNavigatorJavaSourceFactory() {
@@ -73,6 +83,7 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
         return new WrapperTask(task);
     }
 
+    @Override
     public List<FileObject> getFileObjects() {
         List<FileObject> result = super.getFileObjects();
 
@@ -96,20 +107,68 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
         super.setLookup(l);
     }
 
+    @ServiceProvider(service=JavaSourceTaskFactory.class)
+    public static final class CaretAwareFactoryImpl extends CaretAwareJavaSourceTaskFactory {
+
+        static CaretAwareFactoryImpl getInstance() {
+            return Lookup.getDefault().lookup(CaretAwareFactoryImpl.class);
+        }
+
+        private CancellableTask<CompilationInfo> task;
+
+        public CaretAwareFactoryImpl() {
+            super(Phase.UP_TO_DATE, Priority.LOW);
+        }
+
+        @Override
+        protected synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
+            return new WrapperTask(task);
+        }
+
+        @Override
+        public List<FileObject> getFileObjects() {
+            List<FileObject> result = super.getFileObjects();
+
+            if (result.size() == 1)
+                return result;
+
+            return Collections.emptyList();
+        }
+
+        public FileObject getFile() {
+            List<FileObject> result = super.getFileObjects();
+
+            if (result.size() == 1)
+                return result.get(0);
+
+            return null;
+        }
+
+        public synchronized void setTask(CancellableTask<CompilationInfo> task) {
+            this.task = task;
+            FileObject file = getFile();
+            if (file != null) {
+                reschedule(file);
+            }
+        }
+    }
+
     static class WrapperTask implements CancellableTask<CompilationInfo> {
         
-        private CancellableTask<CompilationInfo> delegate;
+        private final CancellableTask<CompilationInfo> delegate;
         
         public WrapperTask(CancellableTask<CompilationInfo> delegate) {
             this.delegate = delegate;
         }
 
         public void cancel() {
-            delegate.cancel();
+            if (delegate != null)
+                delegate.cancel();
         }
 
         public void run(CompilationInfo parameter) throws Exception {
-            delegate.run(parameter);
+            if (delegate != null)
+                delegate.run(parameter);
         }
         
     }

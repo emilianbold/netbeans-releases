@@ -29,6 +29,7 @@ import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.soa.ui.form.ReusablePropertyCustomizer;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropertyCustomizer;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

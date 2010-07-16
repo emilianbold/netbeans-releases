@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -70,7 +74,22 @@ public abstract class APTAbstractWalker extends APTWalker {
         this.preprocHandler = preprocHandler;
         this.cacheEntry = cacheEntry;
     }
-    
+
+    @Override
+    protected void preInit() {
+        super.preInit();
+        if (preprocHandler != null) {
+            APTIncludeHandler includeHandler = preprocHandler.getIncludeHandler();
+            if (APTHandlersSupportImpl.isFirstLevel(includeHandler)) {
+                // special handling of "-include file" feature of preprocessor
+                for (IncludeDirEntry includeDirEntry : APTHandlersSupportImpl.extractIncludeFileEntries(includeHandler)) {
+                    APT fake = new APTIncludeFake(includeDirEntry.getAsSharedCharSequence().toString());
+                    onInclude(fake);
+                }
+            }
+        }
+    }
+
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
@@ -134,7 +153,7 @@ public abstract class APTAbstractWalker extends APTWalker {
      * @param postIncludeState cached information about visit of this include directive
      * @return true if need to cache post include state
      */
-    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState);
+    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState);
     abstract protected boolean hasIncludeActionSideEffects();
 
     protected void onDefine(APT apt) {
@@ -219,14 +238,15 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
-        APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-        if (postIncludeState != null && !hasIncludeActionSideEffects()) {
-            getPreprocHandler().getMacroMap().setState(postIncludeState);
+        PostIncludeData postIncludeData = cacheEntry.getPostIncludeState(aptInclude);
+        if (postIncludeData.hasPostIncludeMacroState() && !hasIncludeActionSideEffects()) {
+            getPreprocHandler().getMacroMap().setState(postIncludeData.getPostIncludeMacroState());
             return;
         }
-        if (include(resolvedPath, aptInclude, postIncludeState)) {
-            postIncludeState = getPreprocHandler().getMacroMap().getState();
-            cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+        if (include(resolvedPath, aptInclude, postIncludeData)) {
+            APTMacroMap.State postIncludeMacroState = getPreprocHandler().getMacroMap().getState();
+            PostIncludeData newData = new PostIncludeData(postIncludeMacroState, postIncludeData.getDeadBlocks());
+            cacheEntry.setIncludeData(aptInclude, newData);
         }
     }
 }

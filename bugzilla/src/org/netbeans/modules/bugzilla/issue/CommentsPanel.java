@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,25 +43,35 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -75,14 +88,14 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
@@ -94,19 +107,39 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
+    static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
+    private final static String ATTACHMENT_ATTRIBUTE = "attachment hyperlink"; //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
+    private final JPopupMenu commentsPopup = new PopupMenu();
     private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
+    private List<BugzillaIssue.Attachment> attachments;
+    private List<String> attachmentIds;
     private MouseAdapter listener;
+    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        motionListener = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                AttributeSet as = elem.getAttributes();
+                if (StyleConstants.isUnderline(as)) {
+                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        };
         listener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -136,6 +169,11 @@ public class CommentsPanel extends JPanel {
                             urlAction.openUrlHyperlink(hyperlinkText);
                             return;
                         }
+
+                        if (as.getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                            CommentsPanel.this.openAttachmentHyperlink(pane);
+                            return;
+                        }
                     }
                 } catch(Exception ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -147,9 +185,12 @@ public class CommentsPanel extends JPanel {
         assert issueFinder != null;
     }
 
-    public void setIssue(BugzillaIssue issue) {
+    void setIssue(BugzillaIssue issue,
+                  List<BugzillaIssue.Attachment> attachments) {
         removeAll();
         this.issue = issue;
+        this.attachments = attachments;
+        this.attachmentIds = getAttachmentIds(attachments);
         GroupLayout layout = new GroupLayout(this);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -160,7 +201,7 @@ public class CommentsPanel extends JPanel {
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
-        String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+        String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
             Date creation = dateTimeFormat.parse(creationTxt);
             creationTxt = format.format(creation);
@@ -168,9 +209,9 @@ public class CommentsPanel extends JPanel {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
         addSection(layout,
-            issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME),
+            issue.getFieldValue(IssueField.DESCRIPTION),
+            issue.getFieldValue(IssueField.REPORTER),
+            issue.getFieldValue(IssueField.REPORTER_NAME),
             creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
@@ -178,6 +219,19 @@ public class CommentsPanel extends JPanel {
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
+    }
+
+    private static List<String> getAttachmentIds(
+                                   List<BugzillaIssue.Attachment> attachments) {
+        if (attachments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>(attachments.size());
+        for (BugzillaIssue.Attachment attachment : attachments) {
+            result.add(attachment.getId());
+        }
+        return result;
     }
 
     public void setNewCommentHandler(NewCommentHandler handler) {
@@ -208,9 +262,8 @@ public class CommentsPanel extends JPanel {
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
             String userName = (index == -1) ? author : author.substring(0,index);
-            KenaiUserUI ku = new KenaiUserUI(userName);
-            ku.setMessage(KenaiUtil.getChatLink(issue));
-            stateLabel = ku.createUserWidget();
+            String host = ((KenaiRepository) issue.getRepository()).getHost();
+            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
@@ -254,7 +307,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -285,41 +337,73 @@ public class CommentsPanel extends JPanel {
                     doc.remove(off, length);
                     doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
                 } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                    Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
                 }
             }
         }
 
         // URL hyperlinks
-        final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
-        if ((boundaries != null) && (boundaries.length != 0)) {
-            Style defStyle = StyleContext.getDefaultStyleContext()
-                             .getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-            hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-            
-            for (int i = 0; i < boundaries.length; i+=2) {
-                int off = boundaries[i];
-                int length = boundaries[i + 1] - boundaries[i];
-                try {
-                    doc.remove(off, length);
-                    doc.insertString(off, comment.substring(boundaries[i],
-                                                            boundaries[i + 1]),
-                                                            hlStyle);
-                } catch (BadLocationException ex) {
-                    ex.printStackTrace();
+        {
+            final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
+            if ((boundaries != null) && (boundaries.length != 0)) {
+                Style defStyle = StyleContext.getDefaultStyleContext()
+                                 .getStyle(StyleContext.DEFAULT_STYLE);
+                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
+                hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
+                StyleConstants.setForeground(hlStyle, Color.BLUE);
+                StyleConstants.setUnderline(hlStyle, true);
+
+                for (int i = 0; i < boundaries.length; i+=2) {
+                    int off = boundaries[i];
+                    int length = boundaries[i + 1] - boundaries[i];
+                    try {
+                        doc.remove(off, length);
+                        doc.insertString(off, comment.substring(boundaries[i],
+                                                                boundaries[i + 1]),
+                                                                hlStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
+                    }
                 }
             }
-
         }
+
+        // attachments
+        if (!attachmentIds.isEmpty()) {
+            final int[] boundaries = AttachmentHyperlinkSupport
+                                     .findBoundaries(comment, attachmentIds);
+            if ((boundaries != null) && (boundaries.length != 0)) {
+                Style defStyle = StyleContext.getDefaultStyleContext()
+                                 .getStyle(StyleContext.DEFAULT_STYLE);
+                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
+                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new Object());
+                StyleConstants.setForeground(hlStyle, Color.BLUE);
+                StyleConstants.setUnderline(hlStyle, true);
+
+                for (int i = 0; i < boundaries.length; i+=2) {
+                    int off = boundaries[i];
+                    int length = boundaries[i + 1] - boundaries[i];
+                    try {
+                        doc.remove(off, length);
+                        doc.insertString(off, comment.substring(boundaries[i],
+                                                                boundaries[i + 1]),
+                                                                hlStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
+                    }
+                }
+            }
+        }
+
+        // pop-ups
+        textPane.setComponentPopupMenu(commentsPopup);
 
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
+        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
@@ -328,6 +412,7 @@ public class CommentsPanel extends JPanel {
     private ActionListener getReplyListener() {
         if (replyListener == null) {
             replyListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Object source = e.getSource();
                     if (source instanceof JComponent) {
@@ -354,7 +439,8 @@ public class CommentsPanel extends JPanel {
     private class IssueAction {
         void openIssue(String hyperlinkText) {
             final String issueNo = issueFinder.getIssueId(hyperlinkText);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);
                     if (is != null) {
@@ -379,6 +465,78 @@ public class CommentsPanel extends JPanel {
                                                  ex);
             }
         }
+    }
+
+    private void openAttachmentHyperlink(JTextPane textPane) {
+        String attachmentId = null;
+        try {
+            BugzillaIssue.Attachment attachment = getAttachment(textPane);
+            if (attachment != null) {
+                attachment.open();
+            }
+        } catch (Exception ex) {
+            assert false;
+            String errMsg = "Could not open attachment";                //NOI18N
+            if (attachmentId != null) {
+                errMsg += " #" + attachmentId;                          //NOI18N
+            }
+            ErrorManager.getDefault().log(ErrorManager.WARNING, errMsg);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    private BugzillaIssue.Attachment getAttachment(JTextPane textPane) {
+        String commentText = textPane.getText();
+        String attachmentId = AttachmentHyperlinkSupport
+                              .getAttachmentId(commentText);
+        if (attachmentId != null) {
+            int index = attachmentIds.indexOf(attachmentId);
+            if (index != -1) {
+                return attachments.get(index);
+            }
+        }
+        return null;
+    }
+
+    class PopupMenu extends JPopupMenu {
+
+        /*
+         * Holds the location of where the user invoked the pop-up menu.
+         * It must be remembered before calling super.show(...) because
+         * the method show() may change the location of the pop-up menu,
+         * so the original location might not be available.
+         */
+        private final Point clickPoint = new Point();
+
+        @Override
+        public void show(Component invoker, int x, int y) {
+            clickPoint.setLocation(x, y);
+            super.show(invoker, x, y);
+        }
+
+        @Override
+        public void setVisible(boolean b) {
+            if (b) {
+                JTextPane pane = (JTextPane) getInvoker();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
+                if (elem.getAttributes().getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                    BugzillaIssue.Attachment attachment = getAttachment(pane);
+                    if (attachment != null) {
+                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
+                            add(attachment.new ApplyPatchAction());
+                        }
+                        super.setVisible(true);
+                    }
+                }
+            } else {
+                super.setVisible(false);
+                removeAll();
+            }
+        }
+
     }
 
     public interface NewCommentHandler {

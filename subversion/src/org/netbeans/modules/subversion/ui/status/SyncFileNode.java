@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,6 +64,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -111,7 +115,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     public Action getPreferredAction() {
-        if (node.getInformation().getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+        if ((node.getInformation().getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
             return SystemAction.get(ResolveConflictsAction.class);
         }
         return SystemAction.get(DiffAction.class);
@@ -218,7 +222,7 @@ public class SyncFileNode extends AbstractNode {
                             return;
                         }
                         try {
-                            shortPath = SvnUtils.getRelativePath(node.getFile());
+                            shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(node.getFile()).toString() : SvnUtils.getRelativePath(node.getFile());
                         } catch (SVNClientException ex) { 
                             SvnClientExceptionHandler.notifyException(ex, false, false);
                         }

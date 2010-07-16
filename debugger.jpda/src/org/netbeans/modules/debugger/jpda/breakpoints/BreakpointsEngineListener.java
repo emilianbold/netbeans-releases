@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,14 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import com.sun.jdi.event.Event;
+import com.sun.jdi.request.EventRequest;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -53,6 +60,8 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
@@ -226,7 +235,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     // helper methods ..........................................................
     
-    private Map<Breakpoint, BreakpointImpl> breakpointToImpl = new IdentityHashMap<Breakpoint, BreakpointImpl>();
+    private final Map<Breakpoint, BreakpointImpl> breakpointToImpl = new IdentityHashMap<Breakpoint, BreakpointImpl>();
+    private final BreakpointImpl preliminaryBreakpointImpl = new PreliminaryBreakpointImpl();
     
     private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
@@ -260,101 +270,152 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
     
-    public synchronized void fixBreakpointImpls () {
-        Iterator<BreakpointImpl> i = breakpointToImpl.values ().iterator ();
-        while (i.hasNext ())
-            i.next ().fixed ();
+    public void fixBreakpointImpls () {
+        List<BreakpointImpl> bpis;
+        synchronized (breakpointToImpl) {
+            bpis = new ArrayList<BreakpointImpl>(breakpointToImpl.size());
+            Iterator<BreakpointImpl> i = breakpointToImpl.values ().iterator ();
+            while (i.hasNext ()) {
+                BreakpointImpl bpi = i.next();
+                if (bpi == preliminaryBreakpointImpl) {
+                    continue;
+                }
+                bpis.add(bpi);
+            }
+        }
+        for (BreakpointImpl bpi : bpis) {
+            bpi.fixed ();
+        }
     }
 
-    private synchronized void createBreakpointImpl (Breakpoint b) {
-        if (breakpointToImpl.containsKey (b)) return;
-        if (!(b instanceof JPDABreakpoint)) return ;
-        JPDADebugger bDebugger;
-        try {
-            // TODO: bDebugger = ((JPDADebugger) b).getSession();
-            java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
-            getSessionMethod.setAccessible(true);
-            bDebugger = (JPDADebugger) getSessionMethod.invoke(b);
-        } catch (Exception ex) {
-            bDebugger = null;
-            Exceptions.printStackTrace(ex);
+    private void createBreakpointImpl (Breakpoint b) {
+        synchronized (breakpointToImpl) {
+            if (breakpointToImpl.containsKey (b)) return;
+            if (!(b instanceof JPDABreakpoint)) return ;
+            JPDADebugger bDebugger;
+            try {
+                // TODO: bDebugger = ((JPDADebugger) b).getSession();
+                java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
+                getSessionMethod.setAccessible(true);
+                bDebugger = (JPDADebugger) getSessionMethod.invoke(b);
+            } catch (Exception ex) {
+                bDebugger = null;
+                Exceptions.printStackTrace(ex);
+            }
+            if (bDebugger != null && !bDebugger.equals(debugger)) {
+                return ;
+            }
+            breakpointToImpl.put(b, preliminaryBreakpointImpl);
         }
-        if (bDebugger != null && !bDebugger.equals(debugger)) {
-            return ;
-        }
+        BreakpointImpl bpi;
         if (b instanceof LineBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new LineBreakpointImpl (
+            bpi = new LineBreakpointImpl (
                     (LineBreakpoint) b,
                     breakpointsReader,
                     debugger,
                     session,
                     engineContext
-                )
-            );
+                    );
         } else
         if (b instanceof ExceptionBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new ExceptionBreakpointImpl (
+            bpi = new ExceptionBreakpointImpl (
                     (ExceptionBreakpoint) b,
                     debugger,
                     session
-                )
-            );
+                    );
         } else
         if (b instanceof MethodBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new MethodBreakpointImpl (
+            bpi = new MethodBreakpointImpl (
                     (MethodBreakpoint) b,
                     debugger,
                     session
-                )
-            );
+                    );
         } else
         if (b instanceof FieldBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new FieldBreakpointImpl (
+            bpi = new FieldBreakpointImpl (
                     (FieldBreakpoint) b,
                     debugger,
                     session
-                )
-            );
+                    );
         } else
         if (b instanceof ThreadBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new ThreadBreakpointImpl (
+            bpi = new ThreadBreakpointImpl (
                     (ThreadBreakpoint) b,
                     debugger,
                     session
-                )
-            );
+                    );
         } else
         if (b instanceof ClassLoadUnloadBreakpoint) {
-            breakpointToImpl.put (
-                b,
-                new ClassBreakpointImpl (
+            bpi = new ClassBreakpointImpl (
                     (ClassLoadUnloadBreakpoint) b,
                     debugger,
                     session
-                )
-            );
+                    );
+        } else {
+            bpi = null;
         }
-        logger.finer("BreakpointsEngineListener: created impl "+breakpointToImpl.get(b)+" for "+b);
+        BreakpointImpl bpiToRemove = null;
+        synchronized (breakpointToImpl) {
+            if (bpi == null) {
+                breakpointToImpl.remove(b);
+            } else {
+                if (!breakpointToImpl.containsKey(b)) {
+                    // There already was a request to remove this
+                    bpiToRemove = bpi;
+                } else {
+                    breakpointToImpl.put(b, bpi);
+                }
+            }
+        }
+        logger.finer("BreakpointsEngineListener: created impl "+bpi+" for "+b);
+        if (bpiToRemove != null) {
+            bpiToRemove.remove();
+            logger.finer("BreakpointsEngineListener: removed impl "+bpiToRemove);
+        }
     }
 
     private boolean removeBreakpointImpl (Breakpoint b) {
         BreakpointImpl impl;
-        synchronized (this) {
+        synchronized (breakpointToImpl) {
             impl = breakpointToImpl.remove(b);
             if (impl == null) return false;
         }
         logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
         impl.remove ();
         return true;
+    }
+
+    private static final class PreliminaryBreakpointImpl extends BreakpointImpl {
+
+        public PreliminaryBreakpointImpl() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        protected void setRequests() {}
+
+        @Override
+        protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean processCondition(Event event) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean exec(Event event) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removed(EventRequest eventRequest) {}
+
+        @Override
+        protected void remove() {
+            // do nothing
+        }
+
     }
 }

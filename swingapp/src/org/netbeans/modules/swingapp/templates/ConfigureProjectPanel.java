@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,16 +74,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         wizardIterator = iterator;
     }
 
+    @Override
     public Component getComponent() {
         if (visualPanel == null)
             visualPanel = new ConfigureProjectVisualPanel(this);
         return visualPanel;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("org.netbeans.modules.swingapp.templates.ConfigureProjectPanel"); // NOI18N
     }
 
+    @Override
     public void readSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;
         wizard = wd;
@@ -113,6 +119,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         visualPanel.setConfig(projectLocation, projectName, appClassName);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;
         wd.putProperty("projdir", visualPanel.getProjectDirectory()); // NOI18N
@@ -126,6 +133,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     }
 
+    @Override
     public boolean isValid() {
         if (visualPanel.isShareable()) {
             String location = visualPanel.getLibFolderPath();
@@ -215,16 +223,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return visualPanel.getSelectedTemplate() != null;
     }
 
+    @Override
     public boolean isFinishPanel() {
         return wizardIterator.getAppShellIterator() == null;
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listenerList == null)
             listenerList = new EventListenerList();
         listenerList.add(ChangeListener.class, listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         if (listenerList != null)
             listenerList.remove(ChangeListener.class, listener);

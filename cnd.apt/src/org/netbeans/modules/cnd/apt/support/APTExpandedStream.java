@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,12 +56,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
+import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.debug.DebugUtils;
-import org.netbeans.modules.cnd.apt.impl.support.*;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * TokenStream responsible to expand all containing macros and as result
@@ -98,6 +102,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
     /**
      * implementation of TokenStream interface
      */
+    @Override
     public APTToken nextToken() {
         for (;;) {
             APTToken token;
@@ -269,43 +274,52 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             int paren = 0;
             // Each parameter is list of tokens
             List<APTToken> param = new ArrayList<APTToken>();
-            for (next = nextToken(); !APTUtils.isEOF(next) || continueOnEOF(); next = nextToken()) {
-                int type = next.getType();
-                if (type == APTTokenTypes.LPAREN) {
-                    // add this "(" to parameter
-                    add2Param(param, next);
-                    paren++;
-                } else if (type == APTTokenTypes.RPAREN) {
-                    if (paren == 0) {
-                        // we skipped all params
-                        // add last param
-                        params.add(param);
-                        param = null;
-                        // remember the position of the RPAREN
-                        paramsRParen = next;
-                        break;
-                    } else {
-                        // add this ")" to parameter
+            loop:for (next = nextToken(); !APTUtils.isEOF(next) || continueOnEOF(); next = nextToken()) {
+                switch(next.getType()) {
+                    case APTTokenTypes.LPAREN:
+                        // add this "(" to parameter
                         add2Param(param, next);
-                        paren--;
-                        if (paren < 0) {                              
-                            throw new RecognitionException("Error on expanding " + token + "\n by macro " + macro + // NOI18N
-                                    "\n Unbalanced RPAREN " + next); // NOI18N
+                        paren++;
+                        break;
+                    case APTTokenTypes.RPAREN:
+                        if (paren == 0) {
+                            // we skipped all params
+                            // add last param
+                            params.add(param);
+                            param = null;
+                            // remember the position of the RPAREN
+                            paramsRParen = next;
+                            break loop;
+                        } else {
+                            // add this ")" to parameter
+                            add2Param(param, next);
+                            paren--;
+                            if (paren < 0) {
+                                throw new RecognitionException("Error on expanding " + token + "\n by macro " + macro + // NOI18N
+                                        "\n Unbalanced RPAREN " + next); // NOI18N
+                            }
                         }
-                    }
-                } else if (type == APTTokenTypes.COMMA && paren == 0) {
-                    // params delimeter
-                    // add new param
-                    params.add(param);
-                    param = new ArrayList<APTToken>();
-                } else {
-                    // add token to parameter
-                    add2Param(param, next);
+                        break;
+                    case APTTokenTypes.COMMA:
+                        if (paren == 0) {
+                            // params delimeter
+                            // add new param
+                            params.add(param);
+                            param = new ArrayList<APTToken>();
+                        } else {
+                            // add token to parameter
+                            add2Param(param, next);
+                        }
+                        break;
+                    default:
+                        // add token to parameter
+                        add2Param(param, next);
+                        break;
                 }
             }         
             // check for error
             if (APTUtils.isEOF(next)) {
-                APTUtils.LOG.log(Level.SEVERE, "error expanding macro " + token + " : unterminated arguments list");// NOI18N
+                APTUtils.LOG.log(Level.SEVERE, "error expanding macro {0} : unterminated arguments list", token);// NOI18N
             }
         } finally {
             extractingMacroParams = false;              
@@ -526,7 +540,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 tokensRightMerged.append(token.getTextID());
             }
         }
-        List<APTToken> valRight = paramsMap.get(CharSequenceKey.create(tokensRightMerged));
+        List<APTToken> valRight = paramsMap.get(CharSequences.create(tokensRightMerged));
         String rightText;
         if (valRight != null) {
             rightText = toText(valRight, false);
@@ -541,7 +555,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             return new ArrayList<APTToken>();
         }
         String text = leftText + rightText;
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
         List<APTToken> tokens = APTUtils.toList(ts);
         return tokens;
     }

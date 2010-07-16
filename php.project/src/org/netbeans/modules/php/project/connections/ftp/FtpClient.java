@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,8 @@
 
 package org.netbeans.modules.php.project.connections.ftp;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,6 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ProtocolCommandEvent;
@@ -77,6 +83,9 @@ public class FtpClient implements RemoteClient {
     private final FtpConfiguration configuration;
     private final FTPClient ftpClient;
 
+    // @GuardedBy(this)
+    private Long timestampDiff = null;
+
 
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
@@ -90,19 +99,20 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public void connect() throws RemoteException {
         try {
             // connect
             int timeout = configuration.getTimeout() * 1000;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Connecting to " + configuration.getHost() + " [timeout: " + timeout + " ms]");
+                LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {configuration.getHost(), timeout});
             }
             //before connection - not to force user to put password faster than timeout
             String password = getPassword();
             ftpClient.setDefaultTimeout(timeout);
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Reply is " + getReplyString());
+                LOGGER.log(Level.FINE, "Reply is {0}", getReplyString());
             }
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
                 LOGGER.fine("Disconnecting because of negative reply");
@@ -111,7 +121,7 @@ public class FtpClient implements RemoteClient {
             }
 
             // login
-            LOGGER.fine("Login as " + configuration.getUserName());
+            LOGGER.log(Level.FINE, "Login as {0}", configuration.getUserName());
             if (!ftpClient.login(configuration.getUserName(), password)) {
                 LOGGER.fine("Login unusuccessful -> logout");
                 ftpClient.logout();
@@ -131,7 +141,7 @@ public class FtpClient implements RemoteClient {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Remote system is " + ftpClient.getSystemName());
+                LOGGER.log(Level.FINE, "Remote system is {0}", ftpClient.getSystemName());
             }
 
             LOGGER.fine("Setting data timeout");
@@ -154,6 +164,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public void disconnect() throws RemoteException {
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
         if (ftpClient.isConnected()) {
@@ -193,6 +204,7 @@ public class FtpClient implements RemoteClient {
         return ""; // NOI18N
     }
 
+    @Override
     public String getReplyString() {
         String reply = ftpClient.getReplyString();
         if (reply == null) {
@@ -201,6 +213,7 @@ public class FtpClient implements RemoteClient {
         return reply.trim();
     }
 
+    @Override
     public String getNegativeReplyString() {
         int replyCode = ftpClient.getReplyCode();
         if (FTPReply.isNegativePermanent(replyCode)
@@ -210,10 +223,12 @@ public class FtpClient implements RemoteClient {
         return null;
     }
 
+    @Override
     public boolean isConnected() {
         return ftpClient.isConnected();
     }
 
+    @Override
     public String printWorkingDirectory() throws RemoteException {
         try {
             return ftpClient.printWorkingDirectory();
@@ -223,6 +238,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
             return ftpClient.storeFile(remote, local);
@@ -232,6 +248,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean deleteFile(String pathname) throws RemoteException {
         try {
             return ftpClient.deleteFile(pathname);
@@ -241,6 +258,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean deleteDirectory(String pathname) throws RemoteException {
         try {
             return ftpClient.removeDirectory(pathname);
@@ -250,6 +268,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean rename(String from, String to) throws RemoteException {
         try {
             return ftpClient.rename(from, to);
@@ -259,6 +278,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
         String pwd = null;
@@ -270,7 +290,7 @@ public class FtpClient implements RemoteClient {
                 // #142682
                 if (f == null) {
                     // hmm, really weird...
-                    LOGGER.fine("NULL returned for listing of " + pwd);
+                    LOGGER.log(Level.FINE, "NULL returned for listing of {0}", pwd);
                     continue;
                 }
                 result.add(new RemoteFileImpl(f));
@@ -282,6 +302,7 @@ public class FtpClient implements RemoteClient {
         return result;
     }
 
+    @Override
     public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
             return ftpClient.retrieveFile(remote, local);
@@ -291,6 +312,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
             return ftpClient.changeWorkingDirectory(pathname);
@@ -300,6 +322,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean makeDirectory(String pathname) throws RemoteException {
         try {
             return ftpClient.makeDirectory(pathname);
@@ -309,6 +332,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public int getPermissions(String path) throws RemoteException {
         try {
             return getPermissions(getFile(path));
@@ -318,6 +342,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean setPermissions(int permissions, String path) throws RemoteException {
         try {
             return ftpClient.sendSiteCommand("chmod " + permissions + " " + path); // NOI18N
@@ -327,6 +352,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean exists(String parent, String name) throws RemoteException {
         try {
             ftpClient.changeWorkingDirectory(parent);
@@ -380,6 +406,38 @@ public class FtpClient implements RemoteClient {
         return rights;
     }
 
+    synchronized long getTimestampDiff() {
+        if (timestampDiff != null) {
+            return timestampDiff;
+        }
+        timestampDiff = 0L;
+        // try to calculate the time difference between remote and local pc
+        try {
+            File tmpFile = File.createTempFile("netbeans-timestampdiff-", ".txt"); // NOI18N
+            long now = tmpFile.lastModified();
+
+            final String remotePath = configuration.getInitialDirectory() + "/" + tmpFile.getName(); // NOI18N
+            InputStream is = new FileInputStream(tmpFile);
+            try {
+                if (storeFile(remotePath, is)) {
+                    FTPFile remoteFile = getFile(remotePath);
+                    if (remoteFile != null) {
+                        timestampDiff = now - remoteFile.getTimestamp().getTimeInMillis();
+                    }
+                    deleteFile(remotePath);
+                }
+            } finally {
+                is.close();
+                if (!tmpFile.delete()) {
+                    tmpFile.deleteOnExit();
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
+        }
+        return timestampDiff;
+    }
+
     private static final class PrintCommandListener implements ProtocolCommandListener {
         private final InputOutput io;
 
@@ -388,10 +446,12 @@ public class FtpClient implements RemoteClient {
             this.io = io;
         }
 
+        @Override
         public void protocolCommandSent(ProtocolCommandEvent event) {
             processEvent(event);
         }
 
+        @Override
         public void protocolReplyReceived(ProtocolCommandEvent event) {
             processEvent(event);
         }
@@ -412,12 +472,12 @@ public class FtpClient implements RemoteClient {
             writer.println(message.trim());
             writer.flush();
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Command listener: " + message.trim());
+                LOGGER.log(Level.FINE, "Command listener: {0}", message.trim());
             }
         }
     }
 
-    private static final class RemoteFileImpl implements RemoteFile {
+    private final class RemoteFileImpl implements RemoteFile {
         private final FTPFile ftpFile;
 
         public RemoteFileImpl(FTPFile ftpFile) {
@@ -425,20 +485,29 @@ public class FtpClient implements RemoteClient {
             this.ftpFile = ftpFile;
         }
 
+        @Override
         public String getName() {
             return ftpFile.getName();
         }
 
+        @Override
         public boolean isDirectory() {
             return ftpFile.isDirectory();
         }
 
+        @Override
         public boolean isFile() {
             return ftpFile.isFile();
         }
 
+        @Override
         public long getSize() {
             return ftpFile.getSize();
+        }
+
+        @Override
+        public long getTimestamp() {
+            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
         }
     }
 }

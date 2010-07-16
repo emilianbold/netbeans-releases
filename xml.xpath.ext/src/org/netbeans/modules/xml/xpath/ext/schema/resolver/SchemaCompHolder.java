@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
@@ -66,7 +70,9 @@ public interface SchemaCompHolder<T> {
     String getNamespace(SchemaModelsStack sms);
     SchemaComponent getSchemaComponent();
     boolean isPseudoComp();
-    
+    boolean isPrefixRequired();
+    boolean isAttribute();
+
     final class Factory {
         public static SchemaCompHolder construct(SchemaComponent sc) {
             if (sc == null) {
@@ -146,7 +152,24 @@ public interface SchemaCompHolder<T> {
         public boolean isPseudoComp() {
             return false;
         }
+
+        public boolean isPrefixRequired() {
+            return true;
+        }
         
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 67 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof GTypeHolder) {
                 GTypeHolder holder = (GTypeHolder)other;
@@ -197,12 +220,29 @@ public interface SchemaCompHolder<T> {
             return false;
         }
         
+        public boolean isPrefixRequired() {
+            return XPathUtils.isPrefixRequired(mElement);
+        }
+
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof ElementHolder) {
                 ElementHolder holder = (ElementHolder)other;
                 return holder.mElement.equals(this.mElement);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 47 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -247,12 +287,29 @@ public interface SchemaCompHolder<T> {
             return false;
         }
         
+        public boolean isPrefixRequired() {
+            return XPathUtils.isPrefixRequired(mAttribute);
+        }
+
+        public boolean isAttribute() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof AttributeHolder) {
                 AttributeHolder holder = (AttributeHolder)other;
                 return holder.mAttribute.equals(this.mAttribute);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 43 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -292,12 +349,29 @@ public interface SchemaCompHolder<T> {
             return true;
         }
         
+        public boolean isPrefixRequired() {
+            return true;
+        }
+
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof PseudoElementHolder) {
                 PseudoElementHolder holder = (PseudoElementHolder)other;
                 return holder.mPseudoComp.equals(this.mPseudoComp);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 67 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -336,13 +410,30 @@ public interface SchemaCompHolder<T> {
         public boolean isPseudoComp() {
             return true;
         }
-        
+
+        public boolean isPrefixRequired() {
+            return true;
+        }
+
+        public boolean isAttribute() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof PseudoAttributeHolder) {
                 PseudoAttributeHolder holder = (PseudoAttributeHolder)other;
                 return holder.mPseudoComp.equals(this.mPseudoComp);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 29 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override

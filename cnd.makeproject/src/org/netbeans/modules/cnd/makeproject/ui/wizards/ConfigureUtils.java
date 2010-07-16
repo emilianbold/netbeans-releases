@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,17 +44,20 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -67,11 +73,11 @@ public final class ConfigureUtils {
     public static String findConfigureScript(String folder){
         String pattern[] = new String[]{"configure"}; // NOI18N
         File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+        if (!(file.isDirectory() && (file.canRead()||file.canExecute()))) {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+File.separator+name); // NOI18N
+            file = new File(folder, name); // NOI18N
             if (isRunnable(file)){
                 return file.getAbsolutePath();
             }
@@ -88,7 +94,11 @@ public final class ConfigureUtils {
     }
 
     private static String detectQTProject(File folder){
-        for(File file : folder.listFiles()){
+        final File[] listFiles = folder.listFiles();
+        if (listFiles == null) {
+            return null;
+        }
+        for(File file : listFiles){
             if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
                 if (AbstractExecutorRunAction.findTools("qmake") != null){ // NOI18N
                     return file.getAbsolutePath();
@@ -100,7 +110,7 @@ public final class ConfigureUtils {
     }
 
     private static String detectCMake(String path){
-        File configure = new File(path+File.separator+"CMakeLists.txt"); // NOI18N
+        File configure = new File(path, "CMakeLists.txt"); // NOI18N
         if (configure.exists()) {
             if (AbstractExecutorRunAction.findTools("cmake") != null) { // NOI18N
                 return configure.getAbsolutePath();
@@ -110,7 +120,7 @@ public final class ConfigureUtils {
     }
 
     public static boolean isRunnable(File file) {
-        if (file.exists() && file.isFile() && file.canRead()) {
+        if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
             FileObject configureFileObject = FileUtil.toFileObject(file);
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
@@ -145,11 +155,11 @@ public final class ConfigureUtils {
     public static String findMakefile(String folder){
         String pattern[] = new String[]{"GNUmakefile", "makefile", "Makefile",}; // NOI18N
         File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+        if (!(file.isDirectory() && file.canRead())) {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+File.separator+name); // NOI18N
+            file = new File(folder, name); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 return file.getAbsolutePath();
             }
@@ -157,12 +167,14 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static String getConfigureArguments(String configure, String flags) {
-        String cCompiler = ConfigureUtils.getDefaultC();
-        String cppCompiler = ConfigureUtils.getDefaultCpp();
+    public static String getConfigureArguments(ExecutionEnvironment ee, CompilerSet def, String configure, String flags) {
+        ee = (ee != null) ? ee : ServerList.getDefaultRecord().getExecutionEnvironment();
+        def = (def != null) ? def : CompilerSetManager.get(ee).getDefaultCompilerSet();
+        String cCompiler = ConfigureUtils.getDefaultC(def);
+        String cppCompiler = ConfigureUtils.getDefaultCpp(def);
         StringBuilder buf = new StringBuilder(flags);
-        String cCompilerFlags = getCompilerFlags();
-        String cppCompilerFlags = getCompilerFlags();
+        String cCompilerFlags = getCompilerFlags(def);
+        String cppCompilerFlags = getCompilerFlags(def);
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             appendIfNeed("-G ", flags, buf, "\"Unix Makefiles\""); // NOI18N
             appendIfNeed("-DCMAKE_BUILD_TYPE=", flags, buf, "Debug"); // NOI18N
@@ -171,8 +183,12 @@ public final class ConfigureUtils {
             appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if (isSunStodio() && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+            int platform = getPlatform(ee);
+            if (isSunStudio(def) && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) { // NOI18N
                 appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
+            }
+            if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                buf.append("-spec macx-g++"); // NOI18N
             }
             appendIfNeed("QMAKE_CC=", flags, buf, cCompiler); // NOI18N
             appendIfNeed("QMAKE_CXX=", flags, buf, cppCompiler); // NOI18N
@@ -192,12 +208,15 @@ public final class ConfigureUtils {
             if (buf.length() > 0) {
                 buf.append(' '); // NOI18N
             }
-            buf.append(key + flag);
+            buf.append(key).append(flag);
         }
     }
 
-    private static boolean isSunStodio(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+    private static int getPlatform(ExecutionEnvironment ee){
+        return CompilerSetManager.get(ee).getPlatform();
+    }
+
+    private static boolean isSunStudio(CompilerSet def){
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
@@ -207,9 +226,8 @@ public final class ConfigureUtils {
         return false;
     }
 
-    private static String getDefaultC(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cCompiler = getToolPath(def, Tool.CCompiler);
+    private static String getDefaultC(CompilerSet def){
+        String cCompiler = getToolPath(def, PredefinedToolKind.CCompiler);
         if (cCompiler != null) {
             return cCompiler;
         }
@@ -223,9 +241,8 @@ public final class ConfigureUtils {
         return cCompiler;
     }
 
-    private static String getDefaultCpp(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cppCompiler = getToolPath(def, Tool.CCCompiler);
+    private static String getDefaultCpp(CompilerSet def){
+        String cppCompiler = getToolPath(def, PredefinedToolKind.CCCompiler);
         if (cppCompiler != null) {
             return cppCompiler;
         }
@@ -239,7 +256,7 @@ public final class ConfigureUtils {
         return cppCompiler;
     }
 
-    private static String getToolPath(CompilerSet compilerSet, int tool){
+    private static String getToolPath(CompilerSet compilerSet, PredefinedToolKind tool){
         if (compilerSet == null) {
             return null;
         }
@@ -257,8 +274,7 @@ public final class ConfigureUtils {
         return flags;
     }
 
-    private static String getCompilerFlags(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+    private static String getCompilerFlags(CompilerSet def){
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {

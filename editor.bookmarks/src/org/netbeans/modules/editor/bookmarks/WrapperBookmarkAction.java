@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,11 +48,13 @@ import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
+import org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
@@ -75,50 +80,62 @@ public class WrapperBookmarkAction extends NodeAction {
 //        putValue(BaseAction.ICON_RESOURCE_PROPERTY, getValue(BaseAction.ICON_RESOURCE_PROPERTY));
     }
     
+    @Override
     public String getName() {
         String name = (String)originalAction.getValue(Action.SHORT_DESCRIPTION);
         assert (name != null);
         return name;
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
-        JEditorPane editorPane = getEditorPane (activatedNodes);
+        JTextComponent editorPane = getEditorPane (activatedNodes);
         if (editorPane != null) {
             ActionEvent paneEvt = new ActionEvent (editorPane, 0, "");
             originalAction.actionPerformed (paneEvt);
         }
     }
     
+    @Override
     protected boolean enable (Node[] activatedNodes) {
-        return getEditorPane (activatedNodes) != null;
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return false;
+        }
+
+        if (EditorRegistry.componentList().isEmpty()) {
+            return false;
+        }
+
+        return activatedNodes[0].getLookup().lookup(EditorCookie.class) != null;
     }
     
-    private static JEditorPane getEditorPane (Node[] activatedNodes) {
+    private static JTextComponent getEditorPane (Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
-            Set<JEditorPane> editors = new HashSet<JEditorPane> ();
+            Set<JTextComponent> editors = new HashSet<JTextComponent> ();
             for (Node node : activatedNodes) {
-                EditorCookie ec = node.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    JEditorPane panes[] = ec.getOpenedPanes();
-                    if (panes != null && panes.length > 0) {
-                        editors.add (panes [0]);
-                    }
+                JTextComponent pane = ToggleBookmarkAction.findComponent(node.getLookup());
+                if (pane != null) {
+                    editors.add(pane);
                 }
             }
-            if (editors.size () == 1)
+            if (editors.size () == 1) {
                 return editors.iterator ().next ();
+            }
         }
         return null;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return null;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected String iconResource() {
         return (String)originalAction.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
     }

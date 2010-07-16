@@ -24,10 +24,12 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
+import org.netbeans.modules.bpel.nodes.actions.OpenJavaScriptEditorAction;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.ContainerBpelNode;
 import org.netbeans.modules.soa.ui.SoaUtil;
@@ -44,13 +46,12 @@ public class NodeUtils {
      * Shows a custom editor for the specified Node.
      * @returns TRUE if dialog was submited with OK buppon
      */
-    public static boolean showNodeCustomEditor(Node node,
-            CustomNodeEditor.EditingMode editingMode) {
+    public static boolean showNodeCustomEditor(Node node, CustomNodeEditor.EditingMode editingMode) {
         if (node == null) {
             return false;
         }
-        //
         Component c = null;
+
         if (node instanceof BpelNode) {
             c = ((BpelNode)node).getCustomizer(editingMode);
         } else {
@@ -62,6 +63,7 @@ public class NodeUtils {
         }
         //
         String title;
+
         if (CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE == editingMode && 
                 node instanceof BpelNode) {
             String nodeTypeName = ((BpelNode)node).getNodeType().getDisplayName();
@@ -87,6 +89,14 @@ public class NodeUtils {
             dialog.setVisible(true);
             
             return descriptor.isOkHasPressed();
+        }
+        if (node instanceof BpelNode) {
+            Object ref = ((BpelNode) node).getReference();
+        
+            if (ref instanceof Assign && ((Assign) ref).isJavaScript()) {
+                new OpenJavaScriptEditorAction((Assign) ref).actionPerformed(null);
+                return true;
+            }
         }
         return false;
     }

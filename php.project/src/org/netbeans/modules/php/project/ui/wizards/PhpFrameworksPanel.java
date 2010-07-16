@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,6 +81,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return steps;
     }
 
+    @Override
     public Component getComponent() {
         if (frameworksPanel == null) {
             frameworksPanel = new PhpFrameworksPanelVisual(this, createExtenders());
@@ -85,10 +89,12 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return frameworksPanel;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(PhpFrameworksPanel.class);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
@@ -96,6 +102,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         frameworksPanel.addPhpFrameworksListener(this);
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent();
         frameworksPanel.removePhpFrameworksListener(this);
@@ -103,6 +110,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         descriptor.putProperty(EXTENDERS, frameworksPanel.getSelectedExtenders());
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
@@ -143,18 +151,22 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
@@ -166,7 +178,10 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     private Map<PhpFrameworkProvider, PhpModuleExtender> createExtenders() {
         Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
         for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
-            extenders.put(provider, provider.createPhpModuleExtender(null));
+            PhpModuleExtender extender = provider.createPhpModuleExtender(null);
+            if (extender != null) {
+                extenders.put(provider, extender);
+            }
         }
         return extenders;
     }

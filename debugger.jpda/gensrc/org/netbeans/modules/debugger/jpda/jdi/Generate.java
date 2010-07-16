@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -152,6 +155,10 @@ public class Generate {
         ObjectReferenceExceptions.put("enableCollection", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ObjectReference.class.getName(), ObjectReferenceExceptions);
 
+        Map<String, Set<Class>> FieldExceptions = new LinkedHashMap<String, Set<Class>>();
+        FieldExceptions.put("type", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.Field.class.getName(), FieldExceptions);
+
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
         ThreadReferenceExceptions.put("*", Collections.singleton((Class) IllegalThreadStateException.class));
@@ -180,9 +187,22 @@ public class Generate {
 
         Map<String, Set<Class>> EventRequestExceptions = new LinkedHashMap<String, Set<Class>>();
         // ObjectCollectedException can be thrown
-        EventRequestExceptions.put("enable", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
-        EventRequestExceptions.put("setEnabled", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EventRequestExceptions.put("disable", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
+        EventRequestExceptions.put("enable", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
+        EventRequestExceptions.put("setEnabled", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequest.class.getName(), EventRequestExceptions);
+        Map<String, Set<Class>> EventRequestManagerExceptions = new LinkedHashMap<String, Set<Class>>();
+        EventRequestManagerExceptions.put("deleteEventRequest", Collections.singleton((Class)
+                com.sun.jdi.request.InvalidRequestStateException.class));
+        EventRequestManagerExceptions.put("deleteEventRequests", Collections.singleton((Class)
+                com.sun.jdi.request.InvalidRequestStateException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequestManager.class.getName(), EventRequestManagerExceptions);
 
         Map<String, Set<Class>> EventSetExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
@@ -521,11 +541,37 @@ public class Generate {
             }
         }
         w.write(" {\n");
+        w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
+                "                    \""+className+"\",\n"+
+                "                    \""+mName+"\",\n"+
+                "                    \"JDI CALL: "+className+"({0})."+mName+"(");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) {
+                w.write(", ");
+            }
+            w.write("{"+Integer.toString(i+1)+"}");
+        }
+        w.write(")\",\n"+
+                "                    new Object[] {a");
+        for (int i = 0; i < paramNames.length; i++) {
+            w.write(", ");
+            w.write(paramNames[i]);
+        }
+        w.write("});\n");
+        w.write("        }\n"); // if
+        
+        boolean isVoidReturn = "void".equals(rType);
+        if (!isVoidReturn) {
+            w.write("        Object retValue = null;\n");
+        }
+
         w.write("        try {\n");
 
         StringBuffer exec = new StringBuffer();
-        if (!"void".equals(rType)) {
-            exec.append("            return ");
+        if (!isVoidReturn) {
+            exec.append("            ").append(rType).append(" ret;\n");
+            exec.append("            ret = ");
         } else {
             exec.append("            ");
         }
@@ -537,6 +583,10 @@ public class Generate {
             exec.append(paramNames[i]);
         }
         exec.append(");\n");
+        if (!isVoidReturn) {
+            exec.append("            retValue = ret;\n");
+            exec.append("            return ret;\n");
+        }
         w.write(methodImpl(className, mName, exec.toString()));
 
         w.write("        }");
@@ -552,6 +602,9 @@ public class Generate {
             w.write(" catch (");
             w.write(cex.getName());
             w.write(" ex) {\n");
+            if (!isVoidReturn) {
+                w.write("            retValue = ex;\n");
+            }
             if (com.sun.jdi.InternalException.class.equals(cex)) {
                 w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
             }
@@ -562,7 +615,34 @@ public class Generate {
             }
             w.write("        }");
         }
-        w.write("\n    }\n\n");
+        if (!isVoidReturn) {
+            for (int i = 0; i < exceptionTypes.length; i++) {
+                w.write(" catch (");
+                w.write(exceptionTypes[i].getName());
+                w.write(" ex) {\n");
+                w.write("            retValue = ex;\n");
+                w.write("            throw ex;\n        }");
+            }
+            w.write(" catch (Error err) {\n");
+            w.write("            retValue = err;\n");
+            w.write("            throw err;\n");
+            w.write("        } catch (RuntimeException rex) {\n");
+            w.write("            retValue = rex;\n");
+            w.write("            throw rex;\n        }");
+
+        }
+        w.write(" finally {\n");
+        w.write("            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(\n"+
+                "                        \""+className+"\",\n"+
+                "                        \""+mName+"\",\n"+
+                (isVoidReturn ?
+                "                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);\n" :
+                "                        retValue);\n"));
+        //w.write("                logger.log(java.util.logging.Level.FINER, \"          returned after {0} ns\", (t2 - t1));\n");
+        w.write("            }\n");
+        w.write("        }\n");
+        w.write("    }\n\n");
     }
 
     public static void writeHigherVersionClasses(File dir, Class c,
@@ -791,14 +871,40 @@ public class Generate {
         } else {
             higherVersionClass = null;
         }
+        w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
+                "                    \""+className+"\",\n"+
+                "                    \""+mName+"\",\n"+
+                "                    \"JDI CALL: "+className+"({0})."+mName+"(");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) {
+                w.write(", ");
+            }
+            w.write("{"+Integer.toString(i+1)+"}");
+        }
+        w.write(")\",\n"+
+                "                    new Object[] {a");
+        for (int i = 0; i < paramNames.length; i++) {
+            w.write(", ");
+            w.write(paramNames[i]);
+        }
+        w.write("});\n");
+        w.write("        }\n"); // if
+
+        boolean isVoidReturn = "void".equals(rType);
+        if (!isVoidReturn) {
+            w.write("        Object retValue = null;\n");
+        }
+
         w.write("        try {\n");
 
         StringBuffer exec = new StringBuffer();
-        if (!"void".equals(rType)) {
+        if (!isVoidReturn) {
             if ("boolean".equals(rType)) rType = "Boolean";
             if ("int".equals(rType)) rType = "Integer";
             if ("long".equals(rType)) rType = "Long";
-            exec.append("            return ("+rType+") ");
+            exec.append("            ").append(rType).append(" ret;\n");
+            exec.append("            ret = (").append(rType).append(") ");
         } else {
             exec.append("            ");
         }
@@ -831,19 +937,38 @@ public class Generate {
             exec.append(paramNames[i]);
         }
         exec.append(");\n");
+        if (!isVoidReturn) {
+            exec.append("            retValue = ret;\n");
+            exec.append("            return ret;\n");
+        }
         w.write(methodImpl(className, mName, exec.toString()));
 
 
         w.write("        } catch (NoSuchMethodException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (SecurityException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (IllegalAccessException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (IllegalArgumentException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (java.lang.reflect.InvocationTargetException ex) {\n");
         w.write("            Throwable t = ex.getTargetException();\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = t;\n");
+        }
 
         // First re-throw the checked exceptions:
         for (int i = 0; i < exceptionTypes.size(); i++) {
@@ -868,6 +993,16 @@ public class Generate {
             //w.write("        } catch (");
         }
         w.write("            throw new IllegalStateException(t);\n");
+        w.write("        }");
+        w.write(" finally {\n");
+        w.write("            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(\n"+
+                "                        \""+className+"\",\n"+
+                "                        \""+mName+"\",\n"+
+                (isVoidReturn ?
+                "                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);\n" :
+                "                        retValue);\n"));
+        w.write("            }\n");
         w.write("        }\n");
         w.write("    }\n\n");
     }
@@ -1008,14 +1143,9 @@ public class Generate {
         if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {
             String catchNPE = "            try {\n"+
                               "    "+exec+
-                              "            } catch (java.lang.reflect.InvocationTargetException ex) {\n"+
-                              "                Throwable t = ex.getTargetException();\n"+
-                              "                if (t instanceof NullPointerException) {\n"+
-                              "                    // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627\n"+
-                              "                    return null;\n"+
-                              "                } else {\n" +
-                              "                    throw ex;\n"+
-                              "                }\n"+
+                              "            } catch (NullPointerException ex) {\n"+
+                              "                // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627\n"+
+                              "                return null;\n"+
                               "            }\n";
             return catchNPE;
         }

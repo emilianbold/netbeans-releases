@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,28 @@
 package org.openide.filesystems.annotations;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementVisitor;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.AnnotationProcessorTestUtils;
+import org.openide.util.test.TestFileUtils;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 
@@ -65,9 +88,14 @@ public class LayerBuilderTest extends NbTestCase {
     private String dump() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
-        return baos.toString("UTF-8").
+        return clean(baos.toString("UTF-8"));
+    }
+
+    private static String clean(String layer) {
+        return layer.
                 replace('"', '\'').
                 replaceFirst("^<\\?xml version='1\\.0' encoding='UTF-8'\\?>\r?\n", "").
+                replaceFirst("^<!DOCTYPE [^>]+>\r?\n", "").
                 replaceAll("\r?\n *", "");
     }
 
@@ -161,6 +189,64 @@ public class LayerBuilderTest extends NbTestCase {
                 "<file name='x'/>" +
                 "<attr name='a' stringvalue='v'/>" +
                 "</folder></filesystem>", dump());
+    }
+
+    public void testOriginatingElementComments() throws Exception {
+        b = new LayerBuilder(doc, new Element() {
+            public @Override ElementKind getKind() {
+                return ElementKind.OTHER;
+            }
+            public @Override String toString() {
+                return "originating.Type";
+            }
+            public @Override TypeMirror asType() {return null;}
+            public @Override List<? extends AnnotationMirror> getAnnotationMirrors() {return null;}
+            public @Override <A extends Annotation> A getAnnotation(Class<A> annotationType) {return null;}
+            public @Override Set<Modifier> getModifiers() {return null;}
+            public @Override Name getSimpleName() {return null;}
+            public @Override Element getEnclosingElement() {return null;}
+            public @Override List<? extends Element> getEnclosedElements() {return null;}
+            public @Override <R, P> R accept(ElementVisitor<R, P> v, P p) {return null;}
+        }, null);
+        b.folder("f").write();
+        assertEquals("<filesystem><folder name='f'><!--originating.Type--></folder></filesystem>", dump());
+        // #180154: do not repeat after an incremental build
+        b.folder("f").write();
+        assertEquals("<filesystem><folder name='f'><!--originating.Type--></folder></filesystem>", dump());
+    }
+
+    public void testSourcePath() throws Exception { // #181355
+        clearWorkDir();
+        File src = new File(getWorkDir(), "src");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#label\") public class C {}");
+        File dest = new File(getWorkDir(), "dest");
+        TestFileUtils.writeFile(new File(dest, "p/Bundle.properties"), "label=hello");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        File layer = new File(dest, "META-INF/generated-layer.xml");
+        assertEquals("<filesystem><folder name='whatever'><file name='p-C.instance'>" +
+                "<!--p.C--><attr bundlevalue='p.Bundle#label' name='displayName'/>" +
+                "</file></folder></filesystem>",
+                clean(TestFileUtils.readFile(layer)));
+    }
+
+    public @interface A {String displayName();}
+
+    @ServiceProvider(service=Processor.class)
+    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    public static class AP extends LayerGeneratingProcessor {
+        public @Override Set<String> getSupportedAnnotationTypes() {
+            return Collections.singleton(A.class.getCanonicalName());
+        }
+        protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+            if (roundEnv.processingOver()) {
+                return false;
+            }
+            for (Element e : roundEnv.getElementsAnnotatedWith(A.class)) {
+                A a = e.getAnnotation(A.class);
+                layer(e).instanceFile("whatever", null).bundlevalue("displayName", a.displayName()).write();
+            }
+            return true;
+        }
     }
 
 }

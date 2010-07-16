@@ -254,6 +254,11 @@ public class NewMessageVarChooser extends JPanel
                         VariableContainer vc = scope.getVariableContainer();
                         if (vc != null) {
                             String varName = fldVariableName.getText();
+                            if (varName == null || varName.length() == 0){
+                                    addReasonKey(Severity.ERROR,
+                                            "ERR_EMPTY_VARIABLE_NAME"); //NOI18N
+                            
+                            }
                             Variable[] variables = vc.getVariables();
                             for (Variable variable : variables) {
                                 if (varName.equals( variable.getName())){

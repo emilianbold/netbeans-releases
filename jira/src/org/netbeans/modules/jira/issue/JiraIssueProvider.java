@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,16 @@
 
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.jira.repository.*;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,8 +65,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -67,12 +72,10 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -195,6 +198,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         support.removePropertyChangeListener(listener);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
@@ -228,16 +232,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     }
                 }
             }
-        } else if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
-            // kenai issues need instantiated repository so they can be shown in tasklist
-            // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
-            // when user loggs in so the repository can be created.
-            rp.post(new Runnable() { // do not block here
-                public void run() {
-                    notifyKenaiLogin();
-                }
-            });
-        }
+        } 
     }
 
     /**
@@ -313,6 +308,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     private void reloadAsync() {
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
             }
@@ -326,6 +322,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         }
         final JiraLazyIssue[] lazyIssuesToSave = lazyIssues;
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
                 LOG.log(Level.FINE, "saveIntern: saving issues");       //NOI18N
@@ -379,7 +376,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             LOG.finer("initializeIssues: reloading saved issues");      //NOI18N
             // load from storage
             Map<String, List<String>> repositoryIssues = JiraStorageManager.getInstance().getTaskListIssues();
-            if (repositoryIssues.size() == 0) {
+            if (repositoryIssues.isEmpty()) {
                 LOG.fine("initializeIssues: no saved issues");          //NOI18N
                 return;
             }
@@ -425,7 +422,6 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
         // now what remains are kenai issues and non-existant repositories
-        boolean kenaiIssueAdded = false;
         for (Map.Entry<String, List<String>> e : repositoryIssues.entrySet()) {
             String projectName = e.getKey();
             if (projectName.startsWith(KENAI_REPOSITORY_IDENT_PREFIX)) { // is kenai
@@ -453,15 +449,53 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                             continue;
                         }
                         add(issueName, issueUrl, issueKey, projectName);
-                        kenaiIssueAdded = true;
+                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor();
+                        if(ka != null) {
+                            String host = issueUrl.getHost();
+                            Map<String, PropertyChangeListener> kl = getKenaiListeners();
+                            PropertyChangeListener l = kl.get(host);
+                            if (l == null) {
+                                // kenai host not registered yet
+                                l = new KenaiListener(host);
+                                ka.addPropertyChangeListener(l, host);
+                                kl.put(host, l);
+                            }
+                        }
                     }
                 }
             }
         }
-        if (kenaiIssueAdded) {
-            Kenai.getDefault().removePropertyChangeListener(this);
-            Kenai.getDefault().addPropertyChangeListener(this);
+    }
+
+    private class KenaiListener implements PropertyChangeListener {
+        private final String kenaiHost;
+
+        public KenaiListener(String kenaiHost) {
+            this.kenaiHost = kenaiHost;
         }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (KenaiAccessor.PROP_LOGIN.equals(evt.getPropertyName())) {
+                // kenai issues need instantiated repository so they can be shown in tasklist
+                // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
+                // when user loggs in so the repository can be created.
+                rp.post(new Runnable() { // do not block here
+                    @Override
+                    public void run() {
+                        notifyKenaiLogin(kenaiHost);
+                    }
+                });
+            }
+        }
+    }
+
+    private Map<String, PropertyChangeListener> kenaiListeners;
+    private Map<String, PropertyChangeListener> getKenaiListeners() {
+        if (kenaiListeners == null) {
+            kenaiListeners = new HashMap<String, PropertyChangeListener>();
+        }
+        return kenaiListeners;
     }
 
     private void remove (URL url, boolean savePermanently) {
@@ -519,6 +553,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         final NbJiraIssue[] issue = new NbJiraIssue[1];
         if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueKey); //NOI18N
                     issue[0] = (NbJiraIssue) repository.getIssue(issueKey);
@@ -543,11 +578,13 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
      * and issue tracking repository cannot be created.
      */
-    private void notifyKenaiLogin () {
+    private void notifyKenaiLogin (String notifiedKenaiHost) {
         synchronized (LOCK) {
             for (JiraLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiJiraLazyIssue) {
-                    ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                    if(notifiedKenaiHost.equals(issue.getUrl().getHost())) {
+                        ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                    }
                 }
             }
         }
@@ -622,6 +659,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         private void attachIssueListener (NbJiraIssue issue) {
             if (issueListener == null) {
                 issueListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         NbJiraIssue issue = issueRef.get();
                         if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
@@ -660,8 +698,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
             actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction")) { //NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             final NbJiraIssue issue = getIssue();
                             if (issue == null) {
@@ -681,6 +721,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                                     final Resolution resolution = panel.getSelectedResolution();
                                     final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
+                                        @Override
                                         public void run() {
                                             issue.resolve(resolution, comment);
                                             if (issue.submitAndRefresh()) {
@@ -706,8 +747,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                 }
             });
             actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneAction")) { //NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             final NbJiraIssue issue = getIssue();
                             if (issue == null) {
@@ -719,6 +762,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                                     String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneMessage"); // NOI18N
                                     String message = MessageFormat.format(pattern, issue.getID());
                                     runCancellableCommand(new Runnable() {
+                                        @Override
                                         public void run() {
                                             issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
                                             int remainingEstimate = panel.getRemainingEstimate();
@@ -786,8 +830,8 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
-                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
-                } catch (KenaiException ex) {
+                    repo = KenaiUtil.getRepository(getUrl().toString(), projectName);
+                } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
                 loginStatusChanged = false;

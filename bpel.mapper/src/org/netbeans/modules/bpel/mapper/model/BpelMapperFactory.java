@@ -19,20 +19,24 @@
 
 package org.netbeans.modules.bpel.mapper.model;
 
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
+import org.netbeans.modules.bpel.mapper.model.customitems.DeadlineLiteralVertexEditor;
+import org.netbeans.modules.bpel.mapper.model.customitems.DurationLiteralVertexEditor;
+import org.netbeans.modules.bpel.mapper.model.customitems.XmlLiteralDataObject;
+import org.netbeans.modules.bpel.mapper.model.customitems.XmlLiteralVertexEditor;
 import org.netbeans.modules.bpel.mapper.tree.BpelMapperContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.model.MapperFactory;
+import org.netbeans.modules.xml.time.Deadline;
+import org.netbeans.modules.xml.time.Duration;
 
 /**
- *
  * @author nk160297
  * @author AlexanderPermyakov
  */
-public class BpelMapperFactory {
+public class BpelMapperFactory implements MapperFactory {
 
-    public static Mapper createMapper(MapperModel model) {
+    public Mapper createMapper(MapperModel model) {
         Mapper newMapper = new Mapper(model);
         newMapper.setContext(new BpelMapperContext());
         //
@@ -45,9 +49,10 @@ public class BpelMapperFactory {
 
         //
         // Tune up Vertex Item editors
-        // newMapper.getCanvas().setVertexItemEditor(valueType, editor);
-        //
+        newMapper.getCanvas().setCustomVertexItemEditor(Deadline.class, new DeadlineLiteralVertexEditor());
+        newMapper.getCanvas().setCustomVertexItemEditor(Duration.class, new DurationLiteralVertexEditor());
+        newMapper.getCanvas().setCustomVertexItemEditor(XmlLiteralDataObject.class, new XmlLiteralVertexEditor());
+        
         return newMapper;
     }
-    
 }

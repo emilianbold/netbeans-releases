@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -42,6 +45,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -201,6 +206,7 @@ public final class EngineUtils {
                 ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)));
 
         JarOutputStream jos = null;
+        Set <String> jarEntries = new HashSet <String> ();
 
         try {
             Manifest mf = new Manifest();
@@ -221,7 +227,7 @@ public final class EngineUtils {
                             name.equals(dataDir) || // "data/"
                             name.matches(EngineResources.ENGINE_PROPERTIES_PATTERN) || // engine properties
                             name.equals(CLIHandler.OPTIONS_LIST)) { // additional CLI commands list
-                        jos.putNextEntry(new JarEntry(name));
+                        addJarEntry(jos, name, jarEntries);
                         if (!name.endsWith(StringUtils.FORWARD_SLASH)) {
                             StreamUtils.transferData(ResourceUtils.getResource(name), jos);
                         }
@@ -229,16 +235,14 @@ public final class EngineUtils {
                 }
             }
             LogManager.log("... adding content list and some other stuff");
-
-            jos.putNextEntry(new JarEntry(
-                    EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
-                    Registry.DEFAULT_BUNDLED_REGISTRY_FILE_NAME));
+            addJarEntry(jos, EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
+                    Registry.DEFAULT_BUNDLED_REGISTRY_FILE_NAME, jarEntries);
 
             XMLUtils.saveXMLDocument(
                     Registry.getInstance().getEmptyRegistryDocument(),
                     jos);
 
-            jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
+            addJarEntry(jos, EngineResources.ENGINE_CONTENTS_LIST, jarEntries);
             jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
         } catch (XMLException e) {
             IOException ex = new IOException();
@@ -256,6 +260,24 @@ public final class EngineUtils {
         }
 
         LogManager.log("Installer Engine has been cached to " + dest);
+    }
+
+    private static void addJarEntry(JarOutputStream jos, String name, Set <String> entries) throws IOException {
+        String parent = null;
+        int index = -1;
+        if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
+            //file entry
+            index = name.lastIndexOf(StringUtils.FORWARD_SLASH);            
+        } else {
+            index = name.substring(0, name.length() - 1).lastIndexOf(StringUtils.FORWARD_SLASH);
+        }
+        if(index != -1) {
+            parent = name.substring(0, index + 1);
+            addJarEntry(jos, parent, entries);
+        }
+        if(entries.add(name)) {
+            jos.putNextEntry(new JarEntry(name));            
+        }
     }
     
     public static final String DEFAULT_ENGINE_JAR_NAME = "nbi-engine.jar";//NOI18N    

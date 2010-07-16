@@ -19,32 +19,27 @@
 package org.netbeans.modules.bpel.design.model.elements;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineBreakMeasurer;
-import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.geometry.FBounds;
-import org.netbeans.modules.bpel.design.geometry.FPoint;
-import org.netbeans.modules.bpel.design.geometry.FShape;
+import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.design.ViewProperties;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
+import org.netbeans.modules.bpel.design.decoration.LabelStyleDescriptor;
 import org.netbeans.modules.bpel.design.decoration.TextstyleDescriptor;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
+import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.geometry.FShape;
 import org.netbeans.modules.bpel.design.model.connections.Connection;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
@@ -208,31 +203,52 @@ public abstract class VisualElement {
 
         TextstyleDescriptor textStyle = (decoration == null) ? null
                 : decoration.getTextstyle();
+        LabelStyleDescriptor labelStyle = (decoration == null) ? null
+                : decoration.getLabelStyle();
 
         boolean editable = isTextElement();
 
-        if (textStyle == null) {
+        if (labelStyle != null && labelStyle.getElement().equals(this)) {
             return (editable)
-                    ? ViewProperties.EDITABLE_TEXT_COLOR
-                    : ViewProperties.UNEDITABLE_TEXT_COLOR;
-        } else {
+                    ? labelStyle.getEditableTextColor()
+                    : labelStyle.getNotEditableTextColor();
+        }
+        
+        if (textStyle != null) {
             return (editable)
                     ? textStyle.getEditableTextColor()
                     : textStyle.getNotEditableTextColor();
         }
+
+        return (editable)
+                ? ViewProperties.EDITABLE_TEXT_COLOR
+                : ViewProperties.UNEDITABLE_TEXT_COLOR;
     }
 
+    public int getTextStyle() {
+        Pattern p = getPattern();
+        Decoration decoration = p.getModel().getView().getDecoration(p);
+
+        LabelStyleDescriptor labelStyle = (decoration == null) ? null
+                : decoration.getLabelStyle();
+        if (labelStyle != null && labelStyle.getElement().equals(this)) {
+            return  labelStyle.getTextStyle();
+        }
+        return Font.PLAIN;
+    }
+    
     protected void drawString(Graphics2D g2, String string,
             double x, double y, double width) {
         if (string == null || string.length() == 0) {
             setTextBounds(null);
         }
-
+        g2.setFont(g2.getFont().deriveFont(getTextStyle()));
+        
         string = clipString(string, g2, width);
 
         Rectangle2D bounds = g2.getFont().getStringBounds(string,
                 g2.getFontRenderContext());
-
+      
         double w = bounds.getWidth();
         double h = bounds.getHeight();
 
@@ -251,7 +267,8 @@ public abstract class VisualElement {
         if (string == null || string.length() == 0) {
             setTextBounds(null);
         }
-
+        g2.setFont(g2.getFont().deriveFont(getTextStyle()));
+        
         string = clipString(string, g2, width);
 
         Rectangle2D bounds = g2.getFont().getStringBounds(string,
@@ -275,7 +292,8 @@ public abstract class VisualElement {
         if (string == null || string.length() == 0) {
             setTextBounds(null);
         }
-
+        g2.setFont(g2.getFont().deriveFont(getTextStyle()));
+        
         string = clipString(string, g2, width);
 
         Rectangle2D bounds = g2.getFont().getStringBounds(string,
@@ -296,9 +314,10 @@ public abstract class VisualElement {
 
     private static String clipString(String string, Graphics2D g2,
             double clipWidth) {
+        
         Font font = g2.getFont();
         FontRenderContext frc = g2.getFontRenderContext();
-
+        
         double stringWidth = font.getStringBounds(string, frc).getWidth();
 
         if (stringWidth <= clipWidth) {
@@ -388,17 +407,16 @@ public abstract class VisualElement {
         result.addAll(outputConnections);
         return result;
     }
-/*
+    
     public void scrollTo() {
-        DesignView view = getPattern().getModel().getView();
+        DiagramView dView = getPattern().getView();
         FBounds bounds = getTextBounds();
         Rectangle rect;
-        Point p1,
-         p2;
-
+        Point p1, p2;
+         
         if (bounds == null) {
             FShape shape = getShape();
-            rect = view.getVisibleRect();
+            rect = dView.getVisibleRect();
             double y0;
             double y1;
             double x;
@@ -407,8 +425,8 @@ public abstract class VisualElement {
                 y0 = shape.getMaxY();
                 y1 = y0 + 24;
                 x = shape.getCenterX();
-                p1 = view.convertDiagramToScreen(new FPoint(x, y0));
-                p2 = view.convertDiagramToScreen(new FPoint(x, y1));
+                p1 = dView.convertDiagramToScreen(new FPoint(x, y0));
+                p2 = dView.convertDiagramToScreen(new FPoint(x, y1));
                 rect.x = p1.x - rect.width / 2;
                 rect.y = p1.y;
                 rect.height = p2.y - p1.y;
@@ -416,8 +434,8 @@ public abstract class VisualElement {
                 y0 = shape.getY();
                 y1 = y0 + 32;
                 x = shape.getCenterX();
-                p1 = view.convertDiagramToScreen(new FPoint(x, y0));
-                p2 = view.convertDiagramToScreen(new FPoint(x, y1));
+                p1 = dView.convertDiagramToScreen(new FPoint(x, y0));
+                p2 = dView.convertDiagramToScreen(new FPoint(x, y1));
                 rect.x = p1.x - rect.width / 2;
                 rect.y = p1.y;
                 rect.height = p2.y - p1.y;
@@ -425,22 +443,22 @@ public abstract class VisualElement {
                 y0 = shape.getY();
                 y1 = y0 + 24;
                 x = shape.getX();
-                p1 = view.convertDiagramToScreen(new FPoint(x, y0));
-                p2 = view.convertDiagramToScreen(new FPoint(x, y1));
+                p1 = dView.convertDiagramToScreen(new FPoint(x, y0));
+                p2 = dView.convertDiagramToScreen(new FPoint(x, y1));
                 rect.x = p1.x - 24;
                 rect.y = p1.y;
                 rect.height = p2.y - p1.y;
             }
         } else {
-            p1 = view.convertDiagramToScreen(bounds.getTopLeft());
-            p2 = view.convertDiagramToScreen(bounds.getBottomRight());
+            p1 = dView.convertDiagramToScreen(bounds.getTopLeft());
+            p2 = dView.convertDiagramToScreen(bounds.getBottomRight());
             int width = p2.x - p1.x + 48;
             int height = p2.y - p1.y;
             rect = new Rectangle(p1.x - 24, p1.y, width, height);
         }
         rect.y -= 24;
         rect.height += 48;
-        view.scrollRectToVisible(rect);
+        dView.scrollRectToVisible(rect);
     }
-  */
+ 
 }

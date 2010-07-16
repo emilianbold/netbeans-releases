@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,12 @@
 package org.netbeans.spi.viewmodel;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,11 +69,14 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import org.netbeans.modules.viewmodel.AsynchronousModel;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.HyperCompoundModel;
 import org.netbeans.modules.viewmodel.OutlineTable;
+import org.netbeans.modules.viewmodel.TreeModelNode.DisableableAction;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
 
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
@@ -101,6 +109,8 @@ public final class Models {
     public static int MULTISELECTION_TYPE_EXACTLY_ONE = 1;
     public static int MULTISELECTION_TYPE_ALL = 2;
     public static int MULTISELECTION_TYPE_ANY = 3;
+
+    private static final int DEFAULT_DRAG_DROP_ALLOWED_ACTIONS = DnDConstants.ACTION_NONE;
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
@@ -233,7 +243,7 @@ public final class Models {
         // ; or the models directly
         boolean hasLists = false;
         int modelsSize = models.size();
-        if (11 <= modelsSize && modelsSize <= 14) {
+        if (11 <= modelsSize && modelsSize <= 15) {
             Iterator it = models.iterator ();
             boolean failure = false;
             while (it.hasNext ()) {
@@ -269,26 +279,17 @@ public final class Models {
                 //    ml.asynchModels = (List<AsynchronousModel>) models.get(12);
                     if (modelsSize > 12) { // AsynchronousModelFilter
                         ml.asynchModelFilters = (List<AsynchronousModelFilter>) models.get(12);
+                        if (modelsSize > 13) {
+                            ml.tableRendererModels = (List<TableRendererModel>) models.get(13);
+                            if (modelsSize > 14) {
+                                ml.tableRendererModelFilters = (List<TableRendererModelFilter>) models.get(14);
+                            }
+                        }
                     }
                 //}
-            } else {
-                ml.treeExpansionModelFilters = Collections.emptyList();
             }
             //treeExpansionModelFilters = (models.size() > 11) ? (List<TreeExpansionModelFilter>) models.get(11) : (List<TreeExpansionModelFilter>) Collections.EMPTY_LIST;
         } else { // We have the models, need to find out what they implement
-            ml.treeModels =           new LinkedList<TreeModel> ();
-            ml.treeModelFilters =     new LinkedList<TreeModelFilter> ();
-            ml.treeExpansionModels =  new LinkedList<TreeExpansionModel> ();
-            ml.treeExpansionModelFilters = new LinkedList<TreeExpansionModelFilter> ();
-            ml.nodeModels =           new LinkedList<NodeModel> ();
-            ml.nodeModelFilters =     new LinkedList<NodeModelFilter> ();
-            ml.tableModels =          new LinkedList<TableModel> ();
-            ml.tableModelFilters =    new LinkedList<TableModelFilter> ();
-            ml.nodeActionsProviders = new LinkedList<NodeActionsProvider> ();
-            ml.nodeActionsProviderFilters = new LinkedList<NodeActionsProviderFilter> ();
-            //ml.asynchModels =         new LinkedList<AsynchronousModel> ();
-            ml.asynchModelFilters =   new LinkedList<AsynchronousModelFilter> ();
-            ml.columnModels =         new LinkedList<ColumnModel> ();
             otherModels =          (List<? extends Model>) models;
         }
 
@@ -373,6 +374,10 @@ public final class Models {
                 new DefaultAsynchronousModel(),//new DelegatingAsynchronousModel (ml.asynchModels),
                 ml.asynchModelFilters
             ),
+            createCompoundTableRendererModel (
+                new DelegatingTableRendererModel(ml.tableRendererModels),
+                ml.tableRendererModelFilters
+            ),
             propertiesHelpID
         );
         if (defaultExpansionModel != null) {
@@ -447,11 +452,11 @@ public final class Models {
      *
      * @returns compund tree model
      */
-    private static TreeModel createCompoundTreeModel (
-        TreeModel originalTreeModel,
+    private static ReorderableTreeModel createCompoundTreeModel (
+        ReorderableTreeModel originalTreeModel,
         List treeModelFilters
     ) {
-        TreeModel tm = originalTreeModel;
+        ReorderableTreeModel tm = originalTreeModel;
         int i, k = treeModelFilters.size ();
         for (i = 0; i < k; i++)
             tm = new CompoundTreeModel (
@@ -470,11 +475,11 @@ public final class Models {
      *
      * @returns compund tree model
      */
-    private static ExtendedNodeModel createCompoundNodeModel (
-        ExtendedNodeModel originalNodeModel,
+    private static SuperNodeModel createCompoundNodeModel (
+        SuperNodeModel originalNodeModel,
         List treeNodeModelFilters
     ) {
-        ExtendedNodeModel nm = originalNodeModel;
+        SuperNodeModel nm = originalNodeModel;
         int i, k = treeNodeModelFilters.size ();
         for (i = 0; i < k; i++)
             nm = new CompoundNodeModel (
@@ -507,6 +512,29 @@ public final class Models {
         return tm;
     }
     
+    /**
+     * Creates {@link org.netbeans.spi.viewmodel.TableModel} for given TableModel and
+     * {@link org.netbeans.spi.viewmodel.TableModelFilter}.
+     *
+     * @param originalTableModel a original table model
+     * @param tableModelFilters a list of table model filters
+     *
+     * @returns compund table model
+     */
+    private static TableRendererModel createCompoundTableRendererModel (
+        TableRendererModel originalTableModel,
+        List tableModelFilters
+    ) {
+        TableRendererModel tm = originalTableModel;
+        int i, k = tableModelFilters.size ();
+        for (i = 0; i < k; i++)
+            tm = new CompoundTableRendererModel (
+                tm,
+                (TableRendererModelFilter) tableModelFilters.get (i)
+            );
+        return tm;
+    }
+
     /**
      * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} for given NodeActionsProvider and
      * {@link org.netbeans.spi.viewmodel.NodeActionsProviderFilter}.
@@ -556,11 +584,12 @@ public final class Models {
     /**
      * @author   Jan Jancura
      */
-    private static class ActionSupport extends AbstractAction {
+    private static class ActionSupport extends AbstractAction implements DisableableAction {
 
         private ActionPerformer     performer;
         private int                 multiselectionType;
         private String              displayName;
+        private PrivilegedAction    enabledTest;
 
  
         ActionSupport (
@@ -576,6 +605,11 @@ public final class Models {
         
         @Override
         public boolean isEnabled () {
+            if (enabledTest != null) {
+                if (Boolean.FALSE.equals(enabledTest.run())) {
+                    return false;
+                }
+            }
             boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
@@ -648,6 +682,19 @@ public final class Models {
             return (o instanceof ActionSupport) && 
                 displayName.equals (((ActionSupport) o).displayName);
         }
+
+        @Override
+        public Action createDisableable(PrivilegedAction enabledTest) {
+            ActionSupport a = new ActionSupport(displayName, performer, multiselectionType);
+            a.enabledTest = enabledTest;
+            Object[] keys = getKeys();
+            if (keys != null) {
+                for (Object k : keys) {
+                    a.putValue((String) k, getValue((String) k));
+                }
+            }
+            return a;
+        }
     }
 
     /**
@@ -683,10 +730,10 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    private final static class CompoundTreeModel implements TreeModel, ModelListener {
+    private final static class CompoundTreeModel implements ReorderableTreeModel, ModelListener {
 
 
-        private TreeModel model;
+        private ReorderableTreeModel model;
         private TreeModelFilter filter;
         
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
@@ -696,7 +743,7 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
          * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
          */
-        CompoundTreeModel (TreeModel model, TreeModelFilter filter) {
+        CompoundTreeModel (ReorderableTreeModel model, TreeModelFilter filter) {
             this.model = model;
             this.filter = filter;
         }
@@ -751,6 +798,22 @@ public final class Models {
          */
         public boolean isLeaf (Object node) throws UnknownTypeException {
             return filter.isLeaf (model, node);
+        }
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            if (filter instanceof ReorderableTreeModelFilter) {
+                return ((ReorderableTreeModelFilter) filter).canReorder(model, parent);
+            } else {
+                return model.canReorder(parent);
+            }
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            if (filter instanceof ReorderableTreeModelFilter) {
+                ((ReorderableTreeModelFilter) filter).reorder(model, parent, perm);
+            } else {
+                model.reorder(parent, perm);
+            }
         }
 
         /** 
@@ -818,7 +881,7 @@ public final class Models {
         }
 
     }
-    
+
     private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
         ModelEvent newEvent;
         if (event instanceof ModelEvent.NodeChanged) {
@@ -843,13 +906,14 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    private final static class CompoundNodeModel implements ExtendedNodeModel, CheckNodeModel, ModelListener {
+    private final static class CompoundNodeModel implements SuperNodeModel,
+                                                            ModelListener {
 
 
-        private ExtendedNodeModel model;
+        private SuperNodeModel model;
         private NodeModelFilter filter;
-        private CheckNodeModel cmodel;
         private CheckNodeModelFilter cfilter;
+        private DnDNodeModelFilter dndfilter;
 
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
@@ -858,14 +922,14 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
          * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
          */
-        CompoundNodeModel (ExtendedNodeModel model, NodeModelFilter filter) {
+        CompoundNodeModel (SuperNodeModel model, NodeModelFilter filter) {
             this.model = model;
             this.filter = filter;
-            if (model instanceof CheckNodeModel) {
-                this.cmodel = (CheckNodeModel) model;
-            }
             if (filter instanceof CheckNodeModelFilter) {
                 this.cfilter = (CheckNodeModelFilter) filter;
+            }
+            if (filter instanceof DnDNodeModelFilter) {
+                this.dndfilter = (DnDNodeModelFilter) filter;
             }
         }
     
@@ -1015,14 +1079,30 @@ public final class Models {
             }
         }
 
-        /*public Transferable drag(Object node) throws IOException,
+        public int getAllowedDragActions() {
+            if (dndfilter != null) {
+                return dndfilter.getAllowedDragActions(model);
+            } else {
+                return model.getAllowedDragActions();
+            }
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            if (dndfilter != null) {
+                return dndfilter.getAllowedDropActions(model, t);
+            } else {
+                return model.getAllowedDropActions(t);
+            }
+        }
+
+        public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
-            if (filter instanceof ExtendedNodeModelFilter) {
-                return ((ExtendedNodeModelFilter) filter).drag(model, node);
+            if (dndfilter != null) {
+                return dndfilter.drag(model, node);
             } else {
                 return model.drag(node);
             }
-        }*/
+        }
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             if (filter instanceof ExtendedNodeModelFilter) {
@@ -1032,14 +1112,14 @@ public final class Models {
             }
         }
 
-        /*public PasteType getDropType(Object node, Transferable t, int action,
+        public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
-            if (filter instanceof ExtendedNodeModelFilter) {
-                return ((ExtendedNodeModelFilter) filter).getDropType(model, node, t, action, index);
+            if (dndfilter != null) {
+                return dndfilter.getDropType(model, node, t, action, index);
             } else {
                 return model.getDropType(node, t, action, index);
             }
-        }*/
+        }
 
         public void setName(Object node, String name) throws UnknownTypeException {
             if (filter instanceof ExtendedNodeModelFilter) {
@@ -1076,40 +1156,32 @@ public final class Models {
         public boolean isCheckable(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isCheckable(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isCheckable(node);
             } else {
-                return false;
+                return model.isCheckable(node);
             }
         }
 
         public boolean isCheckEnabled(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isCheckEnabled(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isCheckEnabled(node);
             } else {
-                return true;
+                return model.isCheckEnabled(node);
             }
         }
 
         public Boolean isSelected(Object node) throws UnknownTypeException {
             if (cfilter != null) {
                 return cfilter.isSelected(model, node);
-            } else if (cmodel != null) {
-                return cmodel.isSelected(node);
             } else {
-                return false;
+                return model.isSelected(node);
             }
         }
 
         public void setSelected(Object node, Boolean selected) throws UnknownTypeException {
             if (cfilter != null) {
                 cfilter.setSelected(model, node, selected);
-            } else if (cmodel != null) {
-                cmodel.setSelected(node, selected);
             } else {
-                Exceptions.printStackTrace(new IllegalStateException("Can not set selected state to model "+this));
+                model.setSelected(node, selected);
             }
         }
 
@@ -1260,13 +1332,123 @@ public final class Models {
     }
 
     /**
+     * Creates {@link org.netbeans.spi.viewmodel.TableRendererModel} for given TableRendererModel and
+     * {@link org.netbeans.spi.viewmodel.TableRendererModelFilter}.
+     */
+    private final static class CompoundTableRendererModel implements TableRendererModel, ModelListener {
+
+
+        private TableRendererModel model;
+        private TableRendererModelFilter filter;
+
+        private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+
+
+        /**
+         * Creates {@link org.netbeans.spi.viewmodel.TableRendererModel} for given TableRendererModel and
+         * {@link org.netbeans.spi.viewmodel.TableRendererModelFilter}.
+         */
+        CompoundTableRendererModel (TableRendererModel model, TableRendererModelFilter filter) {
+            this.model = model;
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean canRenderCell(Object node, String columnID) throws UnknownTypeException {
+            return filter.canRenderCell(model, node, columnID);
+        }
+
+        @Override
+        public TableCellRenderer getCellRenderer(Object node, String columnID) throws UnknownTypeException {
+            return filter.getCellRenderer(model, node, columnID);
+        }
+
+        @Override
+        public boolean canEditCell(Object node, String columnID) throws UnknownTypeException {
+            return filter.canEditCell(model, node, columnID);
+        }
+
+        @Override
+        public TableCellEditor getCellEditor(Object node, String columnID) throws UnknownTypeException {
+            return filter.getCellEditor(model, node, columnID);
+        }
+        
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        public void addModelListener (ModelListener l) {
+            synchronized (modelListeners) {
+                if (modelListeners.size() == 0) {
+                    filter.addModelListener (this);
+                    model.addModelListener (this);
+                }
+                modelListeners.add(l);
+            }
+        }
+
+        /**
+         * Unregisters given listener.
+         *
+         * @param l the listener to remove
+         */
+        public void removeModelListener (ModelListener l) {
+            synchronized (modelListeners) {
+                modelListeners.remove(l);
+                if (modelListeners.size() == 0) {
+                    filter.removeModelListener (this);
+                    model.removeModelListener (this);
+                }
+            }
+        }
+
+        public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged && (event.getSource() instanceof NodeModel || event.getSource() instanceof NodeModelFilter)) {
+                // CompoundNodeModel.modelChanged() takes this.
+                return ;
+            }
+            if (event instanceof ModelEvent.TreeChanged &&
+                    (event.getSource() instanceof TreeModel || event.getSource() instanceof TreeModelFilter)) {
+                // CompoundTreeModel.modelChanged() takes this.
+                return ;
+            }
+            ModelEvent newEvent = translateEvent(event, this);
+            Collection<ModelListener> listeners;
+            synchronized (modelListeners) {
+                listeners = new ArrayList<ModelListener>(modelListeners);
+            }
+            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                it.next().modelChanged(newEvent);
+            }
+        }
+
+        @Override
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+
+        public String toString (String n) {
+            if (model instanceof CompoundTableRendererModel)
+                return n + filter + "\n" +
+                    ((CompoundTableRendererModel) model).toString (n + "  ");
+            if (model instanceof DelegatingTableRendererModel)
+                return n + filter + "\n" +
+                    ((DelegatingTableRendererModel) model).toString (n + "  ");
+            return n + filter + "\n" +
+                   n + "  " + model;
+        }
+
+    }
+
+    /**
      * Creates one {@link org.netbeans.spi.viewmodel.TreeModel}
      * from given list of TreeModels. DelegatingTreeModel asks all underlaying 
      * models for each concrete parameter, and returns first returned value.
      *
      * @author   Jan Jancura
      */
-    private final static class DelegatingTreeModel implements TreeModel {
+    private final static class DelegatingTreeModel implements ReorderableTreeModel {
 
         private TreeModel[] models;
         private HashMap<String, TreeModel> classNameToModel = new HashMap<String, TreeModel>();
@@ -1293,7 +1475,7 @@ public final class Models {
          *
          * @param models a array of TreeModel
          */
-        DelegatingTreeModel (TreeModel[] models) {
+        private DelegatingTreeModel (TreeModel[] models) {
             this.models = models;        
         }
         
@@ -1398,7 +1580,70 @@ public final class Models {
                 }
             }
             throw new UnknownTypeException (node);
-        }    
+        }
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            TreeModel model = classNameToModel.get (
+                parent.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ReorderableTreeModel) {
+                    try {
+                        return ((ReorderableTreeModel) model).canReorder (parent);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                }
+            }
+            int i, k = models.length;
+            boolean isIndexed = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ReorderableTreeModel) {
+                    try {
+                        boolean cr = ((ReorderableTreeModel) models [i]).canReorder (parent);
+                        //classNameToModel.put (parent.getClass ().getName (), models [i]);
+                        return cr;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isIndexed = true;
+                }
+            }
+            if (!isIndexed) {
+                return false;
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (parent);
+            }
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            TreeModel model = (TreeModel) classNameToModel.get (
+                parent.getClass ().getName ()
+            );
+            if (model instanceof ReorderableTreeModel) {
+                try {
+                    ((ReorderableTreeModel) model).reorder(parent, perm);
+                    return ;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ReorderableTreeModel) {
+                    try {
+                        ((ReorderableTreeModel) models[i]).reorder(parent, perm);
+                        //classNameToModel.put (parent.getClass ().getName (), models [i]);
+                        return ;
+                    } catch (UnknownTypeException e) {
+                    }
+                }
+            }
+            throw new UnknownTypeException (parent);
+        }
 
         /** 
          * Registers given listener.
@@ -1831,6 +2076,195 @@ public final class Models {
     }
 
     /**
+     * Creates one {@link org.netbeans.spi.viewmodel.TableRendererModel}
+     * from given list of TableRendererModel. DelegatingTableRendererModel asks all underlaying
+     * models for each concrete parameter, and returns first returned value.
+     */
+    private final static class DelegatingTableRendererModel implements TableRendererModel {
+
+        private TableRendererModel[] models;
+        private HashMap<String, TableRendererModel> classNameToModel = new HashMap<String, TableRendererModel>();
+
+
+        /**
+         * Creates new instance of DelegatingTableModel for given list of
+         * TableModels.
+         *
+         * @param models a list of TableModels
+         */
+        DelegatingTableRendererModel (List<TableRendererModel> models) {
+            this (convert (models));
+        }
+
+        private static TableRendererModel[] convert (List<TableRendererModel> l) {
+            TableRendererModel[] models = new TableRendererModel [l.size ()];
+            return l.toArray (models);
+        }
+
+        /**
+         * Creates new instance of DelegatingTableModel for given array of
+         * TableModels.
+         *
+         * @param models a array of TableModels
+         */
+        DelegatingTableRendererModel (TableRendererModel[] models) {
+            this.models = models;
+        }
+
+        @Override
+        public boolean canRenderCell(Object node, String columnID) throws UnknownTypeException {
+            TableRendererModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null)
+                try {
+                    return model.canRenderCell (node, columnID);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    boolean cr = models [i].canRenderCell (node, columnID);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return cr;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }
+
+        @Override
+        public TableCellRenderer getCellRenderer(Object node, String columnID) throws UnknownTypeException {
+            TableRendererModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null)
+                try {
+                    return model.getCellRenderer (node, columnID);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    TableCellRenderer cr = models [i].getCellRenderer (node, columnID);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return cr;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }
+
+        @Override
+        public boolean canEditCell(Object node, String columnID) throws UnknownTypeException {
+            TableRendererModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null)
+                try {
+                    return model.canEditCell (node, columnID);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    boolean ce = models [i].canEditCell (node, columnID);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return ce;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }
+
+        @Override
+        public TableCellEditor getCellEditor(Object node, String columnID) throws UnknownTypeException {
+            TableRendererModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null)
+                try {
+                    return model.getCellEditor (node, columnID);
+                } catch (UnknownTypeException e) {
+                }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    TableCellEditor ce = models [i].getCellEditor (node, columnID);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return ce;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            throw new UnknownTypeException (node);
+        }
+        
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        @Override
+        public void addModelListener (ModelListener l) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++)
+                models [i].addModelListener (l);
+        }
+
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                TableRendererModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingTableRendererModel) {
+                    ((DelegatingTableRendererModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
+        }
+
+        /**
+         * Unregisters given listener.
+         *
+         * @param l the listener to remove
+         */
+        @Override
+        public void removeModelListener (ModelListener l) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++)
+                models [i].removeModelListener (l);
+        }
+
+        @Override
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+
+        public String toString (String n) {
+            int i, k = models.length - 1;
+            if (k == -1) return "";
+            StringBuffer sb = new StringBuffer ();
+            for (i = 0; i < k; i++) {
+                sb.append (n);
+                sb.append (models [i]);
+                sb.append ('\n');
+            }
+            sb.append (n);
+            sb.append (models [i]);
+            return new String (sb);
+        }
+
+    }
+
+    /**
      * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
      * from given list of TableModels. DelegatingTableModel asks all underlaying 
      * models for each concrete parameter, and returns first returned value.
@@ -2023,7 +2457,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    private static final class DelegatingNodeModel implements ExtendedNodeModel, CheckNodeModel {
+    private static final class DelegatingNodeModel implements SuperNodeModel {
 
         private NodeModel[] models;
         private HashMap<String, NodeModel> classNameToModel = new HashMap<String, NodeModel>();
@@ -2233,22 +2667,18 @@ public final class Models {
             return null;
         }
 
-        /*
         private Transferable defaultDrag() throws IOException {
             return null;
         }
-         */
 
         private PasteType[] defaultGetPasteTypes(Transferable t) {
             return null;
         }
 
-        /*
         private PasteType defaultGetDropType(Transferable t, int action,
                                             int index) {
             return null;
         }
-         */
 
         private void defaultSetName(String name) {
             // nothing
@@ -2456,7 +2886,26 @@ public final class Models {
             }
         }
 
-        /*
+        public int getAllowedDragActions() {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof DnDNodeModel) {
+                    return ((DnDNodeModel) models[i]).getAllowedDragActions();
+                }
+            }
+            return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof DnDNodeModel) {
+                    return ((DnDNodeModel) models[i]).getAllowedDropActions(t);
+                }
+            }
+            return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+        }
+
         public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2464,9 +2913,9 @@ public final class Models {
                 node.getClass ().getName ()
             );
             if (model != null) {
-                if (model instanceof ExtendedNodeModel) {
+                if (model instanceof DnDNodeModel) {
                     try {
-                        return ((ExtendedNodeModel) model).drag (node);
+                        return ((DnDNodeModel) model).drag (node);
                     } catch (UnknownTypeException e) {
                         uex = e;
                     }
@@ -2477,9 +2926,9 @@ public final class Models {
             int i, k = models.length;
             boolean isExtended = false;
             for (i = 0; i < k; i++) {
-                if (models[i] instanceof ExtendedNodeModel) {
+                if (models[i] instanceof DnDNodeModel) {
                     try {
-                        Transferable t = ((ExtendedNodeModel) models [i]).drag (node);
+                        Transferable t = ((DnDNodeModel) models [i]).drag (node);
                         classNameToModel.put (node.getClass ().getName (), models [i]);
                         return t;
                     } catch (UnknownTypeException e) {
@@ -2497,7 +2946,6 @@ public final class Models {
                 throw new UnknownTypeException (node);
             }
         }
-         */
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2539,7 +2987,6 @@ public final class Models {
             }
         }
 
-        /*
         public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -2547,9 +2994,9 @@ public final class Models {
                 node.getClass ().getName ()
             );
             if (model != null) {
-                if (model instanceof ExtendedNodeModel) {
+                if (model instanceof DnDNodeModel) {
                     try {
-                        return ((ExtendedNodeModel) model).getDropType (node, t, action, index);
+                        return ((DnDNodeModel) model).getDropType (node, t, action, index);
                     } catch (UnknownTypeException e) {
                         uex = e;
                     }
@@ -2560,9 +3007,9 @@ public final class Models {
             int i, k = models.length;
             boolean isExtended = false;
             for (i = 0; i < k; i++) {
-                if (models[i] instanceof ExtendedNodeModel) {
+                if (models[i] instanceof DnDNodeModel) {
                     try {
-                        PasteType p = ((ExtendedNodeModel) models [i]).getDropType (node, t, action, index);
+                        PasteType p = ((DnDNodeModel) models [i]).getDropType (node, t, action, index);
                         classNameToModel.put (node.getClass ().getName (), models [i]);
                         return p;
                     } catch (UnknownTypeException e) {
@@ -2580,7 +3027,6 @@ public final class Models {
                 throw new UnknownTypeException (node);
             }
         }
-         */
 
         public void setName(Object node, String name) throws UnknownTypeException {
             UnknownTypeException uex = null;
@@ -3212,15 +3658,23 @@ public final class Models {
      * @see Models#createCompoundModel
      * @author   Jan Jancura
      */
-    public static final class CompoundModel implements TreeModel, 
-    ExtendedNodeModel, CheckNodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
+    public static final class CompoundModel implements ReorderableTreeModel,
+                                                       ExtendedNodeModel,
+                                                       CheckNodeModel,
+                                                       DnDNodeModel,
+                                                       NodeActionsProvider,
+                                                       TableModel,
+                                                       TreeExpansionModel,
+                                                       TableRendererModel {
 
-        private TreeModel       treeModel;
+        private ReorderableTreeModel treeModel;
         private ExtendedNodeModel nodeModel;
         private CheckNodeModel cnodeModel;
+        private DnDNodeModel    dndNodeModel;
         private NodeActionsProvider nodeActionsProvider;
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
+        private TableRendererModel tableRendererModel;
         private TreeExpansionModel treeExpansionModel;
         private AsynchronousModel asynchModel;
 
@@ -3245,13 +3699,14 @@ public final class Models {
          * @param nodeActionsProvider a columns modeol to delegate on
          */
         private CompoundModel (
-            TreeModel treeModel, 
+            ReorderableTreeModel treeModel,
             TreeExpansionModel treeExpansionModel,
             ExtendedNodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
             List<ColumnModel> columnModels,
             TableModel tableModel,
             AsynchronousModel asynchModel,
+            TableRendererModel tableRendererModel,
             String propertiesHelpID
         ) {
             if (treeModel == null) throw new NullPointerException ();
@@ -3266,7 +3721,11 @@ public final class Models {
             if (nodeModel instanceof CheckNodeModel) {
                 this.cnodeModel = (CheckNodeModel) nodeModel;
             }
+            if (nodeModel instanceof DnDNodeModel) {
+                this.dndNodeModel = (DnDNodeModel) nodeModel;
+            }
             this.tableModel = tableModel;
+            this.tableRendererModel = tableRendererModel;
             this.nodeActionsProvider = nodeActionsProvider;
             this.columnModels = columnModels.toArray (
                 new ColumnModel [columnModels.size ()]
@@ -3366,6 +3825,15 @@ public final class Models {
             return treeModel.isLeaf (node);
         }
 
+        // ReorderableTreeModel ...............................................................
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            return treeModel.canReorder(parent);
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            treeModel.reorder(parent, perm);
+        }
 
         // NodeModel ...............................................................
 
@@ -3635,23 +4103,43 @@ public final class Models {
             return nodeModel.clipboardCut(node);
         }
 
-        /*
+        public int getAllowedDragActions() {
+            if (dndNodeModel != null) {
+                return dndNodeModel.getAllowedDragActions();
+            } else {
+                return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+            }
+        }
+
+        public int getAllowedDropActions(Transferable t) {
+            if (dndNodeModel != null) {
+                return dndNodeModel.getAllowedDropActions(t);
+            } else {
+                return DEFAULT_DRAG_DROP_ALLOWED_ACTIONS;
+            }
+        }
+
         public Transferable drag(Object node) throws IOException,
                                                      UnknownTypeException {
-            return nodeModel.drag(node);
+            if (dndNodeModel != null) {
+                return dndNodeModel.drag(node);
+            } else {
+                return null;
+            }
         }
-         */
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             return nodeModel.getPasteTypes(node, t);
         }
 
-        /*
         public PasteType getDropType(Object node, Transferable t, int action,
                                      int index) throws UnknownTypeException {
-            return nodeModel.getDropType(node, t, action, index);
+            if (dndNodeModel != null) {
+                return dndNodeModel.getDropType(node, t, action, index);
+            } else {
+                return null;
+            }
         }
-         */
 
         public void setName(Object node, String name) throws UnknownTypeException {
             nodeModel.setName(node, name);
@@ -3702,6 +4190,44 @@ public final class Models {
             return asynchModel.asynchronous(asynchCall, node);
         }
 
+        // TableRendererModel
+
+        @Override
+        public boolean canRenderCell(Object node, String columnID) throws UnknownTypeException {
+            if (tableRendererModel != null) {
+                return tableRendererModel.canRenderCell(node, columnID);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public TableCellRenderer getCellRenderer(Object node, String columnID) throws UnknownTypeException {
+            if (tableRendererModel != null) {
+                return tableRendererModel.getCellRenderer(node, columnID);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean canEditCell(Object node, String columnID) throws UnknownTypeException {
+            if (tableRendererModel != null) {
+                return tableRendererModel.canEditCell(node, columnID);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public TableCellEditor getCellEditor(Object node, String columnID) throws UnknownTypeException {
+            if (tableRendererModel != null) {
+                return tableRendererModel.getCellEditor(node, columnID);
+            } else {
+                return null;
+            }
+        }
+
     }
 
     private static final class ModelLists extends Object {
@@ -3719,6 +4245,8 @@ public final class Models {
         public List<ColumnModel>               columnModels = Collections.emptyList();
         //public List<AsynchronousModel>         asynchModels = Collections.emptyList();
         public List<AsynchronousModelFilter>   asynchModelFilters = Collections.emptyList();
+        public List<TableRendererModel>        tableRendererModels = Collections.emptyList();
+        public List<TableRendererModelFilter>  tableRendererModelFilters = Collections.emptyList();
 
         public void addOtherModels(List<? extends Model> otherModels) {
             Iterator it = otherModels.iterator ();
@@ -3768,6 +4296,17 @@ public final class Models {
                         tableModelFilters.add((TableModelFilter) model);
                     else
                         tableModelFilters.add(0, (TableModelFilter) model);
+                }
+                if (model instanceof TableRendererModel && !tableRendererModels.contains((TableRendererModel) model)) {
+                    tableRendererModels = new ArrayList<TableRendererModel>(tableRendererModels);
+                    tableRendererModels.add((TableRendererModel) model);
+                }
+                if (model instanceof TableRendererModelFilter && !tableRendererModelFilters.contains((TableRendererModelFilter) model)) {
+                    tableRendererModelFilters = new ArrayList<TableRendererModelFilter>(tableRendererModelFilters);
+                    if (first)
+                        tableRendererModelFilters.add((TableRendererModelFilter) model);
+                    else
+                        tableRendererModelFilters.add(0, (TableRendererModelFilter) model);
                 }
                 if (model instanceof NodeActionsProvider && !nodeActionsProviders.contains((NodeActionsProvider) model)) {
                     nodeActionsProviders = new ArrayList<NodeActionsProvider>(nodeActionsProviders);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -53,14 +55,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.DuplicateException;
@@ -89,14 +90,11 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
-import org.openide.util.io.NbObjectInputStream;
-import org.openide.util.io.NbObjectOutputStream;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -139,8 +137,7 @@ final class ModuleList implements Stamps.Updater {
     private boolean triggered = false;
     /** listener for changes in modules, etc.; see comment on class Listener */
     private final Listener listener = new Listener();
-    /** any module install sers from externalizedModules.ser, from class name to data */
-    private final Map<String,byte[]> compatibilitySers = new HashMap<String,byte[]>(100);
+    private FileChangeListener weakListener;
     /** atomic actions I have used to change Modules/*.xml */
     private final Set<FileSystem.AtomicAction> myAtomicActions = Collections.<FileSystem.AtomicAction>synchronizedSet(new WeakSet<FileSystem.AtomicAction>(100));
     
@@ -189,11 +186,43 @@ final class ModuleList implements Stamps.Updater {
             if (!f.isFile()) throw new FileNotFoundException(f.getAbsolutePath());
             return f;
         } else {
-            f = InstalledFileLocator.getDefault().locate(jar, name, false);
-            if (f != null) {
-                return f;
-            } else {
+            Set<File> jars = InstalledFileLocator.getDefault().locateAll(jar, name, false);
+            if (jars.isEmpty()) {
                 throw new FileNotFoundException(jar);
+            } else if (jars.size() == 1) {
+                return jars.iterator().next();
+            } else {
+                // Pick the newest one available.
+                int major = -1;
+                SpecificationVersion spec = null;
+                File newest = null;
+                for (File candidate : jars) {
+                    int candidateMajor = -1;
+                    SpecificationVersion candidateSpec = null;
+                    JarFile jf = new JarFile(candidate);
+                    try {
+                        java.util.jar.Attributes attr = jf.getManifest().getMainAttributes();
+                        String codename = attr.getValue("OpenIDE-Module");
+                        if (codename != null) {
+                            int slash = codename.lastIndexOf('/');
+                            if (slash != -1) {
+                                candidateMajor = Integer.parseInt(codename.substring(slash + 1));
+                            }
+                        }
+                        String sv = attr.getValue("OpenIDE-Module-Specification-Version");
+                        if (sv != null) {
+                            candidateSpec = new SpecificationVersion(sv);
+                        }
+                    } finally {
+                        jf.close();
+                    }
+                    if (newest == null || candidateMajor > major || (spec != null && candidateSpec != null && candidateSpec.compareTo(spec) > 0)) {
+                        newest = candidate;
+                        major = candidateMajor;
+                        spec = candidateSpec;
+                    }
+                }
+                return newest;
             }
         }
     }
@@ -301,197 +330,6 @@ final class ModuleList implements Stamps.Updater {
         ev.log(Events.PERF_END, "ModuleList.installNew"); // NOI18N
     }
     
-    /** Record initial condition of a module installer.
-     * First, if any stored state of the installer was found on disk,
-     * that is if it is kept in the ModuleHistory, then deserialize
-     * it (to the found installer). If there are deserialization errors,
-     * this step is simply skipped. Or, if there was no prerecorded state,
-     * and the ModuleInstall class overrides writeExternal or a similar
-     * serialization-related method, thus indicating that it wishes to
-     * serialize state, then this initial object is serialized to the
-     * history's state for comparison with the later value. If there are
-     * problems with this serialization, the history receives a dummy state
-     * (empty bytestream) to indicate that something should be saved later.
-     * If there is no prerecorded state and no writeExternal method, it is
-     * assumed that serialization is irrelevant to this installer and so the
-     * state is left null and nothing will be done here or in the postpare method.
-     * If this installer was mentioned in externalizedModules.ser, also try to
-     * handle the situation (determine if the state was useful or not etc.).
-     * Access from NbInstaller.
-     */
-    void installPrepare(Module m, ModuleInstall inst) {
-        if (! (m.getHistory() instanceof ModuleHistory)) {
-            LOG.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
-            return;
-        }
-        ModuleHistory hist = (ModuleHistory)m.getHistory();
-        // We might have loaded something from externalizedModules.ser before.
-        byte[] compatSer = compatibilitySers.get(inst.getClass().getName());
-        if (compatSer != null) {
-            LOG.fine("Had some old-style state for " + m);
-            if (isReallyExternalizable(inst.getClass())) {
-                // OK, maybe it was not useless, let's see...
-                // Compare virgin state to what we had; if different, load
-                // the old state and record that we want to track state.
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
-                    new NbObjectOutputStream(baos).writeObject(inst);
-                    baos.close();
-                    if (Utilities.compareObjects(compatSer, baos.toByteArray())) {
-                        LOG.fine("Old-style state for " + m + " was gratuitous");
-                        // leave hist.installerState null
-                    } else {
-                        LOG.fine("Old-style state for " + m + " was useful, loading it...");
-                        // Make sure it is recorded as "changed" in history by writing something
-                        // fake now. In installPostpare, we will load the new installer state
-                        // and call setInstallerState again, so the result will be written to disk.
-                        hist.setInstallerState(new byte[0]);
-                        // And also load it into the actual installer.
-                        InputStream is = new ByteArrayInputStream(compatSer);
-                        Object o = new NbObjectInputStream(is).readObject();
-                        if (o != inst) throw new ClassCastException("Stored " + o + " but expecting " + inst); // NOI18N
-                    }
-                } catch (Exception e) {
-                    LOG.log(Level.WARNING, null, e);
-                    // Try later to continue.
-                    hist.setInstallerState(new byte[0]);
-                } catch (LinkageError le) {
-                    LOG.log(Level.WARNING, null, le);
-                    // Try later to continue.
-                    hist.setInstallerState(new byte[0]);
-                }
-            } else {
-                LOG.fine(m + " did not want to store install state");
-                // leave hist.installerState null
-            }
-        } else if (hist.getInstallerState() != null) {
-            // We already have some state, load it now.
-            LOG.fine("Loading install state for " + m);
-            try {
-                InputStream is = new ByteArrayInputStream(hist.getInstallerState());
-                // Note: NBOOS requires the system class loader to be in order.
-                // Technically we have not yet fired any changes in it. However,
-                // assuming that we are not in the first block of modules to be
-                // loaded (that is, core = bootstraps) this will work because the
-                // available systemClassLoader is just appended to. Better would
-                // probably be to use a special ObjectInputStream resolving
-                // specifically to the module's classloader, as this is far more
-                // direct and possibly more reliable.
-                Object o = new NbObjectInputStream(is).readObject();
-                // The joys of SharedClassObject. The deserialization itself actually
-                // is assumed to overwrite the state of the install singleton. We
-                // can only confirm that we actually deserialized the same thing we
-                // were expecting too (it is too late to revert anything of course).
-                if (o != inst) throw new ClassCastException("Stored " + o + " but expecting " + inst); // NOI18N
-            } catch (Exception e) {
-                // IOException, ClassNotFoundException, and maybe unchecked stuff
-                LOG.log(Level.WARNING, null, e);
-                // Nothing else to do, hope that the install object was not corrupted
-                // by the failed deserialization! If it was, it cannot be saved now.
-            } catch (LinkageError le) {
-                LOG.log(Level.WARNING, null, le);
-            }
-        } else {
-            // Virgin installer. First we check if it really cares about serialization
-            // at all, because it not we do not want to waste time forcing it.
-            if (isReallyExternalizable(inst.getClass())) {
-                LOG.fine("Checking pre-install state of " + m);
-                LOG.warning("Warning: use of writeExternal (or writeReplace) in " + inst.getClass().getName() + " is deprecated; use normal settings instead");
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
-                    new NbObjectOutputStream(baos).writeObject(inst);
-                    baos.close();
-                    // Keep track of the installer's state before we installed it.
-                    // This will be compared to its state afterwards so we can
-                    // avoid writing anything if nothing changed, thus avoid
-                    // polluting the disk.
-                    hist.setInstallerState(baos.toByteArray());
-                } catch (Exception e) {
-                    LOG.log(Level.WARNING, null, e);
-                    // Remember that it is *supposed* to be serializable to something.
-                    hist.setInstallerState(new byte[0]);
-                } catch (LinkageError le) {
-                    LOG.log(Level.WARNING, null, le);
-                    hist.setInstallerState(new byte[0]);
-                }
-            } else {
-                // It does not want to store anything. Leave the installer state null
-                // and continue.
-                LOG.fine(m + " did not want to store install state");
-            }
-        }
-    }
-    /** Check if a class (extends ModuleInstall) is truly externalizable,
-     * e.g. overrides writeExternal.
-     */
-    private static boolean isReallyExternalizable(Class clazz) {
-        Class<?> c;
-        for (c = clazz; c != ModuleInstall.class && c != Object.class; c = c.getSuperclass()) {
-            try {
-                c.getDeclaredMethod("writeExternal", ObjectOutput.class); // NOI18N
-                // [PENDING] check that m is public, nonstatic, returns Void.TYPE and includes at most
-                // IOException and unchecked exceptions in its clauses, else die
-                // OK, it does something nontrivial.
-                return true;
-            } catch (NoSuchMethodException nsme) {
-                // Didn't find it at this level, continue.
-            }
-            try {
-                c.getDeclaredMethod("writeReplace"); // NOI18N
-                // [PENDING] check that m is nonstatic, returns Object, throws ObjectStreamException
-                // Designates a serializable replacer, this is special.
-                return true;
-            } catch (NoSuchMethodException nsme) {
-                // Again keep on looking.
-            }
-        }
-        // Hit a superclass.
-        if (c == Object.class) throw new IllegalArgumentException("Class " + clazz + " was not a ModuleInstall"); // NOI18N
-        // Hit ModuleInstall. Did not find anything. Assumed to not do anything during externalization.
-        return false;
-    }
-    
-    /** Acknowledge later conditions of a module installer.
-     * If the module history indicates a nonnull installer state, then we
-     * try to serialize the current state to a temporary buffer and compare
-     * to the previous state. If the serialization succeeds, and they differ,
-     * then the new state is recorded in the history and will later be written to disk.
-     * Access from NbInstaller.
-     */
-    void installPostpare(Module m, ModuleInstall inst) {
-        if (! (m.getHistory() instanceof ModuleHistory)) {
-            LOG.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
-            return;
-        }
-        ModuleHistory hist = (ModuleHistory)m.getHistory();
-        if (hist.getInstallerState() != null) {
-            try {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
-                new NbObjectOutputStream(baos).writeObject(inst);
-                baos.close();
-                byte[] old = hist.getInstallerState();
-                byte[] nue = baos.toByteArray();
-                if (Utilities.compareObjects(old, nue)) {
-                    // State has not changed.
-                    LOG.fine(m + " did not change installer state (" + old.length + " bytes), not writing anything");
-                } else {
-                    // It did change. Store new version.
-                    LOG.fine(m + " changed installer state after loading");
-                    hist.setInstallerState(nue);
-                }
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, null, e);
-                // We could not compare, so don't bother writing out any old state.
-                //hist.setInstallerState(null);
-            } catch (LinkageError le) {
-                LOG.log(Level.WARNING, null, le);
-            }
-        } else {
-            // Nothing stored (does not writeExternal), do nothing.
-            LOG.fine(m + " has no saved state");
-        }
-    }
-    
     /** Read an XML file using an XMLReader and parse into a map of properties.
      * One distinguished property 'name' is the code name base
      * and is taken from the root element. Others are taken
@@ -579,16 +417,12 @@ final class ModuleList implements Stamps.Updater {
      * @return some parsed value suitable for the status map
      */
     private Object processStatusParam(String k, String v) throws NumberFormatException {
-        if (k == "release") { // NOI18N
-            return Integer.parseInt(v);
-        } else if (k == "enabled" // NOI18N
+        if (k == "enabled" // NOI18N
                    || k == "autoload" // NOI18N
                    || k == "eager" // NOI18N
                    || k == "reloadable" // NOI18N
                    ) {
             return Boolean.valueOf(v);
-        } else if (k == "specversion") { // NOI18N
-            return new SpecificationVersion(v);
         } else {
             // Other properties are of type String.
             // Intern the smaller ones which are likely to be repeated somewhere.
@@ -600,34 +434,15 @@ final class ModuleList implements Stamps.Updater {
     /** Just checks that all the right stuff is there.
      */
     private void sanityCheckStatus(Map<String,Object> m) throws IOException {
-        if (m.get("jar") == null) // NOI18N
+        String jar = (String) m.get("jar"); // NOI18N
+        if (jar == null) {
             throw new IOException("Must define jar param"); // NOI18N
-        if (m.get("autoload") != null // NOI18N
-            && ((Boolean)m.get("autoload")).booleanValue() // NOI18N
-            && m.get("enabled") != null) // NOI18N
-            throw new IOException("Autoloads cannot specify enablement"); // NOI18N
-        if (m.get("eager") != null // NOI18N
-            && ((Boolean)m.get("eager")).booleanValue() // NOI18N
-            && m.get("enabled") != null) // NOI18N
-            throw new IOException("Eager modules cannot specify enablement"); // NOI18N
-        // Compatibility:
-        String origin = (String)m.remove("origin"); // NOI18N
-        if (origin != null) {
-            String jar = (String)m.get("jar"); // NOI18N
-            String newjar;
-            if (origin.equals("user") || origin.equals("installation")) { // NOI18N
-                newjar = "modules/" + jar; // NOI18N
-            } else if (origin.equals("user/autoload") || origin.equals("installation/autoload")) { // NOI18N
-                newjar = "modules/autoload/" + jar; // NOI18N
-            } else if (origin.equals("user/eager") || origin.equals("installation/eager")) { // NOI18N
-                newjar = "modules/eager/" + jar; // NOI18N
-            } else if (origin.equals("adhoc")) { // NOI18N
-                newjar = jar;
-            } else {
-                throw new IOException("Unrecognized origin " + origin + " for " + jar); // NOI18N
-            }
-            LOG.warning("Upgrading 'jar' param from " + jar + " to " + newjar + " and removing 'origin' " + origin);
-            m.put("jar", newjar); // NOI18N
+        }
+        if (Boolean.TRUE.equals(m.get("autoload")) && m.get("enabled") != null) { // NOI18N
+            throw new IOException("Autoload " + jar + " cannot specify enablement");
+        }
+        if (Boolean.TRUE.equals(m.get("eager")) && m.get("enabled") != null) { // NOI18N
+            throw new IOException("Eager " + jar + " cannot specify enablement");
         }
     }
 
@@ -874,7 +689,7 @@ final class ModuleList implements Stamps.Updater {
         for (Map.Entry<String, Object> entry: new TreeMap<String, Object>(m).entrySet()) {
             String name = entry.getKey();
             if (
-                name.equals("installerState") || name.equals("name") || // NOI18N
+                name.equals("name") || // NOI18N
                 name.equals("deps") // NOI18N
             ) {
                 // Skip this one, it is a pseudo-param.
@@ -936,36 +751,6 @@ final class ModuleList implements Stamps.Updater {
                     lock.releaseLock();
                 }
                 //nue.lastApprovedChange = nue.file.lastModified().getTime();
-                // Now check up on the installer ser.
-                byte[] data = (byte[])nue.diskProps.get("installerState"); // NOI18N
-                if (data != null) {
-                    String installerName = (String)nue.diskProps.get("installer"); // NOI18N
-                    FileObject ser = folder.getFileObject(installerName);
-                    if (ser == null) {
-                        // Need to make it.
-                        int idx = installerName.lastIndexOf('.'); // NOI18N
-                        ser = folder.createData(installerName.substring(0, idx), installerName.substring(idx + 1));
-                    }
-                    // Now write it.
-                    lock = ser.lock();
-                    try {
-                        OutputStream os = ser.getOutputStream(lock);
-                        try {
-                            os.write(data);
-                        } finally {
-                            os.close();
-                        }
-                    } finally {
-                        lock.releaseLock();
-                    }
-                } else {
-                    /* Probably not right:
-                    // Delete any existing one.
-                    if (ser != null) {
-                        ser.delete();
-                    }
-                     */
-                }
             }
         };
         myAtomicActions.add(aa);
@@ -1153,23 +938,11 @@ final class ModuleList implements Stamps.Updater {
     
     /** Compute what properties we would want to store in XML
      * for this module. I.e. 'name', 'reloadable', etc.
-     * The special property 'installerState' may be set (only
-     * if the normal property 'installer' is also set) and
-     * will be a byte[] rather than a string, which means that
-     * the indicated installer state should be written out.
      */
     private Map<String,Object> computeProperties(Module m) {
         if (m.isFixed() || ! m.isValid()) throw new IllegalArgumentException("fixed or invalid: " + m); // NOI18N
         Map<String,Object> p = new HashMap<String,Object>();
         p.put("name", m.getCodeNameBase()); // NOI18N
-        int rel = m.getCodeNameRelease();
-        if (rel >= 0) {
-            p.put("release", rel); // NOI18N
-        }
-        SpecificationVersion spec = m.getSpecificationVersion();
-        if (spec != null) {
-            p.put("specversion", spec); // NOI18N
-        }
         if (!m.isAutoload() && !m.isEager()) {
             p.put("enabled", m.isEnabled()); // NOI18N
         }
@@ -1179,15 +952,20 @@ final class ModuleList implements Stamps.Updater {
         if (m.getHistory() instanceof ModuleHistory) {
             ModuleHistory hist = (ModuleHistory) m.getHistory();
             p.put("jar", hist.getJar()); // NOI18N
-            if (hist.getInstallerStateChanged()) {
-                p.put("installer", m.getCodeNameBase().replace('.', '-') + ".ser"); // NOI18N
-                p.put("installerState", hist.getInstallerState()); // NOI18N
-            }
         }
         return p;
     }
     
     private static RequestProcessor rpListener = null;
+
+    final void init() {
+        weakListener = FileUtil.weakFileChangeListener(listener, folder);
+        folder.addFileChangeListener(weakListener);
+    }
+
+    final void shutDown() {
+        folder.removeFileChangeListener(weakListener);
+    }
     /** Listener for changes in set of modules and various properties of individual modules.
      * Also serves as a strict error handler for XML parsing.
      * Also listens to changes in the Modules/ folder and processes them in req proc.
@@ -1636,7 +1414,7 @@ final class ModuleList implements Stamps.Updater {
         }
         private void stepCheckMisc(Map<String,Map<String,Object>> dirtyprops) {
             LOG.fine("ModuleList: stepCheckMisc");
-            String[] toCheck = {"jar", "autoload", "eager", "release", "specversion"}; // NOI18N
+            String[] toCheck = {"jar", "autoload", "eager"}; // NOI18N
             for (Map.Entry<String,Map<String,Object>> entry : dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
                 Map<String,Object> props = entry.getValue();
@@ -1804,10 +1582,6 @@ final class ModuleList implements Stamps.Updater {
                         continue;
                     }
                     ModuleHistory history = new ModuleHistory(jar); // NOI18N
-                    Integer prevReleaseI = (Integer) props.get("release"); // NOI18N
-                    int prevRelease = prevReleaseI == null ? -1 : prevReleaseI.intValue();
-                    SpecificationVersion prevSpec = (SpecificationVersion) props.get("specversion"); // NOI18N
-                    history.upgrade(prevRelease, prevSpec);
                     Boolean reloadableB = (Boolean) props.get("reloadable"); // NOI18N
                     boolean reloadable = reloadableB != null ? reloadableB.booleanValue() : false;
                     boolean enabled = enabledB != null ? enabledB.booleanValue() : false;
@@ -1815,29 +1589,6 @@ final class ModuleList implements Stamps.Updater {
                     boolean autoload = autoloadB != null ? autoloadB.booleanValue() : false;
                     Boolean eagerB = (Boolean) props.get("eager"); // NOI18N
                     boolean eager = eagerB != null ? eagerB.booleanValue() : false;
-                    String installer = (String) props.get("installer"); // NOI18N
-                    if (installer != null) {
-                        String nameDashes = name.replace('.', '-');
-                        if (!installer.equals(nameDashes + ".ser")) {
-                            throw new IOException("Incorrect installer ser name: " + installer); // NOI18N
-                        }
-                        // Load from disk in mentioned file.
-                        FileObject installerSer = folder.getFileObject(nameDashes, "ser"); // NOI18N
-                        if (installerSer == null) {
-                            throw new IOException("No such install ser: " + installer + "; I see only: " + Arrays.asList(folder.getChildren())); // NOI18N
-                        }
-                        // Hope the stored state is not >Integer.MAX_INT! :-)
-                        byte[] buf = new byte[(int) installerSer.getSize()];
-                        InputStream is2 = installerSer.getInputStream();
-                        try {
-                            is2.read(buf);
-                        } finally {
-                            is2.close();
-                        }
-                        history.setInstallerState(buf);
-                        // Quasi-prop which is stored separately.
-                        props.put("installerState", buf); // NOI18N
-                    }
                     NbInstaller.register(name, props.get("deps")); // NOI18N
                     Module m = mgr.create(jarFile, history, reloadable, autoload, eager);
                     NbInstaller.register(null, null);
@@ -1862,7 +1613,7 @@ final class ModuleList implements Stamps.Updater {
             }
             ev.log(Events.FINISH_READ, read);
             // Handle changes in the Modules/ folder on disk by parsing & applying them.
-            folder.addFileChangeListener(FileUtil.weakFileChangeListener(listener, folder));
+            init();
         }
     }
     

@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.soa.mappercore.model;
 
-import java.awt.Point;
-
 /**
  *
  * @author anjeleevich

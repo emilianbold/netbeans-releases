@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -68,6 +72,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
@@ -120,7 +125,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 return klass.cast(getJspEditorSupport());
             }
         });
-        
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                getJspEditorSupport().saveAs( folder, fileName );
+            }
+        });
+
         initialize();
     }
     
@@ -382,15 +392,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         WebExecSupport.setQueryString(getPrimaryEntry().getFile(), params);
         firePropertyChange(PROP_REQUEST_PARAMS, null, null);
     }
-    
-    @Override
-    protected org.openide.filesystems.FileObject handleRename(String str) throws java.io.IOException {
-        if (!Utilities.isJavaIdentifier(str)) {
-            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName", str));  //NOI18N
-        }
-        return super.handleRename(str);
-    }
-    
+
     public void addSaveCookie(SaveCookie cookie){
         getCookieSet().add(cookie);
     }

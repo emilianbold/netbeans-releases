@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,9 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -139,7 +145,18 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                 try {
                     // Write to memory and reparse to make sure it is valid according to DTD before writing to disk.
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLUtil.write(doc, baos, "UTF-8");
+                    // #184714: XMLUtil.write has too much overhead.
+                    DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0"); // NOI18N
+                    assert ls != null : "No DOM 3 LS supported in " + doc.getClass().getName();
+                    LSOutput output = ls.createLSOutput();
+                    output.setEncoding("UTF-8");
+                    output.setByteStream(baos);
+                    LSSerializer ser = ls.createLSSerializer();
+                    String fpp = "format-pretty-print"; // NOI18N
+                    if (ser.getDomConfig().canSetParameter(fpp, true)) {
+                        ser.getDomConfig().setParameter(fpp, true);
+                    }
+                    ser.write(doc, output);
                     byte[] data = baos.toByteArray();
                     XMLUtil.parse(new InputSource(new ByteArrayInputStream(data)), true, true, ERROR_HANDLER, ENTITY_RESOLVER);
                     FileObject layer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER, originatingElementsA);

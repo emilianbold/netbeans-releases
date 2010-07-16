@@ -84,12 +84,6 @@ public class NbArtifactResolverTest extends TestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(NbArtifactResolverTest.class);
-        
-        return suite;
-    }
-
     public void testDefaultArtifactResolverHasWagonManagerField() throws Exception {
         Field wagonMan = DefaultArtifactResolver.class.getDeclaredField("wagonManager");
         assertNotNull(wagonMan);

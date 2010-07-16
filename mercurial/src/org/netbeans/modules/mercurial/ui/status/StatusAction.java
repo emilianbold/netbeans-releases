@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,22 +44,17 @@
 package org.netbeans.modules.mercurial.ui.status;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  * Status action for mercurial: 
@@ -65,16 +63,20 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
  * @author John Rice
  */
 public class StatusAction extends ContextAction {
-
     
-    private final VCSContext context;
-
-    public StatusAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    public boolean enable (Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent ev) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ShowChanges"; // NOI18N
+    }
+
+    public void performContextAction (Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return;
                 
@@ -85,10 +87,6 @@ public class StatusAction extends ContextAction {
         stc.requestActive();
         stc.performRefreshAction();
     }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 
     /**
      * Connects to repository and gets recent status.
@@ -98,56 +96,10 @@ public class StatusAction extends ContextAction {
             return;
         }
 
-        try {
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-            Calendar start = Calendar.getInstance();
-            cache.refreshCached(context);
-            Calendar end = Calendar.getInstance();
-            Mercurial.LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-
-            for (File root :  context.getRootFiles()) {
-                File repository = Mercurial.getInstance().getRepositoryRoot(root);
-                if (repository == null) {
-                    continue;
-                }
-                // XXX Why in the hell is this still here? cache.refreshCached(context) should be enough
-                // This logic seems to be pointless
-                refreshFile(root, repository, support, cache);
-                if (support.isCanceled()) {
-                    return;
-                }
-            }
-        } catch (HgException ex) {
-            support.annotate(ex);
-        }
-    }
-
-    public static void refreshFile(File root, File repository, HgProgressSupport support, FileStatusCache cache) throws HgException {
-        if (support != null && support.isCanceled()) {
-            return;
-        }
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Calendar start = Calendar.getInstance();
+        cache.refreshAllRoots(context.getRootFiles());
         Calendar end = Calendar.getInstance();
-        if (root.isDirectory()) {
-            Map<File, FileInformation> interestingFiles;
-            // XXX Why so complex? cache.refreshAllRoots should do the work and there would be only one entry point for hg status call
-            interestingFiles = HgCommand.getInterestingStatus(repository, java.util.Collections.singletonList(root));
-            if (!interestingFiles.isEmpty()) {
-                Collection<File> files = interestingFiles.keySet();
-                Map<File, Map<File, FileInformation>> interestingDirs = HgUtils.getInterestingDirs(interestingFiles, files);
-                start = Calendar.getInstance();
-                for (File file : files) {
-                    if (support != null && support.isCanceled()) {
-                        return;
-                    }
-                    FileInformation fi = interestingFiles.get(file);
-                    cache.refreshFileStatus(file, fi, interestingDirs.get(file.isDirectory() ? file : file.getParentFile()));
-                }
-                end = Calendar.getInstance();
-                Mercurial.LOG.log(Level.FINE, "executeStatus: process interesting files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-            }
-        } else {
-            cache.refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
+        Mercurial.STATUS_LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
     }
 }

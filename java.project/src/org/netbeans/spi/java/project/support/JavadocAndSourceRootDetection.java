@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,13 +48,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -103,7 +115,29 @@ public class JavadocAndSourceRootDetection {
         }
         return null;
     }
-    
+
+    /**
+     * Finds Java sources roots inside of given folder.
+     *
+     * @param folder to start search in; routine will traverse subfolders
+     *  to find a Java file to detect package root; cannot be null; must be folder
+     * @param canceled if set to true the method immediately returns roots it has already found,
+     * may be null
+     * @return {@link Collection} of found package roots
+     * @since 1.31
+     */
+    public static Set<? extends FileObject> findSourceRoots(final @NonNull FileObject folder, final @NullAllowed AtomicBoolean canceled) {
+        Parameters.notNull("folder", folder);   //NOI18N
+        if (!folder.isValid()) {
+            throw new IllegalArgumentException("Folder: " + FileUtil.getFileDisplayName(folder)+" is not valid.");  //NOI18N
+        }
+        if (!folder.isFolder()) {
+            throw new IllegalArgumentException("The parameter: " + FileUtil.getFileDisplayName(folder) + " has to be a directory.");    //NOI18N
+        }
+        final Set<FileObject> result = new HashSet<FileObject>();
+        findAllSourceRoots(folder, result, canceled, 0);
+        return Collections.unmodifiableSet(result);
+    }
     /**
      * Returns package root of the given java or class file.
      *
@@ -120,6 +154,30 @@ public class JavadocAndSourceRootDetection {
         }
     }
 
+    private static FileObject findAllSourceRoots(final FileObject folder, final Collection<? super FileObject> result,
+            final AtomicBoolean canceled, final int depth) {
+        if (depth == 50) {
+            return null;
+        }
+        final FileObject[] children = folder.getChildren();
+        for (FileObject child : children) {
+            if (canceled != null && canceled.get()) {
+                return null;
+            } else if (child.isData() && "text/x-java".equals(FileUtil.getMIMEType(child, "text/x-java"))) {   //NOI18N
+                final FileObject root = findPackageRoot(child);
+                if (root != null) {
+                    result.add(root);
+                }
+                return root;
+            } else if (child.isFolder()) {
+                final FileObject upTo = findAllSourceRoots(child, result, canceled, depth+1);
+                if (upTo != null && !upTo.equals(child)) {
+                    return upTo;
+                }
+            }
+        }
+        return null;
+    }
 
     private static FileObject findJavadocRoot(FileObject fo, int level) {
         FileObject fo1 = fo.getFileObject("package-list", null); // NOI18N
@@ -169,19 +227,24 @@ public class JavadocAndSourceRootDetection {
         String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
         String packageStatement = "package" + whitespace + "+(" + javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;"; //NOI18N
         JAVA_FILE = Pattern.compile("(?ms)" + whitespace + "*" + packageStatement + ".*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
+        // XXX this does not take into account annotations and imports:
         PACKAGE_INFO = Pattern.compile("(?ms)(?:.*" + whitespace + ")?" + packageStatement + whitespace + "*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
     }
 
+    @SuppressWarnings({"OS_OPEN_STREAM", "RR_NOT_CHECKED"})
     private static FileObject findJavaPackage(FileObject fo) {
         try {
+            InputStream is = fo.getInputStream();
+            try {
             // Try default encoding, probably good enough.
-            Reader r = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            Reader r = new BufferedReader(new InputStreamReader(is));
             r.mark(2);
             char[] cbuf = new char[2];
             r.read(cbuf, 0, 2);
             if (cbuf[0] == 255 && cbuf[1] == 254) { // BOM
-                r.close();
-                r = new BufferedReader(new InputStreamReader(fo.getInputStream(), "Unicode")); //NOI18N
+                is.close();
+                is = fo.getInputStream();
+                r = new BufferedReader(new InputStreamReader(is, "Unicode")); //NOI18N
             } else {
                 r.reset();
             }
@@ -200,6 +263,9 @@ public class JavadocAndSourceRootDetection {
             } else {
                 // XXX probably not a good idea to infer the default package: return f.getParentFile();
                 return null;
+            }
+            } finally {
+                is.close();
             }
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
@@ -228,7 +294,7 @@ public class JavadocAndSourceRootDetection {
      *
      * @return package or null if not found
      */
-    private static final FileObject findClassPackage (FileObject file) {
+    private static FileObject findClassPackage(FileObject file) {
         try {
             InputStream in = file.getInputStream();
             try {

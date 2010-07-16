@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.8.1
+#Signature file v4.1
+#Version 1.20
 
 CLSS public abstract interface java.io.Serializable
 
@@ -7,7 +7,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -24,15 +24,15 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -46,10 +46,10 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -82,9 +82,11 @@ supr java.lang.Object
 hfds container,impl
 
 CLSS public final static org.netbeans.api.autoupdate.InstallSupport$Installer
+ outer org.netbeans.api.autoupdate.InstallSupport
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.autoupdate.InstallSupport$Validator
+ outer org.netbeans.api.autoupdate.InstallSupport
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.autoupdate.OperationContainer<%0 extends java.lang.Object>
@@ -97,6 +99,7 @@ meth public java.util.List<org.netbeans.api.autoupdate.OperationContainer$Operat
 meth public org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}> add(org.netbeans.api.autoupdate.UpdateElement)
 meth public org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}> add(org.netbeans.api.autoupdate.UpdateUnit,org.netbeans.api.autoupdate.UpdateElement)
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForInstall()
+meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForInternalUpdate()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForUpdate()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.OperationSupport> createForCustomInstallComponent()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.OperationSupport> createForCustomUninstallComponent()
@@ -117,6 +120,7 @@ supr java.lang.Object
 hfds impl,support,upToDate
 
 CLSS public final static org.netbeans.api.autoupdate.OperationContainer$OperationInfo<%0 extends java.lang.Object>
+ outer org.netbeans.api.autoupdate.OperationContainer
 meth public java.lang.String toString()
 meth public java.util.Set<java.lang.String> getBrokenDependencies()
 meth public java.util.Set<org.netbeans.api.autoupdate.UpdateElement> getRequiredElements()
@@ -126,9 +130,9 @@ supr java.lang.Object
 hfds impl
 
 CLSS public final org.netbeans.api.autoupdate.OperationException
-cons public OperationException(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE)
-cons public OperationException(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.lang.Exception)
-cons public OperationException(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.lang.String)
+cons public init(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE)
+cons public init(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.lang.Exception)
+cons public init(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.lang.String)
 innr public final static !enum ERROR_TYPE
 meth public java.lang.String getLocalizedMessage()
 meth public org.netbeans.api.autoupdate.OperationException$ERROR_TYPE getErrorType()
@@ -136,6 +140,7 @@ supr java.lang.Exception
 hfds error,msg
 
 CLSS public final static !enum org.netbeans.api.autoupdate.OperationException$ERROR_TYPE
+ outer org.netbeans.api.autoupdate.OperationException
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE ENABLE
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE INSTALL
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE INSTALLER
@@ -155,6 +160,7 @@ supr java.lang.Object
 hfds container
 
 CLSS public final static org.netbeans.api.autoupdate.OperationSupport$Restarter
+ outer org.netbeans.api.autoupdate.OperationSupport
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.autoupdate.UpdateElement
@@ -188,6 +194,7 @@ supr java.lang.Object
 hfds mgr
 
 CLSS public final static !enum org.netbeans.api.autoupdate.UpdateManager$TYPE
+ outer org.netbeans.api.autoupdate.UpdateManager
 fld public final static org.netbeans.api.autoupdate.UpdateManager$TYPE CUSTOM_HANDLED_COMPONENT
 fld public final static org.netbeans.api.autoupdate.UpdateManager$TYPE FEATURE
 fld public final static org.netbeans.api.autoupdate.UpdateManager$TYPE KIT_MODULE
@@ -231,6 +238,7 @@ supr java.lang.Object
 hfds impl
 
 CLSS public final static !enum org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY
+ outer org.netbeans.api.autoupdate.UpdateUnitProvider
 fld public final static org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY BETA
 fld public final static org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY COMMUNITY
 fld public final static org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY STANDARD
@@ -250,7 +258,7 @@ supr java.lang.Object
 hfds INSTANCE
 
 CLSS public abstract org.netbeans.spi.autoupdate.AutoupdateClusterCreator
-cons public AutoupdateClusterCreator()
+cons public init()
 meth protected abstract java.io.File findCluster(java.lang.String)
 meth protected abstract java.io.File[] registerCluster(java.lang.String,java.io.File) throws java.io.IOException
 supr java.lang.Object

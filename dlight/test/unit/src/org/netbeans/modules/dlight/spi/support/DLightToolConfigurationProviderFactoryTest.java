@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import org.openide.filesystems.FileUtil;
  * @author mt154047
  */
 public class DLightToolConfigurationProviderFactoryTest {
+    private static final boolean TRACE = false;
 
     private FileObject folder;
 
@@ -87,7 +91,9 @@ public class DLightToolConfigurationProviderFactoryTest {
      */
     @Test
     public void testCreate() {
-        System.out.println("create");
+        if (TRACE){
+            System.out.println("create");
+        }
         DLightToolConfiguration result = null;
         try {
             FileObject fo = folder.getFileObject("XMLToolConfiguration.instance");
@@ -107,16 +113,20 @@ public class DLightToolConfigurationProviderFactoryTest {
         }
         assertNotNull("DLightToolConfiguration should not be null", result);
         DLightToolConfigurationAccessor toolConfigurationAccessor = DLightToolConfigurationAccessor.getDefault();
-        System.out.println("name=" + toolConfigurationAccessor.getToolName(result));
-        System.out.println("displayedName=" + toolConfigurationAccessor.getDetailedToolName(result));
-        System.out.println("id=" + result.getID());
+        if (TRACE){
+            System.out.println("name=" + toolConfigurationAccessor.getToolName(result));
+            System.out.println("displayedName=" + toolConfigurationAccessor.getDetailedToolName(result));
+            System.out.println("id=" + result.getID());
+        }
         // TODO review the generated test code and remove the default call to fail.
 
     }
 
     @Test
     public void testCreateTable() {
-        System.out.println("createTable");
+        if (TRACE){
+            System.out.println("createTable");
+        }
         DataTableMetadata result = null;
         try {
             FileObject fo = folder.getFileObject("DtraceDatatableMetadata.instance");
@@ -134,12 +144,16 @@ public class DLightToolConfigurationProviderFactoryTest {
             fail("Test is not passed");
         }
         assertNotNull("DataTableMetadata should not be null", result);
-        System.out.println("table name=" + result.getName());
+        if (TRACE){
+            System.out.println("table name=" + result.getName());
+        }
     }
 
     @Test
     public void testCreateDetailsTable() {
-        System.out.println("createDetaiklsTable");
+        if (TRACE){
+            System.out.println("createDetaiklsTable");
+        }
         DataTableMetadata result = null;
         try {
             FileObject fo = folder.getFileObject("DtraceDetailsDatatableMetadata.instance");
@@ -157,19 +171,23 @@ public class DLightToolConfigurationProviderFactoryTest {
             fail("Test is not passed");
         }
         assertNotNull("DataTableMetadata should not be null", result);
-        System.out.println("****************************************");
-        System.out.println("table name=" + result.getName());
-        System.out.println("*********************columns*********************");
-        List<Column> columns = result.getColumns();
-        for (Column c: columns ){
-            print(c);
+        if (TRACE){
+            System.out.println("****************************************");
+            System.out.println("table name=" + result.getName());
+            System.out.println("*********************columns*********************");
+            List<Column> columns = result.getColumns();
+            for (Column c: columns ){
+                print(c);
+            }
+            System.out.println("****************************************");
         }
-        System.out.println("****************************************");
     }
 
     @Test
     public void testCreateColumnsList(){
-        System.out.println("createColumnsList");
+        if (TRACE){
+            System.out.println("createColumnsList");
+        }
         List<Column> result = null;
         try {
             FileObject fo = folder.getFileObject("FopsColumns.List");
@@ -187,15 +205,19 @@ public class DLightToolConfigurationProviderFactoryTest {
             fail("Test is not passed");
         }
         assertNotNull("List<Column> should not be null", result);
-        System.out.println("columns count=" + result.size());
-        for (Column c : result){
-            print(c);
+        if (TRACE){
+            System.out.println("columns count=" + result.size());
+            for (Column c : result){
+                print(c);
+            }
         }
     }
 
     @Test
     public void testCreateColumn(){
-        System.out.println("createColumn");
+        if (TRACE){
+            System.out.println("createColumn");
+        }
         Column result = null;
         try {
             FileObject fo = folder.getFileObject("FopsColumns/Column1.instance");
@@ -213,12 +235,16 @@ public class DLightToolConfigurationProviderFactoryTest {
             fail("Test is not passed");
         }
         assertNotNull("Column should not be null", result);
-        print(result);
+        if (TRACE){
+            print(result);
+        }
     }
 
     @Test
     public void testIndicatorMetadata(){
-        System.out.println("createIndicatorMetadata");
+        if (TRACE){
+            System.out.println("createIndicatorMetadata");
+        }
         IndicatorMetadata result = null;
         try {
             FileObject fo = folder.getFileObject("IndicatorMetadata.instance");

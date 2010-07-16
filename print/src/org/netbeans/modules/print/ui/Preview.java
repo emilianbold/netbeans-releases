@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,7 +82,7 @@ import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.util.Config;
 import org.netbeans.modules.print.util.Percent;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -97,12 +100,25 @@ public final class Preview extends Dialog implements Percent.Listener {
 
             public void keyPressed(KeyEvent event) {
                 char ch = event.getKeyChar();
+                int modifiers = event.getModifiers();
 
                 if (ch == '+' || ch == '=') {
-                    myScale.increaseValue();
+                    if (isCtrl(modifiers)) {
+                        increaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.increaseValue();
+                    }
                 }
                 else if (ch == '-' || ch == '_') {
-                    myScale.decreaseValue();
+                    if (isCtrl(modifiers)) {
+                        decreaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.decreaseValue();
+                    }
                 }
                 else if (ch == '/') {
                     myScale.normalValue();
@@ -174,6 +190,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         c.fill = GridBagConstraints.BOTH;
         c.insets = new Insets(0, 0, 0, 0);
         panel.add(createScrollPanel(), c);
+//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
         toggle();
 
@@ -388,14 +405,14 @@ public final class Preview extends Dialog implements Percent.Listener {
         panel.setBackground(Color.lightGray);
         panel.add(myPaperPanel, c);
 
-//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
-//      optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-//      myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-
         // scroll
         c.fill = GridBagConstraints.BOTH;
         myScrollPane = new MyScrollPane(panel);
         myScrollPane.setFocusable(true);
+//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
+//      optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+//      myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+//      myScrollPane.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
         myScrollPane.addWheelListener(new MouseWheelListener() {
             public void mouseWheelMoved(MouseWheelEvent event) {
@@ -736,7 +753,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         Object[] leftButtons = getLeftButtons();
 
         DialogDescriptor descriptor = new DialogDescriptor(
-            getResizable(createPanel()),
+            getResizableXY(createPanel()),
             i18n("LBL_Print_Preview"), // NOI18N
             true,
             rightButtons,

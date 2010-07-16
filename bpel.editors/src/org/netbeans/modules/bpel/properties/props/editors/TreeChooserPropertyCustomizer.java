@@ -26,8 +26,8 @@ import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractTreeChooserPanel;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
-import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.soa.ui.properties.PropertyVetoError;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**

@@ -24,8 +24,13 @@ package org.netbeans.modules.xslt.tmap;
  * @version 1.0
  */
 public interface TMapConstants {
-
-    final String TRANSFORMMAP_XML = "transformmap.xml";// NOI18N
-    final String OLD_TRANSFORM_MAP_NS_URI = "http://xml.netbeans.org/schema/transformmap"; // NOI18N
-    
+    String 
+        TRANSFORMMAP_XML = "transformmap.xml",// NOI18N
+        OLD_TRANSFORM_MAP_NS_URI = "http://xml.netbeans.org/schema/transformmap", // NOI18N
+        TRANSFORMMAP_TAG_NAME = "transformmap", // NOI18N
+        TRANSFORMMAP_ATTRIBUTE_NAMESPACE_PREFIX = "xmlns", // NOI18N
+        DOLLAR_SIGN = "$", // NOI18N
+        DOT = ".", // NOI18N
+        COLON = ":", // NOI18N
+        PART_NAME_STATUS="status"; // NOI18N
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,8 +56,6 @@ import java.util.Map;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
@@ -113,7 +114,7 @@ public class SAConnectionsBuilder implements Serializable {
      * @param repo DOCUMENT ME!     *
      * @param p
      * @throws javax.xml.parsers.ParserConfigurationException DOCUMENT ME!
-     */
+     *
     public void buildDOMTree(ConnectionResolver container, 
             String saName, String saDescription, Document casaDocument)
             throws ParserConfigurationException {
@@ -153,7 +154,7 @@ public class SAConnectionsBuilder implements Serializable {
         for (Element connections : connectionsElements) {
             sroot.appendChild(connections);
         }
-    }
+    }*/
     
     public List<Element> createConnections(ConnectionResolver container, 
             Document document, Document casaDocument) {
@@ -210,6 +211,9 @@ public class SAConnectionsBuilder implements Serializable {
                             qosConnections.appendChild(qosConnection);
                             CasaBuilder.deepCloneChildren(
                                     casaConnection, qosConnection);
+
+                            // Performance Enhancement
+                            casaConnectionElementsWithExtension.remove(casaConnection);
                         }
                     }
                 }
@@ -255,14 +259,16 @@ public class SAConnectionsBuilder implements Serializable {
         assert casaConnectionElements != null && c != null && p != null;
         
         for (Element casaConnection : casaConnectionElements) {
+            
             String consumerEndpointID = casaConnection.getAttribute(CASA_CONSUMER_ATTR_NAME);
-            String providerEndpointID = casaConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
-            
             Endpoint consumer = CasaBuilder.getEndpoint(casaDocument, consumerEndpointID);
-            Endpoint provider = CasaBuilder.getEndpoint(casaDocument, providerEndpointID);
-            
-            if (c.equals(consumer) && p.equals(provider)) {
-                return casaConnection;
+            if (c.equals(consumer)) {
+
+                String providerEndpointID = casaConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
+                Endpoint provider = CasaBuilder.getEndpoint(casaDocument, providerEndpointID);
+                if (p.equals(provider)) {
+                    return casaConnection;
+                }
             }
         }
         

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.xml.search.api;
 import java.awt.Component;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.openide.util.Lookup;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 
@@ -52,27 +56,36 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  */
 public abstract class SearchManager {
 
-  /**
-   * Shows search for given provider.
-   * @param provider is given provider
-   */
-  public abstract void showSearch(SearchProvider provider);
+    /**
+     * Shows search for the given provider.
+     * @param provider the given provider
+     */
+    public abstract void showSearch(SearchProvider provider);
 
-  /**
-   * Returns find for given root and parent.
-   * @param root where find will be perfromed
-   * @param parent is component where ui will be placed
-   * @return find
-   */
-  public abstract Component createFind(Object root, JComponent parent);
+    /**
+     * Returns find for the given root and parent.
+     * @param root where find will be perfromed
+     * @param parent component where ui will be placed
+     * @return find
+     */
+    public abstract Component createFind(Object root, JComponent parent);
 
-  /**
-   * Returns Search action.
-   * @return Search action
-   */
-  public abstract Action getSearchAction();
+    /**
+     * Returns find for the given root and parent.
+     * @param root where find will be perfromed
+     * @param parent component where ui will be placed
+     * @param panel being added to Find panel
+     * @return find
+     */
+    public abstract Component createFind(Object root, JComponent parent, JPanel panel);
 
-  public static SearchManager getDefault() {
-    return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
-  }
+    /**
+     * Returns Search action.
+     * @return Search action
+     */
+    public abstract Action getSearchAction();
+
+    public static SearchManager getDefault() {
+        return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
+    }
 }

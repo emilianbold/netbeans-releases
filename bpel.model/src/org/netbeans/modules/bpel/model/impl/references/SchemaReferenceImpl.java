@@ -22,6 +22,8 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
@@ -63,15 +65,20 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
          * reference. And in this case we can try to ask
          * namespace via prefix at parent element.
          */
-        if ( getReferenced() == null ){
-            assert refString != null;
-            return ((BpelEntity)getParent()).getNamespaceContext().getNamespaceURI(
-                    getPrefix());
+        T referenced = getReferenced();
+        if (referenced != null ){
+            SchemaModel sModel = referenced.getModel();
+            if (sModel != null) {
+                Schema schema = sModel.getSchema();
+                if (schema != null) {
+                    return schema.getTargetNamespace();
+                }
+            }
         }
-        else {
-            return getReferenced().getModel().getSchema().
-            getTargetNamespace();
-        }
+        //
+        assert refString != null;
+        return ((BpelEntity)getParent()).getNamespaceContext().getNamespaceURI(
+                getPrefix());
     }
 
     /* (non-Javadoc)

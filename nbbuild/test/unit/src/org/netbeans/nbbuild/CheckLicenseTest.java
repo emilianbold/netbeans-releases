@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,29 +47,15 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class CheckLicenseTest extends NbTestCase {
 
     public CheckLicenseTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        //return new CheckLicenseTest("testReplaceHTMLLicense");
-        return new NbTestSuite(CheckLicenseTest.class);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public void testWeCanSearchForSunPublicLicense() throws Exception {
@@ -390,7 +379,9 @@ public class CheckLicenseTest extends NbTestCase {
     }        
 
     public void testMayReplaces() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
@@ -516,7 +507,9 @@ public class CheckLicenseTest extends NbTestCase {
     }
     
     public void testReplacesTextSeparatedByNewLine() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
@@ -593,7 +586,9 @@ public class CheckLicenseTest extends NbTestCase {
     }        
     
     public void testReplacePropertiesLicense() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicensePropertiesExample.properties");

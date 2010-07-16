@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,21 +42,18 @@
 
 package org.netbeans.modules.bugzilla.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetTaskDataCommand;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,18 +104,12 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        final TaskData[] taskData = new TaskData[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
-            }
-        };
+        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository.getTaskRepository());
         repository.getExecutor().execute(cmd, handleExceptions);
         if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
         }
-        return taskData[0];
+        return cmd.getTaskData();
     }
 
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {
@@ -141,7 +135,7 @@ public class BugzillaUtil {
         ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
         if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Ok"))) { // NOI18N
             String[] values = kp.getSelectedKeywords();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < values.length; i++) {
                 String s = values[i];
                 sb.append(s);
@@ -169,6 +163,18 @@ public class BugzillaUtil {
      */
     public static boolean isNbRepository(Repository repo) {
         return BugtrackingUtil.isNbRepository(repo);
+    }
+
+    public static boolean showQAContact(BugzillaRepository repo) {
+        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+    }
+
+    public static boolean showStatusWhiteboard(BugzillaRepository repo) {
+        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+    }
+
+    public static boolean showIssueType(BugzillaRepository repo) {
+        return isNbRepository(repo);
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -143,7 +147,7 @@ public final class Indexable {
         return delegate.toString();
     }
 
-    private static class MyAccessor extends SPIAccessor {
+    private static final class MyAccessor extends SPIAccessor {
 
         @Override
         public Indexable create(IndexableImpl delegate) {
@@ -151,18 +155,26 @@ public final class Indexable {
         }
 
         @Override
-        public void index(BinaryIndexer indexer, Context context) {
+        public void index(final BinaryIndexer indexer, final Context context) {
             assert indexer != null;
             assert context != null;
-            indexer.index(context);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(context);
+                }
+            });
         }
 
         @Override
-        public void index(CustomIndexer indexer, Iterable<? extends Indexable> files, Context context) {
+        public void index(final CustomIndexer indexer, final Iterable<? extends Indexable> files, final Context context) {
             assert indexer != null;
             assert files != null;
             assert context != null;
-            indexer.index(files, context);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(files, context);
+                }
+            });
         }
 
         @Override
@@ -186,12 +198,16 @@ public final class Indexable {
         }
 
         @Override
-        public void index(EmbeddingIndexer indexer, Indexable indexable, Result parserResult, Context ctx) {
+        public void index(final EmbeddingIndexer indexer, final Indexable indexable, final Result parserResult, final Context ctx) {
             assert indexer != null;
             assert indexable != null;
             assert parserResult != null;
             assert ctx != null;
-            indexer.index(indexable, parserResult, ctx);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(indexable, parserResult, ctx);
+                }
+            });
         }
 
         @Override

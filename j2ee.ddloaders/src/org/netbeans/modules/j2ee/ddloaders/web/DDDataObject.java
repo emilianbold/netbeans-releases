@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -116,7 +119,9 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** List of updates to servlets that should be processed */
     private Vector updates;
 
+    private static final RequestProcessor rp = new RequestProcessor();
     private transient RequestProcessor.Task updateTask;
+    private transient RequestProcessor.Task refreshSourcesTask;
 
     public DDDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
@@ -371,7 +376,7 @@ public class DDDataObject extends  DDMultiViewDataObject
 
         // schedule processDDChangeEvent
         if (updateTask == null) {
-            updateTask = RequestProcessor.getDefault().post (new Runnable () {
+            updateTask = rp.post (new Runnable () {
                 public void run () {
                     java.util.List changes = null;
                     synchronized (DDDataObject.this) {
@@ -666,8 +671,19 @@ public class DDDataObject extends  DDMultiViewDataObject
         }
     };
 
-    public void stateChanged (javax.swing.event.ChangeEvent e) {
-        refreshSourceFolders ((Sources)e.getSource());
+    @Override
+    public void stateChanged (final javax.swing.event.ChangeEvent e) {
+        if (refreshSourcesTask != null){
+            refreshSourcesTask.schedule(100);
+            return;
+        }
+        //#179622 break the thread stack chain
+        refreshSourcesTask = rp.post(new Runnable() {
+            @Override
+            public void run() {
+                refreshSourceFolders ((Sources)e.getSource());
+            }
+        }, 100);
     }
 
     @Override

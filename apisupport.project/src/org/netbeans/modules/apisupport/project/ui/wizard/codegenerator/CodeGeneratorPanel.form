@@ -15,7 +15,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -37,9 +37,9 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="fileNametextField" alignment="0" pref="304" max="32767" attributes="0"/>
-                                  <Component id="mimeTypeTextField" alignment="0" pref="304" max="32767" attributes="0"/>
-                                  <Component id="packageNameCombo" alignment="0" pref="304" max="32767" attributes="0"/>
+                                  <Component id="fileNametextField" alignment="0" pref="311" max="32767" attributes="0"/>
+                                  <Component id="mimeTypeTextField" alignment="0" pref="311" max="32767" attributes="0"/>
+                                  <Component id="packageNameCombo" alignment="0" pref="311" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="cpCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>

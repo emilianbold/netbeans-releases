@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui;
 
 import javax.swing.JPanel;
@@ -89,6 +87,4 @@ public class BrokenReferencesAlertPanel extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea message;
     // End of variables declaration//GEN-END:variables
-
-
 }

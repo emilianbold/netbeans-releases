@@ -14,6 +14,8 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
  */
 public class ChangesetPanel extends javax.swing.JPanel {
 
+    private static final String FETCHING_REVISION_DATA = org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "MSG_Fetching_Revisions"); // NOI18N
+
     /** Creates new form ChangesetPanel */
     public ChangesetPanel() {
         initComponents();
@@ -28,9 +30,9 @@ public class ChangesetPanel extends javax.swing.JPanel {
     }
     
     public void clearInfo(){
-        this.setDescription("");
-        this.setAuthor("");
-        this.setDate("");
+        this.setDescription(FETCHING_REVISION_DATA);
+        this.setAuthor(FETCHING_REVISION_DATA);
+        this.setDate(FETCHING_REVISION_DATA);
     }
 
     public void setDescription(String desc){

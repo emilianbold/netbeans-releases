@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,19 +16,13 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -37,7 +34,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.j2ee.weblogic9.optional;
 
 import java.io.BufferedReader;
@@ -47,48 +49,50 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
- * This class provides functionality used to start and stop a particular server
- * instance. It also supports starting the server in debug mode, so that
- * NetBeans can connect to it using its built-in JPDA debugger.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WLStartServer extends StartServer {
+public final class WLStartServer extends StartServer {
 
-    private static final Logger LOGGER = Logger.getLogger(WLStartServer.class.getName());
-    
+    private static final String SUN = "Sun";        // NOI18N
+
     /**
      * The socket timeout value for server ping. Unfortunately there is no right
      * value and the server state should be checked in different (more reliable)
@@ -96,94 +100,37 @@ public class WLStartServer extends StartServer {
      */
     private static final int SERVER_CHECK_TIMEOUT = 10000;
 
-    private static final int AVERAGE_SERVER_INSTANCES = 2;
+    private static final Logger LOGGER = Logger.getLogger(WLStartServer.class.getName());
 
-    private static Set<String> debuggingUris;
+    /* GuardedBy(WLStartServer.class) */
+    private static Set<String> SERVERS_IN_DEBUG;
 
-    /**
-     * The server's deployment manager, to be exact the plugin's wrapper for it
-     */
-    private final WLBaseDeploymentManager dm;
+    private final WLDeploymentManager dm;
 
-    /**
-     * WL server process instance
-     */
+    private final ExecutorService service = Executors.newCachedThreadPool();
+
+    /* GuardedBy("this") */
     private Process serverProcess;
 
-    private static synchronized void addDebugModeUri(String uri) {
-        if (debuggingUris == null) {
-            debuggingUris = new HashSet<String>(AVERAGE_SERVER_INSTANCES);
-        }
-
-        debuggingUris.add(uri);
+    public WLStartServer(WLDeploymentManager dm) {
+        this.dm = dm;
     }
 
-    private static synchronized void removeDebugModeUri(String uri) {
-        if (debuggingUris == null) {
-            return;
-        }
-
-        debuggingUris.remove(uri);
-    }
-
-    private static synchronized boolean existsDebugModeUri(String uri) {
-        return debuggingUris != null && debuggingUris.contains(uri);
-    }
-
-    /**
-     * Creates a new instance of WLStartServer
-     *
-     * @param the server's deployment manager
-     */
-    public WLStartServer(DeploymentManager dm) {
-        // cast the deployment manager to the plugin's wrapper class and save
-        this.dm = (WLBaseDeploymentManager) dm;
-    }
-
-    /**
-     * Starts the server (or even a particular target supplied by admin server)
-     * in debug mode. We do not support this completely thus always start the
-     * server instance defined in the deployment maanger supplied during
-     * WSStartServer construction.
-     *
-     * @param target target thst should be started
-     *
-     * @return a progress object that describes the startup process
-     */
     @Override
-    public ProgressObject startDebugging(Target target) {
-        LOGGER.log(Level.FINER, "Starting server in debug mode"); // NOI18N
-
-        // create a new progress object
-        WLServerProgress serverProgress = new WLServerProgress(this);
-
-        // send a message denoting that the startup process has begun
-        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
-
-        // run the startup process in a separate thread
-        RequestProcessor.getDefault().post(new WLStartDebugRunnable(
-                serverProgress), 0, Thread.NORM_PRIORITY);
-
-        // set the debuggable marker
-        addDebugModeUri(dm.getURI());
-
-        // return the progress object
-        return serverProgress;
+    public ServerDebugInfo getDebugInfo(Target target) {
+        return new ServerDebugInfo(dm.getHost(), new Integer(
+                dm.getInstanceProperties().getProperty(
+                WLPluginProperties.DEBUGGER_PORT_ATTR)).intValue());
     }
 
-    /**
-     * Specifies whether the server instance is started in debug mode. The
-     * detalization can go as deep as an individual target, but we do not
-     * support this
-     *
-     * @param target target to be checked
-     *
-     * @return whether the instance is started in debug mode
-     */
+    @Override
+    public boolean isAlsoTargetServer(Target target) {
+        return true;
+    }
+
     @Override
     public boolean isDebuggable(Target target) {
-        if (!existsDebugModeUri(dm.getURI())) {
+        if (!isServerInDebug(dm.getUri())) {
             return false;
         }
         if (!isRunning()) {
@@ -192,189 +139,131 @@ public class WLStartServer extends StartServer {
         return true;
     }
 
-    /**
-     * Tells whether the target is also the target server
-     *
-     * @return true
-     */
     @Override
-    public boolean isAlsoTargetServer(Target target) {
-        return true;
+    public boolean isRunning() {
+        Process proc = null;
+        synchronized (this) {
+            proc = serverProcess;
+        }
+
+        if (!isRunning(proc)) {
+            return false;
+        }
+
+        String host = dm.getHost();
+        int port = Integer.parseInt(dm.getPort().trim());
+        return ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
     }
 
-    /**
-     * Returns the information for attaching the JPDA debugger to the server
-     * (host and port). The detalization can be down to a specific target, but
-     * we do not support this
-     *
-     * @param target target for which the information is requested
-     *
-     * @return the debug information
-     */
     @Override
-    public ServerDebugInfo getDebugInfo(Target target) {
-        return new ServerDebugInfo(dm.getHost(), new Integer(
-                dm.getInstanceProperties().getProperty(
-                WLPluginProperties.DEBUGGER_PORT_ATTR)).intValue());
-    }
-
-    /**
-     * Tells whether the normal startup of the server is supported.
-     *
-     * @return if the server is local, its true, false otherwise
-     */
-    public boolean supportsStartDeploymentManager() {
-        return true;
-    }
-
-    /**
-     * Stops the server instance identified by the deployment manager.
-     *
-     * @return the progress object describing the shutdown process
-     */
-    @Override
-    public ProgressObject stopDeploymentManager() {
-        LOGGER.log(Level.FINER, "Stopping server"); // NOI18N
-
-        // create a new progress object
-        WLServerProgress serverProgress = new WLServerProgress(this);
-
-        // send a message denoting that the shutdown process has begun
-        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)); // NOI18N
-
-        // run the shutdown process in a separate thread
-        RequestProcessor.getDefault().post(new WLStopRunnable(serverProgress), 0, Thread.NORM_PRIORITY);
-
-        // set the debugguable marker to false as the server is stopped
-        removeDebugModeUri(dm.getURI());
-
-        // return the progress object
-        return serverProgress;
-    }
-
-    /**
-     * Starts a server instance identified by the deployment manager.
-     *
-     * @return a progress object describing the server startup process
-     */
-    @Override
-    public ProgressObject startDeploymentManager() {
-        LOGGER.log(Level.FINER, "Starting server"); // NOI18N
-
-        // create a new progress object
-        WLServerProgress serverProgress = new WLServerProgress(this);
-
-        // send a message denoting that the startup process has begun
-        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        serverProgress.notifyStart(StateType.RUNNING,  NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)); // NOI18N
-
-        // run the startup process in a separate thread
-        RequestProcessor.getDefault().post(new WLStartRunnable(
-                serverProgress), 0, Thread.NORM_PRIORITY);
-
-        // set the debuggble marker to false as we do not start the server in
-        // debug mode
-        removeDebugModeUri(dm.getURI());
-
-        // return the progress object
-        return serverProgress;
-    }
-
-    /**
-     * Tells whether we need to start the server instance in order to get a
-     * list of deployment targets.
-     *
-     * @return true
-     */
-    public boolean needsStartForTargetList() {
-        return true;
-    }
-
-    /**
-     * Tells whether we need to start the server instance in order to configure
-     * an application
-     *
-     * @return false
-     */
-    public boolean needsStartForConfigure() {
-        return false;
-    }
-
-    /**
-     * Tells whether we need to start the server instance in order to configure
-     * the admin server
-     *
-     * @return true
-     */
     public boolean needsStartForAdminConfig() {
         return true;
     }
 
-    /**
-     * Tells whether the server instance identified by the deployment manager is
-     * currently started
-     *
-     * @return true is the server is running, false otherwise
+    @Override
+    public boolean needsStartForConfigure() {
+        return false;
+    }
+
+    @Override
+    public boolean needsStartForTargetList() {
+        return true;
+    }
+
+    @Override
+    public ProgressObject startDebugging(Target target) {
+        LOGGER.log(Level.FINER, "Starting server in debug mode"); // NOI18N
+
+        WLServerProgress serverProgress = new WLServerProgress(this);
+
+        String serverName = dm.getInstanceProperties().getProperty(
+                InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,
+                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+
+        String uri = dm.getUri();
+        service.submit(new WLDebugStartTask(uri, serverProgress, dm));
+
+        addServerInDebug(uri);
+        return serverProgress;
+    }
+
+    @Override
+    public ProgressObject startDeploymentManager() {
+        LOGGER.log(Level.FINER, "Starting server"); // NOI18N
+
+        WLServerProgress serverProgress = new WLServerProgress(this);
+
+        String serverName = dm.getInstanceProperties().getProperty(
+                InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,
+                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+
+        String uri = dm.getUri();
+        service.submit(new WLStartTask(uri, serverProgress, dm));
+
+        removeServerInDebug(uri);
+        return serverProgress;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer#startProfiling(javax.enterprise.deploy.spi.Target, org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings)
      */
     @Override
-    public boolean isRunning() {
-        return isRunning(true);
+    public ProgressObject startProfiling( Target target,
+            ProfilerServerSettings settings )
+    {
+        LOGGER.log(Level.FINER, "Starting server in profiling mode"); // NOI18N
+
+        WLServerProgress serverProgress = new WLServerProgress(this);
+
+        String serverName = dm.getInstanceProperties().getProperty(
+                InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,
+                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+
+        String uri = dm.getUri();
+        service.submit(new WLProfilingStartTask(uri, serverProgress, dm, settings));
+
+        removeServerInDebug(uri);
+        return serverProgress;
     }
 
-    /**
-     * Returns true if the server is running.
-     *
-     * @param checkResponse should be checked whether is the server responding - is really up?
-     * @return <code>true</code> if the server is running.
-     */
-    public boolean isRunning(boolean checkResponse) {
-        Process proc = dm.getServerProcess();
-        if (proc != null) {
-            try {
-                proc.exitValue();
-                // process is stopped
-                return false;
-            } catch (IllegalThreadStateException e) {
-                // process is running
-                if (!checkResponse) {
-                    return true;
-                }
-            }
-        }
-        if (checkResponse) {
-            String host = dm.getHost();
-            int port = Integer.parseInt(dm.getPort().trim());
-            return ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
-        } else {
-            return false; // cannot resolve the state
-        }
+    @Override
+    public ProgressObject stopDeploymentManager() {
+        LOGGER.log(Level.FINER, "Stopping server"); // NOI18N
+
+        WLServerProgress serverProgress = new WLServerProgress(this);
+
+        String serverName = dm.getInstanceProperties().getProperty(
+                InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,
+                NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName));
+
+        String uri = dm.getUri();
+        service.submit(new WLStopTask(uri, serverProgress, dm));
+
+        removeServerInDebug(uri);
+        return serverProgress;
     }
 
-    /** Return true if the server is stopped. If the server was started from within
-     * the IDE, determin the server state from the process exit code, otherwise try
-     * to ping it.
-     */
-    private boolean isStopped() {
-        Process proc = dm.getServerProcess();
-        if (proc != null) {
-            try {
-                proc.exitValue();
-                // process is stopped
-                return true;
-            } catch (IllegalThreadStateException e) {
-                // process is still running
-                return false;
-            }
-        } else {
-            String host = dm.getHost();
-            int port = new Integer(dm.getPort()).intValue();
-            return !ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
-        }
+    @Override
+    public boolean supportsStartDeploymentManager() {
+        return true;
     }
 
-    /** Return true if a WL server is running on the specifed host:port */
-    public static boolean ping(String host, int port, int timeout) {
+    @Override
+    public boolean supportsStartProfiling( Target target ) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsStartDebugging(Target target) {
+        //if we can start it we can debug it
+        return supportsStartDeploymentManager();
+    }
+
+    private static boolean ping(String host, int port, int timeout) {
         // checking whether a socket can be created is not reliable enough, see #47048
         Socket socket = new Socket();
         try {
@@ -383,9 +272,11 @@ public class WLStartServer extends StartServer {
                 socket.setSoTimeout(timeout);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(socket.getInputStream()));
                     try {
-                        // request for the login form - we guess that OK response means pinging the WL server
+                        // request for the login form - we guess that OK response
+                        // means pinging the WL server
                         out.println("GET /console/login/LoginForm.jsp HTTP/1.1\nHost:\n"); // NOI18N
 
                         // check response
@@ -400,226 +291,181 @@ public class WLStartServer extends StartServer {
                 socket.close();
             }
         } catch (IOException ioe) {
+            LOGGER.log(Level.FINE, null, ioe);
             return false;
         }
     }
 
-
-    @Override
-    public boolean supportsStartDebugging(Target target) {
-        //if we can start it we can debug it
-        return supportsStartDeploymentManager();
+    private static synchronized void addServerInDebug(String uri) {
+        if (SERVERS_IN_DEBUG == null) {
+            SERVERS_IN_DEBUG = new HashSet<String>(1);
+        }
+        SERVERS_IN_DEBUG.add(uri);
     }
 
-    /**
-     * Runnable that starts the server in normal mode. It is used to start the
-     * server in a separate thread, so that the IDE does not hang up during the
-     * startup process.
-     *
-     * @author Kirill Sorokin
-     */
-    private class WLStartRunnable implements Runnable {
+    private static synchronized void removeServerInDebug(String uri) {
+        if (SERVERS_IN_DEBUG == null) {
+            return;
+        }
+        SERVERS_IN_DEBUG.remove(uri);
+    }
 
-        /**
-         * Root directory for the selected profile
-         */
-        private String domainHome;
+    private static synchronized boolean isServerInDebug(String uri) {
+        return SERVERS_IN_DEBUG != null && SERVERS_IN_DEBUG.contains(uri);
+    }
 
-        /**
-         * Progress object that describes the startup process. It will be
-         * notified of the progress and the success/failure of the process
-         */
-        private WLServerProgress serverProgress;
-
-        /**
-         * Creates a new instance of WSStartRunnable.
-         *
-         * @param serverProgress the prgress object that the thread should
-         *      notify of anything that happens with the startup process
-         */
-        public WLStartRunnable(WLServerProgress serverProgress) {
-            // save the progress object
-            this.serverProgress = serverProgress;
-
-            // get the profile root directory and the instance name from the
-            // deployment manager
-            domainHome = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DOMAIN_ROOT_ATTR);
+    private static void startService(String uri, Process process, ExecutorService service) {
+        InputOutput io = UISupport.getServerIO(uri);
+        if (io == null) {
+            return;
         }
 
-        /**
-         * Implementation of the run() method from the Runnable interface
-         */
-        public void run() {
-            try {
-                // save the current time so that we can deduct that the startup
-                // failed due to timeout
-                long start = System.currentTimeMillis();
+        try {
+            // as described in the api we reset just ouptut
+            io.getOut().reset();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
 
-                // create the startup process
-                serverProcess = Runtime.getRuntime().exec(
-                        domainHome + "/" + (Utilities.isWindows() ?    // NOI18N
-                            STARTUP_BAT : STARTUP_SH));
+        io.select();
 
-                dm.setServerProcess(serverProcess);
+        service.submit(InputReaderTask.newTask(InputReaders.forStream(
+                process.getInputStream(), Charset.defaultCharset()), InputProcessors.printing(io.getOut(), true)));
+        service.submit(InputReaderTask.newTask(InputReaders.forStream(
+                process.getErrorStream(), Charset.defaultCharset()), InputProcessors.printing(io.getErr(), false)));
+    }
 
-                // create a tailer to the server's output stream so that a user
-                // can observe the progress
-                WLOutputManager manager = new WLOutputManager(serverProcess, dm.getURI());
-                dm.setOutputManager(manager);
-                manager.start();
+    private static void stopService(final ExecutorService service) {
+        if (service != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-
-                // wait till the timeout happens, or if the server starts before
-                // send the completed event to j2eeserver
-                while (System.currentTimeMillis() - start < TIMEOUT) {
-                    // send the 'completed' event and return when the server is running
-                    if (isRunning()) {
-                        serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
-                        return;
-                    }
-
-                    // sleep for a little so that we do not make our checks too
-                    // often
-                    try {
-                        Thread.sleep(DELAY);
-                    } catch (InterruptedException e) {}
+                public Void run() {
+                    service.shutdownNow();
+                    return null;
                 }
+            });
+        }
+    }
 
-                // if the server did not start in the designated time limits
-                // we consider the startup as failed and warn the user
-                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+    private static boolean isRunning(Process process) {
+        if (process != null) {
+            try {
+                process.exitValue();
+                // process is stopped
+                return false;
+            } catch (IllegalThreadStateException e) {
+                // process is running
             }
         }
+        return true;
+    }
+
+    private class WLProfilingStartTask extends WLStartTask {
+
+        private final ProfilerServerSettings mySettings;
+
+        public WLProfilingStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm, ProfilerServerSettings settings) {
+
+            super( uri , serverProgress, dm );
+            mySettings = settings;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.j2ee.weblogic9.optional.WLStartServer.WLStartTask#run()
+         */
+        @Override
+        public void run() {
+            super.run();
+            int state = ProfilerSupport.getState();
+            if ( state == ProfilerSupport.STATE_INACTIVE){
+                getProgress().notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class,
+                                "MSG_START_PROFILED_SERVER_FAILED",
+                                dm.getInstanceProperties().getProperty(
+                                        InstanceProperties.DISPLAY_NAME_ATTR)));
+                Process process = null;
+                synchronized (WLStartServer.this) {
+                    process = serverProcess;
+                }
+                process.destroy();
+            }
+        }
+
+        @Override
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+
+            ExternalProcessBuilder result = builder;
+            JavaPlatform javaPlatform = getSettings().getJavaPlatform();
+            String vendor = javaPlatform.getVendor();
+
+            String javaHome = getJavaHome(javaPlatform);
+            result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
+            if (SUN.equals(vendor)) {
+                result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
+                        javaHome);
+            }
+
+            StringBuilder javaOptsBuilder = new StringBuilder();
+            String[] profJvmArgs = getSettings().getJvmArgs();
+            for (int i = 0; i < profJvmArgs.length; i++) {
+                javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
+            }
+            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N
+                    javaOptsBuilder.toString());
+            return result;
+        }
+
+        @Override
+        protected boolean isRunning(){
+            int state = ProfilerSupport.getState();
+            if (state == ProfilerSupport.STATE_BLOCKING ||
+                    state == ProfilerSupport.STATE_RUNNING  ||
+                    state == ProfilerSupport.STATE_PROFILING )
+            {
+                return true;
+            }
+            return super.isRunning();
+        }
+
+        private String getJavaHome(JavaPlatform platform) {
+            FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
+            return FileUtil.toFile(fo).getAbsolutePath();
+        }
+
+        private ProfilerServerSettings getSettings() {
+            return mySettings;
+        }
+    }
+
+    private class WLDebugStartTask extends WLStartTask {
+
+        public WLDebugStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm) {
+            super( uri , serverProgress, dm  );
+        }
+
+        @Override
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+            int debugPort = 4000;
+            debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DEBUGGER_PORT_ATTR));
+
+            ExternalProcessBuilder result = builder.addEnvironmentVariable("JAVA_OPTIONS",
+                    "-Xdebug -Xnoagent -Djava.compiler=none " +
+                    "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
+                    + debugPort);   //NOI18N
+            return result;
+        }
+    }
+
+    private class WLStartTask implements Runnable {
 
         /**
          * The amount of time in milliseconds during which the server should
          * start
          */
-        private static final int TIMEOUT = 900000;
-
-        /**
-         * The amount of time in milliseconds that we should wait between checks
-         */
-        private static final int DELAY = 5000;
-
-        /**
-         * Name of the startup script for windows
-         */
-        private static final String STARTUP_SH = "startWebLogic.sh";   // NOI18N
-
-        /**
-         * Name of the startup script for Unices
-         */
-        private static final String STARTUP_BAT = "startWebLogic.cmd"; // NOI18N
-    }
-
-    /**
-     * Runnable that starts the server in debug mode. It is used to start the
-     * server in a separate thread, so that the IDE does not hang up during the
-     * startup process.
-     *
-     * @author Kirill Sorokin
-     */
-    private class WLStartDebugRunnable implements Runnable {
-
-        /**
-         * Root directory for the selected profile
-         */
-        private String domainHome;
-
-        /**
-         * The debugger port that the JPDA debugger should connect to, basically
-         * this integer will be added to the server's startup command line, to
-         * make the JVM listen for debugger connection on this port
-         */
-        private String debuggerPort;
-
-        /**
-         * Progress object that describes the startup process. It will be
-         * notified of the progress and the success/failure of the process
-         */
-        private WLServerProgress serverProgress;
-
-        /**
-         * Creates a new instance of WSStartDebugRunnable.
-         *
-         * @param serverProgress the prgress object that the thread should
-         *      notify of anything that happens with the startup process
-         */
-        public WLStartDebugRunnable(WLServerProgress serverProgress) {
-            // save the progress object
-            this.serverProgress = serverProgress;
-
-            // get the profile root directory, the debugger port and the
-            // instance name from the deployment manager
-            domainHome = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DOMAIN_ROOT_ATTR);
-            debuggerPort = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DEBUGGER_PORT_ATTR);
-        }
-
-        /**
-         * Implementation of the run() method from the Runnable interface
-         */
-        public void run() {
-            try {
-                // save the current time so that we can deduct that the startup
-                // failed due to timeout
-                long start = System.currentTimeMillis();
-
-
-                // create the startup process
-                File cwd = new File (domainHome);
-                assert cwd.isDirectory() : "Working directory for weblogic does not exist:" + domainHome; //NOI18N
-                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(domainHome + "/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), "");
-                String envp[];
-                envp = new String[] {"JAVA_OPTIONS=-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=" + debuggerPort};    // NOI18N
-
-                serverProcess = pd.exec(null, envp, true, cwd);
-
-                dm.setServerProcess(serverProcess);
-
-                // create a tailer to the server's output stream so that a user
-                // can observe the progress
-                WLOutputManager manager = new WLOutputManager(serverProcess, dm.getURI());
-                dm.setOutputManager(manager);
-                manager.start();
-
-                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-
-                // wait till the timeout happens, or if the server starts before
-                // send the completed event to j2eeserver
-                while (System.currentTimeMillis() - start < TIMEOUT) {
-                    // send the 'completed' event and return when the server is running
-                    if (isRunning()) {
-                        serverProgress.notifyStart(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName)); // NOI18N
-                        return;
-                    }
-
-                    // sleep for a little so that we do not make our checks too
-                    // often
-                    try {
-                        Thread.sleep(DELAY);
-                    } catch (InterruptedException e) {}
-                }
-
-                // if the server did not start in the designated time limits
-                // we consider the startup as failed and warn the user
-                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
-            }
-        }
-
-        /**
-         * The amount of time in milliseconds during which the server should
-         * start
-         */
-        private static final int TIMEOUT = 900000;
+        private static final int TIMEOUT = 300000;
 
         /**
          * The amount of time in milliseconds that we should wait between checks
@@ -627,117 +473,127 @@ public class WLStartServer extends StartServer {
         private static final int DELAY = 1000;
 
         /**
-         * Name of the startup script for windows
-         */
-        private static final String STARTUP_SH = "startWebLogic.sh"; // NOI18N
-
-        /**
          * Name of the startup script for Unices
          */
+        private static final String STARTUP_SH = "startWebLogic.sh";   // NOI18N
+
+        /**
+         * Name of the startup script for windows
+         */
         private static final String STARTUP_BAT = "startWebLogic.cmd"; // NOI18N
-    }
 
-    /**
-     * Runnable that stops the server. It is used to stop the server in a
-     * separate thread, so that the IDE does not hang up during the stop
-     * process.
-     *
-     * @author Kirill Sorokin
-     */
-    private class WLStopRunnable implements Runnable {
+        private final String uri;
 
-        /**
-         * Root directory for the selected profile
-         */
-        private String domainHome;
+        private final WLServerProgress serverProgress;
 
-        /**
-         * Progress object that describes the stop process. It will be
-         * notified of the progress and the success/failure of the process
-         */
-        private WLServerProgress serverProgress;
+        private final WLDeploymentManager dm;
 
-        /**
-         * Creates a new instance of WSStopRunnable.
-         *
-         * @param serverProgress the prgress object that the thread should
-         *      notify of anything that happens with the stop process
-         */
-        public WLStopRunnable(WLServerProgress serverProgress) {
-            // save the progress pbject
+        public WLStartTask(String uri, WLServerProgress serverProgress, WLDeploymentManager dm) {
+            this.uri = uri;
             this.serverProgress = serverProgress;
-
-            // get the profile home directory and the instance name from the
-            // deployment manager
-            domainHome = dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DOMAIN_ROOT_ATTR);
+            this.dm = dm;
         }
 
-        /**
-         * Implementation of the run() method from the Runnable interface
-         */
+        @Override
         public void run() {
-            WLOutputManager manager = null;
+            String domainString = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR);
+
+            File domainHome = new File(domainString);
+            if (!domainHome.exists() || !domainHome.isDirectory()) {
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
+                return;
+            }
+
             try {
-                // save the current time so that we can deduct that the startup
-                // failed due to timeout
                 long start = System.currentTimeMillis();
 
-                // create the stop process
-                Process serverProcess = Runtime.getRuntime().exec(
-                        domainHome + "/bin/" + (Utilities.isWindows() ?    // NOI18N
-                            SHUTDOWN_BAT : SHUTDOWN_SH));
+                ExternalProcessBuilder builder = new ExternalProcessBuilder(Utilities.isWindows()
+                            ? new File(domainHome, STARTUP_BAT).getAbsolutePath() // NOI18N
+                            : new File(domainHome, STARTUP_SH).getAbsolutePath()); // NOI18N
+                builder = builder.workingDirectory(domainHome);
+                
+                String mwHome = dm.getProductProperties().getMiddlewareHome();
+                if (mwHome != null) {
+                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                }
 
-                // create a tailer to the server's output stream so that a user
-                // can observe the progress
-                manager = new WLOutputManager(serverProcess, dm.getURI());
-                manager.start();
+                builder = initBuilder(builder);
 
-                String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+                Process process = null;
+                synchronized (WLStartServer.this) {
+                    serverProcess = builder.call();
+                    process = serverProcess;
+                }
 
-                while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (!isStopped()) {
-                        serverProgress.notifyStop(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)); // NOI18N
-                    } else {
+                ExecutorService service = Executors.newFixedThreadPool(2);
+                startService(uri, process, service);
+
+                String serverName = dm.getInstanceProperties().getProperty(
+                        InstanceProperties.DISPLAY_NAME_ATTR);
+
+                // wait till the timeout happens, or if the server starts before
+                // send the completed event to j2eeserver
+                while ((System.currentTimeMillis() - start) < TIMEOUT) {
+                    if (isRunning()) {
+                        // reset the restart flag
+                        dm.setRestartNeeded(false);
+
+                        serverProgress.notifyStart(StateType.COMPLETED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
+
+                        // FIXME we should wait for the process and kill service
+                        boolean interrupted = false;
                         try {
-                            serverProcess.waitFor();
+                            process.waitFor();
                         } catch (InterruptedException ex) {
+                            interrupted = true;
                         }
-                        long pbLagTime  = (System.currentTimeMillis() - start) / 4;
-                        try {
-                            Thread.sleep(pbLagTime);
-                        } catch (InterruptedException e) {}
-                        serverProgress.notifyStop(StateType.COMPLETED, NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STOPPED", serverName)); // NOI18N
+                        if (interrupted) {
+                            Thread.currentThread().interrupt();
+                        } else {
+                            stopService(service);
+                        }
                         return;
                     }
-
-                    // sleep for a while so that we do not make our checks too often
                     try {
                         Thread.sleep(DELAY);
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                        serverProgress.notifyStart(StateType.FAILED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
                 }
 
-                // if the server did not stop in the designated time limits
-                // we consider the stop process as failed and kill the process
-                serverProgress.notifyStop(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StopServerTimeout"));
-                serverProcess.destroy();
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_TIMEOUT"));
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
-            } finally {
-                if (dm.getOutputManager() != null) {
-                    dm.getOutputManager().finish();
-                }
-                if (manager != null) {
-                    manager.finish();
-                }
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
+
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
+            return builder;
+        }
+
+        protected boolean isRunning(){
+            return WLStartServer.this.isRunning();
+        }
+
+        protected WLServerProgress getProgress(){
+            return serverProgress;
+        }
+    }
+
+    private class WLStopTask implements Runnable {
 
         /**
          * The amount of time in milliseconds during which the server should
          * stop
          */
-        private static final int TIMEOUT = 900000;
+        private static final int TIMEOUT = 300000;
 
         /**
          * The amount of time in milliseconds that we should wait between checks
@@ -753,293 +609,121 @@ public class WLStartServer extends StartServer {
          * Name of the shutdown script for unices
          */
         private static final String SHUTDOWN_BAT = "stopWebLogic.cmd"; // NOI18N
-    }
 
-    /**
-     * An implementation of the ProgressObject interface targeted at tracking
-     * the server instance's startup/shutdown progress
-     *
-     * @author Kirill Sorokin
-     */
-    private static class WLServerProgress implements ProgressObject {
+        private static final String KEY_UUID = "NB_EXEC_WL_STOP_PROCESS_UUID"; //NOI18N
 
-        /**
-         * Listeners vector
-         */
-        private Vector listeners = new Vector();
+        private final String uri;
 
-        /**
-         * Current startus of the startup/shutdown process
-         */
-        private DeploymentStatus deploymentStatus;
+        private final WLServerProgress serverProgress;
 
-        /**
-         * Progress events source
-         */
-        private Object source;
+        private final WLDeploymentManager dm;
 
-        /**
-         * Creates a new instance of WSServerProgress. The source supplied will
-         * be used as the source for all the events. Ususally it is the parent
-         * WSStartServerObject
-         *
-         * @param source the events' source
-         */
-        public WLServerProgress(Object source) {
-            this.source = source;
+        public WLStopTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm) {
+            this.uri = uri;
+            this.serverProgress = serverProgress;
+            this.dm = dm;
         }
 
-        /**
-         * Sends a startup event to the listeners.
-         *
-         * @param state the new state of the startup process
-         * @param message the attached string message
-         */
-        public void notifyStart(StateType state, String message) {
-            // call the general notify method with the specific startup event
-            // parameters set
-            notify(new WLDeploymentStatus(ActionType.EXECUTE, CommandType.START, state, message));
-        }
+        @Override
+        public void run() {
+            String username = dm.getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR);
+            String password = dm.getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR);
 
-        /**
-         * Sends a shutdown event to the listeners.
-         *
-         * @param state the new state of the shutdown process
-         * @param message the attached string message
-         */
-        public void notifyStop(StateType state, String message) {
-            // call the general notify method with the specific shutdown event
-            // parameters set
-            notify(new WLDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, state, message));
-        }
+            // it is guaranteed it is WL
+            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
 
-        /**
-         * Notifies the listeners of the new process status
-         *
-         * @param deploymentStatus the new status of the startup/shutdown
-         *      process
-         */
-        public void notify(DeploymentStatus deploymentStatus) {
-            // construct a new progress event from the source and the supplied
-            // new process status
-            ProgressEvent evt = new ProgressEvent(source, null, deploymentStatus);
+            String host = parts[0];
+            String port = parts.length > 1 ? parts[1] : "";
 
-            // update the saved process status
-            this.deploymentStatus = deploymentStatus;
+            String domainString = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR);
 
-
-            // get a copy of the listeners vector so that we do not get any
-            // conflicts when multithreading
-            java.util.Vector targets = null;
-            synchronized (this) {
-                if (listeners != null) {
-                    targets = (java.util.Vector) listeners.clone();
-                }
+            File domainHome = new File(domainString);
+            if (!domainHome.exists() || !domainHome.isDirectory()) {
+                serverProgress.notifyStop(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
+                return;
             }
 
+            ExecutorService stopService = null;
+            try {
+                long start = System.currentTimeMillis();
+                String uuid = UUID.randomUUID().toString();
 
-            // traverse the listeners, notifying each with the new event
-            if (targets != null) {
-                for (int i = 0; i < targets.size(); i++) {
-                    ProgressListener target = (ProgressListener) targets.elementAt(i);
-                    target.handleProgressEvent(evt);
+                ExternalProcessBuilder builder = new ExternalProcessBuilder(Utilities.isWindows()
+                            ? new File(new File(domainHome, "bin"), SHUTDOWN_BAT).getAbsolutePath() // NOI18N
+                            : new File(new File(domainHome, "bin"), SHUTDOWN_SH).getAbsolutePath()); // NOI18N
+
+                builder = builder.workingDirectory(domainHome)
+                        .addEnvironmentVariable(KEY_UUID, uuid)
+                        .addArgument(username)
+                        .addArgument(password)
+                        .addArgument("t3://" + host + ":" + port);
+
+                String mwHome = dm.getProductProperties().getMiddlewareHome();
+                if (mwHome != null) {
+                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
                 }
+
+                Process stopProcess = builder.call();
+                stopService = Executors.newFixedThreadPool(2);
+                startService(uri, stopProcess, stopService);
+
+                String serverName = dm.getInstanceProperties().getProperty(
+                        InstanceProperties.DISPLAY_NAME_ATTR);
+
+                while ((System.currentTimeMillis() - start) < TIMEOUT) {
+                    if (isRunning() && isRunning(stopProcess)) {
+                        serverProgress.notifyStop(StateType.RUNNING,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName));
+                        try {
+                            Thread.sleep(DELAY);
+                        } catch (InterruptedException e) {
+                            serverProgress.notifyStart(StateType.FAILED,
+                                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                    } else {
+                        try {
+                            stopProcess.waitFor();
+                        } catch (InterruptedException ex) {
+                            serverProgress.notifyStart(StateType.FAILED,
+                                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+
+                        if (isRunning()) {
+                            serverProgress.notifyStop(StateType.FAILED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName));
+                        } else {
+                            serverProgress.notifyStop(StateType.COMPLETED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STOPPED", serverName));
+                        }
+                        return;
+                    }
+                }
+
+                // if the server did not stop in the designated time limits
+                // we consider the stop process as failed and kill the process
+                serverProgress.notifyStop(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_TIMEOUT"));
+
+                // do the cleanup
+                Map<String, String> mark = new HashMap<String, String>();
+                mark.put(KEY_UUID, uuid);
+                ExternalProcessSupport.destroy(stopProcess, mark);
+                stopService(stopService);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, null, e);
             }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////
-        // ProgressObject implementation
-        ////////////////////////////////////////////////////////////////////////////
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
-            return null;
-        }
-
-        /**
-         * Removes the registered listener
-         *
-         * @param progressListener the listener to be removed
-         */
-        public void removeProgressListener(ProgressListener progressListener) {
-            listeners.remove(progressListener);
-        }
-
-        /**
-         * Adds a new listener
-         *
-         * @param progressListener the listener to be added
-         */
-        public void addProgressListener(ProgressListener progressListener) {
-            listeners.add(progressListener);
-        }
-
-        /**
-         * Returns the current state of the startup/shutdown process
-         *
-         * @return current state of the process
-         */
-        public DeploymentStatus getDeploymentStatus() {
-            return deploymentStatus;
-        }
-
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public TargetModuleID[] getResultTargetModuleIDs() {
-            return new TargetModuleID[]{};
-        }
-
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public boolean isStopSupported() {
-            return false;
-        }
-
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public void stop() throws OperationUnsupportedException {
-            throw new OperationUnsupportedException("");               // NOI18N
-        }
-
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public boolean isCancelSupported() {
-            return false;
-        }
-
-        /**
-         * A dummy implementation of the ProgressObject method, since this
-         * method is not used anywhere, we omit the reasonable implementation
-         */
-        public void cancel() throws OperationUnsupportedException {
-            throw new OperationUnsupportedException("");               // NOI18N
         }
     }
 
-    /**
-     * A class that describes the startup/shutdown process state. It is an
-     * implementation of the DeploymentStatus interface.
-     */
-    private static class WLDeploymentStatus implements DeploymentStatus {
-        /**
-         * Current action
-         */
-        private ActionType action;
-
-        /**
-         * Current command
-         */
-        private CommandType command;
-
-        /**
-         * Current state
-         */
-        private StateType state;
-
-        /**
-         * Current message
-         */
-        private String message;
-
-        /**
-         * Creates a new WSDeploymentStatus object.
-         *
-         * @param action current action
-         * @param command current command
-         * @param state current state
-         * @param message current message
-         */
-        public WLDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-            // save the supplied parameters
-            this.action = action;
-            this.command = command;
-            this.state = state;
-            this.message = message;
-        }
-
-        /**
-         * Returns the current action
-         *
-         * @return current action
-         */
-        public ActionType getAction() {
-            return action;
-        }
-
-        /**
-         * Returns the current command
-         *
-         * @return current command
-         */
-        public CommandType getCommand() {
-            return command;
-        }
-
-        /**
-         * Returns the current message
-         *
-         * @return current message
-         */
-        public String getMessage() {
-            return message;
-        }
-
-        /**
-         * Returns the current state
-         *
-         * @return current state
-         */
-        public StateType getState() {
-            return state;
-        }
-
-        /**
-         * Tells whether the current action has completed successfully
-         *
-         * @return true if the action has completed successfully, false
-         *      otherwise
-         */
-        public boolean isCompleted() {
-            return StateType.COMPLETED.equals(state);
-        }
-
-        /**
-         * Tells whether the current action has failed
-         *
-         * @return true if the action has failed, false otherwise
-         */
-        public boolean isFailed() {
-            return StateType.FAILED.equals(state);
-        }
-
-        /**
-         * Tells whether the current action is still running
-         *
-         * @return true if the action is still running, false otherwise
-         */
-        public boolean isRunning() {
-            return StateType.RUNNING.equals(state);
-        }
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constants section
-    ////////////////////////////////////////////////////////////////////////////
-    // These introduce two additional states to the instance - starting and
-    // stopping son that we can filter sunsequent requests. They are currently
-    // not used, but may be if problems wth multiple startup arise again
-    // private static final int STATE_STOPPED  = 0;
-    // private static final int STATE_STARTING = 1;
-    // private static final int STATE_STARTED  = 2;
-    // private static final int STATE_STOPPING = 3;
+    @Override
+    public boolean needsRestart(Target target) {
+        return dm.isRestartNeeded();
+    }
 }

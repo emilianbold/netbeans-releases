@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,7 +80,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Special component on side of project filechooser.
@@ -359,42 +361,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     // Private methods ---------------------------------------------------------
 
-    private static boolean isProjectDir( File dir ) {
-        boolean retVal = false;
-        if (dir != null) {
-            FileObject fo = convertToValidDir(dir);
-            if (fo != null) {
-                if ( Utilities.isUnix() && fo.getParent() != null && fo.getParent().getParent() == null  ) {
-                    retVal = false; // Ignore all subfolders of / on unixes (e.g. /net, /proc)
-                }
-                else {
-                    retVal = ProjectManager.getDefault().isProject( fo );
-                }
-            }
-        }
-        return retVal;
-    }
-
-    private static FileObject convertToValidDir(File f) {
-        FileObject fo;
-        File testFile = new File( f.getPath() );
-        if ( testFile == null || testFile.getParent() == null ) {
-            // BTW this means that roots of file systems can't be project
-            // directories.
-            return null;
-        }
-
-        /**ATTENTION: on Windows may occur dir.isDirectory () == dir.isFile () == true then
-         * its used testFile instead of dir.
-        */
-        if ( !testFile.isDirectory() ) {
-            return null;
-        }
-
-        fo =  FileUtil.toFileObject(FileUtil.normalizeFile(f));
-        return fo;
-    }
-
     private static Project getProject( File dir ) {
         return OpenProjectList.fileToProject( dir );
     }
@@ -561,7 +527,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             if (selectedFile != null) {
                 File dir = FileUtil.normalizeFile(selectedFile);
 
-                if ( isProjectDir( dir ) && getProject( dir ) != null ) {
+                if (getProject(dir) != null) {
                     super.approveSelection();
                 }
                 else {
@@ -610,15 +576,17 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
 
         @Override
-        public Icon getIcon(File _f) {
-            if (!_f.exists()) {
+        public Icon getIcon(File f) {
+            if (!f.exists()) {
+                //#159646: Workaround for JDK issue #6357445
                 // Can happen when a file was deleted on disk while project
                 // dialog was still open. In that case, throws an exception
                 // repeatedly from FSV.gSI during repaint.
                 return null;
             }
-            File f = FileUtil.normalizeFile(_f);
-            if ( isProjectDir( f ) ) {
+            if (f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
+                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
+                    f.getParentFile() != null) { // do not consider drive roots
                 synchronized (this) {
                     Icon icon = knownProjectIcons.get(f);
                     if (icon != null) {
@@ -632,30 +600,24 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-            //#159646: Workaround for JDK issue #6357445
-            if (f.exists()) {
-                return chooser.getFileSystemView().getSystemIcon(f);
-            } else {
-                return null;
-            }
+            return chooser.getFileSystemView().getSystemIcon(f);
         }
 
-        public void run() {
-            ProjectManager.Result r = getProjectResult(lookingForIcon);
+        public @Override void run() {
+            File d = FileUtil.normalizeFile(lookingForIcon);
+            ProjectManager.Result r = getProjectResult(d);
             Icon icon;
             if (r != null) {
                 icon = r.getIcon();
                 if (icon == null) {
-                    Project p = getProject(lookingForIcon);
+                    Project p = getProject(d);
                     if (p != null) {
                         icon = ProjectUtils.getInformation(p).getIcon();
                     } else {
-                        // Could also badge with an error icon:
                         icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
                     }
                 }
             } else {
-                // Could also badge with an error icon:
                 icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
             }
             synchronized (this) {

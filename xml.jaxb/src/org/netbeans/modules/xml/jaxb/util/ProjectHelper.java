@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -93,7 +97,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -133,21 +136,13 @@ public class ProjectHelper {
     private static final String BUILD_GEN_JAXB_DIR = "build/generated-sources/jaxb"; //NOI18N
     private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; //NOI18N
     private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; //NOI18N
-    //private static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
-    //private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
-    private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
-    private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
-    private static final String JAXB_API_JAR_DIR = "ext/jaxb/api"; //NOI18N
     private static final String PROP_XJC_DEF_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
     private static final String PROP_XJC_RUN_CLASSPATH = "jaxbwiz.xjcrun.classpath" ;//NOI18N
     private static final String PROP_JAXB_GEN_SRC_CLASSPATH = "jaxbwiz.gensrc.classpath";//NOI18N
     private static final String PROP_VAL_JAXB_LIB_CLASSPATH = "${libs.jaxb.classpath}";//NOI18N
-    private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs"; //NOI18N    
-    private static final String RUN_JVM_ARGS_VAL = RUN_JVM_ARGS_VAL_PREFIX + "=${" + PROP_ENDORSED + "}"; //NOI18N
-    private static final String PROP_SYS_RUN_ENDORSED = "run-sys-prop.java.endorsed.dirs" ; //NOI18N
-    private static final String PROP_SYS_RUN_ENDORSED_VAL = "${" + PROP_ENDORSED + "}" ; //NOI18N
-    //private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
     private static final String JAXB_CONTEXT_CLASS_RES_PATH = "javax/xml/bind/JAXBContext.class"; //NOI18N
+    private static final String CLASSPATH_ENDORSED = "classpath/endorsed"; //NOI18N
+    private static final String JAXB_ENDORSED="JAXB-ENDORSED"; //NOI18N
 
     public static final String IDE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-model.jar"; // NOI18N
     public static final String IDE_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model"; // NOI18N
@@ -807,42 +802,6 @@ public class ProjectHelper {
         }
         return foSchemaDir;
     }
-
-    private static String getEndorsedDirs(Project prj) {
-        // XXX TODO:Find a better portable way to do this.
-        //String ret = "\"${netbeans.home}/../java2/modules/ext/jaxws21/api" //NOI18N
-        //        + File.pathSeparator 
-        //        + "${netbeans.home}/../java2/modules/ext/jaxws21\""; //NOI18N
-        String ret = "\"${netbeans.home}/../ide12/modules/" + JAXB_API_JAR_DIR + "\""; //NOI18N
-        return ret;
-    }
-
-    private static void addEndorsedDir(Project prj) {
-        // Do not check, add by default so that project created in JDK 5
-        // can work when used with JDK 6.
-        //if (isJDK6(prj)) {
-        String endorsedDirs = getProjectProperty(prj, PROP_ENDORSED);
-
-        if ((endorsedDirs == null) || ("".equals(endorsedDirs.trim()))) {//NOI18N
-            endorsedDirs = getEndorsedDirs(prj);
-            String existingJVM = getProjectProperty(prj, RUN_JVM_ARGS_KEY);
-            if ((existingJVM == null) || (existingJVM.length() == 0)){
-                saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
-                saveProjectProperty(prj, RUN_JVM_ARGS_KEY, RUN_JVM_ARGS_VAL);                    
-            } else {
-                saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
-                saveProjectProperty(prj, PROP_SYS_RUN_ENDORSED, 
-                        PROP_SYS_RUN_ENDORSED_VAL);
-            }
-
-            try {
-                ProjectManager.getDefault().saveProject(prj);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
     
     private static void addClasspathProperties(Project prj){
         String xjcClasspath = getProjectProperty(prj, PROP_XJC_DEF_CLASSPATH);
@@ -883,7 +842,7 @@ public class ProjectHelper {
             saveXMLBindingSchemas(project, scs);
             refreshBuildScript(project);
             addClasspathProperties(project);
-            addEndorsedDir(project);
+
             // Register our build XML file, if not already.
             // http://wiki.netbeans.org/wiki/view/BuildScriptExtensibility
             // http://www.netbeans.org/issues/show_bug.cgi?id=93509
@@ -1152,8 +1111,6 @@ public class ProjectHelper {
         addJAXBLibrary(prj);
         
         //Update JAXB Wiz properties.
-        String endorsedDirs = getEndorsedDirs(prj);
-        saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
         saveProjectProperty(prj, PROP_XJC_DEF_CLASSPATH, 
                 PROP_VAL_JAXB_LIB_CLASSPATH);
         saveProjectProperty(prj, PROP_XJC_RUN_CLASSPATH, 
@@ -1171,39 +1128,53 @@ public class ProjectHelper {
         }
     }
 
-    public static void setPrivateProjPros(Project prj){
-        boolean changedPrivateProp = false;
-        boolean changedProjProp = false;
-
-        AntProjectHelper helper = getAntProjectHelper(prj);
-        EditableProperties privateEP = helper.getProperties(
-                AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
-        InstalledFileLocator installedFileLocator = InstalledFileLocator.getDefault();
-        File f = installedFileLocator.locate(IDE_MODULE_INSTALL_NAME, IDE_MODULE_INSTALL_CBN, false);
-        if (f != null) {
-            File jaxbApiDir = new File(f.getParentFile(), JAXB_API_JAR_DIR); 
-            privateEP.setProperty(PROP_ENDORSED, jaxbApiDir.getPath());
-            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
-            changedPrivateProp = true;
+    public static void addJaxbApiEndorsed(Project prj) throws IOException {
+        FileObject srcRoot = getSourceRoot(prj);
+        if (srcRoot != null) {
+            addJaxbApiEndorsed(srcRoot);
         }
+    }
 
-        EditableProperties projectEP = helper.getProperties(
-                AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String endorsedDirVal = getEndorsedDirs(prj);
-        String existingVal = projectEP.getProperty(PROP_ENDORSED);
-        if ((existingVal == null) || (!endorsedDirVal.equals(existingVal))){
-            projectEP.setProperty(PROP_ENDORSED, endorsedDirVal);
-            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
-            changedProjProp = true;
-        }
+    public static void addJaxbApiEndorsed(FileObject srcRoot) throws IOException {
+            ClassPath classPath = ClassPath.getClassPath(srcRoot, CLASSPATH_ENDORSED);
+            if (classPath == null || classPath.findResource("javax/xml/bind/JAXBElement.class") == null) { //NOI18N
+                Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
+                if (jaxWsApiLib == null) {
+                    jaxWsApiLib = createJaxbApiLibrary();
+                }
+                ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, CLASSPATH_ENDORSED);
+            }
+    }
 
-        if (changedPrivateProp || changedProjProp){
-            try {
-                ProjectManager.getDefault().saveProject(prj);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+    private static FileObject getSourceRoot(Project prj) {
+        Sources sources = ProjectUtils.getSources(prj);
+        if (sources != null) {
+            SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (srcGroups != null && srcGroups.length>0) {
+                return srcGroups[0].getRootFolder();
             }
         }
+        return null;
+    }
+
+    private static Library createJaxbApiLibrary() throws IOException {
+        List<URL> apiJars = getJaxbApiJars();
+        if (apiJars.size() > 0) {
+            Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
+            return LibraryManager.getDefault().createLibrary("j2se", JAXB_ENDORSED, map); //NOI18N
+        }
+        return null;
+    }
+
+    private static List<URL> getJaxbApiJars() throws IOException {
+        List<URL> urls = new ArrayList<URL>();
+        File apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+        if (apiJar != null) {
+            URL url = apiJar.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                urls.add(FileUtil.getArchiveRoot(url));
+            }
+        }
+        return urls;
     }
 }

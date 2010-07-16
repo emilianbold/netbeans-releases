@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -67,21 +69,6 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean1"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean2"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean3"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean4"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean5"));
-        return suite;
-    }
     
     public void setUp() {
         // Select project node
@@ -99,7 +86,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * StandardMBean without attributes and operations
      */
-    public void createEmptyMBean1() {
+    public void testCreateEmptyMBean1() {
         
         System.out.println("============  createEmptyMBean1  ============");
         
@@ -116,7 +103,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * MXBean without attributes and operations
      */
-    public void createEmptyMBean2() {
+    public void testCreateEmptyMBean2() {
         
         System.out.println("============  createEmptyMBean2  ============");
         
@@ -133,7 +120,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class without attributes and operations
      */
-    public void createEmptyMBean3() {
+    public void testCreateEmptyMBean3() {
         
         System.out.println("============  createEmptyMBean3  ============");
         
@@ -153,7 +140,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * without attributes and operations
      */
-    public void createEmptyMBean4() {
+    public void testCreateEmptyMBean4() {
         
         System.out.println("============  createEmptyMBean4  ============");
         
@@ -172,7 +159,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * StandardMBean with metadata without attributes and operations
      */
-    public void createEmptyMBean5() {
+    public void testCreateEmptyMBean5() {
         
         System.out.println("============  createEmptyMBean5  ============");
         

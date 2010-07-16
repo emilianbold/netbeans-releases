@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -199,7 +202,32 @@ public class RegexpMakerTest extends NbTestCase {
         assertEquals("a\\>b", RegexpMaker.makeRegexp("a>b"));
         assertEquals("a\\@b", RegexpMaker.makeRegexp("a@b"));
         assertEquals("a\\[b", RegexpMaker.makeRegexp("a[b"));
+        assertEquals("aa", RegexpMaker.makeRegexp("a\\a"));
         assertEquals("ab", RegexpMaker.makeRegexp("a\\b"));
+        assertEquals("ac", RegexpMaker.makeRegexp("a\\c"));
+        assertEquals("ad", RegexpMaker.makeRegexp("a\\d"));
+        assertEquals("ae", RegexpMaker.makeRegexp("a\\e"));
+        assertEquals("af", RegexpMaker.makeRegexp("a\\f"));
+        assertEquals("ag", RegexpMaker.makeRegexp("a\\g"));
+        assertEquals("ah", RegexpMaker.makeRegexp("a\\h"));
+        assertEquals("ai", RegexpMaker.makeRegexp("a\\i"));
+        assertEquals("aj", RegexpMaker.makeRegexp("a\\j"));
+        assertEquals("ak", RegexpMaker.makeRegexp("a\\k"));
+        assertEquals("al", RegexpMaker.makeRegexp("a\\l"));
+        assertEquals("am", RegexpMaker.makeRegexp("a\\m"));
+        assertEquals("a\\n", RegexpMaker.makeRegexp("a\\n"));
+        assertEquals("ao", RegexpMaker.makeRegexp("a\\o"));
+        assertEquals("ap", RegexpMaker.makeRegexp("a\\p"));
+        assertEquals("aq", RegexpMaker.makeRegexp("a\\q"));
+        assertEquals("ar", RegexpMaker.makeRegexp("a\\r"));
+        assertEquals("as", RegexpMaker.makeRegexp("a\\s"));
+        assertEquals("at", RegexpMaker.makeRegexp("a\\t"));
+        assertEquals("au", RegexpMaker.makeRegexp("a\\u"));
+        assertEquals("av", RegexpMaker.makeRegexp("a\\v"));
+        assertEquals("aw", RegexpMaker.makeRegexp("a\\w"));
+        assertEquals("ax", RegexpMaker.makeRegexp("a\\x"));
+        assertEquals("ay", RegexpMaker.makeRegexp("a\\y"));
+        assertEquals("az", RegexpMaker.makeRegexp("a\\z"));
         assertEquals("a\\]b", RegexpMaker.makeRegexp("a]b"));
         assertEquals("a\\^b", RegexpMaker.makeRegexp("a^b"));
         assertEquals("a\\_b", RegexpMaker.makeRegexp("a_b"));

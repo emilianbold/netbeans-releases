@@ -79,11 +79,13 @@
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${scriptsdir}/add_tc.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
+
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
         <echo message="Building tomcat-${tomcat.id}.pkg into ${basedir}/../build/tomcat-${tomcat.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir}; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/tomcat-${tomcat.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir}; ${packagemaker.path} -build -v -p ${basedir}/../build/tomcat-${tomcat.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
 </project>

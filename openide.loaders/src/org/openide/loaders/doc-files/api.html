@@ -803,42 +803,37 @@ themselves by default to hold all cookies their own class implements.
 with a different meaning sometimes used in computer science, that of
 an opaque callback object.
 
-<p>For purposes of marking a cookie as such, the cookie interface
-should extend
+<p>Originally there used to be a marker interface
+<a href="@org-openide-nodes@/org/openide/nodes/Node.Cookie.html"><code>Node.Cookie</code></a>,
+however it is no longer necessary to use it. Rather rely on
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()">getLookup</a>
+method which can deal with plain Java objects.
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.Cookie.html"><code>Node.Cookie</code></a>.
-
-Other than that, there are no requirements as to what makes a valid
+As such there are no requirements as to what makes a valid
 cookie - typically it will provide a small set of abstract operations,
 such as "opening", "compiling", "searching", etc.
 
 <p>Uses of cookies on nodes are not much different from uses on data
 objects; the initial cookie detection is done by
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getCookie(java.lang.Class)"><code>Node.getCookie(...)</code></a>;
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup().lookup(...)</code></a>;
 
-however the default data node uses
+however the default data node provides
 
-<a href="../DataNode.html#getCookie(java.lang.Class)"><code>DataNode.getCookie(...)</code></a>
+<a href="../DataNode.html"><code>DataNode.getLookup(...)</code></a>
 
-to both look in the node's specific
+that looks inside 
 
-<a href="@org-openide-nodes@/org/openide/nodes/AbstractNode.html#getCookieSet()">cookie set</a>,
-
-and to look through the underlying data object's
-
-<a href="../DataObject.html#getCookie(java.lang.Class)">cookies</a>
-
-(which may also be provided via a
-
-<a href="../MultiDataObject.html#getCookieSet()"><code>MultiDataObject.getCookieSet()</code></a>).
+<a href="../MultiDataObject.html#getCookieSet()"><code>MultiDataObject.getCookieSet()</code></a>.
 
 <h4><a name="attach-retrieve">Attaching and retrieving cookies</a></h4>
 
 <p>In short, there are a number of ways to attach cookies to either a
 node or data object (and you may listen for changes in the set of
 supported cookies, etc.). In all cases, the
-<code>getCookie(Class)</code> method is used by the system to
+<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup(Class)</a>
+method
+is used by the system to
 determine whether or not a given cookie is supported: thus, cookies
 are identified by their <em>representation class</em>, i.e. the Java
 class of the cookie interface. The system will expect to find a cookie
@@ -852,7 +847,9 @@ node or data object is holding it.
 <a href="@org-openide-nodes@/org/openide/nodes/CookieSet.html">cookie sets</a>,
 
 it is possible to dynamically add and remove cookies from a
-holder. This is appropriate for cookie types whose applicability may
+holder (possible
+using <a href="@org-openide-util-lookup@/org/openide/util/lookup/AbstractLookup.html">AbstractLookup</a>).
+This is appropriate for cookie types whose applicability may
 vary over time. For example, some objects may be compilable at certain
 times, but if they have been compiled recently and are already
 up-to-date, this support should be temporarily disabled. In the common
@@ -863,9 +860,9 @@ grayed out when necessary; and then reenabled when either the
 selection changes, or the object changes state so as to make the
 cookie appropriate once more, at which time the folder re-adds the
 cookie to its cookie set and
-
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#fireCookieChange()">fires a property change</a>
-
+<a href="@org-openide-util-lookup@/org/openide/util/LookupListener.html">LookupListener</a>
+may observer the
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#fireCookieChange()">fired changes</a>
 to this effect.
 
 <h4>Cookie Usage Scenarios</h4>
@@ -905,8 +902,8 @@ this:</p>
 <font class="keyword">public</font> <font class="keyword">class</font> O <font class="keyword">extends</font> <font class="type">DataObject</font> {
     <font class="keyword">public</font> O(<font class="type">FileObject</font> fo) {
         <font class="comment">// super...
-</font>        getCookieSet().add(<font class="keyword">new</font> S1(fo));
-        getCookieSet().add(<font class="keyword">new</font> S2(<font class="keyword">this</font>));
+</font>        getCookieSet().assign(C1.class, <font class="keyword">new</font> S1(fo));
+        getCookieSet().assign(C2.class, <font class="keyword">new</font> S2(<font class="keyword">this</font>));
     }
 }
 <font class="keyword">public</font> <font class="keyword">class</font> S1 <font class="keyword">implements</font> C1 {<font class="comment">/* ... */</font>}
@@ -914,44 +911,10 @@ this:</p>
 <font class="comment">// ...
 </font><font class="type">DataObject</font> o = DataObject.find(someFileObject);
 <font class="comment">// o instanceof O, in fact
-</font>C1 c1 = (C1)o.getCookie(C1.<font class="keyword">class</font>);
+</font>C1 c1 = o.getLookup().lookup(C1.<font class="keyword">class</font>);
 <font class="comment">// c1 instanceof S1
 </font><font class="keyword">if</font> (c1 != <font class="constant">null</font>) {
     c1.foo();
-}
-</pre>
-
-</dd>
-
-<dt>Proxying a cookie holder</dt>
-
-<dd><p>Sometimes you want to make a cookie holder that proxies some or
-all of its behavior to another object. This is not hard. But remember
-to proxy events in the cookie set too!</p>
-
-<pre>
-<font class="comment">/** Basic idea behind org.openide.nodes.FilterNode. */</font>
-<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">ProxyN</font> <font class="keyword">extends</font> <font class="type">Node</font> <font class="keyword">implements</font> <font class="type">PropertyChangeListener</font> {
-    <font class="keyword">private</font> <font class="type">Node</font> orig;
-    <font class="keyword">public</font> <font class="type">ProxyN</font>(<font class="type">Node</font> orig) {
-        <font class="keyword">this</font>.orig = orig;
-        orig.addPropertyChangeListener(WeakListener.propertyChange(<font class="keyword">this</font>, orig));
-    }
-    <font class="keyword">public</font> <font class="type">Node.Cookie</font> getCookie(<font class="type">Class</font> c) {
-        <font class="keyword">if</font> (c != C3.<font class="keyword">class</font>) {
-            <font class="comment">// Proxy most cookies.
-</font>            <font class="keyword">return</font> orig.getCookie(c);
-        } <font class="keyword">else</font> {
-            <font class="comment">// But do not proxy this one.
-</font>            <font class="keyword">return</font> <font class="constant">null</font>;
-        }
-    }
-    <font class="keyword">public</font> <font class="type">void</font> propertyChange(<font class="type">PropertyChangeEvent</font> ev) {
-        <font class="keyword">if</font> (Node.PROP_COOKIE.equals(ev.getPropertyName())) {
-            <font class="comment">// Cookies on orig changed. Notify anyone listening to us.
-</font>            fireCookieChange();
-        }
-    }
 }
 </pre>
 
@@ -993,8 +956,8 @@ inheritance, you can use subclassing naturally on supports.</p>
     <font class="keyword">private</font> <font class="type">int</font> state;
     <font class="keyword">public</font> O(<font class="type">String</font> p) {
         state = INACTIVE; <font class="comment">// initially
-</font>        getCookieSet().add(<font class="keyword">new</font> <font class="type">MyS1</font>(p));
-        getCookieSet().add(<font class="keyword">new</font> <font class="type">MyS2</font>(p));
+</font>        getCookieSet().assign(C1.class, <font class="keyword">new</font> <font class="type">MyS1</font>(p));
+        getCookieSet().assign(C2.class, <font class="keyword">new</font> <font class="type">MyS2</font>(p));
     }
     <font class="keyword">private</font> <font class="keyword">static</font> <font class="keyword">final</font> <font class="keyword">class</font> <font class="type">MyS1</font> <font class="keyword">extends</font> S1 {
         <font class="keyword">public</font> <font class="type">MyS1</font>(<font class="type">String</font> p) {<font class="keyword">super</font>(p);}
@@ -1011,10 +974,10 @@ inheritance, you can use subclassing naturally on supports.</p>
 }
 <font class="comment">// ...
 </font>O o = <font class="keyword">new</font> O(<font class="string">"Hello"</font>);
-C1 c1 = (C1)o.getCookie(C1.<font class="keyword">class</font>);
+C1 c1 = o.getLookup().lookup(C1.<font class="keyword">class</font>);
 <font class="keyword">if</font> (c1 != <font class="constant">null</font>) c1.foo1();
 <font class="comment">// prints "foo: hello"
-</font>C2 c2 = (C2)o.getCookie(C2.<font class="keyword">class</font>);
+</font>C2 c2 = o.getLookup().lookup(C2.<font class="keyword">class</font>);
 <font class="keyword">if</font> (c2 != <font class="constant">null</font>) c2.foo2();
 <font class="comment">// does nothing: o is not yet active
 </font></pre>
@@ -1037,7 +1000,7 @@ after its creation.</p>
         <font class="keyword">if</font> (!modified) {
             <font class="comment">// Newly modified, make it possible to save.
 </font>            <font class="comment">// Note this will automatically fire a cookie change.
-</font>            getCookieSet().add(<font class="keyword">new</font> <font class="type">SaveCookie</font>() {
+</font>            getCookieSet().assign(SaveCookie.class, <font class="keyword">new</font> <font class="type">SaveCookie</font>() {
                 <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">save</font>() {
                     doSave();
                 }
@@ -1048,8 +1011,8 @@ after its creation.</p>
     <font class="keyword">private</font> <font class="keyword">synchronized</font> <font class="type">void</font> <font class="function-name">doSave</font>() {
         <font class="keyword">if</font> (modified) {
             <font class="comment">// actually save...then:
-</font>            <font class="type">SaveCookie</font> <font class="variable-name">s</font> = (<font class="type">SaveCookie</font>)getCookie(SaveCookie.<font class="keyword">class</font>);
-            getCookieSet().remove(s);
+</font>            
+            getCookieSet().assign(SaveCookie.class);
             modified = <font class="constant">false</font>;
         }
     }
@@ -1058,48 +1021,6 @@ after its creation.</p>
 
 </dd>
 
-<dt>Lazy instantiation</dt>
-
-<dd><p>Sometimes a cookie implementation is too heavyweight to make
-unless someone really asks for it.</p>
-
-<pre>
-<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">HeavyS</font> <font class="keyword">implements</font> C {
-    <font class="keyword">private</font> <font class="type">byte</font>[1000000] buf;
-    <font class="keyword">public</font> <font class="type">HeavyS</font>(<font class="type">String</font> <font class="variable-name">p</font>) {
-        buf = parse(p);
-    }
-    <font class="keyword">private</font> <font class="keyword">static</font> <font class="type">byte</font>[] <font class="function-name">parse</font>(<font class="type">String</font> <font class="variable-name">p</font>) {<font class="comment">/* ... */</font>}
-}
-<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">O</font> {
-    <font class="comment">// ...
-</font>    <font class="keyword">private</font> <font class="variable-name">C</font> cImpl = <font class="constant">null</font>;
-    <font class="keyword">public</font> <font class="type">Node.Cookie</font> <font class="function-name">getCookie</font>(<font class="type">Class</font> <font class="variable-name">c</font>) {
-        <font class="keyword">if</font> (c == C.<font class="keyword">class</font>) {
-            <font class="keyword">if</font> (cImpl == <font class="constant">null</font>) {
-                cImpl = <font class="keyword">new</font> <font class="type">HeavyS</font>(someParam);
-            }
-            <font class="keyword">return</font> cImpl;
-        } <font class="keyword">else</font> {
-            <font class="comment">// Use regular CookieSet.
-</font>            <font class="keyword">return</font> <font class="keyword">super</font>.getCookie(c);
-        }
-    }
-}
-<font class="comment">// alternatively:
-</font><font class="keyword">public</font> <font class="keyword">class</font> <font class="type">O</font> <font class="keyword">implements</font> <font class="type">CookieSet.Factory</font> {
-    <font class="keyword">public</font> <font class="function-name">O</font>(<font class="type">String</font> <font class="variable-name">p</font>) {
-        <font class="comment">// ...
-</font>        getCookieSet().add(<font class="keyword">this</font>, C.<font class="keyword">class</font>);
-    }
-    <font class="keyword">public</font> <font class="type">Node.Cookie</font> <font class="function-name">createCookie</font>(<font class="type">Class</font> <font class="variable-name">c</font>) {
-        <font class="keyword">assert</font> c == C.<font class="keyword">class</font>;
-        <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">HeavyS</font>(someParam);
-    }
-}
-</pre>
-
-</dd>
 
 </dl>
 
@@ -1155,11 +1076,8 @@ for instance, uses only <code>OpenCookie</code> and
 
 <h3><a name="write-cookie">Writing a cookie</a></h3>
 
-Writing a new cookie requires no special knowledge - just extend
-
-<a href="@org-openide-nodes@/org/openide/nodes/Node.Cookie.html"><code>Node.Cookie</code></a>
-
-and add interface methods according to whatever you need done.
+Writing a new cookie requires no special knowledge - just extend create
+an interface and add its methods according to whatever you need done.
 
 <p>Often, in conjunction with writing a cookie you may want to create
 an action which is <a href="#attach-retrieve">sensitive</a> to that

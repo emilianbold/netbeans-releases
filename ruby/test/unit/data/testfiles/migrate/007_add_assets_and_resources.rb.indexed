@@ -4,6 +4,7 @@ Document 0
 Searchable Keys:
   class : AddAssetsAndResources
   class-ig : addassetsandresources
+  explicit-dbtable : templates
   extends : ActiveRecord::Migration
   fqn : AddAssetsAndResources
   method : down|STATIC|
@@ -18,6 +19,7 @@ Document 1
 Searchable Keys:
   class : OldTemplate
   class-ig : oldtemplate
+  explicit-dbtable : templates
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::OldTemplate
   require : 007_add_assets_and_resources
@@ -31,6 +33,7 @@ Document 2
 Searchable Keys:
   class : Template
   class-ig : template
+  explicit-dbtable : assets
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::Template
   require : 007_add_assets_and_resources

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityEleme
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
+import org.netbeans.modules.compapp.configextension.util.StackTraceUtil;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -58,6 +62,7 @@ import org.openide.util.Exceptions;
  * Extension property of Java Callback Project location.
  *
  * @author tli
+ * @author jqian
  */
 public class CallbackProjectExtensionProperty
         extends ExtensionProperty<String> {
@@ -83,20 +88,18 @@ public class CallbackProjectExtensionProperty
 
     @Override
     public PropertyEditor getPropertyEditor() {
-
-        PropertyEditor pChooserEditor = new ProjectChooserEditor();
-        try {
-            String value = getValue();
-            pChooserEditor.setValue(value);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        if (canWrite()) {
+            PropertyEditor pChooserEditor = new ProjectChooserEditor();
+            try {
+                String value = getValue();
+                pChooserEditor.setValue(value);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return pChooserEditor;
+        } else {
+            return super.getPropertyEditor();
         }
-        return pChooserEditor;
-    }
-
-    @Override
-    public boolean supportsDefaultValue () {
-        return false;
     }
 
     @Override
@@ -107,13 +110,19 @@ public class CallbackProjectExtensionProperty
 
         String projectDir = component.getAnyAttribute(PROJECT_DIR_QNAME);
 
-        return projectDir;
+        return projectDir == null ? "" : projectDir; // NOI18N
     }
 
     @Override
     public void setValue(String value)
             throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
+
+        if (!canWrite() && StackTraceUtil.isCalledBy(
+                "org.openide.explorer.propertysheet.PropertyDialogManager", // NOI18N
+                "cancelValue")) { // NOI18N
+            return;
+        }
 
         CasaComponent component = getComponent();
         CasaWrapperModel model = getModel();
@@ -126,7 +135,8 @@ public class CallbackProjectExtensionProperty
             }
         }
         if (component.getParent() == null) {
-            model.addExtensibilityElement(extensionPointComponent, (CasaExtensibilityElement) component);
+            model.addExtensibilityElement(extensionPointComponent,
+                    (CasaExtensibilityElement) component);
         }
     }
 
@@ -137,12 +147,7 @@ public class CallbackProjectExtensionProperty
 
         @Override
         public String getAsText() {
-            String value =  (String) getValue();
-            if (value == null) {
-                return ""; // NOI18N
-            } else {
-                return value; // NOI18N
-            }
+            return (String) getValue();
         }
 
         @Override
@@ -154,7 +159,7 @@ public class CallbackProjectExtensionProperty
         public java.awt.Component getCustomEditor() {
             chooser = ProjectChooser.projectChooser();
 
-            String value =  (String) getValue();
+            String value = (String) getValue();
             if (value != null) {
                 File file = new File(value);
                 if (file.exists()) {

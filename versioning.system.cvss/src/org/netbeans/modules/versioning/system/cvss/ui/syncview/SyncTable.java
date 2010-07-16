@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.*;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -84,18 +88,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.util.RequestProcessor;
 
 /**
  * Table that displays nodes in the Versioning view. 
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
+class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, VersioningListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -104,6 +111,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     
     private String []   tableColumns; 
     private TableSorter sorter;
+    private final RequestProcessor rp = new RequestProcessor("CVS.SyncTableProcessor", 1); //NOI18N
 
     /**
      * Defines labels for Versioning view table columns.
@@ -224,6 +232,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     public JComponent getComponent() {
         return component;
     }
+
+    @Override
+    public void versioningEvent(VersioningEvent event) {
+        if (CvsVersioningSystem.EVENT_REFRESH_ANNOTATIONS.equals(event.getId())) {
+            refreshNodes();
+        }
+    }
     
     /**
      * Sets visible columns in the Versioning table.
@@ -258,10 +273,32 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     void setTableModel(SyncFileNode [] nodes) {
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        rp.post(new Runnable () {
+            @Override
+            public void run() {
+                refreshNodes();
+            }
+        });
     }
 
     void focus() {
         table.requestFocus();
+    }
+
+    private void refreshNodes () {
+        SyncFileNode[] toRefreshNodes = nodes;
+        for (SyncFileNode node : toRefreshNodes) {
+            node.refresh();
+        }
+        if (toRefreshNodes.length > 0) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run() {
+                    table.revalidate();
+                    table.repaint();
+                }
+            });
+        }
     }
 
     private static class ColumnDescriptor extends ReadOnly {
@@ -379,7 +416,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files, false) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,7 +70,8 @@ import org.openide.util.NbBundle;
  * 
  * @author jsandusky
  */
-public abstract class InternalProjectTypePluginWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public abstract class InternalProjectTypePluginWizardIterator
+        implements WizardDescriptor.InstantiatingIterator {
 
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -78,9 +82,8 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
     
     private transient FileObject mProjectFileObject;
     
-    
-    protected abstract void createProject(File dirF, String name, String j2eeLevel) throws IOException;
-
+    protected abstract void createProject(File dirF, String name, String j2eeLevel)
+            throws IOException;
     
     /**
      * Uninitializes this iterator, called when the wizard is being
@@ -101,26 +104,29 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
      */
     public final String name() {
         return MessageFormat.format(
-                NbBundle.getMessage(getClass(), "LBL_WizardStepsCount"),  //NOI18N
-                new String[] {
-            (new Integer(index + 1)).toString(),
-            (new Integer(panels.length)).toString() });
+                NbBundle.getMessage(getClass(), "LBL_WizardStepsCount"), // NOI18N
+                "" + (index + 1), // NOI18N
+                "" + panels.length); // NOI18N
     }
     
     public final boolean hasNext() {
         return index < panels.length - 1;
     }
+
     public final boolean hasPrevious() {
         return index > 0;
     }
+
     public final void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
+
     public final void previousPanel() {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
+
     public final WizardDescriptor.Panel current() {
         return panels[index];
     }

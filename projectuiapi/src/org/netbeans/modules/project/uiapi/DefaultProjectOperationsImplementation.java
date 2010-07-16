@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -73,6 +78,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -80,12 +86,10 @@ import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -244,8 +248,10 @@ public final class DefaultProjectOperationsImplementation {
                     public void run() throws IOException {
                         try {
                             doCopyProject(handle, project, nueName, newTgtFO);
-                        } catch (Exception ex) {
-                            throw new IOException(ex.getLocalizedMessage());
+                        } catch (IOException x) {
+                            throw x;
+                        } catch (Exception x) {
+                            throw new IOException(x);
                         }
                     }
                 });
@@ -332,15 +338,7 @@ public final class DefaultProjectOperationsImplementation {
                     newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
                 }
                 final FileObject newTgtFO = newTargetFO;
-                project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
-                        try {
-                            doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
-                        } catch (Exception ex) {
-                            throw new IOException(ex.getLocalizedMessage());
-                        }
-                    }
-                });
+                doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
             }
         });
     }
@@ -361,22 +359,16 @@ public final class DefaultProjectOperationsImplementation {
                 final String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
-                    project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            try {
-                                doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
-                            } catch (Exception ex) {
-                                throw new IOException(ex.getLocalizedMessage());
-                            }
-                        }
-                    });
+                    doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
                 } else {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
                             try {
                                 doRenameProject(handle, project, nueName);
-                            } catch (Exception ex) {
-                                throw new IOException(ex.getLocalizedMessage());
+                            } catch (IOException x) {
+                                throw x;
+                            } catch (Exception x) {
+                                throw new IOException(x);
                             }
                         }
                     });
@@ -386,6 +378,39 @@ public final class DefaultProjectOperationsImplementation {
     }
 
     private static void doRenameProject(ProgressHandle handle, Project project, String nueName) throws Exception {
+        Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
+        for (MoveOperationImplementation o : operations) {
+            if (!(o instanceof MoveOrRenameOperationImplementation)) {
+                Logger.getLogger(DefaultProjectOperationsImplementation.class.getName()).log(Level.WARNING,
+                        "{0} should implement MoveOrRenameOperationImplementation", o.getClass().getName());
+                doRenameProjectOld(handle, project, nueName, operations);
+                return;
+            }
+        }
+        // Better new style.
+        try {
+            handle.switchToDeterminate(4);
+            int currentWorkDone = 0;
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                ((MoveOrRenameOperationImplementation) o).notifyRenaming();
+            }
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                ((MoveOrRenameOperationImplementation) o).notifyRenamed(nueName);
+            }
+            handle.progress(++currentWorkDone);
+            ProjectManager.getDefault().saveProject(project);
+            handle.progress(++currentWorkDone);
+            handle.finish();
+        } catch (Exception e) {
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
+            throw e;
+        }
+    }
+
+    private static void doRenameProjectOld(ProgressHandle handle, Project project, String nueName,
+            Collection<? extends MoveOperationImplementation> operations) throws Exception {
         boolean originalOK = true;
         Project main = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
@@ -396,7 +421,6 @@ public final class DefaultProjectOperationsImplementation {
             int currentWorkDone = 0;
             FileObject projectDirectory = project.getProjectDirectory();
             File projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
-            Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
             close(project);
             handle.progress(++currentWorkDone);
             for (MoveOperationImplementation o : operations) {
@@ -417,6 +441,7 @@ public final class DefaultProjectOperationsImplementation {
             for (MoveOperationImplementation o : operations) {
                 o.notifyMoved(project, projectDirectoryFile, nueName);
             }
+            ProjectManager.getDefault().saveProject(project);
             ProjectManager.getDefault().saveProject(nue);
             open(nue, wasMain);
             handle.progress(++currentWorkDone);
@@ -453,46 +478,25 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
             
             FileObject projectDirectory = project.getProjectDirectory();
-            List<FileObject> toMoveList = new ArrayList<FileObject>();
-            for (FileObject child : projectDirectory.getChildren()) {
-                if (child.isValid()) {
-                    toMoveList.add(child);
-                }
-            }
             
-            double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
-            
-            target = newTarget.createFolder(nueFolderName);
+            double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK);
 
-            for (FileObject toCopy : toMoveList) {
-                doCopy(project, toCopy, target);
-                
-                int lastWorkDone = (int) currentWorkDone;
-                
-                currentWorkDone += workPerFileAndOperation;
-                
-                if (lastWorkDone < (int) currentWorkDone) {
-                    handle.progress((int) currentWorkDone);
-                }
+            FileLock lock = projectDirectory.lock();
+            try {
+                target = projectDirectory.move(lock, newTarget, nueFolderName, null);
+            } finally {
+                lock.releaseLock();
+            }
+            // TBD if #109580 matters here: do we need to delete nbproject/private? probably not
+            int lastWorkDone = (int) currentWorkDone;
+
+            currentWorkDone += workPerFileAndOperation;
+
+            if (lastWorkDone < (int) currentWorkDone) {
+                handle.progress((int) currentWorkDone);
             }
             
             originalOK = false;
-            
-            for (FileObject toCopy : toMoveList) {
-                doDelete(project, toCopy);
-                
-                int lastWorkDone = (int) currentWorkDone;
-                
-                currentWorkDone += workPerFileAndOperation;
-                
-                if (lastWorkDone < (int) currentWorkDone) {
-                    handle.progress((int) currentWorkDone);
-                }
-            }
-            
-            if (projectDirectory.getChildren().length == 0) {
-                projectDirectory.delete();
-            }
             
             //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
             ProjectManager.getDefault().clearNonProjectCache();
@@ -501,7 +505,8 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress((int) (currentWorkDone += totalWork * FIND_PROJECT_WORK));
             
             assert nue != null;
-            
+            assert nue != project : "got same Project for " + projectDirectory + " and " + target;
+
             ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueProjectName);
             
             handle.progress((int) (currentWorkDone += totalWork * NOTIFY_WORK));
@@ -565,40 +570,6 @@ public final class DefaultProjectOperationsImplementation {
             return path.createFolder(name);
         } else {
             return createFolder(parent.getParentFile(), parent.getName()).createFolder(name);
-        }
-    }
-    
-    private static boolean doDelete(Project original, FileObject toDelete) throws IOException {
-        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
-            return false;
-        }
-        
-        if (toDelete.isFolder()) {
-            boolean delete = true;
-
-            for (FileObject kid : toDelete.getChildren()) {
-                delete &= doDelete(original, kid);
-            }
-            
-            if (delete) {
-                //#83958
-                DataFolder.findFolder(toDelete).delete();
-            }
-            
-            return delete;
-        } else {
-            assert toDelete.isData();
-            try {
-                //#83958
-                DataObject dobj = DataObject.find(toDelete);
-                dobj.delete();
-            } catch (DataObjectNotFoundException ex) {
-                //In case of MultiDataObjects the file may be laready deleted
-                if (toDelete.isValid()) {                    
-                    toDelete.delete();
-                }
-            }
-            return true;
         }
     }
     

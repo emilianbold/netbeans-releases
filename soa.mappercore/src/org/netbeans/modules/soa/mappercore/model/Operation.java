@@ -47,7 +47,9 @@ public class Operation extends Vertex {
     }
     
     
+    @Override
     public int getMinimumWidth() { return 4; }
+    @Override
     public int getMaximumWidth() { return 4; }    
     
     
@@ -119,6 +121,7 @@ public class Operation extends Vertex {
     }
     
     
+    @Override
     public void layout() {
         int width = getWidth();
         int itemCount = getItemCount();

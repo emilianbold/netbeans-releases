@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 
 /**
  * Implementation of FileEncodingQuery for Freeform project, its instance can be 
@@ -114,23 +118,23 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     private void computeEncodingsCache() {
         Map<FileObject,Charset> cache = new HashMap<FileObject,Charset>(3);
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
-            for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
+            for (Element sourceFolderEl : XMLUtil.findSubElements(foldersEl)) {
                 if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                     continue;
                 }
                 FileObject srcRoot = null;
-                Element locationEl = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
+                Element locationEl = XMLUtil.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
                 if (locationEl != null) {
-                    String location = evaluator.evaluate(Util.findText(locationEl));
+                    String location = evaluator.evaluate(XMLUtil.findText(locationEl));
                     if (location != null) {
                         srcRoot = helper.resolveFileObject(location);
                     }
                 }
-                Element encodingEl = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
+                Element encodingEl = XMLUtil.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
                 if (encodingEl != null && srcRoot != null) {
-                    String encoding = evaluator.evaluate(Util.findText(encodingEl));
+                    String encoding = evaluator.evaluate(XMLUtil.findText(encodingEl));
                     Charset charset = null;
                     if (encoding != null) {
                         try {

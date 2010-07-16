@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,7 +87,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         if ( context == null ) { 
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
     
     protected void actionPerformed( Lookup context ) {
@@ -95,9 +98,9 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         
     }
     
-    public void refresh( Lookup context ) {
+    public @Override void refresh(Lookup context, boolean immediate) {
         
-        super.refresh( context );
+        super.refresh(context, immediate);
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         if ( projects.length != 1 /* Some projects have to be open !OpenProjectList.getDefault().isOpen( projects[0] ) */ ) {
@@ -121,7 +124,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         
         Project projects[] = OpenProjectList.getDefault().getOpenProjects();
         
-        Arrays.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+        Arrays.sort(projects, OpenProjectList.projectByDisplayName());
         
         // Enable disable the action according to number of open projects
         if ( projects == null || projects.length == 0 ) {

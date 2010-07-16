@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * token to be used in APT infrastructure
@@ -53,8 +56,8 @@ public class APTBaseToken implements APTToken {
     // most tokens will want line and text information
     protected int line;
     protected CharSequence text = null;
-    protected int col;
-    protected int type;
+    protected short col;
+    protected short type;
     private int offset;
     /**
      * Creates a new instance of APTBaseToken
@@ -74,7 +77,7 @@ public class APTBaseToken implements APTToken {
         // This constructor is used with the existing tokens so do not use setText here,
         // because we do not need to go through APTStringManager once again
         text = token.getTextID();
-        assert text instanceof TinyCharSequence;
+        assert CharSequences.isCompact(text);
 
         this.setType(ttype);
         this.setOffset(token.getOffset());
@@ -88,68 +91,90 @@ public class APTBaseToken implements APTToken {
         this.setText(text);
     }
     
+    @Override
     public final int getType() {
         return type;
     }
 
+    @Override
     public final void setType(int t) {
-        type = t;
+        assert t <= Short.MAX_VALUE;
+        type = (short) t;
     }
 
+    @Override
     public String getFilename() {
         return null;
     }
 
+    @Override
     public void setFilename(String name) {
     }
     
+    @Override
     public final int getOffset() {
         return offset;
     }
 
+    @Override
     public final void setOffset(int o) {
         this.offset = o;
     }
 
+    @Override
     public int getEndOffset() {
         return getOffset() + getTextID().length();
     }
 
+    @Override
     public void setEndOffset(int end) {
         // do nothing
     }
 
+    @Override
     public final CharSequence getTextID() {
         return this.text;
     }
 
+    @Override
     public final void setTextID(CharSequence textID) {
         this.text = TextCache.getManager().getString(textID);
     }
 
+    @Override
     public final String getText() {
         return text.toString();
     }
 
+    @Override
     public final void setText(String t) {
         text = TextCache.getManager().getString(t);
     }
 
+    @Override
     public final int getLine() {
         return line;
     }
 
+    @Override
     public final void setLine(int l) {
         line = l;
     }
 
     /** Return token's start column */
+    @Override
     public final int getColumn() {
         return col;
     }
 
+    @Override
     public final void setColumn(int c) {
-        col = c;
+        if (c > Short.MAX_VALUE) {
+            // Column line used for messages, so set in max value in case too long line.
+            c = Short.MAX_VALUE;
+        } else {
+            col = (short) c;
+        }
     }
 
     @Override
@@ -157,18 +182,22 @@ public class APTBaseToken implements APTToken {
         return "[\"" + getTextID() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
+    @Override
     public int getEndColumn() {
         return getColumn() + getTextID().length();
     }
 
+    @Override
     public void setEndColumn(int c) {
         // do nothing
     }
 
+    @Override
     public int getEndLine() {
         return getLine();
     }
 
+    @Override
     public void setEndLine(int l) {
         // do nothing
     }

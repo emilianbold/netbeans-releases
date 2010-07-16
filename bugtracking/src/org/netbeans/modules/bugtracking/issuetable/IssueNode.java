@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,7 +73,9 @@ public abstract class IssueNode extends AbstractNode {
      * Recetn Changes property id
      */
     public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
-    
+
+    public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
+
     private Issue issue;
 
     private String htmlDisplayName;
@@ -134,7 +139,8 @@ public abstract class IssueNode extends AbstractNode {
         for (Property<?> property : properties) {
             ps.put(property);
         }
-        
+        ps.put(new RecentChangesProperty());
+        ps.put(new SeenProperty());
         sheet.put(ps);
         setSheet(sheet);    
     }
@@ -205,7 +211,29 @@ public abstract class IssueNode extends AbstractNode {
             return toString().compareTo(o.toString());
         }
     }
-    
+
+    // XXX the same for id
+    // XXX CTL_Issue_Summary_Title also defined in bugzilla nad jira!!!
+    public class SummaryProperty extends IssueProperty<String> {
+        public SummaryProperty() {
+            super(LABEL_NAME_SUMMARY,
+                  String.class,
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Summary_Title"), // NOI18N
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Summary_Desc")); // NOI18N
+        }
+        @Override
+        public String getValue() {
+            return getIssue().getSummary();
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getIssue().getSummary();
+            String s2 = p.getIssue().getSummary();
+            return s1.compareTo(s2);
+        }
+    }
+
     /**
      * Represens the Seen value in a IssueNode
      */

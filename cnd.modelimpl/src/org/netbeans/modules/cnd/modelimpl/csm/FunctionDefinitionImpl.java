@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,7 +86,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             ((Disposable) body).dispose();
         }
     }
-    
+
     @Override
     public CsmCompoundStatement getBody() {
         return body;
@@ -96,7 +99,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
-        if (declaration == null || isFakeFunction(declaration)) {
+        if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
                 return null;
@@ -165,34 +168,56 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByName(it, getName());
+                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
                 if (def == null && isOperator()) {
                     def = fixCastOperator((CsmClass)owner);
                 }
             } else if (owner instanceof CsmNamespace) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByName(it, getName());
+                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
             }
         } else {
-            def = findByName(defs.iterator(), getName());
+            def = findByNameAndParamsNumber(defs.iterator(), getName(), getParameters().size());
         }
         return (CsmFunction) def;
     }
 
-    private static CsmFunction findByName(Iterator declarations, CharSequence name) {
+    private CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
         CsmFunction out = null;
+        CsmFunction best = null;
+        CsmFunction best2 = null;
         for (Iterator it = declarations; it.hasNext();) {
             Object o = it.next();
             if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
-                    out = decl;
-                    if (!isFakeFunction(decl)) {
-                        break;
+                    if (decl.getParameters().size() == paramsNumber) {
+                        out = decl;
+                        if (!FunctionImplEx.isFakeFunction(decl)) {
+                            if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
+                                best = decl;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (!FunctionImplEx.isFakeFunction(decl)) {
+                            if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
+                                best2 = decl;
+                            }
+                            if (out == null) {
+                                out = decl;
+                            }
+                        }
                     }
                 }
             }
+        }
+        if (best != null) {
+            return best;
+        }
+        if (best2 != null) {
+            return best2;
         }
         return out;
     }
@@ -245,9 +270,5 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         // read cached declaration
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }
-
-    private static boolean isFakeFunction(CsmFunction declaration) {
-        return declaration instanceof FunctionImplEx;
     }
 }

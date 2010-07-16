@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,11 +42,15 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import org.netbeans.modules.kenai.api.KenaiManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
@@ -58,10 +65,13 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
     private Object bean;
     private NotificationLineSupport ns;
     private DialogDescriptor dd;
+    private JButton addButton;
 
     /** Creates new customizer KenaiInstanceCustomizer */
-    public KenaiInstanceCustomizer() {
+    public KenaiInstanceCustomizer(JButton addButton) {
+        this.addButton = addButton;
         initComponents();
+        progress.setVisible(false);
         txtDisplayName.getDocument().addDocumentListener(this);
         txtUrl.getDocument().addDocumentListener(this);
     }
@@ -90,6 +100,10 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         lblUrl = new javax.swing.JLabel();
         txtDisplayName = new javax.swing.JTextField();
         txtUrl = new javax.swing.JTextField();
+        progress = new javax.swing.JProgressBar();
+        proxy = new javax.swing.JButton();
+
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         lblName.setLabelFor(txtDisplayName);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.lblName.text")); // NOI18N
@@ -99,6 +113,17 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
 
         txtUrl.setText(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.text")); // NOI18N
 
+        progress.setIndeterminate(true);
+        progress.setString(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.progress.string")); // NOI18N
+        progress.setStringPainted(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(proxy, org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.proxy.text")); // NOI18N
+        proxy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                proxyActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -106,12 +131,18 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblName)
-                    .add(lblUrl))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                    .add(txtDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblName)
+                            .add(lblUrl))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+                            .add(txtDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(proxy)
+                        .add(18, 18, 18)
+                        .add(progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -125,14 +156,30 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txtUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lblUrl))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(proxy)
+                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(2, 2, 2))
         );
+
+        txtDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleName")); // NOI18N
+        txtDisplayName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleName")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        proxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.proxy.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
+        OptionsDisplayer.getDefault().open("General"); // NOI18N
+    }//GEN-LAST:event_proxyActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblUrl;
+    private javax.swing.JProgressBar progress;
+    private javax.swing.JButton proxy;
     private javax.swing.JTextField txtDisplayName;
     private javax.swing.JTextField txtUrl;
     // End of variables declaration//GEN-END:variables
@@ -159,14 +206,25 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         }
     }
 
-    private void showError(String text) {
+    void showError(String text) {
+        stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
+        addButton.setEnabled(false);
     }
 
-    private void clearError() {
+    void clearError() {
         ns.clearMessages();
         dd.setValid(true);
+        addButton.setEnabled(true);
+    }
+
+    void startProgress() {
+        progress.setVisible(true);
+    }
+
+    void stopProgress() {
+        progress.setVisible(false);
     }
 
     private static Pattern urlPatten = Pattern.compile("https://([a-zA-Z0-9\\-\\.])+\\.(([a-zA-Z]{2,3})|(info)|(name)|(aero)|(coop)|(museum)|(jobs)|(mobi)|(travel))/?$");
@@ -178,10 +236,10 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
             return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_NotHttps");
         }
 
-        if (!urlPatten.matcher(s).matches()) {
+        if (s.equals("https://") || !urlPatten.matcher(s).matches()) { //NOI18N
             return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlNotValid");
         }
-        for (KenaiInstance instance : KenaiInstancesManager.getDefault().getInstances()) {
+        for (Kenai instance : KenaiManager.getDefault().getKenais()) {
             if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) { // NOI18N
                 return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlUsed", s);
             }

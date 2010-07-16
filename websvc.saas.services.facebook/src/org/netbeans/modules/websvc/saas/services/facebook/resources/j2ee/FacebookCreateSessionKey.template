@@ -1,0 +1,14 @@
+{
+    String[] queryParamNames = new String[]{"api_key", "auth_token", "v", "method"};
+    String[] queryParamValues = new String[]{api_key, auth_token, "1.0", "facebook.auth.getSession"};
+    String sig = signParams(queryParamNames, queryParamValues);
+    Client c = new Client();
+    WebResource webRes = c.resource(BASE_URI).path("restserver.php");
+    String result = webRes.queryParam("api_key", api_key).queryParam("auth_token", auth_token).queryParam("v", "1.0").queryParam("method", "facebook.auth.getSession").queryParam("sig", sig).get(String.class);
+    c.destroy();
+    try {
+        return result.substring(result.indexOf("<session_key>") + 13, result.indexOf("</session_key>"));
+    } catch (Exception ex) {
+        throw new java.io.IOException("Failed to get session key: " + result);
+    }
+}

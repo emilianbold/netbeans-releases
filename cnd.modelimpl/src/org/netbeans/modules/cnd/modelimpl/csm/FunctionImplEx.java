@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -70,21 +72,17 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
-    private static final byte QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
-    private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
-        classOrNspNames = CastUtils.isCast(ast) ? getClassOrNspNames(ast) : initClassOrNspNames(ast);
+        classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }
-    }
-
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, AST fakeRegistrationAst, boolean register, boolean global) throws AstRendererException {
-        this(ast, file, scope, register, global);
-        fixFakeRegistrationAst = fakeRegistrationAst;
     }
 
     /** @return either class or namespace */
@@ -137,7 +135,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	return null;
     }
 
-    private static CharSequence[] initClassOrNspNames(AST node) {
+    private CharSequence[] initClassOrNspNames(AST node) {
         //qualified id
         AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {
@@ -147,11 +145,30 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
             APTStringManager manager = NameCache.getManager();
+            StringBuilder id = new StringBuilder(""); // NOI18N
+            int level = 0;
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                if( token.getType() == CPPTokenTypes.ID ) {
-                    if( token.getNextSibling() != null ) {
-                        l.add(manager.getString(token.getText()));
-                    }
+                int type2 = token.getType();
+                switch (type2) {
+                    case CPPTokenTypes.ID:
+                        id = new StringBuilder(token.getText());
+                        break;
+                    case CPPTokenTypes.GREATERTHAN:
+                        level--;
+                        break;
+                    case CPPTokenTypes.LESSTHAN:
+                        // getTemplateParameters does not work for constructors and destructors...
+                        if(!CsmKindUtilities.isConstructor(this) && !CsmKindUtilities.isDestructor(this)) {
+                            TemplateUtils.addSpecializationSuffix(token, id, getInheritedTemplateParameters().size() != 0 ? getInheritedTemplateParameters() : getTemplateParameters(), true);
+                        }
+                        level++;
+                        break;
+                    case CPPTokenTypes.SCOPE:
+                        if (id != null && level == 0) {
+                            l.add(manager.getString(id.toString()));
+                        }
+                        break;
+                    default:
                 }
             }
             return l.toArray(new CharSequence[l.size()]);
@@ -169,11 +186,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     protected String findQualifiedName() {
         CsmObject owner = findOwner(null);
+        // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
-            setFlags(QUALIFIED_NAME, false);
+            setFlags(FAKE_QUALIFIED_NAME, false);
             return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
         }
-        setFlags(QUALIFIED_NAME, true);
+        setFlags(FAKE_QUALIFIED_NAME, true);
         CharSequence[] cnn = classOrNspNames;
         CsmNamespaceDefinition nsd = findNamespaceDefinition();
         StringBuilder sb = new StringBuilder();
@@ -196,16 +214,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         sb.append(getQualifiedNamePostfix());
         return sb.toString();
     }
-    
+
     @Override
     protected void registerInProject() {
         super.registerInProject();
-        if( hasFlags(QUALIFIED_NAME) ) {
-            ((FileImpl) getContainingFile()).onFakeRegisration(this);
+        // if this funtion couldn't find it's FQN => register it as fake and
+        // come back later on for registration (see fixFakeRegistration with null ast)
+        if( hasFlags(FAKE_QUALIFIED_NAME) ) {
+            ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
         }
     }
     
-    public final boolean fixFakeRegistration(boolean projectParsedMode) {
+    public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
         boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);
@@ -216,8 +236,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -234,8 +254,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -248,7 +268,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    RepositoryUtils.remove(getUID(), this);
+                    aFile.removeDeclaration(this);
+                    fi.registerInProject();
                     aFile.addDeclaration(fi);
                     fixed = true;
                     if (NamespaceImpl.isNamespaceScope(fi)) {
@@ -267,7 +288,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;
-                aProject.registerDeclaration(this);
+                registerInProject();
                 fixed = true;
             }
         }
@@ -296,7 +317,14 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return null;
     }    
     
-    
+    public static boolean isFakeFunction(CsmObject declaration) {
+        if (declaration instanceof FunctionImplEx) {
+            return FunctionImplEx.class.equals(declaration.getClass());
+        } else {
+            return false;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

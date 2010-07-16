@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,25 +45,40 @@
 package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -70,6 +88,9 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
+
+import static org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription;
 
 /** Manages rules read from the system filesystem.
  *
@@ -92,14 +113,8 @@ public class RulesManager implements FileChangeListener {
     private static final String SUGGESTIONS = "suggestions"; // NOI18N
 
     // Maps of registered rules
-    private final Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
-    private final Map<Tree.Kind,List<TreeRule>> hints = new HashMap<Tree.Kind,List<TreeRule>>();
-    private final Map<Tree.Kind,List<TreeRule>> suggestions = new HashMap<Tree.Kind, List<TreeRule>>();
-
-    // Tree models for the settings GUI
-    private TreeModel errorsTreeModel;
-    private TreeModel hintsTreeModel;
-    private TreeModel suggestionsTreeModel;
+    private final Map<String, Map<String,List<ErrorRule>>> mimeType2Errors = new HashMap<String, Map<String, List<ErrorRule>>>();
+    private final Map<HintMetadata, Collection<? extends HintDescription>> metadata = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
 
     private static RulesManager INSTANCE;
 
@@ -114,68 +129,14 @@ public class RulesManager implements FileChangeListener {
         return INSTANCE;
     }
 
-    public synchronized Map<String,List<ErrorRule>> getErrors() {
-        return errors;
-    }
+    public synchronized Map<String,List<ErrorRule>> getErrors(String mimeType) {
+        Map<String,List<ErrorRule>> res = mimeType2Errors.get(mimeType);
 
-    public synchronized Map<Tree.Kind,List<TreeRule>> getHints() {
-        return hints;
-    }
-
-    public synchronized Map<Tree.Kind,List<TreeRule>> getHints(boolean onLine) {
-        Map<Tree.Kind, List<TreeRule>> result = new HashMap<Tree.Kind, List<TreeRule>>();
-        
-        for (Entry<Tree.Kind, List<TreeRule>> e : getHints().entrySet()) {
-            List<TreeRule> nueRules = new LinkedList<TreeRule>();
-            
-            for (TreeRule r : e.getValue()) {
-                if (!(r instanceof AbstractHint)) {
-                    if (!onLine)
-                        nueRules.add(r);
-                    continue;
-                }
-                
-                AbstractHint ah = (AbstractHint) r;
-                
-                Preferences p = ah.getPreferences(null);
-                
-                if (p == null) {
-                    if (!onLine)
-                        nueRules.add(r);
-                    continue;
-                }
-                
-                if (ah.getSeverity() == AbstractHint.HintSeverity.CURRENT_LINE_WARNING) {
-                    if (onLine)
-                        nueRules.add(r);
-                } else {
-                    if (!onLine)
-                        nueRules.add(r);
-                }
-            }
-            
-            if (!nueRules.isEmpty()) {
-                result.put(e.getKey(), nueRules);
-            }
+        if (res == null) {
+            res = Collections.emptyMap();
         }
-        
-        return result;
-    }
-    
-    public synchronized Map<Tree.Kind,List<TreeRule>> getSuggestions() {
-        return suggestions;
-    }
 
-    public synchronized TreeModel getErrorsTreeModel() {
-        return errorsTreeModel;
-    }
-
-    public synchronized TreeModel getHintsTreeModel() {
-        return hintsTreeModel;
-    }
-
-    public synchronized TreeModel getSuggestionsTreeModel() {
-        return suggestionsTreeModel;
+        return res;
     }
 
     private synchronized void doInit() {
@@ -187,28 +148,22 @@ public class RulesManager implements FileChangeListener {
     // Private methods ---------------------------------------------------------
 
     private void initErrors() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-        errorsTreeModel = new DefaultTreeModel( rootNode );
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + ERRORS );
         List<Pair<Rule,FileObject>> rules = readRules( folder );
-        categorizeErrorRules(rules, errors, folder, rootNode);
+        categorizeErrorRules(rules, mimeType2Errors, folder);
     }
 
     private void initHints() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-        hintsTreeModel = new DefaultTreeModel( rootNode );
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + HINTS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules( rules, hints, folder, rootNode );
+        categorizeTreeRules( rules, HintMetadata.Kind.HINT, HintMetadata.Kind.HINT_NON_GUI, metadata);
     }
 
 
     private void initSuggestions() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
-        suggestionsTreeModel = new DefaultTreeModel( rootNode );
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + SUGGESTIONS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules(rules, suggestions, folder, rootNode);
+        categorizeTreeRules( rules, HintMetadata.Kind.SUGGESTION, HintMetadata.Kind.SUGGESTION_NON_GUI, metadata);
     }
 
     /** Read rules from system filesystem */
@@ -254,27 +209,27 @@ public class RulesManager implements FileChangeListener {
     }
 
     private static void categorizeErrorRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<String,List<ErrorRule>> dest,
-                                             FileObject rootFolder,
-                                             DefaultMutableTreeNode rootNode ) {
+                                             Map<String, Map<String,List<ErrorRule>>> dest,
+                                             FileObject rootFolder) {
         dest.clear();
-        Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
-        dir2node.put(rootFolder, rootNode);
 
         for( Pair<Rule,FileObject> pair : rules ) {
             Rule rule = pair.getA();
             FileObject fo = pair.getB();
+            String mime = FileUtil.getRelativePath(rootFolder, fo.getParent());
+
+            if (mime.length() == 0) {
+                mime = Utilities.JAVA_MIME_TYPE;
+            }
 
             if ( rule instanceof ErrorRule ) {
-                addRule( (ErrorRule)rule, dest );
-                FileObject parent = fo.getParent();
-                DefaultMutableTreeNode category = dir2node.get( parent );
-                if ( category == null ) {
-                    category = new DefaultMutableTreeNode( parent );
-                    rootNode.add( category );
-                    dir2node.put( parent, category );
+                Map<String, List<ErrorRule>> map = dest.get(mime);
+
+                if (map == null) {
+                    dest.put(mime, map = new HashMap<String, List<ErrorRule>>());
                 }
-                category.add( new DefaultMutableTreeNode( rule, false ) );
+
+                addRule( (ErrorRule)rule, map );
             }
             else {
                 LOG.log( Level.WARNING, "The rule defined in " + fo.getPath() + "is not instance of ErrorRule" );
@@ -283,39 +238,61 @@ public class RulesManager implements FileChangeListener {
     }
 
     private static void categorizeTreeRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<Tree.Kind,List<TreeRule>> dest,
-                                             FileObject rootFolder,
-                                             DefaultMutableTreeNode rootNode ) {
-        dest.clear();
-        Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
-        dir2node.put(rootFolder, rootNode);
-
+                                             HintMetadata.Kind kind,
+                                             HintMetadata.Kind kindNonGui,
+                                             Map<HintMetadata, Collection<? extends HintDescription>> metadata) {
         for( Pair<Rule,FileObject> pair : rules ) {
             Rule rule = pair.getA();
             FileObject fo = pair.getB();
 
             if ( rule instanceof TreeRule ) {
-                
+                final TreeRule tr = (TreeRule) rule;
                 Object nonGuiObject = fo.getAttribute(NON_GUI);
                 boolean toGui = true;
                 
-                if ( nonGuiObject != null && 
+                if ( nonGuiObject != null &&
                      nonGuiObject instanceof Boolean &&
                      ((Boolean)nonGuiObject).booleanValue() ) {
                     toGui = false;
                 }
-                
-                addRule( (TreeRule)rule, dest );
+
+                HintMetadata hm;
+
                 FileObject parent = fo.getParent();
-                DefaultMutableTreeNode category = dir2node.get( parent );
-                if ( category == null ) {
-                    category = new DefaultMutableTreeNode( parent );
-                    rootNode.add( category );
-                    dir2node.put( parent, category );
+
+                if (rule instanceof AbstractHint) {
+                    final AbstractHint h = (AbstractHint) rule;
+                    hm = HintMetadata.create(h.getId(),
+                                             toGui ? h.getDisplayName() : "",
+                                             toGui ? h.getDescription() : "",
+                                             parent.getName(),
+                                             HintsSettings.HINTS_ACCESSOR.isEnabledDefault(h),
+                                             toGui ? kind : kindNonGui,
+                                             HintsSettings.HINTS_ACCESSOR.severiryDefault(h),
+                                             new CustomizerProviderImpl(h),
+                                             Arrays.asList(HintsSettings.HINTS_ACCESSOR.getSuppressBy(h)));
+                } else {
+                    hm = HintMetadata.create(tr.getId(),
+                                             toGui ? tr.getDisplayName() : "",
+                                             toGui ? tr.getDisplayName() : "",
+                                             parent.getName(),
+                                             true,
+                                             toGui ? kind : kindNonGui,
+                                             AbstractHint.HintSeverity.WARNING,
+                                             Arrays.<String>asList());
                 }
-                if ( toGui ) {
-                    category.add( new DefaultMutableTreeNode( rule, false ) );
+
+                List<HintDescription> hd = new LinkedList<HintDescription>();
+
+                for (Kind k : tr.getTreeKinds()) {
+                    hd.add(HintDescriptionFactory.create()
+                                                 .setTriggerKind(k)
+                                                 .setMetadata(hm)
+                                                 .setWorker(new WorkerImpl(tr))
+                                                 .produce());
                 }
+
+                metadata.put(hm, hd);
             }
             else {
                 LOG.log( Level.WARNING, "The rule defined in " + fo.getPath() + "is not instance of TreeRule" );
@@ -406,60 +383,57 @@ public class RulesManager implements FileChangeListener {
         }
     });
 
-    // Unused code -------------------------------------------------------------
+    private static final class CustomizerProviderImpl implements CustomizerProvider {
+        private final AbstractHint hint;
 
-//    /** Rules to be run on elements */
-//    private static Map<ElementKind,List<ElementRule>> elementRules = new HashMap<ElementKind,List<ElementRule>>();
+        public CustomizerProviderImpl(AbstractHint hint) {
+            this.hint = hint;
+        }
 
+        public JComponent getCustomizer(Preferences prefs) {
+            return hint.getCustomizer(prefs);
+        }
+    }
 
-//    private static void addRule( ElementRule rule ) {
-//
-//        for( ElementKind kind : rule.getElementKinds()) {
-//            List<ElementRule> l = elementRules.get( kind );
-//            if ( l == null ) {
-//                l = new LinkedList<ElementRule>();
-//                elementRules.put( kind, l );
-//            }
-//            l.add( rule );
-//        }
-//
-//    }
+    private static class WorkerImpl implements Worker {
+        private final TreeRule tr;
 
-//    private static class ElementWalker extends ElementScanner6<List<ErrorDescription>,CompilationInfo> {
-//
-//        private List<ErrorDescription> warnings = new LinkedList<ErrorDescription>();
-//
-//        @Override
-//        public List<ErrorDescription> scan( Element element, CompilationInfo compilationInfo ) {
-//
-//            if ( element == null ) {
-//                return warnings;
-//            }
-//
-//            List<ElementRule> rules = elementRules.get( element.getKind() ); // Find list of rules associated with given kind
-//            if ( rules != null ) {
-//                for (ElementRule rule : rules) { // Run the rules for given node
-//                    List<ErrorDescription> w = rule.run( compilationInfo, element, runNumber );
-//                    if ( w != null ) {
-//                        warnings.addAll( w );
-//                    }
-//                }
-//            }
-//
-//            super.scan( element, compilationInfo );
-//
-//            return warnings;
-//        }
-//
-//    }
-//
+        public WorkerImpl(TreeRule tr) {
+            this.tr = tr;
+        }
 
-//    /** Runs all rules registered to ElementKinds */
-//    private static List<ErrorDescription> runElementRules() {
-//        ElementScanner6<List<ErrorDescription>,CompilationInfo> v = new ElementWalker();
-//        // XXX How to implement?
-//        return Collections.<ErrorDescription>emptyList();
-//    }
+        public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
+            Collection<? extends ErrorDescription> result = tr.run(ctx.getInfo(), ctx.getPath());
 
+            if (result == null) return result;
+
+            Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
+
+            for (ErrorDescription ed : result) {
+                if (ed == null) continue;
+                List<Fix> fixesForED = ErrorDescriptionFactory.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
+
+                ErrorDescription nue = createErrorDescription(ed.getSeverity(),
+                                                              ed.getDescription(),
+                                                              fixesForED,
+                                                              ed.getFile(),
+                                                              ed.getRange().getBegin().getOffset(),
+                                                              ed.getRange().getEnd().getOffset());
+
+                wrapped.add(nue);
+            }
+
+            return wrapped;
+        }
+    }
+    
+    @ServiceProvider(service=HintProvider.class)
+    public static final class HintProviderImpl implements HintProvider {
+
+        public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
+            return RulesManager.getInstance().metadata;
+        }
+        
+    }
 
 }

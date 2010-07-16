@@ -35,15 +35,18 @@ public class SelectPanelTableCellRenderer extends DefaultTableCellRenderer{
                 boolean isSelected, boolean hasFocus, int rowIndex, int colIndex) {
             
            super.getTableCellRendererComponent(table,value,isSelected,hasFocus,rowIndex,colIndex);
-            if (isSelected) {
-                
-            }
-    
-            if (hasFocus) {
-                super.setForeground(table.getForeground());
-                super.setBackground(table.getBackground());
-            }
-        return  this;
+//            if (isSelected) {
+//                
+//            }
+//    
+//            if (hasFocus) {
+//                super.setForeground(table.getForeground());
+//                super.setBackground(table.getBackground());
+//            }
+            
+            boolean editable = table.getModel().isCellEditable(rowIndex, colIndex);
+            super.setEnabled(editable);
+            return  this;
         }
    
     

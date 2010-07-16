@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,7 @@ public class CompilerSettings {
     public static final String ENABLE_LINT_EMPTY = "enable_lint_empty";
     public static final String ENABLE_LINT_OVERRIDES = "enable_lint_overrides";
     public static final String ENABLE_LINT_RAWTYPES = "enable_lint_rawtypes";
+    public static final String ENABLE_LINT_CAN_USE_DIAMOND = "enable_can_use_diamond";
     
     private static final Map<String, Boolean> DEFAULTS;
     
@@ -83,6 +87,7 @@ public class CompilerSettings {
         DEFAULTS.put(ENABLE_LINT_EMPTY, false);
         DEFAULTS.put(ENABLE_LINT_OVERRIDES, false);
         DEFAULTS.put(ENABLE_LINT_RAWTYPES, false);
+        DEFAULTS.put(ENABLE_LINT_CAN_USE_DIAMOND, true);
     }
     
     public static Preferences getNode() {
@@ -114,6 +119,8 @@ public class CompilerSettings {
             sb.append("-Xlint:overrides ");
         if (get(p, ENABLE_LINT_RAWTYPES))
             sb.append("-Xlint:rawtypes ");
+        if (get(p, ENABLE_LINT_CAN_USE_DIAMOND))
+            sb.append("-XDfindDiamond ");
         
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);

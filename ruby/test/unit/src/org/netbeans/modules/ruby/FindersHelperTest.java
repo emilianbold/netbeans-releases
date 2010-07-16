@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,12 +57,13 @@ public class FindersHelperTest extends TestCase {
         List<FinderMethod> result =
                 FindersHelper.getFinderSignatures("", Arrays.asList("name", "title", "price", "url"));
 
-        assertEquals(256, result.size());
+        assertEquals(64, result.size());
         // some basic checking
         assertTrue(containsMethod("find_by_name(name, *options)", result));
         assertTrue(containsMethod("find_by_name_and_price(name, price, *options)", result));
-        assertTrue(containsMethod("find_by_name_and_price_and_title(name, price, title, *options)", result));
-        assertTrue(containsMethod("find_by_name_and_title_and_price(name, title, price, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_title(name, title, *options)", result));
+        assertTrue(containsMethod("find_by_price_and_title(price, title, *options)", result));
+        assertTrue(containsMethod("find_by_title_and_price(title, price, *options)", result));
     }
 
     public void testGetScopedBy() {
@@ -94,6 +98,19 @@ public class FindersHelperTest extends TestCase {
         assertEquals(2, columns.size());
         assertTrue(columns.contains("name"));
         assertTrue(columns.contains("title"));
+
+        assertTrue(FindersHelper.extractColumns("find_by_").isEmpty());
+    }
+
+    public void testExistingColumnsNotComputed() {
+        List<FinderMethod> result =
+                FindersHelper.getFinderSignatures("find_by_name_and_title", Arrays.asList("name", "title", "price", "availability"));
+
+        assertEquals(4, result.size());
+
+        assertTrue(containsMethod("find_by_name_and_title_and_availability(name, title, availability, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_title_and_price(name, title, price, *options)", result));
+
     }
 
     public void testDepth() {
@@ -102,7 +119,7 @@ public class FindersHelperTest extends TestCase {
             columns.add("column" + i);
         }
         List<FinderMethod> result = FindersHelper.getFinderSignatures("", columns);
-        assertEquals(1300, result.size());
+        assertEquals(100, result.size());
 
         columns.clear();
 
@@ -133,6 +150,9 @@ public class FindersHelperTest extends TestCase {
         assertTrue(FindersHelper.isFinderMethod("scoped_by_title"));
         assertTrue(FindersHelper.isFinderMethod("find"));
         assertTrue(FindersHelper.isFinderMethod("all"));
+
+        assertFalse(FindersHelper.isFinderMethod("find", false));
+        assertFalse(FindersHelper.isFinderMethod("all", false));
 
         assertFalse(FindersHelper.isFinderMethod("not_a_finder"));
         assertFalse(FindersHelper.isFinderMethod("findery"));

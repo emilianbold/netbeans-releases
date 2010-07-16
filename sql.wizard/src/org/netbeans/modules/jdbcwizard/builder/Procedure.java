@@ -90,7 +90,7 @@ public class Procedure {
     private Parameter[] parameters; // array of parameters
 
     private boolean hasReturn = false; // indicates whether has any out parameters
-
+    private String callableStatementString;
     /**
      * Creates an instance of Procedure with the given attributes.
      * 
@@ -378,4 +378,11 @@ public class Procedure {
         return null;
     }
 
+    public void setCallableStmtString(String cstmtString) {
+        this.callableStatementString = cstmtString;
+    }
+    
+    public String getCallableStmtString() {
+        return this.callableStatementString;
+    }
 }

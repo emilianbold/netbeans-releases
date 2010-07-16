@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,14 +66,14 @@ public class Backout implements PropertyChangeListener {
     private RepositoryRevision repoRev;
     
     /** Creates a new instance of Backout */
-    public Backout(File repository, RepositoryRevision repoRev, File [] roots) {
-        this (repository, null, repoRev, roots);
+    public Backout(File repository, RepositoryRevision repoRev) {
+        this (repository, null, repoRev);
     }
 
-    public Backout(File repository, String defaultRevision, RepositoryRevision repoRev, File [] roots) {
+    public Backout(File repository, String defaultRevision, RepositoryRevision repoRev) {
         this.repoRev = repoRev;
         this.repository = repository;
-        panel = new BackoutPanel(repository, repoRev, roots);
+        panel = new BackoutPanel(repository, repoRev);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutForm_Action_Backout")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutForm_Action_Backout")); // NOI18N
@@ -107,14 +110,10 @@ public class Backout implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision();
+        return panel.getSelectedRevision()[0];
     }
     public String getCommitMessage() {
         if (panel == null) return null;
         return panel.getCommitMessage();
-    }
-    public boolean isMergeRequested() {
-        if (panel == null) return false;
-        return panel.isMergeRequested();
     }
 }

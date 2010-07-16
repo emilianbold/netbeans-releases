@@ -6,5 +6,4 @@
   <database-url value='jdbc:bar:localhost'/>
   <schema value='schema'/>
   <user value='user'/>
-  <password value='cGFzc3dvcmQ='/>
 </connection>

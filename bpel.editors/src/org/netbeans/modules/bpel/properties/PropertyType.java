@@ -27,16 +27,21 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.api.support.AtomicTxType;
+import org.netbeans.modules.bpel.model.api.support.BinaryCopy;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.Pattern;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.properties.props.editors.AlarmTypeEditor;
 import org.netbeans.modules.bpel.properties.props.editors.ForExprEditor;
 import org.netbeans.modules.bpel.properties.props.editors.InitiateEditor;
+import org.netbeans.modules.bpel.properties.props.editors.AtomicTxTypeEditor;
+import org.netbeans.modules.bpel.properties.props.editors.BinaryCopyEditor;
 import org.netbeans.modules.bpel.properties.props.editors.QNamePropEditor;
 import org.netbeans.modules.bpel.properties.props.editors.RepeatEveryExprEditor;
 import org.netbeans.modules.bpel.properties.props.editors.StartCounterExprEditor;
 import org.netbeans.modules.bpel.properties.props.editors.StringPropEditor;
+import org.netbeans.modules.bpel.properties.props.editors.VariablesEditor;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
@@ -64,19 +69,19 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xam.Reference;
 
 /**
- *
+ * @author Vitaly Bychkov
  * @author nk160297
  */
-public enum PropertyType {
+public enum PropertyType implements org.netbeans.modules.soa.ui.properties.PropertyType {
     NAME(String.class, StringPropEditor.class),
-    DOCUMENTATION(String.class, StringPropEditor.class), 
+    VARIABLES(String.class, VariablesEditor.class),
+    DOCUMENTATION(String.class, StringPropEditor.class),
     VERSION(String.class, StringPropEditor.class), 
     AUTHOR(String.class, StringPropEditor.class), 
     LANGUAGE(String.class, StringPropEditor.class), 
     TARGET_NAMESPACE(String.class, StringPropEditor.class), 
     QUERY_LANGUAGE(String.class, StringPropEditor.class), 
     EXPRESSION_LANGUAGE(String.class, StringPropEditor.class), 
-    // ABSTRACT_PROCESS(TBoolean.class, TBooleanEditor.class), 
     FAULT_NAME(QName.class, FaultNamePropertyEditor.class), 
     FAULT_NAME_RO(QName.class, QNamePropEditor.class), // Read-only variant
     FAULT_VARIABLE(VariableDeclaration.class, VariablePropertyEditor.class),
@@ -88,7 +93,6 @@ public enum PropertyType {
     OPERATION(WSDLReference.class, ModelReferenceEditor.class), 
     INPUT(BpelReference.class, ModelReferenceEditor.class), 
     OUTPUT(BpelReference.class, ModelReferenceEditor.class), 
-    VARIABLE(String.class, StringPropEditor.class), 
     EVENT_VARIABLE_NAME(String.class, StringPropEditor.class),
     TRANSIENT_CONDITION(String.class, StringPropEditor.class), 
     JOIN_CONDITION(String.class, StringPropEditor.class), 
@@ -98,10 +102,8 @@ public enum PropertyType {
     PARTNER_LINK_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
     MY_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
     PARTNER_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
-    // SUPPRESS_JOIN_FAILURE(TBoolean.class, TBooleanEditor.class), 
     CREATE_INSTANCE(Boolean.class), 
     MESSAGE_EXCHANGE(BpelReference.class, MessageExchangePropEditor.class), 
-    // MESSAGE_EXCHANGE(BpelReference.class, ModelReferenceEditor.class), 
     SCOPE_NAME(String.class, StringPropEditor.class), 
     SCOPE(BpelReference.class, ModelReferenceEditor.class),
     LABEL(String.class, StringPropEditor.class), 
@@ -112,7 +114,6 @@ public enum PropertyType {
     VARIABLE_TYPE_QNAME(QName.class, QNamePropEditor.class),
     CORRELATON_PROPERTY_TYPE(GlobalSimpleType.class), 
     CORRELATON_PROPERTY_TYPE_NAME(String.class, StringPropEditor.class), 
-//    CORRELATON_PROPERTY_TYPE_NAME(QName.class, QNamePropEditor.class), 
     CORR_PROPERTY(CorrelationProperty.class), 
     CORR_PROPERTY_NAME(QName.class, QNamePropEditor.class), 
     MESSAGE_TYPE(Message.class), 
@@ -120,7 +121,10 @@ public enum PropertyType {
     PART(String.class, StringPropEditor.class), 
     QUERY(String.class, StringPropEditor.class), 
     COPY_FROM(From.class, FromPropEditor.class), 
-    IGNORE_MISSING_FROM_DATA(TBoolean.class, TBooleanEditor.class), 
+    IGNORE_MISSING_FROM_DATA(TBoolean.class, TBooleanEditor.class),
+    VALIDATE(TBoolean.class, TBooleanEditor.class),
+    BINARY_COPY(BinaryCopy.class, BinaryCopyEditor.class), 
+    ATOMIC_TX_TYPE(AtomicTxType.class, AtomicTxTypeEditor.class), 
     KEEP_SRC_ELEMENT_NAME(TBoolean.class, TBooleanEditor.class), 
     COPY_TO(To.class, ToPropEditor.class), 
     TIMER_FOR(String.class, StringPropEditor.class), 
@@ -130,9 +134,6 @@ public enum PropertyType {
     CORRELATION_PATTERN(Pattern.class, PatternEditor.class), 
     XPATH(String.class, StringPropEditor.class), 
     ASSIGNMENT_COUNT(int.class), 
-    // ASSIGN_VALIDATE(TBoolean.class, TBooleanEditor.class), 
-    // ISOLATED_SCOPE(TBoolean.class, TBooleanEditor.class), 
-    // EXIT_ON_STANDART_FAULT(TBoolean.class, TBooleanEditor.class), 
     BOOLEAN_EXPRESSION(BooleanExpr.class, BooleanExprEditor.class), 
     IMPORT_LOCATION(String.class, StringPropEditor.class), 
     IMPORT_TYPE(String.class, StringPropEditor.class), 
@@ -150,7 +151,9 @@ public enum PropertyType {
     UNTIL_EXPRESSION(TimeEvent.class, UntilExprEditor.class), 
     REPEAT_EVERY_EXPRESSION(RepeatEvery.class, RepeatEveryExprEditor.class), 
     COMPENSATION_TARGET(BpelReference.class, CompensationTargetEditor.class), 
-    ATOMIC_PROCESS(Boolean.class);
+    ATOMIC_PROCESS(Boolean.class),
+    WAITING_REQUEST_LIFE_SPAN(Integer.class),
+    PERSISTENCE_OPT_OUT(TBoolean.class, TBooleanEditor.class);
 
     private Class<?> myClass;
     private String myDisplayName;

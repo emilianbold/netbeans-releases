@@ -21,7 +21,6 @@ import org.openide.nodes.Node;
  *
  * @author ksorokin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.core.debugger.DebuggerHelper.class)
 public class DebuggerHelperImpl implements DebuggerHelper {
     private BpelBreakpointListener myBreakpointAnnotationListener;
     
@@ -98,7 +97,9 @@ public class DebuggerHelperImpl implements DebuggerHelper {
             final String breakpointXPath = 
                     EditorContextBridge.getXpath(annotation);
             
-            if (breakpointXPath.startsWith(entityXPath) ) {
+            if ((breakpointXPath != null) && (entityXPath != null) &&
+                    breakpointXPath.startsWith(entityXPath) ) {
+
                 breakpoint.disable();
             }
         }
@@ -118,7 +119,9 @@ public class DebuggerHelperImpl implements DebuggerHelper {
             final String breakpointXPath = 
                     EditorContextBridge.getXpath(annotation);
             
-            if (breakpointXPath.startsWith(entityXPath) ) {
+            if ((breakpointXPath != null) && (entityXPath != null) &&
+                    breakpointXPath.startsWith(entityXPath) ) {
+
                 DebuggerManager.
                         getDebuggerManager().removeBreakpoint(breakpoint);
             }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,20 +47,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-//import org.apache.tools.ant.module.api.support.ActionUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation, MoveOrRenameOperationImplementation {
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private MakeProject project;
 
@@ -73,28 +79,30 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
+    @Override
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        addFile(projectDirectory, "nbproject", files); // NOI18N
+        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files); // NOI18N
         addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files); // NOI18N
 
         return files;
     }
 
+    @Override
     public List<FileObject> getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
 
         List<FileObject> files = new ArrayList<FileObject>();
         FileObject[] children = projectDirectory.getChildren();
-        List metadataFiles = getMetadataFiles();
+        List<FileObject> metadataFiles = getMetadataFiles();
         for (int i = 0; i < children.length; i++) {
             if (metadataFiles.indexOf(children[i]) < 0) {
                 files.add(children[i]);
             }
         }
-        if (files.size() == 0) {
+        if (files.isEmpty()) {
             // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the project dir cannot be deleted.
             // IZ?????
             files.add(projectDirectory);
@@ -102,23 +110,15 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
 
+    @Override
     public void notifyDeleting() throws IOException {
-//        J2SEActionProvider ap = (J2SEActionProvider) project.getLookup().lookup(J2SEActionProvider.class);
-//        
-//        assert ap != null;
-//        
-//        Lookup context = Lookups.fixed(new Object[0]);
-//        Properties p = new Properties();
-//        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
-//        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//        
-//        assert targetNames != null;
-//        assert targetNames.length > 0;
-//        
-//        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        LOGGER.log(Level.FINE, "notify Deleting MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.setDeleted();
     }
 
+    @Override
     public void notifyDeleted() throws IOException {
+        LOGGER.log(Level.FINE, "notify Deleted MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
         project.getAntProjectHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
@@ -132,14 +132,16 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
+    @Override
     public void notifyCopying() {
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor().save();
+        LOGGER.log(Level.FINE, "notify Copying MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.save();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
 
+    @Override
     public void notifyCopied(Project original, File originalPath, String nueName) {
         if (original == null) {
             //do nothing for the original project.
@@ -150,9 +152,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
         if (!originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
@@ -166,15 +168,16 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         makeSharabilityQuery.setPrivateShared(false);
     }
 
+    @Override
     public void notifyMoving() throws IOException {
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor().save();
-        notifyDeleting();
+        LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.saveAndMarkDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
 
+    @Override
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
@@ -184,44 +187,27 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
         if (!originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
-//      fixDistJarProperty (nueName);
         project.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
     }
 
-    private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo)) {
-            return false;
-        }
-
-        while (fo != null) {
-            if (fo.equals(folder)) {
-                return true;
-            }
-
-            fo = fo.getParentFile();
-        }
-
-        return false;
+    @Override
+    public void notifyRenaming() throws IOException {
+        LOGGER.log(Level.FINE, "notify Renaming MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.save();
     }
-//    private void fixDistJarProperty (final String newName) {
-//        ProjectManager.mutex().writeAccess(new Runnable () {
-//            public void run () {
-//                ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-//                String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
-//                EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                String propValue = ep.getProperty("dist.jar");  //NOI18N
-//                if (oldDistJar != null && oldDistJar.equals (propValue)) {
-//                    ep.put ("dist.jar","${dist.dir}/"+PropertyUtils.getUsablePropertyName(newName)+".jar"); //NOI18N
-//                    project.getUpdateHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-//                }
-//            }
-//        });
-//    }
+
+    @Override
+    public void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
+        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        info.firePropertyChange(ProjectInformation.PROP_NAME);
+        info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
+    }
 }

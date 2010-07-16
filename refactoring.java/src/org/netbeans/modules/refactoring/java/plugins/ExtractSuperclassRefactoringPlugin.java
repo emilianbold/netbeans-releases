@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -309,11 +313,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             return typeArgs;
         
         Types typeUtils = javac.getTypes();
-        List<TypeMirror> result = new ArrayList<TypeMirror>(typeArgs.size());
+        Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
         
         // check super class
         TypeMirror superClass = javaClass.getSuperclass();
-        RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, superClass);
+        RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
         
         MemberInfo[] members = refactoring.getMembers();
         for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
@@ -323,11 +327,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
                 ExecutableElement elm = handle.resolve(javac);
             
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
 
                 for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                     VariableElement param = paramIter.next();
-                    RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
+                    RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
                 }
             } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
                 if (members[i].getModifiers().contains(Modifier.STATIC)) {
@@ -338,17 +342,17 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
                 VariableElement elm = handle.resolve(javac);
                 TypeMirror asType = elm.asType();
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, asType);
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
             } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 // check implements
                 TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
                 TypeMirror implemetz = handle.resolve(javac);
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
             }
             // do not check fields since static fields cannot use type parameter of the enclosing class
         }
         
-        return result;
+        return RetoucheUtils.filterTypes(typeArgs, used);
     }
     
     // --- REFACTORING ELEMENTS ------------------------------------------------

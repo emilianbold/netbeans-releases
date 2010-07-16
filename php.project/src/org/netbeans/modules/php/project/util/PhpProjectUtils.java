@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -58,6 +62,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
@@ -114,7 +119,7 @@ public final class PhpProjectUtils {
 
         FileObject fileObject = FileUtil.toFileObject(new File(path));
         if (fileObject == null) {
-            LOGGER.info("FileObject not found for " + path);
+            LOGGER.log(Level.INFO, "FileObject not found for {0}", path);
             return;
         }
 
@@ -122,19 +127,20 @@ public final class PhpProjectUtils {
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException ex) {
-            LOGGER.info("DataObject not found for " + path);
+            LOGGER.log(Level.INFO, "DataObject not found for {0}", path);
             return;
         }
 
         LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) {
-            LOGGER.info("LineCookie not found for " + path);
+            LOGGER.log(Level.INFO, "LineCookie not found for {0}", path);
             return;
         }
         Set lineSet = lineCookie.getLineSet();
         try {
             final Line currentLine = lineSet.getCurrent(line - 1);
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                 }
@@ -159,19 +165,24 @@ public final class PhpProjectUtils {
         return fileObjects;
     }
 
-    // XXX see AssertionError at HtmlIndenter.java:68
-    // NbReaderProvider.setupReaders(); cannot be called because of deps
     /**
      * Reformat the file.
      * @param file file to reformat.
      */
     public static void reformatFile(final File file) throws IOException {
-        FileObject testFileObject = FileUtil.toFileObject(file);
-        assert testFileObject != null : "No fileobject for " + file;
+        FileObject fileObject = FileUtil.toFileObject(file);
+        assert fileObject != null : "No fileobject for " + file;
 
-        final DataObject dataObject = DataObject.find(testFileObject);
+        reformatFile(DataObject.find(fileObject));
+    }
+
+    // XXX see AssertionError at HtmlIndenter.java:68
+    // NbReaderProvider.setupReaders(); cannot be called because of deps
+    public static void reformatFile(final DataObject dataObject) throws IOException {
+        assert dataObject != null;
+
         EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + testFileObject;
+        assert ec != null : "No editorcookie for " + dataObject;
 
         Document doc = ec.openDocument();
         assert doc instanceof BaseDocument;
@@ -183,11 +194,12 @@ public final class PhpProjectUtils {
         try {
             // seems to be synchronous but no info in javadoc
             baseDoc.runAtomic(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         reformat.reformat(0, baseDoc.getLength());
                     } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
                     }
                 }
             });
@@ -196,9 +208,40 @@ public final class PhpProjectUtils {
         }
 
         // save
+        saveFile(dataObject);
+    }
+
+    /**
+     * Save a file.
+     * @param dataObject file to save
+     */
+    public static void saveFile(DataObject dataObject) {
+        assert dataObject != null;
+
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
         if (saveCookie != null) {
-            saveCookie.save();
+            try {
+                saveCookie.save();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Save a file.
+     * @param fileObject file to save
+     */
+    public static void saveFile(FileObject fileObject) {
+        assert fileObject != null;
+
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+            if (dobj != null) {
+                saveFile(dobj);
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            LOGGER.log(Level.SEVERE, donfe.getLocalizedMessage(), donfe);
         }
     }
 
@@ -241,5 +284,17 @@ public final class PhpProjectUtils {
             logRecord.setParameters(params.toArray(new Object[params.size()]));
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    public static String getFrameworksForUsage(Collection<PhpFrameworkProvider> frameworks) {
+        assert frameworks != null;
+        StringBuilder buffer = new StringBuilder(200);
+        for (PhpFrameworkProvider provider : frameworks) {
+            if (buffer.length() > 0) {
+                buffer.append("|"); // NOI18N
+            }
+            buffer.append(provider.getName());
+        }
+        return buffer.toString();
     }
 }

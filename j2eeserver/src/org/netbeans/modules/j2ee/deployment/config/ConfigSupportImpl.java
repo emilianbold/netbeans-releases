@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -63,6 +69,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
@@ -76,10 +83,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
+import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
 
 /**
@@ -88,7 +98,7 @@ import org.openide.util.Parameters;
  * and it is cached for to avoid performance penalty of creating new one for every
  * access to configuration.
  *
- * Whenenver target server of the module changes, a new config support is associate
+ * Whenever target server of the module changes, a new config support is associate
  * with the module providing access to the right configuration data object.
  *
  * @author  nn136682
@@ -98,7 +108,9 @@ import org.openide.util.Parameters;
 
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport, 
         ModuleConfigurationProvider {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigSupportImpl.class.getName());
+
     private static final File[] EMPTY_FILE_LIST = new File[0];
     private static final String GENERIC_EXTENSION = ".dpf"; // NOI18N
     
@@ -327,7 +339,42 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             mappingConfiguration.setCMPResource(ejbName, jndiName);
         }
     }
-    
+
+    @Override
+    public void configureLibrary(@NonNull ServerLibraryDependency library) throws ConfigurationException {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.configureLibrary(library);
+        }
+    }
+
+    @Override
+    public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException {
+        Set<ServerLibraryDependency> libs = Collections.emptySet();
+
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libs = libraryConfiguration.getLibraries();
+        }
+        return libs;
+    }
+
+    @Override
+    public void addLibraryChangeListener(ChangeListener listener) {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.addLibraryChangeListener(listener);
+        }
+    }
+
+    @Override
+    public void removeLibraryChangeListener(ChangeListener listener) {
+        ServerLibraryConfiguration libraryConfiguration = getServerLibraryConfiguration();
+        if (libraryConfiguration != null) {
+            libraryConfiguration.removeLibraryChangeListener(listener);
+        }
+    }
+
     public Set<Datasource> getDatasources() throws ConfigurationException {
         
         Set<Datasource> projectDS = Collections.<Datasource>emptySet();
@@ -706,20 +753,34 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /**
      * Create and cache deployment configuration for the current server.
      */
-    public synchronized ModuleConfiguration getModuleConfiguration() {
-        if (moduleConfiguration == null) {
-            try {
-                if (server == null) {
-                    return null;
+    @Override
+    public ModuleConfiguration getModuleConfiguration() {
+        return ProjectManager.mutex().readAccess(new Action<ModuleConfiguration>() {
+
+            @Override
+            public ModuleConfiguration run() {
+                synchronized (ConfigSupportImpl.this) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Thread {0} acquired lock on object {1}",
+                                new Object[] {Thread.currentThread().getName(), ConfigSupportImpl.this});
+                        LOGGER.log(Level.FINE, "Stacktrace", new Exception());
+                    }
+                    if (moduleConfiguration == null) {
+                        try {
+                            if (server == null) {
+                                return null;
+                            }
+                            ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
+                            moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
+                        } catch (ConfigurationException ce) {
+                            LOGGER.log(Level.INFO, null, ce);
+                            return null;
+                        }
+                    }
+                    return moduleConfiguration;
                 }
-                ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
-                moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
-            } catch (ConfigurationException ce) {
-                Logger.getLogger("global").log(Level.INFO, null, ce);
-                return null;
             }
-        }
-        return moduleConfiguration;
+        });
     }
         
     public J2eeModule getJ2eeModule(String moduleUri) {
@@ -740,6 +801,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     
     // private helpers --------------------------------------------------------
     
+    @CheckForNull
+    private ServerLibraryConfiguration getServerLibraryConfiguration() {
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                return config.getLookup().lookup(ServerLibraryConfiguration.class);
+            }
+        }
+        return null;
+    }
+
     /**
      * Return list of server specific configuration files.
      */

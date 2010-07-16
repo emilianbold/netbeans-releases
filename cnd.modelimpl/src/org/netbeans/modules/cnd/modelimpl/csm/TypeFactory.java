@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 
 /**
  *
@@ -150,6 +152,10 @@ public class TypeFactory {
     }
 
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(ast, null, file, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }
+
+    public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -211,10 +217,13 @@ public class TypeFactory {
             tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID )*/ {
             //return null;
         } else {
-            if( typeStart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-                CsmClassifier classifier = BuiltinTypes.getBuiltIn(typeStart);
+            if(classifier != null) {
                 type._setClassifier(classifier);
-                type.classifierText = classifier.getName();
+                type.setClassifierText(classifier.getName());
+            } else if( typeStart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+                CsmClassifier cls = BuiltinTypes.getBuiltIn(typeStart);
+                type._setClassifier(cls);
+                type.setClassifierText(cls.getName());
             } else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                 AST tokFirstId;
                 try {
@@ -254,8 +263,8 @@ public class TypeFactory {
                                 if( templateDepth == 0) {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
                                         // We're done here, start filling nested type
-                                        type.classifierText = QualifiedNameCache.getManager().getString(sb);
-                                        type.qname = l.toArray(new CharSequence[l.size()]);
+                                        type.setClassifierText(NameCache.getManager().getString(sb));
+                                        type.setQName(l.toArray(new CharSequence[l.size()]));
                                         type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
@@ -286,9 +295,9 @@ public class TypeFactory {
                                 }
                             }
                         }
-                        if (type.classifierText == TypeImpl.NON_INITIALIZED_CLASSIFIER_TEXT) {
-                            type.classifierText = QualifiedNameCache.getManager().getString(sb);
-                            type.qname = l.toArray(new CharSequence[l.size()]);
+                        if (!type.isInitedClassifierText()) {
+                            type.setClassifierText(NameCache.getManager().getString(sb));
+                            type.setQName(l.toArray(new CharSequence[l.size()]));
                         }
                     }
                 } catch( Exception e ) {
@@ -352,74 +361,92 @@ public class TypeFactory {
             this._const = _const;
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             return type.getClassifier();
         }
 
+        @Override
         public CharSequence getClassifierText() {
             return type.getClassifierText();
         }
 
+        @Override
         public boolean isInstantiation() {
             return type.isInstantiation();
         }
 
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return type.getInstantiationParams();
         }
 
+        @Override
         public int getArrayDepth() {
             return arrayDepth;
         }
 
+        @Override
         public boolean isPointer() {
             return pointerDepth > 0;
         }
 
+        @Override
         public int getPointerDepth() {
             return pointerDepth;
         }
 
+        @Override
         public boolean isReference() {
             return reference;
         }
 
+        @Override
         public boolean isConst() {
             return _const;
         }
 
+        @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return type.isBuiltInBased(resolveTypeChain);
         }
 
+        @Override
         public boolean isTemplateBased() {
             return type.isTemplateBased();
         }
 
+        @Override
         public CharSequence getCanonicalText() {
             return getText();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return type.getContainingFile();
         }
 
+        @Override
         public int getStartOffset() {
             return type.getStartOffset();
         }
 
+        @Override
         public int getEndOffset() {
             return type.getEndOffset();
         }
 
+        @Override
         public Position getStartPosition() {
             return type.getStartPosition();
         }
 
+        @Override
         public Position getEndPosition() {
             return type.getEndPosition();
         }
 
+        @Override
         public CharSequence getText() {
             return format();
         }

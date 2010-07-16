@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -55,12 +59,14 @@ public class FilterItem {
 
     private String name;
     private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chatroom_online.png")); // NOI18N
+    private KenaiProject project;
 
     public FilterItem() {
     }
 
-    public FilterItem(String name) {
+    public FilterItem(String name, KenaiProject project) {
         this.name = name;
+        this.project = project;
     }
 
     public String getName() {
@@ -69,19 +75,18 @@ public class FilterItem {
 
     @Override
     public String toString() {
-        try {
-            if (name == null) {
-                return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
+        if (name == null) {
+            return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
             }
-            return Kenai.getDefault().getProject(name).getDisplayName();
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return ""; // NOI18N
+        return project.getDisplayName();
     }
 
     public Icon getIcon() {
         return name == null?null:GROUP;
+    }
+
+    public KenaiProject getKenaiProject() {
+        return project;
     }
 
 }

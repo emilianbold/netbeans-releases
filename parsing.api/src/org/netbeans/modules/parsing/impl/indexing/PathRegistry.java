@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,6 +83,8 @@ public final class PathRegistry implements Runnable {
 
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
+
+    // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
 
     private final RequestProcessor.Task firerTask;
@@ -104,6 +108,7 @@ public final class PathRegistry implements Runnable {
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private  PathRegistry () {
         firerTask = firer.create(this, true);
         regs = GlobalPathRegistry.getDefault();
@@ -150,7 +155,12 @@ public final class PathRegistry implements Runnable {
             }
         } else if (definingClassPath != null) {
             List<URL> cacheRoots = new ArrayList<URL> ();
-            Collection<? extends URL> unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            Collection<? extends URL> unknownRes;
+            try {
+                unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            } catch (IllegalArgumentException iae) {
+                throw new IllegalArgumentException("Defining cp URLs: " + definingClassPath.entries(), iae); //NOI18N
+            }
             if (unknownRes.isEmpty()) {
                 return null;
             }
@@ -189,7 +199,13 @@ public final class PathRegistry implements Runnable {
                     null,
                     Collections.singleton(owner)));
         }
-        LOGGER.log(Level.FINE, "registerUnknownSourceRoots: " + Arrays.asList(roots)); // NOI18N
+        if (LOGGER.isLoggable(Level.FINE)) {
+            List<URL> l = new LinkedList<URL>();
+            for(URL r : roots) {
+                l.add(r);
+            }
+            LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
+        }
         firerTask.schedule(0);
     }
 
@@ -199,6 +215,7 @@ public final class PathRegistry implements Runnable {
             if (this.sourcePaths != null) {
                 return this.sourcePaths;
             }
+            LOGGER.fine("Computing data due to getSources"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -242,6 +259,7 @@ public final class PathRegistry implements Runnable {
             if (this.libraryPath != null) {
                 return this.libraryPath;
             }
+            LOGGER.fine("Computing data due to getLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -285,6 +303,7 @@ public final class PathRegistry implements Runnable {
             if (this.binaryLibraryPath != null) {
                 return this.binaryLibraryPath;
             }
+            LOGGER.fine("Computing data due to getBinaryLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -328,6 +347,7 @@ public final class PathRegistry implements Runnable {
             if (this.unknownSourcePath != null) {
                 return unknownSourcePath;
             }
+            LOGGER.fine("Computing data due to getUnknownRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -432,7 +452,7 @@ public final class PathRegistry implements Runnable {
        return firerTask.isFinished();
     }
 
-    public void run () {
+    public @Override void run () {
         assert firer.isRequestProcessorThread();
         long now = System.currentTimeMillis();
         try {
@@ -458,6 +478,7 @@ public final class PathRegistry implements Runnable {
             if (this.rootPathIds != null) {
                 return rootPathIds;
             }
+            LOGGER.fine("Computing data due to getRootPathIds"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -501,6 +522,7 @@ public final class PathRegistry implements Runnable {
             if (this.pathIdToRoots != null) {
                 return pathIdToRoots;
             }
+            LOGGER.fine("Computing data due to getPathIdToRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -732,7 +754,8 @@ public final class PathRegistry implements Runnable {
             this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, pathId, paths));
         }
 
-        LOGGER.log(Level.FINE, "resetCacheAndFire"); // NOI18N
+        LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
+            new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
         firerTask.schedule(0);
     }
 
@@ -788,7 +811,7 @@ public final class PathRegistry implements Runnable {
                 ids = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
                 break;
             default:
-                LOGGER.warning("Not expecting PathKind of " + kind); //NOI18N
+                LOGGER.log(Level.WARNING, "Not expecting PathKind of {0}", kind); //NOI18N
                 return Collections.<TaggedClassPath>emptySet();
         }
 
@@ -915,7 +938,7 @@ public final class PathRegistry implements Runnable {
             this.key = key;
         }
 
-        public void run () {
+        public @Override void run () {
             boolean fire = false;
             synchronized (PathRegistry.this) {
                 fire = (unknownRoots.remove (key) != null);
@@ -930,7 +953,7 @@ public final class PathRegistry implements Runnable {
 
             private WeakReference<Object> lastPropagationId;
 
-            public void pathsAdded(GlobalPathRegistryEvent event) {
+            public @Override void pathsAdded(GlobalPathRegistryEvent event) {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -942,7 +965,7 @@ public final class PathRegistry implements Runnable {
                 }
             }
 
-            public void pathsRemoved(GlobalPathRegistryEvent event) {
+            public @Override void pathsRemoved(GlobalPathRegistryEvent event) {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -954,16 +977,19 @@ public final class PathRegistry implements Runnable {
                 }
             }
 
-            public void propertyChange(PropertyChangeEvent evt) {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("propertyChange: " + evt.getPropertyName() //NOI18N
+                    String msg = "propertyChange: " + evt.getPropertyName() //NOI18N
                             + ", old=" + evt.getOldValue() //NOI18N
-                            + ", new=" + evt.getNewValue()); //NOI18N
+                            + ", new=" + evt.getNewValue() //NOI18N
+                            + ", source=" + s2s(evt.getSource()); //NOI18N
+//                    LOGGER.log(Level.FINE, null, new Throwable(msg));
+                    LOGGER.log(Level.FINE, msg);
                 }
 
                 String propName = evt.getPropertyName();
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
-                    resetCacheAndFire (EventKind.PATHS_CHANGED,null, null, Collections.singleton((ClassPath)evt.getSource()));
+                    resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
                 }
                 else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     final Object newPropagationId = evt.getPropagationId();
@@ -973,17 +999,21 @@ public final class PathRegistry implements Runnable {
                         lastPropagationId = new WeakReference<Object>(newPropagationId);
                     }
                     if (fire) {
-                        resetCacheAndFire (EventKind.PATHS_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
+                        resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
                     }
                 }
             }
 
-            public void stateChanged (final ChangeEvent event) {
+            public @Override void stateChanged (final ChangeEvent event) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("stateChanged: " + event); //NOI18N
                 }
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY_LIBRARY, null, null);
             }
+    }
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 
     private static final class TaggedClassPath {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,20 +47,24 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -75,8 +82,6 @@ public final class BugtrackingManager implements LookupListener {
     
     private static final BugtrackingManager instance = new BugtrackingManager();
 
-    private boolean initialized;
-
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
     private RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
@@ -89,32 +94,16 @@ public final class BugtrackingManager implements LookupListener {
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
      */
-    private final Lookup.Result<BugtrackingConnector> connectorsLookup;
+    private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
-
-    public class RecentIssue {
-        private Issue issue;
-        private long ts;
-        public RecentIssue(Issue issue, long ts) {
-            this.issue = issue;
-            this.ts = ts;
-        }
-        public Issue getIssue() {
-            return issue;
-        }
-        public long getTimestamp() {
-            return ts;
-        }
-    }
+    private KenaiAccessor kenaiAccessor;
 
     public static BugtrackingManager getInstance() {
-        instance.init();
         return instance;
     }
 
     private BugtrackingManager() {
-        connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
@@ -122,14 +111,11 @@ public final class BugtrackingManager implements LookupListener {
      *
      * Returns all known repositories incl. the Kenai ones
      *
+     * @param pingOpenProjects 
      * @return repositories
      */
-    public Repository[] getKnownRepositories() {
-        return getKnownRepositories(false);
-    }
-
     public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
         Repository[] otherRepos = getRepositories();
         Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
@@ -147,9 +133,7 @@ public final class BugtrackingManager implements LookupListener {
         for (BugtrackingConnector bc : conns) {
             Repository[] rs = bc.getRepositories();
             if(rs != null) {
-                for (Repository r : rs) {
-                    repos.add(r);
-                }
+                repos.addAll(Arrays.asList(rs));
             }
         }
         return repos.toArray(new Repository[repos.size()]);
@@ -159,23 +143,16 @@ public final class BugtrackingManager implements LookupListener {
         return rp;
     }
 
-    private synchronized void init() {
-        if (initialized) return;
-
-        connectorsLookup.addLookupListener(this);
-        refreshConnectors();
-
-        BugtrackingRuntime.getInstance(); // force init
-        LOG.fine("Bugtracking manager initialized"); // NOI18N
-        initialized = true;
-    }
-
     public BugtrackingConnector[] getConnectors() {
         synchronized(connectors) {
+            if(connectorsLookup == null) {
+                refreshConnectors();
+            }
             return connectors.toArray(new BugtrackingConnector[connectors.size()]);
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refreshConnectors();
     }
@@ -200,7 +177,7 @@ public final class BugtrackingManager implements LookupListener {
         }
         List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
-            l = new ArrayList<RecentIssue>();
+            l = new LinkedList<RecentIssue>();
             getRecentIssues().put(repo.getID(), l);
         }
         for (RecentIssue i : l) {
@@ -209,27 +186,30 @@ public final class BugtrackingManager implements LookupListener {
                 break;
             }
         }
-        if(l.size() == 5) {
-            l.remove(4);
-        }
         l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
         if(LOG.isLoggable(Level.FINE)) {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
             for (RecentIssue ri : l) {
-                LOG.fine(
-                        "recent issue: [" +                                     // NOI18N
-                        ri.getIssue().getRepository().getDisplayName() +
-                        ", " +                                                  // NOI18N
-                        ri.getIssue().getID() +
-                        ", " +                                                  // NOI18N
-                        f.format(new Date(ri.getTimestamp())) +
-                        "]");                                                   // NOI18N
+                LOG.log(
+                        Level.FINE,
+                        "recent issue: [{0}, {1}, {2}]",                        // NOI18N
+                        new Object[]{
+                            ri.getIssue().getRepository().getDisplayName(),
+                            ri.getIssue().getID(),
+                            f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
         }
     }
 
     public Map<String, List<RecentIssue>> getAllRecentIssues() {
         return Collections.unmodifiableMap(getRecentIssues());
+    }
+
+    public KenaiAccessor getKenaiAccessor() {
+        if (kenaiAccessor == null) {
+            kenaiAccessor = Lookup.getDefault().lookup(KenaiAccessor.class);
+        }
+        return kenaiAccessor;
     }
 
     private Map<String, List<RecentIssue>> getRecentIssues() {
@@ -240,30 +220,35 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     private void refreshConnectors() {
-        Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
-        if(LOG.isLoggable(Level.FINER)) {
-            for (BugtrackingConnector repository : conns) {
-                LOG.finer("registered provider: " + repository.getDisplayName()); // NOI18N
-            }
-        }
         synchronized (connectors) {
+            if (connectorsLookup == null) {
+                connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
+                connectorsLookup.addLookupListener(this);
+            }
+            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
+            if(LOG.isLoggable(Level.FINER)) {
+                for (BugtrackingConnector repository : conns) {
+                    LOG.log(Level.FINER, "registered provider: {0}", repository.getDisplayName()); // NOI18N
+                }
+            }
             connectors.clear();
             connectors.addAll(conns);
         }
     }
 
     private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Registry registry = WindowManager.getDefault().getRegistry();
             if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 TopComponent tc = registry.getActivated();
-                LOG.finer("activated TC : " + tc); // NOI18N
+                LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(!(tc instanceof IssueTopComponent)) {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
                 Issue issue = itc.getIssue();
-                LOG.fine("activated issue : " + issue); // NOI18N
+                LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;
                 }
@@ -271,4 +256,5 @@ public final class BugtrackingManager implements LookupListener {
             } 
         }
     }
+
 }

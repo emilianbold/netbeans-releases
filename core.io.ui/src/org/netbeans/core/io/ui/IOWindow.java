@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -145,9 +148,9 @@ public final class IOWindow implements IOContainer.Provider {
         return true;
     }
 
-    static final class IOWindowImpl extends TopComponent implements ChangeListener, PropertyChangeListener {
+    public static final class IOWindowImpl extends TopComponent implements ChangeListener, PropertyChangeListener {
 
-        static IOWindowImpl DEFAULT;
+        public static IOWindowImpl DEFAULT;
 
         static synchronized IOWindowImpl findDefault() {
             if (DEFAULT == null) {
@@ -271,7 +274,8 @@ public final class IOWindow implements IOContainer.Provider {
 
         @Override
         public void open() {
-            super.open();
+            if (!isOpened())
+		super.open();
         }
 
         @Override
@@ -285,10 +289,12 @@ public final class IOWindow implements IOContainer.Provider {
 
         @Override
         public void requestVisible() {
-            super.requestVisible();
-            if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
-                requestActive();
-            }
+            if (!isShowing()) {
+		super.requestVisible();
+		if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
+		    requestActive();
+		}
+	    }
         }
 
         boolean activated;
@@ -360,12 +366,15 @@ public final class IOWindow implements IOContainer.Provider {
         }
 
         public void selectTab(JComponent comp) {
-            if (!isOpened()) {
-                open();
-            }
-            if (!isShowing()) {
-                requestVisible();
-            }
+//	    Calls to open/requestVisible() lifted into Controller, case CMD_SELECT.
+//	    Tests pushed into this.open() and this.requestVisible().
+//
+//            if (!isOpened()) {
+//                open();
+//            }
+//            if (!isShowing()) {
+//                requestVisible();
+//            }
             if (singleTab == null) {
                 pane.setSelectedComponent(comp);
             }

@@ -51,7 +51,7 @@ public final class DataCollectorProvider {
         Collection<? extends DataCollectorFactory> result =
                 Lookup.getDefault().lookupAll(DataCollectorFactory.class);
 
-        for (DataCollectorFactory f : result) {
+        for (DataCollectorFactory<?> f : result) {
             f.reset();
         }
     }

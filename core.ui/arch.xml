@@ -580,7 +580,23 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+      <api name="netbeans.indexing.noFileRefresh" group="systemproperty" type="export" category="devel">
+        When set, no check for external file changes is performed on focus gain. Works in
+        concert with Parsing API.
+      </api>
+
+        <api category="devel" group="preferences" name="org.openide.actions.FileSystemRefreshAction.manual" type="import">
+            External changes refresh is only performed when manual refresh is off.
+            Various UI elements can also change the value of this preference setting.
+        </api>
+
+        <api category="friend" group="property" name="MSG_RefreshDelay" type="export">
+            There is <code>MSG_RefreshDelay</code> key
+            in org.netbeans.core.ui.warmup.Bundle that allows applications built
+            on top of NetBeans to customized or even suppress appearance of
+            'external changes' progress. The value is amount of ms to set as
+            initial delay to the progress handle.
+        </api>
   </p>
  </answer>
 
@@ -1031,7 +1047,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-preferences">
-    <api type="import" group="property"  name="nb.show.statistics.ui" category="private">
+    <api type="import" group="systemproperty"  name="nb.show.statistics.ui" category="private">
         System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
         If this property is non null (for IDE) UI is shown. This property contains key of preference used
         to save status - true if usage statistics are collected and uploaded, false if not.

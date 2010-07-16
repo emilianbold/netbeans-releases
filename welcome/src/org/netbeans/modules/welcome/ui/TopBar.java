@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,15 +44,13 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.util.ImageUtilities;
@@ -60,46 +61,13 @@ import org.openide.util.ImageUtilities;
  */
 class TopBar extends JPanel implements Constants {
 
-    private Image imgCenter;
-    private Image imgLeft;
-    private Image imgRight;
-    
     public TopBar() {
         super( new GridBagLayout() );
-        imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
-        imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
-        imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
-        
-        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
-
-        WebLink nbLogo = new WebLink(null, "http://www.netbeans.org", false); //NOI18N
-        Icon icon = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/nb_logo.png")); //NOI18N
+        setOpaque(false);
+        WebLink nbLogo = new WebLink(null, BundleSupport.getURL("TopBarLogo"), false); //NOI18N
+        Icon icon = new ImageIcon( ImageUtilities.loadImage(IMAGE_TOPBAR_LOGO, true));
         nbLogo.setIcon( icon );
         nbLogo.setPressedIcon( icon );
-        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
-    }
-
-    @Override
-    protected void paintBorder(Graphics g) {
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        int width = getWidth();
-        int height = getHeight();
-        
-        int centerImageWidth = imgCenter.getWidth(null);
-        int centerImageHeight = imgCenter.getHeight(null);
-        
-        int x = (width - centerImageWidth) / 2;
-        int y = Math.min( (height - centerImageHeight) / 2, 0 );
-        
-        g.drawImage(imgCenter, x, y, null);
-        if( x > 0 ) {
-            for( int i=0; i<=x; i++ ) {
-                g.drawImage(imgLeft, i, y, null);
-                g.drawImage(imgRight, width-i-1, y, null);
-            }
-        }
+        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,0,5), 0, 0));
     }
 }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -55,6 +58,9 @@ made subject to such option by the copyright holder.
         <folder name="Libraries">
             <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc"/>
+            </file>
+            <file name="spring-webmvc-3.0.xml" url="spring-webmvc-3.0.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc3"/>
             </file>
         </folder>
     </folder>
@@ -100,6 +106,34 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-springconfig+xml">
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-spring-webmvc-editor-BeanCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="107"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="xhtml">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spring-webmvc-editor-el-SpringElCompletionProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-jsp">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spring-webmvc-editor-el-SpringElCompletionProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-java">
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-spring-webmvc-editor-BeanCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="107"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,9 +67,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private static class ConcurrentFileRWAccess extends BufferedRWAccess {
        
         public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-        public final String unit;
+        public final CharSequence unit;
 
-        public ConcurrentFileRWAccess(File file, String unit) throws IOException {
+        public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
             super(file);
             this.unit = unit;
         }
@@ -74,7 +77,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
 
     private static final class Lock {}
     private final Object cacheLock = new Lock();
-    private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    private final RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
     
@@ -97,10 +100,11 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }
     
-    public static final FilesAccessStrategy getInstance() {
+    public static FilesAccessStrategy getInstance() {
         return instance;
     }
 
+    @Override
     public Persistent read(Key key) throws IOException {
         readCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
@@ -123,6 +127,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return null;
     }
 
+    @Override
     public void write(Key key, Persistent object) throws IOException {
         writeCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
@@ -161,7 +166,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 aFile = nameToFileCache.get(fileName);
                 if (aFile == null) {
                     File fileToCreate = new File(fileName);
-                    String unit = id.getUnit().toString();
+                    CharSequence unit = id.getUnit();
                     if (fileToCreate.exists()) {
                         aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                         putFile(fileName, aFile);
@@ -231,6 +236,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }    
     
+    @Override
     public void remove(Key id) throws IOException{
         
         String fileName = resolveFileName(id);
@@ -258,8 +264,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         
     }
     
-    public void closeUnit(final String unitName) throws IOException {
+    @Override
+    public void closeUnit(final CharSequence unitName) throws IOException {
         Filter<ConcurrentFileRWAccess> filter = new Filter<ConcurrentFileRWAccess>() {
+            @Override
             public boolean accept(ConcurrentFileRWAccess value) {
                 return value.unit.equals(unitName);
             }
@@ -336,7 +344,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
 
         fileName = URLEncoder.encode(fileName, Stats.ENCODING);
 
-        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit().toString()) + 
+        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
                 StorageAllocator.getInstance().reduceString(fileName);
 
         return fileName;

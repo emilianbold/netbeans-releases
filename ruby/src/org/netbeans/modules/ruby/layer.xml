@@ -145,19 +145,6 @@
       </folder>
     </folder>
 
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-ruby">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyStructureAnalyzer"/>
-                </file> 
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-ruby">

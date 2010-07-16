@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,32 +59,23 @@ public final class Main extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
-        // following code has to execute without java5 - e.g. do not use
-        // NbBundle or any other library compiled against java5 only
-        // also prevent usage of java5 methods and classes
+        // following code has to execute without java6 - e.g. do not use
+        // NbBundle or any other library compiled against java6 only
+        // also prevent usage of java6 methods and classes
         try {
-            Class.forName("java.lang.StringBuilder"); // NOI18N
+            Class.forName("java.util.ServiceLoader"); // NOI18N
         } catch (ClassNotFoundException ex) {
             JOptionPane.showMessageDialog(
                 null,
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava5"),
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava5"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava6"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava6"),
                 JOptionPane.WARNING_MESSAGE
             );
             System.exit(10);
         }
-        // end of java5 only code
+        // end of java6 only code
 
         MainImpl.main(args);
-    }
-    
-    /** Returns string describing usage of the system. Does that by talking to
-     * all registered handlers and asking them to show their usage.
-     *
-     * @return the usage string for the system
-     */
-    public static String usage () throws Exception {
-        return MainImpl.usage();
     }
         
     

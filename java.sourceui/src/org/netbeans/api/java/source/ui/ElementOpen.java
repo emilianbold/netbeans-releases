@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.openide.util.NbBundle;
 
 /** Utility class for opening elements in editor.
  *
@@ -68,6 +77,9 @@ public final class ElementOpen {
      */
     public static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el) {
         FileObject fo = SourceUtils.getFile(el, cpInfo);
+        if (fo != null && fo.isFolder()) {
+            fo = fo.getFileObject("package-info.java"); // NOI18N
+        }
         Object[] openInfo = fo != null ? getOpenInfo(fo, el) : null;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
@@ -149,13 +161,17 @@ public final class ElementOpen {
     private static final int AWT_TIMEOUT = 1000;
     private static final int NON_AWT_TIMEOUT = 2000;
 
-    private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
+    private static int getOffset(final FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         final int[]  result = new int[] {-1};
         
-        JavaSource js = JavaSource.forFileObject(fo);
+        final JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
-            Task<CompilationController> t = new Task<CompilationController>() {
-                public void run(CompilationController info) {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final Task<CompilationController> t = new Task<CompilationController>() {
+                public @Override void run(CompilationController info) throws IOException {
+                    if (cancel.get()) {
+                        return;
+                    }
                     try {
                         info.toPhase(JavaSource.Phase.RESOLVED);
                     } catch (IOException ioe) {
@@ -164,6 +180,16 @@ public final class ElementOpen {
                     Element el = handle.resolve(info);
                     if (el == null) {
                         log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        return;
+                    }
+                    
+                    if (el.getKind() == ElementKind.PACKAGE) {
+                        // FindDeclarationVisitor does not work since there is no visitPackage.
+                        // Imprecise but should usually work:
+                        Matcher m = Pattern.compile("(?m)^package (.+);$").matcher(fo.asText(/*FileEncodingQuery.getEncoding(fo).name()*/)); // NOI18N
+                        if (m.find()) {
+                            result[0] = m.start();
+                        }
                         return;
                     }
 
@@ -202,6 +228,19 @@ public final class ElementOpen {
                     log.info("Skipping location of element offset within file, Scannig in progress");
                     return 0; //we are opening @ 0 position. Fix #160478
                 }
+            } else if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        public void run() {
+                            try {
+                                js.runUserActionTask(t, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    },
+                    NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
+                    cancel,
+                    false);
             } else {
                 js.runUserActionTask(t, true);
             }

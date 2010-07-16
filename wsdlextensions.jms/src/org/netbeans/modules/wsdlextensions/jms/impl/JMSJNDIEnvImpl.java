@@ -25,6 +25,7 @@ import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
 import java.util.List;
 import java.util.Iterator;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
 
@@ -40,6 +41,10 @@ public class JMSJNDIEnvImpl extends JMSComponentImpl implements JMSJNDIEnv {
     
     public JMSJNDIEnvImpl(WSDLModel model){
         this(model, createPrefixedElement(JMSQName.JNDIENV.getQName(), model));
+    }
+    
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
     }
 
     public List<JMSJNDIEnvEntry> getJNDIEnvEntries() {

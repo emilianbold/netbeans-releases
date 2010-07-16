@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,6 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,15 +71,16 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
-@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
+@ServiceProvider(service=URLMapper.class)
 public class ArchiveURLMapper extends URLMapper {
-    private static boolean warningAlreadyReported = false;
+
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
     private static Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
 
-    public URL getURL(FileObject fo, int type) {
+    public @Override URL getURL(FileObject fo, int type) {
         assert fo != null;
         if (type == URLMapper.EXTERNAL || type == URLMapper.INTERNAL) {
             if (fo.isValid()) {
@@ -100,7 +103,7 @@ public class ArchiveURLMapper extends URLMapper {
         return null;
     }
 
-    public FileObject[] getFileObjects(URL url) {
+    public @Override FileObject[] getFileObjects(URL url) {
         assert url != null;
         String protocol  = url.getProtocol ();
         if (JAR_PROTOCOL.equals (protocol)) {
@@ -113,6 +116,7 @@ public class ArchiveURLMapper extends URLMapper {
                     try {
                         archiveFileURL = archiveFileURI.toURL();
                     } catch (IllegalArgumentException x) {
+                        ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + archiveFileURI, x);
                         return null;
                     }
                     FileObject fo = URLMapper.findFileObject (archiveFileURL);
@@ -131,14 +135,7 @@ public class ArchiveURLMapper extends URLMapper {
                         return new FileObject[] {resource};
                     }
                 } catch (IOException e) {                    
-                    // Can easily happen if the JAR file is corrupt etc,
-                    // it is better for user to log localized message than to dump stack
-                    if (warningAlreadyReported) {
-                        ModuleLayeredFileSystem.err.log(Level.INFO, null, e);
-                    } else {
-                        ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
-                        warningAlreadyReported = true;
-                    }
+                    ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + url, e);
                 }
                 catch (URISyntaxException e) {
                     Exceptions.printStackTrace(e);
@@ -159,13 +156,8 @@ public class ArchiveURLMapper extends URLMapper {
         if (reference == null || (jfs = reference.get()) == null) {
             jfs = findJarFileSystemInRepository(file);
             if (jfs == null) {
-                try {
-                    jfs = new JarFileSystem();
-                    File aRoot = FileUtil.normalizeFile(file);
-                    jfs.setJarFile(aRoot);
-                } catch (PropertyVetoException pve) {
-                    throw new AssertionError(pve);
-                }
+                File aRoot = FileUtil.normalizeFile(file);
+                jfs = new JarFileSystem(aRoot);
             }
             mountRoots.put(file, new JFSReference(jfs));
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,14 @@
 
 package org.netbeans.api.debugger;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 
-import junit.framework.Test;
 import org.netbeans.api.debugger.providers.TestActionProvider;
 import org.netbeans.api.debugger.providers.TestAttachType;
 import org.netbeans.api.debugger.providers.TestBreakpointType;
@@ -49,20 +57,28 @@ import org.netbeans.api.debugger.providers.TestColumnModel;
 import org.netbeans.api.debugger.providers.TestExtendedNodeModelFilter;
 import org.netbeans.api.debugger.providers.TestLazyActionsManagerListenerAnnotated;
 import org.netbeans.api.debugger.providers.TestLazyDebuggerManagerListenerAnnotated;
+import org.netbeans.api.debugger.providers.TestMIMETypeSensitiveActionProvider;
 import org.netbeans.api.debugger.providers.TestThreeModels;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcherManager;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 
 /**
  *
@@ -199,5 +215,211 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         assertEquals(ColumnModels.createLocalsValueColumn().getDisplayName(), list.get(2).getDisplayName());
         //assertEquals(ColumnModels.createLocalsToStringColumn().getDisplayName(), list.get(3).getDisplayName()); - was made hidden!
         }
+    }
+
+    public void testMIMETypeSensitiveActionProviders() throws Exception {
+        Lookup.MetaInf l = new Lookup.MetaInf("unittest_MIME");
+
+        List<? extends ActionsProvider> list = l.lookup(null, ActionsProvider.class);
+        assertEquals("No test action provider instance should be created yet!", 0, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+        assertInstanceOf("Wrong looked up object", list.get(0), ActionsProvider.class);
+        ActionsProvider ap = list.get(0);
+        Object action = ap.getActions().iterator().next();
+        assertEquals(TestMIMETypeSensitiveActionProvider.ACTION_OBJECT, action);
+        assertEquals("No test action provider instance should be created yet!", 0, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+        ap.isEnabled(action);
+        assertEquals("No test action provider instance should be created yet!", 0, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+        final Boolean[] actionStateChanged = new Boolean[] { null };
+        ap.addActionsProviderListener(new ActionsProviderListener() {
+            @Override
+            public void actionStateChange(Object action, boolean enabled) {
+                actionStateChanged[0] = enabled;
+            }
+        });
+        assertEquals("No test action provider instance should be created yet!", 0, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+
+        /*
+        LocalFileSystem fs = new LocalFileSystem();
+        fs.setRootDirectory(new File("/tmp"));
+        Repository.getDefault().addFileSystem(fs);
+         */
+        FileObject f = createCFile();
+        EditorContextDispatcherManager.setMostRecentFile(f);
+        Thread.sleep(500);
+        assertEquals("No test action provider instance should be created yet!", 0, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+
+        f = createJavaFile();
+        EditorContextDispatcherManager.setMostRecentFile(f);
+        Thread.sleep(500);
+        assertEquals("One test action provider instance should be created!", 1, TestMIMETypeSensitiveActionProvider.INSTANCES.size());
+
+    }
+
+    private static FileObject createCFile() throws IOException {
+        /* Creates FileObject with unknown content type without full IDE
+        File file = File.createTempFile("Foo", ".c");
+        FileWriter fw = new FileWriter(file);
+        fw.append("#include <stdio.h>\n\nmain() {\n  printf(\"Hi there!\");\n}\n");
+        fw.flush();
+        fw.close();
+        fs.refresh(true);
+        return FileUtil.toFileObject(file);
+         */
+        return new FileObjectWithMIMEType("text/x-c");
+    }
+    
+    private static FileObject createJavaFile() throws IOException {
+        /* Creates FileObject with unknown content type without full IDE
+        File file = File.createTempFile("Foo", ".java");
+        FileWriter fw = new FileWriter(file);
+        fw.append("\nmain(String[] args) {\n  System.out.println(\"Hi there!\");\n}\n");
+        fw.flush();
+        fw.close();
+        fs.refresh(true);
+        return FileUtil.toFileObject(file);
+         */
+        return new FileObjectWithMIMEType("text/x-java");
+    }
+
+    /** Test FileObject implementation that provides a given MIME type */
+    private static class FileObjectWithMIMEType extends FileObject {
+
+        private String MIMEType;
+
+        public FileObjectWithMIMEType(String MIMEType) {
+            this.MIMEType = MIMEType;
+        }
+
+        @Override
+        public String getMIMEType() {
+            return MIMEType;
+        }
+
+        @Override
+        public String getName() {
+            return "Test Name";
+        }
+
+        @Override
+        public String getExt() {
+            return "Test ext.";
+        }
+
+        @Override
+        public void rename(FileLock lock, String name, String ext) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public FileSystem getFileSystem() throws FileStateInvalidException {
+            return new LocalFileSystem();
+        }
+
+        @Override
+        public FileObject getParent() {
+            return null;
+        }
+
+        @Override
+        public boolean isFolder() {
+            return false;
+        }
+
+        @Override
+        public Date lastModified() {
+            return new Date();
+        }
+
+        @Override
+        public boolean isRoot() {
+            return false;
+        }
+
+        @Override
+        public boolean isData() {
+            return true;
+        }
+
+        @Override
+        public boolean isValid() {
+            return true;
+        }
+
+        @Override
+        public void delete(FileLock lock) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public Object getAttribute(String attrName) {
+            return null;
+        }
+
+        @Override
+        public void setAttribute(String attrName, Object value) throws IOException {
+        }
+
+        @Override
+        public Enumeration<String> getAttributes() {
+            return null;
+        }
+
+        @Override
+        public void addFileChangeListener(FileChangeListener fcl) {
+        }
+
+        @Override
+        public void removeFileChangeListener(FileChangeListener fcl) {
+        }
+
+        @Override
+        public long getSize() {
+            return 1000;
+        }
+
+        @Override
+        public InputStream getInputStream() throws FileNotFoundException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public OutputStream getOutputStream(FileLock lock) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public FileLock lock() throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public void setImportant(boolean b) {
+        }
+
+        @Override
+        public FileObject[] getChildren() {
+            return new FileObject[] {};
+        }
+
+        @Override
+        public FileObject getFileObject(String name, String ext) {
+            return null;
+        }
+
+        @Override
+        public FileObject createFolder(String name) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public FileObject createData(String name, String ext) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+        
     }
 }

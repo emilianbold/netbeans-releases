@@ -4,6 +4,7 @@ import com.lowagie.text.BadElementException;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,6 +26,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import com.lowagie.text.Chapter;
+import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -40,6 +42,7 @@ import org.netbeans.modules.reportgenerator.api.ReportCustomizationOptions;
 import org.netbeans.modules.reportgenerator.generator.ReportGeneratorFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 
 public class PDFReportGenerator implements ReportGenerator {
 
@@ -107,19 +110,36 @@ public class PDFReportGenerator implements ReportGenerator {
 			mDocument.add(sTitle);
 //			
 			//add a gap
-			Paragraph gap = new Paragraph("     ");
-			mDocument.add(gap);
+//			Paragraph gap = new Paragraph("     ");
+//			mDocument.add(gap);
+            mDocument.add(Chunk.NEWLINE);
 			
-			
-			
+          
 		}
 		//we add a paragraph to the document
-		mDocument.add(new Paragraph(report.getDescription()));
-		
+        Paragraph description = new Paragraph(report.getDescription()); 
+		mDocument.add(description);
+		mDocument.add(Chunk.NEWLINE);
+        
 		Image image = report.getOverviewImage();
-		if(image != null) {
-			com.lowagie.text.Image png = com.lowagie.text.Image.getInstance(image, null);
-			mDocument.add(png);
+        if(image != null) {
+            
+            //if image width is greater than width of pdf document
+            //split images width wise and add all of them
+            //this is to avoid image cut off
+            int imageWidth = image.getWidth(null);
+            int imageHeight = image.getHeight(null);
+            float docWidth =  mDocument.getPageSize().getWidth();
+            float docHeight = mDocument.getPageSize().getHeight();
+            
+            if(imageWidth > docWidth || imageHeight > docHeight) {
+                processOverviewImage(image, imageWidth, imageHeight, docWidth, docHeight);
+            } else {
+                processOverviewImage(image);
+            }
+            
+            //add a new page
+            mDocument.newPage();
 		}
 		
                 boolean generateVerboseReport = this.mOptions.isGenerateVerboseReport();
@@ -152,8 +172,9 @@ public class PDFReportGenerator implements ReportGenerator {
 		List<ReportAttribute> attrs = report.getAttributes();
 		if(attrs.size() > 0) {
 			//add a gap
-			Paragraph gap = new Paragraph("     ");
-			mDocument.add(gap);
+//			Paragraph gap = new Paragraph("     ");
+//			mDocument.add(gap);
+            mDocument.add(Chunk.NEWLINE);
 			
 			float[] widths = {2f, 4f};
 			PdfPTable table = new PdfPTable(widths);
@@ -256,8 +277,9 @@ public class PDFReportGenerator implements ReportGenerator {
 		
 		Paragraph sTitle = new Paragraph(name, sectionFont);
 		section = chapter.addSection(sTitle, 2);
-        Paragraph gap1 = new Paragraph("     ");
-		section.add(gap1);
+//        Paragraph gap1 = new Paragraph("     ");
+//		section.add(gap1);
+        section.add(Chunk.NEWLINE);
 		section.setIndentationLeft(20);
 		
 		if(description != null) {
@@ -265,9 +287,9 @@ public class PDFReportGenerator implements ReportGenerator {
 			section.add(desPara);
 			
 			//add a gap
-			Paragraph gap2 = new Paragraph("     ");
-			section.add(gap2);
-			
+//			Paragraph gap2 = new Paragraph("     ");
+//			section.add(gap2);
+            section.add(Chunk.NEWLINE);
 		}
 		
 		if(image != null) {
@@ -340,8 +362,9 @@ public class PDFReportGenerator implements ReportGenerator {
                     section.add(table);
                 }
                 
-		Paragraph gap = new Paragraph("     ");
-		section.add(gap);
+//		Paragraph gap = new Paragraph("     ");
+//		section.add(gap);
+        section.add(Chunk.NEWLINE);
                 
 		
 	}
@@ -370,6 +393,131 @@ public class PDFReportGenerator implements ReportGenerator {
 	private void generateFooter(ReportFooter footer) throws DocumentException {
 		mDocument.add(new Paragraph(footer.getDescription()));
 	}
-
 	
+    private void processOverviewImageWidth(Image image, 
+            int imageWidth, 
+            int imageHeight, 
+            float docWidth, 
+            float docHeight) throws DocumentException, IOException  {
+        
+        BufferedImage bufImage = null;
+        if(image instanceof BufferedImage) {
+            bufImage = (BufferedImage) image;
+            int x = 0;
+            int y = 0;
+            int w = imageWidth > (int) docWidth ? (int) docWidth : imageWidth;
+            int h = imageHeight > (int) docHeight ? (int) docHeight : imageHeight;
+            
+            
+            boolean endLoop = false;
+            
+            while(true) {
+                BufferedImage bImage = bufImage.getSubimage(x, y, w, h);
+                com.lowagie.text.Image png = com.lowagie.text.Image.getInstance(bImage, null);
+                mDocument.add(png);
+                
+//              add a gap
+                mDocument.add(Chunk.NEWLINE);
+                
+                if(endLoop) {
+                    break;
+                }
+                
+                
+                //increment x by w
+                x = x + w;
+                
+                //now check if new x plus w is still withing imageWidth
+                //if it is outside imageWidth then this is final iteration
+                //and we need to adjust width
+                if(x+w > imageWidth) {
+                    w = imageWidth -x;
+                    endLoop = true;
+                } 
+            }
+            
+        }
+    }
+
+    
+    private void processOverviewImageHeight(Image image, 
+            int imageWidth, 
+            int imageHeight, 
+            float docWidth, 
+            float docHeight,
+            int initialY) throws DocumentException, IOException  {
+        
+        BufferedImage bufImage = null;
+        if(image instanceof BufferedImage) {
+            bufImage = (BufferedImage) image;
+            int x = 0;
+            int y = initialY;
+//            int w = (int) imageWidth;
+//            int h = (int) docHeight;
+            int w = imageWidth > (int) docWidth ? (int) docWidth : imageWidth;
+            int h = imageHeight > (int) docHeight ? (int) docHeight : imageHeight;
+            
+            
+            boolean endLoop = false;
+            
+            while(true) {
+                //now check if new y plus h is still withing imageHeight
+                //if it is outside imageHeight then this is final iteration
+                //and we need to adjust height
+                if(y+h > imageHeight) {
+                    h = imageHeight -y;
+                    endLoop = true;
+                } 
+                
+                BufferedImage bImage = bufImage.getSubimage(x, y, w, h);
+                com.lowagie.text.Image png = com.lowagie.text.Image.getInstance(bImage, null);
+                mDocument.add(png);
+                
+                if(endLoop) {
+                    break;
+                }
+                
+                
+                //increment y by h
+                y = y + h;
+                
+//              add a gap
+                mDocument.add(Chunk.NEWLINE);
+                
+            }
+            
+        }
+    }
+
+    private void processOverviewImage(Image image, 
+                                      int imageWidth, 
+                                      int imageHeight, 
+                                      float docWidth, 
+                                      float docHeight) throws DocumentException, IOException {
+        if(image instanceof BufferedImage) {
+            //we first divide image width wise and store in pdf
+            //then go height wise and store in pdf
+            int initialY = 0;
+            
+            if(imageWidth > docWidth) {
+                processOverviewImageWidth(image, imageWidth, imageHeight, docWidth, docHeight);
+                initialY = (int) docHeight;
+            }
+            
+            if(imageHeight > docHeight) {
+                processOverviewImageHeight(image, imageWidth, imageHeight, docWidth, docHeight, initialY);
+            } 
+        } else {
+            //TODO: at some point we need to handle this
+            //if image is not BufferedImage then need to conver it to 
+            //BufferedImage. for now use old behaviour where image gets cut off
+            processOverviewImage(image);
+        }
+        
+    }
+	
+    private void processOverviewImage(Image image)throws DocumentException, IOException {
+        com.lowagie.text.Image png = com.lowagie.text.Image.getInstance(image, null);
+        mDocument.add(png);
+    }
 }

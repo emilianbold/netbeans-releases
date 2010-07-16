@@ -18,13 +18,10 @@
  */
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
-import java.util.List;
 
 import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSMessage;
-import org.netbeans.modules.wsdlextensions.jms.JMSProperties;
-import org.netbeans.modules.wsdlextensions.jms.JMSMapMessage;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
@@ -41,7 +38,11 @@ public class JMSMessageImpl extends JMSComponentImpl implements JMSMessage {
     public JMSMessageImpl(WSDLModel model){
         this(model, createPrefixedElement(JMSQName.MESSAGE.getQName(), model));
     }
-        
+
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }    
+    
     public String getMessageType() {
         return getAttribute(JMSAttribute.JMS_MESSAGE_MESSAGE_TYPE);        
     }
@@ -72,6 +73,16 @@ public class JMSMessageImpl extends JMSComponentImpl implements JMSMessage {
                      val);                
     }
     
+    public String getBytesPart() {
+        return getAttribute(JMSAttribute.JMS_MESSAGE_BYTESPART);        
+    }
+    
+    public void setBytesPart(String val) {
+        setAttribute(JMSMessage.ATTR_BYTES_PART, 
+                     JMSAttribute.JMS_MESSAGE_BYTESPART,
+                     val);                
+    }
+
     public String getCorrelationIdPart() {
         return getAttribute(JMSAttribute.JMS_MESSAGE_CORRELATION_ID_PART);        
     }
@@ -151,5 +162,13 @@ public class JMSMessageImpl extends JMSComponentImpl implements JMSMessage {
     public String getJMSEncodingStyle() {
         return getAttribute(JMSAttribute.JMS_MESSAGE_ENCODING_STYLE);        
     }
+
+    public void setForwardAsAttachment(boolean b) {
+        setAttribute(JMSMessage.ATTR_FORWARD_AS_ATTACHMENT, JMSAttribute.JMS_MESSAGE_FORWARD_AS_ATTACHMENT, b? "true" : "false");
+    }     
     
+    public boolean getForwardAsAttachment() {
+        String s = getAttribute(JMSAttribute.JMS_MESSAGE_FORWARD_AS_ATTACHMENT);
+        return s != null && s.equals("true");
+    }    
 }

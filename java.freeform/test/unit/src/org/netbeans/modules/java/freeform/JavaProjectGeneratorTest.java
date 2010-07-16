@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -77,6 +80,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
 
 /**
  * Tests for JavaProjectGenerator.
@@ -212,25 +216,25 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // check that all elements are written in expected order
         
         Element el = Util.getPrimaryConfigurationData(helper);
-        List subElements = Util.findSubElements(el);
+        List subElements = XMLUtil.findSubElements(el);
         assertEquals(7, subElements.size());
         assertElementArray(subElements, 
             new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}, 
             new String[]{null, null, null, null, null, null, null});
         Element el2 = (Element)subElements.get(5);
-        subElements = Util.findSubElements(el2);
+        subElements = XMLUtil.findSubElements(el2);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"items", "context-menu"}, 
             new String[]{null, null});
         Element el3 = (Element)subElements.get(0);
-        List subEls = Util.findSubElements(el3);
+        List subEls = XMLUtil.findSubElements(el3);
         assertEquals(2, subEls.size());
         assertElementArray(subEls, 
             new String[]{"source-folder", "source-file"}, 
             new String[]{null, null});
         el3 = (Element)subElements.get(1);
-        subEls = Util.findSubElements(el3);
+        subEls = XMLUtil.findSubElements(el3);
         assertEquals(2, subEls.size());
         assertElementArray(subEls, 
             new String[]{"ide-action", "action"}, 
@@ -259,25 +263,25 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(7, subElements.size());
         assertElementArray(subElements, 
             new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}, 
             new String[]{null, null, null, null, null, null, null});
         el2 = (Element)subElements.get(5);
-        subElements = Util.findSubElements(el2);
+        subElements = XMLUtil.findSubElements(el2);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"items", "context-menu"}, 
             new String[]{null, null});
         el3 = (Element)subElements.get(0);
-        subEls = Util.findSubElements(el3);
+        subEls = XMLUtil.findSubElements(el3);
         assertEquals(2, subEls.size());
         assertElementArray(subEls, 
             new String[]{"source-folder", "source-file"}, 
             new String[]{null, null});
         el3 = (Element)subElements.get(1);
-        subEls = Util.findSubElements(el3);
+        subEls = XMLUtil.findSubElements(el3);
         assertEquals(2, subEls.size());
         assertElementArray(subEls, 
             new String[]{"ide-action", "action"}, 
@@ -296,7 +300,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         String message = "Element "+element+" does not match [name="+expectedName+",value="+expectedValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
     }
 
@@ -324,7 +328,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             expectedValue+", attr="+expectedAttrName+", attrvalue="+expectedAttrValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
         String val = element.getAttribute(expectedAttrName);
         assertEquals(expectedAttrValue, val);
@@ -434,14 +438,14 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         JavaProjectGenerator.putSourceFolders(helper, folders, null);
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "folders", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("Source folders were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first source folder
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "source-folder", null);
-        List l1 = Util.findSubElements(el2);
+        List l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
@@ -449,7 +453,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second source folder
         el2 = (Element)subElements.get(1);
         assertElement(el2, "source-folder", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
@@ -467,14 +471,14 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         JavaProjectGenerator.putSourceFolders(helper, folders, "type2");
         ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "folders", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("Source folders were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first source folder
         el2 = (Element)subElements.get(0);
         assertElement(el2, "source-folder", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
@@ -482,7 +486,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second source folder
         el2 = (Element)subElements.get(1);
         assertElement(el2, "source-folder", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
@@ -490,6 +494,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         ProjectManager.getDefault().saveAllProjects();
     }
 
+    @RandomlyFails // NB-Core-Build #3877: There must be two subnodes in logical view expected:<2> but was:<1>
     public void testSourceViews() throws Exception {
         AntProjectHelper helper = createEmptyProject("proj6", "proj-6", true);
         FileObject base = helper.getProjectDirectory();
@@ -581,17 +586,17 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         JavaProjectGenerator.putSourceViews(helper, folders, null);
         ProjectManager.getDefault().saveAllProjects();
         Element el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "view", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
-        el = Util.findElement(el, "items", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "items", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List subElements = XMLUtil.findSubElements(el);
         // there will be three sublements: <source-file> is added for build.xml during project.creation
         assertEquals(3, subElements.size());
         // compare first source view
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "source-folder", null, "style", "tree");
-        List l1 = Util.findSubElements(el2);
+        List l1 = XMLUtil.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
@@ -599,7 +604,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second source view
         el2 = (Element)subElements.get(1);
         assertElement(el2, "source-folder", null, "style", "packages");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
@@ -617,17 +622,17 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         JavaProjectGenerator.putSourceViews(helper, folders, "packages");
         ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "view", Util.NAMESPACE);
         assertNotNull("Source views were not saved correctly",  el);
-        el = Util.findElement(el, "items", Util.NAMESPACE);
+        el = XMLUtil.findElement(el, "items", Util.NAMESPACE);
         assertNotNull("View folders were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         // there will be three sublements: <source-file> is added for build.xml during project.creation
         assertEquals("3 elements in " + subElements, 3, subElements.size());
         // compare first source view
         el2 = (Element)subElements.get(0);
         assertElement(el2, "source-folder", null, "style", "tree");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
@@ -635,7 +640,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second source view
         el2 = (Element)subElements.get(1);
         assertElement(el2, "source-folder", null, "style", "packages");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
@@ -757,12 +762,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were not saved correctly",  el);
-        List subElements = Util.findSubElements(el);
+        List subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first compilation unit
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "compilation-unit", null);
-        List l1 = Util.findSubElements(el2);
+        List l1 = XMLUtil.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"package-root", "package-root", "classpath", "classpath", "built-to", "built-to", "source-level"}, 
@@ -774,7 +779,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second compilation unit
         el2 = (Element)subElements.get(1);
         assertElement(el2, "compilation-unit", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"package-root", "package-root", "classpath", "classpath", "built-to", "built-to", "source-level"}, 
@@ -796,12 +801,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
 //        ProjectManager.getDefault().saveAllProjects();
         el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare first compilation unit
         el2 = (Element)subElements.get(0);
         assertElement(el2, "compilation-unit", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(1, l1.size());
         assertElementArray(l1, 
             new String[]{"package-root"}, 
@@ -826,12 +831,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // Check that the correct /1 data was saved.
         Element el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were saved in /1",  el);
-        List<Element> subElements = Util.findSubElements(el);
+        List<Element> subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the compilation unit
         Element el2 = (Element) subElements.get(0);
         assertElement(el2, "compilation-unit", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"package-root"},
             new String[] {"pkgroot1"});
         ProjectManager.getDefault().saveAllProjects();
@@ -848,12 +853,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNull("No /1 data", el);
         el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         assertNotNull("Have /2 data", el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the compilation unit
         el2 = (Element) subElements.get(0);
         assertElement(el2, "compilation-unit", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"package-root", "unit-tests"},
             new String[] {"pkgroot1", null});
         ProjectManager.getDefault().saveAllProjects();
@@ -873,12 +878,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNull("No /1 data", el);
         el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         assertNotNull("Have /2 data", el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the compilation unit
         el2 = (Element) subElements.get(0);
         assertElement(el2, "compilation-unit", null);
-        assertElementArray(Util.findSubElements(el2),
+        assertElementArray(XMLUtil.findSubElements(el2),
             new String[] {"package-root", "javadoc-built-to", "javadoc-built-to"},
             new String[] {"pkgroot1", "javadoc1", "javadoc2"});
         ProjectManager.getDefault().saveAllProjects();
@@ -999,7 +1004,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         JavaProjectGenerator.putExports(helper, exports);
         Element el = Util.getPrimaryConfigurationData(helper);
-        List subElements = Util.findSubElements(el);
+        List subElements = XMLUtil.findSubElements(el);
         // 4, i.e. name, two exports and one view of build.xml file
         assertEquals(5, subElements.size());
         // compare first compilation unit
@@ -1009,7 +1014,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "properties", null);
         el2 = (Element)subElements.get(2);
         assertElement(el2, "export", null);
-        List l1 = Util.findSubElements(el2);
+        List l1 = XMLUtil.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "script", "build-target", "clean-target"}, 
@@ -1017,7 +1022,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // compare second compilation unit
         el2 = (Element)subElements.get(3);
         assertElement(el2, "export", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "build-target"}, 
@@ -1037,7 +1042,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         JavaProjectGenerator.putExports(helper, exports);
         el = Util.getPrimaryConfigurationData(helper);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         // 3, i.e. name, export and one view of build.xml file
         assertEquals(4, subElements.size());
         // compare first compilation unit
@@ -1047,7 +1052,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "properties", null);
         el2 = (Element)subElements.get(2);
         assertElement(el2, "export", null);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(3, l1.size());
         assertElementArray(l1, 
             new String[]{"type", "location", "build-target"}, 
@@ -1122,9 +1127,9 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         JavaProjectGenerator.putSubprojects(helper, subprojects);
         Element el = Util.getPrimaryConfigurationData(helper);
-        Element subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
+        Element subprojectsEl = XMLUtil.findElement(el, "subprojects", Util.NAMESPACE);
         assertNotNull("<subprojects> element exists", subprojectsEl);
-        List subElements = Util.findSubElements(subprojectsEl);
+        List subElements = XMLUtil.findSubElements(subprojectsEl);
         assertEquals("project depends on two subprojects", 2, subElements.size());
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "project", "/some/path/projA");
@@ -1139,16 +1144,16 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subprojects.add("/projC");
         JavaProjectGenerator.putSubprojects(helper, subprojects);
         el = Util.getPrimaryConfigurationData(helper);
-        subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
-        subElements = Util.findSubElements(subprojectsEl);
+        subprojectsEl = XMLUtil.findElement(el, "subprojects", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(subprojectsEl);
         assertEquals("project depends on one subproject", 1, subElements.size());
         el2 = (Element)subElements.get(0);
         assertElement(el2, "project", "/projC");
         subprojects = new ArrayList();
         JavaProjectGenerator.putSubprojects(helper, subprojects);
         el = Util.getPrimaryConfigurationData(helper);
-        subprojectsEl = Util.findElement(el, "subprojects", Util.NAMESPACE);
-        subElements = Util.findSubElements(subprojectsEl);
+        subprojectsEl = XMLUtil.findElement(el, "subprojects", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(subprojectsEl);
         assertEquals("project depends on one subproject", 0, subElements.size());
         
         ProjectManager.getDefault().saveAllProjects();
@@ -1211,18 +1216,18 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
         Element el = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
+        Element foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("<folders> element exists", foldersEl);
-        List subElements = Util.findSubElements(foldersEl);
+        List subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has two build-folders", 2, subElements.size());
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "build-folder", null);
-        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/some/path/projA");
+        assertEquals("build-folder has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "/some/path/projA");
         el2 = (Element)subElements.get(1);
         assertElement(el2, "build-folder", null);
-        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB");
+        assertEquals("build-folder has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "C:\\dev\\projB");
         
         ProjectManager.getDefault().saveAllProjects();
         
@@ -1232,18 +1237,18 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         buildFolders.add("/projC");
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
         el = Util.getPrimaryConfigurationData(helper);
-        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
-        subElements = Util.findSubElements(foldersEl);
+        foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has one build-folder", 1, subElements.size());
         el2 = (Element)subElements.get(0);
         assertElement(el2, "build-folder", null);
-        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/projC");
+        assertEquals("build-folder has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "/projC");
         buildFolders = new ArrayList();
         JavaProjectGenerator.putBuildFolders(helper, buildFolders);
         el = Util.getPrimaryConfigurationData(helper);
-        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
-        subElements = Util.findSubElements(foldersEl);
+        foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has no build-folder", 0, subElements.size());
         
         ProjectManager.getDefault().saveAllProjects();
@@ -1263,18 +1268,18 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         JavaProjectGenerator.putBuildFiles(helper, buildFiles);
         Element el = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
+        Element foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
         assertNotNull("<folders> element exists", foldersEl);
-        List subElements = Util.findSubElements(foldersEl);
+        List subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has two build-files", 2, subElements.size());
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "build-file", null);
-        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/some/path/projA/archive.jar");
+        assertEquals("build-file has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "/some/path/projA/archive.jar");
         el2 = (Element)subElements.get(1);
         assertElement(el2, "build-file", null);
-        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB\\library.jar");
+        assertEquals("build-file has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "C:\\dev\\projB\\library.jar");
         
         ProjectManager.getDefault().saveAllProjects();
         
@@ -1283,19 +1288,19 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         buildFiles.add("/projC/dist/projC.jar");
         JavaProjectGenerator.putBuildFiles(helper, buildFiles);
         el = Util.getPrimaryConfigurationData(helper);
-        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
-        subElements = Util.findSubElements(foldersEl);
+        foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has one build-file", 1, subElements.size());
         el2 = (Element)subElements.get(0);
         assertElement(el2, "build-file", null);
-        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
-        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/projC/dist/projC.jar");
+        assertEquals("build-file has one subelement", 1, XMLUtil.findSubElements(el2).size());
+        assertElement((Element)XMLUtil.findSubElements(el2).get(0), "location", "/projC/dist/projC.jar");
         
         buildFiles = new ArrayList();
         JavaProjectGenerator.putBuildFiles(helper, buildFiles);
         el = Util.getPrimaryConfigurationData(helper);
-        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
-        subElements = Util.findSubElements(foldersEl);
+        foldersEl = XMLUtil.findElement(el, "folders", Util.NAMESPACE);
+        subElements = XMLUtil.findSubElements(foldersEl);
         assertEquals("project has no build-file", 0, subElements.size());
         
         ProjectManager.getDefault().saveAllProjects();

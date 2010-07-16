@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,19 +44,21 @@ package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -68,8 +73,8 @@ import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
+import org.openide.util.ImageUtilities;
 
 /**
  * Main entry point to Kenai integration.
@@ -77,7 +82,7 @@ import org.openide.util.NbPreferences;
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public final class Kenai {
+public final class Kenai implements Comparable<Kenai> {
 
     /**
      * fired when user logs in/out
@@ -86,6 +91,9 @@ public final class Kenai {
      */
     public static final String PROP_LOGIN = "login";
 
+    /**
+     * fired when user logs int xmpp server
+     */
     public static final String PROP_XMPP_LOGIN = "xmpp_login";
 
     /**
@@ -104,47 +112,59 @@ public final class Kenai {
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
 
+    /**
+     * fired when log into xmpp failed
+     */
     public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed";
 
+    /**
+     * never fired
+     */
+    @Deprecated
     public static final String PROP_URL_CHANGED = "url";
 
-    private static Kenai instance;
     private PasswordAuthentication auth = null;
     private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
-    private static Preferences prefs = NbPreferences.forModule(Kenai.class);
-    private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
-    private static final String INSTANCES_PREF="kenai.instances";
 
+    /**
+     * users cache <name, instance>
+     */
+    final HashMap<String, KenaiUser> users = new HashMap();
 
+    /**
+     * online users
+     */
+    final HashSet<String> onlineUsers = new HashSet<String>();
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     /**
-     * Singleton instance of Kenai
-     * @return singleton instance
+     * This method is deprecated and will be removed
+     * Kenai is not singleton any more. Use {@link KenaiManager} instead.
+     * @deprecated
+     * @return instance of Kenai representing https://kenai.com
      */
+    @Deprecated
      public static synchronized Kenai getDefault() {
-        if (instance == null) {
-            try {
-                String urlString = prefs.get(DEFAULT_INSTANCE_PREF, "https://kenai.com/");
-                urlString = System.getProperty("kenai.com.url", urlString);
-                assert urlString.startsWith("https://"):"the only supported protocol is https";
-                if (urlString.endsWith("/")) {
-                    urlString = urlString.substring(0, urlString.length()-1);
-                }
-                URL url = new URL(urlString);
-                KenaiImpl impl = new KenaiREST(url);
-                instance = new Kenai(impl);
-            } catch (MalformedURLException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        return instance;
+        new Throwable("Kenai.getDefault() is deprecated. See http://wiki.netbeans.org/ParallelKenais").printStackTrace();
+        return KenaiManager.getDefault().getKenai("https://kenai.com");
     }
+
+     static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
+         assert urlString.startsWith("https://") : "the only supported protocol is https";
+         if (urlString.endsWith("/")) {
+             urlString = urlString.substring(0, urlString.length() - 1);
+         }
+         URL url = new URL(urlString);
+         KenaiImpl impl = new KenaiREST(url);
+         Kenai k = new Kenai(impl);
+         k.name = name;
+         return k;
+     }
 
     /**
      * url of kenai.com instance
@@ -154,42 +174,66 @@ public final class Kenai {
         return impl.getUrl();
     }
 
-    public void setUrl(URL url) {
-        try {
-            if (impl.getUrl().toURI().equals(url.toURI())) {
-                return;
+    private Icon icon;
+    public Icon getIcon() {
+        //hardcoded icons
+        //temporary solution for
+        //http://kenai.com/jira/browse/KENAI-1761
+        if (icon == null) {
+            if (getUrl().getHost().contains("netbeans.org")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/netbeans-small.png", false);
+            } else if (getUrl().getHost().contains("testkenai.com")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/testkenai-small.png", false);
+            } else if (getUrl().getHost().contains("odftoolkit.org")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/odftoolkit-small.png", false);
+            } else if (getUrl().getHost().contains("java.net")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/javanet.png", false);
+            } else {
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/kenai-small.png", false);
             }
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        if (getStatus()!=Status.OFFLINE) {
-            logout(true);
-        }
-        URL old = impl.getUrl();
-        synchronized (Kenai.class) {
-            impl = new KenaiREST(url);
-        }
-        prefs.put(DEFAULT_INSTANCE_PREF, url.toString());
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, null, impl.getUrl()));
+        return icon;
+//        if (icon==null) {
+//            //assert !SwingUtilities.isEventDispatchThread();
+//            try {
+//                URL url = new URL("http://" + getUrl().getHost() + "/favicon.ico");
+//                icon = new ImageIcon(url);
+//            } catch (IOException ex) {
+//                icon = new ImageIcon();
+//            }
+//        }
+//        return icon;
+
     }
 
+//    public void setUrl(URL url) {
+//        try {
+//            if (impl.getUrl().toURI().equals(url.toURI())) {
+//                return;
+//            }
+//        } catch (URISyntaxException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        if (getStatus()!=Status.OFFLINE) {
+//            logout(true);
+//        }
+//        URL old = impl.getUrl();
+//        synchronized (Kenai.class) {
+//            impl = new KenaiREST(url);
+//        }
+//        prefs.put(DEFAULT_INSTANCE_PREF, url.toString());
+//        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, null, impl.getUrl()));
+//    }
+
+    private String name;
     /**
      * name of this kenai instance
      * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
      */
     public String getName() {
-        String s = prefs.get(INSTANCES_PREF, "");//NOI18N
-        if (s.length() > 1) {
-            for (String inst : s.split(";")) { // NOI18N
-                if (inst.length()>0) {
-                    String[] pair = inst.split(","); // NOI18N
-                    if (inst.split(",")[0].equals(getUrl().toString())) {// NOI18N
-                        return pair[1];
-                    }
-                }
-            }
+        if (name!=null) {
+            return name;
         }
-
         return getUrl().toString().substring("https://".length());// NOI18N
     }
 
@@ -235,7 +279,7 @@ public final class Kenai {
             }
         }
         PasswordAuthentication old = auth;
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
+        firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
         try {
             synchronized (this) {
                 String shortName = impl.verify(username, password);
@@ -245,10 +289,15 @@ public final class Kenai {
                     xmppConnect();
             }
         } catch (KenaiException ke) {
-            propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
+            firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
             throw ke;
         }
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+    }
+
+    private void firePropertyChange(PropertyChangeEvent event) {
+        propertyChangeSupport.firePropertyChange(event);
+        KenaiManager.getDefault().propertyChangeSupport.firePropertyChange(event);
     }
 
     /**
@@ -282,7 +331,7 @@ public final class Kenai {
         if (setPropId) {
             propertyChangeEvent.setPropagationId(PROP_URL_CHANGED);
         }
-        propertyChangeSupport.firePropertyChange(propertyChangeEvent);
+        firePropertyChange(propertyChangeEvent);
     }
 
     /**
@@ -339,12 +388,12 @@ public final class Kenai {
      * @throws KenaiException
      */
     public Collection<KenaiProject> searchProjects(String pattern) throws KenaiException {
-        Collection<ProjectData> prjs = impl.searchProjects(pattern);
+        Collection<ProjectData> prjs = impl.searchProjects(pattern, auth);
         return new LazyCollection(prjs);
     }
 
     Collection<KenaiProjectMember> getProjectMembers(String name) throws KenaiException {
-        Collection<UserData> usrs = impl.getProjectMembers(name);
+        Collection<UserData> usrs = impl.getProjectMembers(name, auth);
         return new LazyCollection(usrs);
     }
 
@@ -383,7 +432,7 @@ public final class Kenai {
         if (forceServerReload) {
             return _getProject(name);
         } else {
-            KenaiProject result = KenaiProject.get(name);
+            KenaiProject result = KenaiProject.get(this, name);
             if (result!=null) {
                 return result;
             }
@@ -405,7 +454,7 @@ public final class Kenai {
 
 
     ProjectData getDetails(String name) throws KenaiException {
-        return impl.getProject(name);
+        return impl.getProject(name, auth);
     }
 
     /**
@@ -429,24 +478,13 @@ public final class Kenai {
         if (auth.getUserName()== null) {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
-        ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
-        final KenaiProject result = KenaiProject.get(prj);
+        ProjectData prj = impl.createProject(name, displayName, description, licenses, tags, auth);
+        final KenaiProject result = KenaiProject.get(this, prj);
         synchronized(this) {
             if (myProjects!=null)
                 myProjects.add(result);
         }
         return result;
-    }
-
-    void joinProject(KenaiProject project) throws KenaiException {
-        if (getStatus()==Status.OFFLINE) {
-            throw new KenaiException("Cannot join project. You must be logged in");
-        }
-        impl.joinProject(project.getName(), auth.getUserName());
-        synchronized(this) {
-            if (myProjects!=null)
-                myProjects.add(project);
-        }
     }
 
     /**
@@ -483,11 +521,19 @@ public final class Kenai {
                 url,
                 repository_url,
                 browse_url,
-                service);
+                service,
+                auth);
         return new KenaiFeature(prj);
     }
 
-    String checkName(String name) throws KenaiException {
+
+    /**
+     * Checks weather proposed name is unique and valid
+     * @param name proposed name
+     * @return Error message or null, if name is valid
+     * @throws org.netbeans.modules.kenai.api.KenaiException
+     */
+    public String checkProjectName(String name) throws KenaiException {
         return impl.checkName(name);
     }
 
@@ -500,7 +546,7 @@ public final class Kenai {
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
-        return impl.isAuthorized(project.getName(), activity.getFeature().getId(), activity.getName());
+        return impl.isAuthorized(project.getName(), activity.getFeature().getId(), activity.getName(), getPasswordAuthentication());
     }
 
     /**
@@ -554,7 +600,7 @@ public final class Kenai {
         if (forceServerReload==false) {
                 return getMyProjects();
             }
-            Collection<ProjectData> prjs = impl.getMyProjects();
+            Collection<ProjectData> prjs = impl.getMyProjects(auth);
             myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
             return myProjects;
         }
@@ -569,11 +615,42 @@ public final class Kenai {
     }
 
     private KenaiProject _getProject(String name) throws KenaiException {
-        ProjectData prj = impl.getProject(name);
-        return KenaiProject.get(prj);
+        ProjectData prj = impl.getProject(name, auth);
+        return KenaiProject.get(this, prj);
     }
 
-    private static class LazyCollection<I,O> extends AbstractCollection<O> {
+    void addMember(KenaiProject project, KenaiUser user, Role role) throws KenaiException {
+        assert auth!=null;
+        impl.addMember(project.getName(), user.getUserName(), role.toString(), auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.add(project);
+            }
+        }
+
+    }
+
+    void deleteMember(KenaiProject project, KenaiUser user) throws KenaiException {
+        assert auth!=null;
+        impl.deleteMember(project.getName(), user.data.member_id, auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.remove(project);
+            }
+        }
+    }
+
+    void delete(KenaiProject project) throws KenaiException {
+        assert auth!=null;
+        impl.deleteProject(project.getName(), auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.remove(project);
+            }
+        }
+    }
+
+    private class LazyCollection<I,O> extends AbstractCollection<O> {
 
         private Collection<I> delegate;
 
@@ -586,13 +663,13 @@ public final class Kenai {
             return Iterators.translating(delegate.iterator(), new Factory<O,I>() {
                 public O create(I param) {
                     if (param instanceof ProjectData) {
-                        return (O) KenaiProject.get((ProjectData) param);
+                        return (O) KenaiProject.get(Kenai.this, (ProjectData) param);
                     } else if (param instanceof LicensesListData.LicensesListItem) {
                         return (O) new KenaiLicense((LicensesListData.LicensesListItem) param);
                     } else if (param instanceof ServicesListItem) {
                         return (O) new KenaiService((ServicesListItem) param);
                     } else if (param instanceof UserData) {
-                        return (O) new KenaiProjectMember((UserData) param);
+                        return (O) new KenaiProjectMember(Kenai.this, (UserData) param);
                     }
                     throw new IllegalStateException();
                 }
@@ -607,7 +684,7 @@ public final class Kenai {
     }
 
     private void xmppConnect() throws KenaiException {
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
+        firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
         synchronized (this) {
             xmppConnection = new XMPPConnection(getUrl().getHost());
             packetListener = new KenaiUser.KenaiPacketListener();
@@ -618,15 +695,15 @@ public final class Kenai {
                 xmppConnection.login(auth.getUserName(), new String(auth.getPassword()), "NetBeans"); //NOI18N
             } catch (XMPPException xMPPException) {
                 xmppConnection = null;
-                propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
+                firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
                 throw new KenaiException(xMPPException);
             } catch (IllegalStateException ise) {
                 xmppConnection = null;
-                propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
+                firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_FAILED, null, null));
                 throw new KenaiException(ise);
             }
         }
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, null, xmppConnection));
+        firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, null, xmppConnection));
     }
 
     private void xmppDisconnect(boolean setPropId) {
@@ -634,7 +711,14 @@ public final class Kenai {
             return;
         }
         xmppConnection.disconnect();
-        KenaiUser.clear();
+
+        synchronized (users) {
+            users.clear();
+        }
+        synchronized (onlineUsers) {
+            onlineUsers.clear();
+        }
+
         XMPPConnection temp = xmppConnection;
         xmppConnection = null;
         temp.removePacketListener(packetListener);
@@ -642,7 +726,7 @@ public final class Kenai {
         if (setPropId) {
             propertyChangeEvent.setPropagationId(PROP_URL_CHANGED);
         }
-        propertyChangeSupport.firePropertyChange(propertyChangeEvent);
+        firePropertyChange(propertyChangeEvent);
     }
     /**
      * user status on kenai
@@ -660,5 +744,36 @@ public final class Kenai {
          * user is not logged in
          */
         OFFLINE
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Kenai other = (Kenai) obj;
+        if ((this.getUrl() == null) ? (other.getUrl() != null) : !this.getUrl().toString().equals(other.getUrl().toString())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.getUrl() != null ? this.getUrl().toString().hashCode() : 0);
+        return hash;
+    }
+
+    public int compareTo(Kenai o) {
+        return this.getName().compareToIgnoreCase(o.getName());
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (" + getUrl().toString() + ")";
     }
 }

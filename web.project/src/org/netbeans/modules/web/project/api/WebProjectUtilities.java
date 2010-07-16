@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,6 +104,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -146,7 +150,7 @@ public class WebProjectUtilities {
     public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/project/ui/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/project/ui/resources/"; //NOI18N
     private WebProjectUtilities() {}
     
     /**
@@ -230,7 +234,7 @@ public class WebProjectUtilities {
         
         //create default manifest
         if(confFolderFO != null) {
-            String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
+            String manifestText = readResource(WebProjectUtilities.class.getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
             FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
             FileLock lock = manifest.lock();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
@@ -249,6 +253,9 @@ public class WebProjectUtilities {
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
 
         DDHelper.createWebXml(j2eeProfile, createData.isWebXmlRequired(), webInfFO);
+        if (createData.isCDIEnabled()) {
+            DDHelper.createBeansXml(j2eeProfile, webInfFO);
+        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element data = h.getPrimaryConfigurationData(true);
@@ -302,7 +309,7 @@ public class WebProjectUtilities {
         
         // #119052
         if (sourceLevel == null) {
-            sourceLevel = "1.5"; // NOI18N
+            sourceLevel = "1.6"; // NOI18N
         }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, new SpecificationVersion(sourceLevel));
         
@@ -623,8 +630,10 @@ public class WebProjectUtilities {
         
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel != null && sourceLevel.equals("1.7")) {
+            sourceLevel = "1.6";
+        }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper
@@ -718,25 +727,29 @@ public class WebProjectUtilities {
         
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties epPriv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
+
         // XXX the following just for testing, TBD:
         ep.setProperty(WebProjectProperties.DIST_DIR, "dist"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR_EAR, "${" + WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_EAR_NAME + "}"); //NOI18N
         
-        Deployment deployment = Deployment.getDefault();
-        String serverType = deployment.getServerID(serverInstanceID);
-        
         if (h.isSharableProject() && serverLibraryName != null) {
             // TODO constants
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-            setServerProperties(ep, serverLibraryName);
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
+        J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.WAR);
         
-        
-        ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
+        ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
         
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         
@@ -759,8 +772,6 @@ public class WebProjectUtilities {
             // false
         }
         ep.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
-        
-        ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
@@ -827,100 +838,13 @@ public class WebProjectUtilities {
             ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
         }
 
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(WebProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        
-        // set j2ee.platform.classpath
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.WAR).contains(j2eeProfile)) {
-            Logger.getLogger("global").log(Level.WARNING,
-                    "J2EE level:" + j2eeProfile.getDisplayName() + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
-        }
-        
-        if (!h.isSharableProject() || serverLibraryName == null) {
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-
-            // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
-                ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                        Utils.toClasspathString(ejbClasspath));
-            }
-
-            // set j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsimport.classpath, j2ee.platform.wsgen.classpath
-            WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
-            if (wsStack != null) {
-                WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT); // the same as for WSGEN
-                if (wsTool!= null && wsTool.getLibraries().length > 0) {
-                    String librariesList = Utils.toClasspathString(wsTool.getLibraries());
-                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
-                    ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
-                }
-            }
-            
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            }           
-        }
-        
-        // set j2ee.platform.jsr109 support
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) {
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT,
-                    "true"); //NOI18N
-        }
-        
         // ant deployment support
-        File projectFolder = FileUtil.toFile(dirFO);
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, WebProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                    J2eeModule.WAR, serverInstanceID);
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
-        if (deployAntPropsFile != null) {
-            ep.setProperty(WebProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-        }
+        J2EEProjectProperties.createDeploymentScript(dirFO, ep, epPriv, serverInstanceID, J2eeModule.Type.WAR);
         
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
         
         return h;
-    }
-
-    public static void setServerProperties(EditableProperties ep, String serverLibraryName) {
-        // TODO constants
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "embeddableejb" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
     }
 
     public static void upgradeJ2EEProfile(WebProject project){

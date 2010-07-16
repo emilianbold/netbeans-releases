@@ -100,15 +100,18 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.sh" tofile="${scriptsdir}/servicetag.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/add_gfv3.sh" tofile="${scriptsdir}/add_gfv3.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/add_javadb.sh" tofile="${scriptsdir}/add_javadb.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
 
 
         <!--<copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>        -->
+
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
         <echo message="Building glassfish-v3-${glassfish.v3.id}.pkg into ${basedir}/../build/glassfish-v3-${glassfish.v3.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish-v3-${glassfish.v3.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; ${packagemaker.path} -build -v -p ${basedir}/../build/glassfish-v3-${glassfish.v3.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

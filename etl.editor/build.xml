@@ -2,7 +2,10 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
   specific language governing permissions and limitations under the
   License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
   particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that
+  by Oracle in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
   License Header, with the fields enclosed by brackets [] replaced by
   your own identifying information:
@@ -41,19 +44,9 @@
 -->
 <project name="etl.editor" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/etl"/>
-        <antcall target="compile-i18"/>
-        <copy todir="${cluster}/modules/ext/etl">
-            <fileset dir="${basedir}/external">
-                <include name="*.jar"/>
-                <include name="*.zip"/>
-            </fileset>
-        </copy>
-    </target>
-    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar">
-    </taskdef>
-    <target name="compile-i18" depends="projectized-common.compile">
+
+    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar"></taskdef>
+    <target name="compile" depends="projectized-common.compile">
         <i18n dir="${basedir}/build/classes" file="${basedir}/build/classes/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)">
         </i18n>
         <i18n dir="${basedir}/build/classes" file="${basedir}/build/classes/org/netbeans/modules/etl/logger/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(EDIT\d\d\d)(: )(.*)">

@@ -22,9 +22,8 @@ package org.netbeans.modules.soa.ui.axinodes;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  * @author nk160297

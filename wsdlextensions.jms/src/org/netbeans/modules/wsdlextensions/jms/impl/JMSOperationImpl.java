@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.wsdlextensions.jms.impl;
 
+import org.netbeans.modules.wsdlextensions.jms.JMSComponent;
 import org.netbeans.modules.wsdlextensions.jms.JMSConstants;
 import org.netbeans.modules.wsdlextensions.jms.JMSQName;
 import org.netbeans.modules.wsdlextensions.jms.JMSOperation;
@@ -38,6 +39,10 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
     public JMSOperationImpl(WSDLModel model){
         this(model, createPrefixedElement(JMSQName.OPERATION.getQName(), model));
     }
+
+    public void accept(JMSComponent.Visitor visitor) {
+        visitor.visit(this);
+    }    
     
     /*
     public JMSOptions getOptions() {
@@ -236,9 +241,9 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
                      ""+val);         
     }     
 
-    public int getMaxConcurrentConsumers() {
+    public String getMaxConcurrentConsumers() {
         String strVal = getAttribute(JMSAttribute.JMS_OPERATION_MAX_CONCURRENT_CONSUMERS);        
-        
+       /* 
         int numVal = -1;
         if ( strVal != null ) {
             try {
@@ -248,13 +253,14 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
                 // just ignore
             }
         }
-        return numVal;        
+	*/
+        return strVal;        
     }
 
-    public void setMaxConcurrentConsumers(int val) {
+    public void setMaxConcurrentConsumers(String val) {
         setAttribute(JMSOperation.ATTR_MAX_CONCURRENT_CONSUMERS, 
                      JMSAttribute.JMS_OPERATION_MAX_CONCURRENT_CONSUMERS,
-                     ""+val);                 
+                     val);                 
     }
 
     public String getRedeliveryHandling() {
@@ -277,4 +283,14 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
                      val);         
 
     }
+
+	public String getVerb() {
+        return getAttribute(JMSAttribute.JMS_OPERATION_VERB);        
+	}
+
+	public void setVerb(String val) {
+        setAttribute(JMSOperation.ATTR_VERB, 
+                JMSAttribute.JMS_OPERATION_VERB,
+                val);        
+	}
 }

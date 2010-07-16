@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,7 +44,17 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.CLIHandler;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  * Shows the main window, so it is fronted when second instance of
@@ -49,16 +62,23 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
+@ServiceProvider(service=CLIHandler.class)
 public class CLIOptions2 extends CLIHandler implements Runnable {
     /** number of invocations */
     private int cnt;
+    private static final Logger LOG = Logger.getLogger(CLIOptions2.class.getName());
+    /** Time (in milliseconds) to wait for the event queue to become active. */
+    private static final int EQ_TIMEOUT = 10 * 1000;
+    private final RequestProcessor.Task task;
+    static CLIOptions2 INSTANCE;
 
     /**
      * Create a default handler.
      */
     public CLIOptions2 () {
         super(WHEN_INIT);
+        INSTANCE = this;
+        task = RequestProcessor.getDefault().create(this);
     }
 
     protected int cli(Args arguments) {
@@ -75,28 +95,60 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             }
         }
          */
-        javax.swing.SwingUtilities.invokeLater (this);
+        LOG.fine("CLI running");
+        SwingUtilities.invokeLater(this);
+        task.schedule(EQ_TIMEOUT);
         
         return 0;
     }
     
     public void run () {
-        java.awt.Frame f = org.openide.windows.WindowManager.getDefault ().getMainWindow ();
+        if (!EventQueue.isDispatchThread()) {
+            eqStuck();
+            return;
+        }
+        LOG.fine("running in EQ");
+        task.cancel();
+
+        Frame f = WindowManager.getDefault().getMainWindow();
 
         // makes sure the frame is visible
         f.setVisible(true);
         // uniconifies the frame if it is inconified
-        if ((f.getExtendedState () & java.awt.Frame.ICONIFIED) != 0) {
-            f.setExtendedState (~java.awt.Frame.ICONIFIED & f.getExtendedState ());
+        if ((f.getExtendedState() & Frame.ICONIFIED) != 0) {
+            f.setExtendedState(~Frame.ICONIFIED & f.getExtendedState());
         }
         // moves it to front and requests focus
         f.toFront ();
         
     }
-    
-    
-    protected void usage(java.io.PrintWriter w) {
-        //w.println(NonGui.getString("TEXT_help"));
+
+    @SuppressWarnings("deprecation") // Thread.stop
+    private void eqStuck() {
+        Thread eq = TimableEventQueue.eq;
+        if (eq == null) {
+            LOG.warning("event queue thread not determined");
+            return;
+        }
+        LOG.log(Level.FINE, "EQ stuck in {0}", eq);
+        LOG.log(Level.WARNING, null, new EQStuck(eq));
+        eq.stop();
     }
+    private static class EQStuck extends Throwable {
+        EQStuck(Thread eq) {
+            super("GUI is not responsive"); // NOI18N
+            StackTraceElement[] stack = Thread.getAllStackTraces().get(eq);
+            if (stack != null) {
+                setStackTrace(stack);
+            } else {
+                LOG.log(Level.WARNING, "no stack trace available for {0}", eq);
+            }
+        }
+        public @Override synchronized Throwable fillInStackTrace() {
+            return this;
+        }
+    }
+    
+    protected void usage(PrintWriter w) {}
     
 }

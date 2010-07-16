@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,23 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.projects.jbi;
 
+import org.netbeans.api.project.Project;
+
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.NbBundle;
+
+import java.io.IOException;
+
 /**
- * Factory for EJB Module projects
+ * Factory for JBI projects.
  *
  * @author Chris Webster
  */
-public final class JbiProjectType {
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String TYPE = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
+public final class JbiProjectType implements AntBasedProjectType {
 
-    /**
-     * DOCUMENT ME!
-     */
+    public static final String TYPE = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi/1"; // NOI18N
-    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi-private/1"; // NOI18N
+    
+    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
+    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-jbi-private/1"; // NOI18N
+
+    public JbiProjectType() {
+    }
+
+    public String getType() {
+        return TYPE;
+    }
+
+    public Project createProject(AntProjectHelper helper) throws IOException {
+        if (null == helper) {
+            throw new IllegalArgumentException(NbBundle.getMessage(JbiProjectType.class, "MSG_helper")); // NOI18N
+        }
+
+        return new JbiProject(helper, this);
+    }
+
+    public String getPrimaryConfigurationDataElementName(boolean shared) {
+        return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
+    }
+
+    public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
+        return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
+    }
 }

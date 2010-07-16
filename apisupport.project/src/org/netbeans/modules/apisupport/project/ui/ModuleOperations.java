@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,7 +63,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public final class ModuleOperations implements DeleteOperationImplementation,
-        MoveOperationImplementation, CopyOperationImplementation {
+        MoveOrRenameOperationImplementation, CopyOperationImplementation {
     
     private static final Map<String, SuiteProject> TEMPORARY_CACHE = new HashMap<String, SuiteProject>();
     
@@ -89,7 +92,9 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     private void notifyDeleting(boolean temporary) throws IOException {
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        }
         
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
@@ -134,6 +139,13 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
     }
     
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        setDisplayName(nueName);
+    }
+
     public void notifyCopying() throws IOException {
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
@@ -219,5 +231,5 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
         return result;
     }
-    
+
 }

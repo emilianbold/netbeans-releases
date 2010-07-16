@@ -26,7 +26,7 @@ import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.codegen.Statements;
 import org.netbeans.modules.sql.framework.codegen.TypeGenerator;
 
-import com.sun.sql.framework.jdbc.DBConstants;
+import com.sun.etl.jdbc.DBConstants;
 
 /**
  * @author Ritesh Adval

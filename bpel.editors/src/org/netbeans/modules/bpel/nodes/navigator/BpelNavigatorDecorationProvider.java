@@ -21,10 +21,8 @@ package org.netbeans.modules.bpel.nodes.navigator;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.nodes.DecorationProvider;
-import org.netbeans.modules.xml.xam.Component;
 
 /**
  *
@@ -38,7 +36,9 @@ public class BpelNavigatorDecorationProvider<T extends Object> implements Decora
     private static List<TooltipManager> TOOLTIP_MANAGERS = new ArrayList<TooltipManager>();
     static {
         TOOLTIP_MANAGERS.add(new TooltipManager.CopyTooltipManager());
+        TOOLTIP_MANAGERS.add(new TooltipManager.AssignTooltipManager());
         TOOLTIP_MANAGERS.add(new TooltipManager.LongTooltipManager());
+        TOOLTIP_MANAGERS.add(new TooltipManager.VariableReferenceTooltipManager());
         TOOLTIP_MANAGERS.add(new TooltipManager.ShortTooltipManager());
     }
     

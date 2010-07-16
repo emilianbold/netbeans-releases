@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -70,6 +72,8 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.HideServiceUnitConnectionsAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.ShowServiceUnitConnectionsAction;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.util.Exceptions;
@@ -103,6 +107,8 @@ public class ServiceUnitNode extends CasaNode {
             actions.add(SystemAction.get(AddConsumesPinAction.class));
             actions.add(SystemAction.get(AddProvidesPinAction.class));
         }
+        actions.add(SystemAction.get(HideServiceUnitConnectionsAction.class));
+        actions.add(SystemAction.get(ShowServiceUnitConnectionsAction.class));
     }
 
     @Override
@@ -142,30 +148,57 @@ public class ServiceUnitNode extends CasaNode {
         final CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
         if (casaSU == null) {
             return;
-        }        
+        }
+
+        // 1. Identification property set
         Sheet.Set identificationProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.IDENTIFICATION_SET);
-        
-        PropertyUtils.installServiceUnitNameProperty(
-                identificationProperties, this, casaSU,
-                CasaAttribute.UNIT_NAME.getName(),
-                "serviceUnitName",                                      // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_Name"),           // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_Name"));          // NOI18N
-        
-        Node.Property<String> descriptionSupport = new PropertySupport.ReadOnly<String>(
-                "description", // NOI18N
-                String.class, 
-                NbBundle.getMessage(getClass(), "PROP_Description"),    // NOI18N
-                Constants.EMPTY_STRING) {
-            public String getValue() {
-                return casaSU.getDescription();
-            }
-        };
-        identificationProperties.put(descriptionSupport);
-        
+
+        if (casaSU.isUnknown()) { // read-write
+
+            PropertyUtils.installServiceUnitNameProperty(
+                    identificationProperties, this, casaSU,
+                    CasaAttribute.UNIT_NAME.getName(),
+                    "serviceUnitName",                                      // NOI18N
+                    NbBundle.getMessage(getClass(), "PROP_Name"),           // NOI18N
+                    NbBundle.getMessage(getClass(), "PROP_Name"));          // NOI18N
+
+            PropertyUtils.installServiceUnitDescriptionProperty(
+                    identificationProperties, this, casaSU,
+                    CasaAttribute.DESCRIPTION.getName(),
+                    "serviceUnitDescription",                                      // NOI18N
+                    NbBundle.getMessage(getClass(), "PROP_Description"),           // NOI18N
+                    NbBundle.getMessage(getClass(), "PROP_Description"));          // NOI18N
+
+        } else { // read-only
+
+            Node.Property<String> nameSupport = new PropertySupport.ReadOnly<String>(
+                    "name", // NOI18N
+                    String.class,
+                    NbBundle.getMessage(getClass(), "PROP_Name"),    // NOI18N
+                    Constants.EMPTY_STRING) {
+                public String getValue() {
+                    return casaSU.getName();
+                }
+            };
+            identificationProperties.put(nameSupport);
+
+            Node.Property<String> descriptionSupport = new PropertySupport.ReadOnly<String>(
+                    "description", // NOI18N
+                    String.class,
+                    NbBundle.getMessage(getClass(), "PROP_Description"),    // NOI18N
+                    Constants.EMPTY_STRING) {
+                public String getValue() {
+                    return casaSU.getDescription();
+                }
+            };
+            identificationProperties.put(descriptionSupport);
+        }
+
+        // 2. Target property set
         Sheet.Set targetProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.TARGET_SET);
+
         Node.Property<String> artifactsZipSupport = new PropertySupport.ReadOnly<String>(
                 "artifactsZip", // NOI18N
                 String.class, 

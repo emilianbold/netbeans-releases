@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
+
+For the purpose of easier reading the script
+is divided into following sections:
+
+  - initialization
+  - compilation
+  - dist
+  - execution
+  - debugging
+  - javadoc
+  - cleanup
+
+
+        -->
+<project name="-impl" default="build" basedir="..">
+    <target name="default" depends="dist,javadoc" description="Build whole project."/>
+    <!-- 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+            -->
+    <target name="pre-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="init-private" depends="pre-init">
+        <property file="nbproject/private/private.properties"/>
+    </target>
+    <target name="init-userdir" depends="pre-init,init-private">
+        <property name="user.properties.file" location="${netbeans.user}/build.properties"/>
+    </target>
+    <target name="init-user" depends="pre-init,init-private,init-userdir">
+        <property file="${user.properties.file}"/>
+    </target>
+    <target name="init-project" depends="pre-init,init-private,init-userdir,init-user">
+        <property file="nbproject/project.properties"/>
+        <!-- Points build to Alaska project cluster. -->
+        <!-- NOTE: If cluster name changes, this property must be updated. -->
+    </target>
+    <target name="do-init" depends="pre-init,init-private,init-userdir,init-user,init-project">
+        <!-- The two properties below are usually overridden -->
+        <!-- by the active platform. Just a fallback. -->
+        <property name="default.javac.source" value="1.4"/>
+        <property name="default.javac.target" value="1.4"/>
+        <condition property="no.javadoc.preview">
+            <isfalse value="${javadoc.preview}"/>
+        </condition>
+    </target>
+    <target name="post-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="init-check" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init">
+        <fail unless="src.dir">Must set src.dir
+                </fail>
+        <fail unless="build.dir">Must set build.dir
+                </fail>
+        <fail unless="build.generated.dir">Must set build.generated.dir
+                </fail>
+        <fail unless="dist.dir">Must set dist.dir
+                </fail>
+        <fail unless="build.classes.dir">Must set build.classes.dir
+                </fail>
+        <fail unless="dist.jar">Must set dist.jar
+                </fail>
+    </target>
+    <target name="init-taskdefs-1">
+        <path id="ant.task.classpath.models">
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-wlm-project.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/anttask.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/lib/org-openide-util.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-loaders.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-apache-xml-resolver.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/ext/resolver-1_1_nb.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/chiba-1.0.0.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../xml/modules/ext/jxpath-1.2.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/ext/xerces-2.8.0.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/log4j-1.2.13.jar"/>
+        </path>
+        <path id="generate.jbi">
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-wlm-project.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-wlm-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/anttask.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/wfse_def.jar-1.0.0.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/wsdl4j.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/qname.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/xbean.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/xbean_xpath.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/resolver.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/jsr173_1.0_api.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/xmlpublic.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/wlm/chiba-1.0.0.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../xml/modules/ext/jxpath-1.2.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/ext/xerces-2.8.0.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/core/org-openide-filesystems.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/lib/org-openide-util.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-loaders.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/ext/log4j-1.2.13.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-netbeans-modules-masterfs.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-nodes.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-wlm-model.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-text.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-editor.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-editor-util.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-editor-lib2.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-options.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-text.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-windows.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-dialogs.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-openide-awt.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../platform/modules/org-netbeans-modules-queries.jar"/>
+            <pathelement path="${esb.netbeans.platform}/../ide/modules/org-netbeans-api-xml.jar"/>
+        </path>
+    </target>
+    <target name="init-taskdefs" if="from.commandline" depends="init-taskdefs-1">
+        <taskdef name="generate-asa-artifacts" classname="org.netbeans.modules.wlm.project.anttasks.GenerateAsaArtifacts">
+            <classpath refid="generate.jbi"/>
+        </taskdef>
+        <taskdef name="XFormGen" classname="org.netbeans.modules.wlm.project.anttasks.IDEXFormGenerationTask">
+            <classpath refid="generate.jbi"/>
+        </taskdef>
+    </target>
+    <target name="init" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs"/>
+    <!--
+    ===================
+    COMPILATION SECTION
+    ===================
+            -->
+    <target name="deps-jar" depends="init" unless="${no.dependencies}"/>
+    <target name="pre-pre-compile" depends="init,deps-jar">
+        <mkdir dir="${build.classes.dir}"/>
+    </target>
+    <target name="pre-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="library-inclusion-in-archive" depends="compile"/>
+    <target name="library-inclusion-in-manifest" depends="compile">
+        <manifest file="${build.classes.dir}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Class-Path" value=""/>
+        </manifest>
+    </target>
+    <target name="do-compile" depends="init,deps-jar,pre-pre-compile,pre-compile"/>
+    <target name="post-compile">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile" depends="init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile" description="Compile project."/>
+    <target name="pre-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="do-compile-single" depends="init,deps-jar,pre-pre-compile">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes
+                </fail>
+        <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1">
+            <customize>
+                <include name="${javac.includes}"/>
+            </customize>
+        </ejbproject:javac>
+    </target>
+    <target name="post-compile-single">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="compile-single" depends="init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single"/>
+    <!--
+    ====================
+    DIST BUILDING SECTION
+    ====================
+            -->
+    <target name="generate-xform" depends="init">
+        <copy todir="${basedir}/${build.dir}">
+            <fileset dir="${basedir}/${src.dir}">
+                <include name="**/*.wsdl"/>
+                <include name="**/*.xsd"/>
+            </fileset>
+        </copy>
+        <XFormGen sourcedirectory="${basedir}/${src.dir}" builddirectory="${basedir}/${build.dir}" always="true" generate="true"/>
+        <move todir="${basedir}/${build.dir}">
+            <fileset dir="${basedir}/${src.dir}">
+                <include name="**/*Instance.xml"/>
+            </fileset>
+        </move>
+    </target>
+    <target name="pre-dist">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${build.dir}/META-INF"/>
+        <unzip dest="${build.dir}" src="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-wlm-project.jar" overwrite="true">
+            <patternset>
+                <include name="**/TaskStaticTemplate.wsdl"/>
+                <include name="**/TaskCommon.wsdl"/>
+            </patternset>
+        </unzip>
+        <move file="${build.dir}/org/netbeans/modules/workflow/project/resources/TaskCommon.wsdl" tofile="${basedir}/${build.dir}/TaskCommon.wsdl"/>
+        <copy todir="${basedir}/${build.dir}">
+            <fileset dir="${basedir}/${src.dir}">
+                <include name="**/*.wsdl"/>
+                <include name="**/*.xsd"/>
+            </fileset>
+        </copy>
+        <XFormGen sourcedirectory="${basedir}/${src.dir}" builddirectory="${basedir}/${build.dir}" always="false" generate="${generate.xforms}"/>
+        <move todir="${basedir}/${build.dir}">
+            <fileset dir="${basedir}/${src.dir}">
+                <include name="**/*Instance.xml"/>
+            </fileset>
+        </move>
+        <copy todir="${build.dir}" preservelastmodified="true">
+            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd,**/*.wf,**/*.xhtml,**/*.xml" dir="${src.dir}"/>
+        </copy>
+        <delete file="${build.dir}/org-netbeans-modules-wlm-project.jar"/>
+        <delete dir="${build.dir}/org"/>
+        <generate-asa-artifacts srcDirectoryLocation="${basedir}/${src.dir}" jbiDescriptorFileLocation="${basedir}/${build.dir}/META-INF/jbi.xml" projectName="${projectName}"/>
+    </target>
+    <target name="dist_se" depends="init,pre-dist">
+        <jar compress="${jar.compress}" jarfile="${build.dir}/SEDeployment.jar">
+            <fileset includes="**/*.xsl,**/*.wsdl,**/*.xsd,**/*.wf,**/*.xhtml,**/*.xml" dir="${build.dir}"/>
+            <fileset dir="${src.dir}/">
+                <include name="xsltmap.xml"/>
+            </fileset>
+        </jar>
+    </target>
+    <target name="do-dist" depends="init,pre-dist,dist_se"/>
+    <target name="post-dist">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="dist" depends="init,pre-dist,do-dist,post-dist" description="Build distribution (JAR)."/>
+    <!--
+    =================
+    EXECUTION SECTION
+    =================
+            -->
+    <target name="run" depends="run-deploy" description="Deploy to server."/>
+    <target name="init-deploy">
+        <property name="include.jar.manifest" value=""/>
+    </target>
+    <target name="run-deploy" depends="init,init-deploy,compile,library-inclusion-in-archive"/>
+    <!--
+    =================
+    DEBUGGING SECTION
+    =================
+            -->
+    <target name="debug" description="Debug project in IDE." if="netbeans.home">
+        <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
+        <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+            <sourcepath>
+                <path path="${web.docbase.dir}"/>
+            </sourcepath>
+        </nbjpdaconnect>
+    </target>
+    <target name="pre-debug-fix" depends="init">
+        <fail unless="fix.includes">Must set fix.includes
+                </fail>
+        <property name="javac.includes" value="${fix.includes}.java"/>
+    </target>
+    <target name="do-debug-fix" if="netbeans.home" depends="init,pre-debug-fix,compile-single">
+        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+    </target>
+    <target name="debug-fix" if="netbeans.home" depends="init,pre-debug-fix,do-debug-fix"/>
+    <!--
+    ===============
+    JAVADOC SECTION
+    ===============
+            -->
+    <target name="javadoc-build" depends="init">
+        <mkdir dir="${dist.javadoc.dir}"/>
+        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <sourcepath>
+                <pathelement location="${src.dir}"/>
+            </sourcepath>
+            <fileset dir="${src.dir}"/>
+        </javadoc>
+    </target>
+    <target name="javadoc-browse" if="netbeans.home" unless="no.javadoc.preview" depends="init,javadoc-build">
+        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
+    </target>
+    <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
+    <!--
+    ===============
+    CLEANUP SECTION
+    ===============
+            -->
+    <target name="deps-clean" depends="init" unless="${no.dependencies}"/>
+    <target name="do-clean" depends="init">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+    <target name="post-clean">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
+</project>

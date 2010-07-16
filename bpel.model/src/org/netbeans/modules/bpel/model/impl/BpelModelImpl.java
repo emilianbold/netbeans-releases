@@ -24,8 +24,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
@@ -69,6 +70,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -402,7 +404,7 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     public void undoableEditHappened( UndoableEditEvent e )
     {
         if (!inUndoRedo()) {    // Fix for #77785, #80584
-            assert myLock.getWriteHoldCount() > 0;
+            assert myLock.getWriteHoldCount() >= 0;
             if (!myUndoSupport.editInProgress()) {
                 myUndoSupport.beginUpdate();    
             }
@@ -1044,46 +1046,24 @@ public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements 
     }
 
     private ChangeEventSupport mySupport;
-
     private Lookup.Result innerDispatcherResult;
-
     private InnerEventDispatcher[] myDispatchers;
-
     private final BpelBuilderImpl myBuilder = new BpelBuilderImpl(this);
-
     private ProcessImpl myProcess;
-
     private AtomicLong myNextID = new AtomicLong();
-
     private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
-
     private final Lock readLock = myLock.readLock();
-
     private final Lock writeLock = myLock.writeLock();
-
     private BpelModelUndoableEditSupport myUndoSupport;
-    
     private SyncUpdateVisitor mySyncUpdateVisitor;
-    
     private XDMListener myXDMListener;
-    
     private Transaction myTransaction;
-    
     private PropertyChangeSupport myPropertyChangeSupport;
-    
     private EventListenerList myComponentListeners; 
-    
     private boolean isXamTransaction;
-    
     private UndoableEditListener[] mySavedUndoableEditListeners;
-    
     private ThreadLocal<Boolean> myReadLockObtained = new ThreadLocal<Boolean>();
-    
     private BpelChildEntitiesBuilder myChildBuilder;
-    
     private Element myAnotherRoot;
-
     private RefCacheSupport mRefCacheSupport;
-
-
 }

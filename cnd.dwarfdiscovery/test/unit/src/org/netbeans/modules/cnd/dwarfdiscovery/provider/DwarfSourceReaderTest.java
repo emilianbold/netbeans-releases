@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,14 +16,14 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
@@ -43,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -50,9 +54,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
@@ -67,6 +74,62 @@ public class DwarfSourceReaderTest extends NbTestCase {
     public DwarfSourceReaderTest() {
         super("DwarfSourceReaderTest");
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
+    public void testDllReader(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo";
+        Dwarf dump = null;
+        try {
+            dump = new Dwarf(objFileName);
+            for(String dll : dump.readPubNames()) {
+                assertEquals(dll, "libc.so.1"); // NOI18N
+            }
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (WrongFileFormatException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
+        }
+    }
+
+    public void testSunStudioCompiler(){
+        TreeMap<String, String> golden = new TreeMap<String, String>();
+        golden.put("TEXT_DOMAIN", "\"SUNW_OST_OSCMD\"");
+        golden.put("_TS_ERRNO", "null");
+        golden.put("_iBCS2", "null");
+        TreeMap<String, String> ignore = new TreeMap<String, String>();
+        List<String> system = new ArrayList<String>();
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo", system, ignore, grepBase, false, null);
+        assertNotNull(source);
+        TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertTrue(source.getUserInludePaths().size()==1);
+        assertEquals(source.getUserInludePaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        printInclidePaths(source);
+        List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
+        assertTrue(list.size()==1);
+        SourceFile sf = list.get(0);
+        assertEquals(sf.getCompileDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
+        assertEquals(sf.getSource(), "echo.c");
+//      /export/opt/sunstudio/12ml/SUNWspro/prod/bin/cc -O -xspace -Xa -xildoff -errtags=yes -errwarn=%all -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic -v -D_iBCS2 -DTEXT_DOMAIN='"SUNW_OST_OSCMD"' -D_TS_ERRNO -I/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include -Bdirect -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/common/map.noexstk -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.pagealign -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.noexdata -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/lib -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/lib -c  echo.c
+        //System.err.println(sf.getCompileLine());
+        map = new TreeMap<String, String>(sf.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
+        assertTrue(list.size()==1);
     }
 
     public void testLeopard(){
@@ -161,30 +224,31 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("__weak", "");
         ignore.put("i386", "1");
         List<String> system = new ArrayList<String>();
-        system.add("/usr/include");
-        system.add("/usr/include/c++/4.0.0");
-        system.add("/usr/include/c++/4.0.0/i686-apple-darwin9/bits");
-        system.add("/usr/include/libkern");
-        system.add("/usr/include/libkern/i386");
-        system.add("/usr/include/mach/i386");
-        system.add("/usr/lib/gcc/i686-apple-darwin9/4.0.1/include");
+        String prefix = "";
+        system.add(prefix+"/usr/include");
+        system.add(prefix+"/usr/include/c++/4.0.0");
+        system.add(prefix+"/usr/include/c++/4.0.0/i686-apple-darwin9/bits");
+        system.add(prefix+"/usr/include/libkern");
+        system.add(prefix+"/usr/include/libkern/i386");
+        system.add(prefix+"/usr/include/mach/i386");
+        system.add(prefix+"/usr/lib/gcc/i686-apple-darwin9/4.0.1/include");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         GrepEntry entry = new GrepEntry();
-        grepBase.put("/usr/include", entry);
+        grepBase.put(prefix+"/usr/include", entry);
         entry.includes.add("/sys");
         entry.includes.add("/machine");
         entry.includes.add("/i386");
         entry = new GrepEntry();
-        grepBase.put("/usr/include/c++/4.0.0", entry);
+        grepBase.put(prefix+"/usr/include/c++/4.0.0", entry);
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu-g3-gdwarf-2.leopard.o", system, ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu-g3-gdwarf-2.leopard.o", system, ignore, grepBase, false, null);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertTrue(source.getUserInludePaths().size()==1);
-        assertEquals(source.getUserInludePaths().get(0), "/Users/guest/Quote_10");
+        assertEquals(source.getUserInludePaths().get(0), prefix+"/Users/guest/Quote_10");
         printInclidePaths(source);
     }
 
@@ -199,26 +263,27 @@ public class DwarfSourceReaderTest extends NbTestCase {
         golden.put("BBB", "11");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
         List<String> system = new ArrayList<String>();
-        system.add("/usr/include");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
+        String prefix = "C:/cygwin";
+        system.add(prefix+"/usr/include");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         GrepEntry entry = new GrepEntry();
-        grepBase.put("/usr/include", entry);
+        grepBase.put(prefix+"/usr/include", entry);
         entry.includes.add("/sys");
         entry.includes.add("/machine");
         entry.includes.add("/cygwin");
         entry = new GrepEntry();
-        grepBase.put("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++", entry);
+        grepBase.put(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++", entry);
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", system, ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", system, ignore, grepBase, true, prefix);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertTrue(source.getUserInludePaths().size()==1);
-        assertEquals(source.getUserInludePaths().get(0), "/cygdrive/c/Documents and Settings/tester/My Documents/NetBeansProjects/Quote_1");
+        assertEquals(source.getUserInludePaths().get(0), "C:/Documents and Settings/tester/My Documents/NetBeansProjects/Quote_1");
         printInclidePaths(source);
     }
 
@@ -232,31 +297,33 @@ public class DwarfSourceReaderTest extends NbTestCase {
         golden.put("HAVE_CONFIG_H", "1");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
         List<String> system = new ArrayList<String>();
-        system.add("/usr/include");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include");
-        system.add("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
+        String prefix = "D:/cygwin";
+        system.add(prefix+"/usr/include");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include");
+        system.add(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         GrepEntry entry = new GrepEntry();
-        grepBase.put("/usr/include", entry);
+        grepBase.put(prefix+"/usr/include", entry);
         entry.includes.add("/sys");
         entry.includes.add("/machine");
         entry.includes.add("/cygwin");
         entry = new GrepEntry();
-        grepBase.put("/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++", entry);
+        grepBase.put(prefix+"/lib/gcc/i686-pc-cygwin/3.4.4/include/c++", entry);
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", system, ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", system, ignore, grepBase, true, prefix);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
+        prefix = "D:";
         assertTrue(compareLists(source.getUserInludePaths(), new String[]{
                 "../..",
                 "./../../include/litesql",
-                "/cygdrive/d/usr_/masha/projects/litesql_latest/litesql-0.3.2/src/library",
-                "/cygdrive/d/usr_/masha/projects/litesql_latest/litesql-0.3.2",
-                "/cygdrive/d/usr_/masha/projects/litesql_latest/litesql-0.3.2/include/litesql"
+                prefix+"/usr_/masha/projects/litesql_latest/litesql-0.3.2/src/library",
+                prefix+"/usr_/masha/projects/litesql_latest/litesql-0.3.2",
+                prefix+"/usr_/masha/projects/litesql_latest/litesql-0.3.2/include/litesql"
                 }));
         printInclidePaths(source);
     }
@@ -403,28 +470,29 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("linux", "1");
         ignore.put("unix", "1");
         List<String> system = new ArrayList<String>();
-        system.add("/usr/include");
-        system.add("/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include");
-        system.add("/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4");
-        system.add("/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4/x86_64-pc-linux-gnu/bits");
+        String prefix = "";
+        system.add(prefix+"/usr/include");
+        system.add(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include");
+        system.add(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4");
+        system.add(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4/x86_64-pc-linux-gnu/bits");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         GrepEntry entry = new GrepEntry();
-        grepBase.put("/usr/include", entry);
+        grepBase.put(prefix+"/usr/include", entry);
         entry.includes.add("/sys");
         entry.includes.add("/bits");
         entry.includes.add("/gnu");
         entry = new GrepEntry();
-        grepBase.put("/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4", entry);
+        grepBase.put(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4", entry);
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
         entry.includes.add("/backward");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o", system, ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o", system, ignore, grepBase, false, null);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertTrue(source.getUserInludePaths().size()==1);
-        assertEquals(source.getUserInludePaths().get(0), "/export/home/av202691/NetBeansProjects/Quote_1");
+        assertEquals(source.getUserInludePaths().get(0), prefix+"/export/home/av202691/NetBeansProjects/Quote_1");
         printInclidePaths(source);
     }
 
@@ -531,13 +599,14 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("linux", "1");
         ignore.put("unix", "1");
         List<String> system = new ArrayList<String>();
-        system.add("/usr/include");
-        system.add("/usr/include/c++/4.1.2");
-        system.add("/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include");
-        system.add("/usr/include/c++/4.1.2/x86_64-redhat-linux/bits");
+        String prefix = "";
+        system.add(prefix+"/usr/include");
+        system.add(prefix+"/usr/include/c++/4.1.2");
+        system.add(prefix+"/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include");
+        system.add(prefix+"/usr/include/c++/4.1.2/x86_64-redhat-linux/bits");
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         GrepEntry entry = new GrepEntry();
-        grepBase.put("/usr/include", entry);
+        grepBase.put(prefix+"/usr/include", entry);
         entry.includes.add("/sys");
         entry.includes.add("/bits");
         entry.includes.add("/gnu");
@@ -546,23 +615,23 @@ public class DwarfSourceReaderTest extends NbTestCase {
         entry.includes.add("/asm-x86_64");
         entry.includes.add("/asm-generic");
         entry = new GrepEntry();
-        grepBase.put("/usr/include/c++/4.1.2", entry);
+        grepBase.put(prefix+"/usr/include/c++/4.1.2", entry);
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
         GrepEntry grep =new GrepEntry();
         grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
         grep.firstMacroLine=4;
-        String name = "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
+        String name = "/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
+        if (Utilities.isWindows()) {
+            name = "C:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
+        }
         grepBase.put(name, grep);
         if (Utilities.isWindows()) {
-            // this is hack for testing on windows an object file created on unix
-            name = ":"+name.replace('/', '\\');
-            for (char c = 'A'; c <= 'Z'; c++) {
-                grepBase.put(c+name, grep);
-            }
+            name = "D:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
+            grepBase.put(name, grep);
         }
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", system, ignore, grepBase);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", system, ignore, grepBase, false, null);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
@@ -573,37 +642,38 @@ public class DwarfSourceReaderTest extends NbTestCase {
         "../../../../TAO/../ace/os_include/sys",
         "../../../../TAO/../ace/os_include",
         "../../../../TAO/../ace/os_include/netinet",
-        "/usr/include/netinet",
+        prefix+"/usr/include/netinet",
         "../../../../TAO/../ace/os_include/net",
-        "/usr/include/net",
+        prefix+"/usr/include/net",
         "../../../../TAO/../ace/os_include/arpa",
-        "/usr/include/arpa",
+        prefix+"/usr/include/arpa",
         "../../../../TAO/tao",
         "../../tao",
         "../../orbsvcs/orbsvcs",
         "../../../../TAO/tao/AnyTypeCode",
         "../../../../TAO/../protocols/ace/HTBP",
-        "/usr/include/rpc",
-        "../../../../TAO/orbsvcs",
-        "../../../../TAO/../protocols",
-        "../../../../TAO",
-        "../../../../TAO/..",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
-        "../../..",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
-        "../..",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
-        "../../orbsvcs",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
-        "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        prefix+"/usr/include/rpc",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        // next dirs are detected if source file is available
+        //"../../../../TAO/orbsvcs",
+        //"../../../../TAO/../protocols",
+        //"../../../../TAO",
+        //"../../../../TAO/..",
+        //"../../..",
+        //"../..",
+        //"../../orbsvcs"
                 }));
         printInclidePaths(source);
     }
@@ -630,15 +700,26 @@ public class DwarfSourceReaderTest extends NbTestCase {
     }
 
     private boolean compareLists(List<String> result, String[] golden){
-        if (result.size() != golden.length) {
-            return false;
-        }
         Loop:for(String x : result){
             for(String g : golden) {
                 if (x.equals(g)) {
                     continue Loop;
                 }
             }
+            System.err.println("Result:"+x+" not found in golden");
+            return false;
+        }
+        Loop:for(String g : golden) {
+            for(String x : result){
+                if (x.equals(g)) {
+                    continue Loop;
+                }
+            }
+            System.err.println("Golden:"+g+" not found in results");
+            return false;
+        }
+        if (result.size() != golden.length) {
+            System.err.println("Result size:"+result.size()+" not equals golden size:"+golden.length);
             return false;
         }
         return true;
@@ -667,33 +748,87 @@ public class DwarfSourceReaderTest extends NbTestCase {
         }
     }
 
-    private DwarfSource getDwarfSource(String resource, final List<String> systemPath, final Map<String, String> ignore, final Map<String,GrepEntry> grepBase){
+    private DwarfSource getDwarfSource(String resource, final List<String> systemPath,
+            final Map<String, String> ignore, final Map<String,GrepEntry> grepBase,
+            final boolean isWindows, final String cygwinPath){
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+resource;
+        Dwarf dump = null;
         try {
-            Dwarf dump = new Dwarf(objFileName);
-            List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units != null && units.size() > 0) {
-                for (CompilationUnit cu : units) {
+            dump = new Dwarf(objFileName);
+            Iterator<CompilationUnit> units = dump.iteratorCompilationUnits();
+            if (units != null && units.hasNext()) {
+                while (units.hasNext()) {
+                    CompilationUnit cu = units.next();
                     BaseDwarfProvider.CompilerSettings settings = new BaseDwarfProvider.CompilerSettings(new ProjectProxy() {
+                        @Override
                         public boolean createSubProjects() { return false; }
+                        @Override
                         public Project getProject() { return null; }
+                        @Override
                         public String getMakefile() { return null; }
+                        @Override
                         public String getSourceRoot() { return null; }
+                        @Override
                         public String getExecutable() { return null; }
+                        @Override
                         public String getWorkingFolder() { return null; }
                     }){
                         @Override
-                        public Map<String, String> getSystemMacroDefinitions(boolean isCPP) {
+                        public Map<String, String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {
                             return ignore;
                         }
 
                         @Override
-                        public List<String> getSystemIncludePaths(boolean isCPP) {
+                        public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
                             return systemPath;
                         }
+
+                        @Override
+                        public String getCompileFlavor() {
+                            if (cygwinPath != null) {
+                                return "Cygwin";
+                            }
+                            return super.getCompileFlavor();
+                        }
+
+                        @Override
+                        public String getCygwinDrive() {
+                            if (cygwinPath != null) {
+                                return cygwinPath;
+                            }
+                            return super.getCygwinDrive();
+                        }
+
+                        @Override
+                        public boolean isWindows() {
+                            return isWindows;
+                        }
+
+                        @Override
+                        protected String normalizePath(String path) {
+                            //if (isWindows == Utilities.isWindows()) {
+                            //    return super.normalizePath(path);
+                            //}
+                            path = path.replace('\\', '/');
+                            while (path.indexOf("/..") > 0) {
+                                int i = path.indexOf("/..");
+                                String beg = path.substring(0,i);
+                                String rest = path.substring(i+3);
+                                if (beg.endsWith(".")) {
+                                    break;
+                                }
+                                int j = beg.lastIndexOf('/');
+                                if (j < 0) {
+                                    break;
+                                }
+                                path = beg.substring(0,j)+rest;
+                            }
+                            return path;
+                        }
+
                     };
-                    DwarfSource source = new DwarfSource(cu, false, settings, grepBase);
+                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, settings, grepBase);
                     source.process(cu);
                     return source;
                 }
@@ -704,6 +839,10 @@ public class DwarfSourceReaderTest extends NbTestCase {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
         }
         return null;
     }

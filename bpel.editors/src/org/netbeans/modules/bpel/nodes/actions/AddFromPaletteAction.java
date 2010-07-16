@@ -51,16 +51,11 @@ public class AddFromPaletteAction extends BpelNodeAction {
             (BpelNodeAction)SystemAction.get(AddStructuredActivitiesAction.class)
         };
     
-    public AddFromPaletteAction() {
-    }
+    public AddFromPaletteAction() {}
 
     public final String getBundleName() {
         return NbBundle.getMessage(BpelNodeAction.class, "CTL_AddFromPaletteAction"); // NOI18N    
     }
-
-//    public String getName() {
-//        return model.getCount() == 1 ?  super.getName() + " " +model.getLabel(0): super.getName(); // NOI18N
-//    }
 
     public ActionType getType() {
         return ActionType.ADD_FROM_PALETTE;
@@ -116,8 +111,6 @@ public class AddFromPaletteAction extends BpelNodeAction {
             return availableCategoriesActions.toArray(new BpelNodeAction[availableCategoriesActions.size()]);
         }
         return null;
-
-////        return PALETTE_CATEGORY_ACTIONS;
     }
     
     public static final BpelNodeAction[] getCategoriesAction(Node[] nodes) {
@@ -157,8 +150,6 @@ public class AddFromPaletteAction extends BpelNodeAction {
                 submenu.add(subsubmenu);
             }
         }
-
-////        return new Actions.SubMenu(this, model, true);
         return submenu;
     }
 

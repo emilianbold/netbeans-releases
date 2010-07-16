@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,6 @@ package org.netbeans.modules.xslt.validation.reference;
 
 import java.util.List;
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-
 import org.netbeans.modules.xslt.model.AttributeSet;
 import org.netbeans.modules.xslt.model.CallTemplate;
 import org.netbeans.modules.xslt.model.CharacterMap;
@@ -58,85 +57,59 @@ import org.netbeans.modules.xslt.model.XslVisitor;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
 
 import org.netbeans.modules.xslt.validation.core.XsltValidator;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public final class Validator extends XsltValidator {
 
-  public XslVisitor getVisitor() { return new XslVisitorAdapter() {
+    public XslVisitor getVisitor() {
+        return new XslVisitorAdapter() {
 
-  @Override
-  public void visit(CallTemplate callTemplate) {
+            @Override
+            public void visit(CallTemplate callTemplate) {
 //out();
 //out("callTemplate: " + callTemplate);
+                checkReference(callTemplate, callTemplate.getName());
+            }
 
-    checkReference(callTemplate, callTemplate.getName());
-//todo r
-//addError("FIX_Reference", callTemplate);
-  }
-
-  @Override
-  public void visit(TypeSpec typeSpec) {
+            @Override
+            public void visit(TypeSpec typeSpec) {
 //out();
 //out("typeSpec: " + typeSpec);
-    checkReference(typeSpec, typeSpec.getType());
-  }
+                checkReference(typeSpec, typeSpec.getType());
+            }
 
-  @Override
-  public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {
+            @Override
+            public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {
 //out();
 //out("useAttributesSetsSpec: " + useAttributesSetsSpec);
-    List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
+                List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
 
-    for (XslReference<AttributeSet> set : sets) {
-      checkReference(useAttributesSetsSpec, set);
-    }
-  }
+                for (XslReference<AttributeSet> set : sets) {
+                    checkReference(useAttributesSetsSpec, set);
+                }
+            }
 
-  @Override
-  public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {
+            @Override
+            public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {
 //out();
 //out("useCharacterMapsSpec: " + useCharacterMapsSpec);
-    List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
+                List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
 
-    for (XslReference<CharacterMap> set : sets) {
-      checkReference(useCharacterMapsSpec, set);
-    }
-  }
+                for (XslReference<CharacterMap> set : sets) {
+                    checkReference(useCharacterMapsSpec, set);
+                }
+            }
 
-  @Override
-  public void visit(WithParam withParam) {
+            @Override
+            public void visit(WithParam withParam) {
 //out();
 //out("withParam: " + withParam);
-    checkReference(withParam, withParam.getName());
-  }
-
-  private void checkReference(Object object, Reference<? extends Component> reference) {
-//out("reference: " + reference);
-    if ( !(object instanceof Component)) {
-      return;
+                checkReference(withParam, withParam.getName());
+            }
+        };
     }
-    Component component = (Component) object;
-
-    if (reference == null) {
-      return;
-    }
-    if ( !reference.isBroken()) {
-      return;
-    }
-    String name;
-
-    if (component instanceof DocumentComponent) {
-      name = ((DocumentComponent) component).getPeer().getLocalName();
-    }
-    else {
-      name = ""; // NOI18N
-    }
-    addError("FIX_Reference", component, name); // NOI18N
-  }
-
-};}}
+}

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,14 +63,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -143,6 +146,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 model.addElement(rec);
             }
             defaultRecord = cache.getDefaultRecord();
+            if (defaultRecord == null) {
+                defaultRecord = ServerList.getDefaultRecord();
+            }
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setSelectedValue(defaultRecord, false);
@@ -162,6 +168,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             // need to check remote tool chains in a separate thread
             btSetAsDefault.setEnabled(false);
             final Runnable enabler = new Runnable() {
+                @Override
                 public void run() {
                     // check if it has already changed
                     ServerRecord curr = (ServerRecord) lstDevHosts.getSelectedValue();
@@ -171,6 +178,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 }
             };
             Runnable checker = new Runnable() {
+                @Override
                 public void run() {
                     CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
                     if (!compilerSetManagerCopy.isEmpty()) {
@@ -198,16 +206,18 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             // move expensive operation out of EDT
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
                         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
-                        csm.initialize(false, true);
+                        csm.initialize(false, true, null);
                     }
                     phandle.finish();
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             pbarStatusPanel.setVisible(false);
                             setButtons(true);
@@ -224,10 +234,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ServerRecord rec = (ServerRecord) value;
-            out.setText(rec.getDisplayName());
-            if (value != null && value.equals(getDefaultRecord())) {
-                out.setFont(out.getFont().deriveFont(Font.BOLD));
+            if (value != null) {
+                ServerRecord rec = (ServerRecord) value;
+                out.setText(rec.getDisplayName());
+                if (rec.equals(getDefaultRecord())) {
+                    out.setFont(out.getFont().deriveFont(Font.BOLD));
+                }
             }
             return out;
         }
@@ -268,6 +280,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object source = evt.getSource();
         String prop = evt.getPropertyName();
@@ -277,6 +290,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     /** Enable/disable the Remove and Set As Default buttons */
+    @Override
     public void valueChanged(ListSelectionEvent evt) {
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
@@ -314,12 +328,14 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setEnabled(false); // setVisible(false);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         Object o = evt.getSource();
 
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals(CMD_ADD)) {
+                cacheManager.setHosts(getHosts());
                 ServerRecord result = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (result != null) {
                     if (!model.contains(result)) {

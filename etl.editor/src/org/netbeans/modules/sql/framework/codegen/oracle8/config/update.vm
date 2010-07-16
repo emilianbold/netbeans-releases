@@ -4,6 +4,7 @@
 #set( $totalMappings = $mappings.size())
 #set( $mappingCounter = 1)
 #set( $indent = "    " )
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/disableConstraints.vm")
 UPDATE (  
 ##
 ## SUBSELECT CLAUSE
@@ -34,3 +35,4 @@ ${indent}$mapping.getTarget().getAliasName() = $mapping.getSource().getAliasName
 #set( $mappingCounter = $mappingCounter + 1)
 #end
 #end
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/enableConstraints.vm")

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -102,30 +105,28 @@ public final class EjbEnterpriseReferenceContainerSupport {
             antHelper = helper;
         }
         
-        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-            return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
+        public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+            return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
         }
         
-        public String addEjbLocalReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-            return addReference(ref, ejbRefName, true, referencingFile, referencingClass);
+        public String addEjbLocalReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+            return addReference(ref, refType, ejbRefName, true, referencingFile, referencingClass);
         }
         
-        private String addReference(final EjbReference ejbReference, final String ejbRefName, final boolean local, FileObject referencingFile,
+        private String addReference(final EjbReference ejbReference, final EjbReference.EjbRefIType refType, final String ejbRefName, final boolean local, FileObject referencingFile,
                 final String referencingClass) throws IOException {
 
             final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             
             MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-            final String[] ejbName = new String[1];
-            FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-                public FileObject run(EjbJarMetadata metadata) throws Exception {
-                    ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
-                    return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+            String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
+                    return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
                 }
             });
             
-            Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+            Project project = FileOwnerQuery.getOwner(ejbReference.getComponentFO(refType));
             AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
             boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
             final AntArtifact moduleJarTarget = hasArtifact ? antArtifacts[0] : null;
@@ -136,7 +137,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             }
             
             String jarName = names[names.length - 1] + "#";
-            final String ejbLink = jarName + ejbName[0];
+            final String ejbLink = jarName + ejbName;
             
             final boolean[] write = new boolean[] { false };
             String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -196,7 +197,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             ProjectManager.getDefault().saveProject(ejbProject);
             return resourceName;
         }
-        
+
         public String getServiceLocatorName() {
             EditableProperties ep =
                     antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

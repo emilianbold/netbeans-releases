@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -351,6 +354,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public void addInstance(String url, String username, String password,
             String displayName, boolean withoutUI, Map<String, String> initialproperties) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
+        // may happen when autoregistered instance is removed
         if (url == null || url.equals("")) { //NOI18N
             LOGGER.log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
             return;
@@ -371,6 +375,7 @@ public final class ServerRegistry implements java.io.Serializable {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
         }
+
         FileObject dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
@@ -417,6 +422,11 @@ public final class ServerRegistry implements java.io.Serializable {
     private void addInstanceImpl(String url, String username,
             String password, String displayName, boolean withoutUI,
             Map<String, String> initialProperties, boolean loadPlugins) throws InstanceCreationException {
+
+        if (url == null) {
+            // may happen when autoregistered instance is removed
+            LOGGER.log(Level.FINE, "Tried to add instance with null url");
+        }
 
         synchronized (this) {
             if (instancesMap().containsKey(url)) {

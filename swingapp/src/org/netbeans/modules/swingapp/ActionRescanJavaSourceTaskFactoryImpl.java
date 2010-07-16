@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.FormDataObject;
-import org.netbeans.modules.form.FormEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -63,6 +65,7 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
         super(Phase.RESOLVED, Priority.LOW); //getPhase(),getPriority());
     }
 
+    @Override
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
         return new RescanTask(file);
     }
@@ -82,9 +85,11 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
             this.file = file;
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(CompilationInfo info) throws Exception {
             // Rescan the file only if it is a java file from which some opened
             // form might read action methods - technically this can be the form

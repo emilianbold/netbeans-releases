@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -73,7 +77,9 @@ public class FSInterceptorTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
+        File userdir = new File(getWorkDir() + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getWorkDir());
     }
 
@@ -145,7 +151,7 @@ public class FSInterceptorTest extends NbTestCase {
         // doCreate
         w = new W() {
             void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileDataCreated(new FileEvent(FileUtil.toFileObject(wFile)));
+                fi.createSuccess(FileUtil.toFileObject(wFile));
             }
         };
         w.test(new String[] {"afterCreate", "doCreate"}); // ignore both
@@ -177,7 +183,7 @@ public class FSInterceptorTest extends NbTestCase {
         // afterDelete
         w = new W() {
             void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileDeleted(new FileEvent(FileUtil.toFileObject(wFile)));
+                fi.deleteSuccess(FileUtil.toFileObject(wFile));
             }
         };
         w.test();
@@ -244,6 +250,13 @@ public class FSInterceptorTest extends NbTestCase {
         };
         w.test();
 
+        // refreshRecursively
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                fi.refreshRecursively(wFile, -1, null);
+            }
+        };
+        w.test();
 
         Method[] methods = VCSInterceptor.class.getDeclaredMethods();
         for (Method method : methods) {
@@ -304,6 +317,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         private boolean ignore(String name, String[] toBeIgnored) {
+            if(toBeIgnored == null) return false;
             for (String i : toBeIgnored) {
                 if(i.equals(name)) {
                     return true;
@@ -405,6 +419,12 @@ public class FSInterceptorTest extends NbTestCase {
             return super.isMutable(file);
         }
 
+        @Override
+        public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+            storeMethodName();
+            return super.refreshRecursively(dir, lastTimeStamp, children);
+        }
+
         private void storeMethodName() {
             StackTraceElement[] st = Thread.currentThread().getStackTrace();
             for (int i = 0; i < st.length; i++) {
@@ -413,9 +433,9 @@ public class FSInterceptorTest extends NbTestCase {
                     methodNames.add(st[i+1].getMethodName());
                     return;
                 }
-
             }
         }
+
     }
 
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
@@ -458,8 +478,14 @@ public class FSInterceptorTest extends NbTestCase {
         @Override
         public void publish(LogRecord record) {            
             String msg = record.getMessage();
-            if(msg == null || msg.trim().equals("") || !msg.startsWith("needsLocalHistory")) return;
-            methodNames.add((String) record.getParameters()[0]);
+            if(msg == null || msg.trim().equals("")) {
+                return;
+            }
+            if(msg.startsWith("refreshRecursively")) {
+                methodNames.add("refreshRecursively");
+            } else if(msg.startsWith("needsLocalHistory")) {
+                methodNames.add((String) record.getParameters()[0]);
+            }
         }
 
         void reset () {

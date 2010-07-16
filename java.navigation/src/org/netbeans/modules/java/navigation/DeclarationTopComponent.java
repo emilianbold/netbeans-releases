@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,14 +46,11 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -92,7 +92,7 @@ public final class DeclarationTopComponent extends TopComponent {
         }
         declarationEditorPane.setCaretPosition(0);
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 declarationEditorPane.scrollRectToVisible(ZERO);
             }
         });
@@ -148,19 +148,20 @@ public final class DeclarationTopComponent extends TopComponent {
      * Obtain the DeclarationTopComponent instance. Never call {@link #getDefault} directly!
      */
     public static synchronized DeclarationTopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            LOGGER.log(Level.WARNING, 
-                    "Cannot find MyWindow component. It will not be located properly in the window system.");
-            return getDefault();
-        }
-        if (win instanceof DeclarationTopComponent) {
-            return (DeclarationTopComponent)win;
-        }
-        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
-        return getDefault();
+//        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+//        if (win == null) {
+//            LOGGER.log(Level.WARNING,
+//                    "Cannot find MyWindow component. It will not be located properly in the window system.");
+//            return getDefault();
+//        }
+//        if (win instanceof DeclarationTopComponent) {
+//            return (DeclarationTopComponent)win;
+//        }
+//        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
+//                "There seem to be multiple components with the '" + PREFERRED_ID +
+//                "' ID. That is a potential source of errors and unexpected behavior.");
+//        return getDefault();
+        return instance;
     }
     
     public static boolean shouldUpdate() {
@@ -171,14 +172,17 @@ public final class DeclarationTopComponent extends TopComponent {
             return instance.isShowing();
         }
     }
-    
+
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
+    @Override
     public void componentOpened() {
     }
     
+    @Override
     public void componentClosed() {
     }
     
@@ -190,10 +194,12 @@ public final class DeclarationTopComponent extends TopComponent {
     
          
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }

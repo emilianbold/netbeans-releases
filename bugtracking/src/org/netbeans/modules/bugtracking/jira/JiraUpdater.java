@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,12 +50,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -85,22 +89,6 @@ public class JiraUpdater {
             instance = new JiraUpdater();
         }
         return instance;
-    }
-
-    /**
-     * Determines if the jira plugin is instaled or not
-     *
-     * @return true if jira plugin is installed, otherwise false
-     */
-    public static boolean isJiraInstalled() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (BugtrackingConnector c : connectors) {
-            // XXX hack
-            if(c.getClass().getName().startsWith("org.netbeans.modules.jira")) {    // NOI18N
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -151,7 +139,7 @@ public class JiraUpdater {
         DialogDescriptor dd =
             new DialogDescriptor(
                 panel,
-                NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"),                    // NOI18N
+                NbBundle.getMessage(JiraUpdater.class, "CTL_MissingJiraPlugin"),                    // NOI18N
                 true,
                 new Object[] {download, cancel},
                 download,
@@ -194,17 +182,17 @@ public class JiraUpdater {
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(msgLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 470, Short.MAX_VALUE)
-                    .add(linkButton))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(msgLabel, GroupLayout.PREFERRED_SIZE, 470, Short.MAX_VALUE)
+                    .addComponent(linkButton))
                 .addContainerGap()
         );
         layout.setVerticalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(msgLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(linkButton)
+                .addComponent(msgLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(linkButton)
                 .addContainerGap(25, Short.MAX_VALUE)
         );
 
@@ -214,11 +202,11 @@ public class JiraUpdater {
     private class JiraProxyConector extends BugtrackingConnector {
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(FakeJiraSupport.class, "LBL_FakeJiraName");              // NOI18N
+            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName");              // NOI18N
         }
         @Override
         public String getTooltip() {
-            return NbBundle.getMessage(FakeJiraSupport.class, "LBL_FakeJiraNameTooltip");       // NOI18N
+            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip");       // NOI18N
         }
         @Override
         public Repository createRepository() {
@@ -230,6 +218,16 @@ public class JiraUpdater {
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
@@ -316,7 +314,7 @@ public class JiraUpdater {
             JPanel panel = new JPanel();
 
             JLabel pane = new JLabel();
-            pane.setText(NbBundle.getMessage(FakeJiraSupport.class, "MSG_NOT_YET_INSTALLED"));
+            pane.setText(NbBundle.getMessage(JiraUpdater.class, "MSG_NOT_YET_INSTALLED"));
 
             JButton downloadButton = new JButton();
             downloadButton.addActionListener(new ActionListener() {
@@ -330,20 +328,20 @@ public class JiraUpdater {
             GroupLayout layout = new GroupLayout(panel);
             panel.setLayout(layout);
             layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(downloadButton))
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(pane, GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE))
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(downloadButton))
             );
             layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(pane)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(downloadButton))
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(pane)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(downloadButton))
                 .addContainerGap())
             );
 

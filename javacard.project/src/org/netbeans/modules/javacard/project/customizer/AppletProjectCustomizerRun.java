@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,9 +51,14 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.modules.javacard.common.GuiUtils;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.openide.util.HelpCtx;
 
-public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener, ValidationGroupProvider, ListDataListener {
     private Map<Object, String> selection2url;
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
@@ -58,14 +66,43 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 
     public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
+        GuiUtils.prepareContainer(this);
         platformAndDevicePanel21.setPlatformAndCard(props);
+        platformAndDevicePanel21.setProjectKind(props.getProject().kind());
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
+        servletComboBox.getModel().addListDataListener(this);
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);
         selection2url = new HashMap<Object, String>();
         selecting = SELECTING_SERVLET;
         updateSelection();
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        intervalAdded(null);
+    }
+
+    public ValidationGroup getValidationGroup() {
+        return platformAndDevicePanel21.getValidationGroup();
+    }
+
+    public void intervalAdded(ListDataEvent e) {
+        boolean hasScripts = servletComboBox.getModel().getSize() > 0;
+        launchBrowserCheckBox.setEnabled(hasScripts);
+        if (!launchBrowserCheckBox.isEnabled()) {
+            launchBrowserCheckBox.setSelected(false);
+        }
+    }
+
+    public void intervalRemoved(ListDataEvent e) {
+        intervalAdded(e);
+    }
+
+    public void contentsChanged(ListDataEvent e) {
+        intervalAdded(e);
     }
 
     private static final class CRen extends DefaultListCellRenderer {
@@ -175,7 +212,9 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 }//GEN-LAST:event_servletComboBoxActionPerformed
 
     private void launchBrowserCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_launchBrowserCheckBoxActionPerformed
-
+        if (servletComboBox.getSelectedItem() == null && servletComboBox.getModel().getSize() > 0) {
+            servletComboBox.setSelectedIndex(0);
+        }
 }//GEN-LAST:event_launchBrowserCheckBoxActionPerformed
 
     private void launchBrowserCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_launchBrowserCheckBoxStateChanged
@@ -195,6 +234,10 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     }
     
     private void updateUrl() {
+        if (selection2url == null) {
+            //superclass call
+            return;
+        }
         Object selectedObject = getSelectedServletOrPage();
         String url = selection2url.get(selectedObject);
         if (url == null) {

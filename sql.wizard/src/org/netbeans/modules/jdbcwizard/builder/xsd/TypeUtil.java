@@ -80,7 +80,7 @@ public class TypeUtil {
         TypeUtil.builtInTypes.put("java.sql.Date", "xsd:string");
 
         // temporary for demo
-        TypeUtil.builtInTypes.put("java.sql.Blob", "xsd:string");
+        TypeUtil.builtInTypes.put("java.sql.Blob", "xsd:hexBinary");
         TypeUtil.builtInTypes.put("java.sql.Clob", "xsd:string");
         // added by abey for Procedure with parameter of type RefCursor
         TypeUtil.builtInTypes.put("java.sql.ResultSet", "xsd:ResultSet");

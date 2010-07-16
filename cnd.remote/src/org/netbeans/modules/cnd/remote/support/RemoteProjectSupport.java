@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,7 @@ import java.io.FileFilter;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -58,6 +61,9 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Kvashin
  */
 public class RemoteProjectSupport {
+
+    private RemoteProjectSupport() {
+    }
 
     public static ExecutionEnvironment getExecutionEnvironment(Project project) {
         MakeConfiguration mk = ConfigurationSupport.getProjectActiveConfiguration(project);
@@ -99,8 +105,11 @@ public class RemoteProjectSupport {
         sourceFilesAndDirs.add(baseDir);
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcs == null) {
+            return new File[0];
+        }
         for(String soorceRoot : mcs.getSourceRoots()) {
-            String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
+            String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = new File(path); // or canonical?
             sourceFilesAndDirs.add(file);
         }
@@ -108,7 +117,7 @@ public class RemoteProjectSupport {
         // Make sure 1st level subprojects are visible remotely
         // First, remembr all subproject locations
         for (String subprojectDir : conf.getSubProjectLocations()) {
-            subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
+            subprojectDir = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
             sourceFilesAndDirs.add(new File(subprojectDir));
         }
         // Then go trough open subprojects and add their external source roots
@@ -131,9 +140,11 @@ public class RemoteProjectSupport {
             if (!filter.accept(normFile)) {
                 // user explicitely added file -> copy it even
                 filesToSync.add(normFile);
-                File parentFile = normFile.getParentFile();
             } else if (!isContained(normFile, filesToSync)) {
                 // directory containing file is not yet added => copy it
+                filesToSync.add(normFile);
+            } else if (!normFile.exists()) {
+                // it won't be added while recursin into directories
                 filesToSync.add(normFile);
             }
         }

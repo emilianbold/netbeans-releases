@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,6 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.*;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Engine;
@@ -408,28 +410,6 @@ public class TomcatInstallUtil {
         TomcatInstallUtil.updateDocument(textDoc,TomcatInstallUtil.getDocumentText(doc),"<Server"); //NOI18N
         SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
         if (savec!=null) savec.save();
-    }
-    
-    public static String generatePassword(int length) {
-	int ran2 = 0;
-        Random random = new Random();
-	StringBuilder pwd = new StringBuilder();
-	for (int i = 0; i < length; i++) {
-            //ran2 = (int)(Math.random()*61);
-            ran2 = random.nextInt(61);
-            if (ran2 < 10) {
-                ran2 += 48;
-            } else {
-                if (ran2 < 35) {
-                    ran2 += 55;
-                } else {
-                    ran2 += 62;
-                }
-            }
-            char c = (char) ran2;
-            pwd.append(c);
-	}
-        return pwd.toString();
     }
 
 }

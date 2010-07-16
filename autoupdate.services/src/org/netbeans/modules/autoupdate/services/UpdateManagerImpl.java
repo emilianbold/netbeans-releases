@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -221,28 +224,28 @@ public class UpdateManagerImpl extends Object {
         Cache() {
             units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
         }        
-        public Set<UpdateElement> getAvailableEagers() {
+        public synchronized Set<UpdateElement> getAvailableEagers() {
             if (availableEagers == null) {
                 createMaps ();
             }
             assert availableEagers != null : "availableEagers initialized";
             return availableEagers;
         }
-        public Set<UpdateElement> getInstalledEagers() {
+        public synchronized Set<UpdateElement> getInstalledEagers() {
             if (installedEagers == null) {
                 createMaps ();
             }            
             assert installedEagers != null : "installedEagers initialized";
             return installedEagers;
         }                        
-        public Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
+        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
             if (token2installedProviders == null) {
                 createMaps ();
             }            
             assert token2installedProviders != null : "token2installedProviders initialized";
             return token2installedProviders;
         }                        
-        public Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
+        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
             if (token2availableProviders == null) {
                 createMaps ();
             }

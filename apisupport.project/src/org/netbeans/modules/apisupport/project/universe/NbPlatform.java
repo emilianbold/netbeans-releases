@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,35 +54,33 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -97,6 +98,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static final String PLATFORM_JAVADOC_SUFFIX = ".javadoc"; // NOI18N
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
     public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(NbPlatform.class.getName());
     
     private static volatile Set<NbPlatform> platforms;
     
@@ -104,54 +106,43 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private final SourceRootsSupport srs;
     private final JavadocRootsSupport jrs;
 
-    // should proceed in chronological order so we can do compatibility tests with >=
-    /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
-    public static final int HARNESS_VERSION_UNKNOWN = 0;
-    /** Harness version found in 5.0. */
-    public static final int HARNESS_VERSION_50 = 1;
-    /** Harness version found in 5.0 update 1 and 5.5. */
-    public static final int HARNESS_VERSION_50u1 = 2;
-    /** Harness version found in 5.5 update 1. */
-    public static final int HARNESS_VERSION_55u1 = 3;
-    /** Harness version found in 6.0. */
-    public static final int HARNESS_VERSION_60 = 4;
-    /** Harness version found in 6.1. */
-    public static final int HARNESS_VERSION_61 = 5;
-    /** Harness version found in 6.5. */
-    public static final int HARNESS_VERSION_65 = 6;
-    /** Harness version found in 6.7. */
-    public static final int HARNESS_VERSION_67 = 7;
-    /** Harness version found in 6.8. */
-    public static final int HARNESS_VERSION_68 = 8;
-
-    static {
+    private static volatile boolean inited;
+    private static Map<String,String> initBuildProperties() {
+        if (inited) {
+            return null;
+        }
         final File install = NbPlatform.defaultPlatformLocation();
-        if (install != null) {
-            class Init implements Runnable {
-                public void run() {
-                    if (ProjectManager.mutex().isWriteAccess()) {
-                        EditableProperties p = PropertyUtils.getGlobalProperties();
-                        String installS = install.getAbsolutePath();
-                        p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
-                        if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
-                            p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+        if (install == null) {
+            inited = true;
+            return null;
+        }
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
+            private EditableProperties loadWithProcessing() {
+                EditableProperties p = PropertyUtils.getGlobalProperties();
+                String installS = install.getAbsolutePath();
+                p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
+                if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
+                    p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                }
+                return p;
+            }
+            public @Override Map<String,String> run() {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public @Override void run() {
+                        if (inited) {
+                            return;
                         }
                         try {
-                            PropertyUtils.putGlobalProperties(p);
+                            PropertyUtils.putGlobalProperties(loadWithProcessing());
                         } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
-                    } else {
-                        ProjectManager.mutex().postWriteRequest(this);
+                        inited = true;
                     }
-                }
+                });
+                return PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.fixedPropertyProvider(loadWithProcessing())).getProperties();
             }
-            try {
-                RequestProcessor.getDefault().post(new Init()).waitFinished(1000);
-            } catch (InterruptedException ex) {
-                // OK
-            }
-        }
+        });
     }
     
     /**
@@ -170,6 +161,23 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         Set<NbPlatform> plafs = getPlatformsInternal();
         synchronized (plafs) {
             return new HashSet<NbPlatform>(plafs);
+        }
+    }
+
+    /**
+     * Gets registered platforms, if these have already been computed for some other reason, else an empty set.
+     */
+    public static Set<NbPlatform> getPlatformsOrNot() {
+        Set<NbPlatform> plafs;
+        synchronized (lock) {
+            plafs = platforms;
+        }
+        if (plafs != null) {
+            synchronized (plafs) {
+                return new HashSet<NbPlatform>(plafs);
+            }
+        } else {
+            return Collections.emptySet();
         }
     }
 
@@ -194,7 +202,10 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             // as it acquires PM.mutex() read lock internally and can deadlock
             // when getPlatformsInternal() is called from PM.mutex() write lock;
             // see issue #173345
-            p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+            p = initBuildProperties();
+            if (p == null) {
+                p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+            }
         }
         synchronized (lock) {
             if (platforms == null) {
@@ -229,9 +240,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
                     }
                 }
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("NbPlatform initial list: " + platforms);
-                }
+                LOG.log(Level.FINE, "NbPlatform initial list: {0}", platforms);
             }
         }
         return platforms;
@@ -253,29 +262,24 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         // Semi-arbitrary platform* component.
         File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("no core/core.jar");
-            }
+            LOG.warning("no core/core.jar");
             return null;
         }
         // Semi-arbitrary harness component.
         File harnessJar = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-apisupport-harness.jar", "org.netbeans.modules.apisupport.harness", false); // NOI18N
         if (harnessJar == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve default platform. " + // NOI18N
-                    "Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted."); // NOI18N
+            LOG.warning("Cannot resolve default platform. Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted.");
             return null;
         }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         try {
             if (!loc.getCanonicalFile().equals(bootJar.getParentFile().getParentFile().getParentFile().getCanonicalFile())) {
                 // Unusual installation structure, punt.
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("core.jar & harness.jar locations do not match: " + bootJar + " vs. " + harnessJar);
-                }
+                LOG.log(Level.WARNING, "core.jar & harness.jar locations do not match: {0} vs. {1}", new Object[] {bootJar, harnessJar});
                 return null;
             }
         } catch (IOException x) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+            LOG.log(Level.INFO, null, x);
         }
         // Looks good.
         return FileUtil.normalizeFile(loc);
@@ -419,9 +423,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 Util.findURLs(null), Util.findURLs(null));
         getPlatformsInternal().add(plaf);
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform added: " + plaf);
-        }
+        LOG.log(Level.FINE, "NbPlatform added: {0}", plaf);
         return plaf;
     }
     
@@ -458,24 +460,21 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             throw (IOException) e.getException();
         }
         getPlatformsInternal().remove(plaf);
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform removed: " + plaf);
-        }
+        ModuleList.refresh(); // #97262
+        LOG.log(Level.FINE, "NbPlatform removed: {0}", plaf);
     }
     
     private final String id;
     private String label;
     private File nbdestdir;
     private File harness;
-    private URL[] javadocRoots;
-    private int harnessVersion = -1;
+    private HarnessVersion harnessVersion;
     
     private NbPlatform(String id, String label, File nbdestdir, File harness, URL[] sources, URL[] javadoc) {
         this.id = id;
         this.label = label;
         this.nbdestdir = nbdestdir;
         this.harness = harness;
-        this.javadocRoots = javadoc;
         pcs = new PropertyChangeSupport(this);
         srs = new SourceRootsSupport(sources, this);
         srs.addPropertyChangeListener(new PropertyChangeListener() {
@@ -524,7 +523,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     NbBundle.getMessage(NbPlatform.class, "MSG_InvalidPlatform",  // NOI18N
                         getDestDir().getAbsolutePath());
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(NbPlatform.class.getName()).log(Level.FINE, "could not get label for " + nbdestdir, e);
                 label = nbdestdir.getAbsolutePath();
             }
         }
@@ -549,17 +548,35 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     }
 
     /**
-     * Get javadoc which should by default be associated with the default platform.
+     * Gets Javadoc which should by default be associated with a platform.
      */
-    public URL[] getDefaultJavadocRoots() {
-        if (! isDefault())
-            return null;
-        // javadoc can be built in the meantime, don't cache
-        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
-        if (apidocsZip != null) {
-            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+    public @Override URL[] getDefaultJavadocRoots() {
+        if (isDefault()) {
+            File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+            if (apidocsZip != null) {
+                return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+            }
         }
-        return new URL[0];
+        // Use a representative module present in all 6.x versions.
+        ModuleEntry platform = getModule("org.netbeans.modules.core.kit"); // NOI18N
+        if (platform != null) {
+            String spec = platform.getSpecificationVersion();
+            if (spec != null) {
+                Matcher m = Pattern.compile("(\\d+[.]\\d+)([.]\\d+)*").matcher(spec);
+                if (m.matches()) {
+                    String trunkSpec = m.group(1);
+                    try {
+                        String loc = NbBundle.getBundle(NbPlatform.class).getString("NbPlatform.web.javadoc." + trunkSpec);
+                        return new URL[] {new URL(loc)};
+                    } catch (MissingResourceException x) {
+                        // fine, some other trunk version, ignore
+                    } catch (MalformedURLException x) {
+                        assert false : x;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void addJavadocRoot(URL root) throws IOException {
@@ -594,12 +611,15 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Get any sources which should by default be associated with the default platform.
      */
-    public URL[] getDefaultSourceRoots() {
-        if (! isDefault())
+    public @Override URL[] getDefaultSourceRoots() {
+        if (! isDefault()) {
             return null;
+        }
         // location of platform won't change, safe to cache
-        if (defaultSourceRoots != null)
+        if (defaultSourceRoots != null) {
             return defaultSourceRoots;
+        }
+        defaultSourceRoots = new URL[0];
         File loc = getDestDir();
         if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
             try {
@@ -608,7 +628,6 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 assert false : e;
             }
         }
-        defaultSourceRoots = new URL[0];
         return defaultSourceRoots;
     }
 
@@ -712,24 +731,32 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
      */
     public Set<ModuleEntry> getModules() {
-        try {
-            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft();
-        } catch (IOException e) {
-            Util.err.notify(e);
-            return Collections.emptySet();
+        if (nbdestdir.isDirectory()) {
+            try {
+                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getAllEntries();
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        } else {
+            LOG.log(Level.WARNING, "Platform directory {0} does not exist", nbdestdir);
         }
+        return Collections.emptySet();
     }
 
     /**
      * Gets a module from the platform by name.
      */
     public ModuleEntry getModule(String cnb) {
-        try {
-            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getEntry(cnb);
-        } catch (IOException e) {
-            Util.err.notify(e);
-            return null;
+        if (nbdestdir.isDirectory()) {
+            try {
+                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        } else {
+            LOG.log(Level.WARNING, "Platform directory {0} does not exist", nbdestdir);
         }
+        return null;
     }
     
     private static File findCoreJar(File destdir) {
@@ -766,8 +793,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         if (coreJar != null) {
             String platformDir = coreJar.getParentFile().getParentFile().getName();
             assert platformDir.startsWith("platform"); // NOI18N
-            int version = Integer.parseInt(platformDir.substring(8)); // 8 == "platform".length
-            valid = version >= 6;
+            String version = platformDir.substring("platform".length());
+            valid = /* NB 6.9+ */version.isEmpty() || Integer.parseInt(version) >= 6;
         }
         return valid;
     }
@@ -894,12 +921,12 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Get the version of this platform's harness.
      */
-    public int getHarnessVersion() {
-        if (harnessVersion != -1) {
+    public HarnessVersion getHarnessVersion() {
+        if (harnessVersion != null) {
             return harnessVersion;
         }
         if (!isValid()) {
-            return harnessVersion = HARNESS_VERSION_UNKNOWN;
+            return harnessVersion = HarnessVersion.UNKNOWN;
         }
         File harnessJar = new File(harness, "modules" + File.separatorChar + "org-netbeans-modules-apisupport-harness.jar"); // NOI18N
         if (harnessJar.isFile()) {
@@ -909,34 +936,18 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
                     if (spec != null) {
                         SpecificationVersion v = new SpecificationVersion(spec);
-                        if (v.compareTo(new SpecificationVersion("1.18")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_68;
-                        } else if (v.compareTo(new SpecificationVersion("1.14")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_67;
-                        } else if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_65;
-                        } else if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_61;
-                        } else if (v.compareTo(new SpecificationVersion("1.10")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_60;
-                        } else if (v.compareTo(new SpecificationVersion("1.9")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_55u1;
-                        } else if (v.compareTo(new SpecificationVersion("1.7")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_50u1;
-                        } else if (v.compareTo(new SpecificationVersion("1.6")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_50;
-                        } // earlier than beta2? who knows...
+                        return harnessVersion = HarnessVersion.forHarnessModuleVersion(v);
                     }
                 } finally {
                     jf.close();
                 }
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             } catch (NumberFormatException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             }
         }
-        return harnessVersion = HARNESS_VERSION_UNKNOWN;
+        return harnessVersion = HarnessVersion.UNKNOWN;
     }
     
     /**
@@ -973,36 +984,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             throw (IOException) e.getException();
         }
         this.harness = harness;
-        harnessVersion = -1;
-    }
-    
-    /**
-     * Gets a quick display name for the <em>version</em> of a harness.
-     * @param {@link #HARNESS_VERSION_50} etc.
-     * @return a short display name
-     */
-    public static String getHarnessVersionDisplayName(int version) {
-        switch (version) {
-            case HARNESS_VERSION_50:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0");
-            case HARNESS_VERSION_50u1:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0u1");
-            case HARNESS_VERSION_55u1:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.5u1");
-            case HARNESS_VERSION_60:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.0");
-            case HARNESS_VERSION_61:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.1");
-            case HARNESS_VERSION_65:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
-            case HARNESS_VERSION_67:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.7");
-            case HARNESS_VERSION_68:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.8");
-            default:
-                assert version == HARNESS_VERSION_UNKNOWN;
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");
-        }
+        harnessVersion = null;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

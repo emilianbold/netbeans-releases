@@ -18,12 +18,11 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.openide.nodes.Node;
@@ -51,6 +50,7 @@ public class DeleteAction extends BpelNodeAction {
     /**
      * Used just to declare public scope instead protected
      */
+    @Override
     public boolean enable(Node[] nodes) {
         return super.enable(nodes);
     }
@@ -58,6 +58,7 @@ public class DeleteAction extends BpelNodeAction {
     /**
      * Used just to declare public scope instead protected
      */
+    @Override
     public void performAction(Node[] nodes) {
         super.performAction(nodes);
     }
@@ -66,22 +67,22 @@ public class DeleteAction extends BpelNodeAction {
         if (!enable(bpelEntities)) {
             return;
         }
-
         for (BpelEntity entity : bpelEntities) {
             assert entity != null;
             BpelContainer parent = entity.getParent();
             assert parent != null;
             parent.remove(entity);
             
-            if (parent instanceof Else){
-                BpelContainer if_elem = parent .getParent();
-                if (if_elem != null){
-                    if_elem.remove(parent);
+            if ((parent instanceof Else) || (entity instanceof Correlation)) {
+                BpelContainer grandParent = parent.getParent();
+                if (grandParent != null){
+                    grandParent.remove(parent);
                 }
             }
         }
     }
     
+    @Override
     protected boolean enable(BpelEntity[] bpelEntities) {
         return super.enable(bpelEntities)
         && !(bpelEntities[0] instanceof Process);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,8 @@
 
 package org.netbeans.modules.jira.commands;
 
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraServiceUnavailableException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -46,11 +51,10 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
-import org.eclipse.mylyn.internal.jira.core.service.JiraServiceUnavailableException;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
@@ -102,6 +106,8 @@ public class JiraExecutor {
                 if(checkVersion) {
                     checkAutoupdate();
                 }
+
+                ensureCredentials();
 
                 cmd.execute();
 
@@ -161,6 +167,10 @@ public class JiraExecutor {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
         }
+    }
+
+    private void ensureCredentials() {
+        JiraConfig.getInstance().setupCredentials(repository);
     }
 
     public boolean handleIOException(IOException io) {
@@ -287,7 +297,16 @@ public class JiraExecutor {
             if (status != null && status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
+
                 if(html != null && !html.trim().equals("")) {                   // NOI18N
+                    html = html.trim();
+                    if(html.startsWith("<!DOCTYPE")) {                          // NOI18N
+                        // <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+                        int idx = html.indexOf(">");                            // NOI18N
+                        if(idx > -1) {
+                            html = html.substring(idx, html.length());
+                        }
+                    }
                     final HtmlPanel p = new HtmlPanel();
                     String label = NbBundle.getMessage(JiraExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
                     p.setHtml(repository.getUrl(), html, label);

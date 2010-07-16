@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -99,6 +102,7 @@ class EventProperty extends PropertySupport.ReadWrite {
      * selected event handler (for property sheet), not the Event object.
      * @return String name of the selected event handler attached to the event
      */
+    @Override
     public Object getValue() {
         if (selectedEventHandler == null && event.hasEventHandlers())
             selectedEventHandler = (String) event.getEventHandlerList().get(0);
@@ -116,6 +120,7 @@ class EventProperty extends PropertySupport.ReadWrite {
      * (describing multiple changes in event handlers), or null (to refresh
      * property sheet due to a change in handlers made outside).
      */
+    @Override
     public void setValue(Object val) {
         Change change = null;
         String newSelectedHandler = null;
@@ -236,6 +241,7 @@ class EventProperty extends PropertySupport.ReadWrite {
 
         if ("postSetAction".equals(key)) // NOI18N
             return new javax.swing.AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     // if Enter was pressed without echange or existing handler
                     // chosen, switch to editor
@@ -391,6 +397,7 @@ class EventProperty extends PropertySupport.ReadWrite {
                     new Object [] { getListenerMethod().getName() }),
                 true,
                 new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
                             ed.doChanges();

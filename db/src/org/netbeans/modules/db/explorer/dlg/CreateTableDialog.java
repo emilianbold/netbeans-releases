@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,9 +57,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +90,7 @@ import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 public class CreateTableDialog {
     Dialog dialog = null;
@@ -100,10 +104,10 @@ public class CreateTableDialog {
 
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
-    private static Logger LOGGER = Logger.getLogger(
+    private static final Logger LOGGER = Logger.getLogger(
             CreateTableDialog.class.getName());
 
-    public static final Map getProperties() {
+    public static Map getProperties() {
         if (dlgtab == null) try {
             ClassLoader cl = CreateTableDialog.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(filename);
@@ -115,7 +119,7 @@ public class CreateTableDialog {
             dlgtab = reader.getData();
             stream.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             dlgtab = null;
         }
 
@@ -162,14 +166,17 @@ public class CreateTableDialog {
             pane.add(dbnamefield);
             dbnamefield.getDocument().addDocumentListener(new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     validate();
                 }
@@ -206,6 +213,7 @@ public class CreateTableDialog {
             });
             table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
+                @Override
                 public void valueChanged(ListSelectionEvent e) {
                     // update Edit and Remove buttons
                     validate();
@@ -213,6 +221,7 @@ public class CreateTableDialog {
             });
             table.getModel().addTableModelListener(new TableModelListener() {
 
+                @Override
                 public void tableChanged(TableModelEvent e) {
                     validate();
                 }
@@ -240,6 +249,7 @@ public class CreateTableDialog {
             addbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableAddButtonTitleA11yDesc"));
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
 
                     ColumnItem columnItem = AddTableColumnDialog.showDialog(spec, null);
@@ -258,6 +268,7 @@ public class CreateTableDialog {
             btnpane.add(editBtn);
             editBtn.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     int selectedIndex = table.getSelectedRow();
                     if (selectedIndex != -1) {
@@ -279,6 +290,7 @@ public class CreateTableDialog {
             delbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableRemoveButtonTitleA11yDesc")); // NOI18N
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     int idx = table.getSelectedRow();
                     if (idx != -1) {
@@ -288,15 +300,17 @@ public class CreateTableDialog {
             });
 
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     final ActionEvent evt = event;
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         try {
                             final String tablename = getTableName();
                             final DataModel dataModel = (DataModel)table.getModel();
-                            final Vector data = dataModel.getData();
+                            final List<ColumnItem> data = dataModel.getData();
 
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     CreateTableDDL ddl = new CreateTableDDL(
                                             spec, schema, tablename);
@@ -318,7 +332,7 @@ public class CreateTableDialog {
                             if (cause instanceof DDLException) {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
-                                LOGGER.log(Level.INFO, null, cause);
+                                LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                                 DbUtilities.reportError(NbBundle.getMessage (CreateTableDialog.class, "ERR_UnableToCreateTable"), e.getMessage());
                             }
                         }
@@ -329,6 +343,7 @@ public class CreateTableDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableDialogA11yDesc")); // NOI18N
 
             descriptor = new DialogDescriptor(pane, NbBundle.getMessage (CreateTableDialog.class, "CreateTableDialogTitle"), true, listener); // NOI18N
+            descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.db.explorer.actions.CreateTableAction")); // NOI18N
             statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
@@ -338,7 +353,7 @@ public class CreateTableDialog {
             dialog.setResizable(true);
             validate();
         } catch (MissingResourceException ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
         }
     }
 

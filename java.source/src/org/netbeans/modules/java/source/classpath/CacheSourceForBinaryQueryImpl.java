@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,18 @@
 package org.netbeans.modules.java.source.classpath;
 
 
+import java.io.IOException;
 import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -59,7 +66,7 @@ import org.openide.util.Lookup;
 public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
     private String FILE_PROTOCOL = "file";  //NOI18N
-    
+
     /** Creates a new instance of CacheSourceForBinaryQueryImpl */
     public CacheSourceForBinaryQueryImpl() {
     }
@@ -70,7 +77,7 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
         URL sourceURL = JavaIndex.getSourceRootForClassFolder(binaryRoot);
         SourceForBinaryQuery.Result result = null;
-        if (sourceURL != null) {            
+        if (sourceURL != null) {
             for ( SourceForBinaryQueryImplementation impl :Lookup.getDefault().lookupAll(SourceForBinaryQueryImplementation.class)) {
                 if (impl != this) {
                     result = impl.findSourceRoots(sourceURL);
@@ -83,12 +90,11 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
             }
         return result;
     }
-    
+
     private static class R implements SourceForBinaryQuery.Result {
-        
         private final FileObject sourceRoot;
         private final SourceForBinaryQuery.Result delegate;
-        
+
         public R (final URL sourceRootURL, final SourceForBinaryQuery.Result delegate) {
             assert sourceRootURL != null;
             this.sourceRoot = URLMapper.findFileObject(sourceRootURL);
@@ -104,9 +110,10 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
 
         public FileObject[] getRoots() {
+
             FileObject[] result;
             //Is here SFBQ.Result for root?
-            if (delegate != null) {                
+            if (delegate != null) {
                 //Yes - either [root*] or [] - nothing or unknown
                 result = this.delegate.getRoots();
                 if (result.length == 0) {
@@ -114,22 +121,53 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     if (this.sourceRoot != null && GlobalPathRegistry.getDefault().getSourceRoots().contains(this.sourceRoot)) {
                         //nothing
                         result = new FileObject[] {this.sourceRoot};
-                    }                
+                    }
                     else {
                         //unknown
                         result = new FileObject[0];
                     }
                 }
-            }else {            
+            }else {
                 //No - unknown file - treat it like a source root
                 if (this.sourceRoot == null) {
                     result = new FileObject[0];
                 }
                 else {
-                    result = new FileObject[] {this.sourceRoot};
+                    final FileObject[] aptRoots = resolveAptSourceCache(sourceRoot);
+                    if (aptRoots.length == 0) {
+                        result = new FileObject[] {this.sourceRoot};
+                    }
+                    else {
+                        result = new FileObject[1+aptRoots.length];
+                        result[0] = this.sourceRoot;
+                        System.arraycopy(aptRoots, 0, result, 1, aptRoots.length);
+                    }
                 }
             }
             return result;
-        }                
-    }            
+        }
+
+        /**
+         * Resolves the APT sources cache root
+         * Depends on the JavaIndex rather than on AptCacheForSourceQuery due to performance reasons
+         */
+        private static FileObject[] resolveAptSourceCache(final FileObject sourceRoot) {
+            try {
+                final AnnotationProcessingQuery.Result result = AnnotationProcessingQuery.getAnnotationProcessingOptions(sourceRoot);
+                final URL annotationOutputURL = result.sourceOutputDirectory();
+                final FileObject userAnnotationOutput = annotationOutputURL == null ? null : URLMapper.findFileObject(annotationOutputURL);
+                final FileObject cacheAnnoationOutput = FileUtil.toFileObject(JavaIndex.getAptFolder(sourceRoot.getURL(), false));
+                return userAnnotationOutput == null ?
+                    cacheAnnoationOutput == null ?
+                        new FileObject[0] :
+                        new FileObject[] {cacheAnnoationOutput}
+                    : cacheAnnoationOutput == null ?
+                        new FileObject[] {userAnnotationOutput} :
+                        new FileObject[] {userAnnotationOutput, cacheAnnoationOutput};
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+    }
 }

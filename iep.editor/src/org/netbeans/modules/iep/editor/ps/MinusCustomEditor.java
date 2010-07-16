@@ -20,8 +20,11 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.table.DefaultMoveableRowTableModel;
+import org.netbeans.modules.tbls.editor.table.ReadOnlyNoExpressionDefaultMoveableRowTableModel;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -45,12 +48,11 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -79,8 +81,8 @@ public class MinusCustomEditor extends DefaultCustomEditor {
     private static class MyCustomizer extends DefaultCustomizer {
         protected JComboBox mSubtractCbb;
         protected JTextField mExpTf;
-        protected LinkedList mInputIdList;
-        protected LinkedList mInputNameList;
+        protected LinkedList<String> mInputIdList;
+        protected LinkedList<String> mInputNameList;
         protected String mSubtractFromName;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
@@ -102,7 +104,7 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -126,7 +128,7 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             pane.add(mNamePanel.component[1], gbc);
             
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
@@ -170,30 +172,17 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             pane.add(Box.createHorizontalStrut(20), gbc);
             
             //Subtract from
-            String subtractStr = NbBundle.getMessage(TimeBasedWindowCustomEditor.class, "MinusCustomEditor.SUBTRACT_FROM");
-            JLabel subtractLabel = new JLabel(subtractStr);
-            gbc.gridx = 3;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 0.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.NONE;
-            pane.add(subtractLabel, gbc);
-            
-            
             List<OperatorComponent> inputs = mComponent.getInputOperatorList();
-            mInputIdList = new LinkedList();
-            mInputNameList = new LinkedList();
+            mInputIdList = new LinkedList<String>();
+            mInputNameList = new LinkedList<String>();
             String[] inputNames = new String[inputs.size()];
             int j = 0;
             
             Iterator<OperatorComponent> it = inputs.iterator();
             while(it.hasNext()) {
                 OperatorComponent input = it.next();
-                String id = input.getId();
-                String inputName = input.getDisplayName();
+                String id = input.getString(PROP_ID);
+                String inputName = input.getString(PROP_NAME);
                 mInputIdList.add(id);
                 mInputNameList.add(inputName);
                 inputNames[j] = inputName;
@@ -201,10 +190,7 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             }
             Arrays.sort(inputNames); // display a sorted list in the combobox
             
-            String subtractFromId = mComponent.getProperty(SUBTRACT_FROM_KEY).getValue();
-            if (subtractFromId != null) {
-                subtractFromId = subtractFromId.trim();
-            }
+            String subtractFromId = mComponent.getString(PROP_SUBTRACT_FROM).trim();
             int idx = mInputIdList.indexOf(subtractFromId);
             if (idx < 0) {
                 if (mInputNameList.size() > 0) { // choose the first one by default
@@ -216,13 +202,44 @@ public class MinusCustomEditor extends DefaultCustomEditor {
                 mSubtractFromName = (String)mInputNameList.get(idx);
             }
             
-            mSubtractCbb = new JComboBox(inputNames);
+            Property subtractFromProperty = mComponent.getProperty(PROP_SUBTRACT_FROM);
+            String subtractStr = NbBundle.getMessage(TimeBasedWindowCustomEditor.class, "MinusCustomEditor.SUBTRACT_FROM");
+            PropertyPanel subtractFromProp = PropertyPanel.createComboBoxPanel(subtractStr, 
+                    subtractFromProperty, 
+                    inputNames, 
+                    (String[]) mInputIdList.toArray(new String[] {}), 
+                    false);
+            
+            JLabel subtractLabel = (JLabel) subtractFromProp.component[0];
+            
+            String ACDS_subtractFrom = NbBundle.getMessage(TimeBasedWindowCustomEditor.class, "ACDS_MinusCustomEditor.SUBTRACT_FROM");
+            subtractLabel.getAccessibleContext().setAccessibleDescription(ACDS_subtractFrom);
+            subtractLabel.setToolTipText(ACDS_subtractFrom);
+            
+            
+//            JLabel subtractLabel = new JLabel(subtractStr);
+            gbc.gridx = 3;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            pane.add(subtractLabel, gbc);
+            
+            
+            mSubtractCbb = (JComboBox) subtractFromProp.component[1];//new JComboBox(inputNames);
+            mSubtractCbb.getAccessibleContext().setAccessibleDescription(ACDS_subtractFrom);
+            mSubtractCbb.setToolTipText(ACDS_subtractFrom);
             // PreferredSize must be set o.w. failed validation will resize this field.
             mSubtractCbb.setPreferredSize(new Dimension(160, 20));
             mSubtractCbb.setEditable(false);
-            if (mSubtractFromName != null) {
-                mSubtractCbb.setSelectedItem(mSubtractFromName);
-            }
+//            if (mSubtractFromName != null) {
+//                mSubtractCbb.setSelectedItem(mSubtractFromName);
+//            }
+            
+                    
             mSubtractCbb.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     mSubtractFromName = (String)mSubtractCbb.getSelectedItem();
@@ -262,7 +279,13 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             
             // Expression
             String expStr = NbBundle.getMessage(TimeBasedWindowCustomEditor.class, "MinusCustomEditor.EXPRESSION");
-            JLabel expLabel = new JLabel(expStr);
+            JLabel expLabel = new JLabel();
+            org.openide.awt.Mnemonics.setLocalizedText(expLabel, expStr);
+            
+            String ACDS_expression = NbBundle.getMessage(TimeBasedWindowCustomEditor.class, "ACDS_MinusCustomEditor.EXPRESSION");
+            expLabel.getAccessibleContext().setAccessibleDescription(ACDS_expression);
+            expLabel.setToolTipText(ACDS_expression);
+            
             gbc.gridx = 3;
             gbc.gridy = 1;
             gbc.gridwidth = 1;
@@ -274,6 +297,10 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             pane.add(expLabel, gbc);
             
             mExpTf = new JTextField();
+            expLabel.setLabelFor(mExpTf);
+            mExpTf.getAccessibleContext().setAccessibleDescription(ACDS_expression);
+            mExpTf.setToolTipText(ACDS_expression);
+            
             mExpTf.setPreferredSize(new Dimension(160, 20));
             mExpTf.setEditable(false);
             if (mSubtractFromName != null) {
@@ -330,7 +357,7 @@ public class MinusCustomEditor extends DefaultCustomEditor {
                 int idx = mInputNameList.indexOf(mSubtractFromName);
                 String subtractFrom = (String)mInputIdList.get(idx);
                 mComponent.getModel().startTransaction();
-                mComponent.getProperty(SUBTRACT_FROM_KEY).setValue(subtractFrom);
+                mComponent.getProperty(PROP_SUBTRACT_FROM).setValue(subtractFrom);
                 mComponent.getModel().endTransaction();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -338,5 +365,24 @@ public class MinusCustomEditor extends DefaultCustomEditor {
             }
         }
         
+        
+        @Override
+        protected SelectPanel createSelectPanel(OperatorComponent component) {
+            return new MySelectPanel(component);
+        }
+        
+        class MySelectPanel extends SelectPanel {
+
+            public MySelectPanel(OperatorComponent component) {
+                 super(component);
+             }
+                     
+             @Override
+             protected DefaultMoveableRowTableModel createTableModel() {
+                 return new ReadOnlyNoExpressionDefaultMoveableRowTableModel();
+             }
+         }
+         
+
     }
 }

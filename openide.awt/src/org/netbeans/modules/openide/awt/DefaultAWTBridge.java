@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,11 +59,13 @@ import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.actions.ActionPresenterProvider;
 
-/** Default implementaiton of presenters for various action types.
+/** Default implementation of presenters for various action types.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.AWTBridge.class)
-public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AWTBridge {
+@ServiceProvider(service=ActionPresenterProvider.class)
+public final class DefaultAWTBridge extends ActionPresenterProvider {
     public JMenuItem createMenuPresenter (Action action) {
         if (action instanceof BooleanStateAction) {
             BooleanStateAction b = (BooleanStateAction)action;
@@ -74,17 +79,18 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
         return new Actions.MenuItem (action, true);
     }
     
-    public JMenuItem createPopupPresenter(Action action) {
+    public @Override JMenuItem createPopupPresenter(Action action) {
+        JMenuItem item;
         if (action instanceof BooleanStateAction) {
             BooleanStateAction b = (BooleanStateAction)action;
-            return new Actions.CheckboxMenuItem (b, false);
-        }
-        if (action instanceof SystemAction) {
+            item = new Actions.CheckboxMenuItem (b, false);
+        } else if (action instanceof SystemAction) {
             SystemAction s = (SystemAction)action;
-            return new Actions.MenuItem (s, false);
+            item = new Actions.MenuItem (s, false);
+        } else {
+            item = new Actions.MenuItem (action, false);
         }
-            
-        return new Actions.MenuItem (action, false);
+        return item;
     }
     
     public Component createToolbarPresenter(Action action) {
@@ -103,7 +109,13 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
         return new JPopupMenu();
     }  
     
-    public Component[] convertComponents(Component comp) {
+    public @Override Component[] convertComponents(Component comp) {
+        if (comp instanceof JMenuItem) {
+            JMenuItem item = (JMenuItem) comp;
+            if (Boolean.TRUE.equals(item.getClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !item.isEnabled()) {
+                return new Component[0];
+            }
+        }
          if (comp instanceof DynamicMenuContent) {
             Component[] toRet = ((DynamicMenuContent)comp).getMenuPresenters();
             boolean atLeastOne = false;

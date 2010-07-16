@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
@@ -61,37 +63,47 @@ public class UpdateWithDependenciesAction extends ContextAction {
     
     private boolean running;
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_UpdateWithDependencies";    // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            if (SvnUtils.isVersionedProject(node) == false) {
-                return false;
+        boolean enabled = !running && super.enable(nodes);
+        if (enabled) {
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (!SvnUtils.isVersionedProject(node, false)) {
+                    enabled = false;
+                    break;
+                }
             }
         }
-        return !running && super.enable(nodes);
+        return enabled;
     }
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
         
         running = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     updateWithDependencies(nodes);
@@ -105,13 +117,16 @@ public class UpdateWithDependenciesAction extends ContextAction {
     private void updateWithDependencies(Node[] nodes) {
         Set<Project> projectsToUpdate = new HashSet<Project>(nodes.length * 2);
         for (Node node : nodes) {
+            if (!SvnUtils.isVersionedProject(node, true)) {
+                continue;
+            }
             Project project =  (Project) node.getLookup().lookup(Project.class);
             projectsToUpdate.add(project);
             SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
             if(deps != null) {
                 Set<? extends Project> children = deps.getSubprojects();
                 for (Project child : children) {
-                    if (SvnUtils.isVersionedProject(child)) {
+                    if (SvnUtils.isVersionedProject(child, true)) {
                         projectsToUpdate.add(child);
                     }
                 }

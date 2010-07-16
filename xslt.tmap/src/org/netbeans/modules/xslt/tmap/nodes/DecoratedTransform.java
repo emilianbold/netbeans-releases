@@ -38,7 +38,7 @@ public class DecoratedTransform  extends DecoratedTMapComponentAbstract<Transfor
 
     @Override
     public String getHtmlDisplayName() {
-        Transform ref = getOriginal();
+        Transform ref = getReference();
         String file = ref == null ? null : ref.getFile();
 
         String addon = null;
@@ -51,7 +51,7 @@ public class DecoratedTransform  extends DecoratedTMapComponentAbstract<Transfor
     
     @Override
     public String getTooltip() {
-        Transform ref = getOriginal();
+        Transform ref = getReference();
         StringBuffer attributesTooltip = new StringBuffer();
         if (ref != null) {
             attributesTooltip.append(

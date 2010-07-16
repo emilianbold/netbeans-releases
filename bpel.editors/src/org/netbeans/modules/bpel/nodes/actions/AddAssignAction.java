@@ -26,19 +26,18 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public class AddAssignAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddAssignAction() {
+        super("basic/assign"); // NOI18N
     }    
     
     protected String getBundleName() {
-        return NodeType.ASSIGN.getDisplayName(); // NOI18N
+        return NodeType.ASSIGN.getDisplayName();
     }
     
     public ActionType getType() {
@@ -46,12 +45,10 @@ public class AddAssignAction extends AddPaletteActivityAction {
     }
     
     protected boolean enable(BpelEntity[] bpelEntities) {
-        return super.enable(bpelEntities)
-        && bpelEntities[0] instanceof BpelContainer;
+        return super.enable(bpelEntities) && bpelEntities[0] instanceof BpelContainer;
     }
 
     protected ExtendableActivity getPaletteActivity(BpelModel model) {
         return model.getBuilder().createAssign();
     }
-
 }

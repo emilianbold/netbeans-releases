@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ public abstract class AbstractInterp implements Interp {
 
 	// some generic actors
 	Actor act_error = new Actor() {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		return "generic error";	// NOI18N
 	    } 
@@ -149,10 +153,15 @@ public abstract class AbstractInterp implements Interp {
 	return number[0].equals("");	// NOI18N
     }
     protected int numberAt(int position) {
-	if (position > numberx) {
+	// SHOULD pass in a fallback number instead of returning 0 or 1.
+	if (position > numberx)
 	    return 1;
+
+	try {
+	    return Integer.parseInt(number[position]);
+	} catch (NumberFormatException x) {
+	    return 0;
 	}
-	return Integer.parseInt(number[position]);
     }
     protected int nNumbers() {
 	return numberx;

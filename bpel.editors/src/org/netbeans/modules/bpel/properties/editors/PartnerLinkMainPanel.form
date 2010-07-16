@@ -15,6 +15,8 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -33,11 +35,11 @@
                       <EmptySpace min="17" pref="17" max="17" attributes="0"/>
                       <Component id="lblNewPLTypeName1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="myWsdlWrapperName" pref="373" max="32767" attributes="0"/>
+                      <Component id="myWsdlWrapperName" pref="401" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="myBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblErrorMessage" alignment="0" pref="577" max="32767" attributes="0"/>
+                  <Component id="lblErrorMessage" alignment="0" pref="579" max="32767" attributes="0"/>
                   <Component id="rbtnUseExistingPLT" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -48,8 +50,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="fldPartnerLinkName" pref="500" max="32767" attributes="0"/>
-                                  <Component id="cbxWsdlFile" alignment="0" pref="500" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerLinkName" pref="517" max="32767" attributes="0"/>
+                                  <Component id="cbxWsdlFile" alignment="0" pref="517" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -61,13 +63,13 @@
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxPartnerLinkType" alignment="1" pref="446" max="32767" attributes="0"/>
+                                  <Component id="cbxPartnerLinkType" alignment="1" pref="467" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="btnSwapRoles" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="335" max="32767" attributes="0"/>
+                                      <EmptySpace pref="370" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="fldMyRole" alignment="1" pref="446" max="32767" attributes="0"/>
-                                  <Component id="fldPartnerRole" alignment="1" pref="446" max="32767" attributes="0"/>
+                                  <Component id="fldMyRole" alignment="1" pref="467" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerRole" alignment="1" pref="467" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -86,8 +88,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxProcessPortType" alignment="0" pref="462" max="32767" attributes="0"/>
-                                  <Component id="fldProcessRoleName" alignment="0" pref="462" max="32767" attributes="0"/>
+                                  <Component id="cbxProcessPortType" alignment="0" pref="479" max="32767" attributes="0"/>
+                                  <Component id="fldProcessRoleName" alignment="0" pref="479" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="chbxPartnerWillImpement" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -99,14 +101,14 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxPartnerPortType" alignment="0" pref="462" max="32767" attributes="0"/>
-                                  <Component id="fldPartnerRoleName" alignment="0" pref="462" max="32767" attributes="0"/>
+                                  <Component id="cbxPartnerPortType" alignment="0" pref="479" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerRoleName" alignment="0" pref="479" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblNewPLTypeName" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="fldNewPLTName" pref="404" max="32767" attributes="0"/>
+                              <Component id="fldNewPLTName" pref="433" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>

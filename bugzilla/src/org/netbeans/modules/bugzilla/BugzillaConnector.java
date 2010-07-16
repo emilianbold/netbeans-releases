@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,36 +42,51 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.awt.Image;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
+                                           @ServiceProvider(service=org.netbeans.modules.bugzilla.BugzillaConnector.class)})
 public class BugzillaConnector extends BugtrackingConnector {
 
     private BugzillaIssueFinder issueFinder;
 
+    @Override
+    public String getID() {
+        return "org.netbeans.modules.bugzilla";                                 //  NOI18N
+    }
+
+    @Override
+    public Image getIcon() {
+        return null;
+    }
+
+    @Override
     public String getDisplayName() {
         return getConnectorName();
     }
 
+    @Override
     public String getTooltip() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
     }
     
     @Override
     public Repository createRepository() {
+        Bugzilla.init();
         return new BugzillaRepository();
     }
 
@@ -79,7 +97,7 @@ public class BugzillaConnector extends BugtrackingConnector {
 
     public static String getConnectorName() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
-}
+    }
 
     @Override
     public IssueFinder getIssueFinder() {
@@ -89,8 +107,14 @@ public class BugzillaConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
+    }
+
+    @Override
+    public void fireRepositoriesChanged(Collection<Repository> oldRepos, Collection<Repository> newRepos) {
+        super.fireRepositoriesChanged(oldRepos, newRepos);
     }
 
 }

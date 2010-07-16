@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.api.print;
 
+import java.io.InputStream;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.openide.cookies.EditorCookie;
@@ -126,12 +130,13 @@ import org.netbeans.spi.print.PrintProvider;
  * the manager for preview and printing the component.<p>
  *
  * If there are no printable components, printable data are retrieved from the 
- * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
- * component. The Print manager gets {@link EditorCookie} from the {@link DataObject}
- * of the {@link Node}s. The {@link javax.swing.text.StyledDocument}s, returned by the
- * editor cookies, contain printing information (text, font, color). This information
- * is shown in the print preview. So, any textual documents (Java/C++/Php/... sources,
- * html, xml, plain text, etc.) are printable by default.
+ * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top component.
+ * The Print manager gets {@link EditorCookie} or {@link InputStream} from the selected
+ * {@linkplain org.openide.nodes.Node nodes}. The {@link javax.swing.text.StyledDocument},
+ * returned by the editor cookie, or string, returned by the stream, contain printing
+ * information (text, font, color). This information is shown in the print preview.
+ * So, any textual documents (Java/C++/Php/... sources, html, xml, plain text, etc.)
+ * are printable by default.
  *
  * @see org.netbeans.spi.print.PrintProvider
  *
@@ -166,8 +171,7 @@ public final class PrintManager {
     /**
      * Creates a new instance of <code>PrintManager</code>.
      */
-    private PrintManager() {
-    }
+    private PrintManager() {}
 
     /**
      * Returns the Print action for a component.

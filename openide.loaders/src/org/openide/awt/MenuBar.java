@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -122,6 +125,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
 
     static final long serialVersionUID =-4721949937356581268L;
+    static {
+        AcceleratorBinding.init();
+    }
 
     /** Don't call this constructor or this class will not get
      * initialized properly. This constructor is only for externalization.
@@ -279,6 +285,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
             Exception newEx = null;
             try {
                 Object o = arr[i].instanceCreate();
+                if (o == LazyMenu.SEPARATOR) {
+                    o = new JSeparator();
+                }
                 list.add (o);
             } catch (ClassNotFoundException e) {
                 newEx = e;
@@ -458,14 +467,15 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     /** Menu based on the folder content whith lazy items creation. */
     private static class LazyMenu extends JMenu implements NodeListener, Runnable, ChangeListener {
+        static final JSeparator SEPARATOR = new LazySeparator();
         static {
             // preinitialize outside of AWT
             new DynaMenuModel();
         }
-        DataFolder master;
-        boolean icon;
-        MenuFolder slave;
-        DynaMenuModel dynaModel;
+        final DataFolder master;
+        final boolean icon;
+        final MenuFolder slave;
+        final DynaMenuModel dynaModel;
 	
         /** Constructor. */
         public LazyMenu(final DataFolder df, boolean icon) {
@@ -479,6 +489,15 @@ public class MenuBar extends JMenuBar implements Externalizable {
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
             Mutex.EVENT.readAccess(this);
             getModel().addChangeListener(this);
+        }
+
+        @Override
+        public void updateUI() {
+            if (EventQueue.isDispatchThread()) {
+                super.updateUI();
+            } else {
+                Mutex.EVENT.readAccess(this);
+            }
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -540,7 +559,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         /** Update the properties. Exported via Runnable interface so it
          * can be rescheduled. */
+        @Override
         public void run() {
+            if (master == null) {
+                return;
+            }
+            updateUI();
             updateProps();
         }
 
@@ -648,7 +672,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         @Override
         protected Object instanceForCookie(DataObject obj, InstanceCookie cookie) throws IOException, ClassNotFoundException {
-            Object result = super.instanceForCookie(obj, cookie);
+            Object result;
+            if (cookie.instanceClass().equals(JSeparator.class)) {
+                result = SEPARATOR;
+            } else {
+                result = super.instanceForCookie(obj, cookie);
+            }
             cookiesToFiles.put(result, obj.getPrimaryFile());
             return result;
         }
@@ -737,6 +766,25 @@ public class MenuBar extends JMenuBar implements Externalizable {
             	return new AWTTask (run);
     	    }
 	}
-    }
-    
+    } // end of LazyMenu
+
+    private static final class LazySeparator extends JSeparator
+    implements Runnable {
+        public LazySeparator() {
+        }
+
+        @Override
+        public void updateUI() {
+            if (EventQueue.isDispatchThread()) {
+                super.updateUI();
+            } else {
+                Mutex.EVENT.readAccess(this);
+            }
+        }
+
+        @Override
+        public void run() {
+            updateUI();
+        }
+    } // end of LazySeparator
 }

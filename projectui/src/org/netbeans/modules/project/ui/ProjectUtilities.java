@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -96,6 +100,7 @@ public class ProjectUtilities {
     
     // support class for xtesting in OpenProjectListTest
     static OpenCloseProjectDocument OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = new OpenCloseProjectDocument () {
+        @Override
         public boolean open (FileObject fo) {
             DataObject dobj;
             try {
@@ -117,6 +122,7 @@ public class ProjectUtilities {
             return true;
         }
         
+        @Override
         public Map<Project,Set<String>> close(final Project[] projects,
                                                     final boolean notifyUI) {
             final Wrapper wr = new Wrapper();
@@ -127,6 +133,7 @@ public class ProjectUtilities {
             } else {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                          public void run() {
                              doClose(projects, notifyUI, wr);
                          }
@@ -223,6 +230,7 @@ public class ProjectUtilities {
             
             final ProjectTab ptLogial = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
             
+            @Override
             public void run () {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
@@ -265,6 +273,7 @@ public class ProjectUtilities {
     public static void openAndSelectNewObject (final DataObject newDo) {
         // call the preferred action on main class
         Mutex.EVENT.writeAccess (new Runnable () {
+            @Override
             public void run () {
                 final Node node = newDo.getNodeDelegate ();
                 Action a = node.getPreferredAction();
@@ -278,13 +287,16 @@ public class ProjectUtilities {
                 // next action -> expand && select main class in package view
                 final ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 final ProjectTab ptPhysical = ProjectTab.findDefault(ProjectTab.ID_PHYSICAL);
-                // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
-                // select && expand if the focus is outside ProjectTab
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        boolean success = ptLogical.selectNode (newDo.getPrimaryFile ());
-                        if (!success) {
-                            ptPhysical.selectNode (newDo.getPrimaryFile ());
+                ProjectTab.RP.post(new Runnable() {
+                    public @Override void run() {
+                        ProjectTab tab = ptLogical;
+                        Node n = tab.findNode(newDo.getPrimaryFile());
+                        if (n == null) {
+                            tab = ptPhysical;
+                            n = tab.findNode(newDo.getPrimaryFile());
+                        }
+                        if (n != null) {
+                            tab.selectNode(n);
                         }
                     }
                 });
@@ -296,23 +308,14 @@ public class ProjectUtilities {
      * @param requestFocus if set to true the project tab will not only become visible but also
      *        will gain focus
      */
-    public static void makeProjectTabVisible( final boolean requestFocus ) {
-        final ProjectTab ptLogical  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-        
-//        SwingUtilities.invokeLater (new Runnable () {
-//            public void run () {
-                ptLogical.open();
-                if ( requestFocus ) {
-                    ptLogical.requestActive();
-                }
-                else {
-                    ptLogical.requestVisible();
-                }
-//            }
-//        });
-                
+    public static void makeProjectTabVisible() {
+        if (Boolean.getBoolean("project.tab.no.selection")) {
+            return;
+        }
+        ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+        ptLogical.open();
+        ptLogical.requestActive();
     }
-    
     
     /** Checks if the given file name can be created in the target folder.
      *
@@ -324,7 +327,8 @@ public class ProjectUtilities {
      *                           is allowed in the newObjectName
      * @return localized error message or null if all right
      */    
-    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension, boolean allowFileSeparator) {
+    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName,
+            String extension, boolean allowFileSeparator, boolean freeFileExtension) {
         assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
 
         boolean allowSlash = false;
@@ -374,7 +378,7 @@ public class ProjectUtilities {
         }
         relFileName.append(newObjectName);
         String ext = "";
-        if (extension != null && extension.length() != 0) {
+        if (extension != null && extension.length() != 0 && (!freeFileExtension || newObjectName.indexOf('.') == -1)) {
             ext = "." + extension;
             relFileName.append(ext);
         }
@@ -404,6 +408,9 @@ public class ProjectUtilities {
         }
         
         private static void invoke( WaitCursor wc ) {
+            if (GraphicsEnvironment.isHeadless()) {
+                return;
+            }
             if ( SwingUtilities.isEventDispatchThread() ) {
                 wc.run();
             }
@@ -412,6 +419,7 @@ public class ProjectUtilities {
             }
         }
         
+        @Override
         public void run() {
             try {            
                 JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();

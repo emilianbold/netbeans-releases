@@ -20,10 +20,13 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.JTree;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperSwingTreeModel;
+import org.netbeans.modules.soa.xpath.mapper.tree.MapperTreeNode;
 
 /**
  *
@@ -62,7 +65,12 @@ public class TreeExpandedStateImpl implements TreeExpandedState {
         if (tree == null) {
             return;
         }
-        Object root = tree.getModel().getRoot();
+        TreeModel tModel = tree.getModel();
+        if (tModel == null) {
+            return;
+        }
+        //
+        Object root = tModel.getRoot();
         TreePath root_tp = new TreePath(root);
         //
         //save the expanded state
@@ -169,7 +177,9 @@ public class TreeExpandedStateImpl implements TreeExpandedState {
         return result;
     }
 
-    private MapperTreeNode getTreeNodeByStep(MapperSwingTreeModel treeModel, List<MapperTreeNode> children, Step step){
+    private MapperTreeNode getTreeNodeByStep(MapperSwingTreeModel treeModel, 
+            List<MapperTreeNode> children, Step step){
+        //
         if (children == null) {
             return null;
         }

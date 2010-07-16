@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,7 +71,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTag"));
+        suite.addTest(new HtmlCompletionQueryTest("testIssue177347"));
         return suite;
     }
 
@@ -310,6 +313,55 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     public void testNoCompletionInDoctype() throws BadLocationException, ParseException {
         assertItems("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" |  \"http://www.w3.org/TR/html40/strict.dtd\">", arr(), Match.EMPTY);
     }
+
+    public void testEndTagsAutoCompletionOfUndeclaredTags() throws BadLocationException, ParseException {
+        assertItems("<x:out>|", arr("x:out"), Match.CONTAINS);
+    }
+
+    public void testEndTagsCompletionOfUndeclaredTags() throws BadLocationException, ParseException {
+
+        assertItems("<x:out></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:ou|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:out|", arr("x:out"), Match.CONTAINS);
+        
+        //nested - the tags needs to be close, so only the closest unclosed tag is offered
+        assertItems("<x:out><x:in></|", arr("x:in"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:|", arr("x:in"), Match.CONTAINS);
+        assertItems("<x:out><x:in></|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+        assertItems("<x:out><x:in></x:|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+
+        assertItems("<x:out><x:in></x:in></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></x|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></|", arr("x:in"), Match.DOES_NOT_CONTAIN);
+    }
+
+    public void testEndTagsCompletionOfUndeclaredTagsMixedWithHtml() throws BadLocationException, ParseException {
+        //including html content
+        assertItems("<div><x:out></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><x:out></x| </div>", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><x:out></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<p><x:out></x:ou| </p>", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><div><x:out></x:out|", arr("x:out"), Match.CONTAINS);
+
+        //nested - the tags needs to be close, so only the closest unclosed tag is offered
+        assertItems("<div><x:out><div><x:in></|", arr("x:in", "div"), Match.CONTAINS);
+        assertItems("<div><x:out><div><x:in></x:| </div></div>", arr("x:in"), Match.CONTAINS);
+        assertItems("<p><x:out><x:in></|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+        assertItems("<p><x:out><x:in></x:|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+
+        assertItems("<x:out><div><x:in></x:in></div></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><div><x:in></div></x:in></x|", arr("x:out"), Match.CONTAINS); //crossed
+        assertItems("<div><x:out><div><x:in></x:in></div></x:| </div>", arr("x:out"), Match.CONTAINS);
+        assertItems("<p><x:out><x:in></x:in></|", arr("x:in"), Match.DOES_NOT_CONTAIN);
+    }
+
+    public void testIssue177347 () throws BadLocationException, ParseException {
+//        assertItems("<td><a h|</td>  ", arr("href"), Match.CONTAINS);
+    }
+
 
     //helper methods ------------
 

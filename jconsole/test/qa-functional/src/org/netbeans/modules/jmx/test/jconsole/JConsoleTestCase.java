@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,23 +44,27 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
+import javax.swing.Action;
+import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
-import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Starting class for jconsole tests.
  */
 public class JConsoleTestCase extends JMXTestCase {
 
+    private static final String stopActionName =
+                   Bundle.getString("org.netbeans.modules.extexecution.Bundle",
+                                    "Stop");
+
     /** Need to be defined because of JUnit */
     public JConsoleTestCase(String name) {
         super(name);
     }
 
-    protected void checkOutputTabOperator(String title, String text) {
+    protected OutputTabOperator checkOutputTabOperator(String title, String text) {
 
         OutputTabOperator oto = null;
 
@@ -88,23 +95,19 @@ public class JConsoleTestCase extends JMXTestCase {
                 maxToWait--;
             }
         }
+        return oto;
     }
 
-    protected void terminateProcess(String nodeName) {
+    protected void terminateProcess(OutputTabOperator oto) {
 
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-        // or when Runtime pane is already opened
-        //RuntimeTabOperator rto = new RuntimeTabOperator();
-        
-        Node node = new Node(rto.getRootNode(), nodeName);
-        String[] child = node.getChildren();
-        for (int i = 0; i < child.length; i++) {
-            System.out.println(child[i]);
-        }
         //Little tempo to kill once stabilized state
         sleep(2000);
-
-        System.out.println("Call Terminate Process on " + nodeName);
-        node.callPopup().pushMenu("Terminate Process");
+        AbstractOutputTab tab = (AbstractOutputTab)oto.getSource();
+        for (Action a : tab.getToolbarActions()) {
+            if (stopActionName.equals(a.getValue(Action.SHORT_DESCRIPTION))) {
+                a.actionPerformed(null);
+                break;
+            }
+        }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private static StandardJavacWarnings overrides;
     private static StandardJavacWarnings divisionByZero;
     private static StandardJavacWarnings rawTypes;
+    private static StandardJavacWarnings canUseDiamond;
         
     private String JAVAC_ID = "Javac_"; // NOI18N
     
@@ -140,6 +144,13 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         }
         return rawTypes;
     }
+
+    public static synchronized StandardJavacWarnings createCanUseDiamond() {
+        if ( canUseDiamond == null ) {
+            canUseDiamond = new StandardJavacWarnings(Kind.CAN_USE_DIAMOND);
+        }
+        return canUseDiamond;
+    }
     
     public Set<Tree.Kind> getTreeKinds() {
         return treeKinds;        
@@ -198,7 +209,12 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         EMPTY_STATEMENT_AFTER_IF,
         OVERRIDES,
         DIVISION_BY_ZERO,
-        RAWTYPES;
+        RAWTYPES,
+        CAN_USE_DIAMOND() {
+            boolean defaultOn() {
+                return true;
+            }
+        };
         
         boolean defaultOn() {        
             return false;
@@ -226,6 +242,8 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
                     return "enable_lint_overrides"; // NOI18N
                 case RAWTYPES:
                     return "enable_lint_rawtypes"; // NOI18N
+                case CAN_USE_DIAMOND:
+                    return "enable_can_use_diamond"; // NOI18N
             }
             return "unknown_kind"; // NOI18N
         }

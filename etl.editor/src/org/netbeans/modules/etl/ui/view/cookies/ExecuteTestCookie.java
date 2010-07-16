@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,6 @@ import java.util.ListIterator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGenerator;
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
-import org.netbeans.modules.etl.codegen.ETLScriptBuilderModel;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.DataObjectHelper;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
@@ -65,13 +67,12 @@ import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLEngineExecEvent;
 import com.sun.etl.engine.ETLEngineListener;
 import com.sun.etl.engine.ETLEngineLogEvent;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
-import java.util.HashMap;
+import com.sun.etl.utils.StringUtil;
+import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.codegen.ETLCodegenUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.utils.ETLDeploymentConstants;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 
 /**
@@ -114,6 +115,7 @@ public class ExecuteTestCookie implements Node.Cookie {
         }
 
         try {
+            //System.setProperty(ExternalConnectionProvider.EXTERNAL_CONNECTION_PROVIDER_PROPERTY_NAME, AxionExternalConnectionProvider.class.getName());
             ETLCollaborationModel collabModel = DataObjectProvider.getProvider().getActiveDataObject().getModel();
             if (collabModel == null) {
                 throw new BaseException("Collaboration model is null");
@@ -168,7 +170,7 @@ public class ExecuteTestCookie implements Node.Cookie {
 
             logView.appendToView(msg);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-            mLogger.errorNoloc(mLoc.t("EDIT011: Problem in executing engine."), e);
+            mLogger.infoNoloc(mLoc.t("EDIT011: Problem in executing engine.")+e);
         }
     }
 
@@ -212,8 +214,9 @@ public class ExecuteTestCookie implements Node.Cookie {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msgBuf.toString(), NotifyDescriptor.INFORMATION_MESSAGE));
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT013: Problem while handling ETLEngineExecEvent for current execution."), ex);
+                    mLogger.infoNoloc(mLoc.t("EDIT013: Problem while handling ETLEngineExecEvent for current execution.")+ex);
                 } finally {
+                    System.setProperty(ExternalConnectionProvider.EXTERNAL_CONNECTION_PROVIDER_PROPERTY_NAME, "");
                     // Ensure dialog box is removed from display - should be harmless if called twice.
                     SwingUtilities.invokeLater(new CloseProgressBarTask());
                     engine.stopETLEngine();
@@ -245,16 +248,16 @@ public class ExecuteTestCookie implements Node.Cookie {
         public Object construct() {
             if (execModel != null) {
                 ClassLoader origLoader = Thread.currentThread().getContextClassLoader();
+                SQLDefinition sqlDefn = execModel.getSQLDefinition();
+                String instanceDBFolder = ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefn.getAxiondbWorkingDirectory());
+                String instanceDBParent = new File(instanceDBFolder).getParent();
                 try {
-                    SQLDefinition sqlDefn = execModel.getSQLDefinition();
+                    
                     ETLProcessFlowGenerator flowGen = ETLProcessFlowGeneratorFactory.getCollabFlowGenerator(execModel.getSQLDefinition(), false);
                     flowGen.setWorkingFolder(sqlDefn.getAxiondbWorkingDirectory());
                     flowGen.setInstanceDBName("instancedb");
-                    flowGen.setInstanceDBFolder(ETLCodegenUtil.getEngineInstanceWorkingFolder(sqlDefn.getAxiondbWorkingDirectory()));
-                    flowGen.setMonitorDBName(sqlDefn.getDisplayName());
-                    flowGen.setMonitorDBFolder(ETLCodegenUtil.getMonitorDBDir(sqlDefn.getDisplayName(), sqlDefn.getAxiondbWorkingDirectory()));
-                    mLogger.infoNoloc("setting montior folder" + flowGen.getMonitorDBFolder());
-                    flowGen.applyConnectionDefinitions(true, false);
+                    flowGen.setInstanceDBFolder(instanceDBFolder);
+                    flowGen.applyConnectionDefinitions(true, true);
                     engine = flowGen.getScript();
                     engine.getContext().putValue("AXIONDB_DATA_DIR", sqlDefn.getAxiondbDataDirectory());
                     engine.getContext().putValue("DESIGN_TIME_ATTRS", engine.getInputAttrMap());
@@ -280,7 +283,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                     throwableList.add(ex);
                 } finally {
                     Thread.currentThread().setContextClassLoader(origLoader);
-                    removeInstanceDBFolder();
+                    removeInstanceDBFolder(instanceDBFolder);
+                    removeInstanceDBFolder(instanceDBParent);
                 }
             } else {
                 throwableList.add(new BaseException("No eTL collaboration model to execute"));
@@ -350,9 +354,9 @@ public class ExecuteTestCookie implements Node.Cookie {
             return file.delete();
         }
 
-        private void removeInstanceDBFolder() {
+        private void removeInstanceDBFolder(String instanceDBFolder) {
             try {
-                File workingFolder = new File(ETLScriptBuilderModel.ETL_DESIGN_WORK_FOLDER);
+                File workingFolder = new File(instanceDBFolder);
                 deleteFile(workingFolder);
             } catch (Exception ex) {
                 mLogger.errorNoloc(mLoc.t("EDIT018: Error deleting working folder.{0}", logCategory), ex);

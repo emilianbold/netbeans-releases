@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,11 +100,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
 
     @Override
-    protected void refresh( Lookup context ) {
+    protected void refresh(Lookup context, boolean immediate) {
         // #59615: update synch if possible; only replan if not already in EQ.
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
@@ -266,7 +269,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        refresh( Lookup.EMPTY );
+        refresh(Lookup.EMPTY, false);
     }
 
     public static String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N
@@ -274,35 +277,19 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
 
      private void fillSubMenu(JMenu menuItem, Project project) {
-        menuItem.removeAll();
+         menuItem.removeAll();
 
-        ActionListener menuListener = new PopupListener();
-        
-        // check the action context for recommmended/privileged templates..
-        PrivilegedTemplates privs = getLookup().lookup(PrivilegedTemplates.class);
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project, privs );
-        boolean itemAdded = false;
-        for( Iterator it = lruList.iterator(); it.hasNext(); ) {
-            DataObject template = (DataObject)it.next();
-
-            Node delegate = template.getNodeDelegate();
-            JMenuItem item = new JMenuItem(
-                MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
-                new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
-            item.addActionListener( menuListener );
-            item.putClientProperty( TEMPLATE_PROPERTY, template );
-            menuItem.add( item );
-            itemAdded = true;
-        }
-        if (itemAdded) {
-            menuItem.add( new Separator() );
-        }
-        JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
-        fileItem.addActionListener( menuListener );
-        fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
-        menuItem.add( fileItem );
+         ActionListener menuListener = new PopupListener();
+         MessageFormat mf = new MessageFormat(TEMPLATE_NAME_FORMAT);
+         boolean itemAdded = OpenProjectList.prepareTemplates(menuItem, menuListener, mf, TEMPLATE_PROPERTY, project, getLookup());
+         if (itemAdded) {
+             menuItem.add( new Separator() );
+         }
+         JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
+         fileItem.addActionListener( menuListener );
+         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
+         menuItem.add( fileItem );
     }
-
 
     private void fillNonProjectSubMenu(JMenu menuItem) {
         menuItem.removeAll();

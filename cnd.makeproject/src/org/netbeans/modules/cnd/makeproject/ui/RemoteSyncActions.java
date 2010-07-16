@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,7 +59,6 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -93,6 +95,7 @@ class RemoteSyncActions {
 
     /** A task that activatedNodesCache */
     private static final RequestProcessor.Task clearCacheTask = RequestProcessor.getDefault().create(new Runnable() {
+        @Override
                 public void run() {
                     activatedNodesCache.set(null);
                 }
@@ -208,6 +211,7 @@ class RemoteSyncActions {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled = true;
             Thread thread = workingThread;
@@ -264,6 +268,7 @@ class RemoteSyncActions {
         protected Worker createWorker(final Project project, final ExecutionEnvironment execEnv) {
             return new Worker() {
                 private final PathMap pathMap = HostInfoProvider.getMapper(execEnv);
+                @Override
                 public void process(File file, Writer err) throws PathMapperException, InterruptedException, ExecutionException, IOException {
                     String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);
                     if (remotePath == null) {
@@ -275,6 +280,7 @@ class RemoteSyncActions {
                         throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
                     }
                 }
+                @Override
                 public void close() {}
             };
         }
@@ -399,7 +405,7 @@ class RemoteSyncActions {
     }
 
     private static ExecutionEnvironment getEnv(Project project) {
-        ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {

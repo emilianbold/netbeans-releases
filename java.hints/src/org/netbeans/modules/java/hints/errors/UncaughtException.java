@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -83,8 +86,8 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
+import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -222,7 +225,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
                     List<ElementDescription> eds = new LinkedList<ElementDescription>();
                     TypeElement enclosingType = (TypeElement) method.getEnclosingElement();
-                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, enclosingType, method,eds);
+                    AnnotationType at = ComputeOverriding.detectOverrides(info, enclosingType, method,eds);
                     List<TypeMirror> declaredThrows = null;
                     
                     if (at != null) {
@@ -275,7 +278,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                         }
                         
                         if (tm.getKind() != TypeKind.ERROR) {
-                            result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
+                            result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(info, tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
                         }
                     }
                 }
@@ -288,7 +291,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                 for (TypeMirror tm : uncaught) {
                     if (tm.getKind() != TypeKind.ERROR) {
                         thandles.add(TypeMirrorHandle.create(tm));
-                        fqns.add(Utilities.getTypeName(tm, true).toString());
+                        fqns.add(Utilities.getTypeName(info, tm, true).toString());
                     }
                 }
                 

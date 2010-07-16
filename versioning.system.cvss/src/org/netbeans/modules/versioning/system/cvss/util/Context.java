@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -76,7 +80,7 @@ public class Context implements Serializable {
             File root = (File) i.next();
             for (Iterator j = exclusions.iterator(); j.hasNext();) {
                 File exclusion = (File) j.next();
-                if (Utils.isParentOrEqual(exclusion, root)) {
+                if (Utils.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
                     return true;
@@ -94,8 +98,8 @@ public class Context implements Serializable {
             File file = (File) i.next();
             for (Iterator j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = (File) j.next();
-                if (Utils.isParentOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
-                if (Utils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }
@@ -110,7 +114,7 @@ public class Context implements Serializable {
         if (exclusionChildren == null) return;
         for (int i = 0; i < exclusionChildren.length; i++) {
             File child = exclusionChildren[i];
-            if (!Utils.isParentOrEqual(root, child)) {
+            if (!Utils.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -138,10 +142,10 @@ public class Context implements Serializable {
     public boolean contains(File file) {
         outter : for (Iterator i = rootFiles.iterator(); i.hasNext();) {
             File root = (File) i.next();
-            if (Utils.isParentOrEqual(root, file)) {
+            if (Utils.isAncestorOrEqual(root, file)) {
                 for (Iterator j = exclusions.iterator(); j.hasNext();) {
                     File excluded = (File) j.next();
-                    if (Utils.isParentOrEqual(excluded, file)) {
+                    if (Utils.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }

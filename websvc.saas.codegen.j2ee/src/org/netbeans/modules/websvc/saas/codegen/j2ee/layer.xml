@@ -20,11 +20,6 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            <file name="SessionKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/SessionKeyAuthenticator.template">
-                <attr name="position" intvalue="330"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
-            </file>
             <file name="SessionKeyCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/SessionKeyCallback.template">
                 <attr name="position" intvalue="340"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

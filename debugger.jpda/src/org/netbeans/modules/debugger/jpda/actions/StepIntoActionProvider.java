@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,15 +46,12 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -66,9 +66,9 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.ui.MethodChooser;
 
 
 /**
@@ -105,7 +105,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void doAction (Object action) {
-        runAction(action, true);
+        runAction(action, true, null);
     }
     
     @Override
@@ -113,7 +113,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction(action, true);
+                    runAction(action, true, null);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -121,11 +121,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
-    public void runAction(Object action, boolean doResume) {
+    public void runAction(Object action, boolean doResume, Lock lock) {
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
         }
-        stepInto.runAction(action, doResume);
+        stepInto.runAction(action, doResume, lock);
     }
     
     protected void checkEnabled (int debuggerState) {
@@ -143,7 +143,8 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     public boolean doMethodSelection () {
         synchronized (this) {
             if (currentMethodChooser != null) {
-                currentMethodChooser.doStepIntoCurrentSelection();
+                // perform action
+                currentMethodChooser.releaseUI(true);
                 return true;
             }
         }
@@ -174,7 +175,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         }
         JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
         ThreadReference threadReference = ct.getThreadReference();
-        // Find the class where the thread is stopped at
+        // Find the class the thread is stopped at
         ReferenceType clazz = null;
         try {
             if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return false;
@@ -189,19 +190,39 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         } catch (VMDisconnectedExceptionWrapper ex) {
         }
         if (clazz != null) {
-            MethodChooser chooser = new MethodChooser(debugger, url, clazz, methodLine, methodOffset);
-            boolean success = chooser.run();
-            if (success && chooser.isInSelectMode()) {
-                synchronized (this) {
-                    currentMethodChooser = chooser;
-                    chooser.setReleaseListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            synchronized (this) {
-                                currentMethodChooser = null;
-                            }
+            if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                return false;
+            }
+            final MethodChooserSupport cSupport = new MethodChooserSupport(debugger, url, clazz, methodLine, methodOffset);
+            boolean continuedDirectly = cSupport.init();
+            if (cSupport.getSegmentsCount() == 0) {
+                return false;
+            }
+            if (continuedDirectly) {
+                return true;
+            }
+            MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
+                @Override
+                public void released(boolean performAction) {
+                    synchronized (this) {
+                        currentMethodChooser = null;
+                        cSupport.tearDown();
+                        if (performAction) {
+                            cSupport.doStepInto();
                         }
-                    });
+                    }
                 }
+            };
+            MethodChooser chooser = cSupport.createChooser();
+            chooser.addReleaseListener(releaseListener);
+            boolean success = chooser.showUI();
+            if (success && chooser.isUIActive()) {
+                synchronized (this) {
+                    cSupport.tearUp(chooser);
+                    currentMethodChooser = chooser;
+                }
+            } else {
+                chooser.removeReleaseListener(releaseListener);
             }
             return success;
         } else {

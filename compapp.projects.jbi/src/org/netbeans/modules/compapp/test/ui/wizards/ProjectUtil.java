@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,83 +41,84 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.test.ui.wizards;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author radval
+ * @author jqian
  *
  * Netbeans Project related utility operations
  */
 public class ProjectUtil {
+
     private static final Logger mLog =
             Logger.getLogger("org.netbeans.modules.compapp.test.ui.wizards.ProjectUtil"); // NOI18N
 
-    public static  Set getClasspathProjects(Project p) {
-        Set classpathProjects = new HashSet();
-        Project[] projs = new Project[0];
+    public static Set<Project> getClasspathProjects(Project p, boolean recursive) {
+
+        Set<Project> ret = new HashSet<Project>();
         try {
-            SubprojectProvider sp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
-            Set ls = sp.getSubprojects();
-            if (ls.size() < 1) {
-                return classpathProjects;
+            SubprojectProvider spProvider = p.getLookup().lookup(SubprojectProvider.class);
+            if (spProvider != null) {
+                for (Project sp : spProvider.getSubprojects()) {
+                    ret.add(sp);
+                    if (recursive) {
+                        ret.addAll(getClasspathProjects(sp, recursive));
+                    }
+                }
             }
+        } catch (Exception exception) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        }
 
-            Project[] sps = (Project[])ls.toArray(new Project[ls.size()]);
-            String[] spn = new String[sps.length];
-            for (int i = 0; i < sps.length; i++) {
-                spn[i] = FileUtil.toFile(sps[i].getProjectDirectory()).getPath().replace('\\', '/').toLowerCase(); // NOI18N
-            }
+        return ret;
+    }
 
-            String sroot = FileUtil.toFile(p.getProjectDirectory()).getPath();
-            AntProjectHelper ah = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
-            String src = ah.getStandardPropertyEvaluator().getProperty(
-                    JbiProjectProperties.JBI_CONTENT_ADDITIONAL); 
+    /*
+    public static Set<Project> getClasspathProjects(Project p) {
+        Set<Project> ret = new HashSet<Project>();
+        try {
+            SubprojectProvider spProvider = p.getLookup().lookup(SubprojectProvider.class);
+            Set<? extends Project> sps = spProvider.getSubprojects();
+
+            String pRoot = FileUtil.toFile(p.getProjectDirectory()).getPath();
+
+            AntProjectHelper ah = p.getLookup().lookup(AntProjectHelper.class);
+            String jbiContentAdditional = ah.getStandardPropertyEvaluator().getProperty(
+                    JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+
             // This should be OS-agnostic
-            StringTokenizer st = new StringTokenizer(src, ";"); //File.pathSeparator);
-            Vector v = new Vector();
+            StringTokenizer st = new StringTokenizer(jbiContentAdditional, ";"); //File.pathSeparator); // NOI18N
             while (st.hasMoreTokens()) {
                 String spath = st.nextToken();
                 // Relative path checking (see BuildServiceAssembly.java)
                 if ((spath.indexOf(':') < 0) && (!spath.startsWith("/"))) { // i.e., relative path // NOI18N
-                    spath = sroot + "/" + spath; // NOI18N
+                    spath = pRoot + "/" + spath; // NOI18N
                 }
-                File sfile =  new File(spath);
-                v.add(sfile.getCanonicalPath().replace('\\', '/').toLowerCase()); // NOI18N
-            }
-            String[] vs = (String[]) v.toArray(new String[0]);
 
-            v.removeAllElements();
-            for (int i = 0; i < vs.length; i++) {
-                for (int j =0; j <sps.length; j++) {
-                    if (vs[i].startsWith(spn[j])) {
-                        v.add(sps[j]);
+                String sfilePath = new File(spath).getCanonicalPath();
+
+                for (Project sp : sps) {
+                    File pFile = FileUtil.toFile(sp.getProjectDirectory());
+                    if (sfilePath.startsWith(pFile.getCanonicalPath())) {
+                        ret.add(sp);
                         break;
                     }
                 }
             }
-
-            classpathProjects.addAll(v);
-            return classpathProjects;
-        } catch(Exception exception) {
+            ret.addAll(sps);
+        } catch (Exception exception) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
         }
 
-        return classpathProjects;
-    }
-
+        return ret;
+    }*/
 }

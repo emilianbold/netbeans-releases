@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,102 +53,99 @@ import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.08.13
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory.class)
-public final class DocumentationDecorator extends DecorationProvider
-  implements DecorationProviderFactory, DiagramSelectionListener {
+public final class DocumentationDecorator extends DecorationProvider implements DecorationProviderFactory, DiagramSelectionListener {
 
-  public DocumentationDecorator() {
-    init();
-  }
-
-  public DecorationProvider createInstance(DesignView view) {
-    return new DocumentationDecorator(view);
-  }
-
-  private DocumentationDecorator(DesignView view) {
-    super(view);
-    getDesignView().getSelectionModel().addSelectionListener(this);
-    init();
-  }
-
-  private void init() {
-    myDecorationKey = DocumentationDecorator.class;
-  }
-
-  @Override
-  public Decoration getDecoration(BpelEntity entity) {
-    String documentation = getDocumentation(entity);
-    UniqueId id = entity.getUID();
-
-    if (id == null) {
-      return null;
+    public DocumentationDecorator() {
+        init();
     }
+
+    public DecorationProvider createInstance(DesignView view) {
+        return new DocumentationDecorator(view);
+    }
+
+    private DocumentationDecorator(DesignView view) {
+        super(view);
+        getDesignView().getSelectionModel().addSelectionListener(this);
+        init();
+    }
+
+    private void init() {
+        myDecorationKey = DocumentationDecorator.class;
+    }
+
+    @Override
+    public Decoration getDecoration(BpelEntity entity) {
+        String documentation = getDocumentation(entity);
+        UniqueId id = entity.getUID();
+
+        if (id == null) {
+            return null;
+        }
 //out();
 //out("entity: " + entity);
 //out(" docum: " + documentation);
 
-    if ( !id.equals(mySelectedID) && documentation == null) {
-      entity.removeCookie(myDecorationKey);
-      return null;
-    }
+        if (!id.equals(mySelectedID) && documentation == null) {
+            entity.removeCookie(myDecorationKey);
+            return null;
+        }
 //out();
 //out("entity: " + entity);
-    Decoration decoration = (Decoration) entity.getCookie(myDecorationKey);
+        Decoration decoration = (Decoration) entity.getCookie(myDecorationKey);
 
-    if (decoration == null) {
+        if (decoration == null) {
 //out("  create deco");
-      DocumentationButton button = new DocumentationButton(id, documentation);
-      ComponentsDescriptor descriptor = new ComponentsDescriptor();
-      descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
-      decoration = new Decoration(descriptor);
-      entity.setCookie(myDecorationKey, decoration);
-    }
-//    else {
+            DocumentationButton button = new DocumentationButton(id, documentation);
+            ComponentsDescriptor descriptor = new ComponentsDescriptor();
+            descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
+            decoration = new Decoration(descriptor);
+            entity.setCookie(myDecorationKey, decoration);
+        }
+//      else {
 //out("  found in cookie");
-//    }
-    ComponentsDescriptor descriptor = (ComponentsDescriptor) decoration.getDescriptor();
-    DocumentationButton button = (DocumentationButton) descriptor.getComponent();
-    button.updateText(documentation);
+//      }
+        ComponentsDescriptor descriptor = (ComponentsDescriptor) decoration.getDescriptor();
+        DocumentationButton button = (DocumentationButton) descriptor.getComponent();
+        button.updateText(documentation);
 
-    return decoration;
-  }
+        return decoration;
+    }
 
-  public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
+    public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
 //out("selection changed");
-    if (newSelection instanceof ExtensibleElements) {
-      mySelectedID = newSelection.getUID();
+        if (newSelection instanceof ExtensibleElements) {
+            mySelectedID = newSelection.getUID();
+        } else {
+            mySelectedID = null;
+        }
+        fireDecorationChanged();
     }
-    else {
-      mySelectedID = null;
+
+    @Override
+    public void release() {
+        mySelectedID = null;
+        myDecorationKey = null;
+        getDesignView().getSelectionModel().removeSelectionListener(this);
     }
-    fireDecorationChanged();
-  }
 
-  @Override
-  public void release() {
-    mySelectedID = null;
-    myDecorationKey = null;
-    getDesignView().getSelectionModel().removeSelectionListener(this);
-  }
+    private String getDocumentation(BpelEntity entity) {
+        if (!(entity instanceof ExtensibleElements)) {
+            return null;
+        }
+        String documentation = ((ExtensibleElements) entity).getDocumentation();
 
-  private String getDocumentation(BpelEntity entity) {
-    if ( !(entity instanceof ExtensibleElements)) {
-      return null;
+        if (documentation != null) {
+            documentation = documentation.trim();
+        }
+        return documentation;
     }
-    String documentation = ((ExtensibleElements) entity).getDocumentation();
 
-    if (documentation != null) {
-      documentation = documentation.trim();
-    }
-    return documentation;
-  }
-
-  private UniqueId mySelectedID;
-  private Object myDecorationKey;
+    private UniqueId mySelectedID;
+    private Object myDecorationKey;
 }

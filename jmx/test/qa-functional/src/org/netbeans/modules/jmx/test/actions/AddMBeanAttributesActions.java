@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,10 +48,9 @@ import java.util.ArrayList;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
@@ -60,39 +62,29 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * Check components and created files.
  */
 public class AddMBeanAttributesActions extends ActionsTestCase {
+    private static boolean initialized;
     
     /** Need to be defined because of JUnit */
     public AddMBeanAttributesActions(String name) {
         super(name);
         popupPath = ACTION_JMX + "|" + ACTION_ADD_MBEAN_ATTRIBUTES;
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddMBeanAttributesActions("init"));
-        suite.addTest(new AddMBeanAttributesActions("test1"));
-        suite.addTest(new AddMBeanAttributesActions("test2"));
-        suite.addTest(new AddMBeanAttributesActions("test3"));
-        suite.addTest(new AddMBeanAttributesActions("test4"));
-        suite.addTest(new AddMBeanAttributesActions("test5"));
-        suite.addTest(new AddMBeanAttributesActions("test6"));
-        return suite;
-    }
-    
-    
+
     /**
      * Create all needed files for running next tests
      */
     public void init() {
         
-        System.out.println("====================  init  ====================");
+        System.out.println("====================  setup AddMBeanAttributesActions ====================");
         
         System.out.println("Create new java class " + SIMPLE_1);
         createJavaFile(SIMPLE_1);
@@ -145,7 +137,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test2() {
@@ -157,7 +149,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test3() {
@@ -172,7 +164,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         addAttributesTest(jmio, className, interfaceName);
     }
@@ -189,11 +181,11 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         System.out.println("Open java file " + SIMPLE_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test5() {
@@ -204,11 +196,11 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_1);
         System.out.println("Open java file " + DYNAMIC_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test6() {
@@ -222,11 +214,11 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         addAttributesTest(jmio, className, interfaceName);
     }

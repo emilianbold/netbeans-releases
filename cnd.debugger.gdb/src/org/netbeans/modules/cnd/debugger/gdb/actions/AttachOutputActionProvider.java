@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,12 +48,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -61,7 +67,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
 
     @Override
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-        if (events != null && events.length > 0 && events[events.length - 1].getType() == ProjectActionEvent.Type.RUN) {
+        if (events != null && events.length > 0 && events[events.length - 1].getType() == ProjectActionEvent.PredefinedType.RUN) {
             return Collections.<BuildAction>singletonList(new AttachAction(events));
         }
         return Collections.emptyList();
@@ -71,7 +77,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
 
         ProjectActionEvent[] events;
         private int step = -1;
-        private long pid = ExecutionListener.UNKNOWN_PID;
+        private int pid = ExecutionListener.UNKNOWN_PID;
 
         public AttachAction(ProjectActionEvent[] events) {
             this.events = events;
@@ -80,6 +86,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             setEnabled(false);
         }
 
+        @Override
         public void executionStarted(int pid) {
             if (step == events.length - 1 && pid != ExecutionListener.UNKNOWN_PID) {
                 this.pid = pid;
@@ -87,14 +94,17 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             }
         }
 
+        @Override
         public void executionFinished(int rc) {
             setEnabled(false);
         }
 
+        @Override
         public void setStep(int step) {
             this.step = step;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -110,8 +120,15 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
                 return;
             }
 
+            //IZ 184743 we need winpid for MinGW gdb
+            int attachPid = pid;
+            final ExecutionEnvironment exEnv = (event.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
+            if (exEnv.isLocal() && Utilities.isWindows()) {
+                attachPid = WindowsSupport.getInstance().getWinPID(pid);
+            }
+
             try {
-                GdbDebugger.attach(pid, info, (event.getConfiguration()).getDevelopmentHost().getExecutionEnvironment());
+                GdbDebugger.attach(attachPid, info, exEnv);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

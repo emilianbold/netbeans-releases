@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +60,7 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -1297,15 +1302,24 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         String[] annotations = null;
         Object[] annotationAttributes = null;
         if (useEjbInjections) {
+            // creating @Stateless:name attribute
+            String outerClassName = copy.getCompilationUnit().getSourceFile().getName();
+            if (outerClassName.endsWith(".java")) { //NOI18N
+                outerClassName=outerClassName.substring(0, outerClassName.length()-5);
+            }
+            String jndiName = outerClassName+"."+className; //NOI18N
+            TreeMaker make = copy.getTreeMaker();
+            ExpressionTree nameAttr = make.Assignment(make.Identifier("name"), make.Literal(jndiName)); //NOI18N
+
+            annotationAttributes = new Object[] {nameAttr};
             annotations = new String[] {RestConstants.STATELESS_ANNOTATION};
         }
-        
+
         ClassTree classTree = JavaSourceHelper.createInnerClass(copy, modifiers,
                 className, resourceName, annotations, annotationAttributes);
 
         classTree = JavaSourceHelper.addField(copy, classTree, new Modifier[]{Modifier.PRIVATE},
                 null, null, "parent", parentEntityClass);
-
         classTree = addAccessorMethods(copy, classTree, "parent", parentEntityClass);
 
         String bodyText = null;

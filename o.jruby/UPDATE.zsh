@@ -77,8 +77,8 @@ fi
 
 export PATH=$NB_INDEX_RUBY_HOME/bin:$PATH
 CLUSTERS=$NB_INDEX_HG_HOME/nbbuild/netbeans
-RUBY=$CLUSTERS/ruby2
-GSF=$CLUSTERS/gsf1
+RUBY=$CLUSTERS/ruby
+GSF=$CLUSTERS/gsf
 unset GEM_HOME
 unset GEM_PATH
 

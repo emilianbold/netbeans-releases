@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -155,8 +158,10 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLEditorSupport;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -178,6 +183,7 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -287,40 +293,40 @@ public class DefineCorrelationWizard implements WizardProperties {
         Map<Class, Icon> mapIcons =  new HashMap<Class, Icon>(9);
         
         String iconFileName = IMAGE_FOLDER_NAME + "UNKNOWN_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Object.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Object.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "RECEIVE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Receive.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Receive.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "REPLY" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Reply.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Reply.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
 
         iconFileName = IMAGE_FOLDER_NAME + "INVOKE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Invoke.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Invoke.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Message.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Message.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_PART" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Part.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Part.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "ON_EVENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnEvent.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(OnEvent.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_HANDLER" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(OnMessage.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(OnMessage.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Element.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Element.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "ATTRIBUTE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(Attribute.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(Attribute.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_COMPLEX_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(ComplexType.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(ComplexType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
         
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_SIMPLE_TYPE" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(SimpleType.class, ImageUtilities.loadImageIcon(iconFileName, false));
+        mapIcons.put(SimpleType.class, new ImageIcon(ImageUtilities.loadImage(iconFileName)));
          
         return mapIcons;
     }
@@ -856,7 +862,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             String checkedName) {
             for (CorrelationSet correlationSet : correlationSets) {
                 String correlationSetName = correlationSet.getName();
-                if (ValidationUtil.ignoreNamespace(correlationSetName).equals(checkedName)) {
+                if (XAMUtils.ignoreNamespace(correlationSetName).equals(checkedName)) {
                     return true;
                 }
             }
@@ -883,7 +889,7 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         private void createCorrelationPropertiesAndPropertyAliases(
             final CorrelationLinker linker, 
-            CorrelationPropertyWsdl.WsdlSelector wsdlSelector, BpelModel bpelModel) {
+            final CorrelationPropertyWsdl.WsdlSelector wsdlSelector, BpelModel bpelModel) {
             final CorrelationWSDLWrapper correlationWsdlWrapper;
             final WSDLModel correlationWsdlModel;
 
@@ -908,8 +914,53 @@ public class DefineCorrelationWizard implements WizardProperties {
                     correlationWsdlWrapper.importIntoBpelModel();
                 }
             });
+
+            /*
+             * Fix for issue #162569 (http://www.netbeans.org/issues/show_bug.cgi?id=162569)
+             * If new correlation is created successfully, external .wsdl file,
+             * created by the wizard must be saved.
+             */
+            saveModifiedWsdlFile(wsdlSelector, correlationWsdlModel);
         }
-        
+
+        /**
+         * Fix for issue #162569 (http://www.netbeans.org/issues/show_bug.cgi?id=162569)
+         * If new correlation is created successfully, external .wsdl file,
+         * created by the wizard must be saved.
+         */
+        private void saveModifiedWsdlFile(CorrelationPropertyWsdl.WsdlSelector wsdlSelector,
+            WSDLModel correlationWsdlModel) {
+            if (wsdlSelector.equals(CorrelationPropertyWsdl.WsdlSelector.EXTERNAL_WSDL)) {
+                try {
+                    WSDLDataObject wsdlDataObject = (WSDLDataObject)
+                        correlationWsdlModel.getModelSource().getLookup().lookup(
+                        DataObject.class);
+                    WSDLEditorSupport editorSupport = wsdlDataObject.getWSDLEditorSupport();
+                    //synchronized (this) {
+                    //    wait(2000);
+                    //}
+                    editorSupport.saveDocument();
+                } catch(Exception e) {
+                    String shortWsdlFileName = WizardUtils.getShortWsdlFileName(
+                        correlationWsdlModel);
+                    if ((shortWsdlFileName != null) && (shortWsdlFileName.length() > 0)) {
+                        if (! shortWsdlFileName.endsWith(WSDL_FILE_EXTENSION)) {
+                            shortWsdlFileName += shortWsdlFileName.endsWith(".") ?
+                                WSDL_FILE_EXTENSION : "." + WSDL_FILE_EXTENSION;
+                        }
+                    }
+                    String warningMsg = NbBundle.getMessage(DefineCorrelationWizard.class,
+                        "LBL_WarnMsg_Wsdl_File_Was_Not_Saved",
+                        shortWsdlFileName,
+                        (e.getMessage() == null ? e.getClass().getName() : e.getMessage()));
+
+                    Logger.getLogger(DefineCorrelationWizard.class.getName()).log(
+                        Level.INFO, null, e);
+                    UserNotification.showMessage(warningMsg);
+                }
+            }
+        }
+
         private List<CorrelationLinker> getSublistEqualCorrelationLinkers(List<CorrelationLinker> correlationLinkers) {
             List<CorrelationLinker> linkerSublist = new ArrayList<CorrelationLinker>();
             CorrelationLinker controlLinker = null;
@@ -1207,7 +1258,25 @@ public class DefineCorrelationWizard implements WizardProperties {
                         queryComponents.add(0, (SchemaComponent) userObj);                            
                         parentObj = (CorrelationMapperTreeNode) parentObj.getParent();
                         userObj = parentObj.getUserObject();
-                    } while (! (userObj instanceof Part)); 
+                    } while (! (userObj instanceof Part));
+                    /*
+                    fix for issue #162376 (http://www.netbeans.org/issues/show_bug.cgi?id=162376)
+                    WSDL, Part:
+                     <message name="operation1Request">
+                        <part name="part1" element="ns:request1"/>
+                    </message>
+
+                    Schema:
+                    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" ...>
+                        <xsd:element name="request1" type="xsd:string"/>
+                        .............................................................
+                    </xsd:schema>
+
+                    "queryComponents" will contain 1 element only -> query must
+                    be omitted in this case.
+                    */
+                    if (queryComponents.size() <= 1) return null;
+
                     WizardUtils.importRequiredSchemas(correlationWsdlModel, queryComponents);
                     String strQueryAbsPath = WizardUtils.makeLocationPath(
                         correlationWsdlModel, queryComponents);
@@ -1992,7 +2061,7 @@ class WizardUtils implements WizardConstants {
         String typeName = null;
         if ((schemaComponent instanceof SimpleType) || 
             (schemaComponent instanceof ComplexType)) {
-            typeName = schemaComponent.getAttribute(ValidationUtil.attributeName());
+            typeName = schemaComponent.getAttribute(XAMUtils.attributeName());
         } else {
             NamedComponentReference<? extends GlobalType> typeRef = 
                 getSchemaComponentTypeRef(schemaComponent);
@@ -2000,7 +2069,7 @@ class WizardUtils implements WizardConstants {
                 typeName = typeRef.get().getName();
             } else {
                 typeName = ((SchemaComponent) schemaComponent).getAttribute(
-                    ValidationUtil.attributeType());
+                    XAMUtils.attributeType());
             }
         }
         return typeName;
@@ -2034,8 +2103,8 @@ class WizardUtils implements WizardConstants {
     
     public static GlobalSimpleType findBuiltInType(SchemaComponent schemaComponent) {
         String typeName = getSchemaComponentTypeName(schemaComponent);
-        GlobalSimpleType builtInType = ValidationUtil.findGlobalSimpleType(typeName, 
-            ValidationUtil.BUILT_IN_SIMPLE_TYPES);
+        GlobalSimpleType builtInType = XAMUtils.findGlobalSimpleType(typeName, 
+            XAMUtils.BUILT_IN_SIMPLE_TYPES);
         return builtInType;
     }
     
@@ -2281,8 +2350,8 @@ class WizardUtils implements WizardConstants {
         for (SchemaComponent schemaComponent : schemaComponents) {
 //            String nsUri = sms.getEffectiveNamespace(schemaComponent, sms);
 //            String namespacePrefix = getNamespacePrefix(wsdlModel, nsUri);
-            StepNodeNameTest stepNodeNameTest = 
-                    new StepNodeNameTest(xpathModel, schemaComponent, sms);
+            StepNodeNameTest stepNodeNameTest = new StepNodeNameTest(
+                xpathModel.getNamespaceContext(), schemaComponent, sms);
 //            if (namespacePrefix != null) {
 //                namespacePrefix = XPathUtils.isPrefixRequired(schemaComponent) ? 
 //                    namespacePrefix : "";
@@ -2492,23 +2561,36 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
         
         // find GlobalSimpleType with the name "resolvedTypeName" in the schema, 
         // which the "sourceSchemaComponent" belongs to
-        Collection<GlobalSimpleType> globalSimpleTypes = 
-            sourceSchemaComponent.getModel().getSchema().getSimpleTypes();
-        GlobalSimpleType globalSimpleType = ValidationUtil.findGlobalSimpleType(
+        Collection<GlobalSimpleType> globalSimpleTypes = null;
+        SchemaModel sourceSModel = sourceSchemaComponent.getModel();
+        if (sourceSModel != null) {
+            Schema sourceSchema = sourceSModel.getSchema();
+            if (sourceSchema != null) {
+                globalSimpleTypes = sourceSchema.getSimpleTypes();
+            }
+        }
+        //
+        GlobalSimpleType globalSimpleType = XAMUtils.findGlobalSimpleType(
             resolvedTypeName, globalSimpleTypes);
         if (globalSimpleType != null) return globalSimpleType;
 
         // find GlobalSimpleType with the name "resolvedTypeName" inside 
         // the collection of the built-in types, 
-        globalSimpleType = ValidationUtil.findGlobalSimpleType(
-            resolvedTypeName, ValidationUtil.BUILT_IN_SIMPLE_TYPES);
+        globalSimpleType = XAMUtils.findGlobalSimpleType(
+            resolvedTypeName, XAMUtils.BUILT_IN_SIMPLE_TYPES);
         if (globalSimpleType != null) return globalSimpleType;
 
         // find GlobalSimpleType with the name "resolvedTypeName" in the schema, 
         // which the "targetSchemaComponent" belongs to
-        globalSimpleTypes = 
-            targetSchemaComponent.getModel().getSchema().getSimpleTypes();
-        globalSimpleType = ValidationUtil.findGlobalSimpleType(
+        SchemaModel targetSModel = targetSchemaComponent.getModel();
+        if (targetSModel != null) {
+            Schema targetSchema = targetSModel.getSchema();
+            if (targetSchema != null) {
+                globalSimpleTypes = targetSchema.getSimpleTypes();
+            }
+        }
+        //
+        globalSimpleType = XAMUtils.findGlobalSimpleType(
             resolvedTypeName, globalSimpleTypes);
         return globalSimpleType;
     }
@@ -2537,12 +2619,12 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
     
     private boolean builtInTypesExist() {
         if ((! isSourceBuiltInType) && 
-            (ValidationUtil.getBuiltInSimpleType(sourceSchemaComponent) == null)) {
+            (XAMUtils.getBuiltInSimpleType(sourceSchemaComponent) == null)) {
             resultTypesCompatibility = TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN;
             return false;
         }            
         if ((! isTargetBuiltInType) && 
-            (ValidationUtil.getBuiltInSimpleType(targetSchemaComponent) == null)) {
+            (XAMUtils.getBuiltInSimpleType(targetSchemaComponent) == null)) {
             resultTypesCompatibility = TypesCompatibilityResult.TARGET_BASE_TYPE_UNKNOWN;
             return false;
         }
@@ -2572,7 +2654,7 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
 
     private void checkBuiltInTypeAndSchemaComponentType(SchemaComponent builtInType,
         SchemaComponent schemaComponent) {
-        GlobalSimpleType trgBuiltInType = ValidationUtil.getBuiltInSimpleType(schemaComponent);
+        GlobalSimpleType trgBuiltInType = XAMUtils.getBuiltInSimpleType(schemaComponent);
         if (trgBuiltInType == null) {
             resolvedTypeName = null;
             resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
@@ -2593,13 +2675,13 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
             resolvedTypeName = sourceTypeName;
         } else {
             GlobalSimpleType 
-                sourceBuiltInType = ValidationUtil.getBuiltInSimpleType(sourceSchemaComponent);
+                sourceBuiltInType = XAMUtils.getBuiltInSimpleType(sourceSchemaComponent);
             checkBuiltInTypeAndSchemaComponentType(sourceBuiltInType, targetSchemaComponent);
         }
     }
     
     private String getSchemaComponentTypeName(SchemaComponent schemaComponent) {
-        return ValidationUtil.ignoreNamespace(WizardUtils.getSchemaComponentTypeName(
+        return XAMUtils.ignoreNamespace(WizardUtils.getSchemaComponentTypeName(
             schemaComponent));
     }
     
@@ -2848,7 +2930,7 @@ class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
 
         //if (WizardUtils.isBuiltInSimpleType((SchemaComponent) userObject)) 
         //    return true;
-        if (ValidationUtil.getBuiltInSimpleType((SchemaComponent) userObject) != null) 
+        if (XAMUtils.getBuiltInSimpleType((SchemaComponent) userObject) != null) 
             return true;
 
         return false;
@@ -2864,7 +2946,7 @@ class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
                 WizardUtils.isAttributeUnknownType((SchemaComponent) userObject)); 
             if (! canConnect) return false;
 
-            canConnect &= (ValidationUtil.getBuiltInSimpleType(
+            canConnect &= (XAMUtils.getBuiltInSimpleType(
                 (SchemaComponent) userObject) != null); 
             if (! canConnect) return false;
         }
@@ -3013,23 +3095,24 @@ class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
     }
 }
 //============================================================================//
+// TODO d
 interface WizardProperties {
     String
-        PROPERTY_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle", // NOI18N
-        PROPERTY_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed", // NOI18N
-        PROPERTY_CONTENT_NUMBERED = "WizardPanel_contentNumbered", // NOI18N
-        PROPERTY_LEFT_DIMENSION = "WizardPanel_leftDimension", // NOI18N
+        PROPERTY_AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE, // NOI18N
+        PROPERTY_CONTENT_DISPLAYED = WizardDescriptor.PROP_CONTENT_DISPLAYED, // NOI18N
+        PROPERTY_CONTENT_NUMBERED = WizardDescriptor.PROP_CONTENT_NUMBERED, // NOI18N
+        PROPERTY_LEFT_DIMENSION = WizardDescriptor.PROP_LEFT_DIMENSION, // NOI18N
 
-        PROPERTY_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex", // NOI18N
-        PROPERTY_CONTENT_DATA = "WizardPanel_contentData", // NOI18N
-        PROPERTY_ERROR_MESSAGE = "WizardPanel_errorMessage", // NOI18N
-        PROPERTY_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor", // NOI18N
-        PROPERTY_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor", // NOI18N
-        PROPERTY_IMAGE = "WizardPanel_image", // NOI18N
-        PROPERTY_IMAGE_ALIGNMENT = "WizardPanel_imageAlignment", // NOI18N
+        PROPERTY_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
+        PROPERTY_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA, // NOI18N
+        PROPERTY_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+        PROPERTY_CONTENT_BACK_COLOR = WizardDescriptor.PROP_CONTENT_BACK_COLOR, // NOI18N
+        PROPERTY_CONTENT_FOREGROUND_COLOR = WizardDescriptor.PROP_CONTENT_FOREGROUND_COLOR, // NOI18N
+        PROPERTY_IMAGE = WizardDescriptor.PROP_IMAGE, // NOI18N
+        PROPERTY_IMAGE_ALIGNMENT = WizardDescriptor.PROP_IMAGE_ALIGNMENT, // NOI18N
 
-        PROPERTY_HELP_DISPLAYED = "WizardPanel_helpDisplayed", // NOI18N
-        PROPERTY_HELP_URL = "WizardPanel_helpURL"; // NOI18N
+        PROPERTY_HELP_DISPLAYED = WizardDescriptor.PROP_HELP_DISPLAYED, // NOI18N
+        PROPERTY_HELP_URL = WizardDescriptor.PROP_HELP_URL; // NOI18N
 }
 //============================================================================//
 class CorrelationDefinitionException extends RuntimeException {

@@ -19,6 +19,7 @@
 package org.netbeans.modules.xslt.tmap.nodes.properties;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.soa.ui.properties.editors.StringPropEditor;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.nodes.DecoratedTMapComponent;
 import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
@@ -55,10 +56,10 @@ public class QNamePropEditor extends StringPropEditor {
                     Object firstBean = beans[0];
                     if (firstBean != null && firstBean instanceof TMapComponentNode) {
                         DecoratedTMapComponent refDecObj = ((TMapComponentNode)firstBean).getReference();
-                        TMapComponent refObj = refDecObj == null ? null : refDecObj.getOriginal(); 
-                        if (refObj != null) {
+                        Object refObj = refDecObj == null ? null : refDecObj.getReference(); 
+                        if (refObj instanceof TMapComponent) {
                             retValue = ResolverUtility.
-                                    qName2DisplayText(qValue, refObj);
+                                    qName2DisplayText(qValue, (TMapComponent)refObj);
                         }
                     }
                 }

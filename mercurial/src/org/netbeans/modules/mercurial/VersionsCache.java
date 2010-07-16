@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,11 @@
 package org.netbeans.modules.mercurial;
 
 import java.io.*;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.*;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * File revisions cache. It can access pristine files.
@@ -72,20 +78,36 @@ public class VersionsCache {
      *
      * @return null if the file does not exist in given revision
      */
-    public File getFileRevision(File base, String revision) throws IOException {
-        if(revision.equals("-1")) return null; // NOI18N
+    public File getFileRevision(File base, HgRevision revision) throws IOException {
+        String revisionNumber = revision.getRevisionNumber();
+        if("-1".equals(revisionNumber)) return null; // NOI18N
         
         File repository = Mercurial.getInstance().getRepositoryRoot(base);
-        if (Setup.REVISION_CURRENT.equals(revision)) {
+        if (HgRevision.CURRENT.equals(revision)) {
             return base;
         } else {
             try {
-                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                File tempFile = new File(Utils.getTempFolder(), "nb-hg-" + base.getName()); //NOI18N
                 tempFile.deleteOnExit();
-                if (Setup.REVISION_BASE.equals(revision)) {
+                if (HgRevision.BASE.equals(revision)) {
                     HgCommand.doCat(repository, base, tempFile, null);
                 } else {
-                    HgCommand.doCat(repository, base, tempFile, revision, null);
+                    if ("false".equals(System.getProperty("versioning.mercurial.historycache.enable", "true"))) { //NOI18N
+                        HgCommand.doCat(repository, base, tempFile, revisionNumber, null);
+                    } else {
+                        String changesetId = revision.getChangesetId();
+                        Storage cachedVersions = StorageManager.getInstance().getStorage(repository.getAbsolutePath());
+                        String relativePath = HgUtils.getRelativePath(base);
+                        File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
+                        if (cachedFile.length() == 0) { // not yet cached
+                            HgCommand.doCat(repository, base, tempFile, changesetId, null);
+                            if (tempFile.length() != 0) {
+                                cachedVersions.setContent(relativePath, changesetId, tempFile);
+                            }
+                        } else {
+                            tempFile = cachedFile;
+                        }
+                    }
                 }
                 if (tempFile.length() == 0) {
                     tempFile.delete();
@@ -93,10 +115,17 @@ public class VersionsCache {
                 }
                 return tempFile;
             } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException(e);
             }
         }
+    }
+
+    private static boolean isLong (String revision) {
+        boolean isLong = false;
+        try {
+            Long.parseLong(revision);
+            isLong = true;
+        } catch (NumberFormatException ex) { }
+        return isLong;
     }
 }

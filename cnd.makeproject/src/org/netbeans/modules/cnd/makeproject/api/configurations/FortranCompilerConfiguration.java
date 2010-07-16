@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,16 +46,16 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.compilers.SunFortranCompiler;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class FortranCompilerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
+public class FortranCompilerConfiguration extends BasicCompilerConfiguration {
 
     // Constructors
     public FortranCompilerConfiguration(String baseDir, FortranCompilerConfiguration master) {
@@ -82,19 +85,17 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
     // Interface OptionsProvider
     @Override
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         String options = "$(COMPILE.f) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getFFlagsBasic(BasicCompiler compiler) {
+    public String getFFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        if (compiler instanceof SunFortranCompiler) {
-            options += ((SunFortranCompiler)compiler).getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
-        }
+        options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
@@ -102,25 +103,31 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getFFlags(BasicCompiler compiler) {
+    public String getFFlags(AbstractCompiler compiler) {
         String options = getFFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAllOptions(BasicCompiler compiler) {
-        CCompilerConfiguration master = (CCompilerConfiguration) getMaster();
+    @Override
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
 
         String options = ""; // NOI18N
         options += getFFlagsBasic(compiler) + " "; // NOI18N
-        if (master != null) {
+        FortranCompilerConfiguration master = this;
+        while (master != null) {
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            master = (FortranCompilerConfiguration)master.getMaster();
         }
         options += getAllOptions2(compiler) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAllOptions2(BasicCompiler compiler) {
+    public String getAllOptions2(AbstractCompiler compiler) {
         FortranCompilerConfiguration master = (FortranCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N
@@ -135,13 +142,13 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler fortranCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(Tool.FortranCompiler);
+        AbstractCompiler fortranCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
 
         sheet.put(getBasicSet());
         if (getMaster() != null) {
             sheet.put(getInputSet());
         }
-        if (compilerSet !=null && compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
+        if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
             Sheet.Set set2 = new Sheet.Set();
             set2.setName("OtherOptions"); // NOI18N
             set2.setDisplayName(getString("OtherOptionsTxt"));

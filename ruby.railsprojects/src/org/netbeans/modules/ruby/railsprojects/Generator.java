@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,7 +83,7 @@ public class Generator {
         new Generator("web_service", null, null, "ApiMethods", null, 1); // NOI18N
 
     private final String name;
-    private final FileObject location;
+    private FileObject location;
     private final String nameKey;
     private final String arg1Key;
     private final String arg2Key;
@@ -109,8 +112,13 @@ public class Generator {
         this.arg2Key = arg2Key;
     }
     
-    /** Add in the "known" or builtin generators. */
-    static List<Generator> getBuiltinGenerators(String railsVersion) {
+    /**
+     * Add in the "known" or builtin generators.
+     * 
+     * @param foundBuiltin the builtin generators found in the rails installation
+     *  of the project.
+     */
+    static List<Generator> getBuiltinGenerators(String railsVersion, List<Generator> foundBuiltin) {
         boolean isRailsOne = railsVersion != null && railsVersion.startsWith("1."); // NOI18N
         List<Generator> list = new ArrayList<Generator>();
         list.add(CONTROLLER);
@@ -130,9 +138,29 @@ public class Generator {
             // TODO - missing scaffold_resource!
         }
         
-        return list;
+        return configureBuiltins(list, foundBuiltin);
     }
-    
+
+    private static List<Generator> configureBuiltins(List<Generator> builtin, List<Generator> foundBuiltin) {
+        // sets the location for built-in generators so that the usage file is found, not pretty
+        // but other approaches
+        // would require rather extensive changes.
+        for (Generator found : foundBuiltin) {
+            boolean match = false;
+            for (Generator preConfigured : builtin) {
+                if (found.name.equals(preConfigured.name)) {
+                    preConfigured.location = found.location;
+                    match = true;
+                }
+            }
+            if (!match) {
+                builtin.add(found);
+            }
+        }
+        return builtin;
+    }
+
+
     public int getArgsRequired() {
         return argsRequired;
     }
@@ -190,40 +218,45 @@ public class Generator {
             generatorDir = FileUtil.toFile(location);
         }
 
-        File usageFile = new File(generatorDir, "USAGE"); // NOI18N
+        File usageFile = findUsageFile(generatorDir);
+        return usageFile != null ? RailsProjectUtil.asText(usageFile) : null;
+    }
 
-        if (!usageFile.exists()) {
+    private File findUsageFile(File generatorDir) {
+        final String[] filesToTry = {"USAGE",
             // At least the "resource" generator on railties seems to live
             // in the "wrong" place; check the additional location
-            usageFile = new File(generatorDir, "templates" + File.separator + "USAGE"); // NOI18N
-            if (!usageFile.exists()) {
-                return null;
+            "templates" + File.separator + "USAGE",
+            // e.g. haml_scaffold doesn't ship with a usage file, try README.rdoc instead
+            "README.rdoc",
+            // finally try just README
+            "README"
+        };
+
+        List<File> dirsToTry = new ArrayList<File>(3);
+        dirsToTry.add(generatorDir);
+
+        // look at parents as well for usage/readme. a typical structure of
+        // gem generators is <gem_home>/my-gem-generator/generators/my-gem-generator.rb,
+        // so we're looking for <gem_home>/my-gem-generator/generators/README and
+        // <gem_home>/my-gem-generator/README etc.
+        File parent = generatorDir.getParentFile();
+        if (parent.exists() && "generators".equals(parent.getName())) {
+            dirsToTry.add(parent);
+            File grandParent = parent.getParentFile();
+            if (grandParent.exists()) {
+                dirsToTry.add(grandParent);
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            BufferedReader fr = new BufferedReader(new FileReader(usageFile));
-
-            while (true) {
-                String line = fr.readLine();
-
-                if (line == null) {
-                    break;
+        for (File dir : dirsToTry) {
+            for (String file : filesToTry) {
+                File result = new File(dir, file);
+                if (result.exists()) {
+                    return result;
                 }
-
-                sb.append(line);
-                sb.append("\n"); // NOI18N
             }
-
-            if (sb.length() > 0) {
-                return sb.toString();
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
-
         return null;
     }
 
@@ -248,6 +281,26 @@ public class Generator {
             return NbBundle.getMessage(Generator.class, arg2Key);
         } else {
             return null;
+        }
+    }
+
+    static final class Script {
+
+        final String script;
+        final List<String> args = new ArrayList<String>();
+
+        public Script(String script) {
+            this.script = script;
+        }
+
+        Script addArgs(String... argsToAdd) {
+            if (argsToAdd == null) {
+                return this;
+            }
+            for (String each : argsToAdd) {
+                args.add(each);
+            }
+            return this;
         }
     }
 }

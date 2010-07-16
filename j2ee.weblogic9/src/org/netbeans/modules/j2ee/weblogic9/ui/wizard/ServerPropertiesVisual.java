@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,9 +53,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -81,9 +87,10 @@ import org.xml.sax.SAXException;
  */
 public class ServerPropertiesVisual extends javax.swing.JPanel {
 
-    private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
+    // TODO read from domain-registry.xml instead?
+    private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
-    private static final String DEFAULT_PASSWORD = "weblogic"; // NOI18N
+    private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
     private transient WLInstantiatingIterator instantiatingIterator;
     
@@ -142,7 +149,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_PORT"))); // NOI18N
         }
 
-        // no checks for username & password as they may be intentionally blank
+        Instance item = (Instance) localInstancesCombo.getSelectedItem();
+        // show a hint for sample domain
+        if (item != null && item.getName().startsWith("examples")) { // NOI18N
+            if (passwordField.getPassword().length <= 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+            }
+        }
 
         // save the data to the parent instantiating iterator
         instantiatingIterator.setUrl(getUrl());
@@ -226,18 +240,16 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      */
     private String[] getRegisteredDomains(String serverRoot){
         // init the resulting vector
-        Vector result = new Vector();
+        List<String> result = new ArrayList<String>();
 
         // is the server root was not defined, return an empty array of domains
         if (serverRoot == null) {
             return new String[0];
         }
 
-        // the relative path to the domains list file
-        String domainListFile = "/common/nodemanager/nodemanager.domains";  // NOI18N
-
         // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + domainListFile);
+        File file = new File(serverRoot + File.separator
+                + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
         LineNumberReader lnr = null;
 
         // read the list file line by line fetching out the domain paths
@@ -350,12 +362,20 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                             }
                         }
 
+                        if (port != null) {
+                            port = port.trim();
+                        }
+
                         // if all the parameters were fetched successfully add
                         // them to the result
                         if ((name != null) && (!name.equals(""))) { // NOI18N
                             //address and port have minOccurs=0 and are missing in 90 examples server
-                            port = port == null || port.equals("") ? "7001" : port; //NOI18N
-                            host = host == null || host.equals("") ? "localhost" : host; // NOI18N
+                            port = (port == null || port.equals("")) //NOI18N
+                                    ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                                    : port;
+                            host = (host == null || host.equals(""))
+                                    ? "localhost" // NOI18N
+                                    : host;
                             result.add(new Instance(name, host, port, domains[i]));
                         }
                     }
@@ -607,7 +627,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         jPanel1.add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(15);
-        passwordField.setText(DEFAULT_PASSWORD);
         passwordField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

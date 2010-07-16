@@ -1,5 +1,7 @@
 package org.netbeans.modules.ruby;
 
+import java.util.concurrent.Callable;
+
 /**
  * Test the semantic analyzer / highlighter
  * 
@@ -12,7 +14,14 @@ public class RubySemanticAnalyzerTest extends RubyTestBase {
     }
 
     public void testAnalysis() throws Exception {
-        checkSemantic("testfiles/postgresql_adapter.rb");
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                checkSemantic("testfiles/postgresql_adapter.rb");
+                return null;
+            }
+        });
     }
 
     public void testAnalysis2() throws Exception {

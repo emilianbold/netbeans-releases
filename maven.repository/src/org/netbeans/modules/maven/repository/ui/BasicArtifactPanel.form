@@ -104,7 +104,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="lblClassifier" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="txtClassifier" pref="310" max="32767" attributes="0"/>
+                                  <Component id="txtClassifier" pref="315" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -241,9 +241,9 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="txtLastModified" pref="273" max="32767" attributes="0"/>
-                              <Component id="txtSize" alignment="0" pref="273" max="32767" attributes="0"/>
-                              <Component id="txtSHA" alignment="0" pref="273" max="32767" attributes="0"/>
+                              <Component id="txtLastModified" pref="274" max="32767" attributes="0"/>
+                              <Component id="txtSize" alignment="0" pref="274" max="32767" attributes="0"/>
+                              <Component id="txtSHA" alignment="0" pref="274" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -339,7 +339,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="116" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="158" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -391,7 +391,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane3" pref="149" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" pref="164" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>

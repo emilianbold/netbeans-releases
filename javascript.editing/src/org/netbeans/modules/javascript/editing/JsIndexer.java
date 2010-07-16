@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -136,8 +139,8 @@ public class JsIndexer extends EmbeddingIndexer {
 
 // XXX: parsingapi
 //    public boolean acceptQueryPath(String url) {
-//        return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
-//                url.indexOf("/python1/") == -1; // NOI18N
+//        return url.indexOf("/ruby/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
+//                url.indexOf("/python/") == -1; // NOI18N
 //    }
 //
 //    public String getPersistentUrl(File file) {
@@ -225,9 +228,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
             if (url.endsWith(".js")) { //NOI18N
                 boolean done = indexRelatedScriptDocs();
-                if (done) {
-                    return;
-                }
+//                if (done) {
+//                    return;
+//                }
             }
 
             IndexDocument document = indexingSupport.createDocument(indexable);
@@ -243,7 +246,7 @@ public class JsIndexer extends EmbeddingIndexer {
                     String signature = computeSignature(child);
                     indexFuncOrProperty(child, document, signature);
                     String name = child.getName();
-                    if (Character.isUpperCase(name.charAt(0))) {
+                    if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) {
                         indexClass(child, document, signature);
                     }
                 } else if (childKind == ElementKind.GLOBAL ||
@@ -785,7 +788,7 @@ public class JsIndexer extends EmbeddingIndexer {
             if (relative != null) {
                 if (sdocsRootUrl == null) {
                     File sdocs = InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip",  // NOI18N
-                            "org-netbeans-modules-javascript-editing.jar", false); // NOI18N
+                            "org.netbeans.modules.javascript.editing", false); // NOI18N
                     if (sdocs == null) {
                         sdocsRootUrl = "";
                     } else if (sdocs.exists()) {
@@ -869,26 +872,11 @@ public class JsIndexer extends EmbeddingIndexer {
         return url;
     }
 
-    /** Get the FileObject corresponding to a URL returned from the index */
-    public static FileObject getFileObject(String url) {
-        try {
-            if (url.startsWith(CLUSTER_URL)) {
-                url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
-            }
-
-            return URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException mue) {
-            Exceptions.printStackTrace(mue);
-        }
-
-        return null;
-    }
-
     private static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
-                InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+                    InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip", // NOI18N
+                            "org.netbeans.modules.javascript.editing", false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");

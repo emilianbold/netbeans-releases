@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,6 +56,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -71,12 +75,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -348,6 +354,7 @@ public final class GeneratorUtilities {
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         List<ExpressionTree> throwsList = new LinkedList<ExpressionTree>();
+        List<TypeParameterTree> typeParams = new LinkedList<TypeParameterTree>();
         if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             if (!constructor.getParameters().isEmpty()) {
@@ -368,6 +375,13 @@ public final class GeneratorUtilities {
             for (TypeMirror th : constructorType.getThrownTypes()) {
                 throwsList.add((ExpressionTree) make.Type(th));
             }
+            for (TypeParameterElement typeParameterElement : constructor.getTypeParameters()) {
+                List<ExpressionTree> boundsList = new LinkedList<ExpressionTree>();
+                for (TypeMirror bound : typeParameterElement.getBounds()) {
+                    boundsList.add((ExpressionTree) make.Type(bound));
+                }
+                typeParams.add(make.TypeParameter(typeParameterElement.getSimpleName(), boundsList));
+            }
         }
         for (VariableElement ve : fields) {
             TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
@@ -375,7 +389,7 @@ public final class GeneratorUtilities {
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, throwsList, body, null); //NOI18N
+        return make.Method(make.Modifiers(mods), "<init>", null, typeParams, parameters, throwsList, body, null); //NOI18N
     }
 
     /**
@@ -504,17 +518,23 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
+        TranslateIdentifier translator = new TranslateIdentifier(copy, null, true, null);
         return (T) translator.translate(original);
     }
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
+        return importComments(copy, original, cut);
+    }
+
+    static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq, unit);
+            TreePath tp = TreePath.getPath(cut, original);
+            Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
+            TranslateIdentifier translator = new TranslateIdentifier(info, original, false, seq, unit);
             
-            translator.translate(original);
+            translator.translate(toMap);
 
             return original;
         } catch (IOException ex) {
@@ -577,23 +597,26 @@ public final class GeneratorUtilities {
         MethodTree prototype = createMethod(type, element);
         ModifiersTree mt = prototype.getModifiers();
 
-        //add @Override annotation:
-        SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
-        SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
+        if (supportsOverride(copy)) {
+            //add @Override annotation:
+            if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
+                boolean generate = true;
 
-        if (thisFOVersion.compareTo(version15) >= 0) {
-            boolean generate = true;
+                if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) == 0) {
+                    generate = !element.getEnclosingElement().getKind().isInterface();
+                }
 
-            if (thisFOVersion.compareTo(version15) == 0) {
-                generate = !element.getEnclosingElement().getKind().isInterface();
-            }
-
-            if (generate) {
-               mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
+                if (generate) {
+                   mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
+                }
             }
         }
 
         return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
+    }
+
+    private static boolean supportsOverride(CompilationInfo info) {
+        return info.getElements().getTypeElement("java.lang.Override") != null;
     }
 
     private static StringBuilder getCapitalizedName(CharSequence cs) {

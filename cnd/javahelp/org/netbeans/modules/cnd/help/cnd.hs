@@ -3,9 +3,9 @@
                          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
 <helpset version="2.0">
-	<title>C/C++ Development</title>
+	<title>C/C++/Fortran Development</title>
 	<maps>
-		<homeID>CandC++Overview</homeID>
+		<homeID>IDEToolsOverview</homeID>
 		<mapref location="map.xml"/>
 	</maps>
 	<view mergetype="javax.help.UniteAppendMerge">

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -130,16 +132,16 @@ public final class DLightConfigurationManager {
             configurationFolder.createFolder(ToolsConfiguration.KNOWN_TOOLS_SET);
             FileObject rootFolder = configuration.getRootFolder();
             FileObject configurationOptionsFolder = rootFolder.getFileObject(DLightConfiguration.CONFIGURATION_OPTIONS);
-            if (configurationOptionsFolder != null){
+            if (configurationOptionsFolder != null) {
                 FileObject[] children = configurationOptionsFolder.getChildren();
                 FileObject folderForCOnfigurationOptions = null;
-                if (children != null && children.length > 0){
+                
+                if (children != null && children.length > 0) {
                     folderForCOnfigurationOptions = configurationFolder.createFolder(configurationOptionsFolder.getName());
-                }
-                for (FileObject fo : children){
-                    if (!fo.isFolder()){
-                        FileUtil.copyFile(fo, folderForCOnfigurationOptions, fo.getName());
-                     
+                    for (FileObject fo : children) {
+                        if (!fo.isFolder()) {
+                            FileUtil.copyFile(fo, folderForCOnfigurationOptions, fo.getName());
+                        }
                     }
                 }
             }
@@ -151,7 +153,6 @@ public final class DLightConfigurationManager {
 
         //and add new with the
     }
-
 
     DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
         FileObject configurationsFolder = getToolsFSRoot();
@@ -171,7 +172,7 @@ public final class DLightConfigurationManager {
 
         //and add new with the
     }
-    
+
     /**
      * Returns DLightConfiguration which belongs to the category with the name  <code>categoryName</code>, <code>empty collection</code> otherwise
      * @param categoryName category to get the list of the configirations for
@@ -304,7 +305,7 @@ public final class DLightConfigurationManager {
 
         @Override
         public DLightConfiguration registerConfigurationAsACopy(DLightConfigurationManager manager, DLightConfiguration configuration,
-                 String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
+                String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
             return manager.registerConfigurationAsACopy(configuration,
                     configurationName, displayedName, category, platforms, collector, indicators);
         }

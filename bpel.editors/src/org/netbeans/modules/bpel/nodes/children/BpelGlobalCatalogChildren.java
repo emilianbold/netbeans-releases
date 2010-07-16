@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.bpel.core.BPELCatalog;
+import org.netbeans.modules.xml.catalog.XmlGlobalCatalog;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
@@ -44,27 +44,25 @@ import org.openide.util.Lookup;
 public class BpelGlobalCatalogChildren extends Children.Keys {
     
     private Lookup myLookup;
-    private BPELCatalog myBpelGlobalCatalog;
     private BpelModel myBpelModel;
     
-    public BpelGlobalCatalogChildren(BpelModel model, BPELCatalog bpelCatalog, Lookup lookup) {
+    public BpelGlobalCatalogChildren(BpelModel model, Lookup lookup) {
         myLookup = lookup;
-        myBpelGlobalCatalog = bpelCatalog;
         myBpelModel = model;
-        //
-        Iterator<String> publicIDs = bpelCatalog.getPublicIDs();
+
+        Iterator<String> publicIDs = XmlGlobalCatalog.getBpelGlobalCatalog().getPublicIDs();
         List<String> keys = new ArrayList<String>();
+
         if (publicIDs != null) {
             while (publicIDs.hasNext()) {
                 String pubId = publicIDs.next();
-//                String sysId = myBpelGlobalCatalog.getSystemID(pubId);
+
                 if (pubId != null) {
-                    String sysID = bpelCatalog.getSystemID(pubId);
+                    String sysID = XmlGlobalCatalog.getBpelGlobalCatalog().getSystemID(pubId);
                     keys.add(sysID);
                 }
             }
         }
-        
         setKeys(keys);
     }
     

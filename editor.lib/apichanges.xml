@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -104,6 +107,120 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ToolTipSupport-heavyweight-tooltips">
+            <summary>Support for heavyweight tooltips</summary>
+            <version major="2" minor="10"/>
+            <date day="5" month="5" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    Adding flags to <code>o.n.editor.ext.ToolTipSupport</code> class that control
+                    tooltip behavior such as if the tooltip should be hidden on mouse move, timeout, etc.
+                    The flags are <code>FLAG_HIDE_ON_MOUSE_MOVE</code>, <code>FLAG_HIDE_ON_TIMER</code>, <code>FLAG_PERMANENT</code>
+                    and <code>FLAGS_LIGHTWEIGHT_TOOLTIP</code>, <code>FLAGS_HEAVYWEIGHT_TOOLTIP</code>.
+                </p>
+                <p>
+                    A new method <code>ToolTipSupport.setTooltip()</code> accepting the additional <code>flags</code>
+                    parameter has also been added.
+                </p>
+            </description>
+            <issue number="181533"/>
+        </change>
+
+        <change id="Utilities.createSingleLineEditor">
+            <summary>Adding Utilities.createSingleLineEditor</summary>
+            <version major="2" minor="7"/>
+            <date day="29" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    Adding <code>o.n.editor.Utilities.createSingleLineEditor(String mimeType)</code> method
+                    in order to give modules a unified way of creating simple <code>TextField</code>-like
+                    controls.
+                </p>
+            </description>
+        </change>
+
+        <change id="ToolTipSupport-api-cleanup">
+            <summary>Hiding listener methods from public API</summary>
+            <version major="2" minor="4"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                    A bunch of listener methods were accidentally made publically visible
+                    when ToolTipSupport class was first introduced. These were now removed
+                    and marked by @PatchedPublic in order to preserve binary compatibility.
+                </p>
+            </description>
+        </change>
+
+        <change id="ToolTipSupport-setToolTipVisible-public">
+            <summary>Making ToolTipSupport.setToolTipVisible() public</summary>
+            <version major="2" minor="3"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deprecation="no" deletion="no" modification="yes" />
+            <description>
+                <p>
+                    Making <code>o.n.editor.ext.ToolTipSupport</code> public in order to allow
+                    modules to use custom tooltip components and have full control over their
+                    displaying.
+                </p>
+            </description>
+            <issue number="59336"/>
+        </change>
+
+        <change id="Registry-cleanup">
+            <summary>Cleaning up o.n.editor.Registry</summary>
+            <version major="2" minor="2"/>
+            <date day="11" month="1" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                    <code>o.n.editor.Registry</code> was internally bridged to <code>o.n.api.editor.EditorRegistry</code>
+                    and some of its methods were removed from API. <code>@PatchedPublic</code> was used to preserve binary compatibility.
+                    The whole class has been deprecated for a long time
+                    and its usage is discouraged in favor of <code>EditorRegistry</code>.
+                </p>
+            </description>
+            <issue number="179368"/>
+        </change>
+
+        <change id="removing-DrawLayer">
+            <summary>Removing DrawLayer and related API</summary>
+            <version major="2" minor="1"/>
+            <date day="21" month="12" year="2009"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                Removing DrawLayer and related classes and methods. This part of the API has been long time deprecated
+                and replaced by Highlighting SPI on <code>editor.lib2</code> module.
+                </p>
+            </description>
+            <issue number="97517"/>
+        </change>
+
+        <change id="GapDocumentView.hideBottomPadding">
+            <summary>Add flag hideBottomPadding to GapDocumentView constructor to be able to control adding bottom padding.</summary>
+            <version major="1" minor="46"/>
+            <date day="14" month="12" year="2009"/>
+            <author login="mslama"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                Add flag hideBottomPadding to GapDocumentView constructor. Subclasses should override this constructor
+                to pass this flag to superclass constructor.
+                </p>
+            </description>
+            <issue number="178284"/>
+        </change>
+        
         <change id="MimeTypeInitializer">
             <summary>Adding interface enabling initialization of lookups performed by SideBarFactory implementations.</summary>
             <version major="1" minor="41"/>

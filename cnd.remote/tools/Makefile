@@ -1,6 +1,9 @@
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+# Other names may be trademarks of their respective owners.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
@@ -12,9 +15,9 @@
 # specific language governing permissions and limitations under the
 # License.  When distributing the software, include this License Header
 # Notice in each file and include the License file at
-# nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+# nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 # particular file as subject to the "Classpath" exception as provided
-# by Sun in the GPL Version 2 section of the License file that
+# by Oracle in the GPL Version 2 section of the License file that
 # accompanied this code. If applicable, add the following below the
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
@@ -38,18 +41,21 @@
 # made subject to such option by the copyright holder.
 
 LINKER=cc
-CC=gcc
+
+CC-Linux := gcc
+CC-SunOS := cc
+CC-Mac_OS_X := gcc
 
 DEBUG := -g
 
-CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
-CFLAGS-Linux := ${CFLAGS-COMMON}
-CFLAGS-SunOS := ${CFLAGS-COMMON}
+CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror -std=c99
+CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
-LDFLAGS-LIB-Linux := -shared -ldl
-LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
-LDFLAGS-LIB-Mac_OS_X := -G -ldl
+LDFLAGS-LIB-Linux := -shared -ldl -lrt
+LDFLAGS-LIB-SunOS := -shared -ldl -lrt -lsocket
+LDFLAGS-LIB-Mac_OS_X := -G -ldl -lrt
 
 LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
 LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
@@ -77,13 +83,10 @@ ifeq (Darwin,$(UNAME_S))
 endif
 
 TRACE := 0
+CC := ${CC-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
 LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
-
-ifneq (${TRACE}, 0)
-	LDFLAGS_LIB_TRACE = -lrt
-endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -93,14 +96,17 @@ else
     TEST_ENV_PARAM := 
 endif
 
-PLATFORM-i386  :=  x86${PLATFORM_64}
-PLATFORM-i686  :=  x86${PLATFORM_64}
-PLATFORM-x86_64  :=  x86${PLATFORM_64}
-PLATFORM-sparc  :=  sparc${PLATFORM_64}
-ifeq (${UNAME_P}, unknown)
-	PLATFORM = ${PLATFORM-${UNAME_M}}
-else
-	PLATFORM = ${PLATFORM-${UNAME_P}}
+# map different values of `uname -p` and/or `uname -m` into standard postfixes
+TMP-i386   :=  x86
+TMP-i686   :=  x86
+TMP-i86pc  :=  x86
+TMP-x86_64 :=  x86
+TMP-sparc  :=  sparc
+TMP-sun4u  :=  sparc
+
+PLATFORM = ${TMP-${UNAME_P}}${PLATFORM_64}
+ifeq (${PLATFORM}, )
+    PLATFORM = ${TMP-${UNAME_M}}${PLATFORM_64}
 endif
 
 testit :sh= uname -s
@@ -111,7 +117,7 @@ BUILD_BASE="./build"
 DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
 BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-INSTALLDIR=../../nbbuild/netbeans/cnd?/bin
+INSTALLDIR=../../nbbuild/netbeans/cnd/bin
 
 all: build_impl install
 
@@ -122,7 +128,7 @@ build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs
 
 #object files
 ${BUILD}/%.o : %.c
-	${CC} ${CFLAGS} -Werror -o $@ $<
+	${CC} ${CFLAGS} -o $@ $<
 
 # rfs_test_env can do with implicit function declarations
 ${BUILD}/rfs_test_env.o : rfs_test_env.c
@@ -134,7 +140,7 @@ TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
-	${LINKER} ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
+	${LINKER} ${LDFLAGS_LIB} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
@@ -168,7 +174,7 @@ test_filedata: test_filedata_build
 
 test_filedata_build: all
 	${CC} ${CFLAGS} -DTRACE=1 -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
-	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o ${BUILD}/test_rfs_filedata.o
 
 test_pkg: test_pkg_build
 	${BUILD}/test_pkg_client

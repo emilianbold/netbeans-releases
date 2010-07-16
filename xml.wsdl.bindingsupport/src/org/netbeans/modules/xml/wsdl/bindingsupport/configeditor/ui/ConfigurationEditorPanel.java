@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -26,6 +27,7 @@ import org.openide.DialogDescriptor;
  * @author  skini
  */
 public class ConfigurationEditorPanel extends javax.swing.JPanel implements PropertyChangeListener {
+
     private CommonMessagePanel messagePanel;
     private DialogDescriptor descriptor;
     private boolean showOperations;
@@ -38,6 +40,7 @@ public class ConfigurationEditorPanel extends javax.swing.JPanel implements Prop
     boolean multipleOperationConfigurationSupported;
     
     private String title;
+
     /** Creates new form ConfigurationEditorPanel */
     public ConfigurationEditorPanel(Collection<Operation> operations, boolean multipleOperationSupported) {
         this.operations = operations;
@@ -101,8 +104,12 @@ public class ConfigurationEditorPanel extends javax.swing.JPanel implements Prop
                 configuredOperations.add(lastSelectedOperation);
             }
             ExtensibilityElementConfigurationEditorComponent component = provider.getOperationBasedEditorComponent(lastSelectedOperation);
-            if (component == null) return false;
-            if (operations.size() > 1) return true;
+            if (component == null) {
+                return false;
+            }
+            if (operations.size() > 1) {
+                return true;
+            }
             setInnerPanel(component.getEditorPanel());
             title = component.getTitle();
         }
@@ -130,18 +137,26 @@ public class ConfigurationEditorPanel extends javax.swing.JPanel implements Prop
         bindingConfigurationPanelHolder = new javax.swing.JPanel();
         commonMessagePanelHolder = new javax.swing.JPanel();
 
-        operationLabel.setText(org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.operationLabel.text")); // NOI18N
+        setName("Form"); // NOI18N
+
+        operationPanel.setName("operationPanel"); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(operationLabel, org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.operationLabel.text")); // NOI18N
+        operationLabel.setName("operationLabel"); // NOI18N
 
         operationCombobox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        operationCombobox.setName("operationCombobox"); // NOI18N
         operationCombobox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 operationComboboxActionPerformed(evt);
             }
         });
 
-        commentLabel.setText(org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.commentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(commentLabel, org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.commentLabel.text")); // NOI18N
+        commentLabel.setName("commentLabel"); // NOI18N
 
-        multipleOperationCommentLabel.setText(org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.multipleOperationCommentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(multipleOperationCommentLabel, org.openide.util.NbBundle.getMessage(ConfigurationEditorPanel.class, "ConfigurationEditorPanel.multipleOperationCommentLabel.text")); // NOI18N
+        multipleOperationCommentLabel.setName("multipleOperationCommentLabel"); // NOI18N
 
         org.jdesktop.layout.GroupLayout operationPanelLayout = new org.jdesktop.layout.GroupLayout(operationPanel);
         operationPanel.setLayout(operationPanelLayout);
@@ -171,8 +186,10 @@ public class ConfigurationEditorPanel extends javax.swing.JPanel implements Prop
                     .add(operationCombobox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
+        bindingConfigurationPanelHolder.setName("bindingConfigurationPanelHolder"); // NOI18N
         bindingConfigurationPanelHolder.setLayout(new javax.swing.BoxLayout(bindingConfigurationPanelHolder, javax.swing.BoxLayout.Y_AXIS));
 
+        commonMessagePanelHolder.setName("commonMessagePanelHolder"); // NOI18N
         commonMessagePanelHolder.setLayout(new javax.swing.BoxLayout(commonMessagePanelHolder, javax.swing.BoxLayout.LINE_AXIS));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -196,7 +213,7 @@ public class ConfigurationEditorPanel extends javax.swing.JPanel implements Prop
                 .add(18, 18, 18)
                 .add(bindingConfigurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(commonMessagePanelHolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(commonMessagePanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -234,7 +251,9 @@ private void operationComboboxActionPerformed(java.awt.event.ActionEvent evt) {/
     // End of variables declaration//GEN-END:variables
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt == null) return;
+        if (evt == null) {
+            return;
+        }
         if (evt.getNewValue() instanceof String) {
             String message = (String) evt.getNewValue();
             boolean valid = true;
@@ -253,6 +272,7 @@ private void operationComboboxActionPerformed(java.awt.event.ActionEvent evt) {/
     }
     
     class OperationItem {
+
         String name;
         Operation operation;
 
@@ -269,8 +289,6 @@ private void operationComboboxActionPerformed(java.awt.event.ActionEvent evt) {/
         public String toString() {
             return name;
         }
-        
-        
     }
 
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -97,12 +100,15 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(browseRepositoryButton, getString("CTL_Checkout_Browse1")); // NOI18N
         Mnemonics.setLocalizedText(lblRepoRevision, getString("CTL_Checkout_Revision")); // NOI18N
         Mnemonics.setLocalizedText(searchRevisionButton, getString("CTL_Checkout_Search")); // NOI18N
+        Mnemonics.setLocalizedText(browseRevisionButton, getString("CTL_Checkout_Browse")); // NOI18N
         Mnemonics.setLocalizedText(lblEmptyMeansHead, getString("CTL_Checkout_EmptyHint")); // NOI18N
 
         atWorkingDirLevelCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        exportCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         atWorkingDirLevelCheckBox.setEnabled(false);
 
         Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, getString("CTL_Checkout_CheckoutContentEmpty")); // NOI18N
+        Mnemonics.setLocalizedText(exportCheckBox, getString("CTL_Checkout_Export")); // NOI18N
 
         lblLocalFolder.setLabelFor(workdirTextField);
 
@@ -137,9 +143,11 @@ public class CheckoutPanel extends JPanel {
                                         .add(layout.createSequentialGroup()
                                                 .add(revisionTextField, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                                                 .addPreferredGap(RELATED)
-                                                .add(searchRevisionButton))
+                                                .add(searchRevisionButton)
+                                                .add(browseRevisionButton))
                                         .add(lblEmptyMeansHead)))
                         .add(atWorkingDirLevelCheckBox)
+                        .add(exportCheckBox)
                         .add(lblSpecifyLocalFolders)
                         .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(LEADING)
@@ -166,11 +174,14 @@ public class CheckoutPanel extends JPanel {
                         .add(layout.createParallelGroup(BASELINE)
                                 .add(lblRepoRevision)
                                 .add(revisionTextField)
-                                .add(searchRevisionButton))
+                                .add(searchRevisionButton)
+                                .add(browseRevisionButton))
                         .addPreferredGap(RELATED)
                         .add(lblEmptyMeansHead)
                         .addPreferredGap(UNRELATED)
                         .add(atWorkingDirLevelCheckBox)
+                        .addPreferredGap(RELATED)
+                        .add(exportCheckBox)
                         .add(28)
                         .add(lblSpecifyLocalFolders)
                         .addPreferredGap(RELATED)
@@ -193,7 +204,9 @@ public class CheckoutPanel extends JPanel {
         lblRepoRevision.getAccessibleContext().setAccessibleDescription(getString("ASCD_Repository_Revision"));  //NOI18N
         browseWorkdirButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Local_Directory"));   //NOI18N
         searchRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Search_Revision_Number"));  //NOI18N
+        browseRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Revision_Number"));  //NOI18N
         atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_only_folder_contents"));  //NOI18N
+        exportCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_Export"));  //NOI18N
     }// </editor-fold>
 
     private static String getString(String msgKey) {
@@ -201,6 +214,7 @@ public class CheckoutPanel extends JPanel {
     }
 
     final JCheckBox atWorkingDirLevelCheckBox = new JCheckBox();
+    final JCheckBox exportCheckBox = new JCheckBox();
     final JButton browseRepositoryButton = new JButton();
     final JButton browseWorkdirButton = new JButton();
     private JLabel lblEmptyMeansHead;
@@ -214,6 +228,7 @@ public class CheckoutPanel extends JPanel {
     final JTextField revisionTextField = new JTextField();
     final JCheckBox scanForProjectsCheckBox = new JCheckBox();
     final JButton searchRevisionButton = new JButton();
+    final JButton browseRevisionButton = new JButton();
     final JTextField workdirTextField = new JTextField();
     final JLabel workingCopy = new JLabel();
     

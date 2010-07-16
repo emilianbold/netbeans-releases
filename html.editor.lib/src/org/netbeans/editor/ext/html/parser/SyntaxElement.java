@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,7 @@ import java.util.*;
  * @author  Petr Nejedly
  * @author  Marek.Fukala@Sun.com
  */
-public class SyntaxElement {
+public abstract class SyntaxElement {
     
     public static final int TYPE_COMMENT = 0;
     public static final int TYPE_DECLARATION = 1;
@@ -63,20 +66,18 @@ public class SyntaxElement {
     
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","entity reference"}; //NOI18N
-    
+
     private CharSequence source;
     
     private int offset;
     private int length;
-    private int type;
     
-    SyntaxElement( CharSequence doc, int offset, int length, int type ) {
+    private SyntaxElement( CharSequence doc, int offset, int length) {
         assert offset >=0 : "start offset must be >= 0 !";
         assert length >=0 : "element length must be positive!";
 
         this.offset = offset;
         this.length = length;
-        this.type = type;
         this.source = doc;
     }
     
@@ -88,9 +89,7 @@ public class SyntaxElement {
         return length;
     }
     
-    public int type() {
-        return type;
-    }
+    public abstract int type();
     
     public CharSequence text() {
         return source.subSequence(offset(), offset() + length());
@@ -100,9 +99,83 @@ public class SyntaxElement {
     public String toString() {
         //String textContent = type() == TYPE_TEXT ? text() : "";
         CharSequence textContent = text();
-        return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + "\""; // NOI18N
+        return "Element(" +TYPE_NAMES[type()]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + "\""; // NOI18N
     }
-    
+
+    static class SharedTextElement extends SyntaxElement {
+
+        private static final String TO_STRING = "<n/a>"; //NOI18N
+
+        public SharedTextElement() {
+            super(null, 0, 0);
+        }
+
+        @Override
+        public int length() {
+            assert false;
+            return super.length();
+        }
+
+        @Override
+        public int offset() {
+            assert false;
+            return super.offset();
+        }
+
+        @Override
+        public CharSequence text() {
+            return TO_STRING;
+        }
+
+        @Override
+        public int type() {
+            return TYPE_TEXT;
+        }
+
+    }
+
+    static class Error extends SyntaxElement {
+
+        public Error(CharSequence doc, int offset, int length) {
+            super(doc, offset, length);
+        }
+
+        @Override
+        public int type() {
+            return TYPE_ERROR;
+        }
+
+
+    }
+
+    static class EntityReference extends SyntaxElement {
+
+        public EntityReference(CharSequence doc, int offset, int length) {
+            super(doc, offset, length);
+        }
+
+        @Override
+        public int type() {
+            return TYPE_ENTITY_REFERENCE;
+        }
+
+
+    }
+
+    static class Comment extends SyntaxElement {
+
+        public Comment(CharSequence doc, int offset, int length) {
+            super(doc, offset, length);
+        }
+
+        @Override
+        public int type() {
+            return TYPE_COMMENT;
+        }
+
+    }
+
+
     /**
      * Declaration models SGML declaration with emphasis on &lt;!DOCTYPE
      * declaration, as other declarations are not allowed inside HTML.
@@ -130,7 +203,7 @@ public class SyntaxElement {
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
-            super( document, from, length, TYPE_DECLARATION );
+            super( document, from, length );
             root = doctypeRootElement;
             publicID = doctypePI;
             file = doctypeFile;
@@ -160,14 +233,21 @@ public class SyntaxElement {
         public String getDoctypeFile() {
             return file;
         }
+
+        @Override
+        public int type() {
+            return TYPE_DECLARATION;
+        }
+
+
         
     }
     
-    public static class Named extends SyntaxElement {
+    public static abstract class Named extends SyntaxElement {
         String name;
         
-        public Named( CharSequence document, int from, int to, int type, String name ) {
-            super( document, from, to, type );
+        public Named( CharSequence document, int from, int to, String name ) {
+            super( document, from, to);
             this.name = name;
         }
         
@@ -187,12 +267,19 @@ public class SyntaxElement {
         private boolean empty, openTag;
                 
         public Tag( CharSequence document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
-            super( document, from, length, openTag ? TYPE_TAG : TYPE_ENDTAG, name );
+            super( document, from, length, name );
             this.attribs = attribs;
             this.openTag = openTag;
             this.empty = isEmpty;
         }
-        
+
+        @Override
+        public int type() {
+            return openTag ? TYPE_TAG : TYPE_ENDTAG;
+        }
+
+
+
         public boolean isEmpty() {
             return empty;
         }

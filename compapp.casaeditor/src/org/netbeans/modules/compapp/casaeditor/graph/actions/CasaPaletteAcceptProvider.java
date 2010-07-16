@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
@@ -76,8 +79,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.MultiTransferObject;
 
 /**
- *author
+ * 
  * @author rdara
+ * @author jqian
  */
 public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
@@ -89,8 +93,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         super(scene);
         mModel = model;
     }
-    
-    
+        
+    @Override
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
         try {
@@ -134,14 +138,21 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return null;
     }
     
-    private ConnectorState isAcceptableFromOther(Point point, Transferable transferable, boolean bIgnoreRegionCheck) 
-    throws Exception {
-        CasaRegionWidget region = null; 
+    private ConnectorState isAcceptableFromOther(Point point, 
+            Transferable transferable, boolean bIgnoreRegionCheck)
+            throws Exception {
+        
+        List<CasaRegionWidget> acceptableRegions = new ArrayList<CasaRegionWidget>();
+
         ConnectorState curState = ConnectorState.REJECT;
-        for(Object dfo : getTransferableObjects(transferable)) {
+
+        for (Object dfo : getTransferableObjects(transferable)) {
+            
             curState = ConnectorState.REJECT;
+
             if (dfo instanceof Node) {
-                region = getScene().getEngineRegion();
+                acceptableRegions.add(getScene().getEngineRegion());
+                acceptableRegions.add(getScene().getExternalRegion());
                 Project p = ((Node) dfo).getLookup().lookup(Project.class);
                 /*
                 if (p == null) {
@@ -179,7 +190,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 if(dfoList.size() == 5 &&
                     dfoList.get(0) instanceof String &&
                     dfoList.get(0).equals("JBIMGR_SU_TRANSFER")) {
-                    region = getScene().getExternalRegion();
+                    acceptableRegions.add(getScene().getExternalRegion());
                     String projName /*suName*/ = (String) dfoList.get(1); // FIXME: 
                     if (!mModel.existingServiceEngineServiceUnit(projName)) { // FIXME: existingExternalServiceUnit?
                         curState = ConnectorState.ACCEPT;
@@ -188,21 +199,33 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             } else {
                 curState = ConnectorState.REJECT;
             }
+
             if(curState == ConnectorState.REJECT) {
                 break;
             }
         }
-        if(curState == ConnectorState.ACCEPT) { //Check further whether its droppable region and visual feedback needed
-            if(region != null) {
-                if(bIgnoreRegionCheck) {    //HighLight region!
-                    highlightRegion(region);
+
+        // Check further whether its droppable region and visual feedback needed
+        if (curState == ConnectorState.ACCEPT) {
+            if (acceptableRegions.size() > 0) {
+                if (bIgnoreRegionCheck) {    // HighLight region!
+                    for (CasaRegionWidget region : acceptableRegions) {
+                        highlightRegion(region);
+                    }
                 } else {
-                    if (!region.getBounds().contains(region.convertSceneToLocal(point))) {  //Check for region bounds
-                        curState = ConnectorState.REJECT;
+                    // Check for region bounds
+                    for (CasaRegionWidget region : acceptableRegions) {
+                        if (region.getBounds().contains(region.convertSceneToLocal(point))) {  
+                            curState = ConnectorState.ACCEPT;
+                            break;
+                        } else {
+                            curState = ConnectorState.REJECT;
+                        }
                     }
                 } 
             }
         }
+        
         return curState;
     }
     
@@ -242,10 +265,12 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retList;
     }
     
+    @Override
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                CasaPaletteItemID itemID = (CasaPaletteItemID)
+                        transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (itemID != null) {
                     acceptFromPalette(point, itemID);
                 }
@@ -269,30 +294,43 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     }
     
     private void acceptFromOther(Point point, Transferable transferable)
-    throws Exception {
-        for(Object dfo : getTransferableObjects(transferable)) {
+            throws Exception {
+
+        for (Object dfo : getTransferableObjects(transferable)) {
             if (dfo instanceof Node) {
-                Project p = ((Node) dfo).getLookup().lookup(Project.class);
+                Project project = ((Node) dfo).getLookup().lookup(Project.class);
+
+                boolean internal = true;
+                CasaRegionWidget engineRegion = getScene().getEngineRegion();
+                Point localPoint = engineRegion.convertSceneToLocal(point);
+                if (!engineRegion.getBounds().contains(localPoint)) {
+                    CasaRegionWidget externalRegion = getScene().getExternalRegion();
+                    localPoint = externalRegion.convertSceneToLocal(point);
+                    if (!externalRegion.getBounds().contains(localPoint)) {
+                        continue;
+                    }
+                    internal = false;
+                }
+
                 /*
                 if (p == null) {
                     DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
                     p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
                 }
                 String type = mModel.getJbiProjectType(p);
-                point = getScene().getEngineRegion().convertSceneToLocal(point);
-                mModel.addJBIModule(p, type, point.x, point.y);
+                mModel.addJBIModule(p, type, localPoint.x, localPoint.y);
                 */
-                if (p != null) { // standard NetBeans projects
-                    String type = mModel.getJbiProjectType(p);
-                    point = getScene().getEngineRegion().convertSceneToLocal(point);
-                    mModel.addJBIModule(p, type, point.x, point.y);
-                }  else { // non-standard project, e.g., jcaps
+                if (project != null) {  // standard NetBeans projects
+                    String projectType = mModel.getJbiProjectType(project);
+                    mModel.addJBIModule(project, projectType,
+                            localPoint.x, localPoint.y, internal);
+                }  else {           // non-standard project, e.g., jcaps
                     InternalProjectTypePlugin plugin = getProjectPluginHandler(dfo);
                     if (plugin != null) {
                         String pname = ((Node) dfo).getDisplayName();
                         String type = plugin.getJbiTargetName();
-                        point = getScene().getEngineRegion().convertSceneToLocal(point);
-                        mModel.addJBIModuleFromPlugin(plugin, pname, type, point.x, point.y);
+                        mModel.addJBIModuleFromPlugin(plugin, pname, type, 
+                                localPoint.x, localPoint.y, internal);
                     }
                 }
 
@@ -314,8 +352,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                     String suDescription = suTransfer.getServiceUnitDescription();
                     String compName = suTransfer.getComponentName();
                     final CasaServiceEngineServiceUnit seSU = 
-                            mModel.addServiceEngineServiceUnit(
-                            suName, compName, suDescription, false, false, true, point.x, point.y); 
+                            mModel.addExternalServiceEngineServiceUnitFromRuntime(
+                            suName, compName, suDescription, point.x, point.y); 
 
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {  
@@ -346,7 +384,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return p;
     }
     
-    
+    @Override
     public void acceptStarted(Transferable transferable) {
         super.acceptStarted(transferable);
         if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
@@ -371,6 +409,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
        }
     }
     
+    @Override
     public void acceptFinished() {
         super.acceptFinished();
         highlightExtSUs(false);
@@ -386,8 +425,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private void highlightExtSUs(boolean bValue) {
         for (Widget widget : getScene().getExternalRegion().getChildren()) {
-            if (widget instanceof CasaNodeWidgetEngineExternal) {
-                ((CasaNodeWidgetEngineExternal) widget).setHighlighted(bValue);
+            if (widget instanceof CasaNodeWidgetEngine.External) {
+                ((CasaNodeWidgetEngine.External) widget).setHighlighted(bValue);
             }
         }
         if (bValue) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,11 +72,11 @@ class Commandline {
     Commandline() {
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
-            executable = "svn";
+            executable = "svn";                                                 // NOI18N
         } else {
             File f = new File(executable);
             if(f.isDirectory()) {
-                executable = executable + "/svn";
+                executable = executable + "/svn";                               // NOI18N
             } 
         }                      
     }
@@ -92,12 +95,9 @@ class Commandline {
     private void destroy() throws IOException {
         canceled = true;
         if(cli != null) {
-            try { cli.getErrorStream().close(); } catch (IOException iOException) { }
-            try { cli.getInputStream().close(); } catch (IOException iOException) { }
-            try { cli.getOutputStream().close(); } catch (IOException iOException) { }            
-            cli.destroy();             
+            cli.destroy();
         }        
-        Subversion.LOG.fine("cli: Process destroyed");
+        Subversion.LOG.fine("cli: Process destroyed");                          // NOI18N
     }
 
     void exec(SvnCommand command) throws IOException {
@@ -105,49 +105,51 @@ class Commandline {
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
-        Subversion.LOG.fine("cli: Executing \"" + cmd + "\"");
+        Subversion.LOG.log(Level.FINE, "cli: Executing \"{0}\"", cmd);          // NOI18N
         
-        Subversion.LOG.fine("cli: Creating process...");        
+        Subversion.LOG.fine("cli: Creating process...");                        // NOI18N
         command.commandStarted();
         try {
             cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
             if(canceled) return;
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
 
-            Subversion.LOG.fine("cli: process created");
+            Subversion.LOG.fine("cli: process created");                        // NOI18N
 
             String line = null;                
             if(command.hasBinaryOutput()) {
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
                 int i = -1;
                 if(canceled) return;
-                Subversion.LOG.fine("cli: ready for binary OUTPUT \"");                
+                Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
                 while(!canceled && (i = cli.getInputStream().read()) != -1) {
                     b.write(i);
                 }
-                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: BIN OUTPUT \"" + (new String(b.toByteArray())) + "\"");
+                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", (new String(b.toByteArray()))); // NOI18N
                 command.output(b.toByteArray());
             } else {             
                 if(canceled) return;
-                Subversion.LOG.fine("cli: ready for OUTPUT \"");                     
+                Subversion.LOG.fine("cli: ready for OUTPUT \"");                // NOI18N     
                 ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
                 while (!canceled && (line = ctOutput.readLine()) != null) {                                        
-                    Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
+                    Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", line);// NOI18N
                     command.outputText(line);
                 }    
             }
             
             while (!canceled && (line = ctError.readLine()) != null) {                                    
-                Subversion.LOG.info("cli: ERROR \"" + line + "\"");
+                Subversion.LOG.log(Level.INFO, "cli: ERROR \"{0}\"", line);     // NOI18N
                 command.errorText(line);
             }     
             if(canceled) return;
             cli.waitFor();
             command.commandCompleted(cli.exitValue());
         } catch (InterruptedException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
+            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
+            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too // NOI18N
         } catch (InterruptedIOException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
+            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
+            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too // NOI18N 
         } catch (Throwable t) {
             if(canceled) {
                 Subversion.LOG.fine(t.getMessage());
@@ -155,9 +157,7 @@ class Commandline {
                 if(t instanceof IOException) {
                     throw (IOException) t;
                 } else {
-                    IOException ioe = new IOException();
-                    ioe.initCause(t);
-                    throw ioe;
+                    throw new IOException(t);
                 }
             }
         } finally {
@@ -168,7 +168,7 @@ class Commandline {
             }            
             ctError = null;
             ctOutput = null;
-            Subversion.LOG.fine("cli: process finnished");            
+            Subversion.LOG.fine("cli: process finnished");                      // NOI18N
             command.commandFinished();
         }        
     }    
@@ -178,19 +178,19 @@ class Commandline {
         List ret = new ArrayList(vars.keySet().size());           
         for (Iterator it = vars.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();                
-            if(key.equals("LC_ALL")) {
-                ret.add("LC_ALL=");
-            } else if(key.equals("LC_MESSAGES")) {
-                ret.add("LC_MESSAGES=C");
-            } else if(key.equals("LC_TIME")) {
-                ret.add("LC_TIME=C");
+            if(key.equals("LC_ALL")) {                                          // NOI18N
+                ret.add("LC_ALL=");                                             // NOI18N    
+            } else if(key.equals("LC_MESSAGES")) {                              // NOI18N    
+                ret.add("LC_MESSAGES=C");                                       // NOI18N
+            } else if(key.equals("LC_TIME")) {                                  // NOI18N
+                ret.add("LC_TIME=C");                                           // NOI18N    
             } else {
-                ret.add(key + "=" + vars.get(key));                        
+                ret.add(key + "=" + vars.get(key));                             // NOI18N    
             }		                
         }                       
-        if(!vars.containsKey("LC_ALL"))      ret.add("LC_ALL=");
-        if(!vars.containsKey("LC_MESSAGES")) ret.add("LC_MESSAGES=C");
-        if(!vars.containsKey("LC_TIME"))     ret.add("LC_TIME=C");            
+        if(!vars.containsKey("LC_ALL"))      ret.add("LC_ALL=");                // NOI18N    
+        if(!vars.containsKey("LC_MESSAGES")) ret.add("LC_MESSAGES=C");          // NOI18N
+        if(!vars.containsKey("LC_TIME"))     ret.add("LC_TIME=C");              // NOI18N
         return (String[]) ret.toArray(new String[ret.size()]);
     }	    
     

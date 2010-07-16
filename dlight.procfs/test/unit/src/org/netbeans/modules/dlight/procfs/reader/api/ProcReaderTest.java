@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,22 +42,19 @@
 
 package org.netbeans.modules.dlight.procfs.reader.api;
 
-import java.io.IOException;
 import junit.framework.Test;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.netbeans.modules.dlight.procfs.api.PStatus;
 import org.netbeans.modules.dlight.procfs.api.PStatus.ThreadsInfo;
 import org.netbeans.modules.dlight.procfs.api.PUsage;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,66 +70,52 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
         super(name, execEnv);
     }
 
+    @SuppressWarnings("unchecked")
     public static Test suite() {
         return new NativeExecutionBaseTestSuite(ProcReaderTest.class);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    public void testGetProcessStatusLocal() throws Exception {
+        doTestGetProcessStatus(ExecutionEnvironmentFactory.getLocal());
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    @Override
-    public void setUp() {
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getProcessStatus method, of class ProcReader.
-     */
-    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testGetProcessStatus() throws Exception {
-        System.out.println("getProcessStatus - local");
+        doTestGetProcessStatus(getTestExecutionEnvironment());
+    }
 
-        NativeProcess p = null;
+    private void doTestGetProcessStatus(ExecutionEnvironment execEnv) throws Exception {
+        HostInfo hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        if (hostinfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            // this test is valid only on Solaris
+            return;
+        }
+
+        String pwait = HostInfoUtils.fileExists(execEnv, "/usr/bin/amd64/pwait")
+                ? "/usr/bin/amd64/pwait" : "/usr/bin/pwait";
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        NativeProcess p = npb.setExecutable(pwait).setArguments("1").call();
         try {
-            System.out.println("getProcessInfo");
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
-            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
-            npb.setExecutable("/usr/bin/amd64/pwait").setArguments("1");
-            p = npb.call();
-
-            System.out.println("Process with PID " + p.getPID() + " started");
-
             ProcReader preader = ProcReaderFactory.getReader(execEnv, p.getPID());
 
             PStatus pstatus = preader.getProcessStatus();
             assertNotNull(pstatus);
-            ThreadsInfo threadInfo = pstatus.getThreadInfo();
-            assertNotNull(threadInfo);
-
-            assertEquals("pwait is a single-thread appl", 1, threadInfo.pr_nlwp);
             assertEquals("actual pid should be the same as provider returns", p.getPID(), pstatus.getPIDInfo().pr_pid);
 
-            PUsage usage = preader.getProcessUsage();
-            assertNotNull(usage);
+            ThreadsInfo threadInfo = pstatus.getThreadInfo();
+            assertNotNull(threadInfo);
+            assertEquals("pwait is a single-thread appl", 1, threadInfo.pr_nlwp);
 
-            long sysNanoTime = System.nanoTime();
-            assertTrue("Time of process creation is not more than 2 seconds ago", sysNanoTime - usage.getUsageInfo().pr_create < 2 * 1000 * 1000 * 1000);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            PUsage pusage1 = preader.getProcessUsage();
+            assertNotNull(pusage1);
+            assertTrue(0 < pusage1.getUsageInfo().pr_tstamp - pusage1.getUsageInfo().pr_create);
+
+            PUsage pusage2 = preader.getProcessUsage();
+            assertNotNull(pusage2);
+            assertTrue(0 < pusage2.getUsageInfo().pr_tstamp - pusage2.getUsageInfo().pr_create);
+            assertTrue(0 < pusage2.getUsageInfo().pr_tstamp - pusage1.getUsageInfo().pr_tstamp);
         } finally {
-            if (p != null) {
-                p.destroy();
-            }
+            p.destroy();
         }
     }
 }

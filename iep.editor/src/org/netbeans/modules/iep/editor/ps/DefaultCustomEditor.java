@@ -20,29 +20,8 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
 
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 
 /**
  * DefaultCustomEditor.java

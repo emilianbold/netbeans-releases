@@ -7,13 +7,12 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import javax.swing.KeyStroke;
-import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.netbeans.modules.sql.framework.ui.utils.AxionExternalConnectionProvider;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.openide.awt.StatusDisplayer;
 
 
 public final class TestRunAction extends GraphAction {
@@ -42,11 +41,11 @@ public final class TestRunAction extends GraphAction {
         ETLCollaborationTopPanel topComp = null;
         try {
             topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
-            Thread.currentThread().getContextClassLoader().loadClass(AxionExternalConnectionProvider.class.getName());
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT026: Error loading class:{0}", TestRunAction.class.getName()), ex);
+            String msg = mLoc.t("EDIT026: Error loading class:"+TestRunAction.class.getName());
+            StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+            mLogger.infoNoloc(msg.substring(15)+ex.getMessage());
         }
-        System.setProperty(ExternalConnectionProvider.EXTERNAL_CONNECTION_PROVIDER_PROPERTY_NAME, AxionExternalConnectionProvider.class.getName());
 
         if (topComp != null) {
             topComp.run();

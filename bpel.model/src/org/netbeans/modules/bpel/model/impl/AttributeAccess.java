@@ -18,18 +18,21 @@
  */
 package org.netbeans.modules.bpel.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.CDataContentElement;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.XmlContentElement;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -57,13 +60,15 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute;
+import org.w3c.dom.NodeList;
 
 /**
  * This is "utility" class that incapuslate inside itself
  * all attribute logic.   
  * @author ads
  */
-class AttributeAccess {
+public class AttributeAccess {
 
     AttributeAccess( BpelEntityImpl entity ) {
         myEntity = entity;
@@ -80,6 +85,19 @@ class AttributeAccess {
         }
     }
     
+    Integer getIntegerAttribute(Attribute attr ){
+        readLock();
+        try {
+            String value = getEntity().getAttribute(attr);
+            return Integer.parseInt( value );
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        finally {
+            readUnlock();
+        }
+    }
+
     @SuppressWarnings("unchecked") // NOI18N
     <T extends BpelReferenceable> BpelReference<T> getBpelReference( Attribute attr,
             Class<T> clazz )
@@ -150,8 +168,8 @@ class AttributeAccess {
         else if (QName.class.isAssignableFrom(c)) {
             return Utils.getQName(stringValue, getEntity());
         }
-        else if (Enum.class.isAssignableFrom(c)) {
-            return Utils.parse(c, stringValue);
+        else if (c.isEnum()) {
+            return Utils.parse((Class<Enum>)c, stringValue);
         }
         else if ( Referenceable.class.isAssignableFrom( c )){
             Reference ref = getReferenceValueOf(attr, stringValue, c);
@@ -213,6 +231,60 @@ class AttributeAccess {
                     oldValue, value);
             setAttribute(attr, value);
             getEntity().postGlobalEvent(event);
+        }
+        finally {
+            writeUnlock();
+        }
+    }
+    
+    /**
+     * Register a new prefix for the namespace if necessary. 
+     * @return current prefix
+     */
+    private String registerNsPrefix(ExtBpelAttribute attr) {
+        String prefix = null;
+        try {
+            BpelEntity bpelEntity = attr.getOwner();
+            assert bpelEntity != null : "An owner has to be specified.";
+            ExNamespaceContext nsContext = bpelEntity.getNamespaceContext();
+            assert nsContext != null;
+            prefix = nsContext.addNamespace(attr.getNsUri());
+        }
+        catch (InvalidNamespaceException e) {
+            assert false;
+        }
+        return prefix;
+    }
+    
+    void setBpelAttribute( ExtBpelAttribute attr, Enum value) {
+        writeLock();
+        try {
+            registerNsPrefix(attr);
+            setBpelAttribute(  (Attribute)attr , value);
+        }
+        finally {
+            writeUnlock();
+        }
+    }
+    
+    void setBpelAttribute( ExtBpelAttribute attr, QName qName ) throws VetoException {
+        writeLock();
+        try {
+            registerNsPrefix(attr);
+            setBpelAttribute(  (Attribute)attr , qName);
+        }
+        finally {
+            writeUnlock();
+        }
+    }
+    
+    void setBpelAttribute( ExtBpelAttribute attr, String value )
+            throws VetoException
+    {
+        writeLock();
+        try {
+            registerNsPrefix(attr);
+            setBpelAttribute(  (Attribute)attr , value);
         }
         finally {
             writeUnlock();
@@ -296,6 +368,7 @@ class AttributeAccess {
 
             boolean isQname = ((BpelAttributesType)ref)
                     .getAttributeType() == BpelAttributesType.AttrType.QNAME;
+            
             if (isQname) {
                 str = prepareQNameAttribute(ref.getQName());
             }
@@ -413,7 +486,7 @@ class AttributeAccess {
         }
         StringTokenizer tokenizer = new StringTokenizer(str, " ");
         List<org.netbeans.modules.bpel.model.api.references.WSDLReference<T>> 
-            list = new LinkedList<org.netbeans.modules.bpel.model.api.references.
+            list = new ArrayList<org.netbeans.modules.bpel.model.api.references.
             WSDLReference<T>>();
         while (tokenizer.hasMoreTokens()) {
             String next = tokenizer.nextToken();
@@ -474,7 +547,7 @@ class AttributeAccess {
             return null;
         }
         StringTokenizer tokenizer = new StringTokenizer(str, " ");
-        List<BpelReference<T>> list = new LinkedList<BpelReference<T>>();
+        List<BpelReference<T>> list = new ArrayList<BpelReference<T>>();
         while (tokenizer.hasMoreTokens()) {
             String next = tokenizer.nextToken();
             BpelReference<T> ref = BpelReferenceBuilder.getInstance().build(
@@ -492,7 +565,7 @@ class AttributeAccess {
             return null;
         }
         StringTokenizer tokenizer = new StringTokenizer(str, " ");
-        List<SchemaReference<T>> list = new LinkedList<SchemaReference<T>>();
+        List<SchemaReference<T>> list = new ArrayList<SchemaReference<T>>();
         while (tokenizer.hasMoreTokens()) {
             String next = tokenizer.nextToken();
             SchemaReference<T> ref = SchemaReferenceBuilder.getInstance()
@@ -643,6 +716,33 @@ class AttributeAccess {
         }
     }
     
+    void setXmlContent ( String xmlContent ) throws VetoException, IOException {
+        writeLock();
+        try {
+            NodeList oldValue = getEntity().getPeer().getChildNodes();
+            PropertyUpdateEvent event = preUpdateAttribute(
+                    XmlContentElement.XML_CONTENT_PROPERTY, oldValue , xmlContent );
+            getEntity().setXmlContent( XmlContentElement.XML_CONTENT_PROPERTY , xmlContent );
+            getEntity().postGlobalEvent(event);
+        }
+        finally {
+            writeUnlock();
+        }
+    }
+
+    public void setCDataContent ( String content ) throws VetoException, IOException {
+        writeLock();
+        try {
+            NodeList oldValue = getEntity().getPeer().getChildNodes();
+            PropertyUpdateEvent event = preUpdateAttribute(
+                    CDataContentElement.CDATA_CONTENT_PROPERTY, oldValue , content );
+            getEntity().setCDataContent( CDataContentElement.CDATA_CONTENT_PROPERTY , content );
+            getEntity().postGlobalEvent(event);
+        }
+        finally {
+            writeUnlock();
+        }
+    }
     /**
      * This method changes old reference <code>reference</code>
      * to new reference with referenceable object <code>subject</code>
@@ -742,26 +842,34 @@ class AttributeAccess {
         }
 
         String name = notNull.getLocalName();
+        String nsUri = notNull.getNamespaceURI();
 
         /*
          * Here we take care only about attributes without namespace.
          */
-        if ( notNull.getNamespaceURI()!= null ){
-            return;
-        }
-        
+////        if ( notNull.getNamespaceURI()!= null ){
+////            return;
+////        }
+
         if ( handleNamespaceChange( oldAttr, newAttr ) ){
             return;
         }
 
         Attribute[] attrs = getEntity().getDomainAttributes();
-        BpelAttributes bpelAttr = null;
+        Attribute bpelAttr = null;
+        
         for (Attribute attr : attrs) {
-            if (attr.getName().equals(name)) {
-                if ( attr instanceof BpelAttributes ){
-                    bpelAttr = (BpelAttributes)attr;
-                }
+            if (attr instanceof BpelAttributes && attr.getName().equals(name)) {
+                bpelAttr = attr;
                 break;
+            }
+            else if (attr instanceof ExtBpelAttribute ) {
+                String tmpLocalName = ((ExtBpelAttribute)attr).getLocalName();
+                String tmpNsUri = ((ExtBpelAttribute)attr).getNsUri();
+                if (tmpLocalName.equals(name) && tmpNsUri.equals(nsUri)) {
+                    bpelAttr = attr;
+                    break;
+                }
             }
         }
 
@@ -900,19 +1008,22 @@ class AttributeAccess {
         }
     }
 
-
     private void fireEventOnNSChange( BpelEntityImpl entity, String prefix, 
             String oldNamespaceURI ) 
     {
         Attribute[] attrs = entity.getDomainAttributes();
         for (Attribute attribute : attrs) {
-            String attrValue = entity.getAttribute( attribute );
-            if ( attrValue == null ){
-                continue;
-            }
+            
             if (!( attribute instanceof BpelAttributes )){
                 continue;
             }
+                        
+            String attrValue = entity.getAttribute( attribute );
+            
+            if ( attrValue == null ){
+                continue;
+            }
+
             BpelAttributes attr = (BpelAttributes) attribute;
             
             Pair pair = getOldNewValues( entity , attr , prefix , oldNamespaceURI );
@@ -938,7 +1049,7 @@ class AttributeAccess {
     }
 
     private void firePropertyUpdateEvent( Node oldAttr, Node newAttr, String name, 
-            BpelAttributes bpelAttr ) 
+            Attribute bpelAttr ) 
     {
         if ( bpelAttr == null ){
             return;

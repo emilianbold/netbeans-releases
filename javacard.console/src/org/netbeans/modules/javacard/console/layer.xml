@@ -14,7 +14,7 @@
                 <folder name="Actions">
                     <file name="org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-console-ShowAPDUConsoleAction.instance"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="450"/>
                     </file>
                 </folder>
             </folder>

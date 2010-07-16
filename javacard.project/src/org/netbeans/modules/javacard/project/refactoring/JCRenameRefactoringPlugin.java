@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,14 +43,12 @@
  */
 package org.netbeans.modules.javacard.project.refactoring;
 
-import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.openide.util.Lookup;
 
-import java.util.Collection;
 
 /**
  * Rename refactoring for Java Card projects. It's involved in renaming of
@@ -59,10 +60,10 @@ public class JCRenameRefactoringPlugin implements RefactoringPlugin {
     /* This one is important creature - makes sure that cycles between 
      * plugins won't appear */
     private static ThreadLocal<Object> semafor = new ThreadLocal<Object>();
-    private RenameRefactoring refactoring;
+    private AbstractRefactoring refactoring;
     private ImportantFilesRenameRefactoring importantFilesRenameRefactoring;
 
-    public JCRenameRefactoringPlugin(RenameRefactoring refactoring) {
+    public JCRenameRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.importantFilesRenameRefactoring = new ImportantFilesRenameRefactoring(refactoring);
     }
@@ -113,9 +114,6 @@ public class JCRenameRefactoringPlugin implements RefactoringPlugin {
         Problem problem = null;
 
         if (semafor.get() == null) {
-            Lookup lookup = refactoring.getRefactoringSource();
-            Collection<Object> res =
-                    (Collection<Object>) lookup.lookupAll(Object.class);
             problem = importantFilesRenameRefactoring.prepare(elems);
         }
         return problem;

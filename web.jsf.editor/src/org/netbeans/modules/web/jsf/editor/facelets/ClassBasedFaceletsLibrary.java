@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -10,11 +13,11 @@
  * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
  * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
- * as provided by Sun in the GPL Version 2 section of the License file that
+ * as provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code.  If applicable, add the following below the License
  * Header, with the fields enclosed by brackets [] replaced by your own
  * identifying information: "Portions Copyrighted [year]
@@ -40,14 +43,53 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
+    private final FileObject libraryDescriptorFile;
+    private FaceletsLibraryDescriptor libraryDescriptor;
 
-    public ClassBasedFaceletsLibrary(FaceletsLibrarySupport support, String namespace) {
+    private FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            support.libraryChanged(ClassBasedFaceletsLibrary.this);
+        }
+    };
+
+    public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, final FaceletsLibrarySupport support, String namespace) {
         super(support, namespace);
+        if (libraryDescriptorSourceURL == null) {
+            throw new NullPointerException("libraryDescriptorSourceURL cannot be null!"); //NOI18N
+        }
+        libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
+        if (libraryDescriptorFile == null) {
+            Logger.getAnonymousLogger().info(
+                    String.format("Cannot convert facelets library descriptor's URL %s into a FileObject?!?!",
+                    libraryDescriptorSourceURL.toString())); //NOI18N
+        } else {
+            //listen on the library descriptor for changes and possibly reset libraries cache
+            libraryDescriptorFile.addFileChangeListener(
+                    WeakListeners.create(FileChangeListener.class, FILE_CHANGE_LISTENER, libraryDescriptorFile));
+
+            //parse the descriptor
+            try {
+                libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
+            } catch (LibraryDescriptorException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     //for default libraries
@@ -60,7 +102,8 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     }
 
     public LibraryDescriptor getLibraryDescriptor() {
-        return support.getJsfSupport().getLibraryDescriptor(getNamespace());
+        LibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
+        return ld == null ? libraryDescriptor : ld;
     }
 
     public void putConverter(String name, String id) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,22 +50,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -125,7 +126,12 @@ public class PkgConfigImpl implements PkgConfig {
             String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
                 if (set == null) {
-                    set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
+                    for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
+                        if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                            set = cs;
+                            break;
+                        }
+                    }
                 }
                 if (set != null){
                     baseDirectory = set.getDirectory();
@@ -193,25 +199,21 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
+    @Override
     public PackageConfiguration getPkgConfig(String pkg) {
         return getConfig(pkg);
     }
 
-    public ResolvedPath getResolvedPath(String include) {
+    @Override
+    public Collection<ResolvedPath> getResolvedPath(String include) {
         Map<String, List<Pair>> map = getLibraryItems();
         List<Pair> pairs = map.get(include);
         if (pairs != null && pairs.size() > 0){
-            if (true || pairs.size() == 1) {
-                // get first found package
-                return new ResolvedPathImpl(pairs.get(0).path, pairs.get(0).configurations);
-            } else {
-                String path = pairs.get(0).path;
-                Set<PackageConfiguration> set = new LinkedHashSet<PackageConfiguration>();
-                for(Pair p : pairs){
-                    set.addAll(p.configurations);
-                }
-                return new ResolvedPathImpl(path, set);
+            ArrayList<ResolvedPath> res = new ArrayList<ResolvedPath>(pairs.size());
+            for(Pair p : pairs){
+                res.add(new ResolvedPathImpl(p.path, p.configurations));
             }
+            return res;
         }
         return null;
     }
@@ -481,8 +483,8 @@ public class PkgConfigImpl implements PkgConfig {
                             pc.macros.add(v.substring(2));
                         }
                     }
-                } else if (line.indexOf("=")>0){ // NOI18N
-                    int i = line.indexOf("="); // NOI18N
+                } else if (line.indexOf('=')>0){ // NOI18N
+                    int i = line.indexOf('='); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
                     if (isWindows && name.equals("prefix")) { // NOI18N
@@ -557,7 +559,7 @@ public class PkgConfigImpl implements PkgConfig {
         if (value.indexOf("${")>=0) { // NOI18N
             while(value.indexOf("${")>=0) { // NOI18N
                 int i = value.indexOf("${"); // NOI18N
-                int j = value.indexOf("}"); // NOI18N
+                int j = value.indexOf('}'); // NOI18N
                 if (j < i) {
                     break;
                 }
@@ -582,14 +584,17 @@ public class PkgConfigImpl implements PkgConfig {
             this.name = name;
         }
 
+        @Override
         public Collection<String> getIncludePaths() {
             return new ArrayList<String>(paths);
         }
 
+        @Override
         public Collection<String> getMacros() {
             return new ArrayList<String>(macros);
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -603,10 +608,12 @@ public class PkgConfigImpl implements PkgConfig {
             this.packages = packages;
         }
 
+        @Override
         public String getIncludePath() {
             return path;
         }
 
+        @Override
         public Collection<PackageConfiguration> getPackages() {
             List<PackageConfiguration> res = new ArrayList<PackageConfiguration>(packages.size());
             for(PackageConfiguration pc : packages){

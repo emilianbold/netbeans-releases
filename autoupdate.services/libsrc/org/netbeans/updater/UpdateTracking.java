@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -508,8 +511,8 @@ public final class UpdateTracking {
             bsrc = new BufferedInputStream( new FileInputStream( file ) );
             byte[] bytes = new byte[1024];
             int i;
-            while( (i = bsrc.read()) != -1 ) {
-                crc.update( (byte)i );
+            while( (i = bsrc.read(bytes)) != -1 ) {
+                crc.update(bytes, 0, i );
             }
         }
         finally {
@@ -562,6 +565,7 @@ public final class UpdateTracking {
         
         private Version lastVersion = null;
         private Version newVersion = null;
+        private boolean osgi = false;
         
         /** Getter for property codenamebase.
          * @return Value of property codenamebase.
@@ -576,6 +580,14 @@ public final class UpdateTracking {
         void setCodenamebase(String codenamebase) {
             this.codenamebase = codenamebase;
         }
+
+        void setOSGi(boolean isOSGi) {
+            this.osgi = isOSGi;
+        }
+        boolean isOSGi() {
+            return osgi;
+        }
+
         
         /** Getter for property versions.
          * @return Value of property versions.
@@ -652,10 +664,12 @@ public final class UpdateTracking {
             
             // check module name from config file
             String replaced = name.replace ('.', '-'); // NOI18N
-            String searchFor;
+            String searchFor = null;
             
             if (replaced.indexOf (ModuleDeactivator.MODULES) > 0) { // NOI18N
                 // standard module
+                searchFor = replaced + ".jar"; // NOI18N
+            } else if(osgi) {
                 searchFor = replaced + ".jar"; // NOI18N
             } else {
                 // core module
@@ -835,7 +849,7 @@ public final class UpdateTracking {
                     File p = new File(f.getName()).getParentFile();
                     parentDir = p != null ? p.getName() : "";
                 }
-                needToWrite = needToWrite || n.indexOf(ModuleDeactivator.MODULES) >= 0;
+                needToWrite = needToWrite || n.indexOf(ModuleDeactivator.MODULES) >= 0 || osgi;
                 if (n.endsWith(".jar")) {
                     // NOI18N
                     // ok, module candidate

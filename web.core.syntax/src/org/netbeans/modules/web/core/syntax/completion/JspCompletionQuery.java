@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import java.io.File;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
@@ -55,8 +59,12 @@ import org.netbeans.editor.*;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
+import org.netbeans.modules.web.core.syntax.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -437,7 +445,7 @@ public class JspCompletionQuery {
     }
     
     
-    private void queryJspTagInContent(CompletionResultSet result, int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
+    private void queryJspTagInContent(CompletionResultSet result, int offset, JspSyntaxSupport sup, final BaseDocument doc) throws BadLocationException {
         // find the current item
         
         TokenItem item = sup.getItemAtOrBefore(offset);
@@ -477,9 +485,52 @@ public class JspCompletionQuery {
             result.setAnchorOffset(anchor);
             result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart, true)); //get only first end tag
         } else {
-            int anchor = offset - removeLength;
-            result.setAnchorOffset(anchor);
-            addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
+            int semiColonPos = tokenPart.indexOf(':');
+
+            if (semiColonPos >= 0){
+                Map tagLibMappings = sup.getTagLibraryMappings();
+
+                if (tagLibMappings != null) {
+                    int anchor = offset - tokenPart.length();
+                    String prefix = tokenPart.substring(0, semiColonPos);
+                    String tagNamePrefix = tokenPart.substring(semiColonPos + 1);
+                    String uri = StandardTagLibraryPrefixes.get(prefix);
+                    Object v = tagLibMappings.get(uri);
+
+                    if (v instanceof String[]) {
+                        String[] vals = (String[]) v;
+                        String jarPath = vals[0];
+                        String tldPath = vals[1];
+
+                        String FILE_PREFIX = "file:/"; //NOI18N
+
+                        if (jarPath.startsWith(FILE_PREFIX)) {
+                            jarPath = '/' + jarPath.substring(FILE_PREFIX.length());
+                        }
+
+                        try {
+                            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(new File(jarPath)));
+                            FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
+                            TldLibrary tldLib = TldLibrary.create(tldFile);
+
+                            for (String tagName : tldLib.getTags().keySet()) {
+                                if (tagName.startsWith(tagNamePrefix)) {
+                                    result.addItem(new JspCompletionItem.UnresolvedPrefixTag(prefix + ":" + tagName,
+                                            anchor, uri, prefix));
+                                }
+                            }
+
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                
+            } else {
+                int anchor = offset - removeLength;
+                result.setAnchorOffset(anchor);
+                addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
+            }
         }
  
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,25 +50,27 @@ import javax.swing.event.UndoableEditListener;
 /**
  * Interface describing an abstract model. The model is based on a
  * document representation that represents the persistent form.
+ *
  * @author Chris Webster
  * @author Nam Nguyen
  * @author Rico Cruz
  */
 public interface Model<C extends Component<C>> extends Referenceable {
+    
     public static final String STATE_PROPERTY = "state";
     
     /**
-     * Add coarse-grained change listener for events on model components.
+     * Adds coarse-grained change listener for events on model components.
      */
     public void removeComponentListener(ComponentListener cl);
 
     /**
-     * Remove component event listener.
+     * Removes component event listener.
      */
     public void addComponentListener(ComponentListener cl);
 
     /**
-     * Add fine-grained property change listener for events on model components.
+     * Adds fine-grained property change listener for events on model components.
      */
     public void addPropertyChangeListener(PropertyChangeListener pcl);
 
@@ -101,13 +106,13 @@ public interface Model<C extends Component<C>> extends Referenceable {
     void addUndoableRefactorListener(UndoableEditListener uel);
 
     /**
-     * make the current memory model consistent with the underlying
+     * Makes the current memory model consistent with the underlying
      * representation, typically a swing document. 
      */
     void sync() throws java.io.IOException;
     
     /**
-     * return true if sync is being performed. 
+     * Returns true if sync is being performed.
      */
     boolean inSync();
     
@@ -129,6 +134,11 @@ public interface Model<C extends Component<C>> extends Referenceable {
     State getState();
     
     /**
+     * Be very careful while using this method. It returns only current state
+     * and doesn't inform if the transaction has been started by current thread.
+     * Only the thread, which owns the transaction can use it and do changes to
+     * the model.  
+     *
      * @return true if model is in middle of transformation tranasction.
      */
     boolean isIntransaction();
@@ -149,12 +159,15 @@ public interface Model<C extends Component<C>> extends Referenceable {
     /**
      * This method stops the transaction and causes all events to be fired. 
      * After all events have been fired, the document representation will be 
-     * modified to reflect the current value of the model (flush). 
+     * modified to reflect the current value of the model (flush).
+     *
+     * Be aware that the method does nothing if the transaction hasn't been started or
+     * started by another thread.
      */
     void endTransaction();
     
     /**
-     * Add child component at specified index.
+     * Adds child component at specified index.
      * @param target the parent component.
      * @param child the child component to be added.
      * @param index position among same type of child components, or -1 if not relevant.
@@ -162,7 +175,7 @@ public interface Model<C extends Component<C>> extends Referenceable {
     void addChildComponent(Component target, Component child, int index);
     
     /**
-     * Remove specified component from model.
+     * Removes specified component from model.
      */
     void removeChildComponent(Component child);
 

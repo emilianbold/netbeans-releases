@@ -26,10 +26,6 @@ org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 # org.netbeans.modules.visualweb.palette.PaletteItemDataObject$PaletteItemDataLoader
 # org.netbeans.modules.visualweb.complib.ComplibPaletteItemDataObject$PaletteItemDataLoader
 
-# IZ 140390:
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder$ToolsAction
-org.netbeans.modules.java.hints.analyzer.OverridePreferences
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 
@@ -362,7 +358,7 @@ org.netbeans.editor.ActionFactory$ScrollUpAction
 org.netbeans.editor.ActionFactory$ScrollDownAction
 org.netbeans.editor.ActionFactory$InsertDateTimeAction
 org.netbeans.editor.ActionFactory$GenerateGutterPopupAction
-org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
+#org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
 org.netbeans.editor.ActionFactory$AnnotationsCyclingAction
 org.netbeans.editor.ActionFactory$CollapseFold
 org.netbeans.editor.ActionFactory$ExpandFold
@@ -385,7 +381,7 @@ org.netbeans.editor.ext.ExtKit$CompletionTooltipShowAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildPopupMenuAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildToolTipAction
 #org.netbeans.modules.editor.NbEditorKit$NbToggleLineNumbersAction
-org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
+#org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
 #org.netbeans.modules.editor.NbEditorKit$NbGenerateGoToPopupAction
 org.netbeans.modules.editor.NbEditorKit$NbGenerateCodeAction
 org.netbeans.modules.editor.NbEditorKit$NavigationHistoryLastEditAction
@@ -504,3 +500,48 @@ org.jivesoftware.smackx.provider.RosterExchangeProvider
 org.jivesoftware.smackx.provider.StreamInitiationProvider
 org.jivesoftware.smackx.provider.VCardProvider
 org.jivesoftware.smackx.provider.XHTMLExtensionProvider
+
+
+org.netbeans.modules.cnd.api.model.CsmClass
+org.netbeans.modules.cnd.api.model.CsmClassifier
+org.netbeans.modules.cnd.api.model.CsmCompoundClassifier
+org.netbeans.modules.cnd.api.model.CsmDeclaration
+org.netbeans.modules.cnd.api.model.CsmOffsetable
+org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration
+org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement
+org.netbeans.modules.cnd.api.model.CsmScopeElement
+
+#177561
+org.netbeans.api.debugger.jpda.JPDABreakpoint
+org.netbeans.api.debugger.jpda.LineBreakpoint
+org.netbeans.modules.ant.debugger.breakpoints.AntBreakpoint
+org.netbeans.modules.ant.debugger.breakpoints.AntBreakpointActionProvider
+org.netbeans.modules.cnd.debugger.common.EditorContext
+org.netbeans.modules.cnd.debugger.common.EditorContextBridge
+org.netbeans.modules.cnd.debugger.common.EditorContextImpl
+org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvider
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
+org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
+org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider
+org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider$Listener
+org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
+org.netbeans.modules.groovy.support.debug.Context
+org.netbeans.modules.groovy.support.debug.GroovyLineBreakpoint
+org.netbeans.modules.groovy.support.debug.GroovyToggleBreakpointActionProvider
+org.netbeans.modules.ruby.debugger.EditorUtil
+org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint
+org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointActionProvider
+org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointActionProvider
+org.netbeans.modules.web.debug.Context
+org.netbeans.modules.web.debug.actions.JspRunToCursorActionProvider
+org.netbeans.modules.web.debug.actions.JspRunToCursorActionProvider$Listener
+org.netbeans.modules.web.debug.actions.JspToggleBreakpointActionProvider
+org.netbeans.modules.web.debug.actions.MainProjectManager
+org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint
+org.netbeans.modules.web.debug.util.Utils
+
+#180830
+org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider$AnnotationFormat

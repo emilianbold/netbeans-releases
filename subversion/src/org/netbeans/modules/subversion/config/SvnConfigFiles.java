@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,9 +63,10 @@ import org.ini4j.Ini;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -104,6 +108,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
 
     private String recentUrl;
+    private final static String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; //NOI18N
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -114,6 +119,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
      * so the commandline client wan't create a file holding the authentication credentials when
      * a svn command is called. The reason for this is that the Subverion module holds the credentials
      * in files with the same format as the commandline client but with a different name.
+     *
+     * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
     private class ConfigIniFilePatcher implements IniFilePatcher {
         public void patch(Ini file) {
@@ -123,6 +130,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
                 auth = file.add("auth");                                        // NOI18N
             }
             auth.put("store-auth-creds", "no");                                 // NOI18N
+            auth.put("password-stores", "");                                    // NOI18N
         }
     }
 
@@ -225,8 +233,9 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         if(certFile == null || certFile.equals("")) {
             return true;
         }
-        String certPassword = rc.getCertPassword();
-        if(certPassword == null || certPassword.equals("")) {
+        char[] certPasswordChars = rc.getCertPassword();
+        String certPassword = certPasswordChars == null ? "" : new String(certPasswordChars); //NOI18N
+        if(certPassword.equals("")) { // NOI18N
             return true;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);
@@ -262,7 +271,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
                 boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N
                 if(useAuth) {
                     String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
-                    String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N
+                    String password = getProxyPassword(prefs);
 
                     nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
                     nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
@@ -298,6 +307,10 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     public void setExternalCommand(String tunnelName, String command) {
         if (command == null) {
             return;
+        }
+        if (Utilities.isWindows()) {
+            // tunnel command should contain forward slashes even on windows
+            command = command.replace("\\", "/");                       //NOI18N
         }
         Ini.Section tunnels = getSection(config, "tunnels", true);
         tunnels.put(tunnelName, command);
@@ -683,6 +696,15 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             appdataPath = appdataPath.substring(0, appdataPath.length() - 1);
         }
         return appdataPath;
+    }
+
+    private String getProxyPassword (Preferences prefs) {
+        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (retval == null) {
+            char[] pwd = KeyringSupport.read(PROXY_AUTHENTICATION_PASSWORD, null);
+            retval = pwd == null ? "" : new String(pwd); //NOI18N
+        }
+        return retval;
     }
     
 }

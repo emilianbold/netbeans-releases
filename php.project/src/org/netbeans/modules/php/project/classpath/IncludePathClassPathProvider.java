@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -52,31 +55,42 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
 
 /**
- * Provides ClassPath for php files on include path.
+ * Provides ClassPath for php files on include path or without a project.
  */
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
-    static Set<ClassPath> projectIncludes = new WeakSet<ClassPath>();
+    private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
+
     /** Default constructor for lookup. */
     public IncludePathClassPathProvider() {
     }
-    public static void addProjectIncludePath(ClassPath cp) {
-        projectIncludes.add(cp);
+
+    public static synchronized void addProjectIncludePath(ClassPath cp) {
+        PROJECT_INCLUDES.add(cp);
     }
+
+    public static synchronized void removeProjectIncludePath(ClassPath classPath) {
+        PROJECT_INCLUDES.remove(classPath);
+    }
+
+    @Override
+    @SuppressWarnings("fallthrough")
     public ClassPath findClassPath(FileObject file, String type) {
         if (FileUtils.isPhpFile(file)) {
             FileType fileType = PhpSourcePath.getFileType(file);
-            if (fileType.equals(FileType.INCLUDE)) {
-                /*for global include path*/
-                List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
-                return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
-            } else if (fileType.equals(FileType.UNKNOWN)) {
-                /*include pathes for individual projects*/
-                for (ClassPath classPath : projectIncludes) {
-                    if (classPath.contains(file)) {
-                        return classPath;
+            switch (fileType) {
+                case UNKNOWN:
+                    synchronized (IncludePathClassPathProvider.class) {
+                        for (ClassPath classPath : PROJECT_INCLUDES) {
+                            if (classPath.contains(file)) {
+                                return classPath;
+                            }
+                        }
                     }
-                }
+                    // break; // intentionally commented out! if not found, then return CP for include path
+                case INCLUDE:
+                    List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+                    return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
             }
         }
         return null;

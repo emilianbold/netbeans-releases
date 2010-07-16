@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -100,6 +103,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     // -----
 
     // FormAwareEditor implementation
+    @Override
     public void setContext(FormModel formModel, FormProperty prop) {
         this.formModel = formModel;
         this.property = prop;
@@ -109,6 +113,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
         if (getValue() instanceof ResourceValue) {
             formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -116,6 +121,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // ExPropertyEditor implementation
+    @Override
     public void attachEnv(PropertyEnv env) {
         if (property != null) {
             env.removeVetoableChangeListener(this);
@@ -126,6 +132,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
             ((ExPropertyEditor)delegateEditor).attachEnv(env);
     }
 
+    @Override
     public void setValue(Object value) {
         propertyValue = value;
         ignoreChange = true;
@@ -134,6 +141,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         firePropertyChange();
     }
 
+    @Override
     public Object getValue() {
         return propertyValue;
     }
@@ -142,6 +150,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         return delegateEditor.getValue();
     }
 
+    @Override
     public void setAsText(String text) {
         if (text.equals(delegateEditor.getAsText()))
             return;
@@ -153,18 +162,22 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         firePropertyChange();
     }
 
+    @Override
     public String getAsText() {
         return delegateEditor.getAsText();
     }
 
+    @Override
     public boolean isPaintable() {
         return delegateEditor.isPaintable();
     }
 
+    @Override
     public void paintValue(Graphics g, Rectangle box) {
         delegateEditor.paintValue(g, box);
     }
 
+    @Override
     public String getJavaInitializationString() {
         if (propertyValue instanceof ResourceValue)
             return ((ResourceValue)propertyValue).getJavaInitializationCode();
@@ -172,10 +185,12 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
             return delegateEditor.getJavaInitializationString();
     }
 
+    @Override
     public String[] getTags() {
         return delegateEditor.getTags();
     }
 
+    @Override
     public Component getCustomEditor() {
         if (resourcePanel == null) {
             createResourcePanel();
@@ -203,10 +218,12 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         return createCustomEditorGUI(resGUI);
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (this) {
             if (changeSupport == null)
@@ -215,6 +232,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
         changeSupport.addPropertyChangeListener(l);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         if (changeSupport != null)
             changeSupport.removePropertyChangeListener(l);
@@ -233,6 +251,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // called from the delegated editor
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (!ignoreChange) { // change initiated through custom editor of the delegate
             if (propertyValue instanceof ResourceValue)
@@ -244,6 +263,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // called from ResourcePanel when the key or current value has changed
+    @Override
     public void stateChanged(ChangeEvent e) {
         ResourceValue resValue = resourcePanel.getResource();
         if (resValue != null) {
@@ -264,6 +284,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // called when OK button is pressed in the custom editor dialog
+    @Override
     public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
         // should only be done if this property editor is the selected one
         if (property.getCurrentEditor() != this) return;

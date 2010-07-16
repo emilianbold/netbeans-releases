@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,8 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -73,6 +78,7 @@ public final class DocumentUtilities {
     
     /** BaseDocument's version. */
     private static final String VERSION_PROP = "version"; //NOI18N
+    private static final String LAST_MODIFICATION_TIMESTAMP_PROP = "last-modification-timestamp"; //NOI18N
 
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
@@ -877,5 +883,63 @@ public final class DocumentUtilities {
     public static long getDocumentVersion(Document doc) {
         Object version = doc.getProperty(VERSION_PROP);
         return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
+    }
+
+    /**
+     * Attempts to get the timestamp of a <code>Document</code>. Netbeans editor
+     * documents are versioned and timestamped whenever they are modified.
+     * This method can be used to read the timestamp of the most recent modification.
+     * The timestamp is a number of milliseconds returned from <code>System.currentTimeMillis()</code>
+     * at the document modification.
+     *
+     * @param doc The document to get the timestamp for.
+     *
+     * @return The document's timestamp or <code>0</code> if the document does not
+     *   support timestamps (ie. is not a netbeans editor document).
+     *
+     * @since 1.34
+     */
+    public static long getDocumentTimestamp(Document doc) {
+        Object version = doc.getProperty(LAST_MODIFICATION_TIMESTAMP_PROP);
+        return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
+    }
+
+    /**
+     * Adds <code>PropertyChangeListener</code> to a document.
+     *
+     * <p>In general, document properties are key-value pairs where both the key
+     * and the value can be any <code>Object</code>. Contrary to that <code>PropertyChangeListener</code>s
+     * can only handle named properties that can have an arbitrary value, but have <code>String</code> names.
+     * Therefore the listenera attached to a document will only ever recieve document
+     * properties, which keys are of <code>java.lang.String</code> type.
+     *
+     * <p>Additionally, the list of document properties that clients can listen on
+     * is not part of this contract.
+     *
+     * @param doc The document to add the listener to.
+     * @param l The listener to add to the document.
+     *
+     * @since 1.35
+     */
+    public static void addPropertyChangeListener(Document doc, PropertyChangeListener l) {
+        PropertyChangeSupport pcs = (PropertyChangeSupport) doc.getProperty(PropertyChangeSupport.class);
+        if (pcs != null) {
+            pcs.addPropertyChangeListener(l);
+        }
+    }
+
+    /**
+     * Removes <code>PropertyChangeListener</code> from a document.
+     *
+     * @param doc The document to remove the listener from.
+     * @param l The listener to remove from the document.
+     *
+     * @since 1.35
+     */
+    public static void removePropertyChangeListener(Document doc, PropertyChangeListener l) {
+        PropertyChangeSupport pcs = (PropertyChangeSupport) doc.getProperty(PropertyChangeSupport.class);
+        if (pcs != null) {
+            pcs.removePropertyChangeListener(l);
+        }
     }
 }

@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,6 +50,99 @@ made subject to such option by the copyright holder.
         <folder name="Mercurial">
             <file name="org-netbeans-modules-mercurial-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.status.OpenVersioningAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-create-CreateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.create.CreateAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-status-StatusAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.status.StatusAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-update-UpdateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.UpdateAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-commit-CommitAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.commit.CommitAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-DiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.DiffAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-ExportDiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ExportDiffAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-ExportDiffChangesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-ExportBundleAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ExportBundleAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-ImportDiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ImportDiffAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-annotate-AnnotateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.annotate.AnnotateAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-clone-CloneAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.clone.CloneAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.clone.CloneExternalAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-commit-ExcludeFromCommitAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-ignore-IgnoreAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.ignore.IgnoreAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-log-IncomingAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.log.IncomingAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-log-LogAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.log.LogAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-log-OutAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.log.OutAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-merge-MergeAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.merge.MergeAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-properties-PropertiesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.properties.PropertiesAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-pull-FetchAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.pull.FetchAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-pull-PullAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.pull.PullAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-pull-PullOtherAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.pull.PullOtherAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-push-PushAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.push.PushAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-push-PushOtherAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.push.PushOtherAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-rollback-BackoutAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.rollback.BackoutAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-rollback-RollbackAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.rollback.RollbackAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-rollback-StripAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.rollback.StripAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-rollback-VerifyAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.rollback.VerifyAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-update-ConflictResolvedAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-update-Action.ResolveConflicts.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction"/>
+            </file>
+            <file name="org-netbeans-modules-mercurial-ui-update-RevertModificationsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.RevertModificationsAction"/>
             </file>
         </folder>
     </folder>

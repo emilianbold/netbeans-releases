@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,10 @@ import java.io.*;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
+import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -94,12 +100,25 @@ public class VersionsCache {
     public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String pegRevision, String fileName) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(repoUrl);
-            InputStream in = getInputStream(client, url, revision, pegRevision);
-            return createContent(fileName, in);
+            if ("false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
+                InputStream in = getInputStream(client, url, revision, pegRevision);
+                return createContent(fileName, in);
+            } else {
+                String rootUrl = repoUrl.toString();
+                String resourceUrl = url.toString() + "@" + pegRevision; //NOI18N
+                Storage cachedVersions = StorageManager.getInstance().getStorage(rootUrl);
+                File cachedFile = cachedVersions.getContent(resourceUrl, fileName, revision);
+                if (cachedFile.length() == 0) { // not yet cached
+                    InputStream in = getInputStream(client, url, revision, pegRevision);
+                    cachedFile = createContent(fileName, in);
+                    if (cachedFile.length() != 0) {
+                        cachedVersions.setContent(resourceUrl, revision, cachedFile);
+                    }
+                }
+                return cachedFile;
+            }
         } catch (SVNClientException ex) {
-            IOException ioex = new IOException("Can not load: " + url + " in revision: " + revision); // NOI18N
-            ioex.initCause(ex);
-            throw ioex;
+            throw new IOException("Can not load: " + url + " in revision: " + revision, ex);
         }
     }
 
@@ -174,9 +193,7 @@ public class VersionsCache {
                 }
                 return createContent(base.getName(), in);
             } catch (SVNClientException ex) {
-                IOException ioex = new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision); // NOI18N
-                ioex.initCause(ex);
-                throw ioex;
+                throw new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision, ex);
             }
         }
     }
@@ -214,9 +231,7 @@ public class VersionsCache {
             expanded.setLastModified(svnBase.lastModified());
             return expanded;
         } catch (SVNClientException e) {
-            IOException ioe = new IOException();
-            ioe.initCause(e);
-            throw ioe;
+            throw new IOException(e);
         }
     }
 
@@ -253,7 +268,7 @@ public class VersionsCache {
      */
     private File createContent (String fileName, InputStream in) throws IOException {
         // keep original extension so MIME can be guessed by the extension
-        File tmp = File.createTempFile("nb-svn", fileName);  // NOI18N
+        File tmp = new File(Utils.getTempFolder(), "nb-svn-" + fileName);  // NOI18N
         tmp = FileUtil.normalizeFile(tmp);
         tmp.deleteOnExit();  // hard to track actual lifetime
         FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);

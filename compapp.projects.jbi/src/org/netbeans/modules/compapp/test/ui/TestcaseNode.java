@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -74,12 +77,12 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.RenameAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
@@ -134,7 +137,7 @@ public class TestcaseNode extends FilterNode {
         
         mTestcaseCookie = new TestcaseCookie(this);
         
-        final String testCaseName = mTestcaseDir.getName();
+        final String testCaseName = mTestcaseDir.getNameExt();
         
         // set the model listener
         mFileChangeListener = new FileChangeAdapter() {
@@ -171,7 +174,7 @@ public class TestcaseNode extends FilterNode {
             @Override
             public void fileFolderCreated(FileEvent fe) {
                 FileObject fo = fe.getFile();
-                if (fo.getName().equals("results")) {   // FIXME  // NOI18N
+                if (fo.getNameExt().equals("results")) {   // FIXME  // NOI18N
                     mTestResultsDir = fo;                    
                     mTestResultsDir.addFileChangeListener(mTestResultsDirChangeListener);
                 }
@@ -187,7 +190,7 @@ public class TestcaseNode extends FilterNode {
             @Override
             public void fileDeleted(FileEvent fe) {
                 FileObject fo = fe.getFile();
-                if (fo.getName().equals("results")) {   // FIXME // NOI18N
+                if (fo.getNameExt().equals("results")) {   // FIXME // NOI18N
                     fo.removeFileChangeListener(mTestResultsDirChangeListener);
                 }
                 
@@ -201,7 +204,7 @@ public class TestcaseNode extends FilterNode {
             @Override
             public void fileFolderCreated(FileEvent fe) {
                 FileObject fo = fe.getFile();
-                if (fo.getName().equals(testCaseName)) {
+                if (fo.getNameExt().equals(testCaseName)) {
                     mTestCaseResultsDir = fo;
                     mTestCaseResultsDir.addFileChangeListener(mTestCaseResultsDirChangeListener);
                 }
@@ -213,7 +216,7 @@ public class TestcaseNode extends FilterNode {
             public void fileDeleted(FileEvent fe) {
                 
                 FileObject fo = fe.getFile();
-                if (fo.getName().equals(testCaseName)) {
+                if (fo.getNameExt().equals(testCaseName)) {
                     fo.removeFileChangeListener(mTestCaseResultsDirChangeListener);
                 }
                 
@@ -326,6 +329,7 @@ public class TestcaseNode extends FilterNode {
         List<PropertySpec> specList = new ArrayList<PropertySpec>();
         specList.add(PropertySpec.DESCRIPTION);
         specList.add(PropertySpec.DESTINATION);
+        specList.add(PropertySpec.BINDING_TYPE);
         specList.add(PropertySpec.SOAP_ACTION);
         specList.add(PropertySpec.INPUT_FILE);
         specList.add(PropertySpec.OUTPUT_FILE);
@@ -464,7 +468,7 @@ public class TestcaseNode extends FilterNode {
         
         FileObject resultsFolder = mProject.getTestResultsDirectory();
         if (resultsFolder != null) {
-            String testcaseName = mTestcaseDir.getName();
+            String testcaseName = mTestcaseDir.getNameExt();
             actualFolder = resultsFolder.getFileObject(testcaseName);
             if (actualFolder == null) {
                 try {

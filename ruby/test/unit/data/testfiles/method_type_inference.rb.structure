@@ -10,3 +10,4 @@ A:CLASS:[]:ESCAPED{A}:
   simple_int:METHOD:[PUBLIC]:ESCAPED{simple_int}<font color='#777777'> : ESCAPED{Fixnum}</font>:
 a:VARIABLE:[]:ESCAPED{a}<font color='#777777'> : ESCAPED{A}</font>:
 num:VARIABLE:[]:ESCAPED{num}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+const:VARIABLE:[]:ESCAPED{const}<font color='#777777'> : ESCAPED{Fixnum}</font>:

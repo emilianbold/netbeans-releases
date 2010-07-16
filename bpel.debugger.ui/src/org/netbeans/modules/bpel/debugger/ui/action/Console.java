@@ -23,9 +23,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.bpel.debugger.api.TracerAccess;
@@ -41,7 +40,10 @@ public class Console extends AbstractAction {
       // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
       putValue(NAME,NbBundle.getMessage(Process.class, "LBL_ConsoleView"));// NOI18N
       putValue(
-        SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/bpel/debugger/ui/" + "resources/image/console.gif", false)); // NOI18N
+        SMALL_ICON,
+        new ImageIcon (ImageUtilities.loadImage (
+        "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
+        "resources/image/console.gif"))); // NOI18N
     }
     
     /**{@inheritDoc}*/
@@ -52,6 +54,7 @@ public class Console extends AbstractAction {
     }
 
     /**{@inheritDoc}*/
+    @Override
     public boolean isEnabled() {
 //System.out.println ();
 //System.out.println ("IS ENABLED: " + (getSession() != null));

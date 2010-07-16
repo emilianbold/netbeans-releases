@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -66,6 +70,11 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Property;
@@ -73,7 +82,9 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Scans for known modules.
@@ -179,7 +190,7 @@ final class ModuleListParser {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
                             if (project != null) {
-                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_DEBUG);
                             }
                         }
                     } finally {
@@ -202,7 +213,7 @@ final class ModuleListParser {
                         project.log("Scanning for modules in " + root + " among standard clusters");
                     }
                     for (String module : standardModules) {
-                        scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, properties, module, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
+                        scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, properties, module, ModuleType.NB_ORG, project, timestampsAndSizes);
                     }
                 } else {
                     // Might be an extra module (e.g. something in contrib); need to scan everything.
@@ -222,7 +233,7 @@ final class ModuleListParser {
                             }
                             String name = kid.getName();
                             String path = tree == null ? name : tree + "/" + name;
-                            scanPossibleProject(kid, entries, properties, path, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
+                            scanPossibleProject(kid, entries, properties, path, ModuleType.NB_ORG, project, timestampsAndSizes);
                         }
                         
                     }
@@ -260,7 +271,7 @@ final class ModuleListParser {
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
     private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Map<String,String> properties,
-            String path, int moduleType, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
+            String path, ModuleType moduleType, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
@@ -289,7 +300,7 @@ final class ModuleListParser {
         }
         Element cnbEl = ParseProjectXml.findNBMElement(dataEl, "code-name-base");
         String cnb = XMLUtil.findText(cnbEl);
-        if (moduleType == ParseProjectXml.TYPE_NB_ORG && project != null) {
+        if (moduleType == ModuleType.NB_ORG && project != null) {
             String expectedDirName = abbreviate(cnb);
             String actualDirName = dir.getName();
             if (!actualDirName.equals(expectedDirName)) {
@@ -309,10 +320,10 @@ final class ModuleListParser {
         Property faketask = new Property();
         faketask.setProject(fakeproj);
         switch (moduleType) {
-        case ParseProjectXml.TYPE_NB_ORG:
+        case NB_ORG:
             // do nothing here
             break;
-        case ParseProjectXml.TYPE_SUITE:
+        case SUITE:
             faketask.setFile(new File(nbproject, "private/suite-private.properties"));
             faketask.execute();
             faketask.setFile(new File(nbproject, "suite.properties"));
@@ -322,7 +333,7 @@ final class ModuleListParser {
             faketask.setFile(new File(fakeproj.replaceProperties("${suite.dir}/nbproject/platform.properties")));
             faketask.execute();
             break;
-        case ParseProjectXml.TYPE_STANDALONE:
+        case STANDALONE:
             faketask.setFile(new File(nbproject, "private/platform-private.properties"));
             faketask.execute();
             faketask.setFile(new File(nbproject, "platform.properties"));
@@ -351,7 +362,7 @@ final class ModuleListParser {
         faketask.setValue(fakeproj.replaceProperties("${module.jar.dir}/${module.jar.basename}"));
         faketask.execute();
         switch (moduleType) {
-        case ParseProjectXml.TYPE_NB_ORG:
+        case NB_ORG:
             assert path != null;
             // Find the associated cluster.
             // first try direct mapping in nbbuild/netbeans/moduleCluster.properties
@@ -387,19 +398,25 @@ final class ModuleListParser {
             faketask.setValue(fakeproj.replaceProperties("${netbeans.dest.dir}/${cluster.dir}"));
             faketask.execute();
             break;
-        case ParseProjectXml.TYPE_SUITE:
+        case SUITE:
             assert path == null;
             faketask.setName("suite.dir");
             faketask.setValue(properties.get("suite.dir"));
             faketask.execute();
+            faketask.setName("suite.build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${suite.build.dir}/cluster"));
             faketask.execute();
             break;
-        case ParseProjectXml.TYPE_STANDALONE:
+        case STANDALONE:
             assert path == null;
+            faketask.setName("build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${basedir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${basedir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${build.dir}/cluster"));
             faketask.execute();
             break;
         default:
@@ -487,7 +504,8 @@ final class ModuleListParser {
                 prereqs.toArray(new String[prereqs.size()]), 
                 cluster, 
                 rundeps.toArray(new String[rundeps.size()]),
-                compileTestDeps
+                compileTestDeps,
+                new File(dir, "module-auto-deps.xml")
                 );
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
@@ -543,8 +561,12 @@ final class ModuleListParser {
      * XXX would be slightly more precise to check config/Modules/*.xml rather than scan for module JARs.
      */
     private static void doScanBinaries(File cluster, Map<String,Entry> entries) throws IOException {
-            for (int j = 0; j < MODULE_DIRS.length; j++) {
-                File dir = new File(cluster, MODULE_DIRS[j].replace('/', File.separatorChar));
+        File moduleAutoDepsDir = new File(new File(cluster, "config"), "ModuleAutoDeps");
+            for (String moduleDir : MODULE_DIRS) {
+                if (moduleDir.endsWith("lib") && !cluster.getName().contains("platform")) {
+                    continue;
+                }
+                File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;
                 }
@@ -552,49 +574,49 @@ final class ModuleListParser {
                 if (jars == null) {
                     throw new IOException("Cannot examine dir " + dir);
                 }
-                for (int k = 0; k < jars.length; k++) {
-                    File m = jars[k];
-                    if (!m.getName().endsWith(".jar")) {
+                for (File m : jars) {
+                    scanOneBinary(m, cluster, entries, moduleAutoDepsDir);
+                }
+            }
+
+            final File configDir = new File(new File(cluster, "config"), "Modules");
+            File[] configs = configDir.listFiles();
+            XPathExpression expr = null;
+            DocumentBuilder b = null;
+            if (configs != null) {
+                for (File xml : configs) {
+                    // TODO, read location, scan
+                    final String fileName = xml.getName();
+                    if (!fileName.endsWith(".xml")) {
                         continue;
                     }
-                    JarFile jf = new JarFile(m);
+                    if (entries.containsKey(fileName.substring(0, fileName.length() - 4).replace('-', '.'))) {
+                        continue;
+                    }
                     try {
-                        Attributes attr = jf.getManifest().getMainAttributes();
-                        String codename = attr.getValue("OpenIDE-Module");
-                        if (codename == null) {
-                            continue;
+                        if (expr == null) {
+                            expr = XPathFactory.newInstance().newXPath().compile("/module/param[@name='jar']");
+                            b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                            b.setEntityResolver(new EntityResolver() {
+                                public InputSource resolveEntity(String publicId, String systemId)
+                                throws SAXException, IOException {
+                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                }
+                            });
                         }
-                        String codenamebase;
-                        int slash = codename.lastIndexOf('/');
-                        if (slash == -1) {
-                            codenamebase = codename;
-                        } else {
-                            codenamebase = codename.substring(0, slash);
-                        }
-                        
-                        String cp = attr.getValue("Class-Path");
-                        File[] exts;
-                        if (cp == null) {
-                            exts = new File[0];
-                        } else {
-                            String[] pieces = cp.split(" +");
-                            exts = new File[pieces.length];
-                            for (int l = 0; l < pieces.length; l++) {
-                                exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                        Document doc = b.parse(xml);
+                        String res = expr.evaluate(doc);
+                        File jar = new File(cluster, res.replace('/', File.separatorChar));
+                        if (!jar.isFile()) {
+                            if (cluster.getName().equals("ergonomics")) {
+                                // this is normal
+                                continue;
                             }
+                            throw new BuildException("Cannot find module " + jar + " from " + xml);
                         }
-                        String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
-                        
-                        
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
-                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
-                        if (entries.containsKey(codenamebase)) {
-                            throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
-                        } else {
-                            entries.put(codenamebase, entry);
-                        }
-                    } finally {
-                        jf.close();
+                        scanOneBinary(jar, cluster, entries, moduleAutoDepsDir);
+                    } catch (Exception ex) {
+                        throw new BuildException(ex);
                     }
                 }
             }
@@ -644,7 +666,7 @@ final class ModuleListParser {
             if (!module.isDirectory()) {
                 throw new IOException("No such module " + module + " referred to from " + suite);
             }
-            if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project, null)) {
+            if (!scanPossibleProject(module, entries, properties, null, ModuleType.SUITE, project, null)) {
                 throw new IOException("No valid module found in " + module + " referred to from " + suite);
             }
         }
@@ -656,7 +678,7 @@ final class ModuleListParser {
         Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map<String,Entry> entries = new HashMap<String,Entry>();
-            if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project, null)) {
+            if (!scanPossibleProject(basedir, entries, properties, null, ModuleType.STANDALONE, project, null)) {
                 throw new IOException("No valid module found in " + basedir);
             }
             assert entries.size() == 1;
@@ -687,12 +709,12 @@ final class ModuleListParser {
      * @param type the type of project
      * @param project a project ref, only for logging (may be null with no loss of semantics)
      */
-    public ModuleListParser(Map<String,String> properties, int type, Project project) throws IOException {
+    public ModuleListParser(Map<String,String> properties, ModuleType type, Project project) throws IOException {
         String nball = properties.get("nb_all");
         File basedir = new File(properties.get("basedir"));
         final FileUtils fu = FileUtils.getFileUtils();
 
-        if (type != ParseProjectXml.TYPE_NB_ORG) {
+        if (type != ModuleType.NB_ORG) {
             // add extra clusters
             String suiteDirS = properties.get("suite.dir");
             boolean hasSuiteDir = suiteDirS != null && suiteDirS.length() > 0;
@@ -729,10 +751,10 @@ final class ModuleListParser {
                 project.log("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema", Project.MSG_WARN);
             }
             entries = scanBinaries(project, clusters);
-            if (type == ParseProjectXml.TYPE_SUITE) {
+            if (type == ModuleType.SUITE) {
                 entries.putAll(scanSuiteSources(properties, project));
             } else {
-                assert type == ParseProjectXml.TYPE_STANDALONE;
+                assert type == ModuleType.STANDALONE;
                 Entry e = scanStandaloneSource(properties, project);
                 entries.put(e.getCnb(), e);
             }
@@ -821,6 +843,53 @@ final class ModuleListParser {
         }
         return cnds.toArray(new String[cnds.size()]);
     }
+
+    static boolean scanOneBinary(File m, File cluster, Map<String, Entry> entries, File moduleAutoDepsDir) throws IOException {
+        if (!m.getName().endsWith(".jar")) {
+            return true;
+        }
+        JarFile jf = new JarFile(m);
+        File dir = m.getParentFile();
+        try {
+            Attributes attr = jf.getManifest().getMainAttributes();
+            String codename = JarWithModuleAttributes.extractCodeName(attr);
+            if (codename == null) {
+                return true;
+            }
+            String codenamebase;
+            int slash = codename.lastIndexOf('/');
+            if (slash == -1) {
+                codenamebase = codename;
+            } else {
+                codenamebase = codename.substring(0, slash);
+            }
+
+            String cp = attr.getValue("Class-Path");
+            File[] exts;
+            if (cp == null) {
+                exts = new File[0];
+            } else {
+                String[] pieces = cp.split(" +");
+                exts = new File[pieces.length];
+                for (int l = 0; l < pieces.length; l++) {
+                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                }
+            }
+            String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
+
+
+            Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
+                    parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap(),
+                    new File(moduleAutoDepsDir, codenamebase.replace('.', '-') + ".xml"));
+            Entry prev = entries.put(codenamebase, entry);
+            if (prev != null && !prev.equals(entry)) {
+                throw new IOException("Duplicated module " + codenamebase + ": found in " + prev + " and " + entry);
+            }
+        } finally {
+            jf.close();
+        }
+        return false;
+    }
     
     /**
      * One entry in the file.
@@ -828,7 +897,6 @@ final class ModuleListParser {
     @SuppressWarnings("serial") // really want it to be incompatible if format changes
     public static final class Entry implements Serializable {
 
-        // Synch with org.netbeans.modules.apisupport.project.universe.ModuleList:
         private final String cnb;
         private final File jar;
         private final File[] classPathExtensions;
@@ -839,9 +907,10 @@ final class ModuleListParser {
         private final String[] runtimeDependencies; 
         // dependencies on other tests
         private final Map<String,String[]> testDependencies;
+        private final File moduleAutoDeps;
         
         Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath,
-                String[] buildPrerequisites, String clusterName,String[] runtimeDependencies, Map<String,String[]> testDependencies) {
+                String[] buildPrerequisites, String clusterName,String[] runtimeDependencies, Map<String,String[]> testDependencies, File moduleAutoDeps) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -852,6 +921,7 @@ final class ModuleListParser {
             this.runtimeDependencies = runtimeDependencies;
             assert testDependencies != null;
             this.testDependencies = testDependencies;
+            this.moduleAutoDeps = moduleAutoDeps;
         }
         
         /**
@@ -862,7 +932,7 @@ final class ModuleListParser {
         }
         
         /**
-         * Get the absolute JAR location, e.g. .../ide5/modules/org-netbeans-modules-ant-grammar.jar.
+         * Get the absolute JAR location, e.g. .../ide/modules/org-netbeans-modules-ant-grammar.jar.
          */
         public File getJar() {
             return jar;
@@ -917,10 +987,74 @@ final class ModuleListParser {
         public Map<String,String[]> getTestDependencies() {
             return testDependencies;
         }
+
+        /**
+         * Gets the module auto dependencies XML file.
+         * @return a file location (may or may not exist)
+         */
+        public File getModuleAutoDeps() {
+            return moduleAutoDeps;
+        }
+
         public @Override String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Entry other = (Entry) obj;
+            if ((this.cnb == null) ? (other.cnb != null) : !this.cnb.equals(other.cnb)) {
+                return false;
+            }
+            if (this.jar != other.jar && (this.jar == null || !this.jar.equals(other.jar))) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.classPathExtensions, other.classPathExtensions)) {
+                return false;
+            }
+            if (this.sourceLocation != other.sourceLocation && (this.sourceLocation == null || !this.sourceLocation.equals(other.sourceLocation))) {
+                return false;
+            }
+            if ((this.netbeansOrgPath == null) ? (other.netbeansOrgPath != null) : !this.netbeansOrgPath.equals(other.netbeansOrgPath)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.buildPrerequisites, other.buildPrerequisites)) {
+                return false;
+            }
+            if ((this.clusterName == null) ? (other.clusterName != null) : !this.clusterName.equals(other.clusterName)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.runtimeDependencies, other.runtimeDependencies)) {
+                return false;
+            }
+            if (this.testDependencies != other.testDependencies && (this.testDependencies == null || !this.testDependencies.equals(other.testDependencies))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.cnb != null ? this.cnb.hashCode() : 0);
+            hash = 83 * hash + (this.jar != null ? this.jar.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.classPathExtensions);
+            hash = 83 * hash + (this.sourceLocation != null ? this.sourceLocation.hashCode() : 0);
+            hash = 83 * hash + (this.netbeansOrgPath != null ? this.netbeansOrgPath.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.buildPrerequisites);
+            hash = 83 * hash + (this.clusterName != null ? this.clusterName.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.runtimeDependencies);
+            hash = 83 * hash + (this.testDependencies != null ? this.testDependencies.hashCode() : 0);
+            return hash;
+        }
+
+
     }
 
 }

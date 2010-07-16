@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -115,6 +118,9 @@ NodeActionsProvider {
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke ("DELETE")
         );
+        MOVE_UP_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);     // NOI18N
+        MOVE_DOWN_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);   // NOI18N
+        RESET_ORDER_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE); // NOI18N
     }
 
 
@@ -456,7 +462,7 @@ NodeActionsProvider {
     private static String[] resize(String[] array, int by) {
         int n = array.length + by;
         String[] newArray = new String[n];
-        n = Math.max(n, array.length);
+        n = Math.min(n, array.length);
         System.arraycopy(array, 0, newArray, 0, n);
         return newArray;
     }
@@ -499,6 +505,10 @@ NodeActionsProvider {
                     }
 
                 });
+            }
+            File currentSourceRoot = SourcesCurrentModel.getCurrentSourceRoot();
+            if (currentSourceRoot != null) {
+                newSourceFileChooser.setSelectedFile(currentSourceRoot);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesRemoteModel.class, "CTL_SourcesModel_AddSrc_Btn"));
@@ -564,8 +574,8 @@ NodeActionsProvider {
                             unorderedOriginalSourceRoots = unorderedSR.toArray(new String[] {});
                             int pi = sourcePathPermutation[index];
                             for (int j = 0; j < sourcePathPermutation.length; j++) {
-                                if (sourcePathPermutation[k] > pi) {
-                                    sourcePathPermutation[k]--;
+                                if (sourcePathPermutation[j] > pi) {
+                                    sourcePathPermutation[j]--;
                                 }
                             }
                             for (int j = index; j < (sourcePathPermutation.length - 1); j++) {
@@ -597,10 +607,14 @@ NodeActionsProvider {
                         sourcePath.setSourceRoots(newSourceRoots);
                     }
                      */
-                    saveAdditionalSourceRoots();
-                    saveDisabledSourceRoots();
-                    SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
                 }
+
+                sourcePathPermutation = resize(sourcePathPermutation, -k);
+
+                saveAdditionalSourceRoots();
+                saveDisabledSourceRoots();
+                SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
+                
                 fireTreeChanged ();
             }
         },

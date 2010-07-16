@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,9 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.io.File;
 import java.util.*;
 import java.io.IOException;
 import javax.lang.model.element.Modifier;
@@ -70,6 +76,9 @@ public class Method1Test extends GeneratorTestMDRCompat {
         suite.addTest(new Method1Test("testMethodParameterChange"));
         suite.addTest(new Method1Test("testMethodThrows"));
         suite.addTest(new Method1Test("testMethodReturnType"));
+        suite.addTest(new Method1Test("test159944"));
+        suite.addTest(new Method1Test("test159944b"));
+        suite.addTest(new Method1Test("test159944c"));
         // suite.addTest(new Method1Test("testMethodBody"));
         // suite.addTest(new Method1Test("testParameterizedMethod"));
         // suite.addTest(new Method1Test("testAddRemoveInOneTrans"));
@@ -240,6 +249,161 @@ public class Method1Test extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertFiles("testMethodReturnType.pass");
+    }
+    
+    public void test159944() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    void m() {\n" +
+                "        plus(|1, Math.abs(2));\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    void m() {\n" +
+                "        plus(Math.abs(2), 1);\n" +
+                "    }\n" +
+                "}";
+        File file = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(file, test.replace("|", ""));
+        JavaSource src = getJavaSource(file);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(indexA).getLeaf();
+                assertEquals(Kind.METHOD_INVOCATION, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                MethodInvocationTree original = (MethodInvocationTree) node;
+                List<? extends ExpressionTree> oldArgs = original.getArguments();
+                List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>();
+                newArgs.add(oldArgs.get(1));
+                newArgs.add(oldArgs.get(0));
+                @SuppressWarnings("unchecked")
+                MethodInvocationTree modified = make.MethodInvocation(
+                        (List<? extends ExpressionTree>) original.getTypeArguments(),
+                        original.getMethodSelect(), newArgs);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(file);
+        assertEquals(golden, res);
+    }
+
+    public void test159944b() throws Exception {
+        // XXX should also test annotations
+        // XXX expected whitespace might not be correct in golden
+        String test =
+                "class Test {\n" +
+                "    int plus(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus(|/*foo*/ 1, /*bar*/ plus(2, 3));\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    int plus(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus(/*bar*/ plus(2, 3), /*foo*/ 1);\n" +
+                "    }\n" +
+                "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                TreePath tp = copy.getTreeUtilities().pathFor(indexA);
+                GeneratorUtilities.get(copy).importComments(tp.getParentPath().getLeaf(), tp.getCompilationUnit());
+                Tree node = tp.getLeaf();
+                assertEquals(Kind.METHOD_INVOCATION, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                MethodInvocationTree original = (MethodInvocationTree) node;
+                List<? extends ExpressionTree> oldArgs = original.getArguments();
+                List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>();
+                newArgs.add(oldArgs.get(1));
+                newArgs.add(oldArgs.get(0));
+                @SuppressWarnings("unchecked")
+                MethodInvocationTree modified = make.MethodInvocation(
+                        (List<? extends ExpressionTree>) original.getTypeArguments(),
+                        original.getMethodSelect(), newArgs);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
+    public void test159944c() throws Exception {
+        // XXX should also test annotations
+        // XXX expected whitespace might not be correct in golden
+        String test =
+                "class Test {\n" +
+                "    int plus(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus( |/*foo*/ 1, /*bar*/ plus(2, 3) );\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    int plus(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus( /*bar*/ plus(2, 3), /*foo*/ 1 );\n" +
+                "    }\n" +
+                "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                TreePath tp = copy.getTreeUtilities().pathFor(indexA);
+                GeneratorUtilities.get(copy).importComments(tp.getParentPath().getLeaf(), tp.getCompilationUnit());
+                Tree node = tp.getLeaf();
+                assertEquals(Kind.METHOD_INVOCATION, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                MethodInvocationTree original = (MethodInvocationTree) node;
+                List<? extends ExpressionTree> oldArgs = original.getArguments();
+                List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>();
+                newArgs.add(oldArgs.get(1));
+                newArgs.add(oldArgs.get(0));
+                @SuppressWarnings("unchecked")
+                MethodInvocationTree modified = make.MethodInvocation(
+                        (List<? extends ExpressionTree>) original.getTypeArguments(),
+                        original.getMethodSelect(), newArgs);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
     }
     
     /**

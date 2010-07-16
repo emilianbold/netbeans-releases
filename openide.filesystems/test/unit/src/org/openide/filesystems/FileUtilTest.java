@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,9 +56,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -71,19 +74,21 @@ public class FileUtilTest extends NbTestCase {
         super(n);
     }
 
-    public static Test suite() {
-        Test suite = null;
-            //suite = new FileUtilTest("testNormalizeFile");
-        if (suite == null) {
-            suite = new NbTestSuite(FileUtilTest.class);
-        }
-        return suite;
-    }
-
     @Override
     public void setUp() throws IOException {
         // folder of declarative resolvers must exist before MIME resolvers tests
         FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
+    }
+
+    public void testWrongNormalization() throws Exception {
+        CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
+        final File file = new File("/../../tmp/");
+        final File normalizedFile = FileUtil.normalizeFile(file);
+        FileUtil.addFileChangeListener(
+            new FileChangeAdapter() {},
+            normalizedFile
+        );
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
@@ -189,7 +194,62 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("FileUtil.getArchiveFile failed.", new URL(urls[i][1]), FileUtil.getArchiveFile(new URL(urls[i][0])));
         }
     }
-    
+
+    public void testIsArchiveFileRace() throws Exception {
+        final LocalFileSystem lfs = new LocalFileSystem();
+        clearWorkDir();
+        final File wd = getWorkDir();
+        lfs.setRootDirectory(wd);
+        MockLookup.setInstances(new URLMapper() {
+            String rootURL = lfs.getRoot().getURL().toString();
+            @Override
+            public FileObject[] getFileObjects(URL url) {
+                String u = url.toString();
+                FileObject f = null;
+                if (u.startsWith(rootURL)) {
+                    f = lfs.findResource(u.substring(rootURL.length()));
+                }
+                return f != null ? new FileObject[] {f} : null;
+            }
+            @Override
+            public URL getURL(FileObject fo, int type) {
+                return null;
+            }
+        });
+        URLMapper.reset();
+        final File testFile = new File (wd,"test.jar"); //NOI18N
+        FileUtil.createData(testFile);
+
+        final Logger log = Logger.getLogger(FileUtil.class.getName());
+        log.setLevel(Level.FINEST);
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if ("isArchiveFile_FILE_RESOLVED".equals(record.getMessage())) {  //NOI18N
+                    try {
+                        final FileObject fo = (FileObject) record.getParameters()[0];
+                        fo.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        log.addHandler(handler);
+        try {
+            final boolean result = FileUtil.isArchiveFile(testFile.toURI().toURL());
+            assertTrue("The test.jar should be archive.",result);   //NOI18N
+        } finally {
+            log.removeHandler(handler);
+        }
+    }
+
     /** Tests normalizeFile() method. */
     public void testNormalizeFile() throws IOException {
         // pairs of path before and after normalization
@@ -238,6 +298,23 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
         }
     }
+
+    public void testNormalizeFileIsCached() throws Exception {
+        File f = new File(getWorkDir(), "text.txt");
+        CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File one = FileUtil.normalizeFile(f);
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
+            fail("One querfy for the file shall be in logs:\n" + log);
+        }
+        CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File two = FileUtil.normalizeFile(f);
+        if (log2.toString().contains(msg)) {
+            fail("No second FileUtil.normalizeFile for in:\n" + log);
+        }
+        assertEquals("Files are equal", one, two);
+    }
+
 
     /** Tests that only resolvers are queried which supply at least one of
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
@@ -394,6 +471,7 @@ public class FileUtilTest extends NbTestCase {
     }
 
     /** Tests that refreshAll runs just once in time (see #170556). */
+    @RandomlyFails // NB-Core-Build #4062: FileUtil.refreshAll not called. expected:<2> but was:<1>
     public void testRefreshConcurrency() throws Exception {
         Logger logger = Logger.getLogger(FileUtil.class.getName());
         logger.setLevel(Level.FINE);

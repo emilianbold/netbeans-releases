@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,10 +91,10 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Attribute;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.Attribute;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.utils.StringUtil;
+import com.sun.etl.utils.StringUtil;
 import java.io.File;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
@@ -298,7 +301,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     /**
-     * Creates a new SQLObject instance of the given type. Does not add the the vended
+     * Creates a new SQLObject instance of the given type. Does not add the vended
      * SQLObject to this SQLDefinition, although it does set its parent reference to this.
      * To correctly associate the returned SQLObject instance with this instance, the
      * calling method should call addSQLObject(SQLObject).
@@ -313,7 +316,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     /**
-     * Creates a new SQLObject instance of the given type. Does not add the the vended
+     * Creates a new SQLObject instance of the given type. Does not add the vended
      * SQLObject to this SQLDefinition, although it does set its parent reference to this.
      * To correctly associate the returned SQLObject instance with this instance, the
      * calling method should call addSQLObject(SQLObject).
@@ -438,22 +441,23 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     public String getAxiondbDataDirectory() {
         String dbName = (String) this.getAttributeValue(AXION_DB_DATA_DIR);
-        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator : dbName;
+        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
         return dbName;
     }
-
+    
     public boolean isDynamicFlatFile() {
         Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
         boolean flag = false;
-        if (dynamicFlatFile != null) {
+        if(dynamicFlatFile != null) {
             flag = dynamicFlatFile.booleanValue();
         }
         return flag;
     }
-
+    
     public void setDynamicFlatFile(boolean flag) {
         this.setAttribute(DYNAMIC_FLAT_FILE, Boolean.valueOf(flag));
     }
+    
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
@@ -1044,7 +1048,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void setAxiondbDataDirectory(String dbInstanceName) {
         this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
-
+    
     /**
      * @see SQLDefinition#setParent
      */
@@ -1133,6 +1137,22 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         return valInfo;
     }
 
+    public List<ValidationInfo> validateModel() {
+        
+        // General eTL Collaboration validation
+        SQLValidationVisitor vVisitor = new SQLValidationVisitor();
+        vVisitor.visit(this);
+        List<ValidationInfo> valInfo = vVisitor.getValidationInfoList();
+
+        // Operator usage validation.
+        SQLOperatorInfoVisitor opInfo = new SQLOperatorInfoVisitor(true);
+        opInfo.visit(this);
+        valInfo.addAll(opInfo.getValidationInfoList());
+
+        // Filter condition validation
+        valInfo = ConditionBuilderUtil.filterValidations(valInfo);
+        return valInfo;
+    }
     /**
      * validate the definition starting from the target tables.
      *
@@ -1725,9 +1745,5 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     public void setExecutionStrategyStr(String text) {
-    }
-
-    public void removeJoinViewOnly(SQLJoinView joinView) {
-        objectMap.remove(joinView.getId());
     }
 }

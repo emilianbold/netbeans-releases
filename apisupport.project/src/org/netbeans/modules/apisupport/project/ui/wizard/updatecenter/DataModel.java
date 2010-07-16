@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,8 +49,8 @@ import java.util.Map;
 import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -87,7 +90,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
         FileObject template = newAPI ? null : CreatedModifiedFiles.getTemplate("update_center.xml"); // NOI18N
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
-        FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
+        FileSystem layer = LayerHandle.forProject (getProject ()).layer (false);
         
         String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + extension;
         int sequence = 0;
@@ -118,7 +121,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }        
         String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
-        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "enabled", Boolean.TRUE)); //NOI18N
         
         // write into bundle
@@ -128,6 +130,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         localizingBundle = localizingBundle.replace ('/', '.');
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, 
                 "displayName", "bundlevalue:" + localizingBundle + "#" + pathToAutoUpdateType));
+        cmf.add(cmf.createLayerAttribute(pathToAutoUpdateType, "url", "bundlevalue:" + localizingBundle + "#" + url_key)); //NOI18N
         
         cmf.add (cmf.bundleKeyDefaultBundle (pathToAutoUpdateType, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));

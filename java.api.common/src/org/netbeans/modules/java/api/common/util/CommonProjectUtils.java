@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,9 +42,18 @@
 
 package org.netbeans.modules.java.api.common.util;
 
+import java.util.Collection;
+import java.util.Collections;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
+import org.openide.filesystems.FileObject;
 
 /**
  * Common project utilities. This is a helper class; all methods are static.
@@ -90,4 +102,35 @@ public final class CommonProjectUtils {
         }
         return property;
     }
+
+    public static Collection<ElementHandle<TypeElement>> getMainMethods (final FileObject fo) {
+        // support for unit testing
+        if (fo == null || MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return Collections.<ElementHandle<TypeElement>>emptySet();
+        }
+        return SourceUtils.getMainClasses(fo);
+    }
+
+    /** Check if the given file object represents a source with the main method.
+     *
+     * @param fo source
+     * @return true if the source contains the main method
+     */
+    public static boolean hasMainMethod(FileObject fo) {
+        // support for unit testing
+        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+        }
+        if (fo == null) {
+            // ??? maybe better should be thrown IAE
+            return false;
+        }
+        return !SourceUtils.getMainClasses(fo).isEmpty();
+    }
+
+    public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        return SourceUtils.isMainClass(className, cpInfo);
+    }
+
 }

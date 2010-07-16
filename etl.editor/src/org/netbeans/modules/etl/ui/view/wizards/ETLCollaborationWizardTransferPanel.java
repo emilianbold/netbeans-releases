@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.etl.ui.view.wizards;
 
+import com.sun.etl.exception.DBSQLException;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -88,6 +92,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import net.java.hulp.i18n.Logger;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.dm.virtual.db.model.VirtualDatabaseModel;
+import org.netbeans.modules.dm.virtual.db.ui.wizard.VirtualDBTableWizardIterator;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -109,6 +116,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     private static final String LOG_CATEGORY = ETLCollaborationWizardTransferPanel.class.getName();
     private static transient final Logger mLogger = Logger.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    HashMap<String, SQLDBModel> connURLToDBModelMap = null;
+    boolean hasnext = true;
 
     /**
      * Extends ChangeEvent to convey information on an item being transferred to or from
@@ -211,7 +220,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             };
 
-            setSourceList(srcColl);
+            //setSourceList(srcColl);
+            setSourceList(getModelConnections());
             setDestinationList(dstColl);
 
             changeListeners = new HashSet<ChangeListener>();
@@ -553,6 +563,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             } else if (value instanceof DatabaseConnection) {
                 this.setText(DBExplorerUtil.getDisplayName(((DatabaseConnection) value)));
+                this.setToolTipText(((DatabaseConnection) value).getDatabaseURL());
             } else if (value instanceof String) {
                 this.setText((String) value);
             }
@@ -679,7 +690,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         destLabel.getAccessibleContext().setAccessibleName(LBL_DEST_MSG);
         schemaTablesList.setModel(new javax.swing.AbstractListModel() {
 
-            String[] strings = {""            };
+            String[] strings = {""};
 
             public int getSize() {
                 return strings.length;
@@ -837,10 +848,27 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         initComponents();
     }
 
+    private String getUsedFlatFileDBModel(WizardDescriptor wd) {
+        VirtualDatabaseModel ffmodel = (VirtualDatabaseModel) wd.getProperty(VirtualDBTableWizardIterator.PROP_VIRTUALDBMODEL);
+        if (ffmodel != null) {
+            return ffmodel.toString();
+        }
+        //XXX _ Handle this
+        return null;
+    }
+
+    private String getSchemaGenDBModel(WizardDescriptor wd) {
+        String schemagenurl = (String) wd.getProperty(ETLCollaborationWizard.SCHEMA_GEN_DB_CONN);
+        if (schemagenurl != null) {
+            return schemagenurl.toString();
+        }
+        return null;
+    }
+
     private List getSelectedDBModels(boolean isSource) throws Exception {
         AbstractDBTable newTable = null;
         String connURL = null;
-        HashMap<String, SQLDBModel> connURLToDBModelMap = new HashMap<String, SQLDBModel>();
+        connURLToDBModelMap = new HashMap<String, SQLDBModel>();
         List<SQLDBModel> dbModels = new ArrayList<SQLDBModel>();
         List tableList = this.listModel.getSelectedTablesList();
         if (tableList != null) {
@@ -863,8 +891,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                                 type = SQLConstants.SOURCE_DBMODEL;
                             }
                             model = SQLModelObjectFactory.getInstance().createDBModel(type);
-                              String modelName = generateDBModelName(isSource,connURLToDBModelMap);
-                            populateModel(model, conn, meta,modelName);
+                            String modelName = generateDBModelName(isSource, connURLToDBModelMap);
+                            populateModel(model, conn, meta, modelName);
                             connURLToDBModelMap.put(connURL, model);
                         }
 
@@ -880,7 +908,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         Iterator iter = connURLToDBModelMap.values().iterator();
         while (iter.hasNext()) {
             SQLDBModel model = (SQLDBModel) iter.next();
@@ -892,7 +920,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaDataFactory meta, String modelName) {
         DBConnectionDefinition def = null;
         try {
-          
+
             def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(modelName,
                     meta.getDBType(), conn.getDriverClass(), conn.getDatabaseURL(), conn.getUser(),
                     conn.getPassword(), "Descriptive info here");
@@ -982,7 +1010,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
         return aName;
     }
-    
+
     private String generateDBModelName(boolean isSource, HashMap<String, SQLDBModel> connURLToDBModelMap) {
         int cnt = 1;
         String connNamePrefix = isSource ? "SourceConnection" : "TargetConnection";
@@ -994,9 +1022,9 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
         return aName;
     }
-    
-     private boolean isDBModelNameExist(String aName, HashMap<String, SQLDBModel> connURLToDBModelMap) {
-    
+
+    private boolean isDBModelNameExist(String aName, HashMap<String, SQLDBModel> connURLToDBModelMap) {
+
         Iterator<SQLDBModel> it = connURLToDBModelMap.values().iterator();
 
         while (it.hasNext()) {
@@ -1009,7 +1037,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
         return false;
     }
-    
+
     private boolean isTableAliasNameExist(String aName) {
         List sTables = this.listModel.getSelectedTablesList();
         Iterator it = sTables.iterator();
@@ -1064,6 +1092,79 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     tablesList[i][3] = selectedConnection.getDatabaseURL();
                     this.nameToConnMap.put(selectedConnection.getDatabaseURL(), selectedConnection);
                     listModel.addToSelectedTables(tablesList[i], (SQLDBTable) clonedTables[i]);
+                }
+            }
+
+            jTable1.setModel(listModel.getSelectedTablesModel());
+            if (listModel.getSelectedTablesModel().getRowCount() > 0) {
+                this.removeButton.setEnabled(true);
+            }
+        } catch (Exception ex) {
+            mLogger.errorNoloc(mLoc.t("EDIT035: Error trying to get selected table metadata{0}", LOG_CATEGORY), ex);
+        }
+    }
+
+    private void showSelectionInTable(WizardDescriptor wd, DatabaseConnection dbconn) {
+        List tables;
+        if (isSource) {
+            // add source table list
+            tables = (List) wd.getProperty(VirtualDBTableWizardIterator.TABLE_LIST);
+        } else {
+            // add target table list
+            tables = (List) wd.getProperty(ETLCollaborationWizard.SCHEMA_GEN_DB_TABLES);
+        }
+
+        try {
+            if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
+                mLogger.infoNoloc(mLoc.t("EDIT032: selectedConn is null{0}", LOG_CATEGORY));
+            }
+
+            if ((tables != null) && (tables.size() > 0)) {
+
+                if (isSource) {
+                    SourceTableImpl[] clonedTables = new SourceTableImpl[tables.size()];
+                    for (int i = 0; i < tables.size(); i++) {
+                        //clonedTables[i] = ((SourceTableImpl) fftables.get(i)).clone();
+                        SourceTableImpl stimpl = new SourceTableImpl();
+                        stimpl.setName((String) tables.get(i));
+                        clonedTables[i] = stimpl;
+                    }
+                    String[][] tablesList = new String[tables.size()][4];
+                    //if (tables.size() > 0) {
+                    for (int ii = 0; ii < tables.size(); ii++) {
+                        String tableAliasName = generateTableAliasName(isSource);
+
+                        ((SourceTableImpl) clonedTables[ii]).setAliasName(tableAliasName);
+                        tablesList[ii][0] = ((SourceTableImpl) clonedTables[ii]).getQualifiedName();
+                        tablesList[ii][1] = ((SourceTableImpl) clonedTables[ii]).getSchema();
+                        tablesList[ii][2] = ((SourceTableImpl) clonedTables[ii]).getCatalog();
+                        tablesList[ii][3] = dbconn.getDatabaseURL();
+                        this.nameToConnMap.put(dbconn.getDatabaseURL(), dbconn);
+                        listModel.addToSelectedTables(tablesList[ii], (SQLDBTable) clonedTables[ii]);
+                    }
+                //}
+                } else {
+                    TargetTableImpl[] clonedTables = new TargetTableImpl[tables.size()];
+                    for (int i = 0; i < tables.size(); i++) {
+                        //clonedTables[i] = ((SourceTableImpl) fftables.get(i)).clone();
+                        TargetTableImpl ttimpl = new TargetTableImpl();
+                        ttimpl.setName((String) tables.get(i));
+                        clonedTables[i] = ttimpl;
+                    }
+                    String[][] tablesList = new String[tables.size()][4];
+                    //if (tables.size() > 0) {
+                    for (int ii = 0; ii < tables.size(); ii++) {
+                        String tableAliasName = generateTableAliasName(isSource);
+
+                        ((TargetTableImpl) clonedTables[ii]).setAliasName(tableAliasName);
+                        tablesList[ii][0] = ((TargetTableImpl) clonedTables[ii]).getQualifiedName();
+                        tablesList[ii][1] = ((TargetTableImpl) clonedTables[ii]).getSchema();
+                        tablesList[ii][2] = ((TargetTableImpl) clonedTables[ii]).getCatalog();
+                        tablesList[ii][3] = dbconn.getDatabaseURL();
+                        this.nameToConnMap.put(dbconn.getDatabaseURL(), dbconn);
+                        listModel.addToSelectedTables(tablesList[ii], (SQLDBTable) clonedTables[ii]);
+                    }
+                //}
                 }
             }
 
@@ -1143,7 +1244,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      */
     @Override
     public boolean isValid() {
-        return true;
+        return hasnext;
     }
 
     /**
@@ -1168,34 +1269,76 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             wizard = (WizardDescriptor) settings;
         }
 
-        if (wizard != null &&
-                WizardDescriptor.NEXT_OPTION.equals(wizard.getValue())) {
-            /*
-             * If coming from a previous window (i.e via its Next button)
-             * then (re)set the "available" database(s) list and clear the
-             * "selected" database list. Otherwise, for a "Back" button call,
-             * just keep the current user selections.
-             **/
-            //TODO - more complicated logic to retain user selections across Back/Next buttons
-            List models = null;
-            if (isSource) { //In the source database mode
-                Object[] sources = (Object[]) wizard.getProperty(ETLCollaborationWizard.DATABASE_SOURCES);
-                models = Arrays.asList(sources);
-            } else {
-                Object[] targets = (Object[]) wizard.getProperty(ETLCollaborationWizard.DATABASE_TARGETS);
-                models = Arrays.asList(targets);
+        if (wizard != null) {
+            Boolean isbasicetl = (Boolean) wizard.getProperty(ETLCollaborationWizard.IS_BASIC_ETL_LOADER);
+            Boolean isbulkloader = (Boolean) wizard.getProperty(ETLCollaborationWizard.IS_BULK_LOADER);
+
+            if ((!isbasicetl.booleanValue()) && (!isbulkloader.booleanValue())) {
+                DatabaseConnection fftableconn = null;
+                DatabaseConnection schemagendbconn = null;
+                if (WizardDescriptor.NEXT_OPTION.equals(wizard.getValue())) {
+                    /*
+                     * If coming from a previous window (i.e via its Next button)
+                     * then (re)set the "available" database(s) list and clear the
+                     * "selected" database list. Otherwise, for a "Back" button call,
+                     * just keep the current user selections.
+                     **/
+                    //TODO - more complicated logic to retain user selections across Back/Next buttons
+                    List models = null;
+                    if (isSource) { //In the source database mode
+                        Object[] sources = (Object[]) wizard.getProperty(ETLCollaborationWizard.DATABASE_SOURCES);
+                        Object[] updsources = null;
+
+                        //Add the db model used for flat file databases
+                        String filedburl = getUsedFlatFileDBModel(wizard);
+                        try {
+                            fftableconn = DBExplorerUtil.createDatabaseConnection("org.axiondb.jdbc.AxionDriver", filedburl, "sa", "sa");
+                            updsources = new Object[sources.length + 1];
+                            for (int i = 0; i < sources.length; i++) {
+                                updsources[i] = sources[i];
+                            }
+                            updsources[sources.length] = fftableconn;
+                        } catch (DBSQLException ex) {
+                            mLogger.errorNoloc("Error while connection creation.Url : " + filedburl, ex);
+                        }
+                        models = Arrays.asList(updsources);
+                    } else {
+                        Object[] targets = (Object[]) wizard.getProperty(ETLCollaborationWizard.DATABASE_TARGETS);
+                        Object[] updtargets = null;
+
+                        //Add the db model used for schema generated db databases
+                        String schemagendburl = getSchemaGenDBModel(wizard);
+                        if (schemagendburl != null) {
+                            try {
+                                schemagendbconn = DBExplorerUtil.createDatabaseConnection("org.axiondb.jdbc.AxionDriver", schemagendburl, "sa", "sa");
+                                updtargets = new Object[targets.length + 1];
+                                for (int i = 0; i < targets.length; i++) {
+                                    updtargets[i] = targets[i];
+                                }
+                                updtargets[targets.length] = fftableconn;
+                            } catch (DBSQLException ex) {
+                                mLogger.infoNoloc(ex.getMessage());
+                            }
+                        }
+                        models = Arrays.asList(targets);
+                    }
+                    //listModel.setSourceList(models);
+                    listModel.setSourceList(getModelConnections());
+                    ((DefaultComboBoxModel) listModel.getDestinationModel()).removeAllElements();
+                    tablePanel.resetTable(Collections.EMPTY_LIST);
+                    if (isSource) {
+                        showSelectionInTable(wizard, fftableconn);
+                    } else {
+                        showSelectionInTable(wizard, schemagendbconn);
+                    }
+                }
             }
-            listModel.setSourceList(models);
-            ((DefaultComboBoxModel) listModel.getDestinationModel()).removeAllElements();
-            tablePanel.resetTable(Collections.EMPTY_LIST);
         }
 
         if (sourceList != null) {
-            SwingUtilities.invokeLater(new  
+            SwingUtilities.invokeLater(new Runnable() {
 
-                  Runnable() {
-
-                       public void run() {
+                public void run() {
                     if (sourceList != null && sourceList.getModel().getSize() != 0) {
                         sourceList.requestFocusInWindow();
                     } else if (addButton != null) {
@@ -1245,8 +1388,10 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         // clicks finish, then we should not have a join.
                         wizard.putProperty(ETLCollaborationWizard.JOIN_VIEW, null);
                         wizard.putProperty(ETLCollaborationWizard.JOIN_VIEW_VISIBLE_COLUMNS, null);
+                        wizard.putProperty(ETLCollaborationWizard.CONN_URL_TO_SRCMODEL_MAP, connURLToDBModelMap);
                     } else {
                         wizard.putProperty(ETLCollaborationWizard.TARGET_DB, list);
+                        wizard.putProperty(ETLCollaborationWizard.CONN_URL_TO_TRGTMODEL_MAP, connURLToDBModelMap);
                     }
                 } catch (Exception e) {
                     mLogger.errorNoloc(mLoc.t("EDIT035: Error trying to get selected table metadata{0}", LOG_CATEGORY), e);
@@ -1283,6 +1428,26 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      */
     boolean hasEnoughTablesForJoin() {
         return listModel.getSelectedTablesModel().getRowCount() > 1 ? true : false;
+    }
+
+    private List getModelConnections() {
+        List model = new ArrayList();
+        DBExplorerUtil.recreateMissingFlatfileConnectionInDBExplorer();
+        model.addAll(DBExplorerUtil.getDatabasesForCurrentProject());
+
+        DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
+        if (conns.length > 0) {
+            for (int i = 0; i < conns.length; i++) {
+                if (conns[i] == null) {
+                    model.add("<NULL>");
+                } else if (!model.contains(conns[i])) {
+                    model.add(conns[i]);
+                }
+            }
+        } else if (model.size() == 0) {
+            model.add("<None>");
+        }
+        return model;
     }
 }
 

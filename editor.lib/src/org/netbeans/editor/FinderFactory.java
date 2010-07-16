@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@
  */
 
 package org.netbeans.editor;
+
+import org.netbeans.modules.editor.lib.WcwdithUtil;
 
 /**
 * Various finders are located here.
@@ -121,7 +126,7 @@ public class FinderFactory {
         }
 
         /** Mark that first call will follow */
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             visCol = 0;
         }
@@ -135,7 +140,16 @@ public class FinderFactory {
                 if (buffer[offset] == '\t') {
                     visCol = (visCol + tabSize) / tabSize * tabSize;
                 } else {
-                    visCol++;
+                    // #17356
+                    int codePoint;
+                    if (Character.isHighSurrogate(buffer[offset])) {
+                            codePoint = Character.toCodePoint(buffer[offset], buffer[offset + 1]);
+                            offset++;
+                    } else {
+                            codePoint = buffer[offset];
+                    }
+                    int w = WcwdithUtil.wcwidth(codePoint);
+                    visCol += w > 0 ? w : 0;
                 }
                 offset++;
             }
@@ -176,7 +190,7 @@ public class FinderFactory {
         }
 
         /** Mark that first call will follow */
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             curVisCol = 0;
         }
@@ -200,7 +214,17 @@ public class FinderFactory {
                     found = true;
                     return bufferStartPos + offset;
                 default:
-                    curVisCol++;
+                    // #17356
+                    int codePoint;
+                    if (Character.isHighSurrogate(buffer[offset])) {
+                            codePoint = Character.toCodePoint(buffer[offset], buffer[offset + 1]);
+                            offset++;
+                    } else {
+                            codePoint = buffer[offset];
+                    }
+                    int w = WcwdithUtil.wcwidth(codePoint);
+                    curVisCol += w > 0 ? w : 0;
+                    break;
                 }
                 offset++;
             }
@@ -469,7 +493,7 @@ public class FinderFactory {
             this.stopOnWhitespace = stopOnWhitespace;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             inWhitespace = false;
             inIdentifier = false;
@@ -554,7 +578,7 @@ public class FinderFactory {
             this.stopOnWhitespace = stopOnWhitespace;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             inIdentifier = false;
             inPunct = false;
@@ -728,7 +752,7 @@ public class FinderFactory {
             return chars.length;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             stringInd = 0;
         }
@@ -779,7 +803,7 @@ public class FinderFactory {
             return chars.length;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             stringInd = endInd;
         }
@@ -839,7 +863,7 @@ public class FinderFactory {
             return chars.length;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             insideWord = false;
             wordFound = false;
@@ -939,7 +963,7 @@ public class FinderFactory {
             return chars.length;
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             insideWord = false;
             wordFound = false;
@@ -1016,7 +1040,7 @@ public class FinderFactory {
 
         private boolean closed;
 
-        public void reset() {
+        public @Override void reset() {
             blocksInd = 0;
             closed = false;
         }
@@ -1085,7 +1109,7 @@ public class FinderFactory {
             chars = (matchCase ? s : s.toLowerCase()).toCharArray();
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             stringInd = 0;
         }
@@ -1146,7 +1170,7 @@ public class FinderFactory {
             firstCharWordPart = doc.isIdentifierPart(chars[0]);
         }
 
-        public void reset() {
+        public @Override void reset() {
             super.reset();
             insideWord = false;
             wordFound = false;

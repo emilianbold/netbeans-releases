@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,6 +52,7 @@ import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
  * DataCollector collects data from application/system.
@@ -60,6 +64,19 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
  */
 public interface DataCollector<G extends DataCollectorConfiguration>
         extends DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
+
+
+    /**
+     * Add new listener which will be notified about all changes in the collector's state
+     * @param listener listener to be added
+     */
+    void addDataCollectorListener(DataCollectorListener listener);
+
+    /**
+     * Removes the listener 
+     * @param listener listener to be removed
+     */
+    void removeDataCollectorListener(DataCollectorListener listener);
 
     /**
      * The types of storage this collector requires
@@ -78,10 +95,17 @@ public interface DataCollector<G extends DataCollectorConfiguration>
     /**
      * Method init() is called BEFORE target start
      * It can be used to initialize collector database tables, etc...
-     * @param storage storage this collector willput data into
+     * @param storages storage this collector will put data into
      * @param target target this collector serve for
      */
     void init(Map<DataStorageType, DataStorage> storages, DLightTarget target);
+
+
+    /**
+     *  Initialize with service info data storage
+     * @param infoStorage service info data storage
+     */
+    void init(ServiceInfoDataStorage infoStorage);
 
     /**
      * DataCollector can attach to the {@link org.netbeans.modules.dlight.api.execution.DLightTarget}.
@@ -111,4 +135,44 @@ public interface DataCollector<G extends DataCollectorConfiguration>
      * @return user visible name
      */
     String getName();
+
+/**
+     * States collector can be at
+     */
+    public enum CollectorState {
+
+
+        /**
+         * Initial state
+         */
+        INIT,
+        /**
+         * Validate state
+         */
+        VALIDATING,
+        /**
+         * Starting state
+         */
+        STARTING,
+        /**
+         * Running state
+         */
+        RUNNING,
+        /**
+         * Target is done
+         */
+        DONE,
+        /**
+         * Target is failed
+         */
+        FAILED,
+        /**
+         * Target is Stopped
+         */
+        STOPPED,
+        /**
+         * Target is terminated
+         */
+        TERMINATED,
+    }
 }

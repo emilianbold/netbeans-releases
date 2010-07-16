@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,14 +58,15 @@ import org.netbeans.modules.compapp.casaeditor.nodes.WSDLEndpointNode;
 import org.netbeans.modules.compapp.casaeditor.model.casa.*;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
 import java.net.URI;
 
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -131,9 +135,7 @@ public class CloneWSDLPortAction extends NodeAction {
             FileObject casaFO = lookup.lookup(FileObject.class);
             Project proj = FileOwnerQuery.getOwner(casaFO);
             FileObject projFO = proj.getProjectDirectory();
-            String projPath = FileUtil.toFile(projFO).getAbsolutePath();
-            String srcPath = projPath + "/src";
-            // String srcPath = FileUtil.toFile(casaFO).getParentFile().getParentFile().getAbsolutePath();
+            FileObject projSrcFO = projFO.getFileObject("src"); // NOI18N
 
             CasaPort cp = (CasaPort) node.getData();
             Port port = model.getLinkedWSDLPort(cp);
@@ -147,8 +149,8 @@ public class CloneWSDLPortAction extends NodeAction {
                   wRoot  localhost_9080\secure_echo_mutualcerts.wsdl
                  */
                 String wPath = wFile.getCanonicalPath();
-                String wRoot = wPath.substring(wPath.indexOf(JBI_SU_JAR_DIR) + JBI_SU_JAR_DIR.length() + 1).replace('\\', '/');
-                String wProj = wRoot.substring(0, wRoot.indexOf('/'));
+                String wRoot = wPath.substring(wPath.indexOf(JBI_SU_JAR_DIR) + JBI_SU_JAR_DIR.length() + 1).replace('\\', '/');   // NOI18N
+                String wProj = wRoot.substring(0, wRoot.indexOf('/'));  // NOI18N
                 wRoot = wRoot.substring(wRoot.indexOf('/') + 1);  // NOI18N
                 // System.out.println("wProj: "+wProj+"\nwPath: "+wPath+"\nwRoot: "+wRoot);
 
@@ -159,15 +161,27 @@ public class CloneWSDLPortAction extends NodeAction {
                 //FileObject fo = ret.retrieveResourceClosureIntoSingleDirectory(destFO, wFile.toURI());
                 // String oPath = fo.getPath();
 
-                // Copy remote resouces to local
-                File dstDir = new File(srcPath + "/"+JBI_SOURCE_DIR+"/"+wProj);  // NOI18N
-                File srcDir = new File(srcPath + "/"+JBI_SU_JAR_DIR+"/"+wProj);  // NOI18N
-                copyDirectory(srcDir, dstDir);
+                // Copy remote resouces to local (#173146: Need to use FileObject API)
+//                File dstDir = new File(srcPath + "/"+JBI_SOURCE_DIR+"/"+wProj);  // NOI18N
+//                File srcDir = new File(srcPath + "/"+JBI_SU_JAR_DIR+"/"+wProj);  // NOI18N
+//                copyDirectory(srcDir, dstDir);
+                FileObject srcFO = FileUtil.createFolder(projSrcFO, JBI_SU_JAR_DIR);
+                FileObject dstFO = FileUtil.createFolder(projSrcFO, JBI_SOURCE_DIR);
+                Set<String> thoseToCopy = getCopyClosure(srcFO);
+                copyDeep(srcFO, dstFO, thoseToCopy, wProj);
 
-                // Merge remote catalog with the local one
+               // Merge remote catalog with the local one
+                /*  Fix for NB#164893, 06/06/09, T. Li
+                    we will assume that only xsd and wsdl files in SU jar sources
+                    needed to be cloned and catalog entries should not be cloned/moved.
+                    This assumption only work if no catalog entries pointing back
+                    to the SU jar sources again. Later, we should add code to check
+                    for this condition and generate necessary warning messages.
+
                 File dstCat = new File(projPath + "/catalog.xml");  // NOI18N
                 File srcCat = new File(srcPath + "/"+JBI_SU_JAR_DIR+"/META-INF/"+wProj + "/catalog.xml");  // NOI18N
                 mergeCatalog(srcCat, dstCat, wProj);
+                */
 
                 // Update casa port wsdl link
                 String oHref = cp.getLink().getHref();
@@ -188,7 +202,7 @@ public class CloneWSDLPortAction extends NodeAction {
      * @param srcDir  source directory
      * @param dstDir  target directory
      * @throws IOException i/o exception
-     */
+     *
     private void copyDirectory(File srcDir, File dstDir) throws IOException {
         // todo: calculate closure from starting wsdl (using project catalog...
         if (srcDir.isDirectory()) {
@@ -210,6 +224,88 @@ public class CloneWSDLPortAction extends NodeAction {
                 dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
                 srcChannel.close();
                 dstChannel.close();
+            }
+        }
+    }*/
+
+    /**
+     * Gets the copy closure from starting WSDL (using project catalog).
+     *
+     * Currently gets all the XSDs and WSDLs under the given directory
+     * (recursively).
+     *
+     * @param root  a root directory
+     * @return  a set of relative file paths to the given root directory
+     */
+    // TODO: calculate the real closure
+    private Set<String> getCopyClosure(FileObject root) {
+        Set<String> ret = new HashSet<String>();
+        
+        if (root != null) {
+            int rootPathLen = root.getPath().length();
+            
+            Enumeration<? extends FileObject> childrenEnum = root.getChildren(true);
+            while (childrenEnum.hasMoreElements()) {
+                FileObject child = childrenEnum.nextElement();
+                if (child.isData()) {
+                    String ext = child.getExt();
+                    if ("xsd".equalsIgnoreCase(ext) || // NOI18N
+                            ("wsdl".equalsIgnoreCase(ext))) { // NOI18N
+                        ret.add(child.getPath().substring(rootPathLen + 1));
+                    }
+                }
+            }
+        }
+        
+        return ret;        
+    }
+
+    /**
+     * Does a selective copy of one source tree to another.
+     *
+     * @param source file object to copy from
+     * @param target file object to copy to
+     * @param thoseToCopy set on which contains (relativeNameOfAFileToCopy)
+     *   is being called to find out whether to copy or not
+     * @throws IOException if coping fails
+     */
+    public static void copyDeep(FileObject source, FileObject target,
+            Set thoseToCopy)
+            throws IOException {
+        copyDeep(source, target, thoseToCopy, null);
+    }
+
+    private static void copyDeep(FileObject source, FileObject target,
+            Set thoseToCopy, String prefix)
+            throws IOException {
+        FileObject src = prefix == null ? source : FileUtil.createFolder(source, prefix);
+
+        for (FileObject child : src.getChildren()) {
+            String fullname;
+            if (prefix == null) {
+                fullname = child.getNameExt();
+            } else {
+                fullname = prefix + "/" + child.getNameExt(); // NOI18N
+            }
+
+            if (child.isFolder()) {
+                copyDeep(source, target, thoseToCopy, fullname);
+                if (thoseToCopy.contains(fullname) && child.getAttributes().hasMoreElements()) {
+                    FileObject tg = FileUtil.createFolder(target, fullname);
+                    FileUtil.copyAttributes(child, tg);
+                }
+            } else {
+                if (!thoseToCopy.contains(fullname)) {
+                    continue;
+                }
+                FileObject folder = prefix == null ? target : FileUtil.createFolder(target, prefix);
+                FileObject tg = folder.getFileObject(child.getNameExt());
+                if (tg == null) {
+                    // copy the file otherwise keep old content
+                    tg = FileUtil.copyFile(child, folder, child.getName(), child.getExt());
+                }
+
+                FileUtil.copyAttributes(child, tg);
             }
         }
     }

@@ -76,6 +76,10 @@
 				<tocitem text="Visual Mobile Designer Tasks: Quick Reference" target="me.mvd_quickref" />
 				<tocitem text="Adding Custom Components to the Visual Mobile Designer" target="me.mvd_addcustomcomponent" />
 			</tocitem>
+			<tocitem text="Creating MIDP Games">
+				<tocitem text="About the Game Builder" target="cldc.games_about" />
+				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
+			</tocitem>
                         <tocitem text="Adding and Editing SVG Graphic Files">
 				<tocitem text="About Scalable Vector Graphic (SVG) Files" target="cldc.svg_about" />
 				<tocitem text="Working with SVG Files" target="cldc.svg_working" />
@@ -139,12 +143,8 @@
                         <tocitem text="About CDC Emulator Platforms" target="cdc.emulator_about" /> 
                 		<tocitem text="Adding CDC Emulator Platforms" target="cdc.emulator_adding" />
 				<tocitem text="Customizing Java ME Platform Properties" target="me.prop_setplatform" />
-				<tocitem text="About the Sun Java Wireless Toolkit" target="me.about_toolkit" />
-				<tocitem text="Using the Sun Java Wireless Toolkit Utilities" target="me.toolkit_using" /> 
-			</tocitem>
-			<tocitem text="Creating MIDP Games">
-				<tocitem text="About the Game Builder" target="cldc.games_about" />
-				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
+				<tocitem text="About the Java ME SDK" target="me.about_toolkit" />
+				<tocitem text="Using the Java ME SDK" target="me.toolkit_using" /> 
 			</tocitem>
   	</tocitem>                 
 </toc>

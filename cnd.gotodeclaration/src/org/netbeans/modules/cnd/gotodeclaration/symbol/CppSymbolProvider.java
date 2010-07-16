@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,9 +70,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.spi.jumpto.support.NameMatcher;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.NbBundle;
@@ -115,15 +118,11 @@ public class CppSymbolProvider implements SymbolProvider {
 
     private CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
         final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-        if (nameMatcher == null) {
-            return null;
-        } else {
-            return new CsmSelect.NameAcceptor() {
-                public boolean accept(CharSequence name) {
-                    return nameMatcher.accept(name.toString());
-                }
-            };
-        }
+        return new CsmSelect.NameAcceptor() {
+            public boolean accept(CharSequence name) {
+                return nameMatcher.accept(name.toString());
+            }
+        };
     }
 
     // synchronized is just in case here - it shouldn't be called async
@@ -133,7 +132,8 @@ public class CppSymbolProvider implements SymbolProvider {
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
         if (nameAcceptor == null) {
             if (CndUtils.isDebugMode()) {
-                Logger.global.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
+                Logger log = Logger.getLogger("org.netbeans.modules.cnd.gotodeclaration"); // NOI18N
+                log.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
             }
             return;
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,8 +69,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * utilities for APT serialization
@@ -155,6 +157,8 @@ public class APTSerializeUtils {
     }
     
     private static int fileIndex = 0;
+    private static final boolean TRACE = true;
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     static public APT testAPTSerialization(APTFileBuffer buffer, APT apt) {
         File file = buffer.getFile();
         APT aptRead = null;
@@ -163,7 +167,7 @@ public class APTSerializeUtils {
         String suffix = file.getName();
         try {
             File out = File.createTempFile(prefix, suffix);                
-            if (false) { System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
+            if (TRACE) { System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
             long astTime = System.currentTimeMillis();
             // write
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), APTTraceFlags.BUF_SIZE));
@@ -173,7 +177,7 @@ public class APTSerializeUtils {
                 oos.close();
             }
             long writeTime = System.currentTimeMillis() - astTime;
-            if (false) { System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
+            if (TRACE) { System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
             astTime = System.currentTimeMillis();
             // read
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), APTTraceFlags.BUF_SIZE));
@@ -185,7 +189,7 @@ public class APTSerializeUtils {
                 ois.close();                
             }
             long readTime = System.currentTimeMillis() - astTime;
-            if (false) { System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
+            if (TRACE) { System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
             out.delete();
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -291,7 +295,7 @@ public class APTSerializeUtils {
         output.writeInt(macros.size());
         for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
             assert entry != null;
-            assert entry.getKey() instanceof TinyCharSequence;
+            assert CharSequences.isCompact(entry.getKey());
             String key = entry.getKey().toString();
             output.writeUTF(key);
             APTMacro macro = entry.getValue();
@@ -302,7 +306,7 @@ public class APTSerializeUtils {
 
     public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = CharSequenceKey.create(input.readUTF());
+            CharSequence key = CharSequences.create(input.readUTF());
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -618,8 +621,8 @@ public final class RubyCoverageProvider implements CoverageProvider {
     private static class HideCoverageFramesConvertor implements LineConvertor {
 
         public List<ConvertedLine> convert(String line) {
-            if (line.contains("/ruby2/coverage/") || line.contains("/rcov") || // NOI18N
-                    (File.separatorChar == '\\' && (line.contains("\\ruby2\\coverage\\") || line.contains("\\rcov")))) { // NOI18N
+            if (line.contains("/ruby/coverage/") || line.contains("/rcov") || // NOI18N
+                    (File.separatorChar == '\\' && (line.contains("\\ruby\\coverage\\") || line.contains("\\rcov")))) { // NOI18N
                 return Collections.emptyList();
             }
 
@@ -686,7 +689,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
 
         StringBuilder exclude = new StringBuilder(100); // NOI18N
         // Skip mediator scripts etc.
-        exclude.append("\\/ruby2\\/,/\\\\ruby2\\\\/"); // NOI18N
+        exclude.append("\\/ruby\\/,/\\\\ruby\\\\/"); // NOI18N
         // This shows up when running specs
         exclude.append(",\\bfcntl\\b"); // NOI18N
         // No need: removed by gem stuff below

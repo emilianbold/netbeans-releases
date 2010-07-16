@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,15 +47,19 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
@@ -65,23 +72,18 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
-public class DiscoveryExtension implements IteratorExtension {
+public class DiscoveryExtension implements IteratorExtension, DiscoveryExtensionInterface {
     
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
     }
     
+    @Override
     public Set<FileObject> createProject(WizardDescriptor wizard) throws IOException{
         return new ImportProject(wizard).create();
     }
 
-    public void apply(WizardDescriptor wizard, Project project) throws IOException {
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setProject(project);
-        DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
-        generator.makeProject();
-    }
-    
+    @Override
     public void apply(Map<String, Object> map, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -89,103 +91,91 @@ public class DiscoveryExtension implements IteratorExtension {
         generator.makeProject();
     }
 
-
-    public Map<String,Object> clone(WizardDescriptor wizard){
-        Map<String,Object> map = new HashMap<String,Object>();
-        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, wizard.getProperty("buildCommandWorkingDirTextField")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.BUILD_RESULT, wizard.getProperty("outputTextField")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, wizard.getProperty("additionalLibraries")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, wizard.getProperty("consolidationLevel")); // NOI18N
-        return map;
-    }
-    
-    public void uninitialize(WizardDescriptor wizard) {
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.clean();
-    }
-    
-    public boolean isApplicable(DiscoveryDescriptor descriptor) {
-        if (isApplicableDwarfExecutable(descriptor)){
-            return true;
-        } else if (isApplicableMakeLog(descriptor)){
-            return true;
+    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor) {
+        Progress progress = new MyProgress();
+        progress.start(0);
+        try {
+            DiscoveryExtensionInterface.Applicable applicable = isApplicableDwarfExecutable(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            applicable = isApplicableMakeLog(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            return isApplicableDwarfFolder(descriptor);
+        } finally {
+            progress.done();
         }
-        return isApplicableDwarfFolder(descriptor);
     }
     
-    private boolean isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         File file = new File(selectedExecutable);
         if (!file.exists()) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
 
-    private boolean isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
 
-    private boolean isApplicableMakeLog(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable  isApplicableMakeLog(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         String logFile = descriptor.getBuildLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("make-log"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("make-log-file").setValue(logFile); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
     
-    public boolean isApplicable(WizardDescriptor wizard) {
-        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        String rootFolder = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setBuildResult(selectedExecutable);
-        descriptor.setRootFolder(rootFolder);
+    public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         return isApplicable(descriptor);
     }
     
-    public String getProviderID(WizardDescriptor wizard){
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        return descriptor.getProviderID();
-    }
-    
     public boolean canApply(DiscoveryDescriptor descriptor) {
-        if (!isApplicable(descriptor)){
+        if (!isApplicable(descriptor).isApplicable()){
             return false;
         }
         String level = descriptor.getLevel();
@@ -225,18 +215,7 @@ public class DiscoveryExtension implements IteratorExtension {
             && descriptor.getIncludedFiles() != null;
     }
     
-    public boolean canApply(WizardDescriptor wizard, Project project) {
-        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
-        String level = (String)wizard.getProperty("consolidationLevel"); // NOI18N
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setBuildResult(selectedExecutable);
-        descriptor.setAditionalLibraries(additional);
-        descriptor.setLevel(level);
-        descriptor.setProject(project);
-        return canApply(descriptor);
-    }
-
+    @Override
     public boolean canApply(Map<String, Object> map, Project project) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -253,29 +232,49 @@ public class DiscoveryExtension implements IteratorExtension {
         return null;
     }
 
+    @Override
+    public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, final String functionToOpen) {
+        ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, functionToOpen);
+        importer.process(this);
+    }
+
     private static class ProjectProxyImpl implements ProjectProxy {
-            private DiscoveryDescriptor descriptor;
-            private ProjectProxyImpl(DiscoveryDescriptor descriptor){
-                this.descriptor = descriptor;
-            }
-            public boolean createSubProjects() {
-                return false;
-            }
-            public Project getProject() {
-                return null;
-            }
-            public String getMakefile() {
-                return null;
-            }
-            public String getSourceRoot() {
-                return descriptor.getRootFolder();
-            }
-            public String getExecutable() {
-                return descriptor.getBuildResult();
-            }
-            public String getWorkingFolder() {
-                return null;
-            }
-        };
+
+        private DiscoveryDescriptor descriptor;
+
+        private ProjectProxyImpl(DiscoveryDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public boolean createSubProjects() {
+            return false;
+        }
+
+        @Override
+        public Project getProject() {
+            return null;
+        }
+
+        @Override
+        public String getMakefile() {
+            return null;
+        }
+
+        @Override
+        public String getSourceRoot() {
+            return descriptor.getRootFolder();
+        }
+
+        @Override
+        public String getExecutable() {
+            return descriptor.getBuildResult();
+        }
+
+        @Override
+        public String getWorkingFolder() {
+            return null;
+        }
+    };
 
 }

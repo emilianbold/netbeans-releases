@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
@@ -79,6 +84,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.GenerationUtils;
@@ -154,14 +160,30 @@ public class STSWizardCreator {
             wsitSupported = wsitProvider.isWsitSupported();
         }
         
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (em != null)
-            projectType = EJB_PROJECT_TYPE;
-        else if (wm != null)
-            projectType = WEB_PROJECT_TYPE;
-        else
-            projectType = JSE_PROJECT_TYPE;
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
+                projectType = ProjectInfo.EJB_PROJECT_TYPE;
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
+                projectType = ProjectInfo.WEB_PROJECT_TYPE;
+                Util.checkMetroRtLibrary(project, false);
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
+                projectType = ProjectInfo.CAR_PROJECT_TYPE;
+            } else {
+                projectType = ProjectInfo.JSE_PROJECT_TYPE;
+            }
+        } else {
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
+            if (wm != null) {
+                projectType = WEB_PROJECT_TYPE;
+            } else if (em != null) {
+                projectType = EJB_PROJECT_TYPE;
+            } else {
+                projectType = JSE_PROJECT_TYPE;
+            }
+        }
     }
     
     private void generateWsFromWsdl15(final ProgressHandle handle) throws Exception {
@@ -179,6 +201,7 @@ public class STSWizardCreator {
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             // don't set the packageName for modeler (use the default one generated from target Namespace)
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+                @Override
                 public void modelCreated(WsdlModel model) {
                     WsdlService service1 = model.getServiceByName(service.getName());
                     WsdlPort port1 = service1.getPortByName(port.getName());

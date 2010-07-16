@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -158,6 +161,26 @@ public class AstNode {
     boolean reduce(Element element) {
         if (contentModel == null) {
             return false; //unknown tag can contain anything, error reports done somewhere else
+        }
+
+        Boolean canReduce = null;
+        //process includes/excludes from the root node to the leaf
+        List<AstNode> path = new ArrayList<AstNode>();
+        for(AstNode node = this; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
+            path.add(0, node);
+        }
+        for(AstNode node : path) {
+            DTD.ContentModel cModel = node.getDTDElement().getContentModel();
+            if(cModel.getIncludes().contains(element)) {
+                canReduce = true;
+            }
+            if(cModel.getExcludes().contains(element)) {
+                canReduce = false;
+            }
+        }
+
+        if(canReduce != null) {
+            return canReduce;
         }
 
         //explicitly exluded or included elements doesn't affect the reduction!

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,7 +53,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
@@ -101,7 +104,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
     public ActionEditor() {
         actionNames = new ArrayList<String>();
-        actionMap = new HashMap<ProxyAction.Scope,List<ProxyAction>>();
+        actionMap = new EnumMap<ProxyAction.Scope,List<ProxyAction>>(ProxyAction.Scope.class);
     }
     
     // property editor impl
@@ -129,6 +132,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     // FormAwareEditor impl
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
         ActionManager.registerFormModel(formModel,getSourceFile());
@@ -144,6 +148,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
 
     // FormAwareEditor impl
+    @Override
     public void updateFormVersionLevel() {
         formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
     }
@@ -165,13 +170,14 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if (panel == null) {
             panel = new ActionPropertyEditorPanel(formProperty,getSourceFile());
             panel.addPropertyChangeListener("action", new PropertyChangeListener() { // NOI18N
+                @Override
                 public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                     setValue(panel.getSelectedAction());
                 }
             });
         }
         FileObject srcFile = getSourceFile();
-        Map<ProxyAction.Scope, String> scopeMap = new HashMap<ProxyAction.Scope, String>();
+        Map<ProxyAction.Scope, String> scopeMap = new EnumMap<ProxyAction.Scope, String>(ProxyAction.Scope.class);
         scanForActions();
         String appCls = AppFrameworkSupport.getApplicationClassName(srcFile);
         if (appCls != null) {
@@ -361,6 +367,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         return ResourceUtils.getDesignResourceMap(actFile != null ? actFile : getSourceFile(), true);
     }
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         if(element != null) {
             Element elem = (Element)element;
@@ -384,6 +391,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Element elem = doc.createElement("action"); // NOI18N
         if (action != null) {
@@ -395,6 +403,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
 
     private PropertyEnv env;
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         env.removeVetoableChangeListener(this);
@@ -405,6 +414,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
     // called after the action property editor panel dialog has been closed with the 'okay' button
     // this will *not* be called if the user pressed 'cancel'
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if(!isAppFramework()) {
             return;

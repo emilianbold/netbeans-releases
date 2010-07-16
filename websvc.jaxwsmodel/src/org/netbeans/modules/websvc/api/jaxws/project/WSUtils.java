@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,6 +73,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.jaxwsmodel.project.TransformerUtils;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
@@ -412,7 +417,7 @@ public class WSUtils {
     }
     
     public static FileObject findJaxWsFileObject(Project project) {
-        return project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml");
+        return project.getProjectDirectory().getFileObject(TransformerUtils.JAX_WS_XML_PATH);
     }
     
     /** copy jax-ws.xml from default filesystem to nbproject directory,
@@ -584,6 +589,47 @@ public class WSUtils {
             }
         });
         return webInf.getFileObject("jax-ws-catalog.xml");
+    }
+
+
+    public static boolean hasClients(FileObject jaxWsFo) throws IOException {
+        BufferedReader br = null;
+        boolean found = false;
+        try {
+            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("<client ")) { //NOI18N
+                    found = true;
+                    break;
+                }
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+        return found;
+    }
+
+    public static boolean hasServiceOrClient(FileObject jaxWsFo) throws IOException {
+        BufferedReader br = null;
+        boolean found = false;
+        try {
+            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("<client ") || line.contains("<service ")) { //NOI18N
+                    found = true;
+                    break;
+                }
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+        return found;
     }
 
 }

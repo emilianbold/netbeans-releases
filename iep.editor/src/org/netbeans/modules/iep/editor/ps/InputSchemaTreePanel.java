@@ -23,10 +23,12 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 
 import java.awt.BorderLayout;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.TreeModel;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,17 +40,26 @@ import org.openide.util.NbBundle;
  * 
  * @author Bing Lu
  */
-public class InputSchemaTreePanel extends JPanel {
+public class InputSchemaTreePanel extends JPanel implements SharedConstants {
     private InputSchemaTree mTree;
     
     public InputSchemaTreePanel(IEPModel model, OperatorComponent component) {
-        String msg = NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel.INPUTS");
+        int maxInputs = component.getInt(PROP_INPUT_MAX_COUNT) + component.getInt(PROP_STATIC_INPUT_MAX_COUNT);
+        String msg = maxInputs > 1? 
+            NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel.INPUTS") :
+            NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel.INPUT");
         setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
         setLayout(new BorderLayout(5, 5));
         JScrollPane scrollPane = new JScrollPane();
         add(scrollPane, BorderLayout.CENTER);
         mTree = new InputSchemaTree(model, component);
         scrollPane.getViewport().add(mTree);
+        if (mTree.isEmpty()) {
+            setToolTipText(NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_not_connected"));
+        } else {
+            setToolTipText(NbBundle.getMessage(InputSchemaTreePanel.class, "InputSchemaTreePanel_Tooltip.inputoperator_connected"));
+        }
+        
     }
     
     public InputSchemaTreePanel(IEPModel model, TreeModel treeModel) {

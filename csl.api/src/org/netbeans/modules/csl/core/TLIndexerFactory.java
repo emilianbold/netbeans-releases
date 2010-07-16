@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,37 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.csl.core;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Error.Badging;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex.ExceptionAction;
 
 
 /**
@@ -76,28 +78,43 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
     public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
-    public static final int     INDEXER_VERSION = 3;
+    public static final int     INDEXER_VERSION = 4;
 
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
     public static final String FIELD_LINE_NUMBER = "lineNumber"; //NOI18N
 
+    private static final Map<Indexable, Collection<Error>> errors = new IdentityHashMap<Indexable, Collection<Error>>();
+    private static final Map<Indexable, List<Integer>> lineStartOffsetsCache = new IdentityHashMap<Indexable, List<Integer>>();
+    
     @Override
     public boolean scanStarted(final Context context) {
-        try {
-            return IndexingSupport.getInstance(context).isValid();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return false;
-        }
+        return true;
     }
 
     @Override
-    public EmbeddingIndexer createIndexer (
+    public void scanFinished(Context context) {
+        commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
+    }
+
+    private static void commitErrors(URL root, Map<Indexable, Collection<Error>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
+        for (Entry<Indexable, Collection<Error>> e : errors.entrySet()) {
+            ErrorsCache.setErrors(root, e.getKey(), e.getValue(), new ErrorConvertorImpl(lineStartOffsetsCache.get(e.getKey())));
+        }
+
+        errors.clear();
+        lineStartOffsetsCache.clear();
+    }
+
+    @Override
+    public synchronized EmbeddingIndexer createIndexer (
         Indexable               indexable,
         Snapshot                snapshot
     ) {
-        return new TLIndexer ();
+        assert errors != null;
+        assert lineStartOffsetsCache != null;
+
+        return new TLIndexer(errors, lineStartOffsetsCache);
     }
 
     @Override
@@ -106,12 +123,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                                 deleted,
         Context                 context
     ) {
-        try {
-            IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
-            for (Indexable indexable : deleted)
-                indexingSupport.removeDocuments (indexable);
-        } catch (IOException ex) {
-            LOG.log (Level.WARNING, null, ex);
+        for (Indexable indexable : deleted) {
+            ErrorsCache.setErrors(context.getRootURI(), indexable, Collections.<Error>emptyList(), DUMMY);
         }
     }
 
@@ -126,13 +139,6 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                                 dirty,
         Context                 context
     ) {
-        try {
-            IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
-            for (Indexable indexable : dirty)
-                indexingSupport.markDirtyDocuments (indexable);
-        } catch (IOException ex) {
-            LOG.log (Level.WARNING, null, ex);
-        }
     }
 
     @Override
@@ -145,12 +151,60 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         return INDEXER_VERSION;
     }
 
+    private static final class ErrorConvertorImpl implements Convertor<Error>{
+        private final List<Integer> lineStartOffsets;
+        public ErrorConvertorImpl(List<Integer> lineStartOffsets) {
+            this.lineStartOffsets = lineStartOffsets;
+        }
+        public ErrorKind getKind(Error error) {
+            if (error.getSeverity() == Severity.WARNING) {
+                return ErrorKind.WARNING;
+            } else if (error instanceof Badging && ((Badging) error).showExplorerBadge()) {
+                return ErrorKind.ERROR;
+            } else {
+                return ErrorKind.ERROR_NO_BADGE;
+            }
+        }
+        public int getLineNumber(Error error) {
+            // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
+            int originalOffset = error.getStartPosition();
+            int lineNumber = 1;
+            if (originalOffset >= 0) {
+                int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
+                if (idx < 0) {
+                    // idx == (-(insertion point) - 1) -> (insertion point) == -idx - 1
+                    int ln = -idx - 1;
+                    assert ln >= 1 && ln <= lineStartOffsets.size() :
+                        "idx=" + idx + ", lineNumber=" + ln + ", lineStartOffsets.size()=" + lineStartOffsets.size(); //NOI18N
+                    if (ln >= 1 && ln <= lineStartOffsets.size()) {
+                        lineNumber = ln;
+                    }
+                } else {
+                    lineNumber = idx + 1;
+                }
+            }
 
+            return lineNumber;
+        }
+        public String getMessage(Error error) {
+            return error.getDisplayName();
+        }
+    }
+    
+    private static final ErrorConvertorImpl DUMMY = new ErrorConvertorImpl(Collections.<Integer>emptyList());
+
+    
     // innerclasses ............................................................
 
-    private static Set<FileObject> karelPr = new HashSet<FileObject> ();
-
     private static final class TLIndexer extends EmbeddingIndexer {
+
+        private final Map<Indexable, Collection<Error>> errors;
+        private final Map<Indexable, List<Integer>> lineStartOffsetsCache;
+
+        public TLIndexer(Map<Indexable, Collection<Error>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
+            this.errors = errors;
+            this.lineStartOffsetsCache = lineStartOffsetsCache;
+        }
 
         @Override
         protected void index (
@@ -158,118 +212,45 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             Result              parserResult,
             Context             context
         ) {
-            try {
-                IndexingSupport indexingSupport = IndexingSupport.getInstance (context);
-                ParserResult gsfParserResult = (ParserResult) parserResult;
-                saveErrors (gsfParserResult.getDiagnostics (), gsfParserResult.getSnapshot(), indexingSupport, indexable);
+            ParserResult gsfParserResult = (ParserResult) parserResult;
 
-                FileObject fileObject = parserResult.getSnapshot ().getSource ().getFileObject ();
-                if (!karelPr.contains (fileObject)) {
-                    karelPr.add (fileObject);
-                    if (karelPr.size () == 1)
-                        try {
-                            TaskProcessor.runWhenScanFinished (
-                                new ExceptionAction<Void> () {
-                                    public Void run () throws Exception {
-                                        for (FileObject fileObject : karelPr)
-                                            GsfTaskProvider.refresh (fileObject);
-                                        karelPr = new HashSet<FileObject> ();
-                                        return null;
-                                    }
-                                },
-                                Collections.<Source> emptyList ()
-                            );
-                        } catch (ParseException ex) {
-                            Exceptions.printStackTrace (ex);
-                        }
-                }
-            } catch (IOException ex) {
-                LOG.log (Level.WARNING, null, ex);
+            if (!errors.containsKey(indexable)) {
+                commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
             }
-        }
-        
-        private void saveErrors (
-            List<? extends Error>
-                                errors,
-            Snapshot            snapshot,
-            IndexingSupport     indexingSupport,
-            Indexable           indexable
-        ) {
-            if (errors == null || errors.isEmpty ()) {
-                indexingSupport.addDocument (indexingSupport.createDocument (indexable));
+
+            Collection<Error> storedErrors = this.errors.get(indexable);
+
+            if (storedErrors == null) {
+                this.errors.put(indexable, storedErrors = new LinkedList<Error>());
+            }
+
+            if (errors == null) {
                 return;
             }
 
-            List<Integer> lineStartOffsets = getLineStartOffsets(snapshot);
+            List<Integer> lineStartOffsets = lineStartOffsetsCache.get(indexable);
 
-            for (Error error : errors) {
-                IndexDocument indexDocument = indexingSupport.createDocument (indexable);
-                indexDocument.addPair (
-                    FIELD_GROUP_NAME,
-                    error.getSeverity () == org.netbeans.modules.csl.api.Severity.ERROR ?
-                        "nb-tasklist-error" : //NOI18N
-                        "nb-tasklist-warning", //NOI18N
-                    false,
-                    true
-                );
-                indexDocument.addPair (
-                    FIELD_DESCRIPTION,
-                    error.getDisplayName (),
-                    false,
-                    true
-                );
-
-                // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
-                int originalOffset = error.getStartPosition();
-                int lineNumber = 1;
-                if (originalOffset >= 0) {
-                    int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
-                    if (idx < 0) {
-                        // idx == (-(insertion point) - 1) -> (insertion point) == -idx - 1
-                        int ln = -idx - 1;
-                        assert ln >= 1 && ln <= lineStartOffsets.size() :
-                            "idx=" + idx + ", lineNumber=" + ln + ", lineStartOffsets.size()=" + lineStartOffsets.size(); //NOI18N
-                        if (ln >= 1 && ln <= lineStartOffsets.size()) {
-                            lineNumber = ln;
-                        }
-                    } else {
-                        lineNumber = idx + 1;
-                    }
-                }
-                
-                indexDocument.addPair (
-                    FIELD_LINE_NUMBER,
-                    Integer.toString (lineNumber),
-                    false,
-                    true
-                );
-                indexingSupport.addDocument (indexDocument);
+            if (lineStartOffsets == null) {
+                lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
             }
+
+            storedErrors.addAll(gsfParserResult.getDiagnostics ());
         }
 
-// XXX: ideally we should cache the lineStartOffsets, but the cache has to be dropped
-// at the end of the indexing session and I don't know how to do that
-//        private static final Map<Source, List<Integer>> lineStartOffsetsCache = new WeakHashMap<Source, List<Integer>>();
-        private static List<Integer> getLineStartOffsets(Snapshot snapshot) {
-            Source source = snapshot.getSource();
-//            List<Integer> lineStartOffsets = lineStartOffsetsCache.get(source);
-//
-//            if (lineStartOffsets == null) {
-                List<Integer> lineStartOffsets = new ArrayList<Integer>();
+        private static List<Integer> getLineStartOffsets(Source source) {
+            List<Integer> lineStartOffsets = new ArrayList<Integer>();
 
-                lineStartOffsets.add(0);
+            lineStartOffsets.add(0);
 
-                CharSequence text = source.createSnapshot().getText();
-                for (int i = 0; i < text.length(); i++) {
-                    if (text.charAt(i) == '\n') { //NOI18N
-                        lineStartOffsets.add(i + 1);
-                    }
+            CharSequence text = source.createSnapshot().getText();
+            for (int i = 0; i < text.length(); i++) {
+                if (text.charAt(i) == '\n') { //NOI18N
+                    lineStartOffsets.add(i + 1);
                 }
-
-//                lineStartOffsetsCache.put(source, lineStartOffsets);
-//            }
+            }
 
             return lineStartOffsets;
         }
     } // End of TLIndexer class
+
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,12 +67,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -88,6 +92,7 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -114,7 +119,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         this.searchHandle = refactoring.getRefactoringSource().lookup(RubyElementCtx.class);
         targetName = searchHandle.getSimpleName();
     }
-    
+
 //    protected Source getRubySource(Phase p) {
 //        switch (p) {
 //        default:
@@ -136,28 +141,16 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 
         FileObject file = tph.getFileObject();
         if (file != null) {
-            set.add(file);
-//            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
             if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
                 // No need to do any parsing, we'll be using the index to find these files!
                 set.add(file);
                 String name = tph.getName();
 
                 // Find overrides of the class
-                RubyIndex index = RubyIndex.get(Collections.singleton(file));
+                RubyIndex index = RubyIndex.get(RetoucheUtils.getProjectRoots(file));
                 String fqn = AstUtilities.getFqnName(tph.getPath());
                 subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
-
-                if (subclasses.size() > 0) {
-//                        for (IndexedClass clz : classes) {
-//                            FileObject fo = clz.getFileObject();
-//                            if (fo != null) {
-//                                set.add(fo);
-//                            }
-//                        }
-                    // For now just parse this particular file!
-                    set.add(file);
-                }
+                return set;
             }
 
             if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {

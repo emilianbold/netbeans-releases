@@ -14,9 +14,10 @@
         - javadoc
         - cleanup
 
+        
         -->
 <project name="-impl" default="build" basedir="..">
-    <target name="default" depends="dist,javadoc" description="Build whole project."/>
+    <target name="default" depends="dist" description="Build whole project."/>
     <!-- 
                 ======================
                 INITIALIZATION SECTION 
@@ -43,9 +44,6 @@
         <!-- by the active platform. Just a fallback. -->
         <property name="default.javac.source" value="1.4"/>
         <property name="default.javac.target" value="1.4"/>
-        <condition property="no.javadoc.preview">
-            <isfalse value="${javadoc.preview}"/>
-        </condition>
     </target>
     <target name="post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -61,12 +59,33 @@
     </target>
     <target name="init-taskdefs" if="from.commandline">
         <path id="ant.task.classpath.models">
-            <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-iep-editor.jar"/>
-            <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-iep-project.jar"/>
-            <pathelement location="${netbeans.home}/../soa1/ant/nblib/org-netbeans-modules-iep-project.jar"/>
-            <pathelement location="${netbeans.home}/../platform7/lib/org-openide-util.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-iep-editor.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-iep-project.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../soa/ant/nblib/org-netbeans-modules-iep-project.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-soa-validation.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../soa/modules/org-netbeans-modules-soa-ui.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../xml/modules/org-netbeans-modules-xml-search.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/lib/org-openide-util.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/lib/org-openide-util-lookup.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/core/org-openide-filesystems.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-openide-loaders.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-openide-dialogs.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-openide-loaders.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-openide-nodes.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-openide-text.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-netbeans-modules-masterfs.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../platform/modules/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/ext/resolver-1.2.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-apache-xml-resolver.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-project-ant.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement location="${esb.netbeans.platform}/../xml/modules/org-netbeans-modules-xml-util.jar"/>
         </path>
-        <taskdef name="iep-generate-asa-artifacts" classname="org.netbeans.modules.iep.project.anttasks.GenerateAsaArtifacts">
+        <taskdef name="iep-generate-asa-artifacts" classname="org.netbeans.modules.iep.project.anttasks.cli.GenerateAsaArtifacts">
             <classpath refid="ant.task.classpath.models"/>
         </taskdef>
     </target>
@@ -123,7 +142,7 @@
         <!-- You can override this target in the ../build.xml file. -->
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${build.dir}/META-INF"/>
-        <iep-generate-asa-artifacts srcDirectoryLocation="${basedir}/${src.dir}" buildDirectoryLocation="${basedir}/${build.dir}" jbiDescriptorFileLocation="${basedir}/${build.dir}/META-INF/jbi.xml"/>
+        <iep-generate-asa-artifacts srcDirectoryLocation="${basedir}/${src.dir}" buildDirectoryLocation="${basedir}/${build.dir}" jbiDescriptorFileLocation="${basedir}/${build.dir}/META-INF/jbi.xml" classpathRef="ant.task.classpath.models" validate="true" allowBuildWithError="${allow.build.with.error}" alwaysGenerateAbstractWsdl="${always.generate.abstract.wsdl}"/>
     </target>
     <target name="dist_se" depends="init,pre-dist">
         <jar compress="${jar.compress}" jarfile="${build.dir}/SEDeployment.jar">
@@ -145,7 +164,7 @@
                 DEBUGGING SECTION
                 =================
             -->
-    <target name="debug" description="Debug project in IDE." depends="init,compile" if="netbeans.home">
+    <target name="debug" description="Debug project in IDE." depends="init,compile" if="esb.netbeans.platform">
         <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
         <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
             <classpath>
@@ -160,31 +179,10 @@
         <fail unless="fix.includes">Must set fix.includes</fail>
         <property name="javac.includes" value="${fix.includes}.java"/>
     </target>
-    <target name="do-debug-fix" if="netbeans.home" depends="init,pre-debug-fix,compile-single">
+    <target name="do-debug-fix" if="esb.netbeans.platform" depends="init,pre-debug-fix,compile-single">
         <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
     </target>
-    <target name="debug-fix" if="netbeans.home" depends="init,pre-debug-fix,do-debug-fix"/>
-    <!--
-                ===============
-                JAVADOC SECTION
-                ===============
-            -->
-    <target name="javadoc-build" depends="init">
-        <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}">
-            <classpath>
-                <path path="${javac.classpath}"/>
-            </classpath>
-            <sourcepath>
-                <pathelement location="${src.dir}"/>
-            </sourcepath>
-            <fileset dir="${src.dir}"/>
-        </javadoc>
-    </target>
-    <target name="javadoc-browse" if="netbeans.home" unless="no.javadoc.preview" depends="init,javadoc-build">
-        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
-    </target>
-    <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
+    <target name="debug-fix" if="esb.netbeans.platform" depends="init,pre-debug-fix,do-debug-fix"/>
     <!--
                 ===============
                 CLEANUP SECTION

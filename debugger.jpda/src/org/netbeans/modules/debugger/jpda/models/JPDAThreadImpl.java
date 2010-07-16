@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,6 +84,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
@@ -89,6 +93,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -110,7 +115,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MonitorContendedEnteredRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
@@ -924,6 +928,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+            if (!resumed) suspEvt.setPropagationId("methodInvoke"); // NOI18N
             if (stepBrkpEvt != null) {
                 return Arrays.asList(new PropertyChangeEvent[] {stepBrkpEvt, suspEvt});
             } else {
@@ -1032,6 +1037,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         List<PropertyChangeEvent> evts;
         accessLock.writeLock().lock();
         try {
+            debugger.getOperator().notifyMethodInvoking(threadReference);
             logger.fine("Invoking a method in thread "+threadName);
             loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
             if (methodInvokingDisabledUntilResumed) {
@@ -1071,7 +1077,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     }
                     stepsDeletedDuringMethodInvoke = stepsToDelete;
                 } catch (InternalExceptionWrapper iew) {
-                } catch (VMDisconnectedExceptionWrapper dew) {}
+                } catch (VMDisconnectedExceptionWrapper dew) {
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                } catch (ObjectCollectedExceptionWrapper oce) {}
             }
             methodInvoking = true;
             unsuspendedStateWhenInvoking = !isSuspended();
@@ -1115,12 +1123,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
                 resumedToFinishMethodInvocation = false;
             }
+            debugger.getOperator().notifyMethodInvokeDone(threadReference);
             if (stepsDeletedDuringMethodInvoke != null) {
                 try {
                     for (StepRequest sr : stepsDeletedDuringMethodInvoke) {
                         try {
                             EventRequestWrapper.enable(sr);
                         } catch (ObjectCollectedExceptionWrapper ex) {
+                            continue;
+                        } catch (InvalidRequestStateExceptionWrapper irse) {
                             continue;
                         }
                         if (logger.isLoggable(Level.FINE)) logger.fine("ENABLED Step Request: "+sr);
@@ -1145,7 +1156,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
         // Do not notify suspended state when was already unsuspended when started invoking.
         if (!wasUnsuspendedStateWhenInvoking) {
-            notifySuspended();
+            PropertyChangeEvent evt = notifySuspended(false, false);
+            if (evt != null) {
+                evt.setPropagationId("methodInvoke"); // NOI18N
+                pch.firePropertyChange(evt);
+            }
         }
     }
     
@@ -1420,16 +1435,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
-        if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
+        if (VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
             accessLock.readLock().lock();
             try {
                 if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                     return Collections.emptyList();
                 }
-                List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
+                List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
                 if (monitorInfos != null && monitorInfos.size() > 0) {
                     List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                    for (Object monitorInfo : monitorInfos) {
+                    for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
                         mis.add(createMonitorInfo(monitorInfo));
                     }
                     return Collections.unmodifiableList(mis);
@@ -1451,8 +1466,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @param mi com.sun.jdi.MonitorInfo
      * @return monitor info
      */
-    private MonitorInfo createMonitorInfo(Object mi) {
-        //com.sun.jdi.MonitorInfo _mi = (com.sun.jdi.MonitorInfo) mi;
+    private MonitorInfo createMonitorInfo(com.sun.jdi.MonitorInfo mi) {
         try {
             int depth = MonitorInfoWrapper.stackDepth(mi);
             CallStackFrame frame = null;
@@ -1623,10 +1637,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
             public boolean exec(Event event) {
                 try {
-                    //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
-                    EventRequestManagerWrapper.deleteEventRequest(
-                            VirtualMachineWrapper.eventRequestManager(vm),
-                            EventWrapper.request(event));
+                    try {
+                        //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
+                        EventRequestManagerWrapper.deleteEventRequest(
+                                VirtualMachineWrapper.eventRequestManager(vm),
+                                EventWrapper.request(event));
+                    } catch (InvalidRequestStateExceptionWrapper ex) {}
                     debugger.getOperator().unregister(EventWrapper.request(event));
                 } catch (InternalExceptionWrapper ex) {
                     return true;
@@ -1700,17 +1716,19 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (ObjectCollectedExceptionWrapper ocex) {
             debugger.getOperator().unregister(monitorEnteredRequest);
             throw ocex;
+        } catch (InvalidRequestStateExceptionWrapper irse) {
+            Exceptions.printStackTrace(irse);
         }
     }
 
     private boolean submitMonitorEnteredFor(ObjectReference waitingMonitor) {
-        if (!JPDAUtils.IS_JDK_16 || !VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
+        if (!VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
             return false;
         }
         try {
-            EventRequest/*com.sun.jdi.request.MonitorContendedEnteredRequest*/ monitorEnteredRequest =
-                    (EventRequest) EventRequestManagerWrapper.createMonitorContendedEnteredRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm));
+            com.sun.jdi.request.MonitorContendedEnteredRequest monitorEnteredRequest =
+                    EventRequestManagerWrapper.createMonitorContendedEnteredRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm));
 
             MonitorContendedEnteredRequestWrapper.addThreadFilter(monitorEnteredRequest, threadReference);
             submitMonitorEnteredRequest(monitorEnteredRequest);
@@ -1813,7 +1831,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         private final ReentrantReadWriteLock.WriteLock writerLock;
 
         private ThreadReentrantReadWriteLock() {
-            super(false);  // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+            super(true);
             readerLock = new ThreadReadLock();
             writerLock = new ThreadWriteLock();
         }

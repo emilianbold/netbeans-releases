@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -173,6 +176,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    private static RequestProcessor deleteRP = new RequestProcessor("Breakpoint Delete", 1);    // NOI18N
     private static final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (BreakpointsActionsProvider.class).getString
             ("CTL_BreakpointAction_Delete_Label"),
@@ -181,7 +185,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (final Object[] nodes) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                deleteRP.post(new Runnable() {
                     public void run() {
                         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                         int i, k = nodes.length;
@@ -220,7 +224,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -236,7 +240,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_EnableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                String groupName = (String) node;
+                String groupName = ((BreakpointGroup)node).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -250,7 +254,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return false;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                     getBreakpoints ();
                 int i, k = bs.length;
@@ -266,7 +270,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_DisableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                String groupName = (String) node;
+                String groupName = ((BreakpointGroup)node).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -280,7 +284,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return false;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                     getBreakpoints ();
                 int i, k = bs.length;
@@ -308,7 +312,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 DELETE_ALL_ACTION,
                 null
             };
-        if (node instanceof String)
+        if (node instanceof BreakpointGroup &&
+            ((BreakpointGroup) node).getGroup() == BreakpointGroup.Group.CUSTOM)
             return new Action [] {
                 SET_GROUP_NAME_ACTION,
                 null,
@@ -352,7 +357,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     public void performDefaultAction (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
-        if (node instanceof String) 
+        if (node instanceof BreakpointGroup)
             return;
         if (node instanceof Breakpoint) 
             return;
@@ -387,19 +392,22 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
            int i, k = nodes.length;
             String newName = descriptor.getInputText ();
             for (i = 0; i < k; i++) {
-                if (nodes [i] instanceof String) {
-                    String oldName = (String) nodes [i];
-                    Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-                        getBreakpoints ();
-                    int j, jj = bs.length;
-                    for (j = 0; j < jj; j++)
-                        if (bs[j].getGroupName().equals(oldName)) {
-                            bs[j].setGroupName(newName);
-                        }
+                if (nodes [i] instanceof BreakpointGroup) {
+                    BreakpointGroup g = (BreakpointGroup) nodes[i];
+                    setGroupName(g, newName);
                 } else if (nodes [i] instanceof Breakpoint) {
                     ((Breakpoint) nodes [i]).setGroupName ( newName );
                 }
             }
+        }
+    }
+
+    private static void setGroupName(BreakpointGroup group, String name) {
+        for (BreakpointGroup g : group.getSubGroups()) {
+            setGroupName(g, name);
+        }
+        for (Breakpoint b : group.getBreakpoints()) {
+            b.setGroupName(name);
         }
     }
 

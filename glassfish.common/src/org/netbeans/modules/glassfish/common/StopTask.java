@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ public class StopTask extends BasicTask<OperationState> {
     /**
      * 
      */
+    @Override
     public OperationState call() {
         // save the current time so that we can deduct that the startup
         // failed due to timeout
@@ -98,10 +102,11 @@ public class StopTask extends BasicTask<OperationState> {
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
-        CommandRunner mgr = new CommandRunner(support.getCommandFactory(), ip, new OperationStateListener() {
+        CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
             // if the http command is successful, we are not done yet...
             // The server still has to stop. If we signal success to the 'stateListener'
             // for the task, it may be premature.
+            @Override
             public void operationStateChanged(OperationState newState, String message) {
                 if (newState == OperationState.FAILED) {
                     fireOperationStateChanged(newState, message, instanceName);

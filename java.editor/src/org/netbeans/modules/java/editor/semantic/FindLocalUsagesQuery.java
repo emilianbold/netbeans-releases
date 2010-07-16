@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,12 @@ package org.netbeans.modules.java.editor.semantic;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -54,6 +59,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -102,7 +108,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         }
     }
     
-    private void handleJavadoc(Element el) {
+    private void handleJavadoc(TreePath el) {
         List<Token> tokens = JavadocImports.computeTokensOfReferencedElements(info, el, toFind);
         usages.addAll(tokens);
     }
@@ -117,8 +123,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     @Override
     public Void visitMethod(MethodTree tree, Stack<Tree> d) {
         handlePotentialVariable(getCurrentPath());
-        Element el = info.getTrees().getElement(getCurrentPath());
-        handleJavadoc(el);
+        handleJavadoc(getCurrentPath());
         super.visitMethod(tree, d);
         return null;
     }
@@ -135,7 +140,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         handlePotentialVariable(getCurrentPath());
         Element el = info.getTrees().getElement(getCurrentPath());
         if (el != null && el.getKind().isField()) {
-            handleJavadoc(el);
+            handleJavadoc(getCurrentPath());
         }
         super.visitVariable(tree, d);
         return null;
@@ -144,8 +149,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     @Override
     public Void visitClass(ClassTree tree, Stack<Tree> d) {
         handlePotentialVariable(getCurrentPath());
-        Element el = info.getTrees().getElement(getCurrentPath());
-        handleJavadoc(el);
+        handleJavadoc(getCurrentPath());
         super.visitClass(tree, d);
         return null;
     }
@@ -180,5 +184,23 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         
         return super.visitNewClass(node, p);
     }
-    
+
+    @Override
+    public Void visitImport(ImportTree node, Stack<Tree> p) {
+        if (node.isStatic() && toFind.getModifiers().contains(Modifier.STATIC)) {
+            Tree qualIdent = node.getQualifiedIdentifier();
+            if (qualIdent.getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree) qualIdent;
+                if (toFind.getSimpleName().contentEquals(mst.getIdentifier())) {
+                    Element el = info.getTrees().getElement(new TreePath(getCurrentPath(), mst.getExpression()));
+                    if (el != null && el.equals(toFind.getEnclosingElement())) {
+                        Token<JavaTokenId> t = Utilities.getToken(info, doc, new TreePath(getCurrentPath(), mst));
+                        if (t != null)
+                            usages.add(t);
+                    }
+                }
+            }
+        }
+        return super.visitImport(node, p);
+    }
 }

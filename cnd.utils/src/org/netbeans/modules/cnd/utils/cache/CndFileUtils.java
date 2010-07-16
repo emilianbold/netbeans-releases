@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,6 +92,10 @@ public final class CndFileUtils {
 
     public static boolean isSystemCaseSensitive() {
         return TRUE_CASE_SENSITIVE_SYSTEM;
+    }
+
+    public static boolean areFilenamesEqual(String firstFile, String secondFile) {
+        return isSystemCaseSensitive() ? firstFile.equals(secondFile) : firstFile.equalsIgnoreCase(secondFile);
     }
 
     public static void clearFileExistenceCache() {
@@ -186,7 +193,8 @@ public final class CndFileUtils {
     }
 
     public static boolean isExistingDirectory(File file, String filePath) {
-        return getFlags(file, filePath, false).directory;
+        Flags flags = getFlags(file, filePath, false);
+        return flags.exist && flags.directory;
     }
 
    /**
@@ -228,12 +236,13 @@ public final class CndFileUtils {
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;
         absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
+        absolutePath = changeStringCaseIfNeeded(absolutePath);
         Flags exists;
         ConcurrentMap<String, Flags> files = getFilesMap();
         exists = files.get(absolutePath);
         if (exists == null) {
             file = (file == null) ? new File(absolutePath) : file;
-            String parent = file.getParent();
+            String parent = changeStringCaseIfNeeded(file.getParent());
             if (parent != null) {
                 Flags parentDirFlags = files.get(parent);
                 if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {
@@ -278,7 +287,7 @@ public final class CndFileUtils {
             File[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
                 File curFile = listFiles[i];
-                String absPath = curFile.getAbsolutePath();
+                String absPath = changeStringCaseIfNeeded(curFile.getAbsolutePath());
                 if (curFile.isDirectory()) {
                     files.putIfAbsent(absPath, Flags.DIRECTORY);
                 } else {
@@ -286,8 +295,15 @@ public final class CndFileUtils {
                 }
             }
         }
+        // path is already converted into correct case
+        assert changeStringCaseIfNeeded(path).equals(path);
         files.put(path, Flags.INDEXED_DIRECTORY);
     }
+
+    private static String changeStringCaseIfNeeded(String path) {
+        return FileSystemsProvider.lowerPathCaseIfNeeded(path).toString();
+    }
+    
 //    public static String getHitRate() {
 //	return "" + hits + "/" + calls; // NOI18N
 //    }
@@ -411,19 +427,23 @@ public final class CndFileUtils {
         private FSListener() {
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             clearCachesAboutFile(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             clearCachesAboutFile(fe);
         }
 
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             clearCachesAboutFile(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             final File parent = clearCachesAboutFile(fe);
             // update info about old file as well
@@ -434,10 +454,12 @@ public final class CndFileUtils {
             }
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             // no update
         }
         
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // no update
         }

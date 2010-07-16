@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,6 +58,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The very first node in dashboard window showing logged-in user name.
@@ -66,13 +71,15 @@ public class UserNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lblUser;
-    private JLabel lblProgress;
+    private ProgressLabel lblProgress;
     private LinkButton btnOpenProject;
     private LinkButton btnRefresh;
     private LinkButton btnLogin;
     private LinkButton btnNewProject;
+    private LinkButton btnLogout;
     private String progressTitle;
-
+    private JLabel lpar = new JLabel("(");
+    private JLabel rpar = new JLabel(")");
     private LoginHandle login;
     private boolean projectsAvailable = false;
 
@@ -92,6 +99,7 @@ public class UserNode extends LeafNode {
 
             btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
                     dashboard.createLoginAction());
+            btnLogout = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Logout"), getLogoutAction());
             lblUser = new TreeLabel();
             lblProgress = createProgressLabel(progressTitle); //NOI18N
             btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
@@ -107,12 +115,15 @@ public class UserNode extends LeafNode {
 
             panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
             panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( lblProgress, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(4,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnRefresh, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnNewProject, new GridBagConstraints(7,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            panel.add( btnOpenProject, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            panel.add( lpar, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( btnLogout, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( rpar, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( lblProgress, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( btnRefresh, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            panel.add( btnNewProject, new GridBagConstraints(9,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            panel.add( btnOpenProject, new GridBagConstraints(10,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
         }
 
         lblProgress.setForeground(foreground);
@@ -131,9 +142,29 @@ public class UserNode extends LeafNode {
         if( null != login )
             lblUser.setText( login.getUserName() );
         btnLogin.setVisible( null == login );
+        btnLogout.setVisible(null!=login);
+        rpar.setVisible(null!=login);
+        lpar.setVisible(null!=login);
         lblUser.setVisible( null != login );
         return panel;
     }
+
+    private Action getLogoutAction() {
+        return new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dashboard.getKenai().logout();
+                    }
+                });
+            }
+
+        };
+    }
+
 
     void loadingStarted(String title) {
         synchronized( LOCK ) {
@@ -150,6 +181,10 @@ public class UserNode extends LeafNode {
             loadingCounter--;
             if( loadingCounter < 0 )
                 loadingCounter = 0;
+            if (loadingCounter == 0) {
+                if (lblProgress!=null)
+                    lblProgress.stop();
+            }
             fireContentChanged();
         }
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,6 +76,7 @@ import org.openide.windows.WindowManager;
 public class RecreateTableAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(RecreateTableAction.class.getName());
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -87,6 +91,7 @@ public class RecreateTableAction extends BaseAction {
         return enabled;
     }
 
+    @Override
     public void performAction (Node[] activatedNodes) {
 
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
@@ -96,6 +101,7 @@ public class RecreateTableAction extends BaseAction {
         //final DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         final java.awt.Component par = WindowManager.getDefault().getMainWindow();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     //TableListNodeInfo nfo = (TableListNodeInfo) info.getParent(nodename);
@@ -106,10 +112,12 @@ public class RecreateTableAction extends BaseAction {
                     FileChooserBuilder chooser = new FileChooserBuilder(RecreateTableAction.class);
                     chooser.setTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                        @Override
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
 
+                        @Override
                         public String getDescription() {
                             return NbBundle.getMessage (RecreateTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                         }
@@ -152,7 +160,7 @@ public class RecreateTableAction extends BaseAction {
                         }
                     }
                 } catch (Exception exc) {
-                    LOGGER.log(Level.INFO, null, exc);
+                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                     DbUtilities.reportError(NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
 
@@ -190,7 +198,7 @@ public class RecreateTableAction extends BaseAction {
                     NotifyDescriptor.ERROR_MESSAGE));
             noResult = true;
         } catch (Exception exc) {
-            LOGGER.log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(
                     NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), // NOI18N
                     exc.getMessage());
@@ -237,6 +245,7 @@ public class RecreateTableAction extends BaseAction {
             this.dlg = dlg;
         }
 
+        @Override
         public void run() {
             try {
                 win = new DataViewWindow(connection, dlg.getEditedCommand());

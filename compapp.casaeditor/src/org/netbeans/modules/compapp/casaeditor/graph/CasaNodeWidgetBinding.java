@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,8 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,10 +89,12 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     private Widget mPinsHolderWidget;
     private String mVertTextBarText;
     private Widget mHeaderHolder;
+    private CasaWrapperModel model;
     
-    
-    public CasaNodeWidgetBinding(Scene scene, String bindingType) {
+    public CasaNodeWidgetBinding(Scene scene, String bindingType, CasaWrapperModel model) {
         super(scene);
+        this.model = model;
+
         setOpaque(true);
         setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
         setLayout(LayoutFactory.createVerticalFlowLayout());
@@ -131,8 +137,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 
         regenerateHeaderBorder();
     }
-    
-       
+           
+    @Override
     protected void notifyAdded() {
         super.notifyAdded();
         
@@ -154,7 +160,8 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 Rectangle nodeRect = getBounds();
                 int newX = (nodeRect.width - nameRect.width) / 2;
                 
-                Point nodeSceneLocation = getParentWidget().convertLocalToScene(getPreferredLocation());
+                Point nodeSceneLocation =
+                        getParentWidget().convertLocalToScene(getPreferredLocation());
                 Point point = new Point(
                         nodeSceneLocation.x + newX, 
                         nodeSceneLocation.y + nodeRect.height + nameRect.height);
@@ -166,12 +173,14 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         getDependenciesRegistry().registerDependency(nameLabeler);
     }
     
+    @Override
     protected void notifyRemoved() {
         super.notifyRemoved();
         
         mNameWidget.removeFromParent();
     }
 
+    @Override
     public void initializeGlassLayer(LayerWidget layer) {
         layer.addChild(mNameWidget);
     }
@@ -186,6 +195,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mNameWidget.setForeground(color);
     }
 
+    @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if ((!previousState.isSelected() && state.isSelected()) ||
@@ -216,6 +226,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     }
     
     // This includes our main widget body as well as the name label widget.
+    @Override
     public Rectangle getEntireBounds() {
         Point p = getLocation();
         
@@ -228,12 +239,21 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         return bounds;
     }
 
-    public void setEndpointLabel(String nodeName) {
-        mNameWidget.setToolTipText(nodeName);
+    public void setPortLabel(String nodeName) {
+        setPortToolTip(nodeName);
+
         mNameWidget.setLabel(nodeName);
         if (getBounds() != null) {
             mNameWidget.resolveBounds(null, null);
             readjustBounds();
+        }
+    }
+
+    public void setPortToolTip(String nodeName) {
+        if (CasaModelGraphUtilities.getShowToolTip(model)) {
+            mNameWidget.setToolTipText(nodeName);
+        } else {
+            mNameWidget.setToolTipText(null);
         }
     }
     
@@ -246,28 +266,23 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
      */
     public void setNodeProperties(String nodeName, String nodeType) {
         mVertTextBarText = nodeType;
-        setEndpointLabel(nodeName);
+        setPortLabel(nodeName);
     }
     
     public void regenerateHeaderBorder() {
         BorderDefinition definition = null;
         if (getState().isSelected() || getState().isFocused()) {
             definition = BorderDefinition.createSelectedDefinition();
-            mBodyWidget.setBorder(BorderFactory.createSwingBorder(
-                    getScene(), 
-                    definition.getBorder()));
-            mVerticalTextImageWidget.setBorder(BorderFactory.createSwingBorder(
-                    getScene(), 
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, definition.getBorderColor())));
         } else {
             definition = BorderDefinition.createDefaultDefinition();
-            mBodyWidget.setBorder(BorderFactory.createSwingBorder(
-                    getScene(), 
-                    definition.getBorder()));
-            mVerticalTextImageWidget.setBorder(BorderFactory.createSwingBorder(
-                    getScene(), 
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, definition.getBorderColor())));
         }
+
+        mBodyWidget.setBorder(BorderFactory.createSwingBorder(
+                getScene(),
+                definition.getBorder()));
+        mVerticalTextImageWidget.setBorder(BorderFactory.createSwingBorder(
+                getScene(),
+                javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, definition.getBorderColor())));
     }
     
     public void regenerateVerticalTextBarImage() {
@@ -275,12 +290,14 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         if (mVertTextBarText == null) {
             displayedText = ""; // NOI18N
         } else if (mVertTextBarText.length() > VERT_TEXT_BAR_MAX_CHAR) {
-            displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");
+            displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) +
+                    NbBundle.getMessage(getClass(), "ELLIPSIS");
         }
         
         Graphics2D sceneGraphics = getScene().getGraphics();
         sceneGraphics.setFont(CasaFactory.getCasaCustomizer().getFONT_BC_HEADER());
-        FontMetrics fm = sceneGraphics.getFontMetrics(CasaFactory.getCasaCustomizer().getFONT_BC_HEADER());
+        FontMetrics fm = sceneGraphics.getFontMetrics(
+                CasaFactory.getCasaCustomizer().getFONT_BC_HEADER());
         int fontLength = fm.stringWidth(displayedText);
 
         int barHeight = fontLength < VERT_TEXT_BAR_MIN_HEIGHT ? VERT_TEXT_BAR_MIN_HEIGHT : fontLength;
@@ -318,11 +335,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mVerticalTextImageWidget.setImage(image);
     }
 
+    @Override
     public void setEditable(boolean bValue) {
         super.setEditable(bValue);
         mBadges.setBadge(CasaBindingBadges.Badge.IS_EDITABLE, bValue);
     }
 
+    @Override
     public void setWSPolicyAttached(boolean bValue) {
         super.setWSPolicyAttached(bValue);
         mBadges.setBadge(CasaBindingBadges.Badge.WS_POLICY, bValue);
@@ -330,8 +349,10 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
 
     public void setBackgroundColor(Color color) {
         setBackground(color);
-        mBodyWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        mContainerWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
+
+        CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
+        mBodyWidget.setBackground(customizer.getCOLOR_BC_BACKGROUND());
+        mContainerWidget.setBackground(customizer.getCOLOR_BC_BACKGROUND());
     }
     
     public void setTitleBackgroundColor(Color color) {
@@ -354,13 +375,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         
     private static class BindingPinsLayout implements Layout {
         public void layout(Widget widget) {
-            CasaPinWidgetBindingConsumes consumesPin = null;
-            CasaPinWidgetBindingProvides providesPin = null;
+            CasaPinWidgetBinding.Consumes consumesPin = null;
+            CasaPinWidgetBinding.Provides providesPin = null;
             for (Widget child : widget.getChildren()) {
-                if        (child instanceof CasaPinWidgetBindingConsumes) {
-                    consumesPin = (CasaPinWidgetBindingConsumes) child;
-                } else if (child instanceof CasaPinWidgetBindingProvides) {
-                    providesPin = (CasaPinWidgetBindingProvides) child;
+                if        (child instanceof CasaPinWidgetBinding.Consumes) {
+                    consumesPin = (CasaPinWidgetBinding.Consumes) child;
+                } else if (child instanceof CasaPinWidgetBinding.Provides) {
+                    providesPin = (CasaPinWidgetBinding.Provides) child;
                 }
             }
             if (consumesPin != null) {

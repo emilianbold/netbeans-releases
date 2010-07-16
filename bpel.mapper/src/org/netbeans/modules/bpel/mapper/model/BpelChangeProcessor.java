@@ -25,6 +25,7 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
+import org.netbeans.modules.soa.xpath.mapper.model.updater.GraphChangeProcessor;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.openide.ErrorManager;
@@ -36,13 +37,13 @@ import org.openide.ErrorManager;
  */
 public class BpelChangeProcessor implements GraphChangeProcessor {
 
-    private Object mChangeSource;
+    private Object mSynchObj;
     private BpelModelUpdater mBpelModelUpdater;
     
-    public BpelChangeProcessor(Object source, BpelModelUpdater bpelModelUpdater) {
+    public BpelChangeProcessor(Object synchObj, BpelModelUpdater bpelModelUpdater) {
         assert bpelModelUpdater != null;
-        assert source != null;
-        mChangeSource = source;
+        assert synchObj != null;
+        mSynchObj = synchObj;
         mBpelModelUpdater = bpelModelUpdater;
     }
     
@@ -58,9 +59,10 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
             bpelModel.invoke(new Callable<Object>() {
                 public Object call() throws Exception {
                     mBpelModelUpdater.updateOnChanges(graphTreePath);
+                    mBpelModelUpdater.updateXsiTypeExpression();
                     return null;
                 }
-            }, mChangeSource);
+            }, mSynchObj);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -78,7 +80,7 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
                     registerExtensions(bpelModel);
                     return null;
                 }
-            }, mChangeSource);
+            }, mSynchObj);
     
             bpelModel.sync();
         } catch (Exception ex) {
@@ -96,7 +98,7 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
         if (nsContext == null) {
             return;
         }
-        nsContext.addNamespace(Trace.LOGGING_NAMESPACE_URI);
+        nsContext.addNamespace(Trace.TRACE_NAMESPACE_URI);
         nsContext.addNamespace(Editor.EDITOR_NAMESPACE_URI);
     }
     
@@ -114,9 +116,10 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
                     for (TreePath graphTreePath : graphTreePathList) {
                         mBpelModelUpdater.updateOnChanges(graphTreePath);
                     }
+                    mBpelModelUpdater.updateXsiTypeExpression();
                     return null;
                 }
-            }, mChangeSource);
+            }, mSynchObj);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }

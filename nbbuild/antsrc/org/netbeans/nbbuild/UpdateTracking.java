@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.nbbuild;
 import java.io.*;
 import java.util.*;
 import java.io.FileOutputStream;
+import java.util.zip.CRC32;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -92,7 +96,7 @@ class UpdateTracking {
         this.nbPath = nbPath;
         origin = INST_ORIGIN;
     }
-    
+
     /**
      * Use this constructor, only when you want to use I/O Streams
      */
@@ -376,6 +380,19 @@ class UpdateTracking {
         }
         version.addFile (file );
     }
+
+    static CRC32 crcForFile(File inFile) throws FileNotFoundException, IOException {
+        FileInputStream inFileStream = new FileInputStream(inFile);
+        byte[] array = new byte[(int) inFile.length()];
+        CRC32 crc = new CRC32();
+        int len = inFileStream.read(array);
+        if (len != array.length) {
+            throw new BuildException("Cannot fully read " + inFile);
+        }
+        inFileStream.close();
+        crc.update(array);
+        return crc;
+    }
     
     class Module extends Object {        
         
@@ -552,7 +569,18 @@ class UpdateTracking {
             files = newFiles;
             
         }
-        
+
+        void addFileForRoot(File file) throws IOException {
+            CRC32 crc = crcForFile(file);
+            if (!file.getPath().startsWith(nbPath)) {
+                throw new BuildException("File " + file + " needs to be under " + nbPath);
+            }
+            String rel = file.getPath().substring(nbPath.length()).replace(File.separatorChar, '/');
+            if (rel.startsWith("/")) {
+                rel = rel.substring(1);
+            }
+            addFileWithCrc(rel, "" + crc.getValue());
+        }
     }
     
     class ModuleFile extends Object {        

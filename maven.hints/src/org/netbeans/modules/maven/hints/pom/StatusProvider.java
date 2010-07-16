@@ -73,7 +73,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -86,7 +85,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
     private static final String LAYER_POM_SELECTION = "pom-selection"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("StatusProvider"); //NOI18N
 
+    @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
         FileObject fo = NbEditorUtilities.getFileObject(document);
         if (fo != null && "text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
@@ -107,7 +108,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             listener = new FileChangeAdapter() {
                 @Override
                 public void fileChanged(FileEvent fe) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             checkHints();
                         }
@@ -115,7 +117,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 }
             };
             initializeModel();
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     checkHints();
                 }
@@ -134,11 +137,13 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             assert model != null;
             try {
                 model.sync();
-                model.refresh();
+                // model.refresh();
             } catch (IOException ex) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
             }
+
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
+
             if (!model.getState().equals(Model.State.VALID)) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
                 return err;
@@ -147,18 +152,29 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
                 return err;
             }
-            Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
-            Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
-            for (POMErrorFixProvider prov : res.allInstances()) {
-                if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
-                    continue;
-                }
-               List<ErrorDescription> lst = prov.getErrorsForDocument(model, project);
-               if (lst != null) {
-                   err.addAll(lst);
-               }
+            
+            boolean isInTransaction = model.isIntransaction();
+            if (! isInTransaction) {
+                if (! model.startTransaction()) return err;
             }
-            return err;
+            try {
+                Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
+                Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
+                for (POMErrorFixProvider prov : res.allInstances()) {
+                    if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
+                        continue;
+                    }
+                    List<ErrorDescription> lst = prov.getErrorsForDocument(model, project);
+                    if (lst != null) {
+                        err.addAll(lst);
+                    }
+                }
+                return err;
+            } finally {
+                if ((! isInTransaction) && model.isIntransaction()) {
+                    model.endTransaction();
+                }
+            }
         }
 
         private void initializeModel() {

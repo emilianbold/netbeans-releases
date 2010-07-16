@@ -8,12 +8,14 @@ package o.n.m.ws.qaf.rest.patterns;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.POST;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import javax.ws.rs.POST;
-import javax.ws.rs.Consumes;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -42,23 +44,24 @@ public class CI1CClass {
     }
 
     /**
-     * POST method for creating an instance of CI1CClass
+     * POST method for creating an instance of CI1Cl
      * @param content representation for the new resource
      * @return an HTTP response with content of the created resource
      */
     @POST
     @Consumes("application/json")
     @Produces("application/json")
-    public Response postJson(JSONObject content) {
+    public Response postJson(JSONString content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();
     }
 
     /**
-     * Sub-resource locator method for  {CI1URI}
+     * Sub-resource locator method for {CI1URI}
      */
     @Path("{CI1URI}")
-    public CI1Cl getCI1Cl() {
-        return new CI1Cl();
+    public CI1Cl getCI1Cl(@PathParam("CI1URI")
+    String CI1URI) {
+        return CI1Cl.getInstance(CI1URI);
     }
 }

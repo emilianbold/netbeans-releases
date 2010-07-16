@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,12 +56,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings.DividerSettings;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -71,7 +76,7 @@ import org.openide.windows.OutputWriter;
 final class ResultDisplayHandler {
 
     private static final Logger LOGGER = Logger.getLogger(ResultDisplayHandler.class.getName());
-    
+
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             ResultDisplayHandler.class);
@@ -86,7 +91,9 @@ final class ResultDisplayHandler {
     private InputOutput inOut;
 
     private final TestSession session;
-    
+
+    private Lookup l;
+
     /** Creates a new instance of ResultDisplayHandler */
     public ResultDisplayHandler(TestSession session) {
         this.session = session;
@@ -128,8 +135,9 @@ final class ResultDisplayHandler {
     }
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
-        
-        final JSplitPane splitPane = new JSplitPane(orientation, left, right);
+
+        final JSplitPane splitPane = new JSplitPane(orientation, true, left, right);
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
         splitPane.setDividerLocation(location);
         splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
         splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
@@ -147,6 +155,7 @@ final class ResultDisplayHandler {
                 TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
             }
         });
+        splitPane.setToolTipText(session.getName());
         return splitPane;
     }
 
@@ -214,7 +223,7 @@ final class ResultDisplayHandler {
     private String runningSuite;
     private final List<Report> reports = new ArrayList<Report>();
     private String message;
-    private boolean sessionFinished;
+    boolean sessionFinished;
 
     /**
      *
@@ -296,10 +305,10 @@ final class ResultDisplayHandler {
 
         synchronized (this) {
             if (treePanel == null) {
-                sessionFinished = true;
                 message = msg;
                 return;
             }
+            sessionFinished = true;
         }
 
         displayInDispatchThread(prepareMethod("displayMsgSessionFinished", String.class), msg);        //NOI18N
@@ -317,9 +326,9 @@ final class ResultDisplayHandler {
      */
     private void displayInDispatchThread(final Method method, final Object param) {
         assert method != null;
-        
+
         final Method finalMethod = method;
-        
+
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -385,5 +394,13 @@ final class ResultDisplayHandler {
         if (sessionFinished) {
             treePanel.displayMsgSessionFinished(message);
         }
+    }
+
+    void setLookup(Lookup l) {
+        this.l = l;
+    }
+
+    Lookup getLookup() {
+        return l;
     }
 }

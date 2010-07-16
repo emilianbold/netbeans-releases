@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -124,9 +127,8 @@ public class FileNameTest extends NbTestCase {
             assertEquals(na,NamingFactory.fromFile(fA));
             assertSame(na, NamingFactory.fromFile(fA));
             assertFalse(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
-            NamingFactory.checkCaseSensitivity(na,fA);
-            assertTrue(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
-            
+            FileNaming nna = NamingFactory.checkCaseSensitivity(na,fA);
+            assertTrue(fA.getName() + " / " + nna.getName(),fA.getName().equals(nna.getName()));
         }
     }
     
@@ -195,6 +197,34 @@ public class FileNameTest extends NbTestCase {
         }        
     }
 
+    public void testNamingIsCaseInsensitive() throws Exception {
+        File f1 = new File(getWorkDir(), "Ahoj");
+        File f2 = new File(getWorkDir(), "ahoJ");
+
+        FileNaming root = NamingFactory.fromFile(getWorkDir());
+        FileNaming fn1 = NamingFactory.fromFile(root, f1, false);
+        FileNaming fn2 = NamingFactory.fromFile(root, f2, false);
+
+        boolean equalF = f1.equals(f2);
+
+        f2.createNewFile();
+        NamingFactory.checkCaseSensitivity(fn2, f2);
+        assertEquals("Name equals file name f2", f2.getName(), fn2.getName());
+
+        if (equalF) {
+            assertEquals("File has code", f1.hashCode(), f2.hashCode());
+            assertEquals("FileNaming hash code", fn1.hashCode(), fn2.hashCode());
+            assertSame("namings are equal", fn1, fn2);
+        } else {
+            assertFalse("FileNaming shall be different", fn1.equals(fn2));
+        }
+
+        f2.delete();
+        f1.createNewFile();
+        NamingFactory.checkCaseSensitivity(fn1, f1);
+        assertEquals("Name equals file name f1", f1.getName(), fn1.getName());
+    }
+
 
     /**
      * Test of rename method, of class org.netbeans.modules.masterfs.naming.PathItem.
@@ -203,12 +233,42 @@ public class FileNameTest extends NbTestCase {
         File f = f1;
         assertTrue(f.exists());
         FileNaming pi = NamingFactory.fromFile(f);
-        assertTrue(pi.rename("renamed3"));
-        File f2 = pi.getFile();
+        FileNaming ni = pi.rename("renamed3", null);
+        assertTrue(pi != ni);
+        File f2 = ni.getFile();
         assertFalse(f.exists());
         assertTrue(f2.exists());
         assertFalse(f2.equals(f));
         assertTrue (f2.getName().equals("renamed3"));        
     }
-    
+
+    public void testTwoNamingsAreOnlyEqualIfTheyRepresentTheSamePath() {
+        File hc1 = new HashCodeFile("/space/root/myfile", 444);
+        File hc2 = new HashCodeFile("/space/myfile", 444);
+
+        FileNaming nf1 = NamingFactory.fromFile(hc1);
+        FileNaming nf2 = NamingFactory.fromFile(hc2);
+        
+        assertFalse("namings are different", nf1.equals(nf2));
+    }
+
+
+    private static final class HashCodeFile extends File {
+        private final int hash;
+        public HashCodeFile(String path, int hash) {
+            super(path);
+            this.hash = hash;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj) && (obj instanceof HashCodeFile) && ((HashCodeFile)obj).hash == hash;
+        }
+
+    }
 }

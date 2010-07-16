@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,7 +50,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -57,6 +59,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /**
@@ -67,22 +70,23 @@ import org.openide.util.Utilities;
  */
 public class MergeAction extends ContextAction {
 
-    private final VCSContext context;
-    
-    public MergeAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
-    public void performAction(ActionEvent ev) {
+    @Override
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Merge";                                    //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
         File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -101,13 +105,12 @@ public class MergeAction extends ContextAction {
             return;
         }
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        final File[] files = HgUtils.filterForRepository(context, root, false);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     List<String> headList = HgCommand.getHeadRevisions(root);
-                    String revStr = null;
                     if (headList.size() <= 1) {
                         logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
                         logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
@@ -119,20 +122,34 @@ public class MergeAction extends ContextAction {
                             NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
                             JOptionPane.INFORMATION_MESSAGE);
                          return;
-                    } else {
-                        final MergeRevisions mergeDlg = new MergeRevisions(root, files);
-                        if (!mergeDlg.showDialog()) {
-                            return;
-                        }
-                        revStr = mergeDlg.getSelectionRevision();               
                     }
-                    logger.outputInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
-                    doMergeAction(root, revStr, logger);
-                    HgUtils.forceStatusRefreshProject(context);
-                    logger.output(""); // NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String revStr = null;
+                                MergeRevisions mergeDlg = new MergeRevisions(root, new File[] {root});
+                                if (!mergeDlg.showDialog()) {
+                                    return;
+                                }
+                                revStr = mergeDlg.getSelectionRevision();
+                                logger.outputInRed(
+                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
+                                logger.outputInRed(
+                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
+                                doMergeAction(root, revStr, logger);
+                                HgUtils.forceStatusRefreshProject(context);
+                                logger.output(""); // NOI18N
+                            } catch (HgException.HgCommandCanceledException ex) {
+                                // canceled by user, do nothing
+                            } catch (HgException ex) {
+                                NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                                DialogDisplayer.getDefault().notifyLater(e);
+                            }
+                        }
+                    });
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -142,13 +159,14 @@ public class MergeAction extends ContextAction {
         support.start(rp, root, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_PROGRESS")); // NOI18N
     }
 
-    public static void doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
+    public static List<String> doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
         List<String> listMerge = HgCommand.doMerge(root, revStr);
         
         if (listMerge != null && !listMerge.isEmpty()) {
             logger.output(listMerge);
             handleMergeOutput(root, listMerge, true, logger);
         }
+        return listMerge;
     }
 
     public static void handleMergeOutput(File root, List<String> listMerge, boolean bDone, OutputLogger logger) throws HgException {

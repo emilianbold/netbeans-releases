@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,6 +51,7 @@ import javax.swing.JFrame;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.subversion.TestKit;
+import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -95,12 +99,12 @@ public class SearchHistoryTest extends NbTestCase {
         f = new File(System.getProperty("data.root.dir") + "/testShowFileHistory.file");
         
         // folder
-        showing = Subversion.showFileHistory(f.getParentFile(), 1);
+        showing = SvnSearchHistorySupport.getInstance(f.getParentFile()).searchHistory(1);
         assertFalse(showing);
 
         // unversioned file
         f.createNewFile();
-        showing = Subversion.showFileHistory(f, 1);
+        showing = SvnSearchHistorySupport.getInstance(f).searchHistory(1);
         assertFalse(showing);
 
         // AWT
@@ -108,7 +112,7 @@ public class SearchHistoryTest extends NbTestCase {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    Subversion.showFileHistory(file, 1);
+                    SvnSearchHistorySupport.getInstance(file).searchHistory(1);
                     fail("AWT test failed");
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -154,7 +158,7 @@ public class SearchHistoryTest extends NbTestCase {
         }
         TestKit.write(file, content.toString());
 
-        boolean showing = Subversion.showFileHistory(file, 100);
+        boolean showing = SvnSearchHistorySupport.getInstance(file).searchHistory(100);
         assertTrue(showing);
 
         JDialog d = new JDialog((JFrame)null, "Close dialog");

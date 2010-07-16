@@ -35,11 +35,19 @@ package org.netbeans.modules.sql.project;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.compapp.projects.base.ui.NoSelectedServerWarning;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.sql.project.wsdl.GenFiles;
+
 import java.awt.Dialog;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -72,6 +80,8 @@ class SQLproActionProvider implements ActionProvider {
         COMMAND_RENAME,
     };
 
+    private JFrame frame;
+    
     // Project
     SQLproProject project;
 
@@ -127,6 +137,10 @@ class SQLproActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
+        
+        if (COMMAND_BUILD.equals(command) || COMMAND_REBUILD.equals(command)) {
+        	sqlwsdlTimeStamp();            
+        }
 
         Properties p = null;
         String[] targetNames = (String[])commands.get(command);
@@ -150,6 +164,53 @@ class SQLproActionProvider implements ActionProvider {
         }
     }
 
+    private void sqlwsdlTimeStamp(){
+    	try{
+	    	String baseDir = org.openide.filesystems.FileUtil.getFileDisplayName(project.getProjectDirectory());
+			String OS = System.getProperty("os.name").toLowerCase();
+	                if(OS.indexOf("windows") > -1){
+	                    //do nothing
+	                }else{
+	                    baseDir='/'+baseDir;
+	                }
+	        	
+	            String mSrcDirectoryLocation = baseDir+"/src";
+	        	File srcDir = new File(mSrcDirectoryLocation);
+	            if (!srcDir.exists()) {
+	                throw new Exception("Directory " + mSrcDirectoryLocation + " does not exit.");
+	            }
+	            
+	            int length = baseDir.length();
+	            String projectName = baseDir.substring(baseDir.lastIndexOf(File.separator) + 1, baseDir.length());
+	            if(projectName.length() == length){
+	            	projectName = baseDir.substring(baseDir.lastIndexOf("/") + 1, baseDir.length());	
+	            }
+	            
+	            String[] ext = new String[]{".sql"};
+	            List sqlFiles = org.netbeans.modules.sql.project.wsdl.GenFiles.getFilesRecursively(srcDir, ext);
+	            boolean b = false;
+	            File wsdlFile = new File(mSrcDirectoryLocation, projectName+".wsdl");
+	            long wsdlTS = wsdlFile.lastModified();
+	            for (int i = 0, I = sqlFiles.size(); i < I; i++) {
+	                File f = (File) sqlFiles.get(i);
+	                if (f != null) {
+	                	long sqlTS = f.lastModified();
+	                	if(wsdlTS < sqlTS){
+	                		b = true;
+	                		break;
+	                	}
+	                }
+	            }
+	            if(b){
+	            	JOptionPane.showMessageDialog(frame,
+	                        "Please generate WSDL again",
+	                       "Information",
+	                       JOptionPane.INFORMATION_MESSAGE);
+	            }
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    }
     public boolean isActionEnabled( String command, Lookup context ) {
 
         if ( findBuildXml() == null ) {

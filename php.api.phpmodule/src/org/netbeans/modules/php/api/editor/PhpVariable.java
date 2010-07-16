@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,19 +42,49 @@
 
 package org.netbeans.modules.php.api.editor;
 
+import org.openide.filesystems.FileObject;
+
 /**
  * Class representing a PHP local variable.
  * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpVariable extends PhpElement {
+public final class PhpVariable extends PhpBaseElement {
 
     public PhpVariable(String name, String fullyQualifiedName, String description) {
         super(name, fullyQualifiedName, description);
     }
 
+    /**
+     * @since 1.25
+     */
+    public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
+        super(name, fullyQualifiedName, file);
+    }
+
+    /**
+     * @since 1.28
+     */
+    public PhpVariable(String name, String fullyQualifiedName, FileObject file, int offset) {
+        super(name, fullyQualifiedName, file, offset, null);
+    }
+
+    /**
+     * @since 1.32
+     */
+    public PhpVariable(String name, PhpClass type, FileObject file, int offset) {
+        super(name, null, type, file, offset, null);
+    }
+
     public PhpVariable(String name, String fullyQualifiedName) {
         super(name, fullyQualifiedName);
+    }
+
+    /**
+     * @since 1.32
+     */
+    public PhpVariable(String name, PhpClass type) {
+        super(name, type);
     }
 
     public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,7 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Rectangle;
-import java.net.URL;
-import javax.imageio.ImageIO;
-import javax.swing.border.LineBorder;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ImageWidget;
@@ -52,7 +52,6 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
 
 /**
  * Widget for CASA service engine service unit's process title.
@@ -61,44 +60,30 @@ import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
  */
 public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
 
-    private static final boolean DEBUG = false;
-        
-    private Widget leftEmptyWidget;
     private ImageWidget imageWidget;
     private LabelWidget titleWidget;
-    private Widget rightEmptyWidget;
 
     public CasaProcessTitleWidget(Scene scene, String processName, Image image) {
         super(scene);
 
-        setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.CENTER, 5));
+        setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(
+                LayoutFactory.SerialAlignment.CENTER, 5));
 
-        leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-        leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-        
-        imageWidget = new ImageWidget(scene);
-        imageWidget.setImage(image);
-        
-        rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-        rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
+        setBorder(BorderFactory.createEmptyBorder(
+                0, CasaNodeWidgetEngine.ARROW_PIN_WIDTH,
+                0, CasaNodeWidgetEngine.ARROW_PIN_WIDTH));
 
+        imageWidget = new ImageWidget(scene, image);
+        
         titleWidget = new LabelWidget(getScene(), processName);
-        titleWidget.setOpaque(true);
+        titleWidget.setOpaque(false);
         titleWidget.setAlignment(Alignment.RIGHT);
         titleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
 
-        addChild(leftEmptyWidget);
         addChild(imageWidget);
         addChild(titleWidget);
-        addChild(rightEmptyWidget);
 
         setSelected(false);
-
-        if (DEBUG) {
-            leftEmptyWidget.setBorder(new LineBorder(Color.red));
-            titleWidget.setBorder(new LineBorder(Color.blue));
-            rightEmptyWidget.setBorder(new LineBorder(Color.red));
-        }
     }
 
     /**
@@ -110,6 +95,7 @@ public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
+
         if ((!previousState.isSelected() && state.isSelected()) ||
                 (!previousState.isFocused() && state.isFocused())) {
             setSelected(true);
@@ -120,22 +106,16 @@ public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
     }
 
     private void setSelected(boolean isSelected) {
-        if (isSelected) {
-            titleWidget.setForeground(Color.black);
-        } else {
-            titleWidget.setForeground(Color.gray);
-        }
+        titleWidget.setForeground(isSelected ? Color.black : Color.gray);
     }
     
     public void setMinimized(boolean isMinimized) {
         if (isMinimized) {            
             imageWidget.removeFromParent();
             titleWidget.removeFromParent();
-            rightEmptyWidget.removeFromParent();
         } else {
             addChild(imageWidget);
             addChild(titleWidget);
-            addChild(rightEmptyWidget);
         }
     }
 }

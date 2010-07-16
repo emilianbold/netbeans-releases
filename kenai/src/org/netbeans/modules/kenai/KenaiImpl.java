@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.kenai;
 
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -67,9 +71,9 @@ public abstract class KenaiImpl {
      * @return list of Kenai projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract Collection<ProjectData> searchProjects(String pattern) throws KenaiException;
+    public abstract Collection<ProjectData> searchProjects(String pattern, PasswordAuthentication pa) throws KenaiException;
 
-    public abstract Collection<ProjectData> getMyProjects() throws KenaiException;
+    public abstract Collection<ProjectData> getMyProjects(PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Retrieves all available information about a Kenai project.
@@ -78,9 +82,9 @@ public abstract class KenaiImpl {
      * @return KenaiProjectImpl or null if the project does not exist
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract ProjectData getProject(String name) throws KenaiException;
+    public abstract ProjectData getProject(String name, PasswordAuthentication pa) throws KenaiException;
 
-    public abstract Collection<UserData> getProjectMembers(String name) throws KenaiException;
+    public abstract Collection<UserData> getProjectMembers(String name, PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.
@@ -91,7 +95,7 @@ public abstract class KenaiImpl {
      * @return true if the person is authorized to perform the activity on the project, false otherwise
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException;
+    public abstract boolean isAuthorized(String projectName, String feature, String activity, PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Verifies that the supplied credentials are valid.
@@ -126,7 +130,8 @@ public abstract class KenaiImpl {
             String displayName,
             String description,
             String[] licenses,
-            String tags
+            String tags,
+            PasswordAuthentication pa
             ) throws KenaiException;
 
     /**
@@ -150,9 +155,25 @@ public abstract class KenaiImpl {
             String url,
             String repository_url,
             String browse_url,
-            String service
+            String service,
+            PasswordAuthentication pa
             ) throws KenaiException;
 
-    public abstract void joinProject(String projectName, String userName);
+    public abstract MemberData addMember(
+            String project,
+            String user,
+            String role,
+            PasswordAuthentication pa)
+            throws KenaiException;
 
+    public abstract void deleteMember(
+            String project,
+            long member_id,
+            PasswordAuthentication pa)
+            throws KenaiException;
+
+    public abstract void deleteProject (
+            String name,
+            PasswordAuthentication pa)
+            throws KenaiException;
 }

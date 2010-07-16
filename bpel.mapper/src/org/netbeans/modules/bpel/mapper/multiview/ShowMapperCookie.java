@@ -32,4 +32,5 @@ public interface ShowMapperCookie extends Node.Cookie {
     
     public void show(String message);
 
+    public void showLoading(boolean flag);
 }

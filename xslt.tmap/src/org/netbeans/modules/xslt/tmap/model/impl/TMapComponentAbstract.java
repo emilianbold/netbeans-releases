@@ -18,22 +18,22 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
-import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
-import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
-import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -106,13 +106,96 @@ public abstract class TMapComponentAbstract
 //////        }   
     }
 
+/**
+     * This method is return corrected Text content without XML
+     * comments. See the problem appeared in getText() method.
+     * 
+     */
+    protected String getCorrectedText() {
+        boolean isOwnTransact = false;
+        TMapModel model = getModel();
+        if (model == null) {
+            return "";
+        }
+        if (model != null && !model.isIntransaction()) {
+            model.startTransaction();
+            isOwnTransact = true;
+        }
+        
+        try {
+            StringBuilder text = new StringBuilder();
+            NodeList nodeList = getPeer().getChildNodes();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Text && !(node instanceof Comment)) {
+                    text.append(node.getNodeValue());
+                }
+            }
+            return text.toString();
+        }  finally {
+            if (isOwnTransact && model.isIntransaction()){
+                model.endTransaction();
+            }
+        }
+    }
+
+    @Override
+    protected void setText(String propName, String text) {
+        boolean isOwnTransact = false;
+        TMapModel model = getModel();
+        if (model == null) {
+            return;
+        }
+        if (model != null && !model.isIntransaction()) {
+            model.startTransaction();
+            isOwnTransact = true;
+        }
+        
+        try {
+            StringBuilder oldValue = new StringBuilder();
+            ArrayList<Node> toRemove = new ArrayList<Node>();
+            NodeList nodeList = getPeer().getChildNodes();
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node == null) {
+                    continue;
+                }
+                toRemove.add(node);
+                if (oldValue == null && node instanceof Text &&
+                        node.getNodeType() != Node.COMMENT_NODE) {
+                    oldValue.append(node.getNodeValue());
+                }
+            }
+
+            getModel().getAccess().removeChildren(getPeer(), toRemove, this);
+            if (text != null) {
+                Text newNode = getModel().getDocument().createTextNode(text);
+                    getModel().getAccess().appendChild(getPeer(), newNode, this);
+            }
+            firePropertyChange(propName,
+                    oldValue == null ? null : oldValue.toString(), text);
+            fireValueChanged();
+//        
+//            super.setText(propName, text);
+        
+        } finally {
+            if (isOwnTransact && model.isIntransaction()){
+                model.endTransaction();
+            }
+        }
+    }
+
     @Override
     public void setAttribute(String eventPropertyName, Attribute attr, Object value) {
-        boolean isTransact = true;
-        if (!getModel().isIntransaction()) {
-            getModel().startTransaction();
-        } else {
-            isTransact = true;
+        boolean isOwnTransact = false;
+        TMapModel model = getModel();
+        if (model == null) {
+            return;
+        }
+        if (model != null && !model.isIntransaction()) {
+            model.startTransaction();
+            isOwnTransact = true;
         }
         
         try {
@@ -120,8 +203,8 @@ public abstract class TMapComponentAbstract
             super.setAttribute(eventPropertyName, attr, value);
         
         } finally {
-            if (!isTransact){
-                getModel().endTransaction();
+            if (isOwnTransact && model.isIntransaction()){
+                model.endTransaction();
             }
         }
     }

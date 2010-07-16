@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,7 +69,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
@@ -85,37 +87,34 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
+import javax.swing.ImageIcon;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.netbeans.spi.project.support.ant.ReferenceHelper.RawReference;
+import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 /**
- * Represents one ejb module project
+ * Represents one Composite Application (JBI) Project.
  *
  * @author Chris Webster
  */
-@AntBasedProjectRegistration(
-    type=JbiProjectType.TYPE,
-    iconResource="org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png",
-    sharedNamespace=JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=JbiProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
-public final class JbiProject implements Project, AntProjectListener, ProjectPropertyProvider {
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png", false); // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
+public final class JbiProject 
+        implements Project, AntProjectListener, ProjectPropertyProvider {
+
+    private static final Icon PROJECT_ICON = new ImageIcon(
+            ImageUtilities.loadImage(
+            "org/netbeans/modules/compapp/projects/jbi/ui/resources/composite_application_project.png" // NOI18N
+            )
+            ); // NOI18N    
+
     public static final String SOURCES_TYPE_JBI = "JBI"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
+
     //public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
     public static final String JAVA_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-junit.jar"; // NOI18N
     public static final String ENTERPRISE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-j2ee-sun-appsrv.jar"; // NOI18N
@@ -123,9 +122,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     public static final String IDE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-model.jar"; // NOI18N
     public static final String SOA_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
     //public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
     public static final String JAVA_MODULE_INSTALL_CBN = "org.netbeans.modules.junit"; // NOI18N
     public static final String ENTERPRISE_MODULE_INSTALL_CBN = "org.netbeans.modules.j2ee.sun.api"; // NOI18N
@@ -133,9 +129,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     public static final String IDE_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model"; // NOI18N
     public static final String SOA_MODULE_INSTALL_CBN = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
     //public static final String MODULE_INSTALL_DIR = "module.install.dir"; // NOI18N
     public static final String JAVA_MODULE_INSTALL_DIR = "java.module.install.dir"; // NOI18N
     public static final String ENTERPRISE_MODULE_INSTALL_DIR = "enterprise.module.install.dir"; // NOI18N
@@ -161,6 +154,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    private AntBasedProjectType abpt;
     private JbiLogicalViewProvider lvp;    
     private FileChangeListener casaFileListener;
     
@@ -175,9 +169,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      *
      * @throws IOException DOCUMENT ME!
      */
-    public JbiProject(final AntProjectHelper helper)
-    throws IOException {
+    public JbiProject(final AntProjectHelper helper, AntBasedProjectType abpt)
+            throws IOException {
         this.helper = helper;
+        this.abpt = abpt;
         eval = createEvaluator();
         
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
@@ -185,29 +180,13 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
-        
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {     
-//                JbiProject.this.lvp.refreshRootNode();
-//                CasaHelper.registerCasaFileListener(JbiProject.this);
-//            }
-//        });
-    }
+    }    
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public String toString() {
         return "JbiProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -216,31 +195,9 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         return helper.getStandardPropertyEvaluator();
     }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public PropertyEvaluator evaluator() {
-        return eval;
-    }
-    
-    public ReferenceHelper getReferenceHelper() {
-        return this.refHelper;
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+        
     public Lookup getLookup() {
         return lookup;
-    }
-    
-    public AntProjectHelper getAntProjectHelper() {
-        return helper;
     }
     
     private Lookup createLookup(AuxiliaryConfiguration aux) {
@@ -249,53 +206,55 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 helper.getStandardPropertyEvaluator(), new String[] {"${src.dir}/*.java"}, // NOI18N
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
-        SourcesHelper sourcesHelper = new SourcesHelper(this, helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(this, helper, eval);
         String webModuleLabel = org.openide.util.NbBundle.getMessage(
                 JbiCustomizerProvider.class, "LBL_Node_EJBModule" // NOI18N
                 );
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(
                 JbiCustomizerProvider.class, "LBL_Node_Sources" // NOI18N
                 );
+
+        SourceRootConfig sourceRootConfig =
+                sourcesHelper.sourceRoot("${" + JbiProjectProperties.SOURCE_ROOT + "}"); // NOI18N
+        sourceRootConfig.displayName(webModuleLabel);
+        sourceRootConfig.add();
+
+        sourceRootConfig =
+                sourcesHelper.sourceRoot("${" + JbiProjectProperties.SRC_DIR + "}"); // NOI18N
+        sourceRootConfig.displayName(srcJavaLabel);
+        sourceRootConfig.add();
+
+        sourceRootConfig =
+                sourcesHelper.sourceRoot("${" + JbiProjectProperties.SRC_DIR + "}"); // NOI18N
+        sourceRootConfig.displayName(srcJavaLabel);
+        sourceRootConfig.type(SOURCES_TYPE_JBI);
+        sourceRootConfig.add();
+
+        sourceRootConfig =
+                sourcesHelper.sourceRoot("${" + JbiProjectProperties.SRC_DIR + "}"); // NOI18N
+        sourceRootConfig.displayName(srcJavaLabel);
+        sourceRootConfig.type(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        sourceRootConfig.add();
         
-        sourcesHelper.addPrincipalSourceRoot(
-                "${" + JbiProjectProperties.SOURCE_ROOT + "}", webModuleLabel, // NOI18N
-                null, null
-                );
-        sourcesHelper.addPrincipalSourceRoot(
-                "${" + JbiProjectProperties.SRC_DIR + "}", srcJavaLabel, // NOI18N
-                null, null
-                );
-        
-        sourcesHelper.addTypedSourceRoot(
-                "${" + JbiProjectProperties.SRC_DIR + "}", SOURCES_TYPE_JBI, srcJavaLabel, // NOI18N
-                null, null
-                );
-        sourcesHelper.addTypedSourceRoot(
-                "${" + JbiProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, // NOI18N
-                srcJavaLabel, /*XXX*/
-                null, null
-                );
-        sourcesHelper.registerExternalRoots(
-                FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
-                );
+        ProjectManager.mutex().postWriteRequest(
+                new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(
+                        FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT
+                        );
+            }
+        }
+        );
         
         casaFileListener = new FileChangeAdapter() {
             @Override
             public void fileChanged(FileEvent fe) {                
-                refreshRootNode();
+                propertiesChanged(null);
             }
             
             @Override
             public void fileDeleted(FileEvent fe) {
-                refreshRootNode();
-            }
-            
-            private void refreshRootNode() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {                        
-                        JbiProject.this.lvp.refreshRootNode();
-                    }
-                });
+                propertiesChanged(null);
             }
         };
         
@@ -305,9 +264,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             aux,
             helper.createCacheDirectoryProvider(),
             helper,
+            eval,
             spp,
-            new JbiActionProvider(this, helper, refHelper),
-            lvp = new JbiLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
+            new JbiActionProvider(this, helper),
+            lvp = new JbiLogicalViewProvider(this, helper, eval, spp, refHelper),
             new JbiCustomizerProvider(this, helper, refHelper),
             new AntArtifactProviderImpl(), 
             new ProjectXmlSavedHookImpl(),
@@ -316,12 +276,12 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             new HashSet<TopComponent>(),
             fileBuilt,
             new RecommendedTemplatesImpl(),
-            new JbiProjectEncodingQueryImpl(evaluator()),
+            new JbiProjectEncodingQueryImpl(eval),
             refHelper,
             sourcesHelper.createSources(),
             casaFileListener,
             helper.createSharabilityQuery(
-                    evaluator(), new String[] {"${" + JbiProjectProperties.SOURCE_ROOT + "}"}, // NOI18N
+                    eval, new String[] {"${" + JbiProjectProperties.SOURCE_ROOT + "}"}, // NOI18N
                     new String[] {
                 "${" + JbiProjectProperties.BUILD_DIR + "}", // NOI18N
                 "${" + JbiProjectProperties.DIST_DIR + "}", // NOI18N
@@ -477,12 +437,40 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             }
         });
     }
-    
+
     /**
-     * DOCUMENT ME!
+     * Gets a list of external service unit names in this project.
      *
-     * @return DOCUMENT ME!
+     * @return  external service units' names
      */
+    public List<String> getExternalServiceUnitNames() {
+
+        List<String> ret = new ArrayList<String>();
+
+        // 1. get all reference projects names
+        for (RawReference rawReference : refHelper.getRawReferences()) {
+            String foreignProjName = rawReference.getForeignProjectName();
+            ret.add(foreignProjName);
+        }
+
+        // 2. remove internal su project names
+        Element data = helper.getPrimaryConfigurationData(true);
+        NodeList libs = data.getElementsByTagNameNS(
+                JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
+                );
+
+        for (int i = 0; i < libs.getLength(); i++) {
+            Element lib = (Element) libs.item(i);
+            String cpItem = lib.getTextContent();
+            // cpItem's format: reference.Synchronous3.dist_se
+            String projName = cpItem.substring(cpItem.indexOf(".") + 1,
+                    cpItem.lastIndexOf("."));
+            ret.remove(projName);
+        }
+
+        return ret;
+    }
+   
     public JbiProjectProperties getProjectProperties() {
         return new JbiProjectProperties(this, helper, refHelper);
     }
@@ -491,88 +479,43 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     private final class Info implements ProjectInformation {
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
-        /**
-         * Creates a new Info object.
-         */
         Info() {
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param prop DOCUMENT ME!
-         */
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public String getName() {
             return JbiProject.this.getName();
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public String getDisplayName() {
             return JbiProject.this.getName();
         }
-        
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+
         public Icon getIcon() {
             return PROJECT_ICON;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public Project getProject() {
             return JbiProject.this;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param listener DOCUMENT ME!
-         */
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param listener DOCUMENT ME!
-         */
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
     }
     
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        /**
-         * Creates a new ProjectXmlSavedHookImpl object.
-         */
+       
         ProjectXmlSavedHookImpl() {
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @throws IOException DOCUMENT ME!
-         */
         protected void projectXmlSaved() throws IOException {
             genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
@@ -585,15 +528,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        /**
-         * Creates a new ProjectOpenedHookImpl object.
-         */
+       
         ProjectOpenedHookImpl() {
         }
-        
-        /**
-         * DOCUMENT ME!
-         */
+       
         protected void projectOpened() {
             try {
                 // Check up on build scripts.
@@ -809,9 +747,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             }
         }
         
-        /**
-         * DOCUMENT ME!
-         */
         protected void projectClosed() {
             Set topComponentSet = (Set) JbiProject.this.getLookup().lookup(HashSet.class);
             if (topComponentSet != null) {
@@ -836,11 +771,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      * the artifact will be {@link AntArtifact}.
      */
     private final class AntArtifactProviderImpl implements AntArtifactProvider {
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+      
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(

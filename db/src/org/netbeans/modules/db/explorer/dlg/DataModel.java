@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,8 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
@@ -56,29 +60,31 @@ import org.openide.util.NbBundle;
 public class DataModel extends AbstractTableModel
 {
     /** Column data */
-    private Vector<Object> data;
+    private List<ColumnItem> data;
 
-    transient private Vector<ColumnItem> primaryKeys = new Vector<ColumnItem>();
-    transient private Vector uniqueKeys = new Vector();
+    transient private List<ColumnItem> primaryKeys = new ArrayList<ColumnItem>();
+    transient private List<ColumnItem> uniqueKeys = new ArrayList<ColumnItem>();
 
     static final long serialVersionUID =4162743695966976536L;
     
     public DataModel()
     {
         super();
-        data = new Vector<Object> (1);
+        data = new ArrayList<ColumnItem> (1);
     }
 
-    public Vector getData()
+    public List getData()
     {
         return data;
     }
 
+    @Override
     public int getColumnCount()
     {
         return ColumnItem.getProperties().size();
     }
 
+    @Override
     public int getRowCount()
     {
         return data.size();
@@ -86,10 +92,11 @@ public class DataModel extends AbstractTableModel
 
     public Object getValue(String pname, int row)
     {
-        ColumnItem xcol = (ColumnItem)data.elementAt(row);
+        ColumnItem xcol = (ColumnItem)data.get(row);
         return xcol.getProperty(pname);
     }
 
+    @Override
     public Object getValueAt(int row, int col)
     {
         return getValue((String)ColumnItem.getColumnNames().elementAt(col), row);
@@ -98,7 +105,7 @@ public class DataModel extends AbstractTableModel
     public void setValue(Object val, String pname, int row) {
         if (row < getRowCount()) {
             int srow = row, erow = row;
-            ColumnItem xcol = (ColumnItem)data.elementAt(row);
+            ColumnItem xcol = (ColumnItem)data.get(row);
             xcol.setProperty(pname, val);
             if (pname.equals(ColumnItem.PRIMARY_KEY)) {
                 if (val.equals(Boolean.TRUE)) {
@@ -191,12 +198,12 @@ public class DataModel extends AbstractTableModel
         return primaryKeys.size()>1;
     }
     
-    public Vector getTablePrimaryKeys()
+    public List<ColumnItem> getTablePrimaryKeys()
     {
         return primaryKeys;
     }
 
-    public Vector getTableUniqueKeys()
+    public List<ColumnItem> getTableUniqueKeys()
     {
         return uniqueKeys;
     }
@@ -211,9 +218,9 @@ public class DataModel extends AbstractTableModel
     * Notification of the row being added will be generated.
     * @param object Object to add
     */
-    public void addRow(Object object)
+    public void addRow(ColumnItem object)
     {
-        data.addElement(object);
+        data.add(object);
         fireTableChanged(new TableModelEvent(this, getRowCount()-1, getRowCount()-1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     }
 
@@ -224,9 +231,9 @@ public class DataModel extends AbstractTableModel
     * @param object Object to add
     * @exception ArrayIndexOutOfBoundsException If the row was invalid.
     */
-    public void insertRow(int row, Object object)
+    public void insertRow(int row, ColumnItem item)
     {
-        data.insertElementAt(object, row);
+        data.add(row, item);
         fireTableRowsInserted(row, row);
     }
 
@@ -246,13 +253,13 @@ public class DataModel extends AbstractTableModel
         // lists if it's in there (although the unique key list appears
         // to not be in use at this time -- uniqueness is being enforced
         // by making it part of an index...)
-        Object column = data.elementAt(row);
+        ColumnItem column = data.get(row);
         if ( column != null ) {
             primaryKeys.remove(column);
             uniqueKeys.remove(column);
         }
 
-        data.removeElementAt(row);
+        data.remove(row);
         
         
         fireTableRowsDeleted(row, row);
@@ -263,6 +270,6 @@ public class DataModel extends AbstractTableModel
      * @param rowIndex The row index of the row to be returned
      */
     public ColumnItem getRow(int rowIndex) {
-        return (ColumnItem) data.elementAt(rowIndex);
+        return (ColumnItem) data.get(rowIndex);
     }
 }

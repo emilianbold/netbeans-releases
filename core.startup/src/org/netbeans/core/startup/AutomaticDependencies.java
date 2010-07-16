@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,10 +58,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.ModuleInstaller;
+import org.netbeans.Util;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.xml.XMLUtil;
-import org.netbeans.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
@@ -151,10 +155,12 @@ public final class AutomaticDependencies {
      * @since org.netbeans.core/1 1.19
      */
     public static final class Report {
+        private final String cnb;
         private final Set<Dependency> added;
         private final Set<Dependency> removed;
         private final Set<String> messages;
-        Report(Set<Dependency> added, Set<Dependency> removed, Set<String> messages) {
+        Report(String cnb, Set<Dependency> added, Set<Dependency> removed, Set<String> messages) {
+            this.cnb = cnb;
             this.added = added;
             this.removed = removed;
             this.messages = messages;
@@ -188,6 +194,15 @@ public final class AutomaticDependencies {
         public boolean isModified() {
             return !added.isEmpty() || !removed.isEmpty();
         }
+
+        /**
+         * @since org.netbeans.core.startup 1.21
+         */
+        public @Override String toString() {
+            return "had to upgrade dependencies for module " + cnb + ": added = " + getAdded() +
+                    " removed = " + getRemoved() + "; details: " + getMessages(); // NOI18N
+        }
+
     }
     
     /**
@@ -247,10 +262,10 @@ public final class AutomaticDependencies {
             Set<Dependency> added = new HashSet<Dependency>(dependencies);
             added.removeAll(oldDependencies);
             oldDependencies.removeAll(dependencies);
-            return new Report(added, oldDependencies, messages);
+            return new Report(cnb, added, oldDependencies, messages);
         } else {
             assert messages.isEmpty();
-            return new Report(Collections.<Dependency>emptySet(), Collections.<Dependency>emptySet(), Collections.<String>emptySet());
+            return new Report(cnb, Collections.<Dependency>emptySet(), Collections.<Dependency>emptySet(), Collections.<String>emptySet());
         }
     }
     
@@ -264,6 +279,32 @@ public final class AutomaticDependencies {
      */
     public void refineDependencies(String cnb, Set<Dependency> dependencies) {
         refineDependenciesAndReport(cnb, dependencies);
+    }
+
+    /**
+     * Variant of {@link #refineDependenciesAndReport} with simple signature
+     * intended for use from {@code org.netbeans.nbbuild.ParseProjectXml}.
+     * @param cnb the code name base of the module being considered
+     * @param dependencies a mutable set of dependencies in the format given by
+     *                     {@link Dependency#toString} and {@link Dependency#create} on {@link Dependency#TYPE_MODULE}
+     * @return a message listing some changes, or null if there were no changes
+     * @since org.netbeans.core.startup 1.21
+     */
+    public String refineDependenciesSimple(String cnb, Set<String> dependencies) {
+        Set<Dependency> deps = new HashSet<Dependency>();
+        for (String d : dependencies) {
+            deps.addAll(Dependency.create(Dependency.TYPE_MODULE, d));
+        }
+        Report r = refineDependenciesAndReport(cnb, deps);
+        if (r.isModified()) {
+            dependencies.clear();
+            for (Dependency d : deps) {
+                dependencies.add(d.toString().replaceFirst("^module ", ""));
+            }
+            return r.toString();
+        } else {
+            return null;
+        }
     }
     
     // ---------------- STRUCTS --------------------

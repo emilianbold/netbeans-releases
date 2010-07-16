@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,7 @@ import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -129,10 +133,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     public void runAction(boolean doResume) {
-        runAction(null, doResume);
+        runAction(null, doResume, null);
     }
 
-    public void runAction(Object action, boolean doResume) {
+    public void runAction(Object action, boolean doResume, Lock lock) {
         smartLogger.finer("STEP INTO NEXT METHOD.");
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) {
@@ -140,20 +144,22 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             smartLogger.finer("Can not step into next method! No current thread!");
             return ;
         }
-        Lock lock;
-        if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            lock = ((JPDAThreadImpl) t).accessLock.writeLock();
-        } else {
-            lock = getDebuggerImpl().accessLock.writeLock();
-        }
-        lock.lock();
+        boolean locked = lock == null;
         try {
-            if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
-                // Can not step when it's not suspended.
-                if (smartLogger.isLoggable(Level.FINER)) {
-                    smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+            if (lock == null) {
+                if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    lock = ((JPDAThreadImpl) t).accessLock.writeLock();
+                } else {
+                    lock = getDebuggerImpl().accessLock.writeLock();
                 }
-                return ;
+                lock.lock();
+                if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
+                    // Can not step when it's not suspended.
+                    if (smartLogger.isLoggable(Level.FINER)) {
+                        smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+                    }
+                    return ;
+                }
             }
             JPDAThreadImpl[] resumeThreadPtr = new JPDAThreadImpl[] { null };
             int stepDepth;
@@ -186,7 +192,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             }
         } finally {
-            lock.unlock();
+            if (locked && lock != null) {
+                lock.unlock();
+            }
         }
     }
 
@@ -263,6 +271,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 } catch (InternalExceptionWrapper ex) {
                     return false;
                 } catch (VMDisconnectedExceptionWrapper ex) {
+                    return false;
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    return false;
+                } catch (ObjectCollectedExceptionWrapper oce) {
                     return false;
                 }
             //}
@@ -414,6 +426,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                             getDebuggerImpl().getOperator().unregister(stepIntoRequest);
                             stepIntoRequest = null;
                             return null;
+                        } catch (InvalidRequestStateExceptionWrapper irse) {
+                            getDebuggerImpl().getOperator().unregister(stepIntoRequest);
+                            stepIntoRequest = null;
+                            return null;
                         }
                     } catch (VMDisconnectedExceptionWrapper e) {
                         stepIntoRequest = null;
@@ -472,6 +488,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 return null;
             } catch (ObjectCollectedExceptionWrapper ocex) {
                 // the thread named in the request was collected.
+                getDebuggerImpl().getOperator().unregister(stepRequest);
+                stepRequest = null;
+                return null;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
                 getDebuggerImpl().getOperator().unregister(stepRequest);
                 stepRequest = null;
                 return null;

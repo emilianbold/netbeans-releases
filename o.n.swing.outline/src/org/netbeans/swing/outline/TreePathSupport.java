@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,8 @@ package org.netbeans.swing.outline;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeWillExpandListener;
@@ -77,15 +78,13 @@ import javax.swing.tree.TreePath;
  * @author  Tim Boudreau
  */
 public final class TreePathSupport {
-    private OutlineModel mdl;
-    private Map<TreePath,Boolean> expandedPaths = new HashMap<TreePath,Boolean>();
+
     private List<TreeExpansionListener> eListeners = new ArrayList<TreeExpansionListener>();
     private List<TreeWillExpandListener> weListeners = new ArrayList<TreeWillExpandListener>();
     private AbstractLayoutCache layout;
     
     /** Creates a new instance of TreePathSupport */
     public TreePathSupport(OutlineModel mdl, AbstractLayoutCache layout) {
-        this.mdl = mdl;
         this.layout = layout;
     }
     
@@ -93,22 +92,21 @@ public final class TreePathSupport {
      * a structural change, and any or all of the nodes it contains may no
      * longer be present. */
     public void clear() {
-        expandedPaths.clear();
     }
-    
+
     /** Expand a path.  Notifies the layout cache of the change,
      * stores the expanded path info (so reexpanding a parent node also reexpands
      * this path if a parent node containing it is later collapsed).  Fires
      * TreeWillExpand and TreeExpansion events. */
     public void expandPath (TreePath path) {
-        if (Boolean.TRUE.equals(expandedPaths.get(path))) {
+        assert SwingUtilities.isEventDispatchThread();
+        if (layout.isExpanded(path)) {
             //It's already expanded, don't waste cycles firing bogus events
             return;
         }
         TreeExpansionEvent e = new TreeExpansionEvent (this, path);
         try {
             fireTreeWillExpand(e, true);
-            expandedPaths.put(path, Boolean.TRUE);
             layout.setExpandedState(path, true);
             fireTreeExpansion(e, true);
         } catch (ExpandVetoException eve) {
@@ -121,14 +119,14 @@ public final class TreePathSupport {
      * this path if a parent node containing it is later collapsed).  Fires
      * TreeWillExpand and TreeExpansion events. */
     public void collapsePath (TreePath path) {
-        if (Boolean.FALSE.equals(expandedPaths.get(path))) {
+        assert SwingUtilities.isEventDispatchThread();
+        if (!layout.isExpanded(path)) {
             //It's already collapsed, don't waste cycles firing bogus events
             return;
         }
         TreeExpansionEvent e = new TreeExpansionEvent (this, path);
         try {
             fireTreeWillExpand(e, false);
-            expandedPaths.put(path, Boolean.FALSE);
             layout.setExpandedState(path, false);
             fireTreeExpansion(e, false);
         } catch (ExpandVetoException eve) {
@@ -139,7 +137,6 @@ public final class TreePathSupport {
     /** Remove a path's data from the list of known paths.  Called when
      * a tree model deletion event occurs */
     public void removePath (TreePath path) {
-        expandedPaths.remove(path);
     }
     
     private void fireTreeExpansion (TreeExpansionEvent e, boolean expanded) {
@@ -191,7 +188,8 @@ public final class TreePathSupport {
     
     
     public boolean hasBeenExpanded(TreePath path) {
-	return (path != null && expandedPaths.get(path) != null);
+        assert SwingUtilities.isEventDispatchThread();
+	return (path != null && layout.isExpanded(path));
     }
 
     /**
@@ -202,21 +200,19 @@ public final class TreePathSupport {
      *               true if all nodes in the path are expanded
      */
     public boolean isExpanded(TreePath path) {
+        assert SwingUtilities.isEventDispatchThread();
 	if(path == null)
 	    return false;
 
-	// Is this node expanded?
-	Object value = expandedPaths.get(path);
-
-        if (value == null) {
-            if (!mdl.getLayout().isRootVisible() && path.getParentPath() == null) {
-                return true; // Invisible root is always expanded
-            } else {
-                return false;
-            }
+        if (!layout.isRootVisible() && path.getParentPath() == null) {
+            return true; // Invisible root is always expanded
         }
-	if (!((Boolean) value).booleanValue())
-	    return false;
+
+	// Is this node expanded?
+	boolean nodeExpanded = layout.isExpanded(path);
+        if (!nodeExpanded) {
+            return false;
+        }
 
 	// It is, make sure its parent is also expanded.
 	TreePath parentPath = path.getParentPath();
@@ -224,35 +220,6 @@ public final class TreePathSupport {
 	if(parentPath != null)
 	    return isExpanded(parentPath);
         return true;
-    }
-    
-     protected void removeDescendantToggledPaths(Enumeration toRemove) {
-	 if(toRemove != null) {
-	     while(toRemove.hasMoreElements()) {
-                 TreePath[] descendants = getDescendantToggledPaths(
-                    (TreePath) toRemove.nextElement());
-                 for (int i=0; i < descendants.length; i++) {
-                     expandedPaths.remove(descendants[i]);
-                 }
-	     }
-	 }
-     }
-     
-    protected TreePath[] getDescendantToggledPaths(TreePath parent) {
-	if(parent == null)
-	    return null;
-
-	ArrayList<TreePath> descendants = new ArrayList<TreePath>();
-        Iterator<TreePath> nodes = expandedPaths.keySet().iterator();
-        TreePath path;
-        while (nodes.hasNext()) {
-            path = nodes.next();
-            if (parent.isDescendant(path)) {
-                descendants.add(path);
-            }
-        }
-        TreePath[] result = new TreePath[descendants.size()];
-        return descendants.toArray(result);
     }
     
     public boolean isVisible(TreePath path) {
@@ -269,26 +236,23 @@ public final class TreePathSupport {
     }    
     
     public TreePath[] getExpandedDescendants(TreePath parent) {
+        assert SwingUtilities.isEventDispatchThread();
         TreePath[] result = new TreePath[0];
 	if(isExpanded(parent)) {
             TreePath path;
-            Boolean value;
             List<TreePath> results = null;
 
-            if (!expandedPaths.isEmpty()) {
-
-                Iterator<TreePath> i = expandedPaths.keySet().iterator();
-
-                while(i.hasNext()) {
-                    path = i.next();
-                    value = expandedPaths.get(path);
-
+            Enumeration<TreePath> tpe = layout.getVisiblePathsFrom(parent);
+            if (tpe != null) {
+                while (tpe.hasMoreElements()) {
+                    path = tpe.nextElement();
                     // Add the path if it is expanded, a descendant of parent,
                     // and it is visible (all parents expanded). This is rather
                     // expensive!
-                    if(path != parent && value != null &&
-                       value.booleanValue() &&
-                        parent.isDescendant(path) && isVisible(path)) {
+                    if (path != parent &&
+                        layout.isExpanded(path) &&
+                        parent.isDescendant(path)) {
+                        
                         if (results == null) {
                             results = new ArrayList<TreePath>();
                         }

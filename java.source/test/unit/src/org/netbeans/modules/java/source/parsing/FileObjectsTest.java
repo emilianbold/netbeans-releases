@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,10 +43,10 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -55,7 +58,8 @@ import javax.swing.event.ChangeListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -123,7 +127,47 @@ public class FileObjectsTest extends NbTestCase {
         assertNotNull(uri2);
         assertEquals("jar:file:/tmp/00/foo.jar!/a/b/c/SIAPI%20query%20syntax.html", uri2.toString());   //NOI18N
     }
-    
+
+    public void testFileObjectNotCreated() throws Exception {
+        final File workDir = getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(workDir);
+        final FileObject existing = FileUtil.createData(wd, "test/foo/existing.java");
+        assertNotNull(existing);
+        final javax.tools.FileObject existingFo = FileObjects.nbFileObject(existing.getURL(), wd);
+        assertEquals ("test.foo.existing",((InferableJavaFileObject)existingFo).inferBinaryName());
+        try {
+            final InputStream in = existingFo.openInputStream();
+            in.close();
+        } catch (IOException e) {
+           assertFalse("InputSream should exist for existing file",true);
+        }
+        try {
+            final OutputStream out = existingFo.openOutputStream();
+            out.close();
+        } catch (IOException e) {
+           assertFalse("OutputStream should exist for existing file",true);
+        }
+        File nonExistring = new File (new File(new File (workDir,"test"),"foo"),"nonexisting.java");
+        final javax.tools.FileObject nonExistingFo = FileObjects.nbFileObject(nonExistring.toURI().toURL(), wd);
+        assertEquals ("test.foo.nonexisting",((InferableJavaFileObject)nonExistingFo).inferBinaryName());
+        try {
+            final InputStream in = nonExistingFo.openInputStream();
+            assertFalse("InputSream should not exist for non existing file",true);
+        } catch (IOException e) {}
+        try {
+            final OutputStream out = nonExistingFo.openOutputStream();
+            out.close();
+        } catch (IOException e) {
+           assertFalse("OutputStream should exist for existing file",true);
+        }
+        try {
+            final InputStream in = nonExistingFo.openInputStream();
+            in.close();
+        } catch (IOException e) {
+            assertFalse("InputSream should exist for non existing file after OutputStream taken",true);
+        }
+
+    }
     private static enum Call {
         READER,
         WRITER,

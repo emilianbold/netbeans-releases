@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,11 +42,13 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.File;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,9 +60,11 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,19 +86,32 @@ public class Bugzilla {
     private BugzillaClientManager clientManager;
 
     private KenaiSupport kenaiSupport;
+    private BugzillaConnector connector;
 
     private Bugzilla() {
+
+        BugtrackingRuntime.init();
+
         ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
-        BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
-        brc = new BugzillaRepositoryConnector();
-        clientManager = getRepositoryConnector().getClientManager();
-        BugzillaIssueProvider.getInstance();
         try {
             bcp.start(null);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+        // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
+        // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
+        // in the BugzillaRepositoryConnector-s constructor
+        brc = new BugzillaRepositoryConnector();
+        clientManager = brc.getClientManager();
+
+        // lazy ping tasklist issue provider to load issues ...
+        getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                BugzillaIssueProvider.getInstance();
+            }
+        });
     }
 
     public static synchronized Bugzilla getInstance() {
@@ -101,9 +121,13 @@ public class Bugzilla {
         return instance;
     }
 
+    static synchronized void init() {
+        getInstance();
+    }
+
     void shutdown() {
         try {
-            bcp.stop(null);
+            bcp.stop(null); // forces persisting of repository configuration
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -122,7 +146,7 @@ public class Bugzilla {
 
     public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) throws CoreException, MalformedURLException {
         getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
-        RepositoryConfiguration rc = BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
+        RepositoryConfiguration rc = brc.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
         return rc;
     }
 
@@ -143,7 +167,7 @@ public class Bugzilla {
      * 
      * @return
      */
-    public RequestProcessor getRequestProcessor() {
+    public final RequestProcessor getRequestProcessor() {
         if(rp == null) {
             rp = new RequestProcessor("Bugzilla", 1, true); // NOI18N
         }
@@ -151,21 +175,42 @@ public class Bugzilla {
     }
 
     public void addRepository(BugzillaRepository repository) {
+        assert repository != null;
         if(repository instanceof KenaiRepository) {
             // we don't store kenai repositories - XXX  shouldn't be even called
-            return;
+            return;        
         }
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().add(repository);
+            Set<BugzillaRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            repos.add(repository);
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+
             BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
         }
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
+    }
+
+    public BugzillaConnector getConnector() {
+        if (connector == null) {
+            connector = Lookup.getDefault().lookup(BugzillaConnector.class);
+        }
+        return connector;
     }
 
     public void removeRepository(BugzillaRepository repository) {
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().remove(repository);
+            Set<BugzillaRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            repos.remove(repository);
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             BugzillaConfig.getInstance().removeRepository(repository.getID());
         }
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
     }
 
     public BugzillaRepository[] getRepositories() {

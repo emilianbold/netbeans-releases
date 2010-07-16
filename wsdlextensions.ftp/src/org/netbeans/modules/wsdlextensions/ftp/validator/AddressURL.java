@@ -29,6 +29,7 @@ package org.netbeans.modules.wsdlextensions.ftp.validator;
 
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponent;
 import java.util.Collection;
+import java.util.Vector;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
@@ -58,4 +59,5 @@ public interface AddressURL {
     public String getPort();
     public void setPort(String port);
     public boolean parse(Collection<ResultItem> results, Validator validator, FTPComponent target);
+    public boolean parse(Vector results, FTPComponent target);
 }

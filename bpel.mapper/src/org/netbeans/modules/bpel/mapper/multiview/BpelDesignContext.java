@@ -22,8 +22,8 @@ package org.netbeans.modules.bpel.mapper.multiview;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
+import org.netbeans.modules.soa.xpath.mapper.context.XPathDesignContext;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  * Immutable holder of the current state of the BPEL mapper.
@@ -31,67 +31,30 @@ import org.openide.util.Lookup;
  * @author nk160297
  * @author Vitaly Bychkov
  */
-public interface BpelDesignContext {
+public interface BpelDesignContext extends XPathDesignContext {
     
     Node getActivatedNode();
-    Lookup getLookup();
     BpelModel getBpelModel();
+
+    /**
+     * The BPEL entity which defines a design context of the mapper.
+     * For example, in case selected entity is Assign, Copy, From or To,
+     * it always Assign.
+     * @return
+     */
     BpelEntity getContextEntity();
-    BpelEntity getGraphEntity();
+
+    /**
+     * The BPEL entity which correspond to current selection. For example in
+     * BPEL source editor. For BPEL diagram it usually the same as context entity
+     * because the diagram contains only activities. For example, diagram can
+     * contain Assign, but can't contain Copy, From, To and so on. 
+     * @return
+     */
     BpelEntity getSelectedEntity();
   
     VisibilityScope getVisibilityScope();
     
     StringBuffer getValidationErrMsgBuffer();
 
-/*
-    private WeakReference<BpelEntity> mEntityRef;
-    private WeakReference<Node> mActivatedNode;
-    private Lookup mLookup;
-    
-    public BpelDesignContext(BpelEntity entity, Node node, Lookup lookup) {
-        mEntityRef = new WeakReference<BpelEntity>(entity);
-        mActivatedNode = new WeakReference<Node>(node);
-        mLookup = lookup;
-    }
-
-    public BpelEntity getBpelEntity() {
-        return mEntityRef.get();
-    }
-    
-    public Node getActivatedNode() {
-        return mActivatedNode.get();
-    }
-    
-    public Lookup getLookup() {
-        return mLookup;
-    }
-    
-    public BpelModel getBpelModel() {
-        if(mEntityRef != null) {
-            BpelEntity entity = mEntityRef.get();
-            if (entity != null) {
-                return entity.getBpelModel();
-            }
-        }
-        return null;
-    }
-    
-    @Override
-    public String toString() {
-        return "BpelEntity: " + mEntityRef + " Lookup: " + mLookup;
-    }
-    
-    @Override
-    public boolean equals(Object otherObj) {
-        if (otherObj instanceof BpelDesignContext) {
-            BpelDesignContext otherContext = (BpelDesignContext)otherObj;
-            if (otherContext.getBpelEntity() == getBpelEntity() && 
-                    otherContext.getLookup() == getLookup()) {
-                return true;
-            }
-        }
-        return false;
-    }
- */ 
 }

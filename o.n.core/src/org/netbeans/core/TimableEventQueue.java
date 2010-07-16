@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,11 +57,12 @@ import java.io.DataOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.startup.Main;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -72,7 +76,7 @@ import org.openide.windows.WindowManager;
 final class TimableEventQueue extends EventQueue 
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM;
     private static final int REPORT;
     static {
@@ -84,6 +88,7 @@ implements Runnable {
         QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", quantum); // NOI18N
         REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", report); // NOI18N
     } 
+    private static final int WAIT_CURSOR_LIMIT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.waitcursor", 15000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
@@ -91,6 +96,8 @@ implements Runnable {
     private volatile long start;
     private volatile ActionListener stoppable;
     private volatile boolean isWaitCursor;
+    static volatile Thread eq;
+    private final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
@@ -106,8 +113,12 @@ implements Runnable {
         // XXX this is a hack!
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
-                    Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
+                    ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
+                    if (scl != null) {
+                        Thread.currentThread().setContextClassLoader(scl);
+                    }
                     Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue());
                     LOG.fine("Initialization done");
                     return null;
@@ -120,6 +131,7 @@ implements Runnable {
 
     @Override
     protected void dispatchEvent(AWTEvent event) {
+        eq = Thread.currentThread();
         try {
             tick("dispatchEvent"); // NOI18N
             super.dispatchEvent(event);
@@ -131,32 +143,24 @@ implements Runnable {
     private void done() {
         TIMEOUT.cancel();
         LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
-        long r = isWaitCursor ? REPORT * 10 : REPORT;
+        long r;
+        if (isWaitCursor) {
+            r = REPORT * 10;
+            if (r > WAIT_CURSOR_LIMIT) {
+                r = (WAIT_CURSOR_LIMIT > REPORT) ? WAIT_CURSOR_LIMIT : REPORT;
+            }
+        } else {
+            r = REPORT;
+        }
         isWaitCursor = false;
         long time = System.currentTimeMillis() - start;
         if (time > QUANTUM) {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
             if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
-                ActionListener ss = stoppable;
-                if (ss != null) {
-                    try {
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        DataOutputStream dos = new DataOutputStream(out);
-                        ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                        dos.close();
-                        if (dos.size() > 0) {
-                            Object[] params = new Object[]{out.toByteArray(), time};
-                            Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                        } else {
-                            LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
-                        }
-                        stoppable = null;
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    ignoreTill = System.currentTimeMillis() + PAUSE;
-                }
+                ignoreTill = System.currentTimeMillis() + PAUSE;
+                report(stoppable, time);
+                stoppable = null;
             }
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
@@ -171,12 +175,13 @@ implements Runnable {
 
     private void tick(String name) {
         start = System.currentTimeMillis();
-        if (start >= ignoreTill && WindowManager.getDefault().getMainWindow().isShowing()) {
+        if (start >= ignoreTill && mainWindow.isShowing()) {
             LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
         }
     }
 
+    @Override
     public void run() {
         if (stoppable != null) {
             LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
@@ -188,6 +193,32 @@ implements Runnable {
             stoppable = (ActionListener)selfSampler;
         }
         isWaitCursor |= isWaitCursor();
+    }
+
+    private static void report(final ActionListener ss, final long time) {
+        if (ss == null) {
+            return;
+        }
+        class R implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    dos.close();
+                    if (dos.size() > 0) {
+                        Object[] params = new Object[]{out.toByteArray(), time};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    } else {
+                        LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        RP.post(new R());
     }
 
     private static Object createSelfSampler() {
@@ -210,18 +241,31 @@ implements Runnable {
                 return true;
             }
             Window w = SwingUtilities.windowForComponent(focus);
-            if (w != null && w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            if (w != null && isWaitCursorOnWindow(w)) {
                 LOG.finer("wait cursor on window"); // NOI18N
                 return true;
             }
         }
         for (Frame f : Frame.getFrames()) {
-            if (f.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            if (isWaitCursorOnWindow(f)) {
                 LOG.finer("wait cursor on frame"); // NOI18N
                 return true;
             }
         }
         LOG.finest("no wait cursor"); // NOI18N
+        return false;
+    }
+
+    private static boolean isWaitCursorOnWindow(Window w) {
+        if (w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            return true;
+        }
+        if (w instanceof JFrame) {
+            Component glass = ((JFrame)w).getGlassPane();
+            if (glass.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                return true;
+            }
+        }
         return false;
     }
 

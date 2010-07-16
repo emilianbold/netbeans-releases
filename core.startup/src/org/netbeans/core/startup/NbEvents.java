@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,11 @@
 package org.netbeans.core.startup;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -365,7 +367,7 @@ final class NbEvents extends Events {
                     if (EventType.ACTIVATED == hlevt.getEventType()) {
                         assert hlevt.getURL() != null;
                         try {
-                            showUrl (hlevt.getURL ().toURI (), c);
+                            Desktop.getDesktop().browse(hlevt.getURL().toURI());
                         } catch (Exception ex) {
                             Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
                         }
@@ -417,16 +419,5 @@ final class NbEvents extends Events {
         
     private static void setStatusText (String msg) {
         Main.setStatusText (msg);
-    }
-    
-    private static void showUrl (URI uri, Component c) throws Exception {
-        SpecificationVersion javaSpec = new SpecificationVersion (System.getProperty("java.specification.version")); // NOI18N
-        if (javaSpec.compareTo (new SpecificationVersion ("1.6")) >= 0) {
-            Class<?> desktopC = Class.forName ("java.awt.Desktop");
-            Method getDesktopM = desktopC.getMethod ("getDesktop");
-            Object desktopInstanceO = getDesktopM.invoke (null);
-            Method browseM = desktopC.getMethod ("browse", URI.class);
-            browseM.invoke (desktopInstanceO, uri);
-        }
     }
 }

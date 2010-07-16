@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,9 +46,12 @@ package org.netbeans.modules.project.libraries;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -64,43 +70,45 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     private LibraryImplementation library;
 
     private String libraryType;
-    
     private String libraryDescription;
-    
     private String libraryName;
-
     private String localizingBundle;
-
     private Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
-    
+
     // last volume
     private List<URL> cpEntries;
-    
     //last volume type
     private String contentType;
-    
     //parsing volume?
     private boolean inVolume = false;
-    
-    public static final boolean DEBUG = false;
+    //Used flag preventing from being reused
+    private final AtomicBoolean used = new AtomicBoolean();
 
-
-    /**
-     */
-    public LibraryDeclarationHandlerImpl() {
+    @Override
+    public void startDocument() {
+        if (used.getAndSet(true)) {
+            throw new IllegalStateException("The LibraryDeclarationHandlerImpl was already used, create a new instance");   //NOI18N
+        }
     }
-    
+
+    @Override
+    public void endDocument() {
+    }
+
+    @Override
     public void start_volume(final Attributes meta) throws SAXException {
         cpEntries = new ArrayList<URL>();
         this.inVolume = true;
     }
-    
+
+    @Override
     public void end_volume() throws SAXException {
         contentTypes.put (contentType, cpEntries);
         this.inVolume = false;
         this.contentType = null;
     }
-    
+
+    @Override
     public void handle_type(final String data, final Attributes meta) throws SAXException {
 		if (data == null || data.length () == 0) {
 			throw new SAXException ("Empty value of type element");	//NOI18N
@@ -112,26 +120,16 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             this.libraryType = data;
         }        
     }
-        
+
+    @Override
     public void start_library(final Attributes meta) throws SAXException {
         if ("1.0".equals(meta.getValue("version")) == false) {  // NOI18N
             throw new SAXException("Invalid librray descriptor version"); // NOI18N
         }
-        cleanUp();
     }
-    
-    /**
-     * Sets preconditions
-     */
-    private void cleanUp () {
-        this.libraryName = null;
-        this.libraryDescription = null;
-        this.libraryType = null;
-        this.localizingBundle = null;
-        this.contentTypes.clear ();
-    }
-    
-    public void end_library() throws SAXException {        
+
+    @Override
+    public void end_library() throws SAXException {
         boolean update;
         if (this.library != null) {
             if (this.libraryType == null || !this.libraryType.equals(this.library.getType())) {
@@ -141,10 +139,12 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             update = true;
         }
         else {
+            if (this.libraryType == null) {
+                throw new SAXParseException("Unspecified library type for: "+this.libraryName, null); //NOI18N
+            }
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
             if (provider == null) {
-                LibrariesStorage.LOG.warning("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType);
-                return;
+                throw new SAXParseException("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType,null);
             }
             this.library = provider.createLibrary();
             update = false;
@@ -163,7 +163,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();
             try {
-                if (!update || !safeEquals (this.library.getContent(contentType),cp)) {
+                if (!update || !urlsEqual(this.library.getContent(contentType),cp)) {
                     this.library.setContent(contentType, cp);
                 }
             } catch (IllegalArgumentException e) {
@@ -172,20 +172,24 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         }        
     }
 
+    @Override
     public void handle_resource(URL data, final Attributes meta) throws SAXException {
         if (data != null) {
             cpEntries.add(data);
         }
     }
-        
+
+    @Override
     public void handle_name(final String data, final Attributes meta) throws SAXException {
         this.libraryName = data;
     }
-    
+
+    @Override
     public void handle_description (final String data, final Attributes meta) throws SAXException {
         libraryDescription = data;
     }
 
+    @Override
     public void handle_localizingBundle (final String data, final Attributes meta) throws SAXException {
         this.localizingBundle = data;
     }
@@ -195,14 +199,28 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
     public LibraryImplementation getLibrary () {
-        LibraryImplementation lib = this.library;
-        this.library = null;
-        return lib;
+        return this.library;
     }
 
 
     private static boolean safeEquals (Object o1, Object o2) {
         return o1 == null ? o2 == null : o1.equals (o2);
+    }
+
+    private static boolean urlsEqual (final Collection<? extends URL> first, final Collection<? extends URL> second) {
+        assert first != null;
+        assert second != null;
+        if (first.size() != second.size()) {
+            return false;
+        }
+        for (Iterator<? extends URL> fit = first.iterator(), sit = second.iterator(); fit.hasNext();) {
+            final URL furl = fit.next();
+            final URL surl = sit.next();
+            if (!furl.toExternalForm().equals(surl.toExternalForm())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

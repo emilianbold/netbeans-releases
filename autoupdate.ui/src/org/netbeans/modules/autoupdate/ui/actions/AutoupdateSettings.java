@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -123,6 +126,12 @@ public class AutoupdateSettings {
         tempIdeIdentity = newIdeIdentity;
         if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity () || getPreferences ().get (PROP_QUALIFIED_IDENTITY, null) == null) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
+            
+            //catching strange IDs like
+            //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6
+            assert !newIdeIdentity.startsWith("-n+") : "Generated identity (" + newIdeIdentity + ") is of wrong format. " +
+                    "Old identity was [" + oldIdeIdentity + "].";
+
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
             String sid = getSuperIdentity ();
             if(sid!=null) {
@@ -208,7 +217,7 @@ public class AutoupdateSettings {
                     // don't exceed 128 chars for prefix
                     if (newPrefix.length () > 128) {
                         newPrefix = newPrefix.substring (0, 128);
-                    }
+                    }                    
                 } finally {
                     is.close();
                 }
@@ -221,6 +230,15 @@ public class AutoupdateSettings {
         } else {
             err.log (Level.FINER, "No new prefix."); // NOI18N
         }
+        //catching strange IDs like
+        //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6
+        assert !(newPrefix + id).startsWith("-n+") : 
+            "Product Indentity is of wrong format, prefix=" +
+                newPrefix + ", id=" +
+                id + ", oldPrefix=" +
+                oldPrefix +
+                ",oldIdeIdentity=" + oldIdeIdentity;
+        
         return newPrefix + id;
     }
 

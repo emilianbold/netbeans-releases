@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.tree.search;
 import java.util.List;
 import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.soa.ui.tree.TreeItemFinder.FindResult;
+import org.netbeans.modules.soa.xpath.mapper.tree.DirectedList;
 
 /**
  * The finder for looking a sequence of nested objects in a tree.
@@ -37,6 +38,11 @@ public class PathFinder implements TreeItemFinder {
         mPathStepsList = pathStepsList;
     }
     
+    public PathFinder(DirectedList<Object> pathStepsDList) {
+        List<Object> pathStepsList = pathStepsDList.constructBackwardList();
+        mPathStepsList = pathStepsList;
+    }
+
     protected synchronized List<Object> getPathStepsList() {
         return mPathStepsList;
     }

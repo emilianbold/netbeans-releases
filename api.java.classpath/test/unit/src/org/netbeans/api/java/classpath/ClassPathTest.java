@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -301,12 +304,7 @@ public class ClassPathTest extends NbTestCase {
     public void testChangesAcknowledgedWithoutListener() throws Exception {
         // Discovered in #72573.
         clearWorkDir();
-        File root = new File(getWorkDir(), "root");
-        URL rootU = root.toURI().toURL();
-        if (!rootU.toExternalForm().endsWith("/")) {
-            rootU = new URL(rootU.toExternalForm() + "/");
-        }
-        ClassPath cp = ClassPathSupport.createClassPath(new URL[] {rootU});
+        ClassPath cp = ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "root")));
         assertEquals("nothing there yet", null, cp.findResource("f"));
         FileObject f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "root/f");
         assertEquals("found new file", f, cp.findResource("f"));
@@ -559,8 +557,8 @@ public class ClassPathTest extends NbTestCase {
                 pcs.firePropertyChange(e);
             }
         }
-        FPRI fpri1 = new FPRI(new File(getWorkDir(), "src1").toURI().toURL());
-        FPRI fpri2 = new FPRI(new File(getWorkDir(), "src2").toURI().toURL());
+        FPRI fpri1 = new FPRI(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "src1")));
+        FPRI fpri2 = new FPRI(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "src2")));
         class L implements PropertyChangeListener {
             int cnt;
             public void propertyChange(PropertyChangeEvent e) {
@@ -571,8 +569,7 @@ public class ClassPathTest extends NbTestCase {
         }
         ClassPath cp = ClassPathSupport.createClassPath(Arrays.asList(fpri1, fpri2));
         L l = new L();
-        cp.addPropertyChangeListener(l);        
-        //No events fired before cp.entries() called
+        cp.addPropertyChangeListener(l);
         fpri1.fire(null);
         assertEquals(0, l.cnt);
         cp.entries();
@@ -658,6 +655,63 @@ public class ClassPathTest extends NbTestCase {
         long et = System.currentTimeMillis();
         System.out.println("Loaded: " + noLoaded + " in: " + (et-st)+"ms");
     }
+
+    public void testMemoryLeak183370() throws Exception {
+        final File  wd = getWorkDir();
+        class TestResource implements PathResourceImplementation {
+            private final File f;
+            private final PropertyChangeSupport sup = new PropertyChangeSupport(this);
+            public TestResource(final File f){
+                this.f=f;
+            }
+            @Override
+            public URL[] getRoots() {
+                return new URL[]{FileUtil.urlForArchiveOrDir(f)};
+            }
+            @Override
+            public ClassPathImplementation getContent() {
+                return null;
+            }
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                sup.addPropertyChangeListener(listener);
+            }
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                sup.removePropertyChangeListener(listener);
+            }
+        };
+        class TestCPImpl implements ClassPathImplementation {
+            private final List<? extends PathResourceImplementation> result = Arrays.asList(new TestResource(new File(wd,"1")), new TestResource(new File(wd,"2")));
+            private final PropertyChangeSupport sup = new PropertyChangeSupport(this);
+
+            @Override
+            public List<? extends PathResourceImplementation> getResources() {
+                return result;
+            }
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                sup.addPropertyChangeListener(listener);
+            }
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                sup.removePropertyChangeListener(listener);
+            }
+        };
+        final TestCPImpl impl = new TestCPImpl();
+        final ClassPath cp = ClassPathFactory.createClassPath(impl);
+        assertEquals(2 ,cp.entries().size());
+        assertEquals(impl.getResources().get(0).getRoots()[0] ,cp.entries().get(0).getURL());
+        assertEquals(impl.getResources().get(1).getRoots()[0] ,cp.entries().get(1).getURL());
+        assertEquals(1,((TestResource)impl.getResources().get(0)).sup.getPropertyChangeListeners().length);
+        assertEquals(1,((TestResource)impl.getResources().get(1)).sup.getPropertyChangeListeners().length);
+        impl.sup.firePropertyChange(ClassPathImplementation.PROP_RESOURCES,null,null);
+        assertEquals(2 ,cp.entries().size());
+        assertEquals(impl.getResources().get(0).getRoots()[0] ,cp.entries().get(0).getURL());
+        assertEquals(impl.getResources().get(1).getRoots()[0] ,cp.entries().get(1).getURL());
+        assertEquals(1,((TestResource)impl.getResources().get(0)).sup.getPropertyChangeListeners().length);
+        assertEquals(1,((TestResource)impl.getResources().get(1)).sup.getPropertyChangeListeners().length);
+    }
     
     private Set<String> getClassNames (final ClassPath cp) {
         Set<String> classNames = new HashSet<String> ();
@@ -706,8 +760,30 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(cp.toString(), ClassPathSupport.createClassPath(cp.toString()).toString());
         // XXX could also test IAE (tricky - need to have a URLMapper in Lookup, etc.)
     }
+
+    public void testEmptyClassPath() throws Exception {
+        final ClassPath cp = ClassPath.EMPTY;
+        assertNotNull(cp);
+        assertTrue(cp.entries().isEmpty());
+    }
+
     private String massagePath(String path) throws Exception {
         return path.replace('/', File.separatorChar).replace(':', File.pathSeparatorChar).replace("<root>", getWorkDir().getAbsolutePath());
+    }
+
+    public void testInvalidURLs() throws Exception {
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/dir/without/final/slash"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar/"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
     }
 
 }

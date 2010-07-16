@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.compapp.projects.base.ui;
 
 import java.util.Map;
@@ -28,9 +27,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
-// todo NB_65_VLV
-//import org.netbeans.modules.xml.catalogsupport.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.compapp.projects.base.ui.customizer.catalog.CustomizerProviderImpl;
+import org.netbeans.modules.xml.catalogsupport.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.CustomizerGeneral;

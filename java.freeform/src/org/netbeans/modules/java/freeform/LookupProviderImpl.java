@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -87,6 +90,7 @@ public class LookupProviderImpl implements LookupProvider {
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
+            new AnnotationProcessingQueryImpl(projectHelper, projectEvaluator, aux),
             new OpenHook(project, cp), // ProjectOpenedHook
             new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
@@ -99,8 +103,7 @@ public class LookupProviderImpl implements LookupProvider {
     }
     
     public static boolean isMyProject(AuxiliaryConfiguration aux) {
-        return aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true) != null ||
-               aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true) != null;
+        return JavaProjectGenerator.getJavaCompilationUnits(aux) != null;
     }
     
     private static final class HelpIDFragmentProviderImpl implements HelpIDFragmentProvider {
@@ -142,12 +145,28 @@ public class LookupProviderImpl implements LookupProvider {
         }
 
         public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
-            if (elementName.equals(JavaProjectNature.EL_JAVA) && namespace.equals(JavaProjectNature.NS_JAVA_2) && shared) {
-                Element nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-                if (nue == null) {
-                    Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                    if (old != null) {
-                        nue = upgradeSchema(old);
+            if (elementName.equals(JavaProjectNature.EL_JAVA) && shared) {
+                Element nue = null;
+                if (namespace.equals(JavaProjectNature.NS_JAVA_3)) {
+                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+                    if (nue == null) {
+                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+                        if (old != null) {
+                            nue = upgradeSchema(old);
+                        } else {
+                            old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                            if (old != null) {
+                                nue = upgradeSchema(old);
+                            }
+                        }
+                    }
+                } else if (namespace.equals(JavaProjectNature.NS_JAVA_2)) {
+                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+                    if (nue == null) {
+                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                        if (old != null) {
+                            nue = upgradeSchema(old, JavaProjectNature.NS_JAVA_2);
+                        }
                     }
                 }
                 return nue;
@@ -165,13 +184,17 @@ public class LookupProviderImpl implements LookupProvider {
         }
         
     }
-    
+
     static Element upgradeSchema(Element old) {
+        return upgradeSchema(old, JavaProjectNature.NS_JAVA_3);
+    }
+
+    static Element upgradeSchema(final Element old, final String to) {
         Document doc = old.getOwnerDocument();
-        Element nue = doc.createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
-        copyXMLTree(doc, old, nue, JavaProjectNature.NS_JAVA_2);
+        Element nue = doc.createElementNS(to, JavaProjectNature.EL_JAVA);
+        copyXMLTree(doc, old, nue, to);
         return nue;
-    }  
+    }
     // Copied from org.netbeans.modules.java.j2seproject.UpdateHelper with changes; could be an API eventually:
     private static void copyXMLTree(Document doc, Element from, Element to, String newNamespace) {
         NodeList nl = from.getChildNodes();

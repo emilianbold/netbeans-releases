@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,6 @@ package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
 import java.util.*;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -54,11 +55,13 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.nodes.Node;
 
 /**
  * Reverts local changes.
@@ -67,15 +70,33 @@ import org.netbeans.modules.mercurial.util.HgCommand;
  */
 public class RevertModificationsAction extends ContextAction {
     
-    private final VCSContext context;
     private static String HG_TIP = "tip"; // NOI18N
  
-    public RevertModificationsAction(String name, VCSContext context) {        
-        this.context =  context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+            return false;
+        }
+        Set<File> roots = context.getRootFiles();
+        if(roots == null) return false;
+        for (File root : roots) {
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
+            if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_GetClean";                                 //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         revert(context);
     }
 
@@ -132,7 +153,7 @@ public class RevertModificationsAction extends ContextAction {
             
             // revStr == null => no -r REV in hg revert command
             // No revisions to revert too
-            if (revStr != null && NbBundle.getMessage(RevertModificationsAction.class,
+            if (revStr != null && NbBundle.getMessage(ChangesetPickerPanel.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
                 logger.output(
                         NbBundle.getMessage(RevertModificationsAction.class,
@@ -170,6 +191,8 @@ public class RevertModificationsAction extends ContextAction {
             if (conflictFiles.length != 0) {
                 ConflictResolvedAction.conflictResolved(repository, conflictFiles);
             }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -182,21 +205,5 @@ public class RevertModificationsAction extends ContextAction {
                 "MSG_REVERT_DONE")); // NOI18N
         logger.outputInRed(""); // NOI18N
  
-    }
-
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
-            return false;
-        }
-        Set<File> roots = context.getRootFiles();
-        if(roots == null) return false;
-        for (File root : roots) {
-            FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
-            if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                return false;
-            }
-        }
-        return true; 
     }
 }

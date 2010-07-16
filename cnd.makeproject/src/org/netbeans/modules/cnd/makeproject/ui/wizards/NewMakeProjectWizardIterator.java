@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,8 +53,10 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -67,7 +72,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new Make project.
  */
-public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final long serialVersionUID = 1L;
     public static final String APPLICATION_PROJECT_NAME = "CppApplication"; // NOI18N
@@ -192,9 +197,23 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return steps;
     }
 
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiate();
+        } finally {
+            handle.finish();
+        }
+    }
+
+
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
+        String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -232,18 +251,24 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N
             }
-            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
+            debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
-            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
+            release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
-            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null, null, mainFile);
+            ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, dirF);
+            prjParams.setMakefileName(makefileName);
+            prjParams.setConfigurations(confs);
+            prjParams.setMainFile(mainFile);
+            MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
@@ -255,6 +280,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     private transient WizardDescriptor.Panel[] simplePanels;
     private transient WizardDescriptor wiz;
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -276,6 +302,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir", null); // NOI18N
         this.wiz.putProperty("name", null); // NOI18N
@@ -288,6 +315,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         simplePanels = null;
     }
 
+    @Override
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName"), // NOI18N
                 new Object[]{Integer.valueOf(index + 1), Integer.valueOf(panels.length)});
@@ -297,6 +325,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return wizardtype == TYPE_MAKEFILE && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
     }
 
+    @Override
     public boolean hasNext() {
         if (isSimple()) {
             return index < simplePanels.length - 1;
@@ -305,10 +334,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -316,6 +347,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -323,6 +355,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         index--;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         if (isSimple()) {
             return simplePanels[index];
@@ -332,12 +365,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-
+    
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);

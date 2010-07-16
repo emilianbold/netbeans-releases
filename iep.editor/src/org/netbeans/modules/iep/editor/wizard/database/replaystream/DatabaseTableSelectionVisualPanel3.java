@@ -17,7 +17,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.share.SharedConstants;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DBArtifactTreeModel;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
@@ -64,11 +64,13 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         jLabel3 = new javax.swing.JLabel();
         jndiNameTextField = new javax.swing.JTextField();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Polling Configuration"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jPanel1.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, "Select timestamp column which will be used to fetch records one by one in increasing order of time:");
+        jLabel5.setLabelFor(jTree1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jLabel5.text")); // NOI18N
 
         jScrollPane1.setViewportView(jTree1);
+        jTree1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jtree1.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -90,9 +92,10 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
                 .addContainerGap())
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Database Configuration"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jPanel3.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "JNDI Name:"); // NOI18N
+        jLabel3.setLabelFor(jndiNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jLabel3.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -112,6 +115,8 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
                     .add(jndiNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jndiNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseTableSelectionVisualPanel3.class, "DatabaseTableSelectionVisualPanel3.jndiNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

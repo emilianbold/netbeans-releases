@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +72,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
@@ -89,7 +93,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -101,9 +104,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
@@ -251,8 +252,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
             if (!plaf.isValid()) { // #134492
                 NbPlatform def = NbPlatform.getDefaultPlatform();
-                LOG.log(Level.FINE, "Platform not found, switching to default (" + def.getDestDir() + ")");
                 if (def != null) {
+                    LOG.log(Level.FINE, "Platform not found, switching to default ({0})", def.getDestDir());
                     plaf = def;
                 }
             }
@@ -448,7 +449,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext();) {
             ModuleDependency dep = (ModuleDependency) it.next();
-            if (dep.hasImplementationDepedendency()) {
+            if (dep.hasImplementationDependency()) {
                 return true;
             }
         }
@@ -815,8 +816,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet<String> provTokens = new TreeSet<String>();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
-                    ModuleEntry me = (ModuleEntry) it.next();
+                for (ModuleEntry me : getModuleList().getAllEntries()) {
                     provTokens.addAll(Arrays.asList(me.getProvidedTokens()));
                 }
                 String[] result = new String[provTokens.size()];
@@ -915,7 +915,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 pxm.replaceDependencies(depsToSave);
             } catch (CyclicDependencyException ex) {
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex);
             }
         }
         Set<String> friends = getFriendListModel().getFriends();
@@ -1069,6 +1069,16 @@ public final class SingleModuleProperties extends ModuleProperties {
 
     // XXX should be something similar provided be EditableManifest?
     private void setManifestAttribute(EditableManifest em, String key, String value) {
+        boolean isOSGi = em.getAttribute(ManifestManager.BUNDLE_SYMBOLIC_NAME, null) != null;
+        if (isOSGi) {
+            if (ManifestManager.OPENIDE_MODULE.equals(key)) {
+                key = ManifestManager.BUNDLE_SYMBOLIC_NAME;
+            }
+            if (ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION.equals(key)) {
+                key = ManifestManager.BUNDLE_VERSION;
+            }
+        }
+
         assert value != null;
         if ("".equals(value)) {
             if (em.getAttribute(key, null) != null) {
@@ -1112,8 +1122,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet<String> allCategories = new TreeSet<String>(Collator.getInstance());
                 Set<ModuleDependency> allDependencies = new HashSet<ModuleDependency>();
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
-                    ModuleEntry me = (ModuleEntry) it.next();
+                for (ModuleEntry me : getModuleList().getAllEntries()) {
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
                         allDependencies.add(new ModuleDependency(me));
                     }

@@ -154,8 +154,8 @@ public class AxiomUtils {
                 compName = ((AXIType)axiComponent).getName();
             }
             //
-            String namespace = isUnqualified(axiComponent) ?
-                "" : axiComponent.getTargetNamespace();
+            String namespace = getNamespace(axiComponent);
+
             //
             if (compName != null && compName.length() != 0) {
                 PathItem pathItem = new PathItem(axiComponent, namespace, compName, null);
@@ -248,7 +248,7 @@ public class AxiomUtils {
         //
         if (compName != null && compName.length() != 0) {
             String namespace = getNamespace(axiComponent);
-            
+
             //
             PathItem pathItem = new PathItem(
                     axiComponent, namespace, compName, predicate);

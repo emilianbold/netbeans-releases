@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -377,10 +379,7 @@ public class NbServiceTagSupport2 {
 
         String command = "/usr/bin/zonename";
         File f = new File(command);
-        // com.sun.servicetag package has to be compiled with JDK 5 as well
-        // JDK 5 doesn't support the File.canExecute() method.
-        // Risk not checking isExecute() for the zonename command is very low.
-        if (f.exists()) {
+        if (f.canExecute()) {
             ProcessBuilder pb = new ProcessBuilder(command);
             Process p = pb.start();
             String output = Util.commandOutput(p);
@@ -498,7 +497,6 @@ public class NbServiceTagSupport2 {
         }
     }
     
-    private static final String NB_HEADER_PNG_KEY = "@@NB_HEADER_PNG@@";
     private static final String PRODUCT_KEY = "@@PRODUCT@@";
     private static final String PRODUCT_TITLE_KEY = "@@PRODUCT_TITLE@@";
     private static final String REGISTRATION_URL_KEY = "@@REGISTRATION_URL@@";
@@ -511,10 +509,27 @@ public class NbServiceTagSupport2 {
         String registerURL = NbConnectionSupport.getRegistrationURL(
             regData.getRegistrationURN(), product).toString();
         
-        //Extract image from jar
-        String resource = "/org/netbeans/modules/reglib/resources/nb_header.png";
-        File img = new File(rootDir + File.separator + ST_DIR + File.separator + "nb_header.png");
-        String headerImageSrc = img.toURI().toURL().toString();       
+        //Extract images from jar
+        String resourcePrefix = "/org/netbeans/modules/reglib/resources/";
+        String[] imgResources = {
+            "kz_backg.png",
+            "kz_backh.png",
+            "oracle-white.png",
+            "pg_box_bg_lft_bot.gif",
+            "pg_box_bg_rpt_bot.gif",
+            "pg_box_bg_rt_bot.gif",
+            "pg_box_hder_bg_lft.gif",
+            "pg_box_hder_bg_rpt.gif",
+            "pg_box_hder_bg_rt.gif",
+            "pg_box_side_lft.gif",
+            "pg_box_side_rt.gif",
+            "red-arrow.gif",
+            "red_triangle.gif"};
+
+        
+        for(String resourceName : imgResources) {
+        String resource = resourcePrefix + resourceName;
+        File img = new File(rootDir + File.separator + ST_DIR, resourceName);
         InputStream in = NbServiceTagSupport2.class.getResourceAsStream(resource);
         if (in == null) {
             // if the resource file is missing
@@ -551,6 +566,7 @@ public class NbServiceTagSupport2 {
                 in.close();
             }
         }
+        }
         // Format the registration data in one single line
         String xml = regData.toString();
         String lineSep = System.getProperty("line.separator");
@@ -559,7 +575,7 @@ public class NbServiceTagSupport2 {
         String name = REGISTRATION_HTML_NAME;
         File f = new File(parent, name + ".html");
         
-        in = null;
+        InputStream in = null;
         Locale l = Locale.getDefault();
         Locale [] locales = new Locale[] {
           new Locale(l.getLanguage(), l.getCountry(), l.getVariant()),
@@ -568,16 +584,16 @@ public class NbServiceTagSupport2 {
           new Locale("")
         };
         for (Locale locale : locales) {
-           resource = "/org/netbeans/modules/reglib/resources/register" + (locale.toString().equals("") ? "" : ("_" + locale)) + ".html";
+           String resource = "/org/netbeans/modules/reglib/resources/register" + (locale.toString().equals("") ? "" : ("_" + locale)) + ".html";
            LOG.log(Level.FINE,"Looking for html in: " + resource);
            in = NbServiceTagSupport2.class.getResourceAsStream(resource);
            if (in != null) {
+               LOG.log(Level.FINE,"Found html in: " + resource);
                break;
            }
         }
         if (in != null) {
             try {
-                LOG.log(Level.FINE,"Found html in: " + resource);
                 LOG.log(Level.FINE,"Generating " + f);
 
                 BufferedReader reader = null;
@@ -603,8 +619,6 @@ public class NbServiceTagSupport2 {
                             output = line.replace(PRODUCT_KEY, productName);
                         } else if (line.contains(PRODUCT_TITLE_KEY)) {
                             output = line.replace(PRODUCT_TITLE_KEY, productNameTitle);
-                        } else if (line.contains(NB_HEADER_PNG_KEY)) {
-                            output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
                         } else if (line.contains(REGISTRATION_URL_KEY)) {
                             output = line.replace(REGISTRATION_URL_KEY, registerURL);
                         } else if (line.contains(REGISTRATION_PAYLOAD_KEY)) {

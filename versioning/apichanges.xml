@@ -3,7 +3,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -16,9 +19,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -106,6 +109,40 @@ is the proper place.
 
     <changes>
         
+        <change>
+            <api name="versioning_spi"/>
+            <summary>refreshRecursively() method added to VCSInterceptor</summary>
+            <version major="1" minor="17"/>
+            <date day="19" month="4" year="2010"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>VCSInterceptor.refreshRecursively</code> allows a version control system to get better control on behavior of recursive listener.
+                With this method a versioning system can disable recursive listening on specific folders (e.g. versioning system metadata) and on the other hand 
+                learn about and handle external changes inside the folder in its own way.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="181684"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
+            <summary>Added getVisibilityQueryImplementation() method to VersioningSystem</summary>
+            <version major="1" minor="10"/>
+            <date day="8" month="12" year="2009"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                Some Versioning systems provide a VisibilityQueryImplementation. This API change has two purposes:
+                1. There will be only one registered VQI (Versioning manager) that will delegate the query to the appropriate
+                versioning system which will speed things up.
+                2. It makes it clear and explicit that implementors of a VersioningSystem might want to provide the query.
+                It would be possible for them to just implement and register their own VisibilityQueryImplementation but
+                they could easily forget to do that.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VersioningSystem"/>
+            <issue number="146634"/>
+        </change>
+
         <change>
             <api name="versioning_spi"/>
             <summary>Added getCollocationQueryImplementation() method to VersioningSystem</summary>

@@ -22,26 +22,24 @@ import java.io.File;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 
 import org.apache.xml.resolver.Catalog;
-import org.apache.xml.resolver.NbCatalogManager;
-import org.apache.xml.resolver.tools.NbCatalogResolver;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.helpers.Debug;
+import org.apache.xml.resolver.tools.CatalogResolver;
 
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  * Helper class to read catalog.xml
  * @author Sreenivasan Genipudi
  */
 public class ApacheResolverHelper {
+
     /**
-     * Constructor
-     */
-    public ApacheResolverHelper() {
-    }
-    
-    /**
-     * Checks if the given location is  listed in catalog.xml
+     * Checks if the given location is listed in catalog.xml
      * @param catalogLocation Location of Catalog.xml
      * @param locationURI The location URI to look for
      * @return true if present else returns false
@@ -58,14 +56,13 @@ public class ApacheResolverHelper {
     }
 
     public static String getURI(String catalogLocation, String locationURI) {
-        NbCatalogResolver catalogResolver;
-        Catalog apacheCatalogResolverObj;
-    
+        CatalogResolver catalogResolver;
+        Catalog apacheCatalogResolverObj;    
         
-        NbCatalogManager manager = new NbCatalogManager(null);
+        CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new NbCatalogResolver(manager);
+        catalogResolver = new CatalogResolver(manager);
         
         apacheCatalogResolverObj = catalogResolver.getCatalog();
         try {
@@ -87,19 +84,18 @@ public class ApacheResolverHelper {
         }
         return result;
     }
-    
 
     public static boolean isPresent(ArrayList<File> catalogLocationList, String locationURI) {
-        NbCatalogResolver catalogResolver;
+        CatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;    
-
         
-        NbCatalogManager manager = new NbCatalogManager(null);
+        CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
-        catalogResolver = new NbCatalogResolver(manager);
+        catalogResolver = new CatalogResolver(manager);
         
         apacheCatalogResolverObj = catalogResolver.getCatalog();
+
         for (File catalogLocation : catalogLocationList ) {
             try {
              if (catalogLocation != null && catalogLocation.exists()) {
@@ -127,5 +123,4 @@ public class ApacheResolverHelper {
         } 
         return false;
     }
-    
 }

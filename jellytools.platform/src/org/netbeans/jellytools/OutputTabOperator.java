@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,7 +52,6 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
-import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.FindAction;
@@ -57,9 +59,12 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.openide.util.Lookup;
 
 /** Operator for Output tab. It resides in output top component.
  * <p>
@@ -142,6 +147,15 @@ public class OutputTabOperator extends JComponentOperator {
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();
 
+    /**
+     * Buttons in the toolbar to the left of the currently active output tab.
+     * They apply to depend on the currently open tab, so they're placed
+     * here instead of OutputOperator. This way it's also more useful.
+     */
+    private JButtonOperator btnReRun;
+    private JButtonOperator btnStop;
+    private JButtonOperator btnAntSettings;
+
     /** Create new instance of OutputTabOperator from given component.
      * @param source JComponent source
      */
@@ -167,7 +181,61 @@ public class OutputTabOperator extends JComponentOperator {
         super((JComponent)new OutputOperator().waitSubComponent(new OutputTabSubchooser(name), index));
         makeComponentVisible();
     }
-    
+
+    /**
+     * Returns operator for the Re-Run button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnReRun()
+    {
+        if (btnReRun == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnReRun = new JButtonOperator(co);
+        }
+        return btnReRun;
+    }
+
+    /**
+     * Returns operator for the Stop button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnStop()
+    {
+        if (btnStop == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnStop = new JButtonOperator(co, 1);
+        }
+        return btnStop;
+    }
+
+    /**
+     * Returns operator for the Ant Settings button in the toolbar on the left of the tab.
+     * The button is inside the parent of the output tab, but applies (depends) to the
+     * currently active tab, so the methods are here instead of
+     * OutputOperator.
+     *
+     * @return
+     */
+    public JButtonOperator btnAntSettings()
+    {
+        if (btnAntSettings == null)
+        {
+            ContainerOperator co = new ContainerOperator(this.getParent());
+            btnAntSettings = new JButtonOperator(co, 2);
+        }
+        return btnAntSettings;
+    }
+
     /** Activates this output tab. If this output tab is in tabbed pane, it is selected. If
      * it is only tab in the Output top component, the Output top component 
      * is activated.
@@ -190,10 +258,9 @@ public class OutputTabOperator extends JComponentOperator {
         // ((OutputTab)getSource()).getDocument().getLength();
         return runMapping(new MapIntegerAction("getLength") {
             public int map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getLengthMethod = clazz.getDeclaredMethod("getLength", (Class[])null);
+                    Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[])null);
                     getLengthMethod.setAccessible(true);
                     return ((Integer)getLengthMethod.invoke(document, (Object[])null)).intValue();
                 } catch (Exception e) {
@@ -227,10 +294,9 @@ public class OutputTabOperator extends JComponentOperator {
         final int length = getLength();
         return (String)runMapping(new MapAction("getText") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
+                    Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
                     return getTextMethod.invoke(document, new Object[] {Integer.valueOf(0), Integer.valueOf(length)}).toString();
                 } catch (Exception e) {
@@ -276,10 +342,9 @@ public class OutputTabOperator extends JComponentOperator {
     public int getLineCount() {
         return ((Integer)runMapping(new MapAction("getLineCount") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getElementCountMethod = clazz.getDeclaredMethod("getElementCount", (Class[])null);
+                    Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[])null);
                     getElementCountMethod.setAccessible(true);
                     return (Integer)getElementCountMethod.invoke(document, (Object[])null);
                 } catch (Exception e) {
@@ -287,7 +352,11 @@ public class OutputTabOperator extends JComponentOperator {
                 }
             }})).intValue();
     }
-    
+
+    private Class getOutputDocumentClass() throws ClassNotFoundException{
+        ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
+        return Class.forName("org.netbeans.core.output2.OutputDocument", true, scl);
+    }
     /** Returns operator for OutputPane component.
      * All events should be dispatched to this component.
      * @return operator for OutputPane component
@@ -296,7 +365,7 @@ public class OutputTabOperator extends JComponentOperator {
         // first make component visible because tab must be visible to dispatch events
         makeComponentVisible();
         if(outputPaneOperator == null) {
-            outputPaneOperator = ComponentOperator.createOperator(((AbstractOutputTab)getSource()).getOutputPane());
+            outputPaneOperator = ComponentOperator.createOperator(outputPaneForTab(getSource()));
             outputPaneOperator.copyEnvironment(this);
         }
         return outputPaneOperator;
@@ -309,9 +378,9 @@ public class OutputTabOperator extends JComponentOperator {
     public String getLine(final int line) {
         return (String)runMapping(new MapAction("getText") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
+                    Class clazz = getOutputDocumentClass();
                     Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
                     getLineStartMethod.setAccessible(true);
                     Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[] {Integer.valueOf(line)});
@@ -329,6 +398,23 @@ public class OutputTabOperator extends JComponentOperator {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
             }});
+    }
+    
+    private static Component outputPaneForTab(Component tab) {
+        try {
+            return (Component) tab.getClass().getMethod("getOutputPane").invoke(tab);
+        } catch (Exception x) {
+            throw new JemmyException("Reflection failed: " + x, x);
+        }
+    }
+
+    private static Document documentForTab(Component tab) {
+        Component pane = outputPaneForTab(tab);
+        try {
+            return (Document) pane.getClass().getMethod("getDocument").invoke(pane);
+        } catch (Exception x) {
+            throw new JemmyException("Reflection failed: " + x, x);
+        }
     }
     
     /** SubChooser to determine OutputTab component

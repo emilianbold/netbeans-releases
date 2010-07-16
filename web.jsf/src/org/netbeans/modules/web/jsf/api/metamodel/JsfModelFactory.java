@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,8 +49,10 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -92,14 +97,14 @@ public final class JsfModelFactory {
             return null;
         }
         FileObject fileObject = getFileObject( module );
-        Project project = FileOwnerQuery.getOwner( fileObject );
+        Project project = (fileObject == null) ? null : FileOwnerQuery.getOwner( fileObject );
         if ( project == null ){
             return null;
         }
         ClassPath boot = getClassPath( project , ClassPath.BOOT);
         ClassPath compile = getClassPath(project, ClassPath.COMPILE );
         ClassPath src = getClassPath(project , ClassPath.SOURCE);
-        return ModelUnit.create(boot, compile, src, module);
+        return (src == null) ? null: ModelUnit.create(boot, compile, src, module);
     }
     
     private static ClassPath getClassPath( Project project, String type ) {
@@ -114,13 +119,13 @@ public final class JsfModelFactory {
         }
         SourceGroup[] sourceGroups = sources.getSourceGroups( 
                 JavaProjectConstants.SOURCES_TYPE_JAVA );
-        ClassPath[] paths = new ClassPath[ sourceGroups.length];
-        int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, type);
+            ClassPath path = provider.findClassPath( rootFolder, type);
+            // return classpath of the first source group, that is ignore test source roots:
+            return ClassPathSupport.createProxyClassPath(path);
         }
-        return ClassPathSupport.createProxyClassPath( paths );
+        return null;
     }
     
     private static FileObject getFileObject( WebModule module ) {

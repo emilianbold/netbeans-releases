@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,89 +49,116 @@ import java.net.InetAddress;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/** Utility class
-* @author  Petr Jiricka, Pavel Buzek
-*/
-public class URLWait {
+/**
+ * Utility class.
+ *
+ * @author  Petr Jiricka, Pavel Buzek, Petr Hejl
+ *
+ */
+public final class URLWait {
+
+    private static final Logger LOGGER = Logger.getLogger(URLWait.class.getName());
+
+    private URLWait() {
+        super();
+    }
 
     /** Will wait until the URL is accessible and returns a valid resource
      * (response code other then 4xx or 5xx) or the timeout is reached.
      *
      * @return true if non error response was obtained
      */
-    public static boolean waitForUrlReady(URL url, int timeout) {
+    public static boolean waitForUrlReady(ExecutorService service, URL url, int timeout) {
         String host = url.getHost();
         try {
             InetAddress.getByName(host);
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             return false;
         }
-        return waitForURLConnection(url, timeout, 100);
-    }
-    
-    private static boolean waitForURLConnection(URL url, int timeout, int retryTime) { 
-        Connect connect = new Connect(url, retryTime); 
-        Thread t = new Thread(connect);
-        t.start();
-        try {
-            t.join(timeout);
-        } catch(InterruptedException ie) {
-        }
-        if (t.isAlive()) {
-            connect.finishLoop();
-            t.interrupt();//for thread deadlock
-        }
-        return connect.getStatus();
+        return waitForUrlConnection(service, url, timeout, 100);
     }
 
-    private static class Connect implements Runnable  {
-        private String host;
-        private URL url;
-        private int retryTime;
-        private boolean status = false;
-        private volatile boolean loop = true;        
+    private static boolean waitForUrlConnection(ExecutorService service,
+            URL url, int timeout, int retryTime) {
+
+        Connect connect = new Connect(url, retryTime);
+        Future<Boolean> task = service.submit(connect);
+
+        try {
+            return task.get(timeout, TimeUnit.MILLISECONDS).booleanValue();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (TimeoutException ex) {
+            task.cancel(true);
+        }
+        return false;
+    }
+
+    private static class Connect implements Callable<Boolean> {
+
+        private final URL url;
+
+        private final int retryTime;
+
+        private final String host;
 
         public Connect(URL url, int retryTime) {
             this.url = url;
-            this.retryTime = retryTime; 
+            this.retryTime = retryTime;
             host = url.getHost();
-        } 
-
-        public void finishLoop() {
-            loop = false;
         }
 
-        public void run() {
+        public Boolean call() throws Exception {
             try {
                 InetAddress.getByName(host);
             } catch (UnknownHostException e) {
-                return;
+                return Boolean.FALSE;
             }
-            HttpURLConnection con = null;
-            while (loop) {
-                try {
-                    con = (HttpURLConnection)url.openConnection();
-                    int code = con.getResponseCode();
-                    boolean error = (code == -1) || (code > 399 && code <600);
-                    if (!error) {
-                        status = true;
-                        return;
-                    }
-                } catch (IOException ioe) {//nothing to do
-                } finally {
-                    if (con != null) con.disconnect();
-                }
-                try {
-                    Thread.currentThread().sleep(retryTime);
-                } catch(InterruptedException ie) {
-                }
-            }
-        }
 
-        boolean getStatus() {
-            return status;
+            boolean interrupted = false;
+
+            HttpURLConnection con = null;
+            while (true) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                try {
+                    con = (HttpURLConnection) url.openConnection();
+                    int code = con.getResponseCode();
+                    boolean error = (code == -1) || (code > 399 && code < 600);
+                    if (!error) {
+                        return Boolean.TRUE;
+                    }
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.FINE, null, ioe);
+                } finally {
+                    if (con != null) {
+                        con.disconnect();
+                    }
+                }
+                try {
+                    Thread.sleep(retryTime);
+                } catch (InterruptedException ie) {
+                    interrupted = true;
+                    break;
+                }
+            }
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+            return Boolean.FALSE;
         }
     }
 }

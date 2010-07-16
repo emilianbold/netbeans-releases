@@ -20,7 +20,6 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 /**
  *
- * @author ads
  * @author Vitaly Bychkov
  * @version 1.0
  */

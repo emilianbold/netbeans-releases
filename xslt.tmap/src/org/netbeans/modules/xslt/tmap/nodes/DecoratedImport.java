@@ -36,7 +36,7 @@ public class DecoratedImport extends DecoratedTMapComponentAbstract<Import>{
 
     @Override
     public String getName() {
-        Import ref = getOriginal();
+        Import ref = getReference();
         String location = null;
         if (ref != null) {
             location = ref.getLocation();
@@ -46,7 +46,7 @@ public class DecoratedImport extends DecoratedTMapComponentAbstract<Import>{
 
     @Override
     public String getHtmlDisplayName() {
-        Import ref = getOriginal();
+        Import ref = getReference();
         String namespace = null;
         if (ref != null) {
             namespace = ref.getNamespace();
@@ -63,7 +63,7 @@ public class DecoratedImport extends DecoratedTMapComponentAbstract<Import>{
 
     @Override
     public String getTooltip() {
-        Import ref = getOriginal();
+        Import ref = getReference();
         StringBuffer attributesTooltip = new StringBuffer();
         
         if (ref != null) {

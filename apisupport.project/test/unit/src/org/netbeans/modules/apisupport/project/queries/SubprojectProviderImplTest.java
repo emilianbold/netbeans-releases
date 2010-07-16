@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,17 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,9 +69,9 @@ public class SubprojectProviderImplTest extends TestBase {
     public SubprojectProviderImplTest(String name) {
         super(name);
     }
-    
+
+    /* XXX too brittle:
     public void testNetBeansOrgSubprojects() throws Exception {
-        // Keep in synch with o.apache.tools.ant.module/nbproject/project.xml:
         checkSubprojects("o.apache.tools.ant.module", new String[] {
             "openide.filesystems",
             "openide.util",
@@ -88,6 +96,7 @@ public class SubprojectProviderImplTest extends TestBase {
         });
         checkSubprojects("openide.util", new String[] {});
     }
+     */
     
     public void testExternalSubprojects() throws Exception {
         checkSubprojects(resolveEEPPath("/suite1/action-project"), new String[] {
@@ -114,7 +123,18 @@ public class SubprojectProviderImplTest extends TestBase {
     public void testInclusionOfHigherBin() throws Exception {
         checkSubprojects("servletapi", new String[0]);
     }
-    
+
+    public void testInclusionOfUnresolvedRef() throws Exception {
+        clearWorkDir();
+        initializeBuildProperties(getWorkDir(), null);
+        NbModuleProject p = generateStandaloneModule("prj");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put("cp.extra", "${unknown.jar}");
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        checkSubprojects(p);
+    }
+
+    @Deprecated // relies on nb_all source root
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
         SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
@@ -133,7 +153,17 @@ public class SubprojectProviderImplTest extends TestBase {
         }
         assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
-    
+
+    private void checkSubprojects(Project project, String... subprojectNames) throws Exception {
+        SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
+        assertNotNull("have SPP in " + project, spp);
+        SortedSet<String> actual = new TreeSet<String>();
+        for (Project sp : spp.getSubprojects()) {
+            actual.add(ProjectUtils.getInformation(sp).getName());
+        }
+        assertEquals("correct subprojects for " + project, new TreeSet<String>(Arrays.asList(subprojectNames)).toString(), actual.toString());
+    }
+
     private Project project(String path) throws Exception {
         FileObject dir = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), path));
 //        FileObject dir = nbRoot().getFileObject(path);

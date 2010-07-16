@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,37 +62,37 @@ public class CreateClassTest extends ErrorHintsTestBase {
     }
     
     public void testCreateClassForNewExpression() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1);}}", 114 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1);}}", 114 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testCreateClassVariable() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting n;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting n;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testCreateMemberSelect() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting.call();}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting.call();}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void test116853() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testPerformCreateClass() throws Exception {
         performFixTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting f;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "test/NonExisting.java", "package test; class NonExisting { public NonExisting() { } } ");
     }
-    
+
     public void testPerformCreateClassParams() throws Exception {
         performFixTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1, \"\");}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "test/NonExisting.java", "package test; class NonExisting { public NonExisting(int i, String string) { } } ");
     }
-    
+
     public void disabledtestPerformCreateClassInPackage() throws Exception {
         performFixTest("test/Test.java", "package test; public class Test {public static void test() {new test2.NonExisting(1, \"\");}}", 112 - 48, "CreateClass:test2.NonExisting:[]:CLASS", "test2/NonExisting.java", "package test2; class NonExisting { public NonExisting(int i,String string) { } } ");
     }
-    
+
     public void testCreateInnerClass() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {Test.NonExisting x;}}", 119- 48, "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testCreateInnerClassPerform() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static void test() {Test.NonExisting x;}}",
@@ -97,11 +100,11 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS",
                        "package test; public class Test {public static void test() {Test.NonExisting x;} private static class NonExisting { public NonExisting() { } } }");
     }
-    
+
     public void testCreateInnerClassForNewClass() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new Test.NonExisting(1);}}", 121- 48, "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testCreateInnerClassForNewClassPerform() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Test.NonExisting(1);}}",
@@ -109,15 +112,15 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS",
                        "package test; public class Test {public static void test() {new Test.NonExisting(1);} private static class NonExisting { public NonExisting(int i) { } } }");
     }
-    
+
     public void testCreateClassTypeParameter() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test<T extends Number&CharSequence> {public static void test() {Test<NonExisting> t;}}", 150 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test<T extends Number&CharSequence> {public static void test() {Test<NonExisting> t;}}", 150 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testPerformCreateClassTypeParameter() throws Exception {
         performFixTest("test/Test.java", "package test; public class Test<T extends Number&CharSequence> {public static void test() {Test<NonExisting> t;}}", 150 - 48, "CreateClass:test.NonExisting:[]:CLASS", "test/NonExisting.java", "package test; class NonExisting extends Number implements CharSequence { public NonExisting() { } } ");
     }
-    
+
     public void testPerformCreateInterface() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static class X implements Test.NonExisting {}}",
@@ -125,14 +128,15 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:INTERFACE",
                        "package test; public class Test {public static class X implements Test.NonExisting {} private static interface NonExisting { } }");
     }
-    
+
     public void testPerformCreateForExtends() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test; public class Test {public static class X extends NonExisting {}}",
                             92 - 25,
-                            "CreateClass:test.NonExisting:[]:CLASS");
+                            "CreateClass:test.NonExisting:[]:CLASS",
+			    "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
-    
+
     public void testPerformCreateInterfaceGeneric() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static class X implements java.util.concurrent.Future<NonExisting> {}}",
@@ -141,23 +145,25 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "test/NonExisting.java",
                        "package test; class NonExisting { public NonExisting() { } } ");
     }
-    
+
     public void testGenericNC1() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Unknown1<Unknown2>();}}",
                        93 - 25,
-                       "CreateClass:test.Unknown1:[]:CLASS"
+                       "CreateClass:test.Unknown1:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown1:[private, static]:CLASS"
                        );
     }
-    
+
     public void testGenericNC2() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Unknown1<Unknown2>();}}",
                        101 - 25,
-                       "CreateClass:test.Unknown2:[]:CLASS"
+                       "CreateClass:test.Unknown2:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown2:[private, static]:CLASS"
                        );
     }
-    
+
     public void testDeclWithTypeArguments() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static void test() {Unknown1<String> s;}}",
@@ -167,7 +173,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; class Unknown1<T> { public Unknown1() { } } "
                        );
     }
-    
+
     public void testGenericCreateWithTypeArguments() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Unknown1<String>(1);}}",
@@ -177,43 +183,48 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; class Unknown1<T> { public Unknown1(int i) { } } "
                        );
     }
-    
+
     public void testCreateFromTopLevelClass() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test implements UU {}",
                        69 - 25,
-                       "CreateClass:test.UU:[]:INTERFACE");
+                       "CreateClass:test.UU:[]:INTERFACE",
+		       "CreateInnerClass:test.Test.UU:[private, static]:INTERFACE");
     }
-    
+
     public void testCreate106773() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public UU g() {return null;}}",
                        66 - 25,
-                       "CreateClass:test.UU:[]:CLASS");
+                       "CreateClass:test.UU:[]:CLASS",
+		       "CreateInnerClass:test.Test.UU:[private, static]:CLASS");
     }
-    
+
     public void testCreateFromNewArray() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public Object g() {return new Unknown[0];}}",
                        91 - 25,
-                       "CreateClass:test.Unknown:[]:CLASS");
+                       "CreateClass:test.Unknown:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown:[private, static]:CLASS");
     }
-    
+
     public void testCreate108016() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public void g() {new Runnable() {public void run() {new Runnable() {public void run() {DDD.ddd();}};}};}}",
                        147 - 25,
-                       "CreateClass:test.DDD:[]:CLASS");
+                       "CreateClass:test.DDD:[]:CLASS",
+		       "CreateInnerClass:test.Test.DDD:[private, static]:CLASS");
     }
-    
+
     /**
      * Test offering creation of a new Exception type
-     */ 
+     */
     public void testCreate113905() throws Exception {
 	performAnalysisTest("test/Test.java",
-                       "package test; public class Test {public void g() throws FooException{}}", 
-		       84 - 25, 
-		       "CreateClass:test.FooException:[]:CLASS");
+                       "package test; public class Test {public void g() throws FooException{}}",
+		       84 - 25,
+		       "CreateClass:test.FooException:[]:CLASS",
+		       "CreateInnerClass:test.Test.FooException:[private, static]:CLASS");
     }
 
     /**
@@ -221,9 +232,17 @@ public class CreateClassTest extends ErrorHintsTestBase {
      */
     public void testCreateException130810() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public void g() throws FooException0, FooException1, FooExc|eption2 {}}",
-                "CreateClass:test.FooException2:[]:CLASS");
+                "CreateClass:test.FooException2:[]:CLASS", "CreateInnerClass:test.Test.FooException2:[private, static]:CLASS");
     }
 
+    public void testCreateClassForArray() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private St|ate[] arr;}",
+                       "CreateClass:test.State:[]:CLASS",
+                       "test/State.java",
+                       "package test; class State { public State() { } } "
+                       );
+    }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);

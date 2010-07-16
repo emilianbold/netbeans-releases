@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -82,7 +85,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
 
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
-        super(new GraphContainerKey(project.getUniqueName().toString()), false);
+        super(new GraphContainerKey(project.getUniqueName()), false);
         put();
     }
 
@@ -289,12 +292,12 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             graphLock.readLock().lock();
             try {
                 getParentFiles(parent, keyTo);
-                if (parent.size()==0) {
+                if (parent.isEmpty()) {
                     parent.add(keyTo);
                 }
                 for(CsmUID<CsmFile> uid : parent){
                     NodeLink link = graph.get(uid);
-                    if (link != null && link.getInLinks().size()==0){
+                    if (link != null && link.getInLinks().isEmpty()){
                         top.add(uid);
                     }
                 }
@@ -317,7 +320,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             graphLock.readLock().lock();
             try {
                 getParentFiles(parent, keyTo);
-                if (parent.size()==0) {
+                if (parent.isEmpty()) {
                     parent.add(keyTo);
                 }
                 coherence.addAll(parent);
@@ -556,6 +559,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             return out;
         }
 
+        @Override
         public void write(final DataOutput output) throws IOException {
             assert output != null;
             assert in != null;

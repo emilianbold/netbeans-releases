@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ import java.util.Map.Entry;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
@@ -60,13 +65,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 class CodeMarkerBuilder {
     private ASTNodeInfo currentNodeInfo;
     private Scope  currentScope;
-    private int offset;
     private Map<ASTNodeInfo<ReturnStatement>, Scope> returnStatements;
     private HashMap<MethodDeclarationInfo, Scope> methodDeclarations;
     private HashMap<FunctionDeclarationInfo, Scope> fncDeclarations;
 
-    CodeMarkerBuilder(int offset) {
-        this.offset = offset;
+    CodeMarkerBuilder() {
         this.returnStatements = new HashMap<ASTNodeInfo<ReturnStatement>, Scope>();
         this.methodDeclarations = new HashMap<MethodDeclarationInfo, Scope>();
         this.fncDeclarations = new HashMap<FunctionDeclarationInfo, Scope>();
@@ -76,15 +79,16 @@ class CodeMarkerBuilder {
         FunctionDeclarationInfo nodeInfo = FunctionDeclarationInfo.create(node);
         if (canBePrepared(node, scope)) {
             fncDeclarations.put(nodeInfo, scope);
-            setOccurenceAsCurrent(nodeInfo, scope);
         }
     }
 
     void prepare(MethodDeclaration node, Scope scope) {
-        MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node);
-        if (canBePrepared(node, scope)) {
-            methodDeclarations.put(nodeInfo, scope);
-            setOccurenceAsCurrent(nodeInfo, scope);
+        if (scope instanceof MethodScope && scope.getInScope() instanceof TypeScope) {
+            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope)scope.getInScope());
+            if (canBePrepared(node, scope)) {
+                methodDeclarations.put(nodeInfo, scope);
+            }
+
         }
     }
 
@@ -94,7 +98,20 @@ class CodeMarkerBuilder {
         ASTNodeInfo<ReturnStatement> nodeInfo = ASTNodeInfo.create(returnStatement);
         if (canBePrepared(returnStatement, scope)) {
             returnStatements.put(nodeInfo, scope);
-            setOccurenceAsCurrent(nodeInfo, scope);
+        }
+    }
+
+    void setCurrentContextInfo(final int offset) {
+        for (Entry<FunctionDeclarationInfo, Scope> entry : fncDeclarations.entrySet()) {
+            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
+        }
+
+        for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
+            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
+        }
+
+        for (Entry<ASTNodeInfo<ReturnStatement>, Scope> entry : returnStatements.entrySet()) {
+            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
         }
     }
 
@@ -151,16 +168,24 @@ class CodeMarkerBuilder {
     }
 
 
-    void build(FileScopeImpl fileScope) {
+    void build(FileScopeImpl fileScope, final int offset) {
+        if (currentNodeInfo == null && offset >= 0) {
+            setCurrentContextInfo(offset);
+        }
+
         if (currentNodeInfo != null && currentScope != null) {
-            CodeMarkerImpl currentMarkerImpl = new CodeMarkerImpl(currentScope, currentNodeInfo, fileScope);
-            //fileScope.addCodeMarker(currentMarkerImpl);
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             currentNodeInfo = null;
             switch (kind) {
                 case FUNCTION:
+                    buildFunctionDeclarations(fileScope);
+                    buildReturnStatement(fileScope);
+                    break;
                 case STATIC_METHOD:
                 case METHOD:
+                    buildMethodDeclarations(fileScope);
+                    buildReturnStatement(fileScope);
+                    break;
                 case RETURN_MARKER:
                     buildMethodDeclarations(fileScope);
                     buildFunctionDeclarations(fileScope);
@@ -175,10 +200,10 @@ class CodeMarkerBuilder {
     }
 
     private boolean canBePrepared(ASTNode node, ModelElement scope) {
-        return getOffset() >= 0 && scope != null && node != null;
+        return scope != null && node != null;
     }
 
-    private void setOccurenceAsCurrent(ASTNodeInfo nodeInfo, Scope scope) {
+    private void setOccurenceAsCurrent(ASTNodeInfo nodeInfo, Scope scope, final int offset) {
         OffsetRange range = nodeInfo.getRange();
         ASTNode originalNode = nodeInfo.getOriginalNode();
         if (originalNode instanceof ReturnStatement) {
@@ -198,7 +223,7 @@ class CodeMarkerBuilder {
                 range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
 
         }
-        if (range.containsInclusive(getOffset())) {
+        if (range.containsInclusive(offset)) {
             currentNodeInfo = nodeInfo;
             currentScope = scope;
             
@@ -206,10 +231,4 @@ class CodeMarkerBuilder {
 
     }
 
-    /**
-     * @return the offset
-     */
-    int getOffset() {
-        return offset;
-    }
 }

@@ -1,8 +1,5 @@
 #!/bin/sh
 
-ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
-export ANT_OPTS
-
 # XXX awaiting Forest support:
 if [ -d contrib/.hg ] ; then
     hg -R contrib up -C .
@@ -14,12 +11,13 @@ fi
 
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
-# XXX could use <subant-junit> to prevent compilation error in one module from stopping others
-# (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster use <subant>)
-ant -emacs -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms \
-    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false \
-    verify-libs-and-licenses build-nozip build-nbms || exit
+ant verify-libs-and-licenses || exit
+ant -f autoupdate.services/build.xml # build first to ensure DTD validation works
+ant -Dcluster.config=experimental \
+    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
+    build-nbms create-license-summary create-netbeans-import finish-build || exit
 
+rm -rv nbbuild/netbeans/ergonomics nbbuild/nbms/ergonomics # not going to have been built reasonably anyway
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 (cd nbbuild/netbeans; for cluster in *; do if [ -d $cluster/update_tracking ]; then zip -rq ../dist/$BUILD_TAG-$cluster.zip $cluster; fi; done)
@@ -27,13 +25,7 @@ ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exi
 ant -Dtest.fail.on.error=false build-test-dist
 
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
-ant -v -f nbbuild/hudson/build-update-descriptor.xml || exit
-ant -Djnlp.codebase=${BUILD_URL}artifact/nbbuild/build/jnlp/ \
-    -Djnlp.signjar.keystore=$keystore \
-    -Djnlp.signjar.alias=nb_ide \
-    -Djnlp.signjar.password=$storepass \
-    -Djnlp.fail.on.error=false \
-    build-jnlp || exit
+ant -Dold.updates=${JOB_URL}lastStableBuild/artifact/nbbuild/nbms/updates.xml generate-uc-catalog verify-update-descriptor || exit
 
 ant clean-untracked-files
 
@@ -58,7 +50,7 @@ if wget -O nbbuild/build/old-generated.zip "${JOB_URL}lastSuccessfulBuild/artifa
     (cd nbbuild/build/old-generated; unzip ../old-generated.zip)
     prev_generated=nbbuild/build/old-generated/generated
     # kits.txt is too verbose and changes too frequently to include in diff
-    diff -r -u --show-function-line='^[A-Z][A-Z]' -x kits.txt $prev_generated $generated > $generated.diff
+    diff -r -u --minimal --show-function-line='^[A-Z][A-Z]' --ignore-matching-lines=' [(]merged[)]$' -x kits.txt $prev_generated $generated > $generated.diff
     if [ -s $generated.diff ]; then
         (echo "${BUILD_URL}changes"; echo "${BUILD_URL}artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
     fi

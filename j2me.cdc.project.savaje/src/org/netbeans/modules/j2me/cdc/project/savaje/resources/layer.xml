@@ -9,9 +9,6 @@
                         <file name="savaje-init" url="savaje-init">
                             <attr name="position" intvalue="700"/>
                         </file>
-                        <file name="cdc-hi-init" url="cdc-hi-init">
-                            <attr name="position" intvalue="750"/>
-                        </file>
                     </folder>
                     <folder name="jar-subtargets">
                         <file name="savaje-build-jnlp" url="savaje-build-jnlp">
@@ -21,9 +18,6 @@
                     <folder name="run-subtargets">
                         <file name="savaje-run" url="savaje-run">
                             <attr name="position" intvalue="400"/>
-                        </file>
-                        <file name="cdc-hi-run" url="cdc-hi-run">
-                            <attr name="position" intvalue="975"/>
                         </file>
                     </folder>
                     <folder name="debug-subtargets">

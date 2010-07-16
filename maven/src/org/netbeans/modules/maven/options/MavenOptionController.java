@@ -86,26 +86,32 @@ public class MavenOptionController extends OptionsPanelController {
         listeners = new ArrayList<PropertyChangeListener>();
     }
 
+    @Override
     public void update() {
         getPanel().setValues();
     }
     
+    @Override
     public void applyChanges() {
         getPanel().applyValues();
     }
     
+    @Override
     public void cancel() {
         setts = null;
     }
     
+    @Override
     public boolean isValid() {
         return getPanel().hasValidValues();
     }
     
+    @Override
     public boolean isChanged() {
         return getPanel().hasChangedValues();
     }
     
+    @Override
     public JComponent getComponent(Lookup lookup) {
         return getPanel();
     }
@@ -117,6 +123,10 @@ public class MavenOptionController extends OptionsPanelController {
         }
         PropertyChangeEvent evnt = new PropertyChangeEvent(this, property, oldVal, newVal);
         for (PropertyChangeListener prop : lst) {
+            if (prop == null) {
+                //#180218
+                continue;
+            }
             prop.propertyChange(evnt);
         }
     }
@@ -128,16 +138,19 @@ public class MavenOptionController extends OptionsPanelController {
         return panel;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.maven.options.MavenAdvancedOption");
+        return new HelpCtx("org.netbeans.modules.maven.options.MavenAdvancedOption"); //NOI18N
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (listeners) {
             listeners.add(propertyChangeListener);
         }
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (listeners) {
             listeners.remove(propertyChangeListener);

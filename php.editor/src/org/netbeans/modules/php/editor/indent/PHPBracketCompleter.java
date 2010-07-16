@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -63,10 +69,18 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.Exceptions;
 
 
 /** 
@@ -167,6 +181,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return true;
     }
 
+    @Override
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
         isAfter = false;
@@ -289,7 +304,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
@@ -297,7 +312,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -478,14 +493,29 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
             if (isEmptyComment) {
                 final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
+
                 //XXX: workaround for issue #133210:
-                if (!IndexingManager.getDefault().isIndexing()) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final long currentTimeMillis = System.currentTimeMillis();
+                        try {
+                            ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(doc)), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    if (System.currentTimeMillis() - currentTimeMillis < 1500) {
+                                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                                    }
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    });
-                }
+                    }
+                });
+
+
             }
             
             return (Integer) ret[0];
@@ -510,6 +540,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         
         return -1;
     }
+
+
     
     private static Object [] beforeBreakInComments(
         BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
@@ -783,6 +815,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return false;
     }
 
+    @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = false;
@@ -1012,6 +1045,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      * @return Whether the insert was handled
      * @throws BadLocationException if dotPos is not correct
      */
+    @Override
     public boolean afterCharInserted(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = true;
@@ -1084,6 +1118,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // Reindent blocks (won't do anything if } is not at the beginning of a line
             if (ch == '}') {
                 reindent(doc, dotPos, PHPTokenId.PHP_CURLY_CLOSE, caret);
+            }
+            else if (ch == '{') {
+                reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
             }
         }
 
@@ -1223,8 +1260,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
                 OffsetRange begin;
 
+                if (id == PHPTokenId.PHP_CURLY_OPEN && ts.offset() == rowFirstNonWhite
+                        && ts.movePrevious()) {
+                    // The curly is at the first nonwhite char at the line.
+                    // Do we need to indent the { according previous line?
+                    int previousExprestion = PHPNewLineIndenter.findStartTokenOfExpression(ts);
+                    int previousIndent = Utilities.getRowIndent(doc, previousExprestion);
+                    int currentIndent = Utilities.getRowIndent(doc, offset);
+                    int newIndent = countIndent(doc, offset, previousIndent);
+                    if (newIndent != currentIndent) {
+                        GsfUtilities.setLineIndentation(doc, offset, newIndent);
+                        return;
+                    }
+                }
+
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    begin = LexUtilities.findBwd(doc, ts, '{', '}');
+                    begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                 } else {
                     begin = LexUtilities.findBegin(doc, ts);
                 }
@@ -1241,6 +1292,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     }
 
     /** Replaced by PHPBracesMatcher */
+    @Override
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
         return OffsetRange.NONE;
     }
@@ -1255,6 +1307,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     * @param ch the character that was deleted
     */
     @SuppressWarnings("fallthrough")
+    @Override
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
             throws BadLocationException {
         BaseDocument doc = (BaseDocument) document;
@@ -1787,153 +1840,91 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
     }
 
-    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-//        Node root = AstUtilities.getRoot(info);
-//
-//        if (root == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-//        if (astOffset == -1) {
-//            return Collections.emptyList();
-//        }
-//
-//        AstPath path = new AstPath(root, astOffset);
-//        List<OffsetRange> ranges = new ArrayList<OffsetRange>();
-//        
-//        /** Furthest we can go back in the buffer (in RHTML documents, this
-//         * may be limited to the surrounding &lt;% starting tag
-//         */
-//        int min = 0;
-//        int max = Integer.MAX_VALUE;
-//        int length;
-//
-//        // Check if the caret is within a comment, and if so insert a new
-//        // leaf "node" which contains the comment line and then comment block
-//        try {
-//            BaseDocument doc = (BaseDocument)info.getDocument();
-//            length = doc.getLength();
-//
-//            if (RubyUtils.isRhtmlDocument(doc)) {
-//                TokenHierarchy th = TokenHierarchy.get(doc);
-//                TokenSequence ts = th.tokenSequence();
-//                ts.move(caretOffset);
-//                if (ts.moveNext() || ts.movePrevious()) {
-//                    Token t = ts.token();
-//                    if (t.id().primaryCategory().startsWith("ruby")) { // NOI18N
-//                        min = ts.offset();
-//                        max = min+t.length();
-//                        // Try to extend with delimiters too
-//                        if (ts.movePrevious()) {
-//                            t = ts.token();
-//                            if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                min = ts.offset();
-//                                if (ts.moveNext() && ts.moveNext()) {
-//                                    t = ts.token();
-//                                    if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                        max = ts.offset()+t.length();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, caretOffset);
-//            
-//            if ((token != null) && (token.id() == PHPTokenId.PHP_LINE_COMMENT)) {
-//                // First add a range for the current line
-//                int begin = Utilities.getRowStart(doc, caretOffset);
-//                int end = Utilities.getRowEnd(doc, caretOffset);
-//
-//                if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
-//                    ranges.add(new OffsetRange(Utilities.getRowFirstNonWhite(doc, begin), 
-//                            Utilities.getRowLastNonWhite(doc, end)+1));
-//
-//                    int lineBegin = begin;
-//                    int lineEnd = end;
-//
-//                    while (begin > 0) {
-//                        int newBegin = Utilities.getRowStart(doc, begin - 1);
-//
-//                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
-//                            begin = Utilities.getRowFirstNonWhite(doc, begin);
-//                            break;
-//                        }
-//
-//                        begin = newBegin;
-//                    }
-//
-//                    while (true) {
-//                        int newEnd = Utilities.getRowEnd(doc, end + 1);
-//
-//                        if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
-//                            end = Utilities.getRowLastNonWhite(doc, end)+1;
-//                            break;
-//                        }
-//
-//                        end = newEnd;
-//                    }
-//
-//                    if ((lineBegin > begin) || (lineEnd < end)) {
-//                        ranges.add(new OffsetRange(begin, end));
-//                    }
-//                } else {
-//                    // It's just a line comment next to some code; select the comment
-//                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-//                    int offset = token.offset(th);
-//                    ranges.add(new OffsetRange(offset, offset + token.length()));
-//                }
-//            } else if (token != null && token.id() == PHPTokenId.PHP_DOCUMENTATION) {
-//                // Select the whole token block
-//                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-//                int begin = token.offset(th);
-//                int end = begin + token.length();
-//                ranges.add(new OffsetRange(begin, end));
-//            }
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//            return ranges;
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//            return ranges;
-//        }
-//
-//        Iterator<Node> it = path.leafToRoot();
-//
-//        OffsetRange previous = OffsetRange.NONE;
-//        while (it.hasNext()) {
-//            Node node = it.next();
-//
-//            // Filter out some uninteresting nodes
-//            if (node instanceof NewlineNode) {
-//                continue;
-//            }
-//
-//            OffsetRange range = AstUtilities.getRange(node);
-//            
-//            // The contains check should be unnecessary, but I end up getting
-//            // some weird positions for some JRuby AST nodes
-//            if (range.containsInclusive(astOffset) && !range.equals(previous)) {
-//                range = LexUtilities.getLexerOffsets(info, range);
-//                if (range != OffsetRange.NONE) {
-//                    if (range.getStart() < min) {
-//                        ranges.add(new OffsetRange(min, max));
-//                        ranges.add(new OffsetRange(0, length));
-//                        break;
-//                    }
-//                    ranges.add(range);
-//                    previous = range;
-//                }
-//            }
-//        }
-//
-        return Collections.<OffsetRange>emptyList();
+    /**
+     * This method count new indent ofr braces and parent
+     * @param doc
+     * @param offset - the original offset, where is cursor 
+     * @param currentIndent - the indnet that should be modified
+     * @param previousIndent - indent of the line abot
+     * @return
+     */
+    private int countIndent(BaseDocument doc, int offset, int previousIndent) {
+        int value = previousIndent;
+        int delta = 0;
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+
+        ts.move(offset);
+
+        if (!ts.moveNext() || !ts.moveNext()) {
+            return previousIndent;
+        }
+
+        Token<?extends PHPTokenId> token = ts.token();
+        while (token.id() != PHPTokenId.PHP_CURLY_OPEN
+                && token.id() != PHPTokenId.PHP_SEMICOLON
+                && !(token.id() == PHPTokenId.PHP_TOKEN
+                    && ("(".equals(token.text())
+                        || "[".equals(token.text())))
+                && ts.movePrevious()) {
+            token = ts.token();
+        }
+        if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+            while (token.id() != PHPTokenId.PHP_CLASS
+                    && token.id() != PHPTokenId.PHP_FUNCTION
+                    && token.id() != PHPTokenId.PHP_IF
+                    && token.id() != PHPTokenId.PHP_ELSE
+                    && token.id() != PHPTokenId.PHP_ELSEIF
+                    && token.id() != PHPTokenId.PHP_FOR
+                    && token.id() != PHPTokenId.PHP_FOREACH
+                    && token.id() != PHPTokenId.PHP_WHILE
+                    && token.id() != PHPTokenId.PHP_DO
+                    && token.id() != PHPTokenId.PHP_SWITCH
+                    && ts.movePrevious()) {
+                token = ts.token();
+            }
+            CodeStyle codeStyle = CodeStyle.get(doc);
+            CodeStyle.BracePlacement bracePlacement = codeStyle.getOtherBracePlacement();
+            if (token.id() == PHPTokenId.PHP_CLASS) {
+                bracePlacement = codeStyle.getClassDeclBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_FUNCTION) {
+                bracePlacement = codeStyle.getMethodDeclBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_IF || token.id() == PHPTokenId.PHP_ELSE || token.id() == PHPTokenId.PHP_ELSEIF) {
+                bracePlacement = codeStyle.getIfBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_FOR || token.id() == PHPTokenId.PHP_FOREACH) {
+                bracePlacement = codeStyle.getForBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_WHILE || token.id() == PHPTokenId.PHP_DO) {
+                bracePlacement = codeStyle.getWhileBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_SWITCH) {
+                bracePlacement = codeStyle.getSwitchBracePlacement();
+            }
+            value = bracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? previousIndent + codeStyle.getIndentSize() : previousIndent;
+        }
+
+        return value;
+    }
+
+    @Override
+    public List<OffsetRange> findLogicalRanges(ParserResult info, final int caretOffset) {
+        final Set<OffsetRange> ranges = new LinkedHashSet<OffsetRange>();
+        final DefaultVisitor pathVisitor = new DefaultVisitor() {
+            @Override
+            public void scan(ASTNode node) {
+                if (node != null && node.getStartOffset() <= caretOffset && caretOffset <= node.getEndOffset()) {
+                    ranges.add(new OffsetRange(node.getStartOffset(), node.getEndOffset()));
+                    super.scan(node);
+                }
+            }
+        };
+        if (info instanceof PHPParseResult) {
+            pathVisitor.scan(((PHPParseResult) info).getProgram());
+        }
+        final ArrayList<OffsetRange> retval = new ArrayList<OffsetRange>(ranges);
+        Collections.reverse(retval);
+        return retval;
     }
 
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
+    @Override
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);

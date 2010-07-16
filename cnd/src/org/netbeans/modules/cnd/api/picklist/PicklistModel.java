@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,11 +43,6 @@
  */
 
 package org.netbeans.modules.cnd.api.picklist;
-
-import java.util.Collection;
-
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 
 /**
  * This interface defines the methods components for a picklist list (Picklist).
@@ -117,7 +115,7 @@ public interface PicklistModel {
      * from this list.
      *
      * @param   elem   the element to be removed.
-     * @return  the element removed if found, null othervise.
+     * @return  the element removed if found, null otherwise.
      */
     public PicklistElement removeElement(PicklistElement elem);
 
@@ -132,7 +130,7 @@ public interface PicklistModel {
      * and less than the current size of the list. <p>
      *
      * @param      index   the index of the object to remove.
-     * @return  the element removed if index valid, null othervise.
+     * @return  the element removed if index valid, null otherwise.
      */
     public PicklistElement removeElementAt(int index);
 
@@ -141,7 +139,7 @@ public interface PicklistModel {
      * specified.
      *
      * @param      index   the index of the object to remove.
-     * @return  the element replaced if index valid, null othervise.
+     * @return  the element replaced if index valid, null otherwise.
      */
     public PicklistElement replaceElementAt(PicklistElement elem, int index);
 

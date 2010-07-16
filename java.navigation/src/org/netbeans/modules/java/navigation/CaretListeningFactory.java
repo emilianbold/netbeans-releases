@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,11 +60,11 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     
-    private static CaretListeningFactory INSATNCE;
+    private static CaretListeningFactory INSTANCE;
     
     public CaretListeningFactory() {
         super(Phase.RESOLVED, Priority.LOW);
-        INSATNCE = this;
+        INSTANCE = this;
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
@@ -69,11 +72,13 @@ public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     }
     
     static void runAgain() {
-        List<FileObject> fileObjects = INSATNCE.getFileObjects();
-        CaretListeningTask.resetLastEH();
-        if ( !fileObjects.isEmpty() ) {
-            // System.out.println("Rescheduling for " + fileObjects.get(0));
-            INSATNCE.reschedule(fileObjects.iterator().next());
+        if (INSTANCE != null) {
+            List<FileObject> fileObjects = INSTANCE.getFileObjects();
+            CaretListeningTask.resetLastEH();
+            if ( !fileObjects.isEmpty() ) {
+                // System.out.println("Rescheduling for " + fileObjects.get(0));
+                INSTANCE.reschedule(fileObjects.iterator().next());
+            }
         }
     }
     

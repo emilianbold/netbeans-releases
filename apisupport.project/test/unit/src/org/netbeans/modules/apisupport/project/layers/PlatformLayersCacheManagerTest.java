@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,25 +45,17 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.Log;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  *
@@ -141,7 +136,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
     }
 
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testNextQueryDoesntStoreAnything() throws Exception {
         final Logger LOG = Logger.getLogger(PlatformLayersCacheManager.class.getName());
         CharSequence logsCS = Log.enable(LOG.getName(), Level.FINE);
@@ -166,7 +161,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
         }
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testLoadCacheFromDisk() throws Exception {
         testGetCache(); // to create cache on disk in current work dir
         PlatformLayersCacheManager.reset();
@@ -217,7 +212,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
 //        return 2000000;
 //    }
 //
-//    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+//  // XXX cannot be run in binary dist, requires sources; test against fake platform
 //  XXX cancellation of storing of caches not implemented (yet): public void testStoringCacheDoesntBlockQueries() throws Exception {
 //        final Logger LOG = Logger.getLogger(PlatformLayersCacheManager.class.getName());
 //        Logger observer = Logger.getLogger("observer");

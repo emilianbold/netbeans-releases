@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -102,7 +106,9 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             ActionsProvider.Registration reg = e.getAnnotation(ActionsProvider.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, ActionsProvider.class, path);
+            final String[] actions = reg.actions();
+            final String[] mimeTypes = reg.activateForMIMETypes();
+            handleProviderRegistrationInner(e, ActionsProvider.class, path, actions, mimeTypes);
             //layer(e).instanceFile("Debugger/"+path, null, ActionsProvider.class).
             //        stringvalue("serviceName", instantiableClassOrMethod(e)).
             //        stringvalue("serviceClass", ActionsProvider.class.getName()).
@@ -186,6 +192,12 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
     }
 
     private void handleProviderRegistrationInner(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
+        handleProviderRegistrationInner(e, providerClass, path, null, null);
+    }
+
+    private void handleProviderRegistrationInner(Element e, Class providerClass, String path,
+                                                 String[] actions, String[] enabledOnMIMETypes
+                                                 ) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
@@ -195,12 +207,18 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         } else {
             path = "Debugger";
         }
-        layer(e).instanceFile(path, null, providerClass).
-                stringvalue("serviceName", className).
-                stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("instanceOf", providerClass.getName()).
-                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                write();
+        File f = layer(e).instanceFile(path, null, providerClass).
+                stringvalue(ContextAwareServiceHandler.SERVICE_NAME, className).
+                stringvalue("serviceClass", providerClass.getName());
+        if (actions != null && actions.length > 0) {
+            f.stringvalue(ContextAwareServiceHandler.SERVICE_ACTIONS, Arrays.toString(actions));
+        }
+        if (enabledOnMIMETypes != null && enabledOnMIMETypes.length > 0) {
+            f.stringvalue(ContextAwareServiceHandler.SERVICE_ENABLED_MIMETYPES, Arrays.toString(enabledOnMIMETypes));
+        }
+        f.stringvalue("instanceOf", providerClass.getName());
+        f.methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService");
+        f.write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,9 +57,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import org.netbeans.modules.j2ee.sun.validation.Constants;
 import org.netbeans.modules.j2ee.sun.validation.constraints.CardinalConstraint;
 import org.netbeans.modules.j2ee.sun.validation.constraints.Constraint;
 import org.netbeans.modules.j2ee.sun.validation.constraints.data.Argument;
@@ -85,7 +85,7 @@ import org.netbeans.modules.j2ee.sun.validation.util.Utils;
  * <code>ValidationManagerFactory</code> returns default 
  * <code>ValidationManager</code>. Default <code>ValidationManager</code> is 
  * based on default Validation File. Default Validation File defines Constraints
- * for 8.0 Sun DTDs.
+ * for 8.0 SJSAS DTDs.
  * <p>
  * Validations are performed, recursively on the given Object.
  * Two types of Validations are perfomed, Structural validations and Specified
@@ -1059,7 +1059,7 @@ public class ValidationManager {
     private Constraints getConstraints(String constraintsFile){
         URL url = null;
         InputStream inputStream = null;
-        Constraints constraints = null;
+        Constraints retVal = null;
 
         if(constraintsFile != null){
             inputStream = getInputStream(constraintsFile);
@@ -1068,12 +1068,12 @@ public class ValidationManager {
         //Create graph
         if(inputStream != null){
             try {
-                constraints = Constraints.createGraph(inputStream);
+                retVal = Constraints.createGraph(inputStream);
             } catch(Exception e) {
                 System.out.println(e.getMessage());
-                constraints = null;
+                retVal = null;
             }
         }
-        return constraints;
+        return retVal;
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,11 +62,13 @@ public final class FormEditorPanelController extends OptionsPanelController {
     private boolean initialized = false;
 
 
+    @Override
     public void update () {
         initialized = true;
         customizer.update ();
     }
     
+    @Override
     public void applyChanges () {
         if (initialized) {
             customizer.applyChanges ();
@@ -71,31 +76,38 @@ public final class FormEditorPanelController extends OptionsPanelController {
         initialized = false;
     }
     
+    @Override
     public void cancel () {
         customizer.cancel ();
         initialized = false;
     }
     
+    @Override
     public boolean isValid () {
         return customizer.dataValid ();
     }
     
+    @Override
     public boolean isChanged () {
         return customizer.isChanged ();
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
     }
     
+    @Override
     public JComponent getComponent (Lookup masterLookup) {
         return customizer;
     }
 
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         customizer.addPropertyChangeListener (l);
     }
 
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener l) {
         customizer.removePropertyChangeListener (l);
     }

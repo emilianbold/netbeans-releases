@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,6 +128,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return new NewPhpProjectWizardIterator(WizardType.REMOTE);
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         descriptor = wizard;
         index = 0;
@@ -133,6 +137,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         initDescriptor(wizard);
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         Panel<WizardDescriptor> current = current();
         // #158483
@@ -143,11 +148,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = null;
     }
 
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
 
+    @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
 
@@ -205,6 +212,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws MutexException {
                     try {
                         // update project properties
@@ -239,22 +247,27 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return resultSet;
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_IteratorName", index + 1, panels.length);
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -262,6 +275,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         index--;
     }
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         setTitle();
         return panels[index];
@@ -290,9 +304,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
@@ -373,7 +389,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private File getProjectDirectory() {
-        if ((Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED)) {
+        Boolean isProjectDirUsed = (Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED);
+        if (isProjectDirUsed != null && isProjectDirUsed) {
             return (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
         }
         return null;
@@ -608,6 +625,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             units = 5 + 2 * frameworkExtenders.size();
         }
 
+        @Override
         public void starting() {
             handle.start(units);
 
@@ -616,12 +634,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             handle.progress(msg, 2);
         }
 
+        @Override
         public void creatingIndexFile() {
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
         }
 
+        @Override
         public void finishing() {
         }
 
@@ -654,6 +674,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             this.handle = handle;
         }
 
+        @Override
         public void starting() {
             handle.start(10);
 
@@ -662,10 +683,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             handle.progress(msg, 2);
         }
 
+        @Override
         public void creatingIndexFile() {
             assert false : "Should not get here";
         }
 
+        @Override
         public void finishing() {
         }
 

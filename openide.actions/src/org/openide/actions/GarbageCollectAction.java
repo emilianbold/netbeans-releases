@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CallableSystemAction;
 
 import java.awt.*;
-import java.awt.event.*;
 
 
 import javax.swing.*;
@@ -64,22 +66,30 @@ import javax.swing.*;
  * @author Jesse Glick, Tim Boudreau
  */
 public class GarbageCollectAction extends CallableSystemAction {
+    @Override
     public String getName() {
         return NbBundle.getBundle(GarbageCollectAction.class).getString("CTL_GarbageCollect"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(GarbageCollectAction.class);
     }
 
+    @Override
     public void performAction() {
         gc();
     }
 
+    private static RequestProcessor RP;
     private static void gc() {
+        if (RP == null) {
+            RP = new RequestProcessor("GarbageCollectAction");
+        }
         // Can be slow, would prefer not to block on it.
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+            @Override
                 public void run() {
                     System.gc();
                     System.runFinalization();
@@ -89,10 +99,12 @@ public class GarbageCollectAction extends CallableSystemAction {
         );
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     public Component getToolbarPresenter() {
         return new HeapViewWrapper();
 //        return new MemButton();
@@ -104,18 +116,22 @@ public class GarbageCollectAction extends CallableSystemAction {
             setLayout(null);
         }
         
+        @Override
         public boolean isOpaque() {
             return false;
         }
         
+        @Override
         public Dimension getMinimumSize() {
             return calcPreferredSize();
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return calcPreferredSize();
         }
 
+        @Override
         public Dimension getMaximumSize() {
             Dimension pref = calcPreferredSize();
             Container parent = getParent();

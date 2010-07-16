@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -671,7 +674,7 @@ made subject to such option by the copyright holder.
  <answer id="exec-property">
   <ul>
    <li>
-    <api group="property" name="project.tab.no.selection" type="export" category="private">
+    <api group="systemproperty" name="project.tab.no.selection" type="export" category="private">
      <p>
          When this property is set, the opening of projects doesn't trigger 
          opening and focusing of the projects logical view  top component.
@@ -680,14 +683,14 @@ made subject to such option by the copyright holder.
     </api>
     </li>
    <li>
-    <api group="property" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
+    <api group="systemproperty" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
      <p>
       Error manager logging category for things affecting project list.
      </p>
     </api>
     </li>
     <li>
-    <api group="property" name="netbeans.projects.dir" type="export" category="private">
+    <api group="systemproperty" name="netbeans.projects.dir" type="export" category="private">
      <p>
       Property for overriding default location of projects directory
       which is folder NetBeansProjects under $HOME on Unixes and under default user folder on 

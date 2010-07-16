@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,19 +70,19 @@ import org.openide.util.WeakSet;
  * @author Marian Petras, Erno Mononen
  */
 public final class Manager {
-    
+
     /**
      * reference to the singleton of this class.
      * Strong references to the singleton are kept in instances of
      * {@link JUnitOutputReader JUnitOutputReader}.
      */
     private static Reference<Manager> instanceRef;
-    
+
     /**
-     * The current test sessions. 
+     * The current test sessions.
      */
     private final Set<TestSession> testSessions = new WeakSet<TestSession>(5);
-    
+
     /**
      * if {@code true}, the window will only be promoted
      * at the end of Ant session
@@ -87,7 +90,7 @@ public final class Manager {
     private final boolean lateWindowPromotion;
 
     private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
-    
+
     /**
      * Returns a singleton instance of this class.
      * If no instance exists at the moment, a new instance is created.
@@ -100,7 +103,7 @@ public final class Manager {
         }
 
         final Manager instance = new Manager();
-        
+
         ResultWindow.getInstance().addAncestorListener(new AncestorListener() {
 
             public void ancestorAdded(AncestorEvent event) {
@@ -118,22 +121,22 @@ public final class Manager {
         instanceRef = new WeakReference<Manager>(instance);
         return instance;
     }
-    
+
     /**
-     * Updates the layout orientation of the test result window based on the 
+     * Updates the layout orientation of the test result window based on the
      * dimensions of the ResultWindow in its position.
      */
     private void updateDisplayHandlerLayouts() {
         int x = ResultWindow.getInstance().getWidth();
         int y = ResultWindow.getInstance().getHeight();
-        
+
         int orientation = x > y
-                ? JSplitPane.HORIZONTAL_SPLIT 
+                ? JSplitPane.HORIZONTAL_SPLIT
                 : JSplitPane.VERTICAL_SPLIT;
-        
+
         ResultWindow.getInstance().setOrientation(orientation);
     }
-    
+
     private Manager() {
         lateWindowPromotion = true;
     }
@@ -155,7 +158,7 @@ public final class Manager {
             displayOutput(session, session.getStartingMsg(), true);
         }
     }
-    
+
     /**
      */
     public synchronized void sessionFinished(final TestSession session) {
@@ -166,18 +169,18 @@ public final class Manager {
             }
             return;
         }
-        
+
         displayMessage(session, null, true);  //updates the display
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Finishing session: " + session);
         }
-        
+
         testSessions.remove(session);   //must be after displayMessage(...)
                                          //otherwise the window would get
                                          //activated
     }
-    
+
     /**
      */
     public synchronized void displayOutput(final TestSession session,
@@ -188,7 +191,7 @@ public final class Manager {
         displayHandler.displayOutput(text, error);
         displayInWindow(session, displayHandler);
     }
-    
+
     /**
      *
      * @param  suiteName  name of the running suite; or {@code null} in the case
@@ -229,7 +232,7 @@ public final class Manager {
         displayHandler.displayReport(report);
         displayInWindow(session, displayHandler);
     }
-    
+
     /**
      * Displays a message in the JUnit results window.
      * If this is the first display in the window, it also promotes
@@ -241,7 +244,7 @@ public final class Manager {
                                 final String message) {
         displayMessage(session, message, false);
     }
-    
+
     /**
      * Displays a message in the JUnit results window.
      * If this is the first display in the window, it also promotes
@@ -262,26 +265,26 @@ public final class Manager {
         } else {
             displayHandler.displayMessageSessionFinished(message);
         }
-        
+
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         /*
          * This method is called only from method taskStarted(AntSession)
          * which is synchronized.
          */
-        
+
         /*
         if (pendingSessions == null) {
             pendingSessions = new ArrayList(4);
         }
         pendingSessions.add(session);
          */
-        
+
         /* Close all windows with reports displayed: */
         /*
         assert (displayedSessions == null) == (displayedReports == null);
         if (displayedSessions != null) {
             assert displayedReports.size() == displayedSessions.size();
-            
+
             ListIterator iDispRep
                     = displayedReports.listIterator(displayedReports.size());
             ListIterator iDispSes
@@ -317,25 +320,25 @@ public final class Manager {
          */
         //</editor-fold>
     }
-    
+
     /**
      */
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler) {
          displayInWindow(session, displayHandler, false);
     }
-    
+
     /**
      */
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
         final boolean firstDisplay = (testSessions.add(session) == true);
-        
-        final boolean promote = session.getSessionType() == TestSession.SessionType.TEST 
+
+        final boolean promote = session.getSessionType() == TestSession.SessionType.TEST
                 ? firstDisplay || sessionEnd
                 : sessionEnd;
-                
+
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
             addDisplay(session);
@@ -363,10 +366,10 @@ public final class Manager {
             }
         }
     }
-    
+
     /** singleton of the <code>ResultDisplayHandler</code> */
     private Map<TestSession,ResultDisplayHandler> displayHandlers;
-    
+
     /**
      */
     private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
@@ -383,10 +386,10 @@ public final class Manager {
         }
         return displayHandler;
     }
-    
+
     /**
      * Creates an <code>IOContainer</code> for the given <code>displayHandler</code>.
-     * 
+     *
      * @param displayHandler
      */
     private void createIO(final ResultDisplayHandler displayHandler) {
@@ -394,7 +397,7 @@ public final class Manager {
             Runnable r = new Runnable() {
                 public void run() {
                     final ResultWindow window = ResultWindow.getInstance();
-                    window.addDisplayComponent(displayHandler.getDisplayComponent());
+                    window.addDisplayComponent(displayHandler.getDisplayComponent(), displayHandler.getLookup());
                     window.setOutputComp(displayHandler.getOutputComponent());
                     displayHandler.createIO(window.getIOContainer());
                 }
@@ -405,7 +408,8 @@ public final class Manager {
                 SwingUtilities.invokeAndWait(r);
             }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            // The thread can be interrupted by pressing the Stop button.
+            // Do nothing. #167514
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -413,7 +417,7 @@ public final class Manager {
 
     /** */
     private Map<TestSession,Boolean> displaysMap;
-    
+
     /**
      */
     private int getDisplayIndex(final TestSession session) {
@@ -423,7 +427,7 @@ public final class Manager {
         Boolean o = displaysMap.get(session);
         return (o != null) ? 0 : -1;
     }
-    
+
     /**
      */
     private void addDisplay(final TestSession session) {

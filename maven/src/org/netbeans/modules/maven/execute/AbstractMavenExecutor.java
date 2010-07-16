@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -305,7 +306,12 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
         }
 
         public void actionPerformed(ActionEvent e) {
-            exec.cancel();
+            setEnabled(false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    exec.cancel();
+                }
+            });
         }
     }
 

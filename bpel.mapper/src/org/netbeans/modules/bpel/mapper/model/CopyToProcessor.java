@@ -20,11 +20,15 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperLsmProcessor.MapperLsmContainer;
+import org.netbeans.modules.bpel.mapper.tree.search.BpelFinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.CorrelationPropertyFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.NMPropertyFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
@@ -34,8 +38,7 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
-import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.bpel.model.ext.editor.api.LsmProcessor.XPathCastResolverImpl;
 import org.netbeans.modules.soa.ui.tree.TreeItemFinder;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
@@ -45,7 +48,9 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -66,6 +71,7 @@ public class CopyToProcessor {
         VAR_QUERY, 
         PARTNER_LINK, 
         VAR_PROPERTY, 
+        VAR_NM_PROPERTY, 
         EXPRESSION;
     }
     
@@ -74,6 +80,9 @@ public class CopyToProcessor {
             BpelReference<VariableDeclaration> varRef = copyTo.getVariable();
             if (varRef != null) {
                 WSDLReference<Part> partRef = copyTo.getPart();
+                WSDLReference<CorrelationProperty> propertyRef = copyTo
+                        .getProperty();
+                String nmProperty = copyTo.getNMProperty();
                 if (partRef != null) {
                     Query query = copyTo.getQuery(); // query
                     if (query != null) {
@@ -81,6 +90,10 @@ public class CopyToProcessor {
                     } else {
                         return CopyToForm.VAR_PART;
                     }
+                } else if (propertyRef != null && propertyRef.get() != null) {
+                    return CopyToForm.VAR_PROPERTY;
+                } else if (nmProperty != null) {
+                    return CopyToForm.VAR_NM_PROPERTY;
                 } else {
                     Query query = copyTo.getQuery(); // query
                     if (query != null) {
@@ -105,12 +118,11 @@ public class CopyToProcessor {
         return CopyToForm.UNKNOWN;
     }
 
-    public static ArrayList<TreeItemFinder> constructFindersList(
+    public static List<TreeItemFinder> constructFindersList(
             CopyToForm form, 
             BpelEntity contextEntity, To copyTo, 
             XPathExpression toExpr, 
-            List<Cast> castList, 
-            List<PseudoComp> pseudoComps, 
+            MapperLsmContainer lsmCont,
             MapperModelFactory modelFactory) {
         //
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
@@ -143,6 +155,38 @@ public class CopyToProcessor {
             }
             break;
         }
+        case VAR_PROPERTY: {
+                BpelReference<VariableDeclaration> varDeclRef = copyTo
+                        .getVariable();
+                WSDLReference<CorrelationProperty> propertyRef = copyTo
+                        .getProperty();
+
+                if (varDeclRef != null && propertyRef != null) {
+                    VariableDeclaration variableDeclaration = varDeclRef.get();
+                    if (variableDeclaration != null) {
+                        CorrelationProperty property = propertyRef.get(); 
+                        if (property != null) {
+                            finderList.add(new CorrelationPropertyFinder(
+                                    variableDeclaration, property));
+                        } 
+                    } 
+                }
+            }
+        break;
+        case VAR_NM_PROPERTY: {
+                BpelReference<VariableDeclaration> varDeclRef = copyTo
+                        .getVariable();
+                String nmProperty = copyTo.getNMProperty();
+
+                if (varDeclRef != null && nmProperty != null) {
+                    VariableDeclaration variableDeclaration = varDeclRef.get();
+                    if (variableDeclaration != null) {
+                        finderList.add(new NMPropertyFinder(
+                                variableDeclaration, nmProperty));
+                    } 
+                }
+            }
+        break;
         case VAR_PART_QUERY: {
             BpelReference<VariableDeclaration> varDeclRef = copyTo.getVariable();
             if (varDeclRef != null) {
@@ -163,7 +207,7 @@ public class CopyToProcessor {
                                 contextEntity, part, query);
                         XPathLocationPath lPath = builder.build();
                         if (lPath != null) {
-                            finderList.addAll(FinderListBuilder.build(lPath));
+                            finderList.addAll(BpelFinderListBuilder.singl().build(lPath));
                         }
                     }
                 }
@@ -183,7 +227,7 @@ public class CopyToProcessor {
                                 contextEntity, varDecl, query);
                         XPathLocationPath lPath = builder.build();
                         if (lPath != null) {
-                            finderList.addAll(FinderListBuilder.build(lPath));
+                            finderList.addAll(BpelFinderListBuilder.singl().build(lPath));
                         }
                     }
                 }
@@ -193,15 +237,15 @@ public class CopyToProcessor {
         case EXPRESSION: {
             if (toExpr == null) {
                 toExpr = constructExpression(contextEntity, copyTo, 
-                        castList, pseudoComps, modelFactory);
+                        lsmCont, modelFactory);
             }
             //
             if (toExpr != null) {
                 if (toExpr instanceof AbstractLocationPath) {
-                    finderList.addAll(FinderListBuilder.build(
+                    finderList.addAll(BpelFinderListBuilder.singl().build(
                             (AbstractLocationPath)toExpr));
                 } else if (toExpr instanceof XPathVariableReference) {
-                    finderList.addAll(FinderListBuilder.build(
+                    finderList.addAll(BpelFinderListBuilder.singl().build(
                             (XPathVariableReference)toExpr, null));
                 }
             }
@@ -219,7 +263,7 @@ public class CopyToProcessor {
             break;
         }
         case UNKNOWN: 
-            return null;
+            return Collections.emptyList();
         }
         //
         return finderList;
@@ -227,8 +271,7 @@ public class CopyToProcessor {
     
     public static XPathExpression constructExpression(
             BpelEntity contextEntity, To copyTo, 
-            List<Cast> castList, List<PseudoComp> pseudoComps, 
-            MapperModelFactory modelFactory) {
+            MapperLsmContainer lsmCont, MapperModelFactory modelFactory) {
         //
         String exprLang = copyTo.getExpressionLanguage();
         String exprText = copyTo.getContent();
@@ -238,8 +281,12 @@ public class CopyToProcessor {
         // we can handle only xpath expressions.
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
             try {
+                XPathCastResolver castResolver = null;
+                if (lsmCont != null) {
+                    castResolver = new XPathCastResolverImpl(lsmCont, false);
+                }
                 XPathModel newXPathModel = BpelXPathModelFactory.create(
-                        contextEntity, castList, pseudoComps);
+                        contextEntity, castResolver);
                 //
                 // NOT NEED to specify schema context because of an 
                 // expression with variable is implied here. 

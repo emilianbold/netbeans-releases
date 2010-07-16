@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -226,6 +229,7 @@ public abstract class FormProperty extends Node.Property {
         if (!FormLAF.inLAFBlock() && (propertyContext.getFormModel() != null)) {
             final Exception[] ex = new Exception[1];
             FormLAF.executeWithLookAndFeel(propertyContext.getFormModel(), new Runnable() {
+                @Override
                 public void run() {
                     try {
                         setTargetValue(value);
@@ -257,6 +261,7 @@ public abstract class FormProperty extends Node.Property {
      * @throws java.lang.IllegalAccessException when there is an access problem.
      * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
+    @Override
     public Object getValue() throws IllegalAccessException,
                                     InvocationTargetException {
 //        if (!canRead())
@@ -276,6 +281,7 @@ public abstract class FormProperty extends Node.Property {
      * @throws java.lang.IllegalArgumentException when the specified value is not valid.
      * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
+    @Override
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
                                               InvocationTargetException
@@ -563,12 +569,14 @@ public abstract class FormProperty extends Node.Property {
 
     /** Tests whether the property is readable.
      */
+    @Override
     public boolean canRead() {
         return (propType & NO_READ_PROP) == 0;
     }
 
     /** Tests whether the property is writable.
      */
+    @Override
     public boolean canWrite() {
         return (propType & NO_WRITE_PROP) == 0;
     }
@@ -1221,6 +1229,7 @@ public abstract class FormProperty extends Node.Property {
     }
 
     public static final Filter CHANGED_PROPERTY_FILTER = new Filter() {
+        @Override
         public boolean accept(FormProperty property) {
             return property.isChanged();
         }

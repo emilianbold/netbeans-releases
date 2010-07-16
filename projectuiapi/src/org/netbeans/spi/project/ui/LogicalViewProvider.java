@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,12 +44,15 @@
 
 package org.netbeans.spi.project.ui;
 
+import org.netbeans.spi.project.ProjectIconAnnotator;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.nodes.Node;
 
 /**
  * Ability for a {@link org.netbeans.api.project.Project} to supply
  * a logical view of itself.
  * @see org.netbeans.api.project.Project#getLookup
+ * @see ProjectIconAnnotator
  * @author Jesse Glick
  */
 public interface LogicalViewProvider {
@@ -64,6 +70,7 @@ public interface LogicalViewProvider {
      * <em>As of <code>org.netbeans.modules.projectuiapi/1 1.31</code></em>
      * </p>
      * @return a node displaying the contents of the project in an intuitive way
+     * @see CommonProjectActions#forType
      */
     Node createLogicalView();
     

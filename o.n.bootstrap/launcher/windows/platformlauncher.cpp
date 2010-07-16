@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,7 +65,7 @@ General options:\n\
   --trace <path>        path for launcher log (for trouble shooting)\n\
 \n";
 
-const char *PlatformLauncher::REQ_JAVA_VERSION = "1.5";
+const char *PlatformLauncher::REQ_JAVA_VERSION = "1.6";
 
 const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
@@ -75,6 +78,8 @@ const char *PlatformLauncher::OPT_HEAP_DUMP = "-XX:+HeapDumpOnOutOfMemoryError";
 const char *PlatformLauncher::OPT_HEAP_DUMP_PATH = "-XX:HeapDumpPath=";
 const char *PlatformLauncher::OPT_KEEP_WORKING_SET_ON_MINIMIZE = "-Dsun.awt.keepWorkingSetOnMinimize=true";
 const char *PlatformLauncher::OPT_CLASS_PATH = "-Djava.class.path=";
+const char *PlatformLauncher::OPT_SPLASH = "-splash:";
+const char *PlatformLauncher::OPT_SPLASH_PATH = "\\var\\cache\\splash.png";
 
 const char *PlatformLauncher::REG_PROXY_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings";
 const char *PlatformLauncher::REG_PROXY_ENABLED_NAME = "ProxyEnable";
@@ -91,6 +96,7 @@ PlatformLauncher::PlatformLauncher()
     : separateProcess(false)
     , suppressConsole(false)
     , heapDumpPathOptFound(false)
+    , nosplash(false)
     , exiting(false) {
 }
 
@@ -289,6 +295,8 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
                 if (!appendHelp.empty()) {
                     printToConsole(appendHelp.c_str());
                 }
+            } else if (strcmp(ARG_NAME_NOSPLASH, argv[i]) == 0) {
+                 nosplash = true;
             }
             progArgs.push_back(argv[i]);
         }
@@ -342,6 +350,7 @@ bool PlatformLauncher::processAutoUpdateCL() {
 // check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
 bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
     logMsg("checkForNewUpdater() at %s", basePath);
+    BOOL removeDir = false;
     string srcPath = basePath;
     srcPath += "\\update\\new_updater\\updater.jar";
     WIN32_FIND_DATA fd = {0};
@@ -366,14 +375,53 @@ bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
             Sleep(100);
         }
         logMsg("New updater successfully moved from \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
+        removeDir = true;
+    } else {
+        logMsg("No new updater at %s", srcPath.c_str());
+    }
+    string locPath = basePath;
+    locPath += "\\update\\new_updater\\updater_*.jar";
+    hFind = FindFirstFile(locPath.c_str(), &fd);
+    while (hFind != INVALID_HANDLE_VALUE) {
+        string destPath = basePath;
+        string name = fd.cFileName;
+        logMsg("New updater localization found: %s", name.c_str());
+        destPath += "\\modules\\ext\\locale\\";
+        destPath += name;
 
+        string fromPath = basePath;
+        fromPath += "\\update\\new_updater\\";
+        fromPath += name;
+
+        createPath(destPath.c_str());
+
+        int i = 0;
+        while (true) {
+            if (MoveFileEx(fromPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+                break;
+            }
+            if (exiting || ++i > 10) {
+                logErr(true, false, "Failed to move \"%s\" to \"%s\"", fromPath.c_str(), destPath.c_str());
+                return false;
+            }
+            logErr(true, false, "Failed to move \"%s\" to \"%s\", trying to wait", fromPath.c_str(), destPath.c_str());
+            Sleep(100);
+        }
+        logMsg("New updater successfully moved from \"%s\" to \"%s\"", fromPath.c_str(), destPath.c_str());
+        removeDir = true;
+        
+        if (!FindNextFile(hFind, &fd)) {
+            break;
+        }
+    }
+    FindClose(hFind);
+
+    if (removeDir) {
         srcPath.erase(srcPath.rfind('\\'));
         logMsg("Removing directory \"%s\"", srcPath.c_str());
         if (!RemoveDirectory(srcPath.c_str())) {
             logErr(true, false, "Failed to remove directory \"%s\"", srcPath.c_str());
         }
-    } else {
-        logMsg("No new updater at %s", srcPath.c_str());
     }
     return true;
 }
@@ -393,6 +441,15 @@ bool PlatformLauncher::shouldAutoUpdate(bool firstStart, const char *basePath) {
     if (hFindNbms != INVALID_HANDLE_VALUE) {
         logMsg("Some updates found at %s", path.c_str());
         FindClose(hFindNbms);
+    } else {
+        //also check for OSGi jars if *.nbm not found
+        path = basePath;
+        path += "\\update\\download\\*.jar";
+        hFindNbms = FindFirstFile(path.c_str(), &fd);
+        if (hFindNbms != INVALID_HANDLE_VALUE) {
+            logMsg("Some OSGi updates found at %s", path.c_str());
+            FindClose(hFindNbms);
+        }
     }
 
     path = basePath;
@@ -468,6 +525,14 @@ void PlatformLauncher::prepareOptions() {
     string option = OPT_JDK_HOME;
     option += jdkhome;
     javaOptions.push_back(option);
+
+    if (!nosplash) {
+        string splashPath = userDir;
+        splashPath += OPT_SPLASH_PATH;
+        if (fileExists(splashPath.c_str())) {
+            javaOptions.push_back(OPT_SPLASH + splashPath);
+        }
+    }
 
     option = OPT_NB_PLATFORM_HOME;
     option += platformDir;
@@ -681,11 +746,11 @@ void PlatformLauncher::onExit() {
         logMsg("Old command line: %s", cmdLine.c_str());
         string::size_type bslashPos = cmdLine.find_last_of('\\');
         string::size_type pos = cmdLine.find(ARG_NAME_LA_START_APP);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_APP));
         }
         pos = cmdLine.find(ARG_NAME_LA_START_AU);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_AU));
         }
 

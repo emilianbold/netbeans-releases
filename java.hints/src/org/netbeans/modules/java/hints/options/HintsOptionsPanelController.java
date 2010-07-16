@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -24,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +45,11 @@ package org.netbeans.modules.java.hints.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -84,9 +91,9 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
 	return new HelpCtx("netbeans.optionsDialog.java.hints");
     }
     
-    public synchronized JComponent getComponent(Lookup masterLookup) {
+    public synchronized HintsPanel getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new HintsPanel();
+            panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class));
         }
         return panel;
     }
@@ -98,7 +105,19 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
     public void removePropertyChangeListener(PropertyChangeListener l) {
 	pcs.removePropertyChangeListener(l);
     }
-        
+
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+            if (hm.id.equals(subpath)) {
+                getComponent(null).select(hm);
+                return;
+            }
+        }
+
+        Logger.getLogger(HintsOptionsPanelController.class.getName()).log(Level.WARNING, "setCurrentSubcategory: cannot find: {0}", subpath);
+    }
+
     void changed() {
 	if (!changed) {
 	    changed = true;

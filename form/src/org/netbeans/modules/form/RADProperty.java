@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -61,14 +64,14 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
  * @author Tomas Pavek
  */
 public class RADProperty extends FormProperty {
-
+    private static final Object NOT_INITIALIZED = new Object();
     public static final String SYNTH_PREFIX = "$$$_"; // NOI18N
     public static final String SYNTH_PRE_CODE = SYNTH_PREFIX + PROP_PRE_CODE + "_"; // NOI18N
     public static final String SYNTH_POST_CODE = SYNTH_PREFIX + PROP_POST_CODE + "_"; // NOI18N
 
     private RADComponent component;
     private PropertyDescriptor desc;
-    private Object defaultValue;
+    private Object defaultValue = NOT_INITIALIZED;
 
     public RADProperty(RADComponent metacomp, PropertyDescriptor propdesc) {
         super(new FormPropertyContext.Component(metacomp),
@@ -85,12 +88,16 @@ public class RADProperty extends FormProperty {
         } else if (desc.getReadMethod() == null) {
             setAccessType(DETACHED_READ);
         } // assuming a bean property is at least readable or writeable
+    }
 
-        defaultValue = BeanSupport.NO_VALUE;
-        if (canReadFromTarget()) {
-            try {
-                defaultValue = getTargetValue();
-            } catch (Exception ex) {}
+    private void ensureDefaultValueInitialization() {
+        if (defaultValue == NOT_INITIALIZED) {
+            defaultValue = BeanSupport.NO_VALUE;
+            if (canReadFromTarget()) {
+                try {
+                    defaultValue = getTargetValue();
+                } catch (Exception ex) {}
+            }
         }
     }
 
@@ -102,6 +109,7 @@ public class RADProperty extends FormProperty {
         return desc;
     }
 
+    @Override
     public Object getTargetValue() throws IllegalAccessException,
                                           InvocationTargetException {
         Method readMethod = desc.getReadMethod();
@@ -111,9 +119,11 @@ public class RADProperty extends FormProperty {
         return readMethod.invoke(component.getBeanInstance(), new Object[0]);
     }
 
+    @Override
     public void setTargetValue(Object value) throws IllegalAccessException,
                                                  IllegalArgumentException,
                                                  InvocationTargetException {
+        ensureDefaultValueInitialization();
         Method writeMethod = desc.getWriteMethod();
         if (writeMethod == null) {
             throw new IllegalAccessException("Not a writeable property: "+desc.getName()); // NOI18N
@@ -200,11 +210,13 @@ public class RADProperty extends FormProperty {
 
     @Override
     public boolean supportsDefaultValue() {
+        ensureDefaultValueInitialization();
         return defaultValue != BeanSupport.NO_VALUE;
     }
 
     @Override
     public Object getDefaultValue() {
+        ensureDefaultValueInitialization();
         Object specialDefaultValue = FormUtils.getSpecialDefaultPropertyValue(
                 component.getBeanInstance(), getName());
         return specialDefaultValue != BeanSupport.NO_VALUE

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,18 +69,27 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 public class CollectDerivationVisitor extends DefaultSchemaVisitor {
 
     private GlobalType mProcessedType;
+
+    // Key --- derived from --> Value
     private HashMap<GlobalType, GlobalType> mDerivationMap;
+    private boolean mSimpleTypesOnly;
     
-    public CollectDerivationVisitor(HashMap<GlobalType, GlobalType> derivationMap) {
+    public CollectDerivationVisitor(HashMap<GlobalType, GlobalType> derivationMap,
+            boolean simpleTypesOnly) {
         assert derivationMap != null; 
         //
         mDerivationMap = derivationMap;
+        mSimpleTypesOnly = simpleTypesOnly;
     }
     
     public HashMap<GlobalType, GlobalType> collectDerivationFrom(
             SchemaModel sModel) {
-        assert sModel != null;
-        visit(sModel.getSchema());
+        if (sModel != null) {
+            Schema schema = sModel.getSchema();
+            if (schema != null) {
+                visit(schema);
+            }
+        }
         //
         return mDerivationMap;
     }
@@ -87,6 +99,7 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     @Override
     public void visit(Schema schema) {
         // Looks for global type children only.
+        assert schema != null;
         for (GlobalType gType: schema.getChildren(GlobalType.class)) {
             mProcessedType = gType;
             gType.accept(this);
@@ -100,6 +113,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(GlobalComplexType type) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         visitChildren(type);
     }
     
@@ -112,6 +128,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexContent cc) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         visitChildren(cc);
     }
     
@@ -124,6 +143,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexExtension ce) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         checkBaseTypeRef(ce.getBase());
     }
     
@@ -134,6 +156,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexContentRestriction ccr) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         checkBaseTypeRef(ccr.getBase());
     }
     

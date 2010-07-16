@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,10 @@ package org.netbeans.modules.debugger.jpda.projects;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -65,7 +71,9 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -113,6 +121,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     private static void goToSource (JPDABreakpoint b) {
         String url;
         int lineNumber;
+        Future futureLineNumber = null;
         if (b instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) b;
             url = lb.getURL();
@@ -129,11 +138,24 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             } catch (FileStateInvalidException e) {
                 return ;
             }
-            lineNumber = EditorContextImpl.getFieldLineNumber (
+            Future<Integer> fi = EditorContextImpl.getFieldLineNumber (
                 fo,
                 className,
                 fieldName
             );
+            if (fi.isDone()) {
+                try {
+                    lineNumber = fi.get();
+                } catch (InterruptedException ex) {
+                    lineNumber = 1;
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                    lineNumber = 1;
+                }
+            } else {
+                futureLineNumber = fi;
+                lineNumber = -1;
+            }
         } else if (b instanceof MethodBreakpoint) {
             MethodBreakpoint mb = (MethodBreakpoint) b;
             String methodName = mb.getMethodName();
@@ -147,15 +169,29 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             } catch (FileStateInvalidException e) {
                 return ;
             }
-            int[] lineNumbers = EditorContextImpl.getMethodLineNumbers(
+            Future<int[]> fi = EditorContextImpl.getMethodLineNumbers(
                 fo,
                 className,
                 mb.getClassExclusionFilters(),
                 methodName,
                 mb.getMethodSignature()
             );
-            if (lineNumbers.length == 0) lineNumber = 1;
-            else lineNumber = lineNumbers[0];
+            if (fi.isDone()) {
+                int[] lineNumbers;
+                try {
+                    lineNumbers = fi.get();
+                    if (lineNumbers.length == 0) lineNumber = 1;
+                    else lineNumber = lineNumbers[0];
+                } catch (InterruptedException ex) {
+                    lineNumber = 1;
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                    lineNumber = 1;
+                }
+            } else {
+                futureLineNumber = fi;
+                lineNumber = -1;
+            }
         } else if (b instanceof ExceptionBreakpoint) {
             ExceptionBreakpoint eb = (ExceptionBreakpoint) b;
             String className = eb.getExceptionClassName();
@@ -184,6 +220,41 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             lineNumber = 1;
         } else {
             return;
+        }
+        if (futureLineNumber != null) {
+            final Future future = futureLineNumber;
+            final String u = url;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        Object lineObj = future.get();
+                        final int line;
+                        if (lineObj instanceof Integer) {
+                            line = (Integer) lineObj;
+                        } else {
+                            int[] lines = (int[]) lineObj;
+                            if (lines.length == 0) {
+                                line = 1;
+                            } else {
+                                line = lines[0];
+                            }
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                EditorContextImpl.showSourceLine (
+                                    u,
+                                    line,
+                                    null
+                                );
+                            }
+                        });
+                    } catch (InterruptedException ex) {
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+            return ;
         }
         EditorContextImpl.showSourceLine (
             url,

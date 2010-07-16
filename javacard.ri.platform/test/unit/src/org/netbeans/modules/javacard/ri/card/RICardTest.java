@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.javacard.ri.card;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -68,6 +73,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.javacard.api.RunMode;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.AbstractCard;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.Cards;
@@ -86,6 +92,8 @@ import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
 import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -115,7 +123,6 @@ public class RICardTest {
     static File script;
     @BeforeClass
     public static void setUpClass() throws Exception {
-        System.err.println("setUpClass");
         MockServices.setServices(FakeLoader.class, FakeResolver.class);
         Logger.getLogger(RICard.class.getName()).setLevel(Level.FINEST);
         Logger.getLogger(AbstractCard.class.getName()).setLevel(Level.FINEST);
@@ -178,7 +185,6 @@ public class RICardTest {
 
     @Before
     public void setUp() throws Exception {
-        System.err.println("setUp");
         opa = new OPA();
         memFs = FileUtil.createMemoryFileSystem();
         FileObject fo = memFs.getRoot().createData("foo.jcard");
@@ -188,12 +194,9 @@ public class RICardTest {
         out.close();
         in.close();
         FileUtil.setMIMEType("jcard", "application/javacard");
-        System.err.println("find dob");
         DataObject dob = DataObject.find(fo);
-        System.err.println("DOB " + dob);
         card = new RICardSub(dob, new FakePlatform(),
                 opa.getProperty(JavacardDeviceKeyNames.DEVICE_DISPLAY_NAME));
-        System.err.println("Card " + card);
     }
 
     @Test
@@ -205,8 +208,63 @@ public class RICardTest {
     }
 
     @Test
+    public void testClearEpromCapabilityRemovedAfterInvocation() throws InterruptedException, IOException {
+        assertNull (card.getCapability(ClearEpromCapability.class));
+//        FileObject epromDir = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+//                    card.getPlatform().getSystemName(), true);
+        //Creates the eeprom file
+        File expect = Utils.eepromFileForDevice(card.getPlatform().getSystemName(), card.getSystemId(), true);
+        card.onStateChanged(card.getState(), CardState.NOT_RUNNING);
+
+        EpromFileCapability ef = card.getCapability(EpromFileCapability.class);
+        assertNotNull (ef);
+        FileObject epromFile = ef.getEpromFile();
+        assertSame (expect, FileUtil.toFile(epromFile));
+        assertNotNull (epromFile);
+        ClearEpromCapability clear = card.getCapability(ClearEpromCapability.class);
+        assertNotNull (clear);
+        final CountDownLatch latch = new CountDownLatch(1);
+        epromFile.addFileChangeListener(new FileChangeAdapter() {
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                latch.countDown();}});
+        clear.clear();
+        synchronized (clear) {
+            clear.wait(300);
+        }
+        latch.await(30000, TimeUnit.MILLISECONDS);
+        assertFalse (epromFile.isValid());
+        assertNull (card.getCapability(ClearEpromCapability.class));
+        assertNotNull (card.getCapability(EpromFileCapability.class));
+        EpromFileCapability c = card.getCapability(EpromFileCapability.class);
+        assertNull (c.getEpromFile());
+
+        //Ensure the capability reappears
+        expect = Utils.eepromFileForDevice(card.getPlatform().getSystemName(), card.getSystemId(), true);
+        card.onStateChanged(card.getState(), CardState.RUNNING);
+        card.onStateChanged(card.getState(), CardState.NOT_RUNNING);
+        epromFile = ef.getEpromFile();
+        assertNotNull (epromFile);
+        assertNotNull (clear = card.getCapability(ClearEpromCapability.class));
+        final CountDownLatch latch2 = new CountDownLatch(1);
+        //Ensure the eprom file is gone or the next test will fail
+        epromFile.addFileChangeListener(new FileChangeAdapter() {
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                latch2.countDown();}});
+        clear.clear();
+        synchronized (clear) {
+            clear.wait(300);
+        }
+        latch.await(30000, TimeUnit.MILLISECONDS);
+        assertFalse (epromFile.isValid());
+        assertNull (card.getCapability(ClearEpromCapability.class));
+    }
+
+    @Test
     public void testLookupContents() throws InterruptedException {
-        System.err.println("testLookupContents");
         assertNotNull (card.getLookup().lookup(StartCapability.class));
         assertNotNull (card.getLookup().lookup(EpromFileCapability.class));
         assertNotNull (card.getLookup().lookup(DebugCapability.class));
@@ -215,23 +273,12 @@ public class RICardTest {
         StopCapability stop = card.getLookup().lookup(StopCapability.class);
         assertNull ("Should be no initial StopCapability, but found " + stop, stop);
         assertNull (card.getLookup().lookup(ResumeCapability.class));
-        System.err.println("Completed lookup tests");
-        CardStateObserver o = new CardStateObserver() {
-
-            public void onStateChange(Card card, CardState old, CardState nue) {
-                System.err.println("State from " + old + " to " + nue);
-            }
-
-        };
-        card.addCardStateObserver(o);
-
         final CountDownLatch latch = new CountDownLatch(1);
         final StopCapability[] stopCap = new StopCapability[1];
         CardStateObserver interceptor = new CardStateObserver() {
             public void onStateChange(Card card, CardState old, CardState nue) {
                 //Called synchronously on state changes - we can block and test
                 //states here
-                System.err.println("sync state change from " + old + " to " + nue);
                 switch (nue) {
                     case RUNNING :
                     case RUNNING_IN_DEBUG_MODE :
@@ -240,13 +287,11 @@ public class RICardTest {
                         assertNull (card.getLookup().lookup(StartCapability.class));
                         assertNull (card.getLookup().lookup(ResumeCapability.class));
                         assertNull (card.getLookup().lookup(ClearEpromCapability.class));
-                        System.err.println("Waiting in " + Thread.currentThread() + " for countdown");
                         try {
                             latch.await();
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        System.err.println("...released");
                         break;
                     case NOT_RUNNING :
                         assertNotNull (card.getLookup().lookup(StartCapability.class));
@@ -376,7 +421,6 @@ public class RICardTest {
         private final OPA opa;
         FakeDob(FileObject fo) throws Exception {
             super (fo, Lookup.getDefault().lookup(FakeLoader.class));
-            System.err.println("Created a FakeDob for " + fo.getPath());
             this.opa = new OPA();
         }
 
@@ -437,6 +481,10 @@ public class RICardTest {
     }
 
     private static class FakePlatform extends JavacardPlatform {
+        
+        public Set<ProjectKind> supportedProjectKinds() {
+            return ProjectKind.kindsFor(null, true);
+        }
 
         @Override
         public String getSystemName() {
@@ -535,6 +583,11 @@ public class RICardTest {
         @Override
         public String getPlatformKind() {
             return "TEST";
+        }
+
+        @Override
+        public ClassPath getProcessorClasspath(ProjectKind kind) {
+            return ClassPathSupport.createClassPath("");
         }
     }
 }

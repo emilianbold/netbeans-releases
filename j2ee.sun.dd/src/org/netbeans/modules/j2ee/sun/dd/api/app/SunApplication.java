@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 
 public interface SunApplication extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
 
+        public static final String VERSION_6_0_1 = "6.01"; //NOI18N
+        public static final String VERSION_6_0_0 = "6.00"; //NOI18N
         public static final String VERSION_5_0_0 = "5.00"; //NOI18N
         public static final String VERSION_1_4_0 = "1.40"; //NOI18N
         public static final String VERSION_1_3_0 = "1.30"; //NOI18N

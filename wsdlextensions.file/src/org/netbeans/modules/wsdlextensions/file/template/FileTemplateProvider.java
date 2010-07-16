@@ -21,9 +21,10 @@ package org.netbeans.modules.wsdlextensions.file.template;
 
 import java.io.InputStream;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardContext;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.WSDLWizardExtensionIterator;
 import org.openide.util.NbBundle;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class FileTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String fileTemplateUrl = "/org/netbeans/modules/wsdlextensions/file/template/template.xml";
@@ -36,6 +37,14 @@ public class FileTemplateProvider extends ExtensibilityElementTemplateProvider {
         return NbBundle.getMessage(FileTemplateProvider.class, str, objects);
     }
     
+    @Override
+    public InputStream getTemplateFileInputStream(String filePath) {
+        return FileTemplateProvider.class.getResourceAsStream("/org/netbeans/modules/wsdlextensions/file/template/" + filePath);
+    }
     
+    @Override
+    public WSDLWizardExtensionIterator getWSDLWizardExtensionIterator(WSDLWizardContext context) {
+        return new FileWSDLWizardExtensionIterator(context);
+    }
 
 }

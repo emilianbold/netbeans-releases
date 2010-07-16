@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,10 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
@@ -64,8 +66,9 @@ public class Dwarf {
     private List<MemberHeader> offsets;
     private FileMagic magic;
     private String fileName;
+    private List<FileMagic> toDispose = new ArrayList<FileMagic>();
     
-    enum Mode {
+    private enum Mode {
         Normal, Archive, MachoLOF
     };
     private final Mode mode;
@@ -81,7 +84,7 @@ public class Dwarf {
                 // support archives
                 skipFirstHeader(magic.getReader());
                 offsets = getObjectTable(magic.getReader());
-                if (offsets.size()==0) {
+                if (offsets.isEmpty()) {
                     throw new WrongFileFormatException("Not an ELF file"); // NOI18N
                 }
                 mode = Mode.Archive;
@@ -96,10 +99,51 @@ public class Dwarf {
 
             }
         } catch (IOException ex) {
-            if (magic != null) {
-                magic.dispose();
-            }
+            dispose();
             throw ex;
+        }
+    }
+    
+    public final void dispose(){
+        if (magic != null) {
+            magic.dispose();
+            magic = null;
+        }
+        for(FileMagic file : toDispose){
+            file.dispose();
+        }
+        toDispose.clear();
+    }
+    
+    public ElfSection getSection(String sectionName) {
+	return dwarfReader.getSection(sectionName);
+    }
+
+    public List<String> readPubNames() throws IOException {
+	return dwarfReader.readPubNames();
+    }
+    
+    public String getFileName() {
+	return fileName;
+    }
+
+    public Iterator<CompilationUnit> iteratorCompilationUnits() throws IOException {
+        if (mode == Mode.Archive) {
+            return new ArchiveIterator(magic.getReader());
+        } else if (mode == Mode.Normal) {
+            return iteratorFileCompilationUnits();
+        } else {// mode = Mode.MachoLOF
+            return new MacArchiveIterator();
+        }
+    }
+    
+    public List<CompilationUnit> getCompilationUnits() throws IOException {
+        if (mode == Mode.Archive) {
+            return getArchiveCompilationUnits(magic.getReader());
+        } else if (mode == Mode.Normal) {
+            return getFileCompilationUnits();
+        } else {// mode = Mode.MachoLOF
+            return getMachoLOFCompilationUnits();
         }
     }
     
@@ -119,7 +163,7 @@ public class Dwarf {
         // Skip first header
         reader.skipBytes(length);
     }
-    
+
     private List<MemberHeader> getObjectTable(RandomAccessFile reader) throws IOException{
         byte[] next = new byte[60];
         ArrayList<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
@@ -167,49 +211,7 @@ public class Dwarf {
         }
         return length;
     }
-    
-    public void dispose(){
-        if (magic != null) {
-            magic.dispose();
-            magic = null;
-        }
-    }
-    
-    public CompilationUnit getCompilationUnit(String srcFileFullName) throws IOException {
-        for (CompilationUnit unit : getCompilationUnits()) {
-            // TODO: remove hack
-            
-            String srcFileName = srcFileFullName.substring(srcFileFullName.lastIndexOf(File.separatorChar));
-            String unitFileName = unit.getSourceFileFullName();
-            unitFileName = unitFileName.substring(unitFileName.lastIndexOf(File.separatorChar));
-            
-            if (unitFileName.equals(srcFileName)) {
-                //if (unit.getSourceFileFullName().equals(srcFileFullName)) {
-                return unit;
-            }
-        }
-        
-        return null;
-    }
-    
-    public ElfSection getSection(String sectionName) {
-	return dwarfReader.getSection(sectionName);
-    }
-    
-    public String getFileName() {
-	return fileName;
-    }
-    
-    public List<CompilationUnit> getCompilationUnits() throws IOException {
-        if (mode == Mode.Archive) {
-            return getArchiveCompilationUnits(magic.getReader());
-        } else if (mode == Mode.Normal) {
-            return getFileCompilationUnits();
-        } else {// mode = Mode.MachoLOF
-            return getMachoLOFCompilationUnits();
-        }
-    }
-    
+
     private List<CompilationUnit> getFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
         List<CompilationUnit> result = null;
@@ -220,16 +222,28 @@ public class Dwarf {
         }
         return result;
     }
-    
+
+    private Iterator<CompilationUnit> iteratorFileCompilationUnits() throws IOException {
+        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
+        Iterator<CompilationUnit> result = null;
+        if (debugInfo != null) {
+            result = debugInfo.iteratorCompilationUnits();
+        } else {
+            result = new LinkedList<CompilationUnit>().iterator();
+        }
+        return result;
+    }
+
     private List<CompilationUnit> getMachoLOFCompilationUnits() throws IOException {
         List<CompilationUnit> result = new LinkedList<CompilationUnit>();
         for (String string : dwarfReader.getLinkedObjectFiles()) {
             Dwarf gimli = new Dwarf(string);
             result.addAll(gimli.getCompilationUnits());
+            toDispose.add(gimli.magic);
         }
         return result;
     }
-    
+
     private List<CompilationUnit> getArchiveCompilationUnits(RandomAccessFile reader) throws IOException {
         List<CompilationUnit> result = new LinkedList<CompilationUnit>();
         for (MemberHeader member : offsets) {
@@ -248,5 +262,133 @@ public class Dwarf {
             result.addAll(getFileCompilationUnits());
         }
         return result;
+    }
+
+    private class MacArchiveIterator implements Iterator<CompilationUnit>{
+        private List<String> objectFiles;
+        private int archiveIndex = 0;
+        private Iterator<CompilationUnit> currentList;
+        private Dwarf currentDwarf;
+
+        public MacArchiveIterator() throws IOException{
+            objectFiles = dwarfReader.getLinkedObjectFiles();
+            advanceArchive();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (currentList == null) {
+                return false;
+            }
+            if (currentList.hasNext()) {
+                return true;
+            }
+            try {
+                advanceArchive();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+            return currentList != null;
+        }
+
+        @Override
+        public CompilationUnit next() {
+            return currentList.next();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        private void advanceArchive() throws IOException {
+            while (true) {
+                if (currentDwarf != null) {
+                    toDispose.remove(currentDwarf.magic);
+                    currentDwarf.magic.dispose();
+                    currentDwarf = null;
+                }
+                if (archiveIndex < objectFiles.size()) {
+                    String member = objectFiles.get(archiveIndex);
+                    archiveIndex++;
+                    currentDwarf = new Dwarf(member);
+                    toDispose.add(currentDwarf.magic);
+                    currentList = currentDwarf.iteratorCompilationUnits();
+                    if (!currentList.hasNext()) {
+                        continue;
+                    }
+                } else {
+                    currentList = null;
+                    return;
+                }
+            }
+        }
+    }
+
+    private class ArchiveIterator implements Iterator<CompilationUnit>{
+        private int archiveIndex = 0;
+        private RandomAccessFile reader;
+        private Iterator<CompilationUnit> currentIterator;
+
+        public ArchiveIterator(RandomAccessFile reader) throws IOException {
+            this.reader = reader;
+            advanceArchive();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (currentIterator == null) {
+                return false;
+            }
+            if (currentIterator.hasNext()) {
+                return true;
+            }
+            try {
+                advanceArchive();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+            return currentIterator != null;
+        }
+
+        @Override
+        public CompilationUnit next() {
+            return currentIterator.next();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        private void advanceArchive() throws IOException {
+            while (true) {
+                if (archiveIndex < offsets.size()) {
+                    MemberHeader member = offsets.get(archiveIndex);
+                    archiveIndex++;
+                    long shiftIvArchive = member.getOffset();
+                    int length = member.getLength();
+                    reader.seek(shiftIvArchive);
+                    byte[] bytes = new byte[8];
+                    reader.readFully(bytes);
+                    if (FileMagic.isElfMagic(bytes)) {
+                        dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
+                    } else if (FileMagic.isCoffMagic(bytes)) {
+                        dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
+                    } else if (FileMagic.isMachoMagic(bytes)) {
+                        dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                    }
+                    currentIterator = iteratorFileCompilationUnits();
+                    if (!currentIterator.hasNext()) {
+                        continue;
+                    }
+                } else {
+                    currentIterator = null;
+                    return;
+                }
+            }
+        }
     }
 }

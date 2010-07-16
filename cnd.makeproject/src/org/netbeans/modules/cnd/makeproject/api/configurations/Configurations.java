@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 
 public final class Configurations {
 
@@ -56,7 +60,7 @@ public final class Configurations {
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
-    private final List<Runnable> tasks = new ArrayList<Runnable>();
+    private final List<NamedRunnable> tasks = new ArrayList<NamedRunnable>();
 
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
@@ -71,7 +75,7 @@ public final class Configurations {
     }
 
     public Configurations init(Configuration[] confs, int defaultConf) {
-        List<Runnable> toRun = new ArrayList<Runnable>();
+        List<NamedRunnable> toRun = new ArrayList<NamedRunnable>();
         Configuration def = null;
         configurationsLock.writeLock().lock();
         try {
@@ -104,17 +108,17 @@ public final class Configurations {
 //            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
 //            pcs.firePropertyChange(PROP_DEFAULT, null, null);
 //        }
-        for (Runnable task : toRun) {
-            runOnCodeModelReadiness(task, false);
+        for (NamedRunnable task : toRun) {
+            runOnProjectReadiness(task, false);
         }
         return this;
     }
 
-    public void runOnCodeModelReadiness(Runnable task) {
-        runOnCodeModelReadiness(task, true);
+    public void runOnProjectReadiness(NamedRunnable task) {
+        runOnProjectReadiness(task, true);
     }
 
-    private void runOnCodeModelReadiness(Runnable task, boolean postpone) {
+    private void runOnProjectReadiness(NamedRunnable task, boolean postpone) {
         MakeConfiguration active = null;
         configurationsLock.writeLock().lock();
         try {
@@ -129,7 +133,7 @@ public final class Configurations {
         }
         if (active != null) {
             DevelopmentHostConfiguration host = active.getDevelopmentHost();
-            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runOnCodeModelReadiness(task);
+            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runProjectReadiness(task);
         }
     }
 
@@ -145,7 +149,7 @@ public final class Configurations {
     /*
      * Get all configurations
      */
-    public Configuration[] getConfs() {
+    public Configuration[] toArray() {
         configurationsLock.readLock().lock();
         try {
             return configurations.toArray(new Configuration[size()]);
@@ -154,16 +158,7 @@ public final class Configurations {
         }
     }
 
-    public List<Configuration> getConfigurtions() {
-        configurationsLock.readLock().lock();
-        try {
-            return new ArrayList<Configuration>(configurations);
-        } finally {
-            configurationsLock.readLock().unlock();
-        }
-    }
-
-    public Collection<Configuration> getConfsAsCollection() {
+    public Collection<Configuration> getConfigurations() {
         Collection<Configuration> collection = new LinkedHashSet<Configuration>();
         configurationsLock.readLock().lock();
         try {
@@ -344,8 +339,9 @@ public final class Configurations {
     }
 
     /**
-     * @deprecated. Use getActive()
+     * @deprecated Use getActive()
      */
+    @Deprecated
     public Configuration getDefault() {
         return getActive();
     }

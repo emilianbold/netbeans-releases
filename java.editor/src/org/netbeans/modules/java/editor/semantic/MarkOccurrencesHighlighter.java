@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,12 +47,15 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -148,7 +154,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return;
 
-        caretPosition = info.getPositionConverter().getJavaSourcePosition(caretPosition);
+        caretPosition = info.getSnapshot().getEmbeddedOffset(caretPosition);
 
         List<int[]> bag = processImpl(info, node, doc, caretPosition);
 
@@ -199,8 +205,8 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         AttributeSet attributes = ColoringManager.getColoringImpl(MO);
 
         for (int[] span : result) {
-            int convertedStart = info.getPositionConverter().getOriginalPosition(span[0]);
-            int convertedEnd   = info.getPositionConverter().getOriginalPosition(span[1]);
+            int convertedStart = info.getSnapshot().getOriginalOffset(span[0]);
+            int convertedEnd   = info.getSnapshot().getOriginalOffset(span[1]);
 
             if (convertedStart != (-1) && convertedEnd != (-1)) {
                 obag.addHighlight(convertedStart, convertedEnd, attributes);
@@ -281,6 +287,25 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return null;
 
+        if (node.getBoolean(MarkOccurencesSettings.EXCEPTIONS, true)) {
+            //detect caret inside catch:
+            if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
+                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH) {
+                    MethodExitDetector med = new MethodExitDetector();
+
+                    setExitDetector(med);
+
+                    try {
+                        return med.process(info, doc, ((TryTree)typePath.getParentPath().getParentPath().getParentPath().getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                    } finally {
+                        setExitDetector(null);
+                    }
+            }
+        }
+
+        if (isCancelled())
+            return null;
+        
         if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true)) {
             //detect caret inside the extends/implements clause:
             if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.CLASS) {
@@ -412,6 +437,36 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             }
         }
 
+        if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.IMPORT) {
+            ImportTree it = (ImportTree) tp.getParentPath().getLeaf();
+            if (it.isStatic() && tp.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree) tp.getLeaf();
+                if (!"*".contentEquals(mst.getIdentifier())) {
+                    List<int[]> bag = new ArrayList<int[]>();
+                    Token<JavaTokenId> tok = Utilities.getToken(info, doc, tp);
+                    if (tok != null)
+                        bag.add(new int[] {tok.offset(null), tok.offset(null) + tok.length()});
+                    el = info.getTrees().getElement(new TreePath(tp, mst.getExpression()));
+                    if (el != null) {
+                        FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
+                        setLocalUsages(fluq);
+                        try {
+                            for (Element element : el.getEnclosedElements()) {
+                                if (element.getModifiers().contains(Modifier.STATIC)) {
+                                    for (Token t : fluq.findUsages(element, info, doc)) {
+                                        bag.add(new int[] {t.offset(null), t.offset(null) + t.length()});
+                                    }
+                                }
+                            }
+                            return bag;
+                        } finally {
+                            setLocalUsages(null);
+                        }
+                    }
+                }
+            }
+        }
+        
         return null;
     }
 

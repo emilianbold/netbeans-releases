@@ -23,7 +23,9 @@ jdk_home=$3
 set -e
 
 echo Changing ownership for $chown_dir
-chown -R root:admin "$chown_dir"
+#Fix for 177872 (alternative: change Auth="None" for GF, but problem with existing root:admin dirs)
+ownership=`ls -nlda ~ | awk ' { print $3 ":admin" } ' 2>/dev/null`
+chown -R "$ownership" "$chown_dir"
 
 echo Calling unpack200 in $unpack_dir
 cd "$unpack_dir"

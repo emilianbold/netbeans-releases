@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -107,7 +110,7 @@ public class RecentFilesTest extends TestCase {
         List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
         assertTrue("Expected " + files.length + " recent files, got " + recentFiles.size(), files.length == recentFiles.size());
         for (FileObject fo : files) {
-            assertEquals(RecentFiles.convertFile2URL(fo), recentFiles.get(i).getURL());
+            assertEquals(RecentFiles.convertFile2Path(fo), recentFiles.get(i).getPath());
             i++;
         }
 
@@ -132,7 +135,7 @@ public class RecentFilesTest extends TestCase {
         // store, load and check for equality
         for (int i=0; i < files.length; i++) {
             FileObject file = files[i];
-            RecentFiles.addFile(RecentFiles.convertFile2URL(file));
+            RecentFiles.addFile(RecentFiles.convertFile2Path(file));
             Thread.sleep(100);
         }
         RecentFiles.store();
@@ -141,7 +144,7 @@ public class RecentFilesTest extends TestCase {
         int i = files.length - 1;
         for (FileObject fileObject : files) {
             assertTrue("File #" + (i + 1) + " differs", 
-                    fileObject.equals(RecentFiles.convertURL2File(loaded.get(i--).getURL())));
+                    fileObject.equals(RecentFiles.convertPath2File(loaded.get(i--).getPath())));
         }
     }
     
@@ -165,7 +168,7 @@ public class RecentFilesTest extends TestCase {
         List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
         boolean contained = false;
         for (HistoryItem historyItem : recentFiles) {
-            if (fo.equals(RecentFiles.convertURL2File(historyItem.getURL()))) {
+            if (fo.equals(RecentFiles.convertPath2File(historyItem.getPath()))) {
                 contained = true;
                 break;
             }

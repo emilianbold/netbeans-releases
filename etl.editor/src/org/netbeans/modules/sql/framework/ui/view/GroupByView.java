@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -82,7 +85,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.openide.awt.StatusDisplayer;
 
 /**
  * @author Ritesh Adval
@@ -201,7 +204,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                 try {
                     conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
                 } catch (CloneNotSupportedException ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY), ex);
+                    String msg = mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY);
+                    StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                    mLogger.infoNoloc(msg.substring(15) + ex);
                     return;
                 }
 
@@ -217,7 +222,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                         warnForInvalidCondition();
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT201: Error finding root predicate from text condition{0}from joinview table.", text), ex);
+                    String msg = mLoc.t("EDIT201: Error finding root predicate from text condition " + text + " from joinview table.");
+                    StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                    mLogger.infoNoloc(msg.substring(15) + ex.getMessage());
                     warnForInvalidCondition();
                 }
 
@@ -229,7 +236,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
             ConditionBuilderView builderView = ConditionBuilderUtil.getHavingConditionBuilderView(targetTable, editor);
 
             DialogDescriptor dd = new DialogDescriptor(builderView, "Having Condition", true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-            
+
             if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
                 SQLCondition cond = (SQLCondition) builderView.getPropertyValue();
                 if (cond != null) {

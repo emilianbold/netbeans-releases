@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,10 +44,10 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,15 +67,20 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -82,7 +90,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -96,15 +106,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Utility methods for the module.
@@ -120,105 +125,21 @@ public final class Util {
     private static final String SFS_VALID_PATH_RE = "(\\p{Alnum}|\\/|_)+"; // NOI18N
     
     // COPIED FROM org.netbeans.modules.project.ant:
-    // (except for namespace == null support in findElement)
+    // (**EXCEPT** except for namespace == null support in findElement)
     // (and support for comments in findSubElements)
     
-    /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace the intended namespace (or null)
-     * @return the first child element with that name, or null if none
-     */
-    public static Element findElement(Element parent, String name, String namespace) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if ((namespace == null && name.equals(el.getTagName())) ||
-                        (namespace != null && name.equals(el.getLocalName()) &&
-                        namespace.equals(el.getNamespaceURI()))) {
-                    return el;
-                }
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Extract nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    public static String findText(Element parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes or comments are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // OK, ignore
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
-            }
-        }
-        return elements;
-    }
 
     /**
-     * Convert an XML fragment from one namespace to another.
+     * Pass to {@link XPath#setNamespaceContext} to bind {@code nbm:} to the /3 namespace.
      */
-    public static Element translateXML(Element from, String namespace) {
-        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i = 0; i < length; i++) {
-            Node node = nl.item(i);
-            Node newNode;
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                newNode = translateXML((Element) node, namespace);
-            } else {
-                newNode = node.cloneNode(true);
+    public static final NamespaceContext nbmNamespaceContext() {
+        return new NamespaceContext() {
+            public String getNamespaceURI(String prefix) {
+                return prefix.equals("nbm") ? NbModuleProject.NAMESPACE_SHARED : null; // NOI18N
             }
-            to.appendChild(newNode);
-        }
-        NamedNodeMap m = from.getAttributes();
-        for (int i = 0; i < m.getLength(); i++) {
-            Node attr = m.item(i);
-            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
-        }
-        return to;
+            public String getPrefix(String namespaceURI) {return null;}
+            public Iterator getPrefixes(String namespaceURI) {return null;}
+        };
     }
 
     /**
@@ -325,8 +246,7 @@ public final class Util {
         try {
             if (locBundleResource != null) {
                 List<FileObject> bundleFOs = new ArrayList<FileObject>();
-                for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
-                    String resource = (String) it.next();
+                for (String resource : getPossibleResources(locBundleResource)) {
                     FileObject bundleFO = sourceDir.getFileObject(resource);
                     if (bundleFO != null) {
                         bundleFOs.add(bundleFO);
@@ -380,7 +300,7 @@ public final class Util {
      */
     public static LocalizedBundleInfo findLocalizedBundleInfoFromJAR(File binaryProject) {
         try {
-            JarFile main = new JarFile(binaryProject);
+            JarFile main = new JarFile(binaryProject, false);
             try {
                 Manifest mf = main.getManifest();
                 String locBundleResource =
@@ -398,12 +318,10 @@ public final class Util {
                         }
                         String base = name.substring(0, dot);
                         String suffix = name.substring(dot);
-                        Iterator<String> it = NbBundle.getLocalizingSuffixes();
-                        while (it.hasNext()) {
-                            String infix = it.next();
+                        for (String infix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
-                                JarFile jf = new JarFile(variant);
+                                JarFile jf = new JarFile(variant, false);
                                 extraJarFiles.add(jf);
                                 addBundlesFromJar(jf, bundleISs, locBundleResource);
                             }
@@ -423,6 +341,21 @@ public final class Util {
                         }
                     }
                 }
+                if (mf.getMainAttributes().getValue(ManifestManager.BUNDLE_SYMBOLIC_NAME) != null) {
+                    Properties p = new Properties();
+                    String[] from = {"Bundle-Name", "Bundle-Category", "Bundle-Description", "Bundle-Description"};
+                    String[] to = {LocalizedBundleInfo.NAME, LocalizedBundleInfo.DISPLAY_CATEGORY,
+                                   LocalizedBundleInfo.SHORT_DESCRIPTION, LocalizedBundleInfo.LONG_DESCRIPTION};
+                    for (int i = 0; i < from.length; i++) {
+                        String v = mf.getMainAttributes().getValue(from[i]);
+                        if (v != null) {
+                            p.setProperty(to[i], v);
+                        }
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    p.store(baos, null);
+                    return LocalizedBundleInfo.load(new InputStream[] {new ByteArrayInputStream(baos.toByteArray())});
+                }
             } finally {
                 main.close();
             }
@@ -433,8 +366,7 @@ public final class Util {
     }
     
     private static void addBundlesFromJar(JarFile jf, List<InputStream> bundleISs, String locBundleResource) throws IOException {
-        for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
-            String resource = (String) it.next();
+        for (String resource : getPossibleResources(locBundleResource)) {
             ZipEntry entry = jf.getEntry(resource);
             if (entry != null) {
                 InputStream bundleIS = jf.getInputStream(entry);
@@ -574,9 +506,7 @@ public final class Util {
         ProjectXMLManager pxm = new ProjectXMLManager(target);
         
         // firstly check if the dependency is already not there
-        Set currentDeps = pxm.getDirectDependencies();
-        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (ModuleDependency md : pxm.getDirectDependencies()) {
             if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
                 Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
                 return false;
@@ -616,18 +546,15 @@ public final class Util {
     }
     
     private static URL normalizeURL(URL url) {
-        // not sure - in some private tests it seems that input
-        // jar:file:/home/..../NetBeansAPIs.zip!/..../index.html result in:
-        // http://localhost:8082/..../index.html
-//        URL resolvedURL = null;
-//        FileObject fo = URLMapper.findFileObject(url);
-//        if (fo != null) {
-//            resolvedURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-//        }
-        return URLMapper.findFileObject(url) == null ? null : url;
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo != null) {
+            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        } else {
+            return null;
+        }
     }
     
-    private static Iterator getPossibleResources(String locBundleResource) {
+    private static Iterable<String> getPossibleResources(String locBundleResource) {
         String locBundleResourceBase, locBundleResourceExt;
         int idx = locBundleResource.lastIndexOf('.');
         if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
@@ -638,13 +565,12 @@ public final class Util {
             locBundleResourceExt = "";
         }
         Collection<String> resources = new LinkedHashSet<String>();
-        for (Iterator<String> it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
-            String suffix = it.next();
+        for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
             String resource = locBundleResourceBase + suffix + locBundleResourceExt;
             resources.add(resource);
             resources.add(resource);
         }
-        return resources.iterator();
+        return resources;
     }
     
     public static Manifest getManifest(FileObject manifestFO) {
@@ -657,7 +583,7 @@ public final class Util {
                     is.close();
                 }
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(Util.class.getName()).log(Level.INFO, "Could not parse: " + manifestFO, e);
             }
         }
         return null;
@@ -841,9 +767,9 @@ public final class Util {
         }
         
         // #72669: remove invalid packages.
-        Iterator it = availablePublicPackages.iterator();
+        Iterator<String> it = availablePublicPackages.iterator();
         while (it.hasNext()) {
-            String pkg = (String) it.next();
+            String pkg = it.next();
             if (!Util.isValidJavaFQN(pkg)) {
                 it.remove();
             }

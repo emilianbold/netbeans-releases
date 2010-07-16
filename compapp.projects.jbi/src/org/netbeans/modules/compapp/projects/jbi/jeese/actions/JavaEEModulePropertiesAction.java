@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,24 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * JavaEEModulePropertiesAction.java
- *
- * Created on October 18, 2006, 9:15 PM
- *
- */
-
 package org.netbeans.modules.compapp.projects.jbi.jeese.actions;
 
 import java.awt.Dialog;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.javaee.codegen.model.EndpointCfg;
 import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.jeese.ui.DeploymentOptionPanel;
+import org.netbeans.modules.compapp.projects.jbi.jeese.ui.JavaEEModuleNode;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,25 +64,22 @@ import org.openide.util.actions.NodeAction;
  * Action to display/edit JavaEE module/project properties.
  */
 public class JavaEEModulePropertiesAction extends NodeAction {
-    private String name = "";//NOI18N
+    private String name = ""; // NOI18N
     
     public JavaEEModulePropertiesAction() {
         init();
     }
-    
+
+    @Override
     public boolean asynchronous(){
         return false;
     }
     
     private void init() {
         ResourceBundle rb = NbBundle.getBundle(this.getClass());
-        name = rb.getString("nameProperties");//NOI18N
+        name = rb.getString("nameProperties"); // NOI18N
     }
-    
-    public boolean enable(Project project) {
-        return true;
-    }
-    
+        
     protected void performAction(Node[] activatedNodes) {
         Node theNode = activatedNodes[ 0 ];
         
@@ -133,7 +125,25 @@ public class JavaEEModulePropertiesAction extends NodeAction {
     }
     
     public boolean enable(Node[] nodes) {
-        return true;
+        boolean ret = false;
+
+        // Only enable this action when there is one EE module node selected and
+        // the selected EE module is an internal module.
+        if (nodes.length == 1) {
+            Lookup nodeLookup = nodes[0].getLookup();
+
+            JbiProject jbiProject = nodeLookup.lookup(JbiProject.class);
+            VisualClassPathItem vcpi = nodeLookup.lookup(VisualClassPathItem.class);
+
+            if (jbiProject != null && vcpi != null) {
+                List<String> extSuNames = jbiProject.getExternalServiceUnitNames();
+                if (!extSuNames.contains(vcpi.getProjectName())) {
+                    ret = true;
+                }
+            }
+        }
+
+        return ret;
     }
     
     public HelpCtx getHelpCtx() {

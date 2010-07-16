@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -203,8 +206,10 @@ final class ToolsConfiguration {
                 }
                 try {
                     @SuppressWarnings("unchecked")
-                    Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
-                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
+//                    Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
+
+//                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
+                    DLightToolConfigurationProvider configurationProvider = (DLightToolConfigurationProvider)ic.instanceCreate();
                     DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
                     toolsProviders.put(tool.getID(), child);
                     boolean enabledByDefault = true;
@@ -227,16 +232,6 @@ final class ToolsConfiguration {
                     result.add(tool);
     //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
     //        result.add(clazz.getConstructor().newInstance());
-                } catch (InstantiationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalAccessException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (NoSuchMethodException ex) {
-                    Exceptions.printStackTrace(ex);
                 } catch (SecurityException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {

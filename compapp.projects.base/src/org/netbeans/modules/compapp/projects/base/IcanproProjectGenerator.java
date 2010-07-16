@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -74,7 +75,7 @@ public class IcanproProjectGenerator {
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject (dir);
 
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -84,7 +85,7 @@ public class IcanproProjectGenerator {
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         FileObject bpelasaRoot = srcRoot;
         
-        FileObject portmapFile = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-modules-compapp-projects-base/portmap.xml"), bpelasaRoot, "portmap"); //NOI18N
+        FileObject portmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-compapp-projects-base/portmap.xml"), bpelasaRoot, "portmap"); //NOI18N
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put (IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
         ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N

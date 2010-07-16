@@ -35,6 +35,7 @@ public class AddRepeatuntilAction extends AddPaletteActivityAction {
     private static final long serialVersionUID = 1L;
 
     public AddRepeatuntilAction() {
+        super("structured/repeatuntil"); // NOI18N
     }    
     
     protected String getBundleName() {

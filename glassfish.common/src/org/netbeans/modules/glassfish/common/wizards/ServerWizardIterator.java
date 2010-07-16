@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -101,36 +104,44 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private ServerWizardIterator() {
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public void previousPanel() {
         index--;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
     
+    @Override
     public String name() {
         return gip.getDisplayName() + " AddInstanceIterator";  // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title){
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 d.setTitle(title);
@@ -139,6 +150,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         });
     }
     
+    @Override
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
         File ir = new File(installRoot);
@@ -160,10 +172,12 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return result;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
@@ -212,6 +226,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return index;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
         JComponent component = (JComponent)result.getComponent();
@@ -220,6 +235,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return result;
     }
     
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         fireChangeEvent();
     }
@@ -305,6 +321,10 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                 FileUtil.normalizeFile(installDir).getPath());
         if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.PRELUDE_DEFAULT_NAME)) {
             errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",  //NOI18N
+                FileUtil.normalizeFile(installDir).getPath());
+        }
+        if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.EE6WC_DEFAULT_NAME)) {
+            errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_EE6WCInstallationInvalid",  //NOI18N
                 FileUtil.normalizeFile(installDir).getPath());
         }
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); // getSanitizedPath(installDir)));

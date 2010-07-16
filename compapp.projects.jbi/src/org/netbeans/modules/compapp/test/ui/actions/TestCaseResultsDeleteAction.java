@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,14 +46,10 @@ package org.netbeans.modules.compapp.test.ui.actions;
 
 import javax.swing.JTree;
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.view.TreeView;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -99,9 +98,9 @@ public class TestCaseResultsDeleteAction extends CookieAction {
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage(TestCaseResultsDeleteAction.class, "MSG_DeleteTestCaseResults"), // NOI18N
                 NbBundle.getMessage(TestCaseResultsDeleteAction.class, "TTL_DeleteTestCaseResults"), // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_OPTION);
         
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {            
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
             for (Node node : activatedNodes) {
                 TestcaseCookie testCaseCookie =
                         ((TestcaseCookie) node.getCookie(TestcaseCookie.class));
@@ -118,29 +117,16 @@ public class TestCaseResultsDeleteAction extends CookieAction {
         }
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getName() {
-        return NbBundle.getMessage(TestCaseResultsDeleteAction.class, "LBL_TestcaseDeleteResultsAction_Name");  // NOI18N
+        return NbBundle.getMessage(TestCaseResultsDeleteAction.class,
+                "LBL_TestcaseDeleteResultsAction_Name");  // NOI18N
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         

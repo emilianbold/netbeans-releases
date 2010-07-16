@@ -1,8 +1,7 @@
 package org.netbeans.modules.iep.editor.model;
 
-import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.OperatorComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.tbls.model.TcgComponentType;
 
 public class ModelObjectWrapper {
 

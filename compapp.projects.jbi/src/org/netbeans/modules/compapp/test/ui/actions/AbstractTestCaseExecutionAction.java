@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,8 +51,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
@@ -58,6 +63,7 @@ import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.modules.compapp.test.ui.wizards.NewTestcaseConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -96,12 +102,17 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
     }
     
     protected void performAction(final Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length == 0) {
+            return;
+        }
+        
         TestcaseCookie tc = activatedNodes[0].getCookie(TestcaseCookie.class);
         if (tc == null) {
             return;
         }        
         
         String[] targetNames = { getAntTargetName() };
+        Properties property = new Properties();
         
         /*tc.getTestcaseNode().showDiffTopComponentVisible();*/        
         JbiProject project = tc.getTestcaseNode().getProject();
@@ -124,12 +135,18 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
             // Make sure the SA is deployed and started. It is more effiecient
             // this way than calling the deploy Ant task blindly in the Ant script.
             {
-                AntProjectHelper antProjectHelper = project.getAntProjectHelper();
-                String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
+                AntProjectHelper antProjectHelper = 
+                        project.getLookup().lookup(AntProjectHelper.class);
+                String serverInstanceId = antProjectHelper.getStandardPropertyEvaluator().
                             getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
                 RuntimeManagementServiceWrapper adminService = null;
+                ServerInstance server = AdministrationServiceHelper.
+                        getServerInstance(System.getProperty("netbeans.user"),
+                        serverInstanceId);
+                property.setProperty("server.password", server.getPassword());
+
                 try {
-                     adminService = AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
+                     adminService = AdministrationServiceHelper.getRuntimeManagementServiceWrapper(server);
                 } catch (Exception e) {
                     NotifyDescriptor d = new NotifyDescriptor.Message(
                             e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
@@ -175,7 +192,7 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
         for (Node activatedNode : activatedNodes) {
             TestcaseCookie cookie = activatedNode.getCookie(TestcaseCookie.class);
             TestcaseNode node = cookie.getTestcaseNode();
-            String testFolderName = node.getTestCaseDir().getName();
+            String testFolderName = node.getTestCaseDir().getNameExt();
             selectedTestCasesCSV +=  testFolderName + ","; // NOI18N
         }
         selectedTestCasesCSV = selectedTestCasesCSV.substring(0, selectedTestCasesCSV.length() - 1);
@@ -197,7 +214,7 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
                 node.setTestCaseRunning(true);
             }
             
-            ExecutorTask task = ActionUtils.runTarget(buildXMLFile, targetNames, null);
+            ExecutorTask task = ActionUtils.runTarget(buildXMLFile, targetNames, property);
             
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(Task task) {

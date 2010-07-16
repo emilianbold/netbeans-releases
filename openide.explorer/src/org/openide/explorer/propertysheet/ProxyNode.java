@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -226,12 +229,16 @@ final class ProxyNode extends AbstractNode {
      */
     private Sheet.Set[] computePropertySets() {
         if (original.length > 0) {
-            Node.PropertySet[] firstSet = getOriginalPropertySets().get( 0 );
+            final ArrayList<PropertySet[]> ops = getOriginalPropertySets();
+            if (ops.isEmpty()) {
+                return new Sheet.Set[0];
+            }
+            Node.PropertySet[] firstSet = ops.get( 0 );
             java.util.Set<Node.PropertySet> sheets = new HashSet<Node.PropertySet>(Arrays.asList(firstSet));
 
             // compute intersection of all Node.PropertySets for given nodes
-            for (int i = 1; i < original.length; i++) {
-                sheets.retainAll(new HashSet(Arrays.asList(getOriginalPropertySets().get(i))));
+            for (int i = 1; i < ops.size(); i++) {
+                sheets.retainAll(new HashSet(Arrays.asList(ops.get(i))));
             }
 
             ArrayList<Sheet.Set> resultSheets = new ArrayList<Sheet.Set>(sheets.size());
@@ -261,8 +268,8 @@ final class ProxyNode extends AbstractNode {
                 String propsHelpID = null;
 
                 // intersection of properties from the corresponding tabs
-                for (int j = 0; j < original.length; j++) {
-                    Node.PropertySet[] p = getOriginalPropertySets().get(j);
+                for (int j = 0; j < ops.size(); j++) {
+                    Node.PropertySet[] p = ops.get(j);
 
                     for (int k = 0; k < p.length; k++) {
                         if (current.getName().equals(p[k].getName())) {
@@ -324,7 +331,7 @@ final class ProxyNode extends AbstractNode {
      * delegates to original[0] or applies changes to all
      * original properties.
      */
-    private static class ProxyProperty extends Node.Property {
+    static final class ProxyProperty extends Node.Property {
         private Node.Property[] original;
 
         /** It sets name, displayName and short description.
@@ -372,18 +379,26 @@ final class ProxyNode extends AbstractNode {
          */
         public Object getValue() throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
             Object o = original[0].getValue();
-
-            if (o == null) {
-                return null;
-            }
-
             for (int i = 0; i < original.length; i++) {
-                if (!o.equals(original[i].getValue())) {
+                if (!equals(o, original[i].getValue())) {
                     throw new DifferentValuesException();
                 }
             }
-
             return o;
+        }
+
+        static boolean equals (Object a, Object b) {
+            boolean aIsNull = a == null;
+            boolean bIsNull = b == null;
+            boolean bothNull = aIsNull && (aIsNull == bIsNull);
+            if (bothNull) {
+                return true;
+            }
+            boolean nullMismatch = aIsNull != bIsNull;
+            if (nullMismatch) {
+                return false;
+            }
+            return a.equals(b);
         }
 
         /** Set the value. Calls setValue on all delegates.

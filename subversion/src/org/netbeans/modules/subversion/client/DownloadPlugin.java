@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,10 +52,10 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -91,7 +94,7 @@ public class DownloadPlugin implements ActionListener {
     }
 
     private void download() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));
                 panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));
@@ -104,7 +107,7 @@ public class DownloadPlugin implements ActionListener {
                         if(u.getCodeName().equals(SvnClientFactory.JAVAHL_MODULE_CODE_NAME)) {
 
                             List<UpdateElement> elements = u.getAvailableUpdates();
-                            if(elements.size() == 0) {
+                            if(elements.isEmpty()) {
                                 panel.progressBarPanel.setVisible(false);
                                 panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyBeamedDown"));
                                 panel.repaint();
@@ -132,6 +135,7 @@ public class DownloadPlugin implements ActionListener {
         });
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.acceptCheckBox) {
             ok.setEnabled(panel.acceptCheckBox.isSelected());

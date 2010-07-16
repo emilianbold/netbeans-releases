@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,19 +45,14 @@
 package javax.help;
 
 import java.util.Hashtable;
-import java.awt.Component;
 import java.util.Locale;
-import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 
 /**
- * Navigational View information for a Search
- *
- * @author Eduardo Pelegri-Llopart
- * @version	1.5	01/29/99
+ * @deprecated only here for binary compatibility with old help sets.
+ *             Use javax.help.SearchView instead.
  */
 
+@Deprecated
 public class ModifiedSearchView extends SearchView {
 
     public ModifiedSearchView(HelpSet hs,
@@ -62,7 +60,6 @@ public class ModifiedSearchView extends SearchView {
             String label,
             Hashtable params) {
         super(hs, name, label, hs.getLocale(), params);
-        installUI();
     }
 
     public ModifiedSearchView(HelpSet hs,
@@ -71,17 +68,6 @@ public class ModifiedSearchView extends SearchView {
             Locale locale,
             Hashtable params) {
         super(hs, name, label, locale, params);
-        installUI();
     }
 
-    protected void installUI() {
-        LookAndFeel lnf = UIManager.getLookAndFeel();
-        UIDefaults table = UIManager.getLookAndFeelDefaults();
-        Object[] uiDefaults = {"ModifiedHelpSearchNavigatorUI", "javax.help.plaf.basic.ModifiedBasicSearchNavigatorUI"};
-        table.putDefaults(uiDefaults);
-    }
-
-    public Component createNavigator(HelpModel model) {
-        return new ModifiedJHelpSearchNavigator(this, model);
-    }
 }

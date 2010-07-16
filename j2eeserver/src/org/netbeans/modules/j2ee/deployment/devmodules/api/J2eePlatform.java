@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -95,13 +99,11 @@ public final class J2eePlatform {
     public static final String LIBRARY_TYPE = ServerLibraryTypeProvider.LIBRARY_TYPE;
 
     /** Display name property */
-    public static final String PROP_DISPLAY_NAME = "displayName";       //NOI18N
-    /** Libraries property */
-    public static final String PROP_LIBRARIES = "libraries";            //NOI18N
+    public static final String PROP_DISPLAY_NAME = "displayName"; //NOI18N
     /** Classpath property */
-    public static final String PROP_CLASSPATH = "classpath";            //NOI18N
+    public static final String PROP_CLASSPATH = "classpath"; //NOI18N
     /** Platform roots property */
-    public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
+    public static final String PROP_PLATFORM_ROOTS = "platformRoots"; //NOI18N
 
     /**
      * Constant for the application runtime tool. The standard properties defined
@@ -243,7 +245,7 @@ public final class J2eePlatform {
         // listens to libraries changes
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(PROP_LIBRARIES)) {
+                if (J2eePlatformImpl.PROP_LIBRARIES.equals(evt.getPropertyName())) {
                     LibraryImplementation[] libs = getLibraries();
                     for (int i = 0; i < libs.length; i++) {
                         libs[i].removePropertyChangeListener(librariesChangeListener);
@@ -256,6 +258,8 @@ public final class J2eePlatform {
                         currentClasspath = newClassPath;
                         impl.firePropertyChange(PROP_CLASSPATH, null, null);
                     }
+                } else if (J2eePlatformImpl.PROP_SERVER_LIBRARIES.equals(evt.getPropertyName())) {
+                    impl.firePropertyChange(PROP_CLASSPATH, null, null);
                 }
             }
         });
@@ -283,29 +287,41 @@ public final class J2eePlatform {
      *
      * @return classpath entries.
      */
+    @NonNull
     public File[] getClasspathEntries() {
         if (classpathCache == null) {
-            LibraryImplementation[] libraries = impl.getLibraries();
-            List/*<String>*/ classpath = new ArrayList();
-            for (int i = 0; i < libraries.length; i++) {
-                List classpathList = libraries[i].getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
-                for (Iterator iter = classpathList.iterator(); iter.hasNext();) {
-                    URL url = (URL)iter.next();
-                    if ("jar".equals(url.getProtocol())) { //NOI18N
-                        url = FileUtil.getArchiveFile(url);
-                    }
-                    FileObject fo = URLMapper.findFileObject(url);
-                    if (fo != null) {
-                        File f = FileUtil.toFile(fo);
-                        if (f != null) {
-                            classpath.add(f);
-                        }
+            List<File> classpath = getClasspath(impl.getLibraries());
+            classpathCache = (File[]) classpath.toArray(new File[classpath.size()]);
+        }
+        return classpathCache;
+    }
+
+    @NonNull
+    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) {
+        // FIXME optimize - cache
+        List<File> classpath = getClasspath(impl.getLibraries(libraries));
+        return (File[]) classpath.toArray(new File[classpath.size()]);
+    }
+    
+    private List<File> getClasspath(LibraryImplementation[] libraries) {
+        List<File> classpath = new ArrayList();
+        for (int i = 0; i < libraries.length; i++) {
+            List classpathList = libraries[i].getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+            for (Iterator iter = classpathList.iterator(); iter.hasNext();) {
+                URL url = (URL)iter.next();
+                if ("jar".equals(url.getProtocol())) { //NOI18N
+                    url = FileUtil.getArchiveFile(url);
+                }
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    File f = FileUtil.toFile(fo);
+                    if (f != null) {
+                        classpath.add(f);
                     }
                 }
             }
-            classpathCache = (File[])classpath.toArray(new File[classpath.size()]);
         }
-        return classpathCache;
+        return classpath;
     }
 
     /**
@@ -814,7 +830,7 @@ public final class J2eePlatform {
 
     private String getClasspathAsString() {
         File[] classpathEntr = getClasspathEntries();
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         final String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
         for (int i = 0; i < classpathEntr.length; i++) {
             classpath.append(classpathEntr[i].getAbsolutePath());

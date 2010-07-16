@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -93,6 +97,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(final CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     final ElementUtilities elementUtilities = controller.getElementUtilities();
@@ -111,19 +116,23 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                                 }
                             } else if(intf.getKind() == ElementKind.CLASS) {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    @Override
                                     public boolean accept(Element e, TypeMirror type) {
                                         TypeElement parent = elementUtilities.enclosingTypeElement(e);
-                                        return ElementKind.METHOD == e.getKind() && e.getEnclosingElement().equals(intf);
+                                        return ElementKind.METHOD == e.getKind() && 
+                                               e.getEnclosingElement().equals(intf) &&
+                                               e.getModifiers().contains(Modifier.PUBLIC);
                                     }
                                 });
                                 for (Element method : methods) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                    if (methodModel != null){
+                                    if (methodModel != null && !keys.contains(methodModel)){
                                         keys.add(methodModel);
                                     }
                                 }
                             } else {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    @Override
                                     public boolean accept(Element e, TypeMirror type) {
                                         TypeElement parent = elementUtilities.enclosingTypeElement(e);
                                         boolean isInInterface = ElementKind.INTERFACE == parent.getKind();
@@ -146,12 +155,14 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
             Exceptions.printStackTrace(ioe);
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setKeys(keys);
             }
         });
     }
     
+    @Override
     protected void addNotify() {
         if(interfaces == null){
             interfaces = getInterfaces();
@@ -169,6 +180,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
@@ -187,6 +199,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
@@ -198,6 +211,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         }
     }
     
+    @Override
     protected void removeNotify() {
         if (interfaces == null)
             return;
@@ -210,7 +224,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
      * Subclasses have to override this if no-arg constructor is used
      */
     protected Collection<String> getInterfaces(){
-        return null;
+        return interfaces;
     }
     
     /*
@@ -229,22 +243,27 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
 
     private class ClassIndexListenerImpl implements ClassIndexListener {
 
+        @Override
         public void typesAdded(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void typesRemoved(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void typesChanged(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void rootsAdded(RootsEvent event) {
             // ignore
         }
 
+        @Override
         public void rootsRemoved(RootsEvent event) {
             // ignore
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import static java.util.logging.Logger.getLogger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,23 +58,24 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.windows.InputOutput;
 
@@ -80,11 +85,13 @@ import org.openide.windows.InputOutput;
  */
 public class ReconfigureProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ReconfigureProject.class.getName(), 1);
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
     private CompilerSet compilerSet;
+    private final int platform;
     private DataObject configure;
     private DataObject cmake;
     private DataObject qmake;
@@ -109,7 +116,7 @@ public class ReconfigureProject {
         CompilerSet2Configuration set = configuration.getCompilerSet();
         compilerSet = set.getCompilerSet();
         assert compilerSet != null;
-        isSunCompiler = compilerSet.isSunCompiler();
+        isSunCompiler = compilerSet.getCompilerFlavor().isSunStudioCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
             DataObject dao = item.getDataObject();
@@ -134,6 +141,7 @@ public class ReconfigureProject {
                 }
             }
         }
+        platform = configuration.getDevelopmentHost().getBuildPlatform();
     }
 
     public void addExecutionListener(ExecutionListener listener){
@@ -153,7 +161,8 @@ public class ReconfigureProject {
 
     public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags, final InputOutput io){
         if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true, io);
                 }
@@ -169,8 +178,10 @@ public class ReconfigureProject {
             final AtomicInteger res = new AtomicInteger();
             final AtomicBoolean finished = new AtomicBoolean(false);
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                 }
+                @Override
                 public void executionFinished(int rc) {
                     res.set(rc);
                     finished.set(true);
@@ -224,11 +235,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -240,7 +253,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + cmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{cmake.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -258,11 +271,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -274,7 +289,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + qmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{qmake.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -294,11 +309,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -310,7 +327,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + configure.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{configure.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -326,6 +343,7 @@ public class ReconfigureProject {
 
     private void postClean(final boolean notifyStart) {
         ExecutionListener listener = new ExecutionListener() {
+            @Override
             public void executionStarted(int pid) {
                 if (notifyStart) {
                     for(ExecutionListener listener : listeners){
@@ -333,12 +351,13 @@ public class ReconfigureProject {
                     }
                 }
             }
+            @Override
             public void executionFinished(int rc) {
                 postMake();
             }
         };
         if (TRACE) {
-            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + " clean"); // NOI18N
+            logger.log(Level.INFO, "#make -f {0} clean", make.getPrimaryFile().getPath()); // NOI18N
         }
         if (canceled.get()) {
             listener.executionFinished(-1);
@@ -350,7 +369,7 @@ public class ReconfigureProject {
     private void postMake(){
         String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags, linkerFlags, isSunCompiler());
         if (TRACE) {
-            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath()); // NOI18N
+            logger.log(Level.INFO, "#make -f {0}", make.getPrimaryFile().getPath()); // NOI18N
         }
         Node node = make.getNodeDelegate();
         ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
@@ -363,8 +382,10 @@ public class ReconfigureProject {
             }
         }
         ExecutionListener listener = new ExecutionListener() {
+            @Override
             public void executionStarted(int pid) {
             }
+            @Override
             public void executionFinished(int rc) {
                 for(ExecutionListener listener : listeners){
                     listener.executionFinished(rc);
@@ -395,26 +416,29 @@ public class ReconfigureProject {
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             buf.append(" -G \"Unix Makefiles\""); // NOI18N
             buf.append(" -DCMAKE_BUILD_TYPE=Debug"); // NOI18N
-            buf.append(" -DCMAKE_C_COMPILER="+getCCompilerName()); // NOI18N
-            buf.append(" -DCMAKE_CXX_COMPILER="+getCppCompilerName()); // NOI18N
-            buf.append(" -DCMAKE_C_FLAGS_DEBUG="+cCompilerFlags); // NOI18N
-            buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
-            buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
+            buf.append(" -DCMAKE_C_COMPILER=").append(getCCompilerName()); // NOI18N
+            buf.append(" -DCMAKE_CXX_COMPILER=").append(getCppCompilerName()); // NOI18N
+            buf.append(" -DCMAKE_C_FLAGS_DEBUG=").append(cCompilerFlags); // NOI18N
+            buf.append(" -DCMAKE_CXX_FLAGS_DEBUG=").append(cppCompilerFlags); // NOI18N
+            buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG=").append(ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if (isSunCompiler && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            if (isSunCompiler && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) {
                 buf.append(" -spec solaris-cc"); // NOI18N
             }
-            buf.append(" QMAKE_CC="+getCCompilerName()); // NOI18N
-            buf.append(" QMAKE_CXX="+getCppCompilerName()); // NOI18N
-            buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
-            buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
-            buf.append(" QMAKE_LDFLAGS="+ldFlags); // NOI18N
+            if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                buf.append(" -spec macx-g++"); // NOI18N
+            }
+            buf.append(" QMAKE_CC=").append(getCCompilerName()); // NOI18N
+            buf.append(" QMAKE_CXX=").append(getCppCompilerName()); // NOI18N
+            buf.append(" QMAKE_CFLAGS=").append(cCompilerFlags); // NOI18N
+            buf.append(" QMAKE_CXXFLAGS=").append(cppCompilerFlags); // NOI18N
+            buf.append(" QMAKE_LDFLAGS=").append(ldFlags); // NOI18N
         } else {
-            buf.append(" CC="+getCCompilerName()); // NOI18N
-            buf.append(" CXX="+getCppCompilerName()); // NOI18N
-            buf.append(" CFLAGS="+cCompilerFlags); // NOI18N
-            buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
-            buf.append(" LDFLAGS="+ldFlags); // NOI18N
+            buf.append(" CC=").append(getCCompilerName()); // NOI18N
+            buf.append(" CXX=").append(getCppCompilerName()); // NOI18N
+            buf.append(" CFLAGS=").append(cCompilerFlags); // NOI18N
+            buf.append(" CXXFLAGS=").append(cppCompilerFlags); // NOI18N
+            buf.append(" LDFLAGS=").append(ldFlags); // NOI18N
         }
         return buf.toString();
     }
@@ -489,6 +513,7 @@ public class ReconfigureProject {
             lastFlags = removeFlag(lastFlags, "QMAKE_CXX=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "QMAKE_LDFLAGS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-spec solaris-cc", true); // NOI18N
+            lastFlags = removeFlag(lastFlags, "-spec macx-g++", true); // NOI18N
         } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
             return ""; // NOI18N
         }
@@ -599,7 +624,7 @@ public class ReconfigureProject {
     }
 
     private String getCCompilerName(){
-        String path = getToolPath(Tool.CCompiler);
+        String path = getToolPath(PredefinedToolKind.CCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "cc"; // NOI18N
@@ -611,7 +636,7 @@ public class ReconfigureProject {
     }
 
     private String getCppCompilerName(){
-        String path = getToolPath(Tool.CCCompiler);
+        String path = getToolPath(PredefinedToolKind.CCCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "CC"; // NOI18N
@@ -622,7 +647,7 @@ public class ReconfigureProject {
         return path;
     }
 
-    private String getToolPath(int tool){
+    private String getToolPath(PredefinedToolKind tool){
         Tool compiler = compilerSet.findTool(tool);
         if (compiler == null) {
             return null;

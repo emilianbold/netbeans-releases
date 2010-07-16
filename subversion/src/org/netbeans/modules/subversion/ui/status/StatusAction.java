@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,14 +70,17 @@ public class StatusAction  extends ContextAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ShowChanges"; // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return enabledForStatus;
     }
 
+    @Override
     public void performContextAction(Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -93,9 +99,9 @@ public class StatusAction  extends ContextAction {
     /**
      * Connects to repository and gets recent status.
      */
-    public static void executeStatus(final Context context, SvnProgressSupport support) {
+    public static void executeStatus(final Context context, SvnProgressSupport support, boolean contactServer) {
 
-        if (context == null || context.getRoots().size() == 0) {
+        if (context == null || context.getRoots().isEmpty()) {
             return;
         }
             
@@ -110,7 +116,7 @@ public class StatusAction  extends ContextAction {
             Subversion.getInstance().getStatusCache().refreshCached(context);
             File[] roots = context.getRootFiles();
             for (int i = 0; i < roots.length; i++) {
-                executeStatus(roots[i], client, support);
+                executeStatus(roots[i], client, support, contactServer);
                 if (support.isCanceled()) {
                     return;
                 }
@@ -124,11 +130,21 @@ public class StatusAction  extends ContextAction {
         }
     }
 
-    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support) throws SVNClientException {
+    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support, boolean contactServer) throws SVNClientException {
         if (support != null && support.isCanceled()) {
             return;
         }
-        ISVNStatus[] statuses = client.getStatus(root, true, false, true); // cache refires events
+        ISVNStatus[] statuses;
+        try {
+            statuses = client.getStatus(root, true, false, contactServer); // cache refires events
+        } catch (SVNClientException ex) {
+            if (contactServer && SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
+                Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getAbsolutePath()); //NOI8N
+                statuses = client.getStatus(root, true, false, false); // cache refires events
+            } else {
+                throw ex;
+            }
+        }
         if (support != null && support.isCanceled()) {
             return;
         }
@@ -144,7 +160,7 @@ public class StatusAction  extends ContextAction {
                 // a newly created folders children.
                 // As this is the place were such files should be recognized,
                 // we will force the refresh recursivelly.
-                cache.refreshRecursively(file);
+                cache.refreshRecursively(file, false);
             } else {
                 cache.refresh(file, status);
             }

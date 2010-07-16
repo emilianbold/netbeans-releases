@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,17 +41,24 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -58,11 +68,14 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -82,15 +95,24 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final Object stateLock;
     private volatile State state;
     private volatile int pid = 0;
-    private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
-    private boolean cancelled = false;
+    private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
+    private Future<Integer> waitTask = null;
+    private AtomicInteger result = null;
+    private InputStream inputStream;
+    private InputStream errorStream;
+    private OutputStream outputStream;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
+
+        inputStream = new ByteArrayInputStream(new byte[0]);
+        errorStream = new ByteArrayInputStream(new byte[0]);
+        outputStream = new ByteArrayOutputStream();
+
         execEnv = info.getExecutionEnvironment();
         String cmd = info.getCommandLineForShell();
 
@@ -110,7 +132,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             // no logging for interrupting
         } catch (IOException ex) {
 //            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
 
@@ -120,7 +142,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 new ArrayList<ChangeListener>(ll));
     }
 
-    public final NativeProcess createAndStart() throws IOException {
+    public final NativeProcess createAndStart() {
         try {
             if (hostInfo == null) {
                 throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
@@ -130,9 +152,42 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             create();
             setState(State.RUNNING);
             findInfoProvider();
+            waitTask = NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    int exitCode = -1;
+                    State state = null;
+
+                    try {
+                        exitCode = waitResult();
+                        result = new AtomicInteger(exitCode);
+                        state = State.FINISHED;
+                    } catch (InterruptedException ex) {
+                        result = new AtomicInteger(exitCode);
+                        state = State.CANCELLED;
+                        throw ex;
+                    } catch (Throwable th) {
+                        result = new AtomicInteger(exitCode);
+                        state = State.ERROR;
+                        Exceptions.printStackTrace(th);
+                    } finally {
+                        if (cancelledFlag.get()) {
+                            setState(State.CANCELLED);
+                        } else if (state != null) {
+                            setState(state);
+                        }
+                    }
+
+                    return exitCode;
+                }
+            }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
             setState(State.ERROR);
+            destroy();
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
+            errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
         }
 
         return this;
@@ -152,15 +207,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         return isInterrupted;
     }
 
-    protected final void interrupt() {
-        isInterrupted = true;
-        destroy();
-    }
-
+    @Override
     public final ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
 
+    @Override
     public final int getPID() throws IOException {
         synchronized (this) {
             if (pid == 0) {
@@ -178,9 +230,25 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     /**
      * To be implemented by a successor.
-     * It must terminate the underlaying system process on this method call.
+     * It must implement the specific termination of the underlaying system
+     * process on this method call.
+     * It is guaranteed that this method is called only once.
+     * Implementation should not (but may) wait for the actual terminaltion
+     * before returning from the call.
+     * If destroyImpl() returnes and process's waitFor() still not exited during 
+     * specified (by return value) seconds (i.e. process was not actually
+     * terminated), then a SIGKILL is send to the process.
+     *
+     * Default implementation just returns 0. So SIGKILL is send immediately to
+     * force-terminate the process.
+     *
+     * @return number of seconds to wait before doing an attempt to
+     * force-terminate the process with the SIGKILL signal (signal is send only
+     * if process was not finished by that time).
      */
-    protected abstract void cancel();
+    protected int destroyImpl() {
+        return 0;
+    }
 
     /**
      * To be implemented by a successor. This method must cause the current
@@ -195,6 +263,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     protected abstract int waitResult() throws InterruptedException;
 
+    @Override
     public final State getState() {
         synchronized (stateLock) {
             return state;
@@ -213,20 +282,52 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     /**
      * Terminates the underlaying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
+     *
+     * Returning from the call of this method does not mean that the process was
+     * already terminated.
+     *
      */
     @Override
     public final void destroy() {
-        synchronized (this) {
-            if (cancelled) {
-                return;
-            }
-
-            cancelled = true;
+        if (cancelledFlag.getAndSet(true)) {
+            return;
         }
 
-        synchronized (stateLock) {
-            cancel();
-            setState(State.CANCELLED);
+        final int timeToWait = destroyImpl();
+
+        if (pid > 0 && waitTask != null && !waitTask.isDone()) {
+            Future<Integer> killTask = null;
+
+            if (timeToWait > 0) {
+                // Submit an asynchronious task that will send SIGKILL if
+                // process is still here after returned timeout...
+                final Callable<Integer> waitForTermination = new Callable<Integer>() {
+
+                    @Override
+                    public Integer call() throws Exception {
+                        try {
+                            return waitTask.get(timeToWait, TimeUnit.SECONDS);
+                        } catch (TimeoutException ex) {
+                            // Process didn't gone.. Kill it!
+                            return CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
+                        }
+                    }
+                };
+
+                killTask = NativeTaskExecutorService.submit(waitForTermination,
+                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
+            } else {
+                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+            }
+
+            if (killTask != null) {
+                try {
+                    killTask.get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 
@@ -246,14 +347,37 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int waitFor() throws InterruptedException {
-        setExitValue(waitResult());
+        int exitStatus = -1;
 
-        if (exitValue == null) {
-            throw new InterruptedException(
-                    "Process has been cancelled."); // NOI18N
+        if (waitTask == null) {
+            // createAndStart() failed
+            return exitStatus;
         }
 
-        return exitValue.intValue();
+        try {
+            exitStatus = waitTask.get();
+        } catch (ExecutionException ex) {
+            if (ex.getCause() instanceof InterruptedException) {
+                throw (InterruptedException) ex.getCause();
+            } else {
+                Exceptions.printStackTrace(ex);
+            }
+        } finally {
+            // Will clear interrupted flag (if set) as it is a general
+            // convension that "any method that exits by throwing an
+            // InterruptedException clears interrupt status when it does so."
+            // http://java.sun.com/docs/books/tutorial/essential/concurrency/interrupt.html
+            //
+            // This convension is violated in java.lang.Process.waitFor()
+            // doesn't do this (http://bugs.sun.com/view_bug.do?bug_id=6420270)
+            //
+            // But having this Thread.interrupted() here doesn't harm in other
+            // cases as well.
+
+            Thread.interrupted();
+        }
+
+        return exitStatus;
     }
 
     /**
@@ -268,41 +392,24 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int exitValue() {
-        synchronized (stateLock) {
-            if (exitValue == null) {
-                if (state == State.CANCELLED) {
-                    // TODO: ??
-                    // Removed CancellationException because it is not proceeded
-                    // in ExecutionService...
-                    // throw new CancellationException("Process has been cancelled");
-                    return -1;
-                } else {
-                    // Process not started yet...
-                    throw new IllegalThreadStateException();
-                }
+        if (waitTask == null || !waitTask.isDone()) {
+            if (result != null) {
+                return result.get();
             }
+            // Process not started/finished yet...
+            throw new IllegalThreadStateException();
         }
-
-        return exitValue;
-    }
-
-    private void setExitValue(int exitValue) {
-        synchronized (stateLock) {
-            if (this.exitValue != null) {
-                return;
-            }
-
-            this.exitValue = Integer.valueOf(exitValue);
-
-            if (state == State.CANCELLED || state == State.ERROR) {
-                return;
-            }
-
-            setState(State.FINISHED);
+        try {
+            return waitTask.get();
+        } catch (InterruptedException ex) {
+            // cancelled
+            return -1;
+        } catch (ExecutionException ex) {
+            return -1;
         }
     }
 
-    private final void setState(State state) {
+    private void setState(State state) {
         synchronized (stateLock) {
             if (this.state == state) {
                 return;
@@ -317,9 +424,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
              * CANCELLED, ERROR and FINISHED are terminal states.
              */
 
-            if (this.state == State.CANCELLED ||
-                    this.state == State.ERROR ||
-                    this.state == State.FINISHED) {
+            if (this.state == State.CANCELLED
+                    || this.state == State.ERROR
+                    || this.state == State.FINISHED) {
                 return;
             }
 
@@ -331,8 +438,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
 
                 if (!isInterrupted()) {
-                    LOG.finest(this.toString() + " State change: " + // NOI18N
-                            this.state + " -> " + state); // NOI18N
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
+                                this.toString(), this.state, state));
+                    }
                 }
 
                 this.state = state;
@@ -359,7 +468,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         int c = -1;
         pid = 0;
 
-        while (true) {
+        while (!isInterrupted()) {
             c = is.read();
 
             if (c >= '0' && c <= '9') {
@@ -382,6 +491,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         return provider == null ? new ProcessInfo() {
 
+            @Override
             public long getCreationTimestamp(TimeUnit unit) {
                 return unit.convert(creation_ts, TimeUnit.NANOSECONDS);
             }
@@ -392,9 +502,37 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
     }
 
+    @Override
+    public final InputStream getErrorStream() {
+        return errorStream;
+    }
+
+    @Override
+    public final OutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    @Override
+    public final InputStream getInputStream() {
+        return inputStream;
+    }
+
+    protected final void setErrorStream(InputStream error) {
+        errorStream = error;
+    }
+
+    protected final void setOutputStream(OutputStream output) {
+        outputStream = output;
+    }
+
+    protected final void setInputStream(InputStream input) {
+        inputStream = input;
+    }
+
     private void findInfoProvider() {
         Callable<ProcessInfoProvider> callable = new Callable<ProcessInfoProvider>() {
 
+            @Override
             public ProcessInfoProvider call() throws Exception {
                 final Collection<? extends ProcessInfoProviderFactory> factories =
                         Lookup.getDefault().lookupAll(ProcessInfoProviderFactory.class);

@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.xam.Reference;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface OperationReference extends ReferenceCollection {
+public interface OperationReference extends ReferenceCollection, VariableDeclarator {
     
     /**
      * Operation Name attribute name

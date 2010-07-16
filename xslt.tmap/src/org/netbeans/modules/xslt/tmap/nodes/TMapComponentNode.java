@@ -20,33 +20,53 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import java.awt.Image;
-import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JTree;
+import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddOperationAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
-//import org.openide.actions.DeleteAction;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
+import org.netbeans.modules.soa.ui.nodes.synchronizer.ModelSynchronizer;
+import org.netbeans.modules.soa.ui.nodes.synchronizer.SynchronisationListener;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.netbeans.modules.xslt.tmap.model.api.Nameable;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddInvokeAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddParamAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddServiceAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddTransformAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.AddWsdlImportAction;
 import org.netbeans.modules.xslt.tmap.nodes.actions.DeleteAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.GoToAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.GoToSourceAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.GoToTreeAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.OpenInEditorAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.PropertiesAction;
 import org.netbeans.modules.xslt.tmap.nodes.actions.TMapAbstractNodeAction;
 import org.netbeans.modules.xslt.tmap.nodes.actions.TMapNodeNewType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.Constants;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
-import org.openide.actions.PropertiesAction;
+//import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -54,27 +74,27 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TMapComponentNode<T extends DecoratedTMapComponent> extends AbstractNode 
-        implements InstanceRef<T>, NodeTypeHolder<NodeType> 
+public abstract class TMapComponentNode<T extends DecoratedTMapComponent<? extends TMapComponent>> extends AbstractNode 
+        implements InstanceRef<T>, NodeTypeHolder<NodeType>, SynchronisationListener 
 {
-
+    
     public static final String EMPTY_STRING = ""; // NOI18N
     public static final String WHITE_SPACE = " "; // NOI18N
 
     public static final String MAIN_SET = "Main"; // NOI18N
     
+    private static final Logger LOGGER = Logger.getLogger(TMapComponentNode.class.getName()); 
+    public static final Object UNKNOWN_OLD_VALUE = new Object();
     
     private T myDecoratedComponent; 
-    private NodeType myNodeType;
-    private Synchronizer synchronizer = new Synchronizer();
-    private Object NAME_LOCK = new Object();
+    private ModelSynchronizer synchronizer;
+    private final Object NAME_LOCK = new Object();
     private String cachedName;
     private String cachedShortDescription;
     private String cachedHtmlDisplayName;
@@ -91,10 +111,32 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
                 ,SystemAction.get(CutAction.class));
         ACTION_TYPE_MAP.put(ActionType.PASTE
                 ,SystemAction.get(PasteAction.class));
+//        ACTION_TYPE_MAP.put(ActionType.PROPERTIES
+//                , SystemAction.get(PropertiesAction.class));
         ACTION_TYPE_MAP.put(ActionType.PROPERTIES
                 , SystemAction.get(PropertiesAction.class));
         ACTION_TYPE_MAP.put(ActionType.ADD_NEWTYPES
                 , SystemAction.get(NewAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_WSDL_IMPORT
+                , SystemAction.get(AddWsdlImportAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_SERVICE
+                , SystemAction.get(AddServiceAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_OPERATION
+                , SystemAction.get(AddOperationAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_TRANSFORM
+                , SystemAction.get(AddTransformAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_INVOKE
+                , SystemAction.get(AddInvokeAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_PARAM
+                , SystemAction.get(AddParamAction.class));
+        ACTION_TYPE_MAP.put(ActionType.GO_TO
+                , SystemAction.get(GoToAction.class));
+        ACTION_TYPE_MAP.put(ActionType.GO_TO_SOURCE
+                , SystemAction.get(GoToSourceAction.class));
+        ACTION_TYPE_MAP.put(ActionType.GO_TO_TREE
+                , SystemAction.get(GoToTreeAction.class));
+        ACTION_TYPE_MAP.put(ActionType.OPEN_IN_EDITOR
+                , SystemAction.get(OpenInEditorAction.class));
         
 
     }
@@ -107,26 +149,23 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
         super(children);
         assert ref != null;
         setReference(ref);
-        myNodeType = NodeType.getNodeType(ref.getOriginal());
-        assert myNodeType != null;
         
-        assert ref.getOriginal() != null;
-        TMapModel model = ref.getOriginal().getModel();
+        assert ref.getReference() != null;
+        TMapModel model = ref.getReference().getModel();
 
         assert model != null: "Can't create Node for orphaned TMapComponent"; // NOI18N
-        model.addComponentListener(synchronizer);
+        synchronizer = new ModelSynchronizer(this);
+        synchronizer.subscribe(model);
         
         // set nodeDescription property which is shown in property sheet help region
         setValue("nodeDescription", "");
     }
 
     public Object getAlternativeReference() {
-        return null;
+        return myDecoratedComponent != null ? myDecoratedComponent.getAlternativeReference() : null;
     }
 
-    public NodeType getNodeType() {
-        return myNodeType;
-    }
+    public abstract NodeType getNodeType();
     
     private void setReference(T ref) {
         myDecoratedComponent = ref;
@@ -140,6 +179,15 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
     }
 
     @Override
+    public java.awt.Component getCustomizer() {
+        return getCustomizer(CustomNodeEditor.EditingMode.EDIT_INSTANCE);
+    }
+    
+    public java.awt.Component getCustomizer(CustomNodeEditor.EditingMode editingMode) {
+        return null;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (super.equals(obj)) {
             return true;
@@ -147,15 +195,64 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
         
         //
         if (obj instanceof TMapComponentNode) {
-            Object thisOrig = this.getReference().getOriginal();
+            Object thisOrig = this.getReference().getReference();
             Object objOrig = ((TMapComponentNode) obj).getReference();
+            
+            Object thisAlter = this.getAlternativeReference();
+            Object objAlter = this.getAlternativeReference();
             
             return this.getNodeType().equals(((TMapComponentNode) obj).getNodeType())
                     && thisOrig != null
-                    && thisOrig.equals(objOrig);
+                    && thisOrig.equals(objOrig)
+                    && ((thisAlter != null && thisAlter.equals(objAlter)) || thisAlter == null);
         }
         //
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        T ref = this.getReference();
+        Object thisOrig = ref != null ? ref.getReference() : ref;
+        Object nodeType = getNodeType();
+        Object thisAlter = this.getAlternativeReference();
+        return nodeType == null ? 0 : nodeType.hashCode() 
+                + (thisOrig == null ? 0 : thisOrig.hashCode())
+                + (thisAlter == null ? 0 : thisAlter.hashCode())
+                + (ref == null ? 0 : ref.hashCode());
+    }
+
+    @Override
+    public void setName(String s) {
+        if (!canRename()) {
+            return;
+        }
+
+        TMapComponent ref =  getReference().getReference();
+        if (ref instanceof Nameable) {
+            boolean isOwnTransact = false;
+            try {
+                if (!ref.getModel().isIntransaction()) {
+                    ref.getModel().startTransaction();
+                    isOwnTransact = true;
+                }
+                ((Nameable) ref).setName(s);
+
+            } catch (VetoException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            } finally {
+                if (isOwnTransact && ref.getModel().isIntransaction()) {
+                    ref.getModel().endTransaction();
+                }
+            }
+            super.setName(s);
+            updateName();
+        }
+    }
+
+    @Override
+    public boolean canRename() {
+        return isEditable() && getReference().getReference() instanceof Nameable;
     }
 
     @Override
@@ -170,9 +267,36 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 
     @Override
     public boolean canDestroy() {
-        return true;
+        DeleteAction action = getActualDeleteAction()/*SystemAction.get(DeleteAction.class)*/;
+        return action != null && action.enable(new Node[] {this});
     }
-
+    
+    @Override
+    public void destroy() throws IOException {
+        
+        TMapComponent ref = getReference().getReference();
+        
+        DeleteAction action = getActualDeleteAction();
+        if (action != null) {
+            action.performAction(new Node[] {this});
+        }
+        
+        if (ref != null){
+            synchronizer.unsubscribe();
+        }
+        super.destroy();
+    }
+    
+    private DeleteAction getActualDeleteAction() {
+        Action[] actions = getActions(true);
+        for (Action elem : actions) {
+            if (elem instanceof DeleteAction) {
+                return (DeleteAction)elem;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public Image getIcon(int type) {
         T ref = getReference();
@@ -260,35 +384,6 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
         fireDisplayNameChange(null, getDisplayName());
     }
     
-//    protected void updateProperty(PropertyType propertyType) {
-//        updateProperty(propertyType.toString());
-//    }
-//    
-//    protected void updateProperty(String propertyName) {
-//        Property prop = PropertyUtils.lookForPropertyByName(this, propertyName);
-//        Object newValue = null;
-//        try {
-//            newValue = prop.getValue();
-//        } catch (Exception ex) {
-//            // do nothing here
-//        }
-//        firePropertyChange(propertyName, UNKNOWN_OLD_VALUE, newValue);
-//    }
-    
-    public void updatePropertyChange(String propertyName,
-            Object oldValue,Object newValue) {
-        firePropertyChange(propertyName, oldValue, newValue);
-        synchronized(NAME_LOCK){
-            cachedShortDescription = null;
-        }
-        
-        synchronized(NAME_LOCK){
-            cachedHtmlDisplayName = null;
-        }
-        fireDisplayNameChange(null, getDisplayName());
-        fireShortDescriptionChange(null,getShortDescription());
-    }
-    
     public void updateShortDescription() {
         synchronized(NAME_LOCK){
             cachedShortDescription = null;
@@ -302,11 +397,11 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
      * If the group isn't
      */
     protected Sheet.Set getPropertySet(
-            Sheet sheet) {
-        Sheet.Set propSet = sheet.get(TMapComponentNode.MAIN_SET);
+            Sheet sheet, Constants.PropertiesGroups group) {
+        Sheet.Set propSet = sheet.get(group.getDisplayName());
         if (propSet == null) {
             propSet = new Sheet.Set();
-            propSet.setName(TMapComponentNode.MAIN_SET);
+            propSet.setName(group.getDisplayName());
             sheet.put(propSet);
         }
         //
@@ -354,6 +449,8 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 //            actionList.add(ActionType.TOGGLE_BREAKPOINT);
 //        }
 //        actionList.add(ActionType.SEPARATOR);
+        actionList.add(ActionType.ADD_NEWTYPES);
+        actionList.add(ActionType.SEPARATOR);
         actionList.add(ActionType.REMOVE);
 //        actionList.add(ActionType.SEPARATOR);
 //        actionList.add(ActionType.COPY);
@@ -431,9 +528,9 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
     }
     
     
-    protected TMapComponent getComponentRef() {
+    public TMapComponent getComponentRef() {
         T ref = getReference();
-        return ref.getOriginal();
+        return ref.getReference();
     }
 
 //    @Override
@@ -445,242 +542,288 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 //    public Transferable clipboardCut() throws IOException {
 //        return super.clipboardCut();
 //    }
-
     
+    protected void updateProperty(PropertyType propertyType) {
+        updateProperty(propertyType.toString());
+    }
     
-//    /**
-//     * Iterates over all registered properties and update them.
-//     */
-//    public void updateAllProperties() {
-//        PropertySet[] psArr = getSheet().toArray();
-//        for (PropertySet ps : psArr) {
-//            Property[] propArr = ps.getProperties();
-//            for (Property prop : propArr) {
-//                String propName = prop.getName();
-//                try {
-//                    Object newPropValue = prop.getValue();
-//                    firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
-//                } catch (Exception ex) {
-//                    ErrorManager.getDefault().notify(ex);
-//                }
-//            }
-//        }
-//    }
-//    
-//    public void updateAttributeProperty(String attributeName) {
-//        Property prop = PropertyUtils.lookForPropertyByBoundedAttribute(
-//                this, attributeName);
-//        if (prop != null) {
-//            String propName = prop.getName();
-//            try {
-//                Object newPropValue = prop.getValue();
-//                firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
-//            } catch (Exception ex) {
-//                ErrorManager.getDefault().notify(ex);
-//            }
-//        }
-//        
-//    }
-//    
-//    public void updateElementProperty(Class elementClass) {
-//        Property prop = PropertyUtils.lookForPropertyByBoundedElement(
-//                this, elementClass);
-//        if (prop != null) {
-//            String propName = prop.getName();
-//            try {
-//                Object newPropValue = prop.getValue();
-//                firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
-//            } catch (Exception ex) {
-//                ErrorManager.getDefault().notify(ex);
-//            }
-//        }
-//    }
-    
-    
-    
-    private class Synchronizer implements ComponentListener {
-        public Synchronizer() {
+    protected void updateProperty(String propertyName) {
+        Property prop = PropertyUtils.getInstance().lookForPropertyByName(this, propertyName);
+        Object newValue = null;
+        try {
+            newValue = prop.getValue();
+        } catch (Exception ex) {
+            // do nothing here
         }
-
-        public void valueChanged(ComponentEvent evt) {
-//            System.out.println("value changed: "+evt.getSource());
+        firePropertyChange(propertyName, UNKNOWN_OLD_VALUE, newValue);
+    }
+    
+    public void updatePropertyChange(String propertyName,
+            Object oldValue,Object newValue) {
+        firePropertyChange(propertyName, oldValue, newValue);
+        synchronized(NAME_LOCK){
+            cachedShortDescription = null;
         }
-
-        public void childrenAdded(ComponentEvent evt) {
-//            System.out.println("value changed: "+evt.getSource());
-            reloadChildren();
+        
+        synchronized(NAME_LOCK){
+            cachedHtmlDisplayName = null;
         }
-
-        public void childrenDeleted(ComponentEvent evt) {
-//            System.out.println("value changed: "+evt.getSource());
-            reloadChildren();
+        fireDisplayNameChange(null, getDisplayName());
+        fireShortDescriptionChange(null,getShortDescription());
+    }
+    
+    /**
+     * Iterates over all registered properties and update them.
+     */
+    public void updateAllProperties() {
+        PropertySet[] psArr = getSheet().toArray();
+        for (PropertySet ps : psArr) {
+            Property[] propArr = ps.getProperties();
+            for (Property prop : propArr) {
+                String propName = prop.getName();
+                try {
+                    Object newPropValue = prop.getValue();
+                    firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                }
+            }
         }
-
-        private void reloadChildren() {
-            
-            Children children = getChildren();
-            
-            if (children instanceof ReloadableChildren) {
-                ((ReloadableChildren)children).reload();
-            } else if (TMapComponentNode.this instanceof ReloadableChildren) {
-                ((ReloadableChildren) TMapComponentNode.this).reload();
+    }
+    
+    public void updateAttributeProperty(String attributeName) {
+        Property prop = PropertyUtils.getInstance().lookForPropertyByBoundedAttribute(
+                this, attributeName);
+        if (prop != null) {
+            String propName = prop.getName();
+            try {
+                Object newPropValue = prop.getValue();
+                firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
+            } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
             }
         }
         
-//////        public void notifyEntityRemoved(EntityRemoveEvent event) {
-//////            BpelEntity entity = event.getOutOfModelEntity();
-//////            //
-//////            T ref = getReference();
-//////            if (ref == null) {
-//////                //
-//////                // the referenced element already removed
-//////                //
-//////                BpelModel bpelModel = entity.getBpelModel();
-//////                unsubscribedFromAndDestroy(bpelModel);
-//////            } else {
-//////                if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                    reloadChildren();
-//////                }
-//////                
-//////                if (event.getOutOfModelEntity() instanceof Documentation 
-//////                        && ref.equals(event.getParent())) 
-//////                {
-//////                    updateShortDescription();
-//////                }
-//////            }
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-//////        
-//////        public void notifyPropertyRemoved(PropertyRemoveEvent event) {
-//////            BpelEntity entity = event.getParent();
-//////            
-//////            //
-////////////            if (BpelNode.this.isEventRequreUpdate(event)) {
-////////////                String attributeName = event.getName();
-////////////                updateAttributeProperty(attributeName);
-////////////                updateName();
-////////////                //
-////////////                // Check if the property has the List type
-////////////                Object value = event.getOldValue();
-////////////                if (value != null && value instanceof List) {
-////////////                    reloadChildren();
-////////////                }
-////////////            }
-////////////            //
-////////////            // Check that the property is the content of an entity
-////////////            // which owned by the node's entity.
-////////////            if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
-////////////                BpelEntity parentEntity = event.getParent();
-////////////                //
-////////////                T curEntity = getReference();
-////////////                if (curEntity != null && parentEntity != null &&
-////////////                        parentEntity.getParent() == curEntity) {
-////////////                    updateElementProperty(parentEntity.getClass());
-////////////                }
-////////////            }
-////////////
-//////            //
-//////            T ref = getReference();
-//////            if (ref == null) {
-//////                //
-//////                // the referenced element already removed
-//////                //
-//////                BpelModel bpelModel = entity.getBpelModel();
-//////                unsubscribedFromAndDestroy(bpelModel);
-//////            } else {
-//////                if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                    reloadChildren();
-//////                }
-//////            }
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-//////        
-//////        public void notifyPropertyUpdated(PropertyUpdateEvent event) {
-//////            if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                String attributeName = event.getName();
-//////                updateAttributeProperty(attributeName);
-//////                updateName();
-//////                //
-//////                // Check if the property has the List type
-//////                Object value = event.getNewValue();
-//////                if (value == null) {
-//////                    value = event.getOldValue();
-//////                }
-//////                if (value != null && value instanceof List) {
-//////                    reloadChildren();
-//////                }
-//////            }
-//////            //
-//////            // Check that the property is the content of an entity
-//////            // which owned by the node's entity.
-//////            if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
-//////                BpelEntity parentEntity = event.getParent();
-//////                //
-//////                T curEntity = getReference();
-//////                if (curEntity != null && parentEntity != null &&
-//////                        parentEntity.getParent() == curEntity) {
-//////                    updateElementProperty(parentEntity.getClass());
-//////                    if (parentEntity instanceof Documentation) {
-//////                        updateShortDescription();
-//////                    }
-//////                }
-//////            }
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-//////        
-//////        public void notifyArrayUpdated(ArrayUpdateEvent event) {
-//////            if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                reloadChildren();
-//////            }
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-//////        
-//////        public void notifyEntityUpdated(EntityUpdateEvent event) {
-//////            if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                BpelEntity entity = event.getNewValue();
-//////                if (entity == null) {
-//////                    entity = event.getOldValue();
-//////                }
-//////                if (entity != null) {
-//////                    updateElementProperty(entity.getClass());
-//////                }
-//////                //
-//////                reloadChildren();
-//////            }
-//////            
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-//////        
-//////        public void notifyEntityInserted(EntityInsertEvent event) {
-//////            if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                BpelEntity entity = event.getValue();
-//////                if (entity != null) {
-//////                    updateElementProperty(entity.getClass());
-//////                }
-//////                
-//////                if (entity instanceof Documentation) {
-//////                    updateShortDescription();
-//////                } else {
-//////                    //
-//////                    reloadChildren();
-//////                }
-//////            }
-//////            //
-//////            // Perform update processing of complex ptoperties
-//////            updateComplexProperties(event);
-//////        }
-        
     }
+    
+    public void updateElementProperty(Class elementClass) {
+        Property prop = PropertyUtils.getInstance().lookForPropertyByBoundedElement(
+                this, elementClass);
+        if (prop != null) {
+            String propName = prop.getName();
+            try {
+                Object newPropValue = prop.getValue();
+                firePropertyChange(propName, UNKNOWN_OLD_VALUE, newPropValue);
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    
+    
+//    private class Synchronizer implements ComponentListener, PropertyChangeListener {
+//        public Synchronizer() {
+//        }
+//        
+//        private void subscribe(TMapModel model) {
+//            assert model != null;
+//            model.addPropertyChangeListener(this);
+//            model.addComponentListener(this);
+//        }
+//
+//        private void unsubscribe(TMapModel model) {
+//            assert model != null;
+//            model.removeComponentListener(this);
+//            model.removePropertyChangeListener(this);
+//        }
+//        
+//        public void valueChanged(ComponentEvent evt) {
+//            System.out.println("value changed: "+evt.getSource());
+//            reloadChildren();
+//        }
+//
+//        public void childrenAdded(ComponentEvent evt) {
+//            System.out.println("children added: "+evt.getSource());
+//            reloadChildren();
+//        }
+//
+//        public void childrenDeleted(ComponentEvent evt) {
+//            System.out.println("children deleted: "+evt.getSource());
+//            reloadChildren();
+//        }
+//
+//        public void propertyChange(PropertyChangeEvent evt) {
+//            System.out.println("property change event:  "+evt.getPropertyName());
+//            System.out.print(" oldValue: "+evt.getOldValue());
+//            System.out.print(" newValue: "+evt.getNewValue());
+//        }
+//        
+//        private void reloadChildren() {
+//            
+//            Children children = getChildren();
+//            
+//            if (children instanceof ReloadableChildren) {
+//                ((ReloadableChildren)children).reload();
+//            } else if (TMapComponentNode.this instanceof ReloadableChildren) {
+//                ((ReloadableChildren) TMapComponentNode.this).reload();
+//            }
+//        }
+//
+////////        public void notifyEntityRemoved(EntityRemoveEvent event) {
+////////            BpelEntity entity = event.getOutOfModelEntity();
+////////            //
+////////            T ref = getReference();
+////////            if (ref == null) {
+////////                //
+////////                // the referenced element already removed
+////////                //
+////////                BpelModel bpelModel = entity.getBpelModel();
+////////                unsubscribedFromAndDestroy(bpelModel);
+////////            } else {
+////////                if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                    reloadChildren();
+////////                }
+////////                
+////////                if (event.getOutOfModelEntity() instanceof Documentation 
+////////                        && ref.equals(event.getParent())) 
+////////                {
+////////                    updateShortDescription();
+////////                }
+////////            }
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+////////        
+////////        public void notifyPropertyRemoved(PropertyRemoveEvent event) {
+////////            BpelEntity entity = event.getParent();
+////////            
+////////            //
+//////////////            if (BpelNode.this.isEventRequreUpdate(event)) {
+//////////////                String attributeName = event.getName();
+//////////////                updateAttributeProperty(attributeName);
+//////////////                updateName();
+//////////////                //
+//////////////                // Check if the property has the List type
+//////////////                Object value = event.getOldValue();
+//////////////                if (value != null && value instanceof List) {
+//////////////                    reloadChildren();
+//////////////                }
+//////////////            }
+//////////////            //
+//////////////            // Check that the property is the content of an entity
+//////////////            // which owned by the node's entity.
+//////////////            if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
+//////////////                BpelEntity parentEntity = event.getParent();
+//////////////                //
+//////////////                T curEntity = getReference();
+//////////////                if (curEntity != null && parentEntity != null &&
+//////////////                        parentEntity.getParent() == curEntity) {
+//////////////                    updateElementProperty(parentEntity.getClass());
+//////////////                }
+//////////////            }
+//////////////
+////////            //
+////////            T ref = getReference();
+////////            if (ref == null) {
+////////                //
+////////                // the referenced element already removed
+////////                //
+////////                BpelModel bpelModel = entity.getBpelModel();
+////////                unsubscribedFromAndDestroy(bpelModel);
+////////            } else {
+////////                if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                    reloadChildren();
+////////                }
+////////            }
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+////////        
+////////        public void notifyPropertyUpdated(PropertyUpdateEvent event) {
+////////            if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                String attributeName = event.getName();
+////////                updateAttributeProperty(attributeName);
+////////                updateName();
+////////                //
+////////                // Check if the property has the List type
+////////                Object value = event.getNewValue();
+////////                if (value == null) {
+////////                    value = event.getOldValue();
+////////                }
+////////                if (value != null && value instanceof List) {
+////////                    reloadChildren();
+////////                }
+////////            }
+////////            //
+////////            // Check that the property is the content of an entity
+////////            // which owned by the node's entity.
+////////            if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
+////////                BpelEntity parentEntity = event.getParent();
+////////                //
+////////                T curEntity = getReference();
+////////                if (curEntity != null && parentEntity != null &&
+////////                        parentEntity.getParent() == curEntity) {
+////////                    updateElementProperty(parentEntity.getClass());
+////////                    if (parentEntity instanceof Documentation) {
+////////                        updateShortDescription();
+////////                    }
+////////                }
+////////            }
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+////////        
+////////        public void notifyArrayUpdated(ArrayUpdateEvent event) {
+////////            if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                reloadChildren();
+////////            }
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+////////        
+////////        public void notifyEntityUpdated(EntityUpdateEvent event) {
+////////            if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                BpelEntity entity = event.getNewValue();
+////////                if (entity == null) {
+////////                    entity = event.getOldValue();
+////////                }
+////////                if (entity != null) {
+////////                    updateElementProperty(entity.getClass());
+////////                }
+////////                //
+////////                reloadChildren();
+////////            }
+////////            
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+////////        
+////////        public void notifyEntityInserted(EntityInsertEvent event) {
+////////            if (BpelNode.this.isEventRequreUpdate(event)) {
+////////                BpelEntity entity = event.getValue();
+////////                if (entity != null) {
+////////                    updateElementProperty(entity.getClass());
+////////                }
+////////                
+////////                if (entity instanceof Documentation) {
+////////                    updateShortDescription();
+////////                } else {
+////////                    //
+////////                    reloadChildren();
+////////                }
+////////            }
+////////            //
+////////            // Perform update processing of complex ptoperties
+////////            updateComplexProperties(event);
+////////        }
+//        
+//    }
 
     /**
      * Determines if this node represents a component that is contained
@@ -688,11 +831,35 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
      *
      * @return  true if component is editable, false otherwise.
      */
-    
-    protected boolean isEditable() {
+    public boolean isEditable() {
         TMapComponent component = getComponentRef();
         Model model = component == null ? null : component.getModel();
         return model != null && XAMUtils.isWritable(model);
+    }
+
+    public void componentUpdated(Component component) {
+        if (component.equals(getReference().getReference())) {
+            updateName();
+            updateShortDescription();
+            updateAllProperties();
+        }
+    }
+
+    public void childrenUpdated(Component component) {
+        if (component.equals(getReference().getReference())) {
+            reloadChildren();
+        }
+    }
+
+    private void reloadChildren() {
+
+        Children children = getChildren();
+
+        if (children instanceof ReloadableChildren) {
+            ((ReloadableChildren)children).reload();
+        } else if (TMapComponentNode.this instanceof ReloadableChildren) {
+            ((ReloadableChildren) TMapComponentNode.this).reload();
+        }
     }
 
 }

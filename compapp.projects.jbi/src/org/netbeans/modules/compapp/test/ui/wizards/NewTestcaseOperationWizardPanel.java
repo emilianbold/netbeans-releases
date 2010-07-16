@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,10 +43,6 @@
  */
 package org.netbeans.modules.compapp.test.ui.wizards;
 
-import org.netbeans.modules.compapp.test.wsdl.BindingSupport;
-import org.netbeans.modules.compapp.test.wsdl.BindingSupportFactory;
-import org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory;
-import org.netbeans.modules.compapp.test.wsdl.WsdlSupport;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,6 +50,11 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.compapp.test.wsdl.BindingSupport;
+import org.netbeans.modules.compapp.test.wsdl.BindingSupportFactory;
+import org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory;
+import org.netbeans.modules.compapp.test.wsdl.Soap12BindingSupportFactory;
+import org.netbeans.modules.compapp.test.wsdl.WsdlSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -65,6 +69,7 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
     
     private static BindingSupportFactory[] mBindingSupportFactories = new BindingSupportFactory[] {
         new SoapBindingSupportFactory(),
+        new Soap12BindingSupportFactory(),
     };
 
     /**
@@ -106,7 +111,7 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         // and uncomment the complicated stuff below.
         
         if (mComponent.getSelectedBindingOperation() == null) {
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+            wiz.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(NewTestcaseOperationVisualPanel.class,
                     "LBL_One_operation_must_be_selected")); //NOI18N
             return false; // WSDL not selected
@@ -123,11 +128,11 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         if (!isSupported) {
             String msg = NbBundle.getMessage(NewTestcaseOperationWizardPanel.class,
                     "LBL_Binding_is_not_supported", binding.getName()); // NOI18N 
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+            wiz.putProperty("WizardPanel_errorMessage", msg); // NOI18N
             return false;
         }        
         
-        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        wiz.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
     

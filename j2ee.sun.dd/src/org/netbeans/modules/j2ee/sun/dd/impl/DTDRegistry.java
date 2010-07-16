@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -135,6 +138,15 @@ public final class DTDRegistry {
     public static final String SUN_APPLICATION_50_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application_5_0-0.dtd";
     
+    public static final String SUN_APPLICATION_60_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Java EE Application 6.0//EN";
+    public static final String SUN_APPLICATION_60_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application_6_0-0.dtd";
+
+    public static final String GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID =
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application 6.0//EN";
+    public static final String GLASSFISH_APPLICATION_601_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/sun-application_6_0-1.dtd";
     /**
      * EJB: Sun ONE App Server specific dtd info.
      */
@@ -170,6 +182,15 @@ public final class DTDRegistry {
     public static final String SUN_EJBJAR_301_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-1.dtd";
     
+    public static final String SUN_EJBJAR_310_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN";
+    public static final String SUN_EJBJAR_310_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_1-0.dtd";
+
+    public static final String GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID =
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN";
+    public static final String GLASSFISH_EJBJAR_311_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/sun-ejb-jar_3_1-1.dtd";
     /**
      * Application Client: Sun ONE App Server specific dtd info.
      */
@@ -193,7 +214,15 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Application Client 5.0//EN";
     public static final String SUN_APPCLIENT_50_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application-client_5_0-0.dtd";    
+    public static final String SUN_APPCLIENT_60_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Application Client 6.0//EN";
+    public static final String SUN_APPCLIENT_60_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application-client_6_0-0.dtd";
     
+    public static final String GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID =
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client 6.0//EN";
+    public static final String GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/sun-application-client_6_0-1.dtd";
     /**
      * Connectors: Sun ONE App Server specific dtd info.
      */
@@ -235,10 +264,14 @@ public final class DTDRegistry {
         "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd";
 
     public static final String SUN_WEBAPP_300_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD GlassFish v3 Servlet 3.0//EN";
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN";
     public static final String SUN_WEBAPP_300_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-web-app_3_0-0.dtd";
 
+    public static final String GLASSFISH_WEBAPP_301_DTD_PUBLIC_ID =
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN";
+    public static final String GLASSFISH_WEBAPP_301_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd";
     /**
      * Application Client Container: Sun ONE App Server specific dtd info.
      */

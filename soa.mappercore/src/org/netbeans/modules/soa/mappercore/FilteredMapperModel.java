@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.FilterableMapperModel;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -85,8 +86,11 @@ public class FilteredMapperModel extends FilteredTreeModel
                 protected boolean accept(Object parent, Object child) {
                     Set<Object> acceptedChildren = leftAcceptedChildren
                             .get(parent);
-                    return (acceptedChildren != null) 
-                            && acceptedChildren.contains(child);
+                    if ((acceptedChildren != null) 
+                            && acceptedChildren.contains(child)) {
+                        return true;
+                    }
+                    return showLeft(parent, child);
                 }
             };
         }
@@ -96,6 +100,21 @@ public class FilteredMapperModel extends FilteredTreeModel
                     rightAcceptedChildren);
         }
     }
+    
+    private boolean showLeft(Object parent, Object node) {
+        if (mapperModel instanceof FilterableMapperModel) {
+            return ((FilterableMapperModel) mapperModel).showLeft(parent, node);
+        }
+        return false;
+    }
+    
+    private boolean showRight(Object parent, Object node) {
+        if (mapperModel instanceof FilterableMapperModel) {
+            return ((FilterableMapperModel) mapperModel).showRight(parent, node);
+        }
+        return false;
+    }
+    
     
     public boolean isFilterLeft() {
         return filterLeft;
@@ -111,7 +130,10 @@ public class FilteredMapperModel extends FilteredTreeModel
     
     protected boolean accept(Object parent, Object child) {
         Set<Object> acceptedChildren = rightAcceptedChildren.get(parent);
-        return (acceptedChildren != null) && acceptedChildren.contains(child);
+        if ((acceptedChildren != null) && acceptedChildren.contains(child)) {
+            return true;
+        }
+        return showRight(parent, child);
     }
     
     public TreeModel getLeftTreeModel() {
@@ -256,5 +278,13 @@ public class FilteredMapperModel extends FilteredTreeModel
         if (filteredLeftTreeModel != null) {
             filteredLeftTreeModel.dispose();
         }
+    }
+
+    public List<TreePath> findInLeftTree(String value) {
+        return mapperModel.findInLeftTree(value);
+    }
+
+    public List<TreePath> findInRightTree(String value) {
+        return mapperModel.findInRightTree(value);
     }
 }

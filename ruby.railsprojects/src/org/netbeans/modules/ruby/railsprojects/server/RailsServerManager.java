@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -73,6 +76,8 @@ import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.DialogDisplayer;
@@ -130,6 +135,7 @@ public final class RailsServerManager {
     private int port = -1;
     
     private final RailsProject project;
+    private RailsVersion version;
     private Future<Integer> execution;
     private File dir;
     private String projectName;
@@ -154,6 +160,12 @@ public final class RailsServerManager {
         this.clientDebug = clientDebug;
     }
 
+    private synchronized RailsVersion getRailsVersion() {
+        if (version == null) {
+            this.version = RailsProjectUtil.getRailsVersion(project);
+        }
+        return version;
+    }
     /**
      * @return true if server is ready and application can be run immediately,
      *   otherwise return false indicating server is becoming ready asynchonously.
@@ -294,7 +306,7 @@ public final class RailsServerManager {
 
         ensurePortAvailable();
         String displayName = getServerTabName(server, projectName, port);
-        String serverPath = server.getServerPath();
+        String serverPath = server.getServerPath(getRailsVersion());
         RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, serverPath);
 // can place debug flags here to allow attaching NB debugger to jruby process
 // running server that is started in debug-commons.
@@ -304,8 +316,9 @@ public final class RailsServerManager {
         // Paths required for GlassFish gem.  Not used or required for WEBrick or Mongrel.
         String gemPath = server.getLocation();
         if(gemPath != null) {
-            desc.initialArgs("-I \"" + gemPath + File.separatorChar + "bin\" " +
-                    "-I \"" + gemPath + File.separatorChar + "lib\"");
+            // always use forward slashes in the load path, even on Win
+            desc.initialArgs("-I \"" + gemPath + "/" + "bin\" " +
+                    "-I \"" + gemPath + "/" + "lib\"");
         }
         desc.scriptPrefix(server.getScriptPrefix());
         desc.additionalArgs(buildStartupArgs());
@@ -344,9 +357,7 @@ public final class RailsServerManager {
     
     private String[] buildStartupArgs() {
         List<String> result = new  ArrayList<String>();
-        if (server.getStartupParam() != null) {
-            result.add(server.getStartupParam());
-        } 
+        result.addAll(server.getStartupParams(getRailsVersion()));
         String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
         if (railsEnv != null && !"".equals(railsEnv.trim())) {
             result.add("-e");

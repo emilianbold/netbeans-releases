@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,29 +43,21 @@
 package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.AbstractList;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -71,12 +66,11 @@ import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -89,10 +83,17 @@ public final class Utils {
 
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
     public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?(/[^?# ]*(\\?[^#]*)?(#\\w*)?)?$"; // NOI18N
+    public static final URL PLACEHOLDER_BADGE = Utils.class.getResource("/org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"); // NOI18N
+
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
+    }
+
+    public static Image getIncludePathIcon(boolean opened) {
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/libraries-badge.png", false); // NOI18N
+        return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
     public static boolean validatePhpUnitForProject(PhpUnit phpUnit, PhpProject project) {
@@ -112,6 +113,7 @@ public final class Utils {
      * @param url URL, can be <code>null</code>.
      * @return <code>true</code> if the URL is valid, <code>false</code> otherwise.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public static boolean isValidUrl(String url) {
         if (url == null) {
             return false;
@@ -140,7 +142,6 @@ public final class Utils {
 
     private static File browseAction(final Component parent, File currentDirectory, String title, int mode) {
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(title);
         chooser.setFileSelectionMode(mode);
         if (currentDirectory != null
@@ -224,16 +225,37 @@ public final class Utils {
         }
     }
 
-    public static List getAllItems(final JComboBox comboBox) {
-        return new AbstractList() {
-            public Object get(int i) {
-                return comboBox.getItemAt(i);
-            }
+    public static String validateTestSources(PhpProject project, String testDirPath) {
+        if (!StringUtils.hasText(testDirPath)) {
+            return NbBundle.getMessage(Utils.class, "MSG_FolderEmpty");
+        }
 
-            public int size() {
-                return comboBox.getItemCount();
-            }
-        };
+        File testSourcesFile = new File(testDirPath);
+        if (!testSourcesFile.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotAbsolute");
+        } else if (!testSourcesFile.isDirectory()) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotDirectory");
+        }
+        FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
+        if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestEqualsSources");
+        } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
+                || nbproject.equals(testSourcesFo)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestUnderneathNBMetadata");
+        } else if (!FileUtils.isDirectoryWritable(testSourcesFile)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotWritable");
+        }
+        return null;
+    }
+
+    public static String warnTestSources(PhpProject project, String testDirPath) {
+        File testSourcesFile = new File(testDirPath);
+        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
+        if (!FileUtil.isParentOf(project.getProjectDirectory(), testSourcesFo)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotUnderneathProjectFolder");
+        }
+        return null;
     }
 
     public static File getCanonicalFile(File file) {
@@ -272,7 +294,7 @@ public final class Utils {
      * <p>
      * File is not {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
      * @param file File to check.
-     * @return <code>true</true> if the provided File has valid file name.
+     * @return <code>true</code> if the provided File has valid file name.
      * @see #isValidFileName(java.lang.String)
      */
     public static boolean isValidFileName(File file) {
@@ -343,7 +365,7 @@ public final class Utils {
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
-        if (projLoc == null || !isFolderWritable(projLoc)) {
+        if (projLoc == null || !FileUtils.isDirectoryWritable(projLoc)) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderReadOnly");
         }
 
@@ -399,7 +421,7 @@ public final class Utils {
      * Validate that the text contains only ASCII characters. If not, return an error message.
      * @param text the text to validate, can be <code>null</code>.
      * @param propertyName property name of the given text, e.g. "Project folder name".
-     * @return an error message in case that the text contains non-ASCII characters, <code>null</null> otherwise.
+     * @return an error message in case that the text contains non-ASCII characters, <code>null</code> otherwise.
      * @see #isAsciiPrintable(char)
      */
     public static String validateAsciiText(String text, String propertyName) {
@@ -433,42 +455,6 @@ public final class Utils {
      */
     public static boolean isAsciiPrintable(char ch) {
         return ch >= 32 && ch < 127;
-    }
-
-    // #144928, #157417
-    /**
-     * Handles correctly 'feature' of Windows (read-only flag, "Program Files" directory on Windows Vista).
-     * @param folder folder to check.
-     * @return <code>true</code> if folder is writable.
-     */
-    public static boolean isFolderWritable(File folder) {
-        if (!folder.isDirectory()) {
-            // #157591
-            LOGGER.fine(String.format("%s is not a folder", folder));
-            return false;
-        }
-        boolean windows = Utilities.isWindows();
-        LOGGER.fine("On Windows: " + windows);
-
-        boolean canWrite = folder.canWrite();
-        LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
-        if (!windows) {
-            // we are not on windows => result is ok
-            return canWrite;
-        }
-
-        // on windows
-        LOGGER.fine("Trying to create temp file");
-        try {
-            File tmpFile = File.createTempFile("netbeans", null, folder);
-            LOGGER.fine(String.format("Temp file %s created", tmpFile));
-            tmpFile.delete();
-            LOGGER.fine(String.format("Temp file %s deleted", tmpFile));
-        } catch (IOException exc) {
-            LOGGER.log(Level.FINE, "Temp file NOT created", exc);
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -577,99 +563,13 @@ public final class Utils {
             secure = unifyPath(preselected);
             if (removeExtension) {
                 // e.g. searching in nodes => no file extension can be there
-                int idx = secure.lastIndexOf("."); // NOI18N
+                int idx = secure.lastIndexOf('.'); // NOI18N
                 if (idx != -1) {
                     secure = secure.substring(0, idx);
                 }
             }
         }
         return secure;
-    }
-
-    public static class EncodingModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -3139920099217726436L;
-
-        public EncodingModel() {
-            this(null);
-        }
-
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null && originalEncoding != null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset(originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(EncodingModel.class.getName()).info("IllegalCharsetName: " + originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-
-    public static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 3196531352192214602L;
-
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            setName("ComboBox.listRenderer"); // NOI18N
-            // #175238
-            if (value != null) {
-                assert value instanceof Charset;
-                setText(((Charset) value).displayName());
-            }
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-    }
-
-    private static class UnknownCharset extends Charset {
-
-        UnknownCharset(String name) {
-            super(name, new String[0]);
-        }
-
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**

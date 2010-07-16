@@ -24,7 +24,6 @@ import org.netbeans.modules.bpel.design.selection.placeholders.PartnerlinkPlaceh
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 
 /**
- *
  * @author Alexey
  */
 public class PartnerlinksView extends DiagramView {

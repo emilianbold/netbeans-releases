@@ -25,7 +25,7 @@ import org.netbeans.modules.sql.framework.codegen.OperatorGenerator;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLOperatorDefinition;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 
 /**
  * Handles evaluation of User function AKA generic function of format userFx(arg1, arg2...).

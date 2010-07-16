@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -54,6 +58,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author mkleint
@@ -69,7 +74,7 @@ public class NodeFactorySupportTest extends TestCase {
      */
     public void testCreateCompositeChildren() throws InterruptedException, InvocationTargetException {
         InstanceContent ic = new InstanceContent();
-        final Children dels = new TestDelegates(ic);
+        final Children dels = new TestDelegates(new AbstractLookup(ic));
         final Node node1 = new AbstractNode(Children.LEAF);
         final Node node2 = new AbstractNode(Children.LEAF);
         final Node node3 = new AbstractNode(Children.LEAF);
@@ -105,6 +110,20 @@ public class NodeFactorySupportTest extends TestCase {
         
     }
 
+    public void testFindChild() throws Exception {
+        class HelloNode extends AbstractNode {
+            HelloNode() {
+                super(Children.LEAF);
+                setName("hello");
+            }
+        }
+        Node n = new HelloNode();
+        assertEquals(Collections.singletonList(n), Arrays.asList(new TestDelegates(Lookups.fixed(new TestNodeFactory(n))).getNodes(true)));
+        assertEquals(1, new TestDelegates(Lookups.fixed(new TestNodeFactory(new HelloNode()))).getNodesCount(true));
+        n = new HelloNode();
+        assertEquals(n, new TestDelegates(Lookups.fixed(new TestNodeFactory(n))).findChild("hello"));
+    }
+
    private class TestNodeFactory implements NodeFactory {
        
        Node node;
@@ -117,14 +136,14 @@ public class NodeFactorySupportTest extends TestCase {
    }
    
    private class TestDelegates extends NodeFactorySupport.DelegateChildren  {
-       public AbstractLookup.Content content;
-       TestDelegates(AbstractLookup.Content cont) {
+       public Lookup lkp;
+       TestDelegates(Lookup lkp) {
            super(null, null);
-           content = cont;
+           this.lkp = lkp;
        }
        
        protected @Override Lookup createLookup() {
-           return new AbstractLookup(content);
+           return lkp;
        }
    }
     

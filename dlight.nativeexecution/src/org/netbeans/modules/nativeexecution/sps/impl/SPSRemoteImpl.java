@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,15 +52,12 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,49 +77,36 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         return new SPSRemoteImpl(execEnv);
     }
 
+    @Override
     synchronized String getPID() {
         if (pid != null) {
             return pid;
         }
 
-        NativeProcess pidFetchProcess = null;
+        BufferedLineProcessor blp = new BufferedLineProcessor();
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, "/bin/ptree $$", blp); // NOI18N
 
         try {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setCommandLine("/bin/ptree $$"); // NOI18N
-            pidFetchProcess = npb.call();
-
-            int result = pidFetchProcess.waitFor();
-
-            if (result != 0) {
+            if (scriptRunner.execute() != 0) {
                 throw new IOException("Unable to get sshd pid"); // NOI18N
             }
-
-            List<String> out = ProcessUtils.readProcessOutput(pidFetchProcess);
-            String pidCandidate = null;
-
-            for (String line : out) {
-                line = line.trim();
-                if (line.endsWith("sshd")) { // NOI18N
-                    try {
-                        pidCandidate = line.substring(0, line.indexOf(' '));
-                    } catch (NumberFormatException ex) {
-                    }
-                }
-            }
-
-            pid = pidCandidate;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Logger.getInstance().fine(ex.toString());
-            try {
-                ProcessUtils.logError(Level.FINE, Logger.getInstance(), pidFetchProcess);
-            } catch (IOException ioex) {
-                Logger.getInstance().log(Level.FINE, "", ioex); // NOI18N
+        }
+
+        String pidCandidate = null;
+
+        for (String line : blp.getBuffer()) {
+            line = line.trim();
+            if (line.endsWith("sshd")) { // NOI18N
+                try {
+                    pidCandidate = line.substring(0, line.indexOf(' '));
+                } catch (NumberFormatException ex) {
+                }
             }
         }
 
+        pid = pidCandidate;
         return pid;
     }
 
@@ -130,18 +116,10 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         pid = null;
     }
 
-    public synchronized void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
-        ConnectionManager mgr = ConnectionManager.getInstance();
-
-        final Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(mgr, execEnv, true);
-
-        if (session == null) {
-            return;
-        }
-
+    @Override
+    public synchronized boolean requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException, InterruptedException {
         // Construct privileges list
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         for (String priv : requestedPrivileges) {
             sb.append(priv).append(","); // NOI18N
@@ -155,7 +133,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         String script = "/usr/bin/ppriv -s I+" + // NOI18N
                 requestedPrivs + " " + getPID(); // NOI18N
 
-        StringBuffer cmd = new StringBuffer("/sbin/su - "); // NOI18N
+        StringBuilder cmd = new StringBuilder("/sbin/su - "); // NOI18N
         cmd.append(user).append(" -c \""); // NOI18N
         cmd.append(script).append("\"; echo ExitStatus:$?\n"); // NOI18N
 
@@ -164,7 +142,11 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         int status = 1;
 
         try {
-            channel = (ChannelShell) session.openChannel("shell"); // NOI18N
+            channel = (ChannelShell) ConnectionManagerAccessor.getDefault().openAndAcquireChannel(execEnv, "shell", true); // NOI18N+
+            if (channel == null) {
+                return false;
+            }
+
             channel.setPty(true);
             channel.setPtyType("ldterm"); // NOI18N
 
@@ -185,6 +167,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
             status = Integer.valueOf(exitStatus).intValue();
 
+            return status == 0;
         } catch (InterruptedIOException ex) {
             throw new CancellationException();
         } catch (IOException ex) {
@@ -193,9 +176,11 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } finally {
             if (status != 0) {
-                NotifyDescriptor dd =
-                        new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
-                DialogDisplayer.getDefault().notify(dd);
+                if (!Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                    NotifyDescriptor dd =
+                            new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
+                    DialogDisplayer.getDefault().notify(dd);
+                }
             }
 
             // DO NOT CLOSE A CHANNEL HERE... (Why?)
@@ -221,6 +206,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                 w.close();
             }
         }
+
+        return false;
     }
 
     /**
@@ -229,15 +216,16 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
      * @param expectedString
      * @return
      */
-    private final static String expect(
+    private static String expect(
             final InputStream in,
             final String expectedString) throws IOException {
 
         int pos = 0;
         int len = expectedString.length();
         char[] cbuf = new char[2];
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
+        // LATER: shouldn't it use ProcessUtils.getReader?
         Reader r = new InputStreamReader(in);
 
         while (pos != len && r.read(cbuf, 0, 1) != -1) {

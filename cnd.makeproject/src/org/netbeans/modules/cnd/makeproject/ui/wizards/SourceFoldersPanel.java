@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
@@ -50,7 +52,8 @@ import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider{
+/*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+
     private SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
     private SourceFilesPanel sourceFilesPanel;
     private boolean firstTime = true;
@@ -58,7 +61,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel);
+        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel, true);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -66,7 +69,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weighty = 1.0;
         headerFoldersOuterPanel.add(sourceFilesPanel, gridBagConstraints);
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        
+
         getAccessibleContext().setAccessibleDescription(getString("SourceFoldersPanel_AD"));
     }
 
@@ -76,31 +79,36 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = (String)settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+            String workingdir = (String) settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
-            sourceFilesPanel.getListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
+//            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
+//                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
+//            }
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
         }
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getListData())); // NOI18N
-        if (sourceFilesPanel.getFoldersFilter().trim().length()==0) {
+        wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
+        if (sourceFilesPanel.getFoldersFilter().trim().length() == 0) {
             // change empty pattern on "no ignore folder pattern"
             wizardDescriptor.putProperty("sourceFoldersFilter", MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
         } else {
             wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
+        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getTestListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
     }
-    
+
     boolean valid(WizardDescriptor settings) {
         String regex = sourceFilesPanel.getFoldersFilter();
         try {
             Pattern.compile(regex);
-        } catch (PatternSyntaxException e){
+        } catch (PatternSyntaxException e) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, e.getMessage());
             return false;
         }
@@ -160,15 +168,12 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-            
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel headerFoldersOuterPanel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
     // End of variables declaration//GEN-END:variables
-    
+
     private static String getString(String s) {
         return NbBundle.getBundle(PanelProjectLocationVisual.class).getString(s);
     }

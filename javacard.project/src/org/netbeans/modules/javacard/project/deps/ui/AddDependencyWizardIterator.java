@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -114,7 +117,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
         return null;
     }
     private int index;
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<Map<String,Object>>[] panels;
     private WizardDescriptor wiz;
     private IntermediatePanelKind intermediatePanelKind;
 
@@ -128,7 +131,6 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
 
     void setIntermediatePanelKind(IntermediatePanelKind kind) {
         assert !EventQueue.isDispatchThread();
-        System.err.println("setIntermediatePanelKind " + kind);
         synchronized (this) {
             this.intermediatePanelKind = kind;
         }
@@ -138,9 +140,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             //get the previously computed set of panels
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    System.err.println("Firing steps change");
                     supp.fireChange();
-                    System.err.println("GetPanels length returns " + getPanels().length);
                 }
             });
         } catch (InterruptedException ex) {
@@ -150,6 +150,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
         }
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private WizardDescriptor.Panel<Map<String,Object>>[] createPanels() {
         return new WizardDescriptor.Panel[]{
                     new ChooseDependencyKindWizardPanel(wiz),
@@ -159,6 +160,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
                 };
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private WizardDescriptor.Panel<Map<String,Object>>[] panels() {
         WizardDescriptor.Panel<Map<String,Object>>[] pnls = panels == null ? panels = createPanels() : panels;
         IntermediatePanelKind pk = getIntermediatePanelKind();

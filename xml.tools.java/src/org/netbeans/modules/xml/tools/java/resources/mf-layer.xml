@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -47,51 +50,46 @@ made subject to such option by the copyright holder.
     <!ENTITY dtd-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.DTDDataObject$DTDCookieFactoryCreator'/>">
 ]>
 <filesystem>
-
-    
     <folder name="Services">
         <folder name="Hidden">
-           
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
-            </file>
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
-            </file>
             <file name="org-netbeans-modules-xml-tools-java-generator-DTDGenerateSupportFactory$Creator.instance">
                 &dtd-cookie-attributes;
             </file>
-            
-              
-            
-            
-            
-           
         </folder>
+    </folder>
 
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="dtd-xml">
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
+                        <attr name="position" intvalue="19000"/>
+                        &dtd-action-attributes;
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
+                        <attr name="position" intvalue="19200"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
+                        <attr name="position" intvalue="19300"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
+                        <attr name="position" intvalue="19400"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 
     <!-- register actions to action pool -->
     <folder name="Actions">
         <folder name="XML">
-            
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance">
-                <attr name="instanceCreate"
-                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="displayName"
-                      bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateSAXHandler"/>
-                <attr name="delegate"
-                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction.getInstance"/>
-            </file>
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance">
-                <attr name="instanceCreate"
-                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="displayName" 
-                      bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateDOMScanner"/>
-                <attr name="delegate"
-                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction.getInstance"/>
-            </file>
-            
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
         </folder>
     </folder>
 

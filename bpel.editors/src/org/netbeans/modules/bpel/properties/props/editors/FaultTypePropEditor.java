@@ -32,8 +32,4 @@ public class FaultTypePropEditor extends TypePropEditor {
                 VariableStereotype.MESSAGE,
                 VariableStereotype.GLOBAL_ELEMENT));
     }
-
-
 }
-
-

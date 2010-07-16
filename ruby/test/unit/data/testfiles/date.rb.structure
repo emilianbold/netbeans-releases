@@ -32,7 +32,7 @@ Date:CLASS:[]:ESCAPED{Date}:
   cwyear:METHOD:[PUBLIC]:ESCAPED{cwyear}:
   day_fraction:METHOD:[PUBLIC]:ESCAPED{day_fraction}:
   day_fraction_to_time:METHOD:[PUBLIC, STATIC]:ESCAPED{day_fraction_to_time}(PARAMETERS{ESCAPED{fr}})<font color='#777777'> : ESCAPED{Array}</font>:
-  downto:METHOD:[PUBLIC]:ESCAPED{downto}(PARAMETERS{ESCAPED{min}, ESCAPED{&block}})<font color='#777777'> : ESCAPED{Date}</font>:
+  downto:METHOD:[PUBLIC]:ESCAPED{downto}(PARAMETERS{ESCAPED{min}, ESCAPED{&block}})<font color='#777777'> : ESCAPED{Date, Unknown}</font>:
   england:METHOD:[PUBLIC]:ESCAPED{england}:
   eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   gregorian:METHOD:[PUBLIC]:ESCAPED{gregorian}:
@@ -91,7 +91,7 @@ Date:CLASS:[]:ESCAPED{Date}:
   time_to_day_fraction:METHOD:[PUBLIC, STATIC]:ESCAPED{time_to_day_fraction}(PARAMETERS{ESCAPED{h}, ESCAPED{min}, ESCAPED{s}}):
   to_s:METHOD:[PUBLIC]:ESCAPED{to_s}<font color='#777777'> : ESCAPED{String}</font>:
   today:METHOD:[PUBLIC, STATIC]:ESCAPED{today}(PARAMETERS{ESCAPED{sg}}):
-  upto:METHOD:[PUBLIC]:ESCAPED{upto}(PARAMETERS{ESCAPED{max}, ESCAPED{&block}})<font color='#777777'> : ESCAPED{Date}</font>:
+  upto:METHOD:[PUBLIC]:ESCAPED{upto}(PARAMETERS{ESCAPED{max}, ESCAPED{&block}})<font color='#777777'> : ESCAPED{Date, Unknown}</font>:
   valid_civil?:METHOD:[PUBLIC, STATIC]:ESCAPED{valid_civil?}(PARAMETERS{ESCAPED{y}, ESCAPED{m}, ESCAPED{d}, ESCAPED{sg}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   valid_commercial?:METHOD:[PUBLIC, STATIC]:ESCAPED{valid_commercial?}(PARAMETERS{ESCAPED{y}, ESCAPED{w}, ESCAPED{d}, ESCAPED{sg}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   valid_jd?:METHOD:[PUBLIC, STATIC]:ESCAPED{valid_jd?}(PARAMETERS{ESCAPED{jd}, ESCAPED{sg}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:

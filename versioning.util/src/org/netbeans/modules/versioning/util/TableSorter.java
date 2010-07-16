@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -226,6 +229,14 @@ public final class TableSorter extends AbstractTableModel {
         return getDirective(column).direction;
     }
 
+    public LinkedHashMap<Integer, Integer> getSortingState () {
+        LinkedHashMap<Integer, Integer> sortingState = new LinkedHashMap<Integer, Integer>(sortingColumns.size());
+        for (Directive d : sortingColumns) {
+            sortingState.put(d.column, d.direction);
+        }
+        return sortingState;
+    }
+
     private void sortingStatusChanged() {
         clearSortingState();
         fireTableDataChanged();
@@ -310,6 +321,10 @@ public final class TableSorter extends AbstractTableModel {
 
     public int modelIndex(int viewIndex) {
         return getViewToModel()[viewIndex].modelIndex;
+    }
+
+    public int viewIndex(int modelIndex) {
+        return getModelToView()[modelIndex];
     }
 
     private int[] getModelToView() {
@@ -415,28 +430,19 @@ public final class TableSorter extends AbstractTableModel {
             }
 
             // We can map a cell event through to the view without widening             
-            // when the following conditions apply: 
+            // when the event is known to be preserving the sorting or when
+            // the following conditions apply:
             // 
             // a) all the changes are on one row (e.getFirstRow() == e.getLastRow()) and, 
             // b) all the changes are in one column (column != TableModelEvent.ALL_COLUMNS) and,
             // c) we are not sorting on that column (getSortingStatus(column) == NOT_SORTED) and, 
-            // d) a reverse lookup will not trigger a sort (modelToView != null)
             //
             // Note: INSERT and DELETE events fail this test as they have column == ALL_COLUMNS.
-            // 
-            // The last check, for (modelToView != null) is to see if modelToView 
-            // is already allocated. If we don't do this check; sorting can become 
-            // a performance bottleneck for applications where cells  
-            // change rapidly in different parts of the table. If cells 
-            // change alternately in the sorting column and then outside of             
-            // it this class can end up re-sorting on alternate cell updates - 
-            // which can be a performance problem for large tables. The last 
-            // clause avoids this problem. 
             int column = e.getColumn();
-            if (e.getFirstRow() == e.getLastRow()
-                    && column != TableModelEvent.ALL_COLUMNS
-                    && getSortingStatus(column) == NOT_SORTED
-                    && modelToView != null) {
+            if ((e instanceof SortingSafeTableModelEvent)
+                    || e.getFirstRow() == e.getLastRow()
+                       && column != TableModelEvent.ALL_COLUMNS
+                       && getSortingStatus(column) == NOT_SORTED) {
                 int viewIndex = getModelToView()[e.getFirstRow()];
                 fireTableChanged(new TableModelEvent(TableSorter.this, 
                                                      viewIndex, viewIndex, 
@@ -515,4 +521,15 @@ public final class TableSorter extends AbstractTableModel {
             this.direction = direction;
         }
     }
+
+    public static class SortingSafeTableModelEvent extends TableModelEvent {
+
+        public SortingSafeTableModelEvent(TableModel source,
+                                          int row,
+                                          int column) {
+            super(source, row, row, column, TableModelEvent.UPDATE);
+        }
+
+    }
+
 }

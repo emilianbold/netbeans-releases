@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,18 +42,11 @@
 
 package org.netbeans.modules.php.project.classpath;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Helper class for sharing the same code between {@link org.netbeans.modules.php.project.api.PhpSourcePath}
@@ -72,57 +68,14 @@ public final class CommonPhpSourcePath {
         return internalFolders;
     }
 
-    // workaround because gsf uses toFile() and this causes NPE for SFS
-    // see #131401 for more information
     private static List<FileObject> getInternalFolders() {
         assert Thread.holdsLock(CommonPhpSourcePath.class);
 
-        // FS AtomicAction should not be needed (synchronized)
+        List<FileObject> preindexedFolders = PhpSourcePath.getPreindexedFolders();
         FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
-        for (FileObject fo : sfsFolder.getChildren()) {
-            // XXX need to handle file updates as well
-            if (FileUtil.toFile(fo) != null) {
-                continue;
-            }
-            InputStream is = null;
-            ByteArrayOutputStream bos = null;
-            try {
-                is = fo.getInputStream();
-                bos = new ByteArrayOutputStream();
-                FileUtil.copy(is, bos);
-            } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
-            } finally {
-                closeStreams(is);
-            }
-            OutputStream os = null;
-            try {
-                os = fo.getOutputStream();
-                os.write(bos.toByteArray());
-            } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
-            } finally {
-                closeStreams(os, bos);
-            }
-        }
-        File file = FileUtil.toFile(sfsFolder);
-        //TODO: commented out because of tests
-        //assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
-        List<FileObject> folders = new ArrayList<FileObject>();
+        List<FileObject> folders = new ArrayList<FileObject>(preindexedFolders.size() + 1);
         folders.add(sfsFolder);
-        folders.addAll(PhpSourcePath.getPreindexedFolders());
+        folders.addAll(preindexedFolders);
         return folders;
-    }
-
-    private static void closeStreams(Closeable... streams) {
-        for (Closeable stream : streams) {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,13 +43,16 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -57,6 +63,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.windows.InputOutput;
 
 /**
@@ -68,12 +75,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
-    private ProjectActionEvent[] paes;
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
     private PrintWriter out;
     private PrintWriter err;
+
+    private static final String testWorkerRunningProp = "cnd.remote.sync.worker.running"; // for tests only // NOI18N
 
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -82,7 +90,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
-        this.paes = paes;
         this.delegate = RemoteBuildProjectActionHandlerFactory.createDelegateHandler(pae);
         this.delegate.init(pae, paes);
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
@@ -116,6 +123,21 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         if (execEnv.isLocal()) {
             delegate.execute(io);
             return;
+        } else {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                if (io != null) {
+                    io.getErr().printf("%s\n", ex.getMessage()); //NOI18N
+                }
+                delegate.cancel();
+                return;
+            } catch (CancellationException ex) {
+                // don't log CancellationException
+                delegate.cancel();
+                return;
+            }
         }
 
         if (io != null) {
@@ -141,13 +163,17 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
 
         Map<String, String> env2add = new HashMap<String, String>();
-        if (worker.startup(env2add)) {
+        System.setProperty(testWorkerRunningProp, "true"); // NOI18N
+        if (worker.startup(env2add)) {            
             final ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                 }
+                @Override
                 public void executionFinished(int rc) {
                     worker.shutdown();
                     delegate.removeExecutionListener(this);
+                    System.setProperty(testWorkerRunningProp, "false"); // NOI18N
                 }
             };
             delegate.addExecutionListener(listener);
@@ -160,9 +186,26 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             }
             delegate.execute(io);
         } else {
+            System.setProperty(testWorkerRunningProp, "false"); // NOI18N
             for (ExecutionListener l : listeners) {
                 l.executionFinished(-8);
             }
+        }
+    }
+
+    /**
+     * For test purposes: wait until workeris finished
+     * @param timeout timeout IN SECONDS
+     */
+    /* package */ static void testWaitWorkerFinished(int timeout) throws TimeoutException, InterruptedException {
+        long end = System.currentTimeMillis() + timeout * 1000;
+        while (Boolean.getBoolean(testWorkerRunningProp)) {
+            long rest = end - System.currentTimeMillis();
+            if (rest < 0) {
+                throw new TimeoutException();
+            }
+            RemoteUtil.LOGGER.finest("Waiting until sync worker is finished");
+            Thread.sleep(rest < 200 ? rest : 200);
         }
     }
 }

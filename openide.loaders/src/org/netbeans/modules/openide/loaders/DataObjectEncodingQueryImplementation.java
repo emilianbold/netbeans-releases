@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,13 +87,10 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
      * - If map contains TRUE value for the given MimeType then get FEQ from the DataObject lookup.
      * - If map not contains given MimeType then add it to the map with value TRUE if FEQ is found in the DataObject lookup
      */
+    @Override
     public Charset getEncoding(FileObject file) {
         assert file != null;
         DataFolder df = TARGET.get();
-        if (df != null && df.getPrimaryFile().equals(file.getParent())) {
-            // do not create new data objects
-            return null;
-        }
         String mimeType = file.getMIMEType();
         FileEncodingQueryImplementation impl = MimeLookup.getLookup(mimeType).lookup(FileEncodingQueryImplementation.class);
         if (impl != null) {
@@ -98,6 +98,10 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
             if (charset != null) {
                 return charset;
             }
+        }
+        if (df != null && df.getPrimaryFile().equals(file.getParent())) {
+            // do not create new data objects
+            return null;
         }
         Boolean useDataObjectLookup = MIME_TYPE_CHECK_MAP.get(mimeType);
         if (useDataObjectLookup == null || useDataObjectLookup.booleanValue() || "content/unknown".equals(mimeType)) {  //NOI18N

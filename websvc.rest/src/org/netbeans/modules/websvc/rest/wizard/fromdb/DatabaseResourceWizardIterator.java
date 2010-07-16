@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,8 +68,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
@@ -116,6 +117,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private ProgressPanel progressPanel;
     private PersistenceGenerator generator;
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         Project project = Templates.getProject(wizard);
@@ -137,17 +139,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     }
 
+    @Override
     public Set instantiate() throws IOException {
         // create the pu first if needed
-        if (helper.getPersistenceUnit() != null) {
-            try {
-                ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wizard));
-            } catch (InvalidPersistenceXmlException ipx) {
-                // just log for debugging purposes, at this point the user has
-                // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-
-            }
+        if(helper.isCreatePU()) {
+            Project project = Templates.getProject(wizard);
+            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
         }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
@@ -159,6 +156,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
         final Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     aggregateHandle.start();
@@ -339,8 +337,8 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
-                        new DatabaseTablesWizardPanel(wizardTitle, wizard),
-                        new EntityClassesPanel.WizardPanel(),
+                        new org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel.WizardPanel(wizardTitle),
+                        new EntityClassesPanel.WizardPanel(true),
                         new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
                         "LBL_RestResourcesAndClasses"), wizard)
                     };

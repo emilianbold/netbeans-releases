@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -114,6 +117,14 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
 
     public void testAliasMethod() throws Exception {
         checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
+    }
+
+    public void testAliasMethodKeyword() throws Exception {
+        checkDeclaration("testfiles/alias_method.rb", "Here.new.right_the^re", "alias_method.rb", 296);
+    }
+
+    public void testDefineMethod() throws Exception {
+        checkDeclaration("testfiles/define_method.rb", "Calcutec.new.laun^der", "define_method.rb", 69);
     }
 
     public void testSuperMethod() throws Exception {

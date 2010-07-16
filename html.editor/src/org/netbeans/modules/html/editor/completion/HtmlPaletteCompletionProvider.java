@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -84,6 +87,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
     public HtmlPaletteCompletionProvider() {
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()),
@@ -92,6 +96,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         return null;
     }
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
@@ -99,7 +104,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
     static final class CCQuery extends AsyncCompletionQuery {
 
         private int creationCaretOffset;
-        private int completionExpressionStartOffset;
+        private int completionExpressionStartOffset = -1;
         private JTextComponent component;
         private final Collection<PaletteCompletionItem> items = new ArrayList<PaletteCompletionItem>();
 
@@ -107,11 +112,13 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
         }
 
+        @Override
         protected void query(final CompletionResultSet resultSet, final Document doc, final int offset) {
             try {
                 synchronized (items) {
                     doc.render(new Runnable() {
 
+                        @Override
                         public void run() {
                             items.clear();
 
@@ -156,8 +163,12 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                             if (i > 0) {
                                 prefix = prefix.substring(i, prefix.length());
                             }
+
                             //remember the start of the completion source expression for later removal
-                            completionExpressionStartOffset = creationCaretOffset - prefix.length();
+			    //do not refresh the value during subsequent queries on this query instance as user goes on typing
+                            if(completionExpressionStartOffset == -1) {
+				completionExpressionStartOffset = creationCaretOffset - prefix.length();
+			    }
 
                             TopComponent tc = NbEditorUtilities.getTopComponent(component);
                             if (tc == null) {
@@ -196,10 +207,11 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 final AtomicBoolean retval = new AtomicBoolean();
                 doc.render(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             int offset = component.getCaretPosition();
-                            if (offset < completionExpressionStartOffset) {
+                            if (completionExpressionStartOffset == -1 || offset < completionExpressionStartOffset) {
                                 retval.set(false);
                                 return;
                             }
@@ -229,6 +241,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 synchronized (items) {
                     final Document doc = component.getDocument();
                     doc.render(new Runnable() {
+                        @Override
                         public void run() {
                             try {
                                 int offset = component.getCaretPosition();
@@ -307,6 +320,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             return new ImageIcon(icon);
         }
 
+        @Override
         public void defaultAction(JTextComponent component) {
             try {
                 //first remove the typed prefix
@@ -322,37 +336,46 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             }
         }
 
+        @Override
         public int getPreferredWidth(Graphics g, Font defaultFont) {
             return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
         }
 
+        @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
             CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
         }
 
+        @Override
         public void processKeyEvent(KeyEvent evt) {
         }
 
+        @Override
         public CompletionTask createDocumentationTask() {
             return null;
         }
 
+        @Override
         public CompletionTask createToolTipTask() {
             return null;
         }
 
+        @Override
         public boolean instantSubstitution(JTextComponent component) {
             return false;
         }
 
+        @Override
         public int getSortPriority() {
             return 1;
         }
 
+        @Override
         public CharSequence getSortText() {
             return category + item;
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return getSortText();
         }

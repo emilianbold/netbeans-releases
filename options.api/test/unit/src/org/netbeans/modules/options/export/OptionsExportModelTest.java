@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -299,6 +302,34 @@ public class OptionsExportModelTest extends NbTestCase {
         expectedKeys = new ArrayList<String>();
         expectedKeys.add("key1");
         assertProperties(expectedKeys, "dir0/subdir0/file0.properties", targetUserdir);
+
+        // import from source userdir to current userdir
+        // value for key1 should be replaced from source userdir, key2 should be added, key3 should be kept
+        createModel(new String[][]{
+                    {"Category0", "Item00", "dir0/subdir0/file0[.]properties#key[12]", null}
+                });
+        targetUserdir = new File(getWorkDir(), "userdir2");
+        targetUserdir.mkdir();
+        // create dir0/subdir0/file0.properties in target userdir
+        File targetPropertiesfile = new File(targetUserdir, "dir0/subdir0/file0.properties");
+        targetPropertiesfile.getParentFile().mkdirs();
+        targetPropertiesfile.createNewFile();
+        Properties properties = new Properties();
+        properties.setProperty("key1", "old_value1");  // to be replaced by import
+        properties.setProperty("key3", "value3");  // should be kept after import
+        OutputStream out = new FileOutputStream(targetPropertiesfile);
+        properties.store(out, null);
+        out.close();
+        model.doImport(targetUserdir);
+        expected = new ArrayList<String>();
+        expected.add("dir0/subdir0/file0.properties");
+        assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
+        Properties expectedProperties = new Properties();
+        expectedProperties.load(new FileInputStream(targetPropertiesfile));
+        assertEquals("Wrong number of properties.", 3, expectedProperties.size());
+        assertEquals("Wrong value of property key1.", "value1", expectedProperties.getProperty("key1"));
+        assertEquals("Wrong value of property key2.", "value2", expectedProperties.getProperty("key2"));
+        assertEquals("Wrong value of property key3.", "value3", expectedProperties.getProperty("key3"));
     }
 
     /** Tests that categories and items properly change enabled/disabled state. */
@@ -452,7 +483,7 @@ public class OptionsExportModelTest extends NbTestCase {
             actual.remove(actual.size() - 1);
         }
         assertEquals("Wrong number of files filtered.", expected.size(), actual.size());
-        Iterator<String> iter = actual.iterator();
+        Iterator<String> iter = new TreeSet<String>(actual).iterator();
         for (String file : expected) {
             assertEquals("Wrong file.", file, iter.next());
         }

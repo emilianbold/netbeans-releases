@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,15 +46,18 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.prefs.Preferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Milan Kuchtiak
  */
 public class RefreshClientDialog extends javax.swing.JPanel {
+    private static final String DOWNLOAD_WSDL_ON_REFRESH = "download_client_wsdl_on_refresh"; //NOI18N
     
     static final String CLOSE = "close";
     static final String NO_DOWNLOAD = "no_download";
@@ -62,14 +68,24 @@ public class RefreshClientDialog extends javax.swing.JPanel {
     private RefreshClientDialog(String url) {
         this.url=url;
         initComponents();
+        final Preferences prefs = NbPreferences.forModule(RefreshClientDialog.class);
+        if (prefs != null) {
+            downloadWsdlCheckBox.setSelected(prefs.getBoolean(DOWNLOAD_WSDL_ON_REFRESH, false));
+        }
         jTextField1.setText(url);
         downloadWsdlCheckBox.addItemListener(new ItemListener() {
 
+            @Override
             public void itemStateChanged(ItemEvent e) {
-                if (((javax.swing.JCheckBox)e.getSource()).isSelected())
+                boolean isSelected = ((javax.swing.JCheckBox)e.getSource()).isSelected();
+                if (isSelected) {
                     jTextField1.setEditable(true);
-                else 
+                } else {
                     jTextField1.setEditable(false);
+                }
+                if (prefs != null) {
+                    prefs.putBoolean(DOWNLOAD_WSDL_ON_REFRESH, isSelected);
+                }
             }
             
         });

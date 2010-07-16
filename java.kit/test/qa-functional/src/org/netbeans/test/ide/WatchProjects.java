@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -103,11 +106,11 @@ public final class WatchProjects {
         Clipboard cc = Lookup.getDefault().lookup(Clipboard.class);
         Assert.assertNotNull("There is a clipboard in lookup", cc);
         cc.setContents(ss, ss);
-/*
+
         for (Frame f : Frame.getFrames()) {
-            f.setVisible(false);
+            clearInstanceField( f, "java.awt.Container", "dispatcher" );
         }
- */
+
 // XXX: uncommented because of the csl.api & related changes
         JFrame empty = new JFrame("Clear");
         empty.getContentPane().setLayout(new FlowLayout());
@@ -299,7 +302,34 @@ public final class WatchProjects {
     }
 
     private static Object clearField(String clazz, String... name) throws Exception {
+        return clearInstanceField(null, clazz, name);
+    }
+    private static Object getFieldValue(String clazz, String... name) throws Exception {
         Object ret = null;
+        for (int i = 0; i < name.length; i++) {
+            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            ret = f.get(ret);
+        }
+        return ret;
+    }
+    
+    
+    private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if (l == null) {
+            l = WatchProjects.class.getClassLoader();
+        }
+        Class<?> c = Class.forName(clazz, true, l);
+        return getField(c, name);
+    }
+    private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
+        Field f = clazz.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
+    }
+    
+    private static Object clearInstanceField(Object obj, String clazz, String... name) throws Exception {
+        Object ret = obj;
         for (int i = 0; i < name.length; i++) {
             Field f;
             try {
@@ -330,30 +360,6 @@ public final class WatchProjects {
         }
         return ret;
     }
-    private static Object getFieldValue(String clazz, String... name) throws Exception {
-        Object ret = null;
-        for (int i = 0; i < name.length; i++) {
-            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
-            ret = f.get(ret);
-        }
-        return ret;
-    }
-    
-    
-    private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
-        ClassLoader l = Thread.currentThread().getContextClassLoader();
-        if (l == null) {
-            l = WatchProjects.class.getClassLoader();
-        }
-        Class<?> c = Class.forName(clazz, true, l);
-        return getField(c, name);
-    }
-    private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
-        Field f = clazz.getDeclaredField(name);
-        f.setAccessible(true);
-        return f;
-    }
-    
     
     public static void waitScanFinished() {
         try {

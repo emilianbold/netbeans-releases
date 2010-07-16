@@ -1,7 +1,7 @@
 # The "customers" schema should not show up (not needed). The "customer" table should. The "customization" table should not,
 # because it's not in the default schema.
 
-select * from customers.customer, customizations.customization, discount_code cus where cus|
+select * from customers.customer, customizations.customization, discount_code cus, cus_summary where cus|
 
 --
 <unknown>
@@ -11,6 +11,8 @@ select * from customers.customer, customizations.customization, discount_code cu
       address_line
     discount_code
       id
+    cus_summary[view]
+      cus_summary_id
   customizations
     customization
       invoice_id

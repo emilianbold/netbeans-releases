@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +75,10 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.AnnotationType;
@@ -90,6 +95,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+
 
 public final class ColorModel {
 
@@ -218,16 +224,14 @@ public final class ColorModel {
      */
     public Collection<AttributeSet> getHighlightings (String profile) {
         Map<String, AttributeSet> m = EditorSettings.getDefault().getHighlightings(profile);
-        if (m == null) {
+        if (m == null)
             return null;
-        }
-        return hideDummyCategories(m.values());
+        return m.values ();
     }
     
     public Collection<AttributeSet> getHighlightingDefaults (String profile) {
         Collection<AttributeSet> r = EditorSettings.getDefault().getHighlightingDefaults(profile).values();
-        if (r == null) return null;
-        return hideDummyCategories (r);
+        return r;
     }
     
     public void setHighlightings(String profile, Collection<AttributeSet> highlihgtings) {
@@ -277,10 +281,10 @@ public final class ColorModel {
         
         static final String         PROP_CURRENT_ELEMENT = "currentAElement";
         
-        private String testProfileName;
-        private String currentMimeType;
-        private JEditorPane editorPane;
-        private FontColorSettingsFactory fontColorSettings;
+        private String              testProfileName;
+        private String              currentMimeType;
+        private JEditorPane         editorPane;
+        private boolean             fireChanges = false;
         
         
         public Preview (String testProfileName, final String mimeType) {
@@ -288,6 +292,7 @@ public final class ColorModel {
             this.testProfileName = testProfileName;
             
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     updateMimeType(mimeType);
                 }
@@ -304,11 +309,8 @@ public final class ColorModel {
             final String mimeType = getMimeType(language);
             
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
-                    if (!mimeType.equals(currentMimeType)) {
-                        updateMimeType(mimeType);
-                    }
-                    
                     if (defaults != null) {
                         EditorSettings.getDefault().getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(
                             testProfileName,
@@ -328,6 +330,7 @@ public final class ColorModel {
                             syntaxColorings
                         );
                     }
+                    updateMimeType(mimeType);
                 }
             });
         }
@@ -336,6 +339,7 @@ public final class ColorModel {
          * Sets given mime type to preview and loads proper example text.
          */
         private void updateMimeType(String mimeType) {
+            fireChanges = false;
             currentMimeType = mimeType;
             
             String [] ret = loadPreviewExample(mimeType);
@@ -364,9 +368,15 @@ public final class ColorModel {
             document.putProperty(NbEditorDocument.MIME_TYPE_PROP, hackMimeType);
             editorPane.setEditorKit(kit);
             editorPane.setDocument(document);
-            
+            InputAttributes inputAttributes = new InputAttributes ();
+            Language language = Language.find (exampleMimeType);
+            if (language != null)
+                inputAttributes.setValue (language, "OptionsDialog", Boolean.TRUE, true);
+            document.putProperty (InputAttributes.class, inputAttributes);
             editorPane.addCaretListener (new CaretListener () {
+                @Override
                 public void caretUpdate (CaretEvent e) {
+                    if (!fireChanges) return;
                     int offset = e.getDot ();
                     String elementName = null;
                     
@@ -423,10 +433,12 @@ public final class ColorModel {
             
             editorPane.setEnabled(false);
             editorPane.setText(exampleText);
+            fireChanges = true;
 
             // scroll the view, but leave the caret where it is, otherwise it will
             // change the selected category (#143058)
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     editorPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
                 }
@@ -532,23 +544,6 @@ public final class ColorModel {
                     );
         }
         return languageToMimeType;
-    }
-    
-    private Set<AttributeSet> hiddenCategories = new HashSet<AttributeSet>();
-    {
-//        hiddenCategories.add ("status-bar");
-//        hiddenCategories.add ("status-bar-bold");
-    }
-    
-    private Collection<AttributeSet> hideDummyCategories(Collection<AttributeSet> categories) {
-        List<AttributeSet> result = new ArrayList<AttributeSet>();
-        for(AttributeSet as : categories) {
-            if (hiddenCategories.contains(as.getAttribute(StyleConstants.NameAttribute))) {
-                continue;
-            }
-            result.add(as);
-        }
-        return result;
     }
     
     private static Map<String, AttributeSet> toMap(Collection<AttributeSet> categories) {

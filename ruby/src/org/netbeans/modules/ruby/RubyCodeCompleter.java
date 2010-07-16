@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,6 +112,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.ruby.RubyUtils.*;
 
 /**
  * Code completion handler for Ruby.
@@ -253,16 +258,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     @SuppressWarnings("unchecked")
     public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
-        BaseDocument doc = RubyUtils.getDocument(info);
-        if (doc == null) {
-            return null;
-        }
-
-        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get((Document)doc);
-        }
         try {
+            BaseDocument doc = RubyUtils.getDocument(info);
+            if (doc == null) {
+                return null;
+            }
+
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            doc.readLock(); // Read-lock due to token hierarchy use
+            try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
             if (requireStart != -1) {
@@ -501,6 +505,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     return prefix;
                 }
             }
+            } finally {
+                doc.readUnlock();
+            }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             // do nothing - see #154991;
@@ -518,7 +525,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
-        TokenHierarchy<?> th = request.th;
+        TokenHierarchy<Document> th = request.th;
         QuerySupport.Kind kind = request.kind;
         
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
@@ -915,6 +922,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                             for (String n : actions) {
                                 suggestions.add("'" + n + "'");
                             }
+                        } else if ("status".equals(type)) {
+                            return RubyHttpStatusCodeCompleter.complete(proposals, request, anchor, caseSensitive, target);
                         }
                     }
                 }
@@ -1110,10 +1119,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         lexOffset = AstUtilities.boundCaretOffset(ir, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        TokenHierarchy<?> th = ir.getSnapshot().getTokenHierarchy();
-        if (th == null) { // for unit tests
-            th = TokenHierarchy.get(document);
-        }
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = RubyUtils.getFileObject(ir);
         
@@ -1122,6 +1128,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         boolean showSymbols = false;
         char first = 0;
 
+        doc.readLock(); // Read-lock due to Token hierarchy use
+        try {
         if (prefix.length() > 0) {
             first = prefix.charAt(0);
 
@@ -1224,7 +1232,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 String fqn = AstUtilities.getFqnName(path);
 
                 if ((fqn == null) || (fqn.length() == 0)) {
-                    fqn = "Object"; // NOI18N
+                    String fileName = RubyUtils.getFileObject(context.getParserResult()).getName();
+                    if (fileName.endsWith("_spec")) { //NOI18N
+                        // use the virtual class created for the spec file
+                        fqn = RubyUtils.underlinedNameToCamel(fileName);
+                    } else {
+                        fqn = "Object"; // NOI18N
+                    }
                 }
 
                 // TODO - if fqn has multiple ::'s, try various combinations? or is 
@@ -1504,6 +1518,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             proposals = filterDocumentation(proposals, root, doc, ir, astOffset, lexOffset, prefix, path,
                     index);
         }
+        } finally {
+            doc.readUnlock();
+        }
+
         return completionResult;
     }
         
@@ -1533,13 +1551,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             inheritedMethods.addAll(actionView);
         }
 
-        if (RubyUtils.isRhtmlFile(fileObject) || isMarkaby) {
+        if (isRhtmlFile(fileObject) || isMarkaby) {
             // Hack - include controller and helper files as well
             FileObject f = fileObject.getParent();
+            // name of the controller w/o the "controller" suffix
             String controllerName = null;
             // XXX Will this work for .mab files? Where do they go?
             while (f != null && !f.getName().equals("views")) { // todo - make sure grandparent is app
-                String n = RubyUtils.underlinedNameToCamel(f.getName());
+                String n = underlinedNameToCamel(f.getName());
                 if (controllerName == null) {
                     controllerName = n;
                 } else {
@@ -1547,13 +1566,27 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
                 f = f.getParent();
             }
-            Set<IndexedMethod> helper = index.getInheritedMethods(controllerName+"Helper", prefix, kind); // NOI18N
-            inheritedMethods.addAll(helper);
+
+//           // add in all methods from the associated helper and inherited helpers. this will
+            // add also ApplicationHelper, which is global
+            Set<String> helperNames = new HashSet<String>();
+            helperNames.add(helperName(controllerName));
+            for (IndexedClass superClass : index.getSuperClasses(controllerName(controllerName))) {
+                if ("ActionController::Base".equals(superClass.getFqn())) { //NOI18N
+                    break;
+                }
+                helperNames.add(helperName(superClass.getFqn()));
+            }
+            for (String helper : helperNames) {
+                inheritedMethods.addAll(index.getInheritedMethods(helper, prefix, kind));
+            }
+
+            index.getSuperClasses(controllerName);
             // TODO - pull in the fields (NOT THE METHODS) from the controller
             //Set<IndexedMethod> controller = index.getInheritedMethods(controllerName+"Controller", prefix, kind);
             //inheritedMethods.addAll(controller);
         }
-    }       
+    }
 
     private void addActionViewFields(Set<IndexedField> inheritedFields, FileObject fileObject, RubyIndex index, String prefix, 
             QuerySupport.Kind kind) { 
@@ -2162,8 +2195,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         List<String> comments = getComments(info, element);
         if (comments == null) {
-            if (element.getName().startsWith("find_by_") ||
-                element.getName().startsWith("find_all_by_")) {
+            if (FindersHelper.isFinderMethod(element.getName(), false)) {
                 return new RDocFormatter().getSignature(element) + NbBundle.getMessage(RubyCodeCompleter.class, "DynamicMethod");
             }
             String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(RubyCodeCompleter.class, "NoCommentFound") +"</i>";
@@ -2189,7 +2221,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return html;
     }
 
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        if (elementHandle == null) {
+            return null;
+        }
         if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary

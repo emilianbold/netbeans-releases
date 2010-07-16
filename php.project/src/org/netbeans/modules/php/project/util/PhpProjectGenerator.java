@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,8 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -74,6 +79,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public final class PhpProjectGenerator {
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectGenerator.class.getName());
+
     public static final Monitor DEV_NULL = new Monitor() {
         public void starting() {
         }
@@ -125,7 +132,7 @@ public final class PhpProjectGenerator {
             } else {
                 switch (runAsType) {
                     case SCRIPT:
-                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP"); // NOI18N
+                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP.php"); // NOI18N
                         break;
                     default:
                         template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
@@ -281,12 +288,19 @@ public final class PhpProjectGenerator {
         privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
-    private static DataObject createIndexFile(FileObject template, FileObject sourceDir, String indexFile) throws IOException {
+    private static void createIndexFile(FileObject template, FileObject sourceDir, String indexFile) throws IOException {
         String indexFileName = getIndexFileName(indexFile, template.getExt());
 
         DataFolder dataFolder = DataFolder.findFolder(sourceDir);
         DataObject dataTemplate = DataObject.find(template);
-        return dataTemplate.createFromTemplate(dataFolder, indexFileName);
+        DataObject index = dataTemplate.createFromTemplate(dataFolder, indexFileName);
+
+        // #187374
+        try {
+            PhpProjectUtils.reformatFile(index);
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, exc.getMessage(), exc);
+        }
     }
 
     private static String getIndexFileName(String indexFile, String plannedExt) {
@@ -303,20 +317,12 @@ public final class PhpProjectGenerator {
         assert projectDir != null;
         assert sourceDir != null;
 
-        StringBuilder buffer = new StringBuilder(200);
-        for (PhpFrameworkProvider provider : frameworkExtenders.keySet()) {
-            if (buffer.length() > 0) {
-                buffer.append("|"); // NOI18N
-            }
-            buffer.append(provider.getName());
-        }
-
         PhpProjectUtils.logUsage(PhpProjectGenerator.class, "USG_PROJECT_CREATE_PHP", Arrays.asList(
-                FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+                projectDir.equals(sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
                 runAs != null ? runAs.name() : "", // NOI18N
                 "1", // NOI18N
                 (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N
-                buffer.toString()));
+                PhpProjectUtils.getFrameworksForUsage(frameworkExtenders.keySet())));
     }
 
     /**

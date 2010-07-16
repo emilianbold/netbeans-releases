@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -117,7 +120,12 @@ public abstract class FileObject extends Object implements Serializable {
     public FileObject copy(FileObject target, String name, String ext)
     throws IOException {
         if (isFolder()) {
-            throw new FSException(NbBundle.getMessage(FileObject.class, "EXC_FolderCopy"));
+            FileObject peer = target.createFolder(name);
+            FileUtil.copyAttributes(this, peer);
+            for (FileObject fo : getChildren()) {
+                fo.copy(peer, fo.getName(), fo.getExt());
+            }
+            return peer;
         }
 
         FileObject dest = FileUtil.copyFileImpl(this, target, name, ext);
@@ -749,7 +757,7 @@ public abstract class FileObject extends Object implements Serializable {
     * an "archive" feature it should archive only <code>.java</code> files.
     * @param b true if the file should be considered important
     * @deprecated No longer used. Instead use
-    * <a href="@PROJECTS/QUERIES@/org/netbeans/api/queries/SharabilityQuery.html"><code>SharabilityQuery</code></a>.
+    * <a href="@org-netbeans-modules-queries@/org/netbeans/api/queries/SharabilityQuery.html"><code>SharabilityQuery</code></a>.
     */
     @Deprecated
     public abstract void setImportant(boolean b);
@@ -1018,7 +1026,7 @@ public abstract class FileObject extends Object implements Serializable {
 
     interface PriorityFileChangeListener extends FileChangeListener {}
 
-    private class ED extends FileSystem.EventDispatcher {
+    private static class ED extends FileSystem.EventDispatcher {
         private FCLSupport.Op op;
         private Enumeration<FileChangeListener> en;
         final private List<FileChangeListener> fsList;
@@ -1039,11 +1047,8 @@ public abstract class FileObject extends Object implements Serializable {
             }
             ListenerList<FileChangeListener> fsll = (fs != null) ? fs.getFCLSupport().listeners : null;
             ListenerList<FileChangeListener> repll = (fs != null && fs.getRepository() != null) ? fs.getRepository().getFCLSupport().listeners : null;
-            fsList = (fsll != null) ? new ArrayList<FileChangeListener>(fsll.getAllListeners()) :
-                new ArrayList<FileChangeListener>();
-            repList = (repll != null) ? new ArrayList<FileChangeListener>(repll.getAllListeners()) :
-                new ArrayList<FileChangeListener>();
-            
+            fsList = ListenerList.allListeners(fsll);
+            repList = ListenerList.allListeners(repll);
         }
 
         public ED(Enumeration<FileChangeListener> en, FileEvent fe) {

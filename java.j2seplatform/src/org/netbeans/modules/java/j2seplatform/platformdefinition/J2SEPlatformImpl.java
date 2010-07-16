@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,11 +46,18 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -55,10 +65,10 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.ErrorManager;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -75,6 +85,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
     protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
     protected static final String SYSPROP_USER_DIR = "user.dir";                      //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
 
     /**
      * Holds the display name of the platform
@@ -131,7 +143,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                     try {
                         this.installFolders.add (f.toURI().toURL());
                     } catch (MalformedURLException mue) {
-                        ErrorManager.getDefault().notify (mue);
+                        LOG.log(Level.INFO, null, mue);
                     }
                 }
             }
@@ -143,9 +155,6 @@ public class J2SEPlatformImpl extends JavaPlatform {
         this.sources = createClassPath(sources);
         if (javadoc != null) {
             this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
-        }
-        else {
-            this.javadoc = Collections.<URL>emptyList();
         }
         setSystemProperties(filterProbe(sysProperties));
     }
@@ -210,7 +219,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 return cp;
             String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
             if (pathSpec == null) {
-                Logger.getLogger(J2SEPlatformImpl.class.getName()).warning(String.format("No %s property in platform %s, broken platform?", SYSPROP_BOOT_CLASSPATH, getDisplayName())); //NOI18N
+                LOG.log(Level.WARNING, "No " + SYSPROP_BOOT_CLASSPATH + " property in platform {0}, broken platform?", getDisplayName());
                 pathSpec = "";  //NOI18N
             }
             String extPathSpec = Util.getExtensions(getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
@@ -295,6 +304,9 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * @return FileObject
      */
     public final List<URL> getJavadocFolders () {
+        if (javadoc == null) {
+            javadoc = defaultJavadoc(this);
+        }
         return this.javadoc;
     }
 
@@ -372,4 +384,49 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         return ClassPathSupport.createClassPath (resources);
     }
+    
+    /**
+     * Try to find the standard Javadoc for a platform.
+     * The {@code docs/} folder is used if it exists, else network Javadoc is looked up.
+     * @param platform a JDK
+     * @return a (possibly empty) list of URLs
+     */
+    public static List<URL> defaultJavadoc(JavaPlatform platform) {
+        for (FileObject folder : platform.getInstallFolders()) {
+            // XXX should this rather be docs/api?
+            FileObject docs = folder.getFileObject("docs"); // NOI18N
+            if (docs != null && docs.isFolder() && docs.canRead()) {
+                try {
+                    return Collections.singletonList(docs.getURL());
+                } catch (FileStateInvalidException x) {
+                    LOG.log(Level.INFO, null, x);
+                }
+            }
+        }
+        String version = platform.getSpecification().getVersion().toString();
+        if (!OFFICIAL_JAVADOC.containsKey(version)) {
+            LOG.log(Level.WARNING, "unrecognized Java spec version: {0}", version);
+        }
+        String location = OFFICIAL_JAVADOC.get(version);
+        if (location != null) {
+            try {
+                return Collections.singletonList(new URL(location));
+            } catch (MalformedURLException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        }
+        return Collections.emptyList();
+    }
+    private static final Map<String,String> OFFICIAL_JAVADOC = new HashMap<String,String>();
+    static {
+        OFFICIAL_JAVADOC.put("1.0", null); // NOI18N
+        OFFICIAL_JAVADOC.put("1.1", null); // NOI18N
+        OFFICIAL_JAVADOC.put("1.2", null); // NOI18N
+        OFFICIAL_JAVADOC.put("1.3", "http://java.sun.com/j2se/1.3/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.4", "http://java.sun.com/j2se/1.4.2/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.5", "http://java.sun.com/j2se/1.5.0/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.6", "http://java.sun.com/javase/6/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.7", "http://java.sun.com/javase/7/docs/api/"); // NOI18N
+    }
+    
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,121 +60,260 @@ public final class StackFrameWrapper {
     private StackFrameWrapper() {}
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method getArgumentValues from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.Value> getArgumentValues(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Value> getArgumentValues0(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "getArgumentValues",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).getArgumentValues()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<com.sun.jdi.Value>) com.sun.jdi.StackFrame.class.getMethod("getArgumentValues").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            java.util.List<com.sun.jdi.Value> ret;
+            ret = a.getArgumentValues();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "getArgumentValues",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method getArgumentValues from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.Value> getArgumentValues0(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+    public static java.util.List<com.sun.jdi.Value> getArgumentValues(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "getArgumentValues",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).getArgumentValues()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return (java.util.List<com.sun.jdi.Value>) com.sun.jdi.StackFrame.class.getMethod("getArgumentValues").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
+            java.util.List<com.sun.jdi.Value> ret;
+            ret = a.getArgumentValues();
+            retValue = ret;
+            return ret;
+        } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "getArgumentValues",
+                        retValue);
             }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.Value getValue(com.sun.jdi.StackFrame a, com.sun.jdi.LocalVariable b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "getValue",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).getValue({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.getValue(b);
+            com.sun.jdi.Value ret;
+            ret = a.getValue(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "getValue",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.Map<com.sun.jdi.LocalVariable, com.sun.jdi.Value> getValues0(com.sun.jdi.StackFrame a, java.util.List<? extends com.sun.jdi.LocalVariable> b) throws org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "getValues",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).getValues({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.getValues(b);
+            java.util.Map<com.sun.jdi.LocalVariable, com.sun.jdi.Value> ret;
+            ret = a.getValues(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyMap();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyMap();
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "getValues",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.Map<com.sun.jdi.LocalVariable, com.sun.jdi.Value> getValues(com.sun.jdi.StackFrame a, java.util.List<? extends com.sun.jdi.LocalVariable> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "getValues",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).getValues({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.getValues(b);
+            java.util.Map<com.sun.jdi.LocalVariable, com.sun.jdi.Value> ret;
+            ret = a.getValues(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "getValues",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.Location location(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "location",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).location()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.location();
+            com.sun.jdi.Location ret;
+            ret = a.location();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "location",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void setValue(com.sun.jdi.StackFrame a, com.sun.jdi.LocalVariable b, com.sun.jdi.Value c) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "setValue",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).setValue({1}, {2})",
+                    new Object[] {a, b, c});
+        }
         try {
             a.setValue(b, c);
         } catch (com.sun.jdi.InternalException ex) {
@@ -181,14 +323,32 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "setValue",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ObjectReference thisObject(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "thisObject",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).thisObject()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
             try {
-                return a.thisObject();
+                com.sun.jdi.ObjectReference ret;
+            ret = a.thisObject();
+            retValue = ret;
+            return ret;
             } catch (com.sun.jdi.InternalException iex) {
                 if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=163652
                     return null;
@@ -197,74 +357,210 @@ public final class StackFrameWrapper {
                 }
             }
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "thisObject",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ThreadReference thread(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "thread",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).thread()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.thread();
+            com.sun.jdi.ThreadReference ret;
+            ret = a.thread();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "thread",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.LocalVariable visibleVariableByName(com.sun.jdi.StackFrame a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "visibleVariableByName",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).visibleVariableByName({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.visibleVariableByName(b);
+            com.sun.jdi.LocalVariable ret;
+            ret = a.visibleVariableByName(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         } catch (com.sun.jdi.NativeMethodException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper(ex);
+        } catch (com.sun.jdi.AbsentInformationException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "visibleVariableByName",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.LocalVariable> visibleVariables0(com.sun.jdi.StackFrame a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "visibleVariables",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).visibleVariables()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.visibleVariables();
+            java.util.List<com.sun.jdi.LocalVariable> ret;
+            ret = a.visibleVariables();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         } catch (com.sun.jdi.NativeMethodException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper(ex);
+        } catch (com.sun.jdi.AbsentInformationException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "visibleVariables",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.LocalVariable> visibleVariables(com.sun.jdi.StackFrame a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.StackFrame",
+                    "visibleVariables",
+                    "JDI CALL: com.sun.jdi.StackFrame({0}).visibleVariables()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.visibleVariables();
+            java.util.List<com.sun.jdi.LocalVariable> ret;
+            ret = a.visibleVariables();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         } catch (com.sun.jdi.NativeMethodException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper(ex);
+        } catch (com.sun.jdi.AbsentInformationException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.StackFrame",
+                        "visibleVariables",
+                        retValue);
+            }
         }
     }
 

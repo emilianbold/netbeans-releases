@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -266,24 +269,32 @@ public class DatabaseConnector {
             }
 
             DriverSpecification drvSpec = this.getDriverSpecification(catName);
+            if (! schema.isDefault() && schema.getName().length() > 0) {
+                drvSpec.setSchema(schema.getName());
+            }
             drvSpec.getColumns(table.getName(), column.getName());
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
-                rs.next();
-                HashMap rset = drvSpec.getRow();
+                boolean ok = rs.next();
+                if (ok) {
+                    HashMap rset = drvSpec.getRow();
 
-                try {
-                    //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
-                    col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
-                    col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
-                } catch (NumberFormatException exc) {
-                    col.setColumnType(0);
-                    col.setColumnSize(0);
+                    try {
+                        //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
+                        col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
+                        col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
+                    } catch (NumberFormatException exc) {
+                        col.setColumnType(0);
+                        col.setColumnSize(0);
+                    }
+
+                    col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                    col.setDefaultValue((String) rset.get(new Integer(13)));
+                    rset.clear();
+                } else {
+                    Logger.getLogger(DatabaseConnector.class.getName()).log(Level.INFO, "Empty ResultSet for {0}.{1} in catalog {2}",
+                            new Object[]{table.getName(), column.getName(), catName});
                 }
-
-                col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
-                col.setDefaultValue((String) rset.get(new Integer(13)));
-                rset.clear();
 
                 rs.close();
             }

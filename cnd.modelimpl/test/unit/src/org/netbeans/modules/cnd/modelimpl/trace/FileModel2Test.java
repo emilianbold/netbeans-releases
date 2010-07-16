@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -303,5 +308,23 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ176530() throws Exception {
         // IZ#176530 : Unresolved function parameters in function parameters
         performTest("iz176530.cc");
+    }
+
+    public void testIZ182510() throws Exception {
+        // IZ#182510 : C comment block causes syntax coloring to lose sync
+
+        File file = getDataFile("iz182510.cc");
+        FileWriter writer = new FileWriter(file);
+        try {
+            // \r's are essential for this test, so write the test file here
+            writer.write("//\\\r\n#define FOO 1\r\n#define BAR 2\r\n");
+        } finally {
+            writer.close();
+        }
+
+        // Test that trailing \\\r\n in line comment is interpreted as
+        // single escaped newline, i.e. #define FOO is in comment.
+        // Also test offsets of BAR definition.
+        performTest("iz182510.cc");
     }
 }

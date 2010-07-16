@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.CachedUID;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
@@ -105,6 +110,13 @@ public class UIDManager {
         storage.dispose();
     }
 
+    public final void clearProjectCache(Key key) {
+        int projectIndex = KeyUtilities.getProjectIndex(key);
+        synchronized (lock) {
+            storage.clearCache(projectIndex);
+        }
+    }
+
     private static final class UIDStorage {
 
         private final WeakSharedSet<CsmUID<?>>[] instances;
@@ -134,7 +146,26 @@ public class UIDManager {
 
         @SuppressWarnings("unchecked")
         public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
-            return (CsmUID<T>) getDelegate(uid).addOrGet(uid);
+            return (CsmUID<T>) getDelegate(uid).putIfAbsent(uid);
+        }
+
+        private void clearCache(int projectIndex) {
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i].size() > 0) {
+                    Object[] arr = instances[i].toArray();
+                    for (Object o : arr) {
+                        if (o instanceof CachedUID<?>) {
+                            CachedUID<?> cached = (CachedUID<?>) o;
+                            if (o instanceof KeyBasedUID<?>) {
+                                Key k = ((KeyBasedUID<?>)o).getKey();
+                                if (projectIndex == KeyUtilities.getProjectIndex(k)) {
+                                    cached.clear();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public final void dispose() {

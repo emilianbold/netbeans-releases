@@ -32,9 +32,7 @@ import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 /**
  * @author Alexey
  */
-public class ProcessView extends DiagramView implements 
-        TriScrollPane.Thumbnailable 
-{
+public class ProcessView extends DiagramView implements TriScrollPane.Thumbnailable {
 
     public ProcessView(DesignView designView) {
         super(designView);

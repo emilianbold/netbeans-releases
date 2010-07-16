@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,8 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -51,12 +56,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+
 
 /**
  * Cell Editor for shortcuts column
@@ -64,9 +72,23 @@ import org.openide.util.NbBundle;
  */
 public class ButtonCellEditor extends DefaultCellEditor {
 
-    private Object action;
-    private KeymapViewModel model;
-    private String orig;
+    private Object              action;
+    private KeymapViewModel     model;
+    private String              orig;
+    private FocusListener       focusListener = new FocusListener () {
+
+        @Override
+        public void focusGained (FocusEvent e) {
+        }
+
+        @Override
+        public void focusLost (FocusEvent e) {
+            Component oppositeComponent = e.getOppositeComponent();
+            if (oppositeComponent == null || !SwingUtilities.isDescendingFrom(oppositeComponent, cell)) {
+                cancelCellEditing();
+            }
+        }
+    };
 
     private KeyAdapter escapeAdapter = new KeyAdapter() {
 
@@ -80,9 +102,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
     };
 
-    private static ShortcutCellPanel cell = new ShortcutCellPanel();
+    private static final ShortcutCellPanel cell = new ShortcutCellPanel();
 
-    public ButtonCellEditor(KeymapViewModel model) {
+
+    public ButtonCellEditor (KeymapViewModel model) {
         super(new ShortcutTextField());
         this.model = model;
     }
@@ -111,7 +134,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         ShortcutAction sca = (ShortcutAction) action;
         Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
         conflictingAction.remove(sca); //remove the original action
-        if (!conflictingAction.isEmpty()) {//there is a conflicting action, show err dialog
+        if (!conflictingAction.isEmpty()) {
             //there is a conflicting action, show err dialog
             Object overrride = overrride(conflictingAction);
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
@@ -134,6 +157,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
         cell.getTextField().removeActionListener(delegate);
         cell.getTextField().removeKeyListener(escapeAdapter);
+        cell.getTextField().removeFocusListener (focusListener);
+        cell.getButton ().removeFocusListener (focusListener);
         model.removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
             model.addShortcut((ShortcutAction) action, s);
@@ -160,6 +185,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
         JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
         textField.setBorder(new LineBorder(Color.BLACK));
+        textField.addFocusListener (focusListener);
+        cell.getButton ().addFocusListener (focusListener);
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }
@@ -177,14 +204,14 @@ public class ButtonCellEditor extends DefaultCellEditor {
     }
 
     /**
-     * Shows dialog where user chooses whether SC of confl. action should be overriden
+     * Shows dialog where user chooses whether SC of conflicting action should be overridden
      * @param displayName name of conflicting action
      * @return dialog result
      */
     private Object overrride(Set<ShortcutAction> conflictingActions) {
         StringBuffer conflictingActionList = new StringBuffer();
         for (ShortcutAction sa : conflictingActions) {
-            conflictingActionList.append(" '" + sa.getDisplayName() + "'<br>"); //NOI18N
+            conflictingActionList.append(" '").append (sa.getDisplayName()).append ("'<br>"); //NOI18N
         }
         JPanel innerPane = new JPanel();
         innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", conflictingActionList))); //NOI18N
@@ -203,5 +230,4 @@ public class ButtonCellEditor extends DefaultCellEditor {
     private void setBorderEmpty() {
         ((JComponent) getComponent()).setBorder(new EmptyBorder(0, 0, 0, 0));
     }
-
 }

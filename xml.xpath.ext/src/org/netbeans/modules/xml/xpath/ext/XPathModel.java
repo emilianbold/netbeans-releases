@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.NamespaceContext;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
@@ -84,8 +83,9 @@ public interface XPathModel extends XPathSchemaContextHolder {
      * Be aware that the implementation method is synchronized. So the 
      * second thread will be locked until the method is not finished in 
      * the first thread.
+     * @return resolution success flag.
      */ 
-    void resolveExtReferences(boolean again);
+    boolean resolveExtReferences(boolean again);
     
     /**
      * This method does almost the same as the resolveExtReferences but 
@@ -102,8 +102,9 @@ public interface XPathModel extends XPathSchemaContextHolder {
      * second thread will be locked until the method is not finished in 
      * the first thread.
      * @param expr
+     * @return resolution success flag.
      */
-    void resolveExpressionExtReferences(XPathExpression expr);
+    boolean resolveExpressionExtReferences(XPathExpression expr);
     
     /**
      * Adds special replacing function stub() to all places where required 
@@ -168,7 +169,5 @@ public interface XPathModel extends XPathSchemaContextHolder {
     XPathCastResolver getXPathCastResolver();
     
     void setXPathCastResolver(XPathCastResolver xpathCastResolver);
-        
-    SchemaComponent getLastSchemaComponent();
-    
+
 }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,10 +62,12 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -86,6 +91,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -232,6 +239,8 @@ public abstract class TreeView extends JScrollPane {
 
     /** Holds VisualizerChildren for all visible nodes */
     private final VisualizerHolder visHolder = new VisualizerHolder();
+    /** reference to the last visible search field */
+    private static Reference<TreeView> lastSearchField = new WeakReference<TreeView>(null);
 
     /** Constructor.
     */
@@ -254,7 +263,7 @@ public abstract class TreeView extends JScrollPane {
 //
 //            // note: drag target is activated on focus gained
 //        }
-        setDropTarget( DragDropUtilities.dragAndDropEnabled );
+        setDropTarget(DragDropUtilities.dragAndDropEnabled);
 
         setPopupAllowed(popupAllowed);
         setDefaultActionAllowed(defaultAction);
@@ -308,6 +317,10 @@ public abstract class TreeView extends JScrollPane {
         treeModel.addView(this);
 
         tree = new ExplorerTree(treeModel);
+
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
 
         NodeRenderer rend = new NodeRenderer();
         tree.setCellRenderer(rend);
@@ -557,22 +570,27 @@ public abstract class TreeView extends JScrollPane {
         });
     }
 
-    /** Expandes the node in the tree.
-    *
-    * @param n node
-    */
+    /** Expands the node in the tree. This method can be called outside
+     * of AWT dispatch thread. It gets the children fro the node immediately,
+     * and then switches to AWT via {@link EventQueue#invokeLater(java.lang.Runnable)}
+     * and really expands the node
+     *
+     * @param n node
+     * @exception IllegalArgumentException if the node is null
+     */
     public void expandNode(final Node n) {
         if (n == null) {
             throw new IllegalArgumentException();
         }
 
         lookupExplorerManager();
-
+        final List<Node> prepare = n.getChildren().snapshot();
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
+                LOG.log(Level.FINEST, "Just print the variable so it is not GCed: {0}", prepare);
                 tree.expandPath(getTreePath(n));
             }
         });
@@ -933,8 +951,9 @@ public abstract class TreeView extends JScrollPane {
         }
 
         showWaitCursor(true);
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        // not sure whenter throughput 1 is OK...
+        ViewUtil.uiProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     node.getChildren().getNodesCount(true);
@@ -1224,6 +1243,7 @@ public abstract class TreeView extends JScrollPane {
             });
         }
 
+        @Override
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
             VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
             visHolder.add(vn.getChildren());
@@ -1300,9 +1320,10 @@ public abstract class TreeView extends JScrollPane {
 
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
-            scheduled = RequestProcessor.getDefault().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
+            scheduled = ViewUtil.uiProcessor().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
         }
 
+        @Override
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
             class Request implements Runnable {
                 private TreePath path;
@@ -1364,7 +1385,7 @@ public abstract class TreeView extends JScrollPane {
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
             // bugfix #37420, children of all collapsed folders will be throw out
-            RequestProcessor.getDefault().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
+            ViewUtil.uiProcessor().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
         }
 
         /* Called whenever the value of the selection changes.
@@ -1694,6 +1715,11 @@ public abstract class TreeView extends JScrollPane {
         if( null != searchpanel )
             return;
 
+        TreeView previousSearchField = lastSearchField.get();
+        if (previousSearchField != null && previousSearchField != this) {
+            previousSearchField.removeSearchField();
+        }
+
         JViewport vp = getViewport();
         originalScrollMode = vp.getScrollMode();
         vp.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
@@ -1704,6 +1730,8 @@ public abstract class TreeView extends JScrollPane {
         revalidate();
         repaint();
         searchTextField.requestFocus();
+
+        lastSearchField = new WeakReference<TreeView>(this);
     }
 
     /**
@@ -1770,8 +1798,10 @@ public abstract class TreeView extends JScrollPane {
             }
 
             setupSearch();
-            
-            setDragEnabled( true );
+
+            if (!GraphicsEnvironment.isHeadless()) {
+                setDragEnabled(true);
+            }
         }
 
         /** removeNotify() call count sometimes does not match addNotify(), use special flag */
@@ -1827,6 +1857,16 @@ public abstract class TreeView extends JScrollPane {
                 revalidate();
                 repaint();
             }
+        }
+
+        @Override
+        public Rectangle getRowBounds(int row) {
+            Rectangle r = super.getRowBounds(row);
+            if (r == null) {
+                LOG.log(Level.WARNING, "No bounds for row {0} in three view: {1}", new Object[]{row, this});
+                return new Rectangle();
+            }
+            return r;
         }
 
         //

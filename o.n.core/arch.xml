@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -139,7 +142,7 @@ made subject to such option by the copyright holder.
    <ul>
     <li><api name="org.netbeans.core.ModuleNode.ModuleNewType" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/ModuleNode.java" /></li>
     <li><api name="org.netbeans.core.modules.AutomaticDependencies" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/modules/AutomaticDependencies.java" /></li>
-    <li><api name="NbTopManager.WindowSystem" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/NbTopManager.java" /></li>
+    <li><api name="WindowSystem" category="friend" group="java" type="export" /></li>
     <li><api name="org.netbeans.core.StatusLineElementProvider" type="export" group="lookup" category="friend" /></li>
    </ul>
  </answer>
@@ -570,17 +573,17 @@ made subject to such option by the copyright holder.
         icon start flashing in the main status bar and clicking the icon then brings
         up the error dialog.
    </api>
-   <api name="netbeans.hack.50423" category="private" group="property" type="export" url="http://www.netbeans.org/issues/show_bug.cgi?id=50423">
+   <api name="netbeans.hack.50423" category="private" group="systemproperty" type="export" url="http://www.netbeans.org/issues/show_bug.cgi?id=50423">
         Set this property to <q>true</q> to workaround the bug #50423 which
         appears on some linuxes on JDK 1.5.
    </api>
-   <api name="netbeans.close.no.exit" category="friend" group="property" type="export">
+   <api name="netbeans.close.no.exit" category="friend" group="systemproperty" type="export">
         Set this property to <q>true</q> if you do want to cleanup the module system,
         but not call System.exit at the end. Used from <code>NbModuleSuite</code> from
         nbjunit library.
    </api>
   </p>
-        <api name="java.net.useSystemProxies" category="private" group="property" type="import">
+        <api name="java.net.useSystemProxies" category="private" group="systemproperty" type="import">
             Get this property to determine when use JDK's <code>java.net.ProxySelector</code> or core's 
             implementation of <code>ProxySelector</code>.
         </api>
@@ -863,15 +866,19 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-progress">
   <p>
-   <api name="org.netbeans.core.TimeableEventQueue" category="private" group="property" type="export">
+   <api name="org.netbeans.core.TimeableEventQueue" category="private" group="systemproperty" type="export">
    This module contains a hook to identify long running tasks inside the AWT
-   dispatch thread. It observers the Swing event queue and if a task takes longer
-   than expected (right now 5s, but that is configurable via
-   <code>org.netbeans.core.TimeableEventQueue.quantum=xyz</code> ms), it reports
-   a warning exception with <code>Level.INFO</code> logging level. This exception
-   shall contain a thread dump taken at the time the AWT event queue was occupied.
-   After such exception the <q>watch dog</q> is disabled for next 
-   <code>org.netbeans.core.TimeableEventQueue.pause</code> milliseconds, by default 60s.
+   dispatch thread. It observers the AWT event queue and if a task takes longer
+   than expected, it invokes a sampler that creates a profiling snapshot of the IDE
+   until the task returns back to the event queue. Time limits can be
+   configured via system properties (in milliseconds):
+   <ul>
+    <li><code>org.netbeans.core.TimeableEventQueue.quantum=xyz</code> - for how long the event queue must be blocked to start the self-sampler (by default 100ms),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.report=xyz</code> - total time of blocked event queue to report a problem (by default 3s),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.waitcursor=xyz</code> - time for which a problem is not reported if mouse wait cursor is in place (by default 15s),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.pause=xyz</code> - time after reporting a problem for which the detection is disabled (by default 15s).</li>
+   </ul>
+   In production builds the default time limits are different (10s to start sampler, 20s to report a problem).
    </api>
   </p>
  </answer>

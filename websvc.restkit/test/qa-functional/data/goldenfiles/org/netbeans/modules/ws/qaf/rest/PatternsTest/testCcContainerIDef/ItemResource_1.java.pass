@@ -5,14 +5,12 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
+
 
 /**
  * REST Web Service
@@ -21,44 +19,44 @@ import javax.ws.rs.DELETE;
  */
 
 public class ItemResource_1 {
-    @Context
-    private UriInfo context;
-
+    private String name;
     /** Creates a new instance of ItemResource_1 */
-    public ItemResource_1() {
+    private ItemResource_1(String name) {
+        this.name=name;
+    }
+
+    /** Get instance of the ItemResource_1 */
+    public static ItemResource_1 getInstance(String name) {
+        // The user may use some kind of persistence mechanism
+        // to store and restore instances of ItemResource_1 class.
+        return new ItemResource_1(name);
     }
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemResource_1
-     * @param name resource URI parameter
      * @return an instance of java.lang.String
      */
     @GET
     @Produces("application/xml")
-    public String getXml(@PathParam("name")
-    String name) {
+    public String getXml() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
 
     /**
      * PUT method for updating or creating an instance of ItemResource_1
-     * @param name resource URI parameter
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
     @Consumes("application/xml")
-    public void putXml(@PathParam("name")
-    String name, String content) {
+    public void putXml(String content) {
     }
 
     /**
      * DELETE method for resource ItemResource_1
-     * @param name resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("name")
-    String name) {
+    public void delete() {
     }
 }

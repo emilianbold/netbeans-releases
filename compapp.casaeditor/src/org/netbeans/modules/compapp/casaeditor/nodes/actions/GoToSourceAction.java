@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,21 +41,33 @@
  */
 package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.EndpointNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.WSDLEndpointNode;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSourceMultiViewElement;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -60,12 +75,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 
 /**
+ * Action to go to the source of a BPEL Process, a WSDL Port, etc.
  *
  * @author jqian
  */
@@ -77,59 +94,169 @@ public class GoToSourceAction extends NodeAction {
             return;
         }
 
-        CasaServiceEngineServiceUnit sesu = null;
-        String filePath = null;
-        
-        if (activatedNodes[0] instanceof ServiceUnitProcessNode) {
-            ServiceUnitProcessNode node = ((ServiceUnitProcessNode) activatedNodes[0]);
-            sesu = (CasaServiceEngineServiceUnit) node.getServiceEngineServiceUnit();
-            filePath = node.getFilePath();
-        } else if (activatedNodes[0] instanceof EndpointNode) {
-            EndpointNode node = ((EndpointNode) activatedNodes[0]);
+        Node activatedNode = activatedNodes[0];
+
+        if (activatedNode instanceof ServiceUnitProcessNode) {
+            ServiceUnitProcessNode node = ((ServiceUnitProcessNode) activatedNode);
+            CasaServiceEngineServiceUnit sesu = node.getServiceEngineServiceUnit();
+            String filePath = node.getFilePath();
+            gotoProcess(sesu, filePath);
+        } else if (activatedNode instanceof EndpointNode) {
+            EndpointNode node = ((EndpointNode) activatedNode);
             CasaEndpointRef endpointRef = (CasaEndpointRef) node.getData();
-            sesu = (CasaServiceEngineServiceUnit) endpointRef.getParent();
-            filePath = endpointRef.getFilePath();
+            CasaServiceEngineServiceUnit sesu =
+                    (CasaServiceEngineServiceUnit) endpointRef.getParent();
+            String filePath = endpointRef.getFilePath();
+            gotoProcess(sesu, filePath);
+        } else if (activatedNode instanceof WSDLEndpointNode) {
+            WSDLEndpointNode node = ((WSDLEndpointNode) activatedNode);
+            CasaPort casaPort = (CasaPort) node.getData();
+            gotoWSDLPort(casaPort);
         }
-        
-        if (sesu != null && filePath != null) {
-            Project ownerProject = getOwnerProject(sesu);
-            FileObject ownerProjectDir = ownerProject.getProjectDirectory();
+    }
 
-            if (filePath != null && filePath.length() > 0) {
-                filePath = "src/" + filePath; // NOI18N
-                FileObject fileObject = ownerProjectDir.getFileObject(filePath);
-                //System.out.println("Opening " + fileObject.getPath());
-                try {
-                    final DataObject dataObject = DataObject.find(fileObject);
-                    EditCookie editCookie = dataObject.getCookie(EditCookie.class);
-                    if (editCookie != null) {
-                        editCookie.edit();
-                    } else {
-                        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
-                        if (editorCookie != null) {
-                            editorCookie.open();
-                        } else {
-                            OpenCookie openCookie = dataObject.getCookie(OpenCookie.class);
-                            if (openCookie != null) {
-                                openCookie.open();
-                            }
-                        }
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceAction_Name"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    /**
+     * Goes to the source of a process (e.x., a BPEL Process).
+     *
+     * @param sesu      a CASA service engine service unit
+     * @param filePath  path of the process artifact relative to the
+     *                  SU project's source directory
+     */
+    private static void gotoProcess(CasaServiceEngineServiceUnit sesu, String filePath) {
+
+        if (sesu == null || filePath == null) {
+            return;
+        }
+
+        Project ownerProject = getOwningSUProject(sesu);
+        if (ownerProject == null) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(GoToSourceAction.class,
+                    "MSG_SuProjectNotFound", sesu.getUnitName()), // NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+
+        FileObject ownerProjectDir = ownerProject.getProjectDirectory();
+
+        if (filePath != null && filePath.length() > 0) {
+            filePath = "src/" + filePath.replaceAll("\\\\", "/"); // NOI18N  #171994
+            FileObject fileObject = ownerProjectDir.getFileObject(filePath);
+            //System.out.println("Opening " + fileObject.getPath());
+            try {
+                final DataObject dataObject = DataObject.find(fileObject);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        openDataObject(dataObject);
+                        requestViewOpen(dataObject);
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
+                });
+            } catch (DataObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-                        public void run() {
-                            requestViewOpen(dataObject);
-                        }
-                    });
-                } catch (DataObjectNotFoundException e) {
-                    e.printStackTrace();
+    /**
+     * Goes to the source of a WSDL Port.
+     *
+     * @param casaPort  a CASA port
+     */
+    private static void gotoWSDLPort(final CasaPort casaPort) {
+        if (casaPort == null) {
+            return;
+        }
+
+        CasaWrapperModel casaModel = (CasaWrapperModel)casaPort.getModel();
+        final Port port = casaModel.getLinkedWSDLPort(casaPort);
+        if (port == null) {
+            String message = NbBundle.getMessage(GoToSourceAction.class,
+                    "MSG_LinkedWSDLPortNotAvailable"); // NOI18N
+            NotifyDescriptor d = new NotifyDescriptor.Message(message,
+                    NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+
+        FileObject wsdlFO =
+                port.getModel().getModelSource().getLookup().lookup(FileObject.class);
+        if (wsdlFO != null) {
+            String casaPortLinkHref = casaPort.getLink().getHref();
+            if (casaPortLinkHref.startsWith("../jbiServiceUnits/")) { // NOI18N
+                String suProjectName = casaPortLinkHref.substring(19);
+                suProjectName = suProjectName.substring(0, suProjectName.indexOf("/")); // NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(GoToSourceAction.class,
+                        "MSG_OpenReadOnlyCopyOfWSDL", // NOI18N
+                        wsdlFO.getNameExt(),
+                        suProjectName),
+                        NbBundle.getMessage(GoToSourceAction.class,
+                        "TTL_OpenReadOnlyCopyOfWSDL"), // NOI18N
+                        NotifyDescriptor.OK_CANCEL_OPTION);
+
+                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+                    return;
+                }
+            }
+
+            try {
+                final DataObject dataObject = DataObject.find(wsdlFO);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        WSDLSourceMultiViewElement.gotoSource(port, dataObject);
+//                      ViewComponentCookie cookie = dataObject.getCookie(ViewComponentCookie.class);
+//                      if (cookie != null && cookie.canView(View.STRUCTURE, port)) {
+//                          cookie.view(View.STRUCTURE, port);
+//                      }
+                    }
+                });
+            } catch (DataObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Tries to open the given data object using EditCookie, EditorCookie
+     * or OpenCookie.
+     *
+     * @param dataObject    a data object
+     */
+    private static void openDataObject(DataObject dataObject) {
+        EditCookie editCookie = dataObject.getCookie(EditCookie.class);
+        if (editCookie != null) {
+            editCookie.edit();
+        } else {
+            EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
+            if (editorCookie != null) {
+                editorCookie.open();
+            } else {
+                OpenCookie openCookie = dataObject.getCookie(OpenCookie.class);
+                if (openCookie != null) {
+                    openCookie.open();
                 }
             }
         }
     }
 
     // This is a slightly modified version based on BpelMultiViewSupport.
-    private void requestViewOpen(DataObject targetDO) {
+    private static void requestViewOpen(DataObject targetDO) {
 
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
@@ -162,30 +289,15 @@ public class GoToSourceAction extends NodeAction {
         }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceAction_Name"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
     /**
-     * Gets the owner project for the given endpoint reference.
+     * Gets the owning SU project for the given service engine service unit.
      */
-    private Project getOwnerProject(CasaServiceEngineServiceUnit sesu) {
+    private static Project getOwningSUProject(CasaServiceEngineServiceUnit sesu) {
         CasaWrapperModel model = (CasaWrapperModel) sesu.getModel();
+        Project jbiProject = (Project) model.getJBIProject();
 
         String unitName = sesu.getUnitName();
 
-        Project jbiProject = model.getJBIProject();
         SubprojectProvider subprojectProvider =
                 jbiProject.getLookup().lookup(SubprojectProvider.class);
         for (Project subproject : subprojectProvider.getSubprojects()) {
@@ -193,6 +305,28 @@ public class GoToSourceAction extends NodeAction {
                     subproject.getLookup().lookup(ProjectInformation.class);
             if (projectInfo.getName().equals(unitName)) {
                 return subproject;
+            }
+        }
+
+        // The above will not work right after a rename of the SU project! (#152355)
+        // Try using the unitName as a project reference to find the
+        // corresponding SU project.
+        AntProjectHelper antProjectHelper =
+                jbiProject.getLookup().lookup(AntProjectHelper.class);
+        EditableProperties projectProperties =
+                antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String suProjectPath =
+                projectProperties.getProperty("project." + unitName); // NOI18N
+        if (suProjectPath != null) {
+            FileObject suProjectFO = jbiProject.getProjectDirectory().getFileObject(suProjectPath);
+            if (suProjectFO != null) {
+                try {
+                    return ProjectManager.getDefault().findProject(suProjectFO);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 

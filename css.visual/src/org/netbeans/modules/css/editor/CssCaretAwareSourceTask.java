@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,13 +43,16 @@
  */
 package org.netbeans.modules.css.editor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.visual.ui.preview.CssTCController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -62,12 +68,24 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
+    //static, will hold the singleton reference forever but I cannot reasonably
+    //hook to gsf to be able to free this once last css component closes
+    private static CssTCController windowController;
+
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+
+    private static synchronized void initializeWindowController() {
+        if(windowController == null) {
+            windowController = CssTCController.getDefault();
+        }
+    }
 
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            initializeWindowController();
+
             String mimeType = snapshot.getMimeType();
             String sourceMimeType = snapshot.getSource().getMimeType();
 
@@ -112,25 +130,46 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         if(event == null) {
             return ;
         }
-        
-        List<? extends Error> errors = result.getDiagnostics();
-        List<Error> onlyErrors = new ArrayList<Error>(errors.size());
-        //filter out warnings
-        for(Error e : errors) {
-            if(e.getSeverity() == Severity.ERROR) {
-                onlyErrors.add(e);
+
+        if(!(event instanceof CursorMovedSchedulerEvent)) {
+            return ;
+        }
+
+        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
+
+        SimpleNode root = result.root();
+        if(root != null) {
+            //find the rule scope and check if there is an error inside it
+            SimpleNode leaf = SimpleNodeUtil.findDescendant(root, caretOffset);
+            if(leaf != null) {
+                SimpleNode ruleNode = leaf.kind() == CssParserTreeConstants.JJTSTYLERULE ?
+                    leaf :
+                    SimpleNodeUtil.getAncestorByType(leaf, CssParserTreeConstants.JJTSTYLERULE);
+                if(ruleNode != null) {
+                    //filter out warnings
+                    List<? extends Error> errors = result.getDiagnostics();
+                    for(Error e : errors) {
+
+                        if(e.getSeverity() == Severity.ERROR) {
+                            if(ruleNode.startOffset() <= e.getStartPosition() &&
+                                    ruleNode.endOffset() >= e.getEndPosition()) {
+                                //there is an error in the selected rule
+                                CssEditorSupport.getDefault().parsedWithError(result);
+                                return ;
+                            }
+                        }
+                    }
+
+                    //no errors found in the node
+                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
+                    return ;
+                }
             }
         }
 
-        if(onlyErrors.size() > 0) {
-            //filter out warnings if present here!?!?
-            CssEditorSupport.getDefault().parsedWithError(result);
-        } else {
-            CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
-        }
- 
+        //some error
+        CssEditorSupport.getDefault().parsedWithError(result);
 
-//        forDocument(result.getSnapshot().getSource().getDocument(true)).parsed(result, event);
     }
 
 //    public static class Source {

@@ -19,27 +19,24 @@
 
 package org.netbeans.modules.xslt.tmap.nodes;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.Constants;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
 import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -56,6 +53,10 @@ public class ServiceNode extends TMapComponentNode<DecoratedService> {
         super(new DecoratedService(ref), children, lookup);
     }
 
+    @Override
+    public NodeType getNodeType() {
+        return NodeType.SERVICE;
+    }
 //    @Override
 //    protected void createPasteTypes(Transferable t, List<PasteType> s) {
 ////        super.createPasteTypes(t, s);
@@ -89,29 +90,15 @@ public class ServiceNode extends TMapComponentNode<DecoratedService> {
         }
         //
         Sheet.Set mainPropertySet =
-                getPropertySet(sheet);
+                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
         //
-        Node.Property prop;
-// 142908
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.PARTNER_LINK_TYPE,
-                "getPartnerLinkType", "setPartnerLinkType"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Named.NAME_PROPERTY, PropertyType.NAME,
+                "getName", "setName", null); // NOI18N
         //
-        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.ROLE,
-                "getRole", "setRole"); // NOI18N
-        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        
-//142908        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-//                PropertyType.NAME,
-//                "getName", "setName"); // NOI18N
-//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-//        //
-//        prop = PropertyUtils.registerProperty(this, mainPropertySet,
-//                PropertyType.PORT_TYPE,
-//                "getPortType", "setPortType"); // NOI18N
-//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        PropertyUtils.getInstance().registerAttributeProperty(this.getReference(), mainPropertySet,
+                Service.PORT_TYPE, PropertyType.PORT_TYPE,
+                "getPortType", "setPortType", null); // NOI18N
         //
         //
         return sheet;
@@ -179,50 +166,73 @@ public class ServiceNode extends TMapComponentNode<DecoratedService> {
 //    }
 
     @Override
-    public NewType[] getNewTypes() {
-        if (isEditable()) {
-            return getNewTypes(getComponentRef());
-        }
-        return new NewType[] {};
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.ADD_NEWTYPES,
+            ActionType.SEPARATOR,
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES,
+            
+        };
     }
-    
-    
-    
-        public NewType[] getNewTypes(TMapComponent newComponent) {
-            
-            List<NewType> list = new ArrayList<NewType>();
 
-            if (newComponent instanceof Service) {
-                list.add(new OperationNewType((Service)newComponent));
-            }
+    @Override
+    public ActionType[] getAddActionArray() {
+        return new ActionType[] {
+            ActionType.ADD_OPERATION
+        };
+    }
 
-            return list.toArray(new NewType[]{});
-        }        
     
-        public static class OperationNewType extends NewType {
-
-            private Service myService;
-            OperationNewType(Service service) {
-                myService = service;
-            }
-            
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(TMapComponentNode.class, "LBL_NewOperationAction"); // NOI18N
-        }
-            
-        @Override
-        public void create() throws IOException {
-        TMapModel model = myService.getModel();
-        model.startTransaction();
-//        String operationOutputName = NameGenerator.getInstance().generateUniqueOperationOutputName(mOperation);
-        Operation operation = model.getFactory().createOperation();
-//        output.setName(operationOutputName);
-//        mOperation.setOutput(output);
-        myService.addOperation(operation);
-        model.endTransaction();
-//        ActionHelper.selectNode(operation);
-        }
-        }
-        
+    
+//    @Override
+//    public NewType[] getNewTypes() {
+//        if (isEditable()) {
+//            return getNewTypes(getComponentRef());
+//        }
+//        return new NewType[] {};
+//    }
+//    
+//    
+//    
+//        public NewType[] getNewTypes(TMapComponent newComponent) {
+//            
+//            List<NewType> list = new ArrayList<NewType>();
+//
+//            if (newComponent instanceof Service) {
+//                list.add(new OperationNewType((Service)newComponent));
+//            }
+//
+//            return list.toArray(new NewType[]{});
+//        }        
+//    
+//        public static class OperationNewType extends NewType {
+//
+//            private Service myService;
+//            OperationNewType(Service service) {
+//                myService = service;
+//            }
+//            
+//        @Override
+//        public String getName() {
+//            return NbBundle.getMessage(TMapComponentNode.class, "LBL_NewOperationAction"); // NOI18N
+//        }
+//            
+//        @Override
+//        public void create() throws IOException {
+//        TMapModel model = myService.getModel();
+//        model.startTransaction();
+////        String operationOutputName = NameGenerator.getInstance().generateUniqueOperationOutputName(mOperation);
+//        Operation operation = model.getFactory().createOperation();
+////        output.setName(operationOutputName);
+////        mOperation.setOutput(output);
+//        myService.addOperation(operation);
+//        model.endTransaction();
+////        ActionHelper.selectNode(operation);
+//        }
+//        }
+//        
 }

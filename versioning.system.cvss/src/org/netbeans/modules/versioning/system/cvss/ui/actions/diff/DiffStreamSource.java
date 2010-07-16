@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,6 +79,7 @@ public class DiffStreamSource extends StreamSource {
 
     private ExecutorGroup   group;
     private boolean         initialized;
+    private Boolean canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -122,8 +126,17 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    @Override
     public synchronized boolean isEditable() {
-        return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
+        return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary() && isBaseFileWritable();
+    }
+
+    private boolean isBaseFileWritable () {
+        if (canWriteBaseFile == null) {
+            FileObject fo = FileUtil.toFileObject(baseFile);
+            canWriteBaseFile = fo != null && fo.canWrite();
+        }
+        return canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -139,6 +152,7 @@ public class DiffStreamSource extends StreamSource {
         return true;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         try {
             init(null);
@@ -215,5 +229,6 @@ public class DiffStreamSource extends StreamSource {
         } else {
             mimeType = "text/plain"; // NOI18N
         }
+        canWriteBaseFile = fo != null && fo.canWrite();
     }
 }

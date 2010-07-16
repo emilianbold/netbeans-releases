@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -74,10 +78,11 @@ public final class RepositoryUtils {
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
+    private static final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 77;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 88;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -285,21 +290,21 @@ public final class RepositoryUtils {
         repository.debugClear();
     }
 
-    public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(CsmUID uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(String unitName, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(CharSequence unitName, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         RepositoryListenerImpl.instance().onExplicitClose(unitName);
         _closeUnit(unitName, requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(Key key, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        _closeUnit(key.getUnit().toString(), requiredUnits, cleanRepository);
+        _closeUnit(key.getUnit(), requiredUnits, cleanRepository);
     }
 
-    private static void _closeUnit(String unit, Set<String> requiredUnits, boolean cleanRepository) {
+    private static void _closeUnit(CharSequence unit, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         assert unit != null;
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unit);
@@ -313,12 +318,12 @@ public final class RepositoryUtils {
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
-        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName().toString());
+        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName());
     }
 
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
-        repository.removeUnit(key.getUnit().toString());
+        repository.removeUnit(key.getUnit());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -329,10 +334,10 @@ public final class RepositoryUtils {
     }
 
     public static void openUnit(Key key) {
-        openUnit(key.getUnitId(), key.getUnit().toString());
+        openUnit(key.getUnitId(), key.getUnit());
     }
 
-    private static void openUnit(int unitId, String unitName) {
+    private static void openUnit(int unitId, CharSequence unitName) {
         // TODO explicit open should be called here:
         RepositoryListenerImpl.instance().onExplicitOpen(unitName);
         repository.openUnit(unitId, unitName);
@@ -342,24 +347,24 @@ public final class RepositoryUtils {
         repository.unregisterRepositoryListener(listener);
     }
 
-    static int getUnitId(String unitName) {
-        return RepositoryAccessor.getTranslator().getUnitId(unitName);
+    static int getUnitId(CharSequence unitName) {
+        return translator.getUnitId(unitName);
     }
 
-    static String getUnitName(int unitIndex) {
-        return RepositoryAccessor.getTranslator().getUnitName(unitIndex);
+    static CharSequence getUnitName(int unitIndex) {
+        return translator.getUnitName(unitIndex);
     }
 
-    static int getFileIdByName(int unitId, String fileName) {
-        return RepositoryAccessor.getTranslator().getFileIdByName(unitId, fileName);
+    static int getFileIdByName(int unitId, CharSequence fileName) {
+        return translator.getFileIdByName(unitId, fileName);
     }
 
-    static String getFileNameByIdSafe(int unitId, int fileId) {
-        return RepositoryAccessor.getTranslator().getFileNameByIdSafe(unitId, fileId);
+    static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
+        return translator.getFileNameByIdSafe(unitId, fileId);
     }
 
-    static String getFileNameById(int unitId, int fileId) {
-        return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
+    static CharSequence getFileNameById(int unitId, int fileId) {
+        return translator.getFileNameById(unitId, fileId);
     }
 
     private static boolean isTracingKey(Key key) {
@@ -377,10 +382,10 @@ public final class RepositoryUtils {
 
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
-        private Map<String,Integer> wasErrors = new ConcurrentHashMap<String,Integer>();
+        private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
         private RepositoryListenerProxy(){
         }
-        public int getErrorCount(String unitName) {
+        public int getErrorCount(CharSequence unitName) {
             Integer i = wasErrors.get(unitName);
             if (i == null) {
                 return 0;
@@ -388,16 +393,19 @@ public final class RepositoryUtils {
                 return i.intValue();
             }
         }
-        public void cleanErrorCount(String unitName) {
+        public void cleanErrorCount(CharSequence unitName) {
             wasErrors.remove(unitName);
         }
-        public boolean unitOpened(String unitName) {
+        @Override
+        public boolean unitOpened(CharSequence unitName) {
             return parent.unitOpened(unitName);
         }
-        public void unitClosed(String unitName) {
+        @Override
+        public void unitClosed(CharSequence unitName) {
             parent.unitClosed(unitName);
         }
-        public void anExceptionHappened(String unitName, RepositoryException exc) {
+        @Override
+        public void anExceptionHappened(CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitName, exc);
             parent.anExceptionHappened(unitName, exc);
         }
@@ -408,7 +416,7 @@ public final class RepositoryUtils {
          * Provide intelligence logic that take into account possibility to "fixing" errors.
          * For example error in "file" segment can be fixed by file reparse.
          */
-        private void primitiveErrorStrategy(String unitName, RepositoryException exc){
+        private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
             Integer i = wasErrors.get(unitName);
             if (i == null) {
                 i = Integer.valueOf(1);

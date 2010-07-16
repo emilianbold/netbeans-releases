@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,422 +42,145 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.model.Component;
-import org.eclipse.mylyn.internal.jira.core.model.Group;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
-import org.eclipse.mylyn.internal.jira.core.model.User;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientCache;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
-import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
-// XXX rename - it actually the cache, not the configuration
-// XXX Project MUST be somehow refreshed when a list of components changes on a server
-public class JiraConfiguration extends JiraClientCache {
+public class JiraConfiguration {
 
     private JiraClient client;
-    private JiraRepository repository;
-    private ConfigurationData data;
-    private final Set<String> loadedProjects = new HashSet<String>();
-
-    private static final Object USER_LOCK = new Object();
-    private static final Object PROJECT_LOCK = new Object();
-    private static final Object SERVER_INFO_LOCK = new Object();
-
-    private boolean hacked;
+    protected final JiraRepository repository;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
-        super(jiraClient);
         this.client = jiraClient;
         this.repository = repository;
-    }
-
-    protected void initialize(boolean forceRefresh) throws JiraException {
-        data = (ConfigurationData) getData();
-        getServerInfo(new NullProgressMonitor());
-        synchronized (data) {
-            if(!forceRefresh) {
-                if(data.initialized) {
-                    if (!hacked) {
-                        hackJiraCache();
-                    }
-                    return;
-                }
-            }
-            clearCached();
-            refreshData();
-            putToCache();
-            hackJiraCache();
+        String value = System.getProperty("org.netbeans.modules.jira.datePattern"); // NOI18N
+        if (value != null) {
+            client.getConfiguration().setDatePattern(value);
+        }
+        value = System.getProperty("org.netbeans.modules.jira.dateTimePattern"); // NOI18N
+        if (value != null) {
+            client.getConfiguration().setDateTimePattern(value);
+        }
+        value = System.getProperty("org.netbeans.modules.jira.locale"); // NOI18N
+        if (value != null) {
+            StringTokenizer st = new StringTokenizer(value,"_"); // NOI18N
+            String language = st.nextToken();
+            String country = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
+            String variant = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
+            Locale locale = new Locale(language, country, variant);
+            client.getConfiguration().setLocale(locale);
         }
     }
 
-    /**
-     * Clears whatever is needed after a configuration refresh
-     */
-    protected void clearCached () {
-        loadedProjects.clear();
-    }
-
-    private void refreshData () throws JiraException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
-
-        data.projectsById = new HashMap<String, Project>(data.projects.length);
-        data.projectsByKey = new HashMap<String, Project>(data.projects.length);
-        loadProjectsIntern();
-        data.priorities = client.getPriorities(nullProgressMonitor);
-        data.prioritiesById = new HashMap<String, Priority>(data.priorities.length);
-        for (Priority priority : data.priorities) {
-            data.prioritiesById.put(priority.getId(), priority);
-        }
-        data.resolutions = client.getResolutions(nullProgressMonitor);
-        data.resolutionsById = new HashMap<String, Resolution>(data.resolutions.length);
-        for (Resolution resolution : data.resolutions) {
-            data.resolutionsById.put(resolution.getId(), resolution);
-        }
-        IssueType[] issueTypes = client.getIssueTypes(nullProgressMonitor);
-        IssueType[] subTaskTypes = client.getSubTaskIssueTypes(nullProgressMonitor);
-        data.issueTypes = mergeIssueTypes(issueTypes, subTaskTypes);
-        data.issueTypesById = new HashMap<String, IssueType>(data.issueTypes.length);
-        for (IssueType type : data.issueTypes) {
-            data.issueTypesById.put(type.getId(), type);
-        }
-        data.statuses = client.getStatuses(nullProgressMonitor);
-        data.statusesById = new HashMap<String, JiraStatus>(data.statuses.length);
-        for (JiraStatus status : data.statuses) {
-            data.statusesById.put(status.getId(), status);
-        }
-
-        data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
-        data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
-
-        data.initialized = true;
-        // XXX what else do we need?
-        // XXX issue types by project
-
-        putToCache();
-    }
-
-    private void loadProjectsIntern() throws JiraException {
-        loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
-        data.projects = client.getProjects(new NullProgressMonitor());
-        if(data.projects == null) {
-            data.projects = new Project[0];
-        }
-        for (Project project : data.projects) {
-            data.projectsById.put(project.getId(), project);
-            data.projectsByKey.put(project.getKey(), project);
-        }
-    }
-
-    private void putToCache () {
-        assert data != null;
-        Jira.getInstance().getConfigurationCacheManager().setCachedData(repository.getUrl(), data);
-    }
-
-    private void hackJiraCache() {
-        try {
-            Field f = client.getClass().getDeclaredField("cache");      // NOI18N
-            f.setAccessible(true);
-            f.set(client, this);
-        } catch (IllegalArgumentException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        } catch (NoSuchFieldException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
-        hacked = true;
-    }
-
-    @Override
-    public boolean hasDetails() {
-        return true; // always
-    }
-
-    @Override
-    public JiraClientData getData() {
-        if(data == null) {
-            data = initializeCached();
-            if (data == null) {
-                data = new ConfigurationData();
-            }
-        }
-        return data;
-    }
-
-    @Override
     public IssueType getIssueTypeById(String id) {
-        return data.issueTypesById.get(id);
+        return client.getCache().getIssueTypeById(id);
     }
 
-    @Override
     public IssueType[] getIssueTypes() {
-        return data.issueTypes;
+        return client.getCache().getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(String projectId) {
-        if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
-            return data.issueTypes;
+        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+            return getIssueTypes();
         }
         return getProjectById(projectId).getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(final Project project) {
-        if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
-            return data.issueTypes;
+        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+            return getIssueTypes();
         }
-        synchronized(PROJECT_LOCK) {
-            ensureProjectLoaded(project);
-            return project.getIssueTypes();
-        }
+        ensureProjectLoaded(project);
+        return project.getIssueTypes();
     }
 
-    @Override
     public Priority[] getPriorities() {
-        return data.priorities;
+        return client.getCache().getPriorities();
     }
 
-    @Override
     public Priority getPriorityById(String id) {
-        return data.prioritiesById.get(id);
+        return client.getCache().getPriorityById(id);
     }
 
-    @Override
     public Resolution getResolutionById(String id) {
-        return data.resolutionsById.get(id);
+        return client.getCache().getResolutionById(id);
     }
 
-    @Override
     public Resolution[] getResolutions() {
-        return data.resolutions;
+        return client.getCache().getResolutions();
     }
 
-    @Override
     public ServerInfo getServerInfo() {
-        synchronized(SERVER_INFO_LOCK) {
-            return data.serverInfo;
-        }
+        return client.getCache().getServerInfo();
     }
 
-    @Override
     public ServerInfo getServerInfo(IProgressMonitor monitor) throws JiraException {
-        synchronized(SERVER_INFO_LOCK) {
-            if(data.serverInfo == null) {
-                refreshServerInfo(monitor);
-            }
-            return data.serverInfo;
-        }
+        return client.getCache().getServerInfo(monitor);
     }
 
-    @Override
     public JiraStatus getStatusById(String id) {
-        return data.statusesById.get(id);
+        return client.getCache().getStatusById(id);
     }
 
-    @Override
     public JiraStatus[] getStatuses() {
-        return data.statuses;
+        return client.getCache().getStatuses();
     }
 
-    @Override
     public User getUser(String name) {
-        synchronized(USER_LOCK) {
-            return data.usersByName.get(name);
-        }
+        return client.getCache().getUser(name);
     }
 
     public Collection<User> getUsers() {
-        return data.usersByName.values();
+        return Collections.EMPTY_LIST; // XXX is there a way to get the users?
     }
 
-    @Override
-    public User putUser(String name, String fullName) {
-	User user = new User();
-        user.setName(name);
-        user.setFullName(fullName);
-        synchronized(USER_LOCK) {
-            data.usersByName.put(name, user);
-        }
-        return user;
-    }
-
-    /**
-     * This method should not EVER be called
-     */
-    @Override
-    public synchronized void refreshDetails(IProgressMonitor monitor) throws JiraException {
-        assert false;
-    }
-
-    @Override
-    public synchronized void refreshServerInfo(IProgressMonitor monitor) throws JiraException {
-        data.serverInfo = client.getServerInfo(monitor);
-    }
-
-    @Override
-    public void setData(JiraClientData data) {
-        this.data = (ConfigurationData) data;
-    }
-
-    @Override
     public Project getProjectById(String id) {
-        synchronized(PROJECT_LOCK) {
-            Project project = getProject(data.projectsById, id);
-            if(project == null) {
-                Jira.LOG.warning("No project with id '" + id + "' available.");
-                return null;
-            }
-            ensureProjectLoaded(project);
-            return project;
-        }
+        return client.getCache().getProjectById(id);
     }
 
-    @Override
     public Project getProjectByKey(String key) {
-        synchronized(PROJECT_LOCK) {
-            Project project = getProject(data.projectsByKey, key);
-            if(project == null) {
-                Jira.LOG.warning("No project with key '" + key + "' available.");
-                return null;
-            }
-            ensureProjectLoaded(project);
-            return project;
-        }
+        return client.getCache().getProjectByKey(key);
     }
 
-    private Project getProject(Map<String, Project> projectMap, String mapKey) {
-        Project project = projectMap.get(mapKey);
-        if(project == null) {
-            loadProjects();
-            project = projectMap.get(mapKey);
-        }
-        return project;
-    }
-
-    @Override
     public Project[] getProjects() {
-        synchronized(PROJECT_LOCK) {
-            return data.projects;
-        }
-    }
-
-    public void ensureProjectLoaded(Project project) {
-        synchronized(PROJECT_LOCK) {
-            if (!loadedProjects.contains(project.getId())) {
-                initProject(project);
-            } else {
-                // XXX This is ugly, but required, find a better way
-                // there can be more than one instances of a project with the same id
-                ensureProjectHasInitializedFields(project, data.projectsById.get(project.getId()));
-            }
-        }
-    }
-
-    private void ensureProjectHasInitializedFields (Project project, Project initialized) {
-        if (initialized != project) {
-            project.setComponents(initialized.getComponents());
-            project.setVersions(initialized.getVersions());
-            project.setIssueTypes(initialized.getIssueTypes());
-            // XXX what else !!!
-        }
-    }
-
-    public void forceProjectReload(Project project) {
-        initProject(project);
-    }
-
-    private static IssueType[] mergeIssueTypes(IssueType[] issueTypes, IssueType[] subTaskTypes) {
-        IssueType[] allIssueTypes = new IssueType[issueTypes.length+subTaskTypes.length];
-        System.arraycopy(issueTypes, 0, allIssueTypes, 0, issueTypes.length);
-        System.arraycopy(subTaskTypes, 0, allIssueTypes, issueTypes.length, subTaskTypes.length);
-        // Sub-task types returned by JIRA connector are not marked as sub-tasks!
-        for (IssueType type: subTaskTypes) {
-            type.setSubTaskType(true);
-        }
-        return allIssueTypes;
-    }
-
-    protected void initProject(final Project project) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        JiraCommand cmd = new JiraCommand() {
-            @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                ServerInfo info = getServerInfo();
-                if(supportsProjectIssueTypes(info.getVersion())) {
-                    IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
-                    IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
-                    project.setIssueTypes(mergeIssueTypes(issueTypes, subTaskTypes));
-                }
-                Component[] components = client.getComponents(project.getKey(), new NullProgressMonitor());
-                project.setComponents(components);
-
-                Version[] versions = client.getVersions(project.getKey(), new NullProgressMonitor());
-                project.setVersions(versions);
-                // XXX what else !!!
-
-                Project p = data.projectsById.get(project.getId());
-                if(p == null) {
-                    refreshData();
-                    p = data.projectsById.get(project.getId());
-                }
-                if (p.getComponents() == null) {
-                    ensureProjectHasInitializedFields(p, project);
-                }
-                loadedProjects.add(project.getId());
-            }
-        };
-        repository.getExecutor().execute(cmd);
-    }
-
-    private void loadProjects() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        JiraCommand cmd = new JiraCommand() {
-            @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                loadProjectsIntern();
-            }
-        };
-        repository.getExecutor().execute(cmd);
+        return client.getCache().getProjects();
     }
 
     public Component[] getComponents(String projectId) {
-        return getProjectById(projectId).getComponents();
+        Component[] components = getProjectById(projectId).getComponents();
+        return components != null ? components : new Component[0];
     }
 
     public Component[] getComponents(final Project project) {
-        synchronized(PROJECT_LOCK) {
-            ensureProjectLoaded(project);
-            return project.getComponents();
-        }
+        ensureProjectLoaded(project);
+        return project.getComponents();
     }
 
     public Component getComponentById(String projectId, String componentId) {
@@ -467,14 +193,13 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     public Version[] getVersions(String projectId) {
-        return getProjectById(projectId).getVersions();
+        Version[] versions = getProjectById(projectId).getVersions();
+        return versions != null ? versions : new Version[0];
     }
 
     public Version[] getVersions(final Project project) {
-        synchronized(PROJECT_LOCK) {
-            ensureProjectLoaded(project);
-            return project.getVersions();
-        }
+        ensureProjectLoaded(project);
+        return project.getVersions();
     }
 
     public Version getVersionById(String projectId, String versionId) {
@@ -487,61 +212,48 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     public int getWorkDaysPerWeek() {
-        return data.workDaysPerWeek;
+        return client.getConfiguration().getWorkDaysPerWeek();
     }
 
     public int getWorkHoursPerDay() {
-        return data.workHoursPerDay;
+        return client.getConfiguration().getWorkHoursPerDay();
     }
 
     public boolean supportsProjectIssueTypes(String version) {
         return new JiraVersion(version).compareTo(JiraVersion.JIRA_3_12) > -1;
     }
 
-    protected ConfigurationData initializeCached () {
-        String repoUrl = repository.getUrl();
-        ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
-        if (cached != null) {
-            setLoadedProjects(cached);
-            cached.serverInfo = null; // download this from the repo at the first access
-            cached.initialized = true;
-        }
-        return cached;
+    public void ensureProjectLoaded(final Project project) {
+        ensureProjectLoaded(project, false);
     }
 
-    /**
-     * Scans projects in data and sets a flag for those already initialized (means the project has not-null components)
-     * @param data
-     */
-    protected void setLoadedProjects(ConfigurationData data) {
-        loadedProjects.clear();
-        for (Project p : data.projects) {
-            if (p.getComponents() != null) {
-                loadedProjects.add(p.getId());
+    public void ensureProjectLoaded(final Project project, boolean force) {
+        if(!force && project.hasDetails()) {
+            return;
+        }
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                try {
+                    client.getCache().refreshProjectDetails(project.getId(), new NullProgressMonitor());
+                } catch (JiraException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-        }
+        };
+        repository.getExecutor().execute(cmd);
     }
 
-    protected static class ConfigurationData extends JiraClientData {
-	Group[] groups = new Group[0];
-	IssueType[] issueTypes = new IssueType[0];
-	Map<String, IssueType> issueTypesById = new HashMap<String, IssueType>();
-	Priority[] priorities = new Priority[0];
-	Map<String, Priority> prioritiesById = new HashMap<String, Priority>();
-	Project[] projects = new Project[0];
-	Map<String, Project> projectsById = new HashMap<String, Project>();
-	Map<String, Project> projectsByKey = new HashMap<String, Project>();
-	Resolution[] resolutions = new Resolution[0];
-	Map<String, Resolution> resolutionsById = new HashMap<String, Resolution>();
-	volatile ServerInfo serverInfo;
-	JiraStatus[] statuses = new JiraStatus[0];
-	Map<String, JiraStatus> statusesById = new HashMap<String, JiraStatus>();
-	User[] users = new User[0];
-	Map<String, User> usersByName = new HashMap<String, User>();
-        int workDaysPerWeek;
-        int workHoursPerDay;
-	long lastUpdate;
-        boolean initialized = false;
+    public void ensureIssueTypes(Project project) {
+        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+            return;
+        }
+        if (project.getIssueTypes() == null) {
+            // The cached project data had been created before we started
+            // to use project specific issue types. Forcing reload.
+            ensureProjectLoaded(project, true);
+        }
     }
 
 }

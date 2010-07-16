@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,8 +92,11 @@ public abstract class PhpUnit extends PhpProgram {
     // options
     public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
-    public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
-    public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    private static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
+    private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    // suite files suffix
+    private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
+    private static final String SUITE_FILE_SUFFIX = SUITE_CLASS_SUFFIX + ".php"; // NOI18N
     // create test
     private static final String REQUIRE_ONCE_TPL_START = "require_once '"; // NOI18N
     private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
@@ -112,8 +118,9 @@ public abstract class PhpUnit extends PhpProgram {
 
     // suite file
     public static final File SUITE;
+    public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
     public static final String SUITE_RUN = "run=%s"; // NOI18N
-    private static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
+    private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -136,9 +143,9 @@ public abstract class PhpUnit extends PhpProgram {
     static volatile int[] version = null;
 
     static {
-        SUITE = InstalledFileLocator.getDefault().locate(SUITE_NAME, "org.netbeans.modules.php.project", false);  // NOI18N
+        SUITE = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.project", false);  // NOI18N
         if (SUITE == null || !SUITE.isFile()) {
-            throw new IllegalStateException("Could not locate file " + SUITE_NAME);
+            throw new IllegalStateException("Could not locate file " + SUITE_REL_PATH);
         }
     }
 
@@ -174,6 +181,58 @@ public abstract class PhpUnit extends PhpProgram {
     public static boolean isRequireOnceSourceFile(String line, String filename) {
         return line.startsWith(REQUIRE_ONCE_TPL_START)
                 && line.endsWith(String.format(REQUIRE_ONCE_TPL_END, filename));
+    }
+
+    public static boolean isTestFile(String fileName) {
+        return !fileName.equals(PhpUnit.TEST_FILE_SUFFIX) && fileName.endsWith(PhpUnit.TEST_FILE_SUFFIX);
+    }
+
+    public static boolean isTestClass(String className) {
+        return !className.equals(PhpUnit.TEST_CLASS_SUFFIX) && className.endsWith(PhpUnit.TEST_CLASS_SUFFIX);
+    }
+
+    public static boolean isSuiteFile(String fileName) {
+        return !fileName.equals(PhpUnit.SUITE_FILE_SUFFIX) && fileName.endsWith(PhpUnit.SUITE_FILE_SUFFIX);
+    }
+
+    public static boolean isSuiteClass(String className) {
+        return !className.equals(PhpUnit.SUITE_CLASS_SUFFIX) && className.endsWith(PhpUnit.SUITE_CLASS_SUFFIX);
+    }
+
+    public static boolean isTestOrSuiteFile(String fileName) {
+        return isTestFile(fileName) || isSuiteFile(fileName);
+    }
+
+    public static boolean isTestOrSuiteClass(String className) {
+        return isTestClass(className) || isSuiteClass(className);
+    }
+
+    public static String getTestedClass(String testOrSuiteClass) {
+        assert isTestOrSuiteClass(testOrSuiteClass) : "Not Test or Suite class: " + testOrSuiteClass;
+        int lastIndexOf = -1;
+        if (isTestClass(testOrSuiteClass)) {
+            lastIndexOf = testOrSuiteClass.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+        } else if (isSuiteClass(testOrSuiteClass)) {
+            lastIndexOf = testOrSuiteClass.lastIndexOf(PhpUnit.SUITE_CLASS_SUFFIX);
+        }
+        assert lastIndexOf != -1;
+        return testOrSuiteClass.substring(0, lastIndexOf);
+    }
+
+    public static String makeTestFile(String testedFileName) {
+        return testedFileName + PhpUnit.TEST_FILE_SUFFIX;
+    }
+
+    public static String makeTestClass(String testedClass) {
+        return testedClass + PhpUnit.TEST_CLASS_SUFFIX;
+    }
+
+    public static String makeSuiteFile(String testedFileName) {
+        return testedFileName + PhpUnit.SUITE_FILE_SUFFIX;
+    }
+
+    public static String makeSuiteClass(String testedClass) {
+        return testedClass + PhpUnit.SUITE_CLASS_SUFFIX;
     }
 
     @Override
@@ -359,7 +418,7 @@ public abstract class PhpUnit extends PhpProgram {
             }
         }
         warnAboutMissingFiles(missingFiles);
-        return new ConfigFiles(bootstrap, configuration, suite);
+        return new ConfigFiles(bootstrap, ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project), configuration, suite);
     }
 
     public static File getCustomSuite(PhpProject project) {
@@ -380,6 +439,7 @@ public abstract class PhpUnit extends PhpProgram {
         final File bootstrapFile = new File(getBootstrapFilepath(project));
         final File[] files = new File[1];
         FileUtil.runAtomicAction(new Runnable() {
+            @Override
             public void run() {
                 try {
                     DataObject dataTemplate = DataObject.find(configFile);
@@ -437,7 +497,7 @@ public abstract class PhpUnit extends PhpProgram {
         }
 
         if (!tmpBootstrap.delete()) {
-            LOGGER.info("Cannot delete temporary file " + tmpBootstrap);
+            LOGGER.log(Level.INFO, "Cannot delete temporary file {0}", tmpBootstrap);
             tmpBootstrap.deleteOnExit();
         }
 
@@ -591,11 +651,13 @@ public abstract class PhpUnit extends PhpProgram {
 
     public static final class ConfigFiles {
         public final File bootstrap;
+        public final boolean useBootstrapForCreateTests;
         public final File configuration;
         public final File suite;
 
-        public ConfigFiles(File bootstrap, File configuration, File suite) {
+        public ConfigFiles(File bootstrap, boolean useBootstrapForCreateTests, File configuration, File suite) {
             this.bootstrap = bootstrap;
+            this.useBootstrapForCreateTests = useBootstrapForCreateTests;
             this.configuration = configuration;
             this.suite = suite;
         }
@@ -605,14 +667,17 @@ public abstract class PhpUnit extends PhpProgram {
         //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
         private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
 
+        @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
+                @Override
                 public void processLine(String line) {
                     int[] match = match(line);
                     if (match != null) {
                         version = match;
                     }
                 }
+                @Override
                 public void reset() {
                     try {
                         defaultProcessor.reset();
@@ -620,6 +685,7 @@ public abstract class PhpUnit extends PhpProgram {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                @Override
                 public void close() {
                     try {
                         defaultProcessor.close();

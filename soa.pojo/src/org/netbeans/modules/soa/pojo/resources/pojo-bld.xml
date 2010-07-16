@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+           DO NOT EDIT!
+           *** GENERATED - To build POJO based project ***
+ -->
+<project name="pojoAnnotationProcessor" default="pojo-annotation-processor" basedir="...">
+    <target name="pojo-init-taskdefs" unless="netbeans.home">
+        <path id="pojose.ant.task.classpath" >
+            <pathelement location="${soa.module.install.dir}/ext/jbi.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/sun-pojo-engine-api.jar"/>
+            <pathelement location="${soa.module.install.dir}/org-netbeans-modules-soa-pojo.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/sun-pojo-validator.jar"/>
+            <pathelement location="${soa.module.install.dir}/../ant/nblib/org-netbeans-modules-soa-pojo.jar"/>
+            <pathelement location="${ide.module.install.dir}/../../java/modules/org-netbeans-modules-classfile.jar"/>
+            <pathelement location="${esb.netbeans.platform}/core/org-openide-filesystems.jar"/>
+        </path>
+        <taskdef name="pojo-generate-jbi-descriptor" classname="org.netbeans.modules.soa.pojo.anttasks.ide.IdePOJOGenerateJbiDescriptorTask">
+            <classpath refid="pojose.ant.task.classpath"/>
+        </taskdef>
+    </target>
+
+    <target name="pojo-typedef-target" depends="-init-project,pojo-init-taskdefs,-pre-pre-jar">
+        <pojo-generate-jbi-descriptor buildDirectory="${basedir}/${build.classes.dir}" sourceDirectory="${basedir}/${src.dir}"/>
+    </target>
+
+    <target name="pojo-annotation-processor" depends="pojo-typedef-target">
+        <condition property="packagealljar">
+            <equals arg1="${pojo.packageall}" arg2="true"/>
+        </condition>
+        <jar update="true" basedir="${build.classes.dir}" compress="${jar.compress}" jarfile="${dist.jar}" includes="META-INF/jbi.xml"/>
+        <antcall target="-pojo-package-jar"/>
+    </target>
+
+    <target name="-pojo-package-jar" if="packagealljar">
+        <mkdir dir="${dist.dir}/lib"/>
+        <jar update="true" basedir="${dist.dir}/lib" compress="${jar.compress}" jarfile="${dist.jar}" includes="**/*" excludes="${pojo.package.excludes}"/>
+    </target>
+    
+    <target name="dist_se" depends="jar,pojo-annotation-processor"/>
+</project>

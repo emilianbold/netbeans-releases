@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -87,6 +90,16 @@ made subject to such option by the copyright holder.
                 <condition>
                     <not>
                         <contains string="${{cluster.path.evaluated}}" substring="platform"/>
+                    </not>
+                </condition>
+            </fail>
+            <fail message="Cannot find NetBeans build harness.
+${{line.separator}}Check that nbplatform.${{nbplatform.active}}.netbeans.dest.dir and nbplatform.${{nbplatform.active}}.harness.dir are defined.
+${{line.separator}}On a developer machine these are normally defined in ${{user.properties.file}}=${{netbeans.user}}/build.properties
+${{line.separator}}but for automated builds you should pass these properties to Ant explicitly.">
+                <condition>
+                    <not>
+                        <available type="dir" file="${{harness.dir}}"/>
                     </not>
                 </condition>
             </fail>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -76,6 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         Document doc = component.getDocument();
         int dotPos = component.getCaret().getDot();
@@ -83,6 +87,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         return openCC ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         AsyncCompletionTask task = null;
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
@@ -104,18 +109,20 @@ public class HtmlCompletionProvider implements CompletionProvider {
             this.component = component;
         }
 
+        @Override
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
                 if(result != null) {
                     items = result.getItems();
-                }
-
-                resultSet.addAllItems(items);
-                if(result != null) {
                     anchor = result.getAnchor();
-                    resultSet.setAnchorOffset(anchor);
+                } else {
+                    items = Collections.emptyList();
+                    anchor = 0;
                 }
+                resultSet.addAllItems(items);
+                resultSet.setAnchorOffset(anchor);
+
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -189,6 +196,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             this.item = item;
         }
 
+        @Override
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             if (item == null) {
                 try {
@@ -217,6 +225,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             checkHideCompletion((BaseDocument) component.getDocument(), component.getCaretPosition());
         }
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 doQuery(resultSet, doc, caretOffset);
@@ -235,6 +244,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         //test whether the user typed an ending quotation in the attribute value
         doc.render(new Runnable() {
 
+            @Override
             public void run() {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
@@ -277,12 +287,18 @@ public class HtmlCompletionProvider implements CompletionProvider {
                         return false;
                     }
 
-                    ts.move(dotPos - 1);
-                    if (ts.moveNext() || ts.movePrevious()) {
-                        if (ts.token().id() == HTMLTokenId.WS) {
-                            return true;
-                        }
+                    int diff = ts.move(dotPos);
+                    if (ts.moveNext() &&
+                            ts.token().id() == HTMLTokenId.WS && //if current token is whitespace
+                            diff == 1 && //and the caret is just after one char of the token
+                            ts.movePrevious() && //then go back and check if the token before is one of following types
+                            (ts.token().id() == HTMLTokenId.TAG_OPEN ||
+                            ts.token().id() == HTMLTokenId.VALUE ||
+                            ts.token().id() == HTMLTokenId.VALUE_CSS ||
+                            ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT)) {
+                        return true;
                     }
+                    
                 } finally {
                     doc.readUnlock();
                 }
@@ -295,6 +311,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 final boolean[] ret = new boolean[1];
                 doc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
                         if (ts == null) {
@@ -330,6 +347,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             this.url = url;
         }
 
+        @Override
         public String getText() {
             return null;
             /*
@@ -341,14 +359,17 @@ public class HtmlCompletionProvider implements CompletionProvider {
              */
         }
 
+        @Override
         public URL getURL() {
             return url;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             return new LinkDocItem(HelpManager.getDefault().getRelativeURL(url, link));
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }
@@ -356,18 +377,22 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
     private static class NoDocItem implements CompletionDocumentation {
 
+        @Override
         public String getText() {
-            return NbBundle.getMessage(HtmlCompletionProvider.class, "MSG_No_Doc_For_Target");
+            return NbBundle.getMessage(HtmlCompletionProvider.class, "MSG_No_Doc_For_Target"); //NOI18N
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }
@@ -381,14 +406,17 @@ public class HtmlCompletionProvider implements CompletionProvider {
             this.item = ri;
         }
 
+        @Override
         public String getText() {
             return item.getHelp();
         }
 
+        @Override
         public URL getURL() {
             return item.getHelpURL();
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
             return itemUrl != null ?
@@ -396,6 +424,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 new NoDocItem();
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }

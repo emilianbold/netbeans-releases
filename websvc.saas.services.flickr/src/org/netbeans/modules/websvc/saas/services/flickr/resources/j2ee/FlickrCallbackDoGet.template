@@ -1,0 +1,23 @@
+{
+    response.setContentType("text/html;charset=UTF-8");
+    java.io.PrintWriter out = response.getWriter();
+    try {
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        String frob = request.getParameter("frob");
+        if (frob != null) {
+            session.setAttribute("flickr_frob", frob);
+            dispatch(request, response);
+        }
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Servlet Flickr Callback</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<h1>Servlet FlickrJerseyClientCallback at " + request.getContextPath() + "</h1>");
+        out.println("<p> Your authentication token is " + session.getAttribute("flickr_auth_token") + "</p>");
+        out.println("</body>");
+        out.println("</html>");
+    } finally {
+        out.close();
+    }
+}

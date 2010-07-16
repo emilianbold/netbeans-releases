@@ -20,19 +20,17 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
-import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.tbls.editor.dialog.NotifyHelper;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizerState;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyCustomizer;
+import org.netbeans.modules.tbls.editor.ps.TcgComponentNodePropertyEditor;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.tbls.model.TcgPropertyType;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -45,13 +43,11 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -142,9 +138,16 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
                 gbc.weightx = 1.0D;
                 gbc.weighty = 0.3D;
                 gbc.fill = GridBagConstraints.BOTH;
-                mSchemaPanel = new TableOutputSchemaPanel(model, mComponent);
+                mSchemaPanel = new TableOutputSchemaPanel(mComponent);
                 mSchemaPanel.setPreferredSize(new Dimension(500, 300));
                 attributePane.add(mSchemaPanel, gbc);
+                if (mComponent.getOutputSchema() != null) {
+                    attributePane.setToolTipText(NbBundle.getMessage(TableOutputCustomEditor.class, 
+                	    "InputSchemaTreePanel_Tooltip.inputoperator_connected"));
+                } else {
+                    attributePane.setToolTipText(NbBundle.getMessage(TableOutputCustomEditor.class, 
+                    "InputSchemaTreePanel_Tooltip.inputoperator_not_connected"));
+                }
                 
 //                // status bar
 //                gbc.gridx = 0;
@@ -176,7 +179,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            Property nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(PROP_NAME);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -200,7 +203,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(PROP_OUTPUT_SCHEMA_ID);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);
@@ -245,16 +248,23 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             gbc.weightx = 0.0D;
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
-            Property isGlobalProp = mComponent.getProperty(IS_GLOBAL_KEY);
+            Property isGlobalProp = mComponent.getProperty(PROP_IS_GLOBAL);
             String isGlobalStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.IS_GLOBAL");
             mIsGlobalPanel = PropertyPanel.createCheckBoxPanel(isGlobalStr, isGlobalProp);
+            String acsd = NbBundle.getMessage(TableInputCustomEditor.class, "ACSD_CustomEditor.IS_GLOBAL");;
+            ((JCheckBox)mIsGlobalPanel.input[0]).getAccessibleContext().setAccessibleDescription(acsd);
+            
+            String tooltip = NbBundle.getMessage(TableInputCustomEditor.class, "TOOLTIP_CustomEditor.IS_GLOBAL");;
+            ((JCheckBox)mIsGlobalPanel.input[0]).setToolTipText(tooltip);
+            
             if (!isGlobalProp.getPropertyType().isWritable()) {
                 ((JCheckBox)mIsGlobalPanel.input[0]).setEnabled(false);
+                
             }
             pane.add(mIsGlobalPanel.panel, gbc);
             
             // global id
-            Property globalIdProp = mComponent.getProperty(GLOBAL_ID_KEY);
+            Property globalIdProp = mComponent.getProperty(PROP_GLOBAL_ID);
             String globalIdStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.GLOBAL_ID");
             mGlobalIdPanel = PropertyPanel.createSingleLineTextPanel(globalIdStr, globalIdProp, false);
             gbc.gridx = 3;
@@ -297,7 +307,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getDisplayName();
+                String name = mComponent.getString(PROP_NAME);
                 if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",

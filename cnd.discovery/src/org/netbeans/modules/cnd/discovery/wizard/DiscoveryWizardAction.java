@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -49,12 +52,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -159,7 +159,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         if (pdp != null && pdp.gotDescriptor()){
             MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
-            Vector sources = folder.getFolders();
+            List<Folder> sources = folder.getFolders();
             List<String> roots = make.getAbsoluteSourceRoots();
             if (roots.size() > 0){
                 return roots.get(0);
@@ -169,7 +169,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 Folder sub = (Folder)o;
                 if (sub.isProjectFiles()) {
                     if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
-                        Vector v = sub.getFolders();
+                        List<Folder> v = sub.getFolders();
                         for (Object e : v){
                             Folder s = (Folder)e;
                             if (s.isProjectFiles()) {
@@ -301,6 +301,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
     }
     
+    @Override
     public String getName() {
         return getString("ACTION_TITLE_TXT");
     }
@@ -310,6 +311,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return null;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

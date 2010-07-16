@@ -134,7 +134,7 @@
               <Image iconType="3" name="/org/netbeans/modules/web/jsf/facelets/resources/template7-unselected.png"/>
             </Property>
             <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/netbeans/modules/web/jsf/facelets/resources/template8-selected.png"/>
+              <Image iconType="3" name="/org/netbeans/modules/web/jsf/facelets/resources/template7-selected.png"/>
             </Property>
           </Properties>
         </Component>

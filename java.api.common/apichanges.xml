@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -102,7 +105,74 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
-    
+        <change id="source-level-query-2">
+            <api name="java-api-common"/>
+            <summary>Added a factory method to create SourceLevelQueryImplementation2</summary>
+            <version major="1" minor="22"/>
+            <date day="8" month="7" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method to create default ant project based SourceLevelQueryImplementation2.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="185031"/>
+        </change>
+        <change id="sources-support">
+            <api name="java-api-common"/>
+            <summary>Support for mutable Sources</summary>
+            <version major="1" minor="21"/>
+            <date day="3" month="6" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding a factory method for creating a mutable Sources implemenation which allows adding (removing)
+                    of roots.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common" name="Roots"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="148320"/>
+        </change>
+        <change id="action-provider">
+            <api name="java-api-common"/>
+            <summary>BaseActionProvider introduced</summary>
+            <version major="1" minor="20"/>
+            <date day="1" month="6" year="2010"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    J2SE implementations of ActionProvider was turned into friend API
+                    so that EE project types can reuse most of Java specific code
+                    without duplicating it.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+            <issue number="171153"/>
+        </change>
+        <change id="ap-query">
+            <api name="java-api-common"/>
+            <summary>Support for AnnotationProcessingQuery</summary>
+            <version major="1" minor="14"/>
+            <date day="26" month="1" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding support for AnnotationProcessingQuery, and related API changes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="EditMediator"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="179749"/>
+        </change>
+
         <change id="endorsed-classpath">
             <api name="java-api-common"/>
             <summary>Add support for endorsed libraries</summary>
@@ -155,6 +225,24 @@ is the proper place.
             <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="EditMediator"/>
             <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="SourceRootsUi"/>
             <issue number="150357"/>
+        </change>
+        <change id="ProjectInfoImpl">
+            <api name="java-api-common"/>
+            <summary>Reusable implementation of ProjectInformation</summary>
+            <version major="1" minor="18"/>
+            <date day="18" month="5" year="2010"/>
+            <author login="mvfranz"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Created a reusable implementation of ProjectInformation that can be
+                    used within the Java language projects.  Provide two factory methods
+                    for creation in QuerySupport, one that uses AntProjectHelper and one
+                    that uses UpdateHelper. 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="110886"/>
         </change>
 
     </changes>

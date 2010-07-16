@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,6 +82,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         RefactoringInfo.ChangeType changeType = null;
         List<FileObject> fileList = new LinkedList<FileObject>();
@@ -116,8 +120,10 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                     final String[] oldNames = new String[1];
                     try {
                         source.runUserActionTask(new CancellableTask<CompilationController>() {
+                            @Override
                             public void cancel() {
                             }
+                            @Override
                             public void run(CompilationController controller) throws Exception {
                                 controller.toPhase(JavaSource.Phase.RESOLVED);
                                 Element el = tpHandle.resolveElement(controller);
@@ -130,7 +136,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                                         Element parentEl = el.getEnclosingElement();
                                         if (parentEl.getKind() == ElementKind.METHOD
                                                 && "initComponents".equals(parentEl.getSimpleName().toString()) // NOI18N
-                                                && ((ExecutableElement)parentEl).getParameters().size() == 0) {
+                                                && ((ExecutableElement)parentEl).getParameters().isEmpty()) {
                                             changeTypes[0] = RefactoringInfo.ChangeType.VARIABLE_RENAME;
                                         }
                                         break;
@@ -227,21 +233,26 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             this.refInfo = refInfo;
         }
 
+        @Override
         public Problem preCheck() {
             return null;
         }
 
+        @Override
         public Problem checkParameters() {
             return null;
         }
 
+        @Override
         public Problem fastCheckParameters() {
             return null;
         }
 
+        @Override
         public void cancelRequest() {
         }
 
+        @Override
         public Problem prepare(RefactoringElementsBag refactoringElements) {
             // even if guarded blocks are not affected directly we might want some changes
             for (FileObject file : refInfo.getOriginalFiles()) {

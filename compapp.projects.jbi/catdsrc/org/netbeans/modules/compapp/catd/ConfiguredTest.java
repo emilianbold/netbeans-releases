@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,7 +45,6 @@ package org.netbeans.modules.compapp.catd;
 
 import org.netbeans.modules.compapp.catd.n2m.Output;
 import org.netbeans.modules.compapp.catd.n2m.Input;
-import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -71,14 +73,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.transform.TransformerFactory;
@@ -90,7 +90,6 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.MimeHeaders;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
@@ -110,16 +109,18 @@ import org.netbeans.modules.xml.xdm.diff.Delete;
 import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
+import javax.xml.namespace.QName;
 //import org.netbeans.junit.NbTestCase;
+import javax.xml.soap.SOAPConstants;
 import org.netbeans.modules.compapp.catd.n2m.Send;
 import org.netbeans.modules.compapp.catd.n2m.Wait;
 
 import org.netbeans.modules.compapp.catd.n2m.WaitTillNextTick;
 import org.netbeans.modules.compapp.catd.util.Util;
-import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
-import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeDiff;
 import org.netbeans.modules.xml.xdm.diff.NodeInfo;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Test the HTTP SOAP processing
@@ -134,6 +135,8 @@ public class ConfiguredTest extends TestCase {
 
     public final static String COMPARISON_TYPE_EQUALS = "equals"; // NOI18N
 
+    public final static String COMPARISON_TYPE_SET = "set"; //NOI18N
+
     private static final String TEST_IN_PROGRESS_VAL = "progress"; // NOI18N
 
     private static final String TEST_IN_PROGRESS_KEY = "featurestatus"; // NOI18N
@@ -143,6 +146,9 @@ public class ConfiguredTest extends TestCase {
     private static final String OVERWRITE_EMPTY_OUTPUT_MSG =
             "The expected output file for this test case was empty. " +
             "The most recent output is saved as the test case's expected output file for comparison during later test runs."; // NOI18N
+
+    private static String OUT_OF_MEMORY_ERROR_MSG =
+            "JUnit Ant Task OutOfMemoryError: Please increase the -Xmx JVM setting in the two JUnit Ant tasks in nbproject/build-impl.xml.";
 
     public final static String NS_PREFIX = "xmlns"; // NOI18N
 
@@ -157,6 +163,7 @@ public class ConfiguredTest extends TestCase {
     private static final XDMUtil xdmUtil = new XDMUtil();
     private String mIndent;
     static String EMPTY = ""; // NOI18N
+    static boolean GENERATE_ATS_OUTPUT = "true".equalsIgnoreCase(System.getProperty("GenerateATSOutput"));
 
 
     public ConfiguredTest(String name, String methodName) {
@@ -193,13 +200,14 @@ public class ConfiguredTest extends TestCase {
         // Set up the mConnection and factories
         mSoapConnFactory = SOAPConnectionFactory.newInstance();
         mConnection = mSoapConnFactory.createConnection();
-        mMessageFactory = MessageFactory.newInstance();
+        //mMessageFactory = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
 
-        // #114295 Disable warning message for NB 6.0
-        Logger.getLogger("org.netbeans.modules.editor.impl.KitsTracker").setLevel(Level.SEVERE);
 
-        // #128868 Disable warning message for NB 6.1
-        Logger.getLogger("org.openide.loaders").setLevel(Level.SEVERE);
+        // Disable info message (no longer works for NB 6.8, why?)
+        // Logger.getLogger("org.netbeans.modules.csl.core").setLevel(Level.WARNING);
+        org.openide.filesystems.FileObject fo =
+                org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot();
+        org.openide.filesystems.FileUtil.createFolder(fo, "CslPlugins");
 
     // TEST
     //System.setProperty ("sun.net.client.defaultReadTimeout", "2000");
@@ -214,11 +222,62 @@ public class ConfiguredTest extends TestCase {
     // Thread.sleep(10000);
     }
 
+    private static String set2str(Set<String> set) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("{");
+        for (String e : set) {
+            sb.append(e.toString() + ",");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Asserts that two Strings are equal.
+     */
+    static public void assertEquals(String message, List<Set<String>> expected, List<Set<String>> actual) {
+        String formatted = "";
+        if (message != null) {
+            formatted = message + " ";
+        }
+        if (expected == null && actual == null) {
+            return;
+        }
+        if (expected != null && actual == null) {
+            if (expected.size() == 0 && actual == null) {
+                return;
+            }
+            fail(formatted + "expected " + expected.size() + " sets instead of : null");
+        }
+        if (expected != null && actual != null) {
+            if (expected.size() != actual.size()) {
+                fail(formatted + "expected " + expected.size() + " sets instead of: " + actual.size());
+            }
+            for (int i = 0; i < expected.size(); i++) {
+                Set<String> eSet = expected.get(i);
+                Set<String> aSet = actual.get(i);
+                if (eSet.size() != aSet.size()) {
+                    fail(formatted + "expected set " + i + " has " + eSet.size() + " elements instead of: " + aSet.size());
+                }
+                for (String e : eSet) {
+                    if (!aSet.contains(e)) {
+                        fail(formatted + "expected element " + e + " is not found in actual set " + i + ": " + set2str(aSet));
+                    }
+                }
+            }
+        }
+        return;
+    }
+
     public static junit.framework.Test suite() throws Exception {
 
-        Properties props = System.getProperties();
-        System.out.println(props);
-        String context = props.getProperty("org.netbeans.modules.compapp.catd.context");
+        // Get Http(s)DefaultPort once
+        Util.getHttpDefaultPorts();
+
+        Util.displaySystemProperties();
+
+        String context = System.getProperty("org.netbeans.modules.compapp.catd.context");
         //Load the list of tests that needs to be exercised. The list is a comma seperated
         //value list. Refer to org.netbeans.modules.compapp.test.ui.actions.TestcaseTestAction
         //to know more about how the properties are set.
@@ -233,6 +292,7 @@ public class ConfiguredTest extends TestCase {
 
         FileFilter testPropertiesFilter = new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
                 if (f.isDirectory()) {
                     return false;
@@ -242,8 +302,8 @@ public class ConfiguredTest extends TestCase {
         };
 
         // We want to make sure we don't test the same test case more than once.
-        // This is for backward compatibility. Some existing projects might have the 
-        // same test case defined more than once in the selected-tests.properties 
+        // This is for backward compatibility. Some existing projects might have the
+        // same test case defined more than once in the selected-tests.properties
         // file due to an old bug, which was forgiven previously when we didn't
         // keep the test case order.
         Set<String> processedTestCases = new HashSet<String>();
@@ -292,7 +352,7 @@ public class ConfiguredTest extends TestCase {
                     testProps = Util.loadProperties(testPropertiesFile, context);
                     testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
                     testProps.put("absoluteinputdir", inputDirAbsolutePath);
-                    testProps.put("inputdirname", inputDirName); 
+                    testProps.put("inputdirname", inputDirName);
                     suite.addTest(new ConfiguredTest(testName, "testConcurrentSOAPRequest", testProps));
                 } // FaultHandling.properties files define tests of BC error handling
                 else if (testPropertiesFile.endsWith("FaultHandling.properties")) {
@@ -349,7 +409,7 @@ public class ConfiguredTest extends TestCase {
 
         return suite;
     }
-    
+
     protected static String stackTraceElementToString(StackTraceElement[] ste) {
         String s = "";
         for (int i = 0; i < ste.length; i++) {
@@ -456,7 +516,7 @@ public class ConfiguredTest extends TestCase {
     }
 
     protected static void logResults(Properties properties, String suitePath, String suiteName, String testName, String aValue, String errorString) throws Exception {
-        // first, copy all the files to a given dir 
+        // first, copy all the files to a given dir
         String destDir = suitePath + File.separator + suiteName + File.separator + testName;
         String srcDir = (String) properties.get("absoluteinputdir");
 
@@ -547,7 +607,7 @@ public class ConfiguredTest extends TestCase {
     /**
      * Test of inbound SOAP Request processing.
      */
-    public void testInboundSOAPRequest() throws Exception {
+    public void testInboundSOAPRequest() throws Throwable {
         String destination = mProperties.getProperty("destination");
         String description = mProperties.getProperty("description");
         String soapAction = mProperties.getProperty("soapaction");
@@ -561,6 +621,9 @@ public class ConfiguredTest extends TestCase {
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         boolean logDetails = false;
@@ -589,19 +652,25 @@ public class ConfiguredTest extends TestCase {
 
             //System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " Passed.");
             System.out.println(" Passed.");
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
     /**
      * Test of BC error handling: setting of appropriate HTTP status or Faults
      */
-    public void testFaultHandlingSOAPRequest() throws Exception {
+    public void testFaultHandlingSOAPRequest() throws Throwable {
         String description = mProperties.getProperty("description");
         String destination = mProperties.getProperty("destination");
         String soapAction = mProperties.getProperty("soapaction");
@@ -617,6 +686,9 @@ public class ConfiguredTest extends TestCase {
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         boolean logDetails = false;
@@ -644,24 +716,29 @@ public class ConfiguredTest extends TestCase {
             sendAndCheck(logPrefix, logDetails, destination, inputFile, expectedOutputFile, expectedHttpStatus, expectedHttpWarning, comparisonType, soapAction);
 
             System.out.println(" Passed.");
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
     /**
      * Test of inbound SOAP Request processing.
      */
-    public void testConcurrentSOAPRequest() throws Exception {
+    public void testConcurrentSOAPRequest() throws Throwable {
 
         String description = mProperties.getProperty("description");
         String destination = mProperties.getProperty("destination");
         String soapAction = mProperties.getProperty("soapaction");
-        //String concurrentInvokesStr = mProperties.getProperty("concurrentinvokes");
         String concurrentInvokesStr = mProperties.getProperty("concurrentthreads");
         String invokesPerThreadStr = mProperties.getProperty("invokesperthread");
         String comparisonType = mProperties.getProperty("comparisontype");
@@ -669,12 +746,14 @@ public class ConfiguredTest extends TestCase {
         String testPropertiesFileName = mProperties.getProperty("testpropertiesfilename");
         String inputDir = mProperties.getProperty("absoluteinputdir");
         String inputDirName = mProperties.getProperty("inputdirname");
-        //--String testDirName = inputDir + File.separator + "test" + File.separator;
         String calculateThroughputStr = mProperties.getProperty("calculatethroughput");
         String debugStr = mProperties.getProperty("debug");
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         int concurrentInvokes = Integer.parseInt(concurrentInvokesStr);
@@ -794,10 +873,14 @@ public class ConfiguredTest extends TestCase {
             String result = " Passed.";
             result += " Threads count Success: <" + threadCountSuccess + "> Error: <" + threadCountError + "> Not completed: <" + threadCountStuck + ">";
 
+            int totalInvocations = 0;
+            double timeInSecs = 0;
+            double invocationsPerSecond = 0;
+
             if (calculateThroughput) {
-                int totalInvocations = invokesPerThread * concurrentInvokes;
-                double timeInSecs = duration / 1000.0;
-                double invocationsPerSecond = totalInvocations / timeInSecs;
+                totalInvocations = invokesPerThread * concurrentInvokes;
+                timeInSecs = duration / 1000.0;
+                invocationsPerSecond = totalInvocations / timeInSecs;
                 result += " Throughput: <" + totalInvocations + "> invocations in <" + timeInSecs + ">s = <" + invocationsPerSecond + "> invokes/s";
             }
             if (detail.length() > 0) {
@@ -807,19 +890,37 @@ public class ConfiguredTest extends TestCase {
             } else {
                 System.out.println(result);
             }
-        } catch (Exception ex) {
+            // ATS
+            if (GENERATE_ATS_OUTPUT) {
+                // Format: Result|test name|result|thread success|thread error|thread timeout|thread throughput|throughput time|throughput TPS
+                if (calculateThroughput) {
+                    System.out.printf("Result|%s|Passed|%d|%d|%d|%d|%.2f|%.2f\n",
+                            inputDirName,
+                            threadCountSuccess, threadCountError, threadCountStuck,
+                            totalInvocations, timeInSecs, invocationsPerSecond);
+                } else {
+                    System.out.printf("Result|%s|Passed|%d|%d|%d|-|-|-\n",
+                            inputDirName,
+                            threadCountSuccess, threadCountError, threadCountStuck);
+                }
+            }
+        } catch (Throwable t) {
+            // ATS
             System.out.println(" Failed. (Destination: " + destination + ")");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed. (Destination: " + destination + ")");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
     /**
      * Test of inbound SOAP Request processing.
      */
-    public void testCorrelationSOAPRequest() throws Exception {
+    public void testCorrelationSOAPRequest() throws Throwable {
 
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         //String featureProgressVal = null;
@@ -827,6 +928,9 @@ public class ConfiguredTest extends TestCase {
         String inputDirName = mProperties.getProperty("inputdirname");
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         String description = mProperties.getProperty("description");
@@ -962,20 +1066,25 @@ public class ConfiguredTest extends TestCase {
 
             String result = " Passed.";
             System.out.println(result);
-
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
     /**
      * Test of inbound SOAP Request processing.
      */
-    public void testConcurrentCorrelationSOAPRequest() throws Exception {
+    public void testConcurrentCorrelationSOAPRequest() throws Throwable {
 
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         //String featureProgressVal = null;
@@ -983,6 +1092,9 @@ public class ConfiguredTest extends TestCase {
         String inputDirName = mProperties.getProperty("inputdirname");
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         String description = mProperties.getProperty("description");
@@ -1097,26 +1209,34 @@ public class ConfiguredTest extends TestCase {
 
             String result = " Passed.";
             System.out.println(result);
-
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
     /**
      * Test of inbound SOAP Request processing.
      */
-    public void testConcCorrelationSOAPRequest() throws Exception {
+    public void testConcCorrelationSOAPRequest() throws Throwable {
 
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         String testPropertiesFileName = mProperties.getProperty("testpropertiesfilename");
         String inputDirName = mProperties.getProperty("inputdirname");
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         String description = mProperties.getProperty("description");
@@ -1307,13 +1427,18 @@ public class ConfiguredTest extends TestCase {
 
             String result = " Passed.";
             System.out.println(result);
-
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
@@ -1338,7 +1463,7 @@ public class ConfiguredTest extends TestCase {
      * # The file containing the expected result to compare to the actual result
      * outputfile.1=DocElemOutput.xml
      */
-    public void testFileRequest() throws Exception {
+    public void testFileRequest() throws Throwable {
 
         String description = mProperties.getProperty("description");
         String clearFeeder = mProperties.getProperty("clearfeederdirectory");
@@ -1355,10 +1480,18 @@ public class ConfiguredTest extends TestCase {
         String testTimeoutStr = mProperties.getProperty("testtimeout");
         String inputDir = mProperties.getProperty("absoluteinputdir");
         String inputDirName = mProperties.getProperty("inputdirname");
+        String testRecursive = mProperties.getProperty("testrecursive");
         String debugStr = mProperties.getProperty("debug");
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
+
+        boolean recursiveEnabled = testRecursive != null &&
+                    (testRecursive.equalsIgnoreCase("yes") || testRecursive.equalsIgnoreCase("true"));
+
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         boolean logDetails = false;
@@ -1402,57 +1535,123 @@ public class ConfiguredTest extends TestCase {
             String testRunOutputFile = new File(eaterDirName, eaterFileName).getAbsolutePath();
             String expectedOutputFile = new File(inputDir, outputFileName).getAbsolutePath();
             String logPrefix = inputDirName + "\\" + testPropertiesFileName + ":";
-            //sendAndCheck(logPrefix, logDetails, destination, inputFile, expectedOutputFile, null, null, comparisonType, soapAction);
 
             // Prepare test run directories if applicable
             if (clearFeeder != null && Boolean.valueOf(clearFeeder).equals(Boolean.TRUE)) {
                 if ((absoluteFeederDir != null) && absoluteFeederDir.length() > 0) {
                     File dir = new File(absoluteFeederDir);
-                    deleteDirAndContents(dir, false);
+                    deleteDirAndContents(dir, recursiveEnabled);
                     dir.mkdirs();
                 }
                 // Empty the directory. For safety reasons don't recurse
+                // Exception : if testing recursive - need to clean up also sub dirs etc.
                 if (feederDir != null && feederDir.length() > 0) {
                     File dir = new File(feederDirName);
-                    deleteDirAndContents(dir, false);
+                    deleteDirAndContents(dir, recursiveEnabled);
                     dir.mkdirs();
                 }
             }
             if (clearEater != null && Boolean.valueOf(clearEater).equals(Boolean.TRUE)) {
                 if (absoluteEaterDir != null && absoluteEaterDir.length() > 0) {
                     File dir = new File(absoluteEaterDir);
-                    deleteDirAndContents(dir, false);
+                    deleteDirAndContents(dir, recursiveEnabled);
                     dir.mkdirs();
                 }
                 // Delete the directory and direct contents. For safety reasons don't recurse
                 if (eaterDir != null && eaterDir.length() > 0) {
                     File dir = new File(eaterDirName);
-                    deleteDirAndContents(dir, false);
+                    deleteDirAndContents(dir, recursiveEnabled);
                     dir.mkdirs();
                 }
             }
 
             // Copy inputfile to feeder dir
-            copyFile(new File(inputFile), new File(feederFile));
+            // then : Wait for eater file to appear, or time out
+            boolean filePresent = false;
 
-            // Wait for eater file to appear, or time out
-            boolean filePresent = waitForfile(testRunOutputFile, testTimeoutSecs);
+            if ( recursiveEnabled ) {
+                // in case of testing recursive polling etc
+                // the inputFile is the root directory
+                // where flat files and sub directories to be polled
+                // reside
+
+                // the feederFile where the output files will be written to
+                // note that, even the input can have sub directories
+                // the output are always flag files
+
+                // e.g. current working dir is:
+                // <driver-tests>\filebc\FileBCTests\FILE_RECURSIVE_ON_DEMAND_APP\test\FILE_RECURSIVE_ON_DEMAND_TEST
+                // the inputFile is a sub directory "data"
+                // the actual data to be copied to the test dir are, for example:
+                // "inbound" - the root dir for all the messages and dirs to be polled by file inbound
+                // "ondemand" - the root dir for all the messages and dirs to be fetched by on-demand reading
+
+                // the feederFile is:
+                // <driver-tests>\filebc\FileBCTests\FILE_RECURSIVE_ON_DEMAND_APP\test\FILE_RECURSIVE_ON_DEMAND_TEST/test
+                // the sample trigger data and sample data to be fetched will be copied here
+                // to trigger the end to end message routing.
+                //
+                // the output will also be written here under a sub dir indicated by:
+                // eaterfile=output
+                //
+                File feederArea = new File(feederFile);
+                File tmpFeederArea = new File(feederArea.getParentFile(), UUID.randomUUID().toString());
+                copyTree(new File(inputFile), tmpFeederArea);
+                if ( tmpFeederArea.exists() )
+                    tmpFeederArea.renameTo(feederArea);
+                else
+                    fail("failed to prepare test files in directory: " + feederArea.getAbsolutePath());
+                File outputExpected = new File(expectedOutputFile);
+                int expectedCount = 0;
+                if (outputExpected.isDirectory()) {
+                    // use regex filter to avoid dir entries - such as CVS
+                    File[] expectedEntries = outputExpected.listFiles(new RegexFileFilter(".*"));
+                    if (expectedEntries != null) {
+                        expectedCount = expectedEntries.length;
+                    }
+                } else {
+                    fail("can not locate the directory where the expected output files are stored: path=" + outputExpected.getPath());
+                }
+                File outputDir = new File(testRunOutputFile);
+                int fileReceived = waitForOutput(outputDir, testTimeoutSecs, expectedCount, new RegexFileFilter(".*"));
+                if (fileReceived == expectedCount) {
+                    if (COMPARISON_TYPE_IDENTICAL.equals(comparisonType)) {
+                        // string compare
+                        checkExpectedOutput(outputDir, outputExpected);
+                    } else {
+                        fail("only support identical comparison, comparisonType: " + comparisonType);
+                    }
+                } else {
+                    fail("expected :" + expectedCount + "output files, received: " + fileReceived);
+                }
+            } else {
+                // input dir is one level and sub dirs are not polled
+                copyFile(new File(inputFile), new File(feederFile));
+                filePresent = waitForfile(testRunOutputFile, testTimeoutSecs);
+
             if (!filePresent) {
                 fail("Timed out waiting for file " + testRunOutputFile + " to appear");
             }
 
-            // Compare eater file to expected output
+                // Compare eater file to expected output
             ByteArrayOutputStream outputStream = getFileContentsAsOS(testRunOutputFile);
             File testExpectedOutputFile = new File(expectedOutputFile);
             checkExpectedOutput(logPrefix, logDetails, outputStream, testExpectedOutputFile, comparisonType);
+            }
 
             System.out.println(" Passed.");
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
@@ -1477,7 +1676,7 @@ public class ConfiguredTest extends TestCase {
      * # The file containing the expected result to compare to the actual result
      * output.expected=expected.xml
      */
-    public void testFtpRequest() throws Exception {
+    public void testFtpRequest() throws Throwable {
 
         String description = mProperties.getProperty("test.desc");
         String clearInputDir = mProperties.getProperty("clear.input.dir");
@@ -1510,6 +1709,9 @@ public class ConfiguredTest extends TestCase {
 
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test ".concat(testCaseDirectory).concat("\\").concat(testPropertiesFile).concat(" in Development"));
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", testCaseDirectory);
+            }
             return;
         }
 
@@ -1572,7 +1774,7 @@ public class ConfiguredTest extends TestCase {
             dirData = testCaseDirectoryFullPath + File.separator + dataDir;
             dirExpected = testCaseDirectoryFullPath + File.separator + expectedOutputDir;
 
-            // Copy input data (message file(s)) to input dir where the file bc is polling 
+            // Copy input data (message file(s)) to input dir where the file bc is polling
             int inputCopied = 0;
 
             if (inputCount > 0) {
@@ -1684,22 +1886,20 @@ public class ConfiguredTest extends TestCase {
             System.out.println();
             System.out.println("Test ".concat(testCaseDirectory).concat("\\").concat(testPropertiesFile).concat(" Passed."));
             System.out.flush();
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", testCaseDirectory);
+            }
+        } catch (Throwable t) {
             System.out.println();
             System.out.println("Test ".concat(testCaseDirectory).concat("\\").concat(testPropertiesFile).concat(" Failed."));
             System.out.flush();
-            if (logDetails) {
-                ex.printStackTrace();
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", testCaseDirectory);
             }
-            throw ex;
-        } catch (Error er) {
-            System.out.println();
-            System.out.println("Test ".concat(testCaseDirectory).concat("\\").concat(testPropertiesFile).concat(" Failed."));
-            System.out.flush();
-            if (logDetails) {
-                er.printStackTrace();
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
             }
-            throw er;
+            throw t;
         }
     }
 
@@ -1751,7 +1951,6 @@ public class ConfiguredTest extends TestCase {
         // for each of the expected message, check the output messages, if there is an identical match,
         // then the test succeeded, otherwise, it is a failure
         if (comparisonType.equals(COMPARISON_TYPE_IDENTICAL)) {
-            //System.out.println("Do IDENTICAL comparison !!!!!!!!!!!!!!");
             File[] expected = dirExpectedObj.listFiles();
             File[] outputs = dirOutObj.listFiles(outputFilter);
             // check each every output has a match in expected
@@ -1785,9 +1984,40 @@ public class ConfiguredTest extends TestCase {
                 assertTrue("Output message " + outputs[i].getPath() + " is not found among expected.", found);
             }
         } else {
-            System.out.println("For FTP BC driver tests, only supports idenitcal comparison between outputs and expected outputs, unsupported comparison type:[" + comparisonType + "]");
+            fail("For FTP BC driver tests, only supports idenitcal comparison between outputs and expected outputs, unsupported comparison type:[" + comparisonType + "]");
         }
-    //System.out.println("Exit output checking ==================================");
+    }
+
+    /**
+     * Check the output received against the expected output.
+     */
+    void checkExpectedOutput(File dirOut, File dirExpected) throws java.io.IOException {
+        // for each of the expected message, check the output messages, if there is an identical match,
+        // then the test succeeded, otherwise, it is a failure
+
+        // use RegexFileFilter to filter out dirs
+        File[] expected = dirExpected.listFiles(new RegexFileFilter(".*"));
+        File[] outputs = dirOut.listFiles(new RegexFileFilter(".*"));
+        // check each every output has a match in expected
+        for (int i = 0; i < outputs.length; i++) {
+            String outMsg = getFileContents(outputs[i]);
+            boolean found = false;
+            for (int j = 0; j < expected.length; j++) {
+                File exp = expected[j];
+                if (exp == null || exp.isDirectory()) {
+                    continue;
+                }
+                String expMsg = getFileContents(exp);
+                if (outMsg.length() == expMsg.length()) {
+                    if (outMsg.equals(expMsg)) {
+                        found = true;
+                        expected[j] = null;
+                        break;
+                    }
+                }
+            }
+            assertTrue("Output message " + outputs[i].getPath() + " is not found among expected.", found);
+        }
     }
 
     class CorrelationTestRunnable extends ConcurrentTestSendOnlyRunnable {
@@ -1830,6 +2060,7 @@ public class ConfiguredTest extends TestCase {
             mReplies = new SOAPMessage[mNoOfInvokes];
         }
 
+        @Override
         public void run() {
             try {
                 String logPrefix = mInputDirName + "\\" + mTestPropertiesFile + " - " + Thread.currentThread().getName() + ":";
@@ -1897,11 +2128,20 @@ public class ConfiguredTest extends TestCase {
         checkExpectedOutput(logPrefix, logDetails, response, testExpectedOutputFileName, comparisonType);
     }
 
+    boolean isSOAP12Binding() {
+        return "SOAP 1.2".equals(mProperties.getProperty("bindingtype"));
+    }
+
     /**
      * read in a soap message from the given input file
      */
     SOAPMessage loadMessage(String logPrefix, boolean logDetails, File testMsgFile) throws SOAPException, IOException {
         //Create and populate the message from a file
+        if (isSOAP12Binding()) {
+            mMessageFactory = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        } else {
+            mMessageFactory = MessageFactory.newInstance();
+        }
         SOAPMessage message = mMessageFactory.createMessage();
         SOAPPart soapPart = message.getSOAPPart();
         StreamSource preppedMsgSrc = new StreamSource(new FileInputStream(testMsgFile));
@@ -1922,6 +2162,11 @@ public class ConfiguredTest extends TestCase {
      */
     SOAPMessage loadMessage(String logPrefix, boolean logDetails, String testMsgFileName) throws SOAPException, IOException {
         //Create and populate the message from a file
+        if (isSOAP12Binding()) {
+            mMessageFactory = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
+        } else {
+            mMessageFactory = MessageFactory.newInstance();
+        }
         SOAPMessage message = mMessageFactory.createMessage();
         SOAPPart soapPart = message.getSOAPPart();
 
@@ -1993,26 +2238,38 @@ public class ConfiguredTest extends TestCase {
             comparisonType = comparisonType.substring(1);
         }
         String testXML = outputStream.toString("UTF-8").trim();
-//        System.out.println("testXML is " + testXML);
-
-        // Temporary fix to make the output file validatable.
-        // The real fix should come from httpsoap bc.
-
-        // Replace old namespace by new namespace
-        testXML = testXML.replaceFirst("xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\"",
-                "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"");
-        testXML = testXML.replaceFirst("xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\"",
-                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/\"");
-
-        // It's possible that the old namespace didn't exist. 
-        // In that case, we insert the new namespace
-        if (testXML.indexOf("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"") == -1) {
-            testXML = testXML.replaceFirst("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">",
-                    "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/\">");
+        //System.out.println("testXML is " + testXML);
+        if (isEmptyOutputAllowed && EMPTY.equals(testXML)) {
+            return;
         }
 
-        if (isEmptyOutputAllowed && (EMPTY.equals(testXML))) {
-            return;
+        // Quick and dirty fix to make the output file validatable.
+        String soapEnvelopeNamespace = isSOAP12Binding() ?
+            SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE :
+            SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
+
+        int startIndex = 0;
+        if (testXML.startsWith("<?")) {
+            startIndex = testXML.indexOf("?>") + 2;
+        }
+
+        int firstStartBracket = testXML.indexOf("<", startIndex);
+        int firstEndBracket = testXML.indexOf(">", startIndex);
+        if (firstStartBracket >= 0 && firstEndBracket >= 0 && firstEndBracket > firstStartBracket) {
+            String envelopeBracket = testXML.substring(firstStartBracket, firstEndBracket + 1);
+            int prefixColon = envelopeBracket.indexOf(":Envelope");
+            if (prefixColon >= 0) {
+                String envelopePrefix = envelopeBracket.substring(1, prefixColon);
+                envelopeBracket = envelopeBracket.replaceFirst(
+                            "<" + envelopePrefix + ":Envelope xmlns:" + envelopePrefix + "=\"" + soapEnvelopeNamespace + "\">",
+                            "<" + envelopePrefix + ":Envelope xmlns:" + envelopePrefix + "=\"" + soapEnvelopeNamespace + "\" " +
+                            System.getProperty("line.separator") +
+                            "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                            System.getProperty("line.separator") +
+                            "    xsi:schemaLocation=\"" + soapEnvelopeNamespace + " " + soapEnvelopeNamespace + "\">");
+                testXML = testXML.substring(0, firstStartBracket) + envelopeBracket +
+                        testXML.substring(firstEndBracket + 1);
+            }
         }
 
         String inputDirName = mProperties.getProperty("inputdirname");  // currently also serves as test case name
@@ -2057,7 +2314,7 @@ public class ConfiguredTest extends TestCase {
             boolean isSimilar = false;
 
             if (!controlXML.equals(EMPTY)) {
-                // Skip diff computation to avoid SAXParserException because of empty file                
+                // Skip diff computation to avoid SAXParserException because of empty file
                 isSimilar = this.testCompareXMLEquals(controlXML, testXML);
             } else {
                 isSimilar = testXML.equals(EMPTY);
@@ -2066,7 +2323,7 @@ public class ConfiguredTest extends TestCase {
             if (!isSimilar || mGenerateOutputOnSuccess) {
                 File actualOutputFile = getActualOutputFile(actualOutputDir, isSimilar);
 
-                writeToFile(actualOutputFile, removeIndent(formatString(testXML, mIndent), mIndent));
+                writeToFile(actualOutputFile, testXML); //removeIndent(formatString(testXML, mIndent), mIndent));
 
                 String timeStampPrefix = getActualOutputTimeStampPrefix(actualOutputFile);
                 //--assertTrue("Response is not similar enough to be considered 'equal' to expected output. \nreceived: " + testXML + "\nexpected: " + controlXML + "\ndifference:" + difference, difference.similar());
@@ -2090,7 +2347,7 @@ public class ConfiguredTest extends TestCase {
 
             if (!isIdentical || mGenerateOutputOnSuccess) {
                 File actualOutputFile = getActualOutputFile(actualOutputDir, isIdentical);
-                writeToFile(actualOutputFile, removeIndent(formatString(testXML, mIndent), mIndent));
+                writeToFile(actualOutputFile, testXML); //removeIndent(formatString(testXML, mIndent), mIndent));
 
                 String timeStampPrefix = getActualOutputTimeStampPrefix(actualOutputFile);
                 //--assertTrue("Response is not identical to expected output. \nreceived: " + testXML + "\nexpected: " + controlXML + "\ndifference:" + difference, difference.identical());
@@ -2207,7 +2464,7 @@ public class ConfiguredTest extends TestCase {
         try {
             transformerFactory.setAttribute("indent-number", new Integer(2));
         } catch (IllegalArgumentException e) {
-            // ignore 
+            // ignore
         }
 
         Transformer transformer = transformerFactory.newTransformer();
@@ -2234,10 +2491,11 @@ public class ConfiguredTest extends TestCase {
         try {
             transformerFactory.setAttribute("indent-number", new Integer(2));
         } catch (IllegalArgumentException e) {
-            // ignore 
+            // ignore
         }
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         if (reply != null) {
             SOAPPart replySOAPPart = reply.getSOAPPart();
@@ -2249,20 +2507,49 @@ public class ConfiguredTest extends TestCase {
 //                System.out.println(prefix + "-> " + uri);
 //            }
 
+            // #170297: Should not excape xml tags embedded within CDATA section.
+            List<QName> cdataContainerElementQNames = new ArrayList<QName>();
+            findCDataContainerElementQNames(replySOAPPart.getDocumentElement(), cdataContainerElementQNames);
+            if (cdataContainerElementQNames.size() > 0) {
+                String cdataSectionElements = "";
+                for (QName qname : cdataContainerElementQNames) {
+                    cdataSectionElements += qname + " ";
+                }
+                transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, cdataSectionElements);
+            }
+
             Source sourceContent = replySOAPPart.getContent();
             try {
-                StreamResult result = new StreamResult(new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8")));
+                StreamResult result =
+                        new StreamResult(
+                        new BufferedWriter(
+                        new OutputStreamWriter(outputStream, "UTF-8")));
                 transformer.transform(sourceContent, result);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         if (logDetails) {
-
-
             System.out.println("\n" + logPrefix + " RESPONSE:\n" + outputStream.toString());
         }
         return outputStream;
+    }
+
+    static void findCDataContainerElementQNames(Node node, List<QName> cdataContainerElementQNames) {
+        if (node instanceof Text) {
+            String text = node.getTextContent();
+            if (text.startsWith("<![CDATA[") && text.endsWith("]]>")) {
+                Element p = (Element) node.getParentNode();
+                QName qname = new QName(p.getNamespaceURI(), p.getLocalName());
+                cdataContainerElementQNames.add(qname);
+            }
+        } else if (node.hasChildNodes()) {
+            NodeList childNodes = node.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node childNode = childNodes.item(i);
+                findCDataContainerElementQNames(childNode, cdataContainerElementQNames);
+            }
+        }
     }
 
     /**
@@ -2388,6 +2675,36 @@ public class ConfiguredTest extends TestCase {
         return count;
     }
 
+    /**
+     *
+     * @param srcRoot - src directory where pre-populated test files reside - can be in sub directories
+     * @param destRoot - the directory where the test will consume inbound messages, note that, when the test
+     * harness is executed, the corresponding application has been deployed and started, so assuming, the
+     * feeder dir is being polled, in order to make sure there is no partial read / lost of write of the
+     * feeder files, the feeder files are copied over using a UUID sub dir, it is renamed to the specified
+     * feeder dir upon completion of the populating of all the files and sub directories.
+     *
+     * @throws java.io.IOException
+     */
+    private void copyTree(File srcRoot, File destRoot) throws IOException {
+        if (!srcRoot.exists()) {
+            fail("Original directory does not exist when preparing test data..., src=" + srcRoot + " dest=" + destRoot);
+        }
+        destRoot.mkdirs();
+        File[] entries = srcRoot.listFiles();
+        File entry = null;
+        for (int i = 0; i < entries.length; i++) {
+            entry = entries[i];
+            if (entry.isDirectory()) {
+                // skip cvs dir
+                if ( !entry.getName().equalsIgnoreCase("CVS") )
+                    copyTree(entry, new File(destRoot, entry.getName()));
+            } else {
+                copyFile(entry, new File(destRoot, entry.getName()));
+            }
+        }
+    }
+
     boolean deleteDirAndContents(File path, boolean recursive) {
         if (path.exists()) {
             File[] files = path.listFiles();
@@ -2457,8 +2774,8 @@ public class ConfiguredTest extends TestCase {
             }
             entries = outDir.listFiles(outputFilter);
             if (entries != null) {
+                received = entries.length;
                 if (entries.length >= expectedCount) {
-                    received = entries.length;
                     break;
                 }
             }
@@ -2501,15 +2818,22 @@ public class ConfiguredTest extends TestCase {
      * wait $seconds (for example: "wait 2")
      * ===============End of example script file=============
      */
-    public void testN2MInboundSOAPRequest() throws Exception {
+    public void testN2MInboundSOAPRequest() throws Throwable {
         String description = mProperties.getProperty("description");
         String destination = mProperties.getProperty("destination");
+        String comparisonType = mProperties.getProperty("comparisontype");
+        if (comparisonType == null) {
+            comparisonType = COMPARISON_TYPE_IDENTICAL;
+        }
         String testPropertiesFileName = mProperties.getProperty("testpropertiesfilename");
         String inputDir = mProperties.getProperty("absoluteinputdir");
         String inputDirName = mProperties.getProperty("inputdirname");
         String featureProgressVal = mProperties.getProperty(TEST_IN_PROGRESS_KEY);
         if (featureProgressVal != null && featureProgressVal.equals(TEST_IN_PROGRESS_VAL)) {
             System.out.println("Test " + inputDirName + "\\" + testPropertiesFileName + " in Development");
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Development|-|-|-|-|-|-\n", inputDirName);
+            }
             return;
         }
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
@@ -2529,10 +2853,18 @@ public class ConfiguredTest extends TestCase {
             int outputCount = Integer.parseInt(mProperties.getProperty("output.count"));
             Map outputTable = new HashMap();
             for (int i = 0; i < outputCount; i++) {
+                Output output = null;
                 String name = "output." + i;
                 File actual = new File(inputDir, mProperties.getProperty(name + ".actualResultFile"));
                 File expected = new File(inputDir, mProperties.getProperty(name + ".expectedResultFile"));
-                Output output = new Output(name, actual, expected);
+                String contentType = mProperties.getProperty(name + ".contentType");
+                if (contentType != null && contentType.equals("set")) {
+                    String linesPerElement = mProperties.getProperty(name + ".linesPerElement");
+                    String setSizes = mProperties.getProperty(name + ".setSizes");
+                    output = new Output(name, actual, expected, linesPerElement, setSizes);
+                } else {
+                    output = new Output(name, actual, expected);
+                }
                 output.removeActual();
                 outputTable.put(name, output);
             }
@@ -2546,18 +2878,25 @@ public class ConfiguredTest extends TestCase {
             for (int i = 0; i < outputCount; i++) {
                 String name = "output." + i;
                 Output output = (Output) outputTable.get(name);
-                String exp = output.getExpectedWithoutCRNL();
-                String act = output.getActualWithoutCRNL();
+                List<Set<String>> exp = output.getExpected();
+                List<Set<String>> act = output.getActual();
                 assertEquals(name, exp, act);
                 output.removeActual();
             }
             System.out.println(" Passed.");
-        } catch (Exception ex) {
+            if (GENERATE_ATS_OUTPUT) {
+                // Format: Result|test name|result|thread success|thread error|thread timeout|thread throughput|throughput time|throughput TPS
+                System.out.printf("Result|%s|Passed|-|-|-|-|-|-\n", inputDirName);
+            }
+        } catch (Throwable t) {
             System.out.println(" Failed.");
-            throw ex;
-        } catch (Error er) {
-            System.out.println(" Failed.");
-            throw er;
+            if (GENERATE_ATS_OUTPUT) {
+                System.out.printf("Result|%s|Failed|-|-|-|-|-|-\n", inputDirName);
+            }
+            if (t instanceof OutOfMemoryError) {
+                System.out.println(OUT_OF_MEMORY_ERROR_MSG);
+            }
+            throw t;
         }
     }
 
@@ -2573,10 +2912,13 @@ public class ConfiguredTest extends TestCase {
             XDMUtil.ComparisonCriteria aCriteria) {
         boolean result = false;
         try {
+//            System.out.println("testCompareXMLIdentical:");
+//            System.out.println("    controlStr: " + controlStr);
+//            System.out.println("actualStr: " + actualStr);
             List<Difference> diffs = xdmUtil.compareXML(controlStr, actualStr, aCriteria);
 
-            // Note: XDMUtil has already filtered out unnecessary ns attribute 
-            // differences. The rest of ns attribute differences are important 
+            // Note: XDMUtil has already filtered out unnecessary ns attribute
+            // differences. The rest of ns attribute differences are important
             // and therefore should no longer be filtered out. See #108234.
             // this.filterNSAttrDiffs(diffs);
 
@@ -2588,11 +2930,52 @@ public class ConfiguredTest extends TestCase {
 
             if (diffs.size() == 0) {
                 result = true;
+            } else {
+                logDifferences(diffs);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    private static void logDifferences(List<Difference> diffs) {
+        try {
+            System.out.println("");
+            for (Difference diff : diffs) {
+                if (diff instanceof Change) {
+                    Node oldNode = diff.getOldNodeInfo().getNode();
+                    System.out.println("  * Difference (Change): " + oldNode.getNodeName());
+                    Change change = (Change) diff;
+                    if (change.isAttributeChanged()) {
+                        for (AttributeDiff attrDiff : change.getAttrChanges()) {
+                            if (attrDiff.getOldAttribute() != null) {
+                                String attrName = attrDiff.getOldAttribute().getName();
+                                System.out.println("    ** attribute change: " + attrName);
+                            } else if (attrDiff.getNewAttribute() != null) {
+                                String attrName = attrDiff.getNewAttribute().getName();
+                                System.out.println("    ** attribute change: " + attrName);
+                            }
+                        }
+                    }
+                    if (change.isTokenChanged()) {
+                        System.out.println("    ** token change ");
+                    }
+                    if (change.isPositionChanged()) {
+                        System.out.println("    ** position change ");
+                    }
+                } else if (diff instanceof Add) {
+                    Node newNode = diff.getNewNodeInfo().getNode();
+                    System.out.println("  * Difference (Add): " + newNode.getNodeName());
+
+                } else if (diff instanceof Delete) {
+                    Node oldNode = diff.getOldNodeInfo().getNode();
+                    System.out.println("  * Difference (Delete): " + oldNode.getNodeName());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Difference logging error.");
+        }
     }
 
     private Map concurrentCorrelationBuildInfo(Properties properties) throws Exception {
@@ -2701,8 +3084,8 @@ public class ConfiguredTest extends TestCase {
             allInputValuesList.add(inputValuesList);
         }
 
-        //****************************** 
-        // create the inputFiles for the given values.  
+        //******************************
+        // create the inputFiles for the given values.
         // Size inner will tell the number of files to be created
         for (int i = 0; i < sizeInner; i++) {
             String s = inputFileTemplateString;
@@ -2724,7 +3107,7 @@ public class ConfiguredTest extends TestCase {
             outputFw.flush();
             outputFw.close();
 
-            // create the InputSet 
+            // create the InputSet
             // Put all these values in a Property Object and return
             Map singleInvokeMap = new HashMap();
 
@@ -2766,8 +3149,8 @@ public class ConfiguredTest extends TestCase {
             }
             allOutputValuesList.add(outputValuesList);
         }
-        //****************************** 
-        // create the outputFiles for the given values.  
+        //******************************
+        // create the outputFiles for the given values.
         // Size inner will tell the number of files to be created
         for (int i = 0; i < sizeInner; i++) {
             String s = outputFileTemplateString;
@@ -2870,13 +3253,14 @@ public class ConfiguredTest extends TestCase {
             diffs.remove((Difference) removeItr.next());
         }
     }*/
-    
+
     /**
-     * Filters out namespace definition differences on
-     * {http://schemas.xmlsoap.org/soap/envelope/}Envelope.
-     * 
-     * The existing samples' test case expected output contain the following 
-     * standard namespace definitions which are missing in the new actual output 
+     * Filters out namespace definition differences on:
+     * {http://schemas.xmlsoap.org/soap/envelope/}Envelope, and
+     * {http://www.w3.org/2003/05/soap-envelope}Envelope.
+     *
+     * The existing samples' test case expected output contain the following
+     * standard namespace definitions which are missing in the new actual output
      * and is causing the test case to fail.
      *     xmlns:xsd="..."
      *     xmlns:xsi="..."
@@ -2886,6 +3270,10 @@ public class ConfiguredTest extends TestCase {
         List<Difference> removeList = new ArrayList<Difference>();
 
         for (Difference diff : diffs) {
+            if (!(diff instanceof Change)) {
+                continue;
+            }
+
             boolean remove = false;
 
             NodeInfo oldNodeInfo = diff.getOldNodeInfo();
@@ -2893,20 +3281,27 @@ public class ConfiguredTest extends TestCase {
 
             Node oldNode = oldNodeInfo.getNode();
             Node newNode = newNodeInfo.getNode();
-            
-            if (diff instanceof Change &&
-                    oldNode.getNamespaceURI().equals("http://schemas.xmlsoap.org/soap/envelope/") &&
-                    oldNode.getLocalName().equals("Envelope") &&
-                    newNode.getNamespaceURI().equals("http://schemas.xmlsoap.org/soap/envelope/") &&
-                    newNode.getLocalName().equals("Envelope")) {
-                
+
+            String oldName = oldNode.getLocalName();
+            String newName = newNode.getLocalName();
+
+            String oldNamespace = oldNode.getNamespaceURI();
+            String newNamespace = newNode.getNamespaceURI();
+
+            if (oldName.equals("Envelope") &&
+                    newName.equals("Envelope") &&
+                    (oldNamespace.equals(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE) &&
+                    newNamespace.equals(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE) ||
+                    oldNamespace.equals(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE) &&
+                    newNamespace.equals(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE))) {
+
                 for (AttributeDiff attrDiff : ((Change) diff).getAttrChanges()) {
                     Attribute oldAttr = attrDiff.getOldAttribute();
                     Attribute newAttr = attrDiff.getNewAttribute();
-                    if (oldAttr != null && newAttr == null || 
+                    if (oldAttr != null && newAttr == null ||
                             oldAttr == null && newAttr != null) {
                         Attribute nonNullAttr = newAttr == null ? oldAttr : newAttr;
-                        if (nonNullAttr.getName().startsWith("xmlns:")) {
+                        if (nonNullAttr.getName().startsWith("xmlns")) {
                             remove = true;
                         } else {
                             remove = false;
@@ -3203,9 +3598,9 @@ public class ConfiguredTest extends TestCase {
                 } else if ("wait-till-next-tick".startsWith(cmd[0])) {
                     if (cmd.length == 2) {
                         taskList.add(new WaitTillNextTick(cmd[1]));
-                    } else if (cmd.length > 2) {   
+                    } else if (cmd.length > 2) {
                         taskList.add(new WaitTillNextTick(cmd[1], cmd[2]));
-                    }    
+                    }
                 }
             }
         } catch (Exception e) {
@@ -3241,7 +3636,7 @@ public class ConfiguredTest extends TestCase {
     public final static void main(String[] args) {
         //new ConfiguredTest("testInboundSOAPRequest").run();
         //new ConfiguredTest("testInboundSOAPRequest", "testInboundSOAPRequest").run();
-        //System.out.println("Hello");
+        System.out.println("Hello");
         try {
             junit.framework.Test test = ConfiguredTest.suite();
             //new ConfiguredTest("testCorrelationSOAPRequest", "testCorrelationSOAPRequest").run();
@@ -3251,7 +3646,7 @@ public class ConfiguredTest extends TestCase {
         }
     }
 
-    public final static void main1(String[] args) throws Exception {
+    public final static void main1(String[] args) throws Throwable {
         Properties props = System.getProperties();
         System.out.println(props);
 
@@ -3277,6 +3672,7 @@ public class ConfiguredTest extends TestCase {
 
                     FileFilter testPropertiesFilter = new FileFilter() {
 
+                        @Override
                         public boolean accept(File f) {
                             if (f.isDirectory()) {
                                 return false;
@@ -3316,6 +3712,7 @@ public class ConfiguredTest extends TestCase {
             this.pattern = Pattern.compile(regex);
         }
 
+        @Override
         public boolean accept(File f) {
             if (f.isDirectory()) {
                 return false;

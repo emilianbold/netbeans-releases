@@ -31,13 +31,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 19 April 2006
  */
@@ -78,7 +75,7 @@ public class OpenInEditorAction extends BpelNodeAction {
             final Line l = lc.getLineSet().getOriginal(1);
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                    l.show(Line.SHOW_GOTO);
                 }
             });
         } catch (DataObjectNotFoundException ex) {

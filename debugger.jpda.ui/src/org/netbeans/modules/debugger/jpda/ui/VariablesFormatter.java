@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -313,6 +316,14 @@ public class VariablesFormatter implements Cloneable {
 
 
     private static VariablesFormatter[] createDefaultFormatters() {
+        VariablesFormatter charSequence = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CharSequenceFormatter"));
+        charSequence.setClassTypes("java.lang.CharSequence");
+        charSequence.setIncludeSubTypes(true);
+        charSequence.setChildrenFormatCode(null);
+        charSequence.setChildrenExpandTestCode("false");
+        charSequence.setValueFormatCode("toString()");
+        charSequence.isDefault = true;
+
         VariablesFormatter collection = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CollectionFormatter"));
         collection.setClassTypes("java.util.Collection");
         collection.setIncludeSubTypes(true);
@@ -338,7 +349,13 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
-        return new VariablesFormatter[] { collection, map, mapEntry };
+        VariablesFormatter enumFormatter = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_EnumFormatter"));
+        enumFormatter.setClassTypes("java.lang.Enum");
+        enumFormatter.setIncludeSubTypes(true);
+        enumFormatter.setValueFormatCode("toString()");
+        enumFormatter.isDefault = true;
+
+        return new VariablesFormatter[] { charSequence, collection, map, mapEntry, enumFormatter };
     }
 
 

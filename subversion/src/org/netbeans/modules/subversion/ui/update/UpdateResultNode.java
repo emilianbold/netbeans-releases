@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.update;
 
+import java.awt.EventQueue;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
@@ -51,6 +55,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.lookup.Lookups;
@@ -63,7 +68,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 class UpdateResultNode extends AbstractNode {
     
-    private FileUpdateInfo info;
+    private final FileUpdateInfo info;
 
     static final String COLUMN_NAME_NAME        = "name";   // NOI18N
     static final String COLUMN_NAME_PATH        = "path";   // NOI18N
@@ -77,9 +82,15 @@ class UpdateResultNode extends AbstractNode {
     private String statusDisplayName;
     
     private String htmlDisplayName;
-    
+    private String relativePath;
+
+    /**
+     * I/O accessed, do not call in AWT
+     * @param info
+     */
     public UpdateResultNode(FileUpdateInfo info) {
         super(Children.LEAF, Lookups.fixed(new Object [] { info }));
+        assert !EventQueue.isDispatchThread();
         this.info = info;
         initProperties();
         refreshHtmlDisplayName();
@@ -160,6 +171,18 @@ class UpdateResultNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
 
+    private String getLocation () {
+        if (relativePath == null) {
+            try {
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(info.getFile()).toString() : SvnUtils.getRelativePath(info.getFile());
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+                relativePath = "";                                      //NOI18N
+            }
+        }
+        return relativePath;
+    }
+
     private abstract class SyncFileProperty extends PropertySupport.ReadOnly<String> {
         protected SyncFileProperty(String name, Class<String> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
@@ -178,12 +201,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Desc")); // NOI18N
-            try {                
-                shortPath = SvnUtils.getRelativePath(info.getFile());
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
-                shortPath = "";
-            }                
+            shortPath = getLocation();
             setValue("sortkey", shortPath + "\t" + UpdateResultNode.this.getName()); // NOI18N
         }
         public String getValue() throws IllegalAccessException, InvocationTargetException {
@@ -207,12 +225,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;        
         public FileStatusProperty() {            
             super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Desc"));            
-            try {
-                shortPath = SvnUtils.getRelativePath(info.getFile());
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
-                shortPath = "";
-            }                
+            shortPath = getLocation();
             String sortable = Integer.toString(info.getAction());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName());
         }

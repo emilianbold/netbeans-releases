@@ -54,7 +54,7 @@ public class BpelWatch {
         
         myNbWatch.setExpression(expression);
         
-        //don't need to re-evaluate since BPELWatchImpl will be re-created
+        //don't need to re-evaluate since BPELWatch will be re-created
         //evaluate();
     }
 

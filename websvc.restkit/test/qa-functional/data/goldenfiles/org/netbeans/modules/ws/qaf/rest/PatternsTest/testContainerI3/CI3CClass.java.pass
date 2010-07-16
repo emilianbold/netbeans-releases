@@ -8,11 +8,12 @@ package o.n.m.ws.qaf.rest.patterns;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.POST;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import javax.ws.rs.POST;
-import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -41,7 +42,7 @@ public class CI3CClass {
     }
 
     /**
-     * POST method for creating an instance of CI3CClass
+     * POST method for creating an instance of CI3Cl
      * @param content representation for the new resource
      * @return an HTTP response with content of the created resource
      */
@@ -54,10 +55,11 @@ public class CI3CClass {
     }
 
     /**
-     * Sub-resource locator method for  {CI3URI}
+     * Sub-resource locator method for {CI3URI}
      */
     @Path("{CI3URI}")
-    public CI3Cl getCI3Cl() {
-        return new CI3Cl();
+    public CI3Cl getCI3Cl(@PathParam("CI3URI")
+    String CI3URI) {
+        return CI3Cl.getInstance(CI3URI);
     }
 }

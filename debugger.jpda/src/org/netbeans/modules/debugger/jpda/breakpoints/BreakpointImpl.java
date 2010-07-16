@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -67,6 +72,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -80,6 +86,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
@@ -123,6 +130,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     final void set () {
         breakpoint.addPropertyChangeListener (this);
+        if (breakpoint instanceof PropertyChangeListener && isApplicable()) {
+            Session s = debugger.getSession();
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            ((PropertyChangeListener) breakpoint).propertyChange(new PropertyChangeEvent(this, DebuggerEngine.class.getName(), null, de));
+        }
         update ();
     }
     
@@ -148,6 +160,10 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             setRequests ();
         }
     }
+
+    protected boolean isApplicable() {
+        return true;
+    }
     
     protected boolean isEnabled() {
         return true;
@@ -164,7 +180,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (Breakpoint.PROP_DISPOSED.equals(propertyName)) {
             remove();
         } else if (!Breakpoint.PROP_VALIDITY.equals(propertyName) &&
-                   !Breakpoint.PROP_GROUP_NAME.equals(propertyName)) {
+                   !Breakpoint.PROP_GROUP_NAME.equals(propertyName) &&
+                   !Breakpoint.PROP_GROUP_PROPERTIES.equals(propertyName)) {
             if (reader != null) {
                 reader.storeCachedClassName(breakpoint, null);
             }
@@ -192,6 +209,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
+        if (breakpoint instanceof ChangeListener) {
+            Session s = debugger.getSession();
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            ((PropertyChangeListener) breakpoint).propertyChange(new PropertyChangeEvent(this, DebuggerEngine.class.getName(), de, null));
+        }
         compiledCondition = null;
     }
 
@@ -216,11 +238,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
         addEventRequest(r, false);
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
         logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -231,6 +253,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_ALL);
         else
             EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_EVENT_THREAD);
+        r.putProperty("brkpSuspend", getBreakpoint().getSuspend()); // Remember the original breakpoint suspend property
         int hitCountFilter = getBreakpoint().getHitCountFilter();
         if (!ignoreHitCount && hitCountFilter > 0) {
             EventRequestWrapper.addCountFilter(r, hitCountFilter);
@@ -261,6 +284,9 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         } catch (VMDisconnectedExceptionWrapper e) {
             getDebugger ().getOperator ().unregister (r);
             throw e;
+        } catch (InvalidRequestStateExceptionWrapper e) {
+            getDebugger ().getOperator ().unregister (r);
+            throw e;
         }
     }
 
@@ -273,9 +299,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             for (i = 0; i < k; i++) { 
                 EventRequest r = requests.get (i);
                 logger.fine("BreakpointImpl removeEventRequest: " + r);
-                EventRequestManagerWrapper.deleteEventRequest(
-                        VirtualMachineWrapper.eventRequestManager(vm),
-                        r);
+                try {
+                    EventRequestManagerWrapper.deleteEventRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm),
+                            r);
+                } catch (InvalidRequestStateExceptionWrapper irex) {}
                 getDebugger ().getOperator ().unregister (r);
             }
             
@@ -290,9 +318,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (vm == null) return; 
         try {
             logger.fine("BreakpointImpl removeEventRequest: " + r);
-            EventRequestManagerWrapper.deleteEventRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm),
-                    r);
+            try {
+                EventRequestManagerWrapper.deleteEventRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        r);
+            } catch (InvalidRequestStateExceptionWrapper irex) {}
             getDebugger ().getOperator ().unregister (r);
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
@@ -305,8 +335,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     protected abstract EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper;
 
-    private Variable processedReturnVariable;
-    private Throwable conditionException;
+    private final Map<Event, Variable> processedReturnVariable = new HashMap<Event, Variable>();
+    private final Map<Event, Throwable> conditionException = new HashMap<Event, Throwable>();
 
     public boolean processCondition(
             Event event,
@@ -354,6 +384,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                     // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
                 }
                 success = evaluateCondition (
+                        event,
                         condition,
                         threadReference
                     );
@@ -363,7 +394,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 success = true;
             }
             if (success) { // perform() will be called, store the data
-                processedReturnVariable = variable;
+                processedReturnVariable.put(event, variable);
             }
             return success;
         } catch (InternalExceptionWrapper iex) {
@@ -372,6 +403,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             return true; // Stop here
         } catch (VMDisconnectedExceptionWrapper iex) {
             return false; // Let it go
+        } catch (InvalidRequestStateExceptionWrapper irsex) {
+            return false; // Deleted - let it go
         }
     }
 
@@ -384,13 +417,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         //S ystem.out.println("BreakpointImpl.perform");
         boolean resume;
         
-        Variable variable = processedReturnVariable;
-        processedReturnVariable = null;
+        Variable variable = processedReturnVariable.remove(event);
         if (variable == null) {
             variable = debugger.getVariable(value);
         }
         JPDABreakpointEvent e;
-        if (conditionException == null) {
+        Throwable cEx = conditionException.remove(event);
+        if (cEx == null) {
             e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
@@ -403,18 +436,21 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
-                conditionException,
+                cEx,
                 debugger.getThread (threadReference),
                 referenceType,
                 variable
             );
-            conditionException = null;
         }
         getDebugger ().fireBreakpointEvent (
             getBreakpoint (),
             e
         );
-        resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
+        Integer brkpSuspend = (Integer) event.request().getProperty("brkpSuspend");
+        if (brkpSuspend == null) {
+            brkpSuspend = getBreakpoint().getSuspend();
+        }
+        resume = brkpSuspend.intValue() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
         logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
         if (!resume) {
             try {
@@ -458,9 +494,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                         stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
                     }
                     if (stepThreadStatus == ThreadReference.THREAD_STATUS_ZOMBIE) {
-                        EventRequestManagerWrapper.deleteEventRequest(
-                                VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)),
-                                step);
+                        try {
+                            EventRequestManagerWrapper.deleteEventRequest(
+                                    VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)),
+                                    step);
+                        } catch (InvalidRequestStateExceptionWrapper irex) {}
                         debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);
                         continue;
@@ -598,6 +636,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     
     private boolean evaluateCondition (
+        Event event,
         String condition,
         ThreadReference thread
     ) {
@@ -617,7 +656,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 logger.fine("BreakpointImpl: perform breakpoint (condition = " + success + "): " + this + " resume: " + (!success));
                 return success;
             } catch (InvalidExpressionException ex) {
-                conditionException = ex;
+                conditionException.put(event, ex);
                 logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
                 return true; // Act as if the condition was satisfied when it's invalid
             }
@@ -785,5 +824,21 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         public String toString() {
             return reason;
         }
+    }
+
+    private static final class EngineChangeEvent extends ChangeEvent {
+
+        private final DebuggerEngine newEngine;
+
+        public EngineChangeEvent(DebuggerEngine e, DebuggerEngine newEngine) {
+            super(e);
+            this.newEngine = newEngine;
+        }
+
+        @Override
+        public Object getSource() {
+            return newEngine;
+        }
+
     }
 }

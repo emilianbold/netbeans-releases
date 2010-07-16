@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,9 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -179,8 +185,29 @@ public final class FormattingPanelController extends OptionsPanelController {
         if (fire) {
             pcs.firePropertyChange(PROP_CHANGED, true, false);
         }
+
+        // XXX: just use whatever value, it's ignored anyway, this is here in order
+        // to fire property change events on documents, which are then intercepted by
+        // the new view hierarchy (DocumentView)
+        SwingUtilities.invokeLater(new Runnable() {
+            public @Override void run() {
+                JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
+                if (lastFocused != null) {
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
+                }
+                for(JTextComponent jtc : EditorRegistry.componentList()) {
+                    if (lastFocused == null || lastFocused != jtc) {
+                        jtc.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                        jtc.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                        jtc.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
+                    }
+                }
+            }
+        });
     }
-    
+
     public void cancel() {
         boolean fire;
         
@@ -252,6 +279,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         SimpleValueNames.SPACES_PER_TAB,
         SimpleValueNames.TAB_SIZE,
         SimpleValueNames.TEXT_LIMIT_WIDTH,
+        SimpleValueNames.TEXT_LINE_WRAP,
     };
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

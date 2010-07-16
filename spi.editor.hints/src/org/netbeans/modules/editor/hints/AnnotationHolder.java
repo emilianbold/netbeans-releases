@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,6 +104,7 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -145,7 +150,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 if (editorCookie == null) {
                     LOG.log(Level.WARNING,
-                            "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
+                            "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file)); //NOI18N
                 } else {
                     Document doc = editorCookie.getDocument();
 
@@ -181,12 +186,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         propertyChange(null);
 
 //        LOG.log(Level.FINE, null, new Throwable("Creating AnnotationHolder for " + file.getPath()));
-        Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder",
+        Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder", //NOI18N
                     new Object[] {file, this});
     }
 
     private synchronized void init() {
-        errors2Lines = new HashMap<ErrorDescription, List<Position>>();
+        errors2Lines = new IdentityHashMap<ErrorDescription, List<Position>>();
         line2Errors = new HashMap<Position, List<ErrorDescription>>();
         line2Annotations = new HashMap<Position, ParseErrorAnnotation>();
         layer2Errors = new HashMap<String, List<ErrorDescription>>();
@@ -472,7 +477,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 long endTime = System.currentTimeMillis();
 
-                LOG.log(Level.FINE, "updateVisibleRanges: time={0}", endTime - startTime);
+                LOG.log(Level.FINE, "updateVisibleRanges: time={0}", endTime - startTime); //NOI18N
             }
         });
     }
@@ -526,7 +531,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             }
         });
 
-        LOG.log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate);
+        LOG.log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate); //NOI18N
 
         for (ErrorDescription e : errorsToUpdate) {
             //TODO: #115340: e can be for an unknown reason null:
@@ -543,7 +548,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         long endTime = System.currentTimeMillis();
 
-        LOG.log(Level.FINE, "updateAnnotations: time={0}", endTime - startTime);
+        LOG.log(Level.FINE, "updateAnnotations: time={0}", endTime - startTime); //NOI18N
     }
 
     private List<ErrorDescription> getErrorsForLayer(String layer) {
@@ -593,7 +598,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         for (ErrorDescription e : errors) {
             if (!first) {
-                description.append("\n\n");
+                description.append("\n\n"); //NOI18N
             }
             description.append(e.getDescription());
             first = false;
@@ -633,7 +638,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         concatDescription(trueErrors, description);
 
         if (!trueErrors.isEmpty() && !others.isEmpty()) {
-            description.append("\n\n");
+            description.append("\n\n"); //NOI18N
         }
 
         concatDescription(others, description);
@@ -654,7 +659,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         FixData fixes = new FixData(computeFixes(trueErrors), computeFixes(others));
 
-        ParseErrorAnnotation pea = new ParseErrorAnnotation(mostImportantSeverity, fixes, description.toString(), line, this);
+        ParseErrorAnnotation pea = new ParseErrorAnnotation(
+                mostImportantSeverity,
+                fixes,
+                description.toString(),
+                line,
+                this);
         Annotation previous = line2Annotations.put(line, pea);
 
         if (previous != null) {
@@ -713,7 +723,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     endOffset = beginOffset;
                     beginOffset = swap;
 
-                    LOG.warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString());
+                    LOG.warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString()); //NOI18N
                 }
 
                 int[] h = new int[] {beginOffset, endOffset};
@@ -754,24 +764,24 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     StringBuilder sb = new StringBuilder();
 
                     for (ErrorDescription e : filteredDescriptions) {
-                        sb.append("[");
+                        sb.append("["); //NOI18N
                         sb.append(e.getRange().getBegin().getOffset());
-                        sb.append("-");
+                        sb.append("-"); //NOI18N
                         sb.append(e.getRange().getEnd().getOffset());
-                        sb.append("]");
+                        sb.append("]"); //NOI18N
                     }
 
-                    sb.append("=>");
+                    sb.append("=>"); //NOI18N
 
                     for (int[] h2 : currentHighlights) {
-                        sb.append("[");
+                        sb.append("["); //NOI18N
                         sb.append(h2[0]);
-                        sb.append("-");
+                        sb.append("-"); //NOI18N
                         sb.append(h2[1]);
-                        sb.append("]");
+                        sb.append("]"); //NOI18N
                     }
 
-                    LOG.warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString());
+                    LOG.warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString()); //NOI18N
                 }
             }
         }
@@ -898,7 +908,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             throw (IOException) new IOException().initCause(ex);
         } finally {
             long end = System.currentTimeMillis();
-            Logger.getLogger("TIMER").log(Level.FINE, "Errors update for " + layer,
+            Logger.getLogger("TIMER").log(Level.FINE, "Errors update for " + layer, //NOI18N
                     new Object[] {file, end - start});
         }
     }
@@ -925,7 +935,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     return - (index + 1);
                 }
             } catch (Abort a) {
-                LOG.log(Level.FINE, "a null Position detected - clearing");
+                LOG.log(Level.FINE, "a null Position detected - clearing"); //NOI18N
                 int removedCount = 0;
                 for (Iterator<Reference<Position>> it = knownPositions.iterator(); it.hasNext(); ) {
                     if (it.next().get() == null) {
@@ -933,7 +943,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         it.remove();
                     }
                 }
-                LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
+                LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount); //NOI18N
             }
         }
     }
@@ -961,12 +971,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                     knownPositions.add(- (index + 1), new WeakReference<Position>(p));
 
-                    Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder - Line Token",
+                    Logger.getLogger("TIMER").log(Level.FINE, "Annotation Holder - Line Token", //NOI18N
                             new Object[] {file, p});
 
                     return p;
                 } catch (Abort a) {
-                    LOG.log(Level.FINE, "a null Position detected - clearing");
+                    LOG.log(Level.FINE, "a null Position detected - clearing"); //NOI18N
                     int removedCount = 0;
                     for (Iterator<Reference<Position>> it = knownPositions.iterator(); it.hasNext(); ) {
                         if (it.next().get() == null) {
@@ -974,11 +984,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                             it.remove();
                         }
                     }
-                    LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount);
+                    LOG.log(Level.FINE, "clearing finished, {0} positions cleared", removedCount); //NOI18N
                 }
             }
         } finally {
-            LOG.log(Level.FINE, "knownPositions.size={0}", knownPositions.size());
+            LOG.log(Level.FINE, "knownPositions.size={0}", knownPositions.size()); //NOI18N
         }
     }
 
@@ -1014,7 +1024,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         //get errors for this layer, all lines
                         Set<ErrorDescription> errorsForLayer = new HashSet<ErrorDescription>(getErrorsForLayer(e.getKey()));
                         errorsForLayer.removeAll(errsForCurrentLine); //remove all for current line
-                        e.getValue().addAll(errorsForLayer); //add the rest to those provided by refresher
+                        
+                        Set<ErrorDescription> toSet = new HashSet<ErrorDescription>();
+                        toSet.addAll(e.getValue());
+                        toSet.addAll(errorsForLayer);
+                        e.getValue().clear();
+                        e.getValue().addAll(toSet); //add the rest to those provided by refresher
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
@@ -1087,7 +1102,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         }
     }
 
-    private static final RequestProcessor INSTANCE = new RequestProcessor("AnnotationHolder");
+    private static final RequestProcessor INSTANCE = new RequestProcessor("AnnotationHolder"); //NOI18N
 
     public static OffsetsBag getBag(Document doc) {
         OffsetsBag ob = (OffsetsBag) doc.getProperty(AnnotationHolder.class);
@@ -1131,13 +1146,15 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 }
 
                 left = value.getOffset();
-            }
+                assert left != -1 : "o1=" + o1 + ", value=" + value; //NOI18N
 
-            if (o1 instanceof Integer) {
+            } else if (o1 instanceof Integer) {
                 left = ((Integer) o1);
-            }
+                assert left != -1 : "o1=" + o1;
 
-            assert left != -1;
+            } else {
+                assert false : "Unexpected type: o1=" + o1; //NOI18N
+            }
 
             int right = -1;
 
@@ -1150,13 +1167,15 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 }
 
                 right = value.getOffset();
-            }
+                assert right != -1 : "o2=" + o2 + ", value=" + value; //NOI18N
 
-            if (o2 instanceof Integer) {
+            } else if (o2 instanceof Integer) {
                 right = ((Integer) o2);
-            }
+                assert right != -1 : "o2=" + o2;
 
-            assert right != -1;
+            } else {
+                assert false : "Unexpected type: o2=" + o2; //NOI18N
+            }
 
             return left - right;
         }
@@ -1229,12 +1248,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                             concatDescription(trueErrors, description);
 
                             if (!trueErrors.isEmpty() && !others.isEmpty()) {
-                                description.append("\n\n");
+                                description.append("\n\n"); //NOI18N
                             }
 
                             concatDescription(others, description);
 
-                            result[0] = description.toString();
+                            result[0] = description.toString() + NbBundle.getMessage(AnnotationHolder.class, "LBL_shortcut_promotion"); //NOI18N
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,7 +73,7 @@ abstract class PopupItem {
 
         public String highlite(String text, String displayText) {
             if(text == null || text.trim().equals("")) return displayText;      // NOI18N
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             text = TextUtils.escapeForHTMLLabel(text);
             displayText = TextUtils.escapeForHTMLLabel(displayText);
@@ -79,10 +82,10 @@ abstract class PopupItem {
             String textLower = text.toLowerCase();
             int idx = displayTextLower.indexOf(textLower);
             if(idx < 0) {
-                return displayTextLower;
+                return displayText;
             }
             int lastIdx = 0;
-            sb.append("<html>");                                                // NOI18N
+            sb.append("<html><table width=10000>");                             // NOI18N
             while(idx > -1) {
                 sb.append(displayText.substring(lastIdx, idx));
                 lastIdx = idx + textLower.length();
@@ -94,10 +97,10 @@ abstract class PopupItem {
                 lastIdx = idx + textLower.length();
                 idx = displayTextLower.indexOf(displayTextLower, lastIdx);
             }
-            if(lastIdx < displayTextLower.length()) {
-                sb.append(displayTextLower.substring(lastIdx, displayTextLower.length()));
+            if(lastIdx < displayText.length()) {
+                sb.append(displayText.substring(lastIdx, displayText.length()));
             } 
-            sb.append("</html>");                                               // NOI18N
+            sb.append("</table></html>");                                       // NOI18N
             return sb.toString();
         }
 

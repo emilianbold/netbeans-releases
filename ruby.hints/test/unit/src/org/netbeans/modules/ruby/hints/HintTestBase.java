@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,8 +46,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -60,7 +61,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class HintTestBase extends RubyTestBase {
 
-    private static final String RAILS_VERSION = "2.3.4"; //NOI18N
+    private static final String RAILS_VERSION = "2.3.8"; //NOI18N
 
     public HintTestBase(String testName) {
         super(testName);
@@ -166,25 +167,4 @@ public abstract class HintTestBase extends RubyTestBase {
         assertTrue(fails.toString(), fails.size() == 0);
     }
     
-    @SuppressWarnings("unchecked")
-    public void ensureRegistered(RubyAstRule hint) throws Exception {
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
-        assertNotNull(language.getHintsProvider());
-        GsfHintsManager hintsManager = language.getHintsManager();
-        Map<NodeType, List<RubyAstRule>> hints = (Map)hintsManager.getHints();
-        Set<NodeType> kinds = hint.getKinds();
-        for (NodeType nodeType : kinds) {
-            List<RubyAstRule> rules = hints.get(nodeType);
-            assertNotNull(rules);
-            boolean found = false;
-            for (RubyAstRule rule : rules) {
-                if (rule.getClass() == hint.getClass()) {
-                    found  = true;
-                    break;
-                }
-            }
-            
-            assertTrue(found);
-        }
-    }
 }

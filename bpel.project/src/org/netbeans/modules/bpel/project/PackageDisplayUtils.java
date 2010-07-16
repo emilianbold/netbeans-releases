@@ -16,19 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project;
 
 import java.awt.Image;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
-// XXX needs unit test
+import org.openide.util.ImageUtilities;
 
 /**
  * Provides display name and icon utilities for
@@ -109,7 +104,7 @@ public final class PackageDisplayUtils {
         return getIcon( pkg, pkgname, isEmpty(pkg) );
     }
     
-    /** Performance optiomization if the the isEmpty status is alredy known.
+    /** Performance optiomization if the isEmpty status is alredy known.
      * 
      */
     public static Image getIcon(FileObject pkg, String pkgname, boolean empty ) {
@@ -128,7 +123,6 @@ public final class PackageDisplayUtils {
             } 
         }
     }
-    
     
     /**
      * Check whether a package is empty (devoid of files except for subpackages).
@@ -181,5 +175,4 @@ public final class PackageDisplayUtils {
         }
         return !subpackages;
     }
-    
 }

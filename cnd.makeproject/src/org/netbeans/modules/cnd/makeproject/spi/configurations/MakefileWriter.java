@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,6 +68,24 @@ public interface MakefileWriter {
     void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
+     * Writes build test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeBuildTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
+     * Writes test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeRunTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
      * Writes all compile targets (only for managed projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -74,6 +95,15 @@ public interface MakefileWriter {
     void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
+     * Writes all compile targets (only for managed projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeCompileTestTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
      * Writes link target (only for linked projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -81,6 +111,15 @@ public interface MakefileWriter {
      * @param writer  output stream to generated makefile
      */
     void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
+     * Writes link test target (only for linked projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeLinkTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes writes archive target (only for archive projects)

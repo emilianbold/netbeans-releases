@@ -1,10 +1,10 @@
-#Signature file v4.0
-#Version 1.10.1
+#Signature file v4.1
+#Version 1.18.0
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -20,7 +20,7 @@ meth public java.lang.String toString()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -93,7 +93,7 @@ supr java.lang.Object
 hfds COLLAPSED_CHANGED_BIT,DESCRIPTION_CHANGED_BIT,END_OFFSET_CHANGED_BIT,START_OFFSET_CHANGED_BIT,fold,originalEndOffset,originalStartOffset,stateChangeBits
 
 CLSS public final org.netbeans.api.editor.fold.FoldType
-cons public FoldType(java.lang.String)
+cons public init(java.lang.String)
 meth public boolean accepts(org.netbeans.api.editor.fold.FoldType)
 meth public java.lang.String toString()
 supr java.lang.Object

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -117,17 +120,17 @@ public class AutosTestCase extends ProjectBasedTestCase {
         performTest("file.cc", 29);
     }
 
-//    public void testAutosEmptyLine() throws Exception {
-//        performTest("file.cc", 19);
-//    }
+    public void testAutosEmptyLine() throws Exception {
+        performTest("file.cc", 19);
+    }
 
     public void testAutosMultiLine() throws Exception {
         performTest("file.cc", 23);
     }
 
-//    public void testAutosComment() throws Exception {
-//        performTest("file.cc", 27);
-//    }
+    public void testAutosComment() throws Exception {
+        performTest("file.cc", 27);
+    }
 
     private void performTest(String source, int lineIndex) throws Exception {
         File workDir = getWorkDir();
@@ -160,18 +163,23 @@ public class AutosTestCase extends ProjectBasedTestCase {
         if (!goldenDataFile.exists()) {
             fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
         }
+
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
+            File diffErrorFile = new File(output.getAbsolutePath() + ".diff");
+            CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
+            showDiff(diffErrorFile, buf);
+            fail(buf.toString());
         }
     }
 
     //TODO: copied from CompletionTestPerformer
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
         FileObject test = FileUtil.toFileObject(testFile);
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath());
+        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), false);
         if (test == null || csmFile == null) {
             throw new IllegalStateException("Given test file does not exist.");
         }

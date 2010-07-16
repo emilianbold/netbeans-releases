@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,12 @@
 
 package org.netbeans.modules.php.editor.codegen.ui;
 
+import java.awt.Dimension;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
@@ -58,11 +64,11 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class ConstructorPanel extends javax.swing.JPanel {
+public class ConstructorPanel extends JPanel {
 
-    private final String className;
-    private final List<Property> properties;
-    private final CGSInfo cgsInfo;
+    protected final String className;
+    protected final List<? extends Property> properties;
+    protected final CGSInfo cgsInfo;
 
     /** Creates new form ConstructorPanel */
     public ConstructorPanel(CGSGenerator.GenType genType, CGSInfo cgsInfo) {
@@ -72,6 +78,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
             case CONSTRUCTOR: properties = cgsInfo.getProperties(); break;
             case GETTER: properties = cgsInfo.getPossibleGetters(); break;
             case SETTER: properties = cgsInfo.getPossibleSetters(); break;
+            case METHODS: properties = cgsInfo.getPossibleMethods(); break;
             default: properties = cgsInfo.getPossibleGettersSetters(); break;
         }
         this.cgsInfo = cgsInfo;
@@ -110,6 +117,11 @@ public class ConstructorPanel extends javax.swing.JPanel {
                     model.addElement(way.getGetterExample(name) + ", " + way.getSetterExample(name));
                 }
                 break;
+            case METHODS:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS");    //NOI18N
+                customizeMethodGeneration = false;
+                Dimension preferredSize = getPreferredSize();
+                setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
         }
         this.label.setText(panelTitle);
         this.pGSCustomize.setVisible(customizeMethodGeneration);
@@ -131,13 +143,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
     }
 
     private void initTree(){
-        CheckNode root;
-        root = new CheckNode.CGSClassNode(className);
-        JTree tree = new JTree(root);
-
-        for(Property property: properties) {
-            root.add(new CheckNode.CGSPropertyNode(property));
-        }
+        JTree tree = new JTree(getRootNode());
         tree.setCellRenderer(new CheckBoxTreeRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.putClientProperty("JTree.lineStyle", "Angled");  //NOI18N
@@ -147,9 +153,25 @@ public class ConstructorPanel extends javax.swing.JPanel {
         tree.expandRow(0);
         tree.setShowsRootHandles(true);
         tree.setSelectionRow(0);
+
+        initTree(tree);
+
         scrollPane.add(tree);
         scrollPane.setViewportView(tree);
     }
+
+    protected MutableTreeNode getRootNode() {
+        CheckNode root = new CheckNode.CGSClassNode(className);
+        for (Property property : properties) {
+            root.add(new CheckNode.CGSPropertyNode(property));
+        }
+        return root;
+    }
+
+    protected void initTree(JTree tree) {
+    }
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -166,8 +188,40 @@ public class ConstructorPanel extends javax.swing.JPanel {
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbMethodGeneration){
+                    return cbGenerateDoc;
+                }
+                return cbGenerateDoc;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbGenerateDoc){
+                    return cbMethodGeneration;
+                }
+                return cbGenerateDoc;//end getComponentBefore
+
+            }}
+        );
+
+        label.setDisplayedMnemonic('G');
+        label.setLabelFor(scrollPane);
         label.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.text")); // NOI18N
 
+        jLabel1.setDisplayedMnemonic('M');
+        jLabel1.setLabelFor(cbMethodGeneration);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.text")); // NOI18N
 
         cbMethodGeneration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -177,26 +231,32 @@ public class ConstructorPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout pGSCustomizeLayout = new org.jdesktop.layout.GroupLayout(pGSCustomize);
+        javax.swing.GroupLayout pGSCustomizeLayout = new javax.swing.GroupLayout(pGSCustomize);
         pGSCustomize.setLayout(pGSCustomizeLayout);
         pGSCustomizeLayout.setHorizontalGroup(
-            pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pGSCustomizeLayout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbMethodGeneration, 0, 247, Short.MAX_VALUE)
+            pGSCustomizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pGSCustomizeLayout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbMethodGeneration, 0, 247, Short.MAX_VALUE)
                 .addContainerGap())
         );
         pGSCustomizeLayout.setVerticalGroup(
-            pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pGSCustomizeLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(cbMethodGeneration, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(65, 65, 65))
+            pGSCustomizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pGSCustomizeLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(pGSCustomizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(cbMethodGeneration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(65, 65, 65))
         );
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        cbMethodGeneration.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleName")); // NOI18N
+        cbMethodGeneration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleDescription")); // NOI18N
+
+        cbGenerateDoc.setMnemonic('e');
         cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.text")); // NOI18N
         cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,32 +264,44 @@ public class ConstructorPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, label)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbGenerateDoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pGSCustomize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .addComponent(label, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbGenerateDoc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .addComponent(pGSCustomize, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(label)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pGSCustomize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbGenerateDoc)
+                .addComponent(label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pGSCustomize, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbGenerateDoc)
                 .addContainerGap())
         );
+
+        label.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.AccessibleContext.accessibleName")); // NOI18N
+        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.AccessibleContext.accessibleDescription")); // NOI18N
+        scrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.scrollPane.AccessibleContext.accessibleName")); // NOI18N
+        scrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.scrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        pGSCustomize.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.pGSCustomize.AccessibleContext.accessibleName")); // NOI18N
+        pGSCustomize.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.pGSCustomize.AccessibleContext.accessibleDescription")); // NOI18N
+        cbGenerateDoc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.AccessibleContext.accessibleName")); // NOI18N
+        cbGenerateDoc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed

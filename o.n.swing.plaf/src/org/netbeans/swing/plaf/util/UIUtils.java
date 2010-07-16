@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -158,8 +161,13 @@ public final class UIUtils {
     private static Image loadWithImageIO (String s) {
         Image result = null;
         try {
-            URL url = UIUtils.class.getResource ( s );
-            result = ImageIO.read ( url );
+            URL url = UIUtils.class.getClassLoader().getResource(s);
+            if (url != null) {
+                result = ImageIO.read(url);
+            } else {
+                System.err.println("Could not load " + s + " from " + UIUtils.class.getClassLoader() +
+                        " at " + UIUtils.class.getProtectionDomain().getCodeSource().getLocation());
+            }
         } catch (Exception e) {
             System.err.println ("Error loading image using ImageIO " + s); //NOI18N
             e.printStackTrace();
@@ -454,4 +462,16 @@ public final class UIUtils {
         System.arraycopy( inputMaps, 0, res, uiDefaults.length, inputMaps.length );
         return res;
     }
+
+    public static Class<?> classForName(String n) throws ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if( null == l )
+            l = UIUtils.class.getClassLoader();
+        try {
+            return Class.forName(n, true, l);
+        } catch (ClassNotFoundException x) {
+            throw x;
+        }
+    }
+
 }

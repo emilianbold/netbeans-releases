@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,14 +72,17 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     // ------------------------------------------------------------------------
     //  DecoratorFactor implementation
     // ------------------------------------------------------------------------
+    @Override
     public boolean isTypeSupported(String type) {
         return decoratorMap.containsKey(type);
     }
 
+    @Override
     public Decorator getDecorator(String type) {
         return decoratorMap.get(type);
     }
 
+    @Override
     public Map<String, Decorator> getAllDecorators() {
         return Collections.unmodifiableMap(decoratorMap);
     }
@@ -103,34 +109,89 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
     };
     
     public static final Decorator WEB_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
     };
     
     public static final Decorator EJB_JAR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
 
     public static final Decorator APPCLIENT = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(APPCLIENT_ICON); }
     };
 
     public static final Decorator CONNECTOR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONNECTOR_ICON); }
     };
     
+    public static final Decorator DISABLED_J2EE_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
+    };
+
+    public static final Decorator DISABLED_WEB_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
+    };
+
+    public static final Decorator DISABLED_EJB_JAR = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
+    };
+
+    public static final Decorator DISABLED_APPCLIENT = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(APPCLIENT_ICON); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
+    };
+
+    public static final Decorator DISABLED_CONNECTOR = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONNECTOR_ICON); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
+    };
+
     public static final Decorator JDBC_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
@@ -193,7 +254,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public String getCmdPropertyName() { return "jndi_name"; }
     };
     
-    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
+    private static final Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
     
     static {
         // !PW XXX need to put in correct strings, then define as static 
@@ -203,6 +264,11 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         decoratorMap.put(GlassfishModule.EAR_CONTAINER, J2EE_APPLICATION);
         decoratorMap.put(GlassfishModule.APPCLIENT_CONTAINER, APPCLIENT);
         decoratorMap.put(GlassfishModule.CONNECTOR_CONTAINER, CONNECTOR);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.WEB_CONTAINER, DISABLED_WEB_APPLICATION);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.EJB_CONTAINER, DISABLED_EJB_JAR);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.EAR_CONTAINER, DISABLED_J2EE_APPLICATION);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.APPCLIENT_CONTAINER, DISABLED_APPCLIENT);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.CONNECTOR_CONTAINER, DISABLED_CONNECTOR);
         decoratorMap.put(GlassfishModule.JDBC_RESOURCE, JDBC_MANAGED_DATASOURCES);
         decoratorMap.put(GlassfishModule.JDBC_CONNECTION_POOL, CONNECTION_POOLS);
         decoratorMap.put(GlassfishModule.JDBC, JDBC_FOLDER);

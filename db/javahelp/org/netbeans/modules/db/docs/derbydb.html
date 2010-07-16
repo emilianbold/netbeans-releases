@@ -52,13 +52,13 @@ made subject to such option by the copyright holder.
 <p>The Java DB database is Sun's supported distribution of the open source Apache Derby database.
 Java DB is a fully transactional, secure, standards-based database server, written 
   fully in the Java programming language, and fully supports SQL, JDBC API, and Java EE technology. 
-  The Java DB database server is bundled with the Sun Java System Application Server/Glassfish.
-  If you install the Sun Java Application Server/GlassFish during the IDE installation, 
+  The Java DB database server is bundled with the Glassfish application server.
+  If you install the GlassFish application server during the IDE installation, 
   the Java DB database server is automatically registered in the IDE.</p>
 <p><b>To enable the Java DB database server in the IDE, do one of the following:</b></p>
 <ul>
   <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Register 
-    an instance of the Sun Java System Application Server/Glassfish</a>. This registers 
+    an instance of the Glassfish application server</a> . This registers 
     the installation of the Java DB database server that is packaged with the application 
     server. The connection to the sample Java DB database is automatically displayed 
     in the Services window. The default user name and password for the sample database
@@ -67,15 +67,14 @@ Java DB is a fully transactional, secure, standards-based database server, writt
   If you already have one of these database servers installed on your computer, 
   you can register the database with the IDE by doing the following:<ol><li>In the Services window, right-click the Java DB node and choose Properties. </li>
       <li>In the dialog box, set the location of the Java DB installation directory.</li>
-      <li>Set the folder where your Java DB databases are stored in the Database Location property.</li>
-      <li>Click OK.</li>
-      <li>In the Services window, Right-click the Java DB node and choose Start Server.</li>
+      <li>Set the folder where your Java DB databases are stored in the Database Location property and click OK. </li>
+      <li> In the Services window, right-click the Java DB node and choose Start Server.</li>
   </ol>
   </li>
 </ul>
 <p>Once your Java DB database is registered with the IDE,
   the Java DB Database menu item appears under the Databases Node in the Services window.
-This menu item enables you to easily start and stop the Java DB database server, and to create a new database.</p>
+This menu item enables you to easily start and stop the Java DB database server and to create a new database.</p>
 <p><b>To create a new Java DB database:</b></p>
 <ol>
   <li>In the Services window, right-click the Java DB node and choose Create Database.</li>
@@ -89,10 +88,10 @@ This menu item enables you to easily start and stop the Java DB database server,
   <li>In the Services window, right-click the Databases node and choose New Connection.</li>
   <li>In the New Database Connection dialog box, choose one of the following Java DB drivers from the drop-down menu: 
     <ul>
-      <li><b>Embedded Driver.</b> Use this driver when you are sure your application will access 
+      <li><b>Java DB (Embedded).</b> Use this driver when you are sure your application will access 
       the database from a single JVM. A typical example of this scenario is a single-user 
       Swing JDBC application using a Java DB database as a data store.</li>
-      <li><b>Network Driver.</b> Use this driver when you need to connect to the database 
+      <li><b>Java DB (Network).</b> Use this driver when you need to connect to the database 
         from multiple JVMs. An example of this scenario is when you need to connect 
         from the IDE and from a Java EE application on the application server. Using 
         the net driver, you can also access the database from remote computers.</li>
@@ -119,7 +118,6 @@ This menu item enables you to easily start and stop the Java DB database server,
     <li>The URL for the sample database is <tt>jdbc:derby://localhost:1527/sample</tt>.</li>
     <li>The default location for the sample database is in the <tt>.netbeans-derby</tt> directory in your home directory.</li>
   <li>To change the default location for the Java DB database directory, in the Services winow, right-click the Java DB node in the Services window and choose Properties. Enter the new location. </li>
-  <li>The Java DB database server replaces the PointBase database server bundled with previous versions of the Sun Java System Application Server.</li>
 </ul>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>

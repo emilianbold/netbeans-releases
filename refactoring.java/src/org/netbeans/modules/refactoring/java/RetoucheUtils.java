@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -97,6 +101,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -139,6 +144,7 @@ public class RetoucheUtils {
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
     private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RetoucheUtils.class.getName(), 1, false, false);
     
     public static String htmlize(String input) {
         String temp = input.replace("<", "&lt;"); // NOI18N
@@ -615,8 +621,12 @@ public class RetoucheUtils {
                 } else {
                     dependentRoots.add(sourceRoot);
                 }
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                final Set<URL> toExclude = new HashSet<URL>(Arrays.asList(UnitTestForSourceQuery.findSources(ownerRoot)));
+                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    final URL rootURL = URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL);
+                    if (!toExclude.contains(rootURL)) {
+                        dependentRoots.add(rootURL);
+                    }
                 }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
@@ -682,7 +692,7 @@ public class RetoucheUtils {
      * @param result modifiable list that will contain referenced type parameters
      * @param tm parametrized type to analyze
      */
-    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
+    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, Set<TypeMirror> result, TypeMirror tm) {
         if (typeArgs.isEmpty()) {
             return;
         } else if (tm.getKind() == TypeKind.TYPEVAR) {
@@ -697,7 +707,7 @@ public class RetoucheUtils {
             }
             int index = findTypeIndex(utils, typeArgs, type);
             if (index >= 0) {
-                result.add(typeArgs.remove(index));
+                result.add(typeArgs.get(index));
             }
         } else if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) tm;
@@ -726,6 +736,18 @@ public class RetoucheUtils {
             }
         }
         return -1;
+    }
+
+    public static List<TypeMirror> filterTypes(List<TypeMirror> source, Set<TypeMirror> used) {
+        List<TypeMirror> result = new ArrayList<TypeMirror>(source.size());
+
+        for (TypeMirror tm : source) {
+            if (used.contains(tm)) {
+                result.add(tm);
+            }
+        }
+
+        return result;
     }
     
     /**
@@ -943,7 +965,7 @@ public class RetoucheUtils {
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
             //100ms is workaround for 127536
-            waitTask = RequestProcessor.getDefault().post(ap, 100);
+            waitTask = RP.post(ap, 100);
             waitDialog.setVisible(true);
             waitTask = null;
             waitDialog = null;

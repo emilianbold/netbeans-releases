@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.AfterClass;
@@ -47,6 +51,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfigurat
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -54,7 +59,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
  */
 public class PackageConfigTestCase extends CndBaseTestCase {
 
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
 
     public PackageConfigTestCase(String testName) {
         super(testName);
@@ -69,64 +74,78 @@ public class PackageConfigTestCase extends CndBaseTestCase {
     }
 
     @Test
-    public void testGtkPackage() {
-        // Test requires cygwin on Windows platform
-        // Test requires package gtk+-2.0
-        // I do not know how the test will work on Mac. Help me to make test working on Mac.
-        // If you computer do not have a needed software, install it. It help us to find bugs.
+    public void testLibxmlPackage() {
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
         PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
-        basicTest(pc);
+        basicTest(pc, "libxml-2.0", "libxml/tree.h");
     }
 
-    private void basicTest(PkgConfigImpl pc) {
-        String packageName = "gtk+-2.0";
+    @Test
+    public void testGtkPackage() {
+        // Test requires cygwin on Windows platform
+        // Test requires package gtk+-2.0
+        if (Utilities.isMac()) {
+            // It seems problematic to install gtk on mac
+            return;
+        }
+        Logger logger = Logger.getLogger(NbPreferences.class.getName());
+        logger.setLevel(Level.SEVERE);
+        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
+        basicTest(pc, "gtk+-2.0", "gtk/gtk.h");
+    }
+
+    private void basicTest(PkgConfigImpl pc, String packageName, String include) {
         if (TRACE) {
             pc.traceConfig(packageName, true);
             pc.traceRecursiveConfig(packageName);
         }
         //pc.trace();
-        assert pc.getPkgConfig(packageName) != null;
-        String include = "gtk/gtk.h";
-        ResolvedPath rp = pc.getResolvedPath(include);
-        assert rp != null;
-        if (TRACE) {
-            System.out.println("Resolved include paths");
-        }
-        String path = rp.getIncludePath();
-        if (TRACE) {
-            System.out.println("Include: " + include);
-        }
-        if (TRACE) {
-            System.out.println("Path:    " + path);
-        }
-        StringBuilder packages = new StringBuilder();
-        for (PackageConfiguration pkg : rp.getPackages()) {
+        assertNotNull(pc.getPkgConfig(packageName));
+        Collection<ResolvedPath> listRP = pc.getResolvedPath(include);
+        assertNotNull(listRP);
+        assertTrue(!listRP.isEmpty());
+        boolean find = false;
+        for (ResolvedPath rp : listRP) {
             if (TRACE) {
-                System.out.print("Package: " + pkg.getName());
+                System.out.println("Resolved include paths");
             }
-            packages.append(pkg.getName() + " ");
-            StringBuilder buf = new StringBuilder();
-            for (String p : pkg.getIncludePaths()) {
-                if (buf.length() > 0) {
-                    buf.append(", ");
-                }
-                buf.append(p);
-            }
-            StringBuilder buf2 = new StringBuilder();
-            for (String p : pkg.getMacros()) {
-                if (buf2.length() > 0) {
-                    buf2.append(", ");
-                }
-                buf2.append(p);
+            String path = rp.getIncludePath();
+            if (TRACE) {
+                System.out.println("Include: " + include);
             }
             if (TRACE) {
-                System.out.println("\t[" + buf.toString() + "] [" + buf2.toString() + "]");
+                System.out.println("Path:    " + path);
+            }
+            StringBuilder packages = new StringBuilder();
+            for (PackageConfiguration pkg : rp.getPackages()) {
+                if (TRACE) {
+                    System.out.print("Package: " + pkg.getName());
+                }
+                packages.append(pkg.getName()).append(" ");
+                StringBuilder buf = new StringBuilder();
+                for (String p : pkg.getIncludePaths()) {
+                    if (buf.length() > 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(p);
+                }
+                StringBuilder buf2 = new StringBuilder();
+                for (String p : pkg.getMacros()) {
+                    if (buf2.length() > 0) {
+                        buf2.append(", ");
+                    }
+                    buf2.append(p);
+                }
+                if (TRACE) {
+                    System.out.println("\t[" + buf.toString() + "] [" + buf2.toString() + "]");
+                }
+            }
+            if (packages.toString().indexOf(packageName + " ") >= 0) {
+                find = true;
             }
         }
-        assert packages.toString().indexOf(packageName + " ") >= 0;
-
+        assertTrue(find);
     }
 
 // World is not yet ready for this test...

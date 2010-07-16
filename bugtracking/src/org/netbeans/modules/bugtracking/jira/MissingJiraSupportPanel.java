@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,16 +48,16 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.GroupLayout.SequentialGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.LayoutStyle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class MissingJiraSupportPanel extends javax.swing.JPanel {
+class MissingJiraSupportPanel extends javax.swing.JPanel {
 
     final javax.swing.JButton downloadButton = new javax.swing.JButton();
     private javax.swing.JTextPane pane;
@@ -74,23 +77,23 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
         this.setPreferredSize(new Dimension(650, 100));
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(createSequentialGroup(layout, containerGaps)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(downloadButton))
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(createSequentialGroup(layout, containerGaps)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(pane, GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downloadButton))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, createSequentialGroup(layout, containerGaps)
-                .add(pane)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(downloadButton))
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(GroupLayout.Alignment.TRAILING, createSequentialGroup(layout, containerGaps)
+                .addComponent(pane)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(downloadButton))
                 .addContainerGap(60, Short.MAX_VALUE)
                     )
         );

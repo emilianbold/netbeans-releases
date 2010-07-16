@@ -1,5 +1,8 @@
 /*
- * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 package org.netbeans.modules.etl.ui.view.wizards;
@@ -183,7 +186,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         String errorMessage = canUseFileName(
                 gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(),
                 template.getExt());
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+        wizard.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
 
         return errorMessage == null;
     }
@@ -249,7 +252,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
             wizard.putProperty("NewEtlWizard_Title", substitute); // NOI18N
         }
         wizard.putProperty(
-                WizardDescriptor.PROP_CONTENT_DATA,
+                "WizardPanel_contentData",
                 new String[]{ // NOI18N
             nbBundle4.substring(15), // NOI18N
             nbBundle5.substring(15)}); // NOI18N

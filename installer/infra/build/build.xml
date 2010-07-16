@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-  
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-  
+
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
+
   The contents of this file are subject to the terms of either the GNU General Public
   License Version 2 only ("GPL") or the Common Development and Distribution
   License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -11,9 +14,9 @@
   http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
   License for the specific language governing permissions and limitations under the
   License.  When distributing the software, include this License Header Notice in
-  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
   designates this particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that accompanied this code.
+  by Oracle in the GPL Version 2 section of the License file that accompanied this code.
   If applicable, add the following below the License Header, with the fields enclosed
   by brackets [] replaced by your own identifying information:
   "Portions Copyrighted [year] [name of copyright owner]"
@@ -302,7 +305,6 @@
             <set property="sjsas.build.suffix"     value="ml"/>
         </if>
 
-
         <if property="gf-mod.build.type" value="">
             <set property="glassfish-mod-sun.build.suffix" value="en"/>
             <set property="glassfish-mod-sun.ml.appendix" value=""/>
@@ -315,7 +317,6 @@
             <set property="glassfish-mod.build.suffix" value="ml"/>
             <set property="glassfish-mod.ml.appendix" value="-ml"/>
         </if>
-
         
 	<set property="nb.build.number"
              value="${build.number}"/>
@@ -325,7 +326,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="6.8.0.0.${nb.build.number}"/>
+             value="6.9.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -337,7 +338,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-6_8"/>
+             value="nb-6_9"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
@@ -384,7 +385,7 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="tomcat.version"      value="6.0.20"/>
+	<set property="tomcat.version"      value="6.0.26"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
 
 
@@ -422,9 +423,9 @@
 		<set property="glassfish.ml.appendix" value="-ml"/>
 		<set property="sjsas.ml.appendix"     value="-ml"/>
 	</if>
-	<!--
+	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/fcs/latest/archive/bundles"
+            src="${glassfish.builds.host}/java/re/glassfish/3.0.1/promoted/fcs/latest/archive/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -432,21 +433,19 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod-sun"/>
-        -->
         
-	<set property="glassfish-mod-sun.milestone.number"      value="73"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="73"/>
-	<set property="glassfish-mod-sun.build.type"            value=""/>
-	<set property="glassfish-mod-sun.build.number"          value="0"/>
-
-	<set property="glassfish-mod.milestone.number"      value="73"/>
-	<set property="glassfish-mod.milestone.number.real" value="73"/>
-	<set property="glassfish-mod.build.type"            value=""/>
-	<set property="glassfish-mod.build.number"          value="0"/>
-	
-
         <!--
-        -->
+	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="74b"/>
+	<set property="glassfish-mod-sun.build.type"            value=""/>
+	<set property="glassfish-mod-sun.build.number"          value="2"/>
+
+	<set property="glassfish-mod.milestone.number"      value="74"/>
+	<set property="glassfish-mod.milestone.number.real" value="74b"/>
+	<set property="glassfish-mod.build.type"            value=""/>
+	<set property="glassfish-mod.build.number"          value="2"/>
+	-->
+
         <!--
         <set property="openesb.build.number" value="2008012302"/>                       
         <set property="openesb.build.number.real" value="080123_2"/>
@@ -661,10 +660,10 @@ jarsigner.storepass=${jarsigner.storepass}
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- glassfish-mod-sun -->
                 <include name="**/glassfish-mod-sun,*"/>
-                <exclude name="**/glassfish-mod-sun,*3.0.0.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
+                <exclude name="**/glassfish-mod-sun,*3.0.1.${glassfish-mod-sun.milestone.number}.${glassfish-mod-sun.build.number}*"/>
 
                 <include name="**/glassfish-mod,*"/>
-                <exclude name="**/glassfish-mod,*3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}*"/>
+                <exclude name="**/glassfish-mod,*3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}*"/>
 
                 <!-- server -->
                 <include name="**/${server-uid}*"/>
@@ -777,6 +776,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-engine">
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
 	<antcall target="build-core-engine"/>
         <antcall target="build-netbeans-engine"/>
     </target>
@@ -790,7 +790,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-javafx nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javaee nb-javacard nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
@@ -832,8 +832,6 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-core-engine">
-	<property name="engine.dist.file.name" value="nbi-engine.jar"/>
-        
         <echo message="BUILDING CORE ENGINE ======================================"/>
         <ant dir="${nbi.core.dir}/infra/build/engine" target="build-all">
             <property 
@@ -1012,6 +1010,12 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    <target name="build-nb-platform-sdk">        
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-platform-sdk"/>
+        </antcall>
+    </target>
+
     <target name="build-nb-webcommon">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-webcommon"/>
@@ -1021,6 +1025,12 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javaee">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javaee"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-javacard">        
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javacard"/>
         </antcall>
     </target>
 
@@ -1228,18 +1238,20 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-netbeans-java-bundle">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-java-${bundle.platform}"/>
-        <condition property="is.mobility.available" value="false" else="true">
-	    <or>
-                <contains string="${bundle.platform}" substring="macosx"/>
-	        <contains string="${bundle.platform}" substring="solaris"/>
-	    </or>
+        <condition property="is.windows.platform" value="true">
+            <contains string="${bundle.platform}" substring="windows"/>
+        </condition>
+        <condition property="is.mac.platform" value="true">
+            <contains string="${bundle.platform}" substring="macosx"/>
+        </condition>
+        <condition property="is.solaris.platform" value="true">
+            <contains string="${bundle.platform}" substring="solaris"/>
+        </condition>
+        <condition property="is.linux.platform" value="true">
+            <contains string="${bundle.platform}" substring="linux"/>
         </condition>
 
-	<if property="is.mobility.available" value="true">
-            <condition property="is.solaris.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris"/>
-            </condition>
-
+	<if property="is.mac.platform" value="true">
             <create-bundle root="${output.dir}/registry-temp" 
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
@@ -1252,16 +1264,34 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
             <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
 	</if>
 
-	<if property="is.mobility.available" value="false">
-            <condition property="is.solaris.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris"/>
-            </condition>
+	<if property="is.windows.platform" value="true">
+
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-javame"     version="${nb.full.version}"/>
+            <!--<component uid="nb-webcommon"  version="${nb.full.version}"/>-->
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-javacard"   version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
+            <component uid="nb-ergonomics" version="${nb.full.version}"/>
+            <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
+
+	<if property="is.solaris.platform" value="true">
             <create-bundle root="${output.dir}/registry-temp" 
                        platform="${bundle.platform}" 
                        target="${bundle.prefix}.${bundle.extension}">
@@ -1273,7 +1303,25 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
             <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
+	<if property="is.linux.platform" value="true">
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-javame"     version="${nb.full.version}"/>
+            <!--<component uid="nb-webcommon"  version="${nb.full.version}"/>-->
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
+            <component uid="nb-ergonomics" version="${nb.full.version}"/>
+            <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
@@ -1306,7 +1354,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base"        version="${nb.full.version}"/>
             <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
             <component uid="nb-ruby"        version="${nb.full.version}"/>
-            <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
 	<antcall target="convert-netbeans-bundle"/>
@@ -1350,35 +1398,67 @@ jarsigner.storepass=${jarsigner.storepass}
         <condition property="is.mac.platform" value="true" else="false">
             <contains string="${bundle.platform}" substring="macosx"/>
         </condition>
+        <condition property="is.solaris.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="solaris"/>
+        </condition>
+        <condition property="is.windows.platform" value="true" else="false">
+           <contains string="${bundle.platform}" substring="windows"/>
+        </condition>
+        <condition property="is.linux.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="linux"/>
+        </condition>
 
-	<if property="is.mac.platform" value="false">
-            <condition property="is.solaris.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris"/>
-            </condition>
-	    <if property="is.solaris.platform" value="false">	    
-                   <create-bundle root="${output.dir}/registry-temp" 
-                                  platform="${bundle.platform}" 
-                                  target="${bundle.prefix}.${bundle.extension}">
-                       <component uid="nb-base"        version="${nb.full.version}"/>
-                       <component uid="nb-javase"      version="${nb.full.version}"/>
-                       <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
-                       <component uid="nb-javaee"      version="${nb.full.version}"/>
-                       <component uid="nb-javame"      version="${nb.full.version}"/>
-                       <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
-                       <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                       <component uid="nb-ruby"        version="${nb.full.version}"/>
-	               <component uid="nb-groovy"     version="${nb.full.version}"/>
-                       <component uid="nb-cnd"         version="${nb.full.version}"/>
-                       <component uid="nb-php"         version="${nb.full.version}"/>
-                       <component uid="nb-ergonomics"  version="${nb.full.version}"/>
-                       <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-                       <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-                       <component uid="tomcat"         version="${tomcat.full.version}"/>
-                       <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
-                   </create-bundle>
-            </if>
-            <if property="is.solaris.platform" value="true">	    
+
+        <if property="is.linux.platform" value="true">	    
+               <create-bundle root="${output.dir}/registry-temp" 
+                              platform="${bundle.platform}" 
+                              target="${bundle.prefix}.${bundle.extension}">
+                   <component uid="nb-base"        version="${nb.full.version}"/>
+                   <component uid="nb-javase"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
+                   <component uid="nb-javaee"      version="${nb.full.version}"/>
+                   <component uid="nb-javame"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
+                   <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+                   <component uid="nb-groovy"     version="${nb.full.version}"/>
+                   <component uid="nb-cnd"         version="${nb.full.version}"/>
+                   <component uid="nb-php"         version="${nb.full.version}"/>
+                   <component uid="nb-ergonomics"  version="${nb.full.version}"/>
+                   <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+                   <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                   <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                   <component uid="tomcat"         version="${tomcat.full.version}"/>
+                   <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
+               </create-bundle>
+        </if>
+
+        <if property="is.windows.platform" value="true">	    
+               <create-bundle root="${output.dir}/registry-temp" 
+                              platform="${bundle.platform}" 
+                              target="${bundle.prefix}.${bundle.extension}">
+                   <component uid="nb-base"        version="${nb.full.version}"/>
+                   <component uid="nb-javase"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
+                   <component uid="nb-javaee"      version="${nb.full.version}"/>
+                   <component uid="nb-javacard"      version="${nb.full.version}"/>
+                   <component uid="nb-javame"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
+                   <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+                   <component uid="nb-groovy"     version="${nb.full.version}"/>
+                   <component uid="nb-cnd"         version="${nb.full.version}"/>
+                   <component uid="nb-php"         version="${nb.full.version}"/>
+                   <component uid="nb-ergonomics"  version="${nb.full.version}"/>
+                   <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+                   <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                   <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                   <component uid="tomcat"         version="${tomcat.full.version}"/>
+                   <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
+               </create-bundle>
+        </if>
+
+        <if property="is.solaris.platform" value="true">	    
                    <create-bundle root="${output.dir}/registry-temp" 
                                   platform="${bundle.platform}" 
                                   target="${bundle.prefix}.${bundle.extension}">
@@ -1396,12 +1476,11 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
                        <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                       <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
             </if>
-        </if>
 
 	<if property="is.mac.platform" value="true">
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1421,7 +1500,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
             <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
             <!--<component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
         </create-bundle>
@@ -1485,6 +1564,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-javase-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1493,6 +1573,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
 
@@ -1514,6 +1595,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-javaee-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1522,6 +1604,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
 
@@ -1543,6 +1626,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-java-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1551,6 +1635,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
 
@@ -1584,6 +1669,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-ruby-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1592,6 +1678,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
     <target name="generate-netbeans-cpp-bundles">
@@ -1612,6 +1699,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-cpp-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1620,6 +1708,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
     
@@ -1641,6 +1730,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-php-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1649,6 +1739,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
 
@@ -1670,6 +1761,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="solaris-sparc"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-full-bundle">	
 	    <param name="bundle.platform"  value="macosx-x86"/>
 	    <param name="bundle.extension" value="zip"/>
@@ -1678,6 +1770,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="macosx-ppc"/>
 	    <param name="bundle.extension" value="zip"/>
         </antcall>
+        -->
     </target>
 
   
@@ -1725,6 +1818,7 @@ jarsigner.storepass=${jarsigner.storepass}
                <param name="bundle.platform"  value="solaris-sparc"/>
                <param name="bundle.extension" value="sh"/>
         </antcall>
+        <!--
 	<antcall target="generate-netbeans-javafx-full-bundle">
                <param name="bundle.platform"  value="macosx-x86"/>
                <param name="bundle.extension" value="zip"/>
@@ -1733,7 +1827,7 @@ jarsigner.storepass=${jarsigner.storepass}
                <param name="bundle.platform"  value="macosx-ppc"/>
                <param name="bundle.extension" value="zip"/>
         </antcall>
-
+        -->
     </target>
 
     <target name="generate-netbeans-javafx-full-bundle">
@@ -1743,43 +1837,73 @@ jarsigner.storepass=${jarsigner.storepass}
         <condition property="is.mac.platform" value="true" else="false">
             <contains string="${bundle.platform}" substring="macosx"/>
         </condition>
+        <condition property="is.windows.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="windows"/>
+        </condition>
+        <condition property="is.linux.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="linux"/>
+        </condition>
+        <condition property="is.solaris.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="solaris"/>
+        </condition>
+        <condition property="is.solaris.x86.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="solaris-x86"/>
+        </condition>
+        <condition property="is.solaris.sparc.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="solaris-sparc"/>
+        </condition>
 
-	<if property="is.mac.platform" value="false">
-            <condition property="is.solaris.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris"/>
-            </condition>
-            <condition property="is.solaris.x86.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris-x86"/>
-            </condition>
-            <condition property="is.solaris.sparc.platform" value="true" else="false">
-                <contains string="${bundle.platform}" substring="solaris-sparc"/>
-            </condition>
 
-	    <if property="is.solaris.platform" value="false">	    
-                   <create-bundle root="${output.dir}/registry-temp" 
-                                  platform="${bundle.platform}" 
-                                  target="${bundle.prefix}.${bundle.extension}">
-                       <component uid="nb-base"        version="${nb.full.version}"/>
-                       <component uid="nb-javase"      version="${nb.full.version}"/>
-                       <component uid="nb-javafx"      version="${nb.full.version}"/>
-                       <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
-                       <component uid="nb-javaee"      version="${nb.full.version}"/>
-                       <component uid="nb-javame"      version="${nb.full.version}"/>
-                       <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
-                       <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                       <component uid="nb-ruby"        version="${nb.full.version}"/>
-	               <component uid="nb-groovy"     version="${nb.full.version}"/>
-                       <component uid="nb-cnd"         version="${nb.full.version}"/>
-                       <component uid="nb-php"         version="${nb.full.version}"/>
-                       <component uid="nb-ergonomics"  version="${nb.full.version}"/>
-                       <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
-                       <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-                       <component uid="tomcat"         version="${tomcat.full.version}"/>
-                       <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
-                   </create-bundle>
-            </if>
-            <if property="is.solaris.x86.platform" value="true">	    
+       <if property="is.linux.platform" value="true">	    
+              <create-bundle root="${output.dir}/registry-temp" 
+                              platform="${bundle.platform}" 
+                              target="${bundle.prefix}.${bundle.extension}">
+                   <component uid="nb-base"        version="${nb.full.version}"/>
+                   <component uid="nb-javase"      version="${nb.full.version}"/>
+                   <component uid="nb-javafx"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
+                   <component uid="nb-javaee"      version="${nb.full.version}"/>
+                   <component uid="nb-javame"      version="${nb.full.version}"/>
+                   <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
+                   <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+	           <component uid="nb-groovy"     version="${nb.full.version}"/>
+                   <component uid="nb-cnd"         version="${nb.full.version}"/>
+                   <component uid="nb-php"         version="${nb.full.version}"/>
+                   <component uid="nb-ergonomics"  version="${nb.full.version}"/>
+                   <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+                   <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                   <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                   <component uid="tomcat"         version="${tomcat.full.version}"/>
+                   <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
+               </create-bundle>
+       </if>
+        <if property="is.windows.platform" value="true">	    
+              <create-bundle root="${output.dir}/registry-temp" 
+                             platform="${bundle.platform}" 
+                             target="${bundle.prefix}.${bundle.extension}">
+                  <component uid="nb-base"        version="${nb.full.version}"/>
+                  <component uid="nb-javase"      version="${nb.full.version}"/>
+                  <component uid="nb-javafx"      version="${nb.full.version}"/>
+                  <!--<component uid="nb-webcommon"   version="${nb.full.version}"/>-->
+                  <component uid="nb-javaee"      version="${nb.full.version}"/>
+                  <component uid="nb-javacard"      version="${nb.full.version}"/>
+                  <component uid="nb-javame"      version="${nb.full.version}"/>
+                  <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
+                  <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                  <component uid="nb-ruby"        version="${nb.full.version}"/>
+                  <component uid="nb-groovy"      version="${nb.full.version}"/>
+                  <component uid="nb-cnd"         version="${nb.full.version}"/>
+                  <component uid="nb-php"         version="${nb.full.version}"/>
+                  <component uid="nb-ergonomics"  version="${nb.full.version}"/>
+                  <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+                  <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+                  <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                  <component uid="tomcat"         version="${tomcat.full.version}"/>
+                  <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
+              </create-bundle>
+        </if>
+        <if property="is.solaris.x86.platform" value="true">	    
                    <create-bundle root="${output.dir}/registry-temp" 
                                   platform="${bundle.platform}" 
                                   target="${bundle.prefix}.${bundle.extension}">
@@ -1798,12 +1922,12 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
                        <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                       <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
-            </if>
-	    <if property="is.solaris.sparc.platform" value="true">	    
+       </if>
+       <if property="is.solaris.sparc.platform" value="true">	    
                    <create-bundle root="${output.dir}/registry-temp" 
                                   platform="${bundle.platform}" 
                                   target="${bundle.prefix}.${bundle.extension}">
@@ -1821,11 +1945,10 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
                        <!--component uid="glassfish"      version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
                        <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                       <component uid="glassfish-mod"  version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
                        <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <!--<component uid="openesb"        version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
                    </create-bundle>
-            </if>
         </if>
 
 	<if property="is.mac.platform" value="true">
@@ -1847,7 +1970,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
             <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.1.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="${tomcat.full.version}"/>
             <!--<component uid="openesb"       version="5.0.7.${server.milestone.number}.${openesb.build.number}"/>-->
         </create-bundle>
@@ -2019,7 +2142,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-6u16"/>
 	    <param name="jdk.full.version"            value="1.6.0.16.1"/>
-            <param name="bundled.jvm.file.prefix"     value="jre-6u14"/>
+            <param name="bundled.jvm.file.prefix"     value="jre-6u20"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
     </target>

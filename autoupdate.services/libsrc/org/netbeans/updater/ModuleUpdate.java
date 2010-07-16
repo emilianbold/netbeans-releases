@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -70,13 +73,55 @@ class ModuleUpdate extends Object {
 
     private boolean l10n = false;
     
-    /** Creates new ModuleUpdate for downloaded .nbm file */
-    ModuleUpdate (File nbmFile) {
-        createFromDistribution( nbmFile );
+    /** Creates new ModuleUpdate for downloaded .nbm or .jar file */
+    ModuleUpdate (File file) {
+        if(file.getName().endsWith(ModuleUpdater.JAR_EXTENSION)) {
+            createFromOSGiDistribution( file );
+        } else {
+            createFromNbmDistribution( file );
+        }
+    }
+
+    /** Creates module from downloaded OSGi .jar file */
+    private void createFromOSGiDistribution( File file ) {
+        JarFile jf = null;
+        boolean exit = false;
+        String errorMessage = null;
+        try {
+            jf = new JarFile(file);
+            String cnb = jf.getManifest().getMainAttributes().getValue("Bundle-SymbolicName");
+            if(cnb!=null) {
+                setCodenamebase(cnb);
+            }
+            String specVersion = jf.getManifest().getMainAttributes().getValue("Bundle-Version");
+            setSpecification_version(specVersion!=null ?
+                specVersion.replaceFirst("^(\\d+([.]\\d+([.]\\d+)?)?)([.].+)?$", "$1") :
+                "0");
+
+
+        } catch ( java.io.IOException e ) {
+            errorMessage = "Missing info : " + file.getAbsolutePath (); // NOI18N
+            System.out.println(errorMessage);
+            e.printStackTrace ();
+            exit = true;
+        }
+        finally {
+            try {
+                if (jf != null)
+                    jf.close();
+            } catch ( IOException ioe ) {
+                ioe.printStackTrace();
+                exit = true;
+            }
+        }
+
+        if (exit) {
+            throw new RuntimeException (errorMessage);
+        }
     }
 
     /** Creates module from downloaded .nbm file */
-    private void createFromDistribution( File nbmFile ) {
+    private void createFromNbmDistribution( File nbmFile ) {
 
         Document document = null;
         Node node = null;

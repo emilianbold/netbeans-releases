@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,24 +46,13 @@
 package org.netbeans.modules.compapp.test.ui;
 
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
-import org.netbeans.modules.compapp.test.ui.actions.AddTestcaseAction;
-import org.netbeans.modules.compapp.test.ui.actions.TestCookie;
 import java.awt.Image;
-import java.util.ArrayList;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.openide.actions.EditAction;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -87,11 +79,13 @@ public class TestCaseInputNode extends FilterNode {
         super(inputDataObject.getNodeDelegate(), Children.LEAF);
         mProject = project;        
     }
-    
+
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(TestCaseInputNode.class, "LBL_TestInputNode"); // NOI18N
     }
-    
+
+    @Override
     public boolean canCut() {
         return false;
     }
@@ -99,27 +93,24 @@ public class TestCaseInputNode extends FilterNode {
 //    public boolean canCopy() {
 //        return false;
 //    }
-    
+
+    @Override
     public boolean canDestroy() {
         return false;
     }
-     
+
+    @Override
     public boolean canRename() {
         return false;
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param type DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public Image getIcon(int type) {
         return INPUT_ICON;
     }    
     
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] { SystemAction.get(EditAction.class),
 //        SystemAction.get(org.openide.actions.OpenAction.class),

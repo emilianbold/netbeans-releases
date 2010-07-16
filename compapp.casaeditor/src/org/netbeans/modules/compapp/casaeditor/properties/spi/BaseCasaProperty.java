@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,31 +59,47 @@ import org.openide.nodes.Node;
  */
 public abstract class BaseCasaProperty<T> extends Node.Property<T> {
     
-    private CasaNode mNode;
+    protected CasaNode mNode;
     private String mPropertyType;
     private CasaComponent mComponent;
-    
-    
+    private T mDefaultValue;
+
+    // TODO: full support of default value
+//    public BaseCasaProperty(
+//            CasaNode node,
+//            CasaComponent component,
+//            String propertyType,
+//            Class<T> valueType,
+//            String propertyName,
+//            String propertyDisplayName,
+//            String propertyDescription,
+//            T defaultValue)
+//    {
+//        this(node, component, propertyType, valueType, propertyName,
+//                propertyDisplayName, propertyDescription);
+//
+//        mDefaultValue = defaultValue;
+//    }
+
     public BaseCasaProperty(
             CasaNode node,
-            CasaComponent component, 
-            String propertyType, 
+            CasaComponent component,
+            String propertyType,
             Class<T> valueType,
-            String property,
-            String propDispName, 
-            String propDesc)
+            String propertyName,
+            String propertyDisplayName,
+            String propertyDescription)
     {
         super(valueType);
-        
+
         mNode = node;
         mComponent = component;
         mPropertyType = propertyType;
-        
-        super.setName(property);
-        super.setDisplayName(propDispName);
-        super.setShortDescription(propDesc);
-    }
 
+        super.setName(propertyName);
+        super.setDisplayName(propertyDisplayName);
+        super.setShortDescription(propertyDescription);
+    }
     
     public boolean canRead() {
         return true;
@@ -88,8 +107,7 @@ public abstract class BaseCasaProperty<T> extends Node.Property<T> {
     
     @Override
     public boolean canWrite() {
-        try {
-            
+        try {            
             CasaDataEditorSupport editorSupport = mNode.getDataObject().getEditorSupport();
             if (editorSupport == null || !editorSupport.isDocumentLoaded()) {
                 // Ensure the document is loaded, otherwise writes will surely fail.
@@ -121,14 +139,13 @@ public abstract class BaseCasaProperty<T> extends Node.Property<T> {
 
     @Override
     public boolean supportsDefaultValue () {
-        //return true;
         return canWrite();
     }
 
     @Override
     public void restoreDefaultValue()
-    throws IllegalAccessException, InvocationTargetException {
-        setValue(null);
+            throws IllegalAccessException, InvocationTargetException {
+        setValue(mDefaultValue);
     }
     
     protected CasaWrapperModel getModel() {
@@ -137,5 +154,9 @@ public abstract class BaseCasaProperty<T> extends Node.Property<T> {
     
     protected CasaComponent getComponent() {
         return mComponent;
+    }
+
+    protected Node getNode() {
+        return mNode;
     }
 }

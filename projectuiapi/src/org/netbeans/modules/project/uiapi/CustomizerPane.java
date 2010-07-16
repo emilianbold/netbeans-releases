@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,34 +49,29 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
+import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.windows.WindowManager;
 
 /**
  *
  * @author  phrebejk
  */
 public class CustomizerPane extends JPanel
-        implements HelpCtx.Provider, PropertyChangeListener {
+        implements HelpCtx.Provider {
     
     public static final String HELP_CTX_PROPERTY = "helpCtxProperty";
     
     private Component currentCustomizer;
-    private JLabel errorMessageValue = new JLabel();
+    private JTextArea errorMessageValue;
     private HelpCtx currentHelpCtx;
     
     private GridBagConstraints fillConstraints;
@@ -87,16 +85,8 @@ public class CustomizerPane extends JPanel
     private static final int MAX_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height * 3 / 4;
     private static final int MAX_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width * 3 / 4;
 
-    /*private static Dimension previousDimension = null;
-    private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerPane.dialog.width";
-    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerPane.dialog.height";*/
-    
-    //private DialogDescriptor dialogDescriptor;
-    
-    /** Creates new form J2SECustomizer */
-    public CustomizerPane( JPanel categoryView, CategoryModel categoryModel, ProjectCustomizer.CategoryComponentProvider componentProvider ) {
+    public CustomizerPane(JPanel categoryView, CategoryModel categoryModel, ProjectCustomizer.CategoryComponentProvider componentProvider) {
         initComponents();
-        // HelpCtx.setHelpIDString( customizerPanel, "org.netbeans.modules.java.j2seproject.ui.customizer.J2SECustomizer" ); // NOI18N
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPane.class,"AD_CustomizerPane")); // NOI18N
         this.componentProvider = componentProvider;
         fillConstraints = new GridBagConstraints();
@@ -108,10 +98,12 @@ public class CustomizerPane extends JPanel
         categoryModel.addPropertyChangeListener( new CategoryChangeListener() );
         categoryPanel.add( categoryView, fillConstraints );
         
-        // init errorMessageValue
+        errorMessageValue = new JTextArea();
+        errorMessageValue.setLineWrap(true);
+        errorMessageValue.setWrapStyleWord(true);
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
-        errorMessageValue.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorMessageValue.setBackground(customizerPanel.getBackground());
+        errorMessageValue.setEditable(false);
         
         // put it into under categoryView
         errMessConstraints = new GridBagConstraints();
@@ -242,7 +234,7 @@ public class CustomizerPane extends JPanel
     
     // Private methods ---------------------------------------------------------
     
-    private void setCategory( ProjectCustomizer.Category newCategory) {
+    private void setCategory(final ProjectCustomizer.Category newCategory) {
         if ( newCategory == null ) {
             return;
         }
@@ -258,7 +250,11 @@ public class CustomizerPane extends JPanel
         }
 
         if ( newCustomizer != null ) {
-            Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(this);
+            Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(new PropertyChangeListener() {
+                public @Override void propertyChange(PropertyChangeEvent evt) {
+                    setErrorMessage(newCategory.getErrorMessage(), newCategory.isValid());
+                }
+            });
             currentCustomizer = newCustomizer;            
             currentHelpCtx = HelpCtx.findHelp( currentCustomizer );
             /*if (previousDimension == null) {
@@ -305,30 +301,24 @@ public class CustomizerPane extends JPanel
                 }
             }*/
             
-            setErrorMessage(newCategory.getErrorMessage());
+            setErrorMessage(newCategory.getErrorMessage(), newCategory.isValid());
             firePropertyChange( HELP_CTX_PROPERTY, null, getHelpCtx() );
         } else {
             currentCustomizer = null;
         }
     }
 
-    private void setErrorMessage(String errMessage) {
-        errorMessageValue.setText(errMessage);
-        if (errMessage == null || errMessage.trim().equals("")) {
-            customizerPanel.remove(errorMessageValue);
-        } else {
+    private void setErrorMessage(String errMessage, boolean valid) {
+        customizerPanel.remove(errorMessageValue);
+        if (errMessage != null && !errMessage.trim().isEmpty()) {
+            errorMessageValue.setText(errMessage);
+            errorMessageValue.setForeground(UIManager.getColor(valid ? "nb.warningForeground" : "nb.errorForeground")); // NOI18N
             customizerPanel.add(errorMessageValue, errMessConstraints);
         }
         customizerPanel.revalidate();
+        customizerPanel.repaint();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == CategoryChangeSupport.ERROR_MESSAGE_PROPERTY) {
-            String errMessage = (String) evt.getNewValue();
-            setErrorMessage(errMessage);
-        }
-    }
-    
     // Private innerclasses ----------------------------------------------------
                 
     /** Listens to selection change and shows the customizers as

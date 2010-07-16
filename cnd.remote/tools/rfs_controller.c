@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,42 +40,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdlib.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <utime.h>
 
-#include <stdio.h>
-#include <string.h>
 #include <memory.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <pthread.h>
 #include <ctype.h>
-#include <errno.h>
-#include <unistd.h>
-#include <limits.h>
-#include <sys/stat.h>
 
- #include <netinet/in.h>
- #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <alloca.h>
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
 #include "rfs_filedata.h"
 
- 
-
-#if TRACE
 static int emulate = false;
-#endif
+
+enum  {
+    VERSION_1 = '1',
+    VERSION_2 = '2'
+} protocol_version = 0;
 
 typedef struct connection_data {
     int sd;
     struct sockaddr_in pin;
 } connection_data;
+
+static const char LC_PROTOCOL_REQUEST = 'r';
+static const char LC_PROTOCOL_WRITTEN = 'w';
+static const char LC_PROTOCOL_PING    = 'p';
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -103,7 +101,7 @@ static void serve_connection(void* data) {
 
         trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
         if (first ? (pkg->kind != pkg_handshake) : (pkg->kind != pkg_request && pkg->kind != pkg_written)) {
-            fprintf(stderr, "prodocol error: unexpected %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), requestor_id, conn_data->sd);
+            fprintf(stderr, "protocol error: unexpected %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), requestor_id, conn_data->sd);
             break;
         }
 
@@ -116,16 +114,13 @@ static void serve_connection(void* data) {
         const char* filename = pkg->data;
         file_data *fd = find_file_data(filename);
 
-        const char LC_PROTOCOL_REQUEST = 'r';
-        const char LC_PROTOCOL_WRITTEN = 'w';
-
         if (pkg->kind == pkg_written) {
             if (fd == NULL) {
                 trace("File %s is unknown - nothing to uncontrol\n", filename);
-            } else if (fd->state == UNCONTROLLED) {
-                trace("File %s already uncontrolled\n", filename);
+            } else if (fd->state == MODIFIED) {
+                trace("File %s already reported as modified\n", filename);
             } else {
-                fd->state = UNCONTROLLED;
+                fd->state = MODIFIED;
                 trace("File %s sending uncontrol request to LC\n", filename);
                 // TODO: this is a very primitive sync!
                 pthread_mutex_lock(&mutex);
@@ -146,11 +141,9 @@ static void serve_connection(void* data) {
                         fprintf(stdout, "%c %s\n", LC_PROTOCOL_REQUEST, filename);
                         fflush(stdout);
 
-                        #if TRACE
-                            if (emulate) {
-                                response[0] = response_ok;
-                            } else
-                        #endif
+                        if (emulate) {
+                            response[0] = response_ok;
+                        } else
                         fgets(response, sizeof response, stdin);
                         fd->state = (response[0] == response_ok) ? COPIED : ERROR;
                         pthread_mutex_unlock(&mutex);
@@ -158,8 +151,9 @@ static void serve_connection(void* data) {
                         break;
                     case COPIED:    // fall through
                     case UNCONTROLLED:
+                    case MODIFIED:
                         response[0] = response_ok;
-                        trace("File %s state %c - uncontrolled/copied, replying %s\n", filename, (char) fd->state,  response);
+                        trace("File %s state %c - uncontrolled/modified/copied, replying %s\n", filename, (char) fd->state,  response);
                         break;
                     case ERROR:
                         response[0] = response_failure;
@@ -170,7 +164,7 @@ static void serve_connection(void* data) {
                     case PENDING:   // fall through
                     default:
                         response[0] = response_failure;
-                        trace("File %s state %c - unexpected state, replying %s\n", filename, (char) fd->state, response);
+                        trace("File %s state %c (0x%x)- unexpected state, replying %s\n", filename, (char) fd->state, (char) fd->state, response);
                         break;
                 }
             } else {
@@ -232,7 +226,17 @@ static int create_dir(const char* path) {
     return true; // TODO: check 
 }
 
-static int create_file(const char* path, int size) {
+static int create_lnk(const char* path, const char* lnk_src) {
+    trace("\tcreating a symlink %s -> %s\n", path, lnk_src);
+    int rc = symlink(lnk_src, path);
+    if (rc != 0) {
+        // TODO: report errors? then check existence first
+        trace("\t\terror creating a symlink %s -> %s\n", path, lnk_src);
+    }
+    return true; // TODO: check
+}
+
+static int create_file(const char* path, int size, const struct timeval *file_time) {
     trace("\tcreating file %s %d\n", path, size);
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
     if (fd > 0) { // // TODO: error processing
@@ -249,6 +253,13 @@ static int create_file(const char* path, int size) {
             report_error("error closing %s (fd=%d)\n", path, fd);
             return false;
         }
+        struct utimbuf tm;
+        tm.actime = file_time->tv_sec;
+        tm.modtime = file_time->tv_sec;
+        if (utime(path, &tm) != 0) {
+            report_error("Error setting modification time for %s: %s\n", path, strerror(errno));
+        }
+
     } else {
         report_error("Error opening %s: %s\n", path, strerror(errno));
         return false;
@@ -256,8 +267,8 @@ static int create_file(const char* path, int size) {
     return true;
 }
 
-static int touch_file(const char* path,  int size) {
-    if (create_file(path, size)) {
+static int touch_file(const char* path,  int size, const struct timeval *file_time) {
+    if (create_file(path, size, file_time)) {
         return true;
     } else {
         report_error("can not create proxy file %s: %s\n", path, strerror(errno));
@@ -284,62 +295,100 @@ static enum file_state char_to_state(char c) {
         case COPIED:
         case ERROR:
         case UNCONTROLLED:
+        case MODIFIED:
         case DIRECTORY:
+        case LINK:
+        case INEXISTENT:
             return c;
         default:
             return -1;
     }
 }
 
-static int scan_line(const char* buffer, int bufsize, enum file_state *state, int *file_size, const char **path) {
+/**
+ * Converts a string that represents a non negative number with trailing space char
+ * to long.
+ * Checks whether the number is followed by the space char; if it is not, returns -1. 
+ * Stores the pointer to the character AFTER this space into *next_char
+ */
+static long string2num(const char *buffer, const char *buf_limit, const char** next_char) {
+    *next_char = buffer;
+    while (*next_char < buf_limit && isdigit(**next_char)) {
+        (*next_char)++;
+    }
+    // we should necessarily stay on ' '
+    if (**next_char == ' ') {
+        (*next_char)++; // skip space after the number
+    } else {
+        return -1;
+    }
+    return atol(buffer);
+}
+
+
+static bool scan_line(const char* buffer, int bufsize, enum file_state *state, int *file_size,
+                    struct timeval *file_time, const char **path) {
     *state = char_to_state(*buffer);
     if (*state == -1) {
         return false;
     }
-    if (*state == DIRECTORY) { // directory
+    
+    file_time->tv_sec = 0;
+    file_time->tv_usec = 0;
+
+    if (*state == DIRECTORY || *state == LINK) { // directory
         // format is as in printf("D %s", path)
         *path = buffer + 2;
-        *state = DIRECTORY;
         *file_size = 0;
         return true;
     } else {
-        // format is as in printf("%c %d %s", kind, length, path)
-        const char* filename = buffer+2;
-        while (filename < buffer + bufsize - 1 && *filename && *filename != ' ') {
-            if (!isdigit(*filename)) {
-                return false;
-            }
-            filename++;
-        }
-        // we should necessarily stay on ' '
-        if (filename < buffer + bufsize - 1 && *filename == ' ') {
-            filename++; // skip space after size
-        } else {
+        // VERSION_1: format is as in printf("%c %d %s", kind, length, path)
+        const char* filename;
+        *file_size = string2num(buffer+2, buffer+bufsize, &filename);
+        if (*file_size < 0) {
             return false;
         }
-        *file_size = atoi(buffer+2);
+        // VERSION_2: format is as in printf("%c %d %d %d %s", kind, length, seconds, milliseconds, path)
+        // so the beginning is the same, and two long values are inserted before path
+        if (protocol_version == VERSION_2) {
+            file_time->tv_sec = string2num(filename, buffer+bufsize, &filename);
+            if (file_time->tv_sec < 0) {
+                return false;
+            }
+            file_time->tv_usec = string2num(filename, buffer+bufsize, &filename);
+            if (file_time->tv_sec < 0) {
+                return false;
+            }
+        }
         *path = filename;
+        return true;
     }
 }
 
 typedef struct file_elem {
     struct file_elem* next;
+    enum file_state state;
+    char* real_path;
     char filename[]; // have to be the last field
 } file_elem;
 
 /**
  * adds info about new file to the tail of the list
  */
-static file_elem* add_file_to_list(file_elem* tail, const char* filename) {
-     trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
+static file_elem* add_file_to_list(file_elem* tail, const char* filename, enum file_state state, const char* real_path) {
     int namelen = strlen(filename);
-    int size = sizeof(file_elem) + namelen + 1;
+    int realpath_len = strlen(real_path);
+    int size = sizeof(file_elem) + namelen + realpath_len + 2;
     file_elem *fe = (file_elem*) malloc(size);
     fe->next = NULL;
     strcpy(fe->filename, filename);
+    fe->state = state;
+    fe->real_path = fe->filename + namelen + 1;
+    strcpy(fe->real_path, real_path);
     if (tail != NULL) {
         tail->next = fe;
     }
+    trace("\t\tadd_file_to_list %c %s -> %s\n", fe->state, fe->filename, fe->real_path);
     return fe;
 }
 
@@ -350,6 +399,23 @@ static void free_file_list(file_elem* list) {
         list = next;
     }
 }
+
+static int init() {
+    trace("Initialization\n");
+    int bufsize = 256;
+    char buffer[bufsize];
+    fgets(buffer, bufsize, stdin);
+    if ( strncmp("VERSION=", buffer, 8) != 0 ) {
+        report_error("protocol error: first line shoud start with VERSION: %s\n", buffer);
+        return false;
+    }
+    protocol_version = buffer[8];
+    if (protocol_version != VERSION_1 && protocol_version != VERSION_2) {
+        report_error("protocol error: unexpected version: %s\n", buffer);
+        return false;
+    }
+}
+
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
@@ -361,74 +427,134 @@ static int init_files() {
     int success = false;
     file_elem* list = NULL;
     file_elem* tail = NULL;
+    start_adding_file_data();
     while (1) {
         fgets(buffer, bufsize, stdin);
         if (buffer[0] == '\n') {
             success = true;
             break;
         }
+        trace("\tFile init: %s", buffer); // no trailing LF since it's in the buffer
         // remove trailing LF
         char* lf = strchr(buffer, '\n');
         if (lf) {
             *lf = 0;
         }
         if (strchr(buffer, '\r')) {
-            report_error("prodocol error: unexpected CR: %s\n", buffer);
+            report_error("protocol error: unexpected CR: %s\n", buffer);
             return false;
         }
 
         enum file_state state;
         int file_size;
-        const char *path;
+        char *path;
+        struct timeval file_time;
+        file_time.tv_sec = file_time.tv_usec = 0;
 
-        scan_line(buffer, bufsize, &state, &file_size, &path);
+        if (!scan_line(buffer, bufsize, &state, &file_size, &file_time, (const char**) &path)) {
+            report_error("protocol error: %s\n", buffer);
+            break;
+        }
+        trace("\t\tpath=%s size=%d state=%c (0x%x) time=%d.%d\n", path, file_size, (char) state, (char) state, file_time.tv_sec, file_time.tv_usec);
 
         if (state == -1) {
-            report_error("prodocol error: %s\n", buffer);
+            report_error("protocol error: %s\n", buffer);
             break;
         } else if (state == DIRECTORY) { // directory
             create_dir(path);
+        } else if (state == LINK) { // symbolic link
+            char lnk_src[bufsize]; // it is followed by a line that contains the link source
+            fgets(lnk_src, sizeof lnk_src, stdin);
+            char* lf = strchr(lnk_src, '\n');
+            if (lf) {
+                *lf = 0;
+            }
+            if (strchr(buffer, '\r')) {
+                report_error("protocol error: unexpected CR: %s\n", buffer);
+                return false;
+            }
+            create_lnk(path, lnk_src);
         } else { // plain file
             int touch = false;
             if (state == INITIAL) {
                 touch = true;
             } else if (state == COPIED || state == TOUCHED) {
                 touch = !file_exists(path, file_size);
-                if (state == COPIED && touch) {
-                    // inform local controller that he is not right about copied status of file
-                    tail = add_file_to_list(tail, path);
-                    if (list == NULL) {
-                        list = tail;
-                    }
-                }
+            } else if (state == UNCONTROLLED || state == INEXISTENT) {
+                // nothing
             } else {
-                report_error("prodocol error: %s\n", buffer);
+                report_error("protocol error: %s\n", buffer);
             }
 
             enum file_state new_state = state;
             if (touch) {
-                if (touch_file(path, file_size)) {
+                if (touch_file(path, file_size, &file_time)) {
                     new_state = TOUCHED;
                 } else {
                     new_state = ERROR;
                 }
             }
 
-            char real_path[PATH_MAX];
-            if ( realpath(path, real_path)) {
-                insert_file_data(real_path, new_state);
+            if (*path == '/') {
+                char real_path [PATH_MAX + 1];
+                if (state == UNCONTROLLED || state == INEXISTENT) {
+                    char *dir = path;
+                    char *file = path;
+                    // find trailing zero
+                    while (*file) {
+                        file++;
+                    }
+                    // we'll find '/' for sure - at least the starting one
+                    while(*file != '/') {
+                        file--;
+                    }
+                    if (file == path) { // the file resides in root directory
+                        strcpy(real_path, path);
+                    } else {
+                        // NB: we modify the path! but we'll restore later
+                        char *pfile_start = file; // save file start char
+                        char file_start = *file;  // save file start char
+                        *file = 0; // replace the '/' that separates file from dir by zero
+                        file++; 
+                        if (!realpath(dir, real_path)) {
+                            report_unresolved_path(dir);
+                            break;
+                        }
+                        char *p = real_path;
+                        while (*p) {
+                            p++;
+                        }
+                        *(p++) = '/';
+                        strncpy(p, file, sizeof real_path - (p - real_path));
+                        *pfile_start = file_start; // restore file start char
+                    }
+                } else {
+                    if (!realpath(path, real_path)) {
+                       report_unresolved_path(path);
+                       break; 
+                    }
+                }
+                trace("\t\tadding %s with state '%c' (0x%x) -> %s\n", path, (char) new_state, (char) new_state, real_path);
+                add_file_data(real_path, new_state);
+                // send real path to local controller
+                tail = add_file_to_list(tail, path, new_state, real_path);
+                //trace("\t\tadded to list %s with state '%c' (0x%x) -> %s\n", tail->filename, tail->state, tail->state, tail->real_path);
+                if (list == NULL) {
+                    list = tail;
+                }
             } else {
-                report_unresolved_path(path);
+                report_error("protocol error: %s is not absoulte\n", path);
+                break;
             }
-
         }
     }
+    stop_adding_file_data();
     trace("Files list initialization done\n");
     if (success) {
         // send info about touched files which were passed as copied files
         tail = list;
         while (tail != NULL) {
-            fprintf(stdout, "t %s\n", tail->filename);
+            fprintf(stdout, "*%c%s\n%s\n", tail->state, tail->filename, tail->real_path);
             fflush(stdout);
             tail = tail->next;
         }
@@ -440,18 +566,34 @@ static int init_files() {
     return success;
 }
 
+/**
+ * From time to time prints to stdout.
+ * This guarantees that, as soon as as ssh connection breaks, program will get SIGPIPE and terminate
+ */
+static void check_stdout_pipe(void* data) {
+    do {
+        pthread_mutex_lock(&mutex);
+        fprintf(stdout, "%c\n", LC_PROTOCOL_PING);
+        fflush(stdout);
+        // no response needed
+        // char response[64];
+        // fgets(response, sizeof response, stdin);
+        pthread_mutex_unlock(&mutex);
+        sleep(20);
+    } while (1);
+}
+
 int main(int argc, char* argv[]) {
+    init_trace_flag("RFS_CONTROLLER_TRACE");
     trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);
     }
-    #if TRACE
     // auto mode for test purposes
     if (argc > 2 && strcmp(argv[2], "emulate") == 0) {
         emulate = true;
     }
-    #endif
     int sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1) {
         perror("Socket");
@@ -488,6 +630,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    if (!init()) {
+        report_error("Initialization error\n");
+        exit(8);
+    }
     if (!init_files()) {
         report_error("Error when initializing files\n");
         exit(8);
@@ -496,6 +642,10 @@ int main(int argc, char* argv[]) {
     // print port later, when we're done with initializing files
     fprintf(stdout, "PORT %d\n", port);
     fflush(stdout);
+
+    pthread_t ping_pong_thread;
+    pthread_create(&ping_pong_thread, NULL /*&attr*/, (void *(*) (void *)) check_stdout_pipe, NULL);
+    pthread_detach(ping_pong_thread);
 
     while (1) {
         /* wait for a client to talk to us */
@@ -509,7 +659,8 @@ int main(int argc, char* argv[]) {
         pthread_create(&thread, NULL /*&attr*/, (void *(*) (void *)) serve_connection, conn_data);
         pthread_detach(thread);
     }
-
-    close(sd);
-    trace_shutdown();
+    // the code below is unreachable, so I commented it out
+    // TODO: (?) more accurate shutdon?
+    // close(sd);
+    // trace_shutdown();
 }

@@ -27,5 +27,4 @@ package org.netbeans.modules.soa.ui;
 public interface TooltipTextProvider {
     
     String getTooltipText();
-    
 }

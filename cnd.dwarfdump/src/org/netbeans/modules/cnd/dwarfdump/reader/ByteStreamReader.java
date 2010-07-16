@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ public class ByteStreamReader implements DataInput {
     
     public static final int LSB = 1;
     public static final int MSB = 2;
+    private final byte[] buffer = new byte[8];
     
     public ByteStreamReader(String fname, RandomAccessFile reader) {
         file = reader;
@@ -118,18 +122,18 @@ public class ByteStreamReader implements DataInput {
     }
     
     public long readNumber(int size) throws IOException {
-        byte[] bytes = new byte[size];
+        assert size <= 8;
         long n = 0;
         
-        file.readFully(bytes);
+        file.readFully(buffer, 0, size);
         
         for (int i = 0; i < size; i++) {
             long u = 0;
             
             if (dataEncoding == LSB) {
-                u = (0xff & bytes[i]);
+                u = (0xff & buffer[i]);
             } else {
-                u = (0xff & bytes[size - i - 1]);
+                u = (0xff & buffer[size - i - 1]);
             }
             
             n |= (u << (i * 8));
@@ -138,20 +142,14 @@ public class ByteStreamReader implements DataInput {
         return n;
     }
     
+    @Override
     public short readShort() throws IOException {
         return (short)readNumber(2);
     }
     
+    @Override
     public int readInt() throws IOException {
         return (int)readNumber(4);
-    }
-    
-    public int readInt(boolean useEncoding) throws IOException {
-        if (useEncoding) {
-            return readInt();
-        } else {
-            return file.readInt();
-        }
     }
     
     public long readDWlen() throws IOException {
@@ -162,6 +160,7 @@ public class ByteStreamReader implements DataInput {
         return res;
     }
     
+    @Override
     public long readLong() throws IOException {
         return readNumber(8);
     }
@@ -171,50 +170,62 @@ public class ByteStreamReader implements DataInput {
         return b;
     }
     
+    @Override
     public void readFully(byte[] b) throws IOException {
         file.readFully(b);
     }
     
+    @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
         file.readFully(b, off, len);
     }
     
+    @Override
     public int skipBytes(int n) throws IOException {
         return file.skipBytes(n);
     }
     
+    @Override
     public boolean readBoolean() throws IOException {
         return file.readBoolean();
     }
     
+    @Override
     public byte readByte() throws IOException {
         return file.readByte();
     }
     
+    @Override
     public int readUnsignedByte() throws IOException {
         return file.readUnsignedByte();
     }
     
+    @Override
     public int readUnsignedShort() throws IOException {
         return file.readUnsignedShort();
     }
     
+    @Override
     public char readChar() throws IOException {
         return file.readChar();
     }
     
+    @Override
     public float readFloat() throws IOException {
         return file.readFloat();
     }
     
+    @Override
     public double readDouble() throws IOException {
         return file.readDouble();
     }
     
+    @Override
     public String readLine() throws IOException {
         return file.readLine();
     }
     
+    @Override
     public String readUTF() throws IOException {
         return file.readUTF();
     }

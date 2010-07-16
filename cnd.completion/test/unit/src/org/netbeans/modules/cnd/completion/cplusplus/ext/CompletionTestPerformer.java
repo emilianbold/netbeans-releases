@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -139,7 +142,7 @@ public class CompletionTestPerformer {
             int caretOffset,
             boolean      unsorted) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
         CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, false, !unsorted, true);
@@ -258,7 +261,7 @@ public class CompletionTestPerformer {
     
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
         FileObject test = FileUtil.toFileObject(testFile);
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath());
+        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), false);
         if (test == null || csmFile == null) {
             throw new IllegalStateException("Given test file does not exist.");
         }
@@ -287,9 +290,9 @@ public class CompletionTestPerformer {
 //                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
 //            }
 //        }
-        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false, false);
         if (csmFile == null) {
-            csmFile = CsmUtilities.getCsmFile(dob, false);
+            csmFile = CsmUtilities.getCsmFile(dob, false, false);
         }
         assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();

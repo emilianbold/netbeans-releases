@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,11 +51,17 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -91,10 +100,30 @@ public class Hk2ItemNode extends AbstractNode {
         
         if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
+                @Override
                 public void refresh() {
+                    refresh(null, null);
+                }
+
+                @Override
+                public void refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
                         ((Refreshable) children).updateKeys();
+                        boolean foundExpected = expected == null ? true : false;
+                        boolean foundUnexpected = false;
+                        for (Node node : children.getNodes()) {
+                            if (!foundExpected && node.getDisplayName().equals(expected))
+                                foundExpected = true;
+                            if (!foundUnexpected && node.getDisplayName().equals(unexpected))
+                                foundUnexpected = true;
+                        }
+                        if (!foundExpected) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("did not find a child node, named "+expected));
+                        }
+                        if (foundUnexpected) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("found unexpected child node, named "+unexpected));
+                        }
                     }
                 }
             });
@@ -102,6 +131,7 @@ public class Hk2ItemNode extends AbstractNode {
         
         if(decorator.canDeployTo()) {
             getCookieSet().add(new DeployDirectoryCookie() {
+                @Override
                 public void deployDirectory() {
                     JFileChooser chooser = new JFileChooser();
                     chooser.setDialogTitle(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); // NOI18N
@@ -119,7 +149,7 @@ public class Hk2ItemNode extends AbstractNode {
                     
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         mgr.deploy(dir);
                     }
                 }
@@ -131,17 +161,19 @@ public class Hk2ItemNode extends AbstractNode {
                 
                 private volatile WeakReference<Future<OperationState>> status;
 
+                @Override
                 public Future<OperationState> undeploy() {
                     Future<OperationState> result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         result = mgr.undeploy(name);
                         status = new WeakReference<Future<OperationState>>(result);
                     }
                     return result;
                 }
 
+                @Override
                 public boolean isRunning() {
                     WeakReference<Future<OperationState>> localref = status;
                     if(localref == null) {
@@ -157,7 +189,73 @@ public class Hk2ItemNode extends AbstractNode {
             });
         }
 
-//        if(decorator.canUnregister()) {
+        if(decorator.canEnable()) {
+            getCookieSet().add(new EnableModulesCookie() {
+
+                private volatile WeakReference<Future<OperationState>> status;
+
+                @Override
+                public Future<OperationState> enableModule() {
+                    Future<OperationState> result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        result = mgr.enable(name);
+                        status = new WeakReference<Future<OperationState>>(result);
+                    }
+                    return result;
+                }
+
+                @Override
+                public boolean isRunning() {
+                    WeakReference<Future<OperationState>> localref = status;
+                    if(localref == null) {
+                        return false;
+                    }
+                    Future<OperationState> cmd = localref.get();
+                    if(cmd == null || cmd.isDone()) {
+                        return false;
+                    }
+                    return true;
+                }
+
+            });
+        }
+
+        if(decorator.canDisable()) {
+            getCookieSet().add(new DisableModulesCookie() {
+
+                private volatile WeakReference<Future<OperationState>> status;
+
+                @Override
+                public Future<OperationState> disableModule() {
+                    Future<OperationState> result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        result = mgr.disable(name);
+                        status = new WeakReference<Future<OperationState>>(result);
+                    }
+                    return result;
+                }
+
+                @Override
+                public boolean isRunning() {
+                    WeakReference<Future<OperationState>> localref = status;
+                    if(localref == null) {
+                        return false;
+                    }
+                    Future<OperationState> cmd = localref.get();
+                    if(cmd == null || cmd.isDone()) {
+                        return false;
+                    }
+                    return true;
+                }
+
+            });
+        }
+
+        //        if(decorator.canUnregister()) {
 //            getCookieSet().add(new UnregisterResourceCookie() {
 //
 //                private volatile WeakReference<Future<OperationState>> status;
@@ -228,7 +326,11 @@ public class Hk2ItemNode extends AbstractNode {
         Image image = null;
         Image badge = decorator.getIconBadge();
         if(badge != null) {
-            image = badgeFolder(badge, false);
+            if (null == decorator.getIcon(type)) {
+                image = badgeFolder(badge, false);
+            } else {
+                image = badgeIcon(badge,decorator.getIcon(type));
+            }
         } else {
             image = decorator.getIcon(type);
         }
@@ -263,6 +365,14 @@ public class Hk2ItemNode extends AbstractNode {
             actions.add(SystemAction.get(UndeployModuleAction.class));
         }
     
+        if(decorator.canEnable()) {
+            actions.add(SystemAction.get(EnableModulesAction.class));
+        }
+
+        if(decorator.canDisable()) {
+            actions.add(SystemAction.get(DisableModulesAction.class));
+        }
+
         if(decorator.canUnregister()) {
             actions.add(SystemAction.get(UnregisterResourceAction.class));
         }
@@ -304,6 +414,17 @@ public class Hk2ItemNode extends AbstractNode {
     }
     
     /**
+     * Applies a badge to an icon.
+     *
+     * @param badge badge image for folder
+     * @param icon the image to be badged
+     * @return an image of the badged folder
+     */
+    public static Image badgeIcon(Image badge, Image icon) {
+        return ImageUtilities.mergeImages(icon, badge, 7, 7);
+    }
+
+    /**
      * Retrieves the IDE's standard folder node, so we can access the default
      * open/closed folder icons.
      * 
@@ -329,6 +450,8 @@ public class Hk2ItemNode extends AbstractNode {
     
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return true; }
     };
     

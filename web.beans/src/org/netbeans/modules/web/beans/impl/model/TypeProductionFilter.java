@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,8 +43,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -50,6 +58,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -70,9 +80,13 @@ class TypeProductionFilter extends Filter<Element> {
         return new TypeProductionFilter();
     }
     
-    void init( VariableElement element , WebBeansModelImplementation model){
+    void init( VariableElement element , TypeMirror elementType ,
+            WebBeansModelImplementation model)
+    {
         myElement = element;
         myImpl = model;
+        myType = elementType;
+        myResult = new HashMap<Element, List<DeclaredType>>();
     }
     
     /* (non-Javadoc)
@@ -80,67 +94,111 @@ class TypeProductionFilter extends Filter<Element> {
      */
     void filter( Set<Element> productionElements ){
         if ( filterPrimitives(productionElements ) ){
+            fillSimpleResult(productionElements);
             return;
         }
         
         if ( filterArray(productionElements) ){
+            fillSimpleResult(productionElements);
             return ;
         }
         
-        Set<TypeElement> types = new HashSet<TypeElement>( 
-                productionElements.size());
+        TypeBindingFilter filter = TypeBindingFilter.get();
+        filter.init(getElement(), getElementType(), getImplementation());
         
         // this cycle care only about declared types.
         for ( Iterator<? extends Element> iterator = productionElements.iterator() ; 
             iterator.hasNext() ; ) 
         {
             Element productionElement = iterator.next();
-            TypeMirror mirror= null;
-            if ( productionElement.getKind() == ElementKind.FIELD){
-                mirror = productionElement.asType();
-            }
-            else if ( productionElement.getKind() == ElementKind.METHOD){
-                mirror = ((ExecutableElement)productionElement).
-                    getReturnType();
-            }
-            Element typeElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( mirror );
-            if ( typeElement instanceof TypeElement ){
-                types.add( (TypeElement) typeElement );
-            }
-            else {
-                iterator.remove();
-            }
-        }
-        TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init(getElement(), getImplementation());
-        filter.filter( types );
-        
-        for (Iterator<? extends Element> iterator = productionElements.iterator(); 
-            iterator.hasNext();)
-        {
-            Element productionElement = iterator.next();
-            TypeMirror mirror = null;
-            if ( productionElement.getKind() == ElementKind.FIELD){
-                mirror = productionElement.asType();
-            }
-            else if ( productionElement.getKind() == ElementKind.METHOD){
-                mirror = ((ExecutableElement)productionElement).
-                    getReturnType();
-            }
-            Element typeElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( mirror );
-            if ( !types.contains( typeElement)){
-                iterator.remove();
+
+            TypeElement enclosingElement = getImplementation().getHelper().
+                getCompilationController().getElementUtilities().
+                enclosingTypeElement( productionElement );
+            
+            List<DeclaredType> derived = getDerived( enclosingElement);
+            
+            for (DeclaredType declaredType : derived) {
+                TypeMirror mirror = null;
+                try {
+                    if (productionElement.getKind() == ElementKind.FIELD) {
+                        mirror = getImplementation().getHelper()
+                                .getCompilationController().getTypes()
+                                .asMemberOf(declaredType, productionElement);
+                    }
+                    else if (productionElement.getKind() == ElementKind.METHOD)
+                    {
+                        mirror = getImplementation().getHelper()
+                                .getCompilationController().getTypes()
+                                .asMemberOf(declaredType, productionElement);
+                        mirror = ((ExecutableType) mirror).getReturnType();
+                    }
+                    if ( filter.isAssignable(mirror) ){
+                        addResult( productionElement , declaredType);
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    /*
+                     * call <code>asMemberOf</code> could be a problem for
+                     * productionElment and derived. In this case just skip
+                     */
+                    continue;
+                }
             }
         }
     }
     
+    Map<Element, List<DeclaredType>> getResult() {
+        return myResult;
+    }
+    
+    private void addResult( Element productionElement, DeclaredType type )
+    {
+        List<DeclaredType> list = myResult.get( productionElement );
+        if ( list == null ){
+            list = new ArrayList<DeclaredType>(2);
+            myResult.put( productionElement , list );
+        }
+        list.add( type );
+    }
+    
+    private void fillSimpleResult( Set<Element> productionElements ){
+        for (Element element : productionElements) {
+            TypeElement enclosingElement = getImplementation().getHelper().
+                getCompilationController().getElementUtilities().
+                    enclosingTypeElement(element);
+            DeclaredType type = (DeclaredType)enclosingElement.asType();
+            myResult.put( element , Collections.singletonList(type) );
+        }
+    }
+    
+    private List<DeclaredType> getDerived( TypeElement element ) 
+    {
+        if ( !isGeneric( element ) ){
+            return Collections.singletonList( (DeclaredType)element.asType());
+        }
+        
+        Set<TypeElement> implementors = FieldInjectionPointLogic.
+            getImplementors(getImplementation(), element);
+        List<DeclaredType> result = new ArrayList<DeclaredType>( 
+                implementors.size());
+        for (TypeElement typeElement : implementors) {
+            result.add((DeclaredType)typeElement.asType());
+        }
+        
+        return result;
+        
+    }
+    
+    private boolean isGeneric( TypeElement element ) {
+        //DeclaredType type = (DeclaredType)element.asType();
+        return element.getTypeParameters().size()!=0;
+    }
+
     private boolean filterArray( Set<? extends Element> productionElements)
     {
-        TypeMirror varType= getElement().asType();
-        if  ( varType.getKind() == TypeKind.ARRAY ){
-            TypeMirror arrayComponentType = ((ArrayType)varType).getComponentType();
+        if  ( getElementType().getKind() == TypeKind.ARRAY ){
+            TypeMirror arrayComponentType = ((ArrayType)getElementType()).getComponentType();
             for (Iterator<? extends Element> iterator = productionElements.iterator() ; 
                     iterator.hasNext() ; ) 
             {
@@ -174,18 +232,17 @@ class TypeProductionFilter extends Filter<Element> {
 
     private boolean filterPrimitives( Set<? extends Element> productionElements )
     {
-        TypeMirror varType= getElement().asType();
         PrimitiveType primitive = null;
         TypeElement boxedType = null;
-        if ( varType.getKind().isPrimitive() ){
+        if ( getElementType().getKind().isPrimitive() ){
             primitive = getImplementation().getHelper().getCompilationController().
-                getTypes().getPrimitiveType( varType.getKind());
+                getTypes().getPrimitiveType( getElementType().getKind());
             boxedType = getImplementation().getHelper().getCompilationController().
                 getTypes().boxedClass( primitive);
         }
-        else if ( varType.getKind() == TypeKind.DECLARED ){
+        else if ( getElementType().getKind() == TypeKind.DECLARED ){
             Element varElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( varType );
+                getCompilationController().getTypes().asElement( getElementType() );
             if ( varElement instanceof TypeElement ){
                 String typeName = ((TypeElement)varElement).getQualifiedName().
                     toString();
@@ -234,9 +291,15 @@ class TypeProductionFilter extends Filter<Element> {
     private VariableElement getElement(){
         return myElement;
     }
+    
+    private TypeMirror getElementType(){
+        return myType;
+    }
 
     private WebBeansModelImplementation myImpl;
     private VariableElement myElement;
+    private TypeMirror myType;
+    private Map<Element, List<DeclaredType>> myResult;
     
     
     private static final Set<String> WRAPPERS = new HashSet<String>();

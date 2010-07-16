@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,16 +45,20 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,13 +115,30 @@ public final class NativeProjectProvider {
             return NativeFileItem.Language.CPP;
         } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.C;
+        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
+            return NativeFileItem.Language.FORTRAN;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.C_HEADER;
         }
         return NativeFileItem.Language.OTHER;
     }
 
-    private static final class NativeProjectImpl implements NativeProject {
+    public static DataObject getDataObject(File file) {
+        CndUtils.assertNormalized(file);
+        DataObject dobj = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                dobj = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                // skip;
+            }
+        }
+
+        return dobj;
+    }
+    
+    public static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;
 	private final List<String> usrIncludes;
@@ -127,6 +151,7 @@ public final class NativeProjectProvider {
 	private boolean pathsRelCurFile;
 	
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+
         private static final class Lock {}
         private final Object listenersLock = new Lock();
 
@@ -171,38 +196,80 @@ public final class NativeProjectProvider {
 	    }
 	}
 	
+        @Override
         public Object getProject() {
             return null;
         }
 
+        @Override
         public List<String> getSourceRoots() {
             return Collections.<String>emptyList();
         }
                 
+        @Override
         public String getProjectRoot() {
             return this.projectRoot;
         }
 
+        @Override
         public String getProjectDisplayName() {
             return "DummyProject"; // NOI18N
         }
 
+        @Override
         public List<NativeFileItem> getAllFiles() {
             return Collections.unmodifiableList(files);
         }
 
+        @Override
+        public NativeFileSearch getNativeFileSearch() {
+            return new NativeFileSearch() {
+                @Override
+                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                    return Collections.<CharSequence>emptyList();
+                }
+            };
+        }
+
+        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.add(listener);
 	    }
         }
 
+        @Override
         public void removeProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.remove(listener);
 	    }
         }
-	
+
+	public void fireFileChanged(File file) {
+            NativeFileItem item = findFileItem(file);
+	    List<NativeProjectItemsListener> listenersCopy;
+	    synchronized( listenersLock ) {
+		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+	    }
+	    for( NativeProjectItemsListener listener : listenersCopy ) {
+		listener.filePropertiesChanged(item);
+	    }
+        }
+
+        public void fireFileAdded(File file) {
+            NativeFileItem item = findFileItem(file);
+            if (item == null) {
+                item = addFile(file);
+            }
+	    List<NativeProjectItemsListener> listenersCopy;
+	    synchronized( listenersLock ) {
+		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+	    }
+	    for( NativeProjectItemsListener listener : listenersCopy ) {
+		listener.fileAdded(item);
+	    }
+        }
+
 	private void fireAllFilesChanged() {
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
@@ -214,6 +281,7 @@ public final class NativeProjectProvider {
 	    }
 	}
 
+        @Override
         public NativeFileItem findFileItem(File file) {
             String path = file.getAbsolutePath();
             for (NativeFileItem item : files) {
@@ -224,59 +292,57 @@ public final class NativeProjectProvider {
             return null;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             return this.sysIncludes;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             return this.usrIncludes;
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return this.usrMacros;
         }
         
-	private void addFile(File file) {
+	private NativeFileItem addFile(File file) {
+            file = CndFileUtils.normalizeFile(file);
             DataObject dobj = getDataObject(file);
 	    NativeFileItem.Language lang = getLanguage(file, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
 	    //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
 	    this.files.add(item);
+            return item;
 	}
 	
+        @Override
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }
 
-        public void runOnCodeModelReadiness(Runnable task) {
+        @Override
+        public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
-    }    
 
-
-    private static DataObject getDataObject(File file) {
-
-        DataObject dobj = null;
-        try {
-            FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-            if (fo != null) {
-                try {
-                    dobj = DataObject.find(fo);
-                } catch (DataObjectNotFoundException ex) {
-                    // skip;
-                }
-            }
-        } catch (IOException ioe) {
-            // skip;
+        @Override
+	public NativeExitStatus execute(String executable, String[] env, String... args) {
+	    return null;
         }
 
-        return dobj;
-    }
+        @Override
+        public String getPlatformName() {
+            return null;
+        }
+    }    
         
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
@@ -300,19 +366,23 @@ public final class NativeProjectProvider {
             this.lang = language;
         }
         
+        @Override
         public NativeProject getNativeProject() {
             return project;
         }
 
+        @Override
         public File getFile() {
             return file;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
 	    List<String> result = project.getSystemIncludePaths();
 	    return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
 	    List<String> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
@@ -334,22 +404,27 @@ public final class NativeProjectProvider {
 	    return result;
 	}
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return project.getSystemMacroDefinitions();
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
         }
 
+        @Override
         public NativeFileItem.Language getLanguage() {
             return lang;
         }
 
+        @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
             return NativeFileItem.LanguageFlavor.GENERIC;
         }
 
+        @Override
         public boolean isExcluded() {
             return false;
         }

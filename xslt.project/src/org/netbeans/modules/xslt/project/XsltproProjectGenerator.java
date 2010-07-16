@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
@@ -88,9 +89,7 @@ public class XsltproProjectGenerator {
                 final Project p = ProjectManager.getDefault().findProject(fo);
                 
                 fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-//                FileObject bpelasaRoot = srcRoot;
-//                FileObject tMapFo = FileUtil.copyFile(FileUtil.getConfigFile("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
-//                        bpelasaRoot, "transformmap"); //NOI18N
+                createCatalogXml(h[0].getProjectDirectory());
                 
                 try {
                     ProjectManager.mutex().writeAccess(
@@ -119,6 +118,15 @@ public class XsltproProjectGenerator {
     }
     
     
+    private static void createCatalogXml(FileObject project) {
+      try {
+        FileObject resource = FileUtil.getConfigFile("xslt-project-resources/catalog.xml"); // NOI18N
+        FileUtil.copyFile(resource, project, "catalog", "xml"); // NOI18N
+      }
+      catch (IOException e) {
+      }
+    }
+
     private static FileObject createProjectDir(File dir) throws IOException {
         FileObject dirFO;
         if(!dir.exists()) {
@@ -223,7 +231,8 @@ public class XsltproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
-        ep.setProperty(VALIDATION_FLAG, "false");
+        ep.setProperty(IcanproConstants.VALIDATION_FLAG, "false");
+        ep.setProperty(IcanproConstants.BETA_FEATURES_FLAG, "false");
 
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
 

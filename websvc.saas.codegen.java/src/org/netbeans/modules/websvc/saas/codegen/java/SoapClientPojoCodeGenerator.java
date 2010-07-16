@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -85,7 +88,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -465,8 +467,9 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {7} = lookup object
     // {8} = result statement (return type and variable, e.g., MyClass myvar =
     private static final String INVOKE_JAXRPC_BODY =
-            "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
-            "\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{7}\");\n" +
+            //"\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
+            //"\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{7}\");\n" +
+            "\t\t{0} {1} = new {0}_Impl();\n" +
             "\t\t{2} {3} = {1}.{4}();\n" +
             "\t\t{8} {3}.{5}({6});\n";
 

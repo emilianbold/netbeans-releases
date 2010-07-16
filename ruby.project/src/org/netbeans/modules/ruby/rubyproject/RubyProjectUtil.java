@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -246,21 +249,23 @@ public class RubyProjectUtil {
         // options field as well.
         FileObject[] srcPath = baseProject.getSourceRootFiles();
         FileObject[] testPath = baseProject.getTestSourceRootFiles();
+        return asLoadPath(srcPath) + asLoadPath(testPath);
+    }
+
+    private static String asLoadPath(FileObject[] paths) {
         StringBuilder result = new StringBuilder();
-        for (FileObject root : srcPath) {
+        for (FileObject root : paths) {
+            // there might be dirs configured as source roots that 
+            // have since been deleted
+            if (root == null || !root.isValid()) {
+                continue;
+            }
             if (result.length() > 0) {
                 result.append(' ');
             }
             result.append("-I\""); // NOI18N
-            result.append(FileUtil.toFile(root).getAbsoluteFile());
-            result.append("\""); // NOI18N
-        }
-        for (FileObject root : testPath) {
-            if (result.length() > 0) {
-                result.append(' ');
-            }
-            result.append("-I\""); // NOI18N
-            result.append(FileUtil.toFile(root).getAbsoluteFile());
+            // using FO#getPath as the load path must use forward slashes even on Win
+            result.append(root.getPath());
             result.append("\""); // NOI18N
         }
         return result.toString();

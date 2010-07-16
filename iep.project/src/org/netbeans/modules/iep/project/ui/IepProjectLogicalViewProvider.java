@@ -22,11 +22,16 @@ package org.netbeans.modules.iep.project.ui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 
+import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
@@ -46,7 +51,15 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.iep.project.IepProject;
+import org.openide.actions.FileSystemAction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -118,6 +131,14 @@ public class IepProjectLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName =
+                    FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(IepProjectLogicalViewProvider.class,
+                    "HINT_Project_Root_Node", prjDirDispName); // NOI18N
+        }
+
         public Action[] getActions( boolean context ) {
             if ( context )
                 return super.getActions( true );
@@ -135,36 +156,72 @@ public class IepProjectLogicalViewProvider implements LogicalViewProvider {
         // Private methods -------------------------------------------------
 
         private Action[] getAdditionalActions() {
-
             ResourceBundle bundle = NbBundle.getBundle(IepProjectLogicalViewProvider.class);
-
-            return new Action[] {
-                // disable new action at the top...
-                 CommonProjectActions.newFileAction(),
-                 null,
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-                null,
-                CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(),
-                null,
-                CommonProjectActions.renameProjectAction(),
-                CommonProjectActions.moveProjectAction(),
-                CommonProjectActions.copyProjectAction(),
-                CommonProjectActions.deleteProjectAction(),
-                null,
-                SystemAction.get( org.openide.actions.FindAction.class ),
-                null,
-                //SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                 org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
-                null,
-                brokenLinksAction,
-                CommonProjectActions.customizeProjectAction(),
-            };
+            ArrayList<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null)); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null )); // NOI18N
+            actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
+            actions.add(CommonProjectActions.openSubprojectsAction());
+            actions.add(CommonProjectActions.closeProjectAction());
+            actions.add(null);
+            actions.add(CommonProjectActions.renameProjectAction());
+            actions.add(CommonProjectActions.moveProjectAction());
+            actions.add(CommonProjectActions.copyProjectAction());
+            actions.add(CommonProjectActions.deleteProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get(org.openide.actions.FindAction.class));
+            // Project versioning action
+            addVersioningAction(actions);
+            actions.add(null);
+            actions.add(brokenLinksAction);
+            actions.add(CommonProjectActions.customizeProjectAction());
+            
+            //retun the Action[] array.
+            Action[] retVal = new Action[actions.size()];
+            actions.toArray(retVal);
+            return retVal;
+            
         }
 
+        /*
+         * Netbeans magic incantations to add context dependent versioning menu items
+         * to the iep project node menu context. 
+         * refer to wiki page: http://wiki.netbeans.org/ProjectVersioning
+         */
+        private void addVersioningAction(List<Action> actions) {
+            // honor 57874 contract.
+            try {
+                Repository repository  = Repository.getDefault();
+                FileSystem sfs = repository.getDefaultFileSystem();
+                FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
+                if (fo != null) {
+                    DataObject dobj = DataObject.find(fo);
+                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
+                    Lookup.Template query = new Lookup.Template(Object.class);
+                    Lookup lookup = actionRegistry.getLookup();
+                    Iterator it = lookup.lookup(query).allInstances().iterator();
+                    if (it.hasNext()) {
+                        actions.add(null);
+                    }
+                    while (it.hasNext()) {
+                        Object next = it.next();
+                        if (next instanceof Action) {
+                            actions.add((Action)next);
+                        } else if (next instanceof JSeparator) {
+                            actions.add(null);
+                        }
+                     }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                // data folder for exiting fileobject expected
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */

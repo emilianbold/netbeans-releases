@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,14 +44,18 @@
 
 package org.netbeans.modules.versioning.util.projects;
 
+import org.netbeans.modules.versioning.util.projects.ProjectOpener.ProjectOpenerType;
+
 /**
  *
  * @author  Petr Kuzel
  */
-public final class CheckoutCompletedPanel extends javax.swing.JPanel {
+final class CheckoutCompletedPanel extends javax.swing.JPanel {
+    private final ProjectOpenerType type;
 
     /** Creates new form CheckoutCompletedPanel */
-    public CheckoutCompletedPanel() {
+    CheckoutCompletedPanel(ProjectOpener.ProjectOpenerType type) {
+        this.type = type;
         initComponents();
     }
 
@@ -63,7 +70,7 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3001")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, type.getMessage("BK3001"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -84,8 +91,7 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(openButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3003")); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/util/projects/Bundle"); // NOI18N
-        openButton.setToolTipText(bundle.getString("TT_OpenProject")); // NOI18N
+        openButton.setToolTipText(type.getMessage("TT_OpenProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -93,12 +99,13 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(openButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(createButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3004")); // NOI18N
-        createButton.setToolTipText(bundle.getString("TT_CreateProject")); // NOI18N
+        createButton.setToolTipText(type.getMessage("TT_CreateProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         add(createButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3005")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/util/projects/Bundle"); // NOI18N
         closeButton.setToolTipText(bundle.getString("TT_Close")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

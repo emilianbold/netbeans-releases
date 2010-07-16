@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,13 +45,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
@@ -58,32 +68,70 @@ import org.openide.util.Exceptions;
  * @author Sergey Grinev
  */
 public abstract class HostMappingProviderUnixAbstract implements HostMappingProvider {
+    private static final Logger log = RemoteUtil.LOGGER;
 
     protected abstract String getShareCommand();
 
     protected abstract String fetchPath(String[] values);
 
+    @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
         String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
+        log.log(Level.FINE, "Find Mappings for {0}", execEnv);
         if (hostName != null) {
             RunFacade runner = RunFacade.getInstance(execEnv);
             if (runner.run(getShareCommand())) { //NOI18N
                 List<String> paths = parseOutput(execEnv, new StringReader(runner.getOutput()));
                 for (String path : paths) {
+                    log.log(Level.FINE, "Path {0}", path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
                     String netPath = NET + hostName + path;
                     if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
                         if (execEnv.isLocal()) {
+                            log.log(Level.FINE, "{0}->{1}", new Object[]{path, netPath});
                             mappings.put(path, netPath);
                         } else {
+                            log.log(Level.FINE, "{0}->{1}", new Object[]{netPath, path});
                             mappings.put(netPath, path);
+                        }
+                    }
+                    if (!mappings.containsKey(path) && execEnv.isLocal()) {
+                        String host = getIP();
+                        if (host != null && host.length()>0) {
+                            log.log(Level.FINE, "IP={0}", host);
+                            netPath = NET + host + path;
+                            if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
+                                mappings.put(path, netPath);
+                                log.log(Level.FINE, "{0}->{1}", new Object[]{path, netPath});
+                            }
                         }
                     }
                 }
             }
         }
         return mappings;
+    }
+
+    private String getIP() {
+        String host = null;
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface nextElement = networkInterfaces.nextElement();
+                if (!nextElement.isLoopback()) {
+                    for (InterfaceAddress addr : nextElement.getInterfaceAddresses()) {
+                        String s = addr.getAddress().getHostAddress();
+                        if (s.indexOf('.') > 0 && s.indexOf('.') < 5) {
+                            host = s;
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return host;
     }
 
     private static final String NET = "/net/"; // NOI18N

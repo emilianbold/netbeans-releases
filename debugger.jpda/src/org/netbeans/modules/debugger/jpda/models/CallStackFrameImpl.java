@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,7 +47,6 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
@@ -56,7 +58,6 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
 import com.sun.jdi.request.EventRequest;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -95,6 +97,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -443,8 +446,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             if (argValues == null) return null;
             Location l = getStackFrameLocation();
             MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, LocationWrapper.lineNumber(l));
-            if (argumentNames == null) return null;
-            int n = Math.min(argValues.size(), argumentNames.length);
+            int n = argValues.size();
+            argumentNames = checkArgumentCount(argumentNames, argValues, n);
+            //int n = Math.min(argValues.size(), argumentNames.length);
             LocalVariable[] arguments = new LocalVariable[n];
             for (int i = 0; i < n; i++) {
                 com.sun.jdi.Value value = argValues.get(i);
@@ -566,28 +570,28 @@ public class CallStackFrameImpl implements CallStackFrame {
                         ErrorManager.getDefault().notify(itsex);
                         return null;
                     }
-                    if (argumentNames != null) {
-                        List<LocalVariable> argumentList = new ArrayList<LocalVariable>(arguments.size());
-                        for (int i = 0; i < arguments.size(); i++) {
-                            com.sun.jdi.Value value = arguments.get(i);
-                            if (value instanceof ObjectReference) {
-                                argumentList.add(
-                                        new ArgumentObjectVariable(debuggerImpl,
-                                                             (ObjectReference) value,
-                                                             argumentNames[i].getName(),
-                                                             //argumentNames[i].getType()));
-                                                             TypeWrapper.name(ValueWrapper.type(value))));
-                            } else {
-                                argumentList.add(
-                                        new ArgumentVariable(debuggerImpl,
-                                                             (PrimitiveValue) value,
-                                                             argumentNames[i].getName(),
-                                                             //argumentNames[i].getType()));
-                                                             (value != null) ? TypeWrapper.name(ValueWrapper.type(value)) : null));
-                            }
+                    int n = arguments.size();
+                    argumentNames = checkArgumentCount(argumentNames, arguments, n);
+                    List<LocalVariable> argumentList = new ArrayList<LocalVariable>(n);
+                    for (int i = 0; i < n; i++) {
+                        com.sun.jdi.Value value = arguments.get(i);
+                        if (value instanceof ObjectReference) {
+                            argumentList.add(
+                                    new ArgumentObjectVariable(debuggerImpl,
+                                                         (ObjectReference) value,
+                                                         argumentNames[i].getName(),
+                                                         //argumentNames[i].getType()));
+                                                         TypeWrapper.name(ValueWrapper.type(value))));
+                        } else {
+                            argumentList.add(
+                                    new ArgumentVariable(debuggerImpl,
+                                                         (PrimitiveValue) value,
+                                                         argumentNames[i].getName(),
+                                                         //argumentNames[i].getType()));
+                                                         (value != null) ? TypeWrapper.name(ValueWrapper.type(value)) : null));
                         }
-                        return argumentList;
                     }
+                    return argumentList;
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
                 return null;
@@ -596,6 +600,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             } catch (InternalExceptionWrapper e) {
                 return null;
             } catch (IllegalThreadStateExceptionWrapper e) {
+                return null;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
                 return null;
             } catch (InvalidStackFrameExceptionWrapper e) {
                 Exceptions.printStackTrace(e);
@@ -607,8 +614,24 @@ public class CallStackFrameImpl implements CallStackFrame {
         return null;
     }
     
+    private static MethodArgument[] checkArgumentCount(MethodArgument[] argumentNames, List<Value> argValues, int size) {
+        if (argumentNames == null || argumentNames.length != size) {
+            argumentNames = new MethodArgument[size];
+            for (int i = 0; i < argumentNames.length; i++) {
+                Value v = argValues.get(i);
+                String type;
+                if (v != null) {
+                    type = v.type().name();
+                } else {
+                    type = Object.class.getName();
+                }
+                argumentNames[i] = new MethodArgument(NbBundle.getMessage(CallStackFrameImpl.class, "CTL_MethodArgument", (i+1)), type, null, null);
+            }
+        }
+        return argumentNames;
+    }
+
     private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
-        if (!JPDAUtils.IS_JDK_16) return null;
         try {
             com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(sf));
             if (MethodWrapper.isNative(m)) {

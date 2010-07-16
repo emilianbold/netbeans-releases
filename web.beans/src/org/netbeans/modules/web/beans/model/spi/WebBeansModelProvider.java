@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,11 +48,13 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
@@ -58,21 +63,26 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
  */
 public interface WebBeansModelProvider {
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
+    Result getInjectable( VariableElement element , DeclaredType parentType,
+            AbstractModelImplementation modelImpl );
     
-    List<Element> getInjectables( VariableElement element , 
+    Result lookupInjectables( VariableElement element , DeclaredType parentType,
             AbstractModelImplementation modelImpl  );
     
     boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
+            AbstractModelImplementation impl );
     
     boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException;
+            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
     
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
 
-    List<AnnotationMirror> getBindings( Element element , 
+    List<AnnotationMirror> getQualifiers( Element element , 
             AbstractModelImplementation impl );
+
+    List<Element> getNamedElements( AbstractModelImplementation impl );
+
+    String getName( Element element,
+            AbstractModelImplementation modelImplementation );
 
 }

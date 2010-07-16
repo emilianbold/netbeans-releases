@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,19 +45,27 @@ package org.netbeans.lib.jsp.lexer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.spi.jsp.lexer.JspParseData;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 
 /**Jsp Lexer Test
  *
  * @author Marek.Fukala@Sun.COM
  */
-public class JspLexerTest extends NbTestCase {
+public class JspLexerTest extends CslTestBase {
 
     public JspLexerTest() {
         super("JspLexerTest");
@@ -223,5 +234,41 @@ public class JspLexerTest extends NbTestCase {
     public void testRegressions() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testRegressions.jsp.txt",
                 JspTokenId.language());
+    }
+
+    public void testHashedEL() throws Exception {
+        testSyntaxTree("testHashedEL.jspx.txt");
+
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-jsp";
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JspLanguage();
+    }
+
+    private void testSyntaxTree(String testFile) throws Exception {
+        FileObject source = getTestFile("testfiles/" + testFile);
+        BaseDocument doc = getDocument(source);
+        
+        
+        JspParseData jspParseData = new JspParseData((Map<String,String>)Collections.EMPTY_MAP, true, true, true);
+
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
+        doc.putProperty(InputAttributes.class, inputAttributes);
+
+
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence ts = th.tokenSequence();
+
+
+        StringBuilder output = new StringBuilder(ts.toString());
+        
+        assertDescriptionMatches(source, output.toString(), false, ".pass", true);
     }
 }

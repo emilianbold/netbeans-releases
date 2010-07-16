@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,16 +48,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Defines the various class paths for a web project.
@@ -120,20 +122,20 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
                             NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR);
                             //remove ${ and } from the beginning and end
-                            String webFileText = findText(webFile);
+                            String webFileText = XMLUtil.findText(webFile);
                             webFileText = webFileText.substring(2, webFileText.length() - 1);
                             
                             //#86522
                             if (webModuleLibraries.equals(TAG_WEB_MODULE__ADDITIONAL_LIBRARIES)) {
                                 String pathInWar = PATH_IN_WAR_NONE;
                                 if (pathInWarElements.getLength() > 0) {
-                                    pathInWar = findText((Element) pathInWarElements.item(0));
+                                    pathInWar = XMLUtil.findText((Element) pathInWarElements.item(0));
                                     if (pathInWar == null)
                                         pathInWar = "";
                                 }
                                 warIncludesMap.put(webFileText, pathInWar);
                             } else {
-                                warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : PATH_IN_WAR_NONE);
+                                warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? XMLUtil.findText((Element) pathInWarElements.item(0)) : PATH_IN_WAR_NONE);
                             }
                             if (dirs != null) {
                                 warIncludesMap.put(webFileText+"."+Util.DESTINATION_DIRECTORY, dirs);
@@ -145,40 +147,6 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             }
         }
         return warIncludesMap; //return an empy map
-    }
-
-    /**
-     * Extracts <b>the first</b> nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    private static String findText( Element parent ) {
-        NodeList l = parent.getChildNodes();
-        for ( int i = 0; i < l.getLength(); i++ ) {
-            if ( l.item(i).getNodeType() == Node.TEXT_NODE ) {
-                Text text = (Text)l.item( i );
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Extract nested text from a node.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent node
-     * @return the nested text, or null if none was found
-     */
-    private static String findText(Node parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
     }
 
     /**

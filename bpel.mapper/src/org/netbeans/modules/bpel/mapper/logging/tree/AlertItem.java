@@ -68,6 +68,6 @@ public class AlertItem implements LoggingTreeItem {
     }
 
     public List<LoggingTreeItem> getChildren() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 }

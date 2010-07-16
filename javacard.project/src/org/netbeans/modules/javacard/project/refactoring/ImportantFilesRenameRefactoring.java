@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,13 +46,19 @@ package org.netbeans.modules.javacard.project.refactoring;
 import com.sun.javacard.filemodels.DeploymentXmlAppletEntry;
 import com.sun.javacard.filemodels.DeploymentXmlModel;
 import com.sun.source.tree.Tree;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -66,23 +75,32 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 
 public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
 
     private final Transformer transformer;
     private final TransformerFactory tFactory = TransformerFactory.newInstance();
     private RefactoringPlugin refactoringPlugin;
-    private final RenameRefactoring renameRefactoring;
+    private final AbstractRefactoring renameRefactoring;
     private JCProject project;
 
-    public ImportantFilesRenameRefactoring(RenameRefactoring renameRefactoring) {
+    public ImportantFilesRenameRefactoring(AbstractRefactoring renameRefactoring) {
         try {
             transformer = tFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -118,7 +136,7 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
 
         // 3. Another case of renaming a class
         FileObject fo = lookup.lookup(FileObject.class);
-        if (fo != null && fo.isData() && fo.hasExt("java")) {
+        if (fo != null && fo.isData() && "text/x-java".equals(fo.getMIMEType())) { //NOI18N
             // check whether the source file belong to a Java Card project.
             project = JCProject.getOwnerProjectOf(fo);
             if (project != null) {
@@ -150,9 +168,11 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
     }
 
     public Problem prepare(RefactoringElementsBag elements) {
-        return refactoringPlugin != null
-                ? refactoringPlugin.prepare(elements)
-                : null;
+        Problem result = null;
+        if (refactoringPlugin != null) {
+            result = refactoringPlugin.prepare(elements);
+        }
+        return result;
     }
 
     private String getResourceName(FileObject fileOrFolder) {
@@ -169,26 +189,28 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
     // Rename the class
     private Problem prepareClassRenaming(RefactoringElementsBag elements, String oldNamePrefix, String newNamePrefix) {
         Problem p = prepareClassRenamingForJavaCardXML(elements, oldNamePrefix, newNamePrefix);
-        if (p != null) {
-            ProjectKind kind= project.kind();
-            switch (kind) {
-                case WEB:
-                    p = prepareClassRenamingForWebXML(elements, oldNamePrefix, newNamePrefix);
-                    break;
-                case EXTENDED_APPLET :
-                case CLASSIC_APPLET:
-                    //XXX this note was in the original source;  also should apply to deployment.xml
-                    // JC-FIXME: for extended applet projects apply rename on applet.xml
-                    p = prepareClassRenamingForAppletXML(elements, oldNamePrefix, newNamePrefix);
-                    break;
-                case CLASSIC_LIBRARY:
-                case EXTENSION_LIBRARY:
-                    break;
-                default :
-                    throw new AssertionError();
-            }
+        Problem pp = null;
+        ProjectKind kind= project.kind();
+        switch (kind) {
+            case WEB:
+                pp = prepareClassRenamingForWebXML(elements, oldNamePrefix, newNamePrefix);
+                break;
+            case EXTENDED_APPLET :
+            case CLASSIC_APPLET:
+                //XXX this note was in the original source;  also should apply to deployment.xml
+                // JC-FIXME: for extended applet projects apply rename on applet.xml
+                pp = prepareClassRenamingForAppletXML(elements, oldNamePrefix, newNamePrefix);
+                break;
+            case CLASSIC_LIBRARY:
+            case EXTENSION_LIBRARY:
+                break;
+            default :
+                throw new AssertionError();
         }
-        return p;
+        if (p != null && pp != null) {
+            p.setNext(pp);
+        }
+        return p == null ? pp : p;
     }
 
     private Problem prepareClassRenamingForAppletXML(RefactoringElementsBag elements,
@@ -374,9 +396,13 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
 
         public Problem prepare(RefactoringElementsBag elements) {
             String oldPackageName = getResourceName(packageFolder);
-            String newPackageName = renameRefactoring.getNewName();
-
-            return prepareClassRenaming(elements, oldPackageName, newPackageName);
+            if (renameRefactoring instanceof RenameRefactoring) {
+                String newPackageName = ((RenameRefactoring) renameRefactoring).getNewName();
+                return prepareClassRenaming(elements, oldPackageName, newPackageName);
+            } else {
+                //should never happen
+                return null;
+            }
         }
     }
 
@@ -408,11 +434,70 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
         }
 
         public Problem prepare(RefactoringElementsBag elements) {
-            String oldClassName = getResourceName(sourceFile);
-            String name = renameRefactoring.getNewName();
-            String newClassName =
-                    oldClassName.substring(0, oldClassName.lastIndexOf('.') + 1) + name;
-            return prepareClassRenaming(elements, oldClassName, newClassName);
+            if (renameRefactoring instanceof RenameRefactoring) {
+                String oldClassName = getResourceName(sourceFile);
+                String name = ((RenameRefactoring) renameRefactoring).getNewName();
+                String newClassName =
+                    oldClassName.substring(0, oldClassName.lastIndexOf('.') + 1) + name; //NOI18N
+                return prepareClassRenaming(elements, oldClassName, newClassName);
+            } else {
+                Problem res = null;
+                MoveRefactoring mv = (MoveRefactoring) renameRefactoring;
+                URL url = mv.getTarget().lookup(URL.class);
+                for (FileObject fo : mv.getRefactoringSource().lookupAll(FileObject.class)) {
+                    String oldClassName = getResourceName(fo);
+                    String newClassName = getRelativePath (fo, url);
+                    Problem p = prepareClassRenaming(elements, oldClassName, newClassName);
+                    if (res != null) {
+                        res.setNext(p);
+                    }
+                    res = p;
+                }
+                return res;
+            }
+        }
+
+        private String getRelativePath(FileObject fo, URL url) {
+            if (url == null) {
+                return null;
+            }
+            //XXX not pretty.  All of the safe ways of computing a path
+            //involve FileObjects; we have a URL to a folder that may not
+            //exist.
+            //For a source, we get a FileObject and an Object[] containing a
+            //TreePathHandle.  For a destination, just the URL.
+            //PENDING:  This is probably broken for applets which are inner
+            //classes, though that is an odd corner case
+            if (fo != null) {
+                File f = FileUtil.toFile(fo);
+                try {
+                    File x = new File(url.toURI());
+                    Project p = FileOwnerQuery.getOwner(fo);
+                    JCProject jp = p.getLookup().lookup(JCProject.class);
+                    if (jp != null) {
+                        ClassPath srcPath = jp.getSourceClassPath();
+                        for (FileObject root : srcPath.getRoots()) {
+                            if (root.equals(fo) || FileUtil.isParentOf(root, fo)) {
+                                String newPackageName = srcPath.getResourceName(fo.getParent(), File.separatorChar, false);
+                                int ix = f.getAbsolutePath().indexOf(newPackageName);
+                                if (ix > 0 && ix < x.getAbsolutePath().length()) {
+                                    String destAsPackage = x.getAbsolutePath().substring(ix).replace(File.separatorChar, '.'); //NOI18N
+                                    return destAsPackage + '.' + fo.getName();
+                                } else if (ix >= x.getAbsolutePath().length()) {
+                                    //default package
+                                    return fo.getName();
+                                } else if (ix == 0) {
+                                    //move *from* default package
+                                    return x.getAbsolutePath().substring(f.getParentFile().getAbsolutePath().length() + 1).replace(File.separatorChar, '.') + '.' + fo.getName(); //NOI18N
+                                }
+                            }
+                        }
+                    }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
         }
     }
 

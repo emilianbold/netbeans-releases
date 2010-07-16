@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,6 +57,7 @@ import java.io.Writer;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,14 +93,22 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.drawing.DrawEngine;
+import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -109,6 +121,7 @@ import org.openide.util.WeakListeners;
 * @version 1.00
 */
 
+@SuppressWarnings("ClassWithMultipleLoggers")
 public class BaseDocument extends AbstractDocument implements AtomicLockDocument {
 
     static {
@@ -134,6 +147,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** This document's version. It's accessed by DocumentUtilities.getDocumentVersion(). */
     private static final String VERSION_PROP = "version"; //NOI18N
+
+    /** Timestamp when this document was last modified. It's accessed by DocumentUtilities.getDocumentVersion(). */
+    private static final String LAST_MODIFICATION_TIMESTAMP_PROP = "last-modification-timestamp"; //NOI18N
 
     /** Line separator property for reading files in */
     public static final String READ_LINE_SEPARATOR_PROP = DefaultEditorKit.EndOfLineStringProperty;
@@ -209,6 +225,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Write lock without write lock */
     private static final String WRITE_LOCK_MISSING = "extWriteUnlock() without extWriteLock()"; // NOI18N
 
+    /**
+     * How many modifications under atomic lock are necessary for disabling of lexer's token hierarchy.
+     */
+    private static final int DEACTIVATE_LEXER_THRESHOLD = 30;
+
     private static final Object annotationsLock = new Object();
     private static final Object getVisColFromPosLock = new Object();
     private static final Object getOffsetFromVisColLock = new Object();
@@ -257,9 +278,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private SyntaxSupport syntaxSupport;
 
-    /** Layer list for document level layers */
-    private DrawLayerList drawLayerList = new DrawLayerList();
-
     /** Reset merging next created undoable edit to the last one. */
     boolean undoMergeReset;
 
@@ -278,7 +296,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private Acceptor whitespaceAcceptor;
 
-    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
+//    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
     LineRootElement lineRootElement;
@@ -342,7 +360,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private Preferences prefs;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
-        public void preferenceChange(PreferenceChangeEvent evt) {
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
             if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
                 tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
@@ -510,6 +528,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
+        putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
+        putProperty(SimpleValueNames.TAB_SIZE, new BaseDocument_PropertyHandler() {
+            public @Override Object setValue(Object value) {
+                return null;
+            }
+
+            public @Override Object getValue() {
+                return getTabSize();
+            }
+        });
+        putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
         lineRootElement = new LineRootElement(this);
 
@@ -527,14 +556,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             ((BaseKit) kit).initDocument(this);
         }
 
-        // Possibly add the document to registry
-        if (addToRegistry) {
-            Registry.addDocument(this); // add if created thru the kit
-        }
-
         // Start listen on find-support
         findSupportListener = new PropertyChangeListener() {
-                                  public void propertyChange(PropertyChangeEvent evt) {
+                                  public @Override void propertyChange(PropertyChangeEvent evt) {
                                       findSupportChange(evt);
                                   }
                               };
@@ -570,25 +594,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     Syntax getFreeSyntax() {
-        synchronized (syntaxList) {
-            int cnt = syntaxList.size();
-            if (cnt > 0) {
-                return syntaxList.remove(cnt - 1);
-            } else {
-                EditorKit kit = getEditorKit();
-                if (kit instanceof BaseKit) {
-                    return ((BaseKit) kit).createSyntax(this);
-                } else {
-                    return new BaseKit.DefaultSyntax();
-                }
-            }
+        EditorKit kit = getEditorKit();
+        if (kit instanceof BaseKit) {
+            return ((BaseKit) kit).createSyntax(this);
+        } else {
+            return new BaseKit.DefaultSyntax();
         }
+//        synchronized (syntaxList) {
+//            int cnt = syntaxList.size();
+//            if (cnt > 0) {
+//                return syntaxList.remove(cnt - 1);
+//            } else {
+//                EditorKit kit = getEditorKit();
+//                if (kit instanceof BaseKit) {
+//                    return ((BaseKit) kit).createSyntax(this);
+//                } else {
+//                    return new BaseKit.DefaultSyntax();
+//                }
+//            }
+//        }
     }
 
     void releaseSyntax(Syntax syntax) {
-        synchronized (syntaxList) {
-            syntaxList.add(syntax);
-        }
+//        synchronized (syntaxList) {
+//            syntaxList.add(syntax);
+//        }
     }
 
     /**
@@ -743,15 +773,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
              */
 
-            if (debug) {
-                System.err.println("BaseDocument.insertString(): doc=" + this // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                String msg = "BaseDocument.insertString(): doc=" + this // NOI18N
                     + (modified ? "" : " - first modification") // NOI18N
                     + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
-                    + (debugNoText ? "" : (", text='" + text + "'")) // NOI18N
-                );
-            }
-            if (debugStack) {
-                Thread.dumpStack();
+                    + (debugNoText ? "" : (", text='" + text + "'")); // NOI18N
+
+                if (debugStack) {
+                    LOG.log(Level.FINE, msg, new Throwable(msg));
+                } else {
+                    LOG.log(Level.FINE, msg);
+                }
             }
 
             BaseDocumentEvent evt = getDocumentEvent(offset, text.length(), DocumentEvent.EventType.INSERT, a);
@@ -847,7 +879,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 }
             }
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, null, e);
         }
     }
 
@@ -901,16 +933,18 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     lastModifyUndoEdit = edit; // #8692 check last modify undo edit
                 }
 
-                if (debug) {
-                    System.err.println("BaseDocument.remove(): doc=" + this // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    String msg = "BaseDocument.remove(): doc=" + this // NOI18N
                         + ", origDocLen=" + docLen // NOI18N
                         + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
                         + ", len=" + len // NOI18N
-                        + (debugNoText ? "" : (", removedText='" + ((DocumentContent.Edit)edit).getUndoRedoText() + "'")) // NOI18N
-                    );
-                }
-                if (debugStack) {
-                    Thread.dumpStack();
+                        + (debugNoText ? "" : (", removedText='" + ((DocumentContent.Edit)edit).getUndoRedoText() + "'")); //NOI18N
+
+                    if (debugStack) {
+                        LOG.log(Level.FINE, msg, new Throwable(msg));
+                    } else {
+                        LOG.log(Level.FINE, msg);
+                    }
                 }
 
                 if (atomicDepth > 0) { // add edits as soon as possible
@@ -973,7 +1007,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean notifyMod;
         if (notifyModifyStatus == null) { // not in atomic lock
             notifyModifyStatus = new NotifyModifyStatus (this);
-            STATUS.set (notifyModifyStatus);
+            setThreadStatusVar(notifyModifyStatus);
             notifyModify(notifyModifyStatus);
             notifyMod = true;
         } else {
@@ -982,7 +1016,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         if (notifyModifyStatus.isModificationVetoed()) {
             if (notifyMod) {
-                STATUS.set (null);
+                setThreadStatusVar(null);
             }
             BadLocationException ble = new BadLocationException(vetoExceptionText, offset);
             PropertyVetoException veto = notifyModifyStatus.veto;
@@ -1007,10 +1041,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     void notifyModifyCheckEnd(boolean modFinished) {
         NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-        STATUS.set (null);
+        setThreadStatusVar(null);
         if (!modFinished) {
             notifyUnmodify(notifyModifyStatus);
         }
+    }
+
+    private void setThreadStatusVar(Object value) {
+        STATUS.set(value);
     }
 
     /** This method is called automatically before the document
@@ -1283,7 +1321,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             DrawGraphics.PrintDG printDG = new DrawGraphics.PrintDG(container);
             DrawEngine.getDrawEngine().draw(printDG, editorUI, startOffset, endOffset, 0, 0, Integer.MAX_VALUE);
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, null, e);
         } finally {
             readUnlock();
         }
@@ -1328,7 +1366,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             DrawGraphics.PrintDG printDG = new DrawGraphics.PrintDG(container);
             DrawEngine.getDrawEngine().draw(printDG, editorUI, startOffset, endOffset, 0, 0, Integer.MAX_VALUE);
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, null, e);
         } finally {
             readUnlock();
         }
@@ -1356,7 +1394,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     /** Return default root element */
-    public Element getDefaultRootElement() {
+    public @Override Element getDefaultRootElement() {
         if (defaultRootElem == null) {
             defaultRootElem = getLineRootElement();
         }
@@ -1454,7 +1492,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 inited = true; // initialized but not modified
             }
             if (debugRead) {
-                System.err.println("BaseDocument.read(): StreamDescriptionProperty: "+getProperty(StreamDescriptionProperty));
+                LOG.log(Level.FINE, "BaseDocument.read(): StreamDescriptionProperty: {0}", getProperty(StreamDescriptionProperty));
             }
 
             // Workaround for #138951:
@@ -1555,10 +1593,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
         if (editorKit == null) {
             // Try 'text/plain'
-            LOG.config("No registered editor kit for '" + mimeType + "', trying 'text/plain'."); //NOI18N
+            LOG.log(Level.CONFIG, "No registered editor kit for ''{0}'', trying ''text/plain''.", mimeType);
             editorKit = MimeLookup.getLookup("text/plain").lookup(EditorKit.class); //NOI18N
             if (editorKit == null) {
-                LOG.warning("No registered editor kit for 'text/plain', using default."); //NOI18N
+                LOG.config("No registered editor kit for 'text/plain', using default.");
                 editorKit = new PlainEditorKit();
             }
         }
@@ -1681,6 +1719,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * 
      * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
      */
+    @Override
     public final synchronized void atomicLock () {
         Exception exception = new Exception ();
         StackTraceElement[] stack = exception.getStackTrace ();
@@ -1694,11 +1733,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
         if (task == null) {
             task = requestProcessor.create (new Runnable () {
-                public void run () {
+                public @Override void run () {
                     synchronized (BaseDocument.this) {
-                        System.out.println("Invalid locks:");
+                        LOG.log(Level.FINE, "Invalid locks:"); //NOI18N
                         for (String className : openedLocks)
-                            System.out.println("  " + className);
+                            LOG.log(Level.FINE, "  " + className); //NOI18N
                     }
                 }
             });
@@ -1713,7 +1752,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (notifyModifyStatus == null) {
                 // Notify that the modification will be done prior locking
                 notifyModifyStatus = new NotifyModifyStatus (this);
-                STATUS.set (notifyModifyStatus);
+                setThreadStatusVar(notifyModifyStatus);
                 //assert atomicDepth == 0 : "New status only on depth 0, but: " + atomicDepth; // NOI18N
             } else {
                 //assert atomicDepth > 0 : "When there is a status: " + notifyModifyStatus+ " there needs to be a lot as well: " + atomicDepth; // NOI18N
@@ -1733,6 +1772,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * 
      * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
      */
+    @Override
     public final synchronized void atomicUnlock () {
         Exception exception = new Exception ();
         StackTraceElement[] stack = exception.getStackTrace ();
@@ -1748,6 +1788,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
     
     final void atomicUnlockImpl () {
+        atomicUnlockImpl(true);
+    }
+
+    final void atomicUnlockImpl (boolean doNotifyModify) {
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
@@ -1756,8 +1800,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 throw new IllegalStateException("atomicUnlock() without atomicLock()"); // NOI18N
             }
 
-
             if (--atomicDepth == 0) { // lock really ended
+                AtomicCompoundEdit localAtomicEdits = null;
                 lastAtomic = true;
                 fireAtomicUnlock(atomicLockEventInstance);
 
@@ -1765,30 +1809,36 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     modsDone = true;
                     // Some edits performed
                     atomicEdits.end();
-                    fireUndoableEditUpdate(new UndoableEditEvent(this, atomicEdits));
-                    atomicEdits = null;
+                    localAtomicEdits = atomicEdits;
+                    atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
                 }
 
                 if (modsUndoneOrRedone) { // Check whether any modifications were undone or redone
                     modsUndoneOrRedone = false;
                     modsDone = true;
                 }
+
+                if (localAtomicEdits != null) {
+                    fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                }
                 atomicLockListenerList = null;
             }
         }
 
-        // Notify unmodification if there were document modifications
-        // inside the atomic section
-        // or in case when in undo/redo because in such case
-        // no insertString() or remove() would be done (just undoing
-        // physical changes in the buffer and firing document listeners)
-        if (modsDone) {
-            NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-            notifyModify(notifyModifyStatus);
-        }
+        if (doNotifyModify) {
+            // Notify unmodification if there were document modifications
+            // inside the atomic section
+            // or in case when in undo/redo because in such case
+            // no insertString() or remove() would be done (just undoing
+            // physical changes in the buffer and firing document listeners)
+            if (modsDone) {
+                NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus) STATUS.get();
+                notifyModify(notifyModifyStatus);
+            }
 
-        if (lastAtomic) {
-            STATUS.set (null);
+            if (lastAtomic) {
+                setThreadStatusVar(null);
+            }
         }
     }
 
@@ -1850,15 +1900,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    public void atomicUndo() {
+    public @Override void atomicUndo() {
         breakAtomicLock();
     }
 
-    public void addAtomicLockListener(AtomicLockListener l) {
+    public @Override void addAtomicLockListener(AtomicLockListener l) {
         listenerList.add(AtomicLockListener.class, l);
     }
 
-    public void removeAtomicLockListener(AtomicLockListener l) {
+    public @Override void removeAtomicLockListener(AtomicLockListener l) {
         listenerList.remove(AtomicLockListener.class, l);
     }
 
@@ -2014,43 +2064,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return modified;
     }
 
-    /**
-     * Get the layer with the specified name. Using of <code>DrawLayer</code>s
-     * has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayer findLayer(String layerName) {
-        return drawLayerList.findLayer(layerName);
-    }
-
-    /**
-     * Using of <code>DrawLayer</code>s has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public boolean addLayer(DrawLayer layer, int visibility) {
-        if (drawLayerList.add(layer, visibility)) {
-            BaseDocumentEvent evt = getDocumentEvent(0, 0, DocumentEvent.EventType.CHANGE, null);
-            evt.addEdit(new BaseDocumentEvent.DrawLayerChange(layer.getName(), visibility));
-            fireChangedUpdate(evt);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    final DrawLayerList getDrawLayerList() {
-        return drawLayerList;
-    }
-
     private LineRootElement getLineRootElement() {
         return lineRootElement;
     }
 
-    public Element getParagraphElement(int pos) {
+    public @Override Element getParagraphElement(int pos) {
         return getLineRootElement().getElement(
                    getLineRootElement().getElementIndex(pos));
     }
@@ -2164,6 +2182,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /* package */ void incrementDocVersion() {
         ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
+        ((AtomicLong) getProperty(LAST_MODIFICATION_TIMESTAMP_PROP)).set(System.currentTimeMillis());
     }
 
     /** Compound edit that write-locks the document for the whole processing
@@ -2178,7 +2197,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         public @Override void undo() throws CannotUndoException {
             atomicLockImpl ();
             try {
-                super.undo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.undo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
@@ -2196,10 +2222,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
             atomicLockImpl ();
             try {
-                super.redo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.redo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
+        }
+
+        private TokenHierarchyControl<?> thcInactive() {
+            TokenHierarchyControl<?> thc = null;
+            if (edits.size() > DEACTIVATE_LEXER_THRESHOLD) {
+                MutableTextInput<?> input = (MutableTextInput<?>)
+                        BaseDocument.this.getProperty(MutableTextInput.class);
+                if (input != null && (thc = input.tokenHierarchyControl()) != null && thc.isActive()) {
+                    thc.setActive(false);
+                } else {
+                    thc = null;
+                }
+            }
+            return thc;
         }
 
         public @Override void die() {
@@ -2273,14 +2320,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * {@link javax.swing.text.Document#getProperty(java.lang.String)}
      * is called.
      */
-    public interface PropertyEvaluator {
-
-        /** Get the real value of the property */
+    public static interface PropertyEvaluator {
         public Object getValue();
-
     }
 
-    private static final class MimeTypePropertyEvaluator implements PropertyEvaluator {
+    private static final class MimeTypePropertyEvaluator implements BaseDocument_PropertyHandler {
 
         private final BaseDocument doc;
         private String hackMimeType = null;
@@ -2289,7 +2333,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             this.doc = baseDocument;
         }
 
-        public Object getValue() {
+        public @Override Object getValue() {
             if (hackMimeType == null) {
                 return doc.mimeType;
             } else {
@@ -2297,7 +2341,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
         }
 
-        public Object setValue(Object value) {
+        public @Override Object setValue(Object value) {
             String mimeType = value == null ? null : value.toString();
             assert MimePath.validate(mimeType) : "Invalid mime type: '" + mimeType + "'"; //NOI18N
 
@@ -2335,13 +2379,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     protected static class LazyPropertyMap extends Hashtable {
 
+        private PropertyChangeSupport pcs = null;
+
         protected LazyPropertyMap(Dictionary dict) {
             super(5);
 
             Enumeration en = dict.keys();
             while (en.hasMoreElements()) {
                 Object key = en.nextElement();
-                put(key, dict.get(key));
+                super.put(key, dict.get(key));
             }
         }
 
@@ -2355,14 +2401,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         public @Override Object put(Object key, Object value) {
-            if (key != null && MIME_TYPE_PROP.equals(key)) {
-                Object val = super.get(key);
-                if (val instanceof MimeTypePropertyEvaluator) {
-                    return ((MimeTypePropertyEvaluator) val).setValue(value);
-                }
-            }
+             if (key == PropertyChangeSupport.class && value instanceof PropertyChangeSupport) {
+                 pcs = (PropertyChangeSupport) value;
+             }
 
-            return super.put(key, value);
+             Object old = null;
+             boolean usePlainPut = true;
+
+              if (key != null) {
+                  Object val = super.get(key);
+                  if (val instanceof BaseDocument_PropertyHandler) {
+                     old = ((BaseDocument_PropertyHandler) val).setValue(value);
+                     usePlainPut = false;
+                  }
+              }
+
+             if (usePlainPut) {
+                 old = super.put(key, value);
+             }
+
+             if (key instanceof String) {
+                 if (pcs != null) {
+                     pcs.firePropertyChange((String) key, old, value);
+                 }
+             }
+
+             return old;
         }
     } // End of LazyPropertyMap class
 
@@ -2445,10 +2509,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final class Accessor extends EditorPackageAccessor {
 
         @Override
-        public CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc) {
+        public CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
             return doc.markAtomicEditsNonSignificant();
         }
 
+        @Override
+        public MarkVector BaseDocument_getMarksStorage(BaseDocument doc) {
+            return doc.marksStorage;
+        }
+
+        @Override
+        public Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark) {
+            return doc.marks.get(multiMark);
+        }
+
+        @Override
+        public void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException {
+            mark.insert(doc, pos);
+        }
     }
 
     // XXX: the same as the one in CloneableEditorSupport
@@ -2471,7 +2549,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         /** Plain view for the element
         */
-        public View create(Element elem) {
+        public @Override View create(Element elem) {
             return new WrappedPlainView(elem);
         }
 

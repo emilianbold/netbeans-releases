@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,7 +66,7 @@ final class UserLibraryParser {
         UserLibraryParser parser = new UserLibraryParser();
         Document xml;
         try {
-            xml = XMLUtil.parse(new InputSource(new StringReader(xmlDoc)), false, true, Util.defaultErrorHandler(), null);
+            xml = XMLUtil.parse(new InputSource(new StringReader(xmlDoc)), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException("Library '"+libName+"' cannot be parsed: " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -73,7 +76,7 @@ final class UserLibraryParser {
         if (!"userlibrary".equals(root.getLocalName())) { //NOI18N
             return false;
         }
-        for (Element el : Util.findSubElements(root)) {
+        for (Element el : XMLUtil.findSubElements(root)) {
             if (!el.getNodeName().equals("archive")) { //NOI18N
                 continue;
             }
@@ -82,11 +85,11 @@ final class UserLibraryParser {
             if (src.length() > 0) {
                 sources.add(src);
             }
-            Element el2 = Util.findElement(el, "attributes", null); //NOI18N
+            Element el2 = XMLUtil.findElement(el, "attributes", null); //NOI18N
             if (el2 == null) {
                 continue;
             }
-            for (Element el3 : Util.findSubElements(el2)) {
+            for (Element el3 : XMLUtil.findSubElements(el2)) {
                 if (el3.getNodeName().equals("attribute") && "javadoc_location".equals(el3.getAttribute("name"))) { //NOI18N
                     String javadoc = el3.getAttribute("value"); //NOI18N
                     if (javadoc != null) {

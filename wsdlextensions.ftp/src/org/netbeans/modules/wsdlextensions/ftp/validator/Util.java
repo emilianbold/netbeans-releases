@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
  * @author jfu
  */
 public class Util {
-    private static final String ENV_VAR_REGEX = "\\$\\{([a-zA-Z0-9\\.\\-\\_^\\{\\}]+)\\}";
-    private static final Pattern ENV_VAR_REF_PATT = Pattern.compile(ENV_VAR_REGEX);
+    private static final String APP_VAR_REGEX = "\\$\\{([a-zA-Z0-9\\.\\-\\_^\\{\\}]+)\\}";
+    private static final Pattern APP_VAR_REF_PATT = Pattern.compile(APP_VAR_REGEX);
     private static final ResourceBundle mMessages =
             ResourceBundle.getBundle("org.netbeans.modules.wsdlextensions.ftp.validator.Bundle");
     
@@ -61,6 +61,10 @@ public class Util {
     }
     
     public static boolean hasMigrationEnvVar(String attrVal) {
-        return attrVal != null ? ENV_VAR_REF_PATT.matcher(attrVal).find() : false;
+        return attrVal != null ? APP_VAR_REF_PATT.matcher(attrVal).find() : false;
+    }
+    
+    public static boolean isEmpty(String s) {
+        return (s == null || s.trim().length() == 0);
     }
 }

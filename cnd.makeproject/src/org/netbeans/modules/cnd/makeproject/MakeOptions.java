@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
@@ -55,34 +59,34 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),};
-
     private static MakeOptions instance = null;
     // Default make options
     private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
     private static String defaultMakeOptions = ""; // NOI18N
     // Default Path mode
-    //private static final int PATH_REL_OR_ABS = 0;
-    private static final int PATH_REL = 1;
-    //private static final int PATH_ABS = 2;
     private static final String PATH_MODE = "pathMode"; // NOI18N
     // Dependency checking
     private static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    //
+    private static final String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Save
     private static final String SAVE = "save";  // NOI18N
     // Reuse
     private static final String REUSE = "reuse";  // NOI18N
     //
     private static final String SHOW_PROFILING = "showProfiling"; // NOI18N
-
+    //
+    private static final String SHOW_CONFIGURATION_WARNING = "showConfigurationWarning"; // NOI18N
     // packaging Defaults
     private static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
     private static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
     private static final String DEF_OWNER = "defowner"; // NOI18N
     private static final String DEF_GROUP = "defgroup"; // NOI18N
     private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
+    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
+    public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
 
     static {
-        
     }
 
     static public MakeOptions getInstance() {
@@ -124,7 +128,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Path Mode
     public int getPathMode() {
-        return getPreferences().getInt(PATH_MODE, PATH_REL);
+        return getPreferences().getInt(PATH_MODE, MakeProjectOptions.REL);
     }
 
     public void setPathMode(int pathMode) {
@@ -145,6 +149,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking) {
             firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
+        }
+    }
+
+    // Dependency Checking
+    public boolean getRebuildPropChanged() {
+        return getPreferences().getBoolean(REBUILD_PROP_CHANGED, false);
+    }
+
+    public void setRebuildPropChanged(boolean rebuildPropChanged) {
+        boolean oldValue = getRebuildPropChanged();
+        getPreferences().putBoolean(REBUILD_PROP_CHANGED, rebuildPropChanged);
+        if (oldValue != rebuildPropChanged) {
+            firePropertyChange(REBUILD_PROP_CHANGED, Boolean.valueOf(oldValue), Boolean.valueOf(rebuildPropChanged));
         }
     }
 
@@ -193,10 +210,23 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     }
 
     public void setShowProfiling(boolean reuse) {
-        boolean oldValue = getReuse();
+        boolean oldValue = getShowProfiling();
         getPreferences().putBoolean(SHOW_PROFILING, reuse);
         if (oldValue != reuse) {
             firePropertyChange(SHOW_PROFILING, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
+        }
+    }
+
+    // Show Configuration warning
+    public boolean getShowConfigurationWarning() {
+        return getPreferences().getBoolean(SHOW_CONFIGURATION_WARNING, true);
+    }
+
+    public void setShowConfigurationWarning(boolean val) {
+        boolean oldValue = getShowConfigurationWarning();
+        getPreferences().putBoolean(SHOW_CONFIGURATION_WARNING, val);
+        if (oldValue != val) {
+            firePropertyChange(SHOW_CONFIGURATION_WARNING, Boolean.valueOf(oldValue), Boolean.valueOf(val));
         }
     }
 
@@ -252,7 +282,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         }
     }
 
-
     // Prefered language when creating new Application projects
     public String getPrefApplicationLanguage() {
         return getPreferences().get(PREF_APP_LANGUAGE, "C++"); // NOI18N
@@ -266,6 +295,33 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         }
     }
 
+    // Is full file indexer available
+    public boolean isFullFileIndexer() {
+        return getPreferences().getBoolean(FULL_FILE_INDEXER, false);
+    }
+
+    public void setFullFileIndexer(boolean value) {
+        boolean oldValue = isFullFileIndexer();
+        getPreferences().putBoolean(FULL_FILE_INDEXER, value);
+        if (oldValue != value) {
+            firePropertyChange(FULL_FILE_INDEXER, oldValue, value);
+        }
+    }
+
+    // Fix unresolved include directive by file indexer
+    public boolean isFixUnresolvedInclude() {
+        return getPreferences().getBoolean(FIX_UNRESOLVED_INCLUDE, true);
+    }
+
+    public void setFixUnresolvedInclude(boolean value) {
+        boolean oldValue = isFixUnresolvedInclude();
+        getPreferences().putBoolean(FIX_UNRESOLVED_INCLUDE, value);
+        if (oldValue != value) {
+            firePropertyChange(FIX_UNRESOLVED_INCLUDE, oldValue, value);
+        }
+    }
+
+    @Override
     public void propertyChange(PropertyChangeEvent pce) {
     }
 

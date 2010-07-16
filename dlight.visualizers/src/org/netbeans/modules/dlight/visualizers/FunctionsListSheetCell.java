@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.KeyboardFocusManager;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
@@ -15,8 +14,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.EventObject;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.AbstractCellEditor;
@@ -41,7 +38,6 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.outline.Outline;
-import org.openide.explorer.propertysheet.ExPropertyModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
@@ -106,7 +102,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
      * Set how to paint renderer.
      * @param f <code>true</code> means flat, <code>false</code> means with button border
      */
-    public void setFlat(boolean f) {
+    public final void setFlat(boolean f) {
 
 //        Color controlDkShadow = Color.lightGray;
 //        if (UIManager.getColor("controlDkShadow") != null) { // NOI18N
@@ -129,11 +125,12 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     /** Actually edited node (its property) */
     private Node node;
     /** Edited property */
-    private Property prop;
+    private Property<?> prop;
 
     /** Returns <code>null<code>.
      * @return <code>null</code>
      */
+    @Override
     public Object getCellEditorValue() {
         return null;
     }
@@ -148,11 +145,12 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
      * @param c column
      * @return <code>PropertyPanel</code>
      */
+    @Override
     public Component getTableCellEditorComponent(JTable table,
             Object value,
             boolean isSelected,
             int r, int c) {
-        prop = (Property) value;
+        prop = (Property<?>) value;
         node = nodeForRow(r);
         node.addPropertyChangeListener(this);
         // create property panel
@@ -213,6 +211,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     /** Table has changed. If underlied property was switched then cancel editing.
      * @param e event
      */
+    @Override
     public void tableChanged(TableModelEvent e) {
         cancelCellEditing();
     }
@@ -234,10 +233,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     private NullPanel nullPanel;
     /** Two-tier cache for property panels
      * Map<TreeNode, WeakHashMap<Node.Property, Reference<FocusedPropertyPanel>> */
-    private Map panelCache = new WeakHashMap(); // weak! #31275
+    //private Map panelCache = new WeakHashMap(); // weak! #31275
     private FocusedPropertyPanel renderer = null;
 
-    private JComponent getNumberRenderer(Property property, Node n, boolean hasFocus) throws IllegalAccessException, InvocationTargetException {
+    private JComponent getNumberRenderer(Property<?> property, Node n, boolean hasFocus) throws IllegalAccessException, InvocationTargetException {
         Object value = property.getValue();
         PropertyEditor propEd = property.getPropertyEditor();
                 if (propEd != null) {
@@ -246,7 +245,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                         value = propEd.getAsText();
                     } catch (Exception ex) {
                         // no problem here - just leave null tooltip
-                        }
+                    }
 
                 }
         JLabel result = new JLabel(value+ "", SwingConstants.RIGHT);
@@ -256,7 +255,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         return result;
     }
 
-    private FocusedPropertyPanel getRenderer(Property p, Node n, boolean hasFocus) {
+    private FocusedPropertyPanel getRenderer(Property<?> p, Node n, boolean hasFocus) {
         if (renderer == null) {
             renderer = new FocusedPropertyPanel(p, PropertyPanel.PREF_READ_ONLY | PropertyPanel.PREF_TABLEUI);
             renderer.putClientProperty("beanBridgeIdentifier", this); //NOI18N
@@ -278,6 +277,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
      * @param column
      * @return <code>PropertyPanel</code>
      */
+    @Override
     public Component getTableCellRendererComponent(JTable table,
             Object value,
             boolean isSelected,
@@ -295,7 +295,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             return comp;
         }
 
-        Property property = (Property) value;
+        Property<?> property = (Property<?>) value;
         Node n = nodeForRow(row);
 
         if (property != null) {
@@ -409,7 +409,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     }
     private PropertyPanel editor = null;
 
-    private PropertyPanel getEditor(Property p, Node n) {
+    private PropertyPanel getEditor(Property<?> p, Node n) {
         int prefs = PropertyPanel.PREF_TABLEUI;
 
         if (editor == null) {
@@ -432,9 +432,9 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         return editor;
     }
 
-    private PropertyPanel obtainPanel(Node node, Property prop) {
-        return getEditor(prop, node);
-    }
+//    private PropertyPanel obtainPanel(Node node, Property<?> prop) {
+//        return getEditor(prop, node);
+//    }
 
     private static class NullPanel extends JPanel {
 
@@ -559,9 +559,9 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     private static class FocusedPropertyPanel extends PropertyPanel {
         //XXX delete this class when new property panel is committed
 
-        boolean focused;
+        private boolean focused;
 
-        public FocusedPropertyPanel(Property p, int preferences) {
+        public FocusedPropertyPanel(Property<?> p, int preferences) {
             super(p, preferences);
             setDoubleBuffered(true);
         }
@@ -660,7 +660,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             @Override
             public String getAccessibleName() {
                 @SuppressWarnings("deprecation")
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
+                FeatureDescriptor fd = ((org.openide.explorer.propertysheet.ExPropertyModel) getModel()).getFeatureDescriptor();
                 @SuppressWarnings("deprecation")
                 PropertyEditor editor = getPropertyEditor();
 
@@ -675,10 +675,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             @Override
             public String getAccessibleDescription() {
                 @SuppressWarnings("deprecation")
-                FeatureDescriptor fd = ((ExPropertyModel) getModel()).getFeatureDescriptor();
+                FeatureDescriptor fd = ((org.openide.explorer.propertysheet.ExPropertyModel) getModel()).getFeatureDescriptor();
                 @SuppressWarnings("deprecation")
-                Node node = (Node) ((ExPropertyModel) getModel()).getBeans()[0];
-                Class clazz = getModel().getPropertyType();
+                Node node = (Node) ((org.openide.explorer.propertysheet.ExPropertyModel) getModel()).getBeans()[0];
+                Class<?> clazz = getModel().getPropertyType();
                 return MessageFormat.format(
                         getString("ACSD_PropertyPanelRenderer"), // NOI18N
                         new Object[]{
@@ -742,16 +742,19 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             this.outline = outline;
         }
 
+        @Override
         public Node nodeForRow(int row) {
             int r = outline.convertRowIndexToModel(row);
             TreePath tp = outline.getLayoutCache().getPathForRow(r);
             return Visualizer.findNode(tp.getLastPathComponent());
         }
 
+        @Override
         public String getShortDescription(int column) {
             return outline.getOutlineModel().getColumnName(column);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             stopCellEditing();
             if (SwingUtilities.isEventDispatchThread()) {
@@ -759,6 +762,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         outline.tableChanged(new TableModelEvent(outline.getModel(), 0, outline.getRowCount()));
                     }
@@ -784,32 +788,32 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         }
     }
 
-    private static class ComplexRenderer extends JPanel{
-        private double whole;
-        private double part;
-        private String toDraw;
-
-        ComplexRenderer(String toDraw, double whole, double part){
-            this.whole = whole;
-            this.part = part;
-            this.toDraw = toDraw;
-            setDoubleBuffered(true);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D)g;
-            int width = this.getWidth();
-            double perPixel = whole/width;
-            int pixelsToDraw = (int) ((int) part / perPixel);
-            int startX = width - pixelsToDraw;
-            g2.setColor(Color.red);
-            g2.fillRect(startX, 0, pixelsToDraw, getHeight());
-            g2.setColor(Color.black);
-            g2.drawString(toDraw, 0, 0);
-        }
-
-
-    }
+//    private static class ComplexRenderer extends JPanel{
+//        private double whole;
+//        private double part;
+//        private String toDraw;
+//
+//        ComplexRenderer(String toDraw, double whole, double part){
+//            this.whole = whole;
+//            this.part = part;
+//            this.toDraw = toDraw;
+//            setDoubleBuffered(true);
+//        }
+//
+//        @Override
+//        protected void paintComponent(Graphics g) {
+//            super.paintComponent(g);
+//            Graphics2D g2 = (Graphics2D)g;
+//            int width = this.getWidth();
+//            double perPixel = whole/width;
+//            int pixelsToDraw = (int) ((int) part / perPixel);
+//            int startX = width - pixelsToDraw;
+//            g2.setColor(Color.red);
+//            g2.fillRect(startX, 0, pixelsToDraw, getHeight());
+//            g2.setColor(Color.black);
+//            g2.drawString(toDraw, 0, 0);
+//        }
+//
+//
+//    }
 }

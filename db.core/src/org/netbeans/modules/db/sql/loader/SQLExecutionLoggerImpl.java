@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,6 +83,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         this(displayName, null);
     }
 
+    @Override
     public void log(SQLExecutionResult result) {
         if (result.hasExceptions()) {
             logException(result);
@@ -88,6 +92,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         }
     }
 
+    @Override
     public void finish(long executionTime) {
         OutputWriter writer = inputOutput.getOut();
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
@@ -97,6 +102,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         writer.close();
     }
 
+    @Override
     public void cancel() {
         OutputWriter writer = inputOutput.getErr();
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
@@ -195,17 +201,21 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             this.column = column;
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
             goToLine(false);
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             goToLine(true);
         }
 
+        @SuppressWarnings("deprecation")
         private void goToLine(boolean focus) {
             Line l = lineCookie.getLineSet().getOriginal(line);
             if (!l.isDeleted()) {

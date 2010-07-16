@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,15 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.AlternativeElement;
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.BeansElement;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -59,34 +68,6 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
      */
     public void visit( Beans beans ) {
         assert false : "Should never add or remove beans root"; // NOI18N
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
-     */
-    public void visit( Deploy deploy ) {
-        assert getParent() instanceof Beans;
-        Beans beans = (Beans)getParent();
-        if ( isAdd() ){
-            beans.addElement( getIndex(), deploy );
-        }
-        else if ( isRemove() ){
-            beans.removeElement( deploy );
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
-     */
-    public void visit( Type type ) {
-        assert getParent() instanceof Deploy;
-        Deploy deploy = (Deploy)getParent();
-        if ( isAdd() ){
-            deploy.addType( getIndex(), type);
-        }
-        else if ( isRemove() ){
-            deploy.removeType(type);
-        }
     }
 
     /* (non-Javadoc)
@@ -114,6 +95,77 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
         myOperation = operation;
         child.accept(this);
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
+     */
+    public void visit( Interceptors interceptors ) {
+        visitBeanElement(interceptors);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
+     */
+    public void visit( Decorators decorators ) {
+        visitBeanElement(decorators);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
+     */
+    public void visit( Alternatives alternatives ) {
+        visitBeanElement(alternatives);        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
+     */
+    public void visit( BeanClass clazz ) {
+        if ( getParent() instanceof Alternatives ){
+            visitAlternativesChild(clazz);
+        }
+        else if ( getParent() instanceof BeanClassContainer ){
+            BeanClassContainer parent = (BeanClassContainer)getParent();
+            if ( isAdd() ){
+                parent.addBeanClass( getIndex() , clazz );
+            }
+            else if ( isRemove() ){
+                parent.removeBeanClass( clazz );
+            }
+        }
+        else {
+            assert false;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
+     */
+    public void visit( Stereotype stereotype ) {
+        visitAlternativesChild(stereotype);
+    }
+
+    private void visitAlternativesChild( AlternativeElement element ) {
+        assert getParent() instanceof Alternatives;
+        Alternatives alternatives = (Alternatives)getParent();
+        if ( isAdd() ){
+            alternatives.addElement( getIndex() , element );
+        }
+        else if ( isRemove() ){
+            alternatives.removeElement( element );
+        }
+    }
+    
+    private void visitBeanElement( BeansElement element ) {
+        assert getParent() instanceof Beans;
+        Beans beans = (Beans)getParent();
+        if ( isAdd() ){
+            beans.addElement( getIndex() , element );
+        }
+        else if ( isRemove() ){
+            beans.removeElement( element );
+        }
+    }
 
     private boolean isAdd() {
         return getOperation() == Operation.ADD;
@@ -140,4 +192,5 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
     private int myIndex;
 
     private Operation myOperation;
+
 }

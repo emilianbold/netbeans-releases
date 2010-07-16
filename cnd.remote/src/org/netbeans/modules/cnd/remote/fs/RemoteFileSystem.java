@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,10 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import java.io.IOException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -55,6 +59,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Vladimir Kvashin
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public class RemoteFileSystem extends FileSystem {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};
@@ -65,15 +70,17 @@ public class RemoteFileSystem extends FileSystem {
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) {
+    public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         CndUtils.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
-        this.filePrefix = BasicCompiler.getIncludeFilePrefix(execEnv);
+        this.filePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
         cache = new File(filePrefix);
-        cache.mkdirs(); // TODO: error processing
+        if (! cache.exists() && ! cache.mkdirs()) {
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
+        }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
 
@@ -100,7 +107,11 @@ public class RemoteFileSystem extends FileSystem {
 
     @Override
     public FileObject findResource(String name) {
-        return getRoot().getFileObject(name);
+        if (name.isEmpty() || name.equals("/")) {  // NOI18N
+            return getRoot();
+        } else {
+            return getRoot().getFileObject(name);
+        }
     }
 
     @Override
@@ -120,12 +131,17 @@ public class RemoteFileSystem extends FileSystem {
     private static class RootFileObject extends RemoteDirectory {
 
         public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, "", cache);
+            super(fileSystem, execEnv, null, "", cache);
         }
 
         @Override
         public boolean isRoot() {
-            return false;
+            return true;
+        }
+
+        @Override
+        public boolean isValid() {
+            return true;
         }
     }
 }

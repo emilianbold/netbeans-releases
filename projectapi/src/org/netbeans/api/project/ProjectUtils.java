@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,15 +44,21 @@
 
 package org.netbeans.api.project;
 
+import java.beans.PropertyChangeEvent;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.spi.project.ProjectIconAnnotator;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -61,8 +70,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -71,6 +86,8 @@ import org.openide.util.Parameters;
 public class ProjectUtils {
 
     private ProjectUtils() {}
+
+    private static final Logger LOG = Logger.getLogger(ProjectUtils.class.getName());
     
     /**
      * Get basic information about a project.
@@ -82,11 +99,7 @@ public class ProjectUtils {
      */
     public static ProjectInformation getInformation(Project p) {
         ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
-        if (pi != null) {
-            return pi;
-        } else {
-            return new BasicInformation(p);
-        }
+        return new AnnotateIconProxyProjectInformation(pi != null ? pi : new BasicInformation(p));
     }
     
     /**
@@ -146,7 +159,7 @@ public class ProjectUtils {
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                return visit(new HashSet<Project>(), new HashMap<Project,Set<? extends Project>>(), master, master, candidate);
+                return visit(new HashMap<Project,Boolean>(), master, master, candidate);
             }
         });
     }
@@ -174,36 +187,40 @@ public class ProjectUtils {
     
     /**
      * Do a DFS traversal checking for cycles.
-     * @param encountered projects already encountered in the DFS (added and removed as you go)
+     * @param encountered projects already encountered in the DFS
      * @param curr current node to visit
      * @param master the original master project (for use with candidate param)
      * @param candidate a candidate added subproject for master, or null
      */
-    private static boolean visit(Set<Project> encountered, Map<Project,Set<? extends Project>> cache, Project curr, Project master, Project candidate) {
-        if (!encountered.add(curr)) {
-            return true;
-        }
-        Set<? extends Project> subprojects = cache.get(curr);
-        if (subprojects == null) {
-            SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
-            subprojects = spp != null ? spp.getSubprojects() : Collections.<Project>emptySet();
-            cache.put(curr, subprojects);
-        }
-        for (Project child : subprojects) {
-            if (candidate == child) {
-                candidate = null;
-            }
-            if (visit(encountered, cache, child, master, candidate)) {
+    private static boolean visit(Map<Project,Boolean> encountered, Project curr, Project master, Project candidate) {
+        if (encountered.containsKey(curr)) {
+            if (encountered.get(curr)) {
+                return false;
+            } else {
+                LOG.log(Level.FINE, "Encountered cycle in {0} from {1} at {2} via {3}", new Object[] {master, candidate, curr, encountered});
                 return true;
+            }
+        }
+        encountered.put(curr, false);
+        SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
+        if (spp != null) {
+            Set<? extends Project> subprojects = spp.getSubprojects();
+            LOG.log(Level.FINEST, "Found subprojects {0} from {1}", new Object[] {subprojects, curr});
+            for (Project child : subprojects) {
+                if (visit(encountered, child, master, candidate)) {
+                    return true;
+                } else if (candidate == child) {
+                    candidate = null;
+                }
             }
         }
         if (candidate != null && curr == master) {
-            if (visit(encountered, cache, candidate, master, candidate)) {
+            if (visit(encountered, candidate, master, candidate)) {
                 return true;
             }
         }
-        assert encountered.contains(curr);
-        encountered.remove(curr);
+        assert !encountered.get(curr);
+        encountered.put(curr, true);
         return false;
     }
     
@@ -244,6 +261,87 @@ public class ProjectUtils {
         }
         
     }
+
+    private static final class AnnotateIconProxyProjectInformation implements ProjectInformation, PropertyChangeListener, ChangeListener, LookupListener {
+
+        private final ProjectInformation pinfo;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
+        private final Result<ProjectIconAnnotator> annotatorResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        private Icon icon;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AnnotateIconProxyProjectInformation(ProjectInformation pi) {
+            pinfo = pi;
+            pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
+            annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
+            annotatorsChanged();
+        }
+
+        private void annotatorsChanged() {
+            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                if (annotators.add(pa)) {
+                    pa.addChangeListener(WeakListeners.change(this, pa));
+                }
+            }
+            updateIcon();
+        }
+
+        public @Override void resultChanged(LookupEvent ev) {
+            annotatorsChanged();
+        }
+        
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
+                updateIcon();
+            } else {
+                pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        }
+        
+        public @Override void stateChanged(ChangeEvent e) {
+            updateIcon();
+        }
+        
+        private void updateIcon() {
+            Icon original = pinfo.getIcon();
+            if (original == null) {
+                // Forbidden generally but common in tests.
+                return;
+            }
+            Image _icon = ImageUtilities.icon2Image(original);
+            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                _icon = pa.annotateIcon(getProject(), _icon, false);
+            }
+            Icon old = icon;
+            icon = ImageUtilities.image2Icon(_icon);
+            pcs.firePropertyChange(ProjectInformation.PROP_ICON, old, icon);
+        }
+
+        public @Override Icon getIcon() {
+            return icon;
+        }
+       
+        public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public @Override Project getProject() {
+            return pinfo.getProject();
+        }
+        public @Override String getName() {
+            return pinfo.getName();
+        }
+        public @Override String getDisplayName() {
+            return pinfo.getDisplayName();
+        }
+
+    }
+
     
     /**
      * Find a way of storing extra configuration in a project.
@@ -261,6 +359,7 @@ public class ProjectUtils {
      * @since org.netbeans.modules.projectapi/1 1.17
      */
     public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
+        Parameters.notNull("project", project);
         return new AuxiliaryConfigImpl(project);
     }
 

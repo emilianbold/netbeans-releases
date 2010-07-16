@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,12 +45,14 @@ package org.netbeans.modules.cnd.completion.debugger;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -81,12 +86,13 @@ import org.openide.util.lookup.ServiceProvider;
 public class CsmAutosProviderImpl implements AutosProvider {
     public static final boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
 
-    public Set<String> getAutos(final StyledDocument document, int line) {
+    @Override
+    public Set<String> getAutos(final StyledDocument document, final int line) {
         if (line < 0 || document == null) {
             return Collections.emptySet();
         }
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
         if (csmFile == null || !csmFile.isParsed()) {
             return Collections.emptySet();
         }
@@ -98,9 +104,27 @@ public class CsmAutosProviderImpl implements AutosProvider {
         // add current line autos
         int startOffset = addAutos(csmFile, lineRootElement, line, document, autos);
 
+        // add previous line autos
         if (line > 0) {
-            // add previous line autos
-            addAutos(csmFile, lineRootElement, line-1, document, autos);
+            final Element lineElem = lineRootElement.getElement(line-1);
+            if (lineElem != null) {
+                final AtomicInteger prevOffset = new AtomicInteger(lineElem.getEndOffset());
+
+                document.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
+                        if (ts == null) {
+                            return;
+                        }
+                        if (CndTokenUtilities.shiftToNonWhite(ts, true)) {
+                            prevOffset.set(ts.offset());
+                        }
+                    }
+                });
+                int prevLine = NbDocument.findLineNumber(document, prevOffset.get());
+                addAutos(csmFile, lineRootElement, prevLine, document, autos);
+            }
         }
 
         return autos;
@@ -131,6 +155,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         final int endOffset = lineEndOffset;
 
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            @Override
             public void visit(CsmReferenceContext context) {
                 CsmReference reference = context.getReference();
                     if (startOffset <= reference.getStartOffset() && reference.getEndOffset() <= endOffset) {

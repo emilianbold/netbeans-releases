@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,9 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
-import junit.framework.Test;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -57,7 +60,8 @@ import org.openide.filesystems.FileUtil;
  * @author pzajac
  */
 public class Deadlock54741Test extends NbTestCase {
-    
+    private static final Logger LOG = Logger.getLogger(Deadlock54741Test.class.getName());
+
     private static class DelFileChangeListener implements FileChangeListener {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
@@ -92,7 +96,7 @@ public class Deadlock54741Test extends NbTestCase {
             this.fo = fo;
         }
         public void run() {
-            System.out.println("start delete");
+            LOG.fine("start delete");
             try {
                fo.getFileSystem().addFileChangeListener(new DelFileChangeListener());
                FileSystem fs = fo.getFileSystem(); 
@@ -101,13 +105,18 @@ public class Deadlock54741Test extends NbTestCase {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("end delete");
+            LOG.fine("end delete");
         } 
     }
     
     
     public Deadlock54741Test(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     public void testDeadLock () throws Exception {
@@ -151,10 +160,4 @@ public class Deadlock54741Test extends NbTestCase {
         return t;  
     }  
         
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(Deadlock54741Test.class);
-         
-        return new FileBasedFileSystemTest(suite);
-    }
 }

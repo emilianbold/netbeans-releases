@@ -2,7 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -15,9 +18,9 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -305,6 +308,20 @@ made subject to such option by the copyright holder.
                 <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <condition property="missing.j2ee.server.home">
+                    <and>
+                        <matches pattern="j2ee.server.home" string="${{j2ee.platform.classpath}}"/>
+                        <not>
+                            <isset property="j2ee.server.home"/>
+                        </not>
+                    </and>
+                </condition>
+                <fail if="missing.j2ee.server.home">
+The Java EE server classpath is not correctly set up - server home directory is missing.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Dj2ee.server.home=&lt;app_server_installation_directory&gt;
+                </fail>
                 <fail unless="j2ee.platform.classpath">
 The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
 Either open the project in the IDE and assign the server or setup the server classpath manually.
@@ -330,7 +347,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-javac">
+            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
@@ -349,6 +366,106 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
+                        <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <!-- XXX #137060 likely needs to be fixed here -->
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">                            
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            </xsl:if>                            
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                                <xsl:attribute name="fork">yes</xsl:attribute>
+                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                            </xsl:if>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg value="-processorpath" />
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
+                            <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg value="-s" />
+                            <compilerarg path="@{{apgeneratedsrcdir}}" />
+                            <compilerarg line="${{ap.proc.none.internal}}" />
+                            <customize/>
+                        </javac>
+                    </sequential>
+                </macrodef>
+            </target>
+            <target name="-init-macrodef-javac-without-processors" depends="-init-ap-cmdline-properties" unless="ap.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
@@ -380,10 +497,10 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
-                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">                            
+                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            </xsl:if>                            
+                            </xsl:if>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
@@ -408,6 +525,70 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
+            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
+                <macrodef> <!-- #36033, #85707 -->
+                    <xsl:attribute name="name">depend</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <depend>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="cache">${build.dir}/depcache</xsl:attribute>
+                            <xsl:attribute name="includes">${includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                        </depend>
+                    </sequential>
+                </macrodef>
+                <macrodef> <!-- #85707 -->
+                    <xsl:attribute name="name">force-recompile</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <fail unless="javac.includes">Must set javac.includes</fail>
+                        <!-- XXX one little flaw in this weird trick: does not work on folders. -->
+                        <pathconvert>
+                            <xsl:attribute name="property">javac.includes.binary</xsl:attribute>
+                            <xsl:attribute name="pathsep">,</xsl:attribute>
+                            <path>
+                                <filelist>
+                                    <xsl:attribute name="dir">@{destdir}</xsl:attribute>
+                                    <xsl:attribute name="files">${javac.includes}</xsl:attribute>
+                                </filelist>
+                            </path>
+                            <globmapper>
+                                <xsl:attribute name="from">*.java</xsl:attribute>
+                                <xsl:attribute name="to">*.class</xsl:attribute>
+                            </globmapper>
+                        </pathconvert>
+                        <delete>
+                            <files includes="${{javac.includes.binary}}"/>
+                        </delete>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="-init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
@@ -511,8 +692,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <sequential>
-                        <!--<nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">-->
-                        <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
+                        <nbjpdastart transport="${{debug-transport-appclient}}" addressproperty="jpda.address.appclient" name="@{{name}}" stopclassname="@{{stopclassname}}">
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -574,7 +754,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
                     <os family="windows"/>
                 </condition>
-                <condition property="debug-transport" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
+                <condition property="debug-transport-appclient" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
                     <isset property="debug.transport"/>
                 </condition>
             </target>
@@ -610,7 +790,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -622,65 +802,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <arg line="@{{args}}"/>
                             <customize/>
                         </java>
-                    </sequential>
-                </macrodef>
-            </target>
-            
-            <target name="-init-macrodef-debug-appclient" depends="-init-debug-args">
-                <macrodef>
-                    <xsl:attribute name="name">debug-appclient</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">mainclass</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <attribute>
-                        <xsl:attribute name="name">args</xsl:attribute>
-                        <xsl:attribute name="default">${application.args.param}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <parallel>
-                            <java fork="true" classname="@{{mainclass}}">
-                                <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                                <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
-                                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                                    <bootclasspath>
-                                        <path path="${{platform.bootcp}}"/>
-                                    </bootclasspath>
-                                </xsl:if>
-                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
-                                <jvmarg line="${{run.jvmargs.param}}"/>
-                                <arg line="@{{args}}"/>
-                                <classpath>
-                                    <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                                    <path path="@{{classpath}}"/>
-                                </classpath>
-                                <syspropertyset>
-                                    <propertyref prefix="run-sys-prop."/>
-                                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                                </syspropertyset>
-                                <customize/>
-                            </java>
-                            <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                                <classpath>
-                                    <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                                    <path path="@{{classpath}}"/>
-                                </classpath>
-                                <sourcepath>
-                                    <path path="${{src.dir}}"/>
-                                </sourcepath>
-                            </nbjpdaconnect>
-                        </parallel>
                     </sequential>
                 </macrodef>
             </target>
@@ -698,9 +819,33 @@ exists or setup the property manually. For example like this:
                 </fail>
                 <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
+            
+            <target name="-init-ap-cmdline-properties">
+                <property name="annotation.processing.enabled" value="true" />
+                <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.run.all.processors" value="true" />
+                <property name="javac.processorpath" value="${{javac.classpath}}" />
+                <property name="javac.test.processorpath" value="${{javac.test.classpath}}"/>
+                <condition property="ap.supported.internal" value="true">
+                    <not>
+                        <matches string="${{javac.source}}" pattern="1\.[0-5](\..*)?" />
+                    </not>
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline-supported" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
+                <condition property="ap.processors.internal" value="-processor ${{annotation.processing.processors.list}}" else="">
+                    <isfalse value="${{annotation.processing.run.all.processors}}" />
+                </condition>
+                <condition property="ap.proc.none.internal" value="-proc:none" else="">
+                    <isfalse value="${{annotation.processing.enabled}}" />
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline" depends="-init-ap-cmdline-properties,-init-ap-cmdline-supported">
+                <property name="ap.cmd.line.internal" value=""/>
+            </target>
 
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient,-init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -1050,85 +1195,103 @@ exists or setup the property manually. For example like this:
             </xsl:comment>
             
             <target name="run">
-                <xsl:attribute name="depends">dist,run-deploy,run-tool2,old-run-jar,run-display-browser</xsl:attribute>
+                <xsl:attribute name="depends">dist,run-deploy,-as-retrieve-option-workaround,-init-run-macros,-run-pregfv3,-run</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
             </target>
             
-            <target name="old-run-jar">
-                <xsl:attribute name="depends">dist,run-deploy</xsl:attribute>
-                <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <xsl:attribute name="if">j2ee.appclient.tool.args</xsl:attribute>
-                <antcall target="run-tool"/>
-                <antcall target="run-jar"/>
+            <target name="-run-pregfv3" if="j2ee.appclient.tool.args">
+                <carproject:run-appclient-pregfv3/>
             </target>
 
-            <target name="run-jar">
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <xsl:attribute name="unless">j2ee.appclient.mainclass.args</xsl:attribute>
-                <xsl:attribute name="if">j2ee.clientName</xsl:attribute>
-                <carproject:java classname="${{main.class}}">
-                    <customize>
-                        <arg line="${{application.args.param}}"/>
-                    </customize>
-                </carproject:java>
-            </target>
-            
-            <target name="run-tool">
-                <xsl:attribute name="depends">init,-as-retrieve-option-workaround</xsl:attribute>
-                <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <xsl:attribute name="if">j2ee.appclient.mainclass.args</xsl:attribute>
-                <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
-                <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
-                    <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                    <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
-                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                    </xsl:if>
-                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                    <jvmarg line="${{run.jvmargs.param}}"/>
-                    <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->
-                    <arg line="${{j2ee.appclient.tool.args}}"/>
-                    <arg line="-client ${{client.jar}}"/>
-                    <arg line="${{application.args.param}}"/>
-                    <classpath>
-                        <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                </java>
-            </target>
-            
-            <target name="run-tool2">
-                <xsl:attribute name="depends">init,run-deploy,-as-retrieve-option-workaround</xsl:attribute>
-                <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <xsl:attribute name="unless">j2ee.appclient.tool.args</xsl:attribute>
-                <mkdir dir="${{dist.dir}}/{$name}Client"/>
-                <copy file="${{dist.jar}}" todir="${{dist.dir}}/{$name}Client"/>
-                <java fork="true" jar="${{client.jar}}">
-                    <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                    <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
-                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                    </xsl:if>
-                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}}"/>
-                    <jvmarg line="${{run.jvmargs.param}}"/>
-                    <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->
-                    <arg line="${{application.args.param}}"/>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                </java>
+            <target name="-run" unless="j2ee.appclient.tool.args">
+                <carproject:run-appclient/>
             </target>
 
             <target name="run-single">
-                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
-                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-                <carproject:java classname="${{run.class}}"/>
+                <xsl:attribute name="depends">dist,run-deploy,-as-retrieve-option-workaround,-init-run-macros,-run-single-pregfv3,-run-single</xsl:attribute>
+                <xsl:attribute name="description">Run a single class.</xsl:attribute>
             </target>
+
+            <target name="-run-single" unless="j2ee.appclient.tool.args">
+                <xsl:attribute name="depends">dist,run-deploy,-as-retrieve-option-workaround,-init-run-macros</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <carproject:run-appclient serverparams="${{j2ee.appclient.tool.jvmoptions.class}}${{run.class}}"/>
+            </target> 
+
+            <target name="-run-single-pregfv3" if="j2ee.appclient.tool.args">
+                <xsl:attribute name="depends">dist,run-deploy,-as-retrieve-option-workaround,-init-run-macros</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <!-- TODO: class to run must be passed here:-->
+                <carproject:run-appclient-pregfv3/>
+            </target>
+
+            <target name="-init-run-macros" depends="init">
+                <macrodef>
+                    <xsl:attribute name="name">run-appclient</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">args</xsl:attribute>
+                        <xsl:attribute name="default">${application.args.param}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">serverparams</xsl:attribute>
+                        <xsl:attribute name="default">${j2ee.appclient.tool.jvmoptions}${client.jar}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" jar="${{client.jar}}">
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg line="@{{serverparams}}"/>
+                            <arg line="@{{args}}"/>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+
+                <macrodef>
+                    <xsl:attribute name="name">run-appclient-pregfv3</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
+                            <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                            <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                            <arg line="${{j2ee.appclient.tool.args}}"/>
+                            <arg line="-client ${{client.jar}}"/>
+                            <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
+                            <arg line="${{application.args.param}}"/>
+                            <classpath>
+                                <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+
+            </target>
+
             
             <!--
                Idea is to add new non-mandatory option to nbdeploy task. This
@@ -1140,7 +1303,16 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
                 <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
                 <sleep seconds="3"/>
-                <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
+                <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}" failonerror="false"/>
+                <copy todir="${{dist.dir}}/" flatten="true" failonerror="false">
+                    <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/{$name}Client.jar"/>
+                </copy>
+                <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
+                    <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+                </copy>
+                <copy todir="${{dist.dir}}/{$name}Client" flatten="false" failonerror="false">
+                    <fileset dir="${{dist.dir}}/gfdeploy/{$name}" includes="**/*.jar"/>
+                </copy>
             </target>
             
             <target name="pre-run-deploy">
@@ -1281,12 +1453,59 @@ exists or setup the property manually. For example like this:
                 =================
             </xsl:comment>
             
+            <target name="-init-debug-macros" depends="init,-init-debug-args,-as-retrieve-option-workaround,-init-run-macros">
+                <macrodef>
+                    <xsl:attribute name="name">debug-appclient</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">serverparams</xsl:attribute>
+                        <xsl:attribute name="default">${j2ee.appclient.tool.jvmoptions}${client.jar}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <carproject:run-appclient serverparams="@{{serverparams}}">
+                            <customize>
+                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
+                                <jvmarg line="${{debug-args-line}}"/>
+                            </customize>
+                        </carproject:run-appclient>
+                    </sequential>
+                </macrodef>
+                <macrodef>
+                    <xsl:attribute name="name">debug-appclient-pregfv3</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <sequential>
+                        <carproject:run-appclient-pregfv3>
+                            <customize>
+                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
+                                <jvmarg line="${{debug-args-line}}"/>
+                            </customize>
+                        </carproject:run-appclient-pregfv3>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="debug">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,run-deploy,-init-debug-args,-as-retrieve-option-workaround,-init-debug-macros,-debug-appclient-start-nbjpda,-debug-appclient-pregfv3,-debug-appclient</xsl:attribute>
+                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+            </target>
+
+            <target name="-debug-appclient-start-nbjpda">
+                <carproject:nbjpdastart name="${{app.client}}" classpath=""/>
+            </target>
+            <target name="-debug-appclient-pregfv3" if="j2ee.appclient.tool.args">
+                <carproject:debug-appclient-pregfv3/>
+            </target>
+            <target name="-debug-appclient" unless="j2ee.appclient.tool.args">
+                <carproject:debug-appclient />
+            </target>
+            
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <carproject:nbjpdastart name="${{debug.class}}"/>
             </target>
-            
+
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <carproject:debug>
@@ -1295,47 +1514,24 @@ exists or setup the property manually. For example like this:
                     </customize>
                 </carproject:debug>
             </target>
-            
-            <target name="debug-jar">
-                <xsl:attribute name="unless">j2ee.appclient.mainclass.args</xsl:attribute>
-                <xsl:attribute name="if">j2ee.clientName</xsl:attribute>
-                <carproject:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}"/>
-            </target>
-            
-            <target name="debug-tool">
-                <xsl:attribute name="depends">init,-as-retrieve-option-workaround</xsl:attribute>
-                <xsl:attribute name="if">j2ee.appclient.mainclass.args</xsl:attribute>
-                <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
-                <carproject:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="${{j2ee.appclient.mainclass.args}} ${{application.args.param}}"/>
-            </target>
-            
-            <target name="debug">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,run-deploy,debug-tool,debug-jar</xsl:attribute>
-                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-            </target>
-            
-            <target name="-debug-start-debugger-stepinto">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <carproject:nbjpdastart stopclassname="${{main.class}}"/>
-            </target>
-            
+
             <target name="debug-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee</xsl:attribute>
+                <xsl:attribute name="depends">debug-single</xsl:attribute>
             </target>
             
-            <target name="-debug-start-debuggee-single">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
-                <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-                <carproject:debug classname="${{debug.class}}"/>
+            <target name="-debug-start-nbjpda-single">
+                <carproject:nbjpdastart name="${{app.client}}" classpath="" stopclassname="${{debug.class}}"/>
             </target>
-            
+            <target name="-debug-single" unless="j2ee.appclient.tool.args">
+                <carproject:debug-appclient serverparams="${{j2ee.appclient.tool.jvmoptions.class}}${{debug.class}}"/>
+            </target>
+            <target name="-debug-single-pregfv3" if="j2ee.appclient.tool.args">
+                <carproject:debug-appclient serverparams="${{j2ee.appclient.tool.jvmoptions.class}}${{debug.class}}"/>
+            </target>
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,run-deploy,-init-debug-args,-as-retrieve-option-workaround,-init-debug-macros,-debug-start-nbjpda-single,-debug-single,-debug-single-pregfv3</xsl:attribute>
             </target>
             
             <target name="-pre-debug-fix">
@@ -1354,7 +1550,7 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
             </target>
-            
+
             <xsl:comment>
                 ===============
                 JAVADOC SECTION
@@ -1363,6 +1559,7 @@ exists or setup the property manually. For example like this:
             
             <target name="-javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
@@ -1409,6 +1606,17 @@ exists or setup the property manually. For example like this:
                         <include name="**/*.java"/>
                     </fileset>
                 </javadoc>
+                <copy todir="${{dist.javadoc.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
+                        <xsl:with-param name="includes2">**/doc-files/**</xsl:with-param>
+                    </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/doc-files/**"/>
+                    </fileset>
+                </copy>
             </target>
             
             <target name="-javadoc-browse">

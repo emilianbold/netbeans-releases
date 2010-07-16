@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -78,6 +81,7 @@ public final class FileObjectFactory {
     public static boolean WARNINGS = true;
     final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
     private BaseFileObj root;
+    private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
     public static enum Caller {
         ToFileObject, GetFileObject, GetChildern, GetParent, Others
     }
@@ -300,7 +304,11 @@ public final class FileObjectFactory {
             }
         } else {
             if (foForFile == null) {
-                exist = touchExists(file, realExists);
+                if (caller == Caller.GetParent) {
+                    exist = true;
+                } else {
+                    exist = touchExists(file, realExists);
+                }
             } else if (foForFile.isValid()) {
                 if (parent == null) {
                     exist = (realExists == -1) ? true : touchExists(file, realExists);
@@ -367,7 +375,7 @@ public final class FileObjectFactory {
         return (state == 1) ? true : false;
     }
 
-    private final BaseFileObj getOrCreate(final FileInfo fInfo) {
+    private BaseFileObj getOrCreate(final FileInfo fInfo) {
         BaseFileObj retVal = null;
         File f = fInfo.getFile();
 
@@ -421,14 +429,15 @@ public final class FileObjectFactory {
         return null;
     }
 
-    public final void refreshAll(final boolean expected) {
+    final void refreshAll(RefreshSlow slow, final boolean expected) {
         Set<BaseFileObj> all2Refresh = collectForRefresh();
-        refresh(all2Refresh, expected);
+        refresh(all2Refresh, slow, expected);
     }
 
     private Set<BaseFileObj> collectForRefresh() {
-        final Set<BaseFileObj> all2Refresh = new WeakSet<BaseFileObj>();
+        final Set<BaseFileObj> all2Refresh;
         synchronized (allIBaseFileObjects) {
+            all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3 + 11);
             final Iterator<Object> it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
                 final Object obj = it.next();
@@ -451,24 +460,64 @@ public final class FileObjectFactory {
                 }
             }
         }
+        all2Refresh.remove(root); // #182793
         return all2Refresh;
     }
 
-    private void refresh(final Set<BaseFileObj> all2Refresh, File... files) {
-        for (final BaseFileObj fo : all2Refresh) {
-            for (File file : files) {
-                if (isParentOf(file, fo.getFileName().getFile())) {
-                    fo.refresh(true);
-                    break;
-                }                
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
+        return refresh(all2Refresh, slow, true, files);
+    }
+
+    private static boolean isInFiles(BaseFileObj fo, File[] files) {
+        if (fo == null) {
+            return false;
+        }
+        if (files == null) {
+            return true;
+        }
+        for (File file : files) {
+            if (isParentOf(file, fo.getFileName().getFile())) {
+                return true;
             }
         }
-    }    
-    
-    private void refresh(final Set<BaseFileObj> all2Refresh, final boolean expected) {
-        for (final BaseFileObj fo : all2Refresh) {
-            fo.refresh(expected);
+        return false;
+    }
+
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected) {
+        return refresh(all2Refresh, slow, expected, null);
+    }
+
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected, File[] files) {
+        int add = 0;
+        Iterator<BaseFileObj> it = all2Refresh.iterator();
+        while (it.hasNext()) {
+            BaseFileObj fo = null;
+            if (slow != null) {
+                BaseFileObj pref = slow.preferrable();
+                if (pref != null && all2Refresh.remove(pref)) {
+                    LOG_REFRESH.log(Level.FINER, "Preferring {0}", pref);
+                    fo = pref;
+                    it = all2Refresh.iterator();
+                }
+            }
+            if (fo == null) {
+                fo = it.next();
+                it.remove();
+            }
+            add++;
+            if (!isInFiles(fo, files)) {
+                continue;
+            }
+            if (slow != null) {
+                if (!slow.refreshFileObject(fo, expected, add)) {
+                    return false;
+                }
+                add = 0;
+            } else {
+                fo.refresh(expected);
+            }
         }
+        return true;
     }
 
     public static boolean isParentOf(final File dir, final File file) {
@@ -479,7 +528,7 @@ public final class FileObjectFactory {
         return tempFile != null;
     }
 
-    public final void rename() {
+    public final void rename(Set<BaseFileObj> changeId) {
         final Map<Integer, Object> toRename = new HashMap<Integer, Object>();
         synchronized (allIBaseFileObjects) {
             final Iterator<Map.Entry<Integer, Object>> it = allIBaseFileObjects.entrySet().iterator();
@@ -492,23 +541,16 @@ public final class FileObjectFactory {
                     final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
 
                     final BaseFileObj fo = (ref != null) ? ref.get() : null;
-
-                    if (fo != null) {
-                        Integer computedId = fo.getFileName().getId();
-                        if (!key.equals(computedId)) {
-                            toRename.put(key, fo);
-                        }
+                    if (changeId.contains(fo)) {
+                        toRename.put(key, fo);
                     }
                 } else {
                     for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
                         @SuppressWarnings("unchecked")
                         WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
                         final BaseFileObj fo = (ref != null) ? ref.get() : null;
-                        if (fo != null) {
-                            Integer computedId = fo.getFileName().getId();
-                            if (!key.equals(computedId)) {
-                                toRename.put(key, ref);
-                            }
+                        if (changeId.contains(fo)) {
+                            toRename.put(key, ref);
                         }
                     }
 
@@ -531,6 +573,9 @@ public final class FileObjectFactory {
     }
 
     public final BaseFileObj getCachedOnly(final File file) {
+        return getCachedOnly(file, true);
+    }
+    public final BaseFileObj getCachedOnly(final File file, boolean checkExtension) {
         final Object o;
         synchronized (allIBaseFileObjects) {
             final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
@@ -542,7 +587,7 @@ public final class FileObjectFactory {
             assert (o == null || o instanceof BaseFileObj);
         }
         BaseFileObj retval = (BaseFileObj) o;
-        if (retval != null) {
+        if (retval != null && checkExtension) {
             if (!file.getName().equals(retval.getNameExt())) {
                 if (!file.equals(retval.getFileName().getFile())) {
                     retval = null;
@@ -633,33 +678,49 @@ public final class FileObjectFactory {
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
-    public final void refresh(final boolean expected) {
+    public void refresh(boolean expected) {
+        refresh(null, expected);
+    }
+    final void refresh(final RefreshSlow slow, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
-                refreshAll(expected);                
+                refreshAll(slow, expected);
             }            
         };        
         
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
@@ -667,33 +728,52 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    public final void refreshFor(final File... files) {
+    final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
-                refresh(all2Refresh, files);
-            }            
+                refresh(all2Refresh, slow, files);
+                if (LOG_REFRESH.isLoggable(Level.FINER)) {
+                    LOG_REFRESH.log(Level.FINER, "Refresh for {0} objects", all2Refresh.size());
+                    for (BaseFileObj baseFileObj : all2Refresh) {
+                        LOG_REFRESH.log(Level.FINER, "  {0}", baseFileObj);
+                    }
+                }
+            }
         };        
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
@@ -706,6 +786,7 @@ public final class FileObjectFactory {
         AsyncRefreshAtomicAction(FileObject fo) {
             this.fo = fo;
         }
+        @Override
         public void run() throws IOException {
             this.fo.refresh();
         }

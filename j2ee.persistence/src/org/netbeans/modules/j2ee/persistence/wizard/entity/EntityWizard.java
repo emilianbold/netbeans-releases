@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -64,6 +67,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -72,7 +76,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -83,6 +86,8 @@ import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -101,6 +106,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private EntityWizardDescriptor ejbPanel;
+    private PersistenceUnitWizardDescriptor puPanel;
     private WizardDescriptor wiz;
     private SourceGroup[] sourceGroups;
     
@@ -108,18 +114,22 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         return new EntityWizard();
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(EntityWizard.class, "LBL_EntityEJBWizardTitle");
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
-        sourceGroups = SourceGroups.getJavaSourceGroups(project);
+        sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+
         ejbPanel = new EntityWizardDescriptor();
         WizardDescriptor.Panel targetChooserPanel = null;
         // Need to check if there are any Java Source group. See issue 139851
@@ -129,10 +139,24 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         } else {
             targetChooserPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         }
-        panels = new WizardDescriptor.Panel[] {targetChooserPanel};
+        //
+        boolean noPuNeeded = true;
+        try {
+            noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
+        } catch (InvalidPersistenceXmlException ex) {
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
+        }
+        if(noPuNeeded){
+            panels =  new WizardDescriptor.Panel[] {targetChooserPanel};
+        } else {
+            puPanel = new PersistenceUnitWizardDescriptor(project);
+            panels = new WizardDescriptor.Panel[] {targetChooserPanel, puPanel};
+        }
+        
         Wizards.mergeSteps(wiz, panels, null);
     }
     
+    @Override
     public Set instantiate() throws IOException {
         
         FileObject result = generateEntity(
@@ -143,10 +167,17 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 );
         
         try{
-            PersistenceUnit punit = ejbPanel.getPersistenceUnit();
-            if (punit != null){
-                ProviderUtil.addPersistenceUnit(punit, Templates.getProject(wiz));
+            boolean isCreatePU = ejbPanel.isCreatePU();
+            Project project = Templates.getProject(wiz);
+            if(isCreatePU)
+            {
+                PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
+                ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
+                if (punit != null){
+                    Util.addPersistenceUnitToProject( project, punit);
+                }
             }
+
             addEntityToPersistenceUnit(result);
             PersistenceUtils.logUsage(EntityWizard.class, "USG_PERSISTENCE_ENTITY", null);
         } catch (InvalidPersistenceXmlException ipx){
@@ -176,7 +207,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             entityFQN = clsPath.getResourceName(entity, '.', false);
         }
         
-        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
             PUDataObject pudo = ProviderUtil.getPUDataObject(project);
             PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
             //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
@@ -187,20 +218,25 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     }
     
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panels.length - 1 && ejbPanel.isCreatePU();
     }
     
+    @Override
     public void nextPanel() {
         if (! hasNext()) {
             throw new NoSuchElementException();
@@ -208,6 +244,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (! hasPrevious()) {
             throw new NoSuchElementException();
@@ -215,6 +252,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
@@ -247,6 +285,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
@@ -316,13 +355,15 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             super(delegate);
         }
         
+        @Override
         public boolean isValid() {
+            boolean valid = super.isValid();
             if (!ProviderUtil.isValidServerInstanceOrNone(getProject())) {
-                getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                         NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_MissingServer")); // NOI18N
-                return false;
             }
-            return super.isValid();
+            return valid;
         }
+
     }
 }

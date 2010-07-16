@@ -15,7 +15,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *

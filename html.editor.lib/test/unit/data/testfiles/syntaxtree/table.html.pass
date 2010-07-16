@@ -1,22 +1,12 @@
 root:ROOT(0-111)
    <table>(0-7/110)[RR];S:root
-      TEXT(7-12)
       <tr>(12-16/34)[RO];S:root,table
-         TEXT(16-25)
          <td>(25-29/34)[RO];S:root,table,tr
-            TEXT(29-34)
       <tr>(34-38/92)[RO];S:root,table,tr,td
-         TEXT(38-47)
          <td>(47-51/60)[RO];S:root,table,tr
-            TEXT(51-60)
          <td>(60-64/69)[RO];S:root,table,tr,td
          </td>(64-69)[RO];S:root,table,tr,td
-         TEXT(69-78)
          <td>(78-82/87)[RO];S:root,table,tr
-            TEXT(82-87)
       </tr>(87-92)[RO!];S:root,table,tr,td
-      TEXT(92-97)
       <tr>(97-101/102)[RO!]unresolved_tag ;S:root,table
-         TEXT(101-102)
    </table>(102-110)[RR!];S:root,table,tr
-   TEXT(110-111)

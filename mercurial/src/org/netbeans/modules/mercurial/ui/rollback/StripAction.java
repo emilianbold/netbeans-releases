@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,6 @@ package org.netbeans.modules.mercurial.ui.rollback;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -60,6 +61,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Pull action for mercurial: 
@@ -69,16 +71,21 @@ import org.openide.NotifyDescriptor;
  */
 public class StripAction extends ContextAction {
     
-    private final VCSContext context;
     private static String HG_STIP_SAVE_BUNDLE = "saving bundle to ";
     private static String HG_TIP = "tip"; // NOI18N
             
-    public StripAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Strip";                                    //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         strip(context);
     }
     
@@ -86,11 +93,10 @@ public class StripAction extends ContextAction {
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        File[] files = HgUtils.filterForRepository(ctx, root, false);
         
         String rev = null;
 
-        final Strip strip = new Strip(root, files);
+        final Strip strip = new Strip(root);
         if (!strip.showDialog()) {
             return;
         }
@@ -132,6 +138,7 @@ public class StripAction extends ContextAction {
                                     NbBundle.getMessage(StripAction.class,
                                     "MSG_MULTI_HEADS_STRIP"));     // NOI18N                       
                         }else{
+                            HgUtils.notifyUpdatedFiles(root, list);
                             if (HgCommand.hasHistory(root)) {
                                 FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                                 // XXX containsFileOfStatus would be better
@@ -154,6 +161,8 @@ public class StripAction extends ContextAction {
                             }
                         }
                     }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -166,9 +175,5 @@ public class StripAction extends ContextAction {
             }
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(StripAction.class, "MSG_STRIP_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

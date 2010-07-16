@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,7 +43,6 @@
  */
 package org.netbeans.modules.sql.framework.ui.view;
 
-import org.netbeans.modules.sql.framework.ui.output.dataview.DataOutputPanel;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -84,22 +86,23 @@ import org.netbeans.modules.sql.framework.ui.view.property.FFSourceTableProperti
 import org.netbeans.modules.sql.framework.ui.view.property.FFTargetTableProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SourceTableProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.TargetTableProperties;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Attribute;
-import net.java.hulp.i18n.Logger;
+import com.sun.etl.exception.BaseException;
+import com.sun.etl.utils.Attribute;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
-import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
+
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
+import org.netbeans.modules.sql.framework.ui.output.dataview.ETLDataOutputPanel;
 import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
-import org.netbeans.modules.sql.framework.ui.output.dataview.JoinOperatorDataPanel;
+
 import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.RejectedRowsDataPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
@@ -120,8 +123,10 @@ import org.openide.windows.WindowManager;
  */
 public abstract class BasicTopView extends JPanel implements IGraphViewContainer {
 
-    private static transient final Logger mLogger = Logger.getLogger(BasicTopView.class.getName());
+    //private static transient final Logger mLogger = Logger.getLogger(BasicTopView.class.getName());
+    private static final String LOG_CATEGORY = BasicTopView.class.getName();
     private static transient final Localizer mLoc = Localizer.get();
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LOG_CATEGORY);
 
     protected static abstract class ConditionValidator implements ActionListener {
 
@@ -238,12 +243,11 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
         protected abstract void setCondition(SQLCondition cond);
     }
-    private static final String LOG_CATEGORY = BasicTopView.class.getName();
     protected SQLCollaborationView collabView;
     protected CollabSQLUIModel sqlModel;
-    private HashMap<String, DataOutputPanel> outputDataViewMap = new HashMap<String, DataOutputPanel>();
+    private HashMap<String, ETLDataOutputPanel> outputDataViewMap = new HashMap<String, ETLDataOutputPanel>();
     private SQLValidationView refreshMetaView;
-    private HashMap<String, DataOutputPanel> rejectionDataViewMap = new HashMap<String, DataOutputPanel>();
+    private HashMap<String, ETLDataOutputPanel> rejectionDataViewMap = new HashMap<String, ETLDataOutputPanel>();
     private HashMap<String, SQLStatementPanel> sqlViewMap = new HashMap<String, SQLStatementPanel>();
 
     /**
@@ -401,6 +405,16 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         topComp.requestActive();
     }
 
+    public void showDataSplitPaneView() {
+        // add to output.
+        ETLOutputWindowTopComponent topComp = ETLOutputWindowTopComponent.findInstance();
+        if (!topComp.isOpened()) {
+            topComp.open();
+        }
+        topComp.setVisible(true);
+        topComp.requestActive();
+    }
+
     public void setDirty(boolean dirty) {
         sqlModel.setDirty(dirty);
         SQLUIModel model = (SQLUIModel) getGraphView().getGraphModel();
@@ -529,7 +543,9 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                         TemplateFactory.invokeSetter(pb, evt.getPropertyName(), evt.getNewValue());
                         DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     } catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("EDIT194: Failed to save changes {0}", LOG_CATEGORY), ex);
+                        String msg = mLoc.t("EDIT194: Failed to save changes {0}", LOG_CATEGORY);
+                        StatusDisplayer.getDefault().setStatusText(msg.substring(15) + ex.getMessage());
+                        logger.log(Level.SEVERE, mLoc.t("EDIT194: Failed to save changes {0}", LOG_CATEGORY) + ex);
                     }
                 }
             }
@@ -591,8 +607,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             try {
                 JoinUtility.editJoinView(jView, modifiedJoinView, modifiedJoinView.getSourceTables(), tableNodes, this.getGraphView());
             } catch (BaseException ex) {
-
-                mLogger.errorNoloc(mLoc.t("EDIT195: Caught Exception while commiting join view edits.{0}", LOG_CATEGORY), ex);
+                logger.log(Level.SEVERE, ex.getMessage());
                 NotifyDescriptor d = new NotifyDescriptor.Message(ex.toString(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
@@ -645,24 +660,22 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         SQLDefinition def = ((CollabSQLUIModel) model).getSQLDefinition();
-        DataOutputPanel dataView = outputDataViewMap.get(table.getId());
+        ETLDataOutputPanel dataView = outputDataViewMap.get(table.getId());
 
         if (dataView == null) {
             if (table.getObjectType() == SQLConstants.TARGET_TABLE) {
                 dataView = new TargetTableDataPanel((TargetTable) table, def);
             } else if (table.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 dataView = new SourceTableDataPanel((SourceTable) table, def);
-            } else if (table.getObjectType() == SQLConstants.JOIN_VIEW) {
-                dataView = new JoinViewDataPanel((SQLJoinView) table, def);
-            } else if (table.getObjectType() == SQLConstants.JOIN) {
-                dataView = new JoinOperatorDataPanel((SQLJoinOperator) table, def);
+            } else if (table.getObjectType() == SQLConstants.JOIN_VIEW || table.getObjectType() == SQLConstants.JOIN) {
+                dataView = new JoinViewDataPanel(table, def);
             }
 
             outputDataViewMap.put(table.getId(), dataView);
         }
 
         dataView.generateResult(table);
-        showSplitPaneView(dataView);
+        showDataSplitPaneView();
     }
 
     /**
@@ -677,7 +690,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         SQLDefinition def = ((CollabSQLUIModel) model).getSQLDefinition();
-        DataOutputPanel view = rejectionDataViewMap.get(table.getId());
+        ETLDataOutputPanel view = rejectionDataViewMap.get(table.getId());
         if (view == null) {
             view = new RejectedRowsDataPanel(table, def);
             rejectionDataViewMap.put(table.getId(), view);

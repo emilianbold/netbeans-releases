@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,16 +45,19 @@ package org.netbeans.modules.web.beans.navigation;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
@@ -60,9 +66,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * @author ads
@@ -194,9 +197,18 @@ public class InjectablesPopup extends JPanel implements FocusListener {
                 ElementHandle<?> handle = (ElementHandle<?>)value;
                 Element resolve = handle.resolve( myController);
                 if ( resolve!= null) {
+                    DeclaredType parent = null;
+                    if ( resolve instanceof VariableElement || 
+                            resolve instanceof ExecutableElement )
+                    {
+                        TypeElement enclosingTypeElement = 
+                            myController.getElementUtilities().
+                            enclosingTypeElement(resolve);
+                        parent = (DeclaredType)enclosingTypeElement.asType();
+                    }
                     setIcon(ElementIcons.getElementIcon(resolve.getKind(), 
                             resolve.getModifiers()));
-                    setText(Utils.format(resolve));
+                    setText(Utils.format(resolve, parent , myController));
                 }
             }
             

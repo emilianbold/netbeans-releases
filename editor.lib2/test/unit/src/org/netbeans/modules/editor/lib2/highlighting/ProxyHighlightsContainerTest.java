@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,10 +51,7 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.Random;
 import javax.swing.text.AttributeSet;
@@ -141,7 +141,7 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
         HighlightsContainer layer = createRandomBag(doc, "layer");
         HighlightsSequence highlights = layer.getHighlights(0, 100);
         
-        ProxyHighlightsContainer proxyLayer = new ProxyHighlightsContainer(new HighlightsContainer [] { layer });
+        ProxyHighlightsContainer proxyLayer = new ProxyHighlightsContainer(doc, new HighlightsContainer [] { layer });
         HighlightsSequence proxyHighlights = proxyLayer.getHighlights(0, 100);
 
         for ( ; highlights.moveNext(); ) {
@@ -172,7 +172,7 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
         hsA.addHighlight(new SimplePosition(5), new SimplePosition(15), attribsA);
         hsB.addHighlight(new SimplePosition(10), new SimplePosition(20), attribsB);
         
-        ProxyHighlightsContainer chc = new ProxyHighlightsContainer(new HighlightsContainer [] { hsA, hsB });
+        ProxyHighlightsContainer chc = new ProxyHighlightsContainer(doc, new HighlightsContainer [] { hsA, hsB });
         HighlightsSequence highlights = chc.getHighlights(0, Integer.MAX_VALUE);
 
         assertTrue("Wrong number of highlights", highlights.moveNext());
@@ -185,55 +185,32 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "value-B", highlights.getAttributes().getAttribute("attribute"));
     }
 
-    public void testConcurrentModification() throws Exception {
-        checkConcurrentModificationOnMethod("moveNext");
-        checkConcurrentModificationOnMethod("getStartOffset");
-        checkConcurrentModificationOnMethod("getEndOffset");
-        checkConcurrentModificationOnMethod("getAttributes");
-    }
-
-    private void checkConcurrentModificationOnMethod(String methodName) throws Exception {
+    public void testConcurrentModification1() throws Exception {
         PlainDocument doc = new PlainDocument();
         PositionsBag bag = createRandomBag(doc, "layer");
         HighlightsContainer [] layers = new HighlightsContainer [] { bag };
         
-        {
-            ProxyHighlightsContainer hb = new ProxyHighlightsContainer(layers);
-            HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        ProxyHighlightsContainer hb = new ProxyHighlightsContainer(doc, layers);
+        HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        assertTrue("There should be some highlights", hs.moveNext());
 
-            // Change the layers
-            hb.setLayers(layers);
+        // Change the layers
+        hb.setLayers(doc, layers);
+        assertFalse("There should be no more highlights after co-modification", hs.moveNext());
+    }
 
-            Throwable exc = null;
-            try {
-                Method m = hs.getClass().getMethod(methodName);
-                m.invoke(hs);
-            } catch (InvocationTargetException e) {
-                exc = e.getCause();
-            }
+    public void testConcurrentModification2() throws Exception {
+        PlainDocument doc = new PlainDocument();
+        PositionsBag bag = createRandomBag(doc, "layer");
+        HighlightsContainer [] layers = new HighlightsContainer [] { bag };
 
-            assertTrue("ConcurrentModificationException has not been thrown from " + 
-                methodName + "() after setLayers", exc instanceof ConcurrentModificationException);
-        }
-        {
-            ProxyHighlightsContainer hb = new ProxyHighlightsContainer(layers);
-            HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        ProxyHighlightsContainer hb = new ProxyHighlightsContainer(doc, layers);
+        HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        assertTrue("There should be some highlights", hs.moveNext());
 
-            // Modify the bag
-            bag.addHighlight(new SimplePosition(20), new SimplePosition(30), SimpleAttributeSet.EMPTY);
-
-            Throwable exc = null;
-            try {
-                Method m = hs.getClass().getMethod(methodName);
-                m.invoke(hs);
-            } catch (InvocationTargetException e) {
-                exc = e.getCause();
-            }
-            
-            assertTrue("ConcurrentModificationException has not been thrown from " + 
-                methodName + "() after changing the original bag", 
-                exc instanceof ConcurrentModificationException);
-        }
+        // Modify the bag
+        bag.addHighlight(new SimplePosition(20), new SimplePosition(30), SimpleAttributeSet.EMPTY);
+        assertFalse("There should be no more highlights after co-modification", hs.moveNext());
     }
     
     public void testRandomMerging() {
@@ -249,7 +226,7 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
             layers[i] = createRandomBag(doc, layerNames[i]);
         };
         
-        ProxyHighlightsContainer proxyLayer = new ProxyHighlightsContainer(layers);
+        ProxyHighlightsContainer proxyLayer = new ProxyHighlightsContainer(doc, layers);
         
         for (int pointer = 0; pointer <= 100; pointer++) {
             
@@ -335,7 +312,7 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
         PositionsBag hsA = new PositionsBag(doc);
         PositionsBag hsB = new PositionsBag(doc);
         
-        ProxyHighlightsContainer chc = new ProxyHighlightsContainer(new HighlightsContainer [] { hsA, hsB });
+        ProxyHighlightsContainer chc = new ProxyHighlightsContainer(doc, new HighlightsContainer [] { hsA, hsB });
         Listener listener = new Listener();
         chc.addHighlightsChangeListener(listener);
         
@@ -364,7 +341,7 @@ public class ProxyHighlightsContainerTest extends NbTestCase {
         chc.addHighlightsChangeListener(listener);
 
         // changing delegate layers fires event covering 'all' offsets
-        chc.setLayers(new HighlightsContainer [] { hsA, hsB });
+        chc.setLayers(doc, new HighlightsContainer [] { hsA, hsB });
         assertEquals("Wrong number of events", 1, listener.eventsCnt);
         assertEquals("Wrong change start offset", 0, listener.lastEventStartOffset);
         assertEquals("Wrong change end offset", Integer.MAX_VALUE, listener.lastEventEndOffset);

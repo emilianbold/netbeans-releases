@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -50,6 +53,7 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
         final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
         HostInfo result = null;
@@ -58,12 +62,8 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
             try {
                 result = provider.getHostInfo(execEnv);
             } catch (IOException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
-                    log.log(Level.FINE, msg, ex);
-                    System.err.println(msg);
-                    ex.printStackTrace();
-                }
+                // TODO: should we throw exception instead?
+                log.log(Level.INFO, "Exception while receiving hostinfo for " + execEnv.toString(), ex); //NOI18N
             }
             if (result != null) {
                 break;

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -99,9 +103,14 @@ public final class ClassDataObject extends MultiDataObject {
                 } else if (binaryRoot != null) {
                     resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                 }
+                ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                if (bootPath == null) {
+                    //No boot cp, try the default platform boot cp
+                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                }
                 FileObject resource = null;
                 final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
-                final ClasspathInfo cpInfo = cp != null ? ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]), cp, ClassPathSupport.createClassPath(new URL[0])) : null;
+                final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                 if (binaryRoot != null) {
                     //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
                     resource = SourceUtils.getFile(handle, cpInfo);

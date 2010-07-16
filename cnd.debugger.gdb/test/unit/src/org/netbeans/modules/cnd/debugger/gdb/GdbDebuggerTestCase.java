@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,7 +48,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
-import org.netbeans.modules.nativeexecution.test.Conditional;
+import org.netbeans.modules.nativeexecution.test.If;
 
 /**
  *
@@ -59,7 +62,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testStartDebugger1() {
         String tfile = System.getProperty("java.io.tmpdir") + "test" + System.currentTimeMillis();
         File file = new File(tfile);
@@ -80,7 +83,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testGetGdbVersion() {
         startDebugger("Args_1", "args", "1111 2222 3333");
         double version = debugger.getGdbVersion();
@@ -91,7 +94,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test start and normal exit */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testNormalExit() {
         startDebugger("BpTestProject", "main", "");
 
@@ -101,7 +104,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of setting a line breakpoint */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testLineBreakpointSet() {
         startDebugger("BpTestProject", "main", "");
 
@@ -124,7 +127,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of setting and disabling a line breakpoint */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testLineBreakpointDisable() {
         startDebugger("BpTestProject", "main", "");
 
@@ -143,7 +146,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of setting and removing a line breakpoint */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testLineBreakpointDelete() {
         startDebugger("BpTestProject", "main", "");
 
@@ -162,7 +165,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of setting a function breakpoint */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testFunctionBreakpointSet() {
         startDebugger("BpTestProject", "main", "");
 
@@ -185,7 +188,7 @@ public class GdbDebuggerTestCase extends GdbTestCase {
 
     /** Test of setting a watch */
     @Test
-    @Conditional(section="gdb", key="functional.tests")
+    @If(section="gdb", key="functional.tests")
     public void testWatchEvaluation() {
         startDebugger("BpTestProject", "main", "");
 

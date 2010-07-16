@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -103,12 +106,12 @@ public class SaasGroupNode extends AbstractNode {
         return group.isUserDefined();
     }
 
-    private Image getUserDirFolderImage(int type) {
+    private Image getUserDirFolderImage(int type, boolean openIcon) {
         FileObject folder = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
         if (folder != null) {
             DataFolder df = DataFolder.findFolder(folder);
             if (df != null) {
-                return df.getNodeDelegate().getIcon(type);
+                return (openIcon ? df.getNodeDelegate().getOpenedIcon(type) : df.getNodeDelegate().getIcon(type));
             }
         }
         return null;
@@ -128,7 +131,7 @@ public class SaasGroupNode extends AbstractNode {
         if (icon != null) {
             return icon;
         }
-        Image standardFolderImage = getUserDirFolderImage(type);
+        Image standardFolderImage = getUserDirFolderImage(type, false);
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
@@ -141,7 +144,7 @@ public class SaasGroupNode extends AbstractNode {
         if (icon != null) {
             return icon;
         }
-        Image standardFolderImage = getUserDirFolderImage(type);
+        Image standardFolderImage = getUserDirFolderImage(type, true);
         if (standardFolderImage != null) {
             return standardFolderImage;
         }

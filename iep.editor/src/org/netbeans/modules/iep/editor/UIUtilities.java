@@ -28,8 +28,6 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 
@@ -73,7 +71,7 @@ public class UIUtilities {
         }
         
         if (shouldShowSource) {
-            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+            l.show(Line.SHOW_GOTO);
         }
     }
     

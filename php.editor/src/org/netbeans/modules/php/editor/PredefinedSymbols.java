@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,18 +48,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,40 +68,7 @@ public class PredefinedSymbols {
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "php_errormsg", //NOI18N
             "HTTP_RAW_POST_DATA", "http_response_header", "argc", "argv")); //NOI18N
 
-    public  static final Map<String,IndexedFunction> MAGIC_METHODS = new HashMap<String, IndexedFunction>();
 
-    public static IndexedFunction createMagicFunction(String fncName, String arguments, int flags) {
-        IndexedFunction ifnc = new MagicIndexedFunction(fncName, 
-                NbBundle.getMessage(PredefinedSymbols.class, "MagicMethod"), //NOI18N
-                null, null, arguments, 0, flags, ElementKind.METHOD);
-        return ifnc;
-    }
-    static class MagicIndexedFunction extends IndexedFunction {
-        public MagicIndexedFunction(String name, String in, PHPIndex index, String fileURL, String arguments, int offset, int flags, ElementKind kind) {
-            super(name, in, index, fileURL, arguments, offset, flags, kind);
-        }
-    }
-
-    static {
-        IndexedFunction[] ifunctions = new IndexedFunction[] {
-            createMagicFunction("__callStatic", "$name, $arguments", Modifier.PUBLIC | Modifier.STATIC),//NOI18N
-            createMagicFunction("__set_state", "$array", Modifier.PUBLIC | Modifier.STATIC),//NOI18N
-            createMagicFunction("__call", "$name, $arguments", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__clone", "", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__construct", "", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__destruct", "", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__get", "$name", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__set", "$name, $value", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__isset", "$name", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__unset", "$name", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__sleep", "", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__wakeup", "", Modifier.PUBLIC),//NOI18N
-            createMagicFunction("__toString", "", Modifier.PUBLIC)//NOI18N
-        };
-        for (IndexedFunction ifunc : ifunctions) {
-            MAGIC_METHODS.put(ifunc.getName(),ifunc);
-        }
-    }
     public static final List<String> SERVER_ENTRY_CONSTANTS =
             Arrays.asList(new String[]{
                 "PHP_SELF",
@@ -141,6 +105,22 @@ public class PredefinedSymbols {
                 "AUTH_TYPE"
             });
 
+
+    public static Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
+                "__callStatic",
+                "__set_state",
+                "__call",
+                "__clone",
+                "__construct",
+                "__destruct",
+                "__get",
+                "__set",
+                "__isset",
+                "__unset",
+                "__sleep",
+                "__wakeup",
+                "__toString"
+            }));
 
     public static enum VariableKind {
         STANDARD,

@@ -80,7 +80,7 @@ public class SequencePattern extends CompositePattern {
     }
 
     public boolean isSelectable() {
-        //sequence can not be selected if sequences are filtered out.
+        //sequence cannot be selected if sequences are filtered out.
         
         return (getBorder() instanceof GroupBorder);
         

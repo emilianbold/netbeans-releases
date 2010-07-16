@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.modules.html.editor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,12 +64,15 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserResult> {
 
+    private static final Logger LOGGER = Logger.getLogger(HtmlCaretAwareSourceTask.class.getSimpleName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/html")) {
+            if(mimeType.equals("text/html")) { //NOI18N
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
@@ -96,13 +103,15 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void cancel() {
-        //xxx cancel???
+        //no-op
     }
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
         if(event == null) {
-            Logger.global.warning("HtmlCaretAwareSourceTask.run() called with null SchedulerEvent argument.");
+            if(LOG) {
+                LOGGER.log(Level.INFO, "ParserResultTask.run(...) called with null SchedulerEvent argument."); //NOI18N
+            }
             return ;
         }
 

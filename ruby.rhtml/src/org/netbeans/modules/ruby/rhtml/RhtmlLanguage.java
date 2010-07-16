@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,22 +44,24 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.IndexSearcher;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.netbeans.modules.ruby.RubyIndexer;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer;
+import org.netbeans.modules.ruby.RubyUtils;
 
-public class RhtmlLanguage extends RubyLanguage {
+@LanguageRegistration(mimeType="application/x-httpd-eruby", useCustomEditorKit=true) //NOI18N
+@PathRecognizerRegistration(mimeTypes="application/x-httpd-eruby", sourcePathIds=RubyLanguage.SOURCE, libraryPathIds=RubyLanguage.BOOT, binaryLibraryPathIds={}) //NOI18N
+public class RhtmlLanguage extends DefaultLanguageConfig {
     
     public RhtmlLanguage() {
     }
@@ -82,58 +87,8 @@ public class RhtmlLanguage extends RubyLanguage {
     }
 
     @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return null;
-    }
-
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return false;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return null;
-    }
-
-    @Override
-    public IndexSearcher getIndexSearcher() {
-        return null;
-    }
-
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return null;
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return null;
-    }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return false;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return null;
-    }
-
-    @Override
     public Parser getParser() {
         return new RhtmlParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return null;
     }
 
     @Override
@@ -151,6 +106,31 @@ public class RhtmlLanguage extends RubyLanguage {
         public Configuration getConfiguration() {
             return new Configuration(false, false, 0);
         }
+    }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new RubyIndexer.Factory();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.singleton(RubyLanguage.SOURCE);
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(RubyLanguage.BOOT);
+    }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return RubyUtils.getLineCommentPrefix();
+    }
+
+    @Override
+    public boolean isIdentifierChar(char c) {
+        return RubyUtils.isIdentifierChar(c);
     }
 
 }

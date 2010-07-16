@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -51,7 +54,6 @@ import java.util.*;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -75,6 +77,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (projectChooser == null) { // create the UI component for the wizard step
             projectChooser = ProjectChooser.projectChooser();
@@ -90,6 +93,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             projectChooser.setControlButtonsAreShown(false);
 
             projectChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent ev) {
                     String propName = ev.getPropertyName();
                     if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName)
@@ -102,11 +106,13 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         return projectChooser;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         if (projectChooser != null) {
             File file = projectChooser.getSelectedFile();
@@ -129,9 +135,11 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         return false;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (projectChooser == null)
             return;
@@ -156,16 +164,16 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             return;
 
         List<ClassSource.ProjectEntry> entries = new ArrayList<ClassSource.ProjectEntry>();
-        for (AntArtifact aa : AntArtifactQuery.findArtifactsByType(project, /* XXX JavaProjectConstants.ARTIFACT_TYPE_JAR */ "jar")) { // NOI18N
-            entries.add(new ClassSource.ProjectEntry(aa));
-        }
+        entries.add(new ClassSource.ProjectEntry(project));
         settings.setJARFiles(entries);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }

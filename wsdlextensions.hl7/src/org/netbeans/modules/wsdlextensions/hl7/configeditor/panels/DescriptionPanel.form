@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Container class="javax.swing.JScrollPane" name="descriptionScrollPane">
+      <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[200, 50]"/>
+        </Property>
+        <Property name="name" type="java.lang.String" value="descriptionScrollPane" noResource="true"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextPane" name="descriptionTextPane">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="name" type="java.lang.String" value="descriptionTextPane" noResource="true"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="javax.swing.JPanel tmpPanel = new javax.swing.JPanel();&#xd;&#xa;descriptionTextPane.setBackground(tmpPanel.getBackground());"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="mDoc = descriptionTextPane.getStyledDocument();&#xd;&#xa;mStyles = new String[]{&quot;bold&quot;, &quot;regular&quot;};&#xd;&#xa;Style def = StyleContext.getDefaultStyleContext().&#xd;&#xa;        getStyle(StyleContext.DEFAULT_STYLE);&#xd;&#xa;Style regular = mDoc.addStyle(&quot;regular&quot;, def);&#xd;&#xa;Style s = mDoc.addStyle(&quot;bold&quot;, regular);&#xd;&#xa;StyleConstants.setBold(s, true);&#xd;&#xa;"/>
+          </AuxValues>
+        </Component>
+      </SubComponents>
+    </Container>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+      <Dimension value="[200, 50]"/>
+    </Property>
+    <Property name="name" type="java.lang.String" value="DescriptionPanel" noResource="true"/>
+  </Properties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
+  </AuxValues>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+  <SubComponents>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="jPanel1" noResource="true"/>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="Center"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JScrollPane" name="editorPaneScrollPane">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="editorPaneScrollPane" noResource="true"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="Center"/>
+            </Constraint>
+          </Constraints>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JEditorPane" name="editorPane">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="editorPane" noResource="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="&#xa;        editorPane.setOpaque(false);&#xa;        editorPane.setBackground(getBackground());&#xa;        editorPane.setEditable(false);&#xa;        editorPane.setOpaque(false);&#xa;        editorPane.getAccessibleContext().setAccessibleName( &quot;Description&quot;);//NbBundle.getMessage(DescriptionComponent.class, &quot;ACS_Description&quot;) );&#xa;        editorPane.getAccessibleContext().setAccessibleDescription( &quot;Description&quot;);//NbBundle.getMessage(DescriptionComponent.class, &quot;ACSD_Description&quot;) );&#xa;&#xa;        HTMLEditorKit htmlKit = new HTMLEditorKit();&#xa;        if (htmlKit.getStyleSheet().getStyleSheets() == null) {&#xa;            javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();&#xa;            java.awt.Font f = new JLabel().getFont();&#xa;            css.addRule(new StringBuffer(&quot;body { font-size: &quot;).append(f.getSize()) // NOI18N&#xa;                        .append(&quot;; font-family: &quot;).append(f.getName()).append(&quot;; }&quot;).toString()); // NOI18N&#xa;            css.addStyleSheet(htmlKit.getStyleSheet());&#xa;            htmlKit.setStyleSheet(css);&#xa;        }&#xa;        editorPane.setEditorKit( htmlKit );"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

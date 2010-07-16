@@ -35,6 +35,11 @@ public enum EditorAttributes implements Attribute {
     PARENT_PATH("parentPath", String.class, AttrType.PATH), //NOI18N
     QNAME("qName", QName.class, AttrType.QNAME), //NOI18N
     IS_ATTRIBUTE("isAttribute", boolean.class), //NOI18N
+    
+    PREFIX("prefix", String.class, AttrType.STRING), // NOI18N
+    NM_PROPERTY("nmProperty", String.class, AttrType.STRING), // NOI18N
+    DISPLAY_NAME("displayName", String.class, AttrType.STRING), // NOI18N
+    
     ;
     
     public static enum AttrType {

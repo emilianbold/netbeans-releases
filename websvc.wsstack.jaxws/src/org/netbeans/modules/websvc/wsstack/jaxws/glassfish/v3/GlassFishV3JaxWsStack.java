@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,13 +68,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                           "webservices-api(|-osgi).jar", //NOI18N
                           "jaxb(|-osgi).jar", //NOI18N
                           "jaxb-api(|-osgi).jar", //NOI18N
-                          "javax.activation.jar"}; //NOI18N
-    private static final String[] METRO_LIBRARIES15 =
-            new String[] {"webservices(|-osgi).jar", //NOI18N
-                          "webservices-api(|-osgi).jar", //NOI18N
-                          "jaxb(|-osgi).jar", //NOI18N
-                          "jaxb-api(|-osgi).jar", //NOI18N
-                          "woodstox(|-osgi).jar", //NOI18N
+                          "javax.ejb.jar", //NOI18N
                           "javax.activation.jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
@@ -122,7 +119,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 if (isEjb) {
                     return serviceName+"/"+portName; //NOI18N
                 } else {
-                    return applicationRoot+"/"+serviceName; //NOI18N
+                    return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
                 }
             }
 
@@ -130,8 +127,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
 
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
             }
             
         };
@@ -150,11 +147,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         public URL[] getLibraries() {
             List<URL> cPath = new ArrayList<URL>();
             if (isMetroInstalled()) {
-                String java_version = System.getProperty("java.version"); //NOI18N
-                String[] metroJars =
-                        (java_version.compareTo("1.6")<0 ? METRO_LIBRARIES15 : METRO_LIBRARIES); //NOI18N
-                
-                for (String entry : metroJars) {
+                for (String entry : METRO_LIBRARIES) {
                     File f = getWsJarName(gfRootStr, entry);
                     if ((f != null) && (f.exists())) {
                         try {

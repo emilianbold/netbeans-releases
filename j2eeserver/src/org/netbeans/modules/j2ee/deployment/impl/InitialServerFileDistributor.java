@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -235,6 +238,12 @@ public class InitialServerFileDistributor extends ServerProgress {
     // projects, but expect the IDE to be as fast or faster that zip or jar
     //
     private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {  
+        String ext = sourceObject.getExt();
+        if (sourceObject.getSize() == 0 &&
+                ("zip".equals(ext) || "jar".equals(ext))) { // NOI18N
+            // a zero length jar or zip file is NEVER ok...
+            return;
+        }
         File destFile = new File(directory, relativePath);
         FileOutputStream os = new FileOutputStream(destFile);
         FileInputStream fis = null;
@@ -266,7 +275,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             if (null != is) { try { is.close(); } catch (IOException ioe) {} }
             if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
             if (null != os) { try { os.close(); } catch (IOException ioe) {} }
-        }
+         }
     }
 
     private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {

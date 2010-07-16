@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,11 +59,12 @@ import javax.swing.text.Position;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
+ * Implementation provides hyperlink support for VCS anotation bar and history views
  *
  * @author Tomas Stupka
  */
@@ -132,12 +136,12 @@ public class VCSHyperlinkSupport {
         private final int start[];
         private final int end[];
         private final String text;
-        private final HyperlinkProvider hp;
+        private final VCSHyperlinkProvider hp;
         private final File root;
         private final int length;
         private final Style issueHyperlinkStyle;
 
-        private IssueLinker(HyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text, int[] spans) {
+        private IssueLinker(VCSHyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text, int[] spans) {
             this.length = spans.length / 2;
             this.docstart = new int[length];
             this.docend = new int[length];
@@ -165,7 +169,7 @@ public class VCSHyperlinkSupport {
             }
         }
 
-        public static IssueLinker create(HyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text) {
+        public static IssueLinker create(VCSHyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text) {
             int[] spans = hp.getSpans(text);
             if (spans == null) {
                 return null;

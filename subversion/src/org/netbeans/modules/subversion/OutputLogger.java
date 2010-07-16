@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,11 +49,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -65,7 +73,7 @@ public class OutputLogger implements ISVNNotifyListener {
     private InputOutput log;
     private boolean ignoreCommand = false;
     private String repositoryRootString;
-    private static final RequestProcessor rp = new RequestProcessor("SubversionOutput", 1);
+    private static final RequestProcessor rp = new RequestProcessor("SubversionOutput", 1); // NOI18N
     private boolean writable; // output window is open and can be written into
     /**
      * cache of already opened output windows
@@ -75,6 +83,7 @@ public class OutputLogger implements ISVNNotifyListener {
      * and in that case it should be closed again. See getLog().
      */
     private static final HashSet<String> openedWindows = new HashSet<String>(5);
+    private static final Pattern filePattern = Pattern.compile("[AUCGE ][ UC][ BC][ C] ?(.+)"); //NOI18N
     
     public static OutputLogger getLogger(SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
@@ -92,8 +101,10 @@ public class OutputLogger implements ISVNNotifyListener {
     private OutputLogger() {
     }
     
+    @Override
     public void logCommandLine(final String commandLine) {
         rp.post(new Runnable() {
+            @Override
             public void run() {                        
                 logln(commandLine, false);
                 flush();
@@ -107,8 +118,10 @@ public class OutputLogger implements ISVNNotifyListener {
         }
     }
     
+    @Override
     public void logCompleted(final String message) {
         rp.post(new Runnable() {
+            @Override
             public void run() {                
                 logln(message, ignoreCommand);
                 flush();
@@ -116,8 +129,10 @@ public class OutputLogger implements ISVNNotifyListener {
         });        
     }
     
+    @Override
     public void logError(final String message) {
         rp.post(new Runnable() {
+            @Override
             public void run() {                
                 logln(message, false);
                 flush();
@@ -125,8 +140,10 @@ public class OutputLogger implements ISVNNotifyListener {
         });            
     }
     
+    @Override
     public void logMessage(final String message) {
         rp.post(new Runnable() {
+            @Override
             public void run() {                
                 logln(message, ignoreCommand);
                 flush();
@@ -134,16 +151,20 @@ public class OutputLogger implements ISVNNotifyListener {
         });
     }
     
+    @Override
     public void logRevision(long revision, String path) {
        // logln(" revision " + revision + ", path = '" + path + "'");
     }
     
+    @Override
     public void onNotify(File path, SVNNodeKind kind) {
         //logln(" file " + path + ", kind " + kind);
     }
     
+    @Override
     public void setCommand(final int command) {
         rp.post(new Runnable() {
+            @Override
             public void run() {        
                 ignoreCommand = command == ISVNNotifyListener.Command.INFO ||
                                 command == ISVNNotifyListener.Command.STATUS ||
@@ -156,6 +177,7 @@ public class OutputLogger implements ISVNNotifyListener {
          
     public void closeLog() {
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 if (log != null && writable) {
                     getLog().getOut().flush();
@@ -167,6 +189,7 @@ public class OutputLogger implements ISVNNotifyListener {
 
     public void flushLog() {
         rp.post(new Runnable() {
+            @Override
             public void run() {        
                 getLog();
                 flush();
@@ -175,16 +198,25 @@ public class OutputLogger implements ISVNNotifyListener {
     }
     
     private void logln(String message, boolean ignore) {
-        log(message + "\n", null, ignore); // NOI18N
+        OpenFileOutputListener ol = null;
+        Matcher m = filePattern.matcher(message);
+        if (m.matches() && m.groupCount() > 0) {
+            String path = m.group(1);
+            File f = new File(path);
+            if (!f.isDirectory()) {
+                ol = new OpenFileOutputListener(FileUtil.normalizeFile(f), m.start(1));
+            }
+        }
+        log(message + "\n", ol, ignore); // NOI18N
     }
-    
-    private void log(String message, OutputListener hyperlinkListener, boolean ignore) {                
+
+    private void log(String message, OpenFileOutputListener hyperlinkListener, boolean ignore) {
         if(ignore) {
             return;
         }
         if (getLog().isClosed()) {
             if (SvnModuleConfig.getDefault().getAutoOpenOutput()) {
-                Subversion.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+                Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString); // NOI18N
                 log = IOProvider.getDefault().getIO(repositoryRootString, false);
                 try {
                     // HACK (mystic logic) workaround, otherwise it writes to nowhere
@@ -199,7 +231,10 @@ public class OutputLogger implements ISVNNotifyListener {
         if (writable) {
             if (hyperlinkListener != null) {
                 try {
-                    getLog().getOut().println(message, hyperlinkListener);
+                    String prefix = message.substring(0, hyperlinkListener.filePathStartPos);
+                    getLog().getOut().write(prefix);
+                    String filePath = message.substring(hyperlinkListener.filePathStartPos);
+                    getLog().getOut().println(filePath.endsWith("\n") ? filePath.substring(0, filePath.length() - 1) : filePath, hyperlinkListener); //NOI18N
                 } catch (IOException e) {
                     getLog().getOut().write(message);
                 }
@@ -215,7 +250,7 @@ public class OutputLogger implements ISVNNotifyListener {
     private InputOutput getLog() {
         writable = true;
         if(log == null) {
-            Subversion.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+            Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString);
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
             if (!openedWindows.contains(repositoryRootString)) {
                 // log window has been opened
@@ -230,9 +265,10 @@ public class OutputLogger implements ISVNNotifyListener {
         return log;
     }
 
-    public Action getOpenOuptutAction() {
+    public Action getOpenOutputAction() {
         if(action == null) {
             action = new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     writable = true;
                     getLog().select();
@@ -243,33 +279,47 @@ public class OutputLogger implements ISVNNotifyListener {
     }
 
     private static class NullLogger extends OutputLogger {
+        @Override
+        public void logCommandLine(String commandLine) { }
+        @Override
+        public void logCompleted(String message) { }
+        @Override
+        public void logError(String message) { }
+        @Override
+        public void logMessage(String message) { }
+        @Override
+        public void logRevision(long revision, String path) { }
+        @Override
+        public void onNotify(File path, SVNNodeKind kind) { }
+        @Override
+        public void setCommand(int command) { }
+        @Override
+        public void closeLog() { }
+        @Override
+        public void flushLog() { }
+    }
 
-        public void logCommandLine(String commandLine) {
+    private static class OpenFileOutputListener implements OutputListener {
+        private final File f;
+        private final int filePathStartPos;
+
+        public OpenFileOutputListener(File f, int filePathStartPos) {
+            this.f = f;
+            this.filePathStartPos = filePathStartPos;
         }
 
-        public void logCompleted(String message) {
+        @Override
+        public void outputLineSelected(OutputEvent ev) { }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+            Subversion.LOG.log(Level.FINE, "Opeining file [{0}]", f);           // NOI18N
+            new OpenInEditorAction(new File[] {f}).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, f.getAbsolutePath()));
         }
 
-        public void logError(String message) {
-        }
+        @Override
+        public void outputLineCleared(OutputEvent ev) { }
 
-        public void logMessage(String message) {
-        }
-
-        public void logRevision(long revision, String path) {
-        }
-
-        public void onNotify(File path, SVNNodeKind kind) {
-        }
-
-        public void setCommand(int command) {
-        }
-
-        public void closeLog() {
-        }
-
-        public void flushLog() {
-        }
     }
 
 }

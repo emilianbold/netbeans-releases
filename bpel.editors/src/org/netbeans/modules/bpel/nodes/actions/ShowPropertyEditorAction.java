@@ -30,23 +30,20 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 23 March 2006
  */
 public class ShowPropertyEditorAction extends BpelNodeAction {
 
     protected String getBundleName() {
-        return NbBundle.getMessage(ShowPropertyEditorAction.class, 
-                "CTL_PropertyEditor"); // NOI18N
+        return NbBundle.getMessage(ShowPropertyEditorAction.class, "CTL_PropertyEditor"); // NOI18N
     }
     
     public void performAction(Node[] nodes) {
         if (!enable(nodes)) {
             return;
         }
-        NodeUtils.showNodeCustomEditor((BpelNode)nodes[0], 
-                CustomNodeEditor.EditingMode.EDIT_INSTANCE);
+        NodeUtils.showNodeCustomEditor((BpelNode)nodes[0], CustomNodeEditor.EditingMode.EDIT_INSTANCE);
     }
 
     protected void performAction(BpelEntity[] bpelEntities) {
@@ -55,7 +52,6 @@ public class ShowPropertyEditorAction extends BpelNodeAction {
     private NodeFactory getNodeFactory(){
         return NavigatorNodeFactory.getInstance();
     }
-
     
     public boolean enable(final Node[] nodes) {
         if (nodes == null) return false;
@@ -64,7 +60,6 @@ public class ShowPropertyEditorAction extends BpelNodeAction {
 
         return !((BpelNode) nodes[0]).isModelReadOnly();
     }
-    
     
     public ActionType getType() {
         return ActionType.SHOW_POPERTY_EDITOR;

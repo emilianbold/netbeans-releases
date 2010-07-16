@@ -7,7 +7,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -20,10 +20,10 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="cbCommandLine" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="122" max="32767" attributes="0"/>
+                      <EmptySpace pref="53" max="32767" attributes="0"/>
                       <Component id="btnSetup" min="-2" pref="229" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane2" alignment="0" pref="623" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="560" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -36,10 +36,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtProfiles" pref="532" max="32767" attributes="2"/>
-                          <Component id="txtGoals" alignment="0" pref="532" max="32767" attributes="2"/>
+                          <Component id="txtProfiles" pref="440" max="32767" attributes="2"/>
+                          <Component id="txtGoals" alignment="0" pref="440" max="32767" attributes="2"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane1" pref="391" max="32767" attributes="1"/>
+                              <Component id="jScrollPane1" pref="297" max="32767" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
@@ -51,13 +51,13 @@
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="532" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="440" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="comConfiguration" pref="389" max="32767" attributes="0"/>
+                              <Component id="comConfiguration" pref="297" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="txtDirectory" pref="302" max="32767" attributes="0"/>
+                              <Component id="txtDirectory" pref="211" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnDirectory" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -113,7 +113,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane3" pref="57" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" pref="53" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,8 +42,6 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
-import java.util.Collection;
-import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
@@ -55,7 +56,7 @@ import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +84,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
     @Override
     protected Runnable getContextRunnable(final Lookup context) {
         return new Runnable() {
+            @Override
             public void run() {
                 invokeActionImpl(context);
             }
@@ -123,17 +125,27 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 File baseLocalDir = FileUtil.toFile(sources);
                 String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
                 for (FileObject fo : preselectedFiles) {
-                    TransferFile transferFile = TransferFile.fromFileObject(fo, baseLocalAbsolutePath);
-                    transferFile.touch();
-                    boolean result = forUpload.remove(transferFile);
-                    assert result : "Transfer file not in upload set: " + transferFile;
-                    result = forUpload.add(transferFile);
-                    assert result : "Transfer file not added to upload set: " + transferFile;
+                    // we need to touch the _original_ transfer file because of its parent!
+                    TransferFile transferFile = TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath);
+                    for (TransferFile file : forUpload) {
+                        if (transferFile.equals(file)) {
+                            file.touch();
+                            break;
+                        }
+                    }
                 }
             }
 
-            forUpload = TransferFilter.showUploadDialog(forUpload, ProjectSettings.getLastUpload(getProject()));
-            if (forUpload.size() == 0) {
+            boolean showDialog = true;
+            if (forUpload.size() == 1
+                    && forUpload.iterator().next().isFile()) {
+                // do not show transfer dialog for exactly one file (not folder!)
+                showDialog = false;
+            }
+            if (showDialog) {
+                forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+            }
+            if (forUpload.isEmpty()) {
                 return;
             }
 

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,34 +42,33 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -81,46 +83,72 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
 
-    private final static String successLine = "BUILD SUCCESSFUL";
-    private final static String failureLine = "BUILD FAILED";
-    private final static String[] errorLines = new String[] {
-            "Error copying project files",
-            "CLEAN FAILED"
-        };
+    public static enum Sync {
+        FTP("ftp"),
+        RFS("rfs"),
+        ZIP("scp");
+        public final String ID;
+        Sync(String id) {
+            this.ID = id;
+        }
+    }
+
+    public static enum Toolchain {
+        GNU("GNU"),
+        SUN("SunStudio");
+        public final String ID;
+        Toolchain(String id) {
+            this.ID = id;
+        }
+    }
+
+    private static final List<String> SUCCESS_PREFIXES = Collections.unmodifiableList(Arrays.asList(
+        "BUILD SUCCESSFUL",
+        "CLEAN SUCCESSFUL"
+    ));
+
+    private static final List<String> ERROR_PREFIXES = Collections.unmodifiableList(Arrays.asList(
+        "Error copying project files",
+        "CLEAN FAILED",
+        "BUILD FAILED"
+    ));
+
+    private static final Pattern EXIT_VALUE_PATTERN = Pattern.compile("\\(exit value (\\d+),");
 
     static {
-        log.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
-                }
-            }
-            @Override
-            public void flush() {
-            }
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        System.setProperty("jsch.connection.timeout", "30000");
+        System.setProperty("socket.connection.timeout", "30000");
+        System.setProperty("sftp.put.retries", "5");
+    }
+
+    static {
+        log.addHandler(new TestLogHandler(log));
     }
 
 
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
         super(testName);
-        setSysProps();
+        cleanUserDir();
+        setSysProps();        
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        setSysProps();
+        cleanUserDir();
+        setSysProps();        
     }
 
+    protected final void cleanUserDir()  {
+        File userDir = getUserDir();
+        if (userDir.exists()) {
+            if (!removeDirectoryContent(userDir)) {
+                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
+            }
+        }
+    }
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private void setSysProps() {
         try {
             addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.logger.level");
@@ -128,8 +156,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
             addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
             if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
-                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
                 Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
+                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -140,6 +168,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env != null) {
@@ -148,47 +177,63 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
     }
 
-    protected static void setupHost(ExecutionEnvironment execEnv) {
-        ToolsCacheManager tcm = new ToolsCacheManager();
-        HostValidatorImpl validator = new HostValidatorImpl(tcm);
-        boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
-        assertTrue(ok);
-        tcm.applyChanges();
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        //ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
-    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
-        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
+    private static Set<ExecutionEnvironment> hosts = new HashSet<ExecutionEnvironment>();
+
+    protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
+        if (! hosts.contains(execEnv)) {
+            ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
+            HostValidatorImpl validator = new HostValidatorImpl(tcm);
+            boolean ok = validator.validate(execEnv, /*null, false,*/ new PrintWriter(System.out));
+            if (ok) {
+                hosts.add(execEnv);
+            }
+            assertTrue("Error setting up host " + execEnv, ok);
+            tcm.applyChanges();
+        }
     }
 
-    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
-    }
+//    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
+//    }
 
-    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+//    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
+//    }
+
+    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
+
+        assertNotSame("buildProject should never be called with \"rebuild\" command.", ActionProvider.COMMAND_REBUILD, command);
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider;
-        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
 
+        CndTestIOProvider.Listener listener = new CndTestIOProvider.Listener() {
+
+            @Override
             public void linePrinted(String line) {
                 if (line != null) {
-                    if (line.startsWith(successLine)) {
+                    if (isSuccessLine(line)) {
                         build_rc.set(0);
                         done.countDown();
                     } else if (isFailureLine(line)) {
                         int rc = -1;
-                        if (line.startsWith(failureLine)) {
-                            // message is:
-                            // BUILD FAILED (exit value 1, total time: 326ms)
-                            String[] tokens = line.split("[ ,]");
-                            if (tokens.length > 4) {
-                                try {
-                                    rc = Integer.parseInt(tokens[4]);
-                                } catch (NumberFormatException nfe) {
-                                    nfe.printStackTrace();
-                                }
+                        Matcher m = EXIT_VALUE_PATTERN.matcher(line);
+                        if (m.find()) {
+                            try {
+                                rc = Integer.parseInt(m.group(1));
+                            } catch (NumberFormatException nfe) {
+                                nfe.printStackTrace();
                             }
                         }
                         build_rc.set(rc);
@@ -197,40 +242,47 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
             }
 
-            private boolean isFailureLine(String line) {
-                if (line.startsWith(failureLine)) {
-                    return true;
-                }
-                for (int i = 0; i < errorLines.length; i++) {
-                    if (line.startsWith(errorLines[i])) {
+            private boolean isSuccessLine(String line) {
+                for (String successLine : SUCCESS_PREFIXES) {
+                    if (line.trim().startsWith(successLine)) {
                         return true;
                     }
                 }
                 return false;
             }
-        });
-        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-        makeActionProvider.invokeAction(command, null);
-        if (timeout <= 0) {
-            done.await();
-        } else {
-            if (!done.await(timeout, unit)) {
-                assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
+
+            private boolean isFailureLine(String line) {
+                for (String errorLine : ERROR_PREFIXES) {
+                    if (line.trim().startsWith(errorLine)) {
+                        return true;
+                    }
+                }
+                return false;
             }
+        };
+        try {
+            ((CndTestIOProvider) iop).addListener(listener);
+            MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+            makeActionProvider.invokeAction(command, null);
+            if (timeout <= 0) {
+                done.await();
+            } else {
+                    if (!done.await(timeout, unit)) {
+                        assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
+                    }
+                }
+            //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
+            RemoteSyncTestSupport.waitWorkerFinished(20);
+            assertTrue("build failed: on " + makeProject.getDevelopmentHostExecutionEnvironment()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+        } finally {
+            ((CndTestIOProvider) iop).removeListener(listener);
         }
-        assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
-    protected void removeRemoteHome() {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
-    }
-
-    protected void removeRemoteHomeSubdir(String subdir) {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/" + subdir;
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
+    protected void clearRemoteSyncRoot() {
+        String dirToRemove = RemotePathMap.getRemoteSyncRoot(getTestExecutionEnvironment());
+        boolean isOk = ProcessUtils.execute(getTestExecutionEnvironment(), "sh", "-c", "rm -rf " + dirToRemove + "/*").isOK();
+        assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 
     protected void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
@@ -242,43 +294,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         String value = rcFile.get(section, varName, defaultValue);
         if (value != null && value.length() > 0) {
             System.setProperty(varName, value);
-        }
-    }
-
-    public static class FakeCompilerSet extends CompilerSet {
-
-        private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-
-        public FakeCompilerSet() {
-            super(PlatformTypes.getDefaultPlatform());
-        }
-
-        @Override
-        public List<Tool> getTools() {
-            return tools;
-        }
-
-        private static class FakeTool extends BasicCompiler {
-
-            private List<String> fakeIncludes = new ArrayList<String>();
-
-            private FakeTool() {
-                super(ExecutionEnvironmentFactory.fromUniqueID("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
-                fakeIncludes.add("/usr/include"); //NOI18N
-                fakeIncludes.add("/usr/local/include"); //NOI18N
-                fakeIncludes.add("/usr/sfw/include"); //NOI18N
-                //fakeIncludes.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-            }
-
-            @Override
-            public List<String> getSystemIncludeDirectories() {
-                return fakeIncludes;
-            }
-
-            @Override
-            public CompilerDescriptor getDescriptor() {
-                return null;
-            }
         }
     }
 }

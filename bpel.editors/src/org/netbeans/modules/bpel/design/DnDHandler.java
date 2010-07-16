@@ -39,16 +39,22 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.openide.filesystems.FileObject;
+import org.openide.windows.TopComponent;
 import org.netbeans.modules.bpel.design.decoration.components.LinkToolButton;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.selection.DnDTool;
 import org.netbeans.modules.bpel.design.selection.FlowlinkTool;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
+import org.netbeans.modules.xml.reference.ReferenceChild;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.editors.api.dnd.DnDFactory;
+import org.netbeans.modules.bpel.editors.api.dnd.DnDCallback;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
@@ -66,20 +72,17 @@ import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Alexey
  */
 public class DnDHandler implements DragSourceListener, DragGestureListener, DropTargetListener {
 
     private DesignView designView;
     private DragSource dragSource;
-
-    
     private String status;
-    
     private MessageFlowDataFlavor flowDataFlavor = new MessageFlowDataFlavor();
     private BpelDataFlavor bpelDataFlavor = new BpelDataFlavor();
     private List<DiagramView> views;
@@ -92,18 +95,13 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
         views.add(designView.getConsumersView());
         views.add(designView.getProvidersView());
 
-
-
         dragSource = DragSource.getDefaultDragSource();// new DragSource();
-
-
 
         for (DiagramView view : views) {
             dragSource.createDefaultDragGestureRecognizer(view, DnDConstants.ACTION_MOVE, this);
             new DropTarget(view, DnDConstants.ACTION_MOVE, (DropTargetListener) this, true);
 
         }
-
     }
 
     public DesignView getDesignView() {
@@ -111,11 +109,10 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     public void dragEnter(DragSourceDragEvent dsde) {
-//      System.out.println("DragSource.dragEnter");
+//System.out.println("DragSource.dragEnter");
     }
 
     public void dragOver(DragSourceDragEvent dsde) {
-
         dsde.getDragSourceContext().setCursor(dragSource.DefaultMoveDrop);
     }
 
@@ -128,8 +125,8 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
 
     public void dragDropEnd(DragSourceDropEvent dsde) {
         clear();
-
-//      System.out.println("DragSource.dragDropEnd");
+//System.out.println();
+//System.out.println("DragSource.dragDropEnd");
         if (dsde.getDropAction() == DnDConstants.ACTION_MOVE) {
 //            BpelEntity be = getBpelEntity(dsde.getDragSourceContext().getTransferable());
 //            BpelContainer parent = (BpelContainer)be.getParent();
@@ -146,8 +143,8 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
     
     public void clear() {
-
         setStatus(null);
+
         for (DiagramView view : views) {
             view.getPlaceholderManager().clear();
         }
@@ -155,8 +152,7 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     public void dragGestureRecognized(DragGestureEvent dge) {
-//      System.out.println("DragSource.dragGestureRecognized");
-
+//System.out.println("DragSource.dragGestureRecognized");
         Object src = dge.getTriggerEvent().getSource();
 
         if (src instanceof LinkToolButton) {
@@ -170,10 +166,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
 
                 DiagramView view = (DiagramView) dge.getComponent();
                 Pattern clicked = view.findPattern(dge.getDragOrigin());
-
-
-
-
                 Pattern selected = designView.getSelectionModel().getSelectedPattern();
 
                 if (clicked == null) {
@@ -198,10 +190,10 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     public void dragEnter(DropTargetDragEvent dtde) {
-//      System.out.println("DropTarget.DragEnter, flavor[0] = " + dtde.getTransferable().getTransferDataFlavors()[0].getDefaultRepresentationClass());
-
+//System.out.println();
+//System.out.println("DropTarget.dragEnter");
+//System.out.println();
         Transferable tr = dtde.getTransferable();
-
 
         if (tr.isDataFlavorSupported(flowDataFlavor)) {
             FPoint p;
@@ -210,16 +202,15 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
                 getFlowLinkTool().init(btn);
                 
                 if (designView.getModel().isReadOnly()) {
-                   setStatus(NbBundle.getMessage(getClass(),
-                            "LBL_ReadOnly")); //NOI18N
+                    setStatus(NbBundle.getMessage(getClass(), "LBL_ReadOnly")); //NOI18N
+//System.out.println("  REG: 1");
                     dtde.rejectDrag();
                     return;
                 }
 
                 if (!designView.getModel().getFilters().showPartnerlinks()) {
-                    setStatus(NbBundle.getMessage(getClass(),
-                            "LBL_CanNotCreateMessageFlow")); //NOI18N
-                            
+                    setStatus(NbBundle.getMessage(getClass(), "LBL_CanNotCreateMessageFlow")); //NOI18N
+//System.out.println("  REG: 2");
                     dtde.rejectDrag();
                 }
             } catch (UnsupportedFlavorException ex) {
@@ -231,79 +222,61 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
             BpelEntity entity = getBpelEntity(tr);
 
             if (entity == null) {
+//System.out.println("  REG: 3");
                 dtde.rejectDrag();
                 return;
             }
-
             if (entity.getModel() != getDesignView().getBPELModel()) {
+//System.out.println("  REG: 4");
                 dtde.rejectDrag();
                 return;
             }
-
             if (designView.getModel().isReadOnly()) {
-                setStatus(NbBundle.getMessage(getClass(),
-                            "LBL_ReadOnly")); //NOI18N
+                setStatus(NbBundle.getMessage(getClass(), "LBL_ReadOnly")); //NOI18N
+//System.out.println("  REG: 5");
                 dtde.rejectDrag();
                 return;
             }
-
-
             if (!designView.getModel().getFilters().showImplicitSequences() && (entity instanceof Sequence)) {
-                setStatus(NbBundle.getMessage(getClass(),
-                        "LBL_CanNotAddSequence")); // NOI18N
+                setStatus(NbBundle.getMessage(getClass(), "LBL_CanNotAddSequence")); // NOI18N
+//System.out.println("  REG: 6");
                 dtde.rejectDrag();
             } else if (!designView.getModel().getFilters().showPartnerlinks() && (entity instanceof PartnerLink)) {
-                setStatus(NbBundle.getMessage(getClass(),
-                        "LBL_CanNotAddPartnerLink")); // NOI18N
+                setStatus(NbBundle.getMessage(getClass(), "LBL_CanNotAddPartnerLink")); // NOI18N
+//System.out.println("  REG: 7");
                 dtde.rejectDrag();
             } else {
                 Pattern pattern = designView.getModel().getPattern(entity);
 
                 if (pattern == null) {
                     pattern = designView.getModel().createPattern(entity);
-                //designView.getLayoutManager().layout(pattern, 0, 0);
-
                 }
-
-
+//System.out.println("PATTERN: " + pattern.getClass().getName());
                 for (DiagramView view : views) {
                     view.getPlaceholderManager().init(pattern);
                 }
-                
-
                 dtde.acceptDrag(DnDConstants.ACTION_MOVE);
             }
         }
     }
 
     public void dragOver(DropTargetDragEvent dtde) {
-//      System.out.println("DropTarget.DragOver");
+//System.out.println();
+//System.out.println("DropTarget.dragOver");
         Transferable tr = dtde.getTransferable();
-
-
-
-
-
         DnDTool tool = null;
 
         if (tr.isDataFlavorSupported(flowDataFlavor)) {
             tool = getFlowLinkTool();
             tool.move(null);
         } else {
-
                 DiagramView view = (DiagramView) dtde.getDropTargetContext().getComponent();
                 if (view != null) {
                     FPoint mp = view.convertScreenToDiagram(dtde.getLocation());
-
                     tool = view.getPlaceholderManager();
-
                     tool.move(mp);
                 }
-
-
         }
-
-
         if (tool != null && tool.isValidLocation()) {
             dtde.acceptDrag(DnDConstants.ACTION_MOVE);
         } else {
@@ -363,51 +336,129 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     private BpelEntity getBpelEntity(Transferable t) {
+//System.out.println();
         BpelEntity entity = null;
+        Collection factories = Lookup.getDefault().lookupAll(DnDFactory.class);
+      
+        for (Object factory : factories){
+            BpelEntity e = ((DnDFactory) factory).getEntity(designView.getBPELModel(), t);
 
+            if (e != null) {
+                return e;
+            }
+        }
         try {
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
                 Class repClass = flavor.getRepresentationClass();
                 Object data = t.getTransferData(flavor);
+
+//System.out.println("getBpelEntity: " + repClass.getName());
                 if (BpelNode.class.isAssignableFrom(repClass)) {
                     //DnD from Diagram or Nav
+//System.out.println("  1");
                     Object ref = ((BpelNode) data).getReference();
+
                     if (ref instanceof BpelEntity) {
                         entity = (BpelEntity) ref;
                     }
-
-                } else if (Node.class.isAssignableFrom(repClass)) {
-                    //DnD from palette or ProjectTree
-                    entity = getPaletteItem((Node) data);
-                } else if (WebServiceReference.class.isAssignableFrom(repClass)) {
+                }
+                else if (Node.class.isAssignableFrom(repClass)) {
+//System.out.println("  2");
+                    // DnD from palette or ProjectTree
+                    Node node = (Node) data;
+                    entity = getPaletteItem(node);
+                    String name = node.getName();
+//System.out.println("Node: " + node);
+//System.out.println("name: " + name);
+//System.out.println("    : " + node.getClass().getName());
+                    
+                    if (name != null && name.toLowerCase().endsWith(".xsd") && node instanceof ReferenceChild) {
+                        FileObject file = ((ReferenceChild) node).getFileObject();
+//System.out.println("here: "  + node.getLookup().lookup(FileObject.class));
+//System.out.println("  fo: " + file);
+                        entity = new ImportRegistrationHelper(designView.getBPELModel()).createImport(file);
+                    }
+                    // Referenced Resources DnD are represented by node which has no related DataObject 
+                    else if (entity == null && node.getLookup().lookup(DataObject.class) == null) {
+                        // it can be wsdl from Referenced Resources
+                        entity = designView.getBPELModel().getBuilder().createPartnerLink();
+                        entity.setCookie(DnDHandler.class, data);
+                        entity.setCookie(FileObject.class, getSelectedFileObject()); 
+                    }
+                }
+                else if (WebServiceReference.class.isAssignableFrom(repClass)) {
+//System.out.println("  3");
+//System.out.println("WebServiceReference: " + data);
+                    // WS node from EJB project, referenced by URL
                     entity = designView.getBPELModel().getBuilder().createPartnerLink();
                     entity.setCookie(DnDHandler.class, data);
-
-                } else if (DataObject.class.isAssignableFrom(repClass)) {
+                    entity.setCookie(FileObject.class, getSelectedFileObject()); 
+                }
+                else if (DataObject.class.isAssignableFrom(repClass)) {
+//System.out.println("  4");
                     DataObject dataObj = (DataObject) data;
                     String ext = dataObj.getPrimaryFile().getExt();
+//System.out.println(" ext: " + ext);
                     if (ext.compareToIgnoreCase("wsdl") == 0) { // NOI18N
-                        //for WSDl first just try to create PL based on PLTS found in that WSDL
+                        // for WSDl first just try to create PL based on PLTS found in that WSDL
                         entity = designView.getBPELModel().getBuilder().createPartnerLink();
                         entity.setCookie(DnDHandler.class, dataObj.getPrimaryFile());
-                    } else if (ext.compareToIgnoreCase("xsd") == 0) { // NOI18N
-                        //For schemas just add imprt
+                    } 
+                    else if (ext.compareToIgnoreCase("xsd") == 0) { // NOI18N
+//System.out.println("  xsd");
+                        // for schema just add imprt
                         entity = new ImportRegistrationHelper(designView.getBPELModel()).createImport(dataObj.getPrimaryFile());
+//System.out.println("  entity: " + entity);
                     }
                 }
                 if (entity != null) {
                     break;
                 }
             }
-
-        } catch (UnsupportedFlavorException ufe) {
-        } catch (IOException ioe) {
         }
+        catch (UnsupportedFlavorException ufe) {}
+        catch (IOException ioe) {}
+
         return entity;
     }
 
-    class MessageFlowDataFlavor extends DataFlavor {
+    public static FileObject getSelectedFileObject() {
+      Node node = getSelectedNode();
 
+      if (node == null) {
+        return null;
+      }
+      return node.getLookup().lookup(FileObject.class);
+    }
+
+    public static Node getSelectedNode() {
+      Node [] nodes = getSelectedNodes();
+
+      if (nodes == null) {
+        return null;
+      }
+      return nodes [0];
+    }
+
+    public static Node [] getSelectedNodes() {
+      TopComponent top = getActiveTopComponent();
+
+      if (top == null) {
+        return null;
+      }
+      Node [] nodes = top.getActivatedNodes();
+
+      if (nodes == null || nodes.length == 0) {
+        return null;
+      }
+      return nodes;
+    }
+
+    public static TopComponent getActiveTopComponent() {
+      return TopComponent.getRegistry().getActivated();
+    }
+
+    class MessageFlowDataFlavor extends DataFlavor {
         private static final long serialVersionUID = 1;
 
         public MessageFlowDataFlavor() {
@@ -416,7 +467,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     class MessageFlowTransferable implements Transferable {
-
         private LinkToolButton button;
 
         public MessageFlowTransferable(LinkToolButton button) {
@@ -440,7 +490,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     class BpelDataFlavor extends DataFlavor {
-
         private static final long serialVersionUID = 1;
 
         public BpelDataFlavor() {
@@ -496,10 +545,9 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
         } else if (item.equals("invoke")) { // NOI18N
             return builder.createInvoke();
         } else if (item.equals("receive")) { // NOI18N
-
             Receive rcv = builder.createReceive();
-            //indicator that object is being DnD from pallete. 
-            //Diagram may use this value to set CreateInstance attribute
+            // indicator that object is being DnD from pallete. 
+            // Diagram may use this value to set CreateInstance attribute
             rcv.setCookie(DnDHandler.class, DnDHandler.class);
             return rcv;
         } else if (item.equals("pick")) { // NOI18N
@@ -508,6 +556,8 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
             return p;
         } else if (item.equals("assign")) { // NOI18N
             return builder.createAssign();
+        } else if (item.equals("javascript")) { // NOI18N
+            return builder.createJavaScript();
         } else if (item.equals("sequence")) { // NOI18N
             return builder.createSequence();
         } else if (item.equals("flow")) { // NOI18N
@@ -556,6 +606,8 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
             return builder.createPartnerLink();
         } else if (item.equals("exit")) { // NOI18N
             return builder.createExit();
+        } else if (item.equals("validate")) { // NOI18N
+            return builder.createValidate();
         } else {
             //System.out.println("Warning: can't recognize dragged item: " + item); // NOI18N
         }

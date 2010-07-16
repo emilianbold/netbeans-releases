@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -67,7 +71,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-//import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.openide.ErrorManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.soa.ui.SoaUtil;
@@ -86,9 +89,8 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wizard) {
         Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        //sourceGroups = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
         sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-
+        
         if(sourceGroups.length == 0 ) {  
             sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
@@ -118,13 +120,7 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     public Set instantiate(TemplateWizard aWiz) throws IOException {
       NewBpelFilePanel panel = (NewBpelFilePanel)folderPanel;
       org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
-      DataObject data = createBpelFile(Templates.getTargetName(wiz), dir, panel.getNS());
-
-      if (data == null) {
-        return Collections.emptySet();
-      }
-      SoaUtil.fixEncoding(data, dir);
-      
+      DataObject data = createBpelProcess(Templates.getTargetName(wiz), Templates.getTemplate(wiz), dir, panel.getNS());
       return Collections.singleton(data);
     }
 
@@ -152,11 +148,8 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
             }
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
-                        Integer.valueOf(i));
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -194,52 +187,48 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    private DataObject createBpelFile(String bpelFileName, FileObject srcFolder, 
-            String namespace) throws IOException {
-        
-        DataFolder df = DataFolder.findFolder( srcFolder );
-        FileObject template = Templates.getTemplate( wiz );
+    // # 92015
+    public static DataObject createBpelProcess(FileObject srcFolder, String projectName, String processName) throws IOException {
+        return createBpelProcess(processName, findTemplate(), srcFolder, BpelOptionsPanel.generateNamespace(projectName, processName));
+    }
 
-        boolean importSchemas=false;
-        
-        DataObject dTemplate = DataObject.find( template );
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName(wiz));
-        
-        initialiseNames(dobj.getPrimaryFile(), bpelFileName, namespace, "url1"); // NOI18N
-        
-        return dobj;
+    private static DataObject createBpelProcess(String processName, FileObject template, FileObject srcFolder, String namespace) throws IOException {
+//System.out.println();
+        DataFolder src = DataFolder.findFolder(srcFolder);
+//System.out.println("       src: " + src);
+        DataObject dTemplate = DataObject.find(template);
+        DataObject data = dTemplate.createFromTemplate(src, processName);
+//System.out.println("  bpelName: " + processName);
+        initNames(data.getPrimaryFile(), processName, namespace);
+        SoaUtil.fixEncoding(data, srcFolder);
+        return data;
     }
     
-    /**
-     *   Basically acts like a xslt tranformer by
-     *   replacing _PROCNAME_ in fileObject contents with 'name'.
-     *   replaceing _NS_ in fileObject contents with 'namespace'
-     */
-    private void initialiseNames(FileObject fileObject, String name,
-            String namespace, String url) {
+    private static FileObject findTemplate() {
+        return FileUtil.getConfigFile("Templates/SOA_BPEL/Process.bpel"); // NOI18N
+    }
+
+    private static void initNames(FileObject fileObject, String name, String namespace) {
         String line;
         StringBuffer buffer = new StringBuffer();
         String separator = System.getProperty("line.separator"); // NOI18N
         
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    fileObject.getInputStream(), "UTF-8")); // NOI18N
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileObject.getInputStream(), "UTF-8")); // NOI18N
             
             try {
                 while((line = reader.readLine()) != null) {
-                    line = line.replace("_PROCNAME_", name); // NOI18N
+                    line = line.replace("_PROCESS_NAME_", name); // NOI18N
                     line = line.replace("_NS_", namespace); // NOI18N
-                    line = line.replace("_URL_", url); // NOI18N
                     buffer.append(line);
                     buffer.append(separator);
                 }
             } finally {
                 reader.close();
             }
-
             Writer writer = new BufferedWriter(new OutputStreamWriter(
                     fileObject.getOutputStream(), 
-                    FileEncodingQuery.getDefaultEncoding())); //NOI18N
+                    FileEncodingQuery.getDefaultEncoding()));
             try {
                 writer.write(buffer.toString());
             } finally {
@@ -251,8 +240,8 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     }
     
     private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;
     private WizardDescriptor.Panel folderPanel;
     private transient SourceGroup[] sourceGroups;
+    private transient WizardDescriptor.Panel[] panels;
 }

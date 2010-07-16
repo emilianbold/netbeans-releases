@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,7 +128,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
-    private RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
+    private static RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
     private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
 
 
@@ -159,7 +162,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 .add(evaluateButton))
         );
         
-        setupContext();
+        //setupContext();
         editorScrollPane.setViewportView(codePane);
         codePane.addKeyListener(this);
         dbgManagerListener = new DbgManagerListener (this);
@@ -168,6 +171,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 dbgManagerListener
         );
         checkDebuggerState();
+    }
+
+    public static RequestProcessor getRequestProcessor() {
+        return rp;
     }
 
     public void pasteExpression(String expr) {
@@ -239,25 +246,27 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private void setupContextLazily() {
-        final String text = codePane.getText();
+        final String text = codeText;
         final Document[] documentPtr = new Document[] { null };
-        ActionListener contextUpdated = new ActionListener() {
+
+        class ContextUpdated implements ActionListener, Runnable {
             public void actionPerformed(ActionEvent e) {
+                run();
+            }
+            public void run() {
                 if (codePane.getDocument() != documentPtr[0]) {
                     codePane.getDocument().addDocumentListener(CodeEvaluator.this);
                     if (text != null) {
                         codePane.setText(text);
                     }
                 }
+                documentPtr[0] = codePane.getDocument();
             }
-        };
-        WatchPanel.setupContext(codePane, contextUpdated);
-        codePane.getDocument().addDocumentListener(this);
-        if (text != null) {
-            codePane.setText(text);
-            codeText = text;
         }
-        documentPtr[0] = codePane.getDocument();
+
+        ContextUpdated contextUpdated = new ContextUpdated();
+        WatchPanel.setupContext(codePane, contextUpdated);
+        SwingUtilities.invokeLater(contextUpdated);
     }
 
     private SwitcherTableItem[] createSwitcherItems() {
@@ -334,7 +343,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void addResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -347,7 +356,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void removeResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -360,7 +369,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private static void fireResultChange() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -381,6 +390,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     debugger = de.lookupFirst(null, JPDADebugger.class);
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
+                if (debugger != lastDebugger) {
+                    setupContext();
+                }
                 if (lastDebugger != null && debugger != lastDebugger) {
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
@@ -390,6 +402,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 if (debugger != null) {
                     debuggerRef = new WeakReference(debugger);
                     debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CLASSES_FIXED, CodeEvaluator.this);
                     debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                 } else {
                     history.clear();
@@ -580,18 +593,20 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             history.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
                     lastEvaluationRecord.value, lastEvaluationRecord.toString);
         }
-        String type = result.getType();
-        String value = result.getValue();
-        String toString = ""; // NOI18N
-        if (result instanceof ObjectVariable) {
-            try {
-                toString = ((ObjectVariable) result).getToStringValue ();
-            } catch (InvalidExpressionException ex) {
+        if (result != null) { // 'result' can be null if debugger finishes
+            String type = result.getType();
+            String value = result.getValue();
+            String toString = ""; // NOI18N
+            if (result instanceof ObjectVariable) {
+                try {
+                    toString = ((ObjectVariable) result).getToStringValue ();
+                } catch (InvalidExpressionException ex) {
+                }
+            } else {
+                toString = value;
             }
-        } else {
-            toString = value;
+            lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
         }
-        lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -664,7 +679,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // PropertyChangeListener on current thread .................................
 
     public void propertyChange(PropertyChangeEvent event) {
-        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(event.getPropertyName())) {
+        String propertyName = event.getPropertyName();
+        if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propertyName) ||
+                JPDADebugger.PROP_CLASSES_FIXED.equals(propertyName)) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     synchronized (this) {
@@ -676,7 +693,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                 }
             });
-        } else if (JPDADebugger.PROP_STATE.equals(event.getPropertyName())) {
+        } else if (JPDADebugger.PROP_STATE.equals(propertyName)) {
             synchronized (this) {
                 JPDADebugger debugger = debuggerRef.get();
                 if (debugger != null && debugger.getState() != JPDADebugger.STATE_STOPPED) {

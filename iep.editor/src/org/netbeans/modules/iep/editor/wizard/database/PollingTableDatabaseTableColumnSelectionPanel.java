@@ -9,6 +9,8 @@ package org.netbeans.modules.iep.editor.wizard.database;
 import java.awt.BorderLayout;
 import java.util.List;
 
+import javax.swing.JTree;
+
 
 /**
  *
@@ -25,6 +27,17 @@ public class PollingTableDatabaseTableColumnSelectionPanel extends javax.swing.J
         tableColumnSelectionPanelContainer.setLayout(new BorderLayout());
         tableColumnSelectionPanelContainer.add(mTableColumnSelectionPanel, BorderLayout.CENTER);
         
+        String whereClauseLabel = org.openide.util.NbBundle.getMessage(PollingTableDatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel2.text");
+        org.openide.awt.Mnemonics.setLocalizedText(this.jLabel2, whereClauseLabel);
+        
+    }
+    
+    public JTree getTableColumnsTree() {
+        return this.mTableColumnSelectionPanel.getTableColumnsTree();
+    }
+    
+    public DatabaseTableColumnSelectionPanel getDatabaseTableColumnSelectionPanel() {
+        return this.mTableColumnSelectionPanel;
     }
     
     /** This method is called from within the constructor to
@@ -42,11 +55,14 @@ public class PollingTableDatabaseTableColumnSelectionPanel extends javax.swing.J
         jTextArea1 = new javax.swing.JTextArea();
         tableColumnSelectionPanelContainer = new javax.swing.JPanel();
 
+        jLabel2.setLabelFor(jTextArea1);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(PollingTableDatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel2.text")); // NOI18N
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
+        jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PollingTableDatabaseTableColumnSelectionPanel.class, "PollingTableDatabaseTableColumnSelectionPanel.jTextArea1.AccessibleContext.accessibleName")); // NOI18N
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PollingTableDatabaseTableColumnSelectionPanel.class, "PollingTableDatabaseTableColumnSelectionPanel.jTextArea1.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout whereClausePanelLayout = new org.jdesktop.layout.GroupLayout(whereClausePanel);
         whereClausePanel.setLayout(whereClausePanelLayout);

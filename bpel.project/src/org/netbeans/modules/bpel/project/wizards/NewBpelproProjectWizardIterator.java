@@ -20,23 +20,23 @@ package org.netbeans.modules.bpel.project.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.project.BpelproProjectGenerator;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 
 /**
- * Wizard to create a new Web project.
- * @author Jesse Glick
+ * Wizard to create a new BPEL project.
  */
-public class NewBpelproProjectWizardIterator 
-        extends NewIcanproProjectWizardIterator 
-        implements org.netbeans.modules.bpel.project.ProjectConstants {
+public class NewBpelproProjectWizardIterator extends NewIcanproProjectWizardIterator implements org.netbeans.modules.bpel.project.ProjectConstants {
     
     private static final long serialVersionUID = 1L;
+    private FileObject myProcess;
     
     @Override
     protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {
-        BpelproProjectGenerator.createProject(dirF, name);
+        myProcess = BpelproProjectGenerator.createProject(dirF, name);
     }
 
     @Override
@@ -47,5 +47,12 @@ public class NewBpelproProjectWizardIterator
     @Override
     protected String getDefaultName() {
         return NbBundle.getMessage(NewBpelproProjectWizardIterator.class, "LBL_DefaultProjectName"); //NOI18N
+    }
+
+    @Override
+    public Set instantiate() throws IOException {
+        Set set = super.instantiate();
+        set.add(myProcess);
+        return set;
     }
 }

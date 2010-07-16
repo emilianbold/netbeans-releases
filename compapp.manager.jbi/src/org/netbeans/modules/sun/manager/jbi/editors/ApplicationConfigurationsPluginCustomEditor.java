@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,6 +61,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.ApplicationConfigurationsPropertySupport;
 import org.netbeans.modules.xml.wsdl.bindingsupport.appconfig.spi.ApplicationConfigurationEditorProvider;
 import org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ApplicationConfigurationEditorProviderFactory;
 import org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ui.ApplicationConfigurationUtils;
@@ -86,8 +90,8 @@ public class ApplicationConfigurationsPluginCustomEditor extends SimpleTabularDa
     @Override
     protected void initColumnNames() {
         columnNames = new String[2];
-        columnNames[0] = "configuraitonName";
-        columnNames[1] = "applicationConfiguraiton";
+        columnNames[0] = ApplicationConfigurationsPropertySupport.APPLICATION_CONFIGURATION_NAME;
+        columnNames[1] = ApplicationConfigurationsPropertySupport.APPLICATION_CONFIGURATION;
         
         indexColumnCount = 1;
     }
@@ -153,7 +157,7 @@ public class ApplicationConfigurationsPluginCustomEditor extends SimpleTabularDa
             for (Object rowDataObj : tabularData.values()) {
                 CompositeData rowComposite = (CompositeData) rowDataObj;
                 Vector<Object> row = new Vector<Object>();
-                row.add(rowComposite.get("configurationName"));
+                row.add(rowComposite.get(ApplicationConfigurationsPropertySupport.APPLICATION_CONFIGURATION_NAME));
                 row.add(rowComposite);
                 dataVector.add(row);
             }
@@ -191,7 +195,7 @@ public class ApplicationConfigurationsPluginCustomEditor extends SimpleTabularDa
             for (Object key : compositeType.keySet()) {
                 map.put((String) key, rowComposite.get((String) key));
             }            
-            map.put("configurationName", configName);
+            map.put(ApplicationConfigurationsPropertySupport.APPLICATION_CONFIGURATION_NAME, configName);
 
             CompositeData myRowComposite =
                     new CompositeDataSupport(compositeType, map);

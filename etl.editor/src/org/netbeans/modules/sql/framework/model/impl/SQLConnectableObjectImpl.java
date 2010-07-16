@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,7 @@ import org.netbeans.modules.sql.framework.model.SQLInputObject;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import net.java.hulp.i18n.Logger;
-import com.sun.sql.framework.exception.BaseException;
+import com.sun.etl.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 
 
@@ -82,7 +85,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
     }
 
     /**
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      * @see SQLConnectableObject#addInput
      */
     public void addInput(String argName, SQLObject newInput) throws BaseException {
@@ -166,7 +169,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
      * array list. Override this method in subclasses.
      * 
      * @return ArrayList of SQLTypeObjects
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      * @see SQLConnectableObject#getPossibleTypes
      */
     public ArrayList getPossibleTypes() throws BaseException {
@@ -253,7 +256,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
 
     /**
      * @param sqlObj 
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.etl.exception.BaseException 
      * @see SQLConnectableObject#removeInputByArgName
      */
     public SQLObject removeInputByArgName(String argName, SQLObject sqlObj) throws BaseException {

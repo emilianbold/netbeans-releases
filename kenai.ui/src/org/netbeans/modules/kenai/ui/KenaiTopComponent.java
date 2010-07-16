@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,25 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -54,12 +70,13 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  * @author Jan Becicka
  */
-final class KenaiTopComponent extends TopComponent {
+public final class KenaiTopComponent extends TopComponent {
 
     private static KenaiTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; // NOI18N
     private static final String PREFERRED_ID = "KenaiTopComponent"; // NOI18N
+    private JComboBox combo;
 
     private JComponent dashboardComponent;
 
@@ -126,6 +143,84 @@ final class KenaiTopComponent extends TopComponent {
         removeAll();
         dashboardComponent = DashboardImpl.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
+        add(getKenaiSwitcher(), BorderLayout.NORTH);
+    }
+
+    Component getKenaiSwitcher() {
+        combo = new KenaiCombo(false);
+        Object k = Utilities.getLastKenai();
+        if (k!=null) {
+            combo.setSelectedItem(k);
+        }
+        combo.addActionListener(new ActionListener() {
+
+            public void actionPerformed(final ActionEvent e) {
+                if (combo.getSelectedItem() instanceof Kenai) {
+                    DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                } else if (combo.getSelectedItem() instanceof String) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AddInstanceAction().actionPerformed(e);
+                            DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                        }
+                    });
+                } else {
+                    DashboardImpl.getInstance().setKenai(null);
+                }
+            }
+        });
+
+        JLabel serverLabel = new JLabel();
+        final JPanel panel = new JPanel();
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        serverLabel = new javax.swing.JLabel();
+        JSeparator jSeparator = new javax.swing.JSeparator();
+
+        panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 0, 3));
+        panel.setLayout(new java.awt.GridBagLayout());
+
+        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(KenaiTopComponent.class, "LBL_Server"));
+        serverLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        panel.add(serverLabel, new java.awt.GridBagConstraints());
+
+        combo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(combo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panel.add(jSeparator, gridBagConstraints);
+
+        panel.setBackground(dashboardComponent.getBackground());
+        combo.setOpaque(false);
+
+        combo.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                panel.setVisible(true);
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                panel.setVisible(false);
+            }
+        });
+
+        return panel;
+    }
+
+    public void setSelectedKenai(Kenai kenai) {
+        if (combo!=null) {
+            combo.setSelectedItem(kenai);
+        }
     }
 
     @Override
@@ -138,7 +233,8 @@ final class KenaiTopComponent extends TopComponent {
     @Override
     public void componentActivated() {
         super.componentActivated();
-        if (Kenai.getDefault().getPasswordAuthentication() != null
+        Kenai pref = Utilities.getPreferredKenai();
+        if (pref!=null && pref.getPasswordAuthentication() != null
                 || DashboardImpl.getInstance().getOpenProjects().length > 0) {
             UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
         }

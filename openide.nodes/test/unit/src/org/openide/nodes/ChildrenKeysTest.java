@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -86,10 +89,6 @@ public class ChildrenKeysTest extends NbTestCase {
         return false;
     }
 
-//    public static ChildrenKeysTest suite() {
-//        return new ChildrenKeysTest("testEventsCausedBySetChildren");
-//    }
-
     @Override
     protected Level logLevel() {
         return Level.FINEST;
@@ -97,7 +96,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 400000;
+        return 35000;
     }
 
     @Override
@@ -2224,12 +2223,18 @@ public class ChildrenKeysTest extends NbTestCase {
             }
 
             @Override
-            protected Node[] createNodes(Object key) {
+            protected Node[] createNodes(final Object key) {
                 if (doThrow) {
                     doThrow = false;
                     throw new IllegalStateException("something went wrong");
                 }
-                return super.createNodes(key);
+                AbstractNode an = new AbstractNode(Children.LEAF) {
+                    @Override
+                    public String getName() {
+                        return key.toString();
+                    }
+                };
+                return new Node[] { an };
             }
         }
 
@@ -2245,8 +2250,9 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a2", nodes[0].getName());
 
         ch.keys("c1");
-        nodes = root.getChildren().getNodes();
-        assertEquals("c1", nodes[0].getName());
+        Node[] arr = root.getChildren().getNodes();
+        assertEquals("One node now: " + Arrays.toString(arr) + "\nwas: " + Arrays.toString(nodes), 1, arr.length);
+        assertEquals("c1", arr[0].getName());
     }
 
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
@@ -2335,7 +2341,8 @@ public class ChildrenKeysTest extends NbTestCase {
         
         //fail("Ok");
     }
-    
+
+    @RandomlyFails // seems to cause problems for following testSetChildrenDoNotCallAddNotify, at least in NB-Core-Build
     public void testIssue148911()  {
         final CountDownLatch block1 = new CountDownLatch(1);
         final CountDownLatch block2 = new CountDownLatch(1);
@@ -2382,7 +2389,7 @@ public class ChildrenKeysTest extends NbTestCase {
         thread1.start();
         block1.countDown();
         try {
-            thread1.join(10000);
+            thread1.join(40000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -65,9 +68,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -87,7 +92,6 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -96,6 +100,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
@@ -105,6 +110,10 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
@@ -143,14 +152,15 @@ public class JsfElExpression extends ELExpression {
     private static final boolean NESTING_AWARE = false;
 
     private WebModule webModule;
-    
+    MetadataModel<WebBeansModel> webBeansModel;
     protected String bundleName;
 
-    public JsfElExpression(WebModule wm, Document doc){
-        super(doc);
+    public JsfElExpression(WebModule wm, Document doc, int offset) throws BadLocationException{
+        super(doc, offset);
         this.webModule = wm;
+	this.webBeansModel = JsfSupport.findFor(doc).getWebBeansModel();
     }
-    
+
     @Override
     protected int findContext(final String expr) {
         int dotIndex = expr.indexOf('.');
@@ -171,7 +181,16 @@ public class JsfElExpression extends ELExpression {
                     return EL_JSF_BEAN;
                 }
             }
-            
+
+	    //go through web beans
+	    List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(webBeansModel);
+	    for (WebBean bean : namedElements) {
+		String beanName = bean.getName();
+		if (first.equals(beanName)) {
+                    return EL_JSF_BEAN;
+                }
+	    }
+
             // look trhough all registered resource bundles
             List <ResourceBundle> bundles = getJSFResourceBundles(webModule);
             for (ResourceBundle bundle : bundles) {
@@ -186,10 +205,11 @@ public class JsfElExpression extends ELExpression {
             final int offset = getContextOffset();
             final String[] _value = new String[1];
             try {
+                //XXX the parsing should run on the ELExpression's snapshot, not the live document
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                        Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                         if (result instanceof HtmlParserResult) {
                             JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
                             _value[0] = model.resolveExpression(expr, findNearestMapableOffsetForward(result.getSnapshot(), offset), NESTING_AWARE);
@@ -314,13 +334,24 @@ public class JsfElExpression extends ELExpression {
         }
         
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
-        
+
+	//managed beans
         for (FacesManagedBean bean : beans){
             if (name.equals(bean.getManagedBeanName())){
                 name = bean.getManagedBeanClass();
                 break;
             }
         }
+	//web beans
+	for (WebBean bean : WebBeansModelSupport.getNamedBeans(webBeansModel)){
+	    String beanName = bean.getName();
+            if (name.equals(beanName)){
+                name = bean.getBeanClassName(); //bean class
+                break;
+            }
+        }
+
+
         final String[] result= new String[1];
         InspectPropertiesTask inspectPropertiesTask = new InspectPropertiesTask(name){
 
@@ -387,7 +418,7 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    HtmlParserResult result = (HtmlParserResult)getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    HtmlParserResult result = (HtmlParserResult)JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if(result == null) {
                         return ;
                     }
@@ -429,7 +460,7 @@ public class JsfElExpression extends ELExpression {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     //one level - works only if xhtml is top level
-                    Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (result instanceof HtmlParserResult) {
                         JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
@@ -448,15 +479,6 @@ public class JsfElExpression extends ELExpression {
         }
 
         return items;
-    }
-
-    private Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
-        for(Embedding e : resultIterator.getEmbeddings()) {
-            if(e.getMimeType().equals(mimeType)) {
-                return resultIterator.getResultIterator(e).getParserResult();
-            }
-        }
-        return null;
     }
 
     //generic properties completion
@@ -756,8 +778,12 @@ public class JsfElExpression extends ELExpression {
                                     continue;
                                 }
                                 addedItems.add(methodName);
+                                TypeMirror methodType = controller.getTypes().asMemberOf(
+                                        (DeclaredType)bean.asType(), method);
+                                String retType = ((ExecutableType)methodType).
+                                    getReturnType().toString();
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
-                                    methodName, anchor, method.getReturnType().toString());
+                                    methodName, anchor, retType);
 
                             completionItems.add(item);
                         }
@@ -829,7 +855,7 @@ public class JsfElExpression extends ELExpression {
 
         public void run(CompilationController controller ) throws Exception {
             controller .toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement bean = getTypePreceedingCaret(controller );
+            TypeElement bean = getTypePreceedingCaret(controller, getResolvedExpression() );
 
             if (bean != null){
                 String suffix = removeQuotes(getPropertyBeingTypedName());

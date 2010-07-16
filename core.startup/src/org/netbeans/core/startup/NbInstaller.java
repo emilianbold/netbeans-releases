@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -62,6 +65,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -73,6 +78,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
+import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
@@ -214,7 +220,8 @@ final class NbInstaller extends ModuleInstaller {
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
         String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-        if (layerResource != null) {
+        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        if (layerResource != null && osgi == null) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
@@ -308,20 +315,18 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
     }
+
+    @Override
+    protected void classLoaderUp(ClassLoader cl) {
+        MainLookup.systemClassLoaderChanged(cl);
+        ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
+    }
     
+    @Override
     public void load(List<Module> modules) {
         ev.log(Events.START_LOAD, modules);
         
-        // we need to update the classloader as otherwise we might not find
-        // all the needed classes
-        if (mgr != null) { // could be null during tests
-            MainLookup.systemClassLoaderChanged(/* #61107: do not use Thread.cCL here! */mgr.getClassLoader());
-        }
-        ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
-        
-        for (Module m: modules) {
-            checkForDeprecations(m);
-        }
+        checkForDeprecations(modules);
         
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
@@ -417,47 +422,11 @@ final class NbInstaller extends ModuleInstaller {
         if (instClazz != null) {
             ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
             if (load) {
-                if (moduleList != null) {
-                    moduleList.installPrepare(m, inst);
-                }
-                // restore, install, or upgrade as appropriate
-                Object history = m.getHistory();
-                if (history instanceof ModuleHistory) {
-                    ModuleHistory h = (ModuleHistory)history;
-                    if (h.isPreviouslyInstalled()) {
-                        // Check whether we have changed versions.
-                        SpecificationVersion oldSpec = h.getOldSpecificationVersion();
-                        SpecificationVersion nueSpec = m.getSpecificationVersion();
-                        if (m.getCodeNameRelease() != h.getOldMajorVersion() ||
-                                (oldSpec == null ^ nueSpec == null) ||
-                                (oldSpec != null && nueSpec != null && oldSpec.compareTo(nueSpec) != 0)) {
-                            // Yes, different version; upgrade from the old one.
-                            ev.log(Events.UPDATE, m);
-                            inst.updated(h.getOldMajorVersion(), oldSpec == null ? null : oldSpec.toString());
-                        } else {
-                            // Same version as before.
-                            ev.log(Events.RESTORE, m);
-                            inst.restored();
-                        }
-                    } else {
-                        // First time.
-                        ev.log(Events.INSTALL, m);
-                        inst.installed();
-                    }
-                } else {
-                    // Probably fixed module. Just restore.
-                    ev.log(Events.RESTORE, m);
-                    inst.restored();
-                }
-                if (moduleList != null) {
-                    moduleList.installPostpare(m, inst);
-                }
+                ev.log(Events.RESTORE, m);
+                inst.restored();
             } else {
                 ev.log(Events.UNINSTALL, m);
                 inst.uninstalled();
-                if (m.getHistory() instanceof ModuleHistory) {
-                    ((ModuleHistory)m.getHistory()).resetHistory();
-                }
             }
         }
     }
@@ -595,7 +564,12 @@ final class NbInstaller extends ModuleInstaller {
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
-                    URL u = cl.getResource(resource);
+                    URL u;
+                    if (cl instanceof ProxyClassLoader) {
+                        u = ((ProxyClassLoader)cl).findResource(resource);
+                    } else {
+                        u = cl.getResource(resource);
+                    }
                     if (u != null) {
                         theseurls.add(u);
                         foundSomething = true;
@@ -646,26 +620,38 @@ final class NbInstaller extends ModuleInstaller {
      * And if the module is not actually enabled, it does not matter.
      * Indirect dependencies are someone else's problem.
      * Provide-require dependencies do not count either.
-     * @param m the module which is now being turned on
+     * @param modules the modules which are now being turned on
      */
-    private void checkForDeprecations(Module m) {
-        if (!Boolean.valueOf((String)m.getAttribute("OpenIDE-Module-Deprecated")).booleanValue()) { // NOI18N
-            for (Dependency dep : m.getDependencies()) {
-                if (dep.getType() == Dependency.TYPE_MODULE) {
-                    String cnb = (String) Util.parseCodeName(dep.getName())[0];
-                    Module o = mgr.get(cnb);
-                    if (o == null) throw new IllegalStateException("No such module: " + cnb); // NOI18N
-                    if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
-                        String message = (String)o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
-                        // XXX use NbEvents? I18N?
-                        // For now, assume this is a developer-oriented message that need not be localized
-                        // or displayed in a pretty fashion.
-                        if (message != null) {
-                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated: " + message); // NOI18N
-                        } else {
-                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated."); // NOI18N
+    private void checkForDeprecations(List<Module> modules) {
+        Map<String,Set<String>> depToUsers = new TreeMap<String,Set<String>>();
+        for (Module m : modules) {
+            if (!Boolean.parseBoolean((String) m.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+                for (Dependency dep : m.getDependencies()) {
+                    if (dep.getType() == Dependency.TYPE_MODULE) {
+                        String cnb = (String) Util.parseCodeName(dep.getName())[0];
+                        Set<String> users = depToUsers.get(cnb);
+                        if (users == null) {
+                            users = new TreeSet<String>();
+                            depToUsers.put(cnb, users);
                         }
+                        users.add(m.getCodeNameBase());
                     }
+                }
+            }
+        }
+        for (Map.Entry<String,Set<String>> entry : depToUsers.entrySet()) {
+            String dep = entry.getKey();
+            Module o = mgr.get(dep);
+            assert o != null : "No such module: " + dep;
+            if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+                String message = (String) o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
+                // XXX use NbEvents? I18N?
+                // For now, assume this is a developer-oriented message that need not be localized or displayed in a pretty fashion.
+                Set<String> users = entry.getValue();
+                if (message != null) {
+                    Util.err.log(Level.WARNING, "the modules {0} use {1} which is deprecated: {2}", new Object[] {users, dep, message});
+                } else {
+                    Util.err.log(Level.WARNING, "the modules {0} use {1} which is deprecated.", new Object[] {users, dep});
                 }
             }
         }
@@ -696,6 +682,7 @@ final class NbInstaller extends ModuleInstaller {
     public void close(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
+        moduleList.shutDown();
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
@@ -784,35 +771,14 @@ final class NbInstaller extends ModuleInstaller {
         }
         AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
-            Util.err.warning("had to upgrade dependencies for module " + m.getCodeNameBase() + ": added = " + rep.getAdded() + " removed = " + rep.getRemoved() + "; details: " + rep.getMessages());
+            Util.err.warning(rep.toString());
         }
     }
-    
+
     public @Override String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
             List<String> arr = new ArrayList<String>(4);
-            
-            if (Utilities.isUnix()) {
-                arr.add("org.openide.modules.os.Unix"); // NOI18N
-                if (!Utilities.isMac()) {
-                    arr.add("org.openide.modules.os.PlainUnix"); // NOI18N
-                }
-            }
-            if (Utilities.isWindows()) {
-                arr.add("org.openide.modules.os.Windows"); // NOI18N
-            }
-            if (Utilities.isMac()) {
-                arr.add("org.openide.modules.os.MacOSX"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
-                arr.add("org.openide.modules.os.OS2"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
-                arr.add("org.openide.modules.os.Linux"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
-                arr.add("org.openide.modules.os.Solaris"); // NOI18N
-            }
+            CoreBridge.defineOsTokens(arr);
             
             // module format is now 2
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N

@@ -12,12 +12,8 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
 public class IEPWizardPanel2 implements WizardDescriptor.Panel {
@@ -50,10 +46,7 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-    // If you have context help:
-    // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx("iep_understandprojects");
     }
 
     public boolean isValid() {

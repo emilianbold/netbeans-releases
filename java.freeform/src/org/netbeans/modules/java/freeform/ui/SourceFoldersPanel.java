@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -54,7 +57,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -68,7 +70,6 @@ import javax.swing.JTable;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -87,6 +88,7 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -143,9 +145,11 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     }
     
     private void initSourceLevel() {
-        sourceLevel.addItem(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK13")); // NOI18N
-        sourceLevel.addItem(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK14")); // NOI18N
-        sourceLevel.addItem(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK15")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK13")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK14")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK15")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK16")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK17")); // NOI18N
     }
     
     private void updateButtons() {
@@ -176,7 +180,11 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
             sourceLevel.setSelectedIndex(1);
         } else if (sourceLevelValue.equals("1.5")) { // NOI18N
             sourceLevel.setSelectedIndex(2);
-        } else {
+        } else if (sourceLevelValue.equals("1.6")) { // NOI18N
+            sourceLevel.setSelectedIndex(3);
+        } else if (sourceLevelValue.equals("1.7")) { // NOI18N
+            sourceLevel.setSelectedIndex(4);
+        }else {
             // user specified some other value in project.xml
             sourceLevel.addItem(sourceLevelValue);
             sourceLevel.setSelectedIndex(3);
@@ -184,7 +192,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     }
     
     private void updateEncodingCombo() {
-        encodingComboBox.setModel(new EncodingModel());
+        String enc = model.getEncoding();
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(enc));
     }
     
     private String getSourceLevelValue(int index) {
@@ -192,6 +201,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
             case 0: return "1.3"; // NOI18N
             case 1: return "1.4"; // NOI18N
             case 2: return "1.5"; // NOI18N
+            case 3: return "1.6"; // NOI18N
+            case 4: return "1.7"; // NOI18N
             default: return null;
         }
     }
@@ -470,7 +481,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         encodingLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Name")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Desc")); // NOI18N
 
-        encodingComboBox.setRenderer(new EncodingRenderer());
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 encodingComboBoxActionPerformed(evt);
@@ -1022,65 +1033,6 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
             if (sf.label.length() == 0) {
                 sf.label = getDefaultLabel(sf.location, tests);
             }
-        }
-        
-    }
-    
-    private class EncodingModel extends DefaultComboBoxModel {
-        public EncodingModel() {
-            Object selEnc = null;
-            if (model.getEncoding() == null) {
-                addElement(ProjectModel.NO_ENCODING);
-                selEnc = ProjectModel.NO_ENCODING;
-            }
-            for (Charset cset : Charset.availableCharsets().values()) {
-                if (cset.name().equals(model.getEncoding())) {
-                    selEnc = cset;
-                }
-                addElement(cset);
-            }
-            if (isWizard) {
-                setSelectedItem(FileEncodingQuery.getDefaultEncoding());
-            } else {
-                if (selEnc != null) {
-                    setSelectedItem(selEnc);
-                }
-            }
-        }
-    }
-    
-    private static class EncodingRenderer extends DefaultListCellRenderer implements UIResource {
-        
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-        
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, 
-                int index, boolean isSelected, boolean cellHasFocus) {
-            setName("ComboBox.listRenderer"); // NOI18N
-            String dispName = null;
-            if (value instanceof Charset) {
-                dispName = ((Charset) value).displayName();
-            } else {
-                dispName = value.toString();
-            }
-            setText(dispName);
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-        
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
         
     }

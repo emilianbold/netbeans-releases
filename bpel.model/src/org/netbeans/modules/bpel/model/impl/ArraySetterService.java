@@ -41,7 +41,6 @@ import org.netbeans.modules.bpel.model.impl.services.InnerEventDispatcherAdapter
  * 
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ArraySetterService extends InnerEventDispatcherAdapter {
 
     /*

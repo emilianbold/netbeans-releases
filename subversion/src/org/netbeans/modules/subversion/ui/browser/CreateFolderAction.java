@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -57,7 +60,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -75,12 +77,14 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
         setEnabled(false);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {            
             setEnabled(isEnabled());   
         }
     }
     
+    @Override
     public boolean isEnabled() {
         Browser browser = getBrowser();
         if(browser == null) {
@@ -100,6 +104,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
     /**
      * Configures this action with the actual browser instance
      */
+    @Override
     public void setBrowser(Browser browser) {        
         Browser oldBrowser = getBrowser();
         if(oldBrowser!=null) {
@@ -109,8 +114,10 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
         super.setBrowser(browser);                
     }    
     
+    @Override
     public void actionPerformed(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {                           
                 Node[] nodes = getSelectedNodes();
                 if(nodes.length > 1) {                        

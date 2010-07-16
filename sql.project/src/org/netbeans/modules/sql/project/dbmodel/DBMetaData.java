@@ -229,7 +229,7 @@ public class DBMetaData {
     private boolean checkPrepStmtMetaData = true;    // indicates driver does not
     // fully support finding prepared
     // statement metadata
-    private boolean checkProcMetaData = true;    // indicates driver does not
+    private boolean checkProcMetaData = false;    // indicates driver does not
     // fully support finding prepared
     // statement metadata
     private boolean errPrepStmtParameters = false;   // error getting prep. stmt. parameters
@@ -989,27 +989,17 @@ public class DBMetaData {
 		javaType = "java.sql.ResultSet";
 		}
 		String paramType = getParamTypeDescription(rs.getShort("COLUMN_TYPE"));
-		int nullable = rs.getShort("NULLABLE");
-		int numericPrecision = rs.getInt("PRECISION");
-		short numericScale = rs.getShort("SCALE");
 		
+		if (paramType.equals("RETURN") || paramType.equals("OUT") || paramType.equals("INOUT")) {
+			hasReturn = true;
+		}
 		// create a parameter and add it to the vector
 		Parameter parm = new Parameter(parmName, javaType);
-		boolean isNullable = false;
-		if (nullable == DatabaseMetaData.procedureNullable) {
-		isNullable = true;
-		}
+		
 		parm.setJavaType(javaType);
 		parm.setSqlType(sqlType);
 		parm.setParamType(paramType);
-		parm.setOrdinalPosition(pos);
-		parm.setNumericPrecision(numericPrecision);
-		parm.setNumericScale(numericScale);
-		parm.setIsNullable(isNullable);
-		
-		if (paramType.equals("RETURN")) {
-		hasReturn = true;
-		}
+				
 		paramIndex++;
 		String parameterName = rs.getString("COLUMN_NAME");
 		int targetSqlType = rs.getInt("DATA_TYPE");
@@ -1061,7 +1051,9 @@ public class DBMetaData {
 			}
 		
 		// add to vector
-		v.add(parm);
+			if(sqlType != "RESULTSET"){
+				v.add(parm);
+			}
 		}
 		
 		rs.close();
@@ -1108,17 +1100,10 @@ public class DBMetaData {
 			// scroll through the resultset column information
 			for (int i = 1; i <= rsmdColCount; i++) {
 			ResultSetColumn currCol = new ResultSetColumn();
-			currCol.setOrdinalPosition(i);
 			currCol.setName(rsmd.getColumnName(i));
-			currCol.setLabel(rsmd.getColumnLabel(i));
 			currCol.setSqlType(getSQLTypeDescription(rsmd.getColumnType(i)));
 			currCol.setJavaType((String)SQLTOJAVATYPES.get(getSQLTypeDescription(rsmd.getColumnType(i))));
 			
-			if (rsmd.isNullable(i) == DatabaseMetaData.columnNullable) {
-			currCol.setIsNullable(true);
-			} else {
-			currCol.setIsNullable(false);
-			}
 			// add ResultSetColumn object to the arraylist
 			boolean addToArray = resultArray.add(currCol);
 			}

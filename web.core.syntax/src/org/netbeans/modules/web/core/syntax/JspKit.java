@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,21 +45,16 @@
 package org.netbeans.modules.web.core.syntax;
 
 
-import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
-import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
 import java.beans.*;
+import java.util.WeakHashMap;
+import javax.lang.model.type.NullType;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -67,7 +65,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.gsf.JspCommentHandler;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -82,6 +79,10 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
+import org.netbeans.modules.csl.api.InstantRenameAction;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -93,6 +94,8 @@ import org.netbeans.spi.lexer.MutableTextInput;
  */
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
+    private static final WeakHashMap<Document, String /* source level id */> SOURCE_LEVEL_MAP = new WeakHashMap<Document, String>();
+
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
@@ -101,6 +104,8 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     public static final boolean debug = false;
     private final String mimeType;
+
+    private static final String NULL_SOURCE_LEVEL = "NullSourceLevel"; //NOI18N
 
     // called from the XML layer
     private static JspKit createKitForJsp() {
@@ -183,7 +188,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
-            new ToggleBlockCommentAction(new JspCommentHandler()),
+            new ToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };
@@ -296,20 +301,23 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     public static Syntax getSyntaxForLanguage(Document doc, String language) {
         EditorKit kit = CloneableEditorSupport.getEditorKit(language);
         if (kit instanceof JavaKit) {
-            JavaKit jkit = (JavaKit)kit;
-            String sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
-            //create a special javasyntax patched for use in JSPs (fix of #55628)
-            return new JavaSyntax(sourceLevel, true);
+            synchronized (SOURCE_LEVEL_MAP) {
+                String sourceLevel = SOURCE_LEVEL_MAP.get(doc);
+                if(sourceLevel == null) {
+                    JavaKit jkit = (JavaKit)kit;
+                    sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
+                    if(sourceLevel == null) {
+                        sourceLevel = NULL_SOURCE_LEVEL;
+                    }
+
+                    SOURCE_LEVEL_MAP.put(doc, sourceLevel);
+                }
+                //create a special javasyntax patched for use in JSPs (fix of #55628)
+                return new JavaSyntax(sourceLevel == NULL_SOURCE_LEVEL ? null : sourceLevel, true); // instance comparation for string is ok here
+            }
         } else {
             return new HtmlSyntax();
         }
-    }
-
-    @Override
-    protected void initDocument(BaseDocument doc) {
-        doc.addLayer(new ELDrawLayerFactory.ELLayer(),
-                ELDrawLayerFactory.EL_LAYER_VISIBILITY);
-
     }
 
     private void initLexerColoringListener(Document doc) {
@@ -339,18 +347,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     // Implement HelpCtx.Provider to provide help for CloneableEditor
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(JspKit.class);
-    }
-
-    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument) doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -392,7 +388,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -476,7 +472,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -507,7 +503,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -588,7 +584,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
          protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

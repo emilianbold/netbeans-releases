@@ -21,6 +21,7 @@ package org.netbeans.modules.soa.mappercore.demo;
 
 import java.awt.datatransfer.Transferable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -391,5 +392,13 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
 
     public void delete(TreePath currentTreePath, GraphSubset graphGroup) {
         return;
+    }
+
+    public List<TreePath> findInLeftTree(String value) {
+        return null;
+    }
+
+    public List<TreePath> findInRightTree(String value) {
+        return null;
     }
 }

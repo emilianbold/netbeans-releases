@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,8 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,6 +67,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.RequestProcessor;
 
 /**
  * Listens on DebuggerManager and:
@@ -71,6 +77,15 @@ import org.openide.filesystems.URLMapper;
  * @author Jan Jancura
  */
 public class PersistenceManager implements LazyDebuggerManagerListener {
+
+    private static Reference<PersistenceManager> instanceRef = new WeakReference<PersistenceManager>(null);
+
+    private Breakpoint[] breakpoints;
+    private RequestProcessor.Task saveTask;
+
+    public PersistenceManager() {
+        instanceRef = new WeakReference<PersistenceManager>(this);
+    }
     
     public synchronized Breakpoint[] initBreakpoints () {
         Properties p = Properties.getDefault ().getProperties ("debugger").
@@ -103,6 +118,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             }
             breakpoints[i].addPropertyChangeListener(this);
         }
+        this.breakpoints = breakpoints;
         return breakpoints;
     }
     
@@ -115,6 +131,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                 b.removePropertyChangeListener(this);
             }
         }
+        this.breakpoints = null;
         return unloaded.toArray(new Breakpoint[0]);
     }
     
@@ -131,8 +148,17 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     public void breakpointAdded (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
-            
-            storeBreakpoints();
+            synchronized (this) {
+                if (breakpoints == null) {
+                    return ;
+                }
+                int n = breakpoints.length;
+                Breakpoint[] newBreakpoints = new Breakpoint[n + 1];
+                System.arraycopy(breakpoints, 0, newBreakpoints, 0, n);
+                newBreakpoints[n] = breakpoint;
+                breakpoints = newBreakpoints;
+                storeTheBreakpoints();
+            }
             breakpoint.addPropertyChangeListener(this);
         }
     }
@@ -140,8 +166,26 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     public void breakpointRemoved (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
-            
-            storeBreakpoints();
+            synchronized (this) {
+                if (breakpoints == null) {
+                    return ;
+                }
+                int n = breakpoints.length;
+                for (int i = 0; i < n; i++) {
+                    if (breakpoints[i] == breakpoint) {
+                        Breakpoint[] newBreakpoints = new Breakpoint[n - 1];
+                        if (i > 0) {
+                            System.arraycopy(breakpoints, 0, newBreakpoints, 0, i);
+                        }
+                        if (i < (n-1)) {
+                            System.arraycopy(breakpoints, i+1, newBreakpoints, i, n - 1 - i);
+                        }
+                        n--;
+                        breakpoints = newBreakpoints;
+                    }
+                }
+                storeTheBreakpoints();
+            }
             breakpoint.removePropertyChangeListener(this);
         }
     }
@@ -163,7 +207,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             if (Breakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
                 return ;
             }
-            storeBreakpoints();
+            storeTheBreakpoints();
         }
     }
     
@@ -182,11 +226,17 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     }
 
     static void storeBreakpoints() {
-        Properties.getDefault ().getProperties ("debugger").
-            getProperties (DebuggerManager.PROP_BREAKPOINTS).setArray (
-                "jpda",
-                getBreakpoints ()
-            );
+        PersistenceManager pm = instanceRef.get();
+        if (pm != null) {
+            pm.storeTheBreakpoints();
+        }
+    }
+
+    private synchronized void storeTheBreakpoints() {
+        if (saveTask == null) {
+            saveTask = new RequestProcessor("Debugger JPDA Breakpoints storage", 1).create(new SaveTask());
+        }
+        saveTask.schedule(100);
     }
     
     public void sessionAdded (Session session) {}
@@ -195,19 +245,22 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     public void engineRemoved (DebuggerEngine engine) {}
     
     
-    private static Breakpoint[] getBreakpoints () {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-            getBreakpoints ();
-        int i, k = bs.length;
-        ArrayList<Breakpoint> bb = new ArrayList<Breakpoint>();
-        for (i = 0; i < k; i++)
-            // Don't store hidden breakpoints
-            if ( bs[i] instanceof JPDABreakpoint &&
-                 !((JPDABreakpoint) bs [i]).isHidden ()
-            )
-                bb.add (bs [i]);
-        bs = new Breakpoint [bb.size ()];
-        return bb.toArray (bs);
+    private final class SaveTask implements Runnable {
+
+        @Override
+        public void run() {
+            synchronized (PersistenceManager.this) {
+                if (breakpoints == null) {
+                    return ;
+                }
+                Properties.getDefault ().getProperties ("debugger").
+                    getProperties (DebuggerManager.PROP_BREAKPOINTS).setArray (
+                        "jpda",
+                        breakpoints
+                    );
+            }
+        }
+        
     }
 
 }

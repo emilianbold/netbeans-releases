@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,9 +44,9 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
@@ -97,9 +100,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
         includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
-        inheritIncludes = new BooleanConfiguration(null, true, null, null);
+        inheritIncludes = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
-        inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
+        inheritPreprocessor = new BooleanConfiguration(true);
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -201,7 +204,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     // Clone and assign
-    public void assign(CCCCompilerConfiguration conf) {
+    protected void assign(CCCCompilerConfiguration conf) {
         // BasicCompilerConfiguration
         super.assign(conf);
         // XCompilerConfiguration
@@ -214,31 +217,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getInheritPreprocessor().assign(conf.getInheritPreprocessor());
     }
 
-//    @Override
-//    public Object clone() {
-//	CCCCompilerConfiguration clone = new CCCCompilerConfiguration(getBaseDir(), (CCCCompilerConfiguration)getMaster());
-//	// BasicCompilerConfiguration
-//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-//	clone.setStrip((BooleanConfiguration)getStrip().clone());
-//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-//	clone.setTool((StringConfiguration)getTool().clone());
-//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-//	// XCompilerConfiguration
-//	clone.setMTLevel((IntConfiguration)getMTLevel().clone());
-//	clone.setLibraryLevel((IntConfiguration)getLibraryLevel().clone());
-//	clone.setStandardsEvolution((IntConfiguration)getStandardsEvolution().clone());
-//	clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
-//	clone.setIncludeDirectories((VectorConfiguration)getIncludeDirectories().clone());
-//	clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
-//	clone.setPreprocessorConfiguration((VectorConfiguration)getPreprocessorConfiguration().clone());
-//	clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
-//	return clone;
-//    }
-
     // Sheet
-    public Sheet.Set getSet() {
+    protected Sheet.Set getSet() {
         CCCCompilerConfiguration master;
         OptionToString visitor = new OptionToString(null, null);
 
@@ -274,25 +254,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         return set1;
     }
 
-//    private class PreprocessorOptions implements AllOptionsProvider {
-//	public String getAllOptions(BasicCompiler compiler) {
-//	    CCCCompilerConfiguration master = (CCCCompilerConfiguration)getMaster();
-//
-//	    StringBuilder options = new StringBuilder();
-//	    while (master != null) {
-//		options.append(master.getPreprocessorConfiguration().getValue());
-//                options.append(" "); // NOI18N
-//                if (master.getInheritPreprocessor().getValue())
-//                    master = (CCCCompilerConfiguration)master.getMaster();
-//                else
-//                    master = null;
-//            }
-//	    return CppUtils.reformatWhitespaces(options.toString());
-//	}
-//    }
-
     // Sheet
-    public Sheet getSheet(Project project) {
+    protected Sheet getSheet(Project project) {
         Sheet sheet = new Sheet();
         sheet.put(getSet());
         return sheet;
@@ -303,11 +266,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         return NbBundle.getMessage(CCCCompilerConfiguration.class, s);
     }
 
-    protected abstract CompilerDescriptor getCompilerDescription();
+    protected abstract String getUserIncludeFlag(CompilerSet cs);
 
-    protected abstract String getUserIncludeFlag();
-
-    protected abstract String getUserMacroFlag();
+    protected abstract String getUserMacroFlag(CompilerSet cs);
 
     public static class OptionToString implements VectorConfiguration.ToString<String> {
 
@@ -319,12 +280,13 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             this.prepend = prepend;
         }
 
+        @Override
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {
-                    item = compilerSet.normalizeDriveLetter(item);
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                item = IpeUtils.escapeOddCharacters(item);
+                item = CndPathUtilitities.escapeOddCharacters(item);
                 return prepend == null ? item : prepend + item;
             } else {
                 return ""; // NOI18N

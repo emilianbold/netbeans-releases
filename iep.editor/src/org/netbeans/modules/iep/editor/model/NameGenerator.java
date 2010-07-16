@@ -1,17 +1,16 @@
 package org.netbeans.modules.iep.editor.model;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.iep.model.share.SharedConstants;
+import org.netbeans.modules.tbls.model.TcgComponentType;
 
-public class NameGenerator {
+public class NameGenerator implements SharedConstants {
 
     private static final int MAX_COUNT = 1000000000;
     
@@ -46,7 +45,7 @@ public class NameGenerator {
                 boolean exist = false;
                 for (int j = 0, J = list.size(); j < J; j++) {
                     OperatorComponent c = list.get(j);
-                    if (c.getDisplayName().equalsIgnoreCase(name)) {
+                    if (c.getString(PROP_NAME).equalsIgnoreCase(name)) {
                         exist = true;
                         break;
                     }

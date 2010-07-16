@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,6 +69,8 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
         suite.addTestSuite(ParameterizedTypeTest.class);
 //        suite.addTest(new ParameterizedTypeTest("test115176HowTo"));
 //        suite.addTest(new ParameterizedTypeTest("test115176TestCase"));
+//        suite.addTest(new ParameterizedTypeTest("testChangeToDiamond"));
+//        suite.addTest(new ParameterizedTypeTest("test185306"));
         return suite;
     }
 
@@ -174,6 +179,80 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(classTree, copy);
             }
             
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testChangeToDiamond() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private Object o = new LinkedList<String>();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private Object o = new LinkedList<>();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree ptt = (ParameterizedTypeTree) ((NewClassTree) var.getInitializer()).getIdentifier();
+
+                workingCopy.rewrite(ptt, make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList()));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test185306() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<?> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<?> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree man = make.ParameterizedType(make.Identifier("LinkedList"), Collections.singletonList(make.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD, make.Identifier("Object"))));
+
+                workingCopy.rewrite(var.getType(), man);
+            }
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

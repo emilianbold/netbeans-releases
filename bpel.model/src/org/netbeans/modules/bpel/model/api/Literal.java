@@ -39,6 +39,14 @@ package org.netbeans.modules.bpel.model.api;
  *   &lt;/xsd:complexType>
  * </pre>
  */
-public interface Literal extends BpelContainer, ContentElement, FromChild {
+public interface Literal extends BpelContainer, ContentElement, XmlContentElement, 
+        CDataContentElement, FromChild 
+{
 
+    public enum LiteralForm {
+        SUBELEMENT,
+        TEXT_CONTENT,
+        CDATA_SUBELEMENT,
+        EMPTY;
+    };
 }

@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -123,18 +126,10 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     @Override
     public void open() {
         FileObject file = getFileObject();
-        if (file != null) {                
-            JavaSource js = JavaSource.forFileObject(file);
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws Exception {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);                        
-                        ElementOpen.open(controller.getClasspathInfo(), me);
-                    }
-                }, true);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+        if (file != null) {
+	    ClasspathInfo cpInfo = ClasspathInfo.create(file);
+	    
+	    ElementOpen.open(cpInfo, me);
         }
     }
    

@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.nodes.navigator;
 
 import java.util.StringTokenizer;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.Documentation;
@@ -35,6 +36,7 @@ import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.ToPart;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.nodes.BpelNode;
@@ -56,6 +58,27 @@ public interface TooltipManager {
     String HR_TAG = "<hr>"; // NOI18N\
     int TOOLPTIP_MAX_STRING_LENGTH = 100;
     
+    class VariableReferenceTooltipManager implements TooltipManager {
+        public boolean accept(NodeType nodeType, Object reference) {
+            return reference instanceof BpelReference
+                    && VariableDeclaration.class == ((BpelReference)reference).getType();
+        }
+
+        public String getTooltip(NodeType nodeType, Object reference) {
+            if (!accept(nodeType, reference)) {
+                return null;
+            }
+
+            String refName = ((BpelReference)reference).getRefString();
+            refName = refName == null ? BpelNode.EMPTY_STRING : refName;
+
+        return NbBundle.getMessage(BpelNode.class,
+                "LBL_SHORT_TOOLTIP_HTML_TEMPLATE", // NOI18N
+                nodeType.getDisplayName(),
+                refName); 
+        }
+    }
+
     class ShortTooltipManager implements TooltipManager {
         public boolean accept(NodeType nodeType, Object reference) {
             return reference instanceof Component;
@@ -89,6 +112,39 @@ public interface TooltipManager {
         }
     }
     
+    class AssignTooltipManager implements TooltipManager {
+        public boolean accept(NodeType nodeType, Object reference) {
+            if (!(reference instanceof Assign)) {
+                return false;
+            }
+
+            return NodeType.ASSIGN == nodeType;        }
+
+        public String getTooltip(NodeType nodeType, Object reference) {
+            if (!accept(nodeType, reference)) {
+                return null;
+            }
+
+            String docsStr = Util.getDocumentations((ExtensibleElements)reference);
+
+            String refName = reference == null ?
+                BpelNode.EMPTY_STRING : ((Assign)reference).getName();
+
+            String typeName = ((Assign)reference).isJavaScript() 
+                    ? NodeType.JAVA_SCRIPT.getDisplayName() 
+                    :nodeType.getDisplayName();
+        return docsStr == null || BpelNode.EMPTY_STRING.equals(docsStr) ?
+            NbBundle.getMessage(BpelNode.class,
+                "LBL_SHORT_TOOLTIP_HTML_TEMPLATE", // NOI18N
+                 typeName,
+                refName)
+                : NbBundle.getMessage(BpelNode.class,
+                "LBL_SHORT_TOOLTIP_WITHDOCS_HTML_TEMPLATE", // NOI18N
+                typeName,
+                refName, docsStr); // NOI18N
+        }
+    }
+
     class LongTooltipManager implements TooltipManager {
         public boolean accept(NodeType nodeType, Object reference) {
             if (!(reference instanceof BpelEntity)) {
@@ -179,7 +235,6 @@ public interface TooltipManager {
                 && endpointStr.length() >0) {
             stringFrom = "("+stringFrom+endpointStr+")";
         }
-        
                         
         stringTo = DecorationProvider.Util.getToLabel(to);
         if (stringFrom == null && stringTo == null 
@@ -313,6 +368,12 @@ public interface TooltipManager {
                                 ((Copy)component).getIgnoreMissingFromData(),
                                 Copy.IGNORE_MISSING_FROM_DATA)
                             );
+                    if (((Copy)component).getBinaryCopy() != null) {
+                        attributesTooltip.append(Util.getLocalizedAttribute(
+                                ((Copy)component).getBinaryCopy().toString(),
+                                Copy.BINARY_COPY)
+                        );
+                    }
                     attributesTooltip.append(Util.getLocalizedAttribute(
                                 ((Copy)component).getKeepSrcElementName(),
                                 Copy.KEEP_SRC_ELEMENT_NAME)
